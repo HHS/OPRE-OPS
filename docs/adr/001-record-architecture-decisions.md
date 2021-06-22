@@ -4,7 +4,7 @@ Date: 2021-06-22
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
@@ -19,4 +19,10 @@ We will use Architecture Decision Records, as described by Michael Nygard in thi
 
 ## Consequences
 
-See Michael Nygard's article, linked above.
+We predict that using ADRs will improve onboarding for new team members by giving them more context. 
+
+We predict that using ADRs will improve how we document decision making and decision changes.
+
+We predict that using ADRs will smooth the path to ATO by providing more documentation about architecture decisions. 
+
+We predict that using ADRs will help us improve communication with partners about architecture decisions.
