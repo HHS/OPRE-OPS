@@ -1,19 +1,23 @@
-# 3. Services for Version Control, Continuous Integration
+# 3. Services for Version Control
 
-Date: TK
+Date: 2021-06-22
 
 ## Status
 
-TK
+Proposed by engineering team
 
 ## Context
 
-TK
+We want to use some form of version control to track our coding work.
+
+We know that HHS operates a GitHub organization: https://github.com/hhs
+
+We don't yet know if this organization is GitHub Enterprise or not.
 
 ## Decision
 
-TK
+We will request to use the HHS GitHub account for MAPS version control.
 
 ## Consequences
 
-TK
+We predict this will ease software development collaboration.
