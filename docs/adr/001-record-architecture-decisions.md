@@ -8,7 +8,7 @@ Proposed
 
 ## Context
 
-We need to record the architectural decisions made on this project.
+We want to record our architectural decisions so that new team members who join can see why we made the decisions we made, and can revise or revisit them with more confidence and context. 
 
 ## Decision
 
