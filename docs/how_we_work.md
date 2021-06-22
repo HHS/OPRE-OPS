@@ -28,7 +28,7 @@
 
 ### We will aim for small, focused Pull Requests that map to issues in our backlog. 
 * *What*:	We will write each pull request to accomplish one small, cohesive change. This change will map back to an issue for reference. We will include a link to the associated issue for each pull request. We may need more than one pull request to implement a given issue.
-* *Why*:	Small and focused pull requests will make code review faster and easier.  If there’s a need to roll back a change, it can also be done easier if we do not have a big change or many different changes in a pull request.  By mapping pull requests back to issues, it can help the team track our progress on our work.
+* *Why*:	Small and focused pull requests will make code review faster and easier.  If there’s a need to roll back a change, it can also be done more easily if we do not have a big change or many different changes in a pull request.  By mapping pull requests back to issues, it can help the team track our progress on our work.
 
 ## Git flow practices
 
