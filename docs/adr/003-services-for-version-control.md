@@ -16,7 +16,7 @@ We don't yet know if this organization is GitHub Enterprise or not.
 
 ## Decision
 
-We will request to use the HHS GitHub account for MAPS version control.
+We will request to use the HHS GitHub account for Unicorn version control.
 
 ## Consequences
 
