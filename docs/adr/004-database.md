@@ -13,6 +13,8 @@ We want to pick a database for Unicorn development.
 
 We will likely need a relational database since the data is mostly structured and related.
 
+Reference to [different types of databases and their usages](https://www.geeksforgeeks.org/types-of-databases/).
+
 ## Decision
 
 We will use PostgreSQL database for Unicorn.
