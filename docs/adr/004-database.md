@@ -5,7 +5,7 @@ Date: 2021-06-25
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
