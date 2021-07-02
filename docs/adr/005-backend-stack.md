@@ -20,6 +20,7 @@ Using a web framework, we won't be starting off writing code on a totally blank 
 
 + https://www.djangoproject.com/
 + https://docs.djangoproject.com/en/dev/faq/general/#faq-general 
++ Django Admin: https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Admin_site
 
 ## Decision
 
