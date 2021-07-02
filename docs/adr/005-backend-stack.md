@@ -41,5 +41,5 @@ We predict that choosing Django as our Python web framework for the back end wil
 Choosing Django won't limit our choices when we consider what front-end tech stack to use. We could: 
 
 * use the Django template language to render server-side HTML
-* use Django as an API, and create a separate front-end using React
-* take a middle route: for example, by rendering most pages server-side but using React to create specific interactive features
+* use Django purely as an API, and create a separate front-end using React
+* take a middle route -- for example, by rendering most pages server-side but using React to create specific interactive features
