@@ -1,7 +1,7 @@
 
 # 4. Database 
 
-Date: 2021-06-25
+Date: 2021-07-07
 
 ## Status
 
@@ -14,6 +14,15 @@ We want to pick a database for Unicorn development.
 We will likely need a relational database since the data is mostly structured and related.
 
 Reference to [different types of databases and their usages](https://www.geeksforgeeks.org/types-of-databases/).
+
+## Options Considered
+
+We consider a few factors when we pick a database:
+- relational
+- cost of owning
+- recommended solutions from [TTS Engineering Practices](https://engineering.18f.gov/)
+
+These factors lead us to an open source relational database, and a [recommended selection at TTS -- PostgreSQL](https://engineering.18f.gov/datastore-selection/).
 
 ## Decision
 
