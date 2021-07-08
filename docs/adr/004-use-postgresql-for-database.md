@@ -18,7 +18,7 @@ Reference to [different types of databases and their usages](https://www.geeksfo
 ## Options Considered
 
 We consider a few factors when we pick a database:
-- relational
+- since the data is relational, we need a relational database
 - cost of owning
 - recommended solutions from [TTS Engineering Practices](https://engineering.18f.gov/)
 
