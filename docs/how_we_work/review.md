@@ -22,4 +22,4 @@ Refactors | Engineering review + PM review
 Documentation | Engineering review + PM review
 Security controls | TBD
 
-We still need to determine the role of the system's product owner (PO) in the review process and the right granularity for her review.
+At this stage in the project, the system's product owner (PO) will not be reviewing individual pull requests; she will be involved in crafting and reviewing stories. Longer term, a tech lead might review pull requests. 
