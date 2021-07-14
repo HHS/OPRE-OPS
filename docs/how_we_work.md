@@ -34,7 +34,7 @@
 
 ### Tech Lead role
 
-Amy Mok will act as our Tech Lead for this project, with backup support from Alex Soble and Carly Jugler.
+Amy Mok (AM) will act as our Tech Lead for this project, with backup support from Alex Soble (ARS) and Carly Jugler (CJ).
 
 ### Table of responsibilities
 
