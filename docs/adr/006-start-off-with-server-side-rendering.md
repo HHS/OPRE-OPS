@@ -32,3 +32,5 @@ We will start off with server-side HTML rendering, and add more front-end toolin
 ## Consequences / premortem
 
 See tradeoffs above.
+
+If user research and initial prototyping suggest that we will need a large amount of JavaScript to implement the project, we may need to request more funding to bring on additional developers to write JavaScript. 
