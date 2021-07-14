@@ -1,4 +1,4 @@
-# 6. Front-end tech stack
+# 6. Front-end tech stack: Start off with server-side rendering
 
 Date: 2021-07-14
 
