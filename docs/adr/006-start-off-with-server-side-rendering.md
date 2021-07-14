@@ -21,9 +21,9 @@ See [Why simplicity? Choosing a web architecture](https://18f.gsa.gov/2021/04/05
 
 ### Tradeoffs 
 
-* In the short term, starting off with server-rendered HTML will allow us to get started delivering features more quickly. We won't need to invest as much time and energy in setting up React, setting up associated front-end tooling, and re-implementing basic accessibility features in React, such as page titles.
+* In the short term, starting off with server-rendered HTML will allow us to get started delivering features more quickly. We won't need to invest developer time and energy in setting up React, setting up associated front-end React tooling and testing, and re-implementing basic accessibility features in React such as page titles.
 * In the long term, keeping most of the front-end code as semantic server-rendered HTML should make the product more accessible, simpler to maintain, and more cost-effective for OPRE, since the cost of developing and maintaining HTML is lower than the cost of developing and maintaining React code.
-* In the medium term, we may want to add some interactivity to our application by using React or another front-end library to power specific interactive features, such as an interactive grid view with client side sorting, search, and/or column selection
+* In the medium term, we may want to add some interactivity to our application by using React or another front-end library to power specific interactive features, such as an interactive grid view with client side sorting, search, and/or column selection.
 
 ## Decision
 
