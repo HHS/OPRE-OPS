@@ -32,11 +32,16 @@
 
 ## Engineering team roles
 
+### Tech Lead role
+
+Amy Mok will act as our Tech Lead for this project, with backup support from Alex Soble and Carly Jugler.
+
 ### Table of responsibilities
 
 Task/Responsibility | Primary | Backup
 -- | -- | --
-More tech-lead-specific things… Keep tabs on the different eng streams and whether they’re flowing smoothly individually and togetherEnsure engs have a good sense of their roles; eng team roles/shape matched to the work that needs doing | AM | ARS
+Keep tabs on the different eng streams and whether they’re flowing smoothly individually and together<br>
+Ensure engs have a good sense of their roles; eng team roles/shape matched to the work that needs doing | AM | ARS
 Meet with PM to provide initial perspective on draft milestones, cycles, stories | AM | CJ
 Meet with OCIO to represent project, fill out ATO docs** | ARS | AM, CJ
 Guide eng team to technical decisions | ARS | AM, CJ
@@ -44,6 +49,7 @@ Implementation — back end | CJ | AM
 Implementation — front end | ARS | CJ
 Implementation — database migration** | AM | CJ
 (TBD) Train up partner tech lead |   |  
+
 
 **this is a big effort!
 
