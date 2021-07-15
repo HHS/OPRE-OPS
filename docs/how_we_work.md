@@ -4,7 +4,7 @@
 
 *Version*: Draft, ~V0.9
 
-## Engineering team practices 
+## Engineering team practices
 
 ### We will review each other’s code. 
 * *What*: 	All code will be code reviewed and approved by at least one other team member before it is accepted and merged.  (Exception: typos, spelling fixes.) We will prioritize reviewing each other’s code and unblocking teammates above our own software development work. 
@@ -29,6 +29,29 @@
 ### We will aim for small, focused Pull Requests that map to issues in our backlog. 
 * *What*:	We will write each pull request to accomplish one small, cohesive change. This change will map back to an issue for reference. We will include a link to the associated issue for each pull request. We may need more than one pull request to implement a given issue.
 * *Why*:	Small and focused pull requests will make code review faster and easier.  If there’s a need to roll back a change, it can also be done more easily if we do not have a big change or many different changes in a pull request.  By mapping pull requests back to issues, it can help the team track our progress on our work.
+
+## Engineering team roles
+
+### Tech Lead role
+
+Amy Mok (AM) will act as our Tech Lead for this project, with backup support from Alex Soble (ARS) and Carly Jugler (CJ).
+
+### Table of responsibilities
+
+Task/Responsibility | Primary | Backup
+-- | -- | --
+Keep tabs on the different eng streams and whether they’re flowing smoothly individually and together | AM | ARS
+Ensure engs have a good sense of their roles; eng team roles/shape matched to the work that needs doing | AM | ARS
+Meet with PM to provide initial perspective on draft milestones, cycles, stories | AM | CJ
+Meet with OCIO to represent project, fill out ATO docs** | ARS | AM, CJ
+Guide eng team to technical decisions | ARS | AM, CJ
+Implementation — back end | CJ | AM
+Implementation — front end | ARS | CJ
+Implementation — database migration** | AM | CJ
+(TBD) Train up partner tech lead |   |  
+
+
+**this is a big effort!
 
 ## Git flow practices
 
