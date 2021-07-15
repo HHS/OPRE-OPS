@@ -40,7 +40,7 @@ Amy Mok (AM) will act as our Tech Lead for this project, with backup support fro
 
 Task/Responsibility | Primary | Backup
 -- | -- | --
-Keep tabs on the different eng streams and whether they’re flowing smoothly individually and together<br>
+Keep tabs on the different eng streams and whether they’re flowing smoothly individually and together | AM | ARS
 Ensure engs have a good sense of their roles; eng team roles/shape matched to the work that needs doing | AM | ARS
 Meet with PM to provide initial perspective on draft milestones, cycles, stories | AM | CJ
 Meet with OCIO to represent project, fill out ATO docs** | ARS | AM, CJ
