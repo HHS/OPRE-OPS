@@ -45,4 +45,4 @@ We predict that using CircleCI will:
 
 ## Related issue
 
-[#55](https://github.com/18F/OPRE-Unicorn/issues/55
+[#55](https://github.com/18F/OPRE-Unicorn/issues/55)  
