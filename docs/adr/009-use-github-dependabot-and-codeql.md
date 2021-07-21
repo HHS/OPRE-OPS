@@ -34,7 +34,7 @@ We considered using [Snyk](https://snyk.io/) for dependency scanning, but we obs
 
 #### GitHub CodeQL
 
-* GitHub offers a static analysis tool called Dependabot, which other 18F teams are using successfully. 
+* GitHub offers a static analysis tool called CodeQL, which other 18F teams are using successfully. 
 * We predict that using a built-in GitHub tool will allow us to configure and maintain the tool with less friction. 
 * We will need to either run CodeQL through an GitHub Actions workflow, or run it in CircleCI. 
 
