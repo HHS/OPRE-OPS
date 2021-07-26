@@ -4,7 +4,7 @@ As a team, we will use points to estimate our issues so that we can better plan 
 
 ## How we'll estimate
 
-We will use points for estimation, using an exponential scale: 1, 2, 4, 8, 16, 32.
+We will use points for estimation, with an exponential scale: 1, 2, 4, 8, 16, 32.
 
 Reference points for what each level means, via [@amymok](https://github.com/18F/OPRE-Unicorn/issues/77):
 
