@@ -4,6 +4,7 @@ As a team we will use labels for tracking which reviews are assign to whom and i
 
 ## Process
 
+- At least one developer and one PM as reviewers on an issue
 - When an issue is ready for review, move to "In Review"
 - Add `____ Review` label for those who need to review and also comment, "@" tagging them on the issue stating that it's ready for their review
   - If the issue has a corresponding PR, also assign those who need to review the PR as "Reviewers" on the PR
