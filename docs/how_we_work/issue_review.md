@@ -1,6 +1,6 @@
 # Reviews Process for Issues
 
-As a team we will use labels for tracking which reviews are assign to whom and issue comments to tag our teammates when an issue is ready for their review.
+As a team we will use labels for tracking which reviews are assigned to whom and issue comments to tag our teammates when an issue is ready for their review.
 
 ## Process
 
