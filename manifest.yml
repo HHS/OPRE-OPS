@@ -1,0 +1,5 @@
+---
+applications:
+    - name: opre-rpm-test
+      buildpacks:
+        - https://github.com/cloudfoundry/python-buildpack.git#v1.7.44
