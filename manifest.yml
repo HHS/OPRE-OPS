@@ -1,5 +1,9 @@
 ---
 applications:
-    - name: opre-rpm-test
+    - name: opre-ops-test
       buildpacks:
         - https://github.com/cloudfoundry/python-buildpack.git#v1.7.44
+
+processes:
+- type: web
+  command: sh start-web.sh
