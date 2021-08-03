@@ -4,3 +4,5 @@ applications:
       buildpacks:
         - https://github.com/cloudfoundry/python-buildpack.git#v1.7.44
 
+services:
+ - opre-ops-psql-db
