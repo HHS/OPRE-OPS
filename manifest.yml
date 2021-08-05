@@ -6,3 +6,4 @@ applications:
 
 services:
  - opre-ops-psql-db
+ 
