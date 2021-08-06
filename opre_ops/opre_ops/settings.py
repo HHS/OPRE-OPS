@@ -75,7 +75,7 @@ WSGI_APPLICATION = 'opre_ops.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config()
+    'default': dj_database_url.config(default='postgres://opre_ops')
 }
 
 
