@@ -11,7 +11,10 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 import dj_database_url
+
 from pathlib import Path
+from .env import env
+from secret import generate_random_string
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-&(pc)tw8963gyks2w6@w-jg3(d&ac=pu&v$vt(rz4zcq2(!san'
+SECRET_KEY = env.get_credential('APP_SECRET_KEY', generate_random_string(50))
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
