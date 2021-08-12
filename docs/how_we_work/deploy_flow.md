@@ -1,10 +1,35 @@
-# Continuous deploy flow
+# Continuous deployment
 
-This document describes our team's continuous deployment practices and patterns. Over the long run, it should answer these questions:
+This document describes our team's continuous deployment practices. Over the long run, it should answer these questions:
 
+* How will our continuous deployment process work?
+* What human review steps are required to deploy changes? [more to come]
+* What automated checks run to verfiy the quality of new code? [more to come]
 * [How is code deployed to the development app for testing and initial review?](#how-is-code-deployed-to-the-development-app-for-testing-and-initial-review)
-* [How is code deployed to the staging app for further review?](#how-is-code-deployed-to-the-staging-app-for-further-review)
-* [How is code deployed to the production app for end users?](#how-is-code-deployed-to-the-production-app-for-end-users)
+* [How is code deployed to the staging app for further review?](#how-is-code-deployed-to-the-staging-app-for-further-review) [more to come]
+* [How is code deployed to the production app for end users?](#how-is-code-deployed-to-the-production-app-for-end-users) [more to come]
+
+## How will our continuous deployment process work?
+
+[We decided to use CircleCI](../adr/008-use-circle-for-ci-cd.md) for our continuous integration (CI) and continuous deployment (CD) pipelines.
+
+Continuous integration (CI) will let us propose code changes on a consistent basis. Automated tests will run on every pull request, keeping code quality high and checking for regressions.
+
+Continuous deployment (CD) will let us create an automated deployment path, making the release of new code more predictable, easier for developers, and less error-prone than manual deployments. Developers will not need to store credentials on local machines to run deploys, since deploy access will be managed through our CI/CD tool.
+
+Code will graduate from development up to production through the following stages. Multiple layers of manual human review and multiple layers of automated checks will run regularly throughout the process.
+
+1. Development
+2. Staging
+3. Production
+
+## What human review steps are required to deploy changes?
+
+More to come here!
+
+## What automated checks run to verfiy the quality of new code?
+
+More to come here!
 
 ## How is code deployed to the development app for testing and initial review?
 
@@ -30,7 +55,7 @@ More to come on continuous deploys to staging. In the future, we will likely wan
 
 In the future, we'll have a production app which will store real data and deliver value to real people!
 
-More to come on continuous deploys to prod. In the future, we will likely want deploys to prod to be triggered once a feature branch has been approved by all relevant parties for a prod deploy and merged into a branch like `main`.
+More to come on continuous deploys to prod and release management. 
 
 ## Resources
 
