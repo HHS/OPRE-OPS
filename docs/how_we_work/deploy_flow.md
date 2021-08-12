@@ -27,7 +27,7 @@ Code will graduate from development up to production through the following stage
 
 More to come here!
 
-## What automated checks run to verfiy the quality of new code?
+## What automated checks run to verify the quality of new code?
 
 More to come here!
 
