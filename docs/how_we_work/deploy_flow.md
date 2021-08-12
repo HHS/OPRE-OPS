@@ -41,9 +41,9 @@ The purpose of a development app is for developers to test out new code. Since i
 
 Unless we create many dev apps and write functionality similar to [Heroku Review Apps](https://devcenter.heroku.com/articles/github-integration-review-apps) (one app per in-progress PR), we will only have one dev app for an engineering team of three. How should devs trigger deploys to the dev app?
 
-Our plan is to allow any dev to trigger a deploy to the dev app via a [git tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging). (See ["Executing workflows for a git tag" in the Circle docs](https://circleci.com/docs/2.0/workflows/#executing-workflows-for-a-git-tag).) 
+Our plan is to allow any dev to trigger a deploy to the dev app via a [git tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging). (See ["Executing workflows for a git tag" in the Circle docs](https://circleci.com/docs/2.0/workflows/#executing-workflows-for-a-git-tag).) This will give devs the flexibility to deploy to dev and test out new code at any time, without waiting for a review process or a git merge process. 
 
-This would let any dev trigger a deploy to the dev app via our continuous deployment tooling whenever they like. Each deploy would overwrite the state of the dev app. Dev should post in Slack to let the team know when they deploy, especially if multiple devs are actively working on features at the same time. This gives us the flexibility to deploy to dev at any time, combined with the simplicity of having to manage just one dev site. 
+Each deploy would overwrite the state of the dev app. Dev should post in Slack to let the team know when they deploy, especially if multiple devs are actively working on features at the same time. 
 
 ## How is code deployed to the staging app for further review? 
 
