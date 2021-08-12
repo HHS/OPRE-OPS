@@ -2,8 +2,8 @@
 
 This document describes our team's continuous deployment practices and patterns. Over the long run, it should answer these questions:
 
-* How is code deployed to the development app for testing and initial review?
-* How is code deployed to the staging app for further review? 
+* [How is code deployed to the development app for testing and initial review?](#how-is-code-deployed-to-the-development-app-for-testing-and-initial-review)
+* How is code deployed to the staging app for further review?
 * How is code deployed to the production app for end users? 
 
 ## How is code deployed to the development app for testing and initial review?
