@@ -43,7 +43,7 @@ Unless we create many dev apps and write functionality similar to [Heroku Review
 
 Our plan is to allow any dev to trigger a deploy to the dev app via a [git tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging). (See ["Executing workflows for a git tag" in the Circle docs](https://circleci.com/docs/2.0/workflows/#executing-workflows-for-a-git-tag).) 
 
-This would let any dev trigger a deploy to the dev app via our continuous deployment tooling whenever they like. Each deploy would overwrite the state of the dev app. Dev should post in Slack to let the team know when they deploy, especially if multiple devs are actively working on features at the same time.
+This would let any dev trigger a deploy to the dev app via our continuous deployment tooling whenever they like. Each deploy would overwrite the state of the dev app. Dev should post in Slack to let the team know when they deploy, especially if multiple devs are actively working on features at the same time. This gives us the flexibility to deploy to dev at any time, combined with the simplicity of having to manage just one dev site. 
 
 ## How is code deployed to the staging app for further review? 
 
