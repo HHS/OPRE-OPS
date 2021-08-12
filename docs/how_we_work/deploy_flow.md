@@ -2,9 +2,9 @@
 
 This document describes our team's continuous deployment practices. Over the long run, it should answer these questions:
 
-* How will our continuous deployment process work?
-* What human review steps are required to deploy changes? [more to come]
-* What automated checks run to verfiy the quality of new code? [more to come]
+* [How will our continuous deployment process work?](#how-will-our-continuous-deployment-process-work)
+* [What human review steps are required to deploy changes?](#what-human-review-steps-are-required-to-deploy-changes) [more to come]
+* [What automated checks run to verify the quality of new code?](#what-automated-checks-run-to-verify-the-quality-of-new-code)[more to come]
 * [How is code deployed to the development app for testing and initial review?](#how-is-code-deployed-to-the-development-app-for-testing-and-initial-review)
 * [How is code deployed to the staging app for further review?](#how-is-code-deployed-to-the-staging-app-for-further-review) [more to come]
 * [How is code deployed to the production app for end users?](#how-is-code-deployed-to-the-production-app-for-end-users) [more to come]
