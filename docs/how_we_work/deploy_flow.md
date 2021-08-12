@@ -25,11 +25,11 @@ Code will graduate from development up to production through the following stage
 
 ## What human review steps are required to deploy changes?
 
-More to come here!
+More to come here! This can reference our [issue_review documentation](./issue_review.md).
 
 ## What automated checks run to verify the quality of new code?
 
-More to come here!
+More to come here! This can reference our ADRs.
 
 ## How is code deployed to the development app for testing and initial review?
 
@@ -53,10 +53,10 @@ More to come on continuous deploys to staging. In the future, we will likely wan
 
 ## How is code deployed to the production app for end users? 
 
-In the future, we'll have a production app which will store real data and deliver value to real people!
+In the future, we'll have a production app which will store real data and deliver value to real users!
 
 More to come on continuous deploys to prod and release management. 
 
 ## Resources
 
-For more on good continuous deployment practices (including sample CircleCI+cloud.gov config!) — see the [TTS Engineering Practices Guide](https://engineering.18f.gov/continuous-deployment/).
+For more on good continuous deployment practices (including sample CircleCI+cloud.gov config) — see the [TTS Engineering Practices Guide](https://engineering.18f.gov/continuous-deployment/).
