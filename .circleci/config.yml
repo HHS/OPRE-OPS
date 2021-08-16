@@ -1,0 +1,7 @@
+jobs:
+  build:
+    docker:
+      - image: cimg/python:3.9.6
+    steps:
+      - checkout
+      - run: python --version
