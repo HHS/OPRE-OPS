@@ -1,1 +1,1 @@
-web: python ./opre_ops/manage.py runserver 0.0.0.0:8080
+web: cd opre_ops/ && gunicorn opre_ops.wsgi
