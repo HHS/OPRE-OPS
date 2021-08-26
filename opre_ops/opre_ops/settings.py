@@ -10,7 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
-import dj_database_url
 
 from pathlib import Path
 from .env import env
@@ -78,7 +77,14 @@ WSGI_APPLICATION = 'opre_ops.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(default='postgres://opre_ops')
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'local_password',
+        'HOST': 'db',
+        'PORT': '5432'
+    }
 }
 
 
