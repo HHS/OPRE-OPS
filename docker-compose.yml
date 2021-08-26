@@ -1,10 +1,18 @@
 version: "3.7"
 
 services:
-  postgres:
+
+  web:
+    image: opre-ops
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+
+  db:
     image: "postgres:11.6"
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_PASSWORD=local_password
     ports:
-      - "5432"
+      - 5432:5432
+
