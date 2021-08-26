@@ -13,10 +13,7 @@ Instructions to start app locally:
 From the project root run:
 
 ```
-# This step builds an image for the web app using the `pack` tool.
 pack build opre-ops --builder gcr.io/buildpacks/builder:v1
-
-# This step starts the web app and database services locally usiing Docker.
 docker-compose up
 ```
 
