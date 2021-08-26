@@ -78,7 +78,14 @@ WSGI_APPLICATION = 'opre_ops.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(default='postgres://opre_ops')
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'password',
+        'HOST': 'localhost', # set in docker-compose.yml
+        'PORT': 5432 # default postgres port
+    }
 }
 
 
