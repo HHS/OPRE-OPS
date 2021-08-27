@@ -5,8 +5,9 @@ import sys
 
 
 def main():
-    """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'opre_ops.settings')
+    # Default to running with cloud.gov settings for fail-safe; allow override to use local settings.
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'opre_ops.settings.cloudgov')
+
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
