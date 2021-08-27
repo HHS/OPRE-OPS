@@ -13,7 +13,7 @@ Instructions to start app locally:
 From the project root run:
 
 ```
-pack build opre-ops --builder gcr.io/buildpacks/builder:v1
+docker-compose build
 docker-compose up
 ```
 
