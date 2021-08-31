@@ -7,5 +7,5 @@ applications:
     command: cd opre_ops && python manage.py migrate && python manage.py runserver 0.0.0.0:8080
 services:
  - opre-ops-psql-db
-
+ - opre-ops-env-service
 

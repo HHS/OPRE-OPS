@@ -27,7 +27,7 @@ database_creds = database_service['credentials']
 
 user_provided_services = vcap_services['user-provided']
 user_provided_env_service = next(
-  i for i in user_provided_services if i['name'] == 'OPRE_OPS_ENV_SERVICE'
+  i for i in user_provided_services if i['name'] == 'opre-ops-env-service'
 )
 user_provided_env = user_provided_env_service['credentials']
 

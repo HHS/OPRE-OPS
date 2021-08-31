@@ -8,9 +8,8 @@ To store Django's [SECRET_KEY](https://docs.djangoproject.com/en/3.2/ref/setting
 # first, log in:
 cf login --sso
 
-# then, create a service named "OPRE_OPS_ENV_SERVICE" and pass in this key/value pair:
-cf cups OPRE_OPS_ENV_SERVICE -p '{"DJANGO_SECRET_KEY":"your_secure_secret_key_here"}'
+# then, create a service named "opre-ops-env-service" and pass in this key/value pair:
+cf cups opre-ops-env-service -p '{"DJANGO_SECRET_KEY":"your_secure_secret_key_here"}'
 
-# then, bind the service to the app that will need the ENV service:
-cf bind-service app_name_goes_here OPRE_OPS_ENV_SERVICE
+# the app manifest (manifest.yml) specifies an application bind to opre-ops-env-service; you may need to re-start the app to apply the bind
 ```
