@@ -1,7 +1,11 @@
 ---
 applications:
-    - name: opre-ops-test
-      buildpack: python_buildpack
-
+  - name: opre-ops-test
+    buildpack: python_buildpack
+    # TODO: Djangoo docs say not to use the `runserver` command in prod;
+    # switch over to a production-ready webserver like gunicorn
+    command: cd opre_ops && python manage.py migrate && python manage.py runserver 0.0.0.0:8080
 services:
  - opre-ops-psql-db
+
+
