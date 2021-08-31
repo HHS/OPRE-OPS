@@ -2,6 +2,7 @@
 Configuration for running OPRE OPS in cloud.gov.
 """
 import os
+import json
 
 # Import all common settings relevant to both local & cloud:
 from opre_ops.settings.common import *
