@@ -29,7 +29,7 @@ user_provided_services = vcap_services['user-provided']
 user_provided_env_service = next(
   i for i in user_provided_services if i['name'] == 'OPRE_OPS_ENV_SERVICE'
 )
-user_provided_env = user_provided_service['credentials']
+user_provided_env = user_provided_env_service['credentials']
 
 
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
