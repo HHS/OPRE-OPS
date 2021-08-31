@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 asgiref = "==3.4.1"
-astroid = "==2.7.2"
+astroid = "==2.7.3"
 "backports.entry-points-selectable" = "==1.1.0"
 cfenv = "==0.5.3"
 cfgv = "==3.3.1"
