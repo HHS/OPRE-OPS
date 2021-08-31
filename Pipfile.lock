@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "1564a622509b6364fc920992b478c08fb1eae3a63bdc8a9a2b3025313e2fb581"
+            "sha256": "184f2bc82be6625a2d2f550326516b05385da3a32e80032a6433c8dfa534ec65"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -182,11 +182,11 @@
         },
         "platformdirs": {
             "hashes": [
-                "sha256:4666d822218db6a262bdfdc9c39d21f23b4cfdb08af331a81e92751daf6c866c",
-                "sha256:632daad3ab546bd8e6af0537d09805cec458dce201bccfe23012df73332e181e"
+                "sha256:15b056538719b1c94bdaccb29e5f81879c7f7f0f4a153f46086d155dffcd4f0f",
+                "sha256:8003ac87717ae2c7ee1ea5a84a1a61e87f3fbd16eb5aadba194ea30a9019f648"
             ],
             "index": "pypi",
-            "version": "==2.2.0"
+            "version": "==2.3.0"
         },
         "protobuf": {
             "hashes": [
