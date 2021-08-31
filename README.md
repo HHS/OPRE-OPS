@@ -30,7 +30,7 @@ this will also update the `Pipfile.lock`
 
 To install a new package into the `[dev-packages]` in the `Pipfile` run:
 ```
-pipenv install --dev <package-name
+pipenv install --dev <package-name>
 ```
 
 this will also update the `Pipfile.lock`
