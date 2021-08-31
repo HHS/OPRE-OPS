@@ -21,16 +21,6 @@ Then navigate to http://localhost:8080 in your browser
 
 ### Dependency management with pipenv
 
-To install `Pipfile` requirements locally run:
-```
-pipenv install
-```
-
-To activate the virtual environment run:
-```
-pipenv shell
-```
-
 To install a new package into the `[packages]` in the `Pipfile` run:
 ```
 pipenv install <package-name>
