@@ -1,9 +1,7 @@
 ---
 applications:
     - name: opre-ops-test
-      buildpacks:
-        - python_buildpack
+      buildpack: python_buildpack
 
 services:
  - opre-ops-psql-db
- 
