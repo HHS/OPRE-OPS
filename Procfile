@@ -1,1 +1,0 @@
-web: cd opre_ops/ && gunicorn opre_ops.wsgi
