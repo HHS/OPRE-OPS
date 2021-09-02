@@ -15,8 +15,8 @@ class Migration(migrations.Migration):
             name='Agency',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=80)),
-                ('nickname', models.CharField(max_length=40)),
+                ('name', models.CharField(max_length=100)),
+                ('nickname', models.CharField(max_length=100)),
             ],
         ),
     ]
