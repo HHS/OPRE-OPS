@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.db import models
 
 class Agency(models.Model):
@@ -6,3 +7,6 @@ class Agency(models.Model):
 
     class Meta:
         verbose_name_plural = "agencies"
+
+class AgencyAdmin(admin.ModelAdmin):
+    list_display = ("name")
