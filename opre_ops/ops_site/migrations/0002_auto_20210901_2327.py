@@ -2,14 +2,12 @@
 
 import os
 
-from opre_ops.settings.local import BASE_DIR
 from django.db import migrations
 from csv import DictReader
 from ops_site.models import Agency
-from pathlib import Path
 
 def seed_agencies(apps, schema_editor):
-    filename = os.path.join('ops_site', 'migrations', 'seed_data', 'agencies.csv')
+    filename = os.path.join('ops_site', 'migrations', 'seed_data', 'fake_data_agencies.csv')
     with open(filename, encoding="utf-8-sig") as read_obj:
         csv_dict_reader = DictReader(read_obj)
         for row in csv_dict_reader:
