@@ -7,6 +7,3 @@ class Agency(models.Model):
 
     class Meta:
         verbose_name_plural = "agencies"
-
-class AgencyAdmin(admin.ModelAdmin):
-    list_display = ("name")
