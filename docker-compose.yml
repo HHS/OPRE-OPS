@@ -22,3 +22,11 @@ services:
       - db
     depends_on:
       - db
+
+  data:
+    build: .
+    command: python manage.py loaddata ops_site/fixtures/fake_data.json
+    links: 
+      - migration
+    depends_on: 
+      - migration

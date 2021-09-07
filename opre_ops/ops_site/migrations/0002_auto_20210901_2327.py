@@ -6,13 +6,6 @@ from django.db import migrations
 from csv import DictReader
 from ops_site.models import Agency
 
-def seed_agencies(apps, schema_editor):
-    filename = os.path.join('ops_site', 'migrations', 'seed_data', 'fake_data_agencies.csv')
-    with open(filename, encoding="utf-8-sig") as read_obj:
-        csv_dict_reader = DictReader(read_obj)
-        for row in csv_dict_reader:
-            agency = Agency(name=row.get("Name"), nickname=row.get("Nickname"))
-            agency.save()
 
 class Migration(migrations.Migration):
 
@@ -20,6 +13,4 @@ class Migration(migrations.Migration):
         ('ops_site', '0001_initial'),
     ]
 
-    operations = [
-        migrations.RunPython(seed_agencies)
-    ]
+    operations = []
