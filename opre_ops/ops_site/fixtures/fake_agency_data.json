@@ -1,0 +1,226 @@
+[
+{
+    "model": "ops_site.agency",
+    "pk": 1,
+    "fields": {
+        "name": "Children's Bureau",
+        "nickname": "Children's Bureau"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 2,
+    "fields": {
+        "name": "Alamed County Health Care Services Agency",
+        "nickname": "Alamed County Health Care Services Agency"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 3,
+    "fields": {
+        "name": "Alameda County HCSA",
+        "nickname": "Alameda County HCSA"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 4,
+    "fields": {
+        "name": "Alameda HCSA",
+        "nickname": "Alameda HCSA"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 5,
+    "fields": {
+        "name": "ASPE",
+        "nickname": "ASPE"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 6,
+    "fields": {
+        "name": "Census",
+        "nickname": "Census"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 7,
+    "fields": {
+        "name": "CMS",
+        "nickname": "CMS"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 8,
+    "fields": {
+        "name": "Dept of Education",
+        "nickname": "Dept of Ed"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 9,
+    "fields": {
+        "name": "DHHS PSC",
+        "nickname": "DHHS PSC"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 10,
+    "fields": {
+        "name": "Dept of Labor",
+        "nickname": "DOL"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 11,
+    "fields": {
+        "name": "GW Ins OF Public Policy",
+        "nickname": "GW Ins OF Public Policy"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 12,
+    "fields": {
+        "name": "HRSA",
+        "nickname": "HRSA"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 13,
+    "fields": {
+        "name": "IJIS Institute",
+        "nickname": "IJIS Institute"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 14,
+    "fields": {
+        "name": "Interior Business Center",
+        "nickname": "Interior Business Center"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 15,
+    "fields": {
+        "name": "ISSLOB",
+        "nickname": "ISSLOB"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 16,
+    "fields": {
+        "name": "NCHS/CDC",
+        "nickname": "NCHS/CDC"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 17,
+    "fields": {
+        "name": "NICHD",
+        "nickname": "NICHD"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 18,
+    "fields": {
+        "name": "NIDA",
+        "nickname": "NIDA"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 19,
+    "fields": {
+        "name": "NIH/Accounts Payable 444035",
+        "nickname": "NIH/Accounts Payable 444035"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 20,
+    "fields": {
+        "name": "OA&Non-ACF",
+        "nickname": "OA&Non-ACF"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 21,
+    "fields": {
+        "name": "OASH",
+        "nickname": "OASH"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 22,
+    "fields": {
+        "name": "OCSE&ACF",
+        "nickname": "OCSE&ACF"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 23,
+    "fields": {
+        "name": "Office of Family Assistance",
+        "nickname": "OFA"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 24,
+    "fields": {
+        "name": "OIS",
+        "nickname": "OIS"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 25,
+    "fields": {
+        "name": "OMB",
+        "nickname": "OMB"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 26,
+    "fields": {
+        "name": "OPRE",
+        "nickname": "OPRE"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 27,
+    "fields": {
+        "name": "SAMHSA",
+        "nickname": "SAMHSA"
+    }
+},
+{
+    "model": "ops_site.agency",
+    "pk": 28,
+    "fields": {
+        "name": "Social Security Administration",
+        "nickname": "SSA"
+    }
+}
+]
