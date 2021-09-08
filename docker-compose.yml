@@ -2,14 +2,6 @@ version: "3.8"
 
 services:
 
-  web:
-    build: .
-    ports:
-      - 8080:8080
-    depends_on:
-      - db
-    command: python manage.py runserver 0.0.0.0:8080
-
   db:
     image: "postgres:11.6"
     environment:
@@ -18,15 +10,19 @@ services:
   migration:
     build: .
     command: python manage.py migrate
-    links:
-      - db
     depends_on:
       - db
 
   data:
     build: .
     command: python manage.py loaddata ops_site/fixtures/fake_data.json
-    links: 
+    depends_on:
       - migration
-    depends_on: 
-      - migration
+
+  web:
+    build: .
+    ports:
+      - 8080:8080
+    depends_on:
+      - data
+    command: python manage.py runserver 0.0.0.0:8080
