@@ -7,28 +7,16 @@ services:
     environment:
       - POSTGRES_PASSWORD=local_password
 
-  wait_for_postgres:
-    build: .
-    command: sh wait-for-postgres.sh
-    depends_on:
-      - db
-
   migration:
     build: .
-    command: python manage.py migrate
+    command: bash -c "sh wait-for-postgres.sh && python manage.py migrate && python manage.py loaddata ops_site/fixtures/fake_data.json"
     depends_on:
-      - wait_for_postgres
-
-  data:
-    build: .
-    command: python manage.py loaddata ops_site/fixtures/fake_data.json
-    depends_on:
-      - migration
+      - db
 
   web:
     build: .
     ports:
       - 8080:8080
     depends_on:
-      - data
+      - migration
     command: python manage.py runserver 0.0.0.0:8080
