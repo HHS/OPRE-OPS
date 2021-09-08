@@ -7,11 +7,17 @@ services:
     environment:
       - POSTGRES_PASSWORD=local_password
 
+  wait_for_postgres:
+    build: .
+    command: sh wait-for-postgres.sh
+    depends_on:
+      - db
+
   migration:
     build: .
     command: python manage.py migrate
     depends_on:
-      - db
+      - wait_for_postgres
 
   data:
     build: .
