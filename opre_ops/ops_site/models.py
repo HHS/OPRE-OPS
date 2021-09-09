@@ -7,3 +7,6 @@ class Agency(models.Model):
 
     class Meta:
         verbose_name_plural = "agencies"
+
+class Role(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Role Name")

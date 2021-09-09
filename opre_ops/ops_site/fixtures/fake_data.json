@@ -222,5 +222,33 @@
         "name": "Social Security Administration",
         "nickname": "SSA"
     }
+},
+{
+    "model": "ops_site.role",
+    "pk": 1,
+    "fields": {
+        "name": "Project Officer"
+    }
+},
+{
+    "model": "ops_site.role",
+    "pk": 2,
+    "fields": {
+        "name": "Team Leader"
+    }
+},
+{
+    "model": "ops_site.role",
+    "pk": 3,
+    "fields": {
+        "name": "Division Director"
+    }
+},
+{
+    "model": "ops_site.role",
+    "pk": 4,
+    "fields": {
+        "name": "Budget Team"
+    }
 }
 ]
