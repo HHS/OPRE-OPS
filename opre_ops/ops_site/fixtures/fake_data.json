@@ -227,7 +227,7 @@
     "model": "ops_site.role",
     "pk": 1,
     "fields": {
-        "name": "Project Officer"
+        "name": "Administrator"
     }
 },
 {
@@ -248,7 +248,21 @@
     "model": "ops_site.role",
     "pk": 4,
     "fields": {
-        "name": "Budget Team"
+        "name": "Budget Officer"
+    }
+},
+{
+    "model": "ops_site.role",
+    "pk": 5,
+    "fields": {
+        "name": "Non-COR/Contractor"
+    }
+},
+{
+    "model": "ops_site.role",
+    "pk": 6,
+    "fields": {
+        "name": "COR"
     }
 }
 ]
