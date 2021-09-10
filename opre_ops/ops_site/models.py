@@ -20,6 +20,9 @@ class Person(models.Model):
     roles = models.ManyToManyField(Role)
     division = models.CharField(max_length=5, choices=DIVSIONS)
 
+    class Meta:
+        verbose_name_plural = "People"
+
     @property
     def display_name(self):
         return "{} {}".format(self.first_name, self.last_name)
