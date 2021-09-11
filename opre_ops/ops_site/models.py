@@ -23,6 +23,8 @@ class Person(models.Model):
     class Meta:
         verbose_name_plural = "People"
 
-    @property
     def display_name(self):
-        return "{} {}".format(self.first_name, self.last_name)
+        return self.first_name + " " + self.last_name
+    display_name.short_description = "Full name of the person"
+    
+    full_name = property(display_name)

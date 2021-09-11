@@ -15,7 +15,4 @@ class RoleAdmin(admin.ModelAdmin):
 
 @admin.register(Person)
 class PersonAdmin(admin.ModelAdmin):
-    list_display = ("display_name",)
-
-    def display_name(self):
-        return "{} {}".format(self.first_name, self.last_name)
+    list_display = ("display_name", "division")
