@@ -1,12 +1,20 @@
 [
-{ "model": "auth.user",
-    "pk": 1,
+{
+    "model": "auth.user", 
+    "pk": 1, 
     "fields": {
-        "username": "admin",
-        "password": "test",
-        "is_superuser": true,
-        "is_active": true,
-        "is_staff": true
+        "password": "pbkdf2_sha256$260000$SPT55SvTcijon2Y3dU3U5U$gAGQU7lfr+nz+j9kovR8/iGlt1TFAbwuJo7F+dEObeM=", 
+        "last_login": null, 
+        "is_superuser": true, 
+        "username": "admin", 
+        "first_name": "", 
+        "last_name": "", 
+        "email": "email@test.com", 
+        "is_staff": true, 
+        "is_active": true, 
+        "date_joined": "2021-09-13T23:29:07.694Z", 
+        "groups": [], 
+        "user_permissions": []
     }
 },
 {
