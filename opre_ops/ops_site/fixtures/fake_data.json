@@ -1,4 +1,14 @@
 [
+{ "model": "auth.user",
+    "pk": 1,
+    "fields": {
+        "username": "admin",
+        "password": "test",
+        "is_superuser": true,
+        "is_active": true,
+        "is_staff": true
+    }
+},
 {
     "model": "ops_site.agency",
     "pk": 1,
@@ -286,7 +296,7 @@
         "first_name": "Emily",
         "last_name": "Ball",
         "roles": [6],
-        "division": "OD"
+        "division": "5"
     }
 },
 {
@@ -296,7 +306,7 @@
         "first_name": "Bethanne",
         "last_name": "Barnes",
         "roles": [3],
-        "division": "DDI"
+        "division": "2"
     }
 },
 {
@@ -306,7 +316,7 @@
         "first_name": "Meryl",
         "last_name": "Barofsky",
         "roles": [6],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -316,7 +326,7 @@
         "first_name": "Anne",
         "last_name": "Bergan",
         "roles": [6],
-        "division": "DFS"
+        "division": "4"
     }
 },
 {
@@ -326,7 +336,7 @@
         "first_name": "Harmanpreet",
         "last_name": "Bhatti",
         "roles": [5],
-        "division": "DFS"
+        "division": "4"
     }
 },
 {
@@ -336,7 +346,7 @@
         "first_name": "Alysia",
         "last_name": "Blandon",
         "roles": [6],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -346,7 +356,7 @@
         "first_name": "Sarah",
         "last_name": "Blankenship",
         "roles": [5],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -356,7 +366,7 @@
         "first_name": "Caryn",
         "last_name": "Blitz",
         "roles": [6],
-        "division": "DFS"
+        "division": "4"
     }
 },
 {
@@ -366,7 +376,7 @@
         "first_name": "Brett",
         "last_name": "Brown",
         "roles": [6],
-        "division": "DDI"
+        "division": "2"
     }
 },
 {
@@ -376,7 +386,7 @@
         "first_name": "Tia",
         "last_name": "Brown",
         "roles": [2],
-        "division": "DFS"
+        "division": "4"
     }
 },
 {
@@ -386,7 +396,7 @@
         "first_name": "Hilary",
         "last_name": "Bruck",
         "roles": [2],
-        "division": "DEI"
+        "division": "3"
     }
 },
 {
@@ -396,7 +406,7 @@
         "first_name": "Valeria",
         "last_name": "Butler",
         "roles": [2],
-        "division": "DDI"
+        "division": "2"
     }
 },
 {
@@ -406,7 +416,7 @@
         "first_name": "Selma",
         "last_name": "Caal",
         "roles": [6],
-        "division": "DFS"
+        "division": "4"
     }
 },
 {
@@ -416,7 +426,7 @@
         "first_name": "Erin",
         "last_name": "Cannon",
         "roles": [5],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -426,7 +436,7 @@
         "first_name": "Elaine",
         "last_name": "Carpenter",
         "roles": [5],
-        "division": "DEI"
+        "division": "3"
     }
 },
 {
@@ -436,7 +446,7 @@
         "first_name": "Sheila",
         "last_name": "Celentano",
         "roles": [4],
-        "division": "OD"
+        "division": "5"
     }
 },
 {
@@ -446,7 +456,7 @@
         "first_name": "Tracy",
         "last_name": "Clopet",
         "roles": [5],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -456,7 +466,7 @@
         "first_name": "Kim",
         "last_name": "Clum",
         "roles": [6],
-        "division": "DEI"
+        "division": "3"
     }
 },
 {
@@ -466,7 +476,7 @@
         "first_name": "Jesse",
         "last_name": "Coe",
         "roles": [5],
-        "division": "DFS"
+        "division": "4"
     }
 },
 {
@@ -476,7 +486,7 @@
         "first_name": "Amanda",
         "last_name": "Coleman",
         "roles": [2],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -486,7 +496,7 @@
         "first_name": "Nicole",
         "last_name": "Constance",
         "roles": [2],
-        "division": "DEI"
+        "division": "3"
     }
 },
 {
@@ -496,7 +506,7 @@
         "first_name": "Pooja",
         "last_name": "Curtin",
         "roles": [7],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -506,7 +516,7 @@
         "first_name": "Paula",
         "last_name": "Daneri",
         "roles": [5],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -516,7 +526,7 @@
         "first_name": "Wendy",
         "last_name": "DeCourcey",
         "roles": [8],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -526,7 +536,7 @@
         "first_name": "Nicole",
         "last_name": "Denmark",
         "roles": [6],
-        "division": "DFS"
+        "division": "4"
     }
 },
 {
@@ -536,7 +546,7 @@
         "first_name": "Nicole",
         "last_name": "Deterding",
         "roles": [2],
-        "division": "DEI"
+        "division": "3"
     }
 },
 {
@@ -546,7 +556,7 @@
         "first_name": "Lauren",
         "last_name": "Deutsch",
         "roles": [5],
-        "division": "DEI"
+        "division": "3"
     }
 },
 {
@@ -556,7 +566,7 @@
         "first_name": "Kathleen",
         "last_name": "Dwyer",
         "roles": [6],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -566,7 +576,7 @@
         "first_name": "Justin",
         "last_name": "Falcone",
         "roles": [6],
-        "division": "OD"
+        "division": "5"
     }
 },
 {
@@ -576,7 +586,7 @@
         "first_name": "Manny",
         "last_name": "Fortson",
         "roles": [1],
-        "division": "OD"
+        "division": "5"
     }
 },
 {
@@ -586,7 +596,7 @@
         "first_name": "Christine",
         "last_name": "Fortunato",
         "roles": [7],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -596,7 +606,7 @@
         "first_name": "Calonie",
         "last_name": "Gray",
         "roles": [2],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -606,7 +616,7 @@
         "first_name": "Amelie",
         "last_name": "Hecht",
         "roles": [5],
-        "division": "DEI"
+        "division": "3"
     }
 },
 {
@@ -616,7 +626,7 @@
         "first_name": "Nina",
         "last_name": "Hetzner",
         "roles": [6],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -626,7 +636,7 @@
         "first_name": "Rebecca",
         "last_name": "Hjelm",
         "roles": [5],
-        "division": "DFS"
+        "division": "4"
     }
 },
 {
@@ -636,7 +646,7 @@
         "first_name": "Laura",
         "last_name": "Hoard",
         "roles": [7],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -646,7 +656,7 @@
         "first_name": "Samantha",
         "last_name": "Illangasekare",
         "roles": [2],
-        "division": "DFS"
+        "division": "4"
     }
 },
 {
@@ -656,7 +666,7 @@
         "first_name": "Kriti",
         "last_name": "Jain",
         "roles": [6],
-        "division": "DFS"
+        "division": "4"
     }
 },
 {
@@ -666,7 +676,7 @@
         "first_name": "Victoria",
         "last_name": "Kabak",
         "roles": [6],
-        "division": "DEI"
+        "division": "3"
     }
 },
 {
@@ -676,7 +686,7 @@
         "first_name": "Mason",
         "last_name": "Kelly",
         "roles": [5],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -686,7 +696,7 @@
         "first_name": "Marie",
         "last_name": "Lawrence",
         "roles": [6],
-        "division": "DEI"
+        "division": "3"
     }
 },
 {
@@ -696,7 +706,7 @@
         "first_name": "Philip",
         "last_name": "Lee",
         "roles": [5],
-        "division": "DDI"
+        "division": "2"
     }
 },
 {
@@ -706,7 +716,7 @@
         "first_name": "Amy",
         "last_name": "Madigan",
         "roles": [2],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -716,7 +726,7 @@
         "first_name": "Jenessa",
         "last_name": "Malin",
         "roles": [6],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -726,7 +736,7 @@
         "first_name": "Nancy",
         "last_name": "Margie",
         "roles": [2],
-        "division": "DFS"
+        "division": "4"
     }
 },
 {
@@ -736,7 +746,7 @@
         "first_name": "Ivelisse",
         "last_name": "Martinez-Beck",
         "roles": [2],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -746,7 +756,7 @@
         "first_name": "Kelly",
         "last_name": "McKenzie",
         "roles": [6],
-        "division": "DFS"
+        "division": "4"
     }
 },
 {
@@ -756,7 +766,7 @@
         "first_name": "Aleta",
         "last_name": "Meyer",
         "roles": [6],
-        "division": "DFS"
+        "division": "4"
     }
 },
 {
@@ -766,7 +776,7 @@
         "first_name": "Mary",
         "last_name": "Mueggenborg",
         "roles": [6],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -776,7 +786,7 @@
         "first_name": "Laura",
         "last_name": "Nerenberg",
         "roles": [6],
-        "division": "DFS"
+        "division": "4"
     }
 },
 {
@@ -786,7 +796,7 @@
         "first_name": "Gabrielle",
         "last_name": "Newell",
         "roles": [6],
-        "division": "DEI"
+        "division": "3"
     }
 },
 {
@@ -796,7 +806,7 @@
         "first_name": "Katie",
         "last_name": "Pahigiannis",
         "roles": [2],
-        "division": "DFS"
+        "division": "4"
     }
 },
 {
@@ -806,7 +816,7 @@
         "first_name": "Amelia",
         "last_name": "Popham",
         "roles": [6],
-        "division": "DEI"
+        "division": "3"
     }
 },
 {
@@ -816,7 +826,7 @@
         "first_name": "Megan",
         "last_name": "Reid",
         "roles": [6],
-        "division": "DEI"
+        "division": "3"
     }
 },
 {
@@ -826,7 +836,7 @@
         "first_name": "Ann",
         "last_name": "Rivera",
         "roles": [6],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -836,7 +846,7 @@
         "first_name": "Emily",
         "last_name": "Ross",
         "roles": [5],
-        "division": "DEI"
+        "division": "3"
     }
 },
 {
@@ -846,7 +856,7 @@
         "first_name": "Kenneth",
         "last_name": "Salyards",
         "roles": [6],
-        "division": "DDI"
+        "division": "2"
     }
 },
 {
@@ -856,7 +866,7 @@
         "first_name": "Emily",
         "last_name": "Schmitt",
         "roles": [1],
-        "division": "OD"
+        "division": "5"
     }
 },
 {
@@ -866,7 +876,7 @@
         "first_name": "John",
         "last_name": "Sweet",
         "roles": [1],
-        "division": "OD"
+        "division": "5"
     }
 },
 {
@@ -876,7 +886,7 @@
         "first_name": "Joanna",
         "last_name": "Thurston",
         "roles": [5],
-        "division": "DDI"
+        "division": "2"
     }
 },
 {
@@ -886,7 +896,7 @@
         "first_name": "Allie",
         "last_name": "Walker",
         "roles": [5],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -896,7 +906,7 @@
         "first_name": "Mary Bruce",
         "last_name": "Webb",
         "roles": [3],
-        "division": "DCFD"
+        "division": "1"
     }
 },
 {
@@ -906,7 +916,7 @@
         "first_name": "Joshua",
         "last_name": "Williams",
         "roles": [6],
-        "division": "DDI"
+        "division": "2"
     }
 },
 {
@@ -916,7 +926,7 @@
         "first_name": "Maria",
         "last_name": "Woolverton",
         "roles": [3],
-        "division": "DFS"
+        "division": "4"
     }
 },
 {
@@ -926,7 +936,7 @@
         "first_name": "Catherine",
         "last_name": "Workmeister",
         "roles": [1],
-        "division": "OD"
+        "division": "5"
     }
 },
 {
@@ -936,7 +946,7 @@
         "first_name": "Girley",
         "last_name": "Wright",
         "roles": [6],
-        "division": "DEI"
+        "division": "3"
     }
 },
 {
@@ -946,7 +956,7 @@
         "first_name": "Lisa",
         "last_name": "Zingman",
         "roles": [6],
-        "division": "DEI"
+        "division": "3"
     }
 }
 ]
