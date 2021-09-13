@@ -25,6 +25,6 @@ class Person(models.Model):
 
     def display_name(self):
         return self.first_name + " " + self.last_name
-    display_name.short_description = "Full name of the person"
+    display_name.short_description = "Full name"
     
     full_name = property(display_name)
