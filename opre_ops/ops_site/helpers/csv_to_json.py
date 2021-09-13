@@ -31,7 +31,8 @@ if __name__ == "__main__":
     parser.add_argument("i", help="Input file path")
     parser.add_argument("o", help="Output file path")
     parser.add_argument("model_name", help="Model name")
-    parser.add_argument("keys", nargs="+", help="Columns to parse as JSON keys")
+    parser.add_argument("keys", nargs="+", help="Columns names to parse as JSON keys \
+                        (these should match model fields)")
     args = parser.parse_args()
 
     inputf = args.i
