@@ -11,6 +11,8 @@ class Agency(models.Model):
 
 class Role(models.Model):
     name = models.CharField(max_length=100, verbose_name="Role Name")
+    def __str__(self):
+        return self.name
 
 
 DIVSIONS = [("1,","DCFD"), ("2", "DDI"), ("3", "DEI"), ("4", "DFS"), ("5", "OD")]
