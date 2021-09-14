@@ -9,7 +9,7 @@ def convert_csv_to_json(inputf, outputf, keys, model_name):
     for fixture data.
 
     How to use:
-    In CLI, run python convert_csv_to_json.py <arg1> <arg2> <list of args 3> <arg 4>
+    In CLI, run python convert_csv_to_json.py <input filepath > <output filepath> <model name> <list of fields/columns to parse>
 
     Do not attempt to output to the existing fixture/fake_data.json file, this will 
     override the existing data in that file. Instead, output to a newly created JSON 
