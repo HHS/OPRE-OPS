@@ -8,7 +8,6 @@ def convert_csv_to_json(inputf, outputf, keys, model_name):
         reader = csv.DictReader(csv_f)
         reader.fieldnames = [name.lower() for name in reader.fieldnames]
         output_dict = []
-        pk_count = 0
         for i, row in enumerate(reader):
             obj = {
                 "model": model_name,
