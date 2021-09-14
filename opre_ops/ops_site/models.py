@@ -15,7 +15,7 @@ class Role(models.Model):
         return self.name
 
 
-DIVSIONS = [("1,","DCFD"), ("2", "DDI"), ("3", "DEI"), ("4", "DFS"), ("5", "OD")]
+DIVSIONS = [("1","DCFD"), ("2", "DDI"), ("3", "DEI"), ("4", "DFS"), ("5", "OD")]
 class Person(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
