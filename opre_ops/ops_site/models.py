@@ -8,5 +8,25 @@ class Agency(models.Model):
     class Meta:
         verbose_name_plural = "agencies"
 
+
 class Role(models.Model):
     name = models.CharField(max_length=100, verbose_name="Role Name")
+    def __str__(self):
+        return self.name
+
+
+DIVSIONS = [("1","DCFD"), ("2", "DDI"), ("3", "DEI"), ("4", "DFS"), ("5", "OD")]
+class Person(models.Model):
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    roles = models.ManyToManyField(Role)
+    division = models.CharField(max_length=5, choices=DIVSIONS)
+
+    class Meta:
+        verbose_name_plural = "People"
+
+    def display_name(self):
+        return self.first_name + " " + self.last_name
+    display_name.short_description = "Full name"
+    
+    full_name = property(display_name)
