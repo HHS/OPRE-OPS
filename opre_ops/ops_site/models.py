@@ -30,3 +30,15 @@ class Person(models.Model):
     display_name.short_description = "Full name"
     
     full_name = property(display_name)
+
+
+ARRANGEMENT_TYPES = [("1", "OPRE Appropriation"), ("2", "Cost Share"), ("3", "IAA"), 
+                    ("4", "IDDA"), ("5", "MOU")]
+class CANInfo(models.Model):
+    number = models.CharField(max_length=30)
+    description = models.CharField(max_length=100)
+    nickname = models.CharField(max_length=30)
+    purpose = models.TextField()
+    arrangement_type = models.CharField(max_length=30, choices=ARRANGEMENT_TYPES)
+    source = models.ManyToManyField(Agency)
+    authorizer = models.ForeignKey(Agency, on_delete=models.PROTECT, related_name="authorizer")
