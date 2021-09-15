@@ -42,3 +42,13 @@ class CANInfo(models.Model):
     arrangement_type = models.CharField(max_length=30, choices=ARRANGEMENT_TYPES)
     source = models.ManyToManyField(Agency)
     authorizer = models.ForeignKey(Agency, on_delete=models.PROTECT, related_name="authorizer")
+
+
+class CANAmount(models.Model):
+    can = models.ForeignKey(CANInfo, on_delete=models.PROTECT)
+    # need to figure out how to calculate default fiscal year since it doesn't follow
+    # calendar years
+    # fiscal_year = models.DateField(default=)
+
+    class Meta:
+        unique_together = ('can', 'fiscal_year',)
