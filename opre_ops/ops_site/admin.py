@@ -24,6 +24,17 @@ class PersonAdmin(admin.ModelAdmin):
         return ", ".join([role.name for role in obj.roles.all()])
     show_roles.short_description = "Roles"
 
-@admin.register(CANAmount)
-class CANAmountAdmin(admin.ModelAdmin):
-    list_display = ("display_name",)
+class CANAmountInline(admin.TabularInline):
+    model = CANAmount
+
+@admin.register(CANInfo)
+class CANInfoAdmin(admin.ModelAdmin):
+    inlines = [
+        CANAmountInline,
+    ]
+
+    list_display = ("display_can_name",)
+
+    def display_can_name(self, obj):
+        return obj.number + " (" + obj.nickname + ") "
+    display_can_name.short_description = "CAN Name"

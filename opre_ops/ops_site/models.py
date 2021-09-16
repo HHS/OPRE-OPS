@@ -8,6 +8,9 @@ class Agency(models.Model):
     class Meta:
         verbose_name_plural = "agencies"
 
+    def __str__(self):
+        return self.name
+
 
 class Role(models.Model):
     name = models.CharField(max_length=100, verbose_name="Role Name")
@@ -42,6 +45,9 @@ class CANInfo(models.Model):
     arrangement_type = models.CharField(max_length=30, choices=ARRANGEMENT_TYPES)
     source = models.ManyToManyField(Agency)
     authorizer = models.ForeignKey(Agency, on_delete=models.PROTECT, related_name="authorizer")
+
+    class Meta:
+        verbose_name_plural = "CANs Info"
 
 
 class CANAmount(models.Model):
