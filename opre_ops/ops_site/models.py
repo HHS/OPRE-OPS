@@ -38,7 +38,7 @@ class CANInfo(models.Model):
     number = models.CharField(max_length=30)
     description = models.CharField(max_length=100)
     nickname = models.CharField(max_length=30)
-    purpose = models.TextField()
+    purpose = models.TextField(null=True)
     arrangement_type = models.CharField(max_length=30, choices=ARRANGEMENT_TYPES)
     source = models.ManyToManyField(Agency)
     authorizer = models.ForeignKey(Agency, on_delete=models.PROTECT, related_name="authorizer")
