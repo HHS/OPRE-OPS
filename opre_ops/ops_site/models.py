@@ -52,7 +52,7 @@ class CANInfo(models.Model):
 
 class CANAmount(models.Model):
     can = models.ForeignKey(CANInfo, on_delete=models.PROTECT)
-    fiscal_year = models.DateField()
+    fiscal_year = models.CharField(max_length=5)
     amount_available = models.DecimalField(max_digits=10, decimal_places=2)
     amount_budgeted = models.DecimalField(max_digits=10, decimal_places=2)
     additional_amount_anticipated = models.DecimalField(max_digits=10, decimal_places=2)
