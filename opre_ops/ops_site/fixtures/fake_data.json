@@ -966,5 +966,161 @@
         "roles": [6],
         "division": "3"
     }
+},
+{
+    "model": "ops_site.caninfo",
+    "pk": 1,
+    "fields": {
+        "number": "G99HRF2",
+        "description": "Healthy Marriages Responsible Fatherhood - OPRE",
+        "nickname": "HMRF-OPRE",
+        "purpose": null,
+        "arrangement_type": "5",
+        "source": [23],
+        "authorizer": 26
+    }
+},
+{
+    "model": "ops_site.caninfo",
+    "pk": 2,
+    "fields": {
+        "number": "G99IA14",
+        "description": "Incoming Interagency Agreements",
+        "nickname": "IAA-Incoming",
+        "purpose": null,
+        "arrangement_type": "3",
+        "source": [5, 28],
+        "authorizer": 26
+    }
+},
+{
+    "model": "ops_site.caninfo",
+    "pk": 3,
+    "fields": {
+        "number": "G99PHS9",
+        "description": "Social Science Research and Development",
+        "nickname": "SSRD",
+        "purpose": null,
+        "arrangement_type": "1",
+        "source":  [26],
+        "authorizer": 26
+    }
+},
+{
+    "model": "ops_site.caninfo",
+    "pk": 4,
+    "fields": {
+        "number": "G99PHS9",
+        "description": "Social Science Research and Development",
+        "nickname": "SSRD",
+        "purpose": null,
+        "arrangement_type": "1",
+        "source":  [26],
+        "authorizer": 26
+    }
+},
+{
+    "model": "ops_site.caninfo",
+    "pk": 5,
+    "fields": {
+        "number": "G99PHS9",
+        "description": "Social Science Research and Development",
+        "nickname": "SSRD",
+        "purpose": null,
+        "arrangement_type": "1",
+        "source":  [26],
+        "authorizer": 26
+    }
+},
+{
+    "model": "ops_site.caninfo",
+    "pk": 6,
+    "fields": {
+        "number": "G990136",
+        "description": "Child Development Research Fellowship Grant Program",
+        "nickname": "ASPE SRCD-IDDA",
+        "purpose": "Fund a child development fellow for ASPE",
+        "arrangement_type": "4",
+        "source": [5],
+        "authorizer": 26
+    }
+},
+{
+    "model": "ops_site.caninfo",
+    "pk": 7,
+    "fields": {
+        "number": "G994426",
+        "description": "Head Start Research",
+        "nickname": "HS",
+        "purpose": "Research into Head Start programs",
+        "arrangement_type": "1",
+        "source":  [26],
+        "authorizer": 26
+    }
+},
+{
+    "model": "ops_site.caninfo",
+    "pk": 8,
+    "fields": {
+        "number": "G994426",
+        "description": "Head Start Research",
+        "nickname": "HS",
+        "purpose": "Research into Head Start programs",
+        "arrangement_type": "1",
+        "source":  [26],
+        "authorizer": 26
+    }
+},
+{
+    "model": "ops_site.caninfo",
+    "pk": 9,
+    "fields": {
+        "number": "G994426",
+        "description": "Head Start Research",
+        "nickname": "HS",
+        "purpose": "Research into Head Start programs",
+        "arrangement_type": "1",
+        "source":  [26],
+        "authorizer": 26
+    }
+},
+{
+    "model": "ops_site.caninfo",
+    "pk": 10,
+    "fields": {
+        "number": "G994426",
+        "description": "Head Start Research",
+        "nickname": "HS",
+        "purpose": "Research into Head Start programs",
+        "arrangement_type": "1",
+        "source":  [26],
+        "authorizer": 26
+    }
+},
+{
+    "model": "ops_site.caninfo",
+    "pk": 11,
+    "fields": {
+        "number": "G994648",
+        "description": "Kinship Navigation",
+        "nickname": "Kin-Nav",
+        "purpose": null,
+        "arrangement_type": "2",
+        "source": [1],
+        "authorizer": 1
+    }
+},
+{
+    "model": "ops_site.caninfo",
+    "pk": 12,
+    "fields": {
+        "number": "G996125",
+        "description": "Healthy Marriages Responsible Fatherhood - OFA",
+        "nickname": "HMRF-OFA",
+        "purpose": null,
+        "arrangement_type": "2",
+        "source": [23],
+        "authorizer": 23
+    }
 }
 ]
