@@ -4,6 +4,8 @@ from django.contrib import admin
 from ops_site.models import Agency
 from ops_site.models import Role
 from ops_site.models import Person
+from ops_site.models import CANInfo
+from ops_site.models import CANAmount
 
 
 @admin.register(Agency)
@@ -21,3 +23,7 @@ class PersonAdmin(admin.ModelAdmin):
     def show_roles(self, obj):
         return ", ".join([role.name for role in obj.roles.all()])
     show_roles.short_description = "Roles"
+
+@admin.register(CANAmount)
+class CANAmountAdmin(admin.ModelAdmin):
+    list_display = ("display_name",)

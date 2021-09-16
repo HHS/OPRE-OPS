@@ -46,9 +46,19 @@ class CANInfo(models.Model):
 
 class CANAmount(models.Model):
     can = models.ForeignKey(CANInfo, on_delete=models.PROTECT)
-    # need to figure out how to calculate default fiscal year since it doesn't follow
-    # calendar years
-    # fiscal_year = models.DateField(default=)
+    fiscal_year = models.DateField()
+    amount_available = models.DecimalField(max_digits=10, decimal_places=2)
+    amount_budgeted = models.DecimalField(max_digits=10, decimal_places=2)
+    additional_amount_anticipated = models.DecimalField(max_digits=10, decimal_places=2)
+    team_leader = models.ForeignKey(Person, on_delete=models.PROTECT, 
+                                    limit_choices_to={"roles__name": "Team Leader"})
+    notes = models.TextField()
 
     class Meta:
         unique_together = ('can', 'fiscal_year',)
+
+    def display_name(self):
+        return self.can.number + " " + self.can.nickname + " - " + self.fiscal_year
+    display_name.short_description = "Name" 
+
+    name = property(display_name)
