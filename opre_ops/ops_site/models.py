@@ -49,7 +49,7 @@ class CANInfo(models.Model):
     authorizer = models.ForeignKey(Agency, on_delete=models.PROTECT, related_name="authorizer")
 
     class Meta:
-        verbose_name_plural = "CANs Info"
+        verbose_name_plural = "CANs"
 
 
 class CANAmount(models.Model):
@@ -64,6 +64,7 @@ class CANAmount(models.Model):
 
     class Meta:
         unique_together = ('can', 'fiscal_year',)
+        verbose_name_plural = "CAN Financials"
 
     def display_name(self):
         return self.can.number + " " + self.can.nickname + " - " + self.fiscal_year
