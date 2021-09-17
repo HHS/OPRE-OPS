@@ -31,8 +31,10 @@ class Person(models.Model):
     def display_name(self):
         return self.first_name + " " + self.last_name
     display_name.short_description = "Full name"
-    
     full_name = property(display_name)
+
+    def __str__(self):
+        return self.full_name
 
 
 ARRANGEMENT_TYPES = [("1", "OPRE Appropriation"), ("2", "Cost Share"), ("3", "IAA"), 
