@@ -43,7 +43,7 @@ class CANInfo(models.Model):
     number = models.CharField(max_length=30)
     description = models.CharField(max_length=100)
     nickname = models.CharField(max_length=30)
-    purpose = models.TextField(null=True)
+    purpose = models.TextField(blank=True)
     arrangement_type = models.CharField(max_length=30, choices=ARRANGEMENT_TYPES)
     source = models.ManyToManyField(Agency)
     authorizer = models.ForeignKey(Agency, on_delete=models.PROTECT, related_name="authorizer")
@@ -55,12 +55,12 @@ class CANInfo(models.Model):
 class CANAmount(models.Model):
     can = models.ForeignKey(CANInfo, on_delete=models.PROTECT)
     fiscal_year = models.CharField(max_length=5)
-    amount_available = models.DecimalField(max_digits=10, decimal_places=2)
-    amount_budgeted = models.DecimalField(max_digits=10, decimal_places=2)
-    additional_amount_anticipated = models.DecimalField(max_digits=10, decimal_places=2)
+    amount_available = models.DecimalField(max_digits=12, decimal_places=2)
+    amount_budgeted = models.DecimalField(max_digits=12, decimal_places=2)
+    additional_amount_anticipated = models.DecimalField(max_digits=12, decimal_places=2)
     team_leader = models.ForeignKey(Person, on_delete=models.PROTECT, 
                                     limit_choices_to={"roles__name": "Team Leader"})
-    notes = models.TextField()
+    notes = models.TextField(blank=True)
 
     class Meta:
         unique_together = ('can', 'fiscal_year',)
