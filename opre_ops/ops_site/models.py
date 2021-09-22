@@ -39,7 +39,12 @@ class Person(models.Model):
 
 ARRANGEMENT_TYPES = [("1", "OPRE Appropriation"), ("2", "Cost Share"), ("3", "IAA"), 
                     ("4", "IDDA"), ("5", "MOU")]
+
 class CANInfo(models.Model):
+    """
+    CANInfo model contains all the descriptive 
+    information about a CAN
+    """
     number = models.CharField(max_length=30)
     description = models.CharField(max_length=100)
     nickname = models.CharField(max_length=30)
@@ -53,6 +58,10 @@ class CANInfo(models.Model):
 
 
 class CANAmount(models.Model):
+    """
+    CANAmount model contains all the relevant financial
+    information by fiscal year for a CAN
+    """
     can = models.ForeignKey(CANInfo, on_delete=models.PROTECT)
     fiscal_year = models.CharField(max_length=5)
     amount_available = models.DecimalField(max_digits=12, decimal_places=2)
