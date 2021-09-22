@@ -42,8 +42,11 @@ ARRANGEMENT_TYPES = [("1", "OPRE Appropriation"), ("2", "Cost Share"), ("3", "IA
 
 class CANInfo(models.Model):
     """
-    CANInfo model contains all the descriptive 
-    information about a CAN
+    A CAN is a Common Accounting Number, which is
+    used to track money coming into OPRE
+
+    The CANInfo model contains all the relevant
+    descriptive information about a given CAN
     """
     number = models.CharField(max_length=30)
     description = models.CharField(max_length=100)
@@ -59,8 +62,11 @@ class CANInfo(models.Model):
 
 class CANAmount(models.Model):
     """
-    CANAmount model contains all the relevant financial
-    information by fiscal year for a CAN
+    A CAN is a Common Accounting Number, which is
+    used to track money coming into OPRE
+
+    The CANAmount model contains all the relevant financial
+    information by fiscal year for a given CAN
     """
     can = models.ForeignKey(CANInfo, on_delete=models.PROTECT)
     fiscal_year = models.CharField(max_length=5)
