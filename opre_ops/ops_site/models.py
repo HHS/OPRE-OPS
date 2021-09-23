@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.db import models
+from model_utils import Choices
 
 class Agency(models.Model):
     name = models.CharField(max_length=100)
@@ -18,8 +19,9 @@ class Role(models.Model):
         return self.name
 
 
-DIVSIONS = [("1","DCFD"), ("2", "DDI"), ("3", "DEI"), ("4", "DFS"), ("5", "OD")]
 class Person(models.Model):
+    DIVSIONS = Choices("DCFD", "DDI", "DEI", "DFS", "OD")
+    
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     roles = models.ManyToManyField(Role)
@@ -37,8 +39,6 @@ class Person(models.Model):
         return self.full_name
 
 
-ARRANGEMENT_TYPES = [("1", "OPRE Appropriation"), ("2", "Cost Share"), ("3", "IAA"), 
-                    ("4", "IDDA"), ("5", "MOU")]
 
 class CANInfo(models.Model):
     """
@@ -48,16 +48,18 @@ class CANInfo(models.Model):
     The CANInfo model contains all the relevant
     descriptive information about a given CAN
     """
+    ARRANGEMENT_TYPES = Choices("OPRE Appropriation", "Cost Share", "IAA", "IDDA", "MOU")
+
     number = models.CharField(max_length=30)
     description = models.CharField(max_length=100)
+    purpose = models.TextField(default="", blank=True)
     nickname = models.CharField(max_length=30)
-    purpose = models.TextField(blank=True)
     arrangement_type = models.CharField(max_length=30, choices=ARRANGEMENT_TYPES)
     source = models.ManyToManyField(Agency)
     authorizer = models.ForeignKey(Agency, on_delete=models.PROTECT, related_name="authorizer")
 
     class Meta:
-        verbose_name_plural = "CANs"
+        verbose_name_plural = "CANs Info"
 
 
 class CANAmount(models.Model):
@@ -75,11 +77,11 @@ class CANAmount(models.Model):
     additional_amount_anticipated = models.DecimalField(max_digits=12, decimal_places=2)
     team_leader = models.ForeignKey(Person, on_delete=models.PROTECT, 
                                     limit_choices_to={"roles__name": "Team Leader"})
-    notes = models.TextField(blank=True)
+    notes = models.TextField(default="", blank=True)
 
     class Meta:
         unique_together = ('can', 'fiscal_year',)
-        verbose_name_plural = "CAN Financials"
+        verbose_name_plural = "CANs"
 
     def display_name(self):
         return self.can.number + " " + self.can.nickname + " - " + self.fiscal_year
