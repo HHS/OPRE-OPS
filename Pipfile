@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 Django = "==3.2.6"
 psycopg2-binary = "==2.9.1"
+django-model-utils = "*"
 
 [dev-packages]
 
