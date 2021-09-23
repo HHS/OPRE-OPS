@@ -73,7 +73,7 @@ class CANAmount(models.Model):
     information by fiscal year for a given CAN
     """
     can = models.ForeignKey(CANInfo, on_delete=models.PROTECT)
-    fiscal_year = models.IntegerField(max_length=4)
+    fiscal_year = models.DecimalField(max_digits=4, decimal_places=0)
     amount_available = models.DecimalField(max_digits=12, decimal_places=2)
     amount_budgeted = models.DecimalField(max_digits=12, decimal_places=2)
     additional_amount_anticipated = models.DecimalField(max_digits=12, decimal_places=2)
@@ -84,9 +84,3 @@ class CANAmount(models.Model):
     class Meta:
         unique_together = ('can', 'fiscal_year',)
         verbose_name_plural = "CANs"
-
-    def display_name(self):
-        return self.can.number + " " + self.can.nickname + " - " + self.fiscal_year
-    display_name.short_description = "Name" 
-
-    name = property(display_name)
