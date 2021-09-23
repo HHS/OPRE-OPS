@@ -50,7 +50,7 @@ class CANAmount(admin.ModelAdmin):
                     "team_leader", "can_division", "notes")
 
     def can_display_name(self, obj):
-        return obj.can.number + " (" + obj.can.nickname + ")" + " - " + str(obj.fiscal_year)
+        return f"{obj.can.number} ({obj.can.nickname}) - {str(obj.fiscal_year)}"
     can_display_name.short_description = "CAN #"
 
     def can_description(self, obj):
