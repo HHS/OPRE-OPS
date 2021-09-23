@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.db import models
-from model_utils import Choices
+from django.utils.translation import gettext_lazy as _
+
 
 class Agency(models.Model):
     name = models.CharField(max_length=100)
@@ -20,12 +21,13 @@ class Role(models.Model):
 
 
 class Person(models.Model):
-    DIVSIONS = Choices("DCFD", "DDI", "DEI", "DFS", "OD")
-    
+    DIVISIONS= [('DCFD', 'DCFD'), ('DDI','DDI'), ('DEI','DEI'),
+                ('DFS','DFS'), ('OD','OD')]
+
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     roles = models.ManyToManyField(Role)
-    division = models.CharField(max_length=5, choices=DIVSIONS)
+    division = models.CharField(max_length=5, choices=DIVISIONS)
 
     class Meta:
         verbose_name_plural = "People"
@@ -39,7 +41,6 @@ class Person(models.Model):
         return self.full_name
 
 
-
 class CANInfo(models.Model):
     """
     A CAN is a Common Accounting Number, which is
@@ -48,7 +49,9 @@ class CANInfo(models.Model):
     The CANInfo model contains all the relevant
     descriptive information about a given CAN
     """
-    ARRANGEMENT_TYPES = Choices("OPRE Appropriation", "Cost Share", "IAA", "IDDA", "MOU")
+
+    ARRANGEMENT_TYPES = [('OPRE Appropriation', 'OPRE Appropriation'), ('Cost Share', 'Cost Share'), 
+                        ('IAA', 'IAA'), ('IDDA', 'IDDA'), ('MOU', 'MOU')]
 
     number = models.CharField(max_length=30)
     description = models.CharField(max_length=100)
