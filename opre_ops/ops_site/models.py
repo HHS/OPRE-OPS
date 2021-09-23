@@ -73,7 +73,7 @@ class CANAmount(models.Model):
     information by fiscal year for a given CAN
     """
     can = models.ForeignKey(CANInfo, on_delete=models.PROTECT)
-    fiscal_year = models.CharField(max_length=5)
+    fiscal_year = models.IntegerField(max_length=4)
     amount_available = models.DecimalField(max_digits=12, decimal_places=2)
     amount_budgeted = models.DecimalField(max_digits=12, decimal_places=2)
     additional_amount_anticipated = models.DecimalField(max_digits=12, decimal_places=2)
