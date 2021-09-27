@@ -77,6 +77,6 @@ class CANAmount(admin.ModelAdmin):
         return obj.can.authorizer.name
 
     def can_division(self, obj):
-        # only display multiple divisons if more than one present
+        # only display multiple divisons if leads are in different divisions
         return ", ".join(set([lead.division for lead in obj.can_lead.all()]))
     can_division.short_description = "OPRE Division"
