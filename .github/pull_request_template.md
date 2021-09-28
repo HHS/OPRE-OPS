@@ -1,6 +1,6 @@
-## What changed
+## What changes
 
-_Described what changed, at a high level_ 
+_Described what changes in this PR, at a high level_ 
 
 ## Issue
 
