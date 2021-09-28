@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+
+  db:
+    image: "postgres:11.6"
+    environment:
+      - POSTGRES_PASSWORD=local_password
+
+  migration:
+    build: .
+    command: bash -c "sh wait-for-postgres.sh && python manage.py migrate && python manage.py loaddata ops_site/fixtures/fake_data.json"
+    depends_on:
+      - db
+
+  web:
+    build: .
+    ports:
+      - 8080:8080
+    depends_on:
+      - migration
+    command: python manage.py runserver 0.0.0.0:8080
