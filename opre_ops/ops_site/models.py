@@ -75,12 +75,16 @@ class CANAmount(models.Model):
     can = models.ForeignKey(CANInfo, on_delete=models.PROTECT)
     fiscal_year = models.IntegerField()
     amount_available = models.DecimalField(max_digits=12, decimal_places=2)
-    amount_budgeted = models.DecimalField(max_digits=12, decimal_places=2)
-    additional_amount_anticipated = models.DecimalField(max_digits=12, decimal_places=2)
-    team_leader = models.ForeignKey(Person, on_delete=models.PROTECT, 
-                                    limit_choices_to={"roles__name": "Team Leader"})
+    total_fiscal_year_funding = models.DecimalField(max_digits=12, decimal_places=2)
+    potential_additional_funding = models.DecimalField(max_digits=12, decimal_places=2)
+    can_lead = models.ManyToManyField(Person)
     notes = models.TextField(default="", blank=True)
 
     class Meta:
         unique_together = ('can', 'fiscal_year',)
         verbose_name_plural = "CANs"
+
+    @property
+    def additional_amount_anticipated(self):
+        return self.total_fiscal_year_funding - self.amount_available
+    

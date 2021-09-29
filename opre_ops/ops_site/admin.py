@@ -45,9 +45,9 @@ class CANInfoAdmin(admin.ModelAdmin):
 
 @admin.register(CANAmount)
 class CANAmount(admin.ModelAdmin):
-    list_display = ("can_display_name", "can_description", "can_purpose", "amount_budgeted", "amount_available",
-                    "additional_amount_anticipated", "can_arrangement_type", "can_source", "can_authorizer", 
-                    "team_leader", "can_division", "notes")
+    list_display = ("can_display_name", "can_description", "can_source", "can_purpose", "total_fiscal_year_funding", "amount_available",
+                    "additional_amount_anticipated", "potential_additional_funding", "can_arrangement_type", "can_authorizer", 
+                    "display_can_leads", "can_division", "notes")
 
     def can_display_name(self, obj):
         return f"{obj.can.number} ({obj.can.nickname}) - {obj.fiscal_year}"
@@ -68,10 +68,15 @@ class CANAmount(admin.ModelAdmin):
     def can_source(self, obj):
         return ", ".join([source.name for source in obj.can.source.all()])
     can_source.short_description = "Source"
+
+    def display_can_leads(self, obj):
+        return ", ".join([lead.full_name for lead in obj.can_lead.all()])
+    display_can_leads.short_description = "CAN Lead"
     
     def can_authorizer(self, obj):
         return obj.can.authorizer.name
 
     def can_division(self, obj):
-        return obj.team_leader.division
+        # only display multiple divisons if leads are in different divisions
+        return ", ".join(set([lead.division for lead in obj.can_lead.all()]))
     can_division.short_description = "OPRE Division"

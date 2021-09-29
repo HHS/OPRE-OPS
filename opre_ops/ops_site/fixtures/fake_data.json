@@ -1065,9 +1065,9 @@
         "can": 1,
         "fiscal_year": 2021,
         "amount_available": 11400000.00,
-        "amount_budgeted": 11400000.00,
-        "additional_amount_anticipated": 1300000.00,
-        "team_leader": 52,
+        "total_fiscal_year_funding": 11400000.00,
+        "potential_additional_funding": 1300000.00,
+        "can_lead": [52],
         "notes": ""
     }
 },
@@ -1078,9 +1078,9 @@
         "can": 2,
         "fiscal_year": 2021,
         "amount_available": 150000.00,
-        "amount_budgeted": 200000.00,
-        "additional_amount_anticipated": 0.00,
-        "team_leader": 16,
+        "total_fiscal_year_funding": 200000.00,
+        "potential_additional_funding": 0.00,
+        "can_lead": [16],
         "notes": "147-OPRE-FY21 $150K from ASPE; 149-OPRE-FY21 $50K from SSA\n\nNote to us: This distinction is in budget lines, not sure how it ties into CANs\n"
     }
 },
@@ -1091,9 +1091,9 @@
         "can": 3,
         "fiscal_year": 2022,
         "amount_available": 0.00,
-        "amount_budgeted": 7512000.00,
-        "additional_amount_anticipated": 3000000.00,
-        "team_leader": 12,
+        "total_fiscal_year_funding": 7512000.00,
+        "potential_additional_funding": 3000000.00,
+        "can_lead": [12],
         "notes": ""
     }
 },
@@ -1104,9 +1104,9 @@
         "can": 3,
         "fiscal_year": 2023,
         "amount_available": 0.00,
-        "amount_budgeted": 7512000.00,
-        "additional_amount_anticipated": 3000000.00,
-        "team_leader": 12,
+        "total_fiscal_year_funding": 7512000.00,
+        "potential_additional_funding": 3000000.00,
+        "can_lead": [12],
         "notes": ""
     }
 },
@@ -1117,9 +1117,9 @@
         "can": 3,
         "fiscal_year": 2024,
         "amount_available": 0.00,
-        "amount_budgeted": 7512000.00,
-        "additional_amount_anticipated": 3000000.00,
-        "team_leader": 12,
+        "total_fiscal_year_funding": 7512000.00,
+        "potential_additional_funding": 3000000.00,
+        "can_lead": [12],
         "notes": ""
     }
 },
@@ -1130,9 +1130,9 @@
         "can": 4,
         "fiscal_year": 2021,
         "amount_available": 0.00,
-        "amount_budgeted": 126476.00,
-        "additional_amount_anticipated": 0.00,
-        "team_leader": 16,
+        "total_fiscal_year_funding": 126476.00,
+        "potential_additional_funding": 0.00,
+        "can_lead": [16],
         "notes": ""
     }
 },
@@ -1143,9 +1143,9 @@
         "can": 5,
         "fiscal_year": 2021,
         "amount_available": 20000000.00,
-        "amount_budgeted": 20000000.00,
-        "additional_amount_anticipated": 1000000.00,
-        "team_leader": 23,
+        "total_fiscal_year_funding": 20000000.00,
+        "potential_additional_funding": 1000000.00,
+        "can_lead": [23],
         "notes": ""
     }
 },
@@ -1156,9 +1156,9 @@
         "can": 5,
         "fiscal_year": 2022,
         "amount_available": 0.00,
-        "amount_budgeted": 20000000.00,
-        "additional_amount_anticipated": 0.00,
-        "team_leader": 23,
+        "total_fiscal_year_funding": 20000000.00,
+        "potential_additional_funding": 0.00,
+        "can_lead": [23],
         "notes": ""
     }
 },
@@ -1169,9 +1169,9 @@
         "can": 5,
         "fiscal_year": 2023,
         "amount_available": 0.00,
-        "amount_budgeted": 20000000.00,
-        "additional_amount_anticipated": 0.00,
-        "team_leader": 23,
+        "total_fiscal_year_funding": 20000000.00,
+        "potential_additional_funding": 0.00,
+        "can_lead": [23],
         "notes": ""
     }
 },
@@ -1182,9 +1182,9 @@
         "can": 5,
         "fiscal_year": 2024,
         "amount_available": 0.00,
-        "amount_budgeted": 20000000.00,
-        "additional_amount_anticipated": 0.00,
-        "team_leader": 23,
+        "total_fiscal_year_funding": 20000000.00,
+        "potential_additional_funding": 0.00,
+        "can_lead": [23],
         "notes": ""
     }
 },
@@ -1195,9 +1195,9 @@
         "can": 6,
         "fiscal_year": 2021,
         "amount_available": 1400000.00,
-        "amount_budgeted": 1400000.00,
-        "additional_amount_anticipated": 0.00,
-        "team_leader": 20,
+        "total_fiscal_year_funding": 1400000.00,
+        "potential_additional_funding": 0.00,
+        "can_lead": [20],
         "notes": ""
     }
 },
@@ -1208,9 +1208,9 @@
         "can": 7,
         "fiscal_year": 2021,
         "amount_available": 80000.00,
-        "amount_budgeted": 80000.00,
-        "additional_amount_anticipated": 0.00,
-        "team_leader": 16,
+        "total_fiscal_year_funding": 80000.00,
+        "potential_additional_funding": 0.00,
+        "can_lead": [16],
         "notes": ""
     }
 }
