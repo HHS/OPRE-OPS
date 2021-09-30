@@ -3,6 +3,7 @@
 This document describes our team's continuous deployment practices. Over the long run, it should answer these questions:
 
 * [How will our continuous deployment process work?](#how-will-our-continuous-deployment-process-work)
+* [How will we manage access to CircleCI?](#how-will-we-manage-access-to-circleci)
 * [What human review steps are required to deploy changes?](#what-human-review-steps-are-required-to-deploy-changes) [more to come here]
 * [What automated checks run to verify the quality of new code?](#what-automated-checks-run-to-verify-the-quality-of-new-code) [more to come here]
 * [How is code deployed to development for testing and initial review?](#how-is-code-deployed-to-development-for-testing-and-initial-review)
@@ -26,6 +27,10 @@ Code will graduate from development up to production through the following space
 4. Production
 
 For more on spaces, see the CloudFoundry documentation: https://docs.cloudfoundry.org/concepts/roles.html#spaces
+
+## How will we manage access to CircleCI?
+
+CircleCI mirrors permissions from GitHub ([docs](https://support.circleci.com/hc/en-us/articles/360034990033-Am-I-an-Org-Admin-)). Access and permissions to CircleCI will be managed via the same processes as access to this GitHub repository. 
 
 ## What human review steps are required to deploy changes?
 
