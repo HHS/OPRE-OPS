@@ -2,12 +2,9 @@ from django.contrib import admin
 from django.db import models
 
 
-class Agency(models.Model):
+class FundingPartner(models.Model):
     name = models.CharField(max_length=100)
     nickname = models.CharField(max_length=100)
-
-    class Meta:
-        verbose_name_plural = "agencies"
 
     def __str__(self):
         return self.name
@@ -57,8 +54,8 @@ class CANInfo(models.Model):
     purpose = models.TextField(default="", blank=True)
     nickname = models.CharField(max_length=30)
     arrangement_type = models.CharField(max_length=30, choices=ARRANGEMENT_TYPES)
-    source = models.ManyToManyField(Agency)
-    authorizer = models.ForeignKey(Agency, on_delete=models.PROTECT, related_name="authorizer")
+    funding_source = models.ManyToManyField(FundingPartner)
+    authorizer = models.ForeignKey(FundingPartner, on_delete=models.PROTECT, related_name="authorizer")
 
     class Meta:
         verbose_name_plural = "CANs Info"
