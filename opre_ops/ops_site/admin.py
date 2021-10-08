@@ -1,15 +1,15 @@
 
 from django.contrib import admin
 
-from ops_site.models import Agency
+from ops_site.models import FundingPartner
 from ops_site.models import Role
 from ops_site.models import Person
 from ops_site.models import CANInfo
 from ops_site.models import CANAmount
 
 
-@admin.register(Agency)
-class AgencyAdmin(admin.ModelAdmin):
+@admin.register(FundingPartner)
+class FundingPartnerAdmin(admin.ModelAdmin):
     list_display = ("name", "nickname")
 
 
@@ -45,7 +45,7 @@ class CANInfoAdmin(admin.ModelAdmin):
 
 @admin.register(CANAmount)
 class CANAmount(admin.ModelAdmin):
-    list_display = ("can_display_name", "can_description", "can_source", "can_purpose", "total_fiscal_year_funding", "amount_available",
+    list_display = ("can_display_name", "can_description", "can_funding_source", "can_purpose", "total_fiscal_year_funding", "amount_available",
                     "additional_amount_anticipated", "potential_additional_funding", "can_arrangement_type", "can_authorizer", 
                     "display_can_leads", "can_division", "notes")
 
@@ -65,10 +65,10 @@ class CANAmount(admin.ModelAdmin):
         return obj.can.arrangement_type
     can_arrangement_type.short_description = "Arrangement Type"
 
-    def can_source(self, obj):
-        return ", ".join([source.name for source in obj.can.source.all()])
-    can_source.short_description = "Source"
-
+    def can_funding_source(self, obj):
+        return ", ".join([source.name for source in obj.can.funding_source.all()])
+    can_funding_source.short_description = "Funding Source"
+ 
     def display_can_leads(self, obj):
         return ", ".join([lead.full_name for lead in obj.can_lead.all()])
     display_can_leads.short_description = "CAN Lead"
