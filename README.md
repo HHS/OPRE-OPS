@@ -3,12 +3,11 @@
 ## Getting Started
 ### Running the Application locally
 
-Application built using [pack Buildpack CLI](https://github.com/buildpacks/pack) and runs within Docker.
+Application built using python Docker image and runs within Docker.
 
 Instructions to start app locally:
 
 1. Make sure you have Docker installed and started locally
-2. Make sure you have pack installed, see [this link](https://buildpacks.io/docs/tools/pack/) for instructions
 
 From the project root run:
 
@@ -42,7 +41,7 @@ pipenv uninstall <package-name>
 
 this will also remove it from the `Pipfile.lock`
 
-### Running the tests locally
+## Running the tests
 
 To run the test locally, run:
 ```
