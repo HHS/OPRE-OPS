@@ -41,3 +41,10 @@ pipenv uninstall <package-name>
 ```
 
 this will also remove it from the `Pipfile.lock`
+
+### Running the tests locally
+
+To run the test locally, run:
+```
+docker-compose run web pytest
+```
