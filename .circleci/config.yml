@@ -5,8 +5,7 @@ jobs:
     steps:
       - checkout
       - run: python --version
-      - run:
-            name: Run tests
-            command: |
-              docker-compose -v \
-              docker-compose run web pytest
+      - run: docker-compose -v
+      - run:         
+          name: Run Tests
+          command: docker-compose run web pytest
