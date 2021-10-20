@@ -7,4 +7,4 @@ jobs:
       - run: python --version
       - run:
             name: Run tests
-            command: docker-compose run web pytest
+            command: sudo docker-compose run web pytest
