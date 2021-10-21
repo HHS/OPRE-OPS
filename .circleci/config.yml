@@ -4,8 +4,7 @@ jobs:
       - image: cimg/python:3.9.6
     steps:
       - checkout
-      - setup_remote_docker:
-          version: 19.03.8
+      - setup_remote_docker
       - run: python --version
       - run: docker-compose -v
       - run:         
