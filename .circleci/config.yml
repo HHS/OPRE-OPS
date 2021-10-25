@@ -5,8 +5,6 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run: python --version
-      - run: docker-compose -v
       - run:         
           name: Run Tests
           command: docker-compose run web pytest
