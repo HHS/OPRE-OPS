@@ -15,8 +15,7 @@ services:
 
   web:
     build: .
-    container_name: web-container
-    ports:
+    ports:  
       - 8080:8080
     depends_on:
       - migration
