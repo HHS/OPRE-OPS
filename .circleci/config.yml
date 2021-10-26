@@ -7,4 +7,4 @@ jobs:
       - setup_remote_docker
       - run:         
           name: Run Tests
-          command: docker-compose run web pytest
+          command:  docker exec opre-ops_web_1 pytest
