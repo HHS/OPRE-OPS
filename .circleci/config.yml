@@ -7,4 +7,4 @@ jobs:
       - setup_remote_docker
       - run:         
           name: Run Tests
-          command:  docker-compose run web pytest --cov=ops_site/tests/
+          command:  docker-compose run web pytest --cov-config=.coveragerc --cov=ops_site ops_site/tests/
