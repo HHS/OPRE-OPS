@@ -45,5 +45,5 @@ this will also remove it from the `Pipfile.lock`
 
 To run the test locally, run:
 ```
-docker-compose run web pytest --cov-config=.coveragerc --cov=ops_site ops_site/tests/ --cov-report term-missing
+docker-compose run web pytest --cov-config=.coveragerc --cov=ops_site --cov-report term-missing
 ```
