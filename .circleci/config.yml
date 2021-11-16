@@ -8,7 +8,13 @@ jobs:
       - run:         
           name: Run Tests
           command:  docker-compose run web pytest --cov-config=.coveragerc --cov=ops_site --cov-report term-missing
-
+      - run:
+          name: Install cf cli
+          command: |
+            mkdir -p $HOME/bin
+            export PATH=$HOME/bin:$PATH
+            curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary" | tar xzv -C $HOME/bin
+            cf install-plugin autopilot -f -r CF-Community
       - run:
           name: Deploy to dev
           command: |
