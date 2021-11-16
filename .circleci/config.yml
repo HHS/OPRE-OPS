@@ -20,7 +20,7 @@ jobs:
           command: |
             if [[ -n "${CIRCLE_BRANCH}" && "${CIRCLE_BRANCH}" != "master" ]]; then
               export PATH=$HOME/bin:$PATH
-              cf login -a https://api.fr.cloud.gov -u $DEV_USER -p $DEV_PASSWORD -o sandbox-gsa -s carly.jugler
+              cf login -a https://api.fr.cloud.gov -u $DEV_USER -p $DEV_PASSWORD -o $ORG_NAME -s $SPACE_NAME
               echo "Login successful."
             else
               echo "Skipped"
