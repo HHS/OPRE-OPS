@@ -7,6 +7,8 @@ import cfenv
 
 # Import all common settings relevant to both local & cloud:
 from opre_ops.settings.common import *
+# Import helper to generate a random string for our local secret key:
+from opre_ops.settings.helpers.random_string import generate_random_string
 
 env = cfenv.AppEnv()
 
