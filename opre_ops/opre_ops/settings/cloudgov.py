@@ -3,11 +3,12 @@ Configuration for running OPRE OPS in cloud.gov.
 """
 import os
 import json
-from .env import env
+import cfenv
 
 # Import all common settings relevant to both local & cloud:
 from opre_ops.settings.common import *
 
+env = cfenv.AppEnv()
 
 # Helper function
 def get_json_env_var(variable_name):
