@@ -29,12 +29,6 @@ vcap_services = get_json_env_var('VCAP_SERVICES')
 database_service = vcap_services['aws-rds'][0]
 database_creds = database_service['credentials']
 
-# user_provided_services = vcap_services['user-provided']
-# user_provided_env_service = next(
-#   i for i in user_provided_services if i['name'] == 'opre-ops-env-service'
-# )
-# user_provided_env = user_provided_env_service['credentials']
-
 
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 DATABASES = {
