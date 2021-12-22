@@ -51,25 +51,25 @@ Since development is a space for experimental changes, don't count on the develo
 
 For initial development and testing, we are currently using a sandbox on cloud.gov: https://cloud.gov/pricing/.
 
-### Continuous deployment to dev 
+### Continuous deployment to dev
 
 Unless we create many dev apps and write functionality similar to [Heroku Review Apps](https://devcenter.heroku.com/articles/github-integration-review-apps) (one app per in-progress PR), we will only have one dev app for an engineering team of three. How should devs trigger deploys to the dev app?
 
-Our plan is to allow any dev to trigger a deploy to the dev app via a [git tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging). (See ["Executing workflows for a git tag" in the Circle docs](https://circleci.com/docs/2.0/workflows/#executing-workflows-for-a-git-tag).) This will give devs the flexibility to deploy to dev and test out new code at any time, without waiting for a review process or a git merge process. 
+Our plan is to allow any dev to trigger a deploy to the dev app via a merge to the `development` branch.
 
-Each deploy would overwrite the state of the dev app. Dev should post in Slack to let the team know when they deploy, especially if multiple devs are actively working on features at the same time. 
+Each deploy would overwrite the state of the dev app. Developers should post in Slack to let the team know when they deploy, especially if multiple developers are actively working on features at the same time.
 
-## How is code deployed to demo for further review? 
+## How is code deployed to demo for further review?
 
 In the future, we want to have a demo space which we will use to demo features that have passed PM review, but still need review from our PO and/or other stakeholders. More to come on continuous deploys to the demo space.
 
-## How is code deployed to staging? 
+## How is code deployed to staging?
 
-In the future, we want to have a staging space, where we can be confident that anything on there is ready to be pushed to production at any time. Anything on staging has gone through all the necessary layers of review and is ready to deploy to production at any time. More to come on continuous deploys to staging. 
+In the future, we want to have a staging space, where we can be confident that anything on there is ready to be pushed to production at any time. Anything on staging has gone through all the necessary layers of review and is ready to deploy to production at any time. More to come on continuous deploys to staging.
 
-## How is code deployed to production for end users? 
+## How is code deployed to production for end users?
 
-In the future, we want to have a production app which will store real data and deliver value to real users! More to come on continuous deploys to prod and release management. 
+In the future, we want to have a production app which will store real data and deliver value to real users! More to come on continuous deploys to prod and release management.
 
 ## Resources
 
