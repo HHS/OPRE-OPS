@@ -17,7 +17,6 @@ jobs:
             cf install-plugin autopilot -f -r CF-Community
       - run:
           name: Deploy to cloud.gov
-          filters:
           command: |
             if [[ -n "${CIRCLE_BRANCH}" && "${CIRCLE_BRANCH}" == "development" ]]; then
               export PATH=$HOME/bin:$PATH
