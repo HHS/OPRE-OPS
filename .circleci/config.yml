@@ -8,7 +8,6 @@ jobs:
       - run:         
           name: Run Tests
           command:  docker-compose run web pytest --cov-config=.coveragerc --cov=ops_site --cov-report term-missing
-
       - run:
           name: Install cf cli
           command: |
