@@ -3,10 +3,14 @@ Configuration for running OPRE OPS in cloud.gov.
 """
 import os
 import json
+import cfenv
 
 # Import all common settings relevant to both local & cloud:
 from opre_ops.settings.common import *
+# Import helper to generate a random string for our local secret key:
+from opre_ops.settings.helpers.random_string import generate_random_string
 
+env = cfenv.AppEnv()
 
 # Helper function
 def get_json_env_var(variable_name):
@@ -25,12 +29,6 @@ vcap_services = get_json_env_var('VCAP_SERVICES')
 database_service = vcap_services['aws-rds'][0]
 database_creds = database_service['credentials']
 
-user_provided_services = vcap_services['user-provided']
-user_provided_env_service = next(
-  i for i in user_provided_services if i['name'] == 'opre-ops-env-service'
-)
-user_provided_env = user_provided_env_service['credentials']
-
 
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 DATABASES = {
@@ -45,7 +43,7 @@ DATABASES = {
 }
 
 # SECURITY: Keep the secret keys used in production secret!
-SECRET_KEY = user_provided_env['DJANGO_SECRET_KEY']
+SECRET_KEY = env.get_credential('APP_SECRET_KEY', generate_random_string(50))
 
 DEBUG = False
 
