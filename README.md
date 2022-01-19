@@ -20,6 +20,17 @@ Then navigate to http://localhost:8080 in your browser
 
 ### Dependency management with pipenv
 
+To verify pipenv is installed and working locally, run:
+```
+pipenv graph
+```
+
+If it is not installed, you can install it with:
+```
+pip3 install pipenv
+```
+You may have to install Python 3.9 and may have to update your system's PATH to get pipenv working.
+
 To install a new package into the `[packages]` in the `Pipfile` run:
 ```
 pipenv install <package-name>
