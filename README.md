@@ -20,7 +20,7 @@ Then navigate to http://localhost:8080 in your browser
 
 ### Dependency management with pipenv
 
-We use pipenv locally, not in Docker. To verify pipenv is installed and working, run:
+To verify pipenv is installed and working locally, run:
 ```
 pipenv graph
 ```
