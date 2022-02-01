@@ -79,3 +79,13 @@ resource "aws_db_instance" "mapsskinner" {
 
 }
 
+# Create EC2 instance to access source database
+
+resource "aws_instance" "dmsclient-source" {
+  ami = "ami-0231217be14a6f3ba"
+  instance_type = "t2.xlarge"
+  tags = {
+    Name = "DMSClient-Source"
+  }
+
+}
