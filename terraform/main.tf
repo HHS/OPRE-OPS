@@ -14,6 +14,7 @@ provider "aws" {
   region  = "us-east-2"
 }
 
+
 # Create VPC for source database
 
 resource "aws_vpc" "dmsvpc_source" {
@@ -82,6 +83,7 @@ resource "aws_db_instance" "mapsskinner" {
 # Create EC2 instance to access source database
 
 resource "aws_instance" "dmsclient-source" {
+  subnet_id = aws_subnet.dmssubnet1-source.id
   ami = "ami-0231217be14a6f3ba"
   instance_type = "t2.xlarge"
   tags = {
