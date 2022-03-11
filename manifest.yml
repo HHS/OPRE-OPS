@@ -1,6 +1,7 @@
 ---
 applications:
   - name: opre-ops-test
+    memory: 1024M
     buildpack: python_buildpack
     # TODO: Django docs say not to use the `runserver` command in prod;
     # switch over to a production-ready webserver like gunicorn
