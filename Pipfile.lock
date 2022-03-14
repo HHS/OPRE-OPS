@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "766982e6cfe599cb9a319faf1642bc8f7b721afba400ba38f0061f80900c6f86"
+            "sha256": "5906731b751aefea6c29b320d641c0552a98165a7a77efcf65543cd8c1cc3661"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -34,11 +34,11 @@
         },
         "django": {
             "hashes": [
-                "sha256:7f92413529aa0e291f3be78ab19be31aefb1e1c9a52cd59e130f505f27a51f13",
-                "sha256:f27f8544c9d4c383bbe007c57e3235918e258364577373d4920e9162837be022"
+                "sha256:1239218849e922033a35d2a2f777cb8bee18bd725416744074f455f34ff50d0c",
+                "sha256:77ff2e7050e3324c9b67e29b6707754566f58514112a9ac73310f60cd5261930"
             ],
             "index": "pypi",
-            "version": "==3.2.6"
+            "version": "==4.0.3"
         },
         "furl": {
             "hashes": [
@@ -115,13 +115,6 @@
             ],
             "index": "pypi",
             "version": "==2.9.3"
-        },
-        "pytz": {
-            "hashes": [
-                "sha256:3672058bc3453457b622aab7a1c3bfd5ab0bdae451512f6cf25f64ed37f5b87c",
-                "sha256:acad2d8b20a1af07d4e4c9d2e9285c5ed9104354062f275f3fcd88dcef4f1326"
-            ],
-            "version": "==2021.3"
         },
         "six": {
             "hashes": [
