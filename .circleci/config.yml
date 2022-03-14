@@ -14,7 +14,6 @@ jobs:
             mkdir -p $HOME/bin
             export PATH=$HOME/bin:$PATH
             curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary" | tar xzv -C $HOME/bin
-            cf install-plugin autopilot -f -r CF-Community
       - run:
           name: Deploy to cloud.gov
           command: |
@@ -22,7 +21,7 @@ jobs:
               export PATH=$HOME/bin:$PATH
               cf login -a https://api.fr.cloud.gov -u $DEV_USER -p $DEV_PASSWORD -o $ORG_NAME -s $SPACE_NAME
               echo "Login successful."
-              cf zero-downtime-push opre-ops-test -f manifest.yml
+              cf push opre-ops-test -f manifest.yml
               echo "Deploy successful."
             else
               echo "Skipped"
