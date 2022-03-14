@@ -14,7 +14,6 @@ jobs:
             mkdir -p $HOME/bin
             export PATH=$HOME/bin:$PATH
             curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary" | tar xzv -C $HOME/bin
-            cf install-plugin autopilot -f -r CF-Community
       - run:
           name: Deploy to cloud.gov
           command: |
