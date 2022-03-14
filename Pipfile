@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 Django = "==4.0.3"
-psycopg2-binary = "==2.9.1"
+psycopg2-binary = "==2.9.3"
 cfenv = "0.5.3"
 
 [dev-packages]
