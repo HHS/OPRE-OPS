@@ -48,3 +48,4 @@ SECRET_KEY = env.get_credential('APP_SECRET_KEY', generate_random_string(50))
 DEBUG = False
 
 ALLOWED_HOSTS = [".cloud.gov"]
+CSRF_TRUSTED_ORIGINS = ['https://opre-ops-test.app.cloud.gov']
