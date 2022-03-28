@@ -1,3 +1,0 @@
-# Ignore everything in this directory, added to allow collectstatic to put
-# static files someplace
-!.gitignore
