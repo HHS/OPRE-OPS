@@ -103,7 +103,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),".."))
+PROJECT_DIR = '/home/vcap/app/opre_ops/opre_ops/static'
 STATIC_ROOT = os.path.join(PROJECT_DIR, 'static')
 
 # Default primary key field type
