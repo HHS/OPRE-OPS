@@ -5,7 +5,9 @@ applications:
     buildpack: python_buildpack
     # TODO: Django docs say not to use the `runserver` command in prod;
     # switch over to a production-ready webserver like gunicorn
-    command: cd opre_ops && python manage.py migrate && python manage.py collectstatic  --noinput && python manage.py runserver 0.0.0.0:8080
+    command: cd opre_ops && python manage.py migrate && python manage.py collectstatic --noinput && python manage.py runserver --insecure 0.0.0.0:8080
+    # The --insecure flag is being used above to allow runserver to serve
+    # static assets in prototype deployment. Replace with e.g. Nginx in prod.
 
 services:
  - opre-ops-psql-db
