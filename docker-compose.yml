@@ -20,3 +20,5 @@ services:
     depends_on:
       - migration
     command: python manage.py runserver 0.0.0.0:8080
+    volumes:
+      - ./opre_ops:/${CI}opre_project

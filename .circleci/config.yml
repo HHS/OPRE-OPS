@@ -5,9 +5,9 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run:         
+      - run:
           name: Run Tests
-          command:  docker-compose run web pytest --cov-config=.coveragerc --cov=ops_site --cov-report term-missing
+          command: docker-compose run web pytest --cov-config=.coveragerc --cov=ops_site --cov-report term-missing
       - run:
           name: Install cf cli
           command: |
