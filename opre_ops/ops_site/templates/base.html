@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
   {% block title %}<title>OPRE OPS</title>{% endblock %}
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
-  {% block sidebar %}<!-- insert default navigation text for every page -->{% endblock %}
-  {% block content %}<!-- default content text (typically empty) -->{% endblock %}
+  {% block sidebar %}OPRE OPS {% endblock %}
+  {% block content %}{% endblock %}
 </body>
 </html>

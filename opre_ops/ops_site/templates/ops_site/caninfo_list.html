@@ -4,7 +4,10 @@
     <h2>CAN info</h2>
     <table>
         {% for can in object_list %}
-            <tr><td>{{ can.number }}</td><td>{{can.description}}</td></li>
+            <tr><td><a href="{{ can.id }}">{{ can.number }}</a></td><td>{{can.description}}</td></li>
         {% endfor %}
     </ul>
+{% endblock %}
+{% block sidebar %}
+    OPRE OPS &mdash; <a href="/ops/home">Home</a> <strong>CANs</strong>
 {% endblock %}
