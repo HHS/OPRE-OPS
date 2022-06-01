@@ -7,8 +7,7 @@ from django.views.generic import DetailView
 from ops_site.models import CANInfo
 
 def home(request):
-    now = datetime.datetime.now()
-    html = "<html><body><h1>OPRE OPS</h1><p>Page created at %s.</p></body></html>" % now
+    html = "<html><body><h1>OPRE OPS</h1><a href='cans'>List CANs</a></body></html>"
     return HttpResponse(html)
 
 class CANInfoListView(ListView):
