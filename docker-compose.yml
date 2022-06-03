@@ -10,6 +10,8 @@ services:
   migration:
     build: .
     command: bash -c "sh wait-for-postgres.sh && python manage.py migrate && python manage.py loaddata ops_site/fixtures/fake_data.json"
+    volumes:
+      - ./opre_ops:/${CI}opre_project
     depends_on:
       - db
 

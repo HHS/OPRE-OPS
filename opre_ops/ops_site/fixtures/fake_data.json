@@ -1211,5 +1211,47 @@
         "contract": 1,
         "name": "SC 1"
     }
+},
+{
+    "model": "ops_site.contractlineitem",
+    "pk": 2,
+    "fields": {
+        "contract": 1,
+        "name": "SC 1 Fee"
+    }
+},
+{
+    "model": "ops_site.contractlineitemfiscalyear",
+    "pk": 1,
+    "fields": {
+        "line_item": 1,
+        "fiscal_year": 2021
+    }
+},
+{
+    "model": "ops_site.contractlineitemfiscalyear",
+    "pk": 2,
+    "fields": {
+        "line_item": 2,
+        "fiscal_year": 2021
+    }
+},
+{
+    "model": "ops_site.contractlineitemfiscalyearpercan",
+    "pk": 1,
+    "fields":{
+        "fiscal_year": 1,
+        "can": 5,
+        "funding": 1745000.00
+    }
+},
+{
+    "model": "ops_site.contractlineitemfiscalyearpercan",
+    "pk": 2,
+    "fields":{
+        "fiscal_year": 2,
+        "can": 5,
+        "funding": 8725.00
+    }
 }
 ]

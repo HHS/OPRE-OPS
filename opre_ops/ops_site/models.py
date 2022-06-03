@@ -71,6 +71,16 @@ class CommonAccountingNumber(models.Model):
         FundingPartner, on_delete=models.PROTECT, related_name="authorizer"
     )
 
+    def info_for_fiscal_year(self, fy):
+        return CANFiscalYear.objects.filter(can=self.id, fiscal_year=fy).first()
+
+    def contracts_for_fiscal_year(self, fy):
+        cid = [
+            li.fiscal_year.line_item.contract.id
+            for li in self.line_items_fy.filter(fiscal_year__fiscal_year=fy)
+        ]
+        return Contract.objects.filter(id__in=cid)
+
     class Meta:
         verbose_name_plural = "CANs"
 
@@ -112,9 +122,58 @@ class Contract(models.Model):
     def research_areas(self):
         return [can.nickname for can in self.cans.all()]
 
+    def contribution_by_can_for_fy(self, can, fy):
+        return sum([li.funding for li in self.line_items_for_fy_and_can(fy, can)])
+
+    def line_items_for_fy(self, fy):
+        return ContractLineItemFiscalYear.objects.filter(
+            line_item__contract=self.id, fiscal_year=fy
+        )
+
+    def line_items_for_fy_and_can(self, fy, can):
+        return ContractLineItemFiscalYearPerCAN.objects.filter(
+            fiscal_year__fiscal_year__in=[fy], can=can
+        )
+
 
 class ContractLineItem(models.Model):
     contract = models.ForeignKey(
         Contract, on_delete=models.CASCADE, related_name="line_items"
     )
     name = models.TextField()
+
+
+class ContractLineItemFiscalYear(models.Model):
+    line_item = models.ForeignKey(
+        ContractLineItem, on_delete=models.CASCADE, related_name="fiscal_years"
+    )
+    fiscal_year = models.IntegerField()
+
+    @property
+    def contract(self):
+        return self.line_item.contract
+
+    @property
+    def name(self):
+        return self.line_item.name
+
+    def for_can(self, can):
+        return self.cans.filter(can=can).first()
+
+
+class ContractLineItemFiscalYearPerCAN(models.Model):
+    fiscal_year = models.ForeignKey(
+        ContractLineItemFiscalYear, on_delete=models.CASCADE, related_name="cans"
+    )
+    can = models.ForeignKey(
+        CommonAccountingNumber, on_delete=models.PROTECT, related_name="line_items_fy"
+    )
+    funding = models.DecimalField(max_digits=12, decimal_places=2)
+
+    @property
+    def contract(self):
+        return self.fiscal_year.contract
+
+    @property
+    def name(self):
+        return self.fiscal_year.name
