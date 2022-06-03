@@ -18,6 +18,12 @@ docker-compose up
 
 Then navigate to http://localhost:8080 in your browser
 
+To create an admin user, use the Django management tool from within the container:
+
+```
+docker-compose exec web python manage.py createsuperuser
+```
+
 ### Dependency management with pipenv
 
 To verify pipenv is installed and working locally, run:
