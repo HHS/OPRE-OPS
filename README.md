@@ -69,3 +69,7 @@ docker-compose run web pytest --cov-config=.coveragerc --cov=ops_site --cov-repo
 This prototype uses `runserver` as a web server, which is considered insecure
 for production use. This should be replaced with something like `gunicorn` and
 `nginx` before it is deployed beyond prototyping purposes.
+
+## Data model
+
+![OPRE prototype data model](docs/models.png)
