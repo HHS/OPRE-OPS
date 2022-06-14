@@ -1,23 +1,5 @@
 [
 {
-    "model": "auth.user", 
-    "pk": 1, 
-    "fields": {
-        "password": "pbkdf2_sha256$260000$SPT55SvTcijon2Y3dU3U5U$gAGQU7lfr+nz+j9kovR8/iGlt1TFAbwuJo7F+dEObeM=", 
-        "last_login": null, 
-        "is_superuser": true, 
-        "username": "admin", 
-        "first_name": "", 
-        "last_name": "", 
-        "email": "email@test.com", 
-        "is_staff": true, 
-        "is_active": true, 
-        "date_joined": "2021-09-13T23:29:07.694Z", 
-        "groups": [], 
-        "user_permissions": []
-    }
-},
-{
     "model": "ops_site.fundingpartner",
     "pk": 1,
     "fields": {
@@ -968,7 +950,7 @@
     }
 },
 {
-    "model": "ops_site.caninfo",
+    "model": "ops_site.commonaccountingnumber",
     "pk": 1,
     "fields": {
         "number": "G99HRF2",
@@ -981,7 +963,7 @@
     }
 },
 {
-    "model": "ops_site.caninfo",
+    "model": "ops_site.commonaccountingnumber",
     "pk": 2,
     "fields": {
         "number": "G99IA14",
@@ -994,7 +976,7 @@
     }
 },
 {
-    "model": "ops_site.caninfo",
+    "model": "ops_site.commonaccountingnumber",
     "pk": 3,
     "fields": {
         "number": "G99PHS9",
@@ -1007,7 +989,7 @@
     }
 },
 {
-    "model": "ops_site.caninfo",
+    "model": "ops_site.commonaccountingnumber",
     "pk": 4,
     "fields": {
         "number": "G990136",
@@ -1020,7 +1002,7 @@
     }
 },
 {
-    "model": "ops_site.caninfo",
+    "model": "ops_site.commonaccountingnumber",
     "pk": 5,
     "fields": {
         "number": "G994426",
@@ -1033,7 +1015,7 @@
     }
 },
 {
-    "model": "ops_site.caninfo",
+    "model": "ops_site.commonaccountingnumber",
     "pk": 6,
     "fields": {
         "number": "G994648",
@@ -1046,7 +1028,7 @@
     }
 },
 {
-    "model": "ops_site.caninfo",
+    "model": "ops_site.commonaccountingnumber",
     "pk": 7,
     "fields": {
         "number": "G996125",
@@ -1059,7 +1041,7 @@
     }
 },
 {
-    "model": "ops_site.canamount",
+    "model": "ops_site.canfiscalyear",
     "pk": 1,
     "fields": {
         "can": 1,
@@ -1072,7 +1054,7 @@
     }
 },
 {
-    "model": "ops_site.canamount",
+    "model": "ops_site.canfiscalyear",
     "pk": 2,
     "fields": {
         "can": 2,
@@ -1085,7 +1067,7 @@
     }
 },
 {
-    "model": "ops_site.canamount",
+    "model": "ops_site.canfiscalyear",
     "pk": 3,
     "fields": {
         "can": 3,
@@ -1098,7 +1080,7 @@
     }
 },
 {
-    "model": "ops_site.canamount",
+    "model": "ops_site.canfiscalyear",
     "pk": 4,
     "fields": {
         "can": 3,
@@ -1111,7 +1093,7 @@
     }
 },
 {
-    "model": "ops_site.canamount",
+    "model": "ops_site.canfiscalyear",
     "pk": 5,
     "fields": {
         "can": 3,
@@ -1124,7 +1106,7 @@
     }
 },
 {
-    "model": "ops_site.canamount",
+    "model": "ops_site.canfiscalyear",
     "pk": 6,
     "fields": {
         "can": 4,
@@ -1137,7 +1119,7 @@
     }
 },
 {
-    "model": "ops_site.canamount",
+    "model": "ops_site.canfiscalyear",
     "pk": 7,
     "fields": {
         "can": 5,
@@ -1150,7 +1132,7 @@
     }
 },
 {
-    "model": "ops_site.canamount",
+    "model": "ops_site.canfiscalyear",
     "pk": 8,
     "fields": {
         "can": 5,
@@ -1163,7 +1145,7 @@
     }
 },
 {
-    "model": "ops_site.canamount",
+    "model": "ops_site.canfiscalyear",
     "pk": 9,
     "fields": {
         "can": 5,
@@ -1176,7 +1158,7 @@
     }
 },
 {
-    "model": "ops_site.canamount",
+    "model": "ops_site.canfiscalyear",
     "pk": 10,
     "fields": {
         "can": 5,
@@ -1189,7 +1171,7 @@
     }
 },
 {
-    "model": "ops_site.canamount",
+    "model": "ops_site.canfiscalyear",
     "pk": 11,
     "fields": {
         "can": 6,
@@ -1202,7 +1184,7 @@
     }
 },
 {
-    "model": "ops_site.canamount",
+    "model": "ops_site.canfiscalyear",
     "pk": 12,
     "fields": {
         "can": 7,
@@ -1212,6 +1194,64 @@
         "potential_additional_funding": 0.00,
         "can_lead": [16],
         "notes": ""
+    }
+},
+{
+    "model": "ops_site.contract",
+    "pk": 1,
+    "fields": {
+        "cans": [5,1,2],
+        "name": "NIH VIQI"
+    }
+},
+{
+    "model": "ops_site.contractlineitem",
+    "pk": 1,
+    "fields": {
+        "contract": 1,
+        "name": "SC 1"
+    }
+},
+{
+    "model": "ops_site.contractlineitem",
+    "pk": 2,
+    "fields": {
+        "contract": 1,
+        "name": "SC 1 Fee"
+    }
+},
+{
+    "model": "ops_site.contractlineitemfiscalyear",
+    "pk": 1,
+    "fields": {
+        "line_item": 1,
+        "fiscal_year": 2021
+    }
+},
+{
+    "model": "ops_site.contractlineitemfiscalyear",
+    "pk": 2,
+    "fields": {
+        "line_item": 2,
+        "fiscal_year": 2021
+    }
+},
+{
+    "model": "ops_site.contractlineitemfiscalyearpercan",
+    "pk": 1,
+    "fields":{
+        "fiscal_year": 1,
+        "can": 5,
+        "funding": 1745000.00
+    }
+},
+{
+    "model": "ops_site.contractlineitemfiscalyearpercan",
+    "pk": 2,
+    "fields":{
+        "fiscal_year": 2,
+        "can": 5,
+        "funding": 8725.00
     }
 }
 ]
