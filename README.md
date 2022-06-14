@@ -69,3 +69,27 @@ docker-compose run web pytest --cov-config=.coveragerc --cov=ops_site --cov-repo
 This prototype uses `runserver` as a web server, which is considered insecure
 for production use. This should be replaced with something like `gunicorn` and
 `nginx` before it is deployed beyond prototyping purposes.
+
+## Data model
+
+![OPRE prototype data model](docs/models.png)
+
+To update this visualization, use the django-extensions module to create a new
+dotfile:
+
+```sh
+docker-compose run web \
+  python manage.py \
+  graph_models \
+  -a \
+  -X LogEntry,AbstractUser,Permission,Group,User,ContentType,AbstractBaseSession,Session \
+  > docs/models.dot
+```
+
+Then use graphviz to convert the dotfile to a PNG image:
+
+```
+docker run -it --rm -v "$(pwd)":/work -w /work \
+  fgrehm/graphviz \
+  dot -Tpng docs/models.dot -odocs/models.png
+```
