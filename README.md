@@ -1,13 +1,12 @@
 # OPRE OPS
 
 ## Getting Started
+
 ### Running the Application locally
 
 Application built using python Docker image and runs within Docker.
 
-Instructions to start app locally:
-
-1. Make sure you have Docker installed and started locally
+Make sure you have Docker installed and started locally
 
 From the project root run:
 
@@ -66,9 +65,24 @@ docker-compose run web pytest --cov-config=.coveragerc --cov=ops_site --cov-repo
 ```
 ## Deployment
 
-This prototype uses `runserver` as a web server, which is considered insecure
+Prototype deployed at https://opre-ops-test.app.cloud.gov/admin
+
+**Warning:** This prototype uses `runserver` as a web server, which is considered insecure
 for production use. This should be replaced with something like `gunicorn` and
 `nginx` before it is deployed beyond prototyping purposes.
+
+OPS is deployed
+* as a [Cloud.gov application](https://dashboard.fr.cloud.gov/applications)
+* backed by a [Cloud.gov database service](https://dashboard.fr.cloud.gov/services)
+* via [CircleCI](https://app.circleci.com/pipelines/github/HHS/OPRE-OPS)
+
+When this CI/CD pipeline is configured and running, deployment happens automatically any time a pull request to the development branch is merged.
+
+To set up or modify the CI/CD pipeline, ensure you
+* have a Cloud.gov app named `opre-ops-test`
+* have a service named `opre-ops-psql-db`
+* conntect the app and service with `cf bind-service opre-ops-test opre-ops-psql-db`
+* [configure the connection to CircleCI](https://github.com/HHS/OPRE-OPS/blob/main/docs/recipes/setup_circleci.md)
 
 ## Data model
 
