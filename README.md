@@ -1,5 +1,8 @@
 # OPRE OPS
 
+This is a prototpye of OPRE's research Portfolio management System, or **OPS**. The finished product will replace OPRE's the prior system, MAPS, which [is archived here](https://github.com/HHS/MAPS-app). OPS is built with Python and Django.
+
+
 ## Getting Started
 
 ### Running the Application locally
@@ -71,14 +74,14 @@ Prototype deployed at https://opre-ops-test.app.cloud.gov/admin
 for production use. This should be replaced with something like `gunicorn` and
 `nginx` before it is deployed beyond prototyping purposes.
 
-OPS is deployed
+OPS is deployed:
 * as a [Cloud.gov application](https://dashboard.fr.cloud.gov/applications)
 * backed by a [Cloud.gov database service](https://dashboard.fr.cloud.gov/services)
 * via [CircleCI](https://app.circleci.com/pipelines/github/HHS/OPRE-OPS)
 
 When this CI/CD pipeline is configured and running, deployment happens automatically any time a pull request to the development branch is merged.
 
-To set up or modify the CI/CD pipeline, ensure you
+To set up or modify the CI/CD pipeline, ensure you:
 * have a Cloud.gov app named `opre-ops-test`
 * have a service named `opre-ops-psql-db`
 * conntect the app and service with `cf bind-service opre-ops-test opre-ops-psql-db`
