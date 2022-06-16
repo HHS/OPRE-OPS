@@ -1,8 +1,8 @@
 # OPRE OPS
 
-This is a prototpye of OPRE's research Portfolio management System, or **OPS**. The finished product will replace OPRE's prior system, MAPS, which [is archived here](https://github.com/HHS/MAPS-app).
+This is a prototpye of OPRE's research Portfolio management System, or **OPS**. The finished product will replace OPRE's prior system, MAPS, which [is archived here](https://github.com/HHS/MAPS-app). The purpose of OPS can be found on [the wiki](https://github.com/HHS/OPRE-OPS/wiki).
 
-Technologies used:
+Technologies used in this prototype:
 * Python
 * Django 4.0
 * PostgreSQL
