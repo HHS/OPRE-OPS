@@ -72,10 +72,22 @@ for production use. This should be replaced with something like `gunicorn` and
 
 ## Data model
 
+The data model diagram below shows all of the tables used by OPS and
+relationships between those tables. Lines between tables mean they are related.
+If a line has a circle on one end, that means the table ***without a circle***
+has a one-to-many relationship with the table ***with a circle*** (modeled with
+a foreign key from the circle-table to the not-circle-table). If a line
+has circles on both ends, the tables have a many-to-many relationship (modeled
+with mapping/cross-reference tables).
+
 ![OPRE prototype data model](docs/models.png)
 
-To update this visualization, use the django-extensions module to create a new
-dotfile:
+This diagram is also available as a [DOT file](docs/models.dot). (DOT is a
+[graph description
+language](https://en.wikipedia.org/wiki/DOT_(graph_description_language)). It
+can be used to represent graph relationships in plain text.) To update this
+visualization, first use the django-extensions module to create a new
+DOT file:
 
 ```sh
 docker-compose run web \
@@ -89,7 +101,11 @@ docker-compose run web \
 Then use graphviz to convert the dotfile to a PNG image:
 
 ```
-docker run -it --rm -v "$(pwd)":/work -w /work \
+docker run -it --rm -v "$(pwd)/docs":/work -w /work \
   fgrehm/graphviz \
-  dot -Tpng docs/models.dot -odocs/models.png
+  dot -Tpng models.dot -omodels.png
 ```
+
+(No, there should not be a space between `-o` and `models.png`. It might work
+with a space, but the official documentation smooshes them together, so we
+documented it that way here.)
