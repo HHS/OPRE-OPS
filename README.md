@@ -93,6 +93,7 @@ To set up or modify the CI/CD pipeline, ensure you:
 * conntect the app and service with `cf bind-service opre-ops-test opre-ops-psql-db`
 * [configure the connection to CircleCI](https://github.com/HHS/OPRE-OPS/blob/main/docs/recipes/setup_circleci.md)
 * [configure egress](https://cloud.gov/docs/management/space-egress/). You may need to run `cg bind-security-group trusted_local_networks_egress [org] --space [space]` to allow the app to reach the database.
+* run `cf restage opre-ops-test` after making configuration changes
 
 ## Data model
 
