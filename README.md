@@ -85,7 +85,7 @@ OPS is deployed:
 * backed by a [Cloud.gov database service](https://dashboard.fr.cloud.gov/services)
 * via [CircleCI](https://app.circleci.com/pipelines/github/HHS/OPRE-OPS)
 
-When this CI/CD pipeline is configured and running, deployment happens automatically any time a pull request to the development branch is merged.
+When this CI/CD pipeline is configured and running, [deployment happens automatically any time a pull request to the development branch is merged](https://github.com/HHS/OPRE-OPS/blob/deployment_in_readme/docs/how_we_work/deploy_flow.md).
 
 To set up or modify the CI/CD pipeline, ensure you:
 * have a Cloud.gov app named `opre-ops-test`
