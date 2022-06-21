@@ -28,3 +28,5 @@ The last command will return a username/password like this:
 }
 ```
 These are the credentials you will need to insert into the CircleCI OPRE-OPS project environment variables the names of which (currently defined there as `$DEV_USER` and `$DEV_PASSWORD`) will need to correspond to the environment variables in the deploy scripts in `.circleci/config.yml`
+
+Update [the CircleCI environment variables](https://app.circleci.com/settings/project/github/HHS/OPRE-OPS/environment-variables) `DEV_PASSWORD` and `DEV_USER`.

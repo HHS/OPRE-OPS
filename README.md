@@ -1,13 +1,21 @@
 # OPRE OPS
 
+This is a prototpye of OPRE's research Portfolio management System, or **OPS**. The finished product will replace OPRE's prior system, MAPS, which [is archived here](https://github.com/HHS/MAPS-app). The purpose of OPS can be found on [the wiki](https://github.com/HHS/OPRE-OPS/wiki).
+
+Technologies used in this prototype:
+* Python
+* Django 4.0
+* PostgreSQL
+* Cloud.gov
+* CircleCI
+
 ## Getting Started
+
 ### Running the Application locally
 
 Application built using python Docker image and runs within Docker.
 
-Instructions to start app locally:
-
-1. Make sure you have Docker installed and started locally
+Make sure you have Docker installed and started locally
 
 From the project root run:
 
@@ -66,9 +74,26 @@ docker-compose run web pytest --cov-config=.coveragerc --cov=ops_site --cov-repo
 ```
 ## Deployment
 
-This prototype uses `runserver` as a web server, which is considered insecure
+Prototype deployed at https://opre-ops-test.app.cloud.gov/admin
+
+**Warning:** This prototype uses `runserver` as a web server, which is considered insecure
 for production use. This should be replaced with something like `gunicorn` and
 `nginx` before it is deployed beyond prototyping purposes.
+
+OPS is deployed:
+* as a [Cloud.gov application](https://dashboard.fr.cloud.gov/applications)
+* backed by a [Cloud.gov database service](https://dashboard.fr.cloud.gov/services)
+* via [CircleCI](https://app.circleci.com/pipelines/github/HHS/OPRE-OPS)
+
+When this CI/CD pipeline is configured and running, [deployment happens automatically any time a pull request to the development branch is merged](https://github.com/HHS/OPRE-OPS/blob/deployment_in_readme/docs/how_we_work/deploy_flow.md).
+
+To set up or modify the CI/CD pipeline, ensure you:
+* have a Cloud.gov app named `opre-ops-test`
+* have a service named `opre-ops-psql-db`
+* conntect the app and service with `cf bind-service opre-ops-test opre-ops-psql-db`
+* [configure the connection to CircleCI](https://github.com/HHS/OPRE-OPS/blob/main/docs/recipes/setup_circleci.md)
+* [configure egress](https://cloud.gov/docs/management/space-egress/). You may need to run `cg bind-security-group trusted_local_networks_egress [org] --space [space]` to allow the app to reach the database.
+* run `cf restage opre-ops-test` after making configuration changes
 
 ## Data model
 
