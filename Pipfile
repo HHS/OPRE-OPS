@@ -9,7 +9,7 @@ psycopg2-binary = "==2.9.3"
 cfenv = "0.5.3"
 pyparsing = "*"
 pydot = "*"
-django-extensions = {git = "https://github.com/django-extensions/django-extensions"}
+django-extensions = {ref = "8746648d5918ef4b5c17c2846aecd4e00e45bec9", git = "https://github.com/django-extensions/django-extensions"}
 
 [dev-packages]
 pytest-django = "==4.5.2"
