@@ -17,6 +17,7 @@ section {
 .flex {
     display: flex;
     gap: 17px;
+    flex-direction: column; /* narrow screen */
 }
 .one-flex {
     flex: 1;
@@ -89,4 +90,10 @@ table tr td:last-child, table tr th:last-child {
     border-radius: 5px;
     padding: 3px;
     text-decoration: none;
+}
+@media all and (min-width: 768px) {
+
+    .flex {
+      flex-direction: row; /* wider screen */
+    }
 }
