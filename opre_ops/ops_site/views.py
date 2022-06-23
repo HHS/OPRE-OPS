@@ -8,8 +8,6 @@ from django.views.generic import DetailView
 from ops_site.models import CommonAccountingNumber
 
 def home(request):
-    #html = "<html><body><h1>OPRE OPS</h1><a href='cans'>List CANs</a></body></html>"
-    #return HttpResponse(html)
     return render(request, "ops_site/home.html")
 
 
