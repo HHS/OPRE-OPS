@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from django.views.generic import TemplateView # Import TemplateView
 from django.http import HttpResponse
 import datetime
 
