@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>CAN info details</h2>
+    <p>number: {{ object.number }}</p>
+    <p>description: {{ object.description }}</p>
+    <p>nickname: {{ object.nickname }}</p>
+{% endblock %}
+{% block sidebar %}
+    OPRE OPS &mdash; <a href="/ops/home">Home</a> <a href="/ops/cans">CANs</a>
+{% endblock %}
+
