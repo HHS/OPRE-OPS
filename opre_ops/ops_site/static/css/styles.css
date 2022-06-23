@@ -1,3 +1,59 @@
 body, html {
+    box-sizing: border-box;
     font-family: sans-serif;
+    padding: 0;
+    margin: 0;
+}
+header, main {
+    padding: 18px;
+}
+header {
+    border-bottom: 1px solid black;
+}
+#summary {
+    display: flex;
+    gap: 17px;
+}
+.one-third {
+    flex: 1;
+}
+.two-thirds {
+    flex: 2;
+}
+.rounded-box {
+    border: 1px solid black;
+    border-radius: 7px;
+    padding: 10px;
+    height: calc(100% - 70px); /* minus height of .info-head */
+}
+.info-head {
+    height: 40px;
+    padding: 5px;
+}
+.info-unit {
+    padding-bottom: 20px
+}
+h1, h2, h3, h4, h5 {
+    padding: 0;
+    margin: 0;
+    text-transform: uppercase;
+}
+h1 {
+    font-size: 16pt;
+}
+h2 {
+    font-size: 14pt;
+}
+h3 {
+    font-size: 10pt;
+    font-weight: lighter;
+    margin-bottom: 5px;
+}
+.right-float {
+    float: right;
+}
+select {
+    padding: 4px;
+    border: 1px solid black;
+    border-radius: 7px;
 }

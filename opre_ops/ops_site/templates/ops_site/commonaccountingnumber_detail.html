@@ -1,12 +1,69 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>CAN info details</h2>
-    <p>number: {{ object.number }}</p>
-    <p>description: {{ object.description }}</p>
-    <p>nickname: {{ object.nickname }}</p>
+    <main>
+        <section id="summary">
+            <div class="one-third">
+                <div class="info-head">
+                    <select class="right-float">
+                        <option>FY 2022</option>
+                        <option>FY 2021</option>
+                        <option>FY 2020</option>
+                    </select>
+                    <h1>
+                        {{ object.number }}
+                        ({{ object.nickname }})
+                    </h1>
+                </div>
+                <div class="rounded-box">
+                    <div class="info-unit">
+                        <h2>CAN information</h2>
+                    </div>
+                    <div class="info-unit">
+                        <h3>CAN description</h3>
+                        {{ object.description }}
+                    </div>
+                    <div class="info-unit">
+                        <h3>CAN purpose</h3>
+                        {{ object.purpose|default:"n/a" }}
+                    </div>
+                    <div class="info-unit">
+                        <h3>Arrangement type</h3>
+                        {{ object.arrangement_type }}
+                    </div>
+                    <div class="info-unit">
+                        <h3>Funding source</h3>
+                        {{ object.funding_source.nickname|default:"n/a" }}
+                    </div>
+                    <div class="info-unit">
+                        <h3>OPRE CAN point of contact</h3>
+                        {{ object.authorizer }}
+                    </div>
+                    <div class="info-unit">
+                        <h3>OPRE division</h3>
+                        {{ object.division|default:"n/a" }}
+                    </div>
+                </div>
+            </div>
+            <div class="two-thirds">
+                <div class="info-head">
+                    <a class="right-float" href="#">Download custom report</a>
+                </div>
+                <div class="rounded-box">
+                    <div class="info-unit">
+                        <h2>Budget summary</h2>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
 {% endblock %}
-{% block sidebar %}
-    OPRE OPS &mdash; <a href="/ops/home">Home</a> <a href="/ops/cans">CANs</a>
+{% block header %}
+    <header>
+        OPRE OPS &mdash;
+        <a href="/ops/home">Home</a>
+        <a href="/ops/cans">CANs</a>
+    </header>
 {% endblock %}
 
