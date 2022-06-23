@@ -11,6 +11,9 @@ header, main {
 header {
     border-bottom: 1px solid black;
 }
+section {
+    margin-bottom: 8px;
+}
 .flex {
     display: flex;
     gap: 17px;
@@ -80,4 +83,10 @@ table tr td:last-child, table tr th:last-child {
 }
 .illustration {
     height: 100px;
+}
+.cartouche {
+    border: 1px solid #CCC;
+    border-radius: 5px;
+    padding: 3px;
+    text-decoration: none;
 }
