@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.views.generic import TemplateView # Import TemplateView
 from django.http import HttpResponse
 import datetime
 
@@ -7,8 +8,9 @@ from django.views.generic import DetailView
 from ops_site.models import CommonAccountingNumber
 
 def home(request):
-    html = "<html><body><h1>OPRE OPS</h1><a href='cans'>List CANs</a></body></html>"
-    return HttpResponse(html)
+    #html = "<html><body><h1>OPRE OPS</h1><a href='cans'>List CANs</a></body></html>"
+    #return HttpResponse(html)
+    return render(request, "ops_site/home.html")
 
 
 class CANInfoListView(ListView):
