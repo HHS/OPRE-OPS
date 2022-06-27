@@ -1,3 +1,99 @@
 body, html {
-    font-family: sans-serif;
+    box-sizing: border-box;
+    font-family: Inter, sans-serif;
+    padding: 0;
+    margin: 0;
+}
+* {font-weight: 300}
+header, main {
+    padding: 18px;
+}
+header {
+    border-bottom: 1px solid black;
+}
+section {
+    margin-bottom: 8px;
+}
+.flex {
+    display: flex;
+    gap: 17px;
+    flex-direction: column; /* narrow screen */
+}
+.one-flex {
+    flex: 1;
+}
+.two-flex {
+    flex: 2;
+}
+.rounded-box {
+    border: 1px solid black;
+    border-radius: 7px;
+    padding: 15px;
+    height: 82%
+}
+.info-head {
+    height: 40px;
+    padding: 5px;
+}
+.info-unit {
+    padding-bottom: 20px
+}
+h1, h2, h3, h4, h5, caption, th {
+    padding: 0;
+    margin: 0;
+    text-transform: uppercase;
+    text-align: left;
+}
+h1 {
+    font-size: 16pt;
+    font-weight: 600;
+}
+h2 {
+    font-size: 14pt;
+    font-weight: 600;
+}
+h3, caption, th {
+    font-size: 10pt;
+    font-weight: 550;
+    margin-bottom: 10px;
+}
+.right-float {
+    float: right;
+}
+select {
+    padding: 4px;
+    border: 1px solid black;
+    border-radius: 7px;
+}
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+tr {
+    border-bottom: 1px solid silver;
+    border-top: 1px solid silver;
+}
+th, td {
+    padding: 7px;
+}
+th {
+    background-color: #EEE;
+}
+table tr td:last-child, table tr th:last-child {
+    text-align: right;
+}
+.illustration {
+    height: 100px;
+}
+.cartouche {
+    border: 1px solid #CCC;
+    border-radius: 5px;
+    padding: 3px;
+    text-decoration: none;
+}
+@media all and (min-width: 768px) {
+
+    .flex {
+      flex-direction: row; /* wider screen */
+    }
 }
