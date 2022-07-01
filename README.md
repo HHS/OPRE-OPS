@@ -25,6 +25,8 @@ docker-compose up
 ```
 
 Then navigate to http://localhost:8080 in your browser
+* http://localhost:8080/ops/home/ for the OPS site interface
+* http://localhost:8080/admin/ for the administrative interface
 
 To create an admin user, use the Django management tool from within the container:
 
