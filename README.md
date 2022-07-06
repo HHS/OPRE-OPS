@@ -87,7 +87,7 @@ OPS is deployed:
 * backed by a [Cloud.gov database service](https://dashboard.fr.cloud.gov/services)
 * via [CircleCI](https://app.circleci.com/pipelines/github/HHS/OPRE-OPS)
 
-When this CI/CD pipeline is configured and running, [deployment happens automatically any time a pull request to the development branch is merged](https://github.com/HHS/OPRE-OPS/blob/deployment_in_readme/docs/how_we_work/deploy_flow.md).
+When this CI/CD pipeline is configured and running, [deployment happens automatically any time a pull request to the development branch is merged](https://github.com/HHS/OPRE-OPS/blob/main/docs/how_we_work/deploy_flow.md).
 
 To set up or modify the CI/CD pipeline, ensure you:
 * have a Cloud.gov app named `opre-ops-test`
@@ -96,6 +96,22 @@ To set up or modify the CI/CD pipeline, ensure you:
 * [configure the connection to CircleCI](https://github.com/HHS/OPRE-OPS/blob/main/docs/recipes/setup_circleci.md)
 * [configure egress](https://cloud.gov/docs/management/space-egress/). You may need to run `cg bind-security-group trusted_local_networks_egress [org] --space [space]` to allow the app to reach the database.
 * run `cf restage opre-ops-test` after making configuration changes
+
+For prototyping and testing purposes, you may want to load the test fixture data
+in this repo. The best way to do that is to SSH into the cloud.gov container and
+execute the Django `loaddata` command:
+
+* `cf ssh opre-ops-test` to get into the container. Once you have a shell in
+  the container, you'll need to [configure the shell](
+  https://docs.cloudfoundry.org/devguide/deploy-apps/ssh-apps.html#ssh-env)
+  to match the app runtime's environment.
+* `/tmp/lifecycle/shell` will run the built-in cloud.gov buildpack command that
+  configures your shell so that its environment matches the runtime's. This
+  includes the correct version of Python, making sure all of the dependencies
+  are in the Python environment, and configuring environment variables from the
+  database service.
+* `cd opre_ops`
+* `python manage.py loaddata ./ops_site/fixtures/fake_data.json`
 
 ## Data model
 
