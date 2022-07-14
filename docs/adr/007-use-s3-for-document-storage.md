@@ -9,14 +9,14 @@ Accepted
 
 ## Context
 
-We need a document storage system for Unicorn because it needs to store documents and objects such as invoices, and contracts.
+We need a document storage system for OPS because it needs to store documents and objects such as invoices, and contracts.
 
 ### Explanation of the tech concept
 Document storage system is a system that stores application content.  The content can be files of different sizes and formats. 
 
 ### Options Considered 
 
-We did not considered options other than Amazon S3.  This decision is driven by our cloud environment choice of using cloud.gov.  S3 is a tool available within cloud.gov and any other choice will require additional procurement.
+We did not consider options other than Amazon S3.  This decision is driven by our cloud environment choice of using cloud.gov.  S3 is a tool available within cloud.gov and any other choice will require additional procurement.
 
 ## Decision
 

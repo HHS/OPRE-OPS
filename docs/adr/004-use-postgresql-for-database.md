@@ -9,7 +9,7 @@ Accepted
 
 ## Context
 
-We want to pick a database for Unicorn development.
+We want to pick a persistent storage mechanism for OPS development.
 
 We will likely need a relational database since the data is mostly structured and related.
 
@@ -17,7 +17,7 @@ Reference to [different types of databases and their usages](https://www.geeksfo
 
 ## Options Considered
 
-We consider a few factors when we pick a database:
+We considered a few factors when we pick a database:
 - since the data is relational, we need a relational database
 - cost of owning
 - recommended solutions from [TTS Engineering Practices](https://engineering.18f.gov/)
@@ -26,7 +26,7 @@ These factors lead us to an open source relational database, and a [recommended 
 
 ## Decision
 
-We will use PostgreSQL database for Unicorn.
+We will use PostgreSQL database for OPS.
 
 ## Consequences
 
