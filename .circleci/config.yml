@@ -1,5 +1,10 @@
+version: 2.1
 jobs:
-  build:
+  deploy:
+    filters:
+      branches:
+        only:
+          - development
     docker:
       - image: cimg/python:3.10.5
     steps:
