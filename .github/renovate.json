@@ -1,19 +1,20 @@
 {
     "extends": ["config:base"],
+    "dependencyDashboard": false,
     "labels": ["dependencies"],
     "automergeType": "pr",
-    "automergeStrategy": "squash",
+    "automergeStrategy": "auto",
     "major": {
         "automerge": false
     },
     "minor": {
-        "automerge": false,
+        "automerge": true,
         "groupName": "minor dependencies",
         "groupSlug": "all-minor",
-        "stabilityDays": 0
+        "stabilityDays": 3
     },
     "patch": {
-        "automerge": false,
+        "automerge": true,
         "groupName": "patch dependencies",
         "groupSlug": "all-patch",
         "stabilityDays": 0
