@@ -1,4 +1,4 @@
-FROM python:3.9.6
+FROM python:3.10.5
 ENV PYTHONUNBUFFERED=1
 RUN apt-get update && apt-get install -y netcat
 ENV DJANGO_SETTINGS_MODULE=opre_ops.settings.local
