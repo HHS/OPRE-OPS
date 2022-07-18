@@ -4,7 +4,7 @@ Date: 2021-07-20
 
 ## Decision
 
-We will use GitHub Dependabot to scan our dependencies for vulnerabilites. 
+We will use GitHub Dependabot to scan our dependencies for vulnerabilities. 
 
 We will use GitHub CodeQL to scan our code for potential vulnerabilities. 
 
