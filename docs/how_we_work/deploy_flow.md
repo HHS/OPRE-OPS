@@ -13,7 +13,7 @@ This document describes our team's continuous deployment practices. Over the lon
 
 ## How will our continuous deployment process work?
 
-[We decided to use CircleCI](../adr/008-use-circle-for-ci-cd.md) for our continuous integration (CI) and continuous deployment (CD) pipelines.
+[We decided to use CircleCI](../adr/deprecated/008-use-circle-for-ci-cd.md) for our continuous integration (CI) and continuous deployment (CD) pipelines.
 
 Continuous integration (CI) will let us propose code changes on a consistent basis. Automated tests will run on every pull request, keeping code quality high and checking for regressions.
 
