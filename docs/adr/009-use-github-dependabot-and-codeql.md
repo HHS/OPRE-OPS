@@ -16,17 +16,18 @@ Accepted
 
 Our project needs security tooling. 
 
-***Dependency scanning***: Alerts developers when one of the libraries we are using needs to be upgraded because of a vulnerability.
+***Dependency vulnerability scanning***: Alerts developers when one of the libraries we are using needs to be upgraded because of a vulnerability.
+This isn't to be confused with dependency updates as new versions are released.
 
 ***Static analysis***: Scans our code for security issues and anti-patterns.
 
-### Options considered 
+### Options considered
 
 #### Snyk
 
 We considered using [Snyk](https://snyk.io/) for dependency scanning, but we observed that other teams had moved away from Snyk, in part because of the complexities of juggling Snyk accounts as team members offboarded and onboarded.
 
-#### GitHub Dependabot 
+#### GitHub Dependabot
 
 * In [ADR #3](https://github.com/18F/OPRE-Unicorn/blob/main/docs/adr/003-use-github-for-version-control.md), we decided to use GitHub for version control.
 * GitHub also offers a dependency scanning tool called Dependabot, which other 18F teams at ACF are using successfully. 
