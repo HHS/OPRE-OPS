@@ -1,0 +1,21 @@
+{
+    "extends": ["config:base"],
+    "labels": ["dependencies"],
+    "automergeType": "pr",
+    "automergeStrategy": "squash",
+    "major": {
+        "automerge": false
+    },
+    "minor": {
+        "automerge": false,
+        "groupName": "minor dependencies",
+        "groupSlug": "all-minor",
+        "stabilityDays": 0
+    },
+    "patch": {
+        "automerge": false,
+        "groupName": "patch dependencies",
+        "groupSlug": "all-patch",
+        "stabilityDays": 0
+    }
+}
