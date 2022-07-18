@@ -4,7 +4,8 @@ jobs:
       - image: cimg/python:3.10.5
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 20.10.14
       - run:
           name: Run Tests
           command: docker compose run web pytest --cov-config=.coveragerc --cov=ops_site --cov-report term-missing
