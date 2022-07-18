@@ -37,8 +37,4 @@ We predict that using Cloud.gov will ease the ATO process, shortening the timeli
 
 We predict that Cloud.gov will reduce burden on developers to manage infrastructure.
 
-We predict that using Cloud.gov may simplify permissions administration, allowing non-software engineers to administer permissions with the Cloud.gov UI. 
-
-## Updates
-
-
+We predict that using Cloud.gov may simplify permissions administration, allowing non-software engineers to administer permissions with the Cloud.gov UI.
