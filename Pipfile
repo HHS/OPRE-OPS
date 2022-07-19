@@ -17,6 +17,8 @@ pytest-cov = "==3.0.0"
 nox = "==2022.1.7"
 flake8 = "==4.0.1"
 black = "==22.6.0"
+flake8-black = "==0.3.3"
+flake8-import-order = "==0.18.1"
 
 [requires]
 python_version = "3.9"
