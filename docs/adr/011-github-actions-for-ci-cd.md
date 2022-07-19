@@ -1,4 +1,4 @@
-# 10. Use Renovatebot for Dependency Updates
+# 10. Use GitHub Actions for CI/CD
 
 Date: 2022-07-18
 
