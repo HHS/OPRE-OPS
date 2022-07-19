@@ -1,5 +1,6 @@
+version: 2.1
 jobs:
-  build:
+  deploy:
     docker:
       - image: cimg/python:3.10.5
     steps:
@@ -27,3 +28,12 @@ jobs:
             else
               echo "Skipped"
             fi
+
+workflows:
+  deploy:
+    jobs:
+      - deploy:
+          filters:
+            branches:
+              only:
+                - development

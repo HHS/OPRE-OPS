@@ -2,18 +2,18 @@
 
 This document describes our team's continuous deployment practices. Over the long run, it should answer these questions:
 
-* [How will our continuous deployment process work?](#how-will-our-continuous-deployment-process-work)
-* [How will we manage access to CircleCI?](#how-will-we-manage-access-to-circleci)
-* [What human review steps are required to deploy changes?](#what-human-review-steps-are-required-to-deploy-changes) [more to come here]
-* [What automated checks run to verify the quality of new code?](#what-automated-checks-run-to-verify-the-quality-of-new-code) [more to come here]
-* [How is code deployed to development for testing and initial review?](#how-is-code-deployed-to-development-for-testing-and-initial-review)
-* [How is code deployed to demo for further review?](#how-is-code-deployed-to-demo-for-further-review) [more to come here]
-* [How is code deployed to staging?](#how-is-code-deployed-to-staging) [more to come here]
-* [How is code deployed to production for end users?](#how-is-code-deployed-to-production-for-end-users) [more to come here]
+- [How will our continuous deployment process work?](#how-will-our-continuous-deployment-process-work)
+- [How will we manage access to CircleCI?](#how-will-we-manage-access-to-circleci)
+- [What human review steps are required to deploy changes?](#what-human-review-steps-are-required-to-deploy-changes) [more to come here]
+- [What automated checks run to verify the quality of new code?](#what-automated-checks-run-to-verify-the-quality-of-new-code) [more to come here]
+- [How is code deployed to development for testing and initial review?](#how-is-code-deployed-to-development-for-testing-and-initial-review)
+- [How is code deployed to demo for further review?](#how-is-code-deployed-to-demo-for-further-review) [more to come here]
+- [How is code deployed to staging?](#how-is-code-deployed-to-staging) [more to come here]
+- [How is code deployed to production for end users?](#how-is-code-deployed-to-production-for-end-users) [more to come here]
 
 ## How will our continuous deployment process work?
 
-[We decided to use CircleCI](../adr/008-use-circle-for-ci-cd.md) for our continuous integration (CI) and continuous deployment (CD) pipelines.
+[We decided to use GitHub Actions](../adr/011-github-actions-for-ci-cd.md) for our continuous integration (CI) and continuous deployment (CD) pipelines.
 
 Continuous integration (CI) will let us propose code changes on a consistent basis. Automated tests will run on every pull request, keeping code quality high and checking for regressions.
 
