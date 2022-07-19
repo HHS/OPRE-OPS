@@ -8,69 +8,157 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='FundingPartner',
+            name="FundingPartner",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('nickname', models.CharField(max_length=100)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("nickname", models.CharField(max_length=100)),
             ],
         ),
         migrations.CreateModel(
-            name='Role',
+            name="Role",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100, verbose_name='Role Name')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100, verbose_name="Role Name")),
             ],
         ),
         migrations.CreateModel(
-            name='Person',
+            name="Person",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('first_name', models.CharField(max_length=100)),
-                ('last_name', models.CharField(max_length=100)),
-                ('division', models.CharField(choices=[('DCFD', 'DCFD'), ('DDI', 'DDI'), ('DEI', 'DEI'), ('DFS', 'DFS'), ('OD', 'OD')], max_length=5)),
-                ('roles', models.ManyToManyField(to='ops_site.Role')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("first_name", models.CharField(max_length=100)),
+                ("last_name", models.CharField(max_length=100)),
+                (
+                    "division",
+                    models.CharField(
+                        choices=[
+                            ("DCFD", "DCFD"),
+                            ("DDI", "DDI"),
+                            ("DEI", "DEI"),
+                            ("DFS", "DFS"),
+                            ("OD", "OD"),
+                        ],
+                        max_length=5,
+                    ),
+                ),
+                ("roles", models.ManyToManyField(to="ops_site.Role")),
             ],
             options={
-                'verbose_name_plural': 'People',
+                "verbose_name_plural": "People",
             },
         ),
         migrations.CreateModel(
-            name='CANInfo',
+            name="CANInfo",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('number', models.CharField(max_length=30)),
-                ('description', models.CharField(max_length=100)),
-                ('purpose', models.TextField(blank=True, default='')),
-                ('nickname', models.CharField(max_length=30)),
-                ('arrangement_type', models.CharField(choices=[('OPRE Appropriation', 'OPRE Appropriation'), ('Cost Share', 'Cost Share'), ('IAA', 'IAA'), ('IDDA', 'IDDA'), ('MOU', 'MOU')], max_length=30)),
-                ('authorizer', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='authorizer', to='ops_site.fundingpartner')),
-                ('funding_source', models.ManyToManyField(to='ops_site.FundingPartner')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("number", models.CharField(max_length=30)),
+                ("description", models.CharField(max_length=100)),
+                ("purpose", models.TextField(blank=True, default="")),
+                ("nickname", models.CharField(max_length=30)),
+                (
+                    "arrangement_type",
+                    models.CharField(
+                        choices=[
+                            ("OPRE Appropriation", "OPRE Appropriation"),
+                            ("Cost Share", "Cost Share"),
+                            ("IAA", "IAA"),
+                            ("IDDA", "IDDA"),
+                            ("MOU", "MOU"),
+                        ],
+                        max_length=30,
+                    ),
+                ),
+                (
+                    "authorizer",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="authorizer",
+                        to="ops_site.fundingpartner",
+                    ),
+                ),
+                (
+                    "funding_source",
+                    models.ManyToManyField(to="ops_site.FundingPartner"),
+                ),
             ],
             options={
-                'verbose_name_plural': 'CANs Info',
+                "verbose_name_plural": "CANs Info",
             },
         ),
         migrations.CreateModel(
-            name='CANAmount',
+            name="CANAmount",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('fiscal_year', models.IntegerField()),
-                ('amount_available', models.DecimalField(decimal_places=2, max_digits=12)),
-                ('total_fiscal_year_funding', models.DecimalField(decimal_places=2, max_digits=12)),
-                ('potential_additional_funding', models.DecimalField(decimal_places=2, max_digits=12)),
-                ('notes', models.TextField(blank=True, default='')),
-                ('can', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='ops_site.caninfo')),
-                ('can_lead', models.ManyToManyField(to='ops_site.Person')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("fiscal_year", models.IntegerField()),
+                (
+                    "amount_available",
+                    models.DecimalField(decimal_places=2, max_digits=12),
+                ),
+                (
+                    "total_fiscal_year_funding",
+                    models.DecimalField(decimal_places=2, max_digits=12),
+                ),
+                (
+                    "potential_additional_funding",
+                    models.DecimalField(decimal_places=2, max_digits=12),
+                ),
+                ("notes", models.TextField(blank=True, default="")),
+                (
+                    "can",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="ops_site.caninfo",
+                    ),
+                ),
+                ("can_lead", models.ManyToManyField(to="ops_site.Person")),
             ],
             options={
-                'verbose_name_plural': 'CANs',
-                'unique_together': {('can', 'fiscal_year')},
+                "verbose_name_plural": "CANs",
+                "unique_together": {("can", "fiscal_year")},
             },
         ),
     ]

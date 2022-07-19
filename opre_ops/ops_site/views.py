@@ -6,12 +6,14 @@ from django.views.generic import ListView
 from django.views.generic import DetailView
 from ops_site.models import CommonAccountingNumber
 
+
 def home(request):
     return render(request, "ops_site/home.html")
 
 
 class CANInfoListView(ListView):
     model = CommonAccountingNumber
+
 
 class CANInfoDetailView(DetailView):
 

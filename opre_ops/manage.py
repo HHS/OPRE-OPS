@@ -6,7 +6,7 @@ import sys
 
 def main():
     # Default to running with cloud.gov settings for fail-safe; allow override to use local settings.
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'opre_ops.settings.cloudgov')
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "opre_ops.settings.cloudgov")
 
     try:
         from django.core.management import execute_from_command_line
@@ -19,5 +19,5 @@ def main():
     execute_from_command_line(sys.argv)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

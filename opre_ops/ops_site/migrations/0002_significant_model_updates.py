@@ -6,60 +6,130 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    replaces = [('ops_site', '0002_rename_canamount_can_fiscalyear_and_more'), ('ops_site', '0003_alter_canfiscalyear_options_and_more'), ('ops_site', '0004_contractlineitem'), ('ops_site', '0005_contractlineitemfiscalyear_and_more')]
+    replaces = [
+        ("ops_site", "0002_rename_canamount_can_fiscalyear_and_more"),
+        ("ops_site", "0003_alter_canfiscalyear_options_and_more"),
+        ("ops_site", "0004_contractlineitem"),
+        ("ops_site", "0005_contractlineitemfiscalyear_and_more"),
+    ]
 
     dependencies = [
-        ('ops_site', '0001_initial'),
+        ("ops_site", "0001_initial"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='CANAmount',
-            new_name='CANFiscalYear',
+            old_name="CANAmount",
+            new_name="CANFiscalYear",
         ),
         migrations.RenameModel(
-            old_name='CANInfo',
-            new_name='CommonAccountingNumber',
+            old_name="CANInfo",
+            new_name="CommonAccountingNumber",
         ),
         migrations.AlterModelOptions(
-            name='canfiscalyear',
-            options={'verbose_name_plural': 'CANs (fiscal year)'},
+            name="canfiscalyear",
+            options={"verbose_name_plural": "CANs (fiscal year)"},
         ),
         migrations.AlterModelOptions(
-            name='commonaccountingnumber',
-            options={'verbose_name_plural': 'CANs'},
+            name="commonaccountingnumber",
+            options={"verbose_name_plural": "CANs"},
         ),
         migrations.CreateModel(
-            name='Contract',
+            name="Contract",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.TextField()),
-                ('cans', models.ManyToManyField(related_name='contracts', to='ops_site.commonaccountingnumber')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.TextField()),
+                (
+                    "cans",
+                    models.ManyToManyField(
+                        related_name="contracts", to="ops_site.commonaccountingnumber"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='ContractLineItem',
+            name="ContractLineItem",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.TextField()),
-                ('contract', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='line_items', to='ops_site.contract')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.TextField()),
+                (
+                    "contract",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="line_items",
+                        to="ops_site.contract",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='ContractLineItemFiscalYear',
+            name="ContractLineItemFiscalYear",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('fiscal_year', models.IntegerField()),
-                ('line_item', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='fiscal_years', to='ops_site.contractlineitem')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("fiscal_year", models.IntegerField()),
+                (
+                    "line_item",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="fiscal_years",
+                        to="ops_site.contractlineitem",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='ContractLineItemFiscalYearPerCAN',
+            name="ContractLineItemFiscalYearPerCAN",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('funding', models.DecimalField(decimal_places=2, max_digits=12)),
-                ('can', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='line_items_fy', to='ops_site.commonaccountingnumber')),
-                ('fiscal_year', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='cans', to='ops_site.contractlineitemfiscalyear')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("funding", models.DecimalField(decimal_places=2, max_digits=12)),
+                (
+                    "can",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="line_items_fy",
+                        to="ops_site.commonaccountingnumber",
+                    ),
+                ),
+                (
+                    "fiscal_year",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="cans",
+                        to="ops_site.contractlineitemfiscalyear",
+                    ),
+                ),
             ],
         ),
     ]
