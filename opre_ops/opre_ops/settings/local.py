@@ -6,9 +6,7 @@ These are settings for local development only, not cloud or production environme
 """
 
 # Import all common settings relevant to both local & cloud:
-from opre_ops.settings.common import *
-
-# Import helper to generate a random string for our local secret key:
+from opre_ops.settings.common import *  # noqa: F403
 from opre_ops.settings.helpers.random_string import generate_random_string
 
 
@@ -32,7 +30,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     "localhost",
-    "0.0.0.0",
 ]
 
-INSTALLED_APPS = ["django_extensions"] + INSTALLED_APPS
+INSTALLED_APPS += ["django_extensions"]  # noqa: F405
