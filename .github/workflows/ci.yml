@@ -20,3 +20,18 @@ jobs:
           python-version: '3.x'
       - name: Run unit tests
         run: docker-compose run web pytest --cov-config=.coveragerc --cov=ops_site --cov-report term-missing
+
+  lint:
+    name: Linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Pipenv install
+        run: pip install pipenv
+      - name: Install dependencies
+        run: pipenv install --dev
+      - name: Lint
+        run: nox -s lint
