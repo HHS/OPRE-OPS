@@ -35,4 +35,4 @@ jobs:
       - name: Install dependencies
         run: pipenv install --dev
       - name: Lint
-        run: nox -s lint
+        run: pipenv run nox -s lint
