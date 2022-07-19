@@ -16,13 +16,13 @@ from opre_ops.settings.helpers.random_string import generate_random_string
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'local_password',
-        'HOST': 'db',
-        'PORT': '5432'
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "postgres",
+        "USER": "postgres",
+        "PASSWORD": "local_password",
+        "HOST": "db",
+        "PORT": "5432",
     }
 }
 
@@ -31,10 +31,8 @@ SECRET_KEY = generate_random_string(50)
 DEBUG = True
 
 ALLOWED_HOSTS = [
-  'localhost',
-  '0.0.0.0',
+    "localhost",
+    "0.0.0.0",
 ]
 
-INSTALLED_APPS = [
-  'django_extensions'
-] + INSTALLED_APPS
+INSTALLED_APPS = ["django_extensions"] + INSTALLED_APPS
