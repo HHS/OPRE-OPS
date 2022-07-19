@@ -1,17 +1,14 @@
 import argparse
-import string
 import secrets
+import string
 
 
 def generate_random_string(length):
-    output = ""
     choice = string.digits + string.ascii_letters + string.punctuation
     choice = choice.replace("'", "")
     choice = choice.replace('"', "")
-    for i in range(length):
-        output += secrets.choice(choice)
 
-    return output
+    return length * secrets.choice(choice)
 
 
 if __name__ == "__main__":

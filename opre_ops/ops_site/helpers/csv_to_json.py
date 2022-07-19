@@ -1,6 +1,6 @@
+import argparse
 import csv
 import json
-import argparse
 
 
 def convert_csv_to_json(inputf, outputf, keys, model_name):
@@ -54,8 +54,6 @@ def convert_csv_to_json(inputf, outputf, keys, model_name):
                 obj["fields"][key] = row[key.lower()]
 
             output_list.append(obj)
-
-        output_json = json.dumps(output_list)
 
         with open(outputf, "w") as json_f:
             json.dump(output_list, json_f, indent=4)
