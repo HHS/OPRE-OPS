@@ -1,8 +1,9 @@
 from django.urls import path
+
+from ops_site.views import CANInfoDetailView
+from ops_site.views import CANInfoListView
 from . import views
 
-from ops_site.views import CANInfoListView
-from ops_site.views import CANInfoDetailView
 
 urlpatterns = [
     path("home", views.home),

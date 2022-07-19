@@ -1,14 +1,15 @@
 from django.contrib import admin
 
 from ops_site.models import (
-    CommonAccountingNumber,
     CANFiscalYear,
+    CommonAccountingNumber,
     Contract,
     ContractLineItem,
     FundingPartner,
-    Role,
     Person,
+    Role,
 )
+
 
 # Here just for reference. Shows how to traverse relationships
 def print_a_can(can_number, fiscal_year):
@@ -33,7 +34,7 @@ def print_a_can(can_number, fiscal_year):
         canfy = can.info_for_fiscal_year(fiscal_year)
 
         print(f"Fiscal year: {fiscal_year}")
-        print(f"   Leads:")
+        print("   Leads:")
         for person in canfy.can_lead.all():
             print(f"      {person.display_name()} ({person.division})")
             for role in person.roles.all():
