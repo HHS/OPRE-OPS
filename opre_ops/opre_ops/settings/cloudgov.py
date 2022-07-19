@@ -7,7 +7,7 @@ import os
 import cfenv
 
 # Import all common settings relevant to both local & cloud:
-from opre_ops.settings.common import *
+from opre_ops.settings.common import *  # noqa: F401,F403,
 from opre_ops.settings.helpers.random_string import generate_random_string
 
 
