@@ -1,11 +1,13 @@
 from django.contrib import admin
 
-from ops_site.models import (
+from ops_site.cans.models import (
     CANFiscalYear,
     CommonAccountingNumber,
     Contract,
     ContractLineItem,
     FundingPartner,
+)
+from ops_site.models import (
     Person,
     Role,
 )

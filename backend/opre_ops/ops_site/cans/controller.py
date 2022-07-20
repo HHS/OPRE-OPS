@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 
-from ops_site.models import CommonAccountingNumber
+from ops_site.cans.models import CommonAccountingNumber
 
 
 class CommonAccountingNumberSerializer(serializers.ModelSerializer):

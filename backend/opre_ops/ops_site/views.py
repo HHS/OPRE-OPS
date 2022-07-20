@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.views.generic import DetailView
 from django.views.generic import ListView
 
-from ops_site.models import CommonAccountingNumber
+from ops_site.cans.models import CommonAccountingNumber
 
 
 def home(request):
