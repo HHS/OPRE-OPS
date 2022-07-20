@@ -18,5 +18,9 @@
         "groupName": "patch dependencies",
         "groupSlug": "all-patch",
         "stabilityDays": 0
-    }
+    },
+    "packageRules": [{
+        "matchPackageNames": ["python"],
+        "automerge": false
+    }]
 }
