@@ -7,9 +7,6 @@ name = "pypi"
 Django = "==4.0.6"
 psycopg2-binary = "==2.9.3"
 cfenv = "0.5.3"
-pyparsing = "*"
-pydot = "*"
-django-extensions = {ref = "8746648d5918ef4b5c17c2846aecd4e00e45bec9", git = "https://github.com/django-extensions/django-extensions"}
 
 [dev-packages]
 pytest-django = "==4.5.2"
@@ -21,6 +18,9 @@ flake8-black = "==0.3.3"
 flake8-import-order = "==0.18.1"
 flake8-bugbear = "==22.7.1"
 flake8-bandit = "==3.0.0"
+pyparsing = "==3.0.9"
+pydot = "==1.4.2"
+django-extensions = "==3.2.0"
 
 [requires]
 python_version = "3.9"
