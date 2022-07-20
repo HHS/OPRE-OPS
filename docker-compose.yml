@@ -14,7 +14,7 @@ services:
       # See below for an explanation of this volume. The same reasoning applies,
       # but in this case it's so we can run new migrations immediately without
       # having to rebuild the migration container.
-      - ./opre_ops:/${CI}opre_project
+      - ./backend/opre_ops:/${CI}opre_project
     depends_on:
       - db
 
@@ -43,4 +43,4 @@ services:
       # make /trueopre_project (or something similar) an empty directory, which
       # is fine because we don't use that directory for anything. It's just
       # temporary cruft in the CI container.
-      - ./opre_ops:/${CI}opre_project
+      - ./backend/opre_ops:/${CI}opre_project
