@@ -29,6 +29,7 @@ jobs:
         working-directory: ./frontend
         run: yarn install --frozen-lockfile
       - name: Run frontend unit tests
+        working-directory: ./frontend
         run: yarn test
 
   lint:
@@ -42,9 +43,9 @@ jobs:
           cache: 'pipenv'
       - name: Pipenv install
         run: pip install pipenv
-      - name: Install dependencies
+      - name: Install backend dependencies
         working-directory: ./backend
         run: pipenv install --dev
-      - name: Lint
+      - name: Lint backend
         working-directory: ./backend
         run: pipenv run nox -s lint
