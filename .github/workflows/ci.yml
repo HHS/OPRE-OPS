@@ -33,6 +33,7 @@ jobs:
       - name: Pipenv install
         run: pip install pipenv
       - name: Install dependencies
+        working-directory: ./backend
         run: pipenv install --dev
       - name: Lint
         working-directory: ./backend
