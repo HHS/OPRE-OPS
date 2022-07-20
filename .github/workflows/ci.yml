@@ -22,6 +22,7 @@ jobs:
         with:
           node-version: 18
           cache: 'yarn'
+          cache-dependency-path: '**/yarn.lock'
       - name: Run backend unit tests
         run: docker-compose run web pytest --cov-config=.coveragerc --cov=ops_site --cov-report term-missing
       - name: Install frontend dependencies
