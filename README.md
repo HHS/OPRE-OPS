@@ -5,9 +5,9 @@ This is a prototpye of OPRE's research Portfolio management System, or **OPS**. 
 Technologies used in this prototype:
 * Python
 * Django 4.0
+* React
 * PostgreSQL
 * Cloud.gov
-* CircleCI
 
 ## Getting Started
 
@@ -85,19 +85,18 @@ for production use. This should be replaced with something like `gunicorn` and
 OPS is deployed:
 * as a [Cloud.gov application](https://dashboard.fr.cloud.gov/applications)
 * backed by a [Cloud.gov database service](https://dashboard.fr.cloud.gov/services)
-* via [CircleCI](https://app.circleci.com/pipelines/github/HHS/OPRE-OPS)
+* via GitHub Actions
 
-When this CI/CD pipeline is configured and running, [deployment happens automatically any time a pull request to the development branch is merged](https://github.com/HHS/OPRE-OPS/blob/main/docs/how_we_work/deploy_flow.md).
+When this CI/CD pipeline is configured and running, deployment happens automatically any time a pull request to the development branch is merged.
 
 To set up or modify the CI/CD pipeline, ensure you:
 * have a Cloud.gov app named `opre-ops-test`
 * have a service named `opre-ops-psql-db`
 * conntect the app and service with `cf bind-service opre-ops-test opre-ops-psql-db`
-* [configure the connection to CircleCI](https://github.com/HHS/OPRE-OPS/blob/main/docs/recipes/setup_circleci.md)
 * [configure egress](https://cloud.gov/docs/management/space-egress/). You may need to run `cg bind-security-group trusted_local_networks_egress [org] --space [space]` to allow the app to reach the database.
 * run `cf restage opre-ops-test` after making configuration changes
 
-For prototyping and testing purposes, you may want to load the test fixture data
+For prototyping and testing purposes, you should load the test fixture data
 in this repo. The best way to do that is to SSH into the cloud.gov container and
 execute the Django `loaddata` command:
 
@@ -150,5 +149,5 @@ docker run -it --rm -v "$(pwd)/docs":/work -w /work \
 ```
 
 (No, there should not be a space between `-o` and `models.png`. It might work
-with a space, but the official documentation smooshes them together, so we
-documented it that way here.)
+with a space, but the official documentation concatenates them together, so it is
+documented that way here.)
