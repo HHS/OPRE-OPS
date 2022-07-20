@@ -35,4 +35,5 @@ jobs:
       - name: Install dependencies
         run: pipenv install --dev
       - name: Lint
+        working-directory: ./backend
         run: pipenv run nox -s lint
