@@ -42,4 +42,4 @@ jobs:
           echo "Deploy successful."
           echo "Deploy frontend"
           cf push opre-ops-frontend-test -f manifest.yml
-          echo Deploy frontend successful"
+          echo "Deploy frontend successful"
