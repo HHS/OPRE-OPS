@@ -13,7 +13,7 @@ applications:
     memory: 64M
     buildpack: https://github.com/cloudfoundry/staticfile-buildpack
     path: ./frontend/build/
-    command: yarn build
+    random-route: true
 
 services:
  - opre-ops-psql-db

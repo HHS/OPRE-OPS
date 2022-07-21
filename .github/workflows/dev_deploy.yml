@@ -15,6 +15,11 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: '3.x'
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'yarn'
+          cache-dependency-path: '**/yarn.lock'
       - name: Run unit tests
         run: docker-compose run web pytest --cov-config=.coveragerc --cov=ops_site --cov-report term-missing
       - name: Install CF CLI
@@ -22,6 +27,12 @@ jobs:
           mkdir -p $HOME/bin
           export PATH=$HOME/bin:$PATH
           curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary" | tar xzv -C $HOME/bin
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: yarn install --frozen-lockfile
+      - name: Build frontend
+        working-directory: ./frontend
+        run: yarn build
       - name: Deploy to Cloud.gov
         run: |
           export PATH=$HOME/bin:$PATH
