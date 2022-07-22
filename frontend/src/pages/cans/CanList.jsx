@@ -1,11 +1,15 @@
 import { useSelector, useDispatch } from "react-redux";
+import { Link } from "react-router-dom";
 import { getCanList } from "./logic";
+import { useEffect } from "react";
 
 const CanList = () => {
     const dispatch = useDispatch();
     const canList = useSelector((state) => state.canList.cans);
 
-    // dispatch(getCanList());
+    useEffect(() => {
+        dispatch(getCanList());
+    }, []);
 
     return (
         <main>
@@ -17,9 +21,9 @@ const CanList = () => {
                         <th>description</th>
                     </tr>
                     {canList.map((can) => (
-                        <tr key={can.number}>
+                        <tr key={can.id}>
                             <td>
-                                <a href={can.id}>{can.number}</a>
+                                <Link to={"./" + can.id}>{can.number}</Link>
                             </td>
                             <td>{can.description}</td>
                         </tr>
