@@ -44,11 +44,11 @@ const CanDetail = () => {
                         </div>
                         <div className="info-unit">
                             <h3>Funding source</h3>
-                            {can.funding_source?.nickname || "n/a"}
+                            {can.funding_source[0]?.nickname || "n/a"}
                         </div>
                         <div className="info-unit">
                             <h3>OPRE CAN point of contact</h3>
-                            {can.authorizer}
+                            {can.authorizer.name}
                         </div>
                         <div className="info-unit">
                             <h3>OPRE division</h3>

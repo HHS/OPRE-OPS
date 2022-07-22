@@ -8,6 +8,7 @@ class CommonAccountingNumberSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommonAccountingNumber
         fields = "__all__"
+        depth = 1
 
 
 class CanListController(ListAPIView):
