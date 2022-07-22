@@ -23,7 +23,7 @@ const CanDetail = () => {
                             <option>FY 2020</option>
                         </select>
                         <h1>
-                            {can.number}({can.nickname})
+                            {can.number} ({can.nickname})
                         </h1>
                     </div>
                     <div className="rounded-box">
@@ -67,43 +67,49 @@ const CanDetail = () => {
                             <h2 className="info-unit">Budget summary</h2>
                             <div className="info-unit flex">
                                 <table className="one-flex">
-                                    <tr>
-                                        <th>Funding status</th>
-                                        <th>Amount</th>
-                                    </tr>
-                                    <tr>
-                                        <td>Funded</td>
-                                        <td>7788</td>
-                                    </tr>
+                                    <tbody>
+                                        <tr>
+                                            <th>Funding status</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Funded</td>
+                                            <td>7788</td>
+                                        </tr>
+                                    </tbody>
                                 </table>
                                 <table className="one-flex">
-                                    <tr>
-                                        <th>Spending plan status</th>
-                                        <th>Amount</th>
-                                    </tr>
-                                    <tr>
-                                        <td>Funded</td>
-                                        <td>7788</td>
-                                    </tr>
+                                    <tbody>
+                                        <tr>
+                                            <th>Spending plan status</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Funded</td>
+                                            <td>7788</td>
+                                        </tr>
+                                    </tbody>
                                 </table>
                             </div>
                             <div className="info-unit">
                                 <table className="one-flex">
                                     <caption>Potential additional funding</caption>
-                                    <tr>
-                                        <th>Source/description</th>
-                                        <th>Amount</th>
-                                        <th>Status</th>
-                                        <th>Last update</th>
-                                        <th>Comments</th>
-                                    </tr>
-                                    <tr>
-                                        <td>Department</td>
-                                        <td>$1,000,000</td>
-                                        <td>In process</td>
-                                        <td>1/1/2022</td>
-                                        <td>💬</td>
-                                    </tr>
+                                    <tbody>
+                                        <tr>
+                                            <th>Source/description</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                            <th>Last update</th>
+                                            <th>Comments</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Department</td>
+                                            <td>$1,000,000</td>
+                                            <td>In process</td>
+                                            <td>1/1/2022</td>
+                                            <td>💬</td>
+                                        </tr>
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
@@ -114,48 +120,52 @@ const CanDetail = () => {
                 <div className="info-unit">
                     <h2>
                         Breakdown of contracts and budget lines funded by CAN
-                        {can.number}({can.nickname}) for FY 2022
+                        {can.number} ({can.nickname}) for FY 2022
                     </h2>
                 </div>
                 <table className="one-flex">
-                    <tr>
-                        <th>Contracts and budget lines</th>
-                        <th>CAN contrib</th>
-                        <th>% of total</th>
-                        <th>Additoinal funding</th>
-                        <th>Research areas</th>
-                        <th>Point of contact</th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <details>
-                                <summary>NIH VIQI</summary>
-                                <table>
-                                    <tr>
-                                        <td>SC 1</td>
-                                        <td>$992,000</td>
-                                    </tr>
-                                    <tr>
-                                        <td>SC 1 Fee</td>
-                                        <td>$8,000</td>
-                                    </tr>
-                                </table>
-                            </details>
-                        </td>
-                        <td>$1,000,000</td>
-                        <td>80%</td>
-                        <td>
-                            <a href="#" className="cartouche">
-                                CAN
-                            </a>
-                        </td>
-                        <td>
-                            <a href="#" className="cartouche">
-                                Area
-                            </a>
-                        </td>
-                        <td>👤 Person</td>
-                    </tr>
+                    <tbody>
+                        <tr>
+                            <th>Contracts and budget lines</th>
+                            <th>CAN contrib</th>
+                            <th>% of total</th>
+                            <th>Additoinal funding</th>
+                            <th>Research areas</th>
+                            <th>Point of contact</th>
+                        </tr>
+                        <tr>
+                            <td>
+                                <details>
+                                    <summary>NIH VIQI</summary>
+                                    <table>
+                                        <tbody>
+                                            <tr>
+                                                <td>SC 1</td>
+                                                <td>$992,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td>SC 1 Fee</td>
+                                                <td>$8,000</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </details>
+                            </td>
+                            <td>$1,000,000</td>
+                            <td>80%</td>
+                            <td>
+                                <a href="#" className="cartouche">
+                                    CAN
+                                </a>
+                            </td>
+                            <td>
+                                <a href="#" className="cartouche">
+                                    Area
+                                </a>
+                            </td>
+                            <td>👤 Person</td>
+                        </tr>
+                    </tbody>
                 </table>
             </section>
         </main>
