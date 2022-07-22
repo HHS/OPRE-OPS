@@ -1,5 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
+import canListSlice from "./pages/cans/canListSlice";
 
 export default configureStore({
-    reducer: {},
+    reducer: {
+        canList: canListSlice,
+    },
 });

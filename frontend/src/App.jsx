@@ -1,7 +1,11 @@
 import logo from "./logo.svg";
 import "./App.css";
+import { useParams } from "react-router-dom";
 
 function App() {
+    const match = useParams();
+    console.log("match", match);
+
     return (
         <div className="App">
             <header className="App-header">

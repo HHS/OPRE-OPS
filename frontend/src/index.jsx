@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
+import CanList from "./pages/cans/CanList";
 import reportWebVitals from "./reportWebVitals";
 
 import { Provider } from "react-redux";
@@ -16,6 +17,8 @@ root.render(
             <BrowserRouter>
                 <Routes>
                     <Route path="/" element={<App />} />
+                    <Route path="/cans" element={<CanList />} />
+                    <Route path="/cans/:id" element={<App />} />
                 </Routes>
             </BrowserRouter>
         </Provider>
