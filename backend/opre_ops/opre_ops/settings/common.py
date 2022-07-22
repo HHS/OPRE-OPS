@@ -48,6 +48,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "opre_ops.urls"
 
+# TEMPLATES is needed for the admin application to run
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
