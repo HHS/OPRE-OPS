@@ -10,7 +10,7 @@ const CanDetail = () => {
 
     useEffect(() => {
         dispatch(getCan(urlPathParams.id));
-    }, []);
+    }, [urlPathParams.id]);
 
     return (
         <main>
