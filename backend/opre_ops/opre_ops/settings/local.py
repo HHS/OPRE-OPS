@@ -32,4 +32,3 @@ ALLOWED_HOSTS = ["localhost"]
 CORS_ALLOWED_ORIGIN_REGEXES = [r"http://localhost(:\d{1,4})?"]
 
 INSTALLED_APPS += ["django_extensions"]  # noqa: F405
-
