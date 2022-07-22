@@ -9,6 +9,7 @@ import { Provider } from "react-redux";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import store from "./store";
+import CanDetail from "./pages/cans/detail/CanDetail";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -18,7 +19,7 @@ root.render(
                 <Routes>
                     <Route path="/" element={<App />} />
                     <Route path="/cans" element={<CanList />}>
-                        <Route path="/cans/:id" element={<App />} />
+                        <Route path="/cans/:id" element={<CanDetail />} />
                     </Route>
                 </Routes>
             </BrowserRouter>
