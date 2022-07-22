@@ -9,7 +9,7 @@ const CanList = () => {
 
     useEffect(() => {
         dispatch(getCanList());
-    }, []);
+    }, [dispatch]);
 
     return (
         <>
