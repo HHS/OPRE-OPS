@@ -8,7 +8,7 @@ _Add link to issue here_
 
 ## How to test
 
-_Write out steps for how someone could test this PR against the conditions of acceptance_ 
+_Write out steps for how someone could test this PR against the acceptance criteria_ 
 
 ## Screenshots
 
