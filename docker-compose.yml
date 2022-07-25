@@ -8,7 +8,7 @@ services:
       - POSTGRES_PASSWORD=local_password
 
   migration:
-    build: .
+    build: ./backend/
     command: bash -c "sh wait-for-postgres.sh && python manage.py migrate && python manage.py loaddata ops_site/fixtures/fake_data.json"
     volumes:
       # See below for an explanation of this volume. The same reasoning applies,
@@ -18,8 +18,8 @@ services:
     depends_on:
       - db
 
-  web:
-    build: .
+  backend:
+    build: ./backend/
     ports:
       - 8080:8080
     depends_on:
@@ -44,3 +44,12 @@ services:
       # is fine because we don't use that directory for anything. It's just
       # temporary cruft in the CI container.
       - ./backend/opre_ops:/${CI}opre_project
+
+  frontend:
+    build: ./frontend/
+    ports:
+      - 3000:3000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend/:/frontned/

@@ -2,12 +2,14 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
+import CanList from "./pages/cans/list/CanList";
 import reportWebVitals from "./reportWebVitals";
 
 import { Provider } from "react-redux";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import store from "./store";
+import CanDetail from "./pages/cans/detail/CanDetail";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -16,6 +18,9 @@ root.render(
             <BrowserRouter>
                 <Routes>
                     <Route path="/" element={<App />} />
+                    <Route path="/cans" element={<CanList />}>
+                        <Route path="/cans/:id" element={<CanDetail />} />
+                    </Route>
                 </Routes>
             </BrowserRouter>
         </Provider>
