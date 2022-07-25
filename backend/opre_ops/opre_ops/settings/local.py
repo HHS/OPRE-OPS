@@ -28,8 +28,7 @@ SECRET_KEY = generate_random_string(50)
 
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    "localhost",
-]
+ALLOWED_HOSTS = ["localhost"]
+CORS_ALLOWED_ORIGIN_REGEXES = [r"http://localhost(:\d{1,4})?"]
 
 INSTALLED_APPS += ["django_extensions"]  # noqa: F405

@@ -72,7 +72,7 @@ this will also remove it from the `Pipfile.lock`
 
 To run the test locally, run:
 ```
-docker-compose run web pytest --cov-config=.coveragerc --cov=ops_site --cov-report term-missing
+docker-compose run backend pytest --cov-config=.coveragerc --cov=ops_site --cov-report term-missing
 ```
 ## Deployment
 
@@ -132,7 +132,7 @@ visualization, first use the django-extensions module to create a new
 DOT file:
 
 ```sh
-docker-compose run web \
+docker-compose run backend \
   python manage.py \
   graph_models \
   -a \
