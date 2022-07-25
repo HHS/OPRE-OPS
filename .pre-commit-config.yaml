@@ -1,5 +1,4 @@
 repos:
-
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.3.0
     hooks:
@@ -23,8 +22,22 @@ repos:
     rev: v2.10.0
     hooks:
       - id: hadolint
-
-  - repo: https://github.com/psf/black
-    rev: 22.6.0
+  # We're running black, but doing it via nox session instead - see below
+  # - repo: https://github.com/psf/black
+  #   rev: 22.6.0
+  #   hooks:
+  #   -   id: black
+  - repo: local
     hooks:
-    -   id: black
+      - id: nox-black
+        name: nox-black
+        entry: pipenv run nox -f ./backend/noxfile.py -s black
+        language: system
+        types: [python]
+        pass_filenames: false
+      - id: nox-flake8
+        name: nox-flake8
+        entry: cd ./backend/ && pipenv run nox -s lint
+        language: system
+        types: [python]
+        pass_filenames: false
