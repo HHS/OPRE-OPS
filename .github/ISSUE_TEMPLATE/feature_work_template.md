@@ -1,6 +1,6 @@
 ---
 name: Feature work template
-about: Use this template to capture the User Story, Conditions of Acceptance, and Tasks associated with feature work
+about: Use this template to capture the User Story, Acceptance Criteria, and Tasks associated with feature work
 title: ''
 labels: ''
 assignees: ''
@@ -10,7 +10,7 @@ assignees: ''
 ### User Story
 _As a [type of user], I want to [do something] so that [this outcome]_
 
-### Conditions of Acceptance
+### Acceptance Criteria
 - [ ] _How will we know when this story is done?  List here the desired behavior that must be enabled for this story to be considered done_ 
 - [ ] _Consider positive behavior (this user can do this thing in this situation)_ 
 - [ ] _Consider negative behavior (this user should not be able to do this thing in this situation)_
