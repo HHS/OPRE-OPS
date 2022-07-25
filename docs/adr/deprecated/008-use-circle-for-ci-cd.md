@@ -4,11 +4,11 @@ Date: 2021-07-19
 
 ## Decision
 
-We will use [CircleCI](https://circleci.com/) for our continuous integration (CI) and continuous deployment (CD) pipelines. 
+We will use [CircleCI](https://circleci.com/) for our continuous integration (CI) and continuous deployment (CD) pipelines.
 
 ## Status
 
-Superseded.  [11. Use GitHub Actions for CI/CD](../011-github-actions-for-ci-cd.md) is newer. 
+Superseded.  [11. Use GitHub Actions for CI/CD](../011-github-actions-for-ci-cd.md) is newer.
 
 ## Context and explanation of the tech concepts
 
@@ -45,4 +45,4 @@ We predict that using CircleCI will:
 
 ## Related issue
 
-[#55](https://github.com/18F/OPRE-Unicorn/issues/55)  
+[#55](https://github.com/18F/OPRE-Unicorn/issues/55)

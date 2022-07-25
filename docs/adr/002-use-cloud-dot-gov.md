@@ -1,4 +1,4 @@
-# 2. Cloud Environment 
+# 2. Cloud Environment
 
 Date: 2021-06-22
 
@@ -13,13 +13,13 @@ with them as fast as possible to discover any showstoppers quickly.
 
 ## Context
 
-We considered three potential cloud environment options to move MAPS into HHS control: 
+We considered three potential cloud environment options to move MAPS into HHS control:
 
 - Cloud.gov
 - an AWS instance provided by ACF
 - an AWS instance provided by HHS
 
-We know that recent projects at ACF have had success using Cloud.gov. Those projects were able to inherit security controls from Cloud.gov, easing the path to ATO. 
+We know that recent projects at ACF have had success using Cloud.gov. Those projects were able to inherit security controls from Cloud.gov, easing the path to ATO.
 
 Of the options, Cloud.gov:
 

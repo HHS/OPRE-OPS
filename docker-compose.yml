@@ -6,17 +6,23 @@ services:
     image: "postgres:14.4"
     environment:
       - POSTGRES_PASSWORD=local_password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   migration:
     build: .
-    command: bash -c "sh wait-for-postgres.sh && python manage.py migrate && python manage.py loaddata ops_site/fixtures/fake_data.json"
+    command: bash -c "python manage.py migrate && python manage.py loaddata ops_site/fixtures/fake_data.json"
     volumes:
       # See below for an explanation of this volume. The same reasoning applies,
       # but in this case it's so we can run new migrations immediately without
       # having to rebuild the migration container.
       - ./backend/opre_ops:/${CI}opre_project
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   web:
     build: .

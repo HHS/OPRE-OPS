@@ -12,15 +12,15 @@ Accepted
 We need a document storage system for OPS because it needs to store documents and objects such as invoices, and contracts.
 
 ### Explanation of the tech concept
-Document storage system is a system that stores application content.  The content can be files of different sizes and formats. 
+Document storage system is a system that stores application content.  The content can be files of different sizes and formats.
 
-### Options Considered 
+### Options Considered
 
 We did not consider options other than Amazon S3.  This decision is driven by our cloud environment choice of using cloud.gov.  S3 is a tool available within cloud.gov and any other choice will require additional procurement.
 
 ## Decision
 
-We will use Amazon Simple Storage Service (Amazon S3) as our document storage system. 
+We will use Amazon Simple Storage Service (Amazon S3) as our document storage system.
 
 ## Consequences
 
