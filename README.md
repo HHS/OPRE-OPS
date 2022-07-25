@@ -167,7 +167,10 @@ Please follow the [pre-commit installation](https://pre-commit.com/#installation
 * [check-merge-conflict](https://github.com/pre-commit/pre-commit-hooks#check-merge-conflict)
 
 ### IBM's [Detect-Secrets](https://github.com/ibm/detect-secrets)
+There's internal debate whether to use Yelp's version or IBM's version (a fork of Yelp's). We can work this out, but starting with IBM's version in the interum.
 
 ### [Hadolint](https://github.com/hadolint/hadolint) Dockerfile linting
+Debating whether this is needed if containers will only be used for development, and rely on the buildpack for production, but better to have for now.
 
 ### Python [Black](https://github.com/psf/black)
+Defacto Python linting. No additional configs at this time.
