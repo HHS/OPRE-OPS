@@ -151,3 +151,23 @@ docker run -it --rm -v "$(pwd)/docs":/work -w /work \
 (No, there should not be a space between `-o` and `models.png`. It might work
 with a space, but the official documentation concatenates them together, so it is
 documented that way here.)
+
+## Pre-Commit
+
+Please follow the [pre-commit installation](https://pre-commit.com/#installation) methods to ensure you are setup to run pre-commmits out-of-the box.
+
+### [pre-commit](https://github.com/pre-commit/pre-commit-hooks) (base)
+* [detect-aws-credentials](https://github.com/pre-commit/pre-commit-hooks#detect-aws-credentials)
+* [detect-private-key](https://github.com/pre-commit/pre-commit-hooks#detect-private-key)
+* [trailing-whitespace](https://github.com/pre-commit/pre-commit-hooks#trailing-whitespace)
+* [end-of-file-fixer](https://github.com/pre-commit/pre-commit-hooks#end-of-file-fixer)
+* [check-json](https://github.com/pre-commit/pre-commit-hooks#check-json)
+* [check-yaml](https://github.com/pre-commit/pre-commit-hooks#check-yaml)
+* [check-added-large-files](https://github.com/pre-commit/pre-commit-hooks#check-added-large-files)
+* [check-merge-conflict](https://github.com/pre-commit/pre-commit-hooks#check-merge-conflict)
+
+### IBM's [Detect-Secrets](https://github.com/ibm/detect-secrets)
+
+### [Hadolint](https://github.com/hadolint/hadolint) Dockerfile linting
+
+### Python [Black](https://github.com/psf/black)
