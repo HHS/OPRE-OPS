@@ -5,5 +5,5 @@ ENV DJANGO_SETTINGS_MODULE=opre_ops.settings.local
 WORKDIR /opre_project
 COPY ./Pipfile ./Pipfile.lock /opre_project/
 RUN pip install --no-cache-dir --upgrade pip==22.2 pipenv==2022.7.24 && pipenv install --dev --system --deploy
-COPY ./backend/opre_ops/ /opre_project/
+COPY ./opre_ops/ /opre_project/
 
