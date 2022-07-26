@@ -77,8 +77,6 @@ docker-compose run backend pytest --cov-config=.coveragerc --cov=ops_site --cov-
 ```
 ## Deployment
 
-Prototype deployed at https://opre-ops-test.app.cloud.gov/admin
-
 **Warning:** This prototype uses `runserver` as a web server, which is considered insecure
 for production use. This should be replaced with something like `gunicorn` and
 `nginx` before it is deployed beyond prototyping purposes.
