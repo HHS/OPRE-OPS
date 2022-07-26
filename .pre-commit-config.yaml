@@ -1,0 +1,43 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.3.0
+    hooks:
+      - id: detect-aws-credentials
+      - id: detect-private-key
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-json
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+
+  ## Used to find secrets throughout the repository.
+  -   repo: https://github.com/ibm/detect-secrets
+      rev: 0.13.1+ibm.50.dss # https://github.com/Yelp/detect-secrets/releases
+      hooks:
+      -   id: detect-secrets
+          args: ['--baseline', '.secrets.baseline']
+
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.10.0
+    hooks:
+      - id: hadolint
+  # We're running black, but doing it via nox session instead - see below
+  # - repo: https://github.com/psf/black
+  #   rev: 22.6.0
+  #   hooks:
+  #   -   id: black
+  - repo: local
+    hooks:
+      - id: nox-black
+        name: nox-black
+        entry: pipenv run nox -f ./backend/noxfile.py -s black
+        language: system
+        types: [python]
+        pass_filenames: false
+      - id: nox-flake8
+        name: nox-flake8
+        entry: cd ./backend/ && pipenv run nox -s lint
+        language: system
+        types: [python]
+        pass_filenames: false

@@ -4,7 +4,7 @@ Date: 2022-07-18
 
 ## Decision
 
-We will use Renovatebot to keep our dependencies up to date. 
+We will use Renovatebot to keep our dependencies up to date.
 
 ## Status
 
@@ -25,7 +25,7 @@ contain breaking changes and should be manually reviewed by a human.
 
 - Renovatebot has many more ways to configure it than Dependabot.
 - We have had success using it in other projects.
-- It has wide support for many different package systems. 
+- It has wide support for many different package systems.
 
 ### GitHub Dependabot
 

@@ -1,5 +1,5 @@
 
-# 4. Database 
+# 4. Database
 
 Date: 2021-07-07
 
