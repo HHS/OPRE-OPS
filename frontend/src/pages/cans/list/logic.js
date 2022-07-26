@@ -1,10 +1,9 @@
 import { setCanList } from "./canListSlice";
-import axios from "axios";
+import { callBackend } from "../../../helpers/backend";
 
 export const getCanList = () => {
     return async (dispatch, getState) => {
-        const response = await axios.get("http://localhost:8080/ops/cans");
-
-        dispatch(setCanList(response.data));
+        const responseData = await callBackend("/ops/cans", "get");
+        dispatch(setCanList(responseData));
     };
 };
