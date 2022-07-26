@@ -39,7 +39,7 @@ jobs:
           echo "::set-output name=BACKEND_DOMAIN::${BACKEND_DOMAIN}"
       - name: Build frontend
         working-directory: ./frontend
-        run: REACT_APP_BACKEND_DOMAIN=https://${{steps.backend-deploy.outputs.BACKEND_DOMAIN} yarn build
+        run: REACT_APP_BACKEND_DOMAIN=https://${{steps.backend-deploy.outputs.BACKEND_DOMAIN}} yarn build
       - name: Deploy frontend to Cloud.gov
         run: |
           export PATH=$HOME/bin:$PATH
