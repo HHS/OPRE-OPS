@@ -4,7 +4,7 @@ Date: 2022-07-26
 
 ## Decision
 
-We will use [Pre-Commit] to implement pre-commit hooks for the repository. This can be used for many security and linting checks, but more importantly will be a core piece for performing secret scanning.
+We will use [Pre-Commit](https://pre-commit.com/) to implement pre-commit hooks for the repository. This can be used for many security and linting checks, but more importantly will be a core piece for performing secret scanning.
 
 ## Status
 
