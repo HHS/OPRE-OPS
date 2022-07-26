@@ -14,7 +14,7 @@ cf login --sso
 cf create-service cloud-gov-service-account space-deployer circleci-deployer-account
 
 # then, create a service key for the newly-create service account by running this command:
-cf create-service-key circleci-deployer-account circleci-deployer-key               
+cf create-service-key circleci-deployer-account circleci-deployer-key
 
 # then, retrieve the created service key for the "circleci-deployer-account" by running this command:
 cf service-key circleci-deployer-account circleci-deployer-key

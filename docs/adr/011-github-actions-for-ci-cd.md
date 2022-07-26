@@ -4,7 +4,7 @@ Date: 2022-07-18
 
 ## Decision
 
-We will use [GitHub Actions](https://github.com/features/actions) to run our CI/CD processes. 
+We will use [GitHub Actions](https://github.com/features/actions) to run our CI/CD processes.
 
 ## Status
 

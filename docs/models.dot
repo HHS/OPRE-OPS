@@ -28,31 +28,31 @@ digraph model_graph {
     <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
     FundingPartner
     </B></FONT></TD></TR>
-  
-  
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto"><B>id</B></FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto"><B>BigAutoField</B></FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto">name</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto">CharField</FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto">nickname</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto">CharField</FONT>
     </TD></TR>
-  
-  
+
+
     </TABLE>
     >]
 
@@ -62,23 +62,23 @@ digraph model_graph {
     <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
     Role
     </B></FONT></TD></TR>
-  
-  
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto"><B>id</B></FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto"><B>BigAutoField</B></FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto">name</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto">CharField</FONT>
     </TD></TR>
-  
-  
+
+
     </TABLE>
     >]
 
@@ -88,39 +88,39 @@ digraph model_graph {
     <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
     Person
     </B></FONT></TD></TR>
-  
-  
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto"><B>id</B></FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto"><B>BigAutoField</B></FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto">division</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto">CharField</FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto">first_name</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto">CharField</FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto">last_name</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto">CharField</FONT>
     </TD></TR>
-  
-  
+
+
     </TABLE>
     >]
 
@@ -130,63 +130,63 @@ digraph model_graph {
     <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
     CommonAccountingNumber
     </B></FONT></TD></TR>
-  
-  
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto"><B>id</B></FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto"><B>BigAutoField</B></FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto"><B>authorizer</B></FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto"><B>ForeignKey (id)</B></FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto">arrangement_type</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto">CharField</FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto">description</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto">CharField</FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto">nickname</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto">CharField</FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto">number</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto">CharField</FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT COLOR="#7B7B7B" FACE="Roboto">purpose</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT COLOR="#7B7B7B" FACE="Roboto">TextField</FONT>
     </TD></TR>
-  
-  
+
+
     </TABLE>
     >]
 
@@ -196,63 +196,63 @@ digraph model_graph {
     <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
     CANFiscalYear
     </B></FONT></TD></TR>
-  
-  
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto"><B>id</B></FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto"><B>BigAutoField</B></FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto"><B>can</B></FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto"><B>ForeignKey (id)</B></FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto">amount_available</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto">DecimalField</FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto">fiscal_year</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto">IntegerField</FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT COLOR="#7B7B7B" FACE="Roboto">notes</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT COLOR="#7B7B7B" FACE="Roboto">TextField</FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto">potential_additional_funding</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto">DecimalField</FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto">total_fiscal_year_funding</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto">DecimalField</FONT>
     </TD></TR>
-  
-  
+
+
     </TABLE>
     >]
 
@@ -262,23 +262,23 @@ digraph model_graph {
     <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
     Contract
     </B></FONT></TD></TR>
-  
-  
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto"><B>id</B></FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto"><B>BigAutoField</B></FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto">name</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto">TextField</FONT>
     </TD></TR>
-  
-  
+
+
     </TABLE>
     >]
 
@@ -288,31 +288,31 @@ digraph model_graph {
     <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
     ContractLineItem
     </B></FONT></TD></TR>
-  
-  
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto"><B>id</B></FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto"><B>BigAutoField</B></FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto"><B>contract</B></FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto"><B>ForeignKey (id)</B></FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto">name</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto">TextField</FONT>
     </TD></TR>
-  
-  
+
+
     </TABLE>
     >]
 
@@ -322,31 +322,31 @@ digraph model_graph {
     <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
     ContractLineItemFiscalYear
     </B></FONT></TD></TR>
-  
-  
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto"><B>id</B></FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto"><B>BigAutoField</B></FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto"><B>line_item</B></FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto"><B>ForeignKey (id)</B></FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto">fiscal_year</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto">IntegerField</FONT>
     </TD></TR>
-  
-  
+
+
     </TABLE>
     >]
 
@@ -356,39 +356,39 @@ digraph model_graph {
     <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
     ContractLineItemFiscalYearPerCAN
     </B></FONT></TD></TR>
-  
-  
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto"><B>id</B></FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto"><B>BigAutoField</B></FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto"><B>can</B></FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto"><B>ForeignKey (id)</B></FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto"><B>fiscal_year</B></FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto"><B>ForeignKey (id)</B></FONT>
     </TD></TR>
-  
-  
-  
+
+
+
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT FACE="Roboto">funding</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT FACE="Roboto">DecimalField</FONT>
     </TD></TR>
-  
-  
+
+
     </TABLE>
     >]
 

@@ -1,4 +1,5 @@
 # OPRE OPS
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 This is a prototpye of OPRE's research Portfolio management System, or **OPS**. The finished product will replace OPRE's prior system, MAPS, which [is archived here](https://github.com/HHS/MAPS-app). The purpose of OPS can be found on [the wiki](https://github.com/HHS/OPRE-OPS/wiki).
 
@@ -151,3 +152,26 @@ docker run -it --rm -v "$(pwd)/docs":/work -w /work \
 (No, there should not be a space between `-o` and `models.png`. It might work
 with a space, but the official documentation concatenates them together, so it is
 documented that way here.)
+
+## Pre-Commit
+
+Please follow the [pre-commit installation](https://pre-commit.com/#installation) methods to ensure you are setup to run pre-commmits out-of-the box.
+
+### [pre-commit](https://github.com/pre-commit/pre-commit-hooks) (base)
+* [detect-aws-credentials](https://github.com/pre-commit/pre-commit-hooks#detect-aws-credentials)
+* [detect-private-key](https://github.com/pre-commit/pre-commit-hooks#detect-private-key)
+* [trailing-whitespace](https://github.com/pre-commit/pre-commit-hooks#trailing-whitespace)
+* [end-of-file-fixer](https://github.com/pre-commit/pre-commit-hooks#end-of-file-fixer)
+* [check-json](https://github.com/pre-commit/pre-commit-hooks#check-json)
+* [check-yaml](https://github.com/pre-commit/pre-commit-hooks#check-yaml)
+* [check-added-large-files](https://github.com/pre-commit/pre-commit-hooks#check-added-large-files)
+* [check-merge-conflict](https://github.com/pre-commit/pre-commit-hooks#check-merge-conflict)
+
+### IBM's [Detect-Secrets](https://github.com/ibm/detect-secrets)
+There's internal debate whether to use Yelp's version or IBM's version (a fork of Yelp's). We can work this out, but starting with IBM's version in the interum.
+
+### [Hadolint](https://github.com/hadolint/hadolint) Dockerfile linting
+Debating whether this is needed if containers will only be used for development, and rely on the buildpack for production, but better to have for now.
+
+### Python [Black](https://github.com/psf/black)
+Defacto Python linting. No additional configs at this time.
