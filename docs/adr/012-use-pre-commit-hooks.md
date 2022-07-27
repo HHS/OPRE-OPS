@@ -1,4 +1,4 @@
-# 10. Use GitHub Actions for CI/CD
+# 12. Use Pre-Commit Hooks
 
 Date: 2022-07-26
 
