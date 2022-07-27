@@ -1,4 +1,4 @@
-# 10. Use GitHub Actions for CI/CD
+# 11. Use GitHub Actions for CI/CD
 
 Date: 2022-07-18
 
