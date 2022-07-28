@@ -1,6 +1,6 @@
 from django.db import models
 
-from ops_site.models import Person
+from opre_ops.ops_site.models import Person
 
 
 class FundingPartner(models.Model):
@@ -97,7 +97,8 @@ class Contract(models.Model):
             line_item__contract=self.id, fiscal_year=fy
         )
 
-    def line_items_for_fy_and_can(self, fy, can):
+    @staticmethod
+    def line_items_for_fy_and_can(fy, can):
         return ContractLineItemFiscalYearPerCAN.objects.filter(
             fiscal_year__fiscal_year__in=[fy], can=can
         )
