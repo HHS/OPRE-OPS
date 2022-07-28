@@ -26,7 +26,7 @@ class Person(models.Model):
         verbose_name_plural = "People"
 
     def display_name(self):
-        return self.first_name + " " + self.last_name
+        return f"{self.first_name} {self.last_name}"
 
     display_name.short_description = "Full name"
     full_name = property(display_name)

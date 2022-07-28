@@ -157,3 +157,7 @@ yarn-error.log*
 
 # MacOS stuff
 .DS_Store
+
+# IDE
+.vscode
+.idea

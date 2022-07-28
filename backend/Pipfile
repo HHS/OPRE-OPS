@@ -11,6 +11,7 @@ djangorestframework = "==3.13.1"
 django-cors-headers = "==3.13.0"
 
 [dev-packages]
+pytest = "7.1.2"
 pytest-django = "==4.5.2"
 pytest-cov = "==3.0.0"
 nox = "==2022.1.7"

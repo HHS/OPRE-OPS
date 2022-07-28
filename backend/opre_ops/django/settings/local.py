@@ -6,8 +6,8 @@ These are settings for local development only, not cloud or production environme
 """
 
 # Import all common settings relevant to both local & cloud:
-from opre_ops.settings.common import *  # noqa: F403
-from opre_ops.settings.helpers.random_string import generate_random_string
+from opre_ops.django.settings.common import *  # noqa: F403
+from opre_ops.django.settings.helpers.random_string import generate_random_string
 
 
 # Local database config for use with Docker Compose

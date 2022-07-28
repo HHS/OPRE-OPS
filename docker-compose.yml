@@ -59,4 +59,4 @@ services:
     depends_on:
       - backend
     volumes:
-      - ./frontend/:/frontned/
+      - ./frontend/:/frontend/

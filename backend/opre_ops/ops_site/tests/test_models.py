@@ -1,6 +1,9 @@
-from django.test import TestCase
+import pytest
 
 
-class ModelTests(TestCase):
-    def test_something(self):
-        pass
+def test_foo():
+    pass
+
+
+def test_bar():
+    pass

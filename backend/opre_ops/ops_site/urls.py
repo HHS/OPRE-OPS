@@ -1,6 +1,6 @@
 from django.urls import path
 
-from ops_site.cans.controller import CanListController, CanReadController
+from opre_ops.ops_site.cans.controller import CanListController, CanReadController
 
 
 urlpatterns = [

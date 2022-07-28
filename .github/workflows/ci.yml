@@ -24,7 +24,7 @@ jobs:
           cache: 'yarn'
           cache-dependency-path: '**/yarn.lock'
       - name: Run backend unit tests
-        run: docker-compose run backend pytest --cov-config=.coveragerc --cov=ops_site --cov-report term-missing
+        run: pipenv run pytest -v
       - name: Install frontend dependencies
         working-directory: ./frontend
         run: yarn install --frozen-lockfile
