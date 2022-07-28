@@ -41,4 +41,7 @@ repos:
         language: system
         types:
           - javascript
+          - jsx
+          - css
+          - html
         pass_filenames: false
