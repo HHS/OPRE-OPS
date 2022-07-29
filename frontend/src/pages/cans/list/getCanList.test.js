@@ -4,7 +4,7 @@ import TestApplicationContext from "../../../applicationContext/TestApplicationC
 
 test("successfully gets the can list from the backend", async () => {
     TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
-        return ["one", "two"];
+        return [{}, {}, {}];
     });
 
     const actualGetCanList = getCanList();

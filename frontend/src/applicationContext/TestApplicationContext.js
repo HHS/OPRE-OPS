@@ -1,10 +1,12 @@
 import "jest";
 
 class TestApplicationContext {
+    static #helpers = {
+        callBackend: jest.fn(),
+    };
+
     static helpers() {
-        return {
-            callBackend: jest.fn(),
-        };
+        return this.#helpers;
     }
 }
 

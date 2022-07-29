@@ -1,7 +1,6 @@
 import { setCanList } from "./canListSlice";
 // import { callBackend } from "../../../helpers/backend";
 import ApplicationContext from "../../../applicationContext/ApplicationContext";
-import DeployedApplicationContext from "../../../applicationContext/DeployedApplicationContext";
 
 export const getCanList = () => {
     return async (dispatch, getState) => {
