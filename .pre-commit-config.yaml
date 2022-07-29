@@ -29,15 +29,19 @@ repos:
   #   -   id: black
   - repo: local
     hooks:
-      - id: nox-black
-        name: nox-black
-        entry: pipenv run nox -f ./backend/noxfile.py -s black
-        language: system
-        types: [python]
-        pass_filenames: false
       - id: nox-flake8
         name: nox-flake8
         entry: cd ./backend/ && pipenv run nox -s lint
         language: system
         types: [python]
+        pass_filenames: false
+      - id: eslint
+        name: eslint
+        entry: cd ./frontend/ && yarn lint
+        language: system
+        types:
+          - javascript
+          - jsx
+          - css
+          - html
         pass_filenames: false
