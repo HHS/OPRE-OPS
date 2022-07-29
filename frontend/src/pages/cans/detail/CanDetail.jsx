@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import { getCan } from "./logic";
+import { getCan } from "./getCan";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
