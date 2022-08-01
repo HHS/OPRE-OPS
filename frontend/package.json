@@ -39,8 +39,8 @@
     "coveragePathIgnorePatterns": [
       ".jsx$",
       "src/applicationContext/.+",
-      "src/helpers/backend.js",
-      "src/reportWebVitals.js"
+      "src/helpers/backend.js$",
+      "src/reportWebVitals.js$"
     ]
   },
   "browserslist": {
