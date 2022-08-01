@@ -22,11 +22,17 @@ _As a [type of user], I want to [do something] so that [this outcome]_
 
 ### Definition of Done Checklist
 - [ ] Usability validated
-- [ ] Design QA passed
+- [ ] UI works as designed
 - [ ] OESA: Code refactored for clarity
 - [ ] OESA: Dependency rules followed
-- [ ] PR(s) have been merged to main with all the automated tests (load, quality, a11y, unit, etc..) and security scans that are a pre-requisite
+- [ ] Automated unit tests passed
+- [ ] Automated integration tests passed
+- [ ] Automated quality tests passed
+- [ ] Automated load tests passed
+- [ ] Automated a11y tests passed
+- [ ] Automated security tests passed
 - [ ] 90%+ Code coverage achieved
+- [ ] PR(s) have been merged to main
 - [ ] Design/tech debt eliminated
 - [ ] Build process updated
 - [ ] Documentation updated or added
