@@ -2,7 +2,7 @@ import { getCanList } from "./getCanList";
 import store from "../../../store";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 
-test("successfully gets the can list from the backend and directly puts it into state", async () => {
+test("successfully gets the CAN list from the backend and directly puts it into state", async () => {
     const mockBackendResponse = [
         {
             id: 1,
