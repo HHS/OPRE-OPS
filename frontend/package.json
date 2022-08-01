@@ -30,6 +30,19 @@
     "eject": "react-scripts eject",
     "lint": "eslint ./src/"
   },
+  "jest": {
+    "coverageThreshold": {
+      "global": {
+        "lines": 90
+      }
+    },
+    "coveragePathIgnorePatterns": [
+      ".jsx$",
+      "src/applicationContext/.+",
+      "src/helpers/backend.js",
+      "src/reportWebVitals.js"
+    ]
+  },
   "browserslist": {
     "production": [
       ">0.2%",
