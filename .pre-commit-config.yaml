@@ -29,8 +29,8 @@ repos:
   #   -   id: black
   - repo: local
     hooks:
-      - id: nox-flake8
-        name: nox-flake8
+      - id: nox-lint
+        name: nox-lint
         entry: cd ./backend/ && pipenv run nox -s lint
         language: system
         types: [python]

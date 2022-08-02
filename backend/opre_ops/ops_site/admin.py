@@ -1,13 +1,13 @@
 from django.contrib import admin
 
-from ops_site.cans.models import (
+from opre_ops.ops_site.cans.models import (
     CANFiscalYear,
     CommonAccountingNumber,
     Contract,
     ContractLineItem,
     FundingPartner,
 )
-from ops_site.models import (
+from opre_ops.ops_site.models import (
     Person,
     Role,
 )
@@ -104,7 +104,8 @@ class PersonAdmin(admin.ModelAdmin):
 class ContractAdmin(admin.ModelAdmin):
     list_display = ("name", "funding_sources", "show_research_areas")
 
-    def funding_sources(self, obj):
+    @staticmethod
+    def funding_sources(obj):
         return ", ".join([can.number for can in obj.cans.all()])
 
     def show_research_areas(self, obj):
@@ -190,7 +191,8 @@ class CANFiscalYear(admin.ModelAdmin):
 
     display_can_leads.short_description = "CAN Lead"
 
-    def can_authorizer(self, obj):
+    @staticmethod
+    def can_authorizer(obj):
         return obj.can.authorizer.name
 
     def can_division(self, obj):
