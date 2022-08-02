@@ -7,7 +7,7 @@ applications:
     env:
       PYTHONPATH: /home/vcap/app/
     # TODO:switch over to a production-ready webserver like gunicorn
-    command: python ./opre_ops/manage.py migrate && python ./opre_ops/manage.py runserver 0.0.0.0:8080
+    command: pwd && ls -l && python ./opre_ops/manage.py migrate && python ./opre_ops/manage.py runserver 0.0.0.0:8080
   - name: opre-ops-frontend-test
     memory: 64M
     buildpack: https://github.com/cloudfoundry/staticfile-buildpack
