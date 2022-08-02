@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Application definition
 
 INSTALLED_APPS = [
-    "opre_ops.django.apps.OpsSiteConfig",
+    "opre_ops.django_config.apps.OpsSiteConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -29,7 +29,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "opre_ops.django.urls"
+ROOT_URLCONF = "opre_ops.django_config.urls"
 
 # TEMPLATES is needed for the admin application to run
 TEMPLATES = [
@@ -48,7 +48,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "opre_ops.django.wsgi.application"
+WSGI_APPLICATION = "opre_ops.django_config.wsgi.application"
 
 
 # Password validation
