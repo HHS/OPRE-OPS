@@ -8,8 +8,12 @@ def main():
     # Default to running with cloud.gov settings for fail-safe; allow override to use local settings.
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "opre_ops.django_config.settings.cloudgov")
 
-    print('PAK::PYTHONPATH3')
+    print("PAK::1")
+    print('PAK::PYTHONPATH')
     print(sys.path)
+
+    print('PAK::environ')
+    print(os.environ)
 
     try:
         from django.core.management import execute_from_command_line
