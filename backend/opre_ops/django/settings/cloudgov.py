@@ -1,11 +1,10 @@
 """
 Configuration for running OPRE OPS in cloud.gov.
 """
-import json, os
+import json
+import os
 
 import cfenv
-
-# Import all common settings relevant to both local & cloud:
 from opre_ops.django.settings.common import *  # noqa: F401,F403,
 from opre_ops.django.settings.helpers.random_string import generate_random_string
 

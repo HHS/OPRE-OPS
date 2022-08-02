@@ -1,6 +1,6 @@
-from django.db import models
-
 from opre_ops.ops_site.models import Person
+
+from django.db import models
 
 
 class FundingPartner(models.Model):
