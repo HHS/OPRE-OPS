@@ -14,13 +14,13 @@ services:
 
   migration:
     build: ./backend/
-    command: bash -c "python manage.py migrate && python manage.py loaddata ops_site/fixtures/fake_data.json"
+    command: bash -c "python ./opre_ops/manage.py migrate && python ./opre_ops/manage.py loaddata ./opre_ops/ops_site/fixtures/fake_data.json"
 
     volumes:
       # See below for an explanation of this volume. The same reasoning applies,
       # but in this case it's so we can run new migrations immediately without
       # having to rebuild the migration container.
-      - ./backend/opre_ops:/${CI}opre_project
+      - ./backend/opre_ops:/opt/local/opre_ops
     depends_on:
       db:
         condition: service_healthy
@@ -31,7 +31,6 @@ services:
       - 8080:8080
     depends_on:
       - migration
-    command: python manage.py runserver 0.0.0.0:8080
     volumes:
       # The container copies the source into it when it gets built, so it's at
       # /opre_project by default. However, in development, we would prefer to
@@ -50,7 +49,7 @@ services:
       # make /trueopre_project (or something similar) an empty directory, which
       # is fine because we don't use that directory for anything. It's just
       # temporary cruft in the CI container.
-      - ./backend/opre_ops:/${CI}opre_project
+      - ./backend/opre_ops:/opt/local/opre_ops
 
   frontend:
     build: ./frontend/
