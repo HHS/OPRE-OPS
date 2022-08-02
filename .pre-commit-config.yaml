@@ -29,12 +29,6 @@ repos:
   #   -   id: black
   - repo: local
     hooks:
-      - id: nox-black
-        name: nox-black
-        entry: cd ./backend/ && pipenv run nox -s black
-        language: system
-        types: [python]
-        pass_filenames: false
       - id: nox-lint
         name: nox-lint
         entry: cd ./backend/ && pipenv run nox -s lint
