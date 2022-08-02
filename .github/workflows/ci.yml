@@ -18,13 +18,17 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: '3.9'
+      - name: Run backend unit tests
+        run: |
+          pip install pipenv
+          cd ./backend
+          pipenv install -d
+          PYTHONPATH=. pipenv run pytest -v
       - uses: actions/setup-node@v3
         with:
           node-version: 18
           cache: 'yarn'
           cache-dependency-path: '**/yarn.lock'
-      - name: Run backend unit tests
-        run: pipenv run pytest -v
       - name: Install frontend dependencies
         working-directory: ./frontend
         run: yarn install --frozen-lockfile
