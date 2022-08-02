@@ -4,11 +4,10 @@ applications:
     memory: 700M
     buildpack: python_buildpack
     path: ./backend/
-    # TODO: Django docs say not to use the `runserver` command in prod;
-    # switch over to a production-ready webserver like gunicorn
+    env:
+      PYTHONPATH: ./
+    # TODO:switch over to a production-ready webserver like gunicorn
     command: cd opre_ops && python manage.py migrate && python manage.py runserver 0.0.0.0:8080
-    # The --insecure flag is being used above to allow runserver to serve
-    # static assets in prototype deployment. Replace with e.g. Nginx in prod.
   - name: opre-ops-frontend-test
     memory: 64M
     buildpack: https://github.com/cloudfoundry/staticfile-buildpack
