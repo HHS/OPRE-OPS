@@ -5,7 +5,7 @@ applications:
     buildpack: python_buildpack
     path: ./backend/
     # TODO:switch over to a production-ready webserver like gunicorn
-    command: pwd && ls -l && PYTHONPATH="./:${PYTHONPATH}" python ./opre_ops/manage.py migrate && PYTHONPATH="./:${PYTHONPATH}" python ./opre_ops/manage.py runserver 0.0.0.0:8080
+    command: export PYTHONPATH="./:${PYTHONPATH}" && python ./opre_ops/manage.py migrate && python ./opre_ops/manage.py runserver 0.0.0.0:8080
   - name: opre-ops-frontend-test
     memory: 64M
     buildpack: https://github.com/cloudfoundry/staticfile-buildpack
