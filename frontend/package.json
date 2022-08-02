@@ -12,9 +12,6 @@
     "web-vitals": "2.1.4"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "5.16.4",
-    "@testing-library/react": "13.3.0",
-    "@testing-library/user-event": "14.3.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-prettier": "4.2.1",
@@ -26,8 +23,22 @@
     "start": "DISABLE_ESLINT_PLUGIN=true REACT_APP_BACKEND_DOMAIN=http://localhost:8080 react-scripts start",
     "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
     "test": "react-scripts test",
+    "test:coverage": "react-scripts test --coverage",
     "eject": "react-scripts eject",
     "lint": "eslint ./src/"
+  },
+  "jest": {
+    "coverageThreshold": {
+      "global": {
+        "lines": 90
+      }
+    },
+    "coveragePathIgnorePatterns": [
+      ".jsx$",
+      "src/applicationContext/.+",
+      "src/helpers/backend.js$",
+      "src/reportWebVitals.js$"
+    ]
   },
   "browserslist": {
     "production": [
