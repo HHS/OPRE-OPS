@@ -4,8 +4,8 @@ const initialState = {
     can: {},
 };
 
-const canSlice = createSlice({
-    name: "can",
+const canDetailSlice = createSlice({
+    name: "canDetail",
     initialState,
     reducers: {
         setCan: (state, action) => {
@@ -14,6 +14,6 @@ const canSlice = createSlice({
     },
 });
 
-export const { setCan } = canSlice.actions;
+export const { setCan } = canDetailSlice.actions;
 
-export default canSlice.reducer;
+export default canDetailSlice.reducer;

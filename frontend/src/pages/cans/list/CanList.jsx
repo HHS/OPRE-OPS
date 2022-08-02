@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from "react-redux";
 import { Link, Outlet } from "react-router-dom";
-import { getCanList } from "./logic";
+import { getCanList } from "./getCanList";
 import { useEffect } from "react";
 
 const CanList = () => {

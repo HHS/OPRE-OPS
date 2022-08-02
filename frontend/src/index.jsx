@@ -10,6 +10,10 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import store from "./store";
 import CanDetail from "./pages/cans/detail/CanDetail";
+import ApplicationContext from "./applicationContext/ApplicationContext";
+import DeployedApplicationContext from "./applicationContext/DeployedApplicationContext";
+
+ApplicationContext.registerApplicationContext(DeployedApplicationContext);
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
