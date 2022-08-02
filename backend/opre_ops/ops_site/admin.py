@@ -1,3 +1,5 @@
+from django.contrib import admin
+
 from opre_ops.ops_site.cans.models import (
     CANFiscalYear,
     CommonAccountingNumber,
@@ -9,8 +11,6 @@ from opre_ops.ops_site.models import (
     Person,
     Role,
 )
-
-from django.contrib import admin
 
 
 # Here just for reference. Shows how to traverse relationships

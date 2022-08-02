@@ -5,6 +5,7 @@ import json
 import os
 
 import cfenv
+
 from opre_ops.django.settings.common import *  # noqa: F401,F403,
 from opre_ops.django.settings.helpers.random_string import generate_random_string
 
