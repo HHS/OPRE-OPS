@@ -13,6 +13,8 @@ jobs:
 
   development:
     name: Deploy to Development
+    needs:
+      - unit-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
