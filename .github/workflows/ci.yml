@@ -11,7 +11,7 @@ on:
 jobs:
 
   unit-tests:
-    name: George
+    name: DogCow
     uses: ./.github/workflows/unit_test_reusable.yml
 
   lint:
