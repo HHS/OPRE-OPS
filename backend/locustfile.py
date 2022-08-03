@@ -1,9 +1,9 @@
-from locust import HttpUser, task, constant_throughput
+from locust import HttpUser, task, between
 
 
 class CanUser(HttpUser):
 
-    wait_time = constant_throughput(10)
+    wait_time = between(1, 5)
 
     @task
     def can_list(self):
