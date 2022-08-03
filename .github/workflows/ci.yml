@@ -12,7 +12,7 @@ jobs:
 
   unit-tests:
     name: Unit Tests
-    uses: /github/workflows/unit_test_reusable.yml
+    uses: /.github/workflows/unit_test_reusable.yml
 
   lint:
     name: Linting
