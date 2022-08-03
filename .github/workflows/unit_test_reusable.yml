@@ -1,11 +1,9 @@
-name: Moof
-
 on:
   workflow_call:
 
 jobs:
   test:
-    name: Clarus
+    name: Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
