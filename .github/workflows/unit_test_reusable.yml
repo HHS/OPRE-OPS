@@ -12,12 +12,14 @@ jobs:
         with:
           python-version: '3.9'
           cache: pipenv
+      - name: Pipenv install
+        run: pip install pipenv
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: pipenv install --dev
       - name: Run backend unit tests
-        run: |
-          pip install pipenv
-          cd ./backend
-          pipenv install -d
-          PYTHONPATH=. pipenv run pytest -v
+        working-directory: ./backend
+        run: PYTHONPATH=. pipenv run pytest -v
 
   frontend:
     name: Frontend Unit Tests
