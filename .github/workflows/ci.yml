@@ -10,32 +10,9 @@ on:
 
 jobs:
 
-  test:
-    name: Unit Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-          cache: pipenv
-      - name: Run backend unit tests
-        run: |
-          pip install pipenv
-          cd ./backend
-          pipenv install -d
-          PYTHONPATH=. pipenv run pytest -v
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: 'yarn'
-          cache-dependency-path: '**/yarn.lock'
-      - name: Install frontend dependencies
-        working-directory: ./frontend
-        run: yarn install --frozen-lockfile
-      - name: Run frontend unit tests
-        working-directory: ./frontend
-        run: yarn test
+  unit-tests:
+    name: Unit Tests
+    uses: /github/workflows/unit_test_reusable.yml
 
   lint:
     name: Linting
