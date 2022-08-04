@@ -1,44 +1,39 @@
-name: Continuous Integration
-
 on:
-  pull_request:
-    branches:
-      - main
-  push:
-    branches:
-      - main
+  workflow_call:
 
 jobs:
 
-  unit-tests:
-    name: Unit Tests
-    uses: ./.github/workflows/unit_test_reusable.yml
-
-  lint:
-    name: Linting
+  backend:
+    name: Backend Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-          cache: 'pipenv'
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: 'yarn'
-          cache-dependency-path: '**/yarn.lock'
+          cache: pipenv
       - name: Pipenv install
         run: pip install pipenv
       - name: Install backend dependencies
         working-directory: ./backend
         run: pipenv install --dev
-      - name: Lint backend
+      - name: Run backend unit tests
         working-directory: ./backend
-        run: pipenv run nox -s lint
+        run: PYTHONPATH=. pipenv run pytest -v
+
+  frontend:
+    name: Frontend Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'yarn'
+          cache-dependency-path: '**/yarn.lock'
       - name: Install frontend dependencies
         working-directory: ./frontend
         run: yarn install --frozen-lockfile
-      - name: Lint frontend
+      - name: Run frontend unit tests
         working-directory: ./frontend
-        run: yarn lint
+        run: yarn test
