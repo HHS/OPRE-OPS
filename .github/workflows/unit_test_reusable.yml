@@ -17,6 +17,9 @@ jobs:
       # - name: Install backend dependencies
       #   working-directory: ./backend
       #   run: pipenv install --dev
+      - name: Build backend containers
+        working-directory: ./backend
+        run: docker-compose build
       - name: Run backend unit tests
         working-directory: ./backend
         run: PYTHONPATH=. docker-compose run backend pytest
