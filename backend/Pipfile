@@ -9,9 +9,10 @@ psycopg2-binary = "==2.9.3"
 cfenv = "==0.5.3"
 djangorestframework = "==3.13.1"
 django-cors-headers = "==3.13.0"
+uvicorn = "*"
 
 [dev-packages]
-pytest = "7.1.2"
+pytest = "==7.1.2"
 pytest-django = "==4.5.2"
 pytest-cov = "==3.0.0"
 nox = "==2022.1.7"
@@ -24,6 +25,7 @@ flake8-bandit = "==3.0.0"
 pyparsing = "==3.0.9"
 pydot = "==1.4.2"
 django-extensions = "==3.2.0"
+model-bakery = "==1.7.0"
 
 [requires]
 python_version = "3.9"
