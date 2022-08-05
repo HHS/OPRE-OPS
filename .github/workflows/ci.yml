@@ -23,11 +23,6 @@ jobs:
         with:
           python-version: '3.9'
           cache: 'pipenv'
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: 'yarn'
-          cache-dependency-path: '**/yarn.lock'
       - name: Pipenv install
         run: pip install pipenv
       - name: Install backend dependencies
@@ -36,6 +31,11 @@ jobs:
       - name: Lint backend
         working-directory: ./backend
         run: pipenv run nox -s lint
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'yarn'
+          cache-dependency-path: '**/yarn.lock'
       - name: Install frontend dependencies
         working-directory: ./frontend
         run: yarn install --frozen-lockfile

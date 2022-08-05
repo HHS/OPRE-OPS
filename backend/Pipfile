@@ -9,7 +9,7 @@ psycopg2-binary = "==2.9.3"
 cfenv = "==0.5.3"
 djangorestframework = "==3.13.1"
 django-cors-headers = "==3.13.0"
-uvicorn = "*"
+uvicorn = "==0.18.2"
 
 [dev-packages]
 pytest = "==7.1.2"
