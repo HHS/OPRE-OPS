@@ -23,11 +23,7 @@ jobs:
       - name: Run backend unit tests
         working-directory: ./backend
         run: |
-          PYTHONPATH=. docker-compose run backend pytest |
-          --cov-config=.coveragerc |
-          --cov=ops_site |
-          --cov-report term-missing
-
+          PYTHONPATH=. docker-compose run backend pytest --cov-config=.coveragerc --cov=ops_site --cov-report term-missing
   frontend:
     name: Frontend Unit Tests
     runs-on: ubuntu-latest
