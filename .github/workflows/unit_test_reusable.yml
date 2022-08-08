@@ -50,7 +50,7 @@ jobs:
         working-directory: ./frontend
         run: yarn install --frozen-lockfile
       - name: Standup Containers
-        run: docker-compose up --build
+        run: docker-compose up --profile tests --build
       - name: Run frontend unit tests
         working-directory: ./frontend
         run: yarn test:e2e
