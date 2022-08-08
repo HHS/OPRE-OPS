@@ -1,8 +1,8 @@
+from model_bakery import baker
+
 import pytest
 
-from model_bakery import baker
 from rest_framework.test import APIClient
-
 from opre_ops.ops_site.cans.models import CommonAccountingNumber as CAN
 
 
@@ -19,5 +19,5 @@ def test_using_can(can):
 
 
 def test_api_getAllCans(can):
-    response = client.get('/ops/cans')
+    response = client.get("/ops/cans")
     assert response.status_code == 200  # noqa: S101,S307
