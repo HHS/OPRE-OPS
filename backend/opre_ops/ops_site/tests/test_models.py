@@ -1,8 +1,7 @@
 from model_bakery import baker
-
 import pytest
-
 from rest_framework.test import APIClient
+
 from opre_ops.ops_site.cans.models import CommonAccountingNumber as CAN
 
 
