@@ -5,7 +5,7 @@
   "dependencies": {
     "@reduxjs/toolkit": "1.8.3",
     "axios": "0.27.2",
-    "puppeteer": "^16.1.0",
+    "puppeteer-core": "^16.1.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-redux": "8.0.2",
@@ -18,6 +18,8 @@
     "eslint-plugin-prettier": "4.2.1",
     "eslint-plugin-react": "7.30.1",
     "prettier": "2.7.1",
+    "puppeteer": "^16.1.0",
+    "puppeteer-firefox": "^0.5.1",
     "react-scripts": "5.0.1"
   },
   "scripts": {
@@ -25,7 +27,7 @@
     "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
     "test": "react-scripts test --testPathIgnorePatterns=.*e2e.test.js",
     "test:coverage": "react-scripts test --coverage",
-    "test:e2e": "react-scripts test --testPathPattern=*e2e.test.js$",
+    "test:e2e": "REACT_APP_BACKEND_DOMAIN=http://localhost:8080 react-scripts test --testPathPattern=*e2e.test.js",
     "eject": "react-scripts eject",
     "lint": "eslint ./src/"
   },

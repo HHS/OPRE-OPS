@@ -39,8 +39,6 @@ jobs:
   e2e:
     name: End-to-End Tests
     runs-on: ubuntu-latest
-    env:
-      - PUPPETEER_PRODUCT=firefox
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3

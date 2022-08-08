@@ -7,7 +7,11 @@ describe("OPS", () => {
     let page;
 
     beforeAll(async () => {
-        browser = await puppeteer.launch();
+        browser = await puppeteer.launch({
+            //executablePath: "/usr/bin/google-chrome",
+            headless: true,
+            args: ["--disable-gpu", "--disable-dev-shm-usage", "--disable-setuid-sandbox", "--no-sandbox"],
+        });
         page = await browser.newPage();
     });
 
@@ -21,13 +25,13 @@ describe("OPS", () => {
     });
 
     describe("/cans", () => {
-        it("CANS List link navigation", async () => {
-            await page.goto("http://localhost:3000/cans");
-            await page.waitForSelector("#can-list");
-            await page.click("#about-page-link");
-            const text = await page.$eval("#can-list", (e) => e.textContent);
-            expect(text).toContain("List of all CANs");
-        });
+        // it("CANS List link navigation", async () => {
+        //     await page.goto("http://localhost:3000/cans");
+        //     await page.waitForSelector("#can-list");
+        //     await page.click("#lnkCans");
+        //     const text = await page.$eval("#can-list", (e) => e.textContent);
+        //     expect(text).toContain("List of all CANs");
+        // });
 
         it("CANS List direct navigation", async () => {
             await page.goto("http://localhost:3000/cans");

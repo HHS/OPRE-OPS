@@ -12,7 +12,7 @@ function App() {
                             <br />
                             OPS system prototype.
                         </p>
-                        <img src={family} className="illustration" />
+                        <img alt="family" src={family} className="illustration" />
                     </div>
                 </div>
                 <div className="two">
