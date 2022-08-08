@@ -1,11 +1,11 @@
-from model_bakery import baker
-import pytest
-from rest_framework.test import APIClient
+# from model_bakery import baker
+# import pytest
+# from rest_framework.test import APIClient
 
-from opre_ops.ops_site.cans.models import CommonAccountingNumber as CAN
+# from opre_ops.ops_site.cans.models import CommonAccountingNumber as CAN
 
 
-client = APIClient()
+# client = APIClient()
 
 
 # @pytest.fixture()
