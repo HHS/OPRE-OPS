@@ -14,7 +14,7 @@ const CanList = () => {
     return (
         <>
             <main>
-                <table>
+                <table id="can-list">
                     <caption>List of all CANs</caption>
                     <tbody>
                         <tr>

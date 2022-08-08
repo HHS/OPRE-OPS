@@ -5,6 +5,7 @@
   "dependencies": {
     "@reduxjs/toolkit": "1.8.3",
     "axios": "0.27.2",
+    "puppeteer": "^16.1.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-redux": "8.0.2",
@@ -22,8 +23,9 @@
   "scripts": {
     "start": "DISABLE_ESLINT_PLUGIN=true REACT_APP_BACKEND_DOMAIN=http://localhost:8080 react-scripts start",
     "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
-    "test": "react-scripts test",
+    "test": "react-scripts test --testPathIgnorePatterns=.*e2e.test.js",
     "test:coverage": "react-scripts test --coverage",
+    "test:e2e": "react-scripts test --testPathPattern=*e2e.test.js$",
     "eject": "react-scripts eject",
     "lint": "eslint ./src/"
   },

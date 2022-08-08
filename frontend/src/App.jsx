@@ -6,7 +6,7 @@ function App() {
         <main>
             <div className="flex">
                 <div className="one">
-                    <div className="rounded-box flex">
+                    <div className="rounded-box flex" id="title-box">
                         <p>
                             This is the OPRE
                             <br />
