@@ -5,7 +5,7 @@ This is a prototpye of OPRE's research Portfolio management System, or **OPS**. 
 
 Technologies used in this prototype:
 * Python
-* Django 4.0
+* Django 4.x
 * React
 * PostgreSQL
 * Cloud.gov
