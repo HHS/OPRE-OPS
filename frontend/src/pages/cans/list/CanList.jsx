@@ -24,7 +24,9 @@ const CanList = () => {
                         {canList.map((can) => (
                             <tr key={can.id}>
                                 <td>
-                                    <Link to={"./" + can.id}>{can.number}</Link>
+                                    <Link id="lnkCans" to={"./" + can.id}>
+                                        {can.number}
+                                    </Link>
                                 </td>
                                 <td>{can.description}</td>
                             </tr>

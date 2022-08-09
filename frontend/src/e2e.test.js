@@ -1,6 +1,6 @@
 import puppeteer from "puppeteer";
 
-jest.setTimeout(15000);
+jest.setTimeout(5000);
 
 describe("OPS", () => {
     let browser;
@@ -8,10 +8,14 @@ describe("OPS", () => {
 
     beforeAll(async () => {
         browser = await puppeteer.launch({
-            //executablePath: "/usr/bin/google-chrome",
+            //executablePath: "/usr/bin/chromium",
             headless: true,
             args: ["--disable-gpu", "--disable-dev-shm-usage", "--disable-setuid-sandbox", "--no-sandbox"],
         });
+        //browser = await puppeteer.connect({ browserWSEndpoint: "ws://localhost:3001" });
+
+        const browserVersion = await browser.version();
+        console.log(`Started ${browserVersion}`);
         page = await browser.newPage();
     });
 
