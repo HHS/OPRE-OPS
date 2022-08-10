@@ -3,7 +3,9 @@ version: "3.8"
 services:
 
   db:
-    image: "postgres:14.4"
+    image: "postgres:14.4-alpine3.16"
+    platform: linux/arm64/v8
+    container_name: ops-db
     environment:
       - POSTGRES_PASSWORD=local_password
     healthcheck:
@@ -13,9 +15,16 @@ services:
       retries: 5
 
   migration:
-    build: ./backend/
-    command: bash -c "python ./opre_ops/manage.py migrate && python ./opre_ops/manage.py loaddata ./opre_ops/ops_site/fixtures/fake_data.json"
-
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    container_name: ops-migration
+    command: >
+      bash -c "
+      python ./opre_ops/manage.py migrate &&
+      python ./opre_ops/manage.py loaddata ./opre_ops/ops_site/fixtures/fake_data.json
+      "
     volumes:
       # See below for an explanation of this volume. The same reasoning applies,
       # but in this case it's so we can run new migrations immediately without
@@ -26,33 +35,24 @@ services:
         condition: service_healthy
 
   backend:
-    build: ./backend/
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    container_name: ops-backend
     ports:
       - 8080:8080
     depends_on:
       - migration
     volumes:
-      # The container copies the source into it when it gets built, so it's at
-      # /opre_project by default. However, in development, we would prefer to
-      # map local source into the container so changes show up immediately.
-      #
-      # However, our CI environment uses a remote Docker runner, which does not
-      # have access to "local" source. If we map local source to /opre_project
-      # in CI, the source that was copied in at build-time will be overriden
-      # with an empty directory.
-      #
-      # To work around this, we'll prepend the value of the CI environment
-      # variable to the destination of the map. In most CI environments, this
-      # value will be some variation of "true", so instead of replacing the
-      # /opre_project directory with an empty directory (because the remote
-      # Docker runner doesn't have access to the local source), we'll instead
-      # make /trueopre_project (or something similar) an empty directory, which
-      # is fine because we don't use that directory for anything. It's just
-      # temporary cruft in the CI container.
       - ./backend/opre_ops:/opt/local/opre_ops
 
   frontend:
-    build: ./frontend/
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    container_name: ops-frontend
     ports:
       - 3000:3000
     depends_on:
