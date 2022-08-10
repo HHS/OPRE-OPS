@@ -22,10 +22,6 @@ repos:
     rev: v2.10.0
     hooks:
       - id: hadolint
-  - repo: https://github.com/asottile/reorder_python_imports
-    rev: v3.8.2
-    hooks:
-    - id: reorder-python-imports
   # We're running black, but doing it via nox session instead - see below
   # - repo: https://github.com/psf/black
   #   rev: 22.6.0
