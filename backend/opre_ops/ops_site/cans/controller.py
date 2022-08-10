@@ -16,11 +16,12 @@ from opre_ops.ops_site.models import Person
 class MultipleFieldLookupMixin:
     """
     Apply this mixin to any view or viewset to get multiple field filtering
-    based on a `lookup_fields` attribute, instead of the default single
-    field filtering.
+    based on a `lookup_fields` attribute, instead of the default single field
+    filtering.
     """
+
     def get_object(self):
-        queryset = self.get_queryset()             # Get the base queryset
+        queryset = self.get_queryset()  # Get the base queryset
         queryset = self.filter_queryset(queryset)  # Apply any filter backends
         filter = {}
         for field in self.lookup_fields:
@@ -32,7 +33,8 @@ class MultipleFieldLookupMixin:
 
 
 class CommonAccountingNumberSerializer(serializers.ModelSerializer):
-    funding_source = serializers.ReadOnlyField(source='fundingpartner.nickname')
+    source = "fundingpartner.nickname"
+    funding_source = serializers.ReadOnlyField(source=source)
 
     class Meta:
         model = CommonAccountingNumber
@@ -69,7 +71,7 @@ class FundingPartnerReadController(RetrieveAPIView):
 
 class CANFiscalYearSerializer(serializers.ModelSerializer):
     # can = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    can_lead = serializers.ReadOnlyField(source='person.id')
+    can_lead = serializers.ReadOnlyField(source="person.id")
 
     class Meta:
         model = CANFiscalYear
@@ -87,7 +89,9 @@ class CANFiscalYearByCanListController(ListAPIView):
     serializer_class = CANFiscalYearSerializer
 
     def get_queryset(self):
-        return CANFiscalYear.objects.filter(can=self.kwargs['can_id'], fiscal_year=self.kwargs['fiscal_year'])
+        return CANFiscalYear.objects.filter(
+            can=self.kwargs["can_id"], fiscal_year=self.kwargs["fiscal_year"]
+        )
 
 
 class CANFiscalYearMultiListController(MultipleFieldLookupMixin, ListAPIView):
@@ -102,7 +106,7 @@ class CANFiscalYearReadController(RetrieveAPIView):
 
 
 class ContractSerializer(serializers.ModelSerializer):
-    cans = serializers.ReadOnlyField(source='cans.id')
+    cans = serializers.ReadOnlyField(source="cans.id")
 
     class Meta:
         model = Contract
