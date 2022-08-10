@@ -4,7 +4,6 @@ We use Docker Compose for local development.
 See the project Dockerfile and docker-compose.yml for context.
 These are settings for local development only, not cloud or production environments.
 """
-
 # Import all common settings relevant to both local & cloud:
 from opre_ops.django_config.settings.common import *  # noqa: F403
 from opre_ops.django_config.settings.helpers.random_string import generate_random_string

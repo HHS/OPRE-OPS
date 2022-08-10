@@ -1,5 +1,4 @@
 from django.db import models
-
 from opre_ops.ops_site.models import Person
 
 

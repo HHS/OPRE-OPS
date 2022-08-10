@@ -1,5 +1,9 @@
 from django.urls import path
-from opre_ops.ops_site.cans.controller import CanListController, CANFiscalYearByCanListController, CanReadController, CANFiscalYearListController, CANFiscalYearReadController
+from opre_ops.ops_site.cans.controller import CANFiscalYearByCanListController
+from opre_ops.ops_site.cans.controller import CANFiscalYearListController
+from opre_ops.ops_site.cans.controller import CANFiscalYearReadController
+from opre_ops.ops_site.cans.controller import CanListController
+from opre_ops.ops_site.cans.controller import CanReadController
 
 
 urlpatterns = [

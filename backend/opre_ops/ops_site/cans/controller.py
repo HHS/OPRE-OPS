@@ -1,8 +1,15 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import serializers
-from rest_framework.generics import ListAPIView, RetrieveAPIView
-from opre_ops.ops_site.cans.models import CommonAccountingNumber, CANFiscalYear, Contract, ContractLineItem, ContractLineItemFiscalYear, ContractLineItemFiscalYearPerCAN, FundingPartner
+from opre_ops.ops_site.cans.models import CANFiscalYear
+from opre_ops.ops_site.cans.models import CommonAccountingNumber
+from opre_ops.ops_site.cans.models import Contract
+from opre_ops.ops_site.cans.models import ContractLineItem
+from opre_ops.ops_site.cans.models import ContractLineItemFiscalYear
+from opre_ops.ops_site.cans.models import ContractLineItemFiscalYearPerCAN
+from opre_ops.ops_site.cans.models import FundingPartner
 from opre_ops.ops_site.models import Person
+from rest_framework import serializers
+from rest_framework.generics import ListAPIView
+from rest_framework.generics import RetrieveAPIView
 
 
 class MultipleFieldLookupMixin:

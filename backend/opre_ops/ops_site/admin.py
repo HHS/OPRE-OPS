@@ -1,16 +1,11 @@
 from django.contrib import admin
-
-from opre_ops.ops_site.cans.models import (
-    CANFiscalYear,
-    CommonAccountingNumber,
-    Contract,
-    ContractLineItem,
-    FundingPartner,
-)
-from opre_ops.ops_site.models import (
-    Person,
-    Role,
-)
+from opre_ops.ops_site.cans.models import CANFiscalYear
+from opre_ops.ops_site.cans.models import CommonAccountingNumber
+from opre_ops.ops_site.cans.models import Contract
+from opre_ops.ops_site.cans.models import ContractLineItem
+from opre_ops.ops_site.cans.models import FundingPartner
+from opre_ops.ops_site.models import Person
+from opre_ops.ops_site.models import Role
 
 
 # Here just for reference. Shows how to traverse relationships
