@@ -1,4 +1,8 @@
 from django.shortcuts import get_object_or_404
+from rest_framework import serializers
+from rest_framework.generics import ListAPIView
+from rest_framework.generics import RetrieveAPIView
+
 from opre_ops.ops_site.cans.models import CANFiscalYear
 from opre_ops.ops_site.cans.models import CommonAccountingNumber
 from opre_ops.ops_site.cans.models import Contract
@@ -7,15 +11,13 @@ from opre_ops.ops_site.cans.models import ContractLineItemFiscalYear
 from opre_ops.ops_site.cans.models import ContractLineItemFiscalYearPerCAN
 from opre_ops.ops_site.cans.models import FundingPartner
 from opre_ops.ops_site.models import Person
-from rest_framework import serializers
-from rest_framework.generics import ListAPIView
-from rest_framework.generics import RetrieveAPIView
 
 
 class MultipleFieldLookupMixin:
     """
     Apply this mixin to any view or viewset to get multiple field filtering
-    based on a `lookup_fields` attribute, instead of the default single field filtering.
+    based on a `lookup_fields` attribute, instead of the default single
+    field filtering.
     """
     def get_object(self):
         queryset = self.get_queryset()             # Get the base queryset
@@ -86,7 +88,6 @@ class CANFiscalYearByCanListController(ListAPIView):
 
     def get_queryset(self):
         return CANFiscalYear.objects.filter(can=self.kwargs['can_id'], fiscal_year=self.kwargs['fiscal_year'])
-
 
 
 class CANFiscalYearMultiListController(MultipleFieldLookupMixin, ListAPIView):
