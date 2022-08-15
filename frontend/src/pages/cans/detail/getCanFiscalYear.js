@@ -1,18 +1,18 @@
-import { setCfy } from "./canFiscalYearSlice";
+import { setCanFiscalYear } from "./canFiscalYearSlice";
 import ApplicationContext from "../../../applicationContext/ApplicationContext";
 
-export const getCfy = (id) => {
+export const getCanFiscalYear = (id) => {
     return async (dispatch, getState) => {
         const resonseData = await ApplicationContext.get().helpers().callBackend(`/ops/cfy/${id}`, "get");
-        dispatch(setCfy(resonseData));
+        dispatch(setCanFiscalYear(resonseData));
     };
 };
 
-export const getCfyByCan = (can_id, fiscal_year) => {
+export const getCanFiscalYearByCan = (can_id, fiscal_year) => {
     return async (dispatch, getState) => {
         const responseData = await ApplicationContext.get()
             .helpers()
-            .callBackend(`/ops/cfys/${can_id}/${fiscal_year}`, "get");
-        dispatch(setCfy(responseData));
+            .callBackend(`/ops/can-fiscal-year/${can_id}/${fiscal_year}`, "get");
+        dispatch(setCanFiscalYear(responseData));
     };
 };

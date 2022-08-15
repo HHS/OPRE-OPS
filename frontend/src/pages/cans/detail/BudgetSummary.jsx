@@ -1,12 +1,12 @@
 import { useSelector, useDispatch } from "react-redux";
-import { getCfyByCan } from "./getCfy";
+import { getCanFiscalYearByCan } from "./getCanFiscalYear";
 import { useEffect, useState } from "react";
 import Select from "react-select";
 import { useParams } from "react-router-dom";
 
 const BudgetSummary = () => {
     const dispatch = useDispatch();
-    const cfy = useSelector((state) => state.cfyDetail.cfy);
+    const can_fiscal_year = useSelector((state) => state.canFiscalYearDetail.canFiscalYear);
     const urlPathParams = useParams();
     const [selectedValue, setSelectedValue] = useState(0);
     const handleChange = (e) => {
@@ -23,7 +23,7 @@ const BudgetSummary = () => {
     ];
 
     useEffect(() => {
-        dispatch(getCfyByCan(urlPathParams.id, selectedValue));
+        dispatch(getCanFiscalYearByCan(urlPathParams.id, selectedValue));
     }, [dispatch, urlPathParams.id, selectedValue]);
 
     return (
@@ -48,18 +48,18 @@ const BudgetSummary = () => {
                                     <th>Amount</th>
                                 </tr>
                                 <tr>
-                                    <td>Total FY {cfy[0]?.fiscal_year || "--"} Funding</td>
-                                    <td>{cfy[0]?.total_fiscal_year_funding || "n/a"}</td>
+                                    <td>Total FY {can_fiscal_year[0]?.fiscal_year || "--"} Funding</td>
+                                    <td>{can_fiscal_year[0]?.total_fiscal_year_funding || "n/a"}</td>
                                 </tr>
                                 <tr>
                                     <td>Funded YTD</td>
-                                    <td>{cfy[0]?.amount_available || "n/a"}</td>
+                                    <td>{can_fiscal_year[0]?.amount_available || "n/a"}</td>
                                 </tr>
                                 <tr>
                                     <td>Pending funds</td>
                                     <td>
-                                        {(cfy[0]?.total_fiscal_year_funding - cfy[0]?.amount_available).toFixed(2) ||
-                                            "n/a"}
+                                        {can_fiscal_year[0]?.total_fiscal_year_funding -
+                                            can_fiscal_year[0]?.amount_available || "n/a"}
                                     </td>
                                 </tr>
                                 <tr>
@@ -75,20 +75,20 @@ const BudgetSummary = () => {
                                     <th>Amount</th>
                                 </tr>
                                 <tr>
-                                    <td>Total FY {cfy[0]?.fiscal_year || "--"} Funding</td>
-                                    <td>{cfy[0]?.total_fiscal_year_funding || "n/a"}</td>
+                                    <td>Total FY {can_fiscal_year[0]?.fiscal_year || "--"} Funding</td>
+                                    <td>{can_fiscal_year[0]?.total_fiscal_year_funding || "n/a"}</td>
                                 </tr>
                                 <tr>
                                     <td>Total in process spending</td>
-                                    <td>{cfy[0]?.total_fiscal_year_funding || "n/a"}</td>
+                                    <td>{can_fiscal_year[0]?.total_fiscal_year_funding || "n/a"}</td>
                                 </tr>
                                 <tr>
                                     <td>Remaining planned spending</td>
-                                    <td>{cfy[0]?.total_fiscal_year_funding || "n/a"}</td>
+                                    <td>{can_fiscal_year[0]?.total_fiscal_year_funding || "n/a"}</td>
                                 </tr>
                                 <tr>
                                     <td>Unplanned (CAN balance)</td>
-                                    <td>{cfy[0]?.total_fiscal_year_funding || "n/a"}</td>
+                                    <td>{can_fiscal_year[0]?.total_fiscal_year_funding || "n/a"}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -106,7 +106,7 @@ const BudgetSummary = () => {
                                 </tr>
                                 <tr>
                                     <td>Department</td>
-                                    <td>{cfy[0]?.potential_additional_funding || "n/a"}</td>
+                                    <td>{can_fiscal_year[0]?.potential_additional_funding || "n/a"}</td>
                                     <td>In process</td>
                                     <td>1/1/2022</td>
                                     <td>💬</td>

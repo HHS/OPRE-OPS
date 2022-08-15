@@ -7,6 +7,6 @@ export default configureStore({
     reducer: {
         canList: canListSlice,
         canDetail: canDetailSlice,
-        cfyDetail: canFiscalYearSlice,
+        canFiscalYearDetail: canFiscalYearSlice,
     },
 });

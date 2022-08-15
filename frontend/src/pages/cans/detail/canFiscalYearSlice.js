@@ -5,15 +5,15 @@ const initialState = {
 };
 
 const canFiscalYearSlice = createSlice({
-    name: "cfyDetail",
+    name: "canFiscalYearDetail",
     initialState,
     reducers: {
-        setCfy: (state, action) => {
-            state.cfy = action.payload;
+        setCanFiscalYear: (state, action) => {
+            state.canFiscalYear = action.payload;
         },
     },
 });
 
-export const { setCfy } = canFiscalYearSlice.actions;
+export const { setCanFiscalYear } = canFiscalYearSlice.actions;
 
 export default canFiscalYearSlice.reducer;

@@ -1,4 +1,4 @@
-import { getCfy, getCfyByCan } from "./getCfy";
+import { getCanFiscalYear, getCanFiscalYearByCan } from "./getCanFiscalYear";
 import store from "../../../store";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 import { dispatchUsecase } from "../../../helpers/test";
@@ -14,11 +14,11 @@ test("successfully gets the CFY from the backend and directly puts it into state
         return mockBackendResponse;
     });
 
-    const actualGetCfy = getCfy(mockCfyId);
+    const actualGetCfy = getCanFiscalYear(mockCfyId);
 
     await dispatchUsecase(actualGetCfy);
 
-    const cfy = store.getState().cfyDetail.cfy;
+    const cfy = store.getState().canFiscalYearDetail.canFiscalYear;
     expect(cfy).toEqual(mockBackendResponse);
 });
 
@@ -33,10 +33,10 @@ test("successfully gets the CFY from the backend by can_id and fiscal_year and d
         return mockBackendResponse;
     });
 
-    const actualGetCfy = getCfyByCan(mockCfyId, 2022);
+    const actualGetCfy = getCanFiscalYearByCan(mockCfyId, 2022);
 
     await dispatchUsecase(actualGetCfy);
 
-    const cfy = store.getState().cfyDetail.cfy;
+    const cfy = store.getState().canFiscalYearDetail.canFiscalYear;
     expect(cfy).toEqual(mockBackendResponse);
 });
