@@ -167,10 +167,11 @@
     "develop": {
         "argcomplete": {
             "hashes": [
-                "sha256:291f0beca7fd49ce285d2f10e4c1c77e9460cf823eef2de54df0c0fec88b0d81",
-                "sha256:2c7dbffd8c045ea534921e63b0be6fe65e88599990d8dc408ac8c542b72a5445"
+                "sha256:6372ad78c89d662035101418ae253668445b391755cfe94ea52f1b9d22425b20",
+                "sha256:cffa11ea77999bb0dd27bb25ff6dc142a6796142f68d45b1a26b11f58724561e"
             ],
-            "version": "==1.12.3"
+            "markers": "python_version >= '3.6'",
+            "version": "==2.0.0"
         },
         "asgiref": {
             "hashes": [
@@ -843,11 +844,11 @@
         },
         "nox": {
             "hashes": [
-                "sha256:b375238cebb0b9df2fab74b8d0ce1a50cd80df60ca2e13f38f539454fcd97d7e",
-                "sha256:efee12f02d39405b16d68f60e7a06fe1fc450ae58669d6cdda8c7f48e3bae9e3"
+                "sha256:1b894940551dc5c389f9271d197ca5d655d40bdc6ccf93ed6880e4042760a34b",
+                "sha256:96cca88779e08282a699d672258ec01eb7c792d35bbbf538c723172bce23212c"
             ],
             "index": "pypi",
-            "version": "==2022.1.7"
+            "version": "==2022.8.7"
         },
         "packaging": {
             "hashes": [
