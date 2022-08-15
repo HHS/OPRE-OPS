@@ -1,15 +1,18 @@
 import { useSelector, useDispatch } from "react-redux";
 import { getCanFiscalYearByCan } from "./getCanFiscalYear";
+import { setSelectedFiscalYear } from "./canFiscalYearSlice";
 import Select from "react-select";
 import { useParams } from "react-router-dom";
 import { useEffect } from "react";
 
 const BudgetSummary = () => {
     const dispatch = useDispatch();
-    const canFiscalYear = useSelector((state) => state.canFiscalYearDetail.canFiscalYear);
+    const canFiscalYear = useSelector((state) => state.canFiscalYearDetail.canFiscalYearObj);
+    const selectedFiscalYear = useSelector((state) => state.canFiscalYearDetail.selectedFiscalYear);
     const urlPathParams = useParams();
     const handleChange = (e) => {
         dispatch(getCanFiscalYearByCan(urlPathParams.id, e.value));
+        dispatch(setSelectedFiscalYear(e.value));
     };
 
     const options = [
@@ -41,7 +44,7 @@ const BudgetSummary = () => {
                                     <th>Amount</th>
                                 </tr>
                                 <tr>
-                                    <td>Total FY {canFiscalYear?.fiscal_year || "--"} Funding</td>
+                                    <td>Total FY {selectedFiscalYear || "--"} Funding</td>
                                     <td>{canFiscalYear?.total_fiscal_year_funding || "n/a"}</td>
                                 </tr>
                                 <tr>
@@ -51,7 +54,7 @@ const BudgetSummary = () => {
                                 <tr>
                                     <td>Pending funds</td>
                                     <td>
-                                        {canFiscalYear
+                                        {canFiscalYear?.total_fiscal_year_funding && canFiscalYear?.amount_available
                                             ? canFiscalYear.total_fiscal_year_funding - canFiscalYear.amount_available
                                             : "n/a"}
                                     </td>

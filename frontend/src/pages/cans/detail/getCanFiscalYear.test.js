@@ -18,6 +18,6 @@ test("successfully gets the CFY from the backend by can_id and fiscal_year and d
 
     await dispatchUsecase(actualGetCfy);
 
-    const cfy = store.getState().canFiscalYearDetail.canFiscalYear;
+    const cfy = store.getState().canFiscalYearDetail.canFiscalYearObj;
     expect(cfy).toEqual(mockBackendResponse);
 });

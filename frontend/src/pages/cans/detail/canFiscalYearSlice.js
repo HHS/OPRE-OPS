@@ -1,7 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    canFiscalYear: {},
+    canFiscalYearObj: {},
+    selectedFiscalYear: new Date().getFullYear(),
 };
 
 const canFiscalYearSlice = createSlice({
@@ -9,11 +10,14 @@ const canFiscalYearSlice = createSlice({
     initialState,
     reducers: {
         setCanFiscalYear: (state, action) => {
-            state.canFiscalYear = action.payload;
+            state.canFiscalYearObj = action.payload;
+        },
+        setSelectedFiscalYear: (state, action) => {
+            state.selectedFiscalYear = action.payload;
         },
     },
 });
 
-export const { setCanFiscalYear } = canFiscalYearSlice.actions;
+export const { setCanFiscalYear, setSelectedFiscalYear } = canFiscalYearSlice.actions;
 
 export default canFiscalYearSlice.reducer;
