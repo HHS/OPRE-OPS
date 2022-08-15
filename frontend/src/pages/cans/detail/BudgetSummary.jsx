@@ -6,7 +6,7 @@ import { useParams } from "react-router-dom";
 
 const BudgetSummary = () => {
     const dispatch = useDispatch();
-    const can_fiscal_year = useSelector((state) => state.canFiscalYearDetail.canFiscalYear);
+    const canFiscalYear = useSelector((state) => state.canFiscalYearDetail.canFiscalYear);
     const urlPathParams = useParams();
     const [selectedValue, setSelectedValue] = useState(0);
     const handleChange = (e) => {
@@ -48,18 +48,18 @@ const BudgetSummary = () => {
                                     <th>Amount</th>
                                 </tr>
                                 <tr>
-                                    <td>Total FY {can_fiscal_year[0]?.fiscal_year || "--"} Funding</td>
-                                    <td>{can_fiscal_year[0]?.total_fiscal_year_funding || "n/a"}</td>
+                                    <td>Total FY {canFiscalYear[0]?.fiscal_year || "--"} Funding</td>
+                                    <td>{canFiscalYear[0]?.total_fiscal_year_funding || "n/a"}</td>
                                 </tr>
                                 <tr>
                                     <td>Funded YTD</td>
-                                    <td>{can_fiscal_year[0]?.amount_available || "n/a"}</td>
+                                    <td>{canFiscalYear[0]?.amount_available || "n/a"}</td>
                                 </tr>
                                 <tr>
                                     <td>Pending funds</td>
                                     <td>
-                                        {can_fiscal_year[0]?.total_fiscal_year_funding -
-                                            can_fiscal_year[0]?.amount_available || "n/a"}
+                                        {canFiscalYear[0]?.total_fiscal_year_funding -
+                                            canFiscalYear[0]?.amount_available || "n/a"}
                                     </td>
                                 </tr>
                                 <tr>
@@ -75,20 +75,20 @@ const BudgetSummary = () => {
                                     <th>Amount</th>
                                 </tr>
                                 <tr>
-                                    <td>Total FY {can_fiscal_year[0]?.fiscal_year || "--"} Funding</td>
-                                    <td>{can_fiscal_year[0]?.total_fiscal_year_funding || "n/a"}</td>
+                                    <td>Total FY {canFiscalYear[0]?.fiscal_year || "--"} Funding</td>
+                                    <td>{canFiscalYear[0]?.total_fiscal_year_funding || "n/a"}</td>
                                 </tr>
                                 <tr>
                                     <td>Total in process spending</td>
-                                    <td>{can_fiscal_year[0]?.total_fiscal_year_funding || "n/a"}</td>
+                                    <td>{canFiscalYear[0]?.total_fiscal_year_funding || "n/a"}</td>
                                 </tr>
                                 <tr>
                                     <td>Remaining planned spending</td>
-                                    <td>{can_fiscal_year[0]?.total_fiscal_year_funding || "n/a"}</td>
+                                    <td>{canFiscalYear[0]?.total_fiscal_year_funding || "n/a"}</td>
                                 </tr>
                                 <tr>
                                     <td>Unplanned (CAN balance)</td>
-                                    <td>{can_fiscal_year[0]?.total_fiscal_year_funding || "n/a"}</td>
+                                    <td>{canFiscalYear[0]?.total_fiscal_year_funding || "n/a"}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -106,7 +106,7 @@ const BudgetSummary = () => {
                                 </tr>
                                 <tr>
                                     <td>Department</td>
-                                    <td>{can_fiscal_year[0]?.potential_additional_funding || "n/a"}</td>
+                                    <td>{canFiscalYear[0]?.potential_additional_funding || "n/a"}</td>
                                     <td>In process</td>
                                     <td>1/1/2022</td>
                                     <td>💬</td>
