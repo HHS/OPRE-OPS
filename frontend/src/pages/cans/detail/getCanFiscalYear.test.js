@@ -11,7 +11,7 @@ test("successfully gets the CFY from the backend by can_id and fiscal_year and d
         otherStuff: "DogCow",
     };
     TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
-        return mockBackendResponse;
+        return [mockBackendResponse];
     });
 
     const actualGetCfy = getCanFiscalYearByCan(mockCfyId, 2022);
