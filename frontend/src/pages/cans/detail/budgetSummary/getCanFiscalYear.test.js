@@ -1,7 +1,7 @@
 import { getCanFiscalYearByCan } from "./getCanFiscalYear";
-import store from "../../../store";
-import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
-import { dispatchUsecase } from "../../../helpers/test";
+import store from "../../../../store";
+import TestApplicationContext from "../../../../applicationContext/TestApplicationContext";
+import { dispatchUsecase } from "../../../../helpers/test";
 
 test("successfully gets the CFY from the backend by can_id and fiscal_year and directly puts it into state", async () => {
     const mockCfyId = 3;

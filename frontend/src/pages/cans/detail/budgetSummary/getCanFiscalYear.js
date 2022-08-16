@@ -1,5 +1,5 @@
 import { setCanFiscalYear } from "./canFiscalYearSlice";
-import ApplicationContext from "../../../applicationContext/ApplicationContext";
+import ApplicationContext from "../../../../applicationContext/ApplicationContext";
 
 export const getCanFiscalYearByCan = (can_id, fiscal_year) => {
     return async (dispatch, getState) => {
