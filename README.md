@@ -1,80 +1,144 @@
 # OPRE OPS
-[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-This is a prototpye of OPRE's research Portfolio management System, or **OPS**. The finished product will replace OPRE's prior system, MAPS, which [is archived here](https://github.com/HHS/MAPS-app). The purpose of OPS can be found on [the wiki](https://github.com/HHS/OPRE-OPS/wiki).
+This is the OPRE's Research Portfolio Management System, or OPS. The finished product will replace OPRE's prior system,
+[MAPS](https://github.com/HHS/MAPS-app). The purpose of OPS can be found on
+[the wiki](https://github.com/HHS/OPRE-OPS/wiki).
 
-Technologies used in this prototype:
-* Python
-* Django 4.x
-* React
-* PostgreSQL
-* Cloud.gov
+## Dependencies
 
-## Getting Started
+At a bare minimum, you need [Docker](https://www.docker.com) installed to run the application locally.  If you want to do
+development, you will also need to install [Python](https://www.python.org), [Node.js](https://nodejs.org), and
+[pre-commit](https://pre-commit.com/#installation).
 
-### Running the Application locally
+## Install
 
-Application built using python Docker image and runs within Docker.
+### Backend
 
-Make sure you have Docker installed and started locally
+We use [pipenv](https://pipenv.pypa.io) to manage our Python dependencies.  Follow the directions on their website to
+install it on your machine.
 
-From the project root run:
+To install the dependencies, run...
 
-```
-docker-compose build
-docker-compose up
-```
-
-Then navigate to http://localhost:8080 in your browser
-* http://localhost:8080/ops/home/ for the OPS site interface
-* http://localhost:8080/admin/ for the administrative interface
-
-To create an admin user, use the Django management tool from within the container:
-
-```
-docker-compose exec web python manage.py createsuperuser
+```shell
+cd ./backend/
+pipenv install --dev
 ```
 
-### Dependency management with pipenv
+### Frontend
 
-To verify pipenv is installed and working locally, run:
-```
-pipenv graph
-```
+We use [yarn](https://yarnpkg.com) to manage our Node.js dependencies.  It comes by default with Node.js.
 
-If it is not installed, you can install it with:
-```
-pip3 install pipenv
-```
-You may have to install Python 3.9 and may have to update your system's PATH to get pipenv working.
+To install the dependencies, run...
 
-To install a new package into the `[packages]` in the `Pipfile` run:
-```
-pipenv install <package-name>
+```shell
+cd ./frontend/
+yarn install
 ```
 
-this will also update the `Pipfile.lock`
+## Run
 
-To install a new package into the `[dev-packages]` in the `Pipfile` run:
-```
-pipenv install --dev <package-name>
-```
+We have a Docker Compose configuration that makes it easy to run the application.
 
-this will also update the `Pipfile.lock`
-
-To uninstall a package from the `Pipfile` run:
-```
-pipenv uninstall <package-name>
+```shell
+docker compose up
 ```
 
-this will also remove it from the `Pipfile.lock`
+To create an admin user, use the Django management tool from within the container.
 
-## Running the tests
+```shell
+docker compose exec backend python ./opre_ops/manage.py createsuperuser
+```
 
-To run the test locally, run:
+## Access
+
+Whether you run the application through Docker or locally, you can access the frontend at `http://localhost:3000` and
+the backend at `http://localhost:8080`.
+
+There remains an administrative interface for the backend that you can access at `http://localhost:8080/admin/`
+
+## Checks
+
+### Unit Tests
+
+#### Backend
+
+TBD.  Pytest, etc.
+
+#### Frontend
+
+The frontend tests are implemented through [Jest](https://jestjs.io).
+
+To run them...
+
+```shell
+cd ./frontend/
+yarn test --watchAll=false
 ```
-docker-compose run backend pytest --cov-config=.coveragerc --cov=ops_site --cov-report term-missing
+
+This runs them once and then exits.  You can remove the `--watchAll=false` if you want to continually rerun the tests
+on each file save.
+
+You can also get code coverage information by running...
+
+```shell
+cd ./frontend/
+yarn test:coverage --watchAll=false
 ```
+
+We require 90% code coverage.
+
+### End-to-end Tests
+
+TBD.
+
+### Linting
+
+#### Backend
+
+The backend linting is implemented using [flake8](https://flake8.pycqa.org).  We use [nox](https://nox.thea.codes) as
+the runner to execute `flake8`.
+
+To run linting...
+
+```shell
+cd ./backend/
+pipenv run nox -s lint
+```
+
+The linter may complain about violations in the [Black](https://black.readthedocs.io) code formatting.  To automatically
+fix these issues, run...
+
+```shell
+cd ./backend/
+pipenv run nox -s black
+```
+
+#### Frontend
+
+The frontend linting is implemented through [ESLint](https://eslint.org).
+
+To run linting...
+
+```shell
+cd ./frontend/
+yarn lint
+```
+
+You can automatically fix many linting errors by passing in `--fix`.
+
+```shell
+cd ./frontend/
+yarn lint --fix
+```
+
+### Pre-commit Hooks
+
+
+
+=====
+
 ## Deployment
 
 Prototype deployed at https://opre-ops-frontend-test.app.cloud.gov/
