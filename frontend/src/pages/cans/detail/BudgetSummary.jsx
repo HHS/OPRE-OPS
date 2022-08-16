@@ -4,12 +4,14 @@ import { setSelectedFiscalYear } from "./canFiscalYearSlice";
 import Select from "react-select";
 import { useParams } from "react-router-dom";
 import { useEffect } from "react";
+import "./budgetSummary.css";
 
 const BudgetSummary = () => {
     const dispatch = useDispatch();
     const canFiscalYear = useSelector((state) => state.canFiscalYearDetail.canFiscalYearObj);
     const selectedFiscalYear = useSelector((state) => state.canFiscalYearDetail.selectedFiscalYear);
     const urlPathParams = useParams();
+
     const handleChange = (e) => {
         dispatch(getCanFiscalYearByCan(urlPathParams.id, e.value));
         dispatch(setSelectedFiscalYear(e.value));
@@ -28,6 +30,15 @@ const BudgetSummary = () => {
         dispatch(getCanFiscalYearByCan(urlPathParams.id, defaultOption.value));
     }, [dispatch, defaultOption.value, urlPathParams.id]);
 
+    const negativeRedStylingClass = "red-negative";
+    const notFilledInText = "--";
+
+    const totalFiscalYearFundingTableData = (
+        <td className={canFiscalYear?.total_fiscal_year_funding < 0 ? negativeRedStylingClass : ""}>
+            {canFiscalYear?.total_fiscal_year_funding || notFilledInText}
+        </td>
+    );
+
     return (
         <div>
             <div className="info-head">
@@ -45,7 +56,7 @@ const BudgetSummary = () => {
                                 </tr>
                                 <tr>
                                     <td>Total FY {selectedFiscalYear || "--"} Funding</td>
-                                    <td>{canFiscalYear?.total_fiscal_year_funding || "n/a"}</td>
+                                    {totalFiscalYearFundingTableData}
                                 </tr>
                                 <tr>
                                     <td>Funded YTD</td>
@@ -72,20 +83,20 @@ const BudgetSummary = () => {
                                     <th>Amount</th>
                                 </tr>
                                 <tr>
-                                    <td>Total FY {canFiscalYear?.fiscal_year || "--"} Funding</td>
-                                    <td>{canFiscalYear?.total_fiscal_year_funding || "n/a"}</td>
+                                    <td>Total FY {selectedFiscalYear || "--"} Funding</td>
+                                    {totalFiscalYearFundingTableData}
                                 </tr>
                                 <tr>
                                     <td>Total in process spending</td>
-                                    <td>{canFiscalYear?.total_fiscal_year_funding || "n/a"}</td>
+                                    {totalFiscalYearFundingTableData}
                                 </tr>
                                 <tr>
                                     <td>Remaining planned spending</td>
-                                    <td>{canFiscalYear?.total_fiscal_year_funding || "n/a"}</td>
+                                    {totalFiscalYearFundingTableData}
                                 </tr>
                                 <tr>
                                     <td>Unplanned (CAN balance)</td>
-                                    <td>{canFiscalYear?.total_fiscal_year_funding || "n/a"}</td>
+                                    {totalFiscalYearFundingTableData}
                                 </tr>
                             </tbody>
                         </table>
