@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from django.contrib import admin
 
 from opre_ops.ops_site.cans.models import CANFiscalYear
@@ -10,7 +12,7 @@ from opre_ops.ops_site.models import Role
 
 
 # Here just for reference. Shows how to traverse relationships
-def print_a_can(can_number, fiscal_year):
+def print_a_can(can_number: CommonAccountingNumber, fiscal_year: int) -> str:
     can = CommonAccountingNumber.objects.filter(number=can_number).first()
 
     if can:
@@ -90,7 +92,7 @@ class RoleAdmin(admin.ModelAdmin):
 class PersonAdmin(admin.ModelAdmin):
     list_display = ("display_name", "show_roles", "division")
 
-    def show_roles(self, obj):
+    def show_roles(self: PersonAdmin, obj: Person) -> str:
         return ", ".join([role.name for role in obj.roles.all()])
 
     show_roles.short_description = "Roles"
@@ -101,10 +103,10 @@ class ContractAdmin(admin.ModelAdmin):
     list_display = ("name", "funding_sources", "show_research_areas")
 
     @staticmethod
-    def funding_sources(obj):
+    def funding_sources(obj: admin.ModelAdmin) -> str:
         return ", ".join([can.number for can in obj.cans.all()])
 
-    def show_research_areas(self, obj):
+    def show_research_areas(self: ContractAdmin, obj: Contract) -> str:
         return ", ".join(obj.research_areas)
 
     show_research_areas.short_description = "research areas"
@@ -114,7 +116,7 @@ class ContractAdmin(admin.ModelAdmin):
 class ContractLineItemAdmin(admin.ModelAdmin):
     list_display = ("show_contract", "name")
 
-    def show_contract(self, obj):
+    def show_contract(self: ContractLineItemAdmin, obj: ContractLineItem) -> str:
         return obj.contract.name
 
     show_contract.short_description = "contract"
@@ -132,14 +134,14 @@ class CANInfoAdmin(admin.ModelAdmin):
 
     list_display = ("display_can_name",)
 
-    def display_can_name(self, obj):
+    def display_can_name(self: CANInfoAdmin, obj: CommonAccountingNumber) -> str:
         return obj.number + " (" + obj.nickname + ") "
 
     display_can_name.short_description = "CAN Name"
 
 
 @admin.register(CANFiscalYear)
-class CANFiscalYear(admin.ModelAdmin):
+class CANFiscalYearAdmin(admin.ModelAdmin):
     list_display = (
         "can_display_name",
         "can_description",
@@ -157,41 +159,43 @@ class CANFiscalYear(admin.ModelAdmin):
         "notes",
     )
 
-    def can_display_name(self, obj):
+    def can_display_name(self: CANFiscalYearAdmin, obj: CANFiscalYear) -> str:
         return f"{obj.can.number} ({obj.can.nickname}) - {obj.fiscal_year}"
 
     can_display_name.short_description = "CAN #"
 
-    def can_description(self, obj):
+    def can_description(self: CANFiscalYearAdmin, obj: CANFiscalYear) -> str:
         return obj.can.description
 
     can_description.short_description = "Description"
 
-    def can_purpose(self, obj):
+    def can_purpose(self: CANFiscalYearAdmin, obj: CANFiscalYear) -> str:
         return obj.can.purpose
 
     can_purpose.short_description = "Purpose"
 
-    def can_arrangement_type(self, obj):
+    def can_arrangement_type(
+        self: CANFiscalYearAdmin, obj: CANFiscalYear
+    ) -> CommonAccountingNumber.ARRANGEMENT_TYPES:
         return obj.can.arrangement_type
 
     can_arrangement_type.short_description = "Arrangement Type"
 
-    def can_funding_source(self, obj):
+    def can_funding_source(self: CANFiscalYearAdmin, obj: CANFiscalYear) -> str:
         return ", ".join([source.name for source in obj.can.funding_source.all()])
 
     can_funding_source.short_description = "Funding Source"
 
-    def display_can_leads(self, obj):
+    def display_can_leads(self: CANFiscalYearAdmin, obj: CANFiscalYear) -> str:
         return ", ".join([lead.full_name for lead in obj.can_lead.all()])
 
     display_can_leads.short_description = "CAN Lead"
 
     @staticmethod
-    def can_authorizer(obj):
+    def can_authorizer(obj: CANFiscalYear) -> str:
         return obj.can.authorizer.name
 
-    def can_division(self, obj):
+    def can_division(self: CANFiscalYearAdmin, obj: CANFiscalYear) -> str:
         # only display multiple divisons if leads are in different divisions
         return ", ".join(set([lead.division for lead in obj.can_lead.all()]))
 

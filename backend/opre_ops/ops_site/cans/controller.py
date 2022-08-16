@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from rest_framework import serializers
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import RetrieveAPIView
@@ -39,7 +41,7 @@ class CANFiscalYearByCanListController(ListAPIView):
     queryset = CANFiscalYear.objects.all()
     serializer_class = CANFiscalYearSerializer
 
-    def get_queryset(self) -> list[CANFiscalYear]:
+    def get_queryset(self: CANFiscalYearByCanListController) -> list[CANFiscalYear]:
         return CANFiscalYear.objects.filter(
             can=self.kwargs["can_id"], fiscal_year=self.kwargs["fiscal_year"]
         )

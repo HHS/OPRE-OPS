@@ -1,6 +1,6 @@
-def test_foo():
+def test_foo() -> None:
     pass
 
 
-def test_bar():
+def test_bar() -> None:
     pass

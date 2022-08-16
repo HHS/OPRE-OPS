@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from decimal import Decimal
+
 from django.db import models
 
 from opre_ops.ops_site.models import Person
@@ -7,7 +11,7 @@ class FundingPartner(models.Model):
     name = models.CharField(max_length=100)
     nickname = models.CharField(max_length=100)
 
-    def __str__(self):
+    def __str__(self: FundingPartner) -> str:
         return self.name
 
 
@@ -38,10 +42,12 @@ class CommonAccountingNumber(models.Model):
         FundingPartner, on_delete=models.PROTECT, related_name="authorizer"
     )
 
-    def info_for_fiscal_year(self, fy):
+    def info_for_fiscal_year(self: CommonAccountingNumber, fy: int) -> CANFiscalYear:
         return CANFiscalYear.objects.filter(can=self.id, fiscal_year=fy).first()
 
-    def contracts_for_fiscal_year(self, fy):
+    def contracts_for_fiscal_year(
+        self: CommonAccountingNumber, fy: int
+    ) -> list[Contract]:
         cid = [
             li.fiscal_year.line_item.contract.id
             for li in self.line_items_fy.filter(fiscal_year__fiscal_year=fy)
@@ -77,7 +83,7 @@ class CANFiscalYear(models.Model):
         verbose_name_plural = "CANs (fiscal year)"
 
     @property
-    def additional_amount_anticipated(self):
+    def additional_amount_anticipated(self: CANFiscalYear) -> Decimal:
         return self.total_fiscal_year_funding - self.amount_available
 
 
@@ -86,19 +92,25 @@ class Contract(models.Model):
     name = models.TextField()
 
     @property
-    def research_areas(self):
+    def research_areas(self: Contract) -> str:
         return [can.nickname for can in self.cans.all()]
 
-    def contribution_by_can_for_fy(self, can, fy):
+    def contribution_by_can_for_fy(
+        self: Contract, can: CommonAccountingNumber, fy: CANFiscalYear
+    ) -> Decimal:
         return sum([li.funding for li in self.line_items_for_fy_and_can(fy, can)])
 
-    def line_items_for_fy(self, fy):
+    def line_items_for_fy(
+        self: Contract, fy: CANFiscalYear
+    ) -> list[ContractLineItemFiscalYear]:
         return ContractLineItemFiscalYear.objects.filter(
             line_item__contract=self.id, fiscal_year=fy
         )
 
     @staticmethod
-    def line_items_for_fy_and_can(fy, can):
+    def line_items_for_fy_and_can(
+        fy: CANFiscalYear, can: CommonAccountingNumber
+    ) -> list[ContractLineItemFiscalYear]:
         return ContractLineItemFiscalYearPerCAN.objects.filter(
             fiscal_year__fiscal_year__in=[fy], can=can
         )
@@ -118,14 +130,16 @@ class ContractLineItemFiscalYear(models.Model):
     fiscal_year = models.IntegerField()
 
     @property
-    def contract(self):
+    def contract(self: ContractLineItemFiscalYear) -> Contract:
         return self.line_item.contract
 
     @property
-    def name(self):
+    def name(self: ContractLineItemFiscalYear) -> str:
         return self.line_item.name
 
-    def for_can(self, can):
+    def for_can(
+        self: ContractLineItemFiscalYear, can: CommonAccountingNumber
+    ) -> list[CommonAccountingNumber]:
         return self.cans.filter(can=can).first()
 
 
@@ -139,9 +153,9 @@ class ContractLineItemFiscalYearPerCAN(models.Model):
     funding = models.DecimalField(max_digits=12, decimal_places=2)
 
     @property
-    def contract(self):
+    def contract(self: ContractLineItemFiscalYearPerCAN) -> Contract:
         return self.fiscal_year.contract
 
     @property
-    def name(self):
+    def name(self: ContractLineItemFiscalYearPerCAN) -> str:
         return self.fiscal_year.name

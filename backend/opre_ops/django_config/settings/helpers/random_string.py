@@ -3,7 +3,7 @@ import secrets
 import string
 
 
-def generate_random_string(length):
+def generate_random_string(length: int) -> str:
     choice = string.digits + string.ascii_letters + string.punctuation
     choice = choice.replace("'", "")
     choice = choice.replace('"', "")

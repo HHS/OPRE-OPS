@@ -14,7 +14,7 @@ env = cfenv.AppEnv()
 
 
 # Helper function
-def get_json_env_var(variable_name):
+def get_json_env_var(variable_name: str) -> json:
     """Retrieve and serialize a JSON environment variable."""
     return json.loads(os.getenv(variable_name, "{}"))
 

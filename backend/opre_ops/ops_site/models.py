@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 from django.db import models
 
 
 class Role(models.Model):
     name = models.CharField(max_length=100, verbose_name="Role Name")
 
-    def __str__(self):
+    def __str__(self: Role) -> str:
         return self.name
 
 
@@ -25,11 +27,11 @@ class Person(models.Model):
     class Meta:
         verbose_name_plural = "People"
 
-    def display_name(self):
+    def display_name(self: Person) -> str:
         return f"{self.first_name} {self.last_name}"
 
     display_name.short_description = "Full name"
     full_name = property(display_name)
 
-    def __str__(self):
+    def __str__(self: Person) -> str:
         return self.full_name

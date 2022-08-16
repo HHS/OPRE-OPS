@@ -3,7 +3,7 @@ import csv
 import json
 
 
-def convert_csv_to_json(inputf, outputf, keys, model_name):
+def convert_csv_to_json(inputf: str, outputf: str, keys: list, model_name: str) -> json:
     """
     Takes csv of model data and converts it into formatted JSON
     for fixture data.

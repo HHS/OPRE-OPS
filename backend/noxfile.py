@@ -1,10 +1,11 @@
 import nox
+from nox.sessions import Session
 
 python_source = ["opre_ops", "./noxfile.py", "./locustfile.py"]
 
 
 @nox.session
-def lint(session):
+def lint(session: Session) -> None:
     session.run("pipenv", "install", "--dev", external=True)
 
     args = session.posargs or python_source
@@ -12,7 +13,7 @@ def lint(session):
 
 
 @nox.session
-def black(session):
+def black(session: Session) -> None:
     session.run("pipenv", "install", "--dev", external=True)
 
     args = session.posargs or python_source
@@ -20,7 +21,7 @@ def black(session):
 
 
 @nox.session
-def locust(session):
+def locust(session: Session) -> None:
     session.run("pipenv", "install", "--dev", external=True)
 
     session.run(
@@ -38,3 +39,11 @@ def locust(session):
         "http://localhost:8080",
         external=True,
     )
+
+
+@nox.session
+def mypy(session: Session) -> None:
+    session.run("pipenv", "install", "--dev", external=True)
+
+    args = session.posargs or python_source
+    session.run("mypy", *args, external=True)
