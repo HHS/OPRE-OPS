@@ -21,6 +21,7 @@ const notFilledInText = "--";
 const BudgetSummary = () => {
     const dispatch = useDispatch();
     const canFiscalYear = useSelector((state) => state.canFiscalYearDetail.canFiscalYearObj);
+    const pendingFunds = useSelector((state) => state.canFiscalYearDetail.pendingFunds);
     const selectedFiscalYear = useSelector((state) => state.canFiscalYearDetail.selectedFiscalYear);
     const urlPathParams = useParams();
 
@@ -45,21 +46,7 @@ const BudgetSummary = () => {
         </td>
     );
 
-    const pendingFunds = canFiscalYear?.total_fiscal_year_funding - canFiscalYear?.amount_available;
-
-    const pendingFundsTableData = (
-        <td
-            className={
-                pendingFunds < 0
-                    ? negativeRedStylingClass
-                    : ""
-            }
-        >
-            {canFiscalYear?.total_fiscal_year_funding && canFiscalYear?.amount_available
-                ? pendingFunds
-                : notFilledInText}
-        </td>
-    );
+    const pendingFundsTableData = <td className={pendingFunds < 0 ? negativeRedStylingClass : ""}>{pendingFunds}</td>;
 
     return (
         <div>
