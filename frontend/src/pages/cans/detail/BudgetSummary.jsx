@@ -39,6 +39,28 @@ const BudgetSummary = () => {
         </td>
     );
 
+    const amountAvailableTableData = (
+        <td className={canFiscalYear?.amount_available < 0 ? negativeRedStylingClass : ""}>
+            {canFiscalYear?.amount_available || notFilledInText}
+        </td>
+    );
+
+    const pendingFunds = canFiscalYear?.total_fiscal_year_funding - canFiscalYear?.amount_available;
+
+    const pendingFundsTableData = (
+        <td
+            className={
+                pendingFunds < 0
+                    ? negativeRedStylingClass
+                    : ""
+            }
+        >
+            {canFiscalYear?.total_fiscal_year_funding && canFiscalYear?.amount_available
+                ? pendingFunds
+                : notFilledInText}
+        </td>
+    );
+
     return (
         <div>
             <div className="info-head">
@@ -65,15 +87,11 @@ const BudgetSummary = () => {
                                 </tr>
                                 <tr>
                                     <td>Funded YTD</td>
-                                    <td>{canFiscalYear?.amount_available || notFilledInText}</td>
+                                    {amountAvailableTableData}
                                 </tr>
                                 <tr>
                                     <td>Pending funds</td>
-                                    <td>
-                                        {canFiscalYear?.total_fiscal_year_funding && canFiscalYear?.amount_available
-                                            ? canFiscalYear.total_fiscal_year_funding - canFiscalYear.amount_available
-                                            : notFilledInText}
-                                    </td>
+                                    {pendingFundsTableData}
                                 </tr>
                                 <tr>
                                     <td></td>
