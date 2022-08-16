@@ -60,23 +60,23 @@ const BudgetSummary = () => {
                                     <th>Amount</th>
                                 </tr>
                                 <tr>
-                                    <td>Total FY {selectedFiscalYear || "--"} Funding</td>
+                                    <td>Total FY {selectedFiscalYear || notFilledInText} Funding</td>
                                     {totalFiscalYearFundingTableData}
                                 </tr>
                                 <tr>
                                     <td>Funded YTD</td>
-                                    <td>{canFiscalYear?.amount_available || "n/a"}</td>
+                                    <td>{canFiscalYear?.amount_available || notFilledInText}</td>
                                 </tr>
                                 <tr>
                                     <td>Pending funds</td>
                                     <td>
                                         {canFiscalYear?.total_fiscal_year_funding && canFiscalYear?.amount_available
                                             ? canFiscalYear.total_fiscal_year_funding - canFiscalYear.amount_available
-                                            : "n/a"}
+                                            : notFilledInText}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td> </td>
+                                    <td></td>
                                     <td></td>
                                 </tr>
                             </tbody>
@@ -88,7 +88,7 @@ const BudgetSummary = () => {
                                     <th>Amount</th>
                                 </tr>
                                 <tr>
-                                    <td>Total FY {selectedFiscalYear || "--"} Funding</td>
+                                    <td>Total FY {selectedFiscalYear || notFilledInText} Funding</td>
                                     {totalFiscalYearFundingTableData}
                                 </tr>
                                 <tr>
@@ -119,7 +119,7 @@ const BudgetSummary = () => {
                                 </tr>
                                 <tr>
                                     <td>Department</td>
-                                    <td>{canFiscalYear?.potential_additional_funding || "n/a"}</td>
+                                    <td>{canFiscalYear?.potential_additional_funding || notFilledInText}</td>
                                     <td>In process</td>
                                     <td>1/1/2022</td>
                                     <td>💬</td>
