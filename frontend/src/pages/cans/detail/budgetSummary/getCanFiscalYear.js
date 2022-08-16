@@ -1,5 +1,6 @@
 import { setCanFiscalYear, setPendingFunds } from "./canFiscalYearSlice";
 import ApplicationContext from "../../../../applicationContext/ApplicationContext";
+import constants from "../../../../constants";
 
 export const getCanFiscalYearByCan = (can_id, fiscal_year) => {
     return async (dispatch, getState) => {
@@ -11,7 +12,7 @@ export const getCanFiscalYearByCan = (can_id, fiscal_year) => {
         dispatch(setCanFiscalYear(canFiscalYear));
 
         if (!canFiscalYear) {
-            dispatch(setPendingFunds("--"));
+            dispatch(setPendingFunds(constants.notFilledInText));
             return;
         }
 

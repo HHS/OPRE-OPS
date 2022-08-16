@@ -2,6 +2,7 @@ import { getCanFiscalYearByCan } from "./getCanFiscalYear";
 import store from "../../../../store";
 import TestApplicationContext from "../../../../applicationContext/TestApplicationContext";
 import { dispatchUsecase } from "../../../../helpers/test";
+import constants from "../../../../constants";
 
 test("successfully gets the CFY from the backend by can_id and fiscal_year and directly puts it into state", async () => {
     const mockCfyId = 3;
@@ -40,5 +41,5 @@ test("don't get the CAN fiscal year and set the pending funds to the nothing str
     expect(canFiscalYear).toBeUndefined();
 
     const pendingFunds = store.getState().canFiscalYearDetail.pendingFunds;
-    expect(pendingFunds).toEqual("--");
+    expect(pendingFunds).toEqual(constants.notFilledInText);
 });
