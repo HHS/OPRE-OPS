@@ -53,6 +53,8 @@ jobs:
       - name: Install frontend dependencies
         working-directory: frontend
         run: yarn install --frozen-lockfile
+      - name: Start Stack
+        run: docker-compose up frontend --build
       - name: Cypress run
         uses: cypress-io/github-action@v4
         with:
