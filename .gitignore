@@ -162,5 +162,9 @@ yarn-error.log*
 .vscode
 .idea
 
+# HTTP-Client
 *.http
+
+# Cypress
 *.mp4
+*.core
