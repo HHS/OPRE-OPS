@@ -43,11 +43,6 @@ services:
     container_name: ops-backend
     ports:
       - 8080:8080
-    # command: >
-    #   uvicorn opre_ops.django_config.asgi:application
-    #   --host 0.0.0.0
-    #   --port 8080
-    #   --reload
     depends_on:
       - migration
     volumes:
