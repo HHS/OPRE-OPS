@@ -4,34 +4,59 @@ import { setSelectedFiscalYear } from "./canFiscalYearSlice";
 import Select from "react-select";
 import { useParams } from "react-router-dom";
 import { useEffect } from "react";
+import "./budgetSummary.css";
+import constants from "../../../../constants";
+
+const fiscalYearOptions = [
+    { label: "FY 2020", value: 2020 },
+    { label: "FY 2021", value: 2021 },
+    { label: "FY 2022", value: 2022 },
+    { label: "FY 2023", value: 2023 },
+    { label: "FY 2024", value: 2024 },
+];
+const defaultOption = fiscalYearOptions[2];
+
+const negativeRedStylingClass = "red-negative";
 
 const BudgetSummary = () => {
     const dispatch = useDispatch();
     const canFiscalYear = useSelector((state) => state.canFiscalYearDetail.canFiscalYearObj);
+    const pendingFunds = useSelector((state) => state.canFiscalYearDetail.pendingFunds);
     const selectedFiscalYear = useSelector((state) => state.canFiscalYearDetail.selectedFiscalYear);
     const urlPathParams = useParams();
-    const handleChange = (e) => {
+
+    const handleFiscalYearChange = (e) => {
         dispatch(getCanFiscalYearByCan(urlPathParams.id, e.value));
         dispatch(setSelectedFiscalYear(e.value));
     };
 
-    const options = [
-        { label: "FY 2020", value: 2020 },
-        { label: "FY 2021", value: 2021 },
-        { label: "FY 2022", value: 2022 },
-        { label: "FY 2023", value: 2023 },
-        { label: "FY 2024", value: 2024 },
-    ];
-    const defaultOption = options[2];
-
     useEffect(() => {
         dispatch(getCanFiscalYearByCan(urlPathParams.id, defaultOption.value));
-    }, [dispatch, defaultOption.value, urlPathParams.id]);
+    }, [dispatch, urlPathParams.id]);
+
+    const totalFiscalYearFundingTableData = (
+        <td className={canFiscalYear?.total_fiscal_year_funding < 0 ? negativeRedStylingClass : ""}>
+            {canFiscalYear?.total_fiscal_year_funding || constants.notFilledInText}
+        </td>
+    );
+
+    const amountAvailableTableData = (
+        <td className={canFiscalYear?.amount_available < 0 ? negativeRedStylingClass : ""}>
+            {canFiscalYear?.amount_available || constants.notFilledInText}
+        </td>
+    );
+
+    const pendingFundsTableData = <td className={pendingFunds < 0 ? negativeRedStylingClass : ""}>{pendingFunds}</td>;
 
     return (
         <div>
             <div className="info-head">
-                <Select className="left-float" options={options} onChange={handleChange} defaultValue={defaultOption} />
+                <Select
+                    className="left-float"
+                    options={fiscalYearOptions}
+                    onChange={handleFiscalYearChange}
+                    defaultValue={defaultOption}
+                />
             </div>
             <div className="rounded-box">
                 <div className="info-unit">
@@ -44,23 +69,19 @@ const BudgetSummary = () => {
                                     <th>Amount</th>
                                 </tr>
                                 <tr>
-                                    <td>Total FY {selectedFiscalYear || "--"} Funding</td>
-                                    <td>{canFiscalYear?.total_fiscal_year_funding || "n/a"}</td>
+                                    <td>Total FY {selectedFiscalYear || constants.notFilledInText} Funding</td>
+                                    {totalFiscalYearFundingTableData}
                                 </tr>
                                 <tr>
                                     <td>Funded YTD</td>
-                                    <td>{canFiscalYear?.amount_available || "n/a"}</td>
+                                    {amountAvailableTableData}
                                 </tr>
                                 <tr>
                                     <td>Pending funds</td>
-                                    <td>
-                                        {canFiscalYear?.total_fiscal_year_funding && canFiscalYear?.amount_available
-                                            ? canFiscalYear.total_fiscal_year_funding - canFiscalYear.amount_available
-                                            : "n/a"}
-                                    </td>
+                                    {pendingFundsTableData}
                                 </tr>
                                 <tr>
-                                    <td> </td>
+                                    <td></td>
                                     <td></td>
                                 </tr>
                             </tbody>
@@ -72,20 +93,20 @@ const BudgetSummary = () => {
                                     <th>Amount</th>
                                 </tr>
                                 <tr>
-                                    <td>Total FY {canFiscalYear?.fiscal_year || "--"} Funding</td>
-                                    <td>{canFiscalYear?.total_fiscal_year_funding || "n/a"}</td>
+                                    <td>Total FY {selectedFiscalYear || constants.notFilledInText} Funding</td>
+                                    {totalFiscalYearFundingTableData}
                                 </tr>
                                 <tr>
                                     <td>Total in process spending</td>
-                                    <td>{canFiscalYear?.total_fiscal_year_funding || "n/a"}</td>
+                                    {totalFiscalYearFundingTableData}
                                 </tr>
                                 <tr>
                                     <td>Remaining planned spending</td>
-                                    <td>{canFiscalYear?.total_fiscal_year_funding || "n/a"}</td>
+                                    {totalFiscalYearFundingTableData}
                                 </tr>
                                 <tr>
                                     <td>Unplanned (CAN balance)</td>
-                                    <td>{canFiscalYear?.total_fiscal_year_funding || "n/a"}</td>
+                                    {totalFiscalYearFundingTableData}
                                 </tr>
                             </tbody>
                         </table>
@@ -103,7 +124,7 @@ const BudgetSummary = () => {
                                 </tr>
                                 <tr>
                                     <td>Department</td>
-                                    <td>{canFiscalYear?.potential_additional_funding || "n/a"}</td>
+                                    <td>{canFiscalYear?.potential_additional_funding || constants.notFilledInText}</td>
                                     <td>In process</td>
                                     <td>1/1/2022</td>
                                     <td>💬</td>

@@ -1085,7 +1085,7 @@
     "fields": {
         "can": 3,
         "fiscal_year": 2023,
-        "amount_available": 0.00,
+        "amount_available": 7812000.00,
         "total_fiscal_year_funding": 7512000.00,
         "potential_additional_funding": 3000000.00,
         "can_lead": [12],

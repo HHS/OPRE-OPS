@@ -2,7 +2,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { getCan } from "./getCan";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import BudgetSummary from "./BudgetSummary.jsx";
+import BudgetSummary from "./budgetSummary/BudgetSummary.jsx";
 
 const CanDetail = () => {
     const dispatch = useDispatch();
