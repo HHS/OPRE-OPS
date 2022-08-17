@@ -173,42 +173,32 @@ TBD.
 
 TBD.
 
-## Data model
+## Data Model
 
-The data model diagram below shows all of the tables used by OPS and
-relationships between those tables. Lines between tables mean they are related.
-If a line has a circle on one end, that means the table ***without a circle***
-has a one-to-many relationship with the table ***with a circle*** (modeled with
-a foreign key from the circle-table to the not-circle-table). If a line
-has circles on both ends, the tables have a many-to-many relationship (modeled
-with mapping/cross-reference tables).
+The data model diagram below shows all the tables used by the application and  relationships between those tables.
+Lines between tables mean they are related.  If a line has a circle on one end, that means the table _without a circle_
+has a one-to-many relationship with the table _with a circle_ (modeled with a foreign key from the circle-table to the
+not-circle-table).  If a line has circles on both ends, the tables have a many-to-many relationship (modeled with
+mapping/cross-reference tables).
 
-![OPRE prototype data model](docs/models.png)
+![the data model](docs/models.png)
 
-This diagram is also available as a [DOT file](docs/models.dot). (DOT is a
-[graph description
-language](https://en.wikipedia.org/wiki/DOT_(graph_description_language)). It
-can be used to represent graph relationships in plain text.) To update this
-visualization, first use the django-extensions module to create a new
-DOT file:
+This diagram is also available as a [DOT file](docs/models.dot) (DOT is a
+[graph description language](https://en.wikipedia.org/wiki/DOT_(graph_description_language)).  It can be used to
+represent graph relationships in plain text).  To update this visualization, first use the django-extensions module to
+create a new DOT file.
 
-```sh
-docker-compose run backend \
-  python manage.py \
-  graph_models \
-  -a \
+```shell
+cd ./backend/
+DJANGO_SETTINGS_MODULE=opre_ops.django_config.settings.local PYTHONPATH=. \
+  pipenv run python ./opre_ops/manage.py graph_models -a \
   -X LogEntry,AbstractUser,Permission,Group,User,ContentType,AbstractBaseSession,Session \
-  > docs/models.dot
+  > ../docs/models.dot
 ```
 
 Then use graphviz to convert the dotfile to a PNG image:
 
-```
-docker run -it --rm -v "$(pwd)/docs":/work -w /work \
-  fgrehm/graphviz \
+```shell
+docker run -it --rm -v "$(pwd)/docs":/work -w /work fgrehm/graphviz \
   dot -Tpng models.dot -omodels.png
 ```
-
-(No, there should not be a space between `-o` and `models.png`. It might work
-with a space, but the official documentation concatenates them together, so it is
-documented that way here.)
