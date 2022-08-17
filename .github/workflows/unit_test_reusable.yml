@@ -53,15 +53,10 @@ jobs:
       - name: Install frontend dependencies
         working-directory: frontend
         run: yarn install --frozen-lockfile
+      # Stand up the system stack, to have something to poke
       - name: Start Stack
         run: docker-compose up --build -d
-      # - name: Cypress run
-      #   uses: cypress-io/github-action@v4
-      #   with:
-      #     working-directory: frontend
-      #     install: false
-      #     command: yarn run test:e2e
-      #     wait-on: 'http://localhost:3000'
-      - name: Cypress Test
+      # Run the Cypress E2E Tests
+      - name: E2E Test
         working-directory: frontend
         run: yarn run test:e2e

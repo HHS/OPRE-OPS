@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-describe("List CANs", () => {
+test("List CANs", () => {
     it("passes", () => {
         cy.visit("/");
         cy.contains("/cans").click();
@@ -7,7 +7,7 @@ describe("List CANs", () => {
     });
 });
 
-describe("CAN Details", () => {
+test("CAN Details", () => {
     it("passes", () => {
         cy.visit("/cans");
         cy.contains("G99PHS9").click();
@@ -15,10 +15,9 @@ describe("CAN Details", () => {
     });
 });
 
-describe("Select Fiscal Year", () => {
+test("Select Fiscal Year", () => {
     it("passes", () => {
         cy.visit("/cans/3");
         cy.contains("G99PHS9").click();
-        cy.url().should("include", "/cans/3");
     });
 });
