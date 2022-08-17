@@ -146,41 +146,32 @@ from succeeding.  Fix the problem and try the commit again.
 
 ## Deployment
 
-Prototype deployed at https://opre-ops-frontend-test.app.cloud.gov/
+This application is deployed to [Cloud.gov](https://cloud.gov) through [Cloud Foundry](https://www.cloudfoundry.org)
+though a [manifest.yml](manifest.yml) file.
 
-**Warning:** This prototype uses `runserver` as a web server, which is considered insecure
-for production use. This should be replaced with something like `gunicorn` and
-`nginx` before it is deployed beyond prototyping purposes.
+For now, while we are waiting for full Cloud.gov access, we only have access to a development space.  Eventually, we
+will have a staging and production environment.
 
-OPS is deployed:
-* as a [Cloud.gov application](https://dashboard.fr.cloud.gov/applications)
-* backed by a [Cloud.gov database service](https://dashboard.fr.cloud.gov/services)
-* via GitHub Actions
+### Development Environment
 
-When this CI/CD pipeline is configured and running, deployment happens automatically any time a pull request to the development branch is merged.
+The development environment is deployed at https://opre-ops-frontend-test.app.cloud.gov
 
-To set up or modify the CI/CD pipeline, ensure you:
-* have a Cloud.gov app named `opre-ops-test`
-* have a service named `opre-ops-psql-db`
-* conntect the app and service with `cf bind-service opre-ops-test opre-ops-psql-db`
-* [configure egress](https://cloud.gov/docs/management/space-egress/). You may need to run `cg bind-security-group trusted_local_networks_egress [org] --space [space]` to allow the app to reach the database.
-* run `cf restage opre-ops-test` after making configuration changes
+This environment can be deployed to by anyone with write access to the repository.  You accomplish this by force pushing
+an existing commit to the `development` branch.
 
-For prototyping and testing purposes, you should load the test fixture data
-in this repo. The best way to do that is to SSH into the cloud.gov container and
-execute the Django `loaddata` command:
+```shell
+git branch -d development  # deletes the development branch if it was already checked out locally
+git checkout -b development
+git push --force --set-upstream origin development
+```
 
-* `cf ssh opre-ops-test` to get into the container. Once you have a shell in
-  the container, you'll need to [configure the shell](
-  https://docs.cloudfoundry.org/devguide/deploy-apps/ssh-apps.html#ssh-env)
-  to match the app runtime's environment.
-* `/tmp/lifecycle/shell` will run the built-in cloud.gov buildpack command that
-  configures your shell so that its environment matches the runtime's. This
-  includes the correct version of Python, making sure all of the dependencies
-  are in the Python environment, and configuring environment variables from the
-  database service.
-* `cd opre_ops`
-* `python manage.py loaddata ./ops_site/fixtures/fake_data.json`
+### Staging Environment
+
+TBD.
+
+### Production Environment
+
+TBD.
 
 ## Data model
 
