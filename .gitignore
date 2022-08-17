@@ -163,3 +163,4 @@ yarn-error.log*
 .idea
 
 *.http
+*.mp4

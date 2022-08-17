@@ -30,7 +30,7 @@
     "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
     "test": "react-scripts test --testPathIgnorePatterns=.*e2e.test.js",
     "test:coverage": "react-scripts test --coverage",
-    "test:e2e": "REACT_APP_BACKEND_DOMAIN=http://localhost:8080 react-scripts test --testPathPattern=*e2e.test.js",
+    "test:e2e": "REACT_APP_BACKEND_DOMAIN=http://localhost:8080 yarn cypress run",
     "eject": "react-scripts eject",
     "lint": "eslint ./src/"
   },
@@ -45,6 +45,18 @@
       "src/applicationContext/.+",
       "src/helpers/backend.js$",
       "src/reportWebVitals.js$"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
     ]
   }
 }
