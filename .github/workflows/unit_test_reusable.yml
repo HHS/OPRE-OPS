@@ -63,4 +63,5 @@ jobs:
       #     command: yarn run test:e2e
       #     wait-on: 'http://localhost:3000'
       - name: Cypress Test
+        working-directory: frontend
         run: yarn run test:e2e
