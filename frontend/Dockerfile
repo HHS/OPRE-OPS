@@ -1,4 +1,4 @@
-FROM node:18-alpine3.16
+FROM node:18-slim
 WORKDIR /frontend
 COPY ./package.json ./yarn.lock /frontend/
 RUN yarn install && yarn cache clean

@@ -25,6 +25,7 @@ services:
       python ./opre_ops/manage.py migrate &&
       python ./opre_ops/manage.py loaddata ./opre_ops/ops_site/fixtures/fake_data.json
       "
+
     volumes:
       # See below for an explanation of this volume. The same reasoning applies,
       # but in this case it's so we can run new migrations immediately without

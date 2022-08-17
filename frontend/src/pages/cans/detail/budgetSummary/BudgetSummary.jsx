@@ -56,6 +56,7 @@ const BudgetSummary = () => {
                     options={fiscalYearOptions}
                     onChange={handleFiscalYearChange}
                     defaultValue={defaultOption}
+                    classNamePrefix="react-select"
                 />
             </div>
             <div className="rounded-box">
