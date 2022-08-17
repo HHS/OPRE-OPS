@@ -2,6 +2,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { getCan } from "./getCan";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
+import BudgetSummary from "./BudgetSummary.jsx";
 
 const CanDetail = () => {
     const dispatch = useDispatch();
@@ -17,11 +18,9 @@ const CanDetail = () => {
             <section className="flex">
                 <div className="one-flex">
                     <div className="info-head">
-                        <select className="right-float">
-                            <option>FY 2022</option>
-                            <option>FY 2021</option>
-                            <option>FY 2020</option>
-                        </select>
+                        <a className="right-float" href="#">
+                            Download custom report
+                        </a>
                         <h1>
                             {can.number} ({can.nickname})
                         </h1>
@@ -57,63 +56,7 @@ const CanDetail = () => {
                     </div>
                 </div>
                 <div className="two-flex">
-                    <div className="info-head">
-                        <a className="right-float" href="#">
-                            Download custom report
-                        </a>
-                    </div>
-                    <div className="rounded-box">
-                        <div className="info-unit">
-                            <h2 className="info-unit">Budget summary</h2>
-                            <div className="info-unit flex">
-                                <table className="one-flex">
-                                    <tbody>
-                                        <tr>
-                                            <th>Funding status</th>
-                                            <th>Amount</th>
-                                        </tr>
-                                        <tr>
-                                            <td>Funded</td>
-                                            <td>7788</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                                <table className="one-flex">
-                                    <tbody>
-                                        <tr>
-                                            <th>Spending plan status</th>
-                                            <th>Amount</th>
-                                        </tr>
-                                        <tr>
-                                            <td>Funded</td>
-                                            <td>7788</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div className="info-unit">
-                                <table className="one-flex">
-                                    <caption>Potential additional funding</caption>
-                                    <tbody>
-                                        <tr>
-                                            <th>Source/description</th>
-                                            <th>Amount</th>
-                                            <th>Status</th>
-                                            <th>Last update</th>
-                                            <th>Comments</th>
-                                        </tr>
-                                        <tr>
-                                            <td>Department</td>
-                                            <td>$1,000,000</td>
-                                            <td>In process</td>
-                                            <td>1/1/2022</td>
-                                            <td>💬</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+                    <BudgetSummary />
                 </div>
             </section>
             <section className="rounded-box">

@@ -1,4 +1,6 @@
-from locust import between, HttpUser, task
+from locust import between
+from locust import HttpUser
+from locust import task
 
 
 class CanUser(HttpUser):

@@ -20,6 +20,7 @@ jobs:
       - name: Run backend unit tests
         working-directory: ./backend
         run: PYTHONPATH=. pipenv run pytest -v
+
   frontend:
     name: Frontend Unit Tests
     runs-on: ubuntu-latest
@@ -36,21 +37,26 @@ jobs:
       - name: Run frontend unit tests
         working-directory: ./frontend
         run: yarn test
+
   e2e:
-    name: End-to-End Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+      # Install NPM dependencies, cache them correctly
+      # and run all Cypress tests
       - uses: actions/setup-node@v3
         with:
           node-version: 18
           cache: 'yarn'
           cache-dependency-path: '**/yarn.lock'
       - name: Install frontend dependencies
-        working-directory: ./frontend
+        working-directory: frontend
         run: yarn install --frozen-lockfile
-      - name: Standup Containers
-        run: docker-compose --profile tests up --build --force-recreate
-      - name: Run frontend unit tests
-        working-directory: ./frontend
-        run: yarn test:e2e
+      - name: Cypress run
+        uses: cypress-io/github-action@v4
+        with:
+          working-directory: frontend
+          install: false
+          command: yarn run test:e2e
+          wait-on: 'http://localhost:3000'
