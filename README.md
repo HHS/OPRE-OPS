@@ -8,7 +8,8 @@ This is the OPRE's Research Portfolio Management System, or OPS. The finished pr
 
 ## Dependencies
 
-At a bare minimum, you need [Docker](https://www.docker.com) installed to run the application locally.  If you want to do
+At a bare minimum, you need [Docker](https://www.docker.com) and
+[Docker Compose](https://docs.docker.com/compose/install/) installed to run the application locally.  If you want to do
 development, you will also need to install [Python](https://www.python.org), [Node.js](https://nodejs.org), and
 [pre-commit](https://pre-commit.com/#installation).
 
