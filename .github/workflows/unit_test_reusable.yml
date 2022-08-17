@@ -54,7 +54,7 @@ jobs:
         working-directory: frontend
         run: yarn install --frozen-lockfile
       - name: Start Stack
-        run: docker-compose up --build
+        run: docker-compose up --build -d
       - name: Cypress run
         uses: cypress-io/github-action@v4
         with:
