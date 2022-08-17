@@ -1,0 +1,5 @@
+[run]
+omit =
+        opre_ops/ops_site/migrations/*
+        **/tests/**
+        *__init__*
