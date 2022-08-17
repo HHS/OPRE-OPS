@@ -19,7 +19,6 @@ describe("Select Fiscal Year", () => {
     it("get can fiscal year details", () => {
         cy.visit("/cans/3");
         cy.contains("G99PHS9").click();
-        cy.wait(100);
         cy.get("[class*='-control']")
             .click(0, 0, { force: true })
             .get("[class*='-menu']")
@@ -34,7 +33,6 @@ describe("Test Negative Value", () => {
     it("get a negative value", () => {
         cy.visit("/cans/3");
         cy.contains("G99PHS9").click();
-        cy.wait(100);
         cy.get("[class*='-control']")
             .click(0, 0, { force: true })
             .get("[class*='-menu']")
