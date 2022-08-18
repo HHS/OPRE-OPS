@@ -66,6 +66,10 @@ class CANFiscalYear(models.Model):
         )
         verbose_name_plural = "CANs (fiscal year)"
 
+    @property
+    def additional_amount_anticipated(self):
+        return self.total_fiscal_year_funding - self.amount_available
+
 
 class Contract(models.Model):
     cans = models.ManyToManyField(CommonAccountingNumber, related_name="contracts")

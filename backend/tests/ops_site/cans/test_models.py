@@ -1,6 +1,7 @@
 import pytest
 
 from opre_ops.ops_site.cans.models import (
+    CANFiscalYear,
     CommonAccountingNumber,
     Contract,
     ContractLineItem,
@@ -31,6 +32,32 @@ def test_Contract_research_areas():
 
     assert nickname1 in contract.research_areas
     assert nickname2 in contract.research_areas
+
+
+@pytest.mark.django_db
+def test_CANFiscalYear_additional_amount_anticipated():
+    apple = FundingPartner.objects.create(
+        name="Apple", nickname="Here's to the crazy ones"
+    )
+
+    dogcow_can = CommonAccountingNumber.objects.create(
+        number="1234", nickname="DogCow", authorizer=apple
+    )
+
+    total_fiscal_year_funding = 10
+    amount_available = 7
+    can_fiscal_year = CANFiscalYear.objects.create(
+        fiscal_year=2022,
+        total_fiscal_year_funding=total_fiscal_year_funding,
+        amount_available=amount_available,
+        potential_additional_funding=6,
+        can=dogcow_can,
+    )
+
+    assert (
+        can_fiscal_year.additional_amount_anticipated
+        == total_fiscal_year_funding - amount_available
+    )
 
 
 @pytest.mark.django_db
