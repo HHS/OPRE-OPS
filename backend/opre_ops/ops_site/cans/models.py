@@ -38,16 +38,6 @@ class CommonAccountingNumber(models.Model):
         FundingPartner, on_delete=models.PROTECT, related_name="authorizer"
     )
 
-    def info_for_fiscal_year(self, fy):
-        return CANFiscalYear.objects.filter(can=self.id, fiscal_year=fy).first()
-
-    def contracts_for_fiscal_year(self, fy):
-        cid = [
-            li.fiscal_year.line_item.contract.id
-            for li in self.line_items_fy.filter(fiscal_year__fiscal_year=fy)
-        ]
-        return Contract.objects.filter(id__in=cid)
-
     class Meta:
         verbose_name_plural = "CANs"
 
@@ -76,10 +66,6 @@ class CANFiscalYear(models.Model):
         )
         verbose_name_plural = "CANs (fiscal year)"
 
-    @property
-    def additional_amount_anticipated(self):
-        return self.total_fiscal_year_funding - self.amount_available
-
 
 class Contract(models.Model):
     cans = models.ManyToManyField(CommonAccountingNumber, related_name="contracts")
@@ -88,20 +74,6 @@ class Contract(models.Model):
     @property
     def research_areas(self):
         return [can.nickname for can in self.cans.all()]
-
-    def contribution_by_can_for_fy(self, can, fy):
-        return sum([li.funding for li in self.line_items_for_fy_and_can(fy, can)])
-
-    def line_items_for_fy(self, fy):
-        return ContractLineItemFiscalYear.objects.filter(
-            line_item__contract=self.id, fiscal_year=fy
-        )
-
-    @staticmethod
-    def line_items_for_fy_and_can(fy, can):
-        return ContractLineItemFiscalYearPerCAN.objects.filter(
-            fiscal_year__fiscal_year__in=[fy], can=can
-        )
 
 
 class ContractLineItem(models.Model):
@@ -124,9 +96,6 @@ class ContractLineItemFiscalYear(models.Model):
     @property
     def name(self):
         return self.line_item.name
-
-    def for_can(self, can):
-        return self.cans.filter(can=can).first()
 
 
 class ContractLineItemFiscalYearPerCAN(models.Model):
