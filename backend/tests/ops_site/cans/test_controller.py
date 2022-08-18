@@ -1,5 +1,5 @@
-from opre_ops.ops_site.cans.controller import CommonAccountingNumberSerializer
 from opre_ops.ops_site.cans.controller import CANFiscalYearSerializer
+from opre_ops.ops_site.cans.controller import CommonAccountingNumberSerializer
 
 
 def test_CAN_serializer_has_depth_of_one():
