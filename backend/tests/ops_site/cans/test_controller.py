@@ -1,5 +1,3 @@
-import pytest
-
 from opre_ops.ops_site.cans.controller import CommonAccountingNumberSerializer
 
 
