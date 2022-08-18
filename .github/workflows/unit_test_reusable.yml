@@ -19,7 +19,7 @@ jobs:
         run: pipenv install --dev
       - name: Run backend unit tests
         working-directory: ./backend
-        run: PYTHONPATH=. pipenv run pytest -v
+        run: pipenv run pytest
 
   frontend:
     name: Frontend Unit Tests
