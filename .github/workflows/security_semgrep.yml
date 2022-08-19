@@ -7,7 +7,7 @@ jobs:
     name: Scan
     runs-on: ubuntu-latest
     container:
-      image:returntocorp/semgrep
+      image: returntocorp/semgrep
     steps:
       - name: Checkout
         uses: actions/checkout@v3
