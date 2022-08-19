@@ -1,0 +1,24 @@
+name: Semgrep
+on:
+  workflow_call:
+
+jobs:
+  semgrep:
+    name: Scan
+    runs-on: ubuntu-latest
+    container:
+      image:returntocorp/semgrep
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Semgrep Scan
+        run: semgrep scan --sarif --output=semgrep.sarif
+        env:
+          SEMGREP_RULES: p/default
+
+      - name: Upload SARIF file for GitHub Advanced Security Dashboard
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: semgrep.sarif
+        if: always()

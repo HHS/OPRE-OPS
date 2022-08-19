@@ -14,6 +14,10 @@ jobs:
     name: Unit Tests
     uses: ./.github/workflows/unit_test_reusable.yml
 
+  semgrep:
+    name: Semgrep Scan
+    uses: ./.github/workflows/security_semgrep.yml
+
   lint:
     name: Linting
     runs-on: ubuntu-latest
