@@ -6,8 +6,12 @@ services:
     image: "postgres:14.4"
     platform: linux/amd64
     container_name: ops-db
+    security_opt:
+      - no-new-privileges:true  # Resolve semgrep https://sg.run/0n8q
     environment:
       - POSTGRES_PASSWORD=local_password
+    read_only: true  # Resolve semgrep https://sg.run/e4JE
+    tmpfs: /var/run/postgresql/
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
