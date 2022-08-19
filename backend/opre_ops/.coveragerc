@@ -1,5 +1,0 @@
-[run]
-omit =
-        ops_site/migrations/*
-        ops_site/tests/*
-        *__init__*

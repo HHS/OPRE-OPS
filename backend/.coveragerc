@@ -1,0 +1,9 @@
+[run]
+omit =
+        opre_ops/ops_site/migrations/*
+        opre_ops/ops_site/admin.py
+        **/tests/**
+        *__init__*
+
+[report]
+fail_under = 90

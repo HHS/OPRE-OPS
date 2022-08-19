@@ -11,7 +11,7 @@ def generate_random_string(length):
     return length * secrets.choice(choice)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     parser = argparse.ArgumentParser(
         "Generate a secret key/password.  The string will include digits, letters, "
         "and punctuation, and has a default length of 50."

@@ -154,6 +154,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Cypress
+
+/frontend/cypress/screenshots/
+
 
 # MacOS stuff
 .DS_Store
