@@ -14,7 +14,7 @@
     "web-vitals": "2.1.4"
   },
   "devDependencies": {
-    "cypress": "10.5.0",
+    "cypress": "10.6.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-prettier": "4.2.1",
