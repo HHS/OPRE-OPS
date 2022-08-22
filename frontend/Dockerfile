@@ -4,7 +4,6 @@ RUN useradd -ms /bin/bash app
 USER app
 WORKDIR /home/app
 
-WORKDIR /home/app
 COPY ./package.json ./yarn.lock /home/app/
 RUN yarn install && yarn cache clean
 
