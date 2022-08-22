@@ -10,6 +10,8 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "opre_ops.django_config.settings.cloudgov")
+os.environ.setdefault(
+    "DJANGO_SETTINGS_MODULE", "opre_ops.django_config.settings.cloudgov"
+)
 
 application = get_asgi_application()
