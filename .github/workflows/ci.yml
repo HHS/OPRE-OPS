@@ -16,7 +16,6 @@ jobs:
 
   semgrep:
     permissions:
-      actions: write
       security-events: write
     name: Semgrep Scan
     uses: ./.github/workflows/security_semgrep.yml
