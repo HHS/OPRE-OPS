@@ -1253,5 +1253,27 @@
         "can": 5,
         "funding": 8725.00
     }
+},
+{
+    "model": "ops_site.portfolios",
+    "pk": 1,
+    "fields":{
+        "name":"SuperAwesome Portfolio",
+        "description":"This is a description of the portfolio, isn't it cool!",
+        "status":"In-Process",
+        "cans":[3,5],
+        "current_fiscal_year_funding": 78000000.00
+    }
+},
+{
+    "model": "ops_site.portfolios",
+    "pk": 2,
+    "fields":{
+        "name":"OPS-Portfolio-1",
+        "description":"Placeholder portfolio",
+        "status":"Not-Started",
+        "cans":[3],
+        "current_fiscal_year_funding": 18000000.00
+    }
 }
 ]
