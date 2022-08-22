@@ -15,6 +15,8 @@ jobs:
     uses: ./.github/workflows/unit_test_reusable.yml
 
   semgrep:
+    permissions:
+      actions: write
     name: Semgrep Scan
     uses: ./.github/workflows/security_semgrep.yml
 
