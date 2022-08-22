@@ -34,7 +34,7 @@ services:
       # See below for an explanation of this volume. The same reasoning applies,
       # but in this case it's so we can run new migrations immediately without
       # having to rebuild the migration container.
-      - ./backend/opre_ops:/opt/local/opre_ops
+      - ./backend/opre_ops:/home/app/opre_ops
     depends_on:
       db:
         condition: service_healthy
@@ -50,7 +50,7 @@ services:
     depends_on:
       - migration
     volumes:
-      - ./backend/opre_ops:/opt/local/opre_ops
+      - ./backend/opre_ops:/home/app/opre_ops
 
   frontend:
     build:
@@ -63,4 +63,4 @@ services:
     depends_on:
       - backend
     volumes:
-      - ./frontend/:/frontend/
+      - ./frontend/:/home/app
