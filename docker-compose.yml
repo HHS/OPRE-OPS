@@ -46,7 +46,7 @@ services:
     platform: linux/amd64
     container_name: ops-backend
     ports:
-      - 8080:8080
+      - "8000:8080"
     depends_on:
       - migration
     volumes:
@@ -59,7 +59,7 @@ services:
     platform: linux/amd64
     container_name: ops-frontend
     ports:
-      - 3000:3000
+      - "3000:3000"
     depends_on:
       - backend
     volumes:
