@@ -6,6 +6,7 @@ jobs:
   semgrep:
     permissions:
       actions: write
+      security-events: write
     name: Scan
     runs-on: ubuntu-latest
     container:
