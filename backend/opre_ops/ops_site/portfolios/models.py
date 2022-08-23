@@ -20,8 +20,5 @@ class Portfolio(models.Model):
     current_fiscal_year_funding = models.DecimalField(max_digits=12,
                                                       decimal_places=2)
 
-    class Meta:
-        verbose_name_plural = "Portfolios"
-
     def __str__(self):
         return self.name

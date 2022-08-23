@@ -1255,7 +1255,7 @@
     }
 },
 {
-    "model": "ops_site.portfolios",
+    "model": "ops_site.portfolio",
     "pk": 1,
     "fields":{
         "name":"SuperAwesome Portfolio",
@@ -1266,7 +1266,7 @@
     }
 },
 {
-    "model": "ops_site.portfolios",
+    "model": "ops_site.portfolio",
     "pk": 2,
     "fields":{
         "name":"OPS-Portfolio-1",
