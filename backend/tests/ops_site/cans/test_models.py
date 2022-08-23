@@ -98,14 +98,3 @@ def test_FundingPartner_str():
         name="FundingPartnerName", nickname="NotTheRealName"
     )
     assert "FundingPartnerName" == str(fundingPartner)
-
-
-@pytest.mark.django_db
-def test_Portfolio_str():
-    portfolio = Portfolio.objects.create(
-        name="PortfolioNameHere",
-        description="",
-        status="Not-Started",
-        current_fiscal_year_funding=0.0,
-    )
-    assert "PortfolioNameHere" == str(portfolio)
