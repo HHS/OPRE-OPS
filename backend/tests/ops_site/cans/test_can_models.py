@@ -95,4 +95,4 @@ def test_ContractLineItemFiscalYear_name():
 def test_FundingPartner_str():
     name = "FundingPartnerName"
     fundingPartner = FundingPartner.objects.create(name=name, nickname="NotTheRealName")
-    assert "FundingPartnerName" == str(fundingPartner)
+    assert name == str(fundingPartner)
