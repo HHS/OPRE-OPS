@@ -94,7 +94,5 @@ def test_ContractLineItemFiscalYear_name():
 @pytest.mark.django_db
 def test_FundingPartner_str():
     name = "FundingPartnerName"
-    fundingPartner = FundingPartner.objects.create(
-        name=name, nickname="NotTheRealName"
-    )
+    fundingPartner = FundingPartner.objects.create(name=name, nickname="NotTheRealName")
     assert "FundingPartnerName" == str(fundingPartner)
