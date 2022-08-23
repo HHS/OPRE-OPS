@@ -8,7 +8,6 @@ from opre_ops.ops_site.cans.models import (
     ContractLineItemFiscalYear,
     FundingPartner,
 )
-from opre_ops.ops_site.portfolios.models import Portfolio
 
 
 @pytest.mark.django_db
