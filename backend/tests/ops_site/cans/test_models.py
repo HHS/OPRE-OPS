@@ -1,5 +1,6 @@
 import pytest
 
+from opre_ops.ops_site.portfolios.models import Portfolio
 from opre_ops.ops_site.cans.models import (
     CANFiscalYear,
     CommonAccountingNumber,
@@ -89,3 +90,21 @@ def test_ContractLineItemFiscalYear_name():
     )
 
     assert contract_line_item_for_2022.name == contract_line_item_name
+
+
+@pytest.mark.django_db
+def test_Portfolio_str():
+    portfolio = Portfolio.objects.create(name="PortfolioNameHere",
+                                         description="",
+                                         status="Not-Started",
+                                         current_fiscal_year_funding=0.0)
+    assert "PortfolioNameHere" == str(portfolio)
+
+
+@pytest.mark.django_db
+def test_Portfolio_str():
+    portfolio = Portfolio.objects.create(name="PortfolioNameHere",
+                                         description="",
+                                         status="Not-Started",
+                                         current_fiscal_year_funding=0.0)
+    assert "PortfolioNameHere" == str(portfolio)
