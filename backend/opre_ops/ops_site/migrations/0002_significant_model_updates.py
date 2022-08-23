@@ -6,13 +6,6 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    replaces = [
-        ("ops_site", "0002_rename_canamount_can_fiscalyear_and_more"),
-        ("ops_site", "0003_alter_canfiscalyear_options_and_more"),
-        ("ops_site", "0004_contractlineitem"),
-        ("ops_site", "0005_contractlineitemfiscalyear_and_more"),
-    ]
-
     dependencies = [
         ("ops_site", "0001_initial"),
     ]
