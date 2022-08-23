@@ -1,6 +1,7 @@
 from django.db import models
 
 from opre_ops.ops_site.models import Person
+from opre_ops.ops_site.portfolios.models import Portfolio
 
 
 class FundingPartner(models.Model):
@@ -36,6 +37,9 @@ class CommonAccountingNumber(models.Model):
     funding_source = models.ManyToManyField(FundingPartner)
     authorizer = models.ForeignKey(
         FundingPartner, on_delete=models.PROTECT, related_name="authorizer"
+    )
+    portfolio = models.ForeignKey(
+        Portfolio, on_delete=models.PROTECT, related_name="portfolio", null=True
     )
 
     class Meta:
