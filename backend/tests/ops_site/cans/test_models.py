@@ -1,6 +1,5 @@
 import pytest
 
-from opre_ops.ops_site.portfolios.models import Portfolio
 from opre_ops.ops_site.cans.models import (
     CANFiscalYear,
     CommonAccountingNumber,
@@ -9,6 +8,7 @@ from opre_ops.ops_site.cans.models import (
     ContractLineItemFiscalYear,
     FundingPartner,
 )
+from opre_ops.ops_site.portfolios.models import Portfolio
 
 
 @pytest.mark.django_db
@@ -94,15 +94,18 @@ def test_ContractLineItemFiscalYear_name():
 
 @pytest.mark.django_db
 def test_FundingPartner_str():
-    fundingPartner = FundingPartner.objects.create(name="FundingPartnerName",
-                                                   nickname="NotTheRealName")
+    fundingPartner = FundingPartner.objects.create(
+        name="FundingPartnerName", nickname="NotTheRealName"
+    )
     assert "FundingPartnerName" == str(fundingPartner)
 
 
 @pytest.mark.django_db
 def test_Portfolio_str():
-    portfolio = Portfolio.objects.create(name="PortfolioNameHere",
-                                         description="",
-                                         status="Not-Started",
-                                         current_fiscal_year_funding=0.0)
+    portfolio = Portfolio.objects.create(
+        name="PortfolioNameHere",
+        description="",
+        status="Not-Started",
+        current_fiscal_year_funding=0.0,
+    )
     assert "PortfolioNameHere" == str(portfolio)
