@@ -17,4 +17,4 @@ RUN pipenv install --dev --system --deploy
 # of prior steps.
 COPY ./ /home/app/
 
-CMD ["python", "./opre_ops/manage.py", "runserver", "0.0.0.0:8080"]
+CMD ["python", "-m", "gunicorn", "opre_ops.django_config.asgi:application", "--worker-class=uvicorn.workers.UvicornWorker", "--bind=0.0.0.0:8080"]
