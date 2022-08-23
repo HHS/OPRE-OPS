@@ -20,10 +20,6 @@ class Portfolio(models.Model):
     current_fiscal_year_funding = models.DecimalField(max_digits=12,
                                                       decimal_places=2)
 
-    @property
-    def get_all_cans(self):
-        return self.cans.all()
-
     class Meta:
         verbose_name_plural = "Portfolios"
 
