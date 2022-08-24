@@ -141,8 +141,7 @@ node_modules
 /frontend/coverage
 
 # production
-frontend/build/*
-!frontend/build/Staticfile
+frontend/build/
 
 # misc
 .env.local
