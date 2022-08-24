@@ -9,7 +9,6 @@ applications:
     memory: 64M
     buildpack: https://github.com/cloudfoundry/staticfile-buildpack
     path: ./frontend/build/
-    pushstate: enabled
 
 services:
  - opre-ops-psql-db
