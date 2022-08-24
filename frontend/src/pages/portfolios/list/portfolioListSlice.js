@@ -5,7 +5,7 @@ const initialState = {
 };
 
 const portfolioListSlice = createSlice({
-    name: "canList",
+    name: "portfolioList",
     initialState,
     reducers: {
         setPortfolioList: (state, action) => {
