@@ -25,6 +25,12 @@ function App() {
                                     <th>Path</th>
                                 </tr>
                                 <tr>
+                                    <td>Portfolios</td>
+                                    <td>
+                                        <Link to="portfolios">/portfolios</Link>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td>CANs</td>
                                     <td>
                                         <Link to="cans">/cans</Link>
