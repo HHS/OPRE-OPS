@@ -10,6 +10,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+build/
 develop-eggs/
 dist/
 downloads/
@@ -141,7 +142,7 @@ node_modules
 /frontend/coverage
 
 # production
-frontend/build/
+frontend/build
 
 # misc
 .env.local
