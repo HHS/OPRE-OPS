@@ -5,7 +5,7 @@ import { useEffect } from "react";
 
 const PortfolioList = () => {
     const dispatch = useDispatch();
-    const canList = useSelector((state) => state.canList.cans);
+    const portfolioList = useSelector((state) => state.portfolioList.portfolios);
 
     useEffect(() => {
         dispatch(getPortfolioList());
@@ -14,21 +14,23 @@ const PortfolioList = () => {
     return (
         <>
             <main>
-                <table id="can-list">
-                    <caption>List of all CANs</caption>
+                <table id="portfolio-list">
+                    <caption>List of all Portfolios</caption>
                     <tbody>
                         <tr>
-                            <th>number</th>
+                            <th>name</th>
+                            <th>status</th>
                             <th>description</th>
                         </tr>
-                        {canList.map((can) => (
-                            <tr key={can.id}>
+                        {portfolioList.map((portfolio) => (
+                            <tr key={portfolio.id}>
                                 <td>
-                                    <Link id="lnkCans" to={"./" + can.id}>
-                                        {can.number}
+                                    <Link to={"./" + portfolio.id}>
+                                        {portfolio.name}
                                     </Link>
                                 </td>
-                                <td>{can.description}</td>
+                                <td>{portfolio.status}</td>
+                                <td>{portfolio.description}</td>
                             </tr>
                         ))}
                     </tbody>
