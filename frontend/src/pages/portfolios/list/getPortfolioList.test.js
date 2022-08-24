@@ -3,21 +3,27 @@ import store from "../../../store";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 import { dispatchUsecase } from "../../../helpers/test";
 
-test("successfully gets the CAN list from the backend and directly puts it into state", async () => {
+test("successfully gets the portfolio list from the backend and directly puts it into state", async () => {
     const mockBackendResponse = [
         {
             id: 1,
-            number: "G99HRF2",
+            name: "Children",
+            status: "Not-Started",
+            description: "Portfolio on children",
             otherStuff: "Moof",
         },
         {
             id: 2,
-            number: "G99IA14",
+            name: "Families",
+            status: "In-Process",
+            description: "Portfolio on families",
             otherStuff: "DogCow",
         },
         {
             id: 3,
-            number: "G99PHS9",
+            name: "Other stuff",
+            status: "Sandbox",
+            description: "The best portfolio",
             otherStuff: "Clarus",
         },
     ];
@@ -25,10 +31,10 @@ test("successfully gets the CAN list from the backend and directly puts it into 
         return mockBackendResponse;
     });
 
-    const actualGetCanList = getPortfolioList();
+    const actualGetPortfolioList = getPortfolioList();
 
-    await dispatchUsecase(actualGetCanList);
+    await dispatchUsecase(actualGetPortfolioList);
 
-    const canList = store.getState().canList.cans;
-    expect(canList).toEqual(mockBackendResponse);
+    const portfolioList = store.getState().portfolioList.portfolios;
+    expect(portfolioList).toEqual(mockBackendResponse);
 });
