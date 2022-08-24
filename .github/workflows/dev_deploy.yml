@@ -16,6 +16,8 @@ jobs:
     needs:
       - unit-tests
     runs-on: ubuntu-latest
+    env:
+      NODE_ENV: production
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -33,7 +35,7 @@ jobs:
           curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary" | tar xzv -C $HOME/bin
       - name: Install frontend dependencies
         working-directory: ./frontend
-        run: yarn install --frozen-lockfile
+        run: yarn install --production --frozen-lockfile
       - name: Deploy backend to Cloud.gov
         id: backend-deploy
         run: |
