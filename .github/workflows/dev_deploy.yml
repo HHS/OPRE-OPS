@@ -51,5 +51,6 @@ jobs:
       - name: Deploy frontend to Cloud.gov
         run: |
           export PATH=$HOME/bin:$PATH
+          cp ./frontend/Staticfile ./frontend/build/
           cf login -a https://api.fr.cloud.gov -u ${{ secrets.DEV_USER }} -p ${{ secrets.DEV_PASSWORD }} -o ${{ secrets.ORG_NAME }} -s ${{ secrets.SPACE_NAME }}
           cf push opre-ops-frontend-test -f manifest.yml
