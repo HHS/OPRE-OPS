@@ -10,7 +10,7 @@ cfenv = "==0.5.3"
 djangorestframework = "==3.13.1"
 django-cors-headers = "==3.13.0"
 django-filter = "==22.1"
-uvicorn = {version = "==0.18.2", extras = ["standard"]}
+uvicorn = {version = "==0.18.3", extras = ["standard"]}
 gunicorn = "==20.1.0"
 
 [dev-packages]
