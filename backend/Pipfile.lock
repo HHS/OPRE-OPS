@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "e6ae3877eb5c46970473e310dbb68a8a675a59ca4373fd22d89c9870f20f54c6"
+            "sha256": "3286f040037981d2f62176b5146d9ee25f4a604dc5eefe349f85ac989858e3d9"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -967,13 +967,11 @@
         },
         "locust": {
             "hashes": [
-                "sha256:b1855b1c6413e56f333de86eb6f92df643bdd605369f7a258e8bfdcd9117b833",
-                "sha256:b6bfbdc4cccd4617b6f9637a3eea3b4c0fda681a1531f5566ad66e2c16547ecd",
-                "sha256:d556e70898240deaa08097a7c3eee9456897150246ceec8367b9943580c0a7c6",
-                "sha256:e5571de2510bb6293daee6245b3e01a614dce5935b1d5283f709ce5b49125492"
+                "sha256:2c8ead881ade240d8988c1c94a9d84b1d38f3df0583f5a7b3bc8ddbd93181dfe",
+                "sha256:a0d2a81729acf057991e376a61194d50d70e3c420ba67d4d73b2462e8d7c029a"
             ],
             "index": "pypi",
-            "version": "==2.11.0"
+            "version": "==2.11.1"
         },
         "markdown": {
             "hashes": [
