@@ -23,9 +23,9 @@
     "prettier": "2.7.1"
   },
   "scripts": {
-    "compile-uswds": "",
+    "compile-uswds": "yarn gulp init",
     "start": "yarn compile-uswds && DISABLE_ESLINT_PLUGIN=true REACT_APP_BACKEND_DOMAIN=http://localhost:8080 react-scripts start",
-    "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
+    "build": "yarn compile-uswds && DISABLE_ESLINT_PLUGIN=true react-scripts build",
     "test": "react-scripts test",
     "test:coverage": "react-scripts test --coverage",
     "test:e2e": "REACT_APP_BACKEND_DOMAIN=http://localhost:8080 cypress run --config-file ./cypress.config.js --headless --",
