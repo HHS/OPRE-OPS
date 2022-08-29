@@ -18,7 +18,7 @@ const CanDetail = () => {
             <section className="flex">
                 <div className="one-flex">
                     <div className="info-head">
-                        <a className="right-float" href="#">
+                        <a className="right-float" href="/custom-report">
                             Download custom report
                         </a>
                         <h1>
@@ -96,16 +96,8 @@ const CanDetail = () => {
                             </td>
                             <td>$1,000,000</td>
                             <td>80%</td>
-                            <td>
-                                <a href="#" className="cartouche">
-                                    CAN
-                                </a>
-                            </td>
-                            <td>
-                                <a href="#" className="cartouche">
-                                    Area
-                                </a>
-                            </td>
+                            <td>CAN</td>
+                            <td>Area</td>
                             <td>👤 Person</td>
                         </tr>
                     </tbody>
