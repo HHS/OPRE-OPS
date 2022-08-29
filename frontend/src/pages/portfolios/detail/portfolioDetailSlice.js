@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import canDetailSlice from "../../cans/detail/canDetailSlice";
 
 const initialState = {
     portfolio: {},
@@ -15,6 +14,6 @@ const portfolioDetailSlice = createSlice({
     },
 });
 
-export const { setPortfolio } = canDetailSlice.action;
+export const { setPortfolio } = portfolioDetailSlice.actions;
 
 export default portfolioDetailSlice.reducer;

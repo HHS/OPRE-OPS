@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { getPorfolio } from "./getPortfolio";
+import { getPortfolio } from "./getPortfolio";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
@@ -9,10 +9,10 @@ const PortfolioDetail = () => {
     const urlPathParams = useParams();
 
     useEffect(() => {
-        dispatch(getPorfolio(urlPathParams.id));
+        dispatch(getPortfolio(urlPathParams.id));
     }, [dispatch, urlPathParams.id]);
 
-    return(
+    return (
         <main>
             <section className="flex">
                 <div className="one-flex">
@@ -42,3 +42,5 @@ const PortfolioDetail = () => {
         </main>
     );
 };
+
+export default PortfolioDetail;

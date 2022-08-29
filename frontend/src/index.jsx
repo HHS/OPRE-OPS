@@ -23,6 +23,7 @@ import App from "./App";
 import CanList from "./pages/cans/list/CanList";
 import CanDetail from "./pages/cans/detail/CanDetail";
 import PortfolioList from "./pages/portfolios/list/PortfolioList";
+import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
 
 ApplicationContext.registerApplicationContext(DeployedApplicationContext);
 
@@ -34,6 +35,7 @@ root.render(
                 <Routes>
                     <Route path="/" element={<App />} />
                     <Route path="/portfolios" element={<PortfolioList />} />
+                        <Route path="/portfolios/:id" element={<PortfolioDetail />} />
                     <Route path="/cans" element={<CanList />}>
                         <Route path="/cans/:id" element={<CanDetail />} />
                     </Route>
