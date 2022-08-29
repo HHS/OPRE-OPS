@@ -8,12 +8,12 @@ const portfolioDetailSlice = createSlice({
     name: "portfolioDetail",
     initialState,
     reducers: {
-        setportfolio: (state, action) => {
+        setPortfolio: (state, action) => {
             state.portfolio = action.payload;
         },
     },
 });
 
-export const { setportfolio } = portfolioDetailSlice.actions;
+export const { setPortfolio } = portfolioDetailSlice.actions;
 
 export default portfolioDetailSlice.reducer;
