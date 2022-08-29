@@ -25,9 +25,7 @@ const PortfolioList = () => {
                         {portfolioList.map((portfolio) => (
                             <tr key={portfolio.id}>
                                 <td>
-                                    <Link to={"./" + portfolio.id}>
-                                        {portfolio.name}
-                                    </Link>
+                                    <Link to={"./" + portfolio.id}>{portfolio.name}</Link>
                                 </td>
                                 <td>{portfolio.status}</td>
                                 <td>{portfolio.description}</td>
