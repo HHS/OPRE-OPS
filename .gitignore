@@ -172,3 +172,6 @@ yarn-error.log*
 # Cypress
 *.mp4
 *.core
+
+# Frontend
+/frontend/assets
