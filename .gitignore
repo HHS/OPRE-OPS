@@ -143,6 +143,7 @@ node_modules
 
 # production
 frontend/build
+frontend/src/uswds
 
 # misc
 .env.local
@@ -172,6 +173,3 @@ yarn-error.log*
 # Cypress
 *.mp4
 *.core
-
-# Frontend
-/frontend/assets

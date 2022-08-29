@@ -4,6 +4,16 @@ import { Link } from "react-router-dom";
 function App() {
     return (
         <main>
+            <div className="usa-alert usa-alert--error" role="alert">
+                <div className="usa-alert__body">
+                    <h4 className="usa-alert__heading">Error status</h4>
+                    <p className="usa-alert__text">
+                        Lorem ipsum dolor sit amet,
+                        <a className="usa-link" href="javascript:void(0);">consectetur adipiscing</a>
+                        elit, sed do eiusmod.
+                    </p>
+                </div>
+            </div>
             <div className="flex">
                 <div className="one">
                     <div className="rounded-box flex" id="title-box">
