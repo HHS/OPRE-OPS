@@ -12,7 +12,7 @@ const PortfolioDetail = () => {
         dispatch(getPorfolio(urlPathParams.id));
     }, [dispatch, urlPathParams.id]);
 
-    return(
+    return (
         <main>
             <section className="flex">
                 <div className="one-flex">
@@ -42,3 +42,5 @@ const PortfolioDetail = () => {
         </main>
     );
 };
+
+export default PortfolioDetail;
