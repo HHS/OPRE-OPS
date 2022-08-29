@@ -28,7 +28,7 @@
     "test:coverage": "react-scripts test --coverage",
     "test:e2e": "REACT_APP_BACKEND_DOMAIN=http://localhost:8080 cypress run --config-file ./cypress.config.js --headless --",
     "eject": "react-scripts eject",
-    "lint": "eslint ./src/"
+    "lint": "eslint './src/**'"
   },
   "jest": {
     "coverageThreshold": {
