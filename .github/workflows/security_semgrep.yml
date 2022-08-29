@@ -17,7 +17,8 @@ jobs:
       - name: Semgrep Scan
         run: semgrep scan --sarif --output=semgrep.sarif --error
         env:
-          SEMGREP_RULES: p/default
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+          SEMGREP_RULES: "p/default "
 
       - name: Upload SARIF file for GitHub Advanced Security Dashboard
         uses: github/codeql-action/upload-sarif@v2
