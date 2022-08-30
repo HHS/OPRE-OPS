@@ -143,7 +143,6 @@ node_modules
 
 # production
 frontend/build
-frontend/src/uswds
 
 # misc
 .env.local

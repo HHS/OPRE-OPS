@@ -11,13 +11,8 @@ import DeployedApplicationContext from "./applicationContext/DeployedApplication
 
 import "./index.css";
 
-// import "@uswds/uswds";
-// import "@uswds/uswds/css/uswds.min.css";
-// import "@uswds/uswds/fonts/source-sans-pro/sourcesanspro-regular-webfont.woff2";
-
-import "./uswds/css/styles.css";
-import "./uswds/js/uswds-init";
-import "./uswds/js/uswds";
+import "@uswds/uswds/css/uswds.min.css";
+import "@uswds/uswds";
 
 import App from "./App";
 import CanList from "./pages/cans/list/CanList";
