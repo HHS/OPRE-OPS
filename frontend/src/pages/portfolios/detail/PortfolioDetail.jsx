@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { getPortfolio } from "./getPortfolio";
 import { useEffect } from "react";
-import { useParams, Link, Outlet } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 
 const CanList = (props) => {
     return (

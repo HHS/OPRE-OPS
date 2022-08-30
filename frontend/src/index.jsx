@@ -11,6 +11,7 @@ import DeployedApplicationContext from "./applicationContext/DeployedApplication
 
 import "./index.css";
 
+// eslint-disable-next-line import/no-unresolved
 import "@uswds/uswds/css/uswds.min.css";
 import "@uswds/uswds";
 
