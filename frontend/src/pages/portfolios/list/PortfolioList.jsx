@@ -17,14 +17,14 @@ const PortfolioList = () => {
                 <nav className="usa-breadcrumb" aria-label="Breadcrumbs,,">
                     <ol className="usa-breadcrumb__list">
                         <li className="usa-breadcrumb__list-item">
-                            <a href="/" className="usa-breadcrumb__link">
-                                <span>Home</span>
-                            </a>
+                            <Link to="/" className="usa-breadcrumb__link">
+                                Home
+                            </Link>
                         </li>
                         <li className="usa-breadcrumb__list-item">
-                            <a href="/portfolios" className="usa-breadcrumb__link">
-                                <span>Portfolios</span>
-                            </a>
+                            <Link to="/portfolios" className="usa-breadcrumb__link">
+                                Portfolios
+                            </Link>
                         </li>
                     </ol>
                 </nav>
