@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import RetrieveAPIView
-from opre_ops.ops_site.cans.controller import CommonAccountingNumberSerializer
 
+from opre_ops.ops_site.cans.controller import CommonAccountingNumberSerializer
 from opre_ops.ops_site.portfolios.models import Portfolio
 
 
