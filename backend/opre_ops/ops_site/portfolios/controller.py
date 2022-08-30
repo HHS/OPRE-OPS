@@ -11,7 +11,7 @@ class PortfolioSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Portfolio
-        fields = '__all__'
+        fields = "__all__"
         depth = 1
 
 
@@ -21,5 +21,5 @@ class PortfolioListController(ListAPIView):
 
 
 class PortfolioReadController(RetrieveAPIView):
-    queryset = Portfolio.objects.prefetch_related('cans')
+    queryset = Portfolio.objects.prefetch_related("cans")
     serializer_class = PortfolioSerializer
