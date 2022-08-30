@@ -39,7 +39,7 @@ class CommonAccountingNumber(models.Model):
         FundingPartner, on_delete=models.PROTECT, related_name="authorizer"
     )
     portfolio = models.ForeignKey(
-        Portfolio, on_delete=models.PROTECT, related_name="portfolio", null=True
+        Portfolio, on_delete=models.PROTECT, related_name="cans", null=True
     )
 
     class Meta:

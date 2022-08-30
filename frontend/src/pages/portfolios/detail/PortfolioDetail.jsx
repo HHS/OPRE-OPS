@@ -1,7 +1,15 @@
 import { useDispatch, useSelector } from "react-redux";
 import { getPortfolio } from "./getPortfolio";
 import { useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link, Outlet } from "react-router-dom";
+
+const CanList = (props) => {
+    return (
+        <li>
+            <Link to={`/cans/${props.id}`}>{props.name}</Link>
+        </li>
+    );
+};
 
 const PortfolioDetail = () => {
     const dispatch = useDispatch();
@@ -34,7 +42,11 @@ const PortfolioDetail = () => {
                         </div>
                         <div className="info-unit">
                             <h3>CANs</h3>
-                            {portfolio.cans}
+                            <ul>
+                                {portfolio.cans?.map((can) => (
+                                    <CanList key={can.id} id={can.id} name={can.number} />
+                                ))}
+                            </ul>
                         </div>
                     </div>
                 </div>
