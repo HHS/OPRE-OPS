@@ -4,12 +4,23 @@ import { Link } from "react-router-dom";
 function App() {
     return (
         <main>
+            <nav className="usa-breadcrumb" aria-label="Breadcrumbs,,">
+                <ol className="usa-breadcrumb__list">
+                    <li className="usa-breadcrumb__list-item">
+                        <a href="/" className="usa-breadcrumb__link">
+                            <span>Home</span>
+                        </a>
+                    </li>
+                </ol>
+            </nav>
             <div className="usa-alert usa-alert--error" role="alert">
                 <div className="usa-alert__body">
                     <h4 className="usa-alert__heading">Error status</h4>
                     <p className="usa-alert__text">
                         Lorem ipsum dolor sit amet,
-                        <a className="usa-link" href="javascript:void(0);">consectetur adipiscing</a>
+                        <a className="usa-link" href="javascript:void(0);">
+                            consectetur adipiscing
+                        </a>
                         elit, sed do eiusmod.
                     </p>
                 </div>

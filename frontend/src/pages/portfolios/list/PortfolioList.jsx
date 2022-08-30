@@ -14,6 +14,20 @@ const PortfolioList = () => {
     return (
         <>
             <main>
+                <nav className="usa-breadcrumb" aria-label="Breadcrumbs,,">
+                    <ol className="usa-breadcrumb__list">
+                        <li className="usa-breadcrumb__list-item">
+                            <a href="/" className="usa-breadcrumb__link">
+                                <span>Home</span>
+                            </a>
+                        </li>
+                        <li className="usa-breadcrumb__list-item">
+                            <a href="/portfolios" className="usa-breadcrumb__link">
+                                <span>Portfolios</span>
+                            </a>
+                        </li>
+                    </ol>
+                </nav>
                 <table id="portfolio-list">
                     <caption>List of all Portfolios</caption>
                     <tbody>
