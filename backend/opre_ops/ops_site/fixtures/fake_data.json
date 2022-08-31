@@ -959,7 +959,8 @@
         "purpose": "",
         "arrangement_type": "MOU",
         "funding_source": [23],
-        "authorizer": 26
+        "authorizer": 26,
+        "portfolio": 2
     }
 },
 {
@@ -972,7 +973,8 @@
         "purpose": "",
         "arrangement_type": "IAA",
         "funding_source": [5, 28],
-        "authorizer": 26
+        "authorizer": 26,
+        "portfolio": 1
     }
 },
 {
@@ -985,7 +987,8 @@
         "purpose": "",
         "arrangement_type": "OPRE Appropriation",
         "funding_source":  [26],
-        "authorizer": 26
+        "authorizer": 26,
+        "portfolio": 1
     }
 },
 {
@@ -998,7 +1001,8 @@
         "purpose": "Fund a child development fellow for ASPE",
         "arrangement_type": "IDDA",
         "funding_source": [5],
-        "authorizer": 26
+        "authorizer": 26,
+        "portfolio": 2
     }
 },
 {
@@ -1011,7 +1015,8 @@
         "purpose": "Research into Head Start programs",
         "arrangement_type": "OPRE Appropriation",
         "funding_source":  [26],
-        "authorizer": 26
+        "authorizer": 26,
+        "portfolio": 3
     }
 },
 {
@@ -1024,7 +1029,8 @@
         "purpose": "",
         "arrangement_type": "Cost Share",
         "funding_source": [1],
-        "authorizer": 1
+        "authorizer": 1,
+        "portfolio": 4
     }
 },
 {
@@ -1037,7 +1043,8 @@
         "purpose": "",
         "arrangement_type": "Cost Share",
         "funding_source": [23],
-        "authorizer": 23
+        "authorizer": 23,
+        "portfolio": 3
     }
 },
 {
@@ -1272,6 +1279,26 @@
         "description":"Placeholder portfolio",
         "status":"Not-Started",
         "current_fiscal_year_funding": 18000000.00
+    }
+},
+{
+    "model": "ops_site.portfolio",
+    "pk": 3,
+    "fields":{
+        "name":"OPS-Portfolio-2",
+        "description":"Placeholder portfolio",
+        "status":"In-Process",
+        "current_fiscal_year_funding": 13504000.00
+    }
+},
+{
+    "model": "ops_site.portfolio",
+    "pk": 4,
+    "fields":{
+        "name":"OPS-Portfolio-3",
+        "description":"Placeholder portfolio",
+        "status":"Not-Started",
+        "current_fiscal_year_funding": 8000000.00
     }
 }
 ]

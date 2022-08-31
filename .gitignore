@@ -172,3 +172,6 @@ yarn-error.log*
 # Cypress
 *.mp4
 *.core
+
+# Root level flake8 only
+.flake8

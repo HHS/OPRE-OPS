@@ -2,10 +2,13 @@ from rest_framework import serializers
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import RetrieveAPIView
 
+from opre_ops.ops_site.cans.controller import CommonAccountingNumberSerializer
 from opre_ops.ops_site.portfolios.models import Portfolio
 
 
 class PortfolioSerializer(serializers.ModelSerializer):
+    cans = CommonAccountingNumberSerializer(many=True, read_only=True)
+
     class Meta:
         model = Portfolio
         fields = "__all__"
@@ -18,5 +21,5 @@ class PortfolioListController(ListAPIView):
 
 
 class PortfolioReadController(RetrieveAPIView):
-    queryset = Portfolio.objects.all()
+    queryset = Portfolio.objects.prefetch_related("cans")
     serializer_class = PortfolioSerializer
