@@ -14,10 +14,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Semgrep login
+        run: semgrep login
+        env:
+          SEMGREP_API_TOKEN_SETTINGS_KEY: ${{ secrets.SEMGREP_APP_TOKEN }}
+
       - name: Semgrep Scan
         run: semgrep ci --sarif --output=semgrep.sarif
-        env:
-          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
       - name: Upload SARIF file for GitHub Advanced Security Dashboard
         uses: github/codeql-action/upload-sarif@v2
