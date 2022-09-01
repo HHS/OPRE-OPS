@@ -10,14 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: returntocorp/semgrep
+    env:
+      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Semgrep login
-        run: semgrep login
-        env:
-          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
       - name: Semgrep Scan
         run: semgrep ci --sarif --output=semgrep.sarif
