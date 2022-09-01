@@ -50,7 +50,7 @@ ALLOWED_HOSTS = [".cloud.gov"]
 CSRF_TRUSTED_ORIGINS = ["https://*.app.cloud.gov"]
 CORS_ALLOWED_ORIGIN_REGEXES = [r"https://\S+\.app.cloud.gov"]
 
-REST_FRAMEWORK = REST_FRAMEWORK | {
+REST_FRAMEWORK = REST_FRAMEWORK | {  # noqa: F405
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
