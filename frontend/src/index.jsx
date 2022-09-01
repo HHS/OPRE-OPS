@@ -9,8 +9,6 @@ import store from "./store";
 import ApplicationContext from "./applicationContext/ApplicationContext";
 import DeployedApplicationContext from "./applicationContext/DeployedApplicationContext";
 
-import "./index.css";
-
 // eslint-disable-next-line import/no-unresolved
 import "@uswds/uswds/css/uswds.min.css";
 import "@uswds/uswds";
