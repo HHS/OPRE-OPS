@@ -16,8 +16,8 @@ jobs:
 
       - name: Semgrep Scan
         run: |
-          semgrep scan --sarif --output=semgrep.sarif --error
           echo "SEMGREP_TO_UPLOAD=semgrep.sarif" >> $GITHUB_ENV
+          semgrep scan --sarif --output=semgrep.sarif --error
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
           SEMGREP_RULES: "p/default"
