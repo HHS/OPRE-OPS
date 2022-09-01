@@ -4,7 +4,7 @@ import { setSelectedFiscalYear } from "./canFiscalYearSlice";
 import Select from "react-select";
 import { useParams } from "react-router-dom";
 import { useEffect } from "react";
-import "./budgetSummary.css";
+import styles from "./BudgetSummary.module.css";
 import constants from "../../../../constants";
 
 const fiscalYearOptions = [
@@ -15,8 +15,6 @@ const fiscalYearOptions = [
     { label: "FY 2024", value: 2024 },
 ];
 const defaultOption = fiscalYearOptions[2];
-
-const negativeRedStylingClass = "red-negative";
 
 const BudgetSummary = () => {
     const dispatch = useDispatch();
@@ -35,18 +33,18 @@ const BudgetSummary = () => {
     }, [dispatch, urlPathParams.id]);
 
     const totalFiscalYearFundingTableData = (
-        <td className={canFiscalYear?.total_fiscal_year_funding < 0 ? negativeRedStylingClass : ""}>
+        <td className={canFiscalYear?.total_fiscal_year_funding < 0 ? styles.redNegative : ""}>
             {canFiscalYear?.total_fiscal_year_funding || constants.notFilledInText}
         </td>
     );
 
     const amountAvailableTableData = (
-        <td className={canFiscalYear?.amount_available < 0 ? negativeRedStylingClass : ""}>
+        <td className={canFiscalYear?.amount_available < 0 ? styles.redNegative : ""}>
             {canFiscalYear?.amount_available || constants.notFilledInText}
         </td>
     );
 
-    const pendingFundsTableData = <td className={pendingFunds < 0 ? negativeRedStylingClass : ""}>{pendingFunds}</td>;
+    const pendingFundsTableData = <td className={pendingFunds < 0 ? styles.redNegative : ""}>{pendingFunds}</td>;
 
     return (
         <div>
