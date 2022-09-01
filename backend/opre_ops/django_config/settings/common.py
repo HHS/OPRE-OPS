@@ -88,8 +88,7 @@ PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# This is a test to see if semgrep is functioning correctly
-REST_FRAMEWORK = {  # nosemgrep: python.django.security.audit.django-rest-framework.missing-throttle-config.missing-throttle-config
+REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     "DEFAULT_PERMISSION_CLASSES": [
