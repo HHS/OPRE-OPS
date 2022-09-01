@@ -33,5 +33,5 @@ it("get a negative value", () => {
         .eq(3)
         .click(0, 0, { force: true });
     cy.contains("-300000");
-    cy.get("[class='red-negative']").contains("-300000");
+    cy.get("[class*='redNegative']").contains("-300000");
 });
