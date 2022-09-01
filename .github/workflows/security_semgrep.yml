@@ -17,7 +17,7 @@ jobs:
       - name: Semgrep login
         run: semgrep login
         env:
-          SEMGREP_API_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
       - name: Semgrep Scan
         run: semgrep ci --sarif --output=semgrep.sarif
