@@ -49,3 +49,11 @@ DEBUG = False
 ALLOWED_HOSTS = [".cloud.gov"]
 CSRF_TRUSTED_ORIGINS = ["https://*.app.cloud.gov"]
 CORS_ALLOWED_ORIGIN_REGEXES = [r"https://\S+\.app.cloud.gov"]
+
+REST_FRAMEWORK = REST_FRAMEWORK | {
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {"anon": "1000/day", "user": "5000/day"},
+}
