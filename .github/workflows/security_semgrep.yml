@@ -25,7 +25,7 @@ jobs:
         # Delete the findings in the SARIF file.
       - name: SARIF clean-up
         run: |
-          sudo apt-get install -y jq
+          apt-get install -y jq
           cat ./semgrep.sarif | jq 'del(.runs[].results[])' > clean_semgrep.sarif
 
       - name: Upload SARIF file for GitHub Advanced Security Dashboard
