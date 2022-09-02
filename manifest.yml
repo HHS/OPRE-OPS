@@ -4,7 +4,7 @@ applications:
     memory: 700M
     buildpack: python_buildpack
     path: ./backend/
-    command: export PYTHONPATH="./:${PYTHONPATH}" && python ./opre_ops/manage.py migrate && python -m gunicorn opre_ops.django_config.asgi:application --worker-class=uvicorn.workers.UvicornWorker --bind=0.0.0.0:8080
+    command: ./deploy_run.sh
   - name: opre-ops-frontend-test
     memory: 64M
     buildpack: https://github.com/cloudfoundry/staticfile-buildpack
