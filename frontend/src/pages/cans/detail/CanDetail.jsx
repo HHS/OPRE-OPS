@@ -23,17 +23,17 @@ const CanDetail = () => {
             <div className="grid-container">
                 <div className="grid-row">
                     <div className="grid-col">
-                        <h3>CAN description</h3>
+                        <h2>CAN description</h2>
                         {can.description}
-                        <h3>CAN purpose</h3>
+                        <h2>CAN purpose</h2>
                         {can.purpose || constants.notFilledInText}
-                        <h3>Arrangement type</h3>
+                        <h2>Arrangement type</h2>
                         {can.arrangement_type}
-                        <h3>Funding source</h3>
+                        <h2>Funding source</h2>
                         {can.funding_source?.[0]?.nickname || constants.notFilledInText}
-                        <h3>OPRE point of contact</h3>
+                        <h2>OPRE point of contact</h2>
                         {can.authorizer?.name}
-                        <h3>OPRE division</h3>
+                        <h2>OPRE division</h2>
                         {can.division || constants.notFilledInText}
                     </div>
 
