@@ -21,37 +21,21 @@ const PortfolioDetail = () => {
     }, [dispatch, urlPathParams.id]);
 
     return (
-        <main>
-            <section className="flex">
-                <div className="one-flex">
-                    <div className="rounded-box">
-                        <div className="info-unit">
-                            <h2>Portfolio Information</h2>
-                        </div>
-                        <div className="info-unit">
-                            <h3>Portfolio description</h3>
-                            {portfolio.description}
-                        </div>
-                        <div className="info-unit">
-                            <h3>Status</h3>
-                            {portfolio.status}
-                        </div>
-                        <div className="info-unit">
-                            <h3>Fiscal Year Funding</h3>
-                            {portfolio.current_fiscal_year_funding}
-                        </div>
-                        <div className="info-unit">
-                            <h3>CANs</h3>
-                            <ul>
-                                {portfolio.cans?.map((can) => (
-                                    <CanList key={can.id} id={can.id} name={can.number} />
-                                ))}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
+        <>
+            <h1>{portfolio.name}</h1>
+            <h2>Portfolio description</h2>
+            {portfolio.description}
+            <h2>Status</h2>
+            {portfolio.status}
+            <h2>Fiscal Year Funding</h2>
+            {portfolio.current_fiscal_year_funding}
+            <h2>CANs</h2>
+            <ul className="usa-list">
+                {portfolio.cans?.map((can) => (
+                    <CanList key={can.id} id={can.id} name={can.number} />
+                ))}
+            </ul>
+        </>
     );
 };
 
