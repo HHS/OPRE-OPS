@@ -47,93 +47,44 @@ const BudgetSummary = () => {
     const pendingFundsTableData = <td className={pendingFunds < 0 ? styles.redNegative : ""}>{pendingFunds}</td>;
 
     return (
-        <div>
-            <div className="info-head">
-                <Select
-                    className="left-float"
-                    options={fiscalYearOptions}
-                    onChange={handleFiscalYearChange}
-                    defaultValue={defaultOption}
-                    classNamePrefix="react-select"
-                />
-            </div>
-            <div className="rounded-box">
-                <div className="info-unit">
-                    <h2 className="info-unit">Budget summary</h2>
-                    <div className="info-unit flex">
-                        <table className="one-flex">
-                            <tbody>
-                                <tr>
-                                    <th>Funding status</th>
-                                    <th>Amount</th>
-                                </tr>
-                                <tr>
-                                    <td>Total FY {selectedFiscalYear || constants.notFilledInText} Funding</td>
-                                    {totalFiscalYearFundingTableData}
-                                </tr>
-                                <tr>
-                                    <td>Funded YTD</td>
-                                    {amountAvailableTableData}
-                                </tr>
-                                <tr>
-                                    <td>Pending funds</td>
-                                    {pendingFundsTableData}
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <table className="one-flex">
-                            <tbody>
-                                <tr>
-                                    <th>Spending plan status</th>
-                                    <th>Amount</th>
-                                </tr>
-                                <tr>
-                                    <td>Total FY {selectedFiscalYear || constants.notFilledInText} Funding</td>
-                                    {totalFiscalYearFundingTableData}
-                                </tr>
-                                <tr>
-                                    <td>Total in process spending</td>
-                                    {totalFiscalYearFundingTableData}
-                                </tr>
-                                <tr>
-                                    <td>Remaining planned spending</td>
-                                    {totalFiscalYearFundingTableData}
-                                </tr>
-                                <tr>
-                                    <td>Unplanned (CAN balance)</td>
-                                    {totalFiscalYearFundingTableData}
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div className="info-unit">
-                        <table className="one-flex">
-                            <caption>Potential additional funding</caption>
-                            <tbody>
-                                <tr>
-                                    <th>Source/description</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                    <th>Last update</th>
-                                    <th>Comments</th>
-                                </tr>
-                                <tr>
-                                    <td>Department</td>
-                                    <td>{canFiscalYear?.potential_additional_funding || constants.notFilledInText}</td>
-                                    <td>In process</td>
-                                    <td>1/1/2022</td>
-                                    <td>💬</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <>
+            <h2>Budget summary</h2>
+
+            <Select
+                className="left-float"
+                options={fiscalYearOptions}
+                onChange={handleFiscalYearChange}
+                defaultValue={defaultOption}
+                classNamePrefix="react-select"
+            />
+
+            <table className="usa-table usa-table--borderless">
+                <thead>
+                    <tr>
+                        <th scope="col">Funding status</th>
+                        <th scope="col">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">Total FY {selectedFiscalYear || constants.notFilledInText} Funding</th>
+                        {totalFiscalYearFundingTableData}
+                    </tr>
+                    <tr>
+                        <th scope="row">Funded YTD</th>
+                        {amountAvailableTableData}
+                    </tr>
+                    <tr>
+                        <th scope="row">Pending funds</th>
+                        {pendingFundsTableData}
+                    </tr>
+                    <tr>
+                        <th scope="row">Potential additional funding</th>
+                        <td>{canFiscalYear?.potential_additional_funding || constants.notFilledInText}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </>
     );
 };
 
