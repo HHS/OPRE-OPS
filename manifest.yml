@@ -4,7 +4,7 @@ applications:
     memory: 700M
     buildpack: python_buildpack
     path: ./backend/
-    command: ./deploy_run.sh
+    command: ./deployed_run.sh
   - name: opre-ops-frontend-test
     memory: 64M
     buildpack: https://github.com/cloudfoundry/staticfile-buildpack
