@@ -4,7 +4,7 @@ const BreadcrumbList = (props) => {
     return (
         <nav className="usa-breadcrumb" aria-label="Breadcrumbs,,">
             <ol className="usa-breadcrumb__list">
-                <li className="usa-breadcrumb__list-item">
+                <li className="usa-breadcrumb__list-item" aria-current={props.isCurrent ? "page" : undefined}>
                     <Link to="/" className="usa-breadcrumb__link">
                         Home
                     </Link>

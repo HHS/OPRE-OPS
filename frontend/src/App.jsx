@@ -4,7 +4,7 @@ import { BreadcrumbList } from "./pages/UI/Breadcrumb";
 function App() {
     return (
         <>
-            <BreadcrumbList />
+            <BreadcrumbList isCurrent />
             <div className="usa-alert usa-alert--error" role="alert">
                 <div className="usa-alert__body">
                     <h4 className="usa-alert__heading">Under Construction</h4>
