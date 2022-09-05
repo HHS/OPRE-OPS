@@ -1,7 +1,9 @@
-import { useSelector, useDispatch } from "react-redux";
-import { Link, Outlet } from "react-router-dom";
-import { getPortfolioList } from "./getPortfolioList";
 import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, Outlet } from "react-router-dom";
+import BreadcrumbItem from "../../UI/BreadcrumbItem";
+import Breadcrumb from "../../UI/BreadcrumbList";
+import { getPortfolioList } from "./getPortfolioList";
 
 const PortfolioList = () => {
     const dispatch = useDispatch();
@@ -13,20 +15,9 @@ const PortfolioList = () => {
 
     return (
         <>
-            <nav className="usa-breadcrumb" aria-label="Breadcrumbs,,">
-                <ol className="usa-breadcrumb__list">
-                    <li className="usa-breadcrumb__list-item">
-                        <Link to="/" className="usa-breadcrumb__link">
-                            Home
-                        </Link>
-                    </li>
-                    <li className="usa-breadcrumb__list-item">
-                        <Link to="/portfolios" className="usa-breadcrumb__link">
-                            Portfolios
-                        </Link>
-                    </li>
-                </ol>
-            </nav>
+            <Breadcrumb>
+                <BreadcrumbItem isCurrent pageName="Portfolios" />
+            </Breadcrumb>
 
             <table className="usa-table usa-table--borderless">
                 <caption>List of all Portfolios</caption>
