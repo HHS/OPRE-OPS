@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, Outlet } from "react-router-dom";
-import BreadcrumbItem from "../../UI/BreadcrumbItem";
-import Breadcrumb from "../../UI/BreadcrumbList";
+import { BreadcrumbItem, BreadcrumbList } from "../../UI/Breadcrumb";
 import { getCanList } from "./getCanList";
 
 const CanList = () => {
@@ -15,9 +14,9 @@ const CanList = () => {
 
     return (
         <>
-            <Breadcrumb>
+            <BreadcrumbList>
                 <BreadcrumbItem isCurrent pageName="CANs" />
-            </Breadcrumb>
+            </BreadcrumbList>
 
             <table className="usa-table usa-table--borderless">
                 <caption>List of all CANs</caption>

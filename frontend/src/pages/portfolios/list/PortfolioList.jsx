@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, Outlet } from "react-router-dom";
-import BreadcrumbItem from "../../UI/BreadcrumbItem";
-import Breadcrumb from "../../UI/BreadcrumbList";
+import { BreadcrumbList, BreadcrumbItem } from "../../UI/Breadcrumb";
 import { getPortfolioList } from "./getPortfolioList";
 
 const PortfolioList = () => {
@@ -15,9 +14,9 @@ const PortfolioList = () => {
 
     return (
         <>
-            <Breadcrumb>
+            <BreadcrumbList>
                 <BreadcrumbItem isCurrent pageName="Portfolios" />
-            </Breadcrumb>
+            </BreadcrumbList>
 
             <table className="usa-table usa-table--borderless">
                 <caption>List of all Portfolios</caption>
