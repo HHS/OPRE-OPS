@@ -15,10 +15,10 @@ const PortfolioDetail = () => {
     const dispatch = useDispatch();
     const portfolio = useSelector((state) => state.portfolioDetail.portfolio);
     const urlPathParams = useParams();
-
+    const portfolioId = parseInt(urlPathParams.id);
     useEffect(() => {
-        dispatch(getPortfolio(urlPathParams.id));
-    }, [dispatch, urlPathParams.id]);
+        dispatch(getPortfolio(portfolioId));
+    }, [dispatch, portfolioId]);
 
     return (
         <>
