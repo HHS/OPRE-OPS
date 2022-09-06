@@ -1,7 +1,8 @@
-import { useSelector, useDispatch } from "react-redux";
-import { Link, Outlet } from "react-router-dom";
-import { getCanList } from "./getCanList";
 import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, Outlet } from "react-router-dom";
+import { BreadcrumbItem, BreadcrumbList } from "../../../components/Breadcrumb";
+import { getCanList } from "./getCanList";
 
 const CanList = () => {
     const dispatch = useDispatch();
@@ -13,20 +14,9 @@ const CanList = () => {
 
     return (
         <>
-            <nav className="usa-breadcrumb" aria-label="Breadcrumbs,,">
-                <ol className="usa-breadcrumb__list">
-                    <li className="usa-breadcrumb__list-item">
-                        <Link to="/" className="usa-breadcrumb__link">
-                            Home
-                        </Link>
-                    </li>
-                    <li className="usa-breadcrumb__list-item">
-                        <Link to="/cans" className="usa-breadcrumb__link">
-                            CANs
-                        </Link>
-                    </li>
-                </ol>
-            </nav>
+            <BreadcrumbList>
+                <BreadcrumbItem isCurrent pageName="CANs" />
+            </BreadcrumbList>
 
             <table className="usa-table usa-table--borderless">
                 <caption>List of all CANs</caption>
