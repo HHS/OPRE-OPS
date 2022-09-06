@@ -1,0 +1,8 @@
+name: Run Full Stack
+description: Runs the full stack from the docker-compose.yml
+runs:
+  using: composite
+  steps:
+    - name: Start Stack
+      shell: bash
+      run: docker-compose up --build -d
