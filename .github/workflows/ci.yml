@@ -5,8 +5,10 @@ on:
     branches:
       - main
   push:
-    branches:
-      - main
+    branches: [main, development]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
 
 jobs:
 
@@ -14,7 +16,15 @@ jobs:
     name: Unit Tests
     uses: ./.github/workflows/unit_test_reusable.yml
 
-  semgrep:
+  codeql-analysis:
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    name: CodeQL Scan
+    uses: ./.github/workflows/security_codeql.yml
+
+  semgrep-analysis:
     permissions:
       security-events: write
     name: Semgrep Scan

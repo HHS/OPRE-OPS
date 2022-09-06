@@ -22,15 +22,16 @@ const BudgetSummary = () => {
     const pendingFunds = useSelector((state) => state.canFiscalYearDetail.pendingFunds);
     const selectedFiscalYear = useSelector((state) => state.canFiscalYearDetail.selectedFiscalYear);
     const urlPathParams = useParams();
+    const canFiscalYearId = parseInt(urlPathParams.id);
 
     const handleFiscalYearChange = (e) => {
-        dispatch(getCanFiscalYearByCan(urlPathParams.id, e.value));
+        dispatch(getCanFiscalYearByCan(canFiscalYearId, e.value));
         dispatch(setSelectedFiscalYear(e.value));
     };
 
     useEffect(() => {
-        dispatch(getCanFiscalYearByCan(urlPathParams.id, defaultOption.value));
-    }, [dispatch, urlPathParams.id]);
+        dispatch(getCanFiscalYearByCan(canFiscalYearId, defaultOption.value));
+    }, [dispatch, canFiscalYearId]);
 
     const totalFiscalYearFundingTableData = (
         <td className={canFiscalYear?.total_fiscal_year_funding < 0 ? styles.redNegative : ""}>

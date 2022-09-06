@@ -6,7 +6,7 @@ jobs:
   semgrep:
     permissions:
       security-events: write
-    name: Scan
+    name: Semgrep Analyze
     runs-on: ubuntu-latest
     container:
       image: returntocorp/semgrep
