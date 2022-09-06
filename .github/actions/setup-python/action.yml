@@ -1,0 +1,14 @@
+name: Set up Python
+description: Installs Python3 and dependencies defined in the Pipfile
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        cache: pipenv
+    - name: Install Pipenv dependencies
+      shell: bash
+      working-directory: ./backend
+      run: pipenv install --dev
