@@ -7,7 +7,7 @@ runs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
-        cache: pipenv
+
     - name: Install Pipenv dependencies
       shell: bash
       working-directory: ./backend
