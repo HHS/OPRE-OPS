@@ -6,6 +6,9 @@ on:
       - main
   push:
     branches: [main, development]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
 
 jobs:
 
