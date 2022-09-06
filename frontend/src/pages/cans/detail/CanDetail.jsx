@@ -9,10 +9,10 @@ const CanDetail = () => {
     const dispatch = useDispatch();
     const can = useSelector((state) => state.canDetail.can);
     const urlPathParams = useParams();
-
+    const canId = parseInt(urlPathParams.id);
     useEffect(() => {
-        dispatch(getCan(urlPathParams.id));
-    }, [dispatch, urlPathParams.id]);
+        dispatch(getCan(canId));
+    }, [dispatch, canId]);
 
     return (
         <>
