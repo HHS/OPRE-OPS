@@ -1,32 +1,26 @@
 import { Link } from "react-router-dom";
 
-const BreadcrumbList = (props) => {
+export const BreadcrumbList = ({ isCurrent, children }) => {
     return (
         <nav className="usa-breadcrumb" aria-label="Breadcrumbs,,">
             <ol className="usa-breadcrumb__list">
-                <li className="usa-breadcrumb__list-item" aria-current={props.isCurrent ? "page" : undefined}>
+                <li className="usa-breadcrumb__list-item" aria-current={isCurrent ? "page" : undefined}>
                     <Link to="/" className="usa-breadcrumb__link">
                         Home
                     </Link>
                 </li>
-                {props.children}
+                {children}
             </ol>
         </nav>
     );
 };
 
-const BreadcrumbItem = (props) => {
+export const BreadcrumbItem = ({ pageName, isCurrent }) => {
     return (
-        <li
-            className="usa-breadcrumb__list-item"
-            aria-label={props.pageName}
-            aria-current={props.isCurrent ? "page" : undefined}
-        >
+        <li className="usa-breadcrumb__list-item" aria-label={pageName} aria-current={isCurrent ? "page" : undefined}>
             <Link to="/portfolios" className="usa-breadcrumb__link">
-                {props.pageName}
+                {pageName}
             </Link>
         </li>
     );
 };
-
-export { BreadcrumbList, BreadcrumbItem };
