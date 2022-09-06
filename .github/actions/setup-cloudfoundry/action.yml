@@ -1,0 +1,10 @@
+name: Setup Cloud Foundry
+description: Download the cloud foundary binary
+runs:
+  using: composite
+  steps:
+    - name: Install CF
+      run: |
+        mkdir -p $HOME/bin
+        export PATH=$HOME/bin:$PATH
+        curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary" | tar xzv -C $HOME/bin
