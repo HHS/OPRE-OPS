@@ -1,0 +1,25 @@
+name: Nightly Security Analysis
+on:
+  workflow_dispatch:
+  schedule:
+    # cron format: 'minute hour dayofmonth month dayofweek'
+    # this will run at noon UTC every day (3am EST / 4am EDT)
+    - cron: '0 8 * * *'
+
+jobs:
+  dast-scan:
+    name: OWASP Zap Scan
+    runs-on: ubuntu-latest
+    stesp:
+      - uses: actions/checkout@v3
+
+      - id: setup
+        uses: ./.github/actions/run-full-stack
+
+      - name: Run OWASP Zap Scan
+        uses: zaproxy/action-full-scan@v0.4.0
+        with:
+          docker_name: 'owasp/zap2docker-stable'
+          targer: 'http://localhost:3000/'
+          fail_action: true
+          cmd_options: '-I'
