@@ -10,7 +10,7 @@ jobs:
   dast-scan:
     name: OWASP Zap Scan
     runs-on: ubuntu-latest
-    stesp:
+    steps:
       - uses: actions/checkout@v3
 
       - id: setup
