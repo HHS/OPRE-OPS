@@ -8,6 +8,14 @@ These are settings for local development only, not cloud or production environme
 from opre_ops.django_config.settings.common import *  # noqa: F403
 from opre_ops.django_config.settings.helpers.random_string import generate_random_string
 
+__all__ = [
+    "DATABASES",
+    "SECRET_KEY",
+    "DEBUG",
+    "ALLOWED_HOSTS",
+    "CORS_ALLOWED_ORIGIN_REGEXES",
+    "INSTALLED_APPS",
+]
 
 # Local database config for use with Docker Compose
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
