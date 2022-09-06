@@ -1,17 +1,10 @@
 import { Link } from "react-router-dom";
+import { BreadcrumbList } from "./components/Breadcrumb";
 
 function App() {
     return (
         <>
-            <nav className="usa-breadcrumb" aria-label="Breadcrumbs,,">
-                <ol className="usa-breadcrumb__list">
-                    <li className="usa-breadcrumb__list-item">
-                        <Link to="/" className="usa-breadcrumb__link">
-                            Home
-                        </Link>
-                    </li>
-                </ol>
-            </nav>
+            <BreadcrumbList isCurrent />
             <div className="usa-alert usa-alert--error" role="alert">
                 <div className="usa-alert__body">
                     <h4 className="usa-alert__heading">Under Construction</h4>

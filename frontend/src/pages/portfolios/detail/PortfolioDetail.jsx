@@ -3,10 +3,10 @@ import { getPortfolio } from "./getPortfolio";
 import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 
-const CanList = (props) => {
+const CanList = ({ id, name }) => {
     return (
         <li>
-            <Link to={`/cans/${props.id}`}>{props.name}</Link>
+            <Link to={`/cans/${id}`}>{name}</Link>
         </li>
     );
 };
