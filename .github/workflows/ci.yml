@@ -13,7 +13,13 @@ jobs:
     name: Unit Tests
     uses: ./.github/workflows/unit_test_reusable.yml
 
-  semgrep:
+  CodeQL Analysis:
+    permissions:
+      security-events: write
+    name: CodeQL Scan
+    uses: ./.github/workflows/security_codeql.yml
+
+  Semgrep Analysis:
     permissions:
       security-events: write
     name: Semgrep Scan
