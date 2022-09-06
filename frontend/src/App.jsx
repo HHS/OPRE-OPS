@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { BreadcrumbList } from "./pages/UI/Breadcrumb";
+import { BreadcrumbList } from "./components/Breadcrumb";
 
 function App() {
     return (

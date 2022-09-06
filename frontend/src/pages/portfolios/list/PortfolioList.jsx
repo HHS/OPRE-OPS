@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, Outlet } from "react-router-dom";
-import { BreadcrumbList, BreadcrumbItem } from "../../UI/Breadcrumb";
+import { BreadcrumbList, BreadcrumbItem } from "../../../components/Breadcrumb";
 import { getPortfolioList } from "./getPortfolioList";
 
 const PortfolioList = () => {
