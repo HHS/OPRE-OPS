@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   schedule:
     # cron format: 'minute hour dayofmonth month dayofweek'
-    # this will run at noon UTC every day (3am EST / 4am EDT)
+    # this will run at 8AM UTC every day (3am EST / 4am EDT)
     - cron: '0 8 * * *'
 
 jobs:
