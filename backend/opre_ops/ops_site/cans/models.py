@@ -4,15 +4,7 @@ from opre_ops.ops_site.models import Person
 from opre_ops.ops_site.portfolios.models import Portfolio
 
 
-class FundingPartner(models.Model):
-    name = models.CharField(max_length=100)
-    nickname = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
-
-class CommonAccountingNumber(models.Model):
+class CAN(models.Model):
     """
     A CAN is a Common Accounting Number, which is
     used to track money coming into OPRE
@@ -21,22 +13,21 @@ class CommonAccountingNumber(models.Model):
     descriptive information about a given CAN
     """
 
-    ARRANGEMENT_TYPES = [
-        ("OPRE Appropriation", "OPRE Appropriation"),
-        ("Cost Share", "Cost Share"),
-        ("IAA", "IAA"),
-        ("IDDA", "IDDA"),
-        ("MOU", "MOU"),
-    ]
+    class ArrangementTypes(models.TextChoices):
+        OPRE_APPROPRIATION = "OPRE Appropriation"
+        COST_SHARE = "Cost Share"
+        IAA = "IAA"
+        IDDA = "IDDA"
+        MOU = "MOU"
 
     number = models.CharField(max_length=30)
     description = models.CharField(max_length=100)
     purpose = models.TextField(default="", blank=True)
     nickname = models.CharField(max_length=30)
-    arrangement_type = models.CharField(max_length=30, choices=ARRANGEMENT_TYPES)
-    funding_source = models.ManyToManyField(FundingPartner)
+    arrangement_type = models.CharField(max_length=30, choices=ArrangementTypes.choices)
+    funding_source = models.ManyToManyField("FundingSource")
     authorizer = models.ForeignKey(
-        FundingPartner, on_delete=models.PROTECT, related_name="authorizer"
+        "FundingPartner", on_delete=models.PROTECT, related_name="authorizers"
     )
     portfolio = models.ForeignKey(
         Portfolio, on_delete=models.PROTECT, related_name="cans", null=True
@@ -44,6 +35,33 @@ class CommonAccountingNumber(models.Model):
 
     class Meta:
         verbose_name_plural = "CANs"
+
+
+class FundingPartner(models.Model):
+    """
+    From: https://docs.google.com/spreadsheets/d/18FP-ZDnvjtKakj0DDGL9lLXPry8xkqNt/
+
+    > Instead of ""Source,"" consider ""Funding Source""
+        Instead of ""Agency,"" consider ""Funding Partner""
+    """
+
+    name = models.CharField(max_length=100)
+    nickname = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
+class FundingSource(models.Model):
+    """
+    See docstring for FundingPartner.
+    """
+
+    name = models.CharField(max_length=100)
+    nickname = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
 
 
 class CANFiscalYear(models.Model):
@@ -55,7 +73,7 @@ class CANFiscalYear(models.Model):
     information by fiscal year for a given CAN
     """
 
-    can = models.ForeignKey(CommonAccountingNumber, on_delete=models.PROTECT)
+    can = models.ForeignKey(CAN, on_delete=models.PROTECT)
     fiscal_year = models.IntegerField()
     amount_available = models.DecimalField(max_digits=12, decimal_places=2)
     total_fiscal_year_funding = models.DecimalField(max_digits=12, decimal_places=2)
@@ -76,7 +94,7 @@ class CANFiscalYear(models.Model):
 
 
 class Contract(models.Model):
-    cans = models.ManyToManyField(CommonAccountingNumber, related_name="contracts")
+    cans = models.ManyToManyField(CAN, related_name="contracts")
     name = models.TextField()
 
     @property
@@ -110,9 +128,7 @@ class ContractLineItemFiscalYearPerCAN(models.Model):
     fiscal_year = models.ForeignKey(
         ContractLineItemFiscalYear, on_delete=models.CASCADE, related_name="cans"
     )
-    can = models.ForeignKey(
-        CommonAccountingNumber, on_delete=models.PROTECT, related_name="line_items_fy"
-    )
+    can = models.ForeignKey(CAN, on_delete=models.PROTECT, related_name="line_items_fy")
     funding = models.DecimalField(max_digits=12, decimal_places=2)
 
     @property
