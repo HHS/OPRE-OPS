@@ -3,8 +3,8 @@ from importlib import import_module
 from django.apps import apps
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management.color import no_style
-from django.core.management.sql import emit_post_migrate_signal, sql_flush
-from django.db import DEFAULT_DB_ALIAS, connections
+from django.core.management.sql import sql_flush
+from django.db import connections, DEFAULT_DB_ALIAS
 
 
 class Command(BaseCommand):
@@ -32,12 +32,12 @@ class Command(BaseCommand):
             action="store_true",
             default=False,
             dest="allow_cascade",
-            help='Add CASCADE to the TRUNCATE.', )
+            help="Add CASCADE to the TRUNCATE.",
+        )
 
     def handle(self, **options):
         database = options["database"]
         connection = connections[database]
-        verbosity = options["verbosity"]
         interactive = options["interactive"]
         allow_cascade = options["allow_cascade"]
 
