@@ -20,6 +20,6 @@ jobs:
         uses: zaproxy/action-full-scan@v0.4.0
         with:
           docker_name: 'owasp/zap2docker-stable'
-          targer: 'http://localhost:3000/'
+          target: 'http://localhost:3000/'
           fail_action: true
           cmd_options: '-I'
