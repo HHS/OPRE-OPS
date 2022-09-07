@@ -16,6 +16,10 @@ inputs:
   APP_NAME:
     description: Applicaiton name (from manifest.yml).
     required: true
+outputs:
+  BACKEND_DOMAIN:
+    description: Uri of the deployed backend.
+    value: ${{ steps.deploy-backend.outputs.BACKEND_DOMAIN }}
 runs:
   using: composite
   steps:
