@@ -12,7 +12,6 @@ class Command(BaseCommand):
         "Removes ALL DATA from the database, including data added during "
         'migrations. Does not achieve a "fresh install" state.'
     )
-    stealth_options = ("reset_sequences", "allow_cascade", "inhibit_post_migrate")
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -60,13 +59,12 @@ class Command(BaseCommand):
 
         if interactive:
             confirm = input(
-                """You have requested a flush of the database.
-This will IRREVERSIBLY DESTROY all data currently in the "%s" database,
+                f"""You have requested a flush of the database.
+This will IRREVERSIBLY DESTROY all data currently in the {connection.settings_dict["NAME"]} database,
 and return each table to an empty state.
 Are you sure you want to do this?
 
     Type 'yes' to continue, or 'no' to cancel: """
-                % connection.settings_dict["NAME"]
             )
         else:
             confirm = "yes"
@@ -76,13 +74,12 @@ Are you sure you want to do this?
                 connection.ops.execute_sql_flush(sql_list)
             except Exception as exc:
                 raise CommandError(
-                    "Database %s couldn't be flushed. Possible reasons:\n"
+                    f"Database {connection.settings_dict['NAME']} couldn't be flushed. Possible reasons:\n"
                     "  * The database isn't running or isn't configured correctly.\n"
                     "  * At least one of the expected database tables doesn't exist.\n"
                     "  * The SQL was invalid.\n"
                     "Hint: Look at the output of 'django-admin sqlflush'. "
                     "That's the SQL this command wasn't able to run."
-                    % (connection.settings_dict["NAME"],)
                 ) from exc
 
         else:
