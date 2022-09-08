@@ -5,7 +5,7 @@ it("list cans", () => {
     cy.checkA11y();
 
     cy.contains("/cans").click();
-    cy.url().should("include", "/caans");
+    cy.url().should("include", "/cans");
 });
 
 it("get can details", () => {

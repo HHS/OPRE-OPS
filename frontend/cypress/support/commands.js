@@ -27,7 +27,7 @@ const severityIndicators = {
     critical: "🔴",
 };
 
-const displayViolationsInCypress = (violations) => {
+const violationHandler = (violations) => {
     violations.forEach((violation) => {
         const violationDomNodes = violation.nodes;
         const violationJQueryNodesReference = Cypress.$(violationDomNodes.map((node) => node.target).join(","));
@@ -48,22 +48,6 @@ const displayViolationsInCypress = (violations) => {
             });
         });
     });
-};
-
-const displayViolationsInConsole = (violations) => {
-    const violationData = violations.map((violation) => ({
-        impact: `${severityIndicators[violation.impact]}`,
-        help: violation.help,
-        helpUrl: violation.helpUrl,
-        nodes: violation.nodes.map((node) => node.target.join(",")),
-    }));
-
-    cy.task("printTableToConsole", violationData);
-};
-
-const violationHandler = (violations) => {
-    displayViolationsInCypress(violations);
-    displayViolationsInConsole(violations);
 };
 
 Cypress.Commands.overwrite("checkA11y", (originalFn, context, options, violationCallback, skipFailures) => {
