@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from opre_ops.ops_site.cans.models import CAN, CANFiscalYear
+from opre_ops.ops_site.cans.models import CAN
+from opre_ops.ops_site.cans.models import CANFiscalYear
 from opre_ops.ops_site.cans.models import Contract
 from opre_ops.ops_site.cans.models import ContractLineItem
 from opre_ops.ops_site.cans.models import FundingPartner
