@@ -20,37 +20,30 @@ jobs:
       NODE_ENV: production
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: ./.github/actions/setup-python
+      - uses: ./.github/actions/setup-javascript
+      - uses: ./.github/actions/setup-cloudfoundry
+
+      - name: Deploy Backend
+        uses: ./.github/actions/deploy-backend
         with:
-          python-version: '3.x'
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: 'yarn'
-          cache-dependency-path: '**/yarn.lock'
-      - name: Install CF CLI
-        run: |
-          mkdir -p $HOME/bin
-          export PATH=$HOME/bin:$PATH
-          curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary" | tar xzv -C $HOME/bin
-      - name: Install frontend dependencies
-        working-directory: ./frontend
-        run: yarn install --production --frozen-lockfile
-      - name: Deploy backend to Cloud.gov
-        id: backend-deploy
-        run: |
-          export PATH=$HOME/bin:$PATH
-          cf login -a https://api.fr.cloud.gov -u ${{ secrets.DEV_USER }} -p ${{ secrets.DEV_PASSWORD }} -o ${{ secrets.ORG_NAME }} -s ${{ secrets.SPACE_NAME }}
-          cf push opre-ops-test -f manifest.yml
-          BACKEND_GUID=$(cf app opre-ops-test --guid)
-          BACKEND_DOMAIN=$(cf curl /v3/apps/$BACKEND_GUID/env | jq -r .application_env_json.VCAP_APPLICATION.application_uris[0])
-          echo "::set-output name=BACKEND_DOMAIN::${BACKEND_DOMAIN}"
+          USERNAME: ${{ secrets.DEV_USER }}
+          PASSWORD: ${{ secrets.DEV_PASSWORD }}
+          ORG_NAME: ${{ secrets.ORG_NAME }}
+          SPACE_NAME: ${{ secrets.SPACE_NAME }}
+          APP_NAME: opre-ops-test
+
       - name: Build frontend
         working-directory: ./frontend
-        run: REACT_APP_BACKEND_DOMAIN=https://${{steps.backend-deploy.outputs.BACKEND_DOMAIN}} yarn build
-      - name: Deploy frontend to Cloud.gov
         run: |
-          export PATH=$HOME/bin:$PATH
+          REACT_APP_BACKEND_DOMAIN=https://${{steps.backend-deploy.outputs.BACKEND_DOMAIN}} yarn build
           cp ./frontend/Staticfile ./frontend/build/
-          cf login -a https://api.fr.cloud.gov -u ${{ secrets.DEV_USER }} -p ${{ secrets.DEV_PASSWORD }} -o ${{ secrets.ORG_NAME }} -s ${{ secrets.SPACE_NAME }}
-          cf push opre-ops-frontend-test -f manifest.yml
+
+      - name: Deploy frontend
+        uses: ./.github/actions/deploy-frontend
+        with:
+          USERNAME: ${{ secrets.DEV_USER }}
+          PASSWORD: ${{ secrets.DEV_PASSWORD }}
+          ORG_NAME: ${{ secrets.ORG_NAME }}
+          SPACE_NAME: ${{ secrets.SPACE_NAME }}
+          APP_NAME: opre-ops-frontend-test

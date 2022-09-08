@@ -1,0 +1,28 @@
+name: Deploy Frontend
+description: Deploy frontend code to Cloud.gov environment.
+inputs:
+  USERNAME:
+    description: Cloud.gov user to authenticate with.
+    required: true
+  PASSWORD:
+    description: Cloud.gov authentication password.
+    required: true
+  ORG_NAME:
+    description: Cloud.gov Organization Name.
+    required: true # Default to our Org once setup.
+  SPACE_NAME:
+    description: Cloud.gov Space (environment) Name.
+    required: true
+  APP_NAME:
+    description: Applicaiton name (from manifest.yml).
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Deploy to Cloud.gov
+      id: deploy-frontend
+      run: |
+        export PATH=$HOME/bin:$PATH
+        cf login -a https://api.fr.cloud.gov -u ${{ inputs.USERNAME }} -p ${{ inputs.PASSWORD }} -o ${{ inputs.ORG_NAME }} -s ${{ inputs.SPACE_NAME }}
+        cf push ${{ inputs.APP_NAME }} -f manifest.yml
