@@ -13,14 +13,26 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - id: setup
-        uses: ./.github/actions/run-full-stack
+      # - id: setup
+      #   uses: ./.github/actions/run-full-stack
 
       - name: Run OWASP Zap Scan on live-dev
         uses: zaproxy/action-full-scan@v0.4.0
         with:
           docker_name: 'owasp/zap2docker-stable'
-          target: 'http://localhost:3000/'
+          #target: 'http://localhost:3000/'
+          target: 'https://opre-ops-frontend-test.app.cloud.gov/'
           allow_issue_writing: false
           fail_action: false
           cmd_options: '-I'
+
+      ## Manually reviewed the action, and validated it performs basic
+      ## conversion from zap.json to zap.sarif.
+      ## Reviewed by tdonaworth 08.09.2022
+      - name: Create sarif file from zaproxy results
+        uses: SvanBoxel/zaproxy-to-ghas@v1.0.2
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: results.sarif
