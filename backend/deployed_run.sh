@@ -4,6 +4,8 @@ set -eo pipefail
 
 export PYTHONPATH="./:${PYTHONPATH}"
 
+SPACE_NAME=$(echo "${VCAP_APPLICATION}" | jq --raw-output '.space_name')
+
 if [[ "${SPACE_NAME}" == "john.skinner" ]]; then
     # In dev environment, remove test data before running migrations to
     # avoid constraint errors
@@ -11,8 +13,6 @@ if [[ "${SPACE_NAME}" == "john.skinner" ]]; then
 fi
 
 python ./opre_ops/manage.py migrate
-
-SPACE_NAME=$(echo "${VCAP_APPLICATION}" | jq --raw-output '.space_name')
 
 if [[ "${SPACE_NAME}" == "john.skinner" ]]; then
     # Load the fake data because we're deploying to the dev environment
