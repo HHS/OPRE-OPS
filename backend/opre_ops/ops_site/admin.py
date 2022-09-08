@@ -1,7 +1,7 @@
 from django.contrib import admin
 
+from opre_ops.ops_site.cans.models import CAN
 from opre_ops.ops_site.cans.models import CANFiscalYear
-from opre_ops.ops_site.cans.models import CommonAccountingNumber
 from opre_ops.ops_site.cans.models import Contract
 from opre_ops.ops_site.cans.models import ContractLineItem
 from opre_ops.ops_site.cans.models import FundingPartner
@@ -57,7 +57,7 @@ class CANAmountInline(admin.TabularInline):
     model = CANFiscalYear
 
 
-@admin.register(CommonAccountingNumber)
+@admin.register(CAN)
 class CANInfoAdmin(admin.ModelAdmin):
     inlines = [
         CANAmountInline,
