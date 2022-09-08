@@ -1,5 +1,5 @@
 """
-WSGI config for opre_ops project.
+WSGI config for ops_api project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,7 +11,7 @@ import os
 from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE", "opre_ops.django_config.settings.cloudgov"
+    "DJANGO_SETTINGS_MODULE", "ops_api.django_config.settings.cloudgov"
 )
 
 application = get_wsgi_application()

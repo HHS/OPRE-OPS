@@ -28,16 +28,16 @@ services:
     container_name: ops-migration
     command: >
       bash -c "
-      python ./opre_ops/manage.py custom-flush --allow-cascade --no-input &&
-      python ./opre_ops/manage.py migrate &&
-      python ./opre_ops/manage.py loaddata ./opre_ops/ops_site/fixtures/fake_data.json
+      python ./ops_api/manage.py custom-flush --allow-cascade --no-input &&
+      python ./ops_api/manage.py migrate &&
+      python ./ops_api/manage.py loaddata ./ops_api/ops_site/fixtures/fake_data.json
       "
 
     volumes:
       # See below for an explanation of this volume. The same reasoning applies,
       # but in this case it's so we can run new migrations immediately without
       # having to rebuild the migration container.
-      - ./backend/opre_ops:/home/app/opre_ops
+      - ./backend/ops_api:/home/app/ops_api
     depends_on:
       db:
         condition: service_healthy
@@ -53,7 +53,7 @@ services:
     depends_on:
       - migration
     volumes:
-      - ./backend/opre_ops:/home/app/opre_ops
+      - ./backend/ops_api:/home/app/ops_api
 
   frontend:
     build:

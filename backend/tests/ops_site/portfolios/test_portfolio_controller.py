@@ -1,4 +1,4 @@
-from opre_ops.ops_site.portfolios.controller import PortfolioSerializer
+from ops_api.ops_site.portfolios.controller import PortfolioSerializer
 
 
 def test_Portfolio_serializer_has_depth_of_one():
