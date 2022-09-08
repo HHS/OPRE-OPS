@@ -1,8 +1,8 @@
 import pytest
 
 from opre_ops.ops_site.cans.models import (
+    CAN,
     CANFiscalYear,
-    CommonAccountingNumber,
     Contract,
     ContractLineItem,
     ContractLineItemFiscalYear,
@@ -19,12 +19,8 @@ def test_Contract_research_areas():
         name="Apple", nickname="Here's to the crazy ones"
     )
 
-    dogcow_can = CommonAccountingNumber.objects.create(
-        number="1234", nickname=nickname1, authorizer=apple
-    )
-    clarus_can = CommonAccountingNumber.objects.create(
-        number="5678", nickname=nickname2, authorizer=apple
-    )
+    dogcow_can = CAN.objects.create(number="1234", nickname=nickname1, authorizer=apple)
+    clarus_can = CAN.objects.create(number="5678", nickname=nickname2, authorizer=apple)
 
     contract = Contract.objects.create(name="PageSetup")
     contract.cans.add(dogcow_can)
@@ -40,9 +36,7 @@ def test_CANFiscalYear_additional_amount_anticipated():
         name="Apple", nickname="Here's to the crazy ones"
     )
 
-    dogcow_can = CommonAccountingNumber.objects.create(
-        number="1234", nickname="DogCow", authorizer=apple
-    )
+    dogcow_can = CAN.objects.create(number="1234", nickname="DogCow", authorizer=apple)
 
     total_fiscal_year_funding = 10
     amount_available = 7

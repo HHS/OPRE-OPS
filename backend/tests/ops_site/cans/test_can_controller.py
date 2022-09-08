@@ -1,13 +1,13 @@
 from opre_ops.ops_site.cans.controller import CANFiscalYearSerializer
-from opre_ops.ops_site.cans.controller import CommonAccountingNumberSerializer
+from opre_ops.ops_site.cans.controller import CANSerializer
 
 
 def test_CAN_serializer_has_depth_of_one():
-    assert CommonAccountingNumberSerializer.Meta.depth == 1
+    assert CANSerializer.Meta.depth == 1
 
 
 def test_CAN_serializer_returns_all_models_fields():
-    assert CommonAccountingNumberSerializer.Meta.fields == "__all__"
+    assert CANSerializer.Meta.fields == "__all__"
 
 
 def test_CAN_fiscal_year_serializer_has_depth_of_one():

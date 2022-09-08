@@ -2,28 +2,28 @@ from rest_framework import serializers
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import RetrieveAPIView
 
+from opre_ops.ops_site.cans.models import CAN
 from opre_ops.ops_site.cans.models import CANFiscalYear
-from opre_ops.ops_site.cans.models import CommonAccountingNumber
 
 
-class CommonAccountingNumberSerializer(serializers.ModelSerializer):
+class CANSerializer(serializers.ModelSerializer):
     source = "fundingpartner.nickname"
     funding_source = serializers.ReadOnlyField(source=source)
 
     class Meta:
-        model = CommonAccountingNumber
+        model = CAN
         fields = "__all__"
         depth = 1
 
 
 class CanListController(ListAPIView):
-    queryset = CommonAccountingNumber.objects.all()
-    serializer_class = CommonAccountingNumberSerializer
+    queryset = CAN.objects.all()
+    serializer_class = CANSerializer
 
 
 class CanReadController(RetrieveAPIView):
-    queryset = CommonAccountingNumber.objects.all()
-    serializer_class = CommonAccountingNumberSerializer
+    queryset = CAN.objects.all()
+    serializer_class = CANSerializer
 
 
 class CANFiscalYearSerializer(serializers.ModelSerializer):
