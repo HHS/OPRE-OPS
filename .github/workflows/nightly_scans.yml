@@ -18,14 +18,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # - id: setup
-      #   uses: ./.github/actions/run-full-stack
-
       - name: Run OWASP Zap Scan on live-dev
         uses: zaproxy/action-full-scan@v0.4.0
         with:
           docker_name: 'owasp/zap2docker-stable'
-          #target: 'http://localhost:3000/'
           target: 'https://opre-ops-frontend-test.app.cloud.gov/'
           allow_issue_writing: false
           fail_action: false
