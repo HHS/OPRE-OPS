@@ -1,10 +1,10 @@
 from django.urls import path
 
-from ops_api.ops_site.cans.controller import CANFiscalYearByCanListController
-from ops_api.ops_site.cans.controller import CanListController
-from ops_api.ops_site.cans.controller import CanReadController
-from ops_api.ops_site.portfolios.controller import PortfolioListController
-from ops_api.ops_site.portfolios.controller import PortfolioReadController
+from ops_api.ops.cans.controller import CANFiscalYearByCanListController
+from ops_api.ops.cans.controller import CanListController
+from ops_api.ops.cans.controller import CanReadController
+from ops_api.ops.portfolios.controller import PortfolioListController
+from ops_api.ops.portfolios.controller import PortfolioReadController
 
 
 urlpatterns = [

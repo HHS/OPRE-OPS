@@ -1,12 +1,12 @@
 from django.contrib import admin
 
-from ops_api.ops_site.cans.models import CAN
-from ops_api.ops_site.cans.models import CANFiscalYear
-from ops_api.ops_site.cans.models import Contract
-from ops_api.ops_site.cans.models import ContractLineItem
-from ops_api.ops_site.cans.models import FundingPartner
-from ops_api.ops_site.models import Person
-from ops_api.ops_site.models import Role
+from ops_api.ops.cans.models import CAN
+from ops_api.ops.cans.models import CANFiscalYear
+from ops_api.ops.cans.models import Contract
+from ops_api.ops.cans.models import ContractLineItem
+from ops_api.ops.cans.models import FundingPartner
+from ops_api.ops.models import Person
+from ops_api.ops.models import Role
 
 
 @admin.register(FundingPartner)

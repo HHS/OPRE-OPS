@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("ops_site", "0004_alter_commonaccountingnumber_portfolio"),
+        ("ops", "0004_alter_commonaccountingnumber_portfolio"),
     ]
 
     operations = [
@@ -61,17 +61,17 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.PROTECT,
                         related_name="authorizers",
-                        to="ops_site.fundingpartner",
+                        to="ops.fundingpartner",
                     ),
                 ),
-                ("funding_source", models.ManyToManyField(to="ops_site.fundingsource")),
+                ("funding_source", models.ManyToManyField(to="ops.fundingsource")),
                 (
                     "portfolio",
                     models.ForeignKey(
                         null=True,
                         on_delete=django.db.models.deletion.PROTECT,
                         related_name="cans",
-                        to="ops_site.portfolio",
+                        to="ops.portfolio",
                     ),
                 ),
             ],
@@ -83,13 +83,13 @@ class Migration(migrations.Migration):
             model_name="canfiscalyear",
             name="can",
             field=models.ForeignKey(
-                on_delete=django.db.models.deletion.PROTECT, to="ops_site.can"
+                on_delete=django.db.models.deletion.PROTECT, to="ops.can"
             ),
         ),
         migrations.AlterField(
             model_name="contract",
             name="cans",
-            field=models.ManyToManyField(related_name="contracts", to="ops_site.can"),
+            field=models.ManyToManyField(related_name="contracts", to="ops.can"),
         ),
         migrations.AlterField(
             model_name="contractlineitemfiscalyearpercan",
@@ -97,7 +97,7 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.PROTECT,
                 related_name="line_items_fy",
-                to="ops_site.can",
+                to="ops.can",
             ),
         ),
         migrations.DeleteModel(

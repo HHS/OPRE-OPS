@@ -69,7 +69,7 @@ class Migration(migrations.Migration):
                         max_length=5,
                     ),
                 ),
-                ("roles", models.ManyToManyField(to="ops_site.Role")),
+                ("roles", models.ManyToManyField(to="ops.Role")),
             ],
             options={
                 "verbose_name_plural": "People",
@@ -109,12 +109,12 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.PROTECT,
                         related_name="authorizer",
-                        to="ops_site.fundingpartner",
+                        to="ops.fundingpartner",
                     ),
                 ),
                 (
                     "funding_source",
-                    models.ManyToManyField(to="ops_site.FundingPartner"),
+                    models.ManyToManyField(to="ops.FundingPartner"),
                 ),
             ],
             options={
@@ -151,10 +151,10 @@ class Migration(migrations.Migration):
                     "can",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.PROTECT,
-                        to="ops_site.caninfo",
+                        to="ops.caninfo",
                     ),
                 ),
-                ("can_lead", models.ManyToManyField(to="ops_site.Person")),
+                ("can_lead", models.ManyToManyField(to="ops.Person")),
             ],
             options={
                 "verbose_name_plural": "CANs",

@@ -29,8 +29,9 @@ services:
     command: >
       bash -c "
       python ./ops_api/manage.py custom-flush --allow-cascade --no-input &&
+      python ./ops_api/manage.py makemigrations &&
       python ./ops_api/manage.py migrate &&
-      python ./ops_api/manage.py loaddata ./ops_api/ops_site/fixtures/fake_data.json
+      python ./ops_api/manage.py loaddata ./ops_api/ops/fixtures/fake_data.json
       "
 
     volumes:

@@ -1,7 +1,7 @@
 from django.db import models
 
-from ops_api.ops_site.models import Person
-from ops_api.ops_site.portfolios.models import Portfolio
+from ops_api.ops.models import Person
+from ops_api.ops.portfolios.models import Portfolio
 
 
 class CAN(models.Model):

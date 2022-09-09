@@ -1,6 +1,6 @@
 import pytest
 
-from ops_api.ops_site.cans.models import (
+from ops_api.ops.cans.models import (
     CAN,
     CANFiscalYear,
     Contract,

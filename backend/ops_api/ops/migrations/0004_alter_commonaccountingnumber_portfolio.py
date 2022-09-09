@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("ops_site", "0003_portfolio_commonaccountingnumber_portfolio"),
+        ("ops", "0003_portfolio_commonaccountingnumber_portfolio"),
     ]
 
     operations = [
@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
                 null=True,
                 on_delete=django.db.models.deletion.PROTECT,
                 related_name="cans",
-                to="ops_site.portfolio",
+                to="ops.portfolio",
             ),
         ),
     ]
