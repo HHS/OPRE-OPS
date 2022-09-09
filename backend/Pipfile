@@ -29,7 +29,7 @@ pyparsing = "==3.0.9"
 pydot = "==1.4.2"
 django-extensions = "==3.2.1"
 markdown = "==3.4.1"
-locust = "==2.11.1"
+locust = "==2.12.0"
 
 [requires]
 python_version = "3.9"
