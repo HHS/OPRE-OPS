@@ -43,6 +43,10 @@ jobs:
       ## results than ZAP by default. - Testing it out.
       - name: Start Stack
         uses: ./.github/actions/run-full-stack
+      - name: Check running containers
+        run: docker ps -a
+      - name: Check logs
+        run: docker logs frontend
       - name: HawkScan
         uses: stackhawk/hawkscan-action@v2.0.0
         with:
