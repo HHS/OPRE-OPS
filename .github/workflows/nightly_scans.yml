@@ -46,7 +46,7 @@ jobs:
       - name: Check running containers
         run: docker ps -a
       - name: Check logs
-        run: docker logs frontend
+        run: docker logs ops-frontend
       - name: HawkScan
         uses: stackhawk/hawkscan-action@v2.0.0
         with:
