@@ -20,11 +20,9 @@ const CanList = () => {
                 </BreadcrumbList>
             </header>
 
-            <main>
-                <h1>CANs</h1>
-            </main>
-
             <nav>
+                <h1>CANs</h1>
+
                 <table className="usa-table usa-table--borderless">
                     <caption>List of all CANs</caption>
                     <thead>
@@ -37,9 +35,7 @@ const CanList = () => {
                         {canList.map((can) => (
                             <tr key={can.id}>
                                 <th scope="row">
-                                    <Link id="lnkCans" to={"./" + can.id}>
-                                        {can.number}
-                                    </Link>
+                                    <Link to={"./" + can.id}>{can.number}</Link>
                                 </th>
                                 <td>{can.description}</td>
                             </tr>
@@ -47,7 +43,9 @@ const CanList = () => {
                     </tbody>
                 </table>
             </nav>
-            <Outlet />
+            <main>
+                <Outlet />
+            </main>
         </>
     );
 };

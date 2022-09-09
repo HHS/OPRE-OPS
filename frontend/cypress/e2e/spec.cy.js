@@ -21,6 +21,10 @@ it("get can details", () => {
 
 it("get can fiscal year details", () => {
     cy.visit("/cans/3");
+    cy.injectAxe();
+
+    cy.checkA11y();
+
     cy.contains("G99PHS9").click();
     cy.get("[class*='-control']")
         .click(0, 0, { force: true })

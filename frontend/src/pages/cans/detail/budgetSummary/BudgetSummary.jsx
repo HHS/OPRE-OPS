@@ -57,6 +57,7 @@ const BudgetSummary = () => {
                 onChange={handleFiscalYearChange}
                 defaultValue={defaultOption}
                 classNamePrefix="react-select"
+                aria-label="Fiscal Year selection"
             />
 
             <table className="usa-table usa-table--borderless">
