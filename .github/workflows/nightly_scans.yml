@@ -47,6 +47,8 @@ jobs:
         run: docker ps -a
       - name: Check logs
         run: docker logs ops-frontend
+      - name: Curl
+        run: curl http://localhost:3000
       - name: HawkScan
         uses: stackhawk/hawkscan-action@v2.0.0
         with:
