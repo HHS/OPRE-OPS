@@ -42,7 +42,7 @@ jobs:
       ## Allows for online monitoring and generally better scanning
       ## results than ZAP by default. - Testing it out.
       - name: Start Stack
-        use: ./.github/actions/run-full-stack
+        uses: ./.github/actions/run-full-stack
       - name: HawkScan
         uses: stackhawk/hawkscan-action@v2.0.0
         with:
