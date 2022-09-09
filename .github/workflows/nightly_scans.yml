@@ -37,3 +37,15 @@ jobs:
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: results.sarif
+
+      ## Third Party service built on OWASP ZAP
+      ## Allows for online monitoring and generally better scanning
+      ## results than ZAP by default. - Testing it out.
+      - name: Start Stack
+        use: ./.github/actions/run-full-stack
+      - name: HawkScan
+        uses: stackhawk/hawkscan-action@v2.0.0
+        with:
+          apiKey: ${{ secrets.HAWK_API_KEY }}
+          codeScanningAlerts: true
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
