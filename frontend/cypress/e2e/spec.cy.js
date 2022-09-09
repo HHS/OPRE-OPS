@@ -2,6 +2,7 @@
 it("list cans", () => {
     cy.visit("/");
     cy.injectAxe();
+
     cy.checkA11y();
 
     cy.contains("/cans").click();
@@ -10,6 +11,10 @@ it("list cans", () => {
 
 it("get can details", () => {
     cy.visit("/cans");
+    cy.injectAxe();
+
+    cy.checkA11y();
+
     cy.contains("G99PHS9").click();
     cy.url().should("include", "/cans/3");
 });

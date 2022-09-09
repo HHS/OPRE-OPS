@@ -14,31 +14,39 @@ const CanList = () => {
 
     return (
         <>
-            <BreadcrumbList>
-                <BreadcrumbItem isCurrent pageName="CANs" />
-            </BreadcrumbList>
+            <header>
+                <BreadcrumbList>
+                    <BreadcrumbItem isCurrent pageName="CANs" />
+                </BreadcrumbList>
+            </header>
 
-            <table className="usa-table usa-table--borderless">
-                <caption>List of all CANs</caption>
-                <thead>
-                    <tr>
-                        <th scope="col">number</th>
-                        <th scope="col">description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {canList.map((can) => (
-                        <tr key={can.id}>
-                            <th scope="row">
-                                <Link id="lnkCans" to={"./" + can.id}>
-                                    {can.number}
-                                </Link>
-                            </th>
-                            <td>{can.description}</td>
+            <main>
+                <h1>CANs</h1>
+            </main>
+
+            <nav>
+                <table className="usa-table usa-table--borderless">
+                    <caption>List of all CANs</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">number</th>
+                            <th scope="col">description</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {canList.map((can) => (
+                            <tr key={can.id}>
+                                <th scope="row">
+                                    <Link id="lnkCans" to={"./" + can.id}>
+                                        {can.number}
+                                    </Link>
+                                </th>
+                                <td>{can.description}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </nav>
             <Outlet />
         </>
     );
