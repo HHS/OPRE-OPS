@@ -1,13 +1,4 @@
 /* eslint-disable no-undef */
-it("list cans", () => {
-    cy.visit("/");
-    cy.injectAxe();
-
-    cy.checkA11y();
-
-    cy.contains("/cans").click();
-    cy.url().should("include", "/cans");
-});
 
 it("get can details", () => {
     cy.visit("/cans");
