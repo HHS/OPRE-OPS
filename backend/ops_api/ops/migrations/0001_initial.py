@@ -319,21 +319,25 @@ class Migration(migrations.Migration):
 
     # If the old tables still exist within local Docker env or in Cloud.gov then clean them up
     # Do not run this in unit tests - sqllite does not support CASCADE
-    if os.getenv("DJANGO_SETTINGS_MODULE") != 'ops_api.django_config.settings.test':
-        operations.append(migrations.RunSQL([
-            "DROP TABLE IF EXISTS ops_site_can CASCADE;",
-            "DROP TABLE IF EXISTS ops_site_can_funding_source CASCADE;",
-            "DROP TABLE IF EXISTS ops_site_canfiscalyear CASCADE;",
-            "DROP TABLE IF EXISTS ops_site_canfiscalyear_can_lead CASCADE;",
-            "DROP TABLE IF EXISTS ops_site_contract CASCADE;",
-            "DROP TABLE IF EXISTS ops_site_contract_cans CASCADE;",
-            "DROP TABLE IF EXISTS ops_site_contractlineitem CASCADE;",
-            "DROP TABLE IF EXISTS ops_site_contractlineitemfiscalyear CASCADE;",
-            "DROP TABLE IF EXISTS ops_site_contractlineitemfiscalyearpercan CASCADE;",
-            "DROP TABLE IF EXISTS ops_site_fundingpartner CASCADE;",
-            "DROP TABLE IF EXISTS ops_site_fundingsource CASCADE;",
-            "DROP TABLE IF EXISTS ops_site_person CASCADE;",
-            "DROP TABLE IF EXISTS ops_site_person_roles CASCADE;",
-            "DROP TABLE IF EXISTS ops_site_portfolio CASCADE;",
-            "DROP TABLE IF EXISTS ops_site_role CASCADE;",
-            ]))
+    if os.getenv("DJANGO_SETTINGS_MODULE") != "ops_api.django_config.settings.test":
+        operations.append(
+            migrations.RunSQL(
+                [
+                    "DROP TABLE IF EXISTS ops_site_can CASCADE;",
+                    "DROP TABLE IF EXISTS ops_site_can_funding_source CASCADE;",
+                    "DROP TABLE IF EXISTS ops_site_canfiscalyear CASCADE;",
+                    "DROP TABLE IF EXISTS ops_site_canfiscalyear_can_lead CASCADE;",
+                    "DROP TABLE IF EXISTS ops_site_contract CASCADE;",
+                    "DROP TABLE IF EXISTS ops_site_contract_cans CASCADE;",
+                    "DROP TABLE IF EXISTS ops_site_contractlineitem CASCADE;",
+                    "DROP TABLE IF EXISTS ops_site_contractlineitemfiscalyear CASCADE;",
+                    "DROP TABLE IF EXISTS ops_site_contractlineitemfiscalyearpercan CASCADE;",
+                    "DROP TABLE IF EXISTS ops_site_fundingpartner CASCADE;",
+                    "DROP TABLE IF EXISTS ops_site_fundingsource CASCADE;",
+                    "DROP TABLE IF EXISTS ops_site_person CASCADE;",
+                    "DROP TABLE IF EXISTS ops_site_person_roles CASCADE;",
+                    "DROP TABLE IF EXISTS ops_site_portfolio CASCADE;",
+                    "DROP TABLE IF EXISTS ops_site_role CASCADE;",
+                ]
+            )
+        )
