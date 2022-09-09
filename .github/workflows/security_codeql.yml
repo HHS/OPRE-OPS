@@ -2,6 +2,13 @@ name: CodeQL
 on:
   workflow_call:
 
+## This ensures only a single job is running at a time.
+## This will specifically kill the long codeql if another
+## commit occors on the pull_request or any other conflicting job
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   codeql:
     name: CodeQL Analyze
