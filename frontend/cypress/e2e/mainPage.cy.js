@@ -1,5 +1,11 @@
 /* eslint-disable no-undef */
 
+it("loads", () => {
+    cy.visit("/");
+
+    cy.get("h1").should("have.text", "This is the OPRE OPS system prototype.");
+});
+
 it("passes a11y checks", () => {
     cy.visit("/");
     cy.injectAxe();

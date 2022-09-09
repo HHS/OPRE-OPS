@@ -1,15 +1,5 @@
 /* eslint-disable no-undef */
 
-it("get can details", () => {
-    cy.visit("/cans");
-    cy.injectAxe();
-
-    cy.checkA11y();
-
-    cy.contains("G99PHS9").click();
-    cy.url().should("include", "/cans/3");
-});
-
 it("get can fiscal year details", () => {
     cy.visit("/cans/3");
     cy.injectAxe();
