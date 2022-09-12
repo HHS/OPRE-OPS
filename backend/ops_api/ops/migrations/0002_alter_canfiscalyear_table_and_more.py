@@ -6,32 +6,32 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ops', '0001_initial'),
+        ("ops", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterModelTable(
-            name='canfiscalyear',
-            table='ops_can_fiscal_year',
+            name="canfiscalyear",
+            table="ops_can_fiscal_year",
         ),
         migrations.AlterModelTable(
-            name='contractlineitem',
-            table='ops_contract_line_item',
+            name="contractlineitem",
+            table="ops_contract_line_item",
         ),
         migrations.AlterModelTable(
-            name='contractlineitemfiscalyear',
-            table='ops_contract_line_item_fiscal_year',
+            name="contractlineitemfiscalyear",
+            table="ops_contract_line_item_fiscal_year",
         ),
         migrations.AlterModelTable(
-            name='contractlineitemfiscalyearpercan',
-            table='ops_contract_line_item_fiscal_year_per_can',
+            name="contractlineitemfiscalyearpercan",
+            table="ops_contract_line_item_fiscal_year_per_can",
         ),
         migrations.AlterModelTable(
-            name='fundingpartner',
-            table='ops_funding_partner',
+            name="fundingpartner",
+            table="ops_funding_partner",
         ),
         migrations.AlterModelTable(
-            name='fundingsource',
-            table='ops_funding_source',
+            name="fundingsource",
+            table="ops_funding_source",
         ),
     ]
