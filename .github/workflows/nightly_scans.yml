@@ -42,15 +42,19 @@ jobs:
       ## Allows for online monitoring and generally better scanning
       ## results than ZAP by default. - Testing it out.
       - name: Start Stack
+        id: run-stack
         uses: ./.github/actions/run-full-stack
       - name: Check running containers
         run: docker ps -a
       - name: Check logs
         run: docker logs ops-frontend
       - name: Curl
+        id: curl
+        if: steps.run-stack.outcome == 'success'
         run: curl http://localhost:3000
       - name: HawkScan
         uses: stackhawk/hawkscan-action@v2.0.0
+        if: steps.curl.outcome == 'success'
         with:
           apiKey: ${{ secrets.HAWK_API_KEY }}
           codeScanningAlerts: true
