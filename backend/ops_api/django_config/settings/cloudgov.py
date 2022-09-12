@@ -6,8 +6,8 @@ import os
 
 import cfenv
 
-from opre_ops.django_config.settings.common import *  # noqa: F403, F401
-from opre_ops.django_config.settings.helpers.random_string import generate_random_string
+from ops_api.django_config.settings.common import *  # noqa: F403, F401
+from ops_api.django_config.settings.helpers.random_string import generate_random_string
 
 
 env = cfenv.AppEnv()

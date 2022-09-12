@@ -49,7 +49,7 @@ docker compose up
 To create an admin user, use the Django management tool from within the container.
 
 ```shell
-docker compose exec backend python ./opre_ops/manage.py createsuperuser
+docker compose exec backend python ./ops_api/manage.py createsuperuser
 ```
 
 ## Access
@@ -191,8 +191,8 @@ create a new DOT file.
 
 ```shell
 cd ./backend/
-DJANGO_SETTINGS_MODULE=opre_ops.django_config.settings.local PYTHONPATH=. \
-  pipenv run python ./opre_ops/manage.py graph_models -a \
+DJANGO_SETTINGS_MODULE=ops_api.django_config.settings.local PYTHONPATH=. \
+  pipenv run python ./ops_api/manage.py graph_models -a \
   -X LogEntry,AbstractUser,Permission,Group,User,ContentType,AbstractBaseSession,Session \
   > ../docs/models.dot
 ```

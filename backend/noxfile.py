@@ -1,6 +1,6 @@
 import nox
 
-python_source = ["opre_ops", "tests", "./noxfile.py", "./locustfile.py"]
+python_source = ["ops_api", "tests", "./noxfile.py", "./locustfile.py"]
 
 
 @nox.session
