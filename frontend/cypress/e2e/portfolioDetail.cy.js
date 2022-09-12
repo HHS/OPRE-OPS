@@ -1,5 +1,3 @@
-/* eslint-disable no-undef */
-
 before(() => {
     cy.visit("/portfolios/1");
     cy.injectAxe();
