@@ -13,17 +13,6 @@ it("passes a11y checks", () => {
     cy.checkA11y();
 });
 
-it("clicking on a CAN takes you to the detail page", () => {
-    cy.visit("/cans/3");
-
-    const canNumber = "G99PHS9";
-
-    cy.contains(canNumber).click();
-
-    cy.url().should("include", "/cans/3");
-    cy.get("h1").should("contain", canNumber);
-});
-
 it("get can fiscal year details", () => {
     cy.visit("/cans/3");
 
