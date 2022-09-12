@@ -28,5 +28,5 @@ it("clicking on /portfolio nav takes you to Portfolio page", () => {
     cy.contains("/portfolio").click();
 
     cy.url().should("include", "/portfolios");
-    cy.get("caption").should("have.text", "List of all Portfolios");
+    cy.get("h1").should("have.text", "Portfolios");
 });
