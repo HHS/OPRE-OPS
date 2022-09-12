@@ -48,6 +48,9 @@ class FundingPartner(models.Model):
     name = models.CharField(max_length=100)
     nickname = models.CharField(max_length=100)
 
+    class Meta:
+        db_table = "ops_funding_partner"
+
     def __str__(self):
         return self.name
 
@@ -59,6 +62,9 @@ class FundingSource(models.Model):
 
     name = models.CharField(max_length=100)
     nickname = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = "ops_funding_source"
 
     def __str__(self):
         return self.name
@@ -87,6 +93,7 @@ class CANFiscalYear(models.Model):
             "fiscal_year",
         )
         verbose_name_plural = "CANs (fiscal year)"
+        db_table = "ops_can_fiscal_year"
 
     @property
     def additional_amount_anticipated(self):
@@ -108,12 +115,18 @@ class ContractLineItem(models.Model):
     )
     name = models.TextField()
 
+    class Meta:
+        db_table = "ops_contract_line_item"
+
 
 class ContractLineItemFiscalYear(models.Model):
     line_item = models.ForeignKey(
         ContractLineItem, on_delete=models.CASCADE, related_name="fiscal_years"
     )
     fiscal_year = models.IntegerField()
+
+    class Meta:
+        db_table = "ops_contract_line_item_fiscal_year"
 
     @property
     def contract(self):
@@ -130,6 +143,9 @@ class ContractLineItemFiscalYearPerCAN(models.Model):
     )
     can = models.ForeignKey(CAN, on_delete=models.PROTECT, related_name="line_items_fy")
     funding = models.DecimalField(max_digits=12, decimal_places=2)
+
+    class Meta:
+        db_table = "ops_contract_line_item_fiscal_year_per_can"
 
     @property
     def contract(self):
