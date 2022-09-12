@@ -1,21 +1,19 @@
 /* eslint-disable no-undef */
 
-it("loads", () => {
+beforeEach(() => {
     cy.visit("/");
+    cy.injectAxe();
+});
 
+it("loads", () => {
     cy.get("h1").should("have.text", "This is the OPRE OPS system prototype.");
 });
 
 it("passes a11y checks", () => {
-    cy.visit("/");
-    cy.injectAxe();
-
     cy.checkA11y();
 });
 
 it("clicking on /cans nav takes you to CAN page", () => {
-    cy.visit("/");
-
     cy.contains("/cans").click();
 
     cy.url().should("include", "/cans");
@@ -23,9 +21,7 @@ it("clicking on /cans nav takes you to CAN page", () => {
 });
 
 it("clicking on /portfolio nav takes you to Portfolio page", () => {
-    cy.visit("/");
-
-    cy.contains("/portfolio").click();
+    cy.contains("/portfolios").click();
 
     cy.url().should("include", "/portfolios");
     cy.get("h1").should("have.text", "Portfolios");
