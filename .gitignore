@@ -177,6 +177,6 @@ yarn-error.log*
 .flake8
 
 # Dev local only files
-backend/opre_ops/django_config/static
+backend/ops_api/django_config/static
 *.pem
 *.crt

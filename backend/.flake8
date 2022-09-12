@@ -6,4 +6,4 @@ per-file-ignores = tests/*:S101
 max-complexity = 10
 max-line-length = 120
 import-order-style = google
-application-import-names = opre_ops,tests
+application-import-names = ops_api,tests

@@ -25,6 +25,7 @@ jobs:
       - uses: ./.github/actions/setup-cloudfoundry
 
       - name: Deploy Backend
+        id: deploy-backend
         uses: ./.github/actions/deploy-backend
         with:
           USERNAME: ${{ secrets.DEV_USER }}
@@ -36,7 +37,7 @@ jobs:
       - name: Build frontend
         working-directory: ./frontend
         run: |
-          REACT_APP_BACKEND_DOMAIN=https://${{steps.backend-deploy.outputs.BACKEND_DOMAIN}} yarn build
+          REACT_APP_BACKEND_DOMAIN=https://${{steps.deploy-backend.outputs.BACKEND_DOMAIN}} yarn build
           cp ./Staticfile ./build/
 
       - name: Deploy frontend
