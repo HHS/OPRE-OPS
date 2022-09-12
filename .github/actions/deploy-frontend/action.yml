@@ -22,6 +22,7 @@ runs:
   steps:
     - name: Deploy to Cloud.gov
       id: deploy-frontend
+      shell: bash
       run: |
         export PATH=$HOME/bin:$PATH
         cf login -a https://api.fr.cloud.gov -u ${{ inputs.USERNAME }} -p ${{ inputs.PASSWORD }} -o ${{ inputs.ORG_NAME }} -s ${{ inputs.SPACE_NAME }}

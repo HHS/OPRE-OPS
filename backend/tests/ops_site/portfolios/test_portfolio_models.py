@@ -1,6 +1,6 @@
 import pytest
 
-from opre_ops.ops_site.portfolios.models import Portfolio
+from ops_api.ops.portfolios.models import Portfolio
 
 
 @pytest.mark.django_db

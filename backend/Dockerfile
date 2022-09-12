@@ -6,7 +6,7 @@ WORKDIR /home/app
 
 ENV PYTHONPATH=/home/app
 ENV PYTHONUNBUFFERED=1
-ENV DJANGO_SETTINGS_MODULE=opre_ops.django_config.settings.local
+ENV DJANGO_SETTINGS_MODULE=ops_api.django_config.settings.local
 
 # Copy the Pipfile(s) only, so that we can cache dependencies
 # in the next step
@@ -17,4 +17,4 @@ RUN pipenv install --dev --system --deploy
 # of prior steps.
 COPY ./ /home/app/
 
-CMD ["python", "-m", "gunicorn", "opre_ops.django_config.asgi:application", "--worker-class=uvicorn.workers.UvicornWorker", "--bind=0.0.0.0:8080"]
+CMD ["python", "-m", "gunicorn", "ops_api.django_config.asgi:application", "--worker-class=uvicorn.workers.UvicornWorker", "--bind=0.0.0.0:8080"]
