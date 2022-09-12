@@ -3,4 +3,4 @@ from django.apps import AppConfig
 
 class OpsSiteConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "opre_ops.ops_site"
+    name = "ops_api.ops"

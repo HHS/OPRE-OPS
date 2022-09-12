@@ -18,7 +18,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 1,
         "fields": {
             "name": "Children's Bureau",
@@ -26,7 +26,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 2,
         "fields": {
             "name": "Alamed County Health Care Services Agency",
@@ -34,7 +34,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 3,
         "fields": {
             "name": "Alameda County HCSA",
@@ -42,7 +42,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 4,
         "fields": {
             "name": "Alameda HCSA",
@@ -50,7 +50,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 5,
         "fields": {
             "name": "ASPE",
@@ -58,7 +58,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 6,
         "fields": {
             "name": "Census",
@@ -66,7 +66,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 7,
         "fields": {
             "name": "CMS",
@@ -74,7 +74,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 8,
         "fields": {
             "name": "Dept of Education",
@@ -82,7 +82,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 9,
         "fields": {
             "name": "DHHS PSC",
@@ -90,7 +90,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 10,
         "fields": {
             "name": "Dept of Labor",
@@ -98,7 +98,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 11,
         "fields": {
             "name": "GW Ins OF Public Policy",
@@ -106,7 +106,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 12,
         "fields": {
             "name": "HRSA",
@@ -114,7 +114,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 13,
         "fields": {
             "name": "IJIS Institute",
@@ -122,7 +122,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 14,
         "fields": {
             "name": "Interior Business Center",
@@ -130,7 +130,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 15,
         "fields": {
             "name": "ISSLOB",
@@ -138,7 +138,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 16,
         "fields": {
             "name": "NCHS/CDC",
@@ -146,7 +146,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 17,
         "fields": {
             "name": "NICHD",
@@ -154,7 +154,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 18,
         "fields": {
             "name": "NIDA",
@@ -162,7 +162,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 19,
         "fields": {
             "name": "NIH/Accounts Payable 444035",
@@ -170,7 +170,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 20,
         "fields": {
             "name": "OA&Non-ACF",
@@ -178,7 +178,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 21,
         "fields": {
             "name": "OASH",
@@ -186,7 +186,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 22,
         "fields": {
             "name": "OCSE&ACF",
@@ -194,7 +194,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 23,
         "fields": {
             "name": "Office of Family Assistance",
@@ -202,7 +202,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 24,
         "fields": {
             "name": "OIS",
@@ -210,7 +210,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 25,
         "fields": {
             "name": "OMB",
@@ -218,7 +218,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 26,
         "fields": {
             "name": "OPRE",
@@ -226,7 +226,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 27,
         "fields": {
             "name": "SAMHSA",
@@ -234,7 +234,7 @@
         }
     },
     {
-        "model": "ops_site.fundingpartner",
+        "model": "ops.fundingpartner",
         "pk": 28,
         "fields": {
             "name": "Social Security Administration",
@@ -242,7 +242,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 1,
         "fields": {
             "name": "Children's Bureau",
@@ -250,7 +250,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 2,
         "fields": {
             "name": "Alamed County Health Care Services Agency",
@@ -258,7 +258,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 3,
         "fields": {
             "name": "Alameda County HCSA",
@@ -266,7 +266,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 4,
         "fields": {
             "name": "Alameda HCSA",
@@ -274,7 +274,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 5,
         "fields": {
             "name": "ASPE",
@@ -282,7 +282,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 6,
         "fields": {
             "name": "Census",
@@ -290,7 +290,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 7,
         "fields": {
             "name": "CMS",
@@ -298,7 +298,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 8,
         "fields": {
             "name": "Dept of Education",
@@ -306,7 +306,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 9,
         "fields": {
             "name": "DHHS PSC",
@@ -314,7 +314,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 10,
         "fields": {
             "name": "Dept of Labor",
@@ -322,7 +322,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 11,
         "fields": {
             "name": "GW Ins OF Public Policy",
@@ -330,7 +330,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 12,
         "fields": {
             "name": "HRSA",
@@ -338,7 +338,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 13,
         "fields": {
             "name": "IJIS Institute",
@@ -346,7 +346,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 14,
         "fields": {
             "name": "Interior Business Center",
@@ -354,7 +354,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 15,
         "fields": {
             "name": "ISSLOB",
@@ -362,7 +362,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 16,
         "fields": {
             "name": "NCHS/CDC",
@@ -370,7 +370,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 17,
         "fields": {
             "name": "NICHD",
@@ -378,7 +378,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 18,
         "fields": {
             "name": "NIDA",
@@ -386,7 +386,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 19,
         "fields": {
             "name": "NIH/Accounts Payable 444035",
@@ -394,7 +394,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 20,
         "fields": {
             "name": "OA&Non-ACF",
@@ -402,7 +402,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 21,
         "fields": {
             "name": "OASH",
@@ -410,7 +410,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 22,
         "fields": {
             "name": "OCSE&ACF",
@@ -418,7 +418,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 23,
         "fields": {
             "name": "Office of Family Assistance",
@@ -426,7 +426,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 24,
         "fields": {
             "name": "OIS",
@@ -434,7 +434,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 25,
         "fields": {
             "name": "OMB",
@@ -442,7 +442,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 26,
         "fields": {
             "name": "OPRE",
@@ -450,7 +450,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 27,
         "fields": {
             "name": "SAMHSA",
@@ -458,7 +458,7 @@
         }
     },
     {
-        "model": "ops_site.fundingsource",
+        "model": "ops.fundingsource",
         "pk": 28,
         "fields": {
             "name": "Social Security Administration",
@@ -466,63 +466,63 @@
         }
     },
     {
-        "model": "ops_site.role",
+        "model": "ops.role",
         "pk": 1,
         "fields": {
             "name": "Administrator"
         }
     },
     {
-        "model": "ops_site.role",
+        "model": "ops.role",
         "pk": 2,
         "fields": {
             "name": "Team Leader"
         }
     },
     {
-        "model": "ops_site.role",
+        "model": "ops.role",
         "pk": 3,
         "fields": {
             "name": "Division Director"
         }
     },
     {
-        "model": "ops_site.role",
+        "model": "ops.role",
         "pk": 4,
         "fields": {
             "name": "Budget Officer"
         }
     },
     {
-        "model": "ops_site.role",
+        "model": "ops.role",
         "pk": 5,
         "fields": {
             "name": "Non-COR/Contractor"
         }
     },
     {
-        "model": "ops_site.role",
+        "model": "ops.role",
         "pk": 6,
         "fields": {
             "name": "COR"
         }
     },
     {
-        "model": "ops_site.role",
+        "model": "ops.role",
         "pk": 7,
         "fields": {
             "name": "Procurement Team"
         }
     },
     {
-        "model": "ops_site.role",
+        "model": "ops.role",
         "pk": 8,
         "fields": {
             "name": "Grants Team"
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 1,
         "fields": {
             "first_name": "Emily",
@@ -534,7 +534,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 2,
         "fields": {
             "first_name": "Bethanne",
@@ -546,7 +546,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 3,
         "fields": {
             "first_name": "Meryl",
@@ -558,7 +558,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 4,
         "fields": {
             "first_name": "Anne",
@@ -570,7 +570,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 5,
         "fields": {
             "first_name": "Harmanpreet",
@@ -582,7 +582,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 6,
         "fields": {
             "first_name": "Alysia",
@@ -594,7 +594,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 7,
         "fields": {
             "first_name": "Sarah",
@@ -606,7 +606,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 8,
         "fields": {
             "first_name": "Caryn",
@@ -618,7 +618,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 9,
         "fields": {
             "first_name": "Brett",
@@ -630,7 +630,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 10,
         "fields": {
             "first_name": "Tia",
@@ -642,7 +642,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 11,
         "fields": {
             "first_name": "Hilary",
@@ -654,7 +654,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 12,
         "fields": {
             "first_name": "Valeria",
@@ -666,7 +666,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 13,
         "fields": {
             "first_name": "Selma",
@@ -678,7 +678,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 14,
         "fields": {
             "first_name": "Erin",
@@ -690,7 +690,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 15,
         "fields": {
             "first_name": "Elaine",
@@ -702,7 +702,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 16,
         "fields": {
             "first_name": "Sheila",
@@ -715,7 +715,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 17,
         "fields": {
             "first_name": "Tracy",
@@ -727,7 +727,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 18,
         "fields": {
             "first_name": "Kim",
@@ -739,7 +739,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 19,
         "fields": {
             "first_name": "Jesse",
@@ -751,7 +751,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 20,
         "fields": {
             "first_name": "Amanda",
@@ -763,7 +763,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 21,
         "fields": {
             "first_name": "Nicole",
@@ -775,7 +775,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 22,
         "fields": {
             "first_name": "Pooja",
@@ -787,7 +787,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 23,
         "fields": {
             "first_name": "Paula",
@@ -800,7 +800,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 24,
         "fields": {
             "first_name": "Wendy",
@@ -812,7 +812,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 25,
         "fields": {
             "first_name": "Nicole",
@@ -824,7 +824,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 26,
         "fields": {
             "first_name": "Nicole",
@@ -836,7 +836,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 27,
         "fields": {
             "first_name": "Lauren",
@@ -848,7 +848,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 28,
         "fields": {
             "first_name": "Kathleen",
@@ -860,7 +860,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 29,
         "fields": {
             "first_name": "Justin",
@@ -872,7 +872,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 30,
         "fields": {
             "first_name": "Manny",
@@ -884,7 +884,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 31,
         "fields": {
             "first_name": "Christine",
@@ -896,7 +896,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 32,
         "fields": {
             "first_name": "Calonie",
@@ -908,7 +908,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 33,
         "fields": {
             "first_name": "Amelie",
@@ -920,7 +920,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 34,
         "fields": {
             "first_name": "Nina",
@@ -932,7 +932,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 35,
         "fields": {
             "first_name": "Rebecca",
@@ -944,7 +944,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 36,
         "fields": {
             "first_name": "Laura",
@@ -956,7 +956,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 37,
         "fields": {
             "first_name": "Samantha",
@@ -968,7 +968,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 38,
         "fields": {
             "first_name": "Kriti",
@@ -980,7 +980,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 39,
         "fields": {
             "first_name": "Victoria",
@@ -992,7 +992,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 40,
         "fields": {
             "first_name": "Mason",
@@ -1004,7 +1004,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 41,
         "fields": {
             "first_name": "Marie",
@@ -1016,7 +1016,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 42,
         "fields": {
             "first_name": "Philip",
@@ -1028,7 +1028,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 43,
         "fields": {
             "first_name": "Amy",
@@ -1040,7 +1040,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 44,
         "fields": {
             "first_name": "Jenessa",
@@ -1052,7 +1052,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 45,
         "fields": {
             "first_name": "Nancy",
@@ -1064,7 +1064,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 46,
         "fields": {
             "first_name": "Ivelisse",
@@ -1076,7 +1076,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 47,
         "fields": {
             "first_name": "Kelly",
@@ -1088,7 +1088,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 48,
         "fields": {
             "first_name": "Aleta",
@@ -1100,7 +1100,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 49,
         "fields": {
             "first_name": "Mary",
@@ -1112,7 +1112,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 50,
         "fields": {
             "first_name": "Laura",
@@ -1124,7 +1124,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 51,
         "fields": {
             "first_name": "Gabrielle",
@@ -1136,7 +1136,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 52,
         "fields": {
             "first_name": "Katie",
@@ -1148,7 +1148,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 53,
         "fields": {
             "first_name": "Amelia",
@@ -1160,7 +1160,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 54,
         "fields": {
             "first_name": "Megan",
@@ -1172,7 +1172,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 55,
         "fields": {
             "first_name": "Ann",
@@ -1184,7 +1184,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 56,
         "fields": {
             "first_name": "Emily",
@@ -1196,7 +1196,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 57,
         "fields": {
             "first_name": "Kenneth",
@@ -1208,7 +1208,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 58,
         "fields": {
             "first_name": "Emily",
@@ -1220,7 +1220,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 59,
         "fields": {
             "first_name": "John",
@@ -1232,7 +1232,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 60,
         "fields": {
             "first_name": "Joanna",
@@ -1244,7 +1244,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 61,
         "fields": {
             "first_name": "Allie",
@@ -1256,7 +1256,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 62,
         "fields": {
             "first_name": "Mary Bruce",
@@ -1268,7 +1268,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 63,
         "fields": {
             "first_name": "Joshua",
@@ -1280,7 +1280,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 64,
         "fields": {
             "first_name": "Maria",
@@ -1292,7 +1292,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 65,
         "fields": {
             "first_name": "Catherine",
@@ -1304,7 +1304,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 66,
         "fields": {
             "first_name": "Girley",
@@ -1316,7 +1316,7 @@
         }
     },
     {
-        "model": "ops_site.person",
+        "model": "ops.person",
         "pk": 67,
         "fields": {
             "first_name": "Lisa",
@@ -1328,7 +1328,7 @@
         }
     },
     {
-        "model": "ops_site.can",
+        "model": "ops.can",
         "pk": 1,
         "fields": {
             "number": "G99HRF2",
@@ -1344,7 +1344,7 @@
         }
     },
     {
-        "model": "ops_site.can",
+        "model": "ops.can",
         "pk": 2,
         "fields": {
             "number": "G99IA14",
@@ -1361,7 +1361,7 @@
         }
     },
     {
-        "model": "ops_site.can",
+        "model": "ops.can",
         "pk": 3,
         "fields": {
             "number": "G99PHS9",
@@ -1377,7 +1377,7 @@
         }
     },
     {
-        "model": "ops_site.can",
+        "model": "ops.can",
         "pk": 4,
         "fields": {
             "number": "G990136",
@@ -1393,7 +1393,7 @@
         }
     },
     {
-        "model": "ops_site.can",
+        "model": "ops.can",
         "pk": 5,
         "fields": {
             "number": "G994426",
@@ -1409,7 +1409,7 @@
         }
     },
     {
-        "model": "ops_site.can",
+        "model": "ops.can",
         "pk": 6,
         "fields": {
             "number": "G994648",
@@ -1425,7 +1425,7 @@
         }
     },
     {
-        "model": "ops_site.can",
+        "model": "ops.can",
         "pk": 7,
         "fields": {
             "number": "G996125",
@@ -1441,7 +1441,7 @@
         }
     },
     {
-        "model": "ops_site.canfiscalyear",
+        "model": "ops.canfiscalyear",
         "pk": 1,
         "fields": {
             "can": 1,
@@ -1456,7 +1456,7 @@
         }
     },
     {
-        "model": "ops_site.canfiscalyear",
+        "model": "ops.canfiscalyear",
         "pk": 2,
         "fields": {
             "can": 2,
@@ -1471,7 +1471,7 @@
         }
     },
     {
-        "model": "ops_site.canfiscalyear",
+        "model": "ops.canfiscalyear",
         "pk": 3,
         "fields": {
             "can": 3,
@@ -1486,7 +1486,7 @@
         }
     },
     {
-        "model": "ops_site.canfiscalyear",
+        "model": "ops.canfiscalyear",
         "pk": 4,
         "fields": {
             "can": 3,
@@ -1501,7 +1501,7 @@
         }
     },
     {
-        "model": "ops_site.canfiscalyear",
+        "model": "ops.canfiscalyear",
         "pk": 5,
         "fields": {
             "can": 3,
@@ -1516,7 +1516,7 @@
         }
     },
     {
-        "model": "ops_site.canfiscalyear",
+        "model": "ops.canfiscalyear",
         "pk": 6,
         "fields": {
             "can": 4,
@@ -1531,7 +1531,7 @@
         }
     },
     {
-        "model": "ops_site.canfiscalyear",
+        "model": "ops.canfiscalyear",
         "pk": 7,
         "fields": {
             "can": 5,
@@ -1546,7 +1546,7 @@
         }
     },
     {
-        "model": "ops_site.canfiscalyear",
+        "model": "ops.canfiscalyear",
         "pk": 8,
         "fields": {
             "can": 5,
@@ -1561,7 +1561,7 @@
         }
     },
     {
-        "model": "ops_site.canfiscalyear",
+        "model": "ops.canfiscalyear",
         "pk": 9,
         "fields": {
             "can": 5,
@@ -1576,7 +1576,7 @@
         }
     },
     {
-        "model": "ops_site.canfiscalyear",
+        "model": "ops.canfiscalyear",
         "pk": 10,
         "fields": {
             "can": 5,
@@ -1591,7 +1591,7 @@
         }
     },
     {
-        "model": "ops_site.canfiscalyear",
+        "model": "ops.canfiscalyear",
         "pk": 11,
         "fields": {
             "can": 6,
@@ -1606,7 +1606,7 @@
         }
     },
     {
-        "model": "ops_site.canfiscalyear",
+        "model": "ops.canfiscalyear",
         "pk": 12,
         "fields": {
             "can": 7,
@@ -1621,7 +1621,7 @@
         }
     },
     {
-        "model": "ops_site.contract",
+        "model": "ops.contract",
         "pk": 1,
         "fields": {
             "cans": [
@@ -1633,7 +1633,7 @@
         }
     },
     {
-        "model": "ops_site.contractlineitem",
+        "model": "ops.contractlineitem",
         "pk": 1,
         "fields": {
             "contract": 1,
@@ -1641,7 +1641,7 @@
         }
     },
     {
-        "model": "ops_site.contractlineitem",
+        "model": "ops.contractlineitem",
         "pk": 2,
         "fields": {
             "contract": 1,
@@ -1649,7 +1649,7 @@
         }
     },
     {
-        "model": "ops_site.contractlineitemfiscalyear",
+        "model": "ops.contractlineitemfiscalyear",
         "pk": 1,
         "fields": {
             "line_item": 1,
@@ -1657,7 +1657,7 @@
         }
     },
     {
-        "model": "ops_site.contractlineitemfiscalyear",
+        "model": "ops.contractlineitemfiscalyear",
         "pk": 2,
         "fields": {
             "line_item": 2,
@@ -1665,7 +1665,7 @@
         }
     },
     {
-        "model": "ops_site.contractlineitemfiscalyearpercan",
+        "model": "ops.contractlineitemfiscalyearpercan",
         "pk": 1,
         "fields": {
             "fiscal_year": 1,
@@ -1674,7 +1674,7 @@
         }
     },
     {
-        "model": "ops_site.contractlineitemfiscalyearpercan",
+        "model": "ops.contractlineitemfiscalyearpercan",
         "pk": 2,
         "fields": {
             "fiscal_year": 2,
@@ -1683,7 +1683,7 @@
         }
     },
     {
-        "model": "ops_site.portfolio",
+        "model": "ops.portfolio",
         "pk": 1,
         "fields": {
             "name": "SuperAwesome Portfolio",
@@ -1693,7 +1693,7 @@
         }
     },
     {
-        "model": "ops_site.portfolio",
+        "model": "ops.portfolio",
         "pk": 2,
         "fields": {
             "name": "OPS-Portfolio-1",
@@ -1703,7 +1703,7 @@
         }
     },
     {
-        "model": "ops_site.portfolio",
+        "model": "ops.portfolio",
         "pk": 3,
         "fields": {
             "name": "OPS-Portfolio-2",
@@ -1713,7 +1713,7 @@
         }
     },
     {
-        "model": "ops_site.portfolio",
+        "model": "ops.portfolio",
         "pk": 4,
         "fields": {
             "name": "OPS-Portfolio-3",

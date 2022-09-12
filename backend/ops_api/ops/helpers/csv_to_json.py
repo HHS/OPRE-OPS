@@ -18,7 +18,7 @@ def convert_csv_to_json(inputf, outputf, keys, model_name):
     Sample output JSON:
     [
     {
-        "model": "ops_site.<model_name>",
+        "model": "ops.<model_name>",
         "pk": 1,
         "fields": {
             "key1": "Test Data 1",
@@ -28,7 +28,7 @@ def convert_csv_to_json(inputf, outputf, keys, model_name):
         }
     },
     {
-        "model": "ops_site.<model_name>",
+        "model": "ops.<model_name>",
         "pk": 2,
         "fields": {
             "key1": "Test Data 2",
@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
     inputf = args.i
     outputf = args.o
-    model_name = "ops_site." + args.model_name
+    model_name = "ops." + args.model_name
     keys = args.keys
 
     convert_csv_to_json(inputf, outputf, keys, model_name)

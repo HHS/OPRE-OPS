@@ -7,7 +7,7 @@ import sys
 def main():
     # Default to running with cloud.gov settings for fail-safe; allow override to use local settings.
     os.environ.setdefault(
-        "DJANGO_SETTINGS_MODULE", "opre_ops.django_config.settings.cloudgov"
+        "DJANGO_SETTINGS_MODULE", "ops_api.django_config.settings.cloudgov"
     )
 
     try:

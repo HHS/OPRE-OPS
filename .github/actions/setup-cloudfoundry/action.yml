@@ -4,6 +4,7 @@ runs:
   using: composite
   steps:
     - name: Install CF
+      shell: bash
       run: |
         mkdir -p $HOME/bin
         export PATH=$HOME/bin:$PATH

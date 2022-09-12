@@ -1,7 +1,7 @@
 [run]
 omit =
-        opre_ops/ops_site/migrations/*
-        opre_ops/ops_site/admin.py
+        ops_api/ops/migrations/*
+        ops_api/ops/admin.py
         **/tests/**
         *__init__*
 
