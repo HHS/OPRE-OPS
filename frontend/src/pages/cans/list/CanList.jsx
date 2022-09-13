@@ -20,30 +20,30 @@ const CanList = () => {
                 </BreadcrumbList>
             </header>
 
-            <nav>
-                <h1>CANs</h1>
-
-                <table className="usa-table usa-table--borderless">
-                    <caption>List of all CANs</caption>
-                    <thead>
-                        <tr>
-                            <th scope="col">number</th>
-                            <th scope="col">description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {canList.map((can) => (
-                            <tr key={can.id}>
-                                <th scope="row">
-                                    <Link to={"./" + can.id}>{can.number}</Link>
-                                </th>
-                                <td>{can.description}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </nav>
             <main>
+                <h1>CANs</h1>
+                <nav>
+                    <table className="usa-table usa-table--borderless">
+                        <caption>List of all CANs</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">number</th>
+                                <th scope="col">description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {canList.map((can) => (
+                                <tr key={can.id}>
+                                    <th scope="row">
+                                        <Link to={"./" + can.id}>{can.number}</Link>
+                                    </th>
+                                    <td>{can.description}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </nav>
+
                 <Outlet />
             </main>
         </>
