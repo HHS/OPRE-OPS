@@ -47,6 +47,13 @@ const BudgetSummary = () => {
 
     const pendingFundsTableData = <td className={pendingFunds < 0 ? styles.redNegative : ""}>{pendingFunds}</td>;
 
+    const customSelectStyle = {
+        option: (provided, state) => ({
+            ...provided,
+            "background-color": state.isSelected ? "black" : provided["background-color"],
+        }),
+    };
+
     return (
         <>
             <h2>Budget summary</h2>
@@ -58,6 +65,7 @@ const BudgetSummary = () => {
                 defaultValue={defaultOption}
                 classNamePrefix="react-select"
                 aria-label="Fiscal Year selection"
+                styles={customSelectStyle}
             />
 
             <table className="usa-table usa-table--borderless">
