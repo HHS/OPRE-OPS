@@ -13,6 +13,7 @@ django-filter = "==22.1"
 uvicorn = {version = "==0.18.3", extras = ["standard"]}
 gunicorn = "==20.1.0"
 djangorestframework-simplejwt = "==5.2.0"
+drf-access-policy = "*"
 
 [dev-packages]
 pytest = "==7.1.3"

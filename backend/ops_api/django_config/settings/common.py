@@ -52,10 +52,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "ops_api.django_config.wsgi.application"
 
+AUTH_USER_MODEL = "ops.User"
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",

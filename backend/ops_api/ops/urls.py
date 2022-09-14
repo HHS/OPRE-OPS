@@ -5,6 +5,7 @@ from ops_api.ops.cans.controller import CanListController
 from ops_api.ops.cans.controller import CanReadController
 from ops_api.ops.portfolios.controller import PortfolioListController
 from ops_api.ops.portfolios.controller import PortfolioReadController
+from ops_api.ops.users.controller import UserViewSet
 
 
 urlpatterns = [
@@ -16,4 +17,5 @@ urlpatterns = [
     ),
     path("portfolios", PortfolioListController.as_view()),
     path("portfolios/<int:pk>", PortfolioReadController.as_view()),
+    path("user", UserViewSet, basename="user")
 ]
