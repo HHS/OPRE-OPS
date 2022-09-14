@@ -17,11 +17,20 @@ Accepted.
 
 A11y is important.  Not only that, it is mandated by federal law.
 
-[aXe](https://www.deque.com/axe/) is a major player in the a11y testing and training.  They make an open-source tool called axe-core that we'll
-be utilizing through Cypress.  That makes it easy to a11y test because Cypress is...
+[aXe](https://www.deque.com/axe/) is a major player in the a11y testing and training.  They make an open-source tool
+called axe-core that we'll be utilizing through Cypress.  That makes it easy to a11y test because Cypress is...
 
 - Adept at interacting and navigating websites to get them into all the different states that need to be a11y tested.
 - Already used for our [end-to-end testing](./014-use-cypress-for-testing.md).
+
+We' are using aXe because it...
+
+- Finds more a11y issues than [pa11y](https://pa11y.org) and other tools.
+- Integrates nicely with our existing end-to-end testing.  There doesn't seem to be a way to use pa11y with Cypress.
+  Instead, it seems that one needs to use pa11y's custom navigation language.
+
+With that said, there are some issues that only pa11y finds.  In the future, we can revisit this and see if the calculus
+has changed such that we want to integrate pa11y or some other tool.
 
 ### Related issues
 
