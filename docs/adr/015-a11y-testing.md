@@ -23,7 +23,7 @@ called axe-core that we'll be utilizing through Cypress.  That makes it easy to 
 - Adept at interacting and navigating websites to get them into all the different states that need to be a11y tested.
 - Already used for our [end-to-end testing](./014-use-cypress-for-testing.md).
 
-We' are using aXe because it...
+We're using aXe because it...
 
 - Finds more a11y issues than [pa11y](https://pa11y.org) and other tools.
 - Has the most active development.
