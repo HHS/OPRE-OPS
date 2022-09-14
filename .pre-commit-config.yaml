@@ -33,13 +33,14 @@ repos:
         name: nox-lint
         entry: cd ./backend/ && pipenv run nox -s lint
         language: system
-        types: [python]
+        types:
+         - python
         pass_filenames: false
       - id: eslint
         name: eslint
         entry: cd ./frontend/ && yarn lint
         language: system
-        types:
+        types_or:
           - javascript
           - jsx
           - css
