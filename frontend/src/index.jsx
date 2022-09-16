@@ -2,12 +2,14 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 
 import { Provider } from "react-redux";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route } from "react-router-dom";
 
 import store from "./store";
 
 import ApplicationContext from "./applicationContext/ApplicationContext";
 import DeployedApplicationContext from "./applicationContext/DeployedApplicationContext";
+
+import HomeRoutes from "./components/HomeRoutes/HomeRoutes";
 
 // eslint-disable-next-line import/no-unresolved
 import "@uswds/uswds/css/uswds.min.css";
@@ -26,15 +28,7 @@ root.render(
     <React.StrictMode>
         <Provider store={store}>
             <BrowserRouter>
-                <Routes>
-                    <Route path="/" element={<App />} />
-                    <Route path="/portfolios" element={<PortfolioList />}>
-                        <Route path="/portfolios/:id" element={<PortfolioDetail />} />
-                    </Route>
-                    <Route path="/cans" element={<CanList />}>
-                        <Route path="/cans/:id" element={<CanDetail />} />
-                    </Route>
-                </Routes>
+                <HomeRoutes />
             </BrowserRouter>
         </Provider>
     </React.StrictMode>
