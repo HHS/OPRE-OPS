@@ -1,8 +1,7 @@
-from django.db import models
-
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
+from django.db import models
 
 
 class UserManager(BaseUserManager):
@@ -39,8 +38,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(db_index=True, max_length=255, unique=True)
     oidc_id = models.CharField(db_index=True, max_length=128, unique=True)
-    email = models.EmailField(db_index=True,
-                              unique=True, null=True, blank=True)
+    email = models.EmailField(db_index=True, unique=True, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     role = models.CharField(db_index=True, max_length=255)
 

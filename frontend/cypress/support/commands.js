@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 // ***********************************************
 // This example commands.js shows you how to
 // create various custom commands and overwrite
@@ -19,7 +20,40 @@
 //
 // -- This is a dual command --
 // Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
+
+const severityIndicators = {
+    minor: "⚪️",
+    moderate: "🟡",
+    serious: "🟠",
+    critical: "🔴",
+};
+
+const violationHandler = (violations) => {
+    violations.forEach((violation) => {
+        const violationDomNodes = violation.nodes;
+        const violationJQueryNodesReference = Cypress.$(violationDomNodes.map((node) => node.target).join(","));
+
+        Cypress.log({
+            name: `a11y ${severityIndicators[violation.impact]}`,
+            message: `[${violation.help}](${violation.helpUrl})`,
+            $el: violationJQueryNodesReference,
+            consoleProps: () => violation,
+        });
+
+        violationDomNodes.forEach((node) => {
+            Cypress.log({
+                name: "node",
+                message: node.target,
+                $el: Cypress.$(node.target.join(",")),
+                consoleProps: () => violation,
+            });
+        });
+    });
+};
+
+Cypress.Commands.overwrite("checkA11y", (originalFn, context, options, violationCallback, skipFailures) => {
+    if (!violationCallback) {
+        violationCallback = violationHandler;
+    }
+    return originalFn(context, options, violationCallback, skipFailures);
+});
