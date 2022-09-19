@@ -31,6 +31,6 @@ class OidcController(APIView):
         )
 
         # This isn't quite right because this request isn't the actual callback
-        # token = oauth.google.authorize_access_token(request)
+        token = oauth.google.fetch_access_token(redirect_uri=callback_url)
 
         return Response({"jwt": "OPS-specific JWT"}, status=HTTPStatus.OK)
