@@ -4,6 +4,8 @@ We use Docker Compose for local development.
 See the project Dockerfile and docker-compose.yml for context.
 These are settings for local development only, not cloud or production environments.
 """
+import os
+
 # Import all common settings relevant to both local & cloud:
 from ops_api.django_config.settings.common import *  # noqa: F403, F401
 from ops_api.django_config.settings.helpers.random_string import generate_random_string
@@ -31,3 +33,11 @@ ALLOWED_HOSTS = ["localhost"]
 CORS_ALLOWED_ORIGIN_REGEXES = [r"http://localhost(:\d{1,4})?"]
 
 INSTALLED_APPS += ["django_extensions"]  # noqa: F405
+
+AUTHLIB_OAUTH_CLIENTS = {
+    "logingov": {
+        "server_metadata_url": "https://idp.int.identitysandbox.gov/.well-known/openid-configuration",
+        "client_id": os.getenv("OIDC_CLIENT_ID"),
+        "client_kwargs": {"scope": "openid"},
+    }
+}
