@@ -1,5 +1,6 @@
 from django.urls import path
 
+from ops_api.ops.auth.oidc import OidcController
 from ops_api.ops.cans.controller import CANFiscalYearByCanListController
 from ops_api.ops.cans.controller import CanListController
 from ops_api.ops.cans.controller import CanReadController
@@ -16,4 +17,5 @@ urlpatterns = [
     ),
     path("portfolios", PortfolioListController.as_view()),
     path("portfolios/<int:pk>", PortfolioReadController.as_view()),
+    path("auth/oidc", OidcController.as_view()),
 ]
