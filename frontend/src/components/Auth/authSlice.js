@@ -5,6 +5,9 @@ export const authSlice = createSlice({
     initialState: {
         authStateToken: "",
         authCode: "",
+        codeVerifier: "",
+        codeChallenge: "",
+        codeVerifierBase64URLEncode: "",
         isLoggedIn: false,
         userDetails: null,
     },
@@ -14,6 +17,15 @@ export const authSlice = createSlice({
         },
         setAuthenticationCode: (state, action) => {
             state.authCode = action.payload;
+        },
+        setCodeVerifier: (state, action) => {
+            state.codeVerifier = action.payload;
+        },
+        setCodeChallenge: (state, action) => {
+            state.codeChallenge = action.payload;
+        },
+        setCodeVerifierBase64URLEncode: (state, action) => {
+            state.codeVerifierBase64URLEncode = action.payload;
         },
         login: (state, action) => {
             state.isLoggedIn = true;
@@ -30,6 +42,15 @@ export const authSlice = createSlice({
     },
 });
 
-export const { setAuthStateToken, setAuthenticationCode, login, logout, setUserDetails } = authSlice.actions;
+export const {
+    setAuthStateToken,
+    setAuthenticationCode,
+    login,
+    logout,
+    setUserDetails,
+    setCodeVerifier,
+    setCodeChallenge,
+    setCodeVerifierBase64URLEncode,
+} = authSlice.actions;
 
 export default authSlice.reducer;
