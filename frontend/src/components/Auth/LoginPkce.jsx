@@ -14,17 +14,14 @@ import { useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { sha256 } from "js-sha256";
 import ApplicationContext from "../../applicationContext/ApplicationContext";
+import cryptoRandomString from "crypto-random-string";
 
-const Login = (props) => {
+const LoginPkce = (props) => {
     const base64_urlencode = (str) => {
-        return btoa(String.fromCharCode.apply(null, new TextEncoder().encode(str)))
+        return btoa(String.fromCharCode.apply(null, new Uint8Array(str)))
             .replace(/\+/g, "-")
             .replace(/\//g, "_")
             .replace(/=+$/, "");
-    };
-
-    const base64URLEncode = (str) => {
-        return str.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
     };
 
     const stateString = nanoid(64);
@@ -39,35 +36,39 @@ const Login = (props) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const callBackend = useCallback(async () => {
+    console.log({ codeVerifier });
+    console.log({ codeChallenge });
+    console.log({ codeVerifierBase64URLEncode });
+
+    const tmpCodeVerifier = "5787d673fb784c90f0e309883241803d";
+    // const tmpCodeVerifier = cryptoRandomString({ length: 32 });
+
+    // create code challenge
+    const tmpCodeChallenge = sha256.create();
+    tmpCodeChallenge.update(tmpCodeVerifier);
+    const tmpCodeChallengeHex = tmpCodeChallenge.hex();
+    const tmpCodeChallengeDigest = tmpCodeChallenge.digest();
+
+    // create base64 url encoded code challenge
+    const tmpCodeVerifierBase64URLEncode = base64_urlencode(tmpCodeChallengeDigest);
+
+    useEffect(() => {
+        // set state
+        dispatch(setCodeVerifier(tmpCodeVerifier));
+        dispatch(setCodeChallenge(tmpCodeChallengeHex));
+        dispatch(setCodeVerifierBase64URLEncode(tmpCodeVerifierBase64URLEncode));
+    }, []);
+
+    const callBackend = useCallback(async (innerCodeVerifier, innerAuthCode) => {
         const response = await ApplicationContext.get().helpers().callBackend(`/ops/auth/oidc`, "post", {
             callbackUrl: window.location.href,
-            pkceCodeVerifier: codeVerifier,
-            code: authCode,
-            code_challenge: codeChallenge,
+            pkceCodeVerifier: innerCodeVerifier,
+            code: innerAuthCode,
         });
 
         console.log({ response });
 
         navigate("/login-pkce");
-    }, []);
-
-    useEffect(() => {
-        console.log("useEffect running.");
-        // const tmpCodeVerifier = nanoid(128);
-        // const tmpCodeVerifier = base64_urlencode("5787d673fb784c90f0e309883241803d");
-        const tmpCodeVerifier = base64_urlencode(nanoid(128));
-        // const tmp1 = base64_urlencode(tmpCodeVerifier);
-        // console.log({ tmp1 });
-        console.log("sanity check.");
-        console.log({ tmpCodeVerifier });
-        const tmpCodeChallenge = sha256(tmpCodeVerifier);
-        // const tmpCodeVerifierBase64URLEncode = base64_urlencode(tmpCodeChallenge);
-        const tmpCodeVerifierBase64URLEncode = base64_urlencode(tmpCodeChallenge);
-        console.log({ tmpCodeVerifierBase64URLEncode });
-        dispatch(setCodeVerifier(tmpCodeVerifier));
-        dispatch(setCodeChallenge(tmpCodeChallenge));
-        dispatch(setCodeVerifierBase64URLEncode(tmpCodeVerifierBase64URLEncode));
     }, []);
 
     useEffect(() => {
@@ -82,7 +83,7 @@ const Login = (props) => {
             console.log({ queryParamsString });
 
             // check if we have been redirected here from the OIDC provider
-            if (queryParams.has("state")) {
+            if (queryParams.has("state") && queryParams.has("code")) {
                 // check that the state matches
                 const returnedState = queryParams.get("state");
                 const localStateString = localStorage.getItem("ops-state-key");
@@ -95,45 +96,19 @@ const Login = (props) => {
                     console.log("Received Authentication Code");
                     const returnedAuthCode = queryParams.get("code");
                     dispatch(setAuthenticationCode(returnedAuthCode));
-
-                    // callBackend().catch(console.error);
                 }
             }
         } else {
             localStorage.setItem("ops-state-key", stateString);
             dispatch(setAuthStateToken(stateString));
         }
-    }, [authStateToken, callBackend]);
+    }, []);
 
     useEffect(() => {
-        // login in backend here synchronously
-        // timer to simulate waiting for response from backend
         console.log({ authCode: authCode });
+
         if (authCode) {
-            // pop the state key from local storage and save to state
-            const localStateString = localStorage.getItem("ops-state-key");
-            dispatch(setAuthStateToken(localStateString));
-            localStorage.removeItem("ops-state-key");
-
-            setTimeout(() => {
-                const responseFromBackend = {
-                    httpStatusCode: 200,
-                    state: authStateToken,
-                    userDetails: {
-                        userId: 101,
-                        fullName: "Matthew M. Anderson",
-                        email: "matthew.m.anderson@example.com",
-                    },
-                };
-
-                if (responseFromBackend.httpStatusCode === 200 && responseFromBackend.state === authStateToken) {
-                    dispatch(setUserDetails(responseFromBackend.userDetails));
-                    dispatch(login());
-                } else {
-                    // throw an error? retry?
-                    console.log("Login failed in backend.");
-                }
-            }, 1000);
+            callBackend(codeVerifier, authCode).catch(console.error);
         }
     }, [authCode]);
 
@@ -153,7 +128,6 @@ const Login = (props) => {
         console.log(`authStateToken = ${authStateToken}`);
         console.log(`providerUrl.searchParams = ${providerUrl.searchParams}`);
         window.location.href = providerUrl;
-        // setRequestSent(true);
     };
 
     const logoutHandler = () => {
@@ -180,4 +154,4 @@ const Login = (props) => {
     );
 };
 
-export default Login;
+export default LoginPkce;

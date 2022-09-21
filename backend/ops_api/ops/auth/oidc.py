@@ -16,15 +16,15 @@ class OidcController(APIView):
 
     @staticmethod
     def post(request: Request):
+        print(f"request.data = {request.data}")
+
         callback_url = request.data["callbackUrl"]
         # state = request.data["state"]
         code = request.data.get("code")
-        code_challenge = request.data.get("code_challenge")
-
         pkce_code_verifier = request.data["pkceCodeVerifier"]
 
         print(
-            f"Got an OIDC request with the callback URL of {callback_url} and code of {code}"
+            f"Got an OIDC request with the callback URL of {callback_url} and code of {code} and pkceCodeVerifier of {pkce_code_verifier}"
         )
 
         token = oauth.logingov.fetch_access_token(
