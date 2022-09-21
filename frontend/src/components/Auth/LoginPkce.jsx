@@ -1,18 +1,19 @@
 import { nanoid } from "nanoid";
 import {
-    setAuthStateToken,
-    setAuthenticationCode,
     login,
     logout,
-    setUserDetails,
-    setCodeVerifier,
+    setAuthenticationCode,
+    setAuthStateToken,
     setCodeChallenge,
+    setCodeVerifier,
     setCodeVerifierBase64URLEncode,
+    setUserDetails,
 } from "./authSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { sha256 } from "js-sha256";
+import ApplicationContext from "../../applicationContext/ApplicationContext";
 
 const Login = (props) => {
     const base64_urlencode = (str) => {
@@ -20,6 +21,10 @@ const Login = (props) => {
             .replace(/\+/g, "-")
             .replace(/\//g, "_")
             .replace(/=+$/, "");
+    };
+
+    const base64URLEncode = (str) => {
+        return str.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
     };
 
     const stateString = nanoid(64);
@@ -34,12 +39,32 @@ const Login = (props) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
+    const callBackend = useCallback(async () => {
+        const response = await ApplicationContext.get().helpers().callBackend(`/ops/auth/oidc`, "post", {
+            callbackUrl: window.location.href,
+            pkceCodeVerifier: codeVerifier,
+            code: authCode,
+            code_challenge: codeChallenge,
+        });
+
+        console.log({ response });
+
+        navigate("/login-pkce");
+    }, []);
+
     useEffect(() => {
         console.log("useEffect running.");
-        const tmpCodeVerifier = nanoid(128);
+        // const tmpCodeVerifier = nanoid(128);
+        // const tmpCodeVerifier = base64_urlencode("5787d673fb784c90f0e309883241803d");
+        const tmpCodeVerifier = base64_urlencode(nanoid(128));
+        // const tmp1 = base64_urlencode(tmpCodeVerifier);
+        // console.log({ tmp1 });
+        console.log("sanity check.");
         console.log({ tmpCodeVerifier });
         const tmpCodeChallenge = sha256(tmpCodeVerifier);
+        // const tmpCodeVerifierBase64URLEncode = base64_urlencode(tmpCodeChallenge);
         const tmpCodeVerifierBase64URLEncode = base64_urlencode(tmpCodeChallenge);
+        console.log({ tmpCodeVerifierBase64URLEncode });
         dispatch(setCodeVerifier(tmpCodeVerifier));
         dispatch(setCodeChallenge(tmpCodeChallenge));
         dispatch(setCodeVerifierBase64URLEncode(tmpCodeVerifierBase64URLEncode));
@@ -70,14 +95,15 @@ const Login = (props) => {
                     console.log("Received Authentication Code");
                     const returnedAuthCode = queryParams.get("code");
                     dispatch(setAuthenticationCode(returnedAuthCode));
-                    navigate("/login-pkce");
+
+                    // callBackend().catch(console.error);
                 }
             }
         } else {
             localStorage.setItem("ops-state-key", stateString);
             dispatch(setAuthStateToken(stateString));
         }
-    }, [authStateToken]);
+    }, [authStateToken, callBackend]);
 
     useEffect(() => {
         // login in backend here synchronously
@@ -122,9 +148,10 @@ const Login = (props) => {
         providerUrl.searchParams.set("redirect_uri", "http://localhost:3001/login-pkce");
         providerUrl.searchParams.set("state", authStateToken);
         providerUrl.searchParams.set("nonce", authStateToken);
-        providerUrl.searchParams.set("code_challenge", "codeChallengeUrlSafe");
+        providerUrl.searchParams.set("code_challenge", codeVerifierBase64URLEncode);
         providerUrl.searchParams.set("code_challenge_method", "S256");
-        console.log({ providerUrl: providerUrl.toString() });
+        console.log(`authStateToken = ${authStateToken}`);
+        console.log(`providerUrl.searchParams = ${providerUrl.searchParams}`);
         window.location.href = providerUrl;
         // setRequestSent(true);
     };
