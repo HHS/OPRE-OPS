@@ -7,6 +7,12 @@ from ops_api.ops.cans.models import ContractLineItem
 from ops_api.ops.cans.models import FundingPartner
 from ops_api.ops.models import Person
 from ops_api.ops.models import Role
+from ops_api.ops.users.models import User
+
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ("username", "email")
 
 
 @admin.register(FundingPartner)

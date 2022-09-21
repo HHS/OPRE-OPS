@@ -38,8 +38,11 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(db_index=True, max_length=255, unique=True)
     oidc_id = models.CharField(db_index=True, max_length=128, unique=True)
-    email = models.EmailField(db_index=True, unique=True, null=True, blank=True)
+    email = models.EmailField(db_index=True, unique=True, null=True)
     is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
+    date_joined = models.DateTimeField(null=True)
     role = models.CharField(db_index=True, max_length=255)
 
     USERNAME_FIELD = "email"

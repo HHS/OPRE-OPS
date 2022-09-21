@@ -5,7 +5,7 @@ from .controller import RefreshViewSet
 from .controller import RegistrationViewSet
 
 urlpatterns = [
-    path("login", LoginViewSet, basename="auth-login"),
-    path("register", RegistrationViewSet, basename="auth-register"),
-    path("refresh", RefreshViewSet, basename="auth-refresh"),
+    path("login", LoginViewSet.as_view({"post": "create"})),
+    path("register", RegistrationViewSet.as_view({"post": "create"})),
+    path("refresh", RefreshViewSet.as_view({"post": "create"})),
 ]

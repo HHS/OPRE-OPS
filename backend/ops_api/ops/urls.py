@@ -17,5 +17,5 @@ urlpatterns = [
     ),
     path("portfolios", PortfolioListController.as_view()),
     path("portfolios/<int:pk>", PortfolioReadController.as_view()),
-    path("user", UserViewSet, basename="user"),
+    path("user", UserViewSet.as_view({"get": "list"})),
 ]

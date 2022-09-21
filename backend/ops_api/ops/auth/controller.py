@@ -1,7 +1,5 @@
 from django.contrib.auth.models import update_last_login
 from django.core.exceptions import ObjectDoesNotExist
-from ops.users.controller import UserSerializer
-from ops.users.models import User
 from rest_framework import serializers
 from rest_framework import status
 from rest_framework import viewsets
@@ -15,6 +13,9 @@ from rest_framework_simplejwt.settings import api_settings
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
+
+from ops_api.ops.users.controller import UserSerializer
+from ops_api.ops.users.models import User
 
 
 class LoginSerializer(TokenObtainPairSerializer):
@@ -62,6 +63,7 @@ class RegisterSerializer(UserSerializer):
             "username",
             "email",
             "password",
+            "role",
             "is_active",
             "created",
             "updated",
