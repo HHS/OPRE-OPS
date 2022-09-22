@@ -144,8 +144,6 @@ const LoginJwt = (props) => {
         providerUrl.searchParams.set("redirect_uri", "http://localhost:3000/login-jwt");
         providerUrl.searchParams.set("state", authStateToken);
         providerUrl.searchParams.set("nonce", authStateToken);
-        providerUrl.searchParams.set("code_challenge", codeVerifierBase64URLEncode);
-        providerUrl.searchParams.set("code_challenge_method", "S256");
         console.log(`authStateToken = ${authStateToken}`);
         console.log(`providerUrl.searchParams = ${providerUrl.searchParams}`);
         window.location.href = providerUrl;
