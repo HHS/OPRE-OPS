@@ -10,7 +10,7 @@ import {
     setUserDetails,
 } from "./authSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { sha256 } from "js-sha256";
 import ApplicationContext from "../../applicationContext/ApplicationContext";
@@ -36,27 +36,44 @@ const LoginPkce = (props) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    console.log({ codeVerifier });
-    console.log({ codeChallenge });
-    console.log({ codeVerifierBase64URLEncode });
+    const tokenLock = useRef(false);
 
-    const tmpCodeVerifier = "5787d673fb784c90f0e309883241803d";
-    // const tmpCodeVerifier = cryptoRandomString({ length: 32 });
+    const generateTokens = () => {
+        const tmpCodeVerifier = cryptoRandomString({ length: 32 });
 
-    // create code challenge
-    const tmpCodeChallenge = sha256.create();
-    tmpCodeChallenge.update(tmpCodeVerifier);
-    const tmpCodeChallengeHex = tmpCodeChallenge.hex();
-    const tmpCodeChallengeDigest = tmpCodeChallenge.digest();
+        // create code challenge
+        const tmpCodeChallenge = sha256.create();
+        tmpCodeChallenge.update(tmpCodeVerifier);
+        const tmpCodeChallengeHex = tmpCodeChallenge.hex();
+        const tmpCodeChallengeDigest = tmpCodeChallenge.digest();
 
-    // create base64 url encoded code challenge
-    const tmpCodeVerifierBase64URLEncode = base64_urlencode(tmpCodeChallengeDigest);
+        // create base64 url encoded code challenge
+        const tmpCodeVerifierBase64URLEncode = base64_urlencode(tmpCodeChallengeDigest);
+
+        return { tmpCodeVerifier, tmpCodeChallengeHex, tmpCodeVerifierBase64URLEncode };
+    };
 
     useEffect(() => {
-        // set state
-        dispatch(setCodeVerifier(tmpCodeVerifier));
-        dispatch(setCodeChallenge(tmpCodeChallengeHex));
-        dispatch(setCodeVerifierBase64URLEncode(tmpCodeVerifierBase64URLEncode));
+        if (tokenLock.current === false) {
+            console.log("inside lock section.");
+            tokenLock.current = true;
+            const tmpCodeVerifier = localStorage.getItem("ops-token-codeVerifier");
+            console.log({ tmpCodeVerifier });
+            if (tmpCodeVerifier) {
+                console.log("set state from localstorage");
+                dispatch(setCodeVerifier(localStorage.getItem("ops-token-codeVerifier")));
+                dispatch(setCodeChallenge(""));
+                dispatch(setCodeVerifierBase64URLEncode(""));
+                localStorage.removeItem("ops-token-codeVerifier");
+            } else {
+                console.log("set state from generated tokens");
+                const { tmpCodeVerifier, tmpCodeChallengeHex, tmpCodeVerifierBase64URLEncode } = generateTokens();
+
+                dispatch(setCodeVerifier(tmpCodeVerifier));
+                dispatch(setCodeChallenge(tmpCodeChallengeHex));
+                dispatch(setCodeVerifierBase64URLEncode(tmpCodeVerifierBase64URLEncode));
+            }
+        }
     }, []);
 
     const callBackend = useCallback(async (innerCodeVerifier, innerAuthCode) => {
@@ -96,6 +113,7 @@ const LoginPkce = (props) => {
                     console.log("Received Authentication Code");
                     const returnedAuthCode = queryParams.get("code");
                     dispatch(setAuthenticationCode(returnedAuthCode));
+                    localStorage.setItem("ops-token-authCode", returnedAuthCode);
                 }
             }
         } else {
@@ -115,6 +133,9 @@ const LoginPkce = (props) => {
     const getAuthorizationCode = () => {
         console.log({ authStateToken });
         console.log({ isLoggedIn });
+        console.log({ codeVerifier });
+        console.log({ codeVerifierBase64URLEncode });
+        localStorage.setItem("ops-token-codeVerifier", codeVerifier);
         const providerUrl = new URL("https://idp.int.identitysandbox.gov/openid_connect/authorize");
         providerUrl.searchParams.set("acr_values", "http://idmanagement.gov/ns/assurance/ial/1");
         providerUrl.searchParams.set("client_id", "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops");
