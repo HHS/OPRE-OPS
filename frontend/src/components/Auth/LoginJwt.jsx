@@ -16,7 +16,7 @@ import { sha256 } from "js-sha256";
 import ApplicationContext from "../../applicationContext/ApplicationContext";
 import cryptoRandomString from "crypto-random-string";
 
-const LoginPkce = (props) => {
+const LoginJwt = (props) => {
     const base64_urlencode = (str) => {
         return btoa(String.fromCharCode.apply(null, new Uint8Array(str)))
             .replace(/\+/g, "-")
@@ -85,7 +85,7 @@ const LoginPkce = (props) => {
 
         console.log({ response });
 
-        navigate("/login-pkce");
+        navigate("/login-jwt");
     }, []);
 
     useEffect(() => {
@@ -138,10 +138,10 @@ const LoginPkce = (props) => {
         localStorage.setItem("ops-token-codeVerifier", codeVerifier);
         const providerUrl = new URL("https://idp.int.identitysandbox.gov/openid_connect/authorize");
         providerUrl.searchParams.set("acr_values", "http://idmanagement.gov/ns/assurance/ial/1");
-        providerUrl.searchParams.set("client_id", "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops");
+        providerUrl.searchParams.set("client_id", "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops_jwt");
         providerUrl.searchParams.set("response_type", "code");
         providerUrl.searchParams.set("scope", "openid");
-        providerUrl.searchParams.set("redirect_uri", "http://localhost:3001/login-pkce");
+        providerUrl.searchParams.set("redirect_uri", "http://localhost:3000/login-jwt");
         providerUrl.searchParams.set("state", authStateToken);
         providerUrl.searchParams.set("nonce", authStateToken);
         providerUrl.searchParams.set("code_challenge", codeVerifierBase64URLEncode);
@@ -175,4 +175,4 @@ const LoginPkce = (props) => {
     );
 };
 
-export default LoginPkce;
+export default LoginJwt;

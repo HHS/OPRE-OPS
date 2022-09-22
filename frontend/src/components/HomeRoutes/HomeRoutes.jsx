@@ -5,8 +5,7 @@ import PortfolioDetail from "../../pages/portfolios/detail/PortfolioDetail";
 import CanList from "../../pages/cans/list/CanList";
 import CanDetail from "../../pages/cans/detail/CanDetail";
 import Login from "../Auth/Login";
-import LoginPkce from "../Auth/LoginPkce";
-import React from "react";
+import LoginJwt from "../Auth/LoginJwt";
 
 const HomeRoutes = () => (
     <Routes>
@@ -18,7 +17,7 @@ const HomeRoutes = () => (
             <Route path="/cans/:id" element={<CanDetail />} />
         </Route>
         <Route path="/login" element={<Login />}></Route>
-        <Route path="/login-pkce" element={<LoginPkce />}></Route>
+        <Route path="/login-jwt" element={<LoginJwt />}></Route>
     </Routes>
 );
 
