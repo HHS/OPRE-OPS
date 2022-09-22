@@ -36,3 +36,7 @@ class OidcController(APIView):
         print(token)
 
         return Response({"jwt": "OPS-specific JWT"}, status=HTTPStatus.OK)
+
+    @staticmethod
+    def get(request: Request):
+        pass
