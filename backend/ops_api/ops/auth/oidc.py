@@ -1,6 +1,8 @@
 from http import HTTPStatus
 
 from authlib.integrations.django_client import OAuth
+from authlib.jose import jwt
+from django.conf import settings
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -39,4 +41,15 @@ class OidcController(APIView):
 
     @staticmethod
     def get(request: Request):
-        pass
+
+        key_path = (
+            settings.BASE_DIR / ".." / "ops" / "management" / "key" / "dev_only.pem"
+        )
+        with key_path.open("rb") as f:
+            key = f.read()
+
+        header = {"alg": "RS256"}
+        payload = {"iss": "HHS", "sub": "OPRE OPS superuser"}
+        jws = jwt.encode(header, payload, key)
+
+        return Response({"jws": jws}, status=HTTPStatus.OK)
