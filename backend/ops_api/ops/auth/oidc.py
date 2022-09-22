@@ -24,7 +24,8 @@ class OidcController(APIView):
         pkce_code_verifier = request.data["pkceCodeVerifier"]
 
         print(
-            f"Got an OIDC request with the callback URL of {callback_url} and code of {code} and pkceCodeVerifier of {pkce_code_verifier}"
+            f"""Got an OIDC request with the callback URL of {callback_url}
+            and code of {code} and pkceCodeVerifier of {pkce_code_verifier}"""
         )
 
         token = oauth.logingov.fetch_access_token(
