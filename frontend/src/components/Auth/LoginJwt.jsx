@@ -75,7 +75,7 @@ const LoginJwt = () => {
     }, []);
 
     const callBackend = useCallback(async (innerCodeVerifier, innerAuthCode) => {
-        const response = await ApplicationContext.get().helpers().callBackend(`/ops/auth/oidc`, "post", {
+        const response = await ApplicationContext.get().helpers().callBackend(`/ops/auth/authenticate`, "post", {
             callbackUrl: window.location.href,
             pkceCodeVerifier: innerCodeVerifier,
             code: innerAuthCode,
