@@ -7,7 +7,6 @@ import {
     setCodeChallenge,
     setCodeVerifier,
     setCodeVerifierBase64URLEncode,
-    setUserDetails,
 } from "./authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useCallback, useEffect, useRef } from "react";
@@ -15,8 +14,9 @@ import { useNavigate } from "react-router-dom";
 import { sha256 } from "js-sha256";
 import ApplicationContext from "../../applicationContext/ApplicationContext";
 import cryptoRandomString from "crypto-random-string";
+import { getAuthorizationCode } from "./auth";
 
-const LoginJwt = (props) => {
+const LoginJwt = () => {
     const base64_urlencode = (str) => {
         return btoa(String.fromCharCode.apply(null, new Uint8Array(str)))
             .replace(/\+/g, "-")
@@ -27,8 +27,6 @@ const LoginJwt = (props) => {
     const stateString = nanoid(64);
 
     const codeVerifier = useSelector((state) => state.auth.codeVerifier);
-    const codeChallenge = useSelector((state) => state.auth.codeChallenge);
-    const codeVerifierBase64URLEncode = useSelector((state) => state.auth.codeVerifierBase64URLEncode);
 
     const authStateToken = useSelector((state) => state.auth.authStateToken);
     const authCode = useSelector((state) => state.auth.authCode);
@@ -83,7 +81,8 @@ const LoginJwt = (props) => {
             code: innerAuthCode,
         });
 
-        console.log({ response });
+        console.log({ jwt: response.jwt });
+        dispatch(login());
 
         navigate("/login-jwt");
     }, []);
@@ -130,25 +129,6 @@ const LoginJwt = (props) => {
         }
     }, [authCode]);
 
-    const getAuthorizationCode = () => {
-        console.log({ authStateToken });
-        console.log({ isLoggedIn });
-        console.log({ codeVerifier });
-        console.log({ codeVerifierBase64URLEncode });
-        localStorage.setItem("ops-token-codeVerifier", codeVerifier);
-        const providerUrl = new URL("https://idp.int.identitysandbox.gov/openid_connect/authorize");
-        providerUrl.searchParams.set("acr_values", "http://idmanagement.gov/ns/assurance/ial/1");
-        providerUrl.searchParams.set("client_id", "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops_jwt");
-        providerUrl.searchParams.set("response_type", "code");
-        providerUrl.searchParams.set("scope", "openid");
-        providerUrl.searchParams.set("redirect_uri", "http://localhost:3000/login-jwt");
-        providerUrl.searchParams.set("state", authStateToken);
-        providerUrl.searchParams.set("nonce", authStateToken);
-        console.log(`authStateToken = ${authStateToken}`);
-        console.log(`providerUrl.searchParams = ${providerUrl.searchParams}`);
-        window.location.href = providerUrl;
-    };
-
     const logoutHandler = () => {
         dispatch(logout());
         localStorage.removeItem("ops-state-key");
@@ -162,7 +142,9 @@ const LoginJwt = (props) => {
             {isLoggedIn && <p>User is logged in.</p>}
             {!isLoggedIn && <p>User is not logged in.</p>}
             <div>
-                <button onClick={getAuthorizationCode}>Login to Login.gov</button>
+                <button onClick={() => (window.location.href = getAuthorizationCode(authStateToken))}>
+                    Login to Login.gov
+                </button>
             </div>
             {isLoggedIn && (
                 <div>
