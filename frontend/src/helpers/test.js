@@ -8,5 +8,10 @@ export const dispatchUsecase = async (usecase) => {
 };
 
 export const authConfig = {
-    loginGovAuthorizationEndpoint: "https://dummy/123/",
+    loginGovAuthorizationEndpoint: "https://dummy/123",
+    acr_values: "http://acr/values",
+    client_id: "blah:blah",
+    response_type: "blah",
+    scope: "blah blah",
+    redirect_uri: "http://uri/login",
 };
