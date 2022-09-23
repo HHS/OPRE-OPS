@@ -13,3 +13,7 @@ export const callBackend = async (urlPath, action, requestBody) => {
 
     return response.data;
 };
+
+export const authConfig = {
+    loginGovAuthorizationEndpoint: "https://idp.int.identitysandbox.gov/openid_connect/authorize",
+};

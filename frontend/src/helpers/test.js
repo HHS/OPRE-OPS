@@ -6,3 +6,7 @@ export const dispatchUsecase = async (usecase) => {
 
     return await usecase(dispatch, getState);
 };
+
+export const authConfig = {
+    loginGovAuthorizationEndpoint: "https://dummy/123/",
+};
