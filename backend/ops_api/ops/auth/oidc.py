@@ -19,7 +19,7 @@ class OidcController(APIView):
     permission_classes = [AllowAny]
 
     @staticmethod
-    def post(request: Request):
+    def post(request: Request) -> Response:
         print(f"request.data = {request.data}")
 
         code = request.data.get("code")
@@ -27,7 +27,7 @@ class OidcController(APIView):
         print(f"Got an OIDC request with the code of {code}")
 
         token = oauth.logingov.fetch_access_token(
-            client_assertion=OidcController.get_jwt(),
+            client_assertion=get_jwt(),
             client_assertion_type="urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
             grant_type="authorization_code",
             code=code,
@@ -36,24 +36,22 @@ class OidcController(APIView):
 
         return Response({"jwt": "OPS-specific JWT"}, status=HTTPStatus.OK)
 
-    @staticmethod
-    def get_jwt():
 
-        key_path = (
-            settings.BASE_DIR / ".." / "ops" / "management" / "key" / "dev_only.pem"
-        )
-        with key_path.open("rb") as f:
-            key = f.read()
+def get_jwt():
 
-        header = {"alg": "RS256"}
-        client_id = "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops_jwt"
-        payload = {
-            "iss": client_id,
-            "sub": client_id,
-            "aud": "https://idp.int.identitysandbox.gov/api/openid_connect/token",
-            "jti": str(uuid.uuid4()),
-            "exp": int(time.time()) + 300,
-        }
-        jws = jwt.encode(header, payload, key)
+    key_path = settings.BASE_DIR / ".." / "ops" / "management" / "key" / "dev_only.pem"
+    with key_path.open("rb") as f:
+        key = f.read()
 
-        return jws
+    header = {"alg": "RS256"}
+    client_id = "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops_jwt"
+    payload = {
+        "iss": client_id,
+        "sub": client_id,
+        "aud": "https://idp.int.identitysandbox.gov/api/openid_connect/token",
+        "jti": str(uuid.uuid4()),
+        "exp": int(time.time()) + 300,
+    }
+    jws = jwt.encode(header, payload, key)
+
+    return jws

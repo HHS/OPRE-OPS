@@ -17,5 +17,5 @@ urlpatterns = [
     ),
     path("portfolios", PortfolioListController.as_view()),
     path("portfolios/<int:pk>", PortfolioReadController.as_view()),
-    path("auth/oidc", OidcController.as_view()),
+    path("auth/authenticate", OidcController.as_view()),
 ]
