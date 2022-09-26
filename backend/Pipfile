@@ -7,7 +7,7 @@ name = "pypi"
 Django = "==4.1.1"
 psycopg2-binary = "==2.9.3"
 cfenv = "==0.5.3"
-djangorestframework = "==3.13.1"
+djangorestframework = "==3.14.0"
 django-cors-headers = "==3.13.0"
 django-filter = "==22.1"
 uvicorn = {version = "==0.18.3", extras = ["standard"]}
