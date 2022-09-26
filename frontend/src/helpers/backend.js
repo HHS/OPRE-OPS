@@ -20,5 +20,5 @@ export const authConfig = {
     client_id: "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops_jwt",
     response_type: "code",
     scope: "openid email",
-    redirect_uri: "http://localhost:3001/login-jwt",
+    redirect_uri: "http://localhost:3001",
 };

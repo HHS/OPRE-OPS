@@ -1,4 +1,5 @@
 import ApplicationContext from "../../applicationContext/ApplicationContext";
+import cryptoRandomString from "crypto-random-string";
 
 const authConfig = ApplicationContext.get().helpers().authConfig;
 
@@ -10,6 +11,6 @@ export const getAuthorizationCode = (stateToken) => {
     providerUrl.searchParams.set("scope", authConfig.scope);
     providerUrl.searchParams.set("redirect_uri", authConfig.redirect_uri);
     providerUrl.searchParams.set("state", stateToken);
-    providerUrl.searchParams.set("nonce", stateToken);
+    providerUrl.searchParams.set("nonce", cryptoRandomString({ length: 64 }));
     return providerUrl;
 };
