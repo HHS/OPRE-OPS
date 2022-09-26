@@ -20,8 +20,6 @@ class OidcController(APIView):
 
     @staticmethod
     def post(request: Request) -> Response:
-        print(f"request.data = {request.data}")
-
         code = request.data.get("code")
 
         print(f"Got an OIDC request with the code of {code}")
@@ -39,12 +37,9 @@ class OidcController(APIView):
 
 def get_jwt():
 
-    key_path = settings.BASE_DIR / ".." / "ops" / "management" / "key" / "dev_only.pem"
-    with key_path.open("rb") as f:
-        key = f.read()
+    key = settings.JWT_PRIVATE_KEY
 
-    header = {"alg": "RS256"}
-    client_id = "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops_jwt"
+    client_id = settings.AUTHLIB_OAUTH_CLIENTS["logingov"]["client_id"]
     payload = {
         "iss": client_id,
         "sub": client_id,
@@ -52,6 +47,7 @@ def get_jwt():
         "jti": str(uuid.uuid4()),
         "exp": int(time.time()) + 300,
     }
+    header = {"alg": "RS256"}
     jws = jwt.encode(header, payload, key)
 
     return jws
