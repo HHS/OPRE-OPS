@@ -43,6 +43,6 @@ AUTHLIB_OAUTH_CLIENTS = {
 }
 AUTHLIB_INSECURE_TRANSPORT = True
 
-JWT_PRIVATE_KEY = os.getenv("JWT_PRIVATE_KEY")
+JWT_PRIVATE_KEY = os.getenv("JWT_PRIVATE_KEY").replace("\\n", "\n")
 if not JWT_PRIVATE_KEY:
     raise NotImplementedError("JWT_PRIVATE_KEY environment variable must be specified")
