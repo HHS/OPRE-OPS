@@ -16,6 +16,7 @@ import CanList from "./pages/cans/list/CanList";
 import CanDetail from "./pages/cans/detail/CanDetail";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
+
 root.render(
     <React.StrictMode>
         <Provider store={store}>
@@ -33,3 +34,7 @@ root.render(
         </Provider>
     </React.StrictMode>
 );
+
+if (window.Cypress) {
+    window.store = store;
+}
