@@ -31,6 +31,7 @@ const AuthSection = () => {
         const currentJWT = localStorage.getItem("jwt");
 
         if (currentJWT) {
+            // TODO: we should validate the JWT here and set it on state if valid else logout
             dispatch(login());
             return;
         }
