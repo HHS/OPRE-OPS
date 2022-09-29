@@ -1,0 +1,172 @@
+[
+    {
+        "model": "ops.portfolio",
+        "pk": 5,
+        "fields": {
+            "name": "Child Welfare Research",
+            "description": "",
+            "status": "In-Process",
+            "current_fiscal_year_funding": 832304951.45
+        }
+    },
+    {
+        "model": "ops.portfolio",
+        "pk": 6,
+        "fields": {
+            "name": "Head Start Research",
+            "description": "",
+            "status": "In-Process",
+            "current_fiscal_year_funding": 98224644.31
+        }
+    },
+    {
+        "model": "ops.portfolio",
+        "pk": 7,
+        "fields": {
+            "name": "Child Care Research",
+            "description": "",
+            "status": "In-Process",
+            "current_fiscal_year_funding": 144078035.15
+        }
+    },
+    {
+        "model": "ops.portfolio",
+        "pk": 8,
+        "fields": {
+            "name": "Welfare Research",
+            "description": "",
+            "status": "In-Process",
+            "current_fiscal_year_funding": 198982157.30
+        }
+    },
+    {
+        "model": "ops.portfolio",
+        "pk": 9,
+        "fields": {
+            "name": "Adolescent Development Research",
+            "description": "",
+            "status": "In-Process",
+            "current_fiscal_year_funding": 601410271.02
+        }
+    },
+    {
+        "model": "ops.portfolio",
+        "pk": 10,
+        "fields": {
+            "name": "Healthy Marriage and Responsible Fatherhood Research",
+            "description": "",
+            "status": "In-Process",
+            "current_fiscal_year_funding": 871788324.75
+        }
+    },
+    {
+        "model": "ops.portfolio",
+        "pk": 11,
+        "fields": {
+            "name": "Home Visiting Research",
+            "description": "",
+            "status": "In-Process",
+            "current_fiscal_year_funding": 929552475.77
+        }
+    },
+    {
+        "model": "ops.portfolio",
+        "pk": 12,
+        "fields": {
+            "name": "Program Team Support",
+            "description": "",
+            "status": "In-Process",
+            "current_fiscal_year_funding": 241590852.95
+        }
+    },
+    {
+        "model": "ops.portfolio",
+        "pk": 13,
+        "fields": {
+            "name": "Data Governance",
+            "description": "",
+            "status": "In-Process",
+            "current_fiscal_year_funding": 214355203.56
+        }
+    },
+    {
+        "model": "ops.can",
+        "pk": 8,
+        "fields": {
+            "number": "G99XXX1",
+            "description": "Healthy Marriages Responsible Fatherhood - OFA",
+            "nickname": "HMRF-OFA",
+            "purpose": "",
+            "arrangement_type": "Cost Share",
+            "funding_source": [
+                23
+            ],
+            "authorizer": 23,
+            "portfolio": 10
+        }
+    },
+    {
+        "model": "ops.can",
+        "pk": 9,
+        "fields": {
+            "number": "G99XXX2",
+            "description": "Healthy Marriages Responsible Fatherhood - OFA",
+            "nickname": "HMRF-OFA",
+            "purpose": "",
+            "arrangement_type": "Cost Share",
+            "funding_source": [
+                23
+            ],
+            "authorizer": 23,
+            "portfolio": 10
+        }
+    },
+    {
+        "model": "ops.can",
+        "pk": 10,
+        "fields": {
+            "number": "G99XXX3",
+            "description": "Healthy Marriages Responsible Fatherhood - OFA",
+            "nickname": "HMRF-OFA",
+            "purpose": "",
+            "arrangement_type": "Cost Share",
+            "funding_source": [
+                23
+            ],
+            "authorizer": 23,
+            "portfolio": 10
+        }
+    },
+    {
+        "model": "ops.can",
+        "pk": 11,
+        "fields": {
+            "number": "G99XXX4",
+            "description": "Healthy Marriages Responsible Fatherhood - OFA",
+            "nickname": "HMRF-OFA",
+            "purpose": "",
+            "arrangement_type": "Cost Share",
+            "funding_source": [
+                23
+            ],
+            "authorizer": 23,
+            "portfolio": 10
+        }
+    },
+    {
+        "model": "ops.can",
+        "pk": 12,
+        "fields": {
+            "number": "G99XXX5",
+            "description": "Healthy Marriages Responsible Fatherhood - OFA",
+            "nickname": "HMRF-OFA",
+            "purpose": "",
+            "arrangement_type": "Cost Share",
+            "funding_source": [
+                23
+            ],
+            "authorizer": 23,
+            "portfolio": 10
+        }
+    }
+]
