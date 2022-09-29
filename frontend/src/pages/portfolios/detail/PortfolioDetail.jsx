@@ -2,6 +2,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { getPortfolio } from "./getPortfolio";
 import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import PortfolioFundingSummary from "../../../components/PortfolioFundingSummary/PortfolioFundingSummary";
+import { setPortfolio } from "./portfolioDetailSlice";
 
 const CanList = ({ id, name }) => {
     return (
@@ -16,8 +18,13 @@ const PortfolioDetail = () => {
     const portfolio = useSelector((state) => state.portfolioDetail.portfolio);
     const urlPathParams = useParams();
     const portfolioId = parseInt(urlPathParams.id);
+
     useEffect(() => {
         dispatch(getPortfolio(portfolioId));
+
+        return () => {
+            dispatch(setPortfolio({}));
+        };
     }, [dispatch, portfolioId]);
 
     return (
@@ -25,10 +32,7 @@ const PortfolioDetail = () => {
             <h1>{portfolio.name}</h1>
             <h2>Portfolio description</h2>
             {portfolio.description}
-            <h2>Status</h2>
-            {portfolio.status}
-            <h2>Fiscal Year Funding</h2>
-            {portfolio.current_fiscal_year_funding}
+            <PortfolioFundingSummary portfolioId={portfolioId} />
             <h2>CANs</h2>
             <ul className="usa-list">
                 {portfolio.cans?.map((can) => (

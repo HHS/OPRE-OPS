@@ -28,9 +28,8 @@ root.render(
             <BrowserRouter>
                 <Routes>
                     <Route path="/" element={<App />} />
-                    <Route path="/portfolios" element={<PortfolioList />}>
-                        <Route path="/portfolios/:id" element={<PortfolioDetail />} />
-                    </Route>
+                    <Route path="/portfolios" element={<PortfolioList />} />
+                    <Route path="/portfolios/:id" element={<PortfolioDetail />} />
                     <Route path="/cans" element={<CanList />}>
                         <Route path="/cans/:id" element={<CanDetail />} />
                     </Route>
