@@ -1,4 +1,4 @@
-import { getPortfolio } from "./getPortfolio";
+import { getPortfolioAndSetState } from "./getPortfolio";
 import store from "../../../store";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 import { dispatchUsecase } from "../../../helpers/test";
@@ -14,7 +14,7 @@ test("successfully gets the Portfolio from the backend and directly puts it into
         return mockBackendResponse;
     });
 
-    const actualGetPortfolio = getPortfolio(mockPortfolioId);
+    const actualGetPortfolio = getPortfolioAndSetState(mockPortfolioId);
 
     await dispatchUsecase(actualGetPortfolio);
 

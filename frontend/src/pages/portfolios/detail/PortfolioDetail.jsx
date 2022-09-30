@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { getPortfolio } from "./getPortfolio";
+import { getPortfolioAndSetState } from "./getPortfolio";
 import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import PortfolioFundingSummary from "../../../components/PortfolioFundingSummary/PortfolioFundingSummary";
@@ -20,7 +20,7 @@ const PortfolioDetail = () => {
     const portfolioId = parseInt(urlPathParams.id);
 
     useEffect(() => {
-        dispatch(getPortfolio(portfolioId));
+        dispatch(getPortfolioAndSetState(portfolioId));
 
         return () => {
             dispatch(setPortfolio({}));
