@@ -4,7 +4,7 @@ import CurrencyFormat from "react-currency-format";
 
 const PortfolioFunding = (props) => {
     const today = new Date();
-    const portfolio = useSelector((state) => state.portfolioFundingSummary.portfolio);
+    const totalFunding = useSelector((state) => state.portfolioFundingSummary.totalFunding);
 
     return (
         <div className="usa-card__container">
@@ -24,7 +24,7 @@ const PortfolioFunding = (props) => {
             </div>
             <div className="usa-card__body padding-2">
                 <CurrencyFormat
-                    value={parseInt(portfolio.current_fiscal_year_funding)}
+                    value={parseInt(totalFunding)}
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$"}

@@ -1,25 +1,40 @@
 import PortfolioFunding from "../PortfolioFunding/PortfolioFunding";
 import { useDispatch, useSelector } from "react-redux";
-import { getPortfolio } from "../../pages/portfolios/detail/getPortfolio";
-import { setPortfolio } from "./portfolioFundingSummarySlice";
+import { setPortfolio, setBudgetLineItems, setTotalFunding } from "./portfolioFundingSummarySlice";
 import { useEffect } from "react";
+import { getBudgetLineItemsAndSetState, getPortfolioAndSetState } from "./util";
+import { getCurrentFiscalYear } from "../PortfolioFunding/util";
 
 const PortfolioFundingSummary = (props) => {
     const portfolio = useSelector((state) => state.portfolioFundingSummary.portfolio);
+    const budgetLineItems = useSelector((state) => state.portfolioFundingSummary.budgetLineItems);
     const dispatch = useDispatch();
 
     useEffect(() => {
-        const callBackend = async () => {
-            const returnedPortfolio = await getPortfolio(props.portfolioId);
-            dispatch(setPortfolio(returnedPortfolio));
-        };
-
-        callBackend();
+        dispatch(getPortfolioAndSetState(props.portfolioId));
 
         return () => {
             dispatch(setPortfolio({}));
         };
     }, [dispatch, props.portfolioId]);
+
+    useEffect(() => {
+        const currentFiscalYear = getCurrentFiscalYear(new Date());
+        dispatch(getBudgetLineItemsAndSetState({ portfolioId: portfolio.id, fiscalYear: currentFiscalYear }));
+
+        return () => {
+            dispatch(setBudgetLineItems({}));
+        };
+    }, [dispatch, portfolio]);
+
+    useEffect(() => {
+        if (Array.isArray(budgetLineItems)) {
+            const calculatedTotalFunding = budgetLineItems.reduce((accumulator, object) => {
+                return accumulator + parseFloat(object.funding);
+            }, 0);
+            dispatch(setTotalFunding(calculatedTotalFunding));
+        }
+    }, [dispatch, budgetLineItems]);
 
     return (
         <>

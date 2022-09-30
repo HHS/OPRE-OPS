@@ -8,7 +8,6 @@ export const getPortfolio = async (id) => {
 
 export const getPortfolioAndSetState = (id) => {
     return async (dispatch, getState) => {
-        // const responseData = await ApplicationContext.get().helpers().callBackend(`/ops/portfolios/${id}`, "get");
         const responseData = await getPortfolio(id);
         dispatch(setPortfolio(responseData));
     };
