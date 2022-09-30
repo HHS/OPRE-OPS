@@ -28,18 +28,26 @@ const PortfolioDetail = () => {
     }, [dispatch, portfolioId]);
 
     return (
-        <>
-            <h1>{portfolio.name}</h1>
-            <h2>Portfolio description</h2>
-            {portfolio.description}
-            <PortfolioFundingSummary portfolioId={portfolioId} />
-            <h2>CANs</h2>
-            <ul className="usa-list">
-                {portfolio.cans?.map((can) => (
-                    <CanList key={can.id} id={can.id} name={can.number} />
-                ))}
-            </ul>
-        </>
+        <div className="grid-container">
+            <div className="grid-row">
+                <h1>{portfolio.name}</h1>
+            </div>
+            <div className="grid-row">
+                <h2>Portfolio description</h2>
+                {portfolio.description}
+            </div>
+            <div className="grid-row">
+                <PortfolioFundingSummary portfolioId={portfolioId} />
+            </div>
+            <div className="grid-row">
+                <h2>CANs</h2>
+                <ul className="usa-list">
+                    {portfolio.cans?.map((can) => (
+                        <CanList key={can.id} id={can.id} name={can.number} />
+                    ))}
+                </ul>
+            </div>
+        </div>
     );
 };
 

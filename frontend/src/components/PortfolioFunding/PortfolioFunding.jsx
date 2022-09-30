@@ -1,9 +1,11 @@
 const PortfolioFunding = () => {
     return (
         <div className="usa-card__container">
-            <div className="usa-card__header">
-                <h2 className="use-card__heading">Total Funding</h2>
-                <h5>Fiscal Year: 2022</h5>
+            <div className="usa-card__header padding-2">
+                <div className="use-card__heading">
+                    <h3 className="margin-0">Total Funding</h3>
+                    <h5 className="margin-0">Fiscal Year: 2022</h5>
+                </div>
             </div>
             <div className="usa-card__media">
                 <div className="usa-card__img">
@@ -13,18 +15,8 @@ const PortfolioFunding = () => {
                     />
                 </div>
             </div>
-            <div className="usa-card__body">
-                <h3>$48,000,000</h3>
-                <div className="grid-container">
-                    <div className="grid-row">
-                        <div className="grid-col">Obligated</div>
-                        <div className="grid-col">$30,720,000</div>
-                    </div>
-                    <div className="grid-row">
-                        <div className="grid-col">Remaining</div>
-                        <div className="grid-col">$17,280,000</div>
-                    </div>
-                </div>
+            <div className="usa-card__body padding-2">
+                <h3 className="font-body-xl">$48,000,000</h3>
             </div>
         </div>
     );
