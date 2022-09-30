@@ -168,5 +168,80 @@
             "authorizer": 23,
             "portfolio": 10
         }
+    },
+    {
+        "model": "ops.agreement",
+        "pk": 2,
+        "fields": {
+            "cans": [8],
+            "name": "NIH VIQI",
+            "agreement_type": "Contract"
+        }
+    },
+    {
+        "model": "ops.budgetlineitem",
+        "pk": 3,
+        "fields": {
+            "name": "Line Item 1",
+            "fiscal_year": 2022,
+            "agreement": 2,
+            "can": 8,
+            "funding": 5671006.14
+        }
+    },
+    {
+        "model": "ops.budgetlineitem",
+        "pk": 4,
+        "fields": {
+            "name": "Line Item 2",
+            "fiscal_year": 2022,
+            "agreement": 2,
+            "can": 8,
+            "funding": 2642511.17
+        }
+    },
+    {
+        "model": "ops.budgetlineitem",
+        "pk": 5,
+        "fields": {
+            "name": "Line Item 1",
+            "fiscal_year": 2022,
+            "agreement": 2,
+            "can": 9,
+            "funding": 9839001.11
+        }
+    },
+    {
+        "model": "ops.budgetlineitem",
+        "pk": 6,
+        "fields": {
+            "name": "Line Item 2",
+            "fiscal_year": 2022,
+            "agreement": 2,
+            "can": 9,
+            "funding": 7122458.44
+        }
+    },
+    {
+        "model": "ops.budgetlineitem",
+        "pk": 7,
+        "fields": {
+            "name": "Line Item 1",
+            "fiscal_year": 2022,
+            "agreement": 2,
+            "can": 9,
+            "funding": 5303898.12
+        }
+    },
+    {
+        "model": "ops.budgetlineitem",
+        "pk": 8,
+        "fields": {
+            "name": "Line Item 2",
+            "fiscal_year": 2022,
+            "agreement": 2,
+            "can": 9,
+            "funding": 869068.53
+        }
     }
 ]
