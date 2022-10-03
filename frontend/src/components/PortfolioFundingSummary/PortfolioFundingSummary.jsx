@@ -10,6 +10,7 @@ const PortfolioFundingSummary = (props) => {
     const budgetLineItems = useSelector((state) => state.portfolioFundingSummary.budgetLineItems);
     const dispatch = useDispatch();
 
+    // fetch initial Portfolio details
     useEffect(() => {
         dispatch(getPortfolioAndSetState(props.portfolioId));
 
@@ -18,15 +19,17 @@ const PortfolioFundingSummary = (props) => {
         };
     }, [dispatch, props.portfolioId]);
 
+    // fetch current BudgetLineItem for Portfolio
     useEffect(() => {
         const currentFiscalYear = getCurrentFiscalYear(new Date());
-        dispatch(getBudgetLineItemsAndSetState({ portfolioId: portfolio.id, fiscalYear: currentFiscalYear }));
+        dispatch(getBudgetLineItemsAndSetState({ portfolioId: props.portfolioId, fiscalYear: currentFiscalYear }));
 
         return () => {
             dispatch(setBudgetLineItems({}));
         };
-    }, [dispatch, portfolio]);
+    }, [dispatch, props.portfolioId]);
 
+    // calculate current total funding for Portfolio
     useEffect(() => {
         if (Array.isArray(budgetLineItems)) {
             const calculatedTotalFunding = budgetLineItems.reduce((accumulator, object) => {
@@ -38,7 +41,7 @@ const PortfolioFundingSummary = (props) => {
 
     return (
         <>
-            <h3 className="site-preview-heading">Funding Summary</h3>
+            <h3 className="site-preview-heading desktop:grid-col-12">Funding Summary</h3>
             <div className="usa-card-group">
                 <li className="usa-card usa-card--flag usa-card--media-right desktop:grid-col-6">
                     <PortfolioFunding portfolioId={portfolio.id} />
