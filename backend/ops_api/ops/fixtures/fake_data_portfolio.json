@@ -183,7 +183,7 @@
         "pk": 3,
         "fields": {
             "name": "Line Item 1",
-            "fiscal_year": 2022,
+            "fiscal_year": 2023,
             "agreement": 2,
             "can": 8,
             "funding": 5671006.14
@@ -194,7 +194,7 @@
         "pk": 4,
         "fields": {
             "name": "Line Item 2",
-            "fiscal_year": 2022,
+            "fiscal_year": 2023,
             "agreement": 2,
             "can": 8,
             "funding": 2642511.17
@@ -205,7 +205,7 @@
         "pk": 5,
         "fields": {
             "name": "Line Item 1",
-            "fiscal_year": 2022,
+            "fiscal_year": 2023,
             "agreement": 2,
             "can": 9,
             "funding": 9839001.11
@@ -216,7 +216,7 @@
         "pk": 6,
         "fields": {
             "name": "Line Item 2",
-            "fiscal_year": 2022,
+            "fiscal_year": 2023,
             "agreement": 2,
             "can": 9,
             "funding": 7122458.44
@@ -227,7 +227,7 @@
         "pk": 7,
         "fields": {
             "name": "Line Item 1",
-            "fiscal_year": 2022,
+            "fiscal_year": 2023,
             "agreement": 2,
             "can": 9,
             "funding": 5303898.12
@@ -238,7 +238,7 @@
         "pk": 8,
         "fields": {
             "name": "Line Item 2",
-            "fiscal_year": 2022,
+            "fiscal_year": 2023,
             "agreement": 2,
             "can": 9,
             "funding": 869068.53
