@@ -42,14 +42,14 @@ const PortfolioFundingSummary = (props) => {
     return (
         <>
             <h3 className="site-preview-heading desktop:grid-col-12">Funding Summary</h3>
-            <div className="usa-card-group">
+            <ul className="usa-card-group">
                 <li className="usa-card usa-card--flag usa-card--media-right desktop:grid-col-6">
                     <PortfolioFunding portfolioId={portfolio.id} />
                 </li>
                 <li className="usa-card usa-card--flag usa-card--media-right desktop:grid-col-6">
                     <PortfolioFunding portfolioId={portfolio.id} />
                 </li>
-            </div>
+            </ul>
         </>
     );
 };

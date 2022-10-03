@@ -10,8 +10,8 @@ const PortfolioFunding = (props) => {
         <div className="usa-card__container">
             <div className="usa-card__header padding-2">
                 <div className="use-card__heading">
-                    <h3 className="margin-0">Total Funding</h3>
-                    <h5 className="margin-0">Fiscal Year: {getCurrentFiscalYear(today)}</h5>
+                    <h3 className="margin-0 font-heading-md">Total Funding</h3>
+                    <h4 className="margin-0 font-heading-2xs">Fiscal Year: {getCurrentFiscalYear(today)}</h4>
                 </div>
             </div>
             <div className="usa-card__media">
