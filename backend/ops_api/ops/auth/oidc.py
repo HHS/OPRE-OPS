@@ -2,17 +2,13 @@ from http import HTTPStatus
 import time
 import uuid
 
-from authlib.integrations.django_client import OAuth
-from authlib.jose import jwt
 from django.conf import settings
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-
-oauth = OAuth()
-oauth.register("logingov")
+from ops_api.ops.contexts.ApplicationContext import get_context
 
 
 class OidcController(APIView):
@@ -24,7 +20,7 @@ class OidcController(APIView):
 
         print(f"Got an OIDC request with the code of {code}")
 
-        token = oauth.logingov.fetch_access_token(
+        token = ApplicationContext.get_context().oauth_library().fetch_access_token(
             client_assertion=get_jwt(),
             client_assertion_type="urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
             grant_type="authorization_code",
@@ -48,6 +44,6 @@ def get_jwt():
         "exp": int(time.time()) + 300,
     }
     header = {"alg": "RS256"}
-    jws = jwt.encode(header, payload, key)
+    jws = ApplicationContext.get_context().jwt_library().encode(header, payload, key)
 
     return jws
