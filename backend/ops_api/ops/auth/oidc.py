@@ -1,3 +1,4 @@
+from ast import Try
 from http import HTTPStatus
 import time
 import uuid
@@ -8,8 +9,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ops_api.ops.contexts.ApplicationContext import get_context
-
+from ops_api.ops.contexts.application_context import ApplicationContext
 
 class OidcController(APIView):
     permission_classes = [AllowAny]
@@ -19,16 +19,17 @@ class OidcController(APIView):
         code = request.data.get("code")
 
         print(f"Got an OIDC request with the code of {code}")
-
-        token = ApplicationContext.get_context().oauth_library().fetch_access_token(
-            client_assertion=get_jwt(),
-            client_assertion_type="urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-            grant_type="authorization_code",
-            code=code,
-        )
-        print(token)
-
-        return Response({"jwt": "OPS-specific JWT"}, status=HTTPStatus.OK)
+        try:
+            token = ApplicationContext.get_context().auth_library().fetch_access_token(
+                client_assertion=get_jwt(),
+                client_assertion_type="urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+                grant_type="authorization_code",
+                code=code,
+            )
+            print(token)
+            return Response({"jwt": "OPS-specific JWT"}, status=HTTPStatus.OK)
+        except:
+            return "There was an error."
 
 
 def get_jwt():
