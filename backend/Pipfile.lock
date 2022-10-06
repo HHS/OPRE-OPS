@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "dfa756497e14678a8672f7b3de8f2f98087cb0e415d6794cbde8892951316fac"
+            "sha256": "9395aa20b3608a2fa6a87578e01eb74998f50ebc7cad039558cd500c1676f9bc"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -193,11 +193,11 @@
         },
         "djangorestframework": {
             "hashes": [
-                "sha256:0c33407ce23acc68eca2a6e46424b008c9c02eceb8cf18581921d0092bc1f2ee",
-                "sha256:24c4bf58ed7e85d1fe4ba250ab2da926d263cd57d64b03e8dcef0ac683f8b1aa"
+                "sha256:579a333e6256b09489cbe0a067e66abe55c6595d8926be6b99423786334350c8",
+                "sha256:eb63f58c9f218e1a7d064d17a70751f528ed4e1d35547fdade9aaf4cd103fd08"
             ],
             "index": "pypi",
-            "version": "==3.13.1"
+            "version": "==3.14.0"
         },
         "djangorestframework-simplejwt": {
             "hashes": [
@@ -854,11 +854,11 @@
         },
         "flake8-bugbear": {
             "hashes": [
-                "sha256:39236c0e97160d1ab05d9f87422173d16e925a6220b3635bfc4aee766bf8194a",
-                "sha256:e74350a4cfc670e184f3433c223b1e7378f1cf8345ded6c8f12ac1a50c5df22b"
+                "sha256:17b9623325e6e0dcdcc80ed9e4aa811287fcc81d7e03313b8736ea5733759937",
+                "sha256:cd2779b2b7ada212d7a322814a1e5651f1868ab0d3f24cc9da66169ab8fda474"
             ],
             "index": "pypi",
-            "version": "==22.9.11"
+            "version": "==22.9.23"
         },
         "flake8-import-order": {
             "hashes": [
@@ -1121,11 +1121,11 @@
         },
         "locust": {
             "hashes": [
-                "sha256:20f7bf79887972813bcc1d1d888c50b7a36dd5387242692183d47044e1164dd8",
-                "sha256:864fbbf3a6170a7a632f03c5d51d9e76c6e6a5adbdbd8f136078459f00173198"
+                "sha256:651ddd77fd8d1e5d529a755b3ad6dceacbcc1b519690edf88ef106f47f4b416f",
+                "sha256:7b7cb1714c607fb2da03b7e2f7d3e5c3c085647ba08e64e9f9e9942d5304b9eb"
             ],
             "index": "pypi",
-            "version": "==2.12.0"
+            "version": "==2.12.1"
         },
         "markdown": {
             "hashes": [
@@ -1563,7 +1563,6 @@
                 "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc",
                 "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"
             ],
-            "markers": "python_full_version < '3.11.0a7'",
             "version": "==2.0.1"
         },
         "typing-extensions": {
