@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC, abstractclassmethod, abstractmethod
 
 from authlib.integrations.django_client import OAuth
 from authlib.jose import jwt
@@ -17,19 +17,19 @@ class ApplicationContext:
 
 
 class BaseContext(ABC):
-    @abstractmethod
+    @abstractclassmethod
     def get_name(self):
         pass
 
-    @abstractmethod
+    @abstractclassmethod
     def auth_library(self):
         pass
 
-    @abstractmethod
+    @abstractclassmethod
     def jwt_library(self):
         pass
 
-    @abstractmethod
+    @abstractclassmethod
     def auth_controller(self):
         pass
 
