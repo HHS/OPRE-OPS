@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-Django = "==4.1.1"
+Django = "==4.1.2"
 psycopg2-binary = "==2.9.3"
 cfenv = "==0.5.3"
 djangorestframework = "==3.14.0"
@@ -12,7 +12,7 @@ django-cors-headers = "==3.13.0"
 django-filter = "==22.1"
 uvicorn = {version = "==0.18.3", extras = ["standard"]}
 gunicorn = "==20.1.0"
-djangorestframework-simplejwt = "==5.2.0"
+djangorestframework-simplejwt = "==5.2.1"
 
 [dev-packages]
 pytest = "==7.1.3"
