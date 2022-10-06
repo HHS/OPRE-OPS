@@ -44,7 +44,7 @@ AUTHLIB_OAUTH_CLIENTS = {
         "server_metadata_url": "http://localhost:8080",
         "client_id": "super:fake:client:id",
         "client_kwargs": {"scope": "openid"},
-    }
+    },
 }
 AUTHLIB_INSECURE_TRANSPORT = True
 

@@ -1,7 +1,7 @@
+from django.contrib.auth import password_validation
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
-from django.contrib.auth import password_validation
 from django.db import models
 
 
