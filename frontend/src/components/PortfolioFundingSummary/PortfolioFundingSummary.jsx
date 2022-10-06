@@ -1,13 +1,12 @@
 import PortfolioFunding from "../PortfolioFunding/PortfolioFunding";
 import { useDispatch, useSelector } from "react-redux";
-import { setPortfolio, setBudgetLineItems, setTotalFunding } from "./portfolioFundingSummarySlice";
+import { setPortfolio, setPortfolioFunding } from "./portfolioFundingSummarySlice";
 import { useEffect } from "react";
-import { getBudgetLineItemsAndSetState, getPortfolioAndSetState } from "./util";
+import { getPortfolioAndSetState, getPortfolioFundingAndSetState } from "./util";
 import { getCurrentFiscalYear } from "../PortfolioFunding/util";
 
 const PortfolioFundingSummary = (props) => {
     const portfolio = useSelector((state) => state.portfolioFundingSummary.portfolio);
-    const budgetLineItems = useSelector((state) => state.portfolioFundingSummary.budgetLineItems);
     const dispatch = useDispatch();
 
     // fetch initial Portfolio details
@@ -19,25 +18,15 @@ const PortfolioFundingSummary = (props) => {
         };
     }, [dispatch, props.portfolioId]);
 
-    // fetch current BudgetLineItem for Portfolio
-    useEffect(() => {
-        const currentFiscalYear = getCurrentFiscalYear(new Date());
-        dispatch(getBudgetLineItemsAndSetState({ portfolioId: props.portfolioId, fiscalYear: currentFiscalYear }));
-
-        return () => {
-            dispatch(setBudgetLineItems({}));
-        };
-    }, [dispatch, props.portfolioId]);
-
     // calculate current total funding for Portfolio
     useEffect(() => {
-        if (Array.isArray(budgetLineItems)) {
-            const calculatedTotalFunding = budgetLineItems.reduce((accumulator, object) => {
-                return accumulator + parseFloat(object.funding);
-            }, 0);
-            dispatch(setTotalFunding(calculatedTotalFunding));
-        }
-    }, [dispatch, budgetLineItems]);
+        const currentFiscalYear = getCurrentFiscalYear(new Date());
+        dispatch(getPortfolioFundingAndSetState(props.portfolioId, currentFiscalYear));
+
+        return () => {
+            dispatch(setPortfolioFunding({}));
+        };
+    }, [dispatch, props.portfolioId]);
 
     return (
         <>

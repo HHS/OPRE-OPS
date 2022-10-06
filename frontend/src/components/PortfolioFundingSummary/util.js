@@ -1,5 +1,5 @@
 import { getPortfolio } from "../../pages/portfolios/detail/getPortfolio";
-import { setBudgetLineItems, setPortfolio } from "./portfolioFundingSummarySlice";
+import { setPortfolio, setPortfolioFunding } from "./portfolioFundingSummarySlice";
 import ApplicationContext from "../../applicationContext/ApplicationContext";
 
 export const getPortfolioAndSetState = (portfolioId) => {
@@ -9,16 +9,12 @@ export const getPortfolioAndSetState = (portfolioId) => {
     };
 };
 
-export const getBudgetLineItems = async ({ portfolioId, fiscalYear }) => {
-    const responseData = await ApplicationContext.get()
-        .helpers()
-        .callBackend("/ops/budget-line-items", "get", {}, { portfolio_id: portfolioId, fiscal_year: fiscalYear });
-    return responseData;
-};
-
-export const getBudgetLineItemsAndSetState = (portfolioId) => {
+export const getPortfolioFundingAndSetState = (portfolioId, fiscalYear) => {
     return async (dispatch, getState) => {
-        const returnedBudgetLineItems = await getBudgetLineItems(portfolioId);
-        dispatch(setBudgetLineItems(returnedBudgetLineItems));
+        const data = await ApplicationContext.get()
+            .helpers()
+            .callBackend(`/ops/portfolios/${portfolioId}/calcFunding`, "get", {}, { fiscal_year: fiscalYear });
+
+        dispatch(setPortfolioFunding(data));
     };
 };

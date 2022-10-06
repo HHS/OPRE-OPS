@@ -2,9 +2,9 @@ import { getCurrentFiscalYear } from "./util";
 import { useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
 
-const PortfolioFunding = (props) => {
+const PortfolioFunding = () => {
     const today = new Date();
-    const totalFunding = useSelector((state) => state.portfolioFundingSummary.totalFunding);
+    const portfolioFunding = useSelector((state) => state.portfolioFundingSummary.portfolioFunding);
 
     return (
         <div className="usa-card__container">
@@ -24,7 +24,7 @@ const PortfolioFunding = (props) => {
             </div>
             <div className="usa-card__body padding-2">
                 <CurrencyFormat
-                    value={parseInt(totalFunding)}
+                    value={parseInt(portfolioFunding.total_funding)}
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$"}

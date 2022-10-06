@@ -2,8 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     portfolio: {},
-    budgetLineItems: [],
-    totalFunding: 0,
+    portfolioFunding: {},
 };
 
 const portfolioFundingSummarySlice = createSlice({
@@ -13,15 +12,12 @@ const portfolioFundingSummarySlice = createSlice({
         setPortfolio: (state, action) => {
             state.portfolio = action.payload;
         },
-        setBudgetLineItems: (state, action) => {
-            state.budgetLineItems = action.payload;
-        },
-        setTotalFunding: (state, action) => {
-            state.totalFunding = action.payload;
+        setPortfolioFunding: (state, action) => {
+            state.portfolioFunding = action.payload;
         },
     },
 });
 
-export const { setPortfolio, setBudgetLineItems, setTotalFunding } = portfolioFundingSummarySlice.actions;
+export const { setPortfolio, setPortfolioFunding } = portfolioFundingSummarySlice.actions;
 
 export default portfolioFundingSummarySlice.reducer;

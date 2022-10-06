@@ -1,12 +1,14 @@
 from django.urls import path
 
 from ops_api.ops.cans.controller import (
-    BudgetLineItemListController,
     CANFiscalYearByCanListController,
 )
 from ops_api.ops.cans.controller import CanListController
 from ops_api.ops.cans.controller import CanReadController
-from ops_api.ops.portfolios.controller import PortfolioListController
+from ops_api.ops.portfolios.controller import (
+    PortfolioFundingView,
+    PortfolioListController,
+)
 from ops_api.ops.portfolios.controller import PortfolioReadController
 
 
@@ -19,5 +21,5 @@ urlpatterns = [
     ),
     path("portfolios", PortfolioListController.as_view()),
     path("portfolios/<int:pk>", PortfolioReadController.as_view()),
-    path("budget-line-items", BudgetLineItemListController.as_view()),
+    path("portfolios/<int:pk>/calcFunding", PortfolioFundingView.as_view()),
 ]

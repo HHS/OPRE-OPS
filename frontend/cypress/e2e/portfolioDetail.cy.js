@@ -9,7 +9,7 @@ it("loads", () => {
     cy.get("h3").should("contain", "Funding Summary");
     cy.get("h3").should("contain", "Total Funding");
     cy.get("h4").should("contain", "Fiscal Year");
-    cy.get("h3").should("contain", "$0");
+    cy.get("h3").should("contain", "$");
 });
 
 it("passes a11y checks", () => {
