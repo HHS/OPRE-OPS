@@ -6,5 +6,6 @@ runs:
     - name: Start Stack
       shell: bash
       run: |
+        set -x
         docker-compose down -v
         docker-compose up --build --no-cache -d
