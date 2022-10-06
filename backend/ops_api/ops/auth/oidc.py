@@ -36,9 +36,8 @@ class OidcController(APIView):
             return "There was an error."
 
 
-def get_jwt():
+def get_jwt(key=settings.JWT_PRIVATE_KEY):
 
-    key = settings.JWT_PRIVATE_KEY
     if not key:
         raise NotImplementedError
 

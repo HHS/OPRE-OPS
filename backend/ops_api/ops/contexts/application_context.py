@@ -18,50 +18,58 @@ class ApplicationContext:
 
 class BaseContext(ABC):
     @abstractclassmethod
-    def get_name(self):
+    def get_name(cls):  # noqa: B902
         pass
 
     @abstractclassmethod
-    def auth_library(self):
+    def auth_library(cls):  # noqa: B902
         pass
 
     @abstractclassmethod
-    def jwt_library(self):
+    def jwt_library(cls):  # noqa: B902
         pass
 
     @abstractclassmethod
-    def auth_controller(self):
+    def auth_controller(cls):  # noqa: B902
         pass
 
 
 class DeployedContext(BaseContext):
     # TODO Parameterize?
-    def auth_library(self):
+    @classmethod
+    def auth_library(cls):
         oauth = OAuth()
         oauth.register("logingov")
         return oauth.logingov
 
-    def get_name(self):
+    @classmethod
+    def get_name(cls):
         return "DeployedContext"
 
-    def jwt_library(self):
+    @classmethod
+    def jwt_library(cls):
         return jwt
 
-    def auth_controller(self):
+    @classmethod
+    def auth_controller(cls):
         pass
 
 
 class TestContext(BaseContext):
-    def get_name(self):
+    @classmethod
+    def get_name(cls):
         return "TestContext"
 
-    def auth_library(self):
+    @classmethod
+    def auth_library(cls):
         oauth = OAuth()
         oauth.register("fake")
         return oauth.fake
 
-    def jwt_library(self):
+    @classmethod
+    def jwt_library(cls):
         return jwt
 
-    def auth_controller(self):
+    @classmethod
+    def auth_controller(cls):
         pass
