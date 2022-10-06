@@ -39,6 +39,8 @@ class OidcController(APIView):
 def get_jwt():
 
     key = settings.JWT_PRIVATE_KEY
+    if not key:
+        raise NotImplementedError
 
     client_id = settings.AUTHLIB_OAUTH_CLIENTS["logingov"]["client_id"]
     payload = {
