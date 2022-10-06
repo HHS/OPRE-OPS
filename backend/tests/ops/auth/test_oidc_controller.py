@@ -8,10 +8,6 @@ from ops_api.ops.contexts.application_context import ApplicationContext, TestCon
 
 ApplicationContext.register_context(TestContext)
 
-def test_get_jwt_has_a_value():
-    jws = get_jwt()
-    assert jws != None
-
 def test_auth_post_fails():
     data = '{"code":"abc1234"}'
     http_req = HttpRequest()
