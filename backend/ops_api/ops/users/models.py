@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
+from django.contrib.auth import password_validation
 from django.db import models
 
 
@@ -13,6 +14,7 @@ class UserManager(BaseUserManager):
             raise TypeError("Users must have an email.")
 
         user = self.model(username=username, email=self.normalize_email(email))
+        password_validation.validate_password(password)
         user.set_password(password)
         user.save(using=self._db)
         return user
