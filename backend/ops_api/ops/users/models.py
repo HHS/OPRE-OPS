@@ -1,3 +1,5 @@
+import datetime
+from typing import Any
 from django.contrib.auth import password_validation
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import BaseUserManager
@@ -47,7 +49,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(null=True)
     role = models.CharField(db_index=True, max_length=255)
 
-    USERNAME_FIELD = "email"
+    USERNAME_FIELD = "oidc_id"
     REQUIRED_FIELDS = ["username", "oidc_id"]
 
     objects = UserManager()

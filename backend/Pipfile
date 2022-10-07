@@ -32,6 +32,9 @@ django-extensions = "==3.2.1"
 markdown = "==3.4.1"
 locust = "==2.12.1"
 cryptography = "==38.0.1"
+factory-boy = "==3.2.1"
+faker = "==15.0.0"
+pytest-factoryboy = "==2.5.0"
 
 [requires]
 python_version = "3.9"
