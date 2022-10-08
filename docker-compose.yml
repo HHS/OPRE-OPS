@@ -26,6 +26,8 @@ services:
       dockerfile: Dockerfile
     platform: linux/amd64
     container_name: ops-migration
+    environment:
+      - JWT_PRIVATE_KEY
     command: >
       bash -c "
       python ./ops_api/manage.py custom-flush --allow-cascade --no-input &&
@@ -51,6 +53,8 @@ services:
     container_name: ops-backend
     ports:
       - "8080:8080"
+    environment:
+      - JWT_PRIVATE_KEY
     depends_on:
       - migration
     volumes:

@@ -1,0 +1,20 @@
+sequenceDiagram
+    autonumber
+    participant User
+    participant Web as OPS Web
+    participant API as OPS API
+    participant Login as Login.gov
+
+    User ->>+ Web: User visits OPS Web
+    Web ->> Web: Check if OPS JWT exists
+
+    User ->>+ Web: User Clicks Login Button if no active JWT
+    User ->>+ Login: User is redirected to Login.gov
+    Login ->>- Web: On login success, Auth Code is returned to OPS Web
+    Web ->>+ API: Sends Auth Code to OPS API (Backend)
+    API ->>+ Login: Backend wraps the Auth Code in JWT, requests Auth Token
+    Login ->> Login: Validate Auth Code
+    Login ->>- API: Auth Token is returned (JWT)
+    API ->> API: Validate Auth Token JWT
+    API ->> API: User Lookup / Creation (within OPS) - Grab details as needed.
+    API ->>- Web: New JWT is created and returned with "Session" / User Data
