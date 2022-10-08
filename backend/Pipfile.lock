@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "219d824a013c7c7fc56eefc219b9e2226205fd28fca46dac23081ae2ac23813c"
+            "sha256": "148d0b17a82458b3d6699d94e384d134853067a4d2e3f2e135fa0e2b93ac3280"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -1118,10 +1118,10 @@
         },
         "gitpython": {
             "hashes": [
-                "sha256:1c885ce809e8ba2d88a29befeb385fcea06338d3640712b59ca623c220bb5704",
-                "sha256:5b68b000463593e05ff2b261acff0ff0972df8ab1b70d3cdbd41b546c8b8fc3d"
+                "sha256:6bd3451b8271132f099ceeaf581392eaf6c274af74bb06144307870479d0697c",
+                "sha256:77bfbd299d8709f6af7e0c70840ef26e7aff7cf0c1ed53b42dd7fc3a310fcb02"
             ],
-            "version": "==3.1.27"
+            "version": "==3.1.28"
         },
         "greenlet": {
             "hashes": [
@@ -1674,10 +1674,10 @@
         },
         "typing-extensions": {
             "hashes": [
-                "sha256:25642c956049920a5aa49edcdd6ab1e06d7e5d467fc00e0506c44ac86fbfca02",
-                "sha256:e6d2677a32f47fc7eb2795db1dd15c1f34eff616bcaf2cfb5e997f854fa1c4a6"
+                "sha256:1511434bb92bf8dd198c12b1cc812e800d4181cfcb867674e0f8279cc93087aa",
+                "sha256:16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e"
             ],
-            "version": "==4.3.0"
+            "version": "==4.4.0"
         },
         "urllib3": {
             "hashes": [
