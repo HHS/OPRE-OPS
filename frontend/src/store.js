@@ -5,6 +5,7 @@ import canFiscalYearSlice from "./pages/cans/detail/budgetSummary/canFiscalYearS
 import portfolioListSlice from "./pages/portfolios/list/portfolioListSlice";
 import portfolioDetailSlice from "./pages/portfolios/detail/portfolioDetailSlice";
 import portfolioFundingSummarySlice from "./components/PortfolioFundingSummary/portfolioFundingSummarySlice";
+import authSlice from "./components/Auth/authSlice";
 
 export default configureStore({
     reducer: {
@@ -14,5 +15,6 @@ export default configureStore({
         portfolioList: portfolioListSlice,
         portfolioDetail: portfolioDetailSlice,
         portfolioFundingSummary: portfolioFundingSummarySlice,
+        auth: authSlice,
     },
 });

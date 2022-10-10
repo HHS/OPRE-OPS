@@ -6,22 +6,17 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import store from "./store";
 
-import ApplicationContext from "./applicationContext/ApplicationContext";
-import DeployedApplicationContext from "./applicationContext/DeployedApplicationContext";
-
 // eslint-disable-next-line import/no-unresolved
 import "@uswds/uswds/css/uswds.min.css";
 import "@uswds/uswds";
-
 import App from "./App";
-import CanList from "./pages/cans/list/CanList";
-import CanDetail from "./pages/cans/detail/CanDetail";
 import PortfolioList from "./pages/portfolios/list/PortfolioList";
 import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
-
-ApplicationContext.registerApplicationContext(DeployedApplicationContext);
+import CanList from "./pages/cans/list/CanList";
+import CanDetail from "./pages/cans/detail/CanDetail";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
+
 root.render(
     <React.StrictMode>
         <Provider store={store}>
@@ -38,3 +33,7 @@ root.render(
         </Provider>
     </React.StrictMode>
 );
+
+if (window.Cypress) {
+    window.store = store;
+}
