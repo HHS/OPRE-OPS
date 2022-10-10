@@ -96,19 +96,27 @@ class CANFiscalYear(models.Model):
 
 
 class Agreement(models.Model):
-    class AgreementType(models.TextChoices):
+
+    name = models.TextField()
+    agreement_type = models.ForeignKey("AgreementType", on_delete=models.PROTECT)
+    cans = models.ManyToManyField(CAN, related_name="agreements")
+    owning_portfolio = models.ForeignKey(Portfolio, on_delete=models.PROTECT)
+
+
+class AgreementType(models.Model):
+    class AgreementTypeChoices(models.TextChoices):
         CONTRACT = "Contract"
         GRANT = "Grant"
         DIRECT_ALLOCATION = "Direct Allocation"
         IAA = "IAA"
         MISC = "Miscellaneous"
 
-        class Meta:
-            db_table = "ops_agreement_type"
+    agreement_type = models.CharField(
+        max_length=100, choices=AgreementTypeChoices.choices
+    )
 
-    name = models.TextField()
-    agreement_type = models.CharField(max_length=100, choices=AgreementType.choices)
-    cans = models.ManyToManyField(CAN, related_name="contracts")
+    class Meta:
+        db_table = "ops_agreement_type"
 
 
 class BudgetLineItem(models.Model):
@@ -116,7 +124,22 @@ class BudgetLineItem(models.Model):
     fiscal_year = models.IntegerField()
     agreement = models.ForeignKey(Agreement, on_delete=models.PROTECT)
     can = models.ForeignKey(CAN, on_delete=models.PROTECT)
-    funding = models.DecimalField(max_digits=12, decimal_places=2)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    status = models.ForeignKey("BudgetLineItemStatus", on_delete=models.PROTECT)
 
     class Meta:
         db_table = "ops_budget_line_item"
+
+
+class BudgetLineItemStatus(models.Model):
+    class BudgetLineItemStatusChoices(models.TextChoices):
+        PLANNED = "Planned"
+        OBLIGATED = "Obligated"
+        CLOSED = "Closed"
+
+    status = models.CharField(
+        max_length=100, choices=BudgetLineItemStatusChoices.choices
+    )
+
+    class Meta:
+        db_table = "ops_budget_line_item_status"

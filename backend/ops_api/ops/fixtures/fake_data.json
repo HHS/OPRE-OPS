@@ -1609,6 +1609,13 @@
         }
     },
     {
+        "model": "ops.agreementtype",
+        "pk": 1,
+        "fields": {
+            "agreement_type": "Contract"
+        }
+    },
+    {
         "model": "ops.agreement",
         "pk": 1,
         "fields": {
@@ -1618,29 +1625,28 @@
                 2
             ],
             "name": "NIH VIQI",
-            "agreement_type": "Contract"
+            "agreement_type": 1
         }
     },
     {
-        "model": "ops.budgetlineitem",
+        "model": "ops.budgetlineitemstatus",
         "pk": 1,
         "fields": {
-            "name": "LI 1",
-            "fiscal_year": 2021,
-            "can": 5,
-            "funding": 1745000.00,
-            "agreement": 1
+            "status": "Planned"
         }
     },
     {
-        "model": "ops.budgetlineitem",
+        "model": "ops.budgetlineitemstatus",
         "pk": 2,
         "fields": {
-            "name": "LI 2",
-            "fiscal_year": 2022,
-            "can": 5,
-            "funding": 8725.00,
-            "agreement": 1
+            "status": "Obligated"
+        }
+    },
+    {
+        "model": "ops.budgetlineitemstatus",
+        "pk": 3,
+        "fields": {
+            "status": "Closed"
         }
     },
     {
@@ -1681,6 +1687,30 @@
             "description": "Placeholder portfolio",
             "status": "Not-Started",
             "current_fiscal_year_funding": 8000000.00
+        }
+    },
+    {
+        "model": "ops.budgetlineitem",
+        "pk": 1,
+        "fields": {
+            "name": "LI 1",
+            "fiscal_year": 2021,
+            "can": 5,
+            "amount": 1745000.00,
+            "agreement": 1,
+            "status": 1
+        }
+    },
+    {
+        "model": "ops.budgetlineitem",
+        "pk": 2,
+        "fields": {
+            "name": "LI 2",
+            "fiscal_year": 2022,
+            "can": 5,
+            "amount": 8725.00,
+            "agreement": 1,
+            "status": 1
         }
     }
 ]
