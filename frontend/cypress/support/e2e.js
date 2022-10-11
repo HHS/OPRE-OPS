@@ -15,3 +15,7 @@
 
 import "cypress-axe";
 import "./commands";
+
+Cypress.Commands.add("login", () => {
+    window.localStorage.setItem("jwt", "123");
+});

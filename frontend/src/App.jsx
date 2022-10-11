@@ -1,18 +1,10 @@
 import { Link } from "react-router-dom";
-import { BreadcrumbList } from "./components/Breadcrumb";
+import Header from "./components/Header/Header";
 
 function App() {
     return (
         <>
-            <header>
-                <BreadcrumbList isCurrent />
-                <div className="usa-alert usa-alert--error" role="alert">
-                    <div className="usa-alert__body">
-                        <h4 className="usa-alert__heading">Under Construction</h4>
-                        <p className="usa-alert__text">This is a developer prototype, please do not judge me</p>
-                    </div>
-                </div>
-            </header>
+            <Header />
             <main>
                 <h1>This is the OPRE OPS system prototype.</h1>
 

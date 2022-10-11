@@ -5,4 +5,7 @@ runs:
   steps:
     - name: Start Stack
       shell: bash
-      run: docker-compose up --build -d
+      run: |
+        set -x
+        docker-compose down -v
+        docker-compose up --build -d
