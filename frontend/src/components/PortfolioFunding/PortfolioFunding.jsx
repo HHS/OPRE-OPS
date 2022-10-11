@@ -1,6 +1,14 @@
 import { getCurrentFiscalYear } from "./util";
 import { useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
+import { VictoryBar, VictoryChart } from "victory";
+
+const data = [
+    { quarter: 1, earnings: 13000 },
+    { quarter: 2, earnings: 16500 },
+    { quarter: 3, earnings: 14250 },
+    { quarter: 4, earnings: 19000 },
+];
 
 const PortfolioFunding = () => {
     const today = new Date();
@@ -15,12 +23,9 @@ const PortfolioFunding = () => {
                 </div>
             </div>
             <div className="usa-card__media">
-                <div className="usa-card__img">
-                    <img
-                        src="https://designsystem.digital.gov/img/introducing-uswds-2-0/built-to-grow--alt.jpg"
-                        alt="A placeholder"
-                    />
-                </div>
+                <VictoryChart className="usa-card__img">
+                    <VictoryBar data={data} />
+                </VictoryChart>
             </div>
             <div className="usa-card__body padding-2">
                 <CurrencyFormat
