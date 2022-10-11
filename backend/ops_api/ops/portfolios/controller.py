@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import RetrieveAPIView
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from ops_api.ops.cans.controller import CANSerializer
 from ops_api.ops.portfolios.models import Portfolio
@@ -23,3 +25,11 @@ class PortfolioListController(ListAPIView):
 class PortfolioReadController(RetrieveAPIView):
     queryset = Portfolio.objects.prefetch_related("cans")
     serializer_class = PortfolioSerializer
+
+
+class PortfolioFundingView(APIView):
+    queryset = Portfolio.objects.all()
+
+    def get(self, request, pk):
+        portfolio = self.queryset.get(pk=pk)
+        return Response({"total_funding": portfolio.current_fiscal_year_funding})

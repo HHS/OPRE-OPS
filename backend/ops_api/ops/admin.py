@@ -1,9 +1,7 @@
 from django.contrib import admin
 
-from ops_api.ops.cans.models import CAN
+from ops_api.ops.cans.models import Agreement, BudgetLineItem, CAN
 from ops_api.ops.cans.models import CANFiscalYear
-from ops_api.ops.cans.models import Contract
-from ops_api.ops.cans.models import ContractLineItem
 from ops_api.ops.cans.models import FundingPartner
 from ops_api.ops.models import Person
 from ops_api.ops.models import Role
@@ -27,30 +25,6 @@ class PersonAdmin(admin.ModelAdmin):
         return ", ".join([role.name for role in obj.roles.all()])
 
     show_roles.short_description = "Roles"
-
-
-@admin.register(Contract)
-class ContractAdmin(admin.ModelAdmin):
-    list_display = ("name", "funding_sources", "show_research_areas")
-
-    @staticmethod
-    def funding_sources(obj):
-        return ", ".join([can.number for can in obj.cans.all()])
-
-    def show_research_areas(self, obj):
-        return ", ".join(obj.research_areas)
-
-    show_research_areas.short_description = "research areas"
-
-
-@admin.register(ContractLineItem)
-class ContractLineItemAdmin(admin.ModelAdmin):
-    list_display = ("show_contract", "name")
-
-    def show_contract(self, obj):
-        return obj.contract.name
-
-    show_contract.short_description = "contract"
 
 
 class CANAmountInline(admin.TabularInline):
@@ -80,8 +54,6 @@ class CANFiscalYear(admin.ModelAdmin):
         "can_purpose",
         "fiscal_year",
         "total_fiscal_year_funding",
-        "amount_available",
-        "additional_amount_anticipated",
         "potential_additional_funding",
         "can_arrangement_type",
         "can_authorizer",
@@ -129,3 +101,13 @@ class CANFiscalYear(admin.ModelAdmin):
         return ", ".join(set([lead.division for lead in obj.can_lead.all()]))
 
     can_division.short_description = "OPRE Division"
+
+
+@admin.register(Agreement)
+class AgreementAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+
+
+@admin.register(BudgetLineItem)
+class BudgetLineItemAdmin(admin.ModelAdmin):
+    list_display = ("name",)

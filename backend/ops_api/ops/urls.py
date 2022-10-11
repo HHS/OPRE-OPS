@@ -4,7 +4,10 @@ from ops_api.ops.auth.oidc import OidcController
 from ops_api.ops.cans.controller import CANFiscalYearByCanListController
 from ops_api.ops.cans.controller import CanListController
 from ops_api.ops.cans.controller import CanReadController
-from ops_api.ops.portfolios.controller import PortfolioListController
+from ops_api.ops.portfolios.controller import (
+    PortfolioFundingView,
+    PortfolioListController,
+)
 from ops_api.ops.portfolios.controller import PortfolioReadController
 
 
@@ -17,5 +20,6 @@ urlpatterns = [
     ),
     path("portfolios", PortfolioListController.as_view()),
     path("portfolios/<int:pk>", PortfolioReadController.as_view()),
+    path("portfolios/<int:pk>/calcFunding", PortfolioFundingView.as_view()),
     path("auth/authenticate", OidcController.as_view()),
 ]

@@ -17,7 +17,7 @@ it("get can fiscal year details", () => {
     cy.checkA11y();
 });
 
-it("get a negative value", () => {
+it.skip("get a negative value - skip for now because we are working on requirements for how to calculate total/pending/funded/etc", () => {
     clickOnFiscalYearOption(3);
     cy.contains("-300000");
     cy.get("[class*='redNegative']").contains("-300000");
