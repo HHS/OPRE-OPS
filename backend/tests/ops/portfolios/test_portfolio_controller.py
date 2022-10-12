@@ -1,3 +1,5 @@
+import pytest
+
 from ops_api.ops.cans.models import (
     Agreement,
     AgreementType,
@@ -25,6 +27,7 @@ def test_Portfolio_serializer_returns_cans_fields():
     assert portfolio_serializer_fields["cans"] is not None
 
 
+@pytest.mark.django_db
 def test_get_total_funding():
 
     portfolio = Portfolio.objects.create(

@@ -1625,7 +1625,8 @@
                 2
             ],
             "name": "NIH VIQI",
-            "agreement_type": 1
+            "agreement_type": 1,
+            "owning_portfolio":  1
         }
     },
     {
