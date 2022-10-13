@@ -1,7 +1,7 @@
 import { getCurrentFiscalYear } from "./util";
 import { useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
-import { VictoryPie, Slice, VictoryLabel } from "victory";
+import { VictoryPie, Slice, VictoryLabel, VictoryTooltip } from "victory";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
@@ -18,10 +18,23 @@ const data1 = {
 };
 
 const data2 = [
-    { x: "planned_funding", y: 10000 },
-    { x: "in_execution_funding", y: 10000 },
-    { x: "obligated_funding", y: 50000 },
-    { x: "available_funding", y: 605539 },
+    { x: "planned_funding", y: 10000, label: "Planned 0.01%" },
+    { x: "in_execution_funding", y: 10000, label: "In Execution 0.01%" },
+    { x: "obligated_funding", y: 50000, label: "Obligated 0.07%" },
+    { x: "available_funding", y: 605539, label: "Remaining 91%" },
+];
+
+const colors = [
+    "#336A90",
+    "#A1D0BE",
+    "#B50909",
+    "#E5A000",
+    "#6F3331",
+    "#C07B96",
+    "#264A64",
+    "#3E8D61",
+    "#D67625",
+    "#429195",
 ];
 
 const CustomSlice = (props) => {
@@ -63,20 +76,21 @@ const PortfolioFunding = () => {
     };
 
     return (
-        <div className="usa-card__container bg-base-lightest">
-            <div className="usa-card__header">
+        <div className="usa-card__container bg-base-lightest font-family-sans">
+            <div className="usa-card__header padding-left-1">
                 <div className="use-card__heading">
-                    <h3 className="margin-0 font-heading-md">Total Funding</h3>
-                    <h4 className="margin-0 font-heading-2xs">Fiscal Year: {getCurrentFiscalYear(today)}</h4>
+                    <h3 className="margin-0 font-sans-md">Total Funding</h3>
+                    <h4 className="margin-0 font-sans-sm">Fiscal Year: {getCurrentFiscalYear(today)}</h4>
                 </div>
             </div>
             <div className="usa-card__media padding-3">
                 <VictoryPie
                     dataComponent={<CustomSlice />}
+                    labelComponent={<VictoryTooltip style={{ fontSize: 50 }} />}
                     className="usa-card__img"
                     data={data2}
-                    labels={({ datum }) => `${datum.x}`}
-                    colorScale={["red", "green", "blue", "yellow"]}
+                    labels={[]}
+                    colorScale={colors}
                     style={{
                         data: {
                             fillOpacity: 0.9,
@@ -84,52 +98,20 @@ const PortfolioFunding = () => {
                             strokeWidth: 1,
                         },
                     }}
-                    labelComponent={<VictoryLabel active={false} style={{ fontSize: 25 }} />}
-                    events={[
-                        {
-                            target: "data",
-                            eventHandlers: {
-                                onMouseOver: (e) => {
-                                    return [
-                                        {
-                                            target: "labels",
-                                            mutation: () => ({ active: true }),
-                                        },
-                                    ];
-                                },
-                                onMouseOut: () => {
-                                    return [
-                                        {
-                                            target: "labels",
-                                            mutation: () => ({ active: false }),
-                                        },
-                                    ];
-                                },
-                                // onShow: () => {
-                                //     return [
-                                //         {
-                                //             target: "labels",
-                                //             mutation: () => ({ active: false }),
-                                //         },
-                                //     ];
-                                // },
-                            },
-                        },
-                    ]}
                 />
             </div>
             <div className="usa-card__body padding-1">
                 <CurrencyFormat
-                    value={parseInt(portfolioFunding.total_funding)}
+                    value={parseInt(data1.total_funding)}
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$"}
-                    renderText={(value) => <h3 className="font-heading-xl">{value}</h3>}
+                    renderText={(value) => <h3 className="font-sans-xl">{value}</h3>}
                 />
-                <div className="grid-container padding-1 font-body-2xs">
+                <div className="grid-container padding-1 font-sans-3xs">
                     <div className="grid-row">
-                        <div className="grid-col">
-                            <FontAwesomeIcon icon={faSquare} className="" style={{ color: "red" }} />
+                        <div className="grid-col-8">
+                            <FontAwesomeIcon icon={faSquare} style={{ color: colors[0] }} />
                             Planned
                         </div>
                         <CurrencyFormat
@@ -137,12 +119,12 @@ const PortfolioFunding = () => {
                             displayType={"text"}
                             thousandSeparator={true}
                             prefix={"$"}
-                            renderText={(value) => <div className="grid-col">{value}</div>}
+                            renderText={(value) => <div className="grid-col-4">{value}</div>}
                         />
                     </div>
                     <div className="grid-row">
-                        <div className="grid-col">
-                            <FontAwesomeIcon icon={faSquare} className="" style={{ color: "green" }} />
+                        <div className="grid-col-8">
+                            <FontAwesomeIcon icon={faSquare} style={{ color: colors[1] }} />
                             In Execution
                         </div>
                         <CurrencyFormat
@@ -150,12 +132,12 @@ const PortfolioFunding = () => {
                             displayType={"text"}
                             thousandSeparator={true}
                             prefix={"$"}
-                            renderText={(value) => <div className="grid-col">{value}</div>}
+                            renderText={(value) => <div className="grid-col-4">{value}</div>}
                         />
                     </div>
                     <div className="grid-row">
-                        <div className="grid-col">
-                            <FontAwesomeIcon icon={faSquare} className="" style={{ color: "blue" }} />
+                        <div className="grid-col-8">
+                            <FontAwesomeIcon icon={faSquare} style={{ color: colors[2] }} />
                             Obligated
                         </div>
                         <CurrencyFormat
@@ -163,12 +145,12 @@ const PortfolioFunding = () => {
                             displayType={"text"}
                             thousandSeparator={true}
                             prefix={"$"}
-                            renderText={(value) => <div className="grid-col">{value}</div>}
+                            renderText={(value) => <div className="grid-col-4">{value}</div>}
                         />
                     </div>
                     <div className="grid-row">
-                        <div className="grid-col">
-                            <FontAwesomeIcon icon={faSquare} className="" style={{ color: "yellow" }} />
+                        <div className="grid-col-8">
+                            <FontAwesomeIcon icon={faSquare} style={{ color: colors[3] }} />
                             Remaining
                         </div>
                         <CurrencyFormat
@@ -176,7 +158,7 @@ const PortfolioFunding = () => {
                             displayType={"text"}
                             thousandSeparator={true}
                             prefix={"$"}
-                            renderText={(value) => <div className="grid-col">{value}</div>}
+                            renderText={(value) => <div className="grid-col-4">{value}</div>}
                         />
                     </div>
                 </div>
