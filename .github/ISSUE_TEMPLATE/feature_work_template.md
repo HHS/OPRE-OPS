@@ -25,12 +25,12 @@ _As a [type of user], I want to [do something] so that [this outcome]_
 - [ ] UI works as designed
 - [ ] OESA: Code refactored for clarity
 - [ ] OESA: Dependency rules followed
-- [ ] Automated unit tests passed
-- [ ] Automated integration tests passed
-- [ ] Automated quality tests passed
-- [ ] Automated load tests passed
-- [ ] Automated a11y tests passed
-- [ ] Automated security tests passed
+- [ ] Automated unit tests updated and passed
+- [ ] Automated integration tests updated and passed
+- [ ] Automated quality tests updated and passed
+- [ ] Automated load tests updated and passed
+- [ ] Automated a11y tests updated and passed
+- [ ] Automated security tests updated and passed
 - [ ] 90%+ Code coverage achieved
 - [ ] PR(s) have been merged to main
 - [ ] Design/tech debt eliminated
