@@ -1,11 +1,12 @@
 import { getCurrentFiscalYear } from "./util";
 import { useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
-import { VictoryPie, VictoryChart, VictoryLegend } from "victory";
+import { VictoryPie, Slice, VictoryLabel } from "victory";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faSquare } from "@fortawesome/free-solid-svg-icons";
+import { useState } from "react";
 
 library.add(faSquare);
 
@@ -23,6 +24,36 @@ const data2 = [
     { x: "available_funding", y: 605539 },
 ];
 
+const CustomSlice = (props) => {
+    const [scale, setScale] = useState(1);
+
+    // modified transformation from here
+    // https://github.com/FormidableLabs/victory/blob/844109cfe4e40b23a4dcb565e551a5a98015d0c0/packages/victory-pie/src/slice.js#L74
+    const transform = `translate(${props.origin.x}, ${props.origin.y}) scale(${scale})`;
+
+    return (
+        <Slice
+            {...props}
+            style={{ ...props.style }}
+            events={{
+                onMouseOver: (e) => {
+                    if (props.events.onMouseOver) {
+                        props.events.onMouseOver(e);
+                    }
+                    setScale((c) => c * 1.2);
+                },
+                onMouseOut: (e) => {
+                    if (props.events.onMouseOut) {
+                        props.events.onMouseOut(e);
+                    }
+                    setScale(1);
+                },
+            }}
+            transform={transform}
+        />
+    );
+};
+
 const PortfolioFunding = () => {
     const today = new Date();
     const portfolioFunding = useSelector((state) => state.portfolioFundingSummary.portfolioFunding);
@@ -32,30 +63,62 @@ const PortfolioFunding = () => {
     };
 
     return (
-        <div className="usa-card__container">
+        <div className="usa-card__container bg-base-lightest">
             <div className="usa-card__header">
                 <div className="use-card__heading">
                     <h3 className="margin-0 font-heading-md">Total Funding</h3>
                     <h4 className="margin-0 font-heading-2xs">Fiscal Year: {getCurrentFiscalYear(today)}</h4>
                 </div>
             </div>
-            <div className="usa-card__media">
+            <div className="usa-card__media padding-3">
                 <VictoryPie
+                    dataComponent={<CustomSlice />}
                     className="usa-card__img"
                     data={data2}
-                    labels={[]}
-                    padding={0}
+                    labels={({ datum }) => `${datum.x}`}
                     colorScale={["red", "green", "blue", "yellow"]}
                     style={{
                         data: {
                             fillOpacity: 0.9,
                             stroke: "black",
-                            strokeWidth: 5,
+                            strokeWidth: 1,
                         },
                     }}
+                    labelComponent={<VictoryLabel active={false} style={{ fontSize: 25 }} />}
+                    events={[
+                        {
+                            target: "data",
+                            eventHandlers: {
+                                onMouseOver: (e) => {
+                                    return [
+                                        {
+                                            target: "labels",
+                                            mutation: () => ({ active: true }),
+                                        },
+                                    ];
+                                },
+                                onMouseOut: () => {
+                                    return [
+                                        {
+                                            target: "labels",
+                                            mutation: () => ({ active: false }),
+                                        },
+                                    ];
+                                },
+                                // onShow: () => {
+                                //     return [
+                                //         {
+                                //             target: "labels",
+                                //             mutation: () => ({ active: false }),
+                                //         },
+                                //     ];
+                                // },
+                            },
+                        },
+                    ]}
                 />
             </div>
-            <div className="usa-card__body padding-0">
+            <div className="usa-card__body padding-1">
                 <CurrencyFormat
                     value={parseInt(portfolioFunding.total_funding)}
                     displayType={"text"}
@@ -63,7 +126,7 @@ const PortfolioFunding = () => {
                     prefix={"$"}
                     renderText={(value) => <h3 className="font-heading-xl">{value}</h3>}
                 />
-                <div className="grid-container padding-0">
+                <div className="grid-container padding-1 font-body-2xs">
                     <div className="grid-row">
                         <div className="grid-col">
                             <FontAwesomeIcon icon={faSquare} className="" style={{ color: "red" }} />

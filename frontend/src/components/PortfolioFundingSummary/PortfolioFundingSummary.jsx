@@ -29,17 +29,17 @@ const PortfolioFundingSummary = (props) => {
     }, [dispatch, props.portfolioId]);
 
     return (
-        <>
+        <section>
             <h3 className="site-preview-heading desktop:grid-col-12">Funding Summary</h3>
             <ul className="usa-card-group">
-                <li className="usa-card usa-card--flag desktop:grid-col-6">
+                <li className="usa-card usa-card--flag usa-card--media-right desktop:grid-col-6">
                     <PortfolioFunding portfolioId={portfolio.id} />
                 </li>
-                <li className="usa-card usa-card--flag desktop:grid-col-6">
+                <li className="usa-card usa-card--flag usa-card--media-right desktop:grid-col-6">
                     <PortfolioFunding portfolioId={portfolio.id} />
                 </li>
             </ul>
-        </>
+        </section>
     );
 };
 
