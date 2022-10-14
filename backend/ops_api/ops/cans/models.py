@@ -133,8 +133,8 @@ class BudgetLineItem(models.Model):
 class BudgetLineItemStatus(models.Model):
     class BudgetLineItemStatusChoices(models.TextChoices):
         PLANNED = "Planned"
+        IN_EXECUTION = "In Execution"
         OBLIGATED = "Obligated"
-        CLOSED = "Closed"
 
     status = models.CharField(
         max_length=100, choices=BudgetLineItemStatusChoices.choices
