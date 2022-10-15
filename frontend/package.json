@@ -19,11 +19,11 @@
     "react-redux": "8.0.4",
     "react-router-dom": "6.4.2",
     "react-scripts": "5.0.1",
-    "react-select": "5.4.0"
+    "react-select": "5.5.0"
   },
   "devDependencies": {
     "axe-core": "4.4.3",
-    "cypress": "10.9.0",
+    "cypress": "10.10.0",
     "cypress-axe": "1.0.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-cypress": "2.12.1",
