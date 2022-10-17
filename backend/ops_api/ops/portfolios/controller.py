@@ -3,7 +3,6 @@ import typing
 from django.db.models import Sum
 from ops_api.ops.cans.controller import CANSerializer
 from ops_api.ops.cans.models import BudgetLineItem, BudgetLineItemStatus
-from ops_api.ops.helpers.type_hints import TotalFunding
 from ops_api.ops.portfolios.models import Portfolio
 from rest_framework import serializers
 from rest_framework.generics import ListAPIView, RetrieveAPIView
@@ -38,6 +37,23 @@ class PortfolioFundingView(APIView):
         fiscal_year = request.query_params.get("fiscal_year")
 
         return Response(get_total_funding(portfolio, fiscal_year=fiscal_year))
+
+
+class FundingLineItem(typing.TypedDict):
+    """Dict type hint for line items in total funding."""
+
+    amount: float
+    label: str
+
+
+class TotalFunding(typing.TypedDict):
+    """Dict type hint for total funding."""
+
+    total_funding: FundingLineItem
+    planned_funding: FundingLineItem
+    obligated_funding: FundingLineItem
+    in_execution_funding: FundingLineItem
+    available_funding: FundingLineItem
 
 
 def get_total_funding(
