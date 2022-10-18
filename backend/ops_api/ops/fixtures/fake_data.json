@@ -1,14 +1,13 @@
 [
     {
-        "model": "auth.user",
+        "model": "ops.user",
         "pk": 1,
         "fields": {
-            "password": "pbkdf2_sha256$390000$YCbNP4y5kkRluOgG8CAURo$LvV8tYRX6IZvXsLIxl3uhJB9ve0W5L5/AvCQHrgG1X0=",
+            "uuid": "6fa459ea-ee8a-3ca4-894e-db77e160355e",
             "last_login": null,
-            "username": "admin",
-            "first_name": "",
-            "last_name": "",
-            "email": "",
+            "first_name": "Philip",
+            "last_name": "Fry",
+            "email": "philip.fry@planetexpress.com",
             "is_superuser": true,
             "is_staff": true,
             "is_active": true,

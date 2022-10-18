@@ -5,30 +5,37 @@ import { useNavigate } from "react-router-dom";
 import ApplicationContext from "../../applicationContext/ApplicationContext";
 import cryptoRandomString from "crypto-random-string";
 import { getAuthorizationCode } from "./auth";
+// eslint-disable-next-line import/no-unresolved
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+// eslint-disable-next-line import/no-unresolved
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
+import axiosInstance from "../../axios";
 
 const AuthSection = () => {
     const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const callBackend = useCallback(async (authCode) => {
-        const response = await ApplicationContext.get().helpers().callBackend(`/ops/auth/authenticate`, "post", {
-            callbackUrl: window.location.href,
-            code: authCode,
-        });
+    const callBackend = useCallback(
+        async (authCode) => {
+            const response = await ApplicationContext.get().helpers().callBackend(`/ops/auth/authenticate`, "post", {
+                callbackUrl: window.location.href,
+                code: authCode,
+            });
 
-        localStorage.setItem("jwt", response.jwt);
-        console.log({ jwt: response.jwt });
+            localStorage.setItem("access_token", response.data.access);
+            localStorage.setItem("refresh_token", response.data.refresh);
+            console.log(`Access Token: ${response.data.access}`);
 
-        dispatch(login());
+            dispatch(login());
 
-        navigate("/");
-    }, []);
+            navigate("/");
+        },
+        [dispatch, navigate]
+    );
 
     useEffect(() => {
-        const currentJWT = localStorage.getItem("jwt");
+        const currentJWT = localStorage.getItem("access_token");
 
         if (currentJWT) {
             // TODO: we should validate the JWT here and set it on state if valid else logout
@@ -61,11 +68,18 @@ const AuthSection = () => {
             // first page load - generate state token and set on localStorage
             localStorage.setItem("ops-state-key", cryptoRandomString({ length: 64 }));
         }
-    }, []);
+    }, [callBackend, dispatch]);
 
     const logoutHandler = () => {
+        const response = axiosInstance.post("api/logout/blacklist/", {
+            refresh_token: localStorage.getItem("refresh_token"),
+        });
+        console.log(response.json);
         dispatch(logout());
-        localStorage.removeItem("jwt");
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        axiosInstance.defaults.headers["Authorization"] = null;
+        navigate("/");
     };
 
     return (

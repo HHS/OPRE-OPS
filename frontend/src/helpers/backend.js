@@ -9,6 +9,11 @@ export const callBackend = async (urlPath, action, requestBody) => {
         method: action,
         url: `${BACKEND_DOMAIN}${urlPath}`,
         data: requestBody,
+        headers: {
+            Authorization: localStorage.getItem("access_token") ? `JWT ${localStorage.getItem("access_token")}` : null,
+            "Content-Type": "application/json",
+            accept: "application/json",
+        },
     });
 
     return response.data;
@@ -19,6 +24,6 @@ export const authConfig = {
     acr_values: "http://idmanagement.gov/ns/assurance/ial/1",
     client_id: "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
     response_type: "code",
-    scope: "openid email",
-    redirect_uri: "http://localhost:3000",
+    scope: "openid email profile",
+    redirect_uri: "http://192.168.13.177:3000",
 };

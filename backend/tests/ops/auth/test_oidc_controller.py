@@ -1,17 +1,22 @@
 from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives.serialization import (
-    Encoding,
-    NoEncryption,
-    PrivateFormat,
-)
+from cryptography.hazmat.primitives.serialization import Encoding
+from cryptography.hazmat.primitives.serialization import NoEncryption
+from cryptography.hazmat.primitives.serialization import PrivateFormat
 from django.http import HttpRequest
+import pytest
 from rest_framework.request import Request
 
-from ops_api.ops.auth.oidc import get_jwt, OidcController
+from ops_api.ops.auth.oidc import get_jwt
+from ops_api.ops.auth.oidc import OidcController
 from ops_api.ops.contexts.application_context import ApplicationContext, TestContext
 
 
 ApplicationContext.register_context(TestContext)
+
+
+@pytest.fixture
+def userinfo():
+    return None
 
 
 def test_auth_post_fails():
@@ -34,3 +39,8 @@ def test_get_jwt_not_none():
     )
     print(bytes)
     assert get_jwt(bytes) is not None
+
+
+def test_process_user(db, userinfo):
+    # user = process_user(userinfo)
+    assert True
