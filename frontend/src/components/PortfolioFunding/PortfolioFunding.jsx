@@ -1,7 +1,7 @@
 import { getCurrentFiscalYear } from "./util";
 import { useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
-import { VictoryPie, Slice, VictoryLabel, VictoryTooltip } from "victory";
+import { VictoryPie, Slice, VictoryTooltip } from "victory";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
@@ -9,33 +9,6 @@ import { faSquare } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 
 library.add(faSquare);
-
-const data1 = {
-    total_funding: 665539,
-    planned_funding: 10000,
-    obligated_funding: 50000,
-    available_funding: 605539,
-};
-
-// data1 = {
-//     "total_funding": {
-//         "amount": 665539,
-//         "label": ""
-//     },
-//     "planned_funding": {
-//         "amount": 10000,
-//         "label: :"Planned 0.01%",
-// }
-// obligated_funding: 50000,
-//     available_funding: 605539,
-// }
-
-const data2 = [
-    { x: "planned_funding", y: 10000, label: "Planned 0.01%" },
-    { x: "in_execution_funding", y: 10000, label: "In Execution 0.01%" },
-    { x: "obligated_funding", y: 50000, label: "Obligated 0.07%" },
-    { x: "available_funding", y: 605539, label: "Remaining 91%" },
-];
 
 const colors = [
     "#336A90",
@@ -84,10 +57,6 @@ const PortfolioFunding = () => {
     const today = new Date();
     const portfolioFunding = useSelector((state) => state.portfolioFundingSummary.portfolioFunding);
 
-    const listStyle = {
-        listStyle: "square",
-    };
-
     return (
         <div className="usa-card__container bg-base-lightest font-family-sans">
             <div className="usa-card__header padding-left-1">
@@ -101,7 +70,28 @@ const PortfolioFunding = () => {
                     dataComponent={<CustomSlice />}
                     labelComponent={<VictoryTooltip style={{ fontSize: 50 }} />}
                     className="usa-card__img"
-                    data={data2}
+                    data={[
+                        {
+                            x: "planned_funding",
+                            y: portfolioFunding.planned_funding.amount,
+                            label: portfolioFunding.planned_funding.label,
+                        },
+                        {
+                            x: "available_funding",
+                            y: portfolioFunding.available_funding.amount,
+                            label: portfolioFunding.available_funding.label,
+                        },
+                        {
+                            x: "obligated_funding",
+                            y: portfolioFunding.obligated_funding.amount,
+                            label: portfolioFunding.obligated_funding.label,
+                        },
+                        {
+                            x: "in_execution_funding",
+                            y: portfolioFunding.in_execution_funding.amount,
+                            label: portfolioFunding.in_execution_funding.label,
+                        },
+                    ]}
                     labels={[]}
                     colorScale={colors}
                     style={{
@@ -115,7 +105,7 @@ const PortfolioFunding = () => {
             </div>
             <div className="usa-card__body padding-1">
                 <CurrencyFormat
-                    value={parseInt(data1.total_funding)}
+                    value={parseInt(portfolioFunding.total_funding.amount)}
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$"}
@@ -128,7 +118,7 @@ const PortfolioFunding = () => {
                             Planned
                         </div>
                         <CurrencyFormat
-                            value={parseInt(data1.planned_funding)}
+                            value={parseInt(portfolioFunding.planned_funding.amount)}
                             displayType={"text"}
                             thousandSeparator={true}
                             prefix={"$"}
@@ -145,7 +135,7 @@ const PortfolioFunding = () => {
                             In Execution
                         </div>
                         <CurrencyFormat
-                            value={parseInt(data1.planned_funding)}
+                            value={parseInt(portfolioFunding.planned_funding.amount)}
                             displayType={"text"}
                             thousandSeparator={true}
                             prefix={"$"}
@@ -162,7 +152,7 @@ const PortfolioFunding = () => {
                             Obligated
                         </div>
                         <CurrencyFormat
-                            value={parseInt(data1.obligated_funding)}
+                            value={parseInt(portfolioFunding.obligated_funding.amount)}
                             displayType={"text"}
                             thousandSeparator={true}
                             prefix={"$"}
@@ -179,7 +169,7 @@ const PortfolioFunding = () => {
                             Remaining
                         </div>
                         <CurrencyFormat
-                            value={parseInt(data1.available_funding)}
+                            value={parseInt(portfolioFunding.available_funding.amount)}
                             displayType={"text"}
                             thousandSeparator={true}
                             prefix={"$"}

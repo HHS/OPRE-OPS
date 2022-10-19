@@ -1,6 +1,6 @@
 import PortfolioFunding from "../PortfolioFunding/PortfolioFunding";
 import { useDispatch, useSelector } from "react-redux";
-import { setPortfolio, setPortfolioFunding } from "./portfolioFundingSummarySlice";
+import { defaultPortfolioFunding, setPortfolio, setPortfolioFunding } from "./portfolioFundingSummarySlice";
 import { useEffect } from "react";
 import { getPortfolioAndSetState, getPortfolioFundingAndSetState } from "./util";
 import { getCurrentFiscalYear } from "../PortfolioFunding/util";
@@ -24,7 +24,7 @@ const PortfolioFundingSummary = (props) => {
         dispatch(getPortfolioFundingAndSetState(props.portfolioId, currentFiscalYear));
 
         return () => {
-            dispatch(setPortfolioFunding({}));
+            dispatch(setPortfolioFunding(defaultPortfolioFunding));
         };
     }, [dispatch, props.portfolioId]);
 

@@ -1,8 +1,31 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+export const defaultPortfolioFunding = {
+    total_funding: {
+        amount: 0,
+        label: "",
+    },
+    planned_funding: {
+        amount: 0,
+        label: "",
+    },
+    obligated_funding: {
+        amount: 0,
+        label: "",
+    },
+    in_execution_funding: {
+        amount: 0,
+        label: "",
+    },
+    available_funding: {
+        amount: 0,
+        label: "",
+    },
+};
+
 const initialState = {
     portfolio: {},
-    portfolioFunding: {},
+    portfolioFunding: defaultPortfolioFunding,
 };
 
 const portfolioFundingSummarySlice = createSlice({
