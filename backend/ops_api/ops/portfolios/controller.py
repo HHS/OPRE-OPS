@@ -25,7 +25,7 @@ class PortfolioListController(ListAPIView):
 
 
 class PortfolioReadController(RetrieveAPIView):
-    queryset = Portfolio.objects.prefetch_related("cans")
+    queryset = Portfolio.objects.all()
     serializer_class = PortfolioSerializer
 
 
@@ -60,22 +60,22 @@ def get_total_funding(
     portfolio: Portfolio,
     fiscal_year: typing.Optional[float] = None,
 ) -> TotalFunding:
-    budget_line_items = BudgetLineItem.objects.filter(can__portfolio=portfolio)
+    budget_line_items = BudgetLineItem.objects.filter(can__managing_portfolio=portfolio)
 
     if fiscal_year:
         budget_line_items = budget_line_items.filter(fiscal_year=fiscal_year)
 
     planned_funding = budget_line_items.filter(
         status=BudgetLineItemStatus.objects.get(status="Planned")
-    ).aggregate(Sum("amount"))["amount__sum"]
+    ).aggregate(Sum("amount"))["amount__sum"] or 0
 
     obligated_funding = budget_line_items.filter(
         status=BudgetLineItemStatus.objects.get(status="Obligated")
-    ).aggregate(Sum("amount"))["amount__sum"]
+    ).aggregate(Sum("amount"))["amount__sum"] or 0
 
     in_execution_funding = budget_line_items.filter(
         status=BudgetLineItemStatus.objects.get(status="In Execution")
-    ).aggregate(Sum("amount"))["amount__sum"]
+    ).aggregate(Sum("amount"))["amount__sum"] or 0
 
     total_funding = portfolio.current_fiscal_year_funding
 
@@ -94,18 +94,18 @@ def get_total_funding(
         },
         "planned_funding": {
             "amount": planned_funding,
-            "label": f"Planned {planned_funding / total_funding:%.2}",
+            "label": f"Planned {str(round(planned_funding / total_funding, 2))} %",
         },
         "obligated_funding": {
             "amount": obligated_funding,
-            "label": f"Obligated {obligated_funding / total_funding:%.2}",
+            "label": f"Obligated {str(round(obligated_funding / total_funding, 2))} %",
         },
         "in_execution_funding": {
             "amount": in_execution_funding,
-            "label": f"In Execution {in_execution_funding / total_funding:%.2}",
+            "label": f"In Execution {str(round(in_execution_funding / total_funding, 2))} %",
         },
         "available_funding": {
             "amount": available_funding,
-            "label": f"Available {available_funding / total_funding:%.2}",
+            "label": f"Available {str(round(available_funding / total_funding, 2))} %",
         },
     }
