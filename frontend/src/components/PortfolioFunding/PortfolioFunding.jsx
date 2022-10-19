@@ -70,6 +70,7 @@ const PortfolioFunding = () => {
                     dataComponent={<CustomSlice />}
                     labelComponent={<VictoryTooltip style={{ fontSize: 50 }} />}
                     className="usa-card__img"
+                    aria-label="Portfolio Pie Chart With Funding Status Percentages"
                     data={[
                         {
                             x: "planned_funding",
