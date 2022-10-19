@@ -32,6 +32,7 @@ django-extensions = "==3.2.1"
 markdown = "==3.4.1"
 locust = "==2.12.1"
 cryptography = "==38.0.1"
+ipython = "==8.5.0"
 
 [requires]
 python_version = "3.9"
