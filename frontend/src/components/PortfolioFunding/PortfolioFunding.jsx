@@ -17,6 +17,19 @@ const data1 = {
     available_funding: 605539,
 };
 
+// data1 = {
+//     "total_funding": {
+//         "amount": 665539,
+//         "label": ""
+//     },
+//     "planned_funding": {
+//         "amount": 10000,
+//         "label: :"Planned 0.01%",
+// }
+// obligated_funding: 50000,
+//     available_funding: 605539,
+// }
+
 const data2 = [
     { x: "planned_funding", y: 10000, label: "Planned 0.01%" },
     { x: "in_execution_funding", y: 10000, label: "In Execution 0.01%" },
@@ -106,7 +119,7 @@ const PortfolioFunding = () => {
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$"}
-                    renderText={(value) => <h3 className="font-sans-xl">{value}</h3>}
+                    renderText={(value) => <h3 className="font-sans-xl text-bold">{value}</h3>}
                 />
                 <div className="grid-container padding-1 font-sans-3xs">
                     <div className="grid-row">
@@ -119,7 +132,11 @@ const PortfolioFunding = () => {
                             displayType={"text"}
                             thousandSeparator={true}
                             prefix={"$"}
-                            renderText={(value) => <div className="grid-col-4">{value}</div>}
+                            renderText={(value) => (
+                                <div className="grid-col-4" style={{ fontWeight: 600 }}>
+                                    {value}
+                                </div>
+                            )}
                         />
                     </div>
                     <div className="grid-row">
@@ -132,7 +149,11 @@ const PortfolioFunding = () => {
                             displayType={"text"}
                             thousandSeparator={true}
                             prefix={"$"}
-                            renderText={(value) => <div className="grid-col-4">{value}</div>}
+                            renderText={(value) => (
+                                <div className="grid-col-4" style={{ fontWeight: 600 }}>
+                                    {value}
+                                </div>
+                            )}
                         />
                     </div>
                     <div className="grid-row">
@@ -145,7 +166,11 @@ const PortfolioFunding = () => {
                             displayType={"text"}
                             thousandSeparator={true}
                             prefix={"$"}
-                            renderText={(value) => <div className="grid-col-4">{value}</div>}
+                            renderText={(value) => (
+                                <div className="grid-col-4" style={{ fontWeight: 600 }}>
+                                    {value}
+                                </div>
+                            )}
                         />
                     </div>
                     <div className="grid-row">
@@ -158,7 +183,11 @@ const PortfolioFunding = () => {
                             displayType={"text"}
                             thousandSeparator={true}
                             prefix={"$"}
-                            renderText={(value) => <div className="grid-col-4">{value}</div>}
+                            renderText={(value) => (
+                                <div className="grid-col-4" style={{ fontWeight: 600 }}>
+                                    {value}
+                                </div>
+                            )}
                         />
                     </div>
                 </div>
