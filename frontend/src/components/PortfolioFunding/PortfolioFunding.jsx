@@ -60,7 +60,7 @@ const PortfolioFunding = () => {
 
     return (
         <div className="usa-card__container bg-base-lightest font-family-sans">
-            <div className="usa-card__header padding-left-1">
+            <div className="usa-card__header padding-left-1 padding-top-1">
                 <div className="use-card__heading">
                     <h3 className="margin-0 font-sans-md">Total Funding</h3>
                     <h4 className="margin-0 font-sans-sm">Fiscal Year: {getCurrentFiscalYear(today)}</h4>
@@ -69,7 +69,13 @@ const PortfolioFunding = () => {
             <div className="usa-card__media padding-1">
                 <VictoryPie
                     dataComponent={<CustomSlice />}
-                    labelComponent={<VictoryTooltip style={{ fontSize: 30 }} constrainToVisibleArea />}
+                    labelComponent={
+                        <VictoryTooltip
+                            style={{ fontSize: 30, fill: "#FFFFFF" }}
+                            flyoutStyle={{ fill: "#000000" }}
+                            constrainToVisibleArea
+                        />
+                    }
                     className="usa-card__img margin-top-2"
                     aria-label="Portfolio Pie Chart With Funding Status Percentages"
                     data={portfolioFundingChart}
@@ -79,7 +85,6 @@ const PortfolioFunding = () => {
                             fill: ({ datum }) => datum.fill,
                         },
                     }}
-                    responsive={false}
                 />
             </div>
             <div className="usa-card__body padding-1">
@@ -92,7 +97,7 @@ const PortfolioFunding = () => {
                 />
                 <div className="grid-container padding-top-0 padding-1 font-sans-3xs">
                     <div className="grid-row margin-bottom-1">
-                        <div className="grid-col-8">
+                        <div className="grid-col-6">
                             <FontAwesomeIcon icon={faSquare} style={{ color: colors[0] }} />
                             Planned
                         </div>
@@ -102,14 +107,14 @@ const PortfolioFunding = () => {
                             thousandSeparator={true}
                             prefix={"$"}
                             renderText={(value) => (
-                                <div className="grid-col-4" style={{ fontWeight: 600 }}>
+                                <div className="grid-col-6" style={{ fontWeight: 600 }}>
                                     {value}
                                 </div>
                             )}
                         />
                     </div>
                     <div className="grid-row margin-bottom-1">
-                        <div className="grid-col-8">
+                        <div className="grid-col-6">
                             <FontAwesomeIcon icon={faSquare} style={{ color: colors[1] }} />
                             In Execution
                         </div>
@@ -119,14 +124,14 @@ const PortfolioFunding = () => {
                             thousandSeparator={true}
                             prefix={"$"}
                             renderText={(value) => (
-                                <div className="grid-col-4" style={{ fontWeight: 600 }}>
+                                <div className="grid-col-6" style={{ fontWeight: 600 }}>
                                     {value}
                                 </div>
                             )}
                         />
                     </div>
                     <div className="grid-row margin-bottom-1">
-                        <div className="grid-col-8">
+                        <div className="grid-col-6">
                             <FontAwesomeIcon icon={faSquare} style={{ color: colors[2] }} />
                             Obligated
                         </div>
@@ -136,14 +141,14 @@ const PortfolioFunding = () => {
                             thousandSeparator={true}
                             prefix={"$"}
                             renderText={(value) => (
-                                <div className="grid-col-4" style={{ fontWeight: 600 }}>
+                                <div className="grid-col-6" style={{ fontWeight: 600 }}>
                                     {value}
                                 </div>
                             )}
                         />
                     </div>
                     <div className="grid-row">
-                        <div className="grid-col-8">
+                        <div className="grid-col-6">
                             <FontAwesomeIcon icon={faSquare} style={{ color: colors[3] }} />
                             Remaining
                         </div>
@@ -153,7 +158,7 @@ const PortfolioFunding = () => {
                             thousandSeparator={true}
                             prefix={"$"}
                             renderText={(value) => (
-                                <div className="grid-col-4" style={{ fontWeight: 600 }}>
+                                <div className="grid-col-6" style={{ fontWeight: 600 }}>
                                     {value}
                                 </div>
                             )}

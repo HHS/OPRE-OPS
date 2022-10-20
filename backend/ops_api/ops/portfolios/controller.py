@@ -1,17 +1,18 @@
 import typing
 
 from django.db.models import Sum
-from ops_api.ops.cans.controller import CANSerializer
-from ops_api.ops.cans.models import BudgetLineItem, BudgetLineItemStatus
-from ops_api.ops.portfolios.models import Portfolio
 from rest_framework import serializers
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from ops_api.ops.cans.controller import CANSerializer
+from ops_api.ops.cans.models import BudgetLineItem, BudgetLineItemStatus
+from ops_api.ops.portfolios.models import Portfolio
+
 
 class PortfolioSerializer(serializers.ModelSerializer):
-    cans = CANSerializer(many=True, read_only=True)
+    internal_can = CANSerializer(many=True, read_only=True)
 
     class Meta:
         model = Portfolio
@@ -25,7 +26,7 @@ class PortfolioListController(ListAPIView):
 
 
 class PortfolioReadController(RetrieveAPIView):
-    queryset = Portfolio.objects.all()
+    queryset = Portfolio.objects.prefetch_related("internal_can")
     serializer_class = PortfolioSerializer
 
 
@@ -65,17 +66,26 @@ def get_total_funding(
     if fiscal_year:
         budget_line_items = budget_line_items.filter(fiscal_year=fiscal_year)
 
-    planned_funding = budget_line_items.filter(
-        status=BudgetLineItemStatus.objects.get(status="Planned")
-    ).aggregate(Sum("amount"))["amount__sum"] or 0
+    planned_funding = (
+        budget_line_items.filter(
+            status=BudgetLineItemStatus.objects.get(status="Planned")
+        ).aggregate(Sum("amount"))["amount__sum"]
+        or 0
+    )
 
-    obligated_funding = budget_line_items.filter(
-        status=BudgetLineItemStatus.objects.get(status="Obligated")
-    ).aggregate(Sum("amount"))["amount__sum"] or 0
+    obligated_funding = (
+        budget_line_items.filter(
+            status=BudgetLineItemStatus.objects.get(status="Obligated")
+        ).aggregate(Sum("amount"))["amount__sum"]
+        or 0
+    )
 
-    in_execution_funding = budget_line_items.filter(
-        status=BudgetLineItemStatus.objects.get(status="In Execution")
-    ).aggregate(Sum("amount"))["amount__sum"] or 0
+    in_execution_funding = (
+        budget_line_items.filter(
+            status=BudgetLineItemStatus.objects.get(status="In Execution")
+        ).aggregate(Sum("amount"))["amount__sum"]
+        or 0
+    )
 
     total_funding = portfolio.current_fiscal_year_funding
 

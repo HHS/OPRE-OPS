@@ -29,8 +29,12 @@ class CAN(models.Model):
     authorizer = models.ForeignKey(
         "FundingPartner", on_delete=models.PROTECT, related_name="authorizers"
     )
-    managing_portfolio = models.ForeignKey("Portfolio", on_delete=models.PROTECT, related_name="internal_can")
-    shared_portfolios = models.ManyToManyField("Portfolio", related_name="external_cans")
+    managing_portfolio = models.ForeignKey(
+        "Portfolio", on_delete=models.PROTECT, related_name="internal_can"
+    )
+    shared_portfolios = models.ManyToManyField(
+        "Portfolio", related_name="external_cans"
+    )
 
     class Meta:
         verbose_name_plural = "CANs"

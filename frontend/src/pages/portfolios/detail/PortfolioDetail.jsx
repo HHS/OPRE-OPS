@@ -43,7 +43,7 @@ const PortfolioDetail = () => {
                 <div className="grid-row">
                     <h2>CANs</h2>
                     <ul className="usa-list">
-                        {portfolio.cans?.map((can) => (
+                        {portfolio.internal_can?.map((can) => (
                             <CanList key={can.id} id={can.id} name={can.number} />
                         ))}
                     </ul>

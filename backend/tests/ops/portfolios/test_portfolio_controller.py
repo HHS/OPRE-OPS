@@ -37,7 +37,7 @@ def test_get_total_funding():
         current_fiscal_year_funding=39131673.16,
     )
 
-    fiscal_year = "2022"
+    # fiscal_year = "2022"
 
     agreement_type = AgreementType.objects.create(agreement_type="Contract")
 
@@ -66,3 +66,5 @@ def test_get_total_funding():
         amount=6757873.75,
         status=budget_line_item_status,
     )
+
+    print(budget_line_items)
