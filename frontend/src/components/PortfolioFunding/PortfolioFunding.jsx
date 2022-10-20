@@ -56,6 +56,7 @@ const CustomSlice = (props) => {
 const PortfolioFunding = () => {
     const today = new Date();
     const portfolioFunding = useSelector((state) => state.portfolioFundingSummary.portfolioFunding);
+    const portfolioFundingChart = useSelector((state) => state.portfolioFundingSummary.portfolioFundingChart);
 
     return (
         <div className="usa-card__container bg-base-lightest font-family-sans">
@@ -65,43 +66,20 @@ const PortfolioFunding = () => {
                     <h4 className="margin-0 font-sans-sm">Fiscal Year: {getCurrentFiscalYear(today)}</h4>
                 </div>
             </div>
-            <div className="usa-card__media padding-3">
+            <div className="usa-card__media padding-1">
                 <VictoryPie
                     dataComponent={<CustomSlice />}
-                    labelComponent={<VictoryTooltip style={{ fontSize: 50 }} />}
-                    className="usa-card__img"
+                    labelComponent={<VictoryTooltip style={{ fontSize: 30 }} constrainToVisibleArea />}
+                    className="usa-card__img margin-top-2"
                     aria-label="Portfolio Pie Chart With Funding Status Percentages"
-                    data={[
-                        {
-                            x: "planned_funding",
-                            y: portfolioFunding.planned_funding.amount,
-                            label: portfolioFunding.planned_funding.label,
-                        },
-                        {
-                            x: "available_funding",
-                            y: portfolioFunding.available_funding.amount,
-                            label: portfolioFunding.available_funding.label,
-                        },
-                        {
-                            x: "obligated_funding",
-                            y: portfolioFunding.obligated_funding.amount,
-                            label: portfolioFunding.obligated_funding.label,
-                        },
-                        {
-                            x: "in_execution_funding",
-                            y: portfolioFunding.in_execution_funding.amount,
-                            label: portfolioFunding.in_execution_funding.label,
-                        },
-                    ]}
+                    data={portfolioFundingChart}
                     labels={[]}
-                    colorScale={colors}
                     style={{
                         data: {
-                            fillOpacity: 0.9,
-                            stroke: "black",
-                            strokeWidth: 1,
+                            fill: ({ datum }) => datum.fill,
                         },
                     }}
+                    responsive={false}
                 />
             </div>
             <div className="usa-card__body padding-1">
@@ -109,17 +87,17 @@ const PortfolioFunding = () => {
                     value={parseInt(portfolioFunding.total_funding.amount)}
                     displayType={"text"}
                     thousandSeparator={true}
-                    prefix={"$"}
-                    renderText={(value) => <h3 className="font-sans-xl text-bold">{value}</h3>}
+                    prefix={"$ "}
+                    renderText={(value) => <h3 className="font-sans-xl text-bold margin-bottom-0">{value}</h3>}
                 />
-                <div className="grid-container padding-1 font-sans-3xs">
-                    <div className="grid-row">
+                <div className="grid-container padding-top-0 padding-1 font-sans-3xs">
+                    <div className="grid-row margin-bottom-1">
                         <div className="grid-col-8">
                             <FontAwesomeIcon icon={faSquare} style={{ color: colors[0] }} />
                             Planned
                         </div>
                         <CurrencyFormat
-                            value={parseInt(portfolioFunding.planned_funding.amount)}
+                            value={portfolioFunding.planned_funding.amount}
                             displayType={"text"}
                             thousandSeparator={true}
                             prefix={"$"}
@@ -130,13 +108,13 @@ const PortfolioFunding = () => {
                             )}
                         />
                     </div>
-                    <div className="grid-row">
+                    <div className="grid-row margin-bottom-1">
                         <div className="grid-col-8">
                             <FontAwesomeIcon icon={faSquare} style={{ color: colors[1] }} />
                             In Execution
                         </div>
                         <CurrencyFormat
-                            value={parseInt(portfolioFunding.planned_funding.amount)}
+                            value={portfolioFunding.in_execution_funding.amount}
                             displayType={"text"}
                             thousandSeparator={true}
                             prefix={"$"}
@@ -147,13 +125,13 @@ const PortfolioFunding = () => {
                             )}
                         />
                     </div>
-                    <div className="grid-row">
+                    <div className="grid-row margin-bottom-1">
                         <div className="grid-col-8">
                             <FontAwesomeIcon icon={faSquare} style={{ color: colors[2] }} />
                             Obligated
                         </div>
                         <CurrencyFormat
-                            value={parseInt(portfolioFunding.obligated_funding.amount)}
+                            value={portfolioFunding.obligated_funding.amount}
                             displayType={"text"}
                             thousandSeparator={true}
                             prefix={"$"}
@@ -170,7 +148,7 @@ const PortfolioFunding = () => {
                             Remaining
                         </div>
                         <CurrencyFormat
-                            value={parseInt(portfolioFunding.available_funding.amount)}
+                            value={portfolioFunding.available_funding.amount}
                             displayType={"text"}
                             thousandSeparator={true}
                             prefix={"$"}
