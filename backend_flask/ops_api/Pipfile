@@ -12,6 +12,7 @@ isort = "*"
 mypy = "*"
 flask-jwt-extended = {extras = ["asymmetric_crypto"], version = "*"}
 flask-sqlalchemy = "*"
+desert = "*"
 
 [dev-packages]
 
