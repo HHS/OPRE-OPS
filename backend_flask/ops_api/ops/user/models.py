@@ -6,8 +6,8 @@ db = SQLAlchemy()
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.Text, nullable=False, unique=True)
-    full_name = db.Column(db.Text, nullable=False)
+    username = db.Column(db.String, nullable=False, unique=True)
+    email = db.Column(db.String, nullable=False)
 
     # NOTE: In a real application make sure to properly hash and salt passwords
     def check_password(self, password):

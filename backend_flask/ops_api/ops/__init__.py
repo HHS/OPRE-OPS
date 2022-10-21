@@ -4,9 +4,10 @@ from flask import Flask
 
 from flask_jwt_extended import JWTManager
 from flask_sqlalchemy import SQLAlchemy
-from ops_api.ops_api.user.user import User
+from ops.user.models import User
+from ops.user.models import db
 
-from ops_api import views
+from ops import views
 
 
 
@@ -34,7 +35,7 @@ def configure_logging():
 def create_app(config_overrides=None):
     configure_logging()  # should be configured before any access to app.logger
     app = Flask(__name__)
-    app.config.from_object("ops_api.default_settings")
+    app.config.from_object("ops.default_settings")
     app.config.from_prefixed_env()
 
     if config_overrides is not None:
@@ -43,13 +44,13 @@ def create_app(config_overrides=None):
     app.register_blueprint(views.bp)
 
     jwt = JWTManager(app)
-    db = SQLAlchemy(app)
-
-    db.create_all()
-    db.session.add(User(full_name="Bruce Wayne", username="batman"))
-    db.session.add(User(full_name="Ann Takamaki", username="panther"))
-    db.session.add(User(full_name="Jester Lavore", username="little_sapphire"))
-    db.session.commit()
-
+    db.init_app(app)
+    
+    with app.app_context():
+        db.create_all()
+        db.session.add(User(email="BWayne@gmail.com", username="batman"))
+        db.session.add(User(email="aTan@gmail.com", username="panther"))
+        db.session.add(User(email="whoyaknow@gmail.com", username="little_sapphire"))
+        db.session.commit()
 
     return app
