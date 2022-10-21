@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+flask = "*"
+pytest = "*"
+flake8 = "*"
+black = "*"
+isort = "*"
+mypy = "*"
+flask-jwt-extended = {extras = ["asymmetric_crypto"], version = "*"}
+flask-sqlalchemy = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
