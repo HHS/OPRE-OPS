@@ -1,6 +1,6 @@
 FROM python:3.9-slim
 RUN apt-get update && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir --upgrade pip==22.2.2 pipenv==2022.7.24 && useradd -ms /bin/bash app
+RUN pip install --no-cache-dir --upgrade pip==22.3 pipenv==2022.10.12 && useradd -ms /bin/bash app
 USER app
 WORKDIR /home/app
 

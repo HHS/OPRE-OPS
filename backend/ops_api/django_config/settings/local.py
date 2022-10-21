@@ -40,7 +40,7 @@ AUTHLIB_OAUTH_CLIENTS = {
     "logingov": {
         "server_metadata_url": "https://idp.int.identitysandbox.gov/.well-known/openid-configuration",
         "client_id": "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
-        "client_kwargs": {"scope": "openid"},
+        "client_kwargs": {"scope": "openid email profile"},
     },
     "fake": {
         "server_metadata_url": "http://localhost:8080",

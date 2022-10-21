@@ -114,12 +114,13 @@ def get_jwt(key=settings.JWT_PRIVATE_KEY):
     return jws
 
 
-def process_user(userinfo):
+def process_user(userinfo) -> User:
+    if userinfo is None:
+        return None
     try:
-        user = get_user_model().objects.get(email=userinfo["email"])
-    except User.DoesNotExist:
+        return get_user_model().objects.get(email=userinfo["email"])
+    except (User.DoesNotExist, AttributeError, TypeError):
         # Create new user
-        user = get_user_model().objects.create_user(
+        return get_user_model().objects.create_user(
             fname="", lname="", email=userinfo["email"], uuid=userinfo["sub"]
         )
-    return user

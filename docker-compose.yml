@@ -35,7 +35,6 @@ services:
       python ./ops_api/manage.py migrate &&
       python ./ops_api/manage.py loaddata ./ops_api/ops/fixtures/fake_data.json
       "
-
     volumes:
       # See below for an explanation of this volume. The same reasoning applies,
       # but in this case it's so we can run new migrations immediately without
@@ -55,6 +54,7 @@ services:
       - "8080:8080"
     environment:
       - JWT_PRIVATE_KEY
+      - JWT_PUBLIC_KEY
     depends_on:
       - migration
     volumes:

@@ -8,6 +8,7 @@ from rest_framework.request import Request
 
 from ops_api.ops.auth.oidc import get_jwt
 from ops_api.ops.auth.oidc import OidcController
+from ops_api.ops.auth.oidc import process_user
 from ops_api.ops.contexts.application_context import ApplicationContext, TestContext
 
 
@@ -28,7 +29,7 @@ def test_auth_post_fails():
     req = Request(request=http_req)
     # req = Request("POST","http://localhost:8080/auth",data=data,json=data)
     res = OidcController.post(req)
-    assert res == "There was an error."
+    assert res.status_code == 403
 
 
 def test_get_jwt_not_none():
@@ -42,5 +43,10 @@ def test_get_jwt_not_none():
 
 
 def test_process_user(db, userinfo):
-    # user = process_user(userinfo)
+    process_user(userinfo)
     assert True
+
+
+def test_process_user_without_userinfo(db):
+    output = process_user(None)
+    assert output is None
