@@ -13,6 +13,8 @@ mypy = "*"
 flask-jwt-extended = {extras = ["asymmetric_crypto"], version = "*"}
 flask-sqlalchemy = "*"
 desert = "*"
+authlib = "*"
+requests = "*"
 
 [dev-packages]
 

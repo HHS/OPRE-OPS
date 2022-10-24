@@ -6,8 +6,11 @@ from flask_jwt_extended import JWTManager
 from flask_sqlalchemy import SQLAlchemy
 from ops.user.models import User
 from ops.user.models import db
+from ops.auth.oauth import oauth as oauth_instance
+from ops.auth import oauth
 
 from ops import views
+from ops.auth.oauth import jwtMgr
 
 
 def configure_logging():
@@ -41,9 +44,12 @@ def create_app(config_overrides=None):
         app.config.from_mapping(config_overrides)
 
     app.register_blueprint(views.bp)
+    app.register_blueprint(oauth.bp)
 
-    jwt = JWTManager(app)
+
+    jwtMgr.init_app(app)
     db.init_app(app)
+    oauth_instance.init_app(app)
 
     with app.app_context():
         db.drop_all()

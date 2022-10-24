@@ -14,7 +14,7 @@ const AuthSection = () => {
     const navigate = useNavigate();
 
     const callBackend = useCallback(async (authCode) => {
-        const response = await ApplicationContext.get().helpers().callBackend(`/ops/auth/authenticate`, "post", {
+        const response = await ApplicationContext.get().helpers().callBackend(`/login`, "post", {
             callbackUrl: window.location.href,
             code: authCode,
         });
