@@ -175,7 +175,7 @@ yarn-error.log*
 *.core
 
 # Root level flake8 only
-.flake8
+#.flake8
 
 # Dev local only files
 backend/ops_api/django_config/static

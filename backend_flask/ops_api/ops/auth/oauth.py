@@ -3,6 +3,7 @@ import traceback
 import uuid
 
 import requests
+
 # from authlib.integrations.requests_client import OAuth2Session
 from authlib.integrations.flask_client import OAuth
 from authlib.jose import jwt
@@ -44,12 +45,15 @@ def login():
 
     try:
 
-        oauth.register("logingov", client_id="urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
-                       server_metadata_url="https://idp.int.identitysandbox.gov/.well-known/openid-configuration",
-                       client_kwargs={"scope": "openid email profile"}
-                    )
+        oauth.register(
+            "logingov",
+            client_id="urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
+            server_metadata_url="https://idp.int.identitysandbox.gov/.well-known/openid-configuration",
+            client_kwargs={"scope": "openid email profile"},
+        )
 
-        token = oauth.logingov.fetch_access_token("",
+        token = oauth.logingov.fetch_access_token(
+            "",
             client_assertion=get_jwt(),
             client_assertion_type="urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
             grant_type="authorization_code",
@@ -61,7 +65,7 @@ def login():
         header = {"Authorization": f'Bearer {token["access_token"]}'}
         user_data = requests.get(
             "https://idp.int.identitysandbox.gov/api/openid_connect/userinfo",
-            headers=header
+            headers=header,
         ).json()
         print(user_data)
 
@@ -74,9 +78,9 @@ def login():
 
         # See if user exists
         user = process_user(user_data)  # Refactor me
-        #user.auth_token = str(token)
-        #user.last_login = datetime.datetime.now()
-        #user.save()
+        # user.auth_token = str(token)
+        # user.last_login = datetime.datetime.now()
+        # user.save()
 
         access_token = create_access_token(identity=user)
         refresh_token = create_refresh_token(identity=user)
@@ -84,7 +88,7 @@ def login():
 
     except Exception as err:
         traceback.print_exc()
-        return "You screwed up!", 400
+        return f"You screwed up!: {err}", 400
 
 
 # We are using the `refresh=True` options in jwt_required to only allow
