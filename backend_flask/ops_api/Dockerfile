@@ -1,12 +1,14 @@
 FROM python:3.9-slim
 RUN apt-get update && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir --upgrade pip==22.2.2 pipenv==2022.7.24 && useradd -ms /bin/bash app
+RUN pip install --no-cache-dir --upgrade pip==22.2.2 pipenv==2022.10.12 && useradd -ms /bin/bash app
 USER app
 WORKDIR /home/app
 
 ENV PYTHONPATH=/home/app
 ENV PYTHONUNBUFFERED=1
-ENV DJANGO_SETTINGS_MODULE=ops_api.django_config.settings.local
+ENV FLASK_APP=ops
+ENV FLASK_DEBUG=true
+ENV FLASK_PORT=5001
 
 # Copy the Pipfile(s) only, so that we can cache dependencies
 # in the next step
@@ -17,4 +19,4 @@ RUN pipenv install --dev --system --deploy
 # of prior steps.
 COPY ./ /home/app/
 
-CMD ["python", "-m", "gunicorn", "ops_api.django_config.asgi:application", "--worker-class=uvicorn.workers.UvicornWorker", "--bind=0.0.0.0:8080"]
+CMD ["python", "-m", "flask", "run"]
