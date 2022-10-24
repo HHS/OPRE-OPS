@@ -1,5 +1,5 @@
-from datetime import timedelta
 import os
+from datetime import timedelta
 
 DEBUG = False  # make sure DEBUG is off unless enabled explicitly otherwise
 JWT_SECRET_KEY = "super-secret-yay"

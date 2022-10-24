@@ -3,16 +3,15 @@ from hmac import compare_digest
 from flask import Blueprint
 from flask import current_app as app
 from flask import jsonify
-from flask import request
 from flask import render_template
-
+from flask import request
+from flask_jwt_extended import JWTManager
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import current_user
 from flask_jwt_extended import jwt_required
 from flask_sqlalchemy import SQLAlchemy
-from flask_jwt_extended import JWTManager
-from ops.user.models import User
 
+from ops.user.models import User
 
 bp = Blueprint("root", __name__)
 

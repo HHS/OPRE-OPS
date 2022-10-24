@@ -1,16 +1,15 @@
 import logging.config
 
 from flask import Flask
-
 from flask_jwt_extended import JWTManager
 from flask_sqlalchemy import SQLAlchemy
-from ops.user.models import User
-from ops.user.models import db
-from ops.auth.oauth import oauth as oauth_instance
-from ops.auth import oauth
 
 from ops import views
+from ops.auth import oauth
 from ops.auth.oauth import jwtMgr
+from ops.auth.oauth import oauth as oauth_instance
+from ops.user.models import User
+from ops.user.models import db
 
 
 def configure_logging():
