@@ -37,6 +37,7 @@ jobs:
       - name: Build frontend
         working-directory: ./frontend
         run: |
+          echo ${{steps.deploy-backend.outputs.BACKEND_DOMAIN}}
           REACT_APP_BACKEND_DOMAIN=https://${{steps.deploy-backend.outputs.BACKEND_DOMAIN}} yarn build
           cp ./Staticfile ./build/
 
