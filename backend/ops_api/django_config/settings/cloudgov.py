@@ -47,8 +47,11 @@ SECRET_KEY = env.get_credential("APP_SECRET_KEY", generate_random_string(50))
 DEBUG = False
 
 ALLOWED_HOSTS = [".cloud.gov"]
-CSRF_TRUSTED_ORIGINS = ["https://*.app.cloud.gov"]
-CORS_ALLOWED_ORIGIN_REGEXES = [r"https://\S+\.app.cloud.gov"]
+CSRF_TRUSTED_ORIGINS = ["https://*.app.cloud.gov", "https://*.fr.cloud.gov"]
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"https://\S+\.app.cloud.gov",
+    r"https://\S+\.fr.cloud.gov",
+]
 
 # nosemgrep: python.django.security.audit.django-rest-framework.missing-throttle-config.missing-throttle-config
 REST_FRAMEWORK = REST_FRAMEWORK | {  # noqa: F405
