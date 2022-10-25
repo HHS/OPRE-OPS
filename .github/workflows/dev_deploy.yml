@@ -32,7 +32,7 @@ jobs:
           PASSWORD: ${{ secrets.DEV_PASSWORD }}
           ORG_NAME: ${{ secrets.ORG_NAME }}
           SPACE_NAME: ${{ secrets.SPACE_NAME }}
-          APP_NAME: opre-ops-test
+          APP_NAME: ops-backend
 
       - name: Build frontend
         working-directory: ./frontend
@@ -47,4 +47,4 @@ jobs:
           PASSWORD: ${{ secrets.DEV_PASSWORD }}
           ORG_NAME: ${{ secrets.ORG_NAME }}
           SPACE_NAME: ${{ secrets.SPACE_NAME }}
-          APP_NAME: opre-ops-frontend-test
+          APP_NAME: ops-frontend
