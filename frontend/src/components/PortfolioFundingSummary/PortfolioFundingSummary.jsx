@@ -1,9 +1,10 @@
-import PortfolioFunding from "../PortfolioFunding/PortfolioFunding";
+import PortfolioFundingTotal from "../PortfolioFundingTotal/PortfolioFundingTotal";
 import { useDispatch, useSelector } from "react-redux";
 import { defaultPortfolioFunding, setPortfolio, setPortfolioFunding } from "./portfolioFundingSummarySlice";
 import { useEffect } from "react";
 import { getPortfolioAndSetState, getPortfolioFundingAndSetState } from "./util";
-import { getCurrentFiscalYear } from "../PortfolioFunding/util";
+import { getCurrentFiscalYear } from "../PortfolioFundingTotal/util";
+import PortfolioFundingByBudgetStatus from "../PortfolioFundingByBudgetStatus/PortfolioFundingByBudgetStatus";
 
 const PortfolioFundingSummary = (props) => {
     const portfolio = useSelector((state) => state.portfolioFundingSummary.portfolio);
@@ -32,11 +33,11 @@ const PortfolioFundingSummary = (props) => {
         <section>
             <h3 className="site-preview-heading desktop:grid-col-12">Funding Summary</h3>
             <ul className="usa-card-group">
-                <li className="usa-card usa-card--flag usa-card--media-right desktop:grid-col-6">
-                    <PortfolioFunding portfolioId={portfolio.id} />
+                <li className="usa-card desktop:grid-col-5">
+                    <PortfolioFundingTotal portfolioId={portfolio.id} />
                 </li>
-                <li className="usa-card usa-card--flag usa-card--media-right desktop:grid-col-6">
-                    <PortfolioFunding portfolioId={portfolio.id} />
+                <li className="usa-card usa-card--flag usa-card--media-right desktop:grid-col-7">
+                    <PortfolioFundingByBudgetStatus portfolioId={portfolio.id} />
                 </li>
             </ul>
         </section>

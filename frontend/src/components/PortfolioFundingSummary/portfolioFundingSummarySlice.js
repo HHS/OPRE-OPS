@@ -23,10 +23,37 @@ export const defaultPortfolioFunding = {
     },
 };
 
+export const defaultPortfolioFundingChart = [
+    {
+        x: "planned_funding",
+        y: 0,
+        label: "0",
+        fill: "",
+    },
+    {
+        x: "available_funding",
+        y: 0,
+        label: "0",
+        fill: "",
+    },
+    {
+        x: "obligated_funding",
+        y: 0,
+        label: "0",
+        fill: "",
+    },
+    {
+        x: "in_execution_funding",
+        y: 0,
+        label: "0",
+        fill: "",
+    },
+];
+
 const initialState = {
     portfolio: {},
     portfolioFunding: defaultPortfolioFunding,
-    portfolioFundingChart: [],
+    portfolioFundingChart: defaultPortfolioFundingChart,
 };
 
 const portfolioFundingSummarySlice = createSlice({
