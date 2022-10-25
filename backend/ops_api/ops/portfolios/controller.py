@@ -106,18 +106,18 @@ def get_total_funding(
         },
         "planned_funding": {
             "amount": planned_funding,
-            "label": f"Planned {round(float(planned_funding) / total_funding, 2):.2%}",
+            "label": f"Planned {round(float(planned_funding) / total_funding, 2):.0%}",
         },
         "obligated_funding": {
             "amount": obligated_funding,
-            "label": f"Obligated {round(float(obligated_funding) / total_funding, 2):.2%}",
+            "label": f"Obligated {round(float(obligated_funding) / total_funding, 2):.0%}",
         },
         "in_execution_funding": {
             "amount": in_execution_funding,
-            "label": f"In Execution {round(float(in_execution_funding) / total_funding, 2):.2%}",
+            "label": f"In Execution {round(float(in_execution_funding) / total_funding, 2):.0%}",
         },
         "available_funding": {
             "amount": available_funding,
-            "label": f"Available {round(available_funding / total_funding, 2):.2%}",
+            "label": f"Available {round(available_funding / total_funding, 2):.0%}",
         },
     }
