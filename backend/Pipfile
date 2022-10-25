@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 Django = "==4.1.2"
-psycopg2-binary = "==2.9.4"
+psycopg2-binary = "==2.9.5"
 cfenv = "==0.5.3"
 djangorestframework = "==3.14.0"
 django-cors-headers = "==3.13.0"
