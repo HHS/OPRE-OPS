@@ -59,7 +59,7 @@ class TotalFunding(typing.TypedDict):
 
 def get_total_funding(
     portfolio: Portfolio,
-    fiscal_year: typing.Optional[float] = None,
+    fiscal_year: typing.Optional[int] = None,
 ) -> TotalFunding:
     budget_line_items = BudgetLineItem.objects.filter(can__managing_portfolio=portfolio)
 
@@ -87,15 +87,17 @@ def get_total_funding(
         or 0
     )
 
-    total_funding = portfolio.current_fiscal_year_funding
+    total_funding = float(portfolio.current_fiscal_year_funding)
 
-    available_funding = total_funding - sum(
+    total_accounted_for = sum(
         (
             planned_funding,
             obligated_funding,
             in_execution_funding,
         )
     )
+
+    available_funding = total_funding - float(total_accounted_for)
 
     return {
         "total_funding": {
@@ -104,18 +106,18 @@ def get_total_funding(
         },
         "planned_funding": {
             "amount": planned_funding,
-            "label": f"Planned {str(round(planned_funding / total_funding, 2) * 100)} %",
+            "label": f"Planned {round(float(planned_funding) / total_funding, 2):.2%}",
         },
         "obligated_funding": {
             "amount": obligated_funding,
-            "label": f"Obligated {str(round(obligated_funding / total_funding, 2) * 100)} %",
+            "label": f"Obligated {round(float(obligated_funding) / total_funding, 2):.2%}",
         },
         "in_execution_funding": {
             "amount": in_execution_funding,
-            "label": f"In Execution {str(round(in_execution_funding / total_funding, 2) * 100)} %",
+            "label": f"In Execution {round(float(in_execution_funding) / total_funding, 2):.2%}",
         },
         "available_funding": {
             "amount": available_funding,
-            "label": f"Available {str(round(available_funding / total_funding, 2) * 100)} %",
+            "label": f"Available {round(available_funding / total_funding, 2):.2%}",
         },
     }
