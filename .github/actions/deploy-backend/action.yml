@@ -19,7 +19,7 @@ inputs:
 outputs:
   BACKEND_DOMAIN:
     description: Uri of the deployed backend.
-    value: ${BACKEND_DOMAIN}
+    value: ${{ steps.deploy-backend.outputs.BACKEND_DOMAIN}}
 runs:
   using: composite
   steps:
