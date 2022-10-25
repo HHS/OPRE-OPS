@@ -11,7 +11,7 @@ djangorestframework = "==3.14.0"
 django-cors-headers = "==3.13.0"
 django-filter = "==22.1"
 gunicorn = "==20.1.0"
-djangorestframework-simplejwt = "==5.2.1"
+djangorestframework-simplejwt = "==5.2.2"
 authlib = "==1.1.0"
 requests = "==2.28.1"
 
@@ -30,13 +30,13 @@ pyparsing = "==3.0.9"
 pydot = "==1.4.2"
 django-extensions = "==3.2.1"
 markdown = "==3.4.1"
-locust = "==2.12.1"
-cryptography = "==38.0.1"
+locust = "==2.12.2"
+cryptography = "==38.0.2"
 ipython = "==8.5.0"
 
 [requires]
 python_version = "3.9"
 
 [packages.uvicorn]
-version = "==0.18.3"
+version = "==0.19.0"
 extras = [ "standard",]
