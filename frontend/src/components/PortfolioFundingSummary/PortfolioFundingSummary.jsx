@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { getPortfolioAndSetState, getPortfolioFundingAndSetState } from "./util";
 import { getCurrentFiscalYear } from "../PortfolioFundingTotal/util";
 import PortfolioFundingByBudgetStatus from "../PortfolioFundingByBudgetStatus/PortfolioFundingByBudgetStatus";
+import PortfolioFundingByBudgetStatusNivio from "../PortfolioFundingByBudgetStatusNivio/PortfolioFundingByBudgetStatusNivio";
 
 const PortfolioFundingSummary = (props) => {
     const portfolio = useSelector((state) => state.portfolioFundingSummary.portfolio);
@@ -37,7 +38,7 @@ const PortfolioFundingSummary = (props) => {
                     <PortfolioFundingTotal portfolioId={portfolio.id} />
                 </li>
                 <li className="usa-card usa-card--flag usa-card--media-right desktop:grid-col-7">
-                    <PortfolioFundingByBudgetStatus portfolioId={portfolio.id} />
+                    <PortfolioFundingByBudgetStatusNivio portfolioId={portfolio.id} />
                 </li>
             </ul>
         </section>

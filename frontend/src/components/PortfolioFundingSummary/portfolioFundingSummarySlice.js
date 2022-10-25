@@ -25,26 +25,26 @@ export const defaultPortfolioFunding = {
 
 export const defaultPortfolioFundingChart = [
     {
-        x: "planned_funding",
-        y: 0,
+        id: "planned_funding",
+        value: 0,
         label: "0",
         fill: "",
     },
     {
-        x: "available_funding",
-        y: 0,
+        id: "available_funding",
+        value: 0,
         label: "0",
         fill: "",
     },
     {
-        x: "obligated_funding",
-        y: 0,
+        id: "obligated_funding",
+        value: 0,
         label: "0",
         fill: "",
     },
     {
-        x: "in_execution_funding",
-        y: 0,
+        id: "in_execution_funding",
+        value: 0,
         label: "0",
         fill: "",
     },
@@ -67,27 +67,27 @@ const portfolioFundingSummarySlice = createSlice({
             state.portfolioFunding = action.payload;
             state.portfolioFundingChart = [
                 {
-                    x: "planned_funding",
-                    y: action.payload.planned_funding.amount,
-                    label: action.payload.planned_funding.label,
+                    id: "planned_funding",
+                    value: action.payload.planned_funding.amount,
+                    // label: action.payload.planned_funding.label,
                     fill: "#336A90",
                 },
                 {
-                    x: "available_funding",
-                    y: action.payload.available_funding.amount,
-                    label: action.payload.available_funding.label,
+                    id: "available_funding",
+                    value: action.payload.available_funding.amount,
+                    // label: action.payload.available_funding.label,
                     fill: "#E5A000",
                 },
                 {
-                    x: "obligated_funding",
-                    y: action.payload.obligated_funding.amount,
-                    label: action.payload.obligated_funding.label,
+                    id: "obligated_funding",
+                    value: action.payload.obligated_funding.amount,
+                    // label: action.payload.obligated_funding.label,
                     fill: "#B50909",
                 },
                 {
-                    x: "in_execution_funding",
-                    y: action.payload.in_execution_funding.amount,
-                    label: action.payload.in_execution_funding.label,
+                    id: "in_execution_funding",
+                    value: action.payload.in_execution_funding.amount,
+                    // label: action.payload.in_execution_funding.label,
                     fill: "#A1D0BE",
                 },
             ];
