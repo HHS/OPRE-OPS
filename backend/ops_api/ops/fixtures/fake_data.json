@@ -1446,7 +1446,6 @@
         "fields": {
             "can": 1,
             "fiscal_year": 2021,
-            "amount_available": 11400000.00,
             "total_fiscal_year_funding": 11400000.00,
             "potential_additional_funding": 1300000.00,
             "can_lead": [
@@ -1461,7 +1460,6 @@
         "fields": {
             "can": 2,
             "fiscal_year": 2021,
-            "amount_available": 150000.00,
             "total_fiscal_year_funding": 200000.00,
             "potential_additional_funding": 0.00,
             "can_lead": [
@@ -1476,7 +1474,6 @@
         "fields": {
             "can": 3,
             "fiscal_year": 2022,
-            "amount_available": 0.00,
             "total_fiscal_year_funding": 7512000.00,
             "potential_additional_funding": 3000000.00,
             "can_lead": [
@@ -1491,7 +1488,6 @@
         "fields": {
             "can": 3,
             "fiscal_year": 2023,
-            "amount_available": 7812000.00,
             "total_fiscal_year_funding": 7512000.00,
             "potential_additional_funding": 3000000.00,
             "can_lead": [
@@ -1506,7 +1502,6 @@
         "fields": {
             "can": 3,
             "fiscal_year": 2024,
-            "amount_available": 0.00,
             "total_fiscal_year_funding": 7512000.00,
             "potential_additional_funding": 3000000.00,
             "can_lead": [
@@ -1521,7 +1516,6 @@
         "fields": {
             "can": 4,
             "fiscal_year": 2021,
-            "amount_available": 0.00,
             "total_fiscal_year_funding": 126476.00,
             "potential_additional_funding": 0.00,
             "can_lead": [
@@ -1536,7 +1530,6 @@
         "fields": {
             "can": 5,
             "fiscal_year": 2021,
-            "amount_available": 20000000.00,
             "total_fiscal_year_funding": 20000000.00,
             "potential_additional_funding": 1000000.00,
             "can_lead": [
@@ -1551,7 +1544,6 @@
         "fields": {
             "can": 5,
             "fiscal_year": 2022,
-            "amount_available": 0.00,
             "total_fiscal_year_funding": 20000000.00,
             "potential_additional_funding": 0.00,
             "can_lead": [
@@ -1566,7 +1558,6 @@
         "fields": {
             "can": 5,
             "fiscal_year": 2023,
-            "amount_available": 0.00,
             "total_fiscal_year_funding": 20000000.00,
             "potential_additional_funding": 0.00,
             "can_lead": [
@@ -1581,7 +1572,6 @@
         "fields": {
             "can": 5,
             "fiscal_year": 2024,
-            "amount_available": 0.00,
             "total_fiscal_year_funding": 20000000.00,
             "potential_additional_funding": 0.00,
             "can_lead": [
@@ -1596,7 +1586,6 @@
         "fields": {
             "can": 6,
             "fiscal_year": 2021,
-            "amount_available": 1400000.00,
             "total_fiscal_year_funding": 1400000.00,
             "potential_additional_funding": 0.00,
             "can_lead": [
@@ -1611,7 +1600,6 @@
         "fields": {
             "can": 7,
             "fiscal_year": 2021,
-            "amount_available": 80000.00,
             "total_fiscal_year_funding": 80000.00,
             "potential_additional_funding": 0.00,
             "can_lead": [
@@ -1621,7 +1609,7 @@
         }
     },
     {
-        "model": "ops.contract",
+        "model": "ops.agreement",
         "pk": 1,
         "fields": {
             "cans": [
@@ -1629,57 +1617,30 @@
                 1,
                 2
             ],
-            "name": "NIH VIQI"
+            "name": "NIH VIQI",
+            "agreement_type": "Contract"
         }
     },
     {
-        "model": "ops.contractlineitem",
+        "model": "ops.budgetlineitem",
         "pk": 1,
         "fields": {
-            "contract": 1,
-            "name": "SC 1"
-        }
-    },
-    {
-        "model": "ops.contractlineitem",
-        "pk": 2,
-        "fields": {
-            "contract": 1,
-            "name": "SC 1 Fee"
-        }
-    },
-    {
-        "model": "ops.contractlineitemfiscalyear",
-        "pk": 1,
-        "fields": {
-            "line_item": 1,
-            "fiscal_year": 2021
-        }
-    },
-    {
-        "model": "ops.contractlineitemfiscalyear",
-        "pk": 2,
-        "fields": {
-            "line_item": 2,
-            "fiscal_year": 2021
-        }
-    },
-    {
-        "model": "ops.contractlineitemfiscalyearpercan",
-        "pk": 1,
-        "fields": {
-            "fiscal_year": 1,
+            "name": "LI 1",
+            "fiscal_year": 2021,
             "can": 5,
-            "funding": 1745000.00
+            "funding": 1745000.00,
+            "agreement": 1
         }
     },
     {
-        "model": "ops.contractlineitemfiscalyearpercan",
+        "model": "ops.budgetlineitem",
         "pk": 2,
         "fields": {
-            "fiscal_year": 2,
+            "name": "LI 2",
+            "fiscal_year": 2022,
             "can": 5,
-            "funding": 8725.00
+            "funding": 8725.00,
+            "agreement": 1
         }
     },
     {

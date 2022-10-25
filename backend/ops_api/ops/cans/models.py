@@ -48,6 +48,9 @@ class FundingPartner(models.Model):
     name = models.CharField(max_length=100)
     nickname = models.CharField(max_length=100)
 
+    class Meta:
+        db_table = "ops_funding_partner"
+
     def __str__(self):
         return self.name
 
@@ -59,6 +62,9 @@ class FundingSource(models.Model):
 
     name = models.CharField(max_length=100)
     nickname = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = "ops_funding_source"
 
     def __str__(self):
         return self.name
@@ -75,7 +81,6 @@ class CANFiscalYear(models.Model):
 
     can = models.ForeignKey(CAN, on_delete=models.PROTECT)
     fiscal_year = models.IntegerField()
-    amount_available = models.DecimalField(max_digits=12, decimal_places=2)
     total_fiscal_year_funding = models.DecimalField(max_digits=12, decimal_places=2)
     potential_additional_funding = models.DecimalField(max_digits=12, decimal_places=2)
     can_lead = models.ManyToManyField(Person)
@@ -87,54 +92,31 @@ class CANFiscalYear(models.Model):
             "fiscal_year",
         )
         verbose_name_plural = "CANs (fiscal year)"
-
-    @property
-    def additional_amount_anticipated(self):
-        return self.total_fiscal_year_funding - self.amount_available
+        db_table = "ops_can_fiscal_year"
 
 
-class Contract(models.Model):
+class Agreement(models.Model):
+    class AgreementType(models.TextChoices):
+        CONTRACT = "Contract"
+        GRANT = "Grant"
+        DIRECT_ALLOCATION = "Direct Allocation"
+        IAA = "IAA"
+        MISC = "Miscellaneous"
+
+        class Meta:
+            db_table = "ops_agreement_type"
+
+    name = models.TextField()
+    agreement_type = models.CharField(max_length=100, choices=AgreementType.choices)
     cans = models.ManyToManyField(CAN, related_name="contracts")
+
+
+class BudgetLineItem(models.Model):
     name = models.TextField()
-
-    @property
-    def research_areas(self):
-        return [can.nickname for can in self.cans.all()]
-
-
-class ContractLineItem(models.Model):
-    contract = models.ForeignKey(
-        Contract, on_delete=models.CASCADE, related_name="line_items"
-    )
-    name = models.TextField()
-
-
-class ContractLineItemFiscalYear(models.Model):
-    line_item = models.ForeignKey(
-        ContractLineItem, on_delete=models.CASCADE, related_name="fiscal_years"
-    )
     fiscal_year = models.IntegerField()
-
-    @property
-    def contract(self):
-        return self.line_item.contract
-
-    @property
-    def name(self):
-        return self.line_item.name
-
-
-class ContractLineItemFiscalYearPerCAN(models.Model):
-    fiscal_year = models.ForeignKey(
-        ContractLineItemFiscalYear, on_delete=models.CASCADE, related_name="cans"
-    )
-    can = models.ForeignKey(CAN, on_delete=models.PROTECT, related_name="line_items_fy")
+    agreement = models.ForeignKey(Agreement, on_delete=models.PROTECT)
+    can = models.ForeignKey(CAN, on_delete=models.PROTECT)
     funding = models.DecimalField(max_digits=12, decimal_places=2)
 
-    @property
-    def contract(self):
-        return self.fiscal_year.contract
-
-    @property
-    def name(self):
-        return self.fiscal_year.name
+    class Meta:
+        db_table = "ops_budget_line_item"

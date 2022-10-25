@@ -26,12 +26,15 @@ services:
       dockerfile: Dockerfile
     platform: linux/amd64
     container_name: ops-migration
+    environment:
+      - JWT_PRIVATE_KEY
     command: >
       bash -c "
       python ./ops_api/manage.py custom-flush --allow-cascade --no-input &&
       python ./ops_api/manage.py makemigrations &&
       python ./ops_api/manage.py migrate &&
-      python ./ops_api/manage.py loaddata ./ops_api/ops/fixtures/fake_data.json
+      python ./ops_api/manage.py loaddata ./ops_api/ops/fixtures/fake_data.json &&
+      python ./ops_api/manage.py loaddata ./ops_api/ops/fixtures/fake_data_portfolio.json
       "
 
     volumes:
@@ -51,6 +54,8 @@ services:
     container_name: ops-backend
     ports:
       - "8080:8080"
+    environment:
+      - JWT_PRIVATE_KEY
     depends_on:
       - migration
     volumes:

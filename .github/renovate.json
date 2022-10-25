@@ -22,5 +22,6 @@
     "packageRules": [{
         "matchPackageNames": ["python"],
         "enabled": false
-    }]
+    }],
+    "prBodyTemplate": "{{{header}}}{{{table}}}{{{notes}}}{{{changelogs}}}{{{controls}}}{{{footer}}}"
 }

@@ -11,7 +11,7 @@ export const getCanFiscalYearByCan = (can_id, fiscal_year) => {
         const canFiscalYear = responseData[0];
         dispatch(setCanFiscalYear(canFiscalYear));
 
-        if (!canFiscalYear) {
+        if (!canFiscalYear || !canFiscalYear.total_fiscal_year_funding || !canFiscalYear.amount_available) {
             dispatch(setPendingFunds(constants.notFilledInText));
             return;
         }

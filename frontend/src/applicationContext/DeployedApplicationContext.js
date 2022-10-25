@@ -1,9 +1,10 @@
-import { callBackend } from "../helpers/backend";
+import { callBackend, authConfig } from "../helpers/backend";
 
 class DeployedApplicationContext {
     static helpers() {
         return {
             callBackend,
+            authConfig,
         };
     }
 }

@@ -6,12 +6,15 @@ jobs:
   backend:
     name: Backend Unit Tests
     runs-on: ubuntu-latest
+    env:
+      JWT_PRIVATE_KEY: "__blank__"
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup-python
       - name: Run backend unit tests
         working-directory: ./backend
         run: pipenv run pytest
+    
 
   frontend:
     name: Frontend Unit Tests
