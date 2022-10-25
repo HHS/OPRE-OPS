@@ -58,3 +58,6 @@ REST_FRAMEWORK = REST_FRAMEWORK | {  # noqa: F405
     ],
     "DEFAULT_THROTTLE_RATES": {"anon": "1000/day", "user": "5000/day"},
 }
+
+JWT_PRIVATE_KEY = os.getenv("JWT_PRIVATE_KEY")
+JWT_PUBLIC_KEY = os.getenv("JWT_PUBLIC_KEY")
