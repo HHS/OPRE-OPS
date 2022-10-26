@@ -37,7 +37,7 @@ const PortfolioFundingSummary = (props) => {
                 <li className="usa-card desktop:grid-col-5">
                     <PortfolioFundingTotal portfolioId={portfolio.id} />
                 </li>
-                <li className="usa-card usa-card--flag usa-card--media-right desktop:grid-col-7">
+                <li className="usa-card usa-card--flag desktop:grid-col-7 usa-card--media-right">
                     <PortfolioFundingByBudgetStatusNivio portfolioId={portfolio.id} />
                 </li>
             </ul>

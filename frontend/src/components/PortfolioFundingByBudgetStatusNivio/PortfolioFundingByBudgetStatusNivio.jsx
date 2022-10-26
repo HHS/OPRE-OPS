@@ -10,6 +10,7 @@ import React, { useState } from "react";
 
 import { render } from "react-dom";
 import { ResponsivePie } from "@nivo/pie";
+import { CustomPie } from "./CustomPie";
 
 library.add(faSquare);
 
@@ -26,65 +27,41 @@ const colors = [
     "#429195",
 ];
 
-const margin = { top: 30, right: 200, bottom: 30, left: 30 };
-
 const styles = {
     root: {
-        fontFamily: "consolas, sans-serif",
-        textAlign: "center",
-        position: "relative",
-        width: 600,
-        height: 600,
+        // fontFamily: "consolas, sans-serif",
+        // textAlign: "center",
+        // position: "relative",
+        width: 150,
+        height: 150,
+        //display: "inline-block",
     },
-    overlay: {
-        position: "absolute",
-        top: 0,
-        right: margin.right,
-        bottom: 0,
-        left: margin.left,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: 96,
-        color: "#FFFFFF",
-        // background: "#FFFFFF33",
-        textAlign: "center",
-        // This is important to preserve the chart interactivity
-        pointerEvents: "none",
-    },
-    totalLabel: {
-        fontSize: 24,
+    cardBody: {
+        //display: "inline-block",
     },
 };
 
-// const data = [
-//     {
-//         id: "Work",
-//         label: "Work",
-//         value: 120
-//     },
-//     {
-//         id: "Eat",
-//         label: "Eat",
-//         value: 35
-//     },
-//     {
-//         id: "Commute",
-//         label: "Commute",
-//         value: 33
-//     },
-//     {
-//         id: "Watch TV",
-//         label: "Watch TV",
-//         value: 27
-//     },
-//     {
-//         id: "Sleep",
-//         label: "Sleep",
-//         value: 199
-//     }
-// ];
+const CustomLayerComponent = (myProps) => (layerProps) => {
+    const { centerX, centerY } = layerProps;
+
+    console.log(myProps);
+    console.log(layerProps);
+
+    return (
+        <text
+            x={centerX}
+            y={centerY}
+            textAnchor="middle"
+            dominantBaseline="central"
+            style={{
+                fontSize: "20px",
+                fontWeight: "600",
+            }}
+        >
+            {myProps}
+        </text>
+    );
+};
 
 const PortfolioFundingByBudgetStatusNivio = (props) => {
     const today = new Date();
@@ -99,22 +76,6 @@ const PortfolioFundingByBudgetStatusNivio = (props) => {
                     <h3 className="margin-0 font-sans-3xs text-normal">
                         FY {getCurrentFiscalYear(today)} Budget Status
                     </h3>
-                </div>
-            </div>
-            <div className="usa-card__media padding-1" style={styles.root}>
-                <ResponsivePie
-                    margin={margin}
-                    data={portfolioFundingChart}
-                    innerRadius={0.8}
-                    enableArcLabels={false}
-                    enableArcLinkLabels={false}
-                    enableRadialLabels={false}
-                    enableSlicesLabels={false}
-                    tooltip={() => <></>}
-                />
-                <div style={styles.overlay}>
-                    <span>5</span>
-                    <span style={styles.totalLabel}>total components</span>
                 </div>
             </div>
             <div className="usa-card__body padding-1">
@@ -186,6 +147,13 @@ const PortfolioFundingByBudgetStatusNivio = (props) => {
                                 </div>
                             )}
                         />
+                    </div>
+                </div>
+            </div>
+            <div className="usa-card__media usa-card__media--inset">
+                <div className="usa-card__img">
+                    <div style={styles.root}>
+                        <CustomPie data={portfolioFundingChart} CustomLayerComponent={CustomLayerComponent(5)} />
                     </div>
                 </div>
             </div>
