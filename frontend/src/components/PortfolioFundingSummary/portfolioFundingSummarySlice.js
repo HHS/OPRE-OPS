@@ -3,23 +3,23 @@ import { createSlice } from "@reduxjs/toolkit";
 export const defaultPortfolioFunding = {
     total_funding: {
         amount: 0,
-        label: "",
+        percent: "",
     },
     planned_funding: {
         amount: 0,
-        label: "",
+        percent: "",
     },
     obligated_funding: {
         amount: 0,
-        label: "",
+        percent: "",
     },
     in_execution_funding: {
         amount: 0,
-        label: "",
+        percent: "",
     },
     available_funding: {
         amount: 0,
-        label: "",
+        percent: "",
     },
 };
 
@@ -27,25 +27,25 @@ export const defaultPortfolioFundingChart = [
     {
         id: "planned_funding",
         value: 0,
-        label: "0",
+        percent: "0",
         fill: "",
     },
     {
         id: "available_funding",
         value: 0,
-        label: "0",
+        percent: "0",
         fill: "",
     },
     {
         id: "obligated_funding",
         value: 0,
-        label: "0",
+        percent: "0",
         fill: "",
     },
     {
         id: "in_execution_funding",
         value: 0,
-        label: "0",
+        percent: "0",
         fill: "",
     },
 ];
@@ -69,25 +69,25 @@ const portfolioFundingSummarySlice = createSlice({
                 {
                     id: "planned_funding",
                     value: action.payload.planned_funding.amount,
-                    // label: action.payload.planned_funding.label,
+                    percent: `${parseInt(action.payload.planned_funding.percent)}%`,
                     color: "#336A90",
                 },
                 {
                     id: "available_funding",
                     value: action.payload.available_funding.amount,
-                    // label: action.payload.available_funding.label,
+                    percent: `${parseInt(action.payload.available_funding.percent)}%`,
                     color: "#E5A000",
                 },
                 {
                     id: "obligated_funding",
                     value: action.payload.obligated_funding.amount,
-                    // label: action.payload.obligated_funding.label,
+                    percent: `${parseInt(action.payload.obligated_funding.percent)}%`,
                     color: "#B50909",
                 },
                 {
                     id: "in_execution_funding",
                     value: action.payload.in_execution_funding.amount,
-                    // label: action.payload.in_execution_funding.label,
+                    percent: `${parseInt(action.payload.in_execution_funding.percent)}%`,
                     color: "#A1D0BE",
                 },
             ];

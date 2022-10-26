@@ -44,7 +44,7 @@ const styles = {
 const CustomLayerComponent = (myProps) => (layerProps) => {
     const { centerX, centerY } = layerProps;
 
-    console.log(myProps);
+    console.log(`myProps=${{ myProps }}`);
     console.log(layerProps);
 
     return (
@@ -153,7 +153,11 @@ const PortfolioFundingByBudgetStatusNivio = (props) => {
             <div className="usa-card__media usa-card__media--inset">
                 <div className="usa-card__img">
                     <div style={styles.root}>
-                        <CustomPie data={portfolioFundingChart} CustomLayerComponent={CustomLayerComponent(5)} />
+                        <CustomPie
+                            data={portfolioFundingChart}
+                            CustomLayerComponent={CustomLayerComponent(percent)}
+                            setPercent={setPercent}
+                        />
                     </div>
                 </div>
             </div>

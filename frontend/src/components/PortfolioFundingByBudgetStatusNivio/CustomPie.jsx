@@ -2,7 +2,7 @@ import { ResponsivePie } from "@nivo/pie";
 
 const margin = { top: 10, right: 10, bottom: 10, left: 10 };
 
-export const CustomPie = ({ data, CustomLayerComponent }) => (
+export const CustomPie = ({ data, CustomLayerComponent, setPercent }) => (
     <ResponsivePie
         margin={margin}
         width={150}
@@ -18,5 +18,11 @@ export const CustomPie = ({ data, CustomLayerComponent }) => (
         tooltip={() => <></>}
         colors={{ datum: "data.color" }}
         layers={["arcs", "slices", "sliceLabels", "radialLabels", "legends", CustomLayerComponent]}
+        onMouseEnter={(node) => {
+            setPercent(node.data.percent);
+        }}
+        onMouseLeave={() => {
+            setPercent("");
+        }}
     />
 );
