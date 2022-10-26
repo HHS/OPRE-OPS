@@ -7,57 +7,18 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { faSquare } from "@fortawesome/free-solid-svg-icons";
 import React, { useState } from "react";
 
-import { CustomPie } from "./CustomPie";
+import { ResponsiveDonutWithInnerPercent } from "../UI/ResponsiveDonutWithInnerPercent/ResponsiveDonutWithInnerPercent";
+
+import constants from "../../constants";
+import CustomLayerComponent from "../UI/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
 
 library.add(faSquare);
 
-const colors = [
-    "#336A90",
-    "#A1D0BE",
-    "#B50909",
-    "#E5A000",
-    "#6F3331",
-    "#C07B96",
-    "#264A64",
-    "#3E8D61",
-    "#D67625",
-    "#429195",
-];
-
 const styles = {
     root: {
-        // fontFamily: "consolas, sans-serif",
-        // textAlign: "center",
-        // position: "relative",
         width: 150,
         height: 150,
-        //display: "inline-block",
     },
-    cardBody: {
-        //display: "inline-block",
-    },
-};
-
-const CustomLayerComponent = (myProps) => (layerProps) => {
-    const { centerX, centerY } = layerProps;
-
-    console.log(`myProps=${{ myProps }}`);
-    console.log(layerProps);
-
-    return (
-        <text
-            x={centerX}
-            y={centerY}
-            textAnchor="middle"
-            dominantBaseline="central"
-            style={{
-                fontSize: "20px",
-                fontWeight: "600",
-            }}
-        >
-            {myProps}
-        </text>
-    );
 };
 
 const PortfolioFundingByBudgetStatus = (props) => {
@@ -79,7 +40,7 @@ const PortfolioFundingByBudgetStatus = (props) => {
                 <div className="grid-container padding-top-0 padding-1 font-sans-3xs">
                     <div className="grid-row margin-bottom-2">
                         <div className="grid-col-6">
-                            <FontAwesomeIcon icon={faSquare} style={{ color: colors[0] }} />
+                            <FontAwesomeIcon icon={faSquare} style={{ color: constants.colors[0] }} />
                             Planned
                         </div>
                         <CurrencyFormat
@@ -96,7 +57,7 @@ const PortfolioFundingByBudgetStatus = (props) => {
                     </div>
                     <div className="grid-row margin-bottom-2">
                         <div className="grid-col-6">
-                            <FontAwesomeIcon icon={faSquare} style={{ color: colors[1] }} />
+                            <FontAwesomeIcon icon={faSquare} style={{ color: constants.colors[1] }} />
                             In Execution
                         </div>
                         <CurrencyFormat
@@ -113,7 +74,7 @@ const PortfolioFundingByBudgetStatus = (props) => {
                     </div>
                     <div className="grid-row margin-bottom-2">
                         <div className="grid-col-6">
-                            <FontAwesomeIcon icon={faSquare} style={{ color: colors[2] }} />
+                            <FontAwesomeIcon icon={faSquare} style={{ color: constants.colors[2] }} />
                             Obligated
                         </div>
                         <CurrencyFormat
@@ -130,7 +91,7 @@ const PortfolioFundingByBudgetStatus = (props) => {
                     </div>
                     <div className="grid-row margin-bottom-2">
                         <div className="grid-col-6">
-                            <FontAwesomeIcon icon={faSquare} style={{ color: colors[3] }} />
+                            <FontAwesomeIcon icon={faSquare} style={{ color: constants.colors[3] }} />
                             Remaining
                         </div>
                         <CurrencyFormat
@@ -150,8 +111,11 @@ const PortfolioFundingByBudgetStatus = (props) => {
             <div className="usa-card__media usa-card__media--inset">
                 <div className="usa-card__img">
                     <div style={styles.root}>
-                        <CustomPie
+                        <ResponsiveDonutWithInnerPercent
                             data={portfolioFundingChart}
+                            width={styles.root.width}
+                            height={styles.root.height}
+                            margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
                             CustomLayerComponent={CustomLayerComponent(percent)}
                             setPercent={setPercent}
                         />
