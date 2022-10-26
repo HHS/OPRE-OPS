@@ -5,7 +5,6 @@ import { useEffect } from "react";
 import { getPortfolioAndSetState, getPortfolioFundingAndSetState } from "./util";
 import { getCurrentFiscalYear } from "../PortfolioFundingTotal/util";
 import PortfolioFundingByBudgetStatus from "../PortfolioFundingByBudgetStatus/PortfolioFundingByBudgetStatus";
-import PortfolioFundingByBudgetStatusNivio from "../PortfolioFundingByBudgetStatusNivio/PortfolioFundingByBudgetStatusNivio";
 
 const PortfolioFundingSummary = (props) => {
     const portfolio = useSelector((state) => state.portfolioFundingSummary.portfolio);
@@ -32,13 +31,17 @@ const PortfolioFundingSummary = (props) => {
 
     return (
         <section>
-            <h3 className="site-preview-heading desktop:grid-col-12">Funding Summary</h3>
-            <ul className="usa-card-group">
-                <li className="usa-card desktop:grid-col-5">
+            <h3 className="font-sans-lg">Portfolio Budget Summary</h3>
+            <p className="font-sans-sm">
+                The graphs below show a summary of the total budget for this portfolio, not including additional funding
+                from other portfolios.
+            </p>
+            <ul className="usa-card-group grid-gap">
+                <li className="usa-card desktop:grid-col-auto">
                     <PortfolioFundingTotal portfolioId={portfolio.id} />
                 </li>
-                <li className="usa-card usa-card--flag desktop:grid-col-7 usa-card--media-right">
-                    <PortfolioFundingByBudgetStatusNivio portfolioId={portfolio.id} />
+                <li className="usa-card usa-card--flag desktop:grid-col-auto usa-card--media-right">
+                    <PortfolioFundingByBudgetStatus portfolioId={portfolio.id} />
                 </li>
             </ul>
         </section>

@@ -1,12 +1,8 @@
 import { getCents, getCurrentFiscalYear } from "./util";
 import { useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
-import { VictoryPie, Slice, VictoryTooltip } from "victory";
-
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faSquare } from "@fortawesome/free-solid-svg-icons";
-import { useState } from "react";
 
 library.add(faSquare);
 
