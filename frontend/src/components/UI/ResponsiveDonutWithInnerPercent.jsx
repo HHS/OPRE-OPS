@@ -1,20 +1,18 @@
 import { ResponsivePie } from "@nivo/pie";
 
-const margin = { top: 10, right: 10, bottom: 10, left: 10 };
-
-export const CustomPie = ({ data, CustomLayerComponent, setPercent }) => (
+export const ResponsiveDonutWithInnerPercent = ({ data, width, height, margin, CustomLayerComponent, setPercent }) => (
     <ResponsivePie
         margin={margin}
-        width={150}
-        height={150}
+        width={width}
+        height={height}
         data={data}
-        innerRadius={0.8}
+        innerRadius={0.5}
         enableArcLabels={false}
         enableArcLinkLabels={false}
         enableRadialLabels={false}
         enableSlicesLabels={false}
-        activeInnerRadiusOffset={2}
-        activeOuterRadiusOffset={2}
+        activeInnerRadiusOffset={3}
+        activeOuterRadiusOffset={3}
         tooltip={() => <></>}
         colors={{ datum: "data.color" }}
         layers={["arcs", "slices", "sliceLabels", "radialLabels", "legends", CustomLayerComponent]}
