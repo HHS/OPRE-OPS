@@ -11,6 +11,7 @@ import { ResponsiveDonutWithInnerPercent } from "../UI/ResponsiveDonutWithInnerP
 
 import constants from "../../constants";
 import CustomLayerComponent from "../UI/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
+import CurrencyWithSmallCents from "../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
 
 library.add(faSquare);
 
@@ -43,16 +44,10 @@ const PortfolioFundingByBudgetStatus = (props) => {
                             <FontAwesomeIcon icon={faSquare} style={{ color: constants.colors[0] }} />
                             Planned
                         </div>
-                        <CurrencyFormat
-                            value={portfolioFunding.planned_funding.amount}
-                            displayType={"text"}
-                            thousandSeparator={true}
-                            prefix={"$"}
-                            renderText={(value) => (
-                                <div className="grid-col-6" style={{ fontWeight: 600 }}>
-                                    {value}
-                                </div>
-                            )}
+                        <CurrencyWithSmallCents
+                            amount={portfolioFunding.planned_funding.amount}
+                            dollarsClasses="grid-col-6"
+                            centsClasses="grid-col-6"
                         />
                     </div>
                     <div className="grid-row margin-bottom-2">
@@ -60,16 +55,10 @@ const PortfolioFundingByBudgetStatus = (props) => {
                             <FontAwesomeIcon icon={faSquare} style={{ color: constants.colors[1] }} />
                             In Execution
                         </div>
-                        <CurrencyFormat
-                            value={portfolioFunding.in_execution_funding.amount}
-                            displayType={"text"}
-                            thousandSeparator={true}
-                            prefix={"$"}
-                            renderText={(value) => (
-                                <div className="grid-col-6" style={{ fontWeight: 600 }}>
-                                    {value}
-                                </div>
-                            )}
+                        <CurrencyWithSmallCents
+                            amount={portfolioFunding.in_execution_funding.amount}
+                            dollarsClasses="grid-col-6"
+                            centsClasses="grid-col-6"
                         />
                     </div>
                     <div className="grid-row margin-bottom-2">
@@ -77,16 +66,10 @@ const PortfolioFundingByBudgetStatus = (props) => {
                             <FontAwesomeIcon icon={faSquare} style={{ color: constants.colors[2] }} />
                             Obligated
                         </div>
-                        <CurrencyFormat
-                            value={portfolioFunding.obligated_funding.amount}
-                            displayType={"text"}
-                            thousandSeparator={true}
-                            prefix={"$"}
-                            renderText={(value) => (
-                                <div className="grid-col-6" style={{ fontWeight: 600 }}>
-                                    {value}
-                                </div>
-                            )}
+                        <CurrencyWithSmallCents
+                            amount={portfolioFunding.obligated_funding.amount}
+                            dollarsClasses="grid-col-6"
+                            centsClasses="grid-col-6"
                         />
                     </div>
                     <div className="grid-row margin-bottom-2">
@@ -94,16 +77,10 @@ const PortfolioFundingByBudgetStatus = (props) => {
                             <FontAwesomeIcon icon={faSquare} style={{ color: constants.colors[3] }} />
                             Remaining
                         </div>
-                        <CurrencyFormat
-                            value={portfolioFunding.available_funding.amount}
-                            displayType={"text"}
-                            thousandSeparator={true}
-                            prefix={"$"}
-                            renderText={(value) => (
-                                <div className="grid-col-6" style={{ fontWeight: 600 }}>
-                                    {value}
-                                </div>
-                            )}
+                        <CurrencyWithSmallCents
+                            amount={portfolioFunding.available_funding.amount}
+                            dollarsClasses="grid-col-6"
+                            centsClasses="grid-col-6"
                         />
                     </div>
                 </div>
