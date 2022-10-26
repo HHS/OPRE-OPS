@@ -1,10 +1,7 @@
 import { getCents, getCurrentFiscalYear } from "./util";
 import { useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
-import { library } from "@fortawesome/fontawesome-svg-core";
-import { faSquare } from "@fortawesome/free-solid-svg-icons";
-
-library.add(faSquare);
+import CurrencyWithSmallCents from "../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
 
 const PortfolioFundingTotal = () => {
     const today = new Date();
@@ -19,18 +16,11 @@ const PortfolioFundingTotal = () => {
                     </h3>
                 </div>
             </div>
-            <div className="usa-card__body padding-left-1 padding-top-3">
-                <CurrencyFormat
-                    value={parseInt(portfolioFunding.total_funding.amount)}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$ "}
-                    renderText={(value) => <span className="font-sans-2xl text-bold margin-bottom-0">{value}</span>}
-                />
-                <CurrencyFormat
-                    value={getCents(portfolioFunding.total_funding.amount)}
-                    displayType={"text"}
-                    renderText={(value) => <span className="font-sans-3xs text-bold margin-bottom-0">.{value}</span>}
+            <div className="usa-card__body padding-left-2 padding-top-3">
+                <CurrencyWithSmallCents
+                    dollarsClasses="font-sans-2xl"
+                    centsClasses="font-sans-3xs"
+                    amount={portfolioFunding.total_funding.amount}
                 />
             </div>
         </div>
