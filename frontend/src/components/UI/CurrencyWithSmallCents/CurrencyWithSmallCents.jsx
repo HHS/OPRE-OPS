@@ -1,7 +1,7 @@
 import CurrencyFormat from "react-currency-format";
 import { getCents } from "./util";
 
-const CurrencyWithSmallCents = ({ amount, dollarsClasses, centsClasses }) => (
+const CurrencyWithSmallCents = ({ amount, dollarsClasses, centsClasses, centsStyles }) => (
     <div>
         <CurrencyFormat
             value={parseInt(amount)}
@@ -13,7 +13,11 @@ const CurrencyWithSmallCents = ({ amount, dollarsClasses, centsClasses }) => (
         <CurrencyFormat
             value={getCents(amount)}
             displayType={"text"}
-            renderText={(value) => <span className={`${centsClasses} text-bold margin-bottom-0`}>.{value}</span>}
+            renderText={(value) => (
+                <span className={`${centsClasses} text-bold margin-bottom-0`} style={centsStyles}>
+                    .{value}
+                </span>
+            )}
         />
     </div>
 );

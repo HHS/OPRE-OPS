@@ -62,8 +62,8 @@ const PortfolioFundingByBudgetStatus = (props) => {
                     <div style={styles.cardItem}>
                         <CurrencyWithSmallCents
                             amount={portfolioFunding.planned_funding.amount}
-                            dollarsClasses=""
-                            centsClasses=""
+                            dollarsClasses="font-sans-3xs"
+                            centsStyles={{ fontSize: "10px" }}
                         />
                     </div>
                 </div>
@@ -75,8 +75,8 @@ const PortfolioFundingByBudgetStatus = (props) => {
                     <div style={styles.cardItem}>
                         <CurrencyWithSmallCents
                             amount={portfolioFunding.in_execution_funding.amount}
-                            dollarsClasses=""
-                            centsClasses=""
+                            dollarsClasses="font-sans-3xs"
+                            centsStyles={{ fontSize: "10px" }}
                         />
                     </div>
                 </div>
@@ -88,8 +88,8 @@ const PortfolioFundingByBudgetStatus = (props) => {
                     <div style={styles.cardItem}>
                         <CurrencyWithSmallCents
                             amount={portfolioFunding.obligated_funding.amount}
-                            dollarsClasses=""
-                            centsClasses=""
+                            dollarsClasses="font-sans-3xs"
+                            centsStyles={{ fontSize: "10px" }}
                         />
                     </div>
                 </div>
@@ -101,8 +101,8 @@ const PortfolioFundingByBudgetStatus = (props) => {
                     <div style={styles.cardItem}>
                         <CurrencyWithSmallCents
                             amount={portfolioFunding.available_funding.amount}
-                            dollarsClasses=""
-                            centsClasses=""
+                            dollarsClasses="font-sans-3xs"
+                            centsStyles={{ fontSize: "10px" }}
                         />
                     </div>
                 </div>
