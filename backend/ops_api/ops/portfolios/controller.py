@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ops_api.ops.cans.controller import CANSerializer
-from ops_api.ops.cans.models import BudgetLineItem, BudgetLineItemStatus
+from ops_api.ops.cans.models import BudgetLineItem, BudgetLineItemStatus, CANFiscalYear
 from ops_api.ops.portfolios.models import Portfolio
 
 
@@ -87,7 +87,12 @@ def get_total_funding(
         or 0
     )
 
-    total_funding = float(portfolio.current_fiscal_year_funding)
+    total_funding = (
+        CANFiscalYear.objects.filter(can__managing_portfolio=portfolio).aggregate(
+            Sum("total_fiscal_year_funding")
+        )["total_fiscal_year_funding__sum"]
+        or 0
+    )
 
     total_accounted_for = sum(
         (
@@ -97,27 +102,27 @@ def get_total_funding(
         )
     )
 
-    available_funding = total_funding - float(total_accounted_for)
+    available_funding = float(total_funding) - float(total_accounted_for)
 
     return {
         "total_funding": {
-            "amount": total_funding,
+            "amount": float(total_funding),
             "percent": "Total",
         },
         "planned_funding": {
             "amount": planned_funding,
-            "percent": f"{str(round(planned_funding / total_funding, 2) * 100)}",
+            "percent": f"{round(float(planned_funding) / float(total_funding), 2) * 100}",
         },
         "obligated_funding": {
             "amount": obligated_funding,
-            "percent": f"{str(round(obligated_funding / total_funding, 2) * 100)}",
+            "percent": f"{round(float(obligated_funding) / float(total_funding), 2) * 100}",
         },
         "in_execution_funding": {
             "amount": in_execution_funding,
-            "percent": f"{str(round(in_execution_funding / total_funding, 2) * 100)}",
+            "percent": f"{round(float(in_execution_funding) / float(total_funding), 2) * 100}",
         },
         "available_funding": {
             "amount": available_funding,
-            "percent": f"{str(round(available_funding / total_funding, 2) * 100)}",
+            "percent": f"{round(float(available_funding) / float(total_funding), 2) * 100}",
         },
     }

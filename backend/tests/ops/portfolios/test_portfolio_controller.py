@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 import pytest
 
 from ops_api.ops.cans.models import (
@@ -6,6 +8,7 @@ from ops_api.ops.cans.models import (
     BudgetLineItem,
     BudgetLineItemStatus,
     CAN,
+    CANFiscalYear,
     FundingPartner,
 )
 from ops_api.ops.portfolios.controller import get_total_funding
@@ -19,7 +22,6 @@ def portfolio(db):
         name="blah blah",
         description="blah",
         status="In-Process",
-        current_fiscal_year_funding=39131673.16,
     )
     return portfolio
 
@@ -36,6 +38,18 @@ def agreement(db, portfolio, agreement_type):
         name="Agreement 1", agreement_type=agreement_type, owning_portfolio=portfolio
     )
     return agreement
+
+
+@pytest.fixture(autouse=True)
+def can_fiscal_year(db, can):
+    can_fiscal_year = CANFiscalYear.objects.create(
+        can=can,
+        fiscal_year="2022",
+        total_fiscal_year_funding=Decimal(39131673.16),
+        potential_additional_funding=Decimal(0),
+        notes="",
+    )
+    return can_fiscal_year
 
 
 @pytest.fixture(autouse=True)
