@@ -14,21 +14,22 @@ inputs:
     description: Cloud.gov Space (environment) Name.
     required: true
   APP_NAME:
-    description: Applicaiton name (from manifest.yml).
+    description: Application name (from manifest.yml).
     required: true
 outputs:
   BACKEND_DOMAIN:
     description: Uri of the deployed backend.
-    value: ${{ steps.deploy-backend.outputs.BACKEND_DOMAIN }}
+    value: ${{ steps.deploy-backend.outputs.BACKEND_DOMAIN}}
 runs:
   using: composite
   steps:
     - name: Deploy to Cloud.gov
+      id: deploy-backend
       shell: bash
       run: |
           export PATH=$HOME/bin:$PATH
           cf login -a https://api.fr.cloud.gov -u ${{ inputs.USERNAME }} -p ${{ inputs.PASSWORD }} -o ${{ inputs.ORG_NAME }} -s ${{ inputs.SPACE_NAME }}
           cf push ${{ inputs.APP_NAME }} -f manifest.yml
           BACKEND_GUID=$(cf app ${{ inputs.APP_NAME }} --guid)
-          BACKEND_DOMAIN=$(cf curl /v3/apps/$BACKEND_GUID/env | jq -r .application_env_json.VCAP_APPLICATION.application_uris[0])
-          echo "::set-output name=BACKEND_DOMAIN::${BACKEND_DOMAIN}"
+          BACKEND_DOMAIN=$(cf curl /v3/apps/$BACKEND_GUID/env | jq -r .application_env_json.VCAP_APPLICATION.application_uris | jq -r '.[0]')
+          echo "BACKEND_DOMAIN=${BACKEND_DOMAIN}" >> $GITHUB_OUTPUT

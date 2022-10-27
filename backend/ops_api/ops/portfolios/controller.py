@@ -59,7 +59,7 @@ class TotalFunding(typing.TypedDict):
 
 def get_total_funding(
     portfolio: Portfolio,
-    fiscal_year: typing.Optional[float] = None,
+    fiscal_year: typing.Optional[int] = None,
 ) -> TotalFunding:
     budget_line_items = BudgetLineItem.objects.filter(can__managing_portfolio=portfolio)
 
@@ -87,15 +87,17 @@ def get_total_funding(
         or 0
     )
 
-    total_funding = portfolio.current_fiscal_year_funding
+    total_funding = float(portfolio.current_fiscal_year_funding)
 
-    available_funding = total_funding - sum(
+    total_accounted_for = sum(
         (
             planned_funding,
             obligated_funding,
             in_execution_funding,
         )
     )
+
+    available_funding = total_funding - float(total_accounted_for)
 
     return {
         "total_funding": {
