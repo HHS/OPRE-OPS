@@ -5,6 +5,13 @@ import { useParams, Link } from "react-router-dom";
 import PortfolioFundingSummary from "../../../components/PortfolioFundingSummary/PortfolioFundingSummary";
 import { setPortfolio } from "./portfolioDetailSlice";
 
+const styles = {
+    body: {
+        width: "1024px",
+        margin: "auto",
+    },
+};
+
 const CanList = ({ id, name }) => {
     return (
         <li>
@@ -28,7 +35,7 @@ const PortfolioDetail = () => {
     }, [dispatch, portfolioId]);
 
     return (
-        <main className="margin-left-5 margin-right-5">
+        <main style={styles.body}>
             <section>
                 <h1 className="font-sans-2xl">{portfolio.name}</h1>
                 {portfolio.description}
