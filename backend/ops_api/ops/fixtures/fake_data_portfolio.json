@@ -102,7 +102,7 @@
                 23
             ],
             "authorizer": 23,
-            "portfolio": 10
+            "managing_portfolio": 10
         }
     },
     {
@@ -118,7 +118,7 @@
                 23
             ],
             "authorizer": 23,
-            "portfolio": 10
+            "managing_portfolio": 10
         }
     },
     {
@@ -134,7 +134,7 @@
                 23
             ],
             "authorizer": 23,
-            "portfolio": 10
+            "managing_portfolio": 10
         }
     },
     {
@@ -150,7 +150,7 @@
                 23
             ],
             "authorizer": 23,
-            "portfolio": 10
+            "managing_portfolio": 10
         }
     },
     {
@@ -166,7 +166,7 @@
                 23
             ],
             "authorizer": 23,
-            "portfolio": 10
+            "managing_portfolio": 10
         }
     },
     {
@@ -175,7 +175,8 @@
         "fields": {
             "cans": [8],
             "name": "NIH VIQI",
-            "agreement_type": "Contract"
+            "agreement_type": 1,
+            "owning_portfolio": 1
         }
     },
     {
@@ -186,7 +187,8 @@
             "fiscal_year": 2023,
             "agreement": 2,
             "can": 8,
-            "funding": 5671006.14
+            "amount": 5671006.14,
+            "status": 1
         }
     },
     {
@@ -197,7 +199,8 @@
             "fiscal_year": 2023,
             "agreement": 2,
             "can": 8,
-            "funding": 2642511.17
+            "amount": 2642511.17,
+            "status": 1
         }
     },
     {
@@ -208,7 +211,8 @@
             "fiscal_year": 2023,
             "agreement": 2,
             "can": 9,
-            "funding": 9839001.11
+            "amount": 9839001.11,
+            "status": 1
         }
     },
     {
@@ -219,7 +223,8 @@
             "fiscal_year": 2023,
             "agreement": 2,
             "can": 9,
-            "funding": 7122458.44
+            "amount": 7122458.44,
+            "status": 1
         }
     },
     {
@@ -230,7 +235,8 @@
             "fiscal_year": 2023,
             "agreement": 2,
             "can": 9,
-            "funding": 5303898.12
+            "amount": 5303898.12,
+            "status": 1
         }
     },
     {
@@ -241,7 +247,8 @@
             "fiscal_year": 2023,
             "agreement": 2,
             "can": 9,
-            "funding": 869068.53
+            "amount": 869068.53,
+            "status": 2
         }
     }
 ]

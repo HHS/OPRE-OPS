@@ -1,8 +1,32 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+export const defaultPortfolioFunding = {
+    total_funding: {
+        amount: 0,
+        label: "",
+    },
+    planned_funding: {
+        amount: 0,
+        label: "",
+    },
+    obligated_funding: {
+        amount: 0,
+        label: "",
+    },
+    in_execution_funding: {
+        amount: 0,
+        label: "",
+    },
+    available_funding: {
+        amount: 0,
+        label: "",
+    },
+};
+
 const initialState = {
     portfolio: {},
-    portfolioFunding: {},
+    portfolioFunding: defaultPortfolioFunding,
+    portfolioFundingChart: [],
 };
 
 const portfolioFundingSummarySlice = createSlice({
@@ -14,6 +38,32 @@ const portfolioFundingSummarySlice = createSlice({
         },
         setPortfolioFunding: (state, action) => {
             state.portfolioFunding = action.payload;
+            state.portfolioFundingChart = [
+                {
+                    x: "planned_funding",
+                    y: action.payload.planned_funding.amount,
+                    label: action.payload.planned_funding.label,
+                    fill: "#336A90",
+                },
+                {
+                    x: "available_funding",
+                    y: action.payload.available_funding.amount,
+                    label: action.payload.available_funding.label,
+                    fill: "#E5A000",
+                },
+                {
+                    x: "obligated_funding",
+                    y: action.payload.obligated_funding.amount,
+                    label: action.payload.obligated_funding.label,
+                    fill: "#B50909",
+                },
+                {
+                    x: "in_execution_funding",
+                    y: action.payload.in_execution_funding.amount,
+                    label: action.payload.in_execution_funding.label,
+                    fill: "#A1D0BE",
+                },
+            ];
         },
     },
 });
