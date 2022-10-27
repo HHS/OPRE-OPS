@@ -29,6 +29,12 @@ const PortfolioFundingSummary = (props) => {
         };
     }, [dispatch, props.portfolioId]);
 
+    const styles = {
+        card: {
+            height: "220px",
+        },
+    };
+
     return (
         <section>
             <h3 className="font-sans-lg">Portfolio Budget Summary</h3>
@@ -37,10 +43,10 @@ const PortfolioFundingSummary = (props) => {
                 from other portfolios.
             </p>
             <ul className="usa-card-group grid-gap">
-                <li className="usa-card desktop:grid-col-auto">
+                <li className="usa-card desktop:grid-col-auto" style={styles.card}>
                     <PortfolioFundingTotal portfolioId={portfolio.id} />
                 </li>
-                <li className="usa-card usa-card--flag desktop:grid-col-auto usa-card--media-right">
+                <li className="usa-card usa-card--flag desktop:grid-col-auto usa-card--media-right" style={styles.card}>
                     <PortfolioFundingByBudgetStatus portfolioId={portfolio.id} />
                 </li>
             </ul>
