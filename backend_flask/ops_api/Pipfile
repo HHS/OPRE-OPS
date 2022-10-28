@@ -12,12 +12,13 @@ isort = "*"
 mypy = "*"
 flask-jwt-extended = {extras = ["asymmetric_crypto"], version = "*"}
 flask-sqlalchemy = "*"
-desert = "*"
 authlib = "*"
 requests = "*"
 
 [dev-packages]
 nox = "*"
+ipython = "*"
+types-all = "*"
 
 [requires]
 python_version = "3.10"

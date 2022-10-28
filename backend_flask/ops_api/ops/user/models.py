@@ -3,8 +3,10 @@ from hmac import compare_digest
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
+reg = db.registry()
 
 
+@reg.mapped_as_dataclass
 class User(db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
