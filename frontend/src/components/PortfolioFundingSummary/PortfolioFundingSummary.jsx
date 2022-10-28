@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { defaultPortfolioFunding, setPortfolio, setPortfolioFunding } from "./portfolioFundingSummarySlice";
 import { useEffect } from "react";
 import { getPortfolioAndSetState, getPortfolioFundingAndSetState } from "./util";
-import { getCurrentFiscalYear } from "../PortfolioFundingTotal/util";
 import PortfolioFundingByBudgetStatus from "../PortfolioFundingByBudgetStatus/PortfolioFundingByBudgetStatus";
 
 const PortfolioFundingSummary = (props) => {
@@ -40,7 +39,7 @@ const PortfolioFundingSummary = (props) => {
 
     return (
         <section>
-            <h3 className="font-sans-lg">Portfolio Budget Summary</h3>
+            <h2 className="font-sans-lg">Portfolio Budget Summary</h2>
             <p className="font-sans-sm">
                 The graphs below show a summary of the total budget for this portfolio, not including additional funding
                 from other portfolios.

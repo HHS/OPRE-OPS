@@ -1,10 +1,9 @@
-import { getCurrentFiscalYear } from "./util";
 import { useSelector } from "react-redux";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faSquare } from "@fortawesome/free-solid-svg-icons";
-import React, { useState } from "react";
+import { useState } from "react";
 
 import { ResponsiveDonutWithInnerPercent } from "../UI/ResponsiveDonutWithInnerPercent/ResponsiveDonutWithInnerPercent";
 
@@ -107,7 +106,11 @@ const PortfolioFundingByBudgetStatus = (props) => {
             </div>
             <div className="usa-card__media usa-card__media--inset">
                 <div className="usa-card__img">
-                    <div style={styles.root}>
+                    <div
+                        style={styles.root}
+                        aria-label="This is a Donut Chart that displays the percent by budget line status in the center."
+                        role="img"
+                    >
                         <ResponsiveDonutWithInnerPercent
                             data={portfolioFundingChart}
                             width={styles.root.width}

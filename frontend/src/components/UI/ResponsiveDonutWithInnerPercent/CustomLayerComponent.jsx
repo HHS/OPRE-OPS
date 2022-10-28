@@ -1,5 +1,3 @@
-import React from "react";
-
 /* eslint-disable react/display-name */
 const CustomLayerComponent = (myProps) => (layerProps) => {
     const { centerX, centerY } = layerProps;
