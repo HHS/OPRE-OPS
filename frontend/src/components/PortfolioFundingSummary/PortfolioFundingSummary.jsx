@@ -32,7 +32,7 @@ const PortfolioFundingSummary = (props) => {
     const styles = {
         cardGroup: {
             margin: "auto",
-            width: "1024px",
+            width: "1000px",
         },
         card: {
             height: "220px",
@@ -46,11 +46,11 @@ const PortfolioFundingSummary = (props) => {
                 The graphs below show a summary of the total budget for this portfolio, not including additional funding
                 from other portfolios.
             </p>
-            <ul className="usa-card-group grid-gap" style={styles.cardGroup}>
-                <li className="usa-card desktop:grid-col-auto" style={styles.card}>
+            <ul className="usa-card-group grid-gap">
+                <li className="usa-card desktop:grid-col-5" style={styles.card}>
                     <PortfolioFundingTotal portfolioId={portfolio.id} />
                 </li>
-                <li className="usa-card usa-card--flag desktop:grid-col-auto usa-card--media-right" style={styles.card}>
+                <li className="usa-card usa-card--flag desktop:grid-col-7 usa-card--media-right" style={styles.card}>
                     <PortfolioFundingByBudgetStatus portfolioId={portfolio.id} />
                 </li>
             </ul>

@@ -61,6 +61,23 @@ def get_total_funding(
     portfolio: Portfolio,
     fiscal_year: typing.Optional[int] = None,
 ) -> TotalFunding:
+
+    # Total Portfolio budgeted is calculated from the sum of its internal CANs budgets/appropriations
+    can_fiscal_year_query = CANFiscalYear.objects.filter(
+        can__managing_portfolio=portfolio
+    )
+
+    if fiscal_year:
+        can_fiscal_year_query = can_fiscal_year_query.filter(fiscal_year=fiscal_year)
+
+    total_funding = (
+        can_fiscal_year_query.aggregate(Sum("total_fiscal_year_funding"))[
+            "total_fiscal_year_funding__sum"
+        ]
+        or 0
+    )
+
+    # Amount available to a Portfolio budget is the sum of the BLI minus the Portfolio total (above)
     budget_line_items = BudgetLineItem.objects.filter(can__managing_portfolio=portfolio)
 
     if fiscal_year:
@@ -84,13 +101,6 @@ def get_total_funding(
         budget_line_items.filter(
             status=BudgetLineItemStatus.objects.get(status="In Execution")
         ).aggregate(Sum("amount"))["amount__sum"]
-        or 0
-    )
-
-    total_funding = (
-        CANFiscalYear.objects.filter(can__managing_portfolio=portfolio).aggregate(
-            Sum("total_fiscal_year_funding")
-        )["total_fiscal_year_funding__sum"]
         or 0
     )
 
