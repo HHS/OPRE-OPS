@@ -3,16 +3,14 @@ from hmac import compare_digest
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
-reg = db.registry()
 
 
-@reg.mapped_as_dataclass
-class User(db.Model):
+class User(db.MappedAsDataclass, db.Model):
     __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String, nullable=False, unique=True)
-    email = db.Column(db.String, nullable=False)
-    first_name = db.Column(db.String, nullable=True)
+    id: db.Mapped[int] = db.mapped_column(primary_key=True, init=False)
+    username: db.Mapped[str] = db.mapped_column(unique=True)
+    email: db.Mapped[str]
+    first_name: db.Mapped[str]
 
     # NOTE: In a real application make sure to properly hash and salt passwords
     def check_password(self, password):
