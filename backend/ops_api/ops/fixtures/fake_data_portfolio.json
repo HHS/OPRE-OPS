@@ -48,7 +48,7 @@
         "model": "ops.portfolio",
         "pk": 10,
         "fields": {
-            "name": "Healthy Marriage and Responsible Fatherhood Research",
+            "name": "Healthy Marriage and Responsible Fatherhood",
             "description": "",
             "status": "In-Process"
         }
