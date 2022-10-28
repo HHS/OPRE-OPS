@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import PortfolioFundingSummary from "../../../components/PortfolioFundingSummary/PortfolioFundingSummary";
 import { setPortfolio } from "./portfolioDetailSlice";
+import { getCurrentFiscalYear } from "../../../components/PortfolioFundingTotal/util";
 
 const styles = {
     body: {
@@ -25,6 +26,7 @@ const PortfolioDetail = () => {
     const portfolio = useSelector((state) => state.portfolioDetail.portfolio);
     const urlPathParams = useParams();
     const portfolioId = parseInt(urlPathParams.id);
+    const currentFiscalYear = getCurrentFiscalYear(new Date());
 
     useEffect(() => {
         dispatch(getPortfolioAndSetState(portfolioId));
@@ -42,7 +44,7 @@ const PortfolioDetail = () => {
                     {portfolio.description}
                 </section>
                 <section>
-                    <PortfolioFundingSummary portfolioId={portfolioId} />
+                    <PortfolioFundingSummary portfolioId={portfolioId} fiscalYear={currentFiscalYear} />
                 </section>
                 <section>
                     <h2>CANs</h2>

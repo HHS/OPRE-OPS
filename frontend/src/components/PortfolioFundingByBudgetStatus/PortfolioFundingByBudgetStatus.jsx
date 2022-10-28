@@ -38,7 +38,6 @@ const styles = {
 };
 
 const PortfolioFundingByBudgetStatus = (props) => {
-    const today = new Date();
     const portfolioFunding = useSelector((state) => state.portfolioFundingSummary.portfolioFunding);
     const portfolioFundingChart = useSelector((state) => state.portfolioFundingSummary.portfolioFundingChart);
     const [percent, setPercent] = useState("");
@@ -47,9 +46,7 @@ const PortfolioFundingByBudgetStatus = (props) => {
         <div className="usa-card__container bg-base-lightest font-family-sans padding-left-2">
             <div className="usa-card__header padding-top-2 padding-bottom-1">
                 <div className="use-card__heading">
-                    <h3 className="margin-0 font-sans-3xs text-normal">
-                        FY {getCurrentFiscalYear(today)} Budget Status
-                    </h3>
+                    <h3 className="margin-0 font-sans-3xs text-normal">FY {props.fiscalYear} Budget Status</h3>
                 </div>
             </div>
             <div className="usa-card__body font-sans-3xs" style={styles.cardContainer}>

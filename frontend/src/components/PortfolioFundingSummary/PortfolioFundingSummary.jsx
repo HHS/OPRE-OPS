@@ -21,8 +21,7 @@ const PortfolioFundingSummary = (props) => {
 
     // calculate current total funding for Portfolio
     useEffect(() => {
-        const currentFiscalYear = getCurrentFiscalYear(new Date());
-        dispatch(getPortfolioFundingAndSetState(props.portfolioId, currentFiscalYear));
+        dispatch(getPortfolioFundingAndSetState(props.portfolioId, props.fiscalYear));
 
         return () => {
             dispatch(setPortfolioFunding(defaultPortfolioFunding));
@@ -48,10 +47,10 @@ const PortfolioFundingSummary = (props) => {
             </p>
             <ul className="usa-card-group grid-gap">
                 <li className="usa-card desktop:grid-col-5" style={styles.card}>
-                    <PortfolioFundingTotal portfolioId={portfolio.id} />
+                    <PortfolioFundingTotal portfolioId={portfolio.id} fiscalYear={props.fiscalYear} />
                 </li>
                 <li className="usa-card usa-card--flag desktop:grid-col-7 usa-card--media-right" style={styles.card}>
-                    <PortfolioFundingByBudgetStatus portfolioId={portfolio.id} />
+                    <PortfolioFundingByBudgetStatus portfolioId={portfolio.id} fiscalYear={props.fiscalYear} />
                 </li>
             </ul>
         </section>
