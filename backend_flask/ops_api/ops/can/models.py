@@ -3,7 +3,7 @@ from typing import Optional
 
 from flask_sqlalchemy import SQLAlchemy
 from ops_api.ops.models import Person
-from ops_api.ops.portfolios.models import Portfolio
+from ops_api.ops.portfolio.models import Portfolio
 
 db = SQLAlchemy()
 
@@ -147,4 +147,4 @@ class CAN(db.MappedAsDataclass, db.Model):
     )
     authorizer: db.Mapped["FundingPartner"] = db.relationship(back_populates="cans")
     portfolio_id: db.Mapped[int] = db.mapped_column(db.ForeignKey("portfolio.id"))
-    portfolio: db.Mapped["Portfolio"] = db.relationship
+    portfolio: db.Mapped["Portfolio"] = db.relationship(back_populates="cans")
