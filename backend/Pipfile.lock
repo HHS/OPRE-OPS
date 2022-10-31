@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "80e45f19482f67b206a14d253991426618ab9784f803454f84708bc83356851c"
+            "sha256": "31c8b0794ba46321ff2627782807e7677b8dd874ac5fde6f2a30a584a88133c9"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -665,10 +665,10 @@
         },
         "asttokens": {
             "hashes": [
-                "sha256:c61e16246ecfb2cde2958406b4c8ebc043c9e6d73aaa83c941673b35e5d3a76b",
-                "sha256:e3305297c744ae53ffa032c45dc347286165e4ffce6875dc662b205db0623d86"
+                "sha256:1b28ed85e254b724439afc783d4bee767f780b936c3fe8b3275332f42cf5f561",
+                "sha256:4aa76401a151c8cc572d906aad7aea2a841780834a19d780f4321c0fe1b54635"
             ],
-            "version": "==2.0.8"
+            "version": "==2.1.0"
         },
         "attrs": {
             "hashes": [
@@ -1028,10 +1028,10 @@
         },
         "executing": {
             "hashes": [
-                "sha256:236ea5f059a38781714a8bfba46a70fad3479c2f552abee3bbafadc57ed111b8",
-                "sha256:b0d7f8dcc2bac47ce6e39374397e7acecea6fdc380a6d5323e26185d70f38ea8"
+                "sha256:0314a69e37426e3608aada02473b4161d4caf5a4b244d1d0c48072b8fee7bacc",
+                "sha256:19da64c18d2d851112f09c287f8d3dbbdf725ab0e569077efb6cdcbd3497c107"
             ],
-            "version": "==1.1.1"
+            "version": "==1.2.0"
         },
         "filelock": {
             "hashes": [
@@ -1374,11 +1374,11 @@
         },
         "locust": {
             "hashes": [
-                "sha256:22cc509b4c03032a30e58a7267d5b051771ddb747e85e06c0fbda374b2837bfa",
-                "sha256:fc5262e41e085cd7bc56e48a460f117d9e366123ad43e67d95cb32a08d6dc867"
+                "sha256:d747fb1be59d9e3f19e11fb90b8a50ad92b9615243ead67fc14e1e7421e5794e",
+                "sha256:f603752ab9d4f7d6034c5896c71e6069be49060a5868d6eb4d6c7d32b1c031ae"
             ],
             "index": "pypi",
-            "version": "==2.12.2"
+            "version": "==2.13.0"
         },
         "markdown": {
             "hashes": [
@@ -1901,10 +1901,10 @@
         },
         "stack-data": {
             "hashes": [
-                "sha256:5120731a18ba4c82cefcf84a945f6f3e62319ef413bfc210e32aca3a69310ba2",
-                "sha256:95eb784942e861a3d80efd549ff9af6cf847d88343a12eb681d7157cfcb6e32b"
+                "sha256:8e515439f818efaa251036af72d89e4026e2b03993f3453c000b200fb4f2d6aa",
+                "sha256:b92d206ef355a367d14316b786ab41cb99eb453a21f2cb216a4204625ff7bc07"
             ],
-            "version": "==0.5.1"
+            "version": "==0.6.0"
         },
         "stevedore": {
             "hashes": [
