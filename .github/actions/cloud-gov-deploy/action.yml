@@ -1,0 +1,33 @@
+name: "Cloud.gov Deployment Action"
+description: "Deploy and manage apps on cloud.gov. Defaults to 'cf push' if no 'command'/'cf_command' is supplied."
+inputs:
+  cf_api:
+    description: "Target API endpoint. Defaults to 'api.fr.cloud.gov'."
+    required: false
+  cf_username:
+    description: "Username for API authentication"
+    required: true
+  cf_password:
+    description: "Password for API authentication"
+    required: true
+  cf_org:
+    description: "Target organization"
+    required: true
+  cf_space:
+    description: "Target space"
+    required: true
+  cf_manifest:
+    description: "Manifest file name to use for pushing. Defaults to 'manifest.yml'."
+    required: false
+  cf_vars_file:
+    description: "Name of the vars file to use"
+    required: false
+  cf_command:
+    description: "CF CLI subcommand to run. Mutually exclusive with 'command:'."
+    required: false
+  command:
+    description: "Command to run. Mutually exclusive with 'cf_command:'."
+    required: false
+runs:
+  using: "docker"
+  image: "Dockerfile"

@@ -101,7 +101,7 @@ class Agreement(models.Model):
         GRANT = "Grant"
         DIRECT_ALLOCATION = "Direct Allocation"
         IAA = "IAA"
-        MISC = "Miscellaneous"
+        MISC = "Miscellaneous"  # Direct Obligations, other, etc.
 
         class Meta:
             db_table = "ops_agreement_type"
