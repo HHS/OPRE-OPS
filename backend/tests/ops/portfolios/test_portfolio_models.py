@@ -10,6 +10,5 @@ def test_Portfolio_str():
         name=name,
         description="",
         status="Not-Started",
-        current_fiscal_year_funding=0.0,
     )
     assert name == str(portfolio)

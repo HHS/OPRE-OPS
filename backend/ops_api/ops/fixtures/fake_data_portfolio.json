@@ -5,8 +5,7 @@
         "fields": {
             "name": "Child Welfare Research",
             "description": "",
-            "status": "In-Process",
-            "current_fiscal_year_funding": 832304951.45
+            "status": "In-Process"
         }
     },
     {
@@ -15,8 +14,7 @@
         "fields": {
             "name": "Head Start Research",
             "description": "",
-            "status": "In-Process",
-            "current_fiscal_year_funding": 98224644.31
+            "status": "In-Process"
         }
     },
     {
@@ -25,8 +23,7 @@
         "fields": {
             "name": "Child Care Research",
             "description": "",
-            "status": "In-Process",
-            "current_fiscal_year_funding": 144078035.15
+            "status": "In-Process"
         }
     },
     {
@@ -35,8 +32,7 @@
         "fields": {
             "name": "Welfare Research",
             "description": "",
-            "status": "In-Process",
-            "current_fiscal_year_funding": 198982157.30
+            "status": "In-Process"
         }
     },
     {
@@ -45,18 +41,16 @@
         "fields": {
             "name": "Adolescent Development Research",
             "description": "",
-            "status": "In-Process",
-            "current_fiscal_year_funding": 601410271.02
+            "status": "In-Process"
         }
     },
     {
         "model": "ops.portfolio",
         "pk": 10,
         "fields": {
-            "name": "Healthy Marriage and Responsible Fatherhood Research",
+            "name": "Healthy Marriage and Responsible Fatherhood",
             "description": "",
-            "status": "In-Process",
-            "current_fiscal_year_funding": 871788324.75
+            "status": "In-Process"
         }
     },
     {
@@ -65,8 +59,7 @@
         "fields": {
             "name": "Home Visiting Research",
             "description": "",
-            "status": "In-Process",
-            "current_fiscal_year_funding": 929552475.77
+            "status": "In-Process"
         }
     },
     {
@@ -75,8 +68,7 @@
         "fields": {
             "name": "Program Team Support",
             "description": "",
-            "status": "In-Process",
-            "current_fiscal_year_funding": 241590852.95
+            "status": "In-Process"
         }
     },
     {
@@ -85,8 +77,7 @@
         "fields": {
             "name": "Data Governance",
             "description": "",
-            "status": "In-Process",
-            "current_fiscal_year_funding": 214355203.56
+            "status": "In-Process"
         }
     },
     {
@@ -247,8 +238,50 @@
             "fiscal_year": 2023,
             "agreement": 2,
             "can": 9,
-            "amount": 869068.53,
+            "amount": 8974267.94,
             "status": 2
+        }
+    },
+    {
+        "model": "ops.canfiscalyear",
+        "pk": 13,
+        "fields": {
+            "can": 10,
+            "fiscal_year": 2023,
+            "total_fiscal_year_funding": 45985840.62,
+            "potential_additional_funding": 0.00,
+            "can_lead": [
+                20
+            ],
+            "notes": ""
+        }
+    },
+    {
+        "model": "ops.canfiscalyear",
+        "pk": 14,
+        "fields": {
+            "can": 9,
+            "fiscal_year": 2023,
+            "total_fiscal_year_funding": 35532980.31,
+            "potential_additional_funding": 0.00,
+            "can_lead": [
+                20
+            ],
+            "notes": ""
+        }
+    },
+    {
+        "model": "ops.canfiscalyear",
+        "pk": 15,
+        "fields": {
+            "can": 8,
+            "fiscal_year": 2023,
+            "total_fiscal_year_funding": 81719750.66,
+            "potential_additional_funding": 0.00,
+            "can_lead": [
+                20
+            ],
+            "notes": ""
         }
     }
 ]

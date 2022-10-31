@@ -1,9 +1,9 @@
-import PortfolioFunding from "../PortfolioFunding/PortfolioFunding";
+import PortfolioFundingTotal from "../PortfolioFundingTotal/PortfolioFundingTotal";
 import { useDispatch, useSelector } from "react-redux";
 import { defaultPortfolioFunding, setPortfolio, setPortfolioFunding } from "./portfolioFundingSummarySlice";
 import { useEffect } from "react";
 import { getPortfolioAndSetState, getPortfolioFundingAndSetState } from "./util";
-import { getCurrentFiscalYear } from "../PortfolioFunding/util";
+import PortfolioFundingByBudgetStatus from "../PortfolioFundingByBudgetStatus/PortfolioFundingByBudgetStatus";
 
 const PortfolioFundingSummary = (props) => {
     const portfolio = useSelector((state) => state.portfolioFundingSummary.portfolio);
@@ -20,23 +20,36 @@ const PortfolioFundingSummary = (props) => {
 
     // calculate current total funding for Portfolio
     useEffect(() => {
-        const currentFiscalYear = getCurrentFiscalYear(new Date());
-        dispatch(getPortfolioFundingAndSetState(props.portfolioId, currentFiscalYear));
+        dispatch(getPortfolioFundingAndSetState(props.portfolioId, props.fiscalYear));
 
         return () => {
             dispatch(setPortfolioFunding(defaultPortfolioFunding));
         };
     }, [dispatch, props.portfolioId]);
 
+    const styles = {
+        cardGroup: {
+            margin: "auto",
+            width: "1000px",
+        },
+        card: {
+            height: "220px",
+        },
+    };
+
     return (
         <section>
-            <h3 className="site-preview-heading desktop:grid-col-12">Funding Summary</h3>
-            <ul className="usa-card-group">
-                <li className="usa-card usa-card--flag usa-card--media-right desktop:grid-col-6">
-                    <PortfolioFunding portfolioId={portfolio.id} />
+            <h2 className="font-sans-lg">Portfolio Budget Summary</h2>
+            <p className="font-sans-sm">
+                The graphs below show a summary of the total budget for this portfolio, not including additional funding
+                from other portfolios.
+            </p>
+            <ul className="usa-card-group grid-gap">
+                <li className="usa-card desktop:grid-col-5" style={styles.card}>
+                    <PortfolioFundingTotal portfolioId={portfolio.id} fiscalYear={props.fiscalYear} />
                 </li>
-                <li className="usa-card usa-card--flag usa-card--media-right desktop:grid-col-6">
-                    <PortfolioFunding portfolioId={portfolio.id} />
+                <li className="usa-card usa-card--flag desktop:grid-col-7 usa-card--media-right" style={styles.card}>
+                    <PortfolioFundingByBudgetStatus portfolioId={portfolio.id} fiscalYear={props.fiscalYear} />
                 </li>
             </ul>
         </section>

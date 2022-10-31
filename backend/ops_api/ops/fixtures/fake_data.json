@@ -1656,8 +1656,7 @@
         "fields": {
             "name": "SuperAwesome Portfolio",
             "description": "This is a description of the portfolio, isn't it cool!",
-            "status": "In-Process",
-            "current_fiscal_year_funding": 78000000.00
+            "status": "In-Process"
         }
     },
     {
@@ -1666,8 +1665,7 @@
         "fields": {
             "name": "OPS-Portfolio-1",
             "description": "Placeholder portfolio",
-            "status": "Not-Started",
-            "current_fiscal_year_funding": 18000000.00
+            "status": "Not-Started"
         }
     },
     {
@@ -1676,8 +1674,7 @@
         "fields": {
             "name": "OPS-Portfolio-2",
             "description": "Placeholder portfolio",
-            "status": "In-Process",
-            "current_fiscal_year_funding": 13504000.00
+            "status": "In-Process"
         }
     },
     {
@@ -1686,8 +1683,7 @@
         "fields": {
             "name": "OPS-Portfolio-3",
             "description": "Placeholder portfolio",
-            "status": "Not-Started",
-            "current_fiscal_year_funding": 8000000.00
+            "status": "Not-Started"
         }
     },
     {

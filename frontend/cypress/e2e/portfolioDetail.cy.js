@@ -5,11 +5,9 @@ before(() => {
 
 it("loads", () => {
     cy.get("h1").should("contain", "SuperAwesome Portfolio");
-    cy.get("h2").should("contain", "Portfolio description");
-    cy.get("h3").should("contain", "Funding Summary");
-    cy.get("h3").should("contain", "Total Funding");
-    cy.get("h4").should("contain", "Fiscal Year");
-    cy.get("h3").should("contain", "$");
+    cy.get("h2").should("contain", "Portfolio Budget Summary");
+    cy.get("h3").should("contain", "Total Budget");
+    cy.get("span").should("contain", "$");
 });
 
 it("passes a11y checks", () => {
