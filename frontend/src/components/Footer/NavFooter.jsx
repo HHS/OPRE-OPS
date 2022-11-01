@@ -9,8 +9,8 @@ export const NavFooter = () => {
               usa-footer__primary-content
             "
                 >
-                    <a className="usa-footer__primary-link" href="javascript:void(0);">
-                        &lt;Primary link&gt;
+                    <a className="usa-footer__primary-link" href="#top">
+                        Documentation
                     </a>
                 </li>
                 <li
@@ -20,8 +20,8 @@ export const NavFooter = () => {
               usa-footer__primary-content
             "
                 >
-                    <a className="usa-footer__primary-link" href="javascript:void(0);">
-                        &lt;Primary link&gt;
+                    <a className="usa-footer__primary-link" href="#top">
+                        Features
                     </a>
                 </li>
                 <li
@@ -31,8 +31,8 @@ export const NavFooter = () => {
               usa-footer__primary-content
             "
                 >
-                    <a className="usa-footer__primary-link" href="javascript:void(0);">
-                        &lt;Primary link&gt;
+                    <a className="usa-footer__primary-link" href="#top">
+                        Getting Started
                     </a>
                 </li>
                 <li
@@ -42,8 +42,8 @@ export const NavFooter = () => {
               usa-footer__primary-content
             "
                 >
-                    <a className="usa-footer__primary-link" href="javascript:void(0);">
-                        &lt;Primary link&gt;
+                    <a className="usa-footer__primary-link" href="#top">
+                        About
                     </a>
                 </li>
             </ul>

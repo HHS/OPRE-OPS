@@ -7,19 +7,18 @@ export const Identifier = () => {
             >
                 <div className="usa-identifier__container">
                     <div className="usa-identifier__logos">
-                        <a href="javascript:void(0)" className="usa-identifier__logo">
+                        <a href="#top" className="usa-identifier__logo">
                             <img
                                 className="usa-identifier__logo-img"
                                 src="/assets/img/circle-gray-20.svg"
-                                alt="&lt;Parent agency&gt; logo"
-                                role="img"
+                                alt="Parent agency logo"
                             />
                         </a>
                     </div>
                     <section className="usa-identifier__identity" aria-label="Agency description">
                         <p className="usa-identifier__identity-domain">domain.gov</p>
                         <p className="usa-identifier__identity-disclaimer">
-                            An official website of the <a href="">&lt;Parent agency&gt;</a>
+                            An official website of the <a href="#top">&lt;Parent agency&gt;</a>
                         </p>
                     </section>
                 </div>
@@ -31,37 +30,37 @@ export const Identifier = () => {
                 <div className="usa-identifier__container">
                     <ul className="usa-identifier__required-links-list">
                         <li className="usa-identifier__required-links-item">
-                            <a href="javascript:void(0)" className="usa-identifier__required-link usa-link">
-                                About &lt;Parent shortname&gt;
+                            <a href="#top" className="usa-identifier__required-link usa-link">
+                                About OPRE
                             </a>
                         </li>
                         <li className="usa-identifier__required-links-item">
-                            <a href="" className="usa-identifier__required-link usa-link">
+                            <a href="#top" className="usa-identifier__required-link usa-link">
                                 Accessibility support
                             </a>
                         </li>
                         <li className="usa-identifier__required-links-item">
-                            <a href="" className="usa-identifier__required-link usa-link">
+                            <a href="#top" className="usa-identifier__required-link usa-link">
                                 FOIA requests
                             </a>
                         </li>
                         <li className="usa-identifier__required-links-item">
-                            <a href="" className="usa-identifier__required-link usa-link">
+                            <a href="#top" className="usa-identifier__required-link usa-link">
                                 No FEAR Act data
                             </a>
                         </li>
                         <li className="usa-identifier__required-links-item">
-                            <a href="" className="usa-identifier__required-link usa-link">
+                            <a href="#top" className="usa-identifier__required-link usa-link">
                                 Office of the Inspector General
                             </a>
                         </li>
                         <li className="usa-identifier__required-links-item">
-                            <a href="" className="usa-identifier__required-link usa-link">
+                            <a href="#top" className="usa-identifier__required-link usa-link">
                                 Performance reports
                             </a>
                         </li>
                         <li className="usa-identifier__required-links-item">
-                            <a href="" className="usa-identifier__required-link usa-link">
+                            <a href="#top" className="usa-identifier__required-link usa-link">
                                 Privacy policy
                             </a>
                         </li>
