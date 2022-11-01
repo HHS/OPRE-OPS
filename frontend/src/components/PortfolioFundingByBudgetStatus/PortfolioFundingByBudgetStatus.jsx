@@ -20,8 +20,13 @@ const styles = {
     },
     cardContainer: {
         display: "flex",
+        borderColor: "#FFF",
+    },
+    cardBody: {
+        display: "flex",
         flexDirection: "column",
         alignItems: "left",
+        borderColor: "#FFF",
     },
     cardGroup: {
         display: "flex",
@@ -46,13 +51,16 @@ const PortfolioFundingByBudgetStatus = (props) => {
     const [percent, setPercent] = useState("");
 
     return (
-        <div className="usa-card__container bg-base-lightest font-family-sans padding-left-2">
+        <div
+            className="usa-card__container bg-base-lightest font-family-sans padding-left-2"
+            style={styles.cardContainer}
+        >
             <div className="usa-card__header padding-top-2 padding-bottom-1">
                 <div className="use-card__heading">
                     <h3 className="margin-0 font-sans-3xs text-normal">FY {props.fiscalYear} Budget Status</h3>
                 </div>
             </div>
-            <div className="usa-card__body font-sans-3xs" style={styles.cardContainer}>
+            <div className="usa-card__body font-sans-3xs" style={styles.cardBody}>
                 <div style={styles.cardGroup}>
                     <div style={styles.cardItem}>
                         <span style={styles.iconStyle}>
