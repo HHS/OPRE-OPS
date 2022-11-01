@@ -36,6 +36,7 @@ const styles = {
     },
     iconStyle: {
         verticalAlign: "middle",
+        paddingRight: "4px",
     },
 };
 
@@ -52,7 +53,6 @@ const PortfolioFundingByBudgetStatus = (props) => {
                 </div>
             </div>
             <div className="usa-card__body font-sans-3xs" style={styles.cardContainer}>
-                {/*<div className="grid-container padding-top-0 padding-1 font-sans-3xs">*/}
                 <div style={styles.cardGroup}>
                     <div style={styles.cardItem}>
                         <span style={styles.iconStyle}>
