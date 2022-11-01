@@ -20,7 +20,7 @@ const styles = {
     },
     cardContainer: {
         display: "flex",
-        borderColor: "#FFF",
+        border: "0",
     },
     cardBody: {
         display: "flex",

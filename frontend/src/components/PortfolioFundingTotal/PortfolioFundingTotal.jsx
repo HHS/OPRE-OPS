@@ -7,7 +7,7 @@ const PortfolioFundingTotal = (props) => {
     const styles = {
         cardContainer: {
             display: "flex",
-            borderColor: "#FFF",
+            border: "0",
         },
     };
 
