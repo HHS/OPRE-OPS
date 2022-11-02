@@ -44,7 +44,7 @@ const PortfolioDetail = () => {
                 <BreadcrumbList>
                     <BreadcrumbItem isCurrent pageName="Portfolios" />
                 </BreadcrumbList>
-                <main style={styles.body}>
+                <div style={styles.body}>
                     <div className="margin-left-2 margin-right-2">
                         <section>
                             <h1 className="font-sans-2xl">{portfolio.name}</h1>
@@ -62,7 +62,7 @@ const PortfolioDetail = () => {
                             </ul>
                         </section>
                     </div>
-                </main>
+                </div>
             </App>
         </>
     );
