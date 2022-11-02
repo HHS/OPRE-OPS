@@ -10,6 +10,7 @@ import store from "./store";
 import "@uswds/uswds/css/uswds.min.css";
 import "@uswds/uswds";
 import App from "./App";
+import Home from "./pages/Home";
 import PortfolioList from "./pages/portfolios/list/PortfolioList";
 import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
 import CanList from "./pages/cans/list/CanList";
@@ -22,12 +23,12 @@ root.render(
         <Provider store={store}>
             <BrowserRouter>
                 <Routes>
-                    <Route path="/" element={<App />} />
+                    <Route path="/" element={<Home />} />
                     <Route path="/portfolios" element={<PortfolioList />} />
                     <Route path="/portfolios/:id" element={<PortfolioDetail />} />
-                    <Route path="/cans" element={<CanList />}>
-                        <Route path="/cans/:id" element={<CanDetail />} />
-                    </Route>
+                    <Route path="/cans" element={<CanList />} />
+                    <Route path="/cans/:id" element={<CanDetail />} />
+                    
                 </Routes>
             </BrowserRouter>
         </Provider>

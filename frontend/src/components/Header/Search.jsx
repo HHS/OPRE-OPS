@@ -8,9 +8,9 @@ export const Search = () => {
                 <label className="usa-sr-only" htmlFor="search-field-en-small">
                     Search
                 </label>
-                <input className="usa-input" id="search-field-en-small" type="search" name="search" />
-                <button className="usa-button" type="submit">
-                    <FontAwesomeIcon icon={solid("magnifying-glass")} />
+                <input className="usa-input" id="search-field-en-small" type="search" name="search" tabindex="0" />
+                <button className="usa-button" type="submit" value="Search" tabindex="1">
+                    <FontAwesomeIcon icon={solid("magnifying-glass")} title="Search" />
                 </button>
             </form>
         </section>
