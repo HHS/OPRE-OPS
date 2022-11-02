@@ -25,7 +25,7 @@ const PortfolioFundingSummary = (props) => {
         return () => {
             dispatch(setPortfolioFunding(defaultPortfolioFunding));
         };
-    }, [dispatch, props.portfolioId]);
+    }, [dispatch, props.portfolioId, props.fiscalYear]);
 
     const styles = {
         cardGroup: {
