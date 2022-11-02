@@ -4,8 +4,18 @@ import CurrencyWithSmallCents from "../UI/CurrencyWithSmallCents/CurrencyWithSma
 const PortfolioFundingTotal = (props) => {
     const portfolioFunding = useSelector((state) => state.portfolioFundingSummary.portfolioFunding);
 
+    const styles = {
+        cardContainer: {
+            display: "flex",
+            border: "0",
+        },
+    };
+
     return (
-        <div className="usa-card__container bg-base-lightest font-family-sans padding-left-2">
+        <div
+            className="usa-card__container bg-base-lightest font-family-sans padding-left-2"
+            style={styles.cardContainer}
+        >
             <div className="usa-card__header padding-top-2">
                 <div className="use-card__heading">
                     <h3 className="margin-0 font-sans-3xs text-normal">FY {props.fiscalYear} Total Budget</h3>

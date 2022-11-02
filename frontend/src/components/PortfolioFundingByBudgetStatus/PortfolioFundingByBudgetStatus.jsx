@@ -20,12 +20,17 @@ const styles = {
     },
     cardContainer: {
         display: "flex",
+        border: "0",
+    },
+    cardBody: {
+        display: "flex",
         flexDirection: "column",
         alignItems: "left",
+        borderColor: "#FFF",
     },
     cardGroup: {
         display: "flex",
-        marginBottom: "3%",
+        marginBottom: "5%",
         flexDirection: "row",
         justifyContent: "space-evenly",
         width: "250px",
@@ -33,6 +38,10 @@ const styles = {
     cardItem: {
         display: "flex",
         flex: "1",
+    },
+    iconStyle: {
+        verticalAlign: "middle",
+        paddingRight: "4px",
     },
 };
 
@@ -42,18 +51,22 @@ const PortfolioFundingByBudgetStatus = (props) => {
     const [percent, setPercent] = useState("");
 
     return (
-        <div className="usa-card__container bg-base-lightest font-family-sans padding-left-2">
+        <div
+            className="usa-card__container bg-base-lightest font-family-sans padding-left-2"
+            style={styles.cardContainer}
+        >
             <div className="usa-card__header padding-top-2 padding-bottom-1">
                 <div className="use-card__heading">
                     <h3 className="margin-0 font-sans-3xs text-normal">FY {props.fiscalYear} Budget Status</h3>
                 </div>
             </div>
-            <div className="usa-card__body font-sans-3xs" style={styles.cardContainer}>
-                {/*<div className="grid-container padding-top-0 padding-1 font-sans-3xs">*/}
+            <div className="usa-card__body font-sans-3xs" style={styles.cardBody}>
                 <div style={styles.cardGroup}>
                     <div style={styles.cardItem}>
-                        <FontAwesomeIcon icon={faSquare} style={{ color: constants.colors[0] }} />
-                        Planned
+                        <span style={styles.iconStyle}>
+                            <FontAwesomeIcon icon={faSquare} style={{ color: constants.colors[0] }} />
+                        </span>
+                        <span>Planned</span>
                     </div>
                     <div style={styles.cardItem}>
                         <CurrencyWithSmallCents
@@ -65,8 +78,10 @@ const PortfolioFundingByBudgetStatus = (props) => {
                 </div>
                 <div style={styles.cardGroup}>
                     <div style={styles.cardItem}>
-                        <FontAwesomeIcon icon={faSquare} style={{ color: constants.colors[1] }} />
-                        In Execution
+                        <span style={styles.iconStyle}>
+                            <FontAwesomeIcon icon={faSquare} style={{ color: constants.colors[1] }} />
+                        </span>
+                        <span>In Execution</span>
                     </div>
                     <div style={styles.cardItem}>
                         <CurrencyWithSmallCents
@@ -78,8 +93,10 @@ const PortfolioFundingByBudgetStatus = (props) => {
                 </div>
                 <div style={styles.cardGroup}>
                     <div style={styles.cardItem}>
-                        <FontAwesomeIcon icon={faSquare} style={{ color: constants.colors[2] }} />
-                        Obligated
+                        <span style={styles.iconStyle}>
+                            <FontAwesomeIcon icon={faSquare} style={{ color: constants.colors[2] }} />
+                        </span>
+                        <span>Obligated</span>
                     </div>
                     <div style={styles.cardItem}>
                         <CurrencyWithSmallCents
@@ -91,8 +108,10 @@ const PortfolioFundingByBudgetStatus = (props) => {
                 </div>
                 <div style={styles.cardGroup}>
                     <div style={styles.cardItem}>
-                        <FontAwesomeIcon icon={faSquare} style={{ color: constants.colors[3] }} />
-                        Remaining
+                        <span style={styles.iconStyle}>
+                            <FontAwesomeIcon icon={faSquare} style={{ color: constants.colors[3] }} />
+                        </span>
+                        <span>Remaining</span>
                     </div>
                     <div style={styles.cardItem}>
                         <CurrencyWithSmallCents
