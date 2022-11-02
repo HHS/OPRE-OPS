@@ -47,7 +47,6 @@ const PortfolioList = () => {
                 </nav>
 
                 <Outlet />
-
             </App>
         </>
     );

@@ -9,7 +9,6 @@ import store from "./store";
 // eslint-disable-next-line import/no-unresolved
 import "@uswds/uswds/css/uswds.min.css";
 import "@uswds/uswds";
-import App from "./App";
 import Home from "./pages/Home";
 import PortfolioList from "./pages/portfolios/list/PortfolioList";
 import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
@@ -28,7 +27,6 @@ root.render(
                     <Route path="/portfolios/:id" element={<PortfolioDetail />} />
                     <Route path="/cans" element={<CanList />} />
                     <Route path="/cans/:id" element={<CanDetail />} />
-                    
                 </Routes>
             </BrowserRouter>
         </Provider>

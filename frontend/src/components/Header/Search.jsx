@@ -8,7 +8,7 @@ export const Search = () => {
                 <label className="usa-sr-only" htmlFor="search-field-en-small">
                     Search
                 </label>
-                <input className="usa-input" id="search-field-en-small" type="search" name="search" tabindex="0" />
+                <input className="usa-input" id="search-field-en-small" type="search" name="search" tabIndex="0" />
                 <button className="usa-button" type="submit" value="Search">
                     <FontAwesomeIcon icon={solid("magnifying-glass")} title="Search" />
                 </button>
