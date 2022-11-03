@@ -56,6 +56,6 @@ def get_jwt(key=settings.JWT_PRIVATE_KEY):
         jws = ApplicationContext.get_context().jwt_library().encode(header, payload, key)
 
         return jws
-    exept Execption:
+    except Execption:
         traceback.print_exc()
         return None
