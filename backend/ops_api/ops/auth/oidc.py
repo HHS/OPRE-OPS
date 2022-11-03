@@ -53,7 +53,9 @@ def get_jwt(key=settings.JWT_PRIVATE_KEY):
             "exp": int(time.time()) + 300,
         }
         header = {"alg": "RS256"}
-        jws = ApplicationContext.get_context().jwt_library().encode(header, payload, key)
+        jws = (
+            ApplicationContext.get_context().jwt_library().encode(header, payload, key)
+        )
 
         return jws
     except Exception:
