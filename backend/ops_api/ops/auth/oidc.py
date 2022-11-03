@@ -41,6 +41,8 @@ def get_jwt(key=settings.JWT_PRIVATE_KEY):
     if not key:
         raise NotImplementedError
 
+    print(f"get_jwt: key --> {key}")
+    
     client_id = settings.AUTHLIB_OAUTH_CLIENTS["logingov"]["client_id"]
     payload = {
         "iss": client_id,
