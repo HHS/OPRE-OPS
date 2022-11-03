@@ -4,6 +4,7 @@
   "license": "CC0-1.0",
   "private": true,
   "dependencies": {
+    "@fontsource/public-sans": "^4.5.11",
     "@fortawesome/fontawesome-svg-core": "6.2.0",
     "@fortawesome/free-regular-svg-icons": "6.2.0",
     "@fortawesome/free-solid-svg-icons": "6.2.0",
@@ -21,7 +22,9 @@
     "react-redux": "8.0.4",
     "react-router-dom": "6.4.3",
     "react-scripts": "5.0.1",
-    "react-select": "5.5.9"
+    "react-select": "5.5.9",
+    "sass": "1.55.0",
+    "sass-loader": "13.1.0"
   },
   "devDependencies": {
     "axe-core": "4.5.1",
