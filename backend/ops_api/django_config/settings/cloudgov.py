@@ -64,3 +64,11 @@ REST_FRAMEWORK = REST_FRAMEWORK | {  # noqa: F405
 
 JWT_PRIVATE_KEY = os.getenv("JWT_PRIVATE_KEY")
 JWT_PUBLIC_KEY = os.getenv("JWT_PUBLIC_KEY")
+
+AUTHLIB_OAUTH_CLIENTS = {
+    "logingov": {
+        "server_metadata_url": "https://idp.int.identitysandbox.gov/.well-known/openid-configuration",
+        "client_id": "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
+        "client_kwargs": {"scope": "openid"},
+    }
+}
