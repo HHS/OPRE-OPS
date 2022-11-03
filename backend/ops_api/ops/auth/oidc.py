@@ -1,5 +1,6 @@
 from http import HTTPStatus
 import time
+import traceback
 import uuid
 
 from django.conf import settings
@@ -33,6 +34,7 @@ class OidcController(APIView):
             print(token)
             return Response({"jwt": "OPS-specific JWT"}, status=HTTPStatus.OK)
         except Exception:
+            traceback.print_exc()
             return "There was an error."
 
 
@@ -41,17 +43,19 @@ def get_jwt(key=settings.JWT_PRIVATE_KEY):
     if not key:
         raise NotImplementedError
 
-    print(f"get_jwt: key --> {key}")
-    
-    client_id = settings.AUTHLIB_OAUTH_CLIENTS["logingov"]["client_id"]
-    payload = {
-        "iss": client_id,
-        "sub": client_id,
-        "aud": "https://idp.int.identitysandbox.gov/api/openid_connect/token",
-        "jti": str(uuid.uuid4()),
-        "exp": int(time.time()) + 300,
-    }
-    header = {"alg": "RS256"}
-    jws = ApplicationContext.get_context().jwt_library().encode(header, payload, key)
+    try:
+        client_id = settings.AUTHLIB_OAUTH_CLIENTS["logingov"]["client_id"]
+        payload = {
+            "iss": client_id,
+            "sub": client_id,
+            "aud": "https://idp.int.identitysandbox.gov/api/openid_connect/token",
+            "jti": str(uuid.uuid4()),
+            "exp": int(time.time()) + 300,
+        }
+        header = {"alg": "RS256"}
+        jws = ApplicationContext.get_context().jwt_library().encode(header, payload, key)
 
-    return jws
+        return jws
+    exept Execption:
+        traceback.print_exc()
+        return None
