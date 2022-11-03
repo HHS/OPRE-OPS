@@ -14,3 +14,16 @@ class CanUser(HttpUser):
     @task
     def can_detail(self):
         self.client.get("/ops/cans/1")
+
+
+class PortfolioUser(HttpUser):
+
+    wait_time = between(1, 5)
+
+    @task
+    def portfolio_list(self):
+        self.client.get("/ops/portfolios")
+
+    @task
+    def portfolio_detail(self):
+        self.client.get("/ops/portfolios/10")
