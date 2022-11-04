@@ -1,7 +1,7 @@
 from flask import Blueprint
-from ops_api.ops.portfolios import views
+from ops_api.ops.portfolio import views
 
-bp = Blueprint("portfolio", __name__)
+bp = Blueprint("portfolio", __name__, url_prefix="/portfolios")
 
 bp.add_url_rule("/", views.portfolio_list)
 bp.add_url_rule("/<int:pk>/", views.get_portfolio)
