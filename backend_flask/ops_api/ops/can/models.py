@@ -1,8 +1,4 @@
-from flask_sqlalchemy import SQLAlchemy
-from ops_api.ops.models import Person
-from ops_api.ops.portfolio.models import Portfolio
-
-db = SQLAlchemy()
+from ops.utils import db
 
 
 class CANArrangementType(db.Model):

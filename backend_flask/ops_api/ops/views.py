@@ -1,26 +1,18 @@
 from flask import Blueprint
 from flask import current_app as app
-from flask import jsonify
-from flask import render_template
-from flask_jwt_extended import current_user
-from flask_jwt_extended import jwt_required
+from flask import jsonify, render_template
+from flask_jwt_extended import current_user, jwt_required
 
 
-bp = Blueprint("root", __name__)
-
-
-@bp.route("/")
 def index():
     app.logger.warning("It's Alive!!!")
     return render_template("index.html")
 
 
-@bp.route("/portfolio_cal", methods=["GET"])
 def port_calc():
     return 42
 
 
-@bp.route("/who_am_i", methods=["GET"])
 @jwt_required()
 def protected():
     # We can now access our sqlalchemy User object via `current_user`.

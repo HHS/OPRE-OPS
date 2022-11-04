@@ -1,9 +1,4 @@
-from decimal import Decimal
-from typing import Optional
-
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
+from ops.utils import db
 
 
 class PortfolioStatus(db.Model):

@@ -1,8 +1,6 @@
 from hmac import compare_digest
 
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
+from ops.utils import db
 
 
 class User(db.Model):

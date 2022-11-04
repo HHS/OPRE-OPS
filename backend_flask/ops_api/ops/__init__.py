@@ -3,7 +3,8 @@ import logging.config
 from flask import Flask
 
 import ops.auth.urls
-from ops import views
+import ops.can.urls
+import ops.urls
 from ops.auth.utils import jwtMgr, oauth
 from ops.user.models import User, db
 
@@ -38,8 +39,9 @@ def create_app(config_overrides=None):
     if config_overrides is not None:
         app.config.from_mapping(config_overrides)
 
-    app.register_blueprint(views.bp)
+    app.register_blueprint(ops.urls.bp)
     app.register_blueprint(ops.auth.urls.bp)
+    app.register_blueprint(ops.can.urls.bp)
 
     jwtMgr.init_app(app)
     db.init_app(app)
