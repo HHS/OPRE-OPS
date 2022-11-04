@@ -1,41 +1,19 @@
-import time
 import traceback
-import uuid
 
 import requests
 
 # from authlib.integrations.requests_client import OAuth2Session
-from authlib.integrations.flask_client import OAuth
-from authlib.jose import jwt
-from flask import Blueprint, jsonify, request
+from flask import jsonify, request
 from flask_jwt_extended import (
-    JWTManager,
     create_access_token,
     create_refresh_token,
     get_jwt_identity,
     jwt_required,
 )
-from ops.default_settings import AUTHLIB_OAUTH_CLIENTS, JWT_PRIVATE_KEY
-from ops.user.models import User
+from ops.auth.utils import get_jwt, oauth
 from ops.user.utils import process_user
 
-oauth = OAuth()
-bp = Blueprint("auth", __name__)
-jwtMgr = JWTManager()
 
-
-@jwtMgr.user_identity_loader
-def user_identity_lookup(user):
-    return user.username
-
-
-@jwtMgr.user_lookup_loader
-def user_lookup_callback(_jwt_header, jwt_data):
-    identity = jwt_data["sub"]
-    return User.query.filter_by(id=identity).one_or_none()
-
-
-@bp.route("/login", methods=["POST"])
 def login():
     authCode = request.json.get("code", None)
 
@@ -46,14 +24,19 @@ def login():
         oauth.register(
             "logingov",
             client_id="urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
-            server_metadata_url="https://idp.int.identitysandbox.gov/.well-known/openid-configuration",
+            server_metadata_url=(
+                "https://idp.int.identitysandbox.gov"
+                "/.well-known/openid-configuration"
+            ),
             client_kwargs={"scope": "openid email profile"},
         )
 
         token = oauth.logingov.fetch_access_token(
             "",
             client_assertion=get_jwt(),
-            client_assertion_type="urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+            client_assertion_type=(
+                "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
+            ),
             grant_type="authorization_code",
             code=authCode,
         )
@@ -91,27 +74,8 @@ def login():
 
 # We are using the `refresh=True` options in jwt_required to only allow
 # refresh tokens to access this route.
-@bp.route("/refresh", methods=["POST"])
 @jwt_required(refresh=True)
 def refresh():
     identity = get_jwt_identity()
     access_token = create_access_token(identity=identity)
     return jsonify(access_token=access_token)
-
-
-def get_jwt(key=JWT_PRIVATE_KEY):
-    if not key:
-        raise NotImplementedError
-
-    client_id = AUTHLIB_OAUTH_CLIENTS["logingov"]["client_id"]
-    payload = {
-        "iss": client_id,
-        "sub": client_id,
-        "aud": "https://idp.int.identitysandbox.gov/api/openid_connect/token",
-        "jti": str(uuid.uuid4()),
-        "exp": int(time.time()) + 300,
-    }
-    header = {"alg": "RS256"}
-    jws = jwt.encode(header, payload, key)
-
-    return jws

@@ -5,11 +5,9 @@ from cryptography.hazmat.primitives.serialization import (
     PrivateFormat,
 )
 from django.http import HttpRequest
-from rest_framework.request import Request
-
-from ops_api.ops.auth.oidc import get_jwt, OidcController
+from ops_api.ops.auth.oidc import OidcController, get_jwt
 from ops_api.ops.contexts.application_context import ApplicationContext, TestContext
-
+from rest_framework.request import Request
 
 ApplicationContext.register_context(TestContext)
 
@@ -29,8 +27,8 @@ def test_auth_post_fails():
 def test_get_jwt_not_none():
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     print(key)
-    bytes = key.private_bytes(
+    encoded = key.private_bytes(
         Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption()
     )
-    print(bytes)
-    assert get_jwt(bytes) is not None
+    print(encoded)
+    assert get_jwt(encoded) is not None

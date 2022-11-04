@@ -2,12 +2,10 @@ import logging.config
 
 from flask import Flask
 
+import ops.auth.urls
 from ops import views
-from ops.auth import oauth
-from ops.auth.oauth import jwtMgr
-from ops.auth.oauth import oauth as oauth_instance
-from ops.user.models import User
-from ops.user.models import db
+from ops.auth.utils import jwtMgr, oauth
+from ops.user.models import User, db
 
 
 def configure_logging():
@@ -41,11 +39,11 @@ def create_app(config_overrides=None):
         app.config.from_mapping(config_overrides)
 
     app.register_blueprint(views.bp)
-    app.register_blueprint(oauth.bp)
+    app.register_blueprint(ops.auth.urls.bp)
 
     jwtMgr.init_app(app)
     db.init_app(app)
-    oauth_instance.init_app(app)
+    oauth.init_app(app)
 
     with app.app_context():
         db.drop_all()
