@@ -6,19 +6,17 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 
-class PortfolioStatus(db.MappedAsDataclass, db.Model):
+class PortfolioStatus(db.Model):
     __tablename__ = "portfolio_status"
-    id: db.Mapped[int] = db.mapped_column(primary_key=True, init=False)
-    name: db.Mapped[str] = db.mapped_column(unique=True)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False, unique=True)
 
 
-class Portfolios(db.MappedAsDataclass, db.Model):
+class Portfolios(db.Model):
     __tablename__ = "portfolio"
-    id: db.Mapped[int] = db.mapped_column(primary_key=True, init=False)
-    name: db.Mapped[str] = db.mapped_column(unique=True)
-    description: db.Mapped[str] = db.mapped_column(insert_default="", default="")
-    status_id: db.Mapped[int] = db.mapped_column(db.ForeignKey("portfolio_status.id"))
-    status = db.Mapped["PortfolioStatus"] = db.relationship(back_populates="portfolios")
-    current_fiscal_year_funding: db.Mapped[Optional[Decimal]] = db.Column(
-        db.Numeric(12, 2),
-    )
+    id = db.mapped_column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False, unique=True)
+    description = db.Column(db.String, default="")
+    status_id = db.Column(db.Integer, db.ForeignKey("portfolio_status.id"))
+    status = db.relationship("PortfolioStatus", back_populates="portfolios")
+    current_fiscal_year_funding = db.Column(db.Numeric(12, 2))

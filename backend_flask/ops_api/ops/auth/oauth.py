@@ -7,19 +7,17 @@ import requests
 # from authlib.integrations.requests_client import OAuth2Session
 from authlib.integrations.flask_client import OAuth
 from authlib.jose import jwt
-from flask import Blueprint
-from flask import jsonify
-from flask import request
-from flask_jwt_extended import JWTManager
-from flask_jwt_extended import create_access_token
-from flask_jwt_extended import create_refresh_token
-from flask_jwt_extended import get_jwt_identity
-from flask_jwt_extended import jwt_required
-
-from ops.default_settings import AUTHLIB_OAUTH_CLIENTS
-from ops.default_settings import JWT_PRIVATE_KEY
+from flask import Blueprint, jsonify, request
+from flask_jwt_extended import (
+    JWTManager,
+    create_access_token,
+    create_refresh_token,
+    get_jwt_identity,
+    jwt_required,
+)
+from ops.default_settings import AUTHLIB_OAUTH_CLIENTS, JWT_PRIVATE_KEY
 from ops.user.models import User
-from ops.user.models import process_user
+from ops.user.utils import process_user
 
 oauth = OAuth()
 bp = Blueprint("auth", __name__)

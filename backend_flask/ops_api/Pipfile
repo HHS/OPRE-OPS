@@ -19,6 +19,7 @@ requests = "*"
 nox = "*"
 ipython = "*"
 types-all = "*"
+pytest-flask = "*"
 
 [requires]
 python_version = "3.10"
