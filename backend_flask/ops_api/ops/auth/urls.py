@@ -1,5 +1,5 @@
 from flask import Blueprint
-from ops_api.ops.auth import views
+from ops.auth import views
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 

@@ -1,9 +1,10 @@
 import traceback
+from typing import Union
 
 import requests
 
 # from authlib.integrations.requests_client import OAuth2Session
-from flask import jsonify, request
+from flask import Response, jsonify, request
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
@@ -14,7 +15,7 @@ from ops.auth.utils import get_jwt, oauth
 from ops.user.utils import process_user
 
 
-def login():
+def login() -> Union[Response, tuple[str, int]]:
     authCode = request.json.get("code", None)
 
     print(f"Got an OIDC request with the code of {authCode}")
@@ -75,7 +76,7 @@ def login():
 # We are using the `refresh=True` options in jwt_required to only allow
 # refresh tokens to access this route.
 @jwt_required(refresh=True)
-def refresh():
+def refresh() -> Response:
     identity = get_jwt_identity()
     access_token = create_access_token(identity=identity)
     return jsonify(access_token=access_token)

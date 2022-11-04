@@ -6,6 +6,7 @@ import ops.auth.urls
 import ops.can.urls
 import ops.portfolio.urls
 import ops.urls
+import ops.user.urls
 from ops.auth.utils import jwtMgr, oauth
 from ops.user.models import User, db
 
