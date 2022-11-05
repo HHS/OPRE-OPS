@@ -6,13 +6,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import store from "./store";
 
-// eslint-disable-next-line import/no-unresolved
-import "@uswds/uswds/css/uswds.min.css";
-import "@uswds/uswds";
-
-import "@fontsource/public-sans";
-
-import "./index.css";
+import "./uswds/css/styles.css";
 
 import Home from "./pages/Home";
 import PortfolioList from "./pages/portfolios/list/PortfolioList";

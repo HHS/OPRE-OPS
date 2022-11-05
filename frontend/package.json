@@ -27,6 +27,7 @@
     "sass-loader": "13.1.0"
   },
   "devDependencies": {
+    "@uswds/compile": "^1.0.0-beta.3",
     "axe-core": "4.5.1",
     "cypress": "10.11.0",
     "cypress-axe": "1.0.0",
@@ -45,7 +46,8 @@
     "test:e2e": "cypress run --config-file ./cypress.config.js --headless",
     "eject": "react-scripts eject",
     "lint": "eslint './src/**'",
-    "cypress:open": "cypress open"
+    "cypress:open": "cypress open",
+    "uswds:update": "npx gulp compile"
   },
   "jest": {
     "coverageThreshold": {
