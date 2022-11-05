@@ -1,12 +1,13 @@
 from sqlalchemy import create_engine, insert, MetaData, delete
 from env.local import DATABASE_URL
 import json5
+import os
 
 engine = create_engine(DATABASE_URL, echo=True, future=True)
 metadata_obj = MetaData()
 metadata_obj.reflect(bind=engine)
 
-portfolio_data = json5.load(open("../../data/data.json5"))
+portfolio_data = json5.load(open(f"data/{os.getenv('DATA')}"))
 
 with engine.connect() as conn:
 
