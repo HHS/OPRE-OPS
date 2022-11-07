@@ -1,5 +1,6 @@
 import time
 import uuid
+from typing import Optional
 
 from authlib.integrations.flask_client import OAuth
 
@@ -14,17 +15,17 @@ oauth = OAuth()
 
 
 @jwtMgr.user_identity_loader
-def user_identity_lookup(user):
+def user_identity_lookup(user: User) -> str:
     return user.username
 
 
 @jwtMgr.user_lookup_loader
-def user_lookup_callback(_jwt_header, jwt_data):
+def user_lookup_callback(_jwt_header: dict, jwt_data: dict) -> Optional[User]:
     identity = jwt_data["sub"]
     return User.query.filter_by(id=identity).one_or_none()
 
 
-def get_jwt(key=JWT_PRIVATE_KEY):
+def get_jwt(key: Optional[str] = JWT_PRIVATE_KEY) -> str:
     if not key:
         raise NotImplementedError
 
