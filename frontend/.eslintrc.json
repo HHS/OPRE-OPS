@@ -17,7 +17,8 @@
     "ignorePatterns": [
         "**/*.css",
         "**/*.svg",
-        "**/*.png"
+        "**/*.png",
+        "**/uswds/**"
     ],
     "settings" : {
         "import/resolver": {
