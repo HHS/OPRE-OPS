@@ -46,6 +46,28 @@ services:
       db:
         condition: service_healthy
 
+  data-import:
+    build:
+      context: ./data-tools/
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    container_name: ops-data-import
+    environment:
+      - ENV=local
+    command: >
+      bash -c "
+      DATA=data.json5 python src/import_static_data/import_data.py
+      "
+
+    volumes:
+      # See below for an explanation of this volume. The same reasoning applies,
+      # but in this case it's so we can run new migrations immediately without
+      # having to rebuild the migration container.
+      - ./backend/ops_api:/home/app/ops_api
+    depends_on:
+      db:
+        condition: service_healthy
+
   backend:
     build:
       context: ./backend/

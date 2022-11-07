@@ -16,4 +16,4 @@ RUN pipenv install --dev --system --deploy
 # of prior steps.
 COPY ./ /home/app/
 
-CMD ["python", "-m"]
+CMD ["bash", "scripts/import_data.sh"]

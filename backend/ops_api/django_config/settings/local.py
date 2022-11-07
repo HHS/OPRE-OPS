@@ -2,7 +2,7 @@
 Configuration for running OPRE OPS locally.
 We use Docker Compose for local development.
 See the project Dockerfile and docker-compose.yml for context.
-These are settings for local development only, not cloud or production environments.
+These are settings for local development only, not cloud or production environment.
 """
 import os
 

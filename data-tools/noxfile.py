@@ -17,4 +17,3 @@ def black(session):
 
     args = session.posargs or python_source
     session.run("black", *args, external=True)
-

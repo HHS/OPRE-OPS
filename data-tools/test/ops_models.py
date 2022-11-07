@@ -1,4 +1,4 @@
-from env.local import DATABASE_URL
+from environment.local import DATABASE_URL
 from sqlalchemy import create_engine, Column, Integer, String, Text, ForeignKey
 from sqlalchemy.orm import declarative_base, relationship
 
@@ -29,7 +29,9 @@ class Portfolios(Base):
     name = Column(String(50), unique=True)
     abbreviation = Column(String(10), unique=True)
     division_id = Column(Integer, ForeignKey("division.id"))
-    division = relationship("Division", back_populates="divisions", cascade="all, delete-orphan")
+    division = relationship(
+        "Division", back_populates="divisions", cascade="all, delete-orphan"
+    )
     description = Column(Text, default="")
     status_id = Column(Integer, ForeignKey("portfolio_status.id"))
     status = relationship("PortfolioStatus", back_populates="portfolios")
