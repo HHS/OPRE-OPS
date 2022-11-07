@@ -16,8 +16,4 @@ class User(db.Model):
     is_superuser = db.Column(db.Boolean, default=False, nullable=False)
     date_joined = db.Column(db.DateTime, default=datetime.utcnow(), nullable=False)
     updated = db.Column(db.DateTime, default=datetime.utcnow(), nullable=False)
-    role = db.Column(db.String(255), index=True, nullable=False)
-
-    # NOTE: In a real application make sure to properly hash and salt passwords
-    def check_password(self, password):
-        return compare_digest(password, "password")
+    role = db.Column(db.String(255), index=True)

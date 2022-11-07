@@ -7,7 +7,7 @@ venv:
 	pipenv shell
 
 run: venv
-	FLASK_APP=ops_api FLASK_DEBUG=true flask run
+	FLASK_APP=ops FLASK_DEBUG=true flask run
 
 format: venv
 	venv/bin/black . && venv/bin/isort .

@@ -5,7 +5,6 @@ from flask import Flask
 import ops.auth.urls
 import ops.can.urls
 import ops.portfolio.urls
-import ops.urls
 import ops.user.urls
 from ops.auth.utils import jwtMgr, oauth
 from ops.user.models import User, db
@@ -41,7 +40,6 @@ def create_app(config_overrides=None):
     if config_overrides is not None:
         app.config.from_mapping(config_overrides)
 
-    app.register_blueprint(ops.urls.bp)
     app.register_blueprint(ops.auth.urls.bp)
     app.register_blueprint(ops.can.urls.bp)
     app.register_blueprint(ops.portfolio.urls.bp)

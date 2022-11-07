@@ -1,10 +1,16 @@
+from sqlalchemy.engine import Connection
 from ops.utils import db
 
-
-class CANArrangementType(db.Model):
-    __tablename__ = "can_arrangement_type"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(), nullable=False, unique=True)
+can_funding_sources = db.Table(
+    "can_funding_sources",
+    db.Model.metadata,
+    db.Column("can_id", db.ForeignKey("can.id"), primary_key=True),
+    db.Column(
+        "funding_source_id",
+        db.ForeignKey("funding_source.id"),
+        primary_key=True,
+    ),
+)
 
 
 class FundingSource(db.Model):
@@ -16,10 +22,15 @@ class FundingSource(db.Model):
         Instead of ""Agency,"" consider ""Funding Partner""
     """
 
-    __tablename__ = "ops_funding_source"
+    __tablename__ = "funding_source"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     nickname = db.Column(db.String(100))
+    cans = db.relationship(
+        "CAN",
+        secondary=can_funding_sources,
+        back_populates="funding_sources",
+    )
 
 
 class FundingPartner(db.Model):
@@ -28,31 +39,38 @@ class FundingPartner(db.Model):
     See docstring for FundingSource
     """
 
-    __tablename__ = "ops_funding_partner"
+    __tablename__ = "funding_partner"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     nickname = db.Column(db.String(100))
 
 
-class CANFiscalYear(db.Model):
-    """Contains the relevant financial info by fiscal year for a given CAN."""
-
-    __tablename__ = "ops_can_fiscal_year"
-    id = db.Column(db.Integer, primary_key=True)
-    can_id = db.Column(db.Integer, db.ForeignKey("can.id"))
-    can = db.relationship("CAN", back_populates="fiscal_years")
-    fiscal_year = db.Column(db.Integer)
-    total_fiscal_year_funding = db.Column(db.Numeric(12, 2))
-    potential_additional_funding = db.Column(db.Numeric(12, 2))
-    can_lead_id = db.Column(db.Integer, db.ForeignKey("person.id"))
-    can_lead = db.relationship("Person", back_populates="fiscal_years")
-    notes = db.Column(db.String, default="")
-
-
-class AgreementTypeChoice(db.Model):
-    __tablename__ = "ops_agreement_type"
+class AgreementType(db.Model):
+    __tablename__ = "agreement_type"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
+
+    @staticmethod
+    def initial_data(
+        target: db.Table,
+        connection: Connection,
+        **kwargs: dict,
+    ) -> None:
+        connection.execute(
+            target.insert(),
+            {"id": 1, "name": "Contract"},
+            {"id": 2, "name": "Grant"},
+            {"id": 3, "name": "Direct Allocation"},
+            {"id": 4, "name": "IAA"},
+            {"id": 5, "name": "Miscellaneous"},
+        )
+
+
+db.event.listen(
+    AgreementType.__table__,
+    "after_create",
+    AgreementType.initial_data,
+)
 
 
 agreement_cans = db.Table(
@@ -60,7 +78,7 @@ agreement_cans = db.Table(
     db.Model.metadata,
     db.Column(
         "agreement_id",
-        db.ForeignKey("ops_agreement.id"),
+        db.ForeignKey("agreement.id"),
         primary_key=True,
     ),
     db.Column("can_id", db.ForeignKey("can.id"), primary_key=True),
@@ -68,41 +86,54 @@ agreement_cans = db.Table(
 
 
 class Agreement(db.Model):
-    __tablename__ = "ops_agreement"
+    __tablename__ = "agreement"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     agreement_type_id = db.Column(
         db.Integer,
-        db.ForeignKey("ops_agreement_type.id"),
+        db.ForeignKey("agreement_type.id"),
     )
-    cans = db.relationship(
-        "CAN",
-        secondary=agreement_cans,
-        back_populates="agreements",
-    )
+    agreement_type = db.relationship("AgreementType")
+    cans = db.relationship("CAN", secondary=agreement_cans, back_populates="agreements")
 
 
 class BudgetLineItem(db.Model):
-    __tablename__ = "ops_budget_line_item"
+    __tablename__ = "budget_line_item"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     fiscal_year = db.Column(db.Integer)
-    agreement_id = db.Column(db.Integer, db.ForeignKey("ops_agreement.id"))
-    agreement = db.relationship("Agreement", back_populates="budget_line_items")
+    agreement_id = db.Column(db.Integer, db.ForeignKey("agreement.id"))
+    agreement = db.relationship(Agreement)
     can_id = db.Column(db.Integer, db.ForeignKey("can.id"))
     can = db.relationship("CAN", back_populates="budget_line_items")
     funding = db.Column(db.Numeric(12, 2))
 
 
-can_funding_sources = db.Table(
-    "can_funding_sources",
-    db.Model.metadata,
-    db.Column("can_id", db.ForeignKey("can.id"), primary_key=True),
-    db.Column(
-        "funding_source_id",
-        db.ForeignKey("ops_funding_source.id"),
-        primary_key=True,
-    ),
+class CANArrangementType(db.Model):
+    __tablename__ = "can_arrangement_type"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(), nullable=False, unique=True)
+
+    @staticmethod
+    def initial_data(
+        target: db.Table,
+        connection: Connection,
+        **kwargs: dict,
+    ) -> None:
+        connection.execute(
+            target.insert(),
+            {"id": 1, "name": "OPRE Appropriation"},
+            {"id": 2, "name": "Cost Share"},
+            {"id": 3, "name": "IAA"},
+            {"id": 4, "name": "IDDA"},
+            {"id": 5, "name": "MOU"},
+        )
+
+
+db.event.listen(
+    CANArrangementType.__table__,
+    "after_create",
+    CANArrangementType.initial_data,
 )
 
 
@@ -119,22 +150,23 @@ class CAN(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     number = db.Column(db.String(30), nullable=False)
     description = db.Column(db.String)
-    purpose = db.Column(default="")
+    purpose = db.Column(db.String, default="")
     nickname = db.Column(db.String(30))
     arrangement_type_id = db.Column(
         db.Integer,
         db.ForeignKey("can_arrangement_type.id"),
     )
-    arrangement_type = db.relationship(
-        "CANArrangementType",
-        back_populates="cans",
-    )
-    funding_source = db.relationship(
-        "FundingSource",
+    arrangement_type = db.relationship(CANArrangementType)
+    funding_sources = db.relationship(
+        FundingSource,
         secondary=can_funding_sources,
         back_populates="cans",
     )
-    authorizer_id = db.Column(db.Integer, db.ForeignKey("ops_funding_partner.id"))
-    authorizer = db.relationship("FundingPartner", back_populates="cans")
+    authorizer_id = db.Column(db.Integer, db.ForeignKey("funding_partner.id"))
+    authorizer = db.relationship(FundingPartner)
     portfolio_id = db.Column(db.Integer, db.ForeignKey("portfolio.id"))
     portfolio = db.relationship("Portfolio", back_populates="cans")
+    budget_line_items = db.relationship("BudgetLineItem", back_populates="can")
+    agreements = db.relationship(
+        "Agreement", secondary=agreement_cans, back_populates="cans"
+    )

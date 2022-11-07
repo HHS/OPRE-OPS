@@ -9,7 +9,7 @@ from cryptography.hazmat.primitives.serialization import (
 def test_auth_post_fails(client):
     data = {"code": "abc1234"}
 
-    res = client.post("http://localhost:8080/auth", json=data)
+    res = client.post("http://localhost:8080/auth/login", json=data)
     assert res == "There was an error."
 
 

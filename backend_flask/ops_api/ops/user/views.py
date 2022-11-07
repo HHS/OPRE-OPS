@@ -1,6 +1,6 @@
 from flask import Response, jsonify
 from ops.user.models import User
-from ops.user.utls import user_dumper
+from ops.user.utils import user_dumper
 from ops.utils import db
 
 

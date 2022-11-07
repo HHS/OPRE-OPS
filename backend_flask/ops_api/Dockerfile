@@ -18,5 +18,8 @@ RUN pipenv install --dev --system --deploy
 # Now copy the rest of the app files, again to better support caching
 # of prior steps.
 COPY ./ /home/app/
+USER root
+RUN chown -R app:app .
+USER app
 
 CMD ["python", "-m", "flask", "run"]

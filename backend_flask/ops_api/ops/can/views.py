@@ -1,17 +1,7 @@
 from flask import Response, jsonify
-from ops.can.models import CAN, CANFiscalYear
-from ops.can.utls import can_dumper
+from ops.can.models import CAN
+from ops.can.utils import can_dumper
 from ops.utils import db
-
-
-def fiscal_year_by_can(can_id: int, fiscal_year: int) -> Response:
-    can = db.session.execute(
-        db.select(CANFiscalYear.can).where(
-            CANFiscalYear.can_id == can_id,
-            CANFiscalYear.fiscal_year == fiscal_year,
-        )
-    ).one()
-    return jsonify(can_dumper(can))
 
 
 def all_cans() -> Response:
