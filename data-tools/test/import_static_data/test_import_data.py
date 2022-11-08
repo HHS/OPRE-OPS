@@ -40,16 +40,16 @@ def test_delete_existing_data_empty():
 
 def test_delete_existing_data():
     mock_conn = mock.MagicMock()
-    delete_existing_data(mock_conn, {"table1": [], "table2": [], "table3": []})
+    delete_existing_data(mock_conn, {"division": [], "portfolio_url": [], "portfolio": []})
     assert mock_conn.execute.call_count == 3
     assert (
-        mock_conn.execute.call_args_list[0].args[0].text == "TRUNCATE table1 CASCADE;"
+        mock_conn.execute.call_args_list[0].args[0].text == "TRUNCATE division CASCADE;"
     )
     assert (
-        mock_conn.execute.call_args_list[1].args[0].text == "TRUNCATE table2 CASCADE;"
+        mock_conn.execute.call_args_list[1].args[0].text == "TRUNCATE portfolio_url CASCADE;"
     )
     assert (
-        mock_conn.execute.call_args_list[2].args[0].text == "TRUNCATE table3 CASCADE;"
+        mock_conn.execute.call_args_list[2].args[0].text == "TRUNCATE portfolio CASCADE;"
     )
 
 
