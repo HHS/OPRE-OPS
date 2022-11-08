@@ -1,6 +1,7 @@
 from django.contrib import admin
-
-from ops_api.ops.cans.models import Agreement, BudgetLineItem, CAN
+from ops_api.ops.cans.models import Agreement
+from ops_api.ops.cans.models import BudgetLineItem
+from ops_api.ops.cans.models import CAN
 from ops_api.ops.cans.models import CANFiscalYear
 from ops_api.ops.cans.models import FundingPartner
 from ops_api.ops.models import Person

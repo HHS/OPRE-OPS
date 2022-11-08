@@ -1,6 +1,5 @@
-import pytest
-
 from ops_api.django_config.settings.helpers import random_string
+import pytest
 
 
 @pytest.mark.parametrize("_length", [10, 256, 9999])

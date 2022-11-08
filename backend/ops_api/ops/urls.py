@@ -1,15 +1,11 @@
 from django.urls import path
-
 from ops_api.ops.auth.oidc import OidcController
 from ops_api.ops.cans.controller import CANFiscalYearByCanListController
 from ops_api.ops.cans.controller import CanListController
 from ops_api.ops.cans.controller import CanReadController
-from ops_api.ops.portfolios.controller import (
-    PortfolioFundingView,
-    PortfolioListController,
-)
+from ops_api.ops.portfolios.controller import PortfolioFundingView
+from ops_api.ops.portfolios.controller import PortfolioListController
 from ops_api.ops.portfolios.controller import PortfolioReadController
-
 
 urlpatterns = [
     path("cans", CanListController.as_view()),

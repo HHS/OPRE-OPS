@@ -1,8 +1,5 @@
+from ops_api.ops.cans.models import FundingPartner
 import pytest
-
-from ops_api.ops.cans.models import (
-    FundingPartner,
-)
 
 
 @pytest.mark.django_db

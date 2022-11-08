@@ -1,12 +1,12 @@
 from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives.serialization import (
-    Encoding,
-    NoEncryption,
-    PrivateFormat,
-)
+from cryptography.hazmat.primitives.serialization import Encoding
+from cryptography.hazmat.primitives.serialization import NoEncryption
+from cryptography.hazmat.primitives.serialization import PrivateFormat
 from django.http import HttpRequest
-from ops_api.ops.auth.oidc import OidcController, get_jwt
-from ops_api.ops.contexts.application_context import ApplicationContext, TestContext
+from ops_api.ops.auth.oidc import get_jwt
+from ops_api.ops.auth.oidc import OidcController
+from ops_api.ops.contexts.application_context import ApplicationContext
+from ops_api.ops.contexts.application_context import TestContext
 from rest_framework.request import Request
 
 ApplicationContext.register_context(TestContext)

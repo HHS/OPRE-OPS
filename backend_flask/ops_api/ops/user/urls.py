@@ -1,5 +1,4 @@
 from flask import Blueprint
-
 from ops.user import views
 
 bp = Blueprint("users", __name__, url_prefix="/users")

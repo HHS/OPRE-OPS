@@ -1,10 +1,12 @@
 from importlib import import_module
 
 from django.apps import apps
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
+from django.core.management.base import CommandError
 from django.core.management.color import no_style
 from django.core.management.sql import sql_flush
-from django.db import connections, DEFAULT_DB_ALIAS
+from django.db import connections
+from django.db import DEFAULT_DB_ALIAS
 
 
 class Command(BaseCommand):

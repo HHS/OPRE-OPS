@@ -1,13 +1,10 @@
 import time
-import uuid
 from typing import Optional
+import uuid
 
 from authlib.integrations.flask_client import OAuth
-
-# from authlib.integrations.requests_client import OAuth2Session
 from authlib.jose import jwt
 from flask_jwt_extended import JWTManager
-
 from ops.default_settings import AUTHLIB_OAUTH_CLIENTS
 from ops.default_settings import JWT_PRIVATE_KEY
 from ops.user.models import User

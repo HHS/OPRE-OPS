@@ -10,7 +10,6 @@ import os
 from ops_api.django_config.settings.common import *  # noqa: F403, F401
 from ops_api.django_config.settings.helpers.random_string import generate_random_string
 
-
 # Local database config for use with Docker Compose
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 

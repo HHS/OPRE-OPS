@@ -3,12 +3,11 @@ import time
 import uuid
 
 from django.conf import settings
+from ops_api.ops.contexts.application_context import ApplicationContext
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from ops_api.ops.contexts.application_context import ApplicationContext
 
 
 class OidcController(APIView):

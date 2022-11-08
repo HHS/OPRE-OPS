@@ -1,5 +1,4 @@
 from flask import Blueprint
-
 from ops.can import views
 
 bp = Blueprint("cans", __name__, url_prefix="/cans")

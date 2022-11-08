@@ -1,5 +1,4 @@
 from flask import Blueprint
-
 from ops.portfolio import views
 
 bp = Blueprint("portfolio", __name__, url_prefix="/portfolios")

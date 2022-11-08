@@ -1,11 +1,10 @@
+from ops_api.ops.cans.controller import CANSerializer
+from ops_api.ops.portfolios.models import Portfolio
 from rest_framework import serializers
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from ops_api.ops.cans.controller import CANSerializer
-from ops_api.ops.portfolios.models import Portfolio
 
 
 class PortfolioSerializer(serializers.ModelSerializer):

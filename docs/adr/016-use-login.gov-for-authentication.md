@@ -4,7 +4,7 @@ Date: 2022-10-04
 
 ## Decision
 
-Login.gov will be used as the central OIDC Provider for user authentication for OPS. 
+Login.gov will be used as the central OIDC Provider for user authentication for OPS.
 
 ## Status
 

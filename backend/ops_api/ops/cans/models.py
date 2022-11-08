@@ -1,5 +1,4 @@
 from django.db import models
-
 from ops_api.ops.models import Person
 from ops_api.ops.portfolios.models import Portfolio
 

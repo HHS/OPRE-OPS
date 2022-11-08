@@ -1,4 +1,5 @@
-from abc import ABC, abstractclassmethod
+from abc import ABC
+from abc import abstractclassmethod
 
 from authlib.integrations.django_client import OAuth
 from authlib.jose import jwt

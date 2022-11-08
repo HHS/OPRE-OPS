@@ -9,11 +9,10 @@ from flask_jwt_extended import create_access_token
 from flask_jwt_extended import create_refresh_token
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
-import requests
-
 from ops.auth.utils import get_jwt
 from ops.auth.utils import oauth
 from ops.user.utils import process_user
+import requests
 
 
 def login() -> Union[Response, tuple[str, int]]:

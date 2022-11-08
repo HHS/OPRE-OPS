@@ -1,6 +1,5 @@
 from flask import jsonify
 from flask import Response
-
 from ops.can.models import CAN
 from ops.can.utils import can_dumper
 

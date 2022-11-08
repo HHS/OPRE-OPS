@@ -1,6 +1,6 @@
 from django.apps import AppConfig
-
-from ops_api.ops.contexts.application_context import ApplicationContext, DeployedContext
+from ops_api.ops.contexts.application_context import ApplicationContext
+from ops_api.ops.contexts.application_context import DeployedContext
 
 
 class OpsSiteConfig(AppConfig):

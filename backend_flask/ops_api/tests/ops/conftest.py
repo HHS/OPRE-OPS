@@ -1,6 +1,5 @@
-import pytest
-
 from ops import create_app
+import pytest
 
 
 @pytest.fixture

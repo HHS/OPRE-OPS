@@ -1,9 +1,8 @@
+from ops_api.ops.cans.models import CAN
+from ops_api.ops.cans.models import CANFiscalYear
 from rest_framework import serializers
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import RetrieveAPIView
-
-from ops_api.ops.cans.models import CAN
-from ops_api.ops.cans.models import CANFiscalYear
 
 
 class CANSerializer(serializers.ModelSerializer):
