@@ -31,7 +31,7 @@ repos:
     hooks:
       - id: nox-lint
         name: nox-lint
-        entry: bash -c 'cd ./backend/ && pipenv run nox -s lint'
+        entry: bash -c 'cd ./backend_flask/ && pipenv run nox -s lint'
         language: system
         types:
          - python
