@@ -1,5 +1,7 @@
 import os
+from unittest.mock import call
 from unittest import mock
+from unittest.mock import MagicMock
 
 import sqlalchemy.engine
 import pytest_mock
@@ -19,8 +21,15 @@ def test_init_db():
     assert isinstance(metadata_obj, sqlalchemy.MetaData)
 
 
-@mock.patch("src.import_static_data.import_data.load_module")
-def test_get_config(mocked_func):
-    get_config("dev")
-    assert mocked_func.call_count == 1
-    assert mocked_func.assert_called_once_with("environment.dev")
+def test_get_config_default():
+    with mock.patch("src.import_static_data.import_data.load_module") as mock_load:
+        get_config()
+        assert mock_load.call_count == 1
+        assert mock_load.call_args_list[0].args == ("environment.dev",)
+
+
+def test_get_config_prod():
+    with mock.patch("src.import_static_data.import_data.load_module") as mock_load:
+        get_config("cloudgov")
+        assert mock_load.call_count == 1
+        assert mock_load.call_args_list[0].args == ("environment.cloudgov",)
