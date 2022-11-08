@@ -46,6 +46,7 @@ def get_data_to_import(file_name: str = os.getenv("DATA")) -> Dict:
     return json5.load(open(f"data/{file_name}"))
 
 
+# nosemgrep
 def delete_existing_data(conn: sqlalchemy.engine.Engine, portfolio_data: Dict):
     for ops_table in portfolio_data:
         if ops_table not in ALLOWED_TABLES:
