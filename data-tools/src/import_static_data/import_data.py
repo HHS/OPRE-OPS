@@ -46,7 +46,6 @@ def delete_existing_data(conn: sqlalchemy.engine.Engine, portfolio_data: Dict):
     for ops_table in portfolio_data:
         if ops_table not in ALLOWED_TABLES:
             raise RuntimeError("Table not allowed")
-        # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
         conn.execute(text(f"TRUNCATE {ALLOWED_TABLES.get(ops_table)} CASCADE;"))
 
 
