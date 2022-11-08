@@ -1,5 +1,4 @@
 from datetime import datetime
-from hmac import compare_digest
 
 from ops.utils import db
 

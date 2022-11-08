@@ -4,12 +4,6 @@ RUN pip install --no-cache-dir --upgrade pip==22.2.2 pipenv==2022.10.12 && usera
 USER app
 WORKDIR /home/app
 
-ENV PYTHONPATH=/home/app
-ENV PYTHONUNBUFFERED=1
-ENV FLASK_APP=ops
-ENV FLASK_DEBUG=true
-ENV FLASK_PORT=5001
-
 # Copy the Pipfile(s) only, so that we can cache dependencies
 # in the next step
 COPY ./Pipfile ./Pipfile.lock /home/app/
@@ -22,4 +16,11 @@ USER root
 RUN chown -R app:app .
 USER app
 
+ENV PYTHONPATH=/home/app
+ENV PYTHONUNBUFFERED=1
+ENV FLASK_APP=ops
+ENV FLASK_DEBUG=true
+ENV FLASK_PORT=8001
+
 CMD ["python", "-m", "flask", "run"]
+#CMD ["gunicorn", "--chdir", "/home/app", "-b", "0.0.0.0:5001", "ops:create_app()"]

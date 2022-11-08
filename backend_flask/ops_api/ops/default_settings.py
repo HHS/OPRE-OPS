@@ -1,11 +1,10 @@
-import os
 from datetime import timedelta
+import os
 
 DEBUG = False  # make sure DEBUG is off unless enabled explicitly otherwise
-JWT_SECRET_KEY = "super-secret-yay"
 SQLALCHEMY_DATABASE_URI = "sqlite:///ops_test.db"
 SQLALCHEMY_TRACK_MODIFICATIONS = False
-FLASK_PORT = 5001
+FLASK_PORT = 8001
 AUTHLIB_OAUTH_CLIENTS = {
     "logingov": {
         "server_metadata_url": "https://idp.int.identitysandbox.gov/.well-known/openid-configuration",

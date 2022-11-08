@@ -1,17 +1,18 @@
 import traceback
 from typing import Union
 
+# from authlib.integrations.requests_client import OAuth2Session
+from flask import jsonify
+from flask import request
+from flask import Response
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_refresh_token
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
 import requests
 
-# from authlib.integrations.requests_client import OAuth2Session
-from flask import Response, jsonify, request
-from flask_jwt_extended import (
-    create_access_token,
-    create_refresh_token,
-    get_jwt_identity,
-    jwt_required,
-)
-from ops.auth.utils import get_jwt, oauth
+from ops.auth.utils import get_jwt
+from ops.auth.utils import oauth
 from ops.user.utils import process_user
 
 

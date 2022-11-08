@@ -1,13 +1,17 @@
 import logging.config
 
 from flask import Flask
-
 import ops.auth.urls
+from ops.auth.utils import jwtMgr
+from ops.auth.utils import oauth
+from ops.can.models import CAN
+from ops.can.models import FundingPartner
 import ops.can.urls
+from ops.portfolio.models import Portfolio
 import ops.portfolio.urls
+from ops.user.models import db
+from ops.user.models import User
 import ops.user.urls
-from ops.auth.utils import jwtMgr, oauth
-from ops.user.models import User, db
 
 
 def configure_logging():
@@ -43,17 +47,40 @@ def create_app(config_overrides=None):
     app.register_blueprint(ops.auth.urls.bp)
     app.register_blueprint(ops.can.urls.bp)
     app.register_blueprint(ops.portfolio.urls.bp)
+    app.register_blueprint(ops.user.urls.bp)
 
     jwtMgr.init_app(app)
     db.init_app(app)
     oauth.init_app(app)
 
+    # Add some basic data to test with
+    # TODO change this out for a proper fixture.
     with app.app_context():
         db.drop_all()
         db.create_all()
         db.session.add(User(email="BWayne@gmail.com", username="batman"))
         db.session.add(User(email="aTan@gmail.com", username="panther"))
         db.session.add(User(email="whoyaknow@gmail.com", username="little_sapphire"))
+        db.session.add(
+            Portfolio(
+                name="WRGB (CCE)",
+                description="",
+                status_id=1,
+                current_fiscal_year_funding=814000,
+            )
+        )
+        db.session.add(FundingPartner(name="Funder1", nickname="Funder1"))
+        db.session.add(
+            CAN(
+                number="G99WRGB",
+                description="Secondary Analyses Data On Child Care & Early Edu",
+                purpose="Secondary Analyses of Child Care and Early Education Data (2022)",
+                nickname="CCE",
+                arrangement_type_id="1",
+                authorizer_id=1,
+                portfolio_id=1,
+            )
+        )
         db.session.commit()
 
     return app

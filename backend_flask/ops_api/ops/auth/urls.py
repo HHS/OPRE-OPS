@@ -1,4 +1,5 @@
 from flask import Blueprint
+
 from ops.auth import views
 
 bp = Blueprint("authenticate", __name__, url_prefix="/auth")

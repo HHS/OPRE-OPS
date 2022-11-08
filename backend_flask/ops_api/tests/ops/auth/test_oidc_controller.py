@@ -1,9 +1,9 @@
 from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives.serialization import (
-    Encoding,
-    NoEncryption,
-    PrivateFormat,
-)
+from cryptography.hazmat.primitives.serialization import Encoding
+from cryptography.hazmat.primitives.serialization import NoEncryption
+from cryptography.hazmat.primitives.serialization import PrivateFormat
+
+from ops.auth.utils import get_jwt
 
 
 def test_auth_post_fails(client):
@@ -13,11 +13,11 @@ def test_auth_post_fails(client):
     assert res == "There was an error."
 
 
-# def test_get_jwt_not_none():
-#     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-#     print(key)
-#     encoded = key.private_bytes(
-#         Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption()
-#     )
-#     print(encoded)
-#     assert get_jwt(encoded) is not None
+def test_get_jwt_not_none():
+    key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    print(key)
+    encoded = key.private_bytes(
+        Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption()
+    )
+    print(encoded)
+    assert get_jwt(encoded) is not None

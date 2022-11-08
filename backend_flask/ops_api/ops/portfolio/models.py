@@ -1,5 +1,6 @@
-from ops.utils import db
 from sqlalchemy.engine import Connection
+
+from ops.utils import db
 
 
 class PortfolioStatus(db.Model):

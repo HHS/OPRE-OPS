@@ -1,5 +1,7 @@
-from flask import Response, jsonify
+from flask import jsonify
+from flask import Response
 from flask_sqlalchemy import SQLAlchemy
+
 from ops.portfolio.models import Portfolio
 from ops.portfolio.utils import portfolio_dumper
 

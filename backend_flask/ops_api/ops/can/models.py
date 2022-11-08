@@ -1,4 +1,5 @@
 from sqlalchemy.engine import Connection
+
 from ops.utils import db
 
 can_funding_sources = db.Table(

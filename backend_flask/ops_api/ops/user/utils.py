@@ -1,5 +1,4 @@
 from datetime import datetime
-from hmac import compare_digest
 from typing import Optional, TypedDict
 
 from ops.user.models import User
