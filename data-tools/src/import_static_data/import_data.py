@@ -46,12 +46,11 @@ def get_data_to_import(file_name: str = os.getenv("DATA")) -> Dict:
     return json5.load(open(f"data/{file_name}"))
 
 
-# nosemgrep
 def delete_existing_data(conn: sqlalchemy.engine.Engine, portfolio_data: Dict):
     for ops_table in portfolio_data:
         if ops_table not in ALLOWED_TABLES:
             raise RuntimeError("Table not allowed")
-        conn.execute(text(f"TRUNCATE {ALLOWED_TABLES.get(ops_table)} CASCADE;"))
+        conn.execute(text(f"TRUNCATE {ALLOWED_TABLES.get(ops_table)} CASCADE;"))  # nosemgrep
 
 
 def load_new_data(
