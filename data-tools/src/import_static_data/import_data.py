@@ -58,7 +58,7 @@ def import_data(engine, metadata_obj, portfolio_data):
 if __name__ == "__main__":
     import importlib
 
-    global_configuration = get_config(module_loader=importlib.import_module)
+    global_configuration = get_config()
     global_data = get_data_to_import()
     global_engine, global_metadata_obj = init_db(global_configuration.DATABASE_URL)
 

@@ -15,5 +15,3 @@ RUN pipenv install --dev --system --deploy
 # Now copy the rest of the app files, again to better support caching
 # of prior steps.
 COPY ./ /home/app/
-
-CMD ["bash", "scripts/import_data.sh"]
