@@ -11,14 +11,10 @@ ALLOWED_TABLES = {
     "division": "division",
     "portfolio_url": "portfolio_url",
     "portfolio": "portfolio",
-    "portfolio_status": "portfolio_status"
+    "portfolio_status": "portfolio_status",
 }
 
-ALLOWED_ENVIRONMENTS = [
-    "environment.dev",
-    "environment.local",
-    "environment.cloudgov"
-]
+ALLOWED_ENVIRONMENTS = ["environment.dev", "environment.local", "environment.cloudgov"]
 
 
 def init_db(database_url: str) -> Tuple[sqlalchemy.engine.Engine, sqlalchemy.MetaData]:
@@ -50,7 +46,8 @@ def delete_existing_data(conn: sqlalchemy.engine.Engine, portfolio_data: Dict):
     for ops_table in portfolio_data:
         if ops_table not in ALLOWED_TABLES:
             raise RuntimeError("Table not allowed")
-        conn.execute(text(f"TRUNCATE {ALLOWED_TABLES.get(ops_table)} CASCADE;"))  # nosemgrep
+        # nosemgrep
+        conn.execute(text(f"TRUNCATE {ALLOWED_TABLES.get(ops_table)} CASCADE;"))
 
 
 def load_new_data(
