@@ -4,12 +4,10 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-ipython = "==8.6.0"
 sqlalchemy = "==1.4.42"
 pandas = "==1.5.1"
 json5 = "==0.9.10"
 psycopg2-binary = "==2.9.5"
-pytest-postgresql = "*"
 
 [dev-packages]
 black = "==22.10.0"
@@ -21,8 +19,8 @@ flake8-bugbear = "==22.10.27"
 flake8-bandit = "==4.1.1"
 pytest = "==7.2.0"
 pytest-cov = "==4.0.0"
-psycopg = "*"
-pytest-mock = "*"
+pytest-mock = "==3.10.0"
+ipython = "==8.6.0"
 
 [requires]
 python_version = "3.9"
