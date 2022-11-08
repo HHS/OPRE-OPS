@@ -7,12 +7,12 @@ import os
 import importlib
 
 # Whitelisting here to help mitigate a SQL Injection attack from the JSON data
-ALLOWED_TABLES = [
-    "division",
-    "portfolio_url",
-    "portfolio",
-    "portfolio_status"
-]
+ALLOWED_TABLES = {
+    "division": "division",
+    "portfolio_url": "portfolio_url",
+    "portfolio": "portfolio",
+    "portfolio_status": "portfolio_status"
+}
 
 ALLOWED_ENVIRONMENTS = [
     "environment.dev",
@@ -50,7 +50,7 @@ def delete_existing_data(conn: sqlalchemy.engine.Engine, portfolio_data: Dict):
     for ops_table in portfolio_data:
         if ops_table not in ALLOWED_TABLES:
             raise RuntimeError("Table not allowed")
-        conn.execute(text(f"TRUNCATE {ops_table} CASCADE;"))
+        conn.execute(text(f"TRUNCATE {ALLOWED_TABLES.get(ops_table)} CASCADE;"))
 
 
 def load_new_data(
