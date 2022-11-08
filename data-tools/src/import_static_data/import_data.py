@@ -6,6 +6,20 @@ import json5
 import os
 import importlib
 
+# Whitelisting here to help mitigate a SQL Injection attack from the JSON data
+ALLOWED_TABLES = [
+    "division",
+    "portfolio_url",
+    "portfolio",
+    "portfolio_status"
+]
+
+ALLOWED_ENVIRONMENTS = [
+    "environment.dev",
+    "environment.local",
+    "environment.cloudgov"
+]
+
 
 def init_db(database_url: str) -> Tuple[sqlalchemy.engine.Engine, sqlalchemy.MetaData]:
     engine = create_engine(database_url, echo=True, future=True)
@@ -16,6 +30,8 @@ def init_db(database_url: str) -> Tuple[sqlalchemy.engine.Engine, sqlalchemy.Met
 
 
 def load_module(module_name: str):
+    if module_name not in ALLOWED_ENVIRONMENTS:
+        raise RuntimeError("Unknown environment")
     return importlib.import_module(module_name)
 
 
@@ -32,6 +48,8 @@ def get_data_to_import(file_name: str = os.getenv("DATA")) -> Dict:
 
 def delete_existing_data(conn: sqlalchemy.engine.Engine, portfolio_data: Dict):
     for ops_table in portfolio_data:
+        if ops_table not in ALLOWED_TABLES:
+            raise RuntimeError("Table not allowed")
         conn.execute(text(f"TRUNCATE {ops_table} CASCADE;"))
 
 
