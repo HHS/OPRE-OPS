@@ -21,18 +21,18 @@ jobs:
         env:
           SEMGREP_RULES: "p/default"
 
-        # There's a bug in semgrep that even if there are ignored findings, there will still be a SARIF file created that has the findings.
-        # So, if we get to this step, the previous scan step succeeded, and we actually don't have any findings.
-        # Delete the findings in the SARIF file.
-      - name: Install jq
-        run: |
-          wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -O /usr/local/bin/jq
-          chmod +x /usr/local/bin/jq
+      #   # There's a bug in semgrep that even if there are ignored findings, there will still be a SARIF file created that has the findings.
+      #   # So, if we get to this step, the previous scan step succeeded, and we actually don't have any findings.
+      #   # Delete the findings in the SARIF file.
+      # - name: Install jq
+      #   run: |
+      #     wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -O /usr/local/bin/jq
+      #     chmod +x /usr/local/bin/jq
 
-      - name: SARIF clean-up
-        run: |
-          cat ./semgrep.sarif | jq 'del(.runs[].results[])' > semgrep_clean.sarif
-          echo "SEMGREP_TO_UPLOAD=semgrep_clean.sarif" >> $GITHUB_ENV
+      # - name: SARIF clean-up
+      #   run: |
+      #     cat ./semgrep.sarif | jq 'del(.runs[].results[])' > semgrep_clean.sarif
+      #     echo "SEMGREP_TO_UPLOAD=semgrep_clean.sarif" >> $GITHUB_ENV
 
       - name: Upload SARIF file for GitHub Advanced Security Dashboard
         uses: github/codeql-action/upload-sarif@v2
