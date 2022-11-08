@@ -1,4 +1,5 @@
 import logging.config
+from typing import Optional
 
 from flask import Flask
 import ops.auth.urls
@@ -14,7 +15,7 @@ from ops.user.models import User
 import ops.user.urls
 
 
-def configure_logging():
+def configure_logging() -> None:
     logging.config.dictConfig(
         {
             "version": 1,
@@ -35,7 +36,7 @@ def configure_logging():
     )
 
 
-def create_app(config_overrides=None):
+def create_app(config_overrides: Optional[dict] = None) -> Flask:
     configure_logging()  # should be configured before any access to app.logger
     app = Flask(__name__)
     app.config.from_object("ops.default_settings")
