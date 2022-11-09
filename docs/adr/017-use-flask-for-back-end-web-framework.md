@@ -23,15 +23,33 @@ Using a web framework, we won't be starting off writing code on a totally blank 
 
 ### Tradeoffs
 
-After looking at the out-of-the-box features of Django more thoroughly and realizing that we would have to build work-arounds for almost all of them to make the OPS system work as desired (like, for instance, the user management system). Key points were:
+After looking at the out-of-the-box features of Django more thoroughly and realizing that we would have to build work-arounds for almost all of them to make the OPS system work as desired (like, for instance, the user management system).
+
+Key points were:
 
 * **Multiple work-arounds**: The extra pieces of Django would essentially be "dead weight" to the system, not to mention extra complicated by having to build such work-arounds rather than just writing what we need the first time. The Django Admin interface was completely to be bypassed, as an example.
-* **Lightweight Framework**: Flask, beuing much more lightweight, allows us to pick and choose from the best libraries in the Python stack, while removing the bulk of the Django "dead weight" away, rather than having unused code sitting around in the application.
+* **Lightweight Framework**: Flask, being much more lightweight, allows us to pick and choose from the best libraries in the Python stack, while removing the bulk of the Django "dead weight" away, rather than having unused code sitting around in the application.
 * **Security**: The unused Django code would essentially open an avenue for possible security problems in the future with the application. By not having the unused code in our application, it ensures that unused code cannot be used to compromose the system.
 
 With Flask, we also are using the SQLAlchemy database abstraction layer, which is a popular framework used by multiple large Python projects. The default server for both Django and Flask are not production-ready, and both would need to have another web server to run, like Gunicorn.
 
 Flask + SQLAlchemy gives more option-enabling flexibility with the application, where Django would require too many work-arounds to be beneficial. As such, we have decided to convert the existing codebase to Flask. We decided it would be best to do it before there is very much code, so the transition would be more painless and smoother.
+
+To address some of the counter-points against Flask in the previous ADR [005-use-django-for-back-end-web-framework](./005-use-django-for-back-end-web-framework.md):
+```
+It does not include a database abstraction layer out of the box
+```
+The fact that Django does include an ORM out of the box is nice from an initial startup step; but does not offer much from an option-enabling standpoint; where you're now locked into what Django provides. In addition the default `migrations` is cumbersome and error prone in a production environment at times.
+
+```
+requires extensive further configuration to make applications production-ready
+```
+I feel like this is semi-opinionated, as Django also requires `extensive` configuration to make it production-ready. This is true for most frameworks in fact, and making things production-ready shouldn't rely on defaults, and should be considered carefully and reviewed by the product team prior to deployment.
+
+```
+The default server bundled with Flask is not production-ready
+```
+The same applies with the Django default server. As above, many configuration considerations should be made. And because this is an API only backend, there's no need for the built-in template engine of Django. In either case, `gunicorn` or `uvicorn` were going to be used.
 
 ## Decision
 
