@@ -13,7 +13,7 @@ export const getPortfolioFundingAndSetState = (portfolioId, fiscalYear) => {
     return async (dispatch, getState) => {
         const data = await ApplicationContext.get()
             .helpers()
-            .callBackend(`/ops/portfolios/${portfolioId}/calcFunding`, "get", {}, { fiscal_year: fiscalYear });
+            .callBackend(`/ops/portfolios/${portfolioId}/calcFunding/`, "get", {}, { fiscal_year: fiscalYear });
 
         dispatch(setPortfolioFunding(data));
     };
