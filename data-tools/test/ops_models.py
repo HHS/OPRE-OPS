@@ -46,4 +46,11 @@ class PortfolioUrl(Base):
     url = Column(String)
 
 
+class FundingPartner(Base):
+    __tablename__ = "funding_partner"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    nickname = Column(String(100))
+
+
 Base.metadata.create_all(engine)

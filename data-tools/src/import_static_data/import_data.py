@@ -4,15 +4,16 @@ import sqlalchemy.engine
 from sqlalchemy import create_engine, insert, MetaData, text
 import json5
 import os
-import importlib
+
 
 # Whitelisting here to help mitigate a SQL Injection attack from the JSON data
-ALLOWED_TABLES = {
-    "division": "division",
-    "portfolio_url": "portfolio_url",
-    "portfolio": "portfolio",
-    "portfolio_status": "portfolio_status",
-}
+ALLOWED_TABLES = [
+    "division",
+    "portfolio_url",
+    "portfolio",
+    "portfolio_status",
+    "funding_partner"
+]
 
 ALLOWED_ENVIRONMENTS = ["environment.dev", "environment.local", "environment.cloudgov"]
 
@@ -40,7 +41,7 @@ def get_config(environment_name: str = os.getenv("ENV")):
 
 
 def get_data_to_import(file_name: str = os.getenv("DATA")) -> Dict:
-    return json5.load(open(f"data/{file_name}"))
+    return json5.load(open(file_name))
 
 
 def delete_existing_data(conn: sqlalchemy.engine.Engine, portfolio_data: Dict):
@@ -48,7 +49,7 @@ def delete_existing_data(conn: sqlalchemy.engine.Engine, portfolio_data: Dict):
         if ops_table not in ALLOWED_TABLES:
             raise RuntimeError("Table not allowed")
         # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
-        conn.execute(text(f"TRUNCATE {ALLOWED_TABLES.get(ops_table)} CASCADE;"))
+        conn.execute(text(f"TRUNCATE {ops_table} CASCADE;"))
 
 
 def load_new_data(

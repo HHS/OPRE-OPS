@@ -56,7 +56,8 @@ services:
       - ENV=local
     command: >
       bash -c "
-      DATA=data.json5 python src/import_static_data/import_data.py
+      DATA=./data/data.json5 python src/import_static_data/import_data.py &&
+      DATA=./data/funding_partner_data.json5 python src/import_static_data/import_data.py
       "
 
     volumes:
