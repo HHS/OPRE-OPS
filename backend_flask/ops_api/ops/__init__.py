@@ -40,7 +40,7 @@ def configure_logging() -> None:
 def create_app(config_overrides: Optional[dict] = None) -> Flask:
     configure_logging()  # should be configured before any access to app.logger
     app = Flask(__name__)
-
+    CORS(app)
     app.config.from_object("ops.default_settings")
     app.config.from_prefixed_env()
 
@@ -51,6 +51,9 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     app.register_blueprint(ops.can.urls.bp)
     app.register_blueprint(ops.portfolio.urls.bp)
     app.register_blueprint(ops.user.urls.bp)
+
+    # CORS(ops.can.urls.bp)
+    # CORS(ops.portfolio.urls.bp)
 
     jwtMgr.init_app(app)
     db.init_app(app)
@@ -86,12 +89,4 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
         )
         db.session.commit()
 
-    CORS(
-        app,
-        origins=[
-            "http://localhost:3000",
-            "https://*.app.cloud.gov",
-            "https://*.fr.cloud.gov",
-        ],
-    )
     return app
