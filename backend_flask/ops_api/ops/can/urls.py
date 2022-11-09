@@ -1,7 +1,10 @@
 from flask import Blueprint
+from flask_cors import CORS
 from ops.can import views
 
-bp = Blueprint("cans", __name__, url_prefix="/cans")
+bp = Blueprint("cans", __name__, url_prefix="/ops/cans")
 
 bp.add_url_rule("/", view_func=views.all_cans)
 bp.add_url_rule("/<int:pk>", view_func=views.load_can)
+
+CORS(bp)

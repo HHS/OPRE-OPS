@@ -4,7 +4,7 @@ import os
 DEBUG = False  # make sure DEBUG is off unless enabled explicitly otherwise
 SQLALCHEMY_DATABASE_URI = "sqlite:///ops_test.db"
 SQLALCHEMY_TRACK_MODIFICATIONS = False
-FLASK_PORT = 8001
+FLASK_PORT = 8080
 AUTHLIB_OAUTH_CLIENTS = {
     "logingov": {
         "server_metadata_url": "https://idp.int.identitysandbox.gov/.well-known/openid-configuration",

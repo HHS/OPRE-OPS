@@ -5,6 +5,7 @@ from ops.portfolio.models import Portfolio
 
 
 class PortfolioDict(TypedDict):
+    id: int
     name: str
     description: Optional[str]
     status: Optional[str]
@@ -13,6 +14,7 @@ class PortfolioDict(TypedDict):
 
 def portfolio_dumper(portfolio: Portfolio) -> PortfolioDict:
     return {
+        "id": portfolio.id,
         "name": portfolio.name,
         "description": portfolio.description,
         "status": portfolio.status.name,

@@ -2,6 +2,7 @@ import logging.config
 from typing import Optional
 
 from flask import Flask
+from flask_cors import CORS
 import ops.auth.urls
 from ops.auth.utils import jwtMgr
 from ops.auth.utils import oauth
@@ -39,6 +40,7 @@ def configure_logging() -> None:
 def create_app(config_overrides: Optional[dict] = None) -> Flask:
     configure_logging()  # should be configured before any access to app.logger
     app = Flask(__name__)
+
     app.config.from_object("ops.default_settings")
     app.config.from_prefixed_env()
 
@@ -84,4 +86,12 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
         )
         db.session.commit()
 
+    CORS(
+        app,
+        origins=[
+            "http://localhost:3000",
+            "https://*.app.cloud.gov",
+            "https://*.fr.cloud.gov",
+        ],
+    )
     return app
