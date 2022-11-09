@@ -13,7 +13,8 @@ ALLOWED_TABLES = [
     "portfolio",
     "portfolio_status",
     "funding_partner",
-    "funding_source"
+    "funding_source",
+    "users"
 ]
 
 ALLOWED_ENVIRONMENTS = ["environment.dev", "environment.local", "environment.cloudgov"]
@@ -50,7 +51,7 @@ def delete_existing_data(conn: sqlalchemy.engine.Engine, portfolio_data: Dict):
         if ops_table not in ALLOWED_TABLES:
             raise RuntimeError("Table not allowed")
         # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
-        conn.execute(text(f"TRUNCATE {ops_table} CASCADE;"))
+        conn.execute(text(f"TRUNCATE TABLE {ops_table} CASCADE;"))
 
 
 def load_new_data(

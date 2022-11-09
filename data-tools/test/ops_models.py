@@ -1,5 +1,7 @@
+from datetime import datetime
+
 from environment.dev import DATABASE_URL
-from sqlalchemy import create_engine, Column, Integer, String, Text, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Text, ForeignKey, DateTime, func
 from sqlalchemy.orm import declarative_base, relationship
 
 # Models here are for testing/development purposes while backend is being
@@ -62,6 +64,19 @@ class FundingSource(Base):
         "CAN",
         back_populates="funding_sources",
     )
+
+
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True)
+    oidc_id = Column(String(128), unique=True, index=True)
+    email = Column(String, index=True, nullable=False)
+    first_name = Column(String)
+    last_name = Column(String)
+    date_joined = Column(DateTime, server_default=func.now())
+    updated = Column(DateTime, onupdate=func.now())
+    role = Column(String(255), index=True)
+    division = Column(Integer, ForeignKey("division.id"))
 
 
 Base.metadata.create_all(engine)
