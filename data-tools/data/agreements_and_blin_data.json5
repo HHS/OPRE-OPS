@@ -1,0 +1,38 @@
+{
+  "agreement_type": [
+    {
+      id: 1,
+      name: "Contract"
+    },
+    {
+      id: 2,
+      name: "Grant"
+    },
+    {
+      id: 3,
+      name: "Direct Allocation"
+    },
+    {
+      id: 4,
+      name: "IAA"
+    },
+    {
+      id: 5,
+      name: "Miscellaneous"
+    }
+  ],
+  "agreement": [
+    {
+      id: 1,
+      name: "NIH VIQI",
+      agreement_type_id: 1,
+      owning_portfolio_id: 1
+    },
+    {
+      id: 2,
+      name: "NIH VIQI",
+      agreement_type_id: 1,
+      owning_portfolio_id: 1
+    }
+  ]
+}

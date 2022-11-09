@@ -142,4 +142,20 @@ class CANFiscalYear(Base):
     notes = Column(Text)
 
 
+class AgreementType(Base):
+    __tablename__ = "agreement_type"
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+
+
+class Agreement(Base):
+    __tablename__ = "agreement"
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    agreement_type_id = Column(Integer, ForeignKey("agreement_type.id"))
+    agreement_type = relationship("AgreementType")
+    owning_portfolio_id = managing_portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
+
+
+
 Base.metadata.create_all(engine)

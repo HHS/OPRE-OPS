@@ -17,7 +17,9 @@ ALLOWED_TABLES = [
     "users",
     "cans",
     "can_fiscal_year",
-    "can_arrangement_type"
+    "can_arrangement_type",
+    "agreement_type",
+    "agreement"
 ]
 
 ALLOWED_ENVIRONMENTS = ["environment.dev", "environment.local", "environment.cloudgov"]
