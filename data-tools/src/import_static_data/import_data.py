@@ -38,7 +38,6 @@ def init_db(database_url: str) -> Tuple[sqlalchemy.engine.Engine, sqlalchemy.Met
 def load_module(module_name: str):
     if module_name not in ALLOWED_ENVIRONMENTS:
         raise RuntimeError("Unknown environment")
-    # nosemgrep: python.lang.security.audit.non-literal-import.non-literal-import
     return importlib.import_module(module_name)
 
 
