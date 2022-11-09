@@ -53,4 +53,15 @@ class FundingPartner(Base):
     nickname = Column(String(100))
 
 
+class FundingSource(Base):
+    __tablename__ = "funding_source"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    nickname = Column(String(100))
+    cans = relationship(
+        "CAN",
+        back_populates="funding_sources",
+    )
+
+
 Base.metadata.create_all(engine)

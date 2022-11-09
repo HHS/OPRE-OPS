@@ -12,7 +12,8 @@ ALLOWED_TABLES = [
     "portfolio_url",
     "portfolio",
     "portfolio_status",
-    "funding_partner"
+    "funding_partner",
+    "funding_source"
 ]
 
 ALLOWED_ENVIRONMENTS = ["environment.dev", "environment.local", "environment.cloudgov"]

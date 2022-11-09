@@ -57,7 +57,8 @@ services:
     command: >
       bash -c "
       DATA=./data/data.json5 python src/import_static_data/import_data.py &&
-      DATA=./data/funding_partner_data.json5 python src/import_static_data/import_data.py
+      DATA=./data/funding_partner_data.json5 python src/import_static_data/import_data.py &&
+      DATA=./data/funding_source_data.json5 python src/import_static_data/import_data.py
       "
 
     volumes:
