@@ -14,7 +14,10 @@ ALLOWED_TABLES = [
     "portfolio_status",
     "funding_partner",
     "funding_source",
-    "users"
+    "users",
+    "cans",
+    "can_fiscal_year",
+    "can_arrangement_type"
 ]
 
 ALLOWED_ENVIRONMENTS = ["environment.dev", "environment.local", "environment.cloudgov"]

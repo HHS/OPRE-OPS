@@ -1,7 +1,9 @@
 from datetime import datetime
 
+from sqlalchemy.engine import Connection
+
 from environment.dev import DATABASE_URL
-from sqlalchemy import create_engine, Column, Integer, String, Text, ForeignKey, DateTime, func
+from sqlalchemy import create_engine, Column, Integer, String, Text, ForeignKey, DateTime, func, Table, Numeric
 from sqlalchemy.orm import declarative_base, relationship
 
 # Models here are for testing/development purposes while backend is being
@@ -77,6 +79,67 @@ class User(Base):
     updated = Column(DateTime, onupdate=func.now())
     role = Column(String(255), index=True)
     division = Column(Integer, ForeignKey("division.id"))
+
+
+class CANArrangementType(Base):
+    __tablename__ = "can_arrangement_type"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(), nullable=False, unique=True)
+
+    @staticmethod
+    def initial_data(
+        target: Table,
+        connection: Connection,
+        **kwargs: dict,
+    ) -> None:
+        connection.execute(
+            target.insert(),
+            {"id": 1, "name": "OPRE Appropriation"},
+            {"id": 2, "name": "Cost Share"},
+            {"id": 3, "name": "IAA"},
+            {"id": 4, "name": "IDDA"},
+            {"id": 5, "name": "MOU"},
+        )
+
+
+can_funding_sources = Table(
+    "can_funding_sources",
+    Base.metadata,
+    Column("can_id", ForeignKey("cans.id"), primary_key=True),
+    Column(
+        "funding_source_id",
+        ForeignKey("funding_source.id"),
+        primary_key=True,
+    ),
+)
+
+
+class CAN(Base):
+    __tablename__ = "cans"
+    id = Column(Integer, primary_key=True)
+    number = Column(String(30), nullable=False)
+    description = Column(String)
+    purpose = Column(String)
+    nickname = Column(String(30))
+    arrangement_type_id = Column(Integer, ForeignKey("can_arrangement_type.id"))
+    arrangement_type = relationship(CANArrangementType)
+    funding_sources = relationship(FundingSource, secondary=can_funding_sources, back_populates="cans")
+    authorizer_id = Column(Integer, ForeignKey("funding_partner.id"))
+    authorizer = relationship(FundingPartner)
+    managing_portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
+    managing_portfolio = relationship("Portfolio", back_populates="internal_can")
+    shared_portfolios = relationship("Portfolio", back_populates="external_cans")
+    budget_line_items = relationship("BudgetLineItem", back_populates="can")
+
+
+class CANFiscalYear(Base):
+    __tablename__ = "can_fiscal_year"
+    id = Column(Integer, primary_key=True)
+    can_id = Column(Integer, ForeignKey("cans.id"))
+    fiscal_year = Column(Integer)
+    total_fiscal_year_funding = Column(Numeric)
+    potential_additional_funding = Column(Numeric)
+    notes = Column(Text)
 
 
 Base.metadata.create_all(engine)
