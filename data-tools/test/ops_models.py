@@ -157,5 +157,23 @@ class Agreement(Base):
     owning_portfolio_id = managing_portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
 
 
+class BudgetLineItem(Base):
+    __tablename__ = "budget_line_item"
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    fiscal_year = Column(Integer)
+    agreement_id = Column(Integer, ForeignKey("agreement.id"))
+    agreement = relationship(Agreement)
+    can_id = Column(Integer, ForeignKey("cans.id"))
+    can = relationship("CAN", back_populates="budget_line_items")
+    funding = Column(Numeric(12, 2))
+    status_id = Column(Integer, ForeignKey("budget_line_item_status.id"))
+
+
+class BudgetLineItemStatus(Base):
+    __tablename__ = "budget_line_item_status"
+    id = Column(Integer, primary_key=True)
+    status = Column(String, nullable=False)
+
 
 Base.metadata.create_all(engine)

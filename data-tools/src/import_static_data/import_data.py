@@ -19,7 +19,9 @@ ALLOWED_TABLES = [
     "can_fiscal_year",
     "can_arrangement_type",
     "agreement_type",
-    "agreement"
+    "agreement",
+    "budget_line_item",
+    "budget_line_item_status"
 ]
 
 ALLOWED_ENVIRONMENTS = ["environment.dev", "environment.local", "environment.cloudgov"]

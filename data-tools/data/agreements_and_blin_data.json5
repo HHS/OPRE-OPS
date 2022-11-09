@@ -34,5 +34,93 @@
       agreement_type_id: 1,
       owning_portfolio_id: 1
     }
+  ],
+  "budget_line_item_status": [
+    {
+      id: 1,
+      status: "Planned"
+    },
+    {
+      id: 2,
+      status: "In Execution"
+    },
+    {
+      id: 3,
+      status: "Obligated"
+    }
+  ],
+  "budget_line_item": [
+    {
+      id: 1,
+      name: "LI 1",
+      fiscal_year: 2021,
+      agreement_id: 1,
+      can_id: 5,
+      funding: 1745000.00,
+      status_id: 1
+    },
+    {
+      id: 2,
+      name: "LI 2",
+      fiscal_year: 2022,
+      agreement_id: 1,
+      can_id: 5,
+      funding: 8725.00,
+      status_id: 1
+    },
+    {
+      id: 3,
+      name: "Line Item 1",
+      fiscal_year: 2023,
+      agreement_id: 2,
+      can_id: 8,
+      funding: 5671006.14,
+      status_id: 1
+    },
+    {
+      id: 4,
+      name: "Line Item 2",
+      fiscal_year: 2023,
+      agreement_id: 2,
+      can_id: 8,
+      funding: 2642511.17,
+      status_id: 1
+    },
+    {
+      id: 5,
+      name: "Line Item 1",
+      fiscal_year: 2023,
+      agreement_id: 2,
+      can_id: 9,
+      funding: 9839001.11,
+      status_id: 1
+    },
+    {
+      id: 6,
+      name: "Line Item 2",
+      fiscal_year: 2023,
+      agreement_id: 2,
+      can_id: 9,
+      funding: 7122458.44,
+      status_id: 1
+    },
+    {
+      id: 7,
+      name: "Line Item 1",
+      fiscal_year: 2023,
+      agreement_id: 2,
+      can_id: 9,
+      funding: 5303898.12,
+      status_id: 1
+    },
+    {
+      id: 8,
+      name: "Line Item 2",
+      fiscal_year: 2023,
+      agreement_id: 2,
+      can_id: 9,
+      funding: 8974267.94,
+      status_id: 2
+    }
   ]
 }
