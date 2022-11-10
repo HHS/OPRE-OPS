@@ -85,6 +85,19 @@ agreement_cans = db.Table(
 )
 
 
+class CANFiscalYear(db.Model):
+    """Contains the relevant financial info by fiscal year for a given CAN."""
+
+    __tablename__ = "ops_can_fiscal_year"
+    id = db.Column(db.Integer, primary_key=True)
+    can_id = db.Column(db.Integer, db.ForeignKey("can.id"))
+    can = db.relationship("CAN", back_populates="fiscal_years")
+    fiscal_year = db.Column(db.Integer)
+    total_fiscal_year_funding = db.Column(db.Numeric(12, 2))
+    potential_additional_funding = db.Column(db.Numeric(12, 2))
+    notes = db.Column(db.String, default="")
+
+
 class Agreement(db.Model):
     __tablename__ = "agreement"
     id = db.Column(db.Integer, primary_key=True)
@@ -193,3 +206,4 @@ class CAN(db.Model):
     agreements = db.relationship(
         "Agreement", secondary=agreement_cans, back_populates="cans"
     )
+    fiscal_years = db.relationship("CANFiscalYear", back_populates="can")
