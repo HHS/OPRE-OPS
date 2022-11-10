@@ -21,5 +21,4 @@ ENV PYTHONUNBUFFERED=1
 ENV FLASK_APP=ops
 ENV FLASK_DEBUG=true
 
-CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=8080"]
-#CMD ["gunicorn", "--chdir", "/home/app", "-b", "0.0.0.0:5001", "ops:create_app()"]
+CMD ["python", "-m", "gunicorn", "-b", ":8080", "ops:create_app()"]
