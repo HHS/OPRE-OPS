@@ -1,0 +1,84 @@
+{
+  "users": [
+    {
+      id: 1,
+      first_name: "Emily",
+      last_name: "Ball",
+      division: 1,
+      email: "emily.ball@example.com",
+      role: "COR"
+    },
+    {
+      id: 2,
+      first_name: "Bethanne",
+      last_name: "Barnes",
+      division: 4,
+      email: "Bethanne.Barnes@example.com",
+      role: "Division Director"
+    },
+    {
+      id: 3,
+      first_name: "Meryl",
+      last_name: "Barofsky",
+      division: 1,
+      email: "Meryl.Barofsky@example.com",
+      role: "COR"
+    },
+    {
+      id: 4,
+      first_name: "Anne",
+      last_name: "Bergan",
+      division: 3,
+      email: "Anne.Bergan@example.com",
+      role: "COR"
+    },
+    {
+      id: 5,
+      first_name: "Harmanpreet",
+      last_name: "Bhatti",
+      division: 3,
+      email: "Harmanpreet.Bhatti@example.com",
+      role: "Non-COR/Contractor"
+    },
+    {
+      id: 6,
+      first_name: "Alysia",
+      last_name: "Blandon",
+      division: 1,
+      email: "Alysia.Blandon@example.com",
+      role: "COR"
+    },
+    {
+      id: 7,
+      first_name: "Sarah",
+      last_name: "Blankenship",
+      division: 1,
+      email: "Sarah.Blankenship@example.com",
+      role: "Non-COR/Contractor"
+    },
+    {
+      id: 8,
+      first_name: "Caryn",
+      last_name: "Blitz",
+      division: 3,
+      email: "Caryn.Blitz@example.com",
+      role: "Non-COR/Contractor"
+    },
+    {
+      id: 9,
+      first_name: "Brett",
+      last_name: "Brown",
+      division: 4,
+      email: "Brett.Brown@example.com",
+      role: "Non-COR/Contractor"
+    },
+    {
+      id: 10,
+      first_name: "Tia",
+      last_name: "Brown",
+      division: 3,
+      email: "Tia.Brown@example.com",
+      role: "Team Leader"
+    }
+  ]
+}
