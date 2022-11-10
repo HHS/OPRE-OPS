@@ -13,19 +13,22 @@ const AuthSection = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const callBackend = useCallback(async (authCode) => {
-        const response = await ApplicationContext.get().helpers().callBackend(`/login`, "post", {
-            callbackUrl: window.location.href,
-            code: authCode,
-        });
+    const callBackend = useCallback(
+        async (authCode) => {
+            const response = await ApplicationContext.get().helpers().callBackend(`/login`, "post", {
+                callbackUrl: window.location.href,
+                code: authCode,
+            });
 
-        localStorage.setItem("jwt", response.jwt);
-        console.log({ jwt: response.jwt });
+            localStorage.setItem("jwt", response.jwt);
+            console.log({ jwt: response.jwt });
 
-        dispatch(login());
+            dispatch(login());
 
-        navigate("/");
-    }, []);
+            navigate("/");
+        },
+        [dispatch, navigate]
+    );
 
     useEffect(() => {
         const currentJWT = localStorage.getItem("jwt");
@@ -61,7 +64,7 @@ const AuthSection = () => {
             // first page load - generate state token and set on localStorage
             localStorage.setItem("ops-state-key", cryptoRandomString({ length: 64 }));
         }
-    }, []);
+    }, [callBackend, dispatch]);
 
     const logoutHandler = () => {
         dispatch(logout());

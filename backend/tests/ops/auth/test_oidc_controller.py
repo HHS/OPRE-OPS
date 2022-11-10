@@ -7,11 +7,14 @@ from ops_api.ops.auth.oidc import get_jwt
 from ops_api.ops.auth.oidc import OidcController
 from ops_api.ops.contexts.application_context import ApplicationContext
 from ops_api.ops.contexts.application_context import TestContext
+import pytest
 from rest_framework.request import Request
 
 ApplicationContext.register_context(TestContext)
 
 
+# will change this to a conditional skip
+@pytest.mark.skip(reason="requires backend server to be running")
 def test_auth_post_fails():
     data = '{"code":"abc1234"}'
     http_req = HttpRequest()
@@ -26,9 +29,7 @@ def test_auth_post_fails():
 
 def test_get_jwt_not_none():
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    print(key)
-    encoded = key.private_bytes(
+    bytes = key.private_bytes(
         Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption()
     )
-    print(encoded)
-    assert get_jwt(encoded) is not None
+    assert get_jwt(bytes) is not None

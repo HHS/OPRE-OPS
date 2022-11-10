@@ -1,14 +1,14 @@
 ---
 applications:
-  - name: opre-ops-test
+  - name: ops-backend
     memory: 700M
     buildpack: python_buildpack
     path: ./backend/
     command: ./deployed_run.sh
-  - name: opre-ops-frontend-test
+  - name: ops-frontend
     memory: 64M
     buildpack: https://github.com/cloudfoundry/staticfile-buildpack
     path: ./frontend/build/
 
 services:
- - opre-ops-psql-db
+ - ops-db
