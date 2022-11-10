@@ -1,4 +1,5 @@
 import logging.config
+import os
 from typing import Optional
 
 from flask import Flask
@@ -41,7 +42,9 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     configure_logging()  # should be configured before any access to app.logger
     app = Flask(__name__)
     CORS(app)
-    app.config.from_object("ops.default_settings")
+    app.config.from_object("ops.environment.default_settings")
+    if os.getenv("OPS_CONFIG"):
+        app.config.from_envvar("OPS_CONFIG")
     app.config.from_prefixed_env()
 
     if config_overrides is not None:

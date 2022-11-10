@@ -12,6 +12,7 @@ authlib = "==1.1.0"
 requests = "==2.28.1"
 markupsafe = "==2.0.1"
 flask-cors = "==3.0.10"
+psycopg2-binary = "==2.9.5"
 
 [dev-packages]
 flake8 = "==5.0.4"
