@@ -10,6 +10,7 @@ from ops.auth.utils import oauth
 from ops.can.models import CAN
 from ops.can.models import FundingPartner
 import ops.can.urls
+from ops.home_page.views import home
 from ops.portfolio.models import Portfolio
 import ops.portfolio.urls
 from ops.user.models import db
@@ -54,9 +55,7 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     app.register_blueprint(ops.can.urls.bp)
     app.register_blueprint(ops.portfolio.urls.bp)
     app.register_blueprint(ops.user.urls.bp)
-
-    # CORS(ops.can.urls.bp)
-    # CORS(ops.portfolio.urls.bp)
+    app.register_blueprint(home)
 
     jwtMgr.init_app(app)
     db.init_app(app)
