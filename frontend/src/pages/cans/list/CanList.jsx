@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, Outlet } from "react-router-dom";
-import { BreadcrumbItem, BreadcrumbList } from "../../../components/Breadcrumb";
+import App from "../../../App";
+import { BreadcrumbItem, BreadcrumbList } from "../../../components/Header/Breadcrumb";
 import { getCanList } from "./getCanList";
 
 const CanList = () => {
@@ -14,13 +15,11 @@ const CanList = () => {
 
     return (
         <>
-            <header>
+            <App>
                 <BreadcrumbList>
                     <BreadcrumbItem isCurrent pageName="CANs" />
                 </BreadcrumbList>
-            </header>
 
-            <main>
                 <h1>CANs</h1>
                 <nav>
                     <table className="usa-table usa-table--borderless">
@@ -45,7 +44,7 @@ const CanList = () => {
                 </nav>
 
                 <Outlet />
-            </main>
+            </App>
         </>
     );
 };

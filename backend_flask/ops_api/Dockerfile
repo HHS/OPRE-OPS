@@ -1,5 +1,6 @@
 FROM python:3.9-slim
-RUN apt-get update && apt-get clean && rm -rf /var/lib/apt/lists/*
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get -y install curl --no-install-recommends && apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir --upgrade pip==22.2.2 pipenv==2022.10.12 && useradd -ms /bin/bash app
 WORKDIR /home/app
 

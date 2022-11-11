@@ -90,7 +90,7 @@ agreement_cans = db.Table(
 class CANFiscalYear(db.Model):
     """Contains the relevant financial info by fiscal year for a given CAN."""
 
-    __tablename__ = "ops_can_fiscal_year"
+    __tablename__ = "can_fiscal_year"
     id = db.Column(db.Integer, primary_key=True)
     can_id = db.Column(db.Integer, db.ForeignKey("can.id"))
     can = db.relationship("CAN", lazy="joined")
@@ -124,10 +124,25 @@ class Agreement(db.Model):
     cans = db.relationship("CAN", secondary=agreement_cans, back_populates="agreements")
 
 
+class BudgetLineItem(db.Model):
+    __tablename__ = "budget_line_item"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    fiscal_year = db.Column(db.Integer)
+    agreement_id = db.Column(db.Integer, db.ForeignKey("agreement.id"))
+    agreement = db.relationship(Agreement)
+    can_id = db.Column(db.Integer, db.ForeignKey("can.id"))
+    can = db.relationship("CAN", back_populates="budget_line_items")
+    funding = db.Column(db.Numeric(12, 2))
+    status_id = db.Column(db.Integer, db.ForeignKey("budget_line_item_status.id"))
+    status = db.relationship("BudgetLineItemStatus", back_populates="budget_line_item")
+
+
 class BudgetLineItemStatus(db.Model):
     __tablename__ = "budget_line_item_status"
     id = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.String, nullable=False, unique=True)
+    budget_line_item = db.relationship("BudgetLineItem")
 
     @staticmethod
     def initial_data(
@@ -141,20 +156,6 @@ class BudgetLineItemStatus(db.Model):
             {"id": 2, "status": "In Execution"},
             {"id": 3, "status": "Obligated"},
         )
-
-
-class BudgetLineItem(db.Model):
-    __tablename__ = "budget_line_item"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
-    fiscal_year = db.Column(db.Integer)
-    agreement_id = db.Column(db.Integer, db.ForeignKey("agreement.id"))
-    agreement = db.relationship(Agreement)
-    can_id = db.Column(db.Integer, db.ForeignKey("can.id"))
-    can = db.relationship("CAN", back_populates="budget_line_items", lazy="joined")
-    funding = db.Column(db.Numeric(12, 2))
-    status_id = db.Column(db.Integer, db.ForeignKey("budget_line_item_status.id"))
-    status = db.relationship(BudgetLineItemStatus)
 
 
 class CANArrangementType(db.Model):
@@ -221,6 +222,7 @@ class CAN(db.Model):
     agreements = db.relationship(
         Agreement, secondary=agreement_cans, back_populates="cans"
     )
+    # fiscal_years = db.relationship("CANFiscalYear", back_populates="can")
 
     def __repr__(self):
         return f"""CAN(

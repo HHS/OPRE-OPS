@@ -1340,7 +1340,7 @@
                 23
             ],
             "authorizer": 26,
-            "portfolio": 2
+            "managing_portfolio": 2
         }
     },
     {
@@ -1357,7 +1357,7 @@
                 28
             ],
             "authorizer": 26,
-            "portfolio": 1
+            "managing_portfolio": 1
         }
     },
     {
@@ -1373,7 +1373,7 @@
                 26
             ],
             "authorizer": 26,
-            "portfolio": 1
+            "managing_portfolio": 1
         }
     },
     {
@@ -1389,7 +1389,7 @@
                 5
             ],
             "authorizer": 26,
-            "portfolio": 2
+            "managing_portfolio": 2
         }
     },
     {
@@ -1405,7 +1405,7 @@
                 26
             ],
             "authorizer": 26,
-            "portfolio": 3
+            "managing_portfolio": 3
         }
     },
     {
@@ -1421,7 +1421,7 @@
                 1
             ],
             "authorizer": 1,
-            "portfolio": 4
+            "managing_portfolio": 4
         }
     },
     {
@@ -1437,7 +1437,7 @@
                 23
             ],
             "authorizer": 23,
-            "portfolio": 3
+            "managing_portfolio": 3
         }
     },
     {
@@ -1609,6 +1609,13 @@
         }
     },
     {
+        "model": "ops.agreementtype",
+        "pk": 1,
+        "fields": {
+            "agreement_type": "Contract"
+        }
+    },
+    {
         "model": "ops.agreement",
         "pk": 1,
         "fields": {
@@ -1618,7 +1625,65 @@
                 2
             ],
             "name": "NIH VIQI",
-            "agreement_type": "Contract"
+            "agreement_type": 1,
+            "owning_portfolio":  1
+        }
+    },
+    {
+        "model": "ops.budgetlineitemstatus",
+        "pk": 1,
+        "fields": {
+            "status": "Planned"
+        }
+    },
+    {
+        "model": "ops.budgetlineitemstatus",
+        "pk": 2,
+        "fields": {
+            "status": "In Execution"
+        }
+    },
+    {
+        "model": "ops.budgetlineitemstatus",
+        "pk": 3,
+        "fields": {
+            "status": "Obligated"
+        }
+    },
+    {
+        "model": "ops.portfolio",
+        "pk": 1,
+        "fields": {
+            "name": "SuperAwesome Portfolio",
+            "description": "This is a description of the portfolio, isn't it cool!",
+            "status": "In-Process"
+        }
+    },
+    {
+        "model": "ops.portfolio",
+        "pk": 2,
+        "fields": {
+            "name": "OPS-Portfolio-1",
+            "description": "Placeholder portfolio",
+            "status": "Not-Started"
+        }
+    },
+    {
+        "model": "ops.portfolio",
+        "pk": 3,
+        "fields": {
+            "name": "OPS-Portfolio-2",
+            "description": "Placeholder portfolio",
+            "status": "In-Process"
+        }
+    },
+    {
+        "model": "ops.portfolio",
+        "pk": 4,
+        "fields": {
+            "name": "OPS-Portfolio-3",
+            "description": "Placeholder portfolio",
+            "status": "Not-Started"
         }
     },
     {
@@ -1628,8 +1693,9 @@
             "name": "LI 1",
             "fiscal_year": 2021,
             "can": 5,
-            "funding": 1745000.00,
-            "agreement": 1
+            "amount": 1745000.00,
+            "agreement": 1,
+            "status": 1
         }
     },
     {
@@ -1639,48 +1705,9 @@
             "name": "LI 2",
             "fiscal_year": 2022,
             "can": 5,
-            "funding": 8725.00,
-            "agreement": 1
-        }
-    },
-    {
-        "model": "ops.portfolio",
-        "pk": 1,
-        "fields": {
-            "name": "SuperAwesome Portfolio",
-            "description": "This is a description of the portfolio, isn't it cool!",
-            "status": "In-Process",
-            "current_fiscal_year_funding": 78000000.00
-        }
-    },
-    {
-        "model": "ops.portfolio",
-        "pk": 2,
-        "fields": {
-            "name": "OPS-Portfolio-1",
-            "description": "Placeholder portfolio",
-            "status": "Not-Started",
-            "current_fiscal_year_funding": 18000000.00
-        }
-    },
-    {
-        "model": "ops.portfolio",
-        "pk": 3,
-        "fields": {
-            "name": "OPS-Portfolio-2",
-            "description": "Placeholder portfolio",
-            "status": "In-Process",
-            "current_fiscal_year_funding": 13504000.00
-        }
-    },
-    {
-        "model": "ops.portfolio",
-        "pk": 4,
-        "fields": {
-            "name": "OPS-Portfolio-3",
-            "description": "Placeholder portfolio",
-            "status": "Not-Started",
-            "current_fiscal_year_funding": 8000000.00
+            "amount": 8725.00,
+            "agreement": 1,
+            "status": 1
         }
     }
 ]

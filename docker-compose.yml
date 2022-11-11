@@ -3,7 +3,7 @@ version: "3.8"
 services:
 
   db:
-    image: "postgres:14.5"
+    image: "postgres:12"
     platform: linux/amd64
     container_name: ops-db
     security_opt:
@@ -19,6 +19,33 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  data-import:
+    build:
+      context: ./data-tools/
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    container_name: ops-data-import
+    environment:
+      - ENV=local
+    command: >
+      bash -c "
+      DATA=./data/data.json5 python src/import_static_data/import_data.py &&
+      DATA=./data/funding_partner_data.json5 python src/import_static_data/import_data.py &&
+      DATA=./data/funding_source_data.json5 python src/import_static_data/import_data.py &&
+      DATA=./data/user_data.json5 python src/import_static_data/import_data.py &&
+      DATA=./data/can_data.json5 python src/import_static_data/import_data.py &&
+      DATA=./data/agreements_and_blin_data.json5 python src/import_static_data/import_data.py
+      "
+
+    volumes:
+      # See below for an explanation of this volume. The same reasoning applies,
+      # but in this case it's so we can run new migrations immediately without
+      # having to rebuild the migration container.
+      - ./backend/ops_api:/home/app/ops_api
+    depends_on:
+      backend:
+        condition: service_healthy
 
   backend:
     build:
@@ -36,6 +63,11 @@ services:
     depends_on:
          db:
            condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
 
   frontend:
     build:

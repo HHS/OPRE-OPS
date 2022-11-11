@@ -1,0 +1,232 @@
+{
+  "can_arrangement_type": [
+    {
+      id: 1,
+      name: "OPRE Appropriation"
+    },
+    {
+      id: 2,
+      name: "Cost Share"
+    },
+    {
+      id: 3,
+      name: "IAA"
+    },
+    {
+      id: 4,
+      name: "IDDA"
+    },
+    {
+      id: 5,
+      name: "MOU"
+    }
+  ],
+  "can": [
+    {
+      id: 1,
+      number: "G99HRF2",
+      description: "Healthy Marriages Responsible Fatherhood - OPRE",
+      nickname: "HMRF-OPRE",
+      arrangement_type_id: 5,
+      authorizer_id: 26,
+      managing_portfolio_id: 6
+    },
+    {
+      id: 2,
+      number: "G99IA14",
+      description: "Incoming Interagency Agreements",
+      nickname: "IAA-Incoming",
+      arrangement_type_id: 3,
+      authorizer_id: 26,
+      managing_portfolio_id: 1
+    },
+    {
+      id: 3,
+      number: "G99PHS9",
+      description: "Social Science Research and Development",
+      nickname: "SSRD",
+      arrangement_type_id: 1,
+      authorizer_id: 26,
+      managing_portfolio_id: 8
+    },
+    {
+      id: 4,
+      number: "G990136",
+      description: "Child Development Research Fellowship Grant Program",
+      nickname: "ASPE SRCD-IDDA",
+      arrangement_type_id: 4,
+      authorizer_id: 26,
+      managing_portfolio_id: 1
+    },
+    {
+      id: 5,
+      number: "G994426",
+      description: "Head Start Research",
+      nickname: "HS",
+      arrangement_type_id: 1,
+      authorizer_id: 26,
+      managing_portfolio_id: 2
+    },
+    {
+      id: 6,
+      number: "G994648",
+      description: "Kinship Navigation",
+      nickname: "Kin-Nav",
+      arrangement_type_id: 2,
+      authorizer_id: 1,
+      managing_portfolio_id: 6
+    },
+    {
+      id: 7,
+      number: "G996125",
+      description: "Healthy Marriages Responsible Fatherhood - OFA",
+      nickname: "HMRF-OFA",
+      arrangement_type_id: 2,
+      authorizer_id: 23,
+      managing_portfolio_id: 6
+    },
+    {
+      id: 8,
+      number: "G99XXX1",
+      description: "Healthy Marriages Responsible Fatherhood - OFA",
+      nickname: "HMRF-OFA",
+      arrangement_type_id: 2,
+      authorizer_id: 23,
+      managing_portfolio_id: 6
+    },
+    {
+      id: 9,
+      number: "G99XXX2",
+      description: "Healthy Marriages Responsible Fatherhood - OFA",
+      nickname: "HMRF-OFA",
+      arrangement_type_id: 2,
+      authorizer_id: 23,
+      managing_portfolio_id: 6
+    },
+    {
+      id: 10,
+      number: "G99XXX3",
+      description: "Healthy Marriages Responsible Fatherhood - OFA",
+      nickname: "HMRF-OFA",
+      arrangement_type_id: 2,
+      authorizer_id: 23,
+      managing_portfolio_id: 6
+    },
+    {
+      id: 11,
+      number: "G99XXX4",
+      description: "Healthy Marriages Responsible Fatherhood - OFA",
+      nickname: "HMRF-OFA",
+      arrangement_type_id: 2,
+      authorizer_id: 23,
+      managing_portfolio_id: 6
+    },
+    {
+      id: 12,
+      number: "G99XXX5",
+      description: "Healthy Marriages Responsible Fatherhood - OFA",
+      nickname: "HMRF-OFA",
+      arrangement_type_id: 2,
+      authorizer_id: 23,
+      managing_portfolio_id: 6
+    }
+  ],
+  "can_fiscal_year": [
+    {
+      id: 1,
+      can_id: 1,
+      fiscal_year: 2021,
+      total_fiscal_year_funding: 11400000.00,
+      potential_additional_funding: 1300000.00,
+      notes: ""
+    },
+    {
+      id: 2,
+      can_id: 2,
+      fiscal_year: 2021,
+      total_fiscal_year_funding: 200000.00,
+      potential_additional_funding: 0.00,
+      notes: "147-OPRE-FY21 $150K from ASPE; 149-OPRE-FY21 $50K from SSA\n\nNote to us: This distinction is in budget lines, not sure how it ties into CANs"
+    },
+    {
+      id: 3,
+      can_id: 3,
+      fiscal_year: 2022,
+      total_fiscal_year_funding: 7512000.00,
+      potential_additional_funding: 3000000.00,
+      notes: ""
+    },
+    {
+      id: 4,
+      can_id: 3,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 7512000.00,
+      potential_additional_funding: 3000000.00,
+      notes: ""
+    },
+    {
+      id: 5,
+      can_id: 3,
+      fiscal_year: 2024,
+      total_fiscal_year_funding: 7512000.00,
+      potential_additional_funding: 3000000.00,
+      notes: ""
+    },
+    {
+      id: 6,
+      can_id: 4,
+      fiscal_year: 2021,
+      total_fiscal_year_funding: 126476.00,
+      potential_additional_funding: 0.00,
+      notes: ""
+    },
+    {
+      id: 7,
+      can_id: 5,
+      fiscal_year: 2021,
+      total_fiscal_year_funding: 20000000.00,
+      potential_additional_funding: 1000000.00,
+      notes: ""
+    },
+    {
+      id: 8,
+      can_id: 5,
+      fiscal_year: 2022,
+      total_fiscal_year_funding: 20000000.00,
+      potential_additional_funding: 0.00,
+      notes: ""
+    },
+    {
+      id: 9,
+      can_id: 5,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 20000000.00,
+      potential_additional_funding: 0.00,
+      notes: ""
+    },
+    {
+      id: 10,
+      can_id: 5,
+      fiscal_year: 2024,
+      total_fiscal_year_funding: 20000000.00,
+      potential_additional_funding: 0.00,
+      notes: ""
+    },
+    {
+      id: 11,
+      can_id: 6,
+      fiscal_year: 2021,
+      total_fiscal_year_funding: 1400000.00,
+      potential_additional_funding: 0.00,
+      notes: ""
+    },
+    {
+      id: 12,
+      can_id: 7,
+      fiscal_year: 2021,
+      total_fiscal_year_funding: 80000.00,
+      potential_additional_funding: 0.00,
+      notes: ""
+    }
+  ]
+}

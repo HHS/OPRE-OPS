@@ -45,8 +45,11 @@ SECRET_KEY = env.get_credential("APP_SECRET_KEY", generate_random_string(50))
 DEBUG = False
 
 ALLOWED_HOSTS = [".cloud.gov"]
-CSRF_TRUSTED_ORIGINS = ["https://*.app.cloud.gov"]
-CORS_ALLOWED_ORIGIN_REGEXES = [r"https://\S+\.app.cloud.gov"]
+CSRF_TRUSTED_ORIGINS = ["https://*.app.cloud.gov", "https://*.fr.cloud.gov"]
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"https://\S+\.app.cloud.gov",
+    r"https://\S+\.fr.cloud.gov",
+]
 
 # nosemgrep: python.django.security.audit.django-rest-framework.missing-throttle-config.missing-throttle-config
 REST_FRAMEWORK = REST_FRAMEWORK | {  # noqa: F405
@@ -55,4 +58,15 @@ REST_FRAMEWORK = REST_FRAMEWORK | {  # noqa: F405
         "rest_framework.throttling.UserRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {"anon": "1000/day", "user": "5000/day"},
+}
+
+JWT_PRIVATE_KEY = os.getenv("JWT_PRIVATE_KEY")
+JWT_PUBLIC_KEY = os.getenv("JWT_PUBLIC_KEY")
+
+AUTHLIB_OAUTH_CLIENTS = {
+    "logingov": {
+        "server_metadata_url": "https://idp.int.identitysandbox.gov/.well-known/openid-configuration",
+        "client_id": "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
+        "client_kwargs": {"scope": "openid"},
+    }
 }
