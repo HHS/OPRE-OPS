@@ -1,4 +1,7 @@
 from ops.utils import db
+from sqlalchemy import Column
+from sqlalchemy import ForeignKey
+from sqlalchemy import Table
 from sqlalchemy.engine import Connection
 
 
@@ -44,6 +47,14 @@ db.event.listen(
 )
 
 
+portfolio_cans = Table(
+    "portfolio_cans",
+    db.Model.metadata,
+    Column("portfolio_id", ForeignKey("portfolio.id"), primary_key=True),
+    Column("can_id", ForeignKey("can.id"), primary_key=True),
+)
+
+
 class Portfolio(db.Model):
     __tablename__ = "portfolio"
     id = db.Column(db.Integer, primary_key=True)
@@ -51,8 +62,6 @@ class Portfolio(db.Model):
     description = db.Column(db.String, default="")
     status_id = db.Column(db.Integer, db.ForeignKey("portfolio_status.id"))
     status = db.relationship("PortfolioStatus")
-    current_fiscal_year_funding = db.Column(db.Numeric(12, 2))
-    cans = db.relationship("CAN", back_populates="portfolio")
-    division_id = db.Column(db.Integer, db.ForeignKey("division.id"))
-    division = db.relationship("Division", back_populates="portfolio")
-    urls = db.relationship("PortfolioUrl")
+    cans = db.relationship(
+        "CAN", back_populates="shared_portfolios", secondary=portfolio_cans
+    )

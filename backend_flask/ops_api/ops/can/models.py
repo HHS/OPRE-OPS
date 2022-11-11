@@ -1,3 +1,5 @@
+from ops.portfolio.models import Portfolio
+from ops.portfolio.models import portfolio_cans
 from ops.utils import db
 from sqlalchemy.engine import Connection
 
@@ -91,10 +93,11 @@ class CANFiscalYear(db.Model):
     __tablename__ = "can_fiscal_year"
     id = db.Column(db.Integer, primary_key=True)
     can_id = db.Column(db.Integer, db.ForeignKey("can.id"))
-    can = db.relationship("CAN", back_populates="fiscal_years")
+    can = db.relationship("CAN", lazy="joined")
     fiscal_year = db.Column(db.Integer)
     total_fiscal_year_funding = db.Column(db.Numeric(12, 2))
     potential_additional_funding = db.Column(db.Numeric(12, 2))
+    can_lead = db.Column(db.String)
     notes = db.Column(db.String, default="")
 
 
@@ -120,9 +123,9 @@ class BudgetLineItem(db.Model):
     can_id = db.Column(db.Integer, db.ForeignKey("can.id"))
     can = db.relationship("CAN", back_populates="budget_line_items")
     funding = db.Column(db.Numeric(12, 2))
-    status_id = db.Column(db.Integer, db.ForeignKey("budget_line_item_status.id"))
+    status_id = db.Column(db.Integer, db.ForeignKey("status.id"))
     status = db.relationship(
-        "BudgetLineItemStatus", back_populates="budget_line_item"
+        "BudgetLineItemStatus", back_pupulates="budget_line_item_status"
     )
 
 
@@ -201,10 +204,13 @@ class CAN(db.Model):
     )
     authorizer_id = db.Column(db.Integer, db.ForeignKey("funding_partner.id"))
     authorizer = db.relationship(FundingPartner)
-    portfolio_id = db.Column(db.Integer, db.ForeignKey("portfolio.id"))
-    portfolio = db.relationship("Portfolio", back_populates="cans")
+    managing_portfolio_id = db.Column(db.Integer, db.ForeignKey("portfolio.id"))
+    managing_portfolios = db.relationship(Portfolio, back_populates="cans")
+    shared_portfolios = db.relationship(
+        Portfolio, secondary=portfolio_cans, back_populates="cans"
+    )
     budget_line_items = db.relationship("BudgetLineItem", back_populates="can")
     agreements = db.relationship(
-        "Agreement", secondary=agreement_cans, back_populates="cans"
+        Agreement, secondary=agreement_cans, back_populates="cans"
     )
     fiscal_years = db.relationship("CANFiscalYear", back_populates="can")
