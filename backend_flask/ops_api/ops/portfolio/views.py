@@ -1,6 +1,8 @@
 from flask import jsonify
+from flask import request
 from flask import Response
 from ops.portfolio.models import Portfolio
+from ops.portfolio.utils import get_total_funding
 from ops.portfolio.utils import portfolio_dumper
 
 
@@ -14,8 +16,9 @@ def get_portfolio(pk: int) -> Response:
     return jsonify(portfolio_dumper(portfolio))
 
 
-#  'http://localhost:8080/ops/portfolios/1/calcFunding?fiscal_year=2023'
 def calc_funding(pk: int) -> Response:
 
     portfolio = Portfolio.query.filter(Portfolio.id == pk).one()
-    return jsonify({"total_funding": portfolio.current_fiscal_year_funding})
+    fiscal_year = request.args.get("fiscal_year")
+
+    return jsonify(get_total_funding(portfolio, fiscal_year))

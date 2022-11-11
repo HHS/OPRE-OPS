@@ -6,6 +6,7 @@ from flask_cors import CORS
 import ops.auth.urls
 from ops.auth.utils import jwtMgr
 from ops.auth.utils import oauth
+from ops.can.models import BudgetLineItem
 from ops.can.models import CAN
 from ops.can.models import FundingPartner
 import ops.can.urls
@@ -72,7 +73,6 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
                 name="WRGB (CCE)",
                 description="",
                 status_id=1,
-                current_fiscal_year_funding=814000,
             )
         )
         db.session.add(FundingPartner(name="Funder1", nickname="Funder1"))
@@ -84,7 +84,16 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
                 nickname="CCE",
                 arrangement_type_id="1",
                 authorizer_id=1,
-                portfolio_id=1,
+                managing_portfolio_id=1,
+            )
+        )
+        db.session.add(
+            BudgetLineItem(
+                name="Line-Item-1",
+                fiscal_year=2022,
+                can_id=1,
+                funding=1222222,
+                status_id=1,
             )
         )
         db.session.commit()

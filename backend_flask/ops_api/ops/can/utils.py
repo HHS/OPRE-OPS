@@ -12,7 +12,8 @@ class CANDict(TypedDict):
     arrangement_type: str
     funding_sources: list[str]
     authorizer: str
-    portfolio: str
+    managing_portfolio: list[str]
+    shared_portfolio: list[str]
 
 
 def can_dumper(can: CAN) -> CANDict:
@@ -25,5 +26,6 @@ def can_dumper(can: CAN) -> CANDict:
         "arrangement_type": can.arrangement_type.name,
         "funding_sources": [fs.name for fs in can.funding_sources],
         "authorizer": can.authorizer.name,
-        "portfolio": can.portfolio.name,
+        "managing_portfolio": [p.name for p in can.managing_portfolios],
+        "shared_portfolio": [p.name for p in can.shared_portfolios],
     }
