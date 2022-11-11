@@ -4,9 +4,8 @@ import uuid
 
 from authlib.integrations.flask_client import OAuth
 from authlib.jose import jwt
+from flask import current_app
 from flask_jwt_extended import JWTManager
-from ops.default_settings import AUTHLIB_OAUTH_CLIENTS
-from ops.default_settings import JWT_PRIVATE_KEY
 from ops.user.models import User
 
 jwtMgr = JWTManager()
@@ -24,11 +23,12 @@ def user_lookup_callback(_jwt_header: dict, jwt_data: dict) -> Optional[User]:
     return User.query.filter_by(id=identity).one_or_none()
 
 
-def get_jwt(key: Optional[str] = JWT_PRIVATE_KEY) -> str:
-    if not key:
+def get_jwt(key: Optional[str] = None) -> str:
+    jwt_private_key = current_app.config.get("JWT_PRIVATE_KEY") or key
+    if not jwt_private_key:
         raise NotImplementedError
 
-    client_id = AUTHLIB_OAUTH_CLIENTS["logingov"]["client_id"]
+    client_id = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"]["client_id"]
     payload = {
         "iss": client_id,
         "sub": client_id,
@@ -37,6 +37,6 @@ def get_jwt(key: Optional[str] = JWT_PRIVATE_KEY) -> str:
         "exp": int(time.time()) + 300,
     }
     header = {"alg": "RS256"}
-    jws = jwt.encode(header, payload, key)
+    jws = jwt.encode(header, payload, jwt_private_key)
 
     return jws

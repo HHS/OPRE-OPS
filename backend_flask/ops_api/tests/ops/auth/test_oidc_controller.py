@@ -9,14 +9,13 @@ def test_auth_post_fails(client):
     data = {"code": "abc1234"}
 
     res = client.post("http://localhost:8080/auth/login", json=data)
-    assert res == "There was an error."
+    assert res.status_code == 400
 
 
-def test_get_jwt_not_none():
+def test_get_jwt_not_none(app):
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    print(key)
     encoded = key.private_bytes(
         Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption()
     )
-    print(encoded)
-    assert get_jwt(encoded) is not None
+    with app.test_request_context("/auth/login", method="POST", data={"code": ""}):
+        assert get_jwt(encoded) is not None
