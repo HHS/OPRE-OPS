@@ -2,6 +2,7 @@ from ops.utils import db
 from sqlalchemy import Column
 from sqlalchemy import ForeignKey
 from sqlalchemy import Table
+from sqlalchemy import Text
 from sqlalchemy.engine import Connection
 
 
@@ -68,3 +69,17 @@ class Portfolio(db.Model):
     division_id = db.Column(db.Integer, db.ForeignKey("division.id"))
     division = db.relationship("Division", back_populates="portfolio")
     urls = db.relationship("PortfolioUrl")
+
+
+class PortfolioDescription(db.Model):
+    __tablename__ = "portfolio_description"
+    id = db.Column(db.Integer, primary_key=True)
+    descriptions = db.relationship("PortfolioDescriptionText")
+
+
+class PortfolioDescriptionText(db.Model):
+    __tablename__ = "portfolio_description_text"
+    id = db.Column(db.Integer, primary_key=True)
+    portfolio_description_id = db.Column(db.Integer, db.ForeignKey("portfolio_description.id"))
+    paragraph_number = db.Column(db.Integer)
+    text = db.Column(Text)
