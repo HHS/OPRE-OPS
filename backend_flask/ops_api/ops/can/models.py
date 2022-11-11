@@ -97,6 +97,12 @@ class Agreement(db.Model):
     cans = db.relationship("CAN", secondary=agreement_cans, back_populates="agreements")
 
 
+class BudgetLineItemStatus(db.Model):
+    __tablename__ = "budget_line_item_status"
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String, nullable=False)
+
+
 class BudgetLineItem(db.Model):
     __tablename__ = "budget_line_item"
     id = db.Column(db.Integer, primary_key=True)
@@ -107,6 +113,7 @@ class BudgetLineItem(db.Model):
     can_id = db.Column(db.Integer, db.ForeignKey("can.id"))
     can = db.relationship("CAN", back_populates="budget_line_items")
     funding = db.Column(db.Numeric(12, 2))
+    status_id = db.Column(db.Integer, db.ForeignKey("budget_line_item_status.id"))
 
 
 class CANArrangementType(db.Model):
@@ -170,3 +177,13 @@ class CAN(db.Model):
     agreements = db.relationship(
         "Agreement", secondary=agreement_cans, back_populates="cans"
     )
+
+
+class CANFiscalYear(db.Model):
+    __tablename__ = "can_fiscal_year"
+    id = db.Column(db.Integer, primary_key=True)
+    can_id = db.Column(db.Integer, db.ForeignKey("can.id"))
+    fiscal_year = db.Column(db.Integer)
+    total_fiscal_year_funding = db.Column(db.Numeric)
+    potential_additional_funding = db.Column(db.Numeric)
+    notes = db.Column(db.Text)

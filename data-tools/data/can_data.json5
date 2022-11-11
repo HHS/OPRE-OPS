@@ -21,7 +21,7 @@
       name: "MOU"
     }
   ],
-  "cans": [
+  "can": [
     {
       id: 1,
       number: "G99HRF2",
