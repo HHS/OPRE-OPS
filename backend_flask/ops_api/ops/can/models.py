@@ -85,6 +85,19 @@ agreement_cans = db.Table(
 )
 
 
+class CANFiscalYear(db.Model):
+    """Contains the relevant financial info by fiscal year for a given CAN."""
+
+    __tablename__ = "ops_can_fiscal_year"
+    id = db.Column(db.Integer, primary_key=True)
+    can_id = db.Column(db.Integer, db.ForeignKey("can.id"))
+    can = db.relationship("CAN", back_populates="fiscal_years")
+    fiscal_year = db.Column(db.Integer)
+    total_fiscal_year_funding = db.Column(db.Numeric(12, 2))
+    potential_additional_funding = db.Column(db.Numeric(12, 2))
+    notes = db.Column(db.String, default="")
+
+
 class Agreement(db.Model):
     __tablename__ = "agreement"
     id = db.Column(db.Integer, primary_key=True)
@@ -107,6 +120,29 @@ class BudgetLineItem(db.Model):
     can_id = db.Column(db.Integer, db.ForeignKey("can.id"))
     can = db.relationship("CAN", back_populates="budget_line_items")
     funding = db.Column(db.Numeric(12, 2))
+    status_id = db.Column(db.Integer, db.ForeignKey("status.id"))
+    status = db.relationship(
+        "BudgetLineItemStatus", back_pupulates="budget_line_item_status"
+    )
+
+
+class BudgetLineItemStatus(db.Model):
+    __tablename__ = "budget_line_item_status"
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String, nullable=False, unique=True)
+
+    @staticmethod
+    def initial_data(
+        target: db.Table,
+        connection: Connection,
+        **kwargs: dict,
+    ) -> None:
+        connection.execute(
+            target.insert(),
+            {"id": 1, "status": "Planned"},
+            {"id": 2, "status": "In Execution"},
+            {"id": 3, "status": "Obligated"},
+        )
 
 
 class CANArrangementType(db.Model):
@@ -170,3 +206,4 @@ class CAN(db.Model):
     agreements = db.relationship(
         "Agreement", secondary=agreement_cans, back_populates="cans"
     )
+    fiscal_years = db.relationship("CANFiscalYear", back_populates="can")
