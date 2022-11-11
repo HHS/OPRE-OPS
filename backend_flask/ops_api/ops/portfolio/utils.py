@@ -46,13 +46,6 @@ def get_total_funding(
     portfolio: Portfolio, fiscal_year: Optional[int] = None
 ) -> TotalFunding:
 
-    # can_fiscal_year_query = (
-    #     CANFiscalYear.query
-    #     .join(CAN)
-    #     .filter(CAN.managing_portfolio == portfolio)
-    #     .all()
-    # )
-
     can_fiscal_year_query = CANFiscalYear.query.filter(
         CANFiscalYear.can.has(CAN.managing_portfolio == portfolio)
     )
@@ -111,6 +104,27 @@ def get_total_funding(
 
     available_funding = float(total_funding) - float(total_accounted_for)
 
+    planned_funding_result = (
+        0
+        if total_funding == 0
+        else f"{round(float(planned_funding) / float(total_funding), 2) * 100}"
+    )
+    obligated_funding_result = (
+        0
+        if total_funding == 0
+        else f"{round(float(obligated_funding) / float(total_funding), 2) * 100}"
+    )
+    in_execution_funding_result = (
+        0
+        if total_funding == 0
+        else f"{round(float(in_execution_funding) / float(total_funding), 2) * 100}"
+    )
+    available_funding_result = (
+        0
+        if total_funding == 0
+        else f"{round(float(available_funding) / float(total_funding), 2) * 100}"
+    )
+
     return {
         "total_funding": {
             "amount": float(total_funding),
@@ -118,18 +132,18 @@ def get_total_funding(
         },
         "planned_funding": {
             "amount": planned_funding,
-            "percent": f"{round(float(planned_funding) / float(total_funding), 2) * 100}",
+            "percent": planned_funding_result,
         },
         "obligated_funding": {
             "amount": obligated_funding,
-            "percent": f"{round(float(obligated_funding) / float(total_funding), 2) * 100}",
+            "percent": obligated_funding_result,
         },
         "in_execution_funding": {
             "amount": in_execution_funding,
-            "percent": f"{round(float(in_execution_funding) / float(total_funding), 2) * 100}",
+            "percent": in_execution_funding_result,
         },
         "available_funding": {
             "amount": available_funding,
-            "percent": f"{round(float(available_funding) / float(total_funding), 2) * 100}",
+            "percent": available_funding_result,
         },
     }
