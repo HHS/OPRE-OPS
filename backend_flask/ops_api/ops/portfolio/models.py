@@ -49,3 +49,14 @@ class Portfolio(db.Model):
     cans = db.relationship(
         "CAN", back_populates="shared_portfolios", secondary=portfolio_cans
     )
+
+    def __repr__(self):
+        return f"""
+                    Portfolio(
+                        id={self.id!r},
+                        name={self.name!r},
+                        description={self.description!r},
+                        status={self.status!r},
+                        shared_cans={self.cans!r}
+                    )
+                """

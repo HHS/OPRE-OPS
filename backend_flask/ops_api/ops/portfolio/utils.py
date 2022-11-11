@@ -1,4 +1,3 @@
-from decimal import Decimal
 from typing import Optional, TypedDict
 
 from ops.can.models import BudgetLineItem
@@ -6,7 +5,6 @@ from ops.can.models import BudgetLineItemStatus
 from ops.can.models import CAN
 from ops.can.models import CANFiscalYear
 from ops.portfolio.models import Portfolio
-from sqlalchemy import func
 
 
 class PortfolioDict(TypedDict):
@@ -14,7 +12,7 @@ class PortfolioDict(TypedDict):
     name: str
     description: Optional[str]
     status: Optional[str]
-    current_fiscal_year_funding: Decimal
+    cans: list[CAN]
 
 
 class FundingLineItem(TypedDict):
@@ -40,7 +38,7 @@ def portfolio_dumper(portfolio: Portfolio) -> PortfolioDict:
         "name": portfolio.name,
         "description": portfolio.description,
         "status": portfolio.status.name,
-        "current_fiscal_year_funding": portfolio.current_fiscal_year_funding,
+        "cans": portfolio.cans,
     }
 
 
@@ -48,58 +46,60 @@ def get_total_funding(
     portfolio: Portfolio, fiscal_year: Optional[int] = None
 ) -> TotalFunding:
 
-    can_fiscal_year_query = (
-        CANFiscalYear.query()
-        .join(CAN)
-        .filter(CAN.managing_portfolio == portfolio)
-        .all()
+    # can_fiscal_year_query = (
+    #     CANFiscalYear.query
+    #     .join(CAN)
+    #     .filter(CAN.managing_portfolio == portfolio)
+    #     .all()
+    # )
+
+    can_fiscal_year_query = CANFiscalYear.query.filter(
+        CANFiscalYear.can.has(CAN.managing_portfolio == portfolio)
     )
 
     if fiscal_year:
         can_fiscal_year_query = can_fiscal_year_query.filter(
             CANFiscalYear.fiscal_year == fiscal_year
-        )
+        ).all()
 
     total_funding = (
-        can_fiscal_year_query.select(
-            [func.sum(CANFiscalYear.total_fiscal_year_funding)]
-        )
-        or 0
+        sum([c.total_fiscal_year_funding for c in can_fiscal_year_query]) or 0
     )
 
     # Amount available to a Portfolio budget is the sum of the BLI minus the Portfolio total (above)
-    budget_line_items = (
-        BudgetLineItem.query.join(CAN).filter(CAN.managing_portfolio == portfolio).all()
+    budget_line_items = BudgetLineItem.query.filter(
+        BudgetLineItem.can.has(CAN.managing_portfolio == portfolio)
     )
 
     if fiscal_year:
-        budget_line_items = budget_line_items.query.filter(
+        budget_line_items = budget_line_items.filter(
             BudgetLineItem.fiscal_year == fiscal_year
         )
 
-    planned_funding = (
-        budget_line_items.filter(
-            BudgetLineItem.status
-            == BudgetLineItemStatus.query.filter(
-                BudgetLineItem.status == "Planned"
-            ).one()
-        ).select([func.sum("amount")])
-        or 0
-    )
+    planned_budget_line_items = budget_line_items.filter(
+        BudgetLineItem.status
+        == BudgetLineItemStatus.query.filter(
+            BudgetLineItemStatus.status == "Planned"
+        ).one()
+    ).all()
 
-    obligated_funding = (
-        budget_line_items.filter(
-            status=BudgetLineItemStatus.objects.get(status="Obligated")
-        ).select([func.sum("amount")])
-        or 0
-    )
+    planned_funding = sum([b.funding for b in planned_budget_line_items]) or 0
 
-    in_execution_funding = (
-        budget_line_items.filter(
-            status=BudgetLineItemStatus.objects.get(status="In Execution")
-        ).select([func.sum("amount")])
-        or 0
-    )
+    obligated_budget_line_items = budget_line_items.filter(
+        BudgetLineItem.status
+        == BudgetLineItemStatus.query.filter(
+            BudgetLineItemStatus.status == "Obligated"
+        ).one()
+    ).all()
+    obligated_funding = sum([b.funding for b in obligated_budget_line_items]) or 0
+
+    in_execution_budget_line_items = budget_line_items.filter(
+        BudgetLineItem.status
+        == BudgetLineItemStatus.query.filter(
+            BudgetLineItemStatus.status == "In Execution"
+        ).one()
+    ).all()
+    in_execution_funding = sum([b.funding for b in in_execution_budget_line_items]) or 0
 
     total_accounted_for = sum(
         (

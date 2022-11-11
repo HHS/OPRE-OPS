@@ -100,6 +100,17 @@ class CANFiscalYear(db.Model):
     can_lead = db.Column(db.String)
     notes = db.Column(db.String, default="")
 
+    def __repr__(self):
+        return f"""CANFiscalYear(
+            id={self.id!r},
+            can={self.can!r},
+            fiscal_year={self.fiscal_year!r},
+            total_fiscal_year_funding={self.total_fiscal_year_funding!r},
+            potential_additional_funding={self.potential_additional_funding!r},
+            can_lead={self.can_lead!r},
+            notes={self.notes!r}
+        )"""
+
 
 class Agreement(db.Model):
     __tablename__ = "agreement"
@@ -202,7 +213,7 @@ class CAN(db.Model):
     authorizer_id = db.Column(db.Integer, db.ForeignKey("funding_partner.id"))
     authorizer = db.relationship(FundingPartner)
     managing_portfolio_id = db.Column(db.Integer, db.ForeignKey("portfolio.id"))
-    managing_portfolios = db.relationship(Portfolio, back_populates="cans")
+    managing_portfolio = db.relationship(Portfolio, back_populates="cans")
     shared_portfolios = db.relationship(
         Portfolio, secondary=portfolio_cans, back_populates="cans"
     )
@@ -210,3 +221,20 @@ class CAN(db.Model):
     agreements = db.relationship(
         Agreement, secondary=agreement_cans, back_populates="cans"
     )
+
+    def __repr__(self):
+        return f"""CAN(
+                    id={self.id!r},
+                    number={self.number!r},
+                    description={self.description!r},
+                    purpose={self.purpose!r},
+                    nickname={self.nickname!r},
+                    arrangement_type={self.arrangement_type!r},
+                    finding_source={self.funding_sources!r},
+                    authorizer={self.authorizer!r},
+                    managing_portfolio={self.managing_portfolio!r},
+                    shared_portfolios={self.shared_portfolios!r},
+                    budget_line_items={self.budget_line_items!r},
+                    agreements={self.agreements!r}
+                )
+        """
