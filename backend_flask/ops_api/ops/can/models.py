@@ -122,7 +122,7 @@ class BudgetLineItem(db.Model):
     funding = db.Column(db.Numeric(12, 2))
     status_id = db.Column(db.Integer, db.ForeignKey("budget_line_item_status.id"))
     status = db.relationship(
-        "BudgetLineItemStatus", back_populates="budget_line_item_status"
+        "BudgetLineItemStatus", back_populates="budget_line_item"
     )
 
 
@@ -130,6 +130,7 @@ class BudgetLineItemStatus(db.Model):
     __tablename__ = "budget_line_item_status"
     id = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.String, nullable=False, unique=True)
+    budget_line_item = db.relationship("BudgetLineItem")
 
     @staticmethod
     def initial_data(
