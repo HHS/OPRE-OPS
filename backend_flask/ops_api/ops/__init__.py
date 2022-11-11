@@ -1,4 +1,5 @@
 import logging.config
+import os
 from typing import Optional
 
 from flask import Flask
@@ -10,6 +11,7 @@ from ops.can.models import BudgetLineItem
 from ops.can.models import CAN
 from ops.can.models import FundingPartner
 import ops.can.urls
+from ops.home_page.views import home
 from ops.portfolio.models import Portfolio
 import ops.portfolio.urls
 from ops.user.models import db
@@ -42,7 +44,9 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     configure_logging()  # should be configured before any access to app.logger
     app = Flask(__name__)
     CORS(app)
-    app.config.from_object("ops.default_settings")
+    app.config.from_object("ops.environment.default_settings")
+    if os.getenv("OPS_CONFIG"):
+        app.config.from_envvar("OPS_CONFIG")
     app.config.from_prefixed_env()
 
     if config_overrides is not None:
@@ -52,9 +56,7 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     app.register_blueprint(ops.can.urls.bp)
     app.register_blueprint(ops.portfolio.urls.bp)
     app.register_blueprint(ops.user.urls.bp)
-
-    # CORS(ops.can.urls.bp)
-    # CORS(ops.portfolio.urls.bp)
+    app.register_blueprint(home)
 
     jwtMgr.init_app(app)
     db.init_app(app)

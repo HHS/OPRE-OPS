@@ -204,3 +204,4 @@ backend/ops_api/django_config/static
 *.pem
 *.crt
 *.drawio.bkp
+*.db
