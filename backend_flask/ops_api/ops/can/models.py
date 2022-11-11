@@ -123,9 +123,9 @@ class BudgetLineItem(db.Model):
     can_id = db.Column(db.Integer, db.ForeignKey("can.id"))
     can = db.relationship("CAN", back_populates="budget_line_items")
     funding = db.Column(db.Numeric(12, 2))
-    status_id = db.Column(db.Integer, db.ForeignKey("status.id"))
+    status_id = db.Column(db.Integer, db.ForeignKey("budget_line_item_status.id"))
     status = db.relationship(
-        "BudgetLineItemStatus", back_pupulates="budget_line_item_status"
+        "BudgetLineItemStatus", back_populates="budget_line_item"
     )
 
 
@@ -205,7 +205,7 @@ class CAN(db.Model):
     authorizer_id = db.Column(db.Integer, db.ForeignKey("funding_partner.id"))
     authorizer = db.relationship(FundingPartner)
     managing_portfolio_id = db.Column(db.Integer, db.ForeignKey("portfolio.id"))
-    managing_portfolios = db.relationship(Portfolio, back_populates="cans")
+    managing_portfolio = db.relationship(Portfolio, back_populates="cans")
     shared_portfolios = db.relationship(
         Portfolio, secondary=portfolio_cans, back_populates="cans"
     )

@@ -40,7 +40,6 @@ def portfolio_dumper(portfolio: Portfolio) -> PortfolioDict:
         "name": portfolio.name,
         "description": portfolio.description,
         "status": portfolio.status.name,
-        "current_fiscal_year_funding": portfolio.current_fiscal_year_funding,
     }
 
 

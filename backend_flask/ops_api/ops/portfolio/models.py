@@ -65,3 +65,6 @@ class Portfolio(db.Model):
     cans = db.relationship(
         "CAN", back_populates="shared_portfolios", secondary=portfolio_cans
     )
+    division_id = db.Column(db.Integer, db.ForeignKey("division.id"))
+    division = db.relationship("Division", back_populates="portfolio")
+    urls = db.relationship("PortfolioUrl")
