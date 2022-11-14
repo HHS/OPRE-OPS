@@ -6,6 +6,7 @@ from ops.can.models import BudgetLineItemStatus
 from ops.can.models import CAN
 from ops.can.models import CANFiscalYear
 from ops.portfolio.models import Portfolio
+from ops.portfolio.models import PortfolioDescriptionText
 from sqlalchemy import func
 
 
@@ -34,12 +35,30 @@ class TotalFunding(TypedDict):
     available_funding: FundingLineItem
 
 
+class PortfolioDescriptionTextDict(TypedDict):
+    """Dict type hint for total finding"""
+
+    id: int
+    portfolio_id: int
+    paragraph_number: int
+    text: str
+
+
 def portfolio_dumper(portfolio: Portfolio) -> PortfolioDict:
     return {
         "id": portfolio.id,
         "name": portfolio.name,
-        "description": portfolio.description,
+        "description": [portfolio_descriptio_text_dumper(pd) for pd in portfolio.description],
         "status": portfolio.status.name,
+    }
+
+
+def portfolio_descriptio_text_dumper(portfolio_description_text: PortfolioDescriptionText) -> PortfolioDescriptionTextDict:
+    return {
+        "id": portfolio_description_text.id,
+        "portfolio_id": portfolio_description_text.portfolio_id,
+        "description": portfolio_description_text.paragraph_number,
+        "text": portfolio_description_text.text,
     }
 
 

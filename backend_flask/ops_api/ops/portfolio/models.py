@@ -69,17 +69,13 @@ class Portfolio(db.Model):
     division_id = db.Column(db.Integer, db.ForeignKey("division.id"))
     division = db.relationship("Division", back_populates="portfolio")
     urls = db.relationship("PortfolioUrl")
-
-
-class PortfolioDescription(db.Model):
-    __tablename__ = "portfolio_description"
-    id = db.Column(db.Integer, primary_key=True)
-    descriptions = db.relationship("PortfolioDescriptionText")
+    description = db.relationship("PortfolioDescriptionText", back_populates="portfolio")
 
 
 class PortfolioDescriptionText(db.Model):
     __tablename__ = "portfolio_description_text"
     id = db.Column(db.Integer, primary_key=True)
-    portfolio_description_id = db.Column(db.Integer, db.ForeignKey("portfolio_description.id"))
+    portfolio_id = db.Column(db.Integer, db.ForeignKey("portfolio.id"))
     paragraph_number = db.Column(db.Integer)
     text = db.Column(Text)
+    portfolio = db.relationship("Portfolio", back_populates="description")
