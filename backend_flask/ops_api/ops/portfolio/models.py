@@ -1,3 +1,4 @@
+from ops.utils import BaseModel
 from ops.utils import db
 from sqlalchemy import Column
 from sqlalchemy import ForeignKey
@@ -6,7 +7,7 @@ from sqlalchemy import Text
 from sqlalchemy.engine import Connection
 
 
-class Division(db.Model):
+class Division(BaseModel):
     __tablename__ = "division"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True)
@@ -14,7 +15,7 @@ class Division(db.Model):
     portfolio = db.relationship("Portfolio", back_populates="division")
 
 
-class PortfolioUrl(db.Model):
+class PortfolioUrl(BaseModel):
     __tablename__ = "portfolio_url"
     id = db.Column(db.Integer, primary_key=True)
     portfolio_id = db.Column(db.Integer, db.ForeignKey("portfolio.id"))
@@ -22,7 +23,7 @@ class PortfolioUrl(db.Model):
     url = db.Column(db.String)
 
 
-class PortfolioStatus(db.Model):
+class PortfolioStatus(BaseModel):
     __tablename__ = "portfolio_status"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False, unique=True)
@@ -56,9 +57,8 @@ portfolio_cans = Table(
 )
 
 
-class Portfolio(db.Model):
+class Portfolio(BaseModel):
     __tablename__ = "portfolio"
-    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False, unique=True)
     description = db.Column(db.String, default="")
     status_id = db.Column(db.Integer, db.ForeignKey("portfolio_status.id"))
@@ -69,7 +69,9 @@ class Portfolio(db.Model):
     division_id = db.Column(db.Integer, db.ForeignKey("division.id"))
     division = db.relationship("Division", back_populates="portfolio")
     urls = db.relationship("PortfolioUrl")
-    description = db.relationship("PortfolioDescriptionText", back_populates="portfolio")
+    description = db.relationship(
+        "PortfolioDescriptionText", back_populates="portfolio"
+    )
 
 
 class PortfolioDescriptionText(db.Model):

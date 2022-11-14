@@ -7,7 +7,6 @@ from ops.can.models import CAN
 from ops.can.models import CANFiscalYear
 from ops.portfolio.models import Portfolio
 from ops.portfolio.models import PortfolioDescriptionText
-from sqlalchemy import func
 
 
 class PortfolioDict(TypedDict):
@@ -15,6 +14,7 @@ class PortfolioDict(TypedDict):
     name: str
     description: Optional[str]
     status: Optional[str]
+    cans: list[CAN]
     current_fiscal_year_funding: Decimal
 
 
@@ -48,12 +48,17 @@ def portfolio_dumper(portfolio: Portfolio) -> PortfolioDict:
     return {
         "id": portfolio.id,
         "name": portfolio.name,
-        "description": [portfolio_descriptio_text_dumper(pd) for pd in portfolio.description],
+        "description": [
+            portfolio_descriptio_text_dumper(pd) for pd in portfolio.description
+        ],
         "status": portfolio.status.name,
+        "cans": portfolio.cans,
     }
 
 
-def portfolio_descriptio_text_dumper(portfolio_description_text: PortfolioDescriptionText) -> PortfolioDescriptionTextDict:
+def portfolio_descriptio_text_dumper(
+    portfolio_description_text: PortfolioDescriptionText,
+) -> PortfolioDescriptionTextDict:
     return {
         "id": portfolio_description_text.id,
         "portfolio_id": portfolio_description_text.portfolio_id,
@@ -66,58 +71,53 @@ def get_total_funding(
     portfolio: Portfolio, fiscal_year: Optional[int] = None
 ) -> TotalFunding:
 
-    can_fiscal_year_query = (
-        CANFiscalYear.query()
-        .join(CAN)
-        .filter(CAN.managing_portfolio == portfolio)
-        .all()
+    can_fiscal_year_query = CANFiscalYear.query.filter(
+        CANFiscalYear.can.has(CAN.managing_portfolio == portfolio)
     )
 
     if fiscal_year:
         can_fiscal_year_query = can_fiscal_year_query.filter(
             CANFiscalYear.fiscal_year == fiscal_year
-        )
+        ).all()
 
     total_funding = (
-        can_fiscal_year_query.select(
-            [func.sum(CANFiscalYear.total_fiscal_year_funding)]
-        )
-        or 0
+        sum([c.total_fiscal_year_funding for c in can_fiscal_year_query]) or 0
     )
 
     # Amount available to a Portfolio budget is the sum of the BLI minus the Portfolio total (above)
-    budget_line_items = (
-        BudgetLineItem.query.join(CAN).filter(CAN.managing_portfolio == portfolio).all()
+    budget_line_items = BudgetLineItem.query.filter(
+        BudgetLineItem.can.has(CAN.managing_portfolio == portfolio)
     )
 
     if fiscal_year:
-        budget_line_items = budget_line_items.query.filter(
+        budget_line_items = budget_line_items.filter(
             BudgetLineItem.fiscal_year == fiscal_year
         )
 
-    planned_funding = (
-        budget_line_items.filter(
-            BudgetLineItem.status
-            == BudgetLineItemStatus.query.filter(
-                BudgetLineItem.status == "Planned"
-            ).one()
-        ).select([func.sum("amount")])
-        or 0
-    )
+    planned_budget_line_items = budget_line_items.filter(
+        BudgetLineItem.status
+        == BudgetLineItemStatus.query.filter(
+            BudgetLineItemStatus.status == "Planned"
+        ).one()
+    ).all()
 
-    obligated_funding = (
-        budget_line_items.filter(
-            status=BudgetLineItemStatus.objects.get(status="Obligated")
-        ).select([func.sum("amount")])
-        or 0
-    )
+    planned_funding = sum([b.funding for b in planned_budget_line_items]) or 0
 
-    in_execution_funding = (
-        budget_line_items.filter(
-            status=BudgetLineItemStatus.objects.get(status="In Execution")
-        ).select([func.sum("amount")])
-        or 0
-    )
+    obligated_budget_line_items = budget_line_items.filter(
+        BudgetLineItem.status
+        == BudgetLineItemStatus.query.filter(
+            BudgetLineItemStatus.status == "Obligated"
+        ).one()
+    ).all()
+    obligated_funding = sum([b.funding for b in obligated_budget_line_items]) or 0
+
+    in_execution_budget_line_items = budget_line_items.filter(
+        BudgetLineItem.status
+        == BudgetLineItemStatus.query.filter(
+            BudgetLineItemStatus.status == "In Execution"
+        ).one()
+    ).all()
+    in_execution_funding = sum([b.funding for b in in_execution_budget_line_items]) or 0
 
     total_accounted_for = sum(
         (
@@ -129,6 +129,27 @@ def get_total_funding(
 
     available_funding = float(total_funding) - float(total_accounted_for)
 
+    planned_funding_result = (
+        0
+        if total_funding == 0
+        else f"{round(float(planned_funding) / float(total_funding), 2) * 100}"
+    )
+    obligated_funding_result = (
+        0
+        if total_funding == 0
+        else f"{round(float(obligated_funding) / float(total_funding), 2) * 100}"
+    )
+    in_execution_funding_result = (
+        0
+        if total_funding == 0
+        else f"{round(float(in_execution_funding) / float(total_funding), 2) * 100}"
+    )
+    available_funding_result = (
+        0
+        if total_funding == 0
+        else f"{round(float(available_funding) / float(total_funding), 2) * 100}"
+    )
+
     return {
         "total_funding": {
             "amount": float(total_funding),
@@ -136,18 +157,18 @@ def get_total_funding(
         },
         "planned_funding": {
             "amount": planned_funding,
-            "percent": f"{round(float(planned_funding) / float(total_funding), 2) * 100}",
+            "percent": planned_funding_result,
         },
         "obligated_funding": {
             "amount": obligated_funding,
-            "percent": f"{round(float(obligated_funding) / float(total_funding), 2) * 100}",
+            "percent": obligated_funding_result,
         },
         "in_execution_funding": {
             "amount": in_execution_funding,
-            "percent": f"{round(float(in_execution_funding) / float(total_funding), 2) * 100}",
+            "percent": in_execution_funding_result,
         },
         "available_funding": {
             "amount": available_funding,
-            "percent": f"{round(float(available_funding) / float(total_funding), 2) * 100}",
+            "percent": available_funding_result,
         },
     }
