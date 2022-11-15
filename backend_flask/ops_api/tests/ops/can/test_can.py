@@ -16,7 +16,7 @@ def test_can_retrieve(loaded_db):
     assert can.nickname == "ABCD"
     assert can.arrangement_type_id == 2
     assert can.authorizer_id == 1
-    assert can.managing_portfolio_id is None
+    assert can.managing_portfolio_id == 2
     assert can.arrangement_type_id == 2
     assert can.funding_sources == []
     assert can.shared_portfolios == []

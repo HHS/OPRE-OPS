@@ -49,7 +49,9 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
 
     app.register_blueprint(ops.auth.urls.bp)
     app.register_blueprint(ops.can.urls.bp)
-    app.register_blueprint(ops.portfolio.urls.bp)
+    app.register_blueprint(ops.portfolio.urls.bp_portfolio)
+    app.register_blueprint(ops.portfolio.urls.bp_portfolio_status)
+    app.register_blueprint(ops.portfolio.urls.bp_division)
     app.register_blueprint(ops.user.urls.bp)
     app.register_blueprint(home)
 

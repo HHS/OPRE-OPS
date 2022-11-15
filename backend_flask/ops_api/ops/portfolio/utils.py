@@ -131,19 +131,19 @@ def get_total_funding(
             "percent": "Total",
         },
         "planned_funding": {
-            "amount": planned_funding,
+            "amount": float(planned_funding),
             "percent": planned_funding_result,
         },
         "obligated_funding": {
-            "amount": obligated_funding,
+            "amount": float(obligated_funding),
             "percent": obligated_funding_result,
         },
         "in_execution_funding": {
-            "amount": in_execution_funding,
+            "amount": float(in_execution_funding),
             "percent": in_execution_funding_result,
         },
         "available_funding": {
-            "amount": available_funding,
+            "amount": float(available_funding),
             "percent": available_funding_result,
         },
     }

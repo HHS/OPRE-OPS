@@ -121,7 +121,7 @@ def loaded_db(app):
         nickname="CCE",
         arrangement_type_id=3,
         authorizer_id=1,
-        managing_portfolio_id=p1.id,
+        managing_portfolio_id=1,
         agreements=[ag1],
         funding_sources=[funding_source1],
     )
@@ -132,7 +132,7 @@ def loaded_db(app):
         nickname="ABCD",
         arrangement_type_id=2,
         authorizer_id=1,
-        managing_portfolio_id=p2.id,
+        managing_portfolio_id=2,
         agreements=[ag1],
     )
     # pc1 = portfolio_cans.insert().values({"portfolio_id": "1", "can_id": "1"})
@@ -147,7 +147,7 @@ def loaded_db(app):
     )
     cfy2 = CANFiscalYear(
         can_id=1,
-        fiscal_year=2023,
+        fiscal_year=2022,
         total_fiscal_year_funding=4333123,
         potential_additional_funding=12000,
         can_lead="John",
