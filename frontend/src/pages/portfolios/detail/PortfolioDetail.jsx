@@ -7,6 +7,7 @@ import { setPortfolio } from "./portfolioDetailSlice";
 import { getCurrentFiscalYear } from "../../../components/PortfolioFundingTotal/util";
 import App from "../../../App";
 import { BreadcrumbItem, BreadcrumbList } from "../../../components/Header/Breadcrumb";
+import PortfolioDescription from "../../../components/PortfolioDescription/PortfolioDescription";
 
 const styles = {
     body: {
@@ -46,9 +47,10 @@ const PortfolioDetail = () => {
                 </BreadcrumbList>
                 <div style={styles.body}>
                     <div className="margin-left-2 margin-right-2">
-                        <section>
+                        <section style={styles.body}>
                             <h1 className="font-sans-2xl">{portfolio.name}</h1>
-                            {portfolio.description}
+                            <h1 className="font-sans-2xl">{portfolio.division?.name}</h1>
+                            <PortfolioDescription />
                         </section>
                         <section>
                             <PortfolioFundingSummary portfolioId={portfolioId} fiscalYear={currentFiscalYear} />
