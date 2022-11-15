@@ -102,7 +102,9 @@
       id: 2,
       portfolio_id: 1,
       paragraph_number: 1,
-      text: "ary services, and productive partnerships with states, tribes, and \
+      text: "The promotion of children’s safety, permanence, and well-being are the principles that guide child\
+             welfare practice and policy. ACF seeks to improve the safety, permanency, and well-being of children through\
+             leadership, support for necessary services, and productive partnerships with states, tribes, and \
              communities. ACF’s Children’s Bureau has the primary responsibility for administering federal programs\
              that support state child welfare services. ACF provides matching federal funds to states, tribes, and\
              communities to help them operate every aspect of their child welfare systems. This includes the\
@@ -151,7 +153,9 @@
       id: 6,
       portfolio_id: 2,
       paragraph_number: 1,
-      text: "ty, comprehensive services. In 1994, the Early Head Start program was established to provide\
+      text: "Established in 1965, Head Start was designed to promote the school readiness of children, ages three\
+             to five, from families with low income, by supporting the development of the whole child through\
+             high-quality, comprehensive services. In 1994, the Early Head Start program was established to provide\
              the same comprehensive services to families with low income who have infants and toddlers, as well as\
              pregnant women. Today, ACF’s Office of Head Start oversees approximately 1,600 Head Start and Early Head\
              Start grantees that serve nearly one million children, birth to age five, and their families."
@@ -166,7 +170,8 @@
              partnerships between researchers and local programs, Head Start develops and evaluates innovations in\
              Head Start practice related to infant mental health, parenting, dual language learning, curricular\
              enhancements, caregiver-child interactions, dual-generation approaches, and other topics. This growing\
-             research base provides valuable information not only for guiding program improvements in Head Start\n              itself, but also for the larger field of ECE.\\"
+             research base provides valuable information not only for guiding program improvements in Head Start\
+             itself, but also for the larger field of ECE."
     },
     {
       id: 8,
@@ -180,7 +185,9 @@
       id: 9,
       portfolio_id: 3,
       paragraph_number: 1,
-      text: "heir families."
+      text: "Quality child care and early education programs are a critical resource for families, support young\
+             children’s development in a variety of domains, and assist parents in accessing comprehensive services\
+             for their families."
     },
     {
       id: 10,
@@ -188,7 +195,12 @@
       paragraph_number: 2,
       text: "ACF supports working families with low incomes by providing funding and implementing policies intended\
              to increase access to affordable, quality child care and early education programs serving children from\
-             birth through age 13. ACF’s Office of Child Care administers the Child Care and Development Fund (CCDF),\n              which is a block grant authorized under the Child Care and Development Block Grant (CCDBG). In 2021,\n              CCDF made $9.5 billion available to state, territory, and tribal governments to support children and\n              their families by paying for child care that meets families’ needs and supports children’s development\n              and well-being. CCDF also provides funding to improve the quality of care by supporting efforts such as\n              child care licensing, quality improvement systems, and training and education for child care workers.\\"
+             birth through age 13. ACF’s Office of Child Care administers the Child Care and Development Fund (CCDF),\
+             which is a block grant authorized under the Child Care and Development Block Grant (CCDBG). In 2021,\
+             CCDF made $9.5 billion available to state, territory, and tribal governments to support children and\
+             their families by paying for child care that meets families’ needs and supports children’s development\
+             and well-being. CCDF also provides funding to improve the quality of care by supporting efforts such as\
+             child care licensing, quality improvement systems, and training and education for child care workers."
     },
     {
       id: 11,
@@ -213,7 +225,9 @@
       id: 13,
       portfolio_id: 4,
       paragraph_number: 1,
-      text: "he TANF block grant provides funds to States, eligible territories, and tribes, which decide\
+      text: "ACF’s Office of Family Assistance administers the Temporary Assistance for Needy Families (TANF)\
+             program. Established by the Personal Responsibility and Work Opportunity Reconciliation Act (PRWORA)\
+             of 1996, the TANF block grant provides funds to States, eligible territories, and tribes, which decide\
              on the design of the program, the type and amount of assistance payments to families, and the range of\
              other services to be provided. In FY 2021, ACF provided $16.5 billion in TANF funding. Approximately\
              437,000 adults and 1.6 million children received TANF cash assistance in FY 2019. The program supports\
@@ -259,7 +273,9 @@
       id: 17,
       portfolio_id: 5,
       paragraph_number: 1,
-      text: "o identify effective ways to decrease rates of teen sexual risk behavior and associated negative\
+      text: "Despite recent declines in teen childbirth rates, teen pregnancy rates in the United States are much\
+             higher than in other western industrialized nations. More research and programming innovations are needed\
+             to identify effective ways to decrease rates of teen sexual risk behavior and associated negative\
              outcomes. Since 2009, ACF has supported research and evaluation efforts in teen pregnancy prevention\
              and, more recently, sexual risk avoidance. ACF supports a number of research and evaluation activities\
              as well as learning from a broad array of other activities such as performance management, technical\
@@ -315,7 +331,9 @@
       id: 22,
       portfolio_id: 6,
       paragraph_number: 1,
-      text: "ally authorized under the Deficit Reduction Act of 2005 and reauthorized under the Claims\
+      text: "The Healthy Marriage and Responsible Fatherhood (HMRF) program is part of ACF’s strategy to improve the\
+             long-term well-being of children and families. HMRF is a $150 million discretionary grant program\
+             originally authorized under the Deficit Reduction Act of 2005 and reauthorized under the Claims\
              Resolution Act of 2010. ACF supports a number of research and evaluation activities as well as learning\
              from a broad array of other activities such as performance management, technical assistance, stakeholder\
              engagement, site monitoring, and continuous quality improvement."
@@ -355,7 +373,9 @@
       id: 26,
       portfolio_id: 7,
       paragraph_number: 1,
-      text: "ing involves three main intervention activities conducted through one-on-one interactions between\
+      text: "Home visiting is a service delivery strategy that aims to support the healthy development and well-being\
+             of children and families. While each home visiting model has its unique aspects, in general, home\
+             visiting involves three main intervention activities conducted through one-on-one interactions between\
              home visitors and families: assessing family needs, educating and supporting parents, and referring\
              families to needed services in the community. Early childhood home visiting programs aim to improve a\
              wide range of outcomes including maternal health, child health and development, child maltreatment\
@@ -398,7 +418,9 @@
       id: 30,
       portfolio_id: 8,
       paragraph_number: 1,
-      text: "ing coordination of planning between private and public welfare agencies or which will help improve\
+      text: "The Social Science Research and Demonstration appropriation is used to fund research or demonstration\
+             projects such as those relating to the prevention and reduction of dependency, or which will aid in\
+             effecting coordination of planning between private and public welfare agencies or which will help improve\
              the administration and effectiveness of programs carried on or assisted under the Social Security Act\
              and programs related thereto."
     }
