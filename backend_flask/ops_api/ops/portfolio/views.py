@@ -3,17 +3,16 @@ from flask import request
 from flask import Response
 from ops.portfolio.models import Portfolio
 from ops.portfolio.utils import get_total_funding
-from ops.portfolio.utils import portfolio_dumper
 
 
 def portfolio_list() -> Response:
     portfolios = Portfolio.query.all()
-    return jsonify([portfolio_dumper(portfolio) for portfolio in portfolios])
+    return jsonify([portfolio.to_dict() for portfolio in portfolios])
 
 
 def get_portfolio(pk: int) -> Response:
     portfolio = Portfolio.query.filter(Portfolio.id == pk).one()
-    return jsonify(portfolio_dumper(portfolio))
+    return portfolio.to_dict(nested=True)
 
 
 def calc_funding(pk: int) -> Response:

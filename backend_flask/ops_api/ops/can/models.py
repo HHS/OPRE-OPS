@@ -1,5 +1,6 @@
 from ops.portfolio.models import Portfolio
 from ops.portfolio.models import portfolio_cans
+from ops.utils import BaseModel
 from ops.utils import db
 from sqlalchemy.engine import Connection
 
@@ -15,7 +16,7 @@ can_funding_sources = db.Table(
 )
 
 
-class FundingSource(db.Model):
+class FundingSource(BaseModel):
     """The Funding Source (Source) for the CAN.
 
     From: https://docs.google.com/spreadsheets/d/18FP-ZDnvjtKakj0DDGL9lLXPry8xkqNt/
@@ -35,7 +36,7 @@ class FundingSource(db.Model):
     )
 
 
-class FundingPartner(db.Model):
+class FundingPartner(BaseModel):
     """The Funding Partner (Agency) for the CAN.
 
     See docstring for FundingSource
@@ -47,7 +48,7 @@ class FundingPartner(db.Model):
     nickname = db.Column(db.String(100))
 
 
-class AgreementType(db.Model):
+class AgreementType(BaseModel):
     __tablename__ = "agreement_type"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
@@ -87,7 +88,7 @@ agreement_cans = db.Table(
 )
 
 
-class CANFiscalYear(db.Model):
+class CANFiscalYear(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN."""
 
     __tablename__ = "can_fiscal_year"
@@ -112,7 +113,7 @@ class CANFiscalYear(db.Model):
         )"""
 
 
-class Agreement(db.Model):
+class Agreement(BaseModel):
     __tablename__ = "agreement"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
@@ -124,7 +125,7 @@ class Agreement(db.Model):
     cans = db.relationship("CAN", secondary=agreement_cans, back_populates="agreements")
 
 
-class BudgetLineItem(db.Model):
+class BudgetLineItem(BaseModel):
     __tablename__ = "budget_line_item"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
@@ -138,7 +139,7 @@ class BudgetLineItem(db.Model):
     status = db.relationship("BudgetLineItemStatus", back_populates="budget_line_item")
 
 
-class BudgetLineItemStatus(db.Model):
+class BudgetLineItemStatus(BaseModel):
     __tablename__ = "budget_line_item_status"
     id = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.String, nullable=False, unique=True)
@@ -158,7 +159,7 @@ class BudgetLineItemStatus(db.Model):
         )
 
 
-class CANArrangementType(db.Model):
+class CANArrangementType(BaseModel):
     __tablename__ = "can_arrangement_type"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(), nullable=False, unique=True)
@@ -186,7 +187,7 @@ db.event.listen(
 )
 
 
-class CAN(db.Model):
+class CAN(BaseModel):
     """
     A CAN is a Common Accounting Number, which is
     used to track money coming into OPRE
@@ -222,21 +223,3 @@ class CAN(db.Model):
     agreements = db.relationship(
         Agreement, secondary=agreement_cans, back_populates="cans"
     )
-    # fiscal_years = db.relationship("CANFiscalYear", back_populates="can")
-
-    def __repr__(self):
-        return f"""CAN(
-                    id={self.id!r},
-                    number={self.number!r},
-                    description={self.description!r},
-                    purpose={self.purpose!r},
-                    nickname={self.nickname!r},
-                    arrangement_type={self.arrangement_type!r},
-                    finding_source={self.funding_sources!r},
-                    authorizer={self.authorizer!r},
-                    managing_portfolio={self.managing_portfolio!r},
-                    shared_portfolios={self.shared_portfolios!r},
-                    budget_line_items={self.budget_line_items!r},
-                    agreements={self.agreements!r}
-                )
-        """

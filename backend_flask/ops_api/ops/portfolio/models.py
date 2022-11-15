@@ -1,5 +1,5 @@
-from ops.utils import db
 from ops.utils import BaseModel
+from ops.utils import db
 from sqlalchemy import Column
 from sqlalchemy import ForeignKey
 from sqlalchemy import Table
@@ -58,7 +58,8 @@ portfolio_cans = Table(
 
 class Portfolio(BaseModel):
     __tablename__ = "portfolio"
-    name = db.Column(db.String, nullable=False, unique=True)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
     description = db.Column(db.String, default="")
     status_id = db.Column(db.Integer, db.ForeignKey("portfolio_status.id"))
     status = db.relationship("PortfolioStatus")

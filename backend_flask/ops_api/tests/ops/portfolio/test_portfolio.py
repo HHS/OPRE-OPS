@@ -1,20 +1,33 @@
-from ops.portfolio.utils import get_total_funding
+import json
+
 from ops.portfolio.models import Portfolio
+import pytest
+
+# @pytest.fixture(scope="module")
+# def new_portfolio():
+#     return Portfolio(
+#         name="WRGB (CCE)",
+#         description="",
+#         status_id=1,
+#     )
 
 
-def test_portfolio_create(db_session):
+@pytest.fixture(scope="session")
+def portfolio_table(db_engine):
+    Portfolio.metadata.create_all(db_engine)
+    yield
+    Portfolio.metadata.drop_all(db_engine)
 
-    db_session.add(
-        Portfolio(
-            name="WRGB (CCE)",
-            description="",
-            status_id=1,
-        )
-    )
-    db_session.commit()
 
-    portfolio = Portfolio.query.first()
+def test_portfolio_retrieve(db_session, init_database, db_tables):
+    portfolio = db_session.query(Portfolio).filter(Portfolio.name == "WRGB (CCE)").one()
 
-    assert portfolio.count == 1
+    assert portfolio is not None
     assert portfolio.name == "WRGB (CCE)"
     assert portfolio.status_id == 1
+
+
+def test_portfolio_get(client, init_database):
+    response = client.get("/ops/portfolios/")
+    print(json.loads(response.data.decode("utf8")))
+    assert response.status_code == 200
