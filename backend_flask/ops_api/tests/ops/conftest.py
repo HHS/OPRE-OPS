@@ -7,14 +7,13 @@ from ops.can.models import CANFiscalYear
 from ops.can.models import FundingPartner
 from ops.can.models import FundingSource
 from ops.portfolio.models import Portfolio
-from ops.utils import BaseModel
+from ops.user.models import db
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session
-from sqlalchemy.orm import sessionmaker
+
+TEST_DB_NAME = "testdb"
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def app():
     app = create_app({"TESTING": True})
     # set up here
@@ -22,13 +21,9 @@ def app():
     # tear down here
 
 
-@pytest.fixture(scope="module")
-def client(app):
-    client = app.test_client()
-    yield client
-
-
-TEST_DB_NAME = "testdb"
+@pytest.fixture()
+def client(app, loaded_db):
+    return app.test_client()
 
 
 def pytest_addoption(parser):
@@ -40,55 +35,56 @@ def pytest_addoption(parser):
     )
 
 
-@pytest.fixture(scope="session")
-def db_engine(request):
-    """yields a SQLAlchemy engine which is suppressed after the test session"""
-    db_url = request.config.getoption("--dburl")
-    engine_ = create_engine(db_url, echo=True)
-
-    yield engine_
-
-    engine_.dispose()
-
-
-@pytest.fixture(scope="session")
-def db_session_factory(db_engine):
-    """returns a SQLAlchemy scoped session factory"""
-    return scoped_session(sessionmaker(bind=db_engine))
+#
+# @pytest.fixture(scope="session")
+# def db_engine(request):
+#     """yields a SQLAlchemy engine which is suppressed after the test session"""
+#     db_url = request.config.getoption("--dburl")
+#     engine_ = create_engine(db_url, echo=True)
+#
+#     yield engine_
+#
+#     engine_.dispose()
 
 
-@pytest.fixture(scope="function")
-def db_session(db_session_factory):
-    """yields a SQLAlchemy connection which is rollbacked after the test"""
-    session_ = db_session_factory()
+# @pytest.fixture(scope="session")
+# def db_session_factory(db_engine):
+#     """returns a SQLAlchemy scoped session factory"""
+#     return scoped_session(sessionmaker(bind=db_engine))
 
-    yield session_
-
-    session_.rollback()
-    session_.close()
-
-
-@pytest.fixture(scope="function")
-def db_tables(db_engine):
-    # AgreementType.metadata.create_all(db_engine)
-    # Agreement.metadata.create_all(db_engine)
-    # CAN.metadata.create_all(db_engine)
-    # CANFiscalYear.metadata.create_all(db_engine)
-    # BudgetLineItem.metadata.create_all(db_engine)
-    # Portfolio.metadata.create_all(db_engine)
-    BaseModel.metadata.create_all(db_engine)
-    yield
-    BaseModel.metadata.drop_all(db_engine)
-    # AgreementType.metadata.drop_all(db_engine)
-    # Agreement.metadata.drop_all(db_engine)
-    # CAN.metadata.drop_all(db_engine)
-    # CANFiscalYear.metadata.drop_all(db_engine)
-    # BudgetLineItem.metadata.drop_all(db_engine)
-    # Portfolio.metadata.drop_all(db_engine)
+#
+# @pytest.fixture(scope="function")
+# def db_session(db_session_factory):
+#     """yields a SQLAlchemy connection which is rollbacked after the test"""
+#     session_ = db_session_factory()
+#
+#     yield session_
+#
+#     session_.rollback()
+#     session_.close()
 
 
-@pytest.fixture(scope="function")
-def init_database(db_session, db_tables):
+# @pytest.fixture(scope="function")
+# def db_tables(db_engine):
+#     # AgreementType.metadata.create_all(db_engine)
+#     # Agreement.metadata.create_all(db_engine)
+#     # CAN.metadata.create_all(db_engine)
+#     # CANFiscalYear.metadata.create_all(db_engine)
+#     # BudgetLineItem.metadata.create_all(db_engine)
+#     # Portfolio.metadata.create_all(db_engine)
+#     BaseModel.metadata.create_all(db_engine)
+#     yield
+#     BaseModel.metadata.drop_all(db_engine)
+#     # AgreementType.metadata.drop_all(db_engine)
+#     # Agreement.metadata.drop_all(db_engine)
+#     # CAN.metadata.drop_all(db_engine)
+#     # CANFiscalYear.metadata.drop_all(db_engine)
+#     # BudgetLineItem.metadata.drop_all(db_engine)
+#     # Portfolio.metadata.drop_all(db_engine)
+
+
+@pytest.fixture()
+def loaded_db(app):
     # Using the db_session fixture, we have a session, with a SQLAlchemy db_engine
     # binding.
 
@@ -184,46 +180,55 @@ def init_database(db_session, db_tables):
         status_id=1,
     )
 
-    db_session.add(funding_source1)
-    db_session.add(funding_source2)
-    db_session.flush()
+    with app.app_context():
+        db.session.add(funding_source1)
+        db.session.add(funding_source2)
+        db.session.flush()
 
-    db_session.add(funding_partner1)
-    db_session.flush()
+        db.session.add(funding_partner1)
+        db.session.flush()
 
-    db_session.add(p1)
-    db_session.add(p2)
-    db_session.flush()
+        db.session.add(p1)
+        db.session.add(p2)
+        db.session.flush()
 
-    db_session.add(planned_status)
-    db_session.add(in_execution_status)
-    db_session.add(obligated_status)
-    # db_session.add(contract)
-    # db_session.add(grant)
-    # db_session.add(direct)
-    # db_session.add(iaa)
-    # db_session.add(misc)
-    db_session.flush()
+        db.session.add(planned_status)
+        db.session.add(in_execution_status)
+        db.session.add(obligated_status)
+        # db_session.add(contract)
+        # db_session.add(grant)
+        # db_session.add(direct)
+        # db_session.add(iaa)
+        # db_session.add(misc)
+        db.session.flush()
 
-    # db_session.add(opre_appropriation)
-    # db_session.add(cost_share)
-    # db_session.add(iaa_arrangement)
-    # db_session.add(idda)
-    # db_session.add(mou)
-    # db_session.flush()
+        # db_session.add(opre_appropriation)
+        # db_session.add(cost_share)
+        # db_session.add(iaa_arrangement)
+        # db_session.add(idda)
+        # db_session.add(mou)
+        # db_session.flush()
 
-    db_session.add(can1)
-    db_session.add(can2)
-    db_session.flush()
+        db.session.add(can1)
+        db.session.add(can2)
+        db.session.flush()
 
-    db_session.add(cfy1)
-    db_session.add(cfy2)
-    db_session.add(cfy3)
-    db_session.add(cf42)
-    db_session.flush()
+        db.session.add(cfy1)
+        db.session.add(cfy2)
+        db.session.add(cfy3)
+        db.session.add(cf42)
+        db.session.flush()
 
-    db_session.add(bli1)
-    db_session.add(bli2)
-    # db_session.add(pc1)
-    # db_session.add(pc2)
-    db_session.commit()
+        db.session.add(bli1)
+        db.session.add(bli2)
+        # db_session.add(pc1)
+        # db_session.add(pc2)
+        db.session.commit()
+
+        yield db
+
+
+@pytest.fixture()
+def app_ctx(app):
+    with app.app_context():
+        yield

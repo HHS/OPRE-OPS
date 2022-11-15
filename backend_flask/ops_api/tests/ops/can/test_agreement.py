@@ -1,8 +1,10 @@
 from ops.can.models import Agreement
+import pytest
 
 
-def test_agreement_lookup(db_session, init_database, db_tables):
-    agreement = db_session.query(Agreement).get(1)
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_lookup(loaded_db):
+    agreement = loaded_db.session.query(Agreement).get(1)
     assert agreement is not None
     assert agreement.name == "Agreement A11"
 

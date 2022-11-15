@@ -1,8 +1,10 @@
 from ops.can.models import CAN
+import pytest
 
 
-def test_can_retrieve(db_session, init_database, db_tables):
-    can = db_session.query(CAN).filter(CAN.number == "G990205").one()
+@pytest.mark.usefixtures("app_ctx")
+def test_can_retrieve(loaded_db):
+    can = loaded_db.session.query(CAN).filter(CAN.number == "G990205").one()
 
     assert can is not None
     assert can.number == "G990205"

@@ -1,4 +1,5 @@
 from ops.utils import BaseModel
+import pytest
 from sqlalchemy import Column
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
@@ -6,7 +7,8 @@ from sqlalchemy import String
 from sqlalchemy.orm import relationship
 
 
-def test_serialize_mixin(db_session, db_engine):
+@pytest.mark.usefixtures("app_ctx")
+def test_serialize_mixin(loaded_db):
     class User(BaseModel):
         __tablename__ = "user"
         id = Column(Integer, primary_key=True)
@@ -20,19 +22,19 @@ def test_serialize_mixin(db_session, db_engine):
         body = Column(String)
         user_id = Column(Integer, ForeignKey("user.id"))
 
-    BaseModel.metadata.create_all(db_engine)
+    # BaseModel.metadata.create_all(db_engine)
 
     bob = User(name="Bob", knowledge_word="pass123")
-    db_session.add(bob)
-    db_session.flush()
+    loaded_db.session.add(bob)
+    loaded_db.session.flush()
 
     post1 = Post(body="Post 1", user=bob)
-    db_session.add(post1)
-    db_session.flush()
+    loaded_db.session.add(post1)
+    loaded_db.session.flush()
 
     post2 = Post(body="Post 2", user=bob)
-    db_session.add(post2)
-    db_session.flush()
+    loaded_db.session.add(post2)
+    loaded_db.session.flush()
 
     serialize = bob.to_dict()
     assert serialize == {"id": 1, "name": "Bob", "knowledge_word": "pass123"}

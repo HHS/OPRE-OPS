@@ -1,9 +1,11 @@
 from ops.can.models import FundingPartner
+import pytest
 
 
-def test_funding_partner_lookup(db_session, init_database, db_tables):
+@pytest.mark.usefixtures("app_ctx")
+def test_funding_partner_lookup(loaded_db):
     funding_partner = (
-        db_session.query(FundingPartner).filter(FundingPartner.id == 1).one()
+        loaded_db.session.query(FundingPartner).filter(FundingPartner.id == 1).one()
     )
     assert funding_partner is not None
     assert funding_partner.id == 1

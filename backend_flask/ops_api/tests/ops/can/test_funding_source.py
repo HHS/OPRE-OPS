@@ -1,8 +1,12 @@
 from ops.can.models import FundingSource
+import pytest
 
 
-def test_funding_source_lookup(db_session, init_database, db_tables):
-    funding_source = db_session.query(FundingSource).filter(FundingSource.id == 1).one()
+@pytest.mark.usefixtures("app_ctx")
+def test_funding_source_lookup(loaded_db):
+    funding_source = (
+        loaded_db.session.query(FundingSource).filter(FundingSource.id == 1).one()
+    )
     assert funding_source is not None
     assert funding_source.id == 1
     assert funding_source.name == "Funding-Source-1"

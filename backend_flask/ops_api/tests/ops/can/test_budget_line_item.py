@@ -1,8 +1,10 @@
 from ops.can.models import BudgetLineItem
+import pytest
 
 
-def test_budget_line_item_lookup(db_session, init_database, db_tables):
-    bli = db_session.query(BudgetLineItem).get(1)
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_item_lookup(loaded_db):
+    bli = loaded_db.session.query(BudgetLineItem).get(1)
     assert bli is not None
     assert bli.id == 1
     assert bli.name == "Grant Expendeture GA112"
