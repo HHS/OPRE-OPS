@@ -2,13 +2,7 @@ button {
     background: none!important;
     border: none;
     text-align: left;
-    /*padding: 0!important;*/
-    /*optional*/
-    /*font-family: arial, sans-serif;*/
-    /*input has OS specific font-family*/
-    /*color: #069;*/
-    /*text-decoration: underline;*/
-    /*cursor: pointer;*/
+    padding: 0!important;
 }
 
 .readMore {

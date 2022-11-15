@@ -30,8 +30,7 @@ const PortfolioDescription = () => {
             <div>
                 <p>
                     <button onClick={expandCollapse} style={buttonStyle}>
-                        <span>{portfolio.description?.[0].text}...</span>
-                        <span>read more</span>
+                        <p>{portfolio.description?.[0].text}...read more</p>
                     </button>
                     <span style={textStyle}>
                         {portfolio.description?.map(
