@@ -1,6 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy_mixins import ReprMixin
+from sqlalchemy_mixins import SerializeMixin
 
-db = SQLAlchemy()
+Base = declarative_base()
 
 
 def keyvalgen(obj):
@@ -11,13 +14,21 @@ def keyvalgen(obj):
             yield k, v
 
 
-class BaseModel(db.Model):
+class BaseModel(Base, SerializeMixin, ReprMixin):
     __abstract__ = True
+    __repr__ = ReprMixin.__repr__
 
-    id = db.Column(db.Integer, primary_key=True)
-    created_on = db.Column(db.DateTime, default=db.func.now())
-    updated_on = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
 
-    def __repr__(self):
-        params = ", ".join(f"{k}={v}" for k, v in keyvalgen(self))
-        return f"{self.__class__.__name__}({params})"
+# class BaseModel(db.Model):
+#     __abstract__ = True
+
+#     id = db.Column(db.Integer, primary_key=True)
+#     created_on = db.Column(db.DateTime, default=db.func.now())
+#     updated_on = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
+
+#     def __repr__(self):
+#         params = ", ".join(f"{k}={v}" for k, v in keyvalgen(self))
+#         return f"{self.__class__.__name__}({params})"
+
+
+db = SQLAlchemy(model_class=BaseModel)
