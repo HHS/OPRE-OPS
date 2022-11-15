@@ -6,7 +6,9 @@ from ops.can.models import CAN
 from ops.can.models import CANFiscalYear
 from ops.can.models import FundingPartner
 from ops.can.models import FundingSource
+from ops.portfolio.models import Division
 from ops.portfolio.models import Portfolio
+from ops.portfolio.models import PortfolioUrl
 from ops.utils import BaseModel
 import pytest
 from sqlalchemy import create_engine
@@ -108,10 +110,24 @@ def init_database(db_session, db_tables):
     # iaa_arrangement=CANArrangementType(name="IAA")
     # idda=CANArrangementType(name="IDDA")
     # mou=CANArrangementType(name="MOU")
+    division1 = Division(name="Division-1", abbreviation="DV1")
+    division2 = Division(name="Division-2", abbreviation="DV2")
     ag1 = Agreement(name="Agreement A11", agreement_type_id=2)
 
-    p1 = Portfolio(name="WRGB (CCE)", description="Sample Description 1", status_id=1)
-    p2 = Portfolio(name="WCCH (ABC)", description="Sample Description 2", status_id=2)
+    p1 = Portfolio(
+        name="WRGB (CCE)",
+        description="Sample Description 1",
+        status_id=1,
+        division_id=2,
+    )
+    p2 = Portfolio(
+        name="WCCH (ABC)",
+        description="Sample Description 2",
+        status_id=2,
+        division_id=1,
+    )
+    p_url1 = PortfolioUrl(portfolio_id=1, url="/ops/portfolio/1")
+    p_url2 = PortfolioUrl(portfolio_id=2, url="/ops/portfolio/2")
     can1 = CAN(
         number="G99WRGB",
         description="Secondary Analyses Data On Child Care & Early Edu",
@@ -184,6 +200,10 @@ def init_database(db_session, db_tables):
         status_id=1,
     )
 
+    db_session.add(division1)
+    db_session.add(division2)
+    db_session.flush()
+
     db_session.add(funding_source1)
     db_session.add(funding_source2)
     db_session.flush()
@@ -193,6 +213,10 @@ def init_database(db_session, db_tables):
 
     db_session.add(p1)
     db_session.add(p2)
+    db_session.flush()
+
+    db_session.add(p_url1)
+    db_session.add(p_url2)
     db_session.flush()
 
     db_session.add(planned_status)
