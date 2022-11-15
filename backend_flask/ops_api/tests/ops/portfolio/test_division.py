@@ -1,12 +1,13 @@
 from ops.portfolio.models import Division
+import pytest
 
 
-def test_division_lookup(db_session, init_database, db_tables):
-    division = db_session.query(Division).get(1)
+@pytest.mark.usefixtures("app_ctx")
+def test_division_lookup(loaded_db):
+    division = loaded_db.session.query(Division).get(1)
     assert division is not None
     assert division.name == "Division-1"
     assert division.abbreviation == "DV1"
-    assert division.portfolio != []
 
 
 def test_division_create():

@@ -1,8 +1,10 @@
 from ops.portfolio.models import PortfolioUrl
+import pytest
 
 
-def test_portfolio_url_lookup(db_session, init_database, db_tables):
-    pUrl = db_session.query(PortfolioUrl).get(1)
+@pytest.mark.usefixtures("app_ctx")
+def test_portfolio_url_lookup(loaded_db):
+    pUrl = loaded_db.session.query(PortfolioUrl).get(1)
     assert pUrl is not None
     assert pUrl.url == "/ops/portfolio/1"
     assert pUrl.portfolio_id == 1

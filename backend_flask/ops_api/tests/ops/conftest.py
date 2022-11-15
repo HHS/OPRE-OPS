@@ -6,7 +6,9 @@ from ops.can.models import CAN
 from ops.can.models import CANFiscalYear
 from ops.can.models import FundingPartner
 from ops.can.models import FundingSource
+from ops.portfolio.models import Division
 from ops.portfolio.models import Portfolio
+from ops.portfolio.models import PortfolioUrl
 from ops.user.models import db
 import pytest
 
@@ -88,6 +90,8 @@ def loaded_db(app):
     # Using the db_session fixture, we have a session, with a SQLAlchemy db_engine
     # binding.
 
+    division1 = Division(name="Division-1", abbreviation="DV1")
+    division2 = Division(name="Division-2", abbreviation="DV2")
     funding_source1 = FundingSource(name="Funding-Source-1", nickname="FS1")
     funding_source2 = FundingSource(name="Funding-Source-2", nickname="FS2")
     funding_partner1 = FundingPartner(name="Funding-Partner-1", nickname="FP1")
@@ -108,6 +112,8 @@ def loaded_db(app):
 
     p1 = Portfolio(name="WRGB (CCE)", description="Sample Description 1", status_id=1)
     p2 = Portfolio(name="WCCH (ABC)", description="Sample Description 2", status_id=2)
+    p_url1 = PortfolioUrl(portfolio_id=1, url="/ops/portfolio/1")
+    p_url2 = PortfolioUrl(portfolio_id=2, url="/ops/portfolio/2")
     can1 = CAN(
         number="G99WRGB",
         description="Secondary Analyses Data On Child Care & Early Edu",
@@ -181,6 +187,10 @@ def loaded_db(app):
     )
 
     with app.app_context():
+        db.session.add(division1)
+        db.session.add(division2)
+        db.session.flush()
+
         db.session.add(funding_source1)
         db.session.add(funding_source2)
         db.session.flush()
@@ -190,6 +200,10 @@ def loaded_db(app):
 
         db.session.add(p1)
         db.session.add(p2)
+        db.session.flush()
+
+        db.session.add(p_url1)
+        db.session.add(p_url2)
         db.session.flush()
 
         db.session.add(planned_status)

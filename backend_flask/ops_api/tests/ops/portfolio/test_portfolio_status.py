@@ -2,8 +2,9 @@ from ops.portfolio.models import PortfolioStatus
 import pytest
 
 
-def test_portfolio_status_count(db_session, init_database, db_tables):
-    portfolio_status_count = db_session.query(PortfolioStatus).all()
+@pytest.mark.usefixtures("app_ctx")
+def test_portfolio_status_count(loaded_db):
+    portfolio_status_count = loaded_db.session.query(PortfolioStatus).all()
     assert len(portfolio_status_count) == 3
 
 
@@ -15,6 +16,7 @@ def test_portfolio_status_count(db_session, init_database, db_tables):
         (3, "Sandbox"),
     ],
 )
-def test_portfolio_status_lookup(db_session, init_database, db_tables, id, name):
-    portfolio_status = db_session.query(PortfolioStatus).get(id)
+@pytest.mark.usefixtures("app_ctx")
+def test_portfolio_status_lookup(loaded_db, id, name):
+    portfolio_status = loaded_db.session.query(PortfolioStatus).get(id)
     assert portfolio_status.name == name
