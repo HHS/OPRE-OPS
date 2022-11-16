@@ -13,5 +13,5 @@ runs:
       run: pip install pipenv
     - name: Install Pipenv dependencies
       shell: bash
-      working-directory: ./backend
+      working-directory: ./backend/ops_api
       run: pipenv install --dev
