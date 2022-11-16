@@ -38,3 +38,19 @@ def test_can_creation():
 
     assert can is not None
     assert serialized["number"] == "G990991-X"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_all(client, loaded_db):
+    assert loaded_db.session.query(CAN).count() == 2
+
+    response = client.get("/ops/cans/")
+    assert response.status_code == 200
+    assert len(response.json) == 2
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_by_id(client, loaded_db):
+    response = client.get("/ops/cans/1")
+    assert response.status_code == 200
+    assert response.json["number"] == "G99WRGB"

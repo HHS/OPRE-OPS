@@ -15,4 +15,4 @@ bp_portfolio_status.add_url_rule("/<int:pk>/", view_func=views.get_portfolio_sta
 
 bp_division = Blueprint("division", __name__, url_prefix="/ops/division")
 bp_division.add_url_rule("/", view_func=views.division_list)
-bp_division.add_url_rule("/<int:pk>/", view_func=views.get_division)
+bp_division.add_url_rule("/<int:pk>", view_func=views.get_division)
