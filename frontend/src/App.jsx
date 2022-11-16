@@ -6,9 +6,7 @@ function App(props) {
         <>
             <div className="usa-overlay"></div>
             <Header />
-            <main id="main-content">
-                <section className="grid-container usa-section">{props.children}</section>
-            </main>
+            <main id="main-content">{props.children}</main>
             <Footer />
         </>
     );
