@@ -1,4 +1,5 @@
 from ops.utils import BaseModel
+from ops.utils import db
 import pytest
 from sqlalchemy import Column
 from sqlalchemy import ForeignKey
@@ -23,6 +24,8 @@ def test_serialize_mixin(loaded_db):
         user_id = Column(Integer, ForeignKey("user.id"))
 
     # BaseModel.metadata.create_all(db_engine)
+    User.metadata.create_all(db.engine)
+    Post.metadata.create_all(db.engine)
 
     bob = User(name="Bob", knowledge_word="pass123")
     loaded_db.session.add(bob)
