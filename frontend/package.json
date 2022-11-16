@@ -59,7 +59,8 @@
       ".jsx$",
       "src/applicationContext/.+",
       "src/helpers/backend.js$",
-      "src/reportWebVitals.js$"
+      "src/reportWebVitals.js$",
+      "src/uswds/"
     ],
     "transformIgnorePatterns": [
       "node_modules/(?!crypto-random-string)/"
