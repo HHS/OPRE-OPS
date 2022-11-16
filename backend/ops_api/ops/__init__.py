@@ -48,7 +48,8 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
         app.config.from_mapping(config_overrides)
 
     app.register_blueprint(ops.auth.urls.bp)
-    app.register_blueprint(ops.can.urls.bp)
+    app.register_blueprint(ops.can.urls.bp_cans)
+    app.register_blueprint(ops.can.urls.bp_can_fiscal_year)
     app.register_blueprint(ops.portfolio.urls.bp_portfolio)
     app.register_blueprint(ops.portfolio.urls.bp_portfolio_status)
     app.register_blueprint(ops.portfolio.urls.bp_division)

@@ -1,14 +1,39 @@
 from flask import jsonify
 from flask import Response
 from ops.can.models import CAN
-from ops.can.utils import can_dumper
+from ops.can.models import CANFiscalYear
 
 
 def all_cans() -> Response:
     cans = CAN.query.all()
-    return jsonify([can_dumper(can) for can in cans])
+    response = jsonify([can.to_dict() for can in cans])
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 
 def load_can(pk: int) -> Response:
     can = CAN.query.filter(CAN.id == pk).one()
-    return jsonify(can_dumper(can))
+    response = jsonify(can.to_dict())
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
+
+
+def all_can_fiscal_years() -> Response:
+    canFiscalYears = CANFiscalYear.query.all()
+    response = jsonify([cfy.to_dict() for cfy in canFiscalYears])
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
+
+
+def get_can_fiscal_year(can_id: int, year: int) -> Response:
+    canFiscalYear = CANFiscalYear.query.filter(
+        CANFiscalYear.can_id == can_id, CANFiscalYear.fiscal_year == year
+    ).one()
+
+    if canFiscalYear:
+        response = jsonify(canFiscalYear.to_dict())
+    else:  # No records returned
+        response = {}
+
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response

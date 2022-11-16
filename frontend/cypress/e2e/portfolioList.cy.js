@@ -13,10 +13,10 @@ it("passes a11y checks", () => {
 });
 
 it("clicking on a Portfolio takes you to the detail page", () => {
-    const portfolioName = "SuperAwesome Portfolio";
+    const portfolioName = "Healthy Marriage & Responsible Fatherhood";
 
     cy.contains(portfolioName).click();
 
-    cy.url().should("include", "/portfolios/1");
+    cy.url().should("include", "/portfolios/6");
     cy.get("h1").should("contain", portfolioName);
 });
