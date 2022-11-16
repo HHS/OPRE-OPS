@@ -1,19 +1,16 @@
 from decimal import Decimal
 
-import pytest
-
-from ops_api.ops.cans.models import (
-    Agreement,
-    AgreementType,
-    BudgetLineItem,
-    BudgetLineItemStatus,
-    CAN,
-    CANFiscalYear,
-    FundingPartner,
-)
+from ops_api.ops.cans.models import Agreement
+from ops_api.ops.cans.models import AgreementType
+from ops_api.ops.cans.models import BudgetLineItem
+from ops_api.ops.cans.models import BudgetLineItemStatus
+from ops_api.ops.cans.models import CAN
+from ops_api.ops.cans.models import CANFiscalYear
+from ops_api.ops.cans.models import FundingPartner
 from ops_api.ops.portfolios.controller import get_total_funding
 from ops_api.ops.portfolios.controller import PortfolioSerializer
 from ops_api.ops.portfolios.models import Portfolio
+import pytest
 
 
 @pytest.fixture(autouse=True)

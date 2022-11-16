@@ -49,7 +49,7 @@ services:
 
   backend:
     build:
-      context: ./backend_flask/ops_api/
+      context: ./backend/ops_api/
       dockerfile: Dockerfile
     platform: linux/amd64
     container_name: ops-backend
@@ -59,7 +59,7 @@ services:
       - JWT_PRIVATE_KEY
       - OPS_CONFIG=environment/local.py
     volumes:
-      - ./backend_flask/ops_api/ops:/home/app/ops
+      - ./backend/ops_api/ops:/home/app/ops
     depends_on:
          db:
            condition: service_healthy
