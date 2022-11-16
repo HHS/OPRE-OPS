@@ -1,7 +1,9 @@
 import { useSelector } from "react-redux";
 
-import "./styles.module.css";
+import cssStyles from "./styles.module.css";
 import { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 
 const PortfolioDescription = () => {
     const portfolio = useSelector((state) => state.portfolioDetail.portfolio);
@@ -19,36 +21,33 @@ const PortfolioDescription = () => {
     const [buttonStyle, setButtonStyle] = useState(styles.visible);
 
     const expandCollapse = () => {
-        console.log("you just clicked");
-
         setTextStyle(styles.visible);
         setButtonStyle(styles.hidden);
     };
 
     return (
         <div>
-            <div>
+            <button onClick={expandCollapse} style={buttonStyle}>
                 <p>
-                    <button onClick={expandCollapse} style={buttonStyle}>
-                        <p>{portfolio.description?.[0].text}...read more</p>
-                    </button>
-                    <span style={textStyle}>
-                        {portfolio.description?.map(
-                            (description_line) =>
-                                description_line.paragraph_number !== 0 && (
-                                    <p key={description_line.id}>{description_line.text}</p>
-                                )
-                        )}
-                        {portfolio.urls?.map((url) => (
-                            <p key={url.id}>
-                                <a key={url.id} href={url.url}>
-                                    See more on the website
-                                </a>
-                            </p>
-                        ))}
-                    </span>
+                    {portfolio.description?.[0].text}...<span className={cssStyles.readMore}>read more</span>
                 </p>
-            </div>
+            </button>
+            <span style={textStyle}>
+                {portfolio.description?.map(
+                    (description_line) =>
+                        description_line.paragraph_number !== 0 && (
+                            <p key={description_line.id}>{description_line.text}</p>
+                        )
+                )}
+                {portfolio.urls?.map((url) => (
+                    <p key={url.id}>
+                        <a key={url.id} href={url.url}>
+                            See more on the website
+                            <FontAwesomeIcon icon={solid("up-right-from-square")} className={cssStyles.upRightIcon} />
+                        </a>
+                    </p>
+                ))}
+            </span>
         </div>
     );
 };

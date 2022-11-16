@@ -1,8 +1,12 @@
 button {
-    background: none!important;
+    background: none;
     border: none;
     text-align: left;
-    padding: 0!important;
+    padding: 0;
+}
+
+p {
+    line-height: 24px;
 }
 
 .readMore {
@@ -16,4 +20,11 @@ button {
 
 .visible {
     display: inline;
+}
+
+.upRightIcon {
+    height: 9px;
+    width: 9px;
+    padding-left: 4px;
+    vertical-align: middle;
 }
