@@ -460,21 +460,6 @@
       id: 7,
       portfolio_id: 7,
       url: "https://www.acf.hhs.gov/opre/topic/home-visiting"
-    },
-    {
-      id: 8,
-      portfolio_id: 8,
-      url: "https://www.acf.hhs.gov/opre/topic/interoperability-and-data-sharing"
-    },
-    {
-      id: 9,
-      portfolio_id: 8,
-      url: "https://www.acf.hhs.gov/opre/topic/methods-and-tools"
-    },
-    {
-      id: 10,
-      portfolio_id: 8,
-      url: "https://www.acf.hhs.gov/opre/topic/administrative-data-research-and-improvement"
     }
   ]
 }
