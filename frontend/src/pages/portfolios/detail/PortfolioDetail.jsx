@@ -8,21 +8,16 @@ import { getCurrentFiscalYear } from "../../../components/PortfolioFundingTotal/
 import App from "../../../App";
 import { BreadcrumbItem, BreadcrumbList } from "../../../components/Header/Breadcrumb";
 import PortfolioHeader from "../../../components/PortfolioHeader/PortfolioHeader";
+import CanCard from "../../../components/CanCard/CanCard";
 
-const styles = {
-    body: {
-        width: "1024px",
-        margin: "auto",
-    },
-};
+import styles from "./styles.module.css";
 
-const CanList = ({ id, name }) => {
-    return (
-        <li>
-            <Link to={`/cans/${id}`}>{name}</Link>
-        </li>
-    );
-};
+// const styles = {
+//     body: {
+//         width: "1024px",
+//         margin: "auto",
+//     }
+// };
 
 const PortfolioDetail = () => {
     const dispatch = useDispatch();
@@ -39,6 +34,8 @@ const PortfolioDetail = () => {
         };
     }, [dispatch, portfolioId]);
 
+    const canListStyles = `usa-list padding-0 ${styles.canList}`;
+
     return (
         <>
             <App>
@@ -53,11 +50,14 @@ const PortfolioDetail = () => {
                         </section>
                         <section>
                             <h2>CANs</h2>
-                            <ul className="usa-list">
-                                {portfolio.internal_can?.map((can) => (
-                                    <CanList key={can.id} id={can.id} name={can.number} />
-                                ))}
-                            </ul>
+                            <div>
+                                {/*<ul className={canListStyles}>*/}
+                                {/*{portfolio.internal_can?.map((can) => (*/}
+                                {/*    <CanCard key={can.id} />*/}
+                                {/*))}*/}
+                                <CanCard />
+                            </div>
+                            {/*</ul>*/}
                         </section>
                     </div>
                 </div>
