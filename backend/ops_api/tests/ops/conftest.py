@@ -110,10 +110,12 @@ def loaded_db(app):
     # mou=CANArrangementType(name="MOU")
     ag1 = Agreement(name="Agreement A11", agreement_type_id=2)
 
-    p1 = Portfolio(name="WRGB (CCE)", description="Sample Description 1", status_id=1)
-    p2 = Portfolio(name="WCCH (ABC)", description="Sample Description 2", status_id=2)
+    p1 = Portfolio(name="WRGB (CCE)", status_id=1)
+    p2 = Portfolio(name="WCCH (ABC)", status_id=2)
+
     p_url1 = PortfolioUrl(portfolio_id=1, url="/ops/portfolio/1")
     p_url2 = PortfolioUrl(portfolio_id=2, url="/ops/portfolio/2")
+
     can1 = CAN(
         number="G99WRGB",
         description="Secondary Analyses Data On Child Care & Early Edu",

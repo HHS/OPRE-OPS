@@ -27,6 +27,7 @@
     "sass-loader": "13.2.0"
   },
   "devDependencies": {
+    "@testing-library/react": "^13.4.0",
     "@uswds/compile": "^1.0.0-beta.3",
     "axe-core": "4.5.2",
     "cypress": "10.11.0",
@@ -59,7 +60,8 @@
       ".jsx$",
       "src/applicationContext/.+",
       "src/helpers/backend.js$",
-      "src/reportWebVitals.js$"
+      "src/reportWebVitals.js$",
+      "src/uswds/"
     ],
     "transformIgnorePatterns": [
       "node_modules/(?!crypto-random-string)/"

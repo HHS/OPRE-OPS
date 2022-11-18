@@ -3,6 +3,7 @@ from ops.utils import db
 from sqlalchemy import Column
 from sqlalchemy import ForeignKey
 from sqlalchemy import Table
+from sqlalchemy import Text
 from sqlalchemy.engine import Connection
 
 
@@ -69,3 +70,15 @@ class Portfolio(BaseModel):
     division_id = db.Column(db.Integer, db.ForeignKey("division.id"))
     division = db.relationship("Division", back_populates="portfolio")
     urls = db.relationship("PortfolioUrl")
+    description = db.relationship(
+        "PortfolioDescriptionText", back_populates="portfolio"
+    )
+
+
+class PortfolioDescriptionText(db.Model):
+    __tablename__ = "portfolio_description_text"
+    id = db.Column(db.Integer, primary_key=True)
+    portfolio_id = db.Column(db.Integer, db.ForeignKey("portfolio.id"))
+    paragraph_number = db.Column(db.Integer)
+    text = db.Column(Text)
+    portfolio = db.relationship("Portfolio", back_populates="description")
