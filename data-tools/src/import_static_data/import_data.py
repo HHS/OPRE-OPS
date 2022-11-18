@@ -23,7 +23,8 @@ ALLOWED_TABLES = [
     "agreement_type",
     "agreement",
     "budget_line_item",
-    "budget_line_item_status"
+    "budget_line_item_status",
+    "portfolio_description_text"
 ]
 
 ALLOWED_ENVIRONMENTS = ["environment.dev", "environment.local", "environment.cloudgov"]
