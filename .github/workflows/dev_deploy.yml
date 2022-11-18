@@ -7,10 +7,6 @@ on:
 
 jobs:
 
-  unit-tests:
-    name: Unit Tests
-    uses: ./.github/workflows/unit_test_reusable.yml
-
   development:
     name: Deploy to Development
     needs:
