@@ -2494,10 +2494,10 @@
     postcss-csso "5.0.1"
     sass-embedded "1.50.1"
 
-"@uswds/uswds@3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@uswds/uswds/-/uswds-3.2.0.tgz#6fe7944fed6b99b4ef6ad74ab811bcd5d1fc0f8a"
-  integrity sha512-Lk3qCkeDVR6I8tFuiK3fsb3ewC6lhttiXL9ZPDDnVVclAXlAE0SFfPIBw5aYdyKU3xq3KEjkQTS2tmC8/nBrmw==
+"@uswds/uswds@3.3.0":
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/@uswds/uswds/-/uswds-3.3.0.tgz#19097ada5bb07cd51269811d0309b021604823e9"
+  integrity sha512-qiugkbwrO+eIIwi4lbEdH15LCHuAjfUMDRQNBBujakR99Ka3iqmrLpPllffdKaJJnnYkt75v0lltnJ5Nnd/obQ==
   dependencies:
     classlist-polyfill "1.0.3"
     object-assign "4.1.1"
