@@ -4,7 +4,7 @@ Date: 2021-07-02
 
 ## Status
 
-Accepted
+~~Accepted~~ *Deprecated - See ADR 017*
 
 ## Context
 

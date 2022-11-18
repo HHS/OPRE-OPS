@@ -1,10 +1,12 @@
-from typing import Tuple, Dict
-
-import sqlalchemy.engine
-from sqlalchemy import create_engine, insert, MetaData, text
-import json5
 import os
+from typing import Dict, Tuple
 
+import json5
+from sqlalchemy import create_engine
+from sqlalchemy import insert
+from sqlalchemy import MetaData
+from sqlalchemy import text
+import sqlalchemy.engine
 
 # Whitelisting here to help mitigate a SQL Injection attack from the JSON data
 ALLOWED_TABLES = [
@@ -15,7 +17,7 @@ ALLOWED_TABLES = [
     "funding_partner",
     "funding_source",
     "users",
-    "cans",
+    "can",
     "can_fiscal_year",
     "can_arrangement_type",
     "agreement_type",

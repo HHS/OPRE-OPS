@@ -6,12 +6,12 @@ runs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.9'
+        python-version: '3.10'
         cache: pipenv
     - name: Install Pipenv
       shell: bash
       run: pip install pipenv
     - name: Install Pipenv dependencies
       shell: bash
-      working-directory: ./backend
+      working-directory: ./backend/ops_api
       run: pipenv install --dev

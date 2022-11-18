@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup-python
       - name: Run backend unit tests
-        working-directory: ./backend
+        working-directory: ./backend/ops_api/
         run: pipenv run pytest
 
 

@@ -13,7 +13,7 @@ repos:
 
   ## Used to find secrets throughout the repository.
   -   repo: https://github.com/ibm/detect-secrets
-      rev: 0.13.1+ibm.50.dss # https://github.com/Yelp/detect-secrets/releases
+      rev: 0.13.1+ibm.54.dss # https://github.com/Yelp/detect-secrets/releases
       hooks:
       -   id: detect-secrets
           args: ['--baseline', '.secrets.baseline']
@@ -27,11 +27,15 @@ repos:
   #   rev: 22.6.0
   #   hooks:
   #   -   id: black
+  - repo: https://github.com/pre-commit/mirrors-isort
+    rev: v5.10.1
+    hooks:
+      - id: isort
   - repo: local
     hooks:
       - id: nox-lint
         name: nox-lint
-        entry: bash -c 'cd ./backend/ && pipenv run nox -s lint'
+        entry: bash -c 'cd ./backend/ops_api && pipenv run nox -s lint'
         language: system
         types:
          - python

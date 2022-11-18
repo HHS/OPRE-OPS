@@ -21,7 +21,7 @@
       name: "MOU"
     }
   ],
-  "cans": [
+  "can": [
     {
       id: 1,
       number: "G99HRF2",
@@ -135,7 +135,7 @@
     {
       id: 1,
       can_id: 1,
-      fiscal_year: 2021,
+      fiscal_year: 2023,
       total_fiscal_year_funding: 11400000.00,
       potential_additional_funding: 1300000.00,
       notes: ""
@@ -223,7 +223,7 @@
     {
       id: 12,
       can_id: 7,
-      fiscal_year: 2021,
+      fiscal_year: 2023,
       total_fiscal_year_funding: 80000.00,
       potential_additional_funding: 0.00,
       notes: ""

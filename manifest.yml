@@ -3,7 +3,7 @@ applications:
   - name: ops-backend
     memory: 700M
     buildpack: python_buildpack
-    path: ./backend/
+    path: ./backend/ops_api
     command: ./deployed_run.sh
   - name: ops-frontend
     memory: 64M
