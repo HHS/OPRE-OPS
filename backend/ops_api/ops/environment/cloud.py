@@ -21,4 +21,4 @@ vcap_services = get_json_env_var("VCAP_SERVICES")
 database_service = vcap_services["aws-rds"][0]
 database_creds = database_service["credentials"]
 
-SQLALCHEMY_DATABASE_URI = f"""postgres://{database_creds['db_name']}:{database_creds['password']}@{database_creds['host']}:{database_creds['port']}/{database_creds['db_name']}"""  # noqa: B950
+SQLALCHEMY_DATABASE_URI = f"""postgresql+psycopg2://{database_creds['db_name']}:{database_creds['password']}@{database_creds['host']}:{database_creds['port']}/{database_creds['db_name']}"""  # noqa: B950
