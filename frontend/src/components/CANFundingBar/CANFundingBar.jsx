@@ -26,6 +26,9 @@ const CANFundingBar = ({ data /* see data tab */ }) => {
             // padding={0.3}
             layout="horizontal"
             valueScale={{ type: "linear" }}
+            valueFormat={(value) => {
+                return null;
+            }}
             indexScale={{ type: "band", round: true }}
             colors={{ scheme: "nivo" }}
             // defs={[
