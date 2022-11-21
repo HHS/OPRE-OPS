@@ -466,11 +466,11 @@
         },
         "flake8-black": {
             "hashes": [
-                "sha256:7f96a4c80a828d09f1d550724e16aabb2adacd6a5f8e0bb051df422fc63d2183",
-                "sha256:fb52f258dfa6a25645c4ba8730eadc5f2ecd32057bf6c9fc21aef1cba9fefd74"
+                "sha256:4948a579fdddd98fbf935fd94255dfcfce560c4ddc1ceee08e3f12d6114c8619",
+                "sha256:9e93252b1314a8eb3c2f55dec54a07239e502b12f57567f2c105f2202714b15e"
             ],
             "index": "pypi",
-            "version": "==0.3.4"
+            "version": "==0.3.5"
         },
         "flake8-bugbear": {
             "hashes": [
