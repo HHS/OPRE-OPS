@@ -2,14 +2,11 @@ from unittest import mock
 
 import pytest
 import sqlalchemy.engine
-
-from src.import_static_data.import_data import (
-    delete_existing_data,
-    get_config,
-    init_db,
-    load_new_data,
-    import_data,
-)
+from src.import_static_data.import_data import delete_existing_data
+from src.import_static_data.import_data import get_config
+from src.import_static_data.import_data import import_data
+from src.import_static_data.import_data import init_db
+from src.import_static_data.import_data import load_new_data
 
 
 def test_init_db():
@@ -39,18 +36,32 @@ def test_delete_existing_data_empty():
 
 
 def test_delete_existing_data():
-    mock_conn = mock.MagicMock()
-    delete_existing_data(mock_conn, {"table1": [], "table2": [], "table3": []})
-    assert mock_conn.execute.call_count == 3
-    assert (
-        mock_conn.execute.call_args_list[0].args[0].text == "TRUNCATE table1 CASCADE;"
-    )
-    assert (
-        mock_conn.execute.call_args_list[1].args[0].text == "TRUNCATE table2 CASCADE;"
-    )
-    assert (
-        mock_conn.execute.call_args_list[2].args[0].text == "TRUNCATE table3 CASCADE;"
-    )
+    with mock.patch("src.import_static_data.import_data.exists") as mock_exists:
+        mock_exists.return_value = True
+
+        mock_conn = mock.MagicMock()
+        with pytest.raises(RuntimeError):
+            delete_existing_data(
+                mock_conn, {"division": [], "portfolio": [], "table3": []}
+            )
+            assert mock_conn.execute.call_count == 3
+            assert (
+                mock_conn.execute.call_args_list[0].args[0].text
+                == "TRUNCATE division CASCADE;"
+            )
+            assert (
+                mock_conn.execute.call_args_list[1].args[0].text
+                == "TRUNCATE portfolio CASCADE;"
+            )
+
+
+def test_delete_existing_data_nonexistant_table():
+    with mock.patch("src.import_static_data.import_data.exists") as mock_exists:
+        mock_exists.return_value = False
+
+        mock_conn = mock.MagicMock()
+        delete_existing_data(mock_conn, {"division": [], "portfolio": [], "table3": []})
+        assert mock_conn.execute.call_count == 0
 
 
 def test_load_new_data_empty():

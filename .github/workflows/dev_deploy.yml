@@ -7,7 +7,7 @@ on:
 
 jobs:
 
-  development:
+  deployment:
     name: Deploy to Development
     runs-on: ubuntu-latest
     env:
@@ -18,20 +18,43 @@ jobs:
       - uses: ./.github/actions/setup-javascript
       - uses: ./.github/actions/setup-cloudfoundry
 
-      - name: Deploy Backend
+      - name: Deploy backend to cloud.gov
         id: deploy-backend
         uses: ./.github/actions/deploy-backend
         with:
           USERNAME: ${{ secrets.DEV_USER }}
           PASSWORD: ${{ secrets.DEV_PASSWORD }}
           ORG_NAME: ${{ secrets.ORG_NAME }}
-          SPACE_NAME: ${{ secrets.SPACE_NAME }}
+          SPACE_NAME: dev
           APP_NAME: ops-backend
+
+      - name: Deploy data-tools to cloud.gov
+        uses: ./.github/actions/deploy-data-tools
+        with:
+          USERNAME: ${{ secrets.DEV_USER }}
+          PASSWORD: ${{ secrets.DEV_PASSWORD }}
+          ORG_NAME: ${{ secrets.ORG_NAME }}
+          SPACE_NAME: dev
+          APP_NAME: ops-data-tools
+
+      # This is where the actual 'data-tools' script is run
+      # ENV (data-tools/environment/<name>.py): is the environment to run in, should always be cloudgov
+      # VERBOSE (True | False): can be used to surpress the SQL output.
+      - name: Load Sample Data
+        uses: ./.github/actions/cf-run-task
+        with:
+          USERNAME: ${{ secrets.DEV_USER }}
+          PASSWORD: ${{ secrets.DEV_PASSWORD }}
+          ORG_NAME: ${{ secrets.ORG_NAME }}
+          SPACE_NAME: dev
+          APP_NAME: ops-data-tools
+          CF_TASKNAME: 'Load-Sample-Data'
+          CF_COMMAND: "ENV=cloudgov VERBOSE=True ./scripts/import_data.sh"
 
       - name: Build frontend
         working-directory: ./frontend
         run: |
-          echo ${{steps.deploy-backend.outputs.BACKEND_DOMAIN}}
+          echo ${{steps.get-backend-uri.outputs.BACKEND_DOMAIN}}
           REACT_APP_BACKEND_DOMAIN=https://${{steps.deploy-backend.outputs.BACKEND_DOMAIN}} yarn build
           cp ./Staticfile ./build/
 
@@ -41,5 +64,5 @@ jobs:
           USERNAME: ${{ secrets.DEV_USER }}
           PASSWORD: ${{ secrets.DEV_PASSWORD }}
           ORG_NAME: ${{ secrets.ORG_NAME }}
-          SPACE_NAME: ${{ secrets.SPACE_NAME }}
+          SPACE_NAME: dev
           APP_NAME: ops-frontend

@@ -7,6 +7,18 @@ applications:
     buildpack: python_buildpack
     path: ./backend/ops_api
     command: ./deployed_run.sh
+
+  - name: ops-data-tools
+    env:
+      ENV: cloudgov.py
+    instances: 0
+    no-route: true
+    memory: 700M
+    buildpack: python_buildpack
+    path: ./data-tools
+    command: ./scripts/import_data.sh
+    timeout: 90
+
   - name: ops-frontend
     memory: 64M
     buildpack: https://github.com/cloudfoundry/staticfile-buildpack
