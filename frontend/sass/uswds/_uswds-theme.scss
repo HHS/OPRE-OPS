@@ -9,4 +9,7 @@ in the form $setting: value,
 
 @use "uswds-core" with (
   $theme-font-type-sans: "public-sans",
+  $theme-font-weight-thin: 200,
+  $theme-font-weight-medium: 500,
+  $theme-font-weight-semibold: 600,
 );
