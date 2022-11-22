@@ -47,6 +47,7 @@ jobs:
           PASSWORD: ${{ secrets.DEV_PASSWORD }}
           ORG_NAME: ${{ secrets.ORG_NAME }}
           SPACE_NAME: dev
+          APP_NAME: ops-data-tools
           CF_TASKNAME: 'Load-Sample-Data'
           CF_COMMAND: "ENV=cloudgov VERBOSE=True ./scripts/import_data.sh"
 
