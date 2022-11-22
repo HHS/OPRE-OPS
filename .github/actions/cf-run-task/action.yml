@@ -24,7 +24,7 @@ inputs:
   CF_TASKNAME:
     description: Name given to the specific task. Can 'grep' this for better log output.
     required: false
-    default: 'github-action-taks-001'
+    default: 'github-action-task-001'
 runs:
   using: composite
   steps:
