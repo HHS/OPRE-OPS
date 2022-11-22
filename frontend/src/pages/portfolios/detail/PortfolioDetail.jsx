@@ -9,13 +9,6 @@ import App from "../../../App";
 import { BreadcrumbItem, BreadcrumbList } from "../../../components/Header/Breadcrumb";
 import PortfolioHeader from "../../../components/PortfolioHeader/PortfolioHeader";
 
-const styles = {
-    body: {
-        width: "1024px",
-        margin: "auto",
-    },
-};
-
 const CanList = ({ id, name }) => {
     return (
         <li>
@@ -40,29 +33,27 @@ const PortfolioDetail = () => {
     }, [dispatch, portfolioId]);
 
     return (
-        <>
-            <App>
-                <BreadcrumbList>
-                    <BreadcrumbItem isCurrent pageName="Portfolios" />
-                </BreadcrumbList>
-                <div style={styles.body}>
-                    <div className="margin-left-2 margin-right-2">
-                        <PortfolioHeader />
-                        <section>
-                            <PortfolioFundingSummary portfolioId={portfolioId} fiscalYear={currentFiscalYear} />
-                        </section>
-                        <section>
-                            <h2>CANs</h2>
-                            <ul className="usa-list">
-                                {portfolio.internal_can?.map((can) => (
-                                    <CanList key={can.id} id={can.id} name={can.number} />
-                                ))}
-                            </ul>
-                        </section>
-                    </div>
+        <App>
+            <BreadcrumbList>
+                <BreadcrumbItem isCurrent pageName="Portfolios" />
+            </BreadcrumbList>
+            <div>
+                <div className="margin-left-2 margin-right-2">
+                    <PortfolioHeader />
+                    <section>
+                        <PortfolioFundingSummary portfolioId={portfolioId} fiscalYear={currentFiscalYear} />
+                    </section>
+                    <section>
+                        <h2>CANs</h2>
+                        <ul className="usa-list">
+                            {portfolio.internal_can?.map((can) => (
+                                <CanList key={can.id} id={can.id} name={can.number} />
+                            ))}
+                        </ul>
+                    </section>
                 </div>
-            </App>
-        </>
+            </div>
+        </App>
     );
 };
 
