@@ -18,4 +18,4 @@ database_service = vcap_services["aws-rds"][0]
 database_creds = database_service["credentials"]
 
 DATABASE_URL = f'postgresql+psycopg2://{database_creds["username"]}:{database_creds["password"]}@{database_creds["host"]}:{database_creds["port"]}/{database_creds["db_name"]}'
-VERBOSE = False
+VERBOSE = True
