@@ -12,18 +12,12 @@ import CanCard from "../../../components/CanCard/CanCard";
 
 import styles from "./styles.module.css";
 
-// const styles = {
-//     body: {
-//         width: "1024px",
-//         margin: "auto",
-//     }
-// };
-
 const PortfolioDetail = () => {
     const dispatch = useDispatch();
     const portfolio = useSelector((state) => state.portfolioDetail.portfolio);
     const urlPathParams = useParams();
     const portfolioId = parseInt(urlPathParams.id);
+    const canId = 1;
     const currentFiscalYear = getCurrentFiscalYear(new Date());
 
     useEffect(() => {
@@ -33,8 +27,6 @@ const PortfolioDetail = () => {
             dispatch(setPortfolio({}));
         };
     }, [dispatch, portfolioId]);
-
-    const canListStyles = `usa-list padding-0 ${styles.canList}`;
 
     return (
         <>
@@ -49,15 +41,7 @@ const PortfolioDetail = () => {
                             <PortfolioFundingSummary portfolioId={portfolioId} fiscalYear={currentFiscalYear} />
                         </section>
                         <section>
-                            <h2>CANs</h2>
-                            <div>
-                                {/*<ul className={canListStyles}>*/}
-                                {/*{portfolio.internal_can?.map((can) => (*/}
-                                {/*    <CanCard key={can.id} />*/}
-                                {/*))}*/}
-                                <CanCard />
-                            </div>
-                            {/*</ul>*/}
+                            <CanCard portfolioId={portfolioId} canId={canId} />
                         </section>
                     </div>
                 </div>
