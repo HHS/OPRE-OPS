@@ -31,6 +31,24 @@
       name: "Inactive"
     }
   ],
+  /*
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    description = db.Column(db.String, default="")
+    status_id = db.Column(db.Integer, db.ForeignKey("portfolio_status.id"))
+    status = db.relationship("PortfolioStatus")
+    cans = db.relationship(
+        "CAN", back_populates="shared_portfolios", secondary=portfolio_cans
+    )
+    division_id = db.Column(db.Integer, db.ForeignKey("division.id"))
+    division = db.relationship("Division", back_populates="portfolio")
+    urls = db.relationship("PortfolioUrl")
+    description = db.relationship(
+        "PortfolioDescriptionText", back_populates="portfolio"
+    )
+
+    */
   portfolio: [
     {
       id: 1,

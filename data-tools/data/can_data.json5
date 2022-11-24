@@ -21,6 +21,34 @@
       name: "MOU"
     }
   ],
+  /*
+    id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.String(30), nullable=False)
+    description = db.Column(db.String)
+    purpose = db.Column(db.String, default="")
+    nickname = db.Column(db.String(30))
+    arrangement_type_id = db.Column(
+        db.Integer,
+        db.ForeignKey("can_arrangement_type.id"),
+    )
+    arrangement_type = db.relationship(CANArrangementType)
+    funding_sources = db.relationship(
+        FundingSource,
+        secondary=can_funding_sources,
+        back_populates="cans",
+    )
+    authorizer_id = db.Column(db.Integer, db.ForeignKey("funding_partner.id"))
+    authorizer = db.relationship(FundingPartner)
+    managing_portfolio_id = db.Column(db.Integer, db.ForeignKey("portfolio.id"))
+    managing_portfolio = db.relationship(Portfolio, back_populates="cans")
+    shared_portfolios = db.relationship(
+        Portfolio, secondary=portfolio_cans, back_populates="cans"
+    )
+    budget_line_items = db.relationship("BudgetLineItem", back_populates="can")
+    agreements = db.relationship(
+        Agreement, secondary=agreement_cans, back_populates="cans"
+    )
+  */
   "can": [
     {
       id: 1,
