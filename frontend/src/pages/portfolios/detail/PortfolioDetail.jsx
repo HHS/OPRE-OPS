@@ -10,7 +10,6 @@ import { BreadcrumbItem, BreadcrumbList } from "../../../components/Header/Bread
 import PortfolioHeader from "../../../components/PortfolioHeader/PortfolioHeader";
 import CanCard from "../../../components/CanCard/CanCard";
 
-<<<<<<< HEAD
 const CanList = ({ id, name }) => {
     return (
         <li>
@@ -18,16 +17,6 @@ const CanList = ({ id, name }) => {
         </li>
     );
 };
-=======
-import styles from "./styles.module.css";
-
-// const styles = {
-//     body: {
-//         width: "1024px",
-//         margin: "auto",
-//     }
-// };
->>>>>>> 4843055 (working on CANFundingBar component)
 
 const PortfolioDetail = () => {
     const dispatch = useDispatch();
