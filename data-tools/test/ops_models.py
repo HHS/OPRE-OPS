@@ -1,10 +1,17 @@
-from datetime import datetime
-
-from sqlalchemy.engine import Connection
-
 from environment.dev import DATABASE_URL
-from sqlalchemy import create_engine, Column, Integer, String, Text, ForeignKey, DateTime, func, Table, Numeric
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy import Column
+from sqlalchemy import create_engine
+from sqlalchemy import DateTime
+from sqlalchemy import ForeignKey
+from sqlalchemy import func
+from sqlalchemy import Integer
+from sqlalchemy import Numeric
+from sqlalchemy import String
+from sqlalchemy import Table
+from sqlalchemy import Text
+from sqlalchemy.engine import Connection
+from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import relationship
 
 # Models here are for testing/development purposes while backend is being
 # ported to SQLAlchemy
@@ -123,7 +130,9 @@ class CAN(Base):
     nickname = Column(String(30))
     arrangement_type_id = Column(Integer, ForeignKey("can_arrangement_type.id"))
     arrangement_type = relationship(CANArrangementType)
-    funding_sources = relationship(FundingSource, secondary=can_funding_sources, back_populates="cans")
+    funding_sources = relationship(
+        FundingSource, secondary=can_funding_sources, back_populates="cans"
+    )
     authorizer_id = Column(Integer, ForeignKey("funding_partner.id"))
     authorizer = relationship(FundingPartner)
     managing_portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
@@ -154,7 +163,9 @@ class Agreement(Base):
     name = Column(String, nullable=False)
     agreement_type_id = Column(Integer, ForeignKey("agreement_type.id"))
     agreement_type = relationship("AgreementType")
-    owning_portfolio_id = managing_portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
+    owning_portfolio_id = managing_portfolio_id = Column(
+        Integer, ForeignKey("portfolio.id")
+    )
 
 
 class BudgetLineItem(Base):

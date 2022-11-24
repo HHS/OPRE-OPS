@@ -2,3 +2,8 @@
 @forward "uswds";
 @forward "uswds-theme-custom-styles";
 @forward "uswds-utilities";
+
+body {
+  width: 1024px;
+  margin: auto;
+}

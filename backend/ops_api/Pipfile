@@ -1,0 +1,30 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+flask = "==2.2.2"
+mypy = "==0.991"
+flask-jwt-extended = {extras = ["asymmetric_crypto"], version = "==4.4.4"}
+flask-sqlalchemy = "==2.5.1"
+authlib = "==1.1.0"
+requests = "==2.28.1"
+markupsafe = "==2.1.1"
+flask-cors = "==3.0.10"
+psycopg2-binary = "==2.9.5"
+gunicorn = "==20.1.0"
+sqlalchemy-mixins = "==1.5.3"
+
+[dev-packages]
+flake8 = "==5.0.4"
+black = "==22.10.0"
+isort = "==5.10.1"
+pytest = "==7.2.0"
+nox = "==2022.8.7"
+ipython = "==8.6.0"
+types-all = "==1.0.0"
+pytest-flask = "==1.2.0"
+
+[requires]
+python_version = "3.10"

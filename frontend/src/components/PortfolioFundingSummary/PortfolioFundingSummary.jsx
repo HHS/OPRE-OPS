@@ -41,7 +41,7 @@ const PortfolioFundingSummary = (props) => {
         <section>
             <h2 className="font-sans-lg">Portfolio Budget Summary</h2>
             <p className="font-sans-sm">
-                The graphs below show a summary of the total budget for this portfolio, not including additional funding
+                The graph below shows a summary of the total budget for this portfolio, not including additional funding
                 from other portfolios.
             </p>
             <ul className="usa-card-group grid-gap">

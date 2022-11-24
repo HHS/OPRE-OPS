@@ -11,6 +11,11 @@
 ### example:
 `cf create-service aws-rds micro-psql ops-db -c {"version":"12"} -t dev`
 
+## Bind Service (DB)
+`cf bind-service <app-name> <service-name>`
+
+### example:
+`cf bind-service ops-backend ops-db`
 
 #### Create Service Account & Credentials
 [https://cloud.gov/docs/services/cloud-gov-service-account/](https://cloud.gov/docs/services/cloud-gov-service-account/)
@@ -43,3 +48,11 @@
 
 ### example:
 `cf bind-security-group trusted_local_networks_egress acf-opre-prototyping —space dev`
+
+
+## Execute a Task
+`cf run-task <app-name> --name <task-name> --command <command-to-run>
+
+### example:
+Run the command `./scripts/import_data.sh` within the `ops-data-tools` app.
+`cf run-task ops-data-tools --command "ENV=cloudgov ./scripts/import_data.sh" --name load_sample_data`

@@ -4,14 +4,14 @@ runs:
   using: composite
   steps:
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@5cddb278857fec730853802fad5126d9d78895d5 # tag: v4.3.0
       with:
-        python-version: '3.9'
+        python-version: '3.10'
         cache: pipenv
     - name: Install Pipenv
       shell: bash
       run: pip install pipenv
     - name: Install Pipenv dependencies
       shell: bash
-      working-directory: ./backend
+      working-directory: ./backend/ops_api
       run: pipenv install --dev

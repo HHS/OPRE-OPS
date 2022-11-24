@@ -1,9 +1,0 @@
-[run]
-omit =
-        ops_api/ops/migrations/*
-        ops_api/ops/admin.py
-        **/tests/**
-        *__init__*
-
-[report]
-fail_under = 90

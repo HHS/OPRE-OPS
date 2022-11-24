@@ -1,10 +1,8 @@
 import { Link } from "react-router-dom";
 
-import style from "./styles.module.css";
-
 export const BreadcrumbList = ({ isCurrent, children }) => {
     return (
-        <section className={style.navSection}>
+        <section>
             <nav className="usa-breadcrumb margin-left-2 margin-right-2" aria-label="Breadcrumbs,,">
                 <ol className="usa-breadcrumb__list">
                     <li className="usa-breadcrumb__list-item" aria-current={isCurrent ? "page" : undefined}>

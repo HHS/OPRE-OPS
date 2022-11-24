@@ -37,12 +37,13 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup-python
 
-      - name: Install backend dependencies
-        working-directory: ./backend
-        run: pipenv install --dev
+      # Not needed here, as this is run in our ^^ setup-python
+      # - name: Install backend dependencies
+      #   working-directory: ./backend/ops_api
+      #   run: pipenv install --dev
 
       - name: Lint backend
-        working-directory: ./backend
+        working-directory: ./backend/ops_api
         run: pipenv run nox -s lint
 
       - uses: ./.github/actions/setup-javascript
