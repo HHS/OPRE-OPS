@@ -30,10 +30,24 @@
     },
     {
       id: 2,
-      name: "NIH VIQI",
+      name: "NIH ABCD",
       agreement_type_id: 1,
       owning_portfolio_id: 1
     }
+  ],
+  "agreement_cans": [
+    {agreement_id: 1, can_id: 1},
+    {agreement_id: 1, can_id: 2},
+    {agreement_id: 1, can_id: 3},
+    {agreement_id: 1, can_id: 4},
+    {agreement_id: 1, can_id: 5},
+    {agreement_id: 1, can_id: 6},
+    {agreement_id: 1, can_id: 7},
+    {agreement_id: 1, can_id: 8},
+    {agreement_id: 1, can_id: 9},
+    {agreement_id: 1, can_id: 10},
+    {agreement_id: 1, can_id: 11},
+    {agreement_id: 1, can_id: 12},
   ],
   "budget_line_item_status": [
     {

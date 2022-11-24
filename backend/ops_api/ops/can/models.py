@@ -3,6 +3,7 @@ from ops.portfolio.models import portfolio_cans
 from ops.utils import BaseModel
 from ops.utils import db
 from sqlalchemy.engine import Connection
+from sqlalchemy.ext.hybrid import hybrid_property
 
 can_funding_sources = db.Table(
     "can_funding_sources",
@@ -158,6 +159,18 @@ class BudgetLineItemStatus(BaseModel):
             {"id": 3, "status": "Obligated"},
         )
 
+    @hybrid_property
+    def Planned(self):
+        return self.status == "Planned"
+
+    @hybrid_property
+    def In_Execution(self):
+        return self.status == "In Execution"
+
+    @hybrid_property
+    def Obligated(self):
+        return self.status == "Obligated"
+
 
 class CANArrangementType(BaseModel):
     __tablename__ = "can_arrangement_type"
@@ -223,3 +236,7 @@ class CAN(BaseModel):
     agreements = db.relationship(
         Agreement, secondary=agreement_cans, back_populates="cans"
     )
+
+    @hybrid_property
+    def arrangementType(self):
+        return self.arrangement_type.name
