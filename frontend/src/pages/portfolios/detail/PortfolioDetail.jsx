@@ -1,10 +1,10 @@
 import { useDispatch, useSelector } from "react-redux";
 import { getPortfolioAndSetState } from "./getPortfolio";
 import { useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import PortfolioFundingSummary from "../../../components/PortfolioFundingSummary/PortfolioFundingSummary";
-import { setPortfolio } from "./portfolioDetailSlice";
-import { getCurrentFiscalYear } from "../../../components/PortfolioFundingTotal/util";
+import { setPortfolio, setPortfolioCans } from "./portfolioDetailSlice";
+import { getCurrentFiscalYear } from "../../../helpers/utils";
 import App from "../../../App";
 import { BreadcrumbItem, BreadcrumbList } from "../../../components/Header/Breadcrumb";
 import PortfolioHeader from "../../../components/PortfolioHeader/PortfolioHeader";
@@ -17,14 +17,38 @@ const CanList = ({ id, name }) => {
         </li>
     );
 };
+import styles from "./styles.module.css";
 
 const PortfolioDetail = () => {
     const dispatch = useDispatch();
     const portfolio = useSelector((state) => state.portfolioDetail.portfolio);
     const urlPathParams = useParams();
     const portfolioId = parseInt(urlPathParams.id);
+    const canId = 1;
     const currentFiscalYear = getCurrentFiscalYear(new Date());
-
+    //const portfolioCans = useSelector((state) => state.portfolioDetail.portfolioCans);
+    const portfolioCans = [
+        {
+            arrangement_type_id: 3,
+            authorizer_id: 26,
+            description: "Incoming Interagency Agreements",
+            id: 2,
+            managing_portfolio_id: 1,
+            nickname: "IAA-Incoming",
+            number: "G99IA14",
+            purpose: null,
+        },
+        {
+            arrangement_type_id: 4,
+            authorizer_id: 26,
+            description: "Child Development Research Fellowship Grant Program",
+            id: 4,
+            managing_portfolio_id: 1,
+            nickname: "ASPE SRCD-IDDA",
+            number: "G990136",
+            purpose: null,
+        },
+    ];
     useEffect(() => {
         dispatch(getPortfolioAndSetState(portfolioId));
 
@@ -32,8 +56,6 @@ const PortfolioDetail = () => {
             dispatch(setPortfolio({}));
         };
     }, [dispatch, portfolioId]);
-
-    const canListStyles = `usa-list padding-0 ${styles.canList}`;
 
     return (
         <App>
