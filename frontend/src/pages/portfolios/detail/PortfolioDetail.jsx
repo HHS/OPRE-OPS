@@ -1,4 +1,4 @@
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { getPortfolioAndSetState } from "./getPortfolio";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -11,11 +11,11 @@ import PortfolioHeader from "../../../components/PortfolioHeader/PortfolioHeader
 import CanCard from "../../../components/CanCard/CanCard";
 
 import styles from "./styles.module.css";
-import { getPortfolioCansAndSetState } from "./getPortfolioCans";
+import { getPortfolioBudgetDetailsByCan } from "./getPortfolioCans";
 
 const PortfolioDetail = () => {
     const dispatch = useDispatch();
-    const portfolio = useSelector((state) => state.portfolioDetail.portfolio);
+    //const portfolio = useSelector((state) => state.portfolioDetail.portfolio);
     const urlPathParams = useParams();
     const portfolioId = parseInt(urlPathParams.id);
     const currentFiscalYear = getCurrentFiscalYear(new Date());
@@ -44,18 +44,20 @@ const PortfolioDetail = () => {
     ];
     useEffect(() => {
         dispatch(getPortfolioAndSetState(portfolioId));
-
         return () => {
             dispatch(setPortfolio({}));
         };
     }, [dispatch, portfolioId]);
 
     useEffect(() => {
-        dispatch(getPortfolioCansAndSetState(portfolioId));
-        return () => {
-            dispatch(setPortfolioCans({}));
-        };
-    }, [dispatch, portfolioId]);
+        try {
+            dispatch(getPortfolioBudgetDetailsByCan(portfolioId, currentFiscalYear));
+        } catch (error) {
+            return () => {
+                dispatch(setPortfolioCans({}));
+            };
+        }
+    }, [dispatch, portfolioId, currentFiscalYear]);
 
     return (
         <>
@@ -79,7 +81,6 @@ const PortfolioDetail = () => {
                             {portfolioCans.map((can) => (
                                 <CanCard can={can} fiscalYear={currentFiscalYear} key={can.id} />
                             ))}
-                            {/* <CanCard canId={canId} fiscalYear={currentFiscalYear} /> */}
                         </section>
                     </div>
                 </div>

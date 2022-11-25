@@ -6,6 +6,7 @@
     /*width: 100%;*/
     /*float: left;*/
     display: flex;
+    margin: 1rem 0;
  }
 
 .clear {
@@ -70,8 +71,6 @@
 .budgetStatusTable td {
     border-bottom: 0px solid #ddd;
 }
-
-.usa-table:margin-top-05 {}
 
 .tag {
     /*flex: 1;*/

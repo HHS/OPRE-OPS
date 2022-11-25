@@ -255,6 +255,23 @@
       total_fiscal_year_funding: 80000.00,
       potential_additional_funding: 0.00,
       notes: ""
+    },
+    {
+      id: 13,
+      can_id: 2,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 180000.00,
+      potential_additional_funding: 90000.00,
+      notes: ""
+    },
+    {
+      id: 14,
+      can_id: 4,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 80000.00,
+      potential_additional_funding: 0.00,
+      notes: ""
     }
+
   ]
 }

@@ -1,4 +1,4 @@
-import { getCan } from "./getCanCardDetails";
+import { getCanTotalFundingandSetState } from "./getCanCardDetails";
 import store from "../../store";
 import TestApplicationContext from "../../applicationContext/TestApplicationContext";
 import { dispatchUsecase } from "../../helpers/test";
@@ -14,7 +14,7 @@ test("successfully gets the CAN from the backend and directly puts it into state
         return mockBackendResponse;
     });
 
-    const actualGetCan = getCan(mockCanId);
+    const actualGetCan = getCanTotalFundingandSetState(mockCanId);
 
     await dispatchUsecase(actualGetCan);
 

@@ -17,7 +17,7 @@ export default configureStore({
         portfolioList: portfolioListSlice,
         portfolioDetail: portfolioDetailSlice,
         portfolioFundingSummary: portfolioFundingSummarySlice,
-        canCardDetail: canCardDetailSlice,
+        canCardDetails: canCardDetailSlice,
         auth: authSlice,
     },
 });

@@ -135,6 +135,87 @@
       can_id: 9,
       funding: 8974267.94,
       status_id: 2
-    }
+    },
+    {
+      id: 9,
+      name: "Line Item 2",
+      fiscal_year: 2023,
+      agreement_id: 2,
+      can_id: 1,
+      funding: 74267.94,
+      status_id: 2
+    },
+    {
+      id: 10,
+      name: "Line Item 2",
+      fiscal_year: 2023,
+      agreement_id: 2,
+      can_id: 4,
+      funding: 4974267.94,
+      status_id: 2
+    },
+    {
+      id: 11,
+      name: "Line Item 2",
+      fiscal_year: 2023,
+      agreement_id: 2,
+      can_id: 2,
+      funding: 4974267.94,
+      status_id: 2
+    },
+    {
+      id: 12,
+      name: "Line Item 2",
+      fiscal_year: 2023,
+      agreement_id: 2,
+      can_id: 3,
+      funding: 4974267.94,
+      status_id: 2
+    },
+    {
+      id: 13,
+      name: "Line Item 2",
+      fiscal_year: 2023,
+      agreement_id: 2,
+      can_id: 5,
+      funding: 4974267.94,
+      status_id: 2
+    },
+    {
+      id: 14,
+      name: "Line Item 2",
+      fiscal_year: 2023,
+      agreement_id: 2,
+      can_id: 6,
+      funding: 4974267.94,
+      status_id: 2
+    },
+    {
+      id: 15,
+      name: "Line Item 2",
+      fiscal_year: 2023,
+      agreement_id: 2,
+      can_id: 7,
+      funding: 4974267.94,
+      status_id: 2
+    },
+    {
+      id: 16,
+      name: "Line Item 2",
+      fiscal_year: 2023,
+      agreement_id: 2,
+      can_id: 2,
+      funding: 4974267.94,
+      status_id: 1
+    },
+    {
+      id: 17,
+      name: "Line Item 2",
+      fiscal_year: 2023,
+      agreement_id: 2,
+      can_id: 2,
+      funding: 4974267.94,
+      status_id: 3
+    },
   ]
 }

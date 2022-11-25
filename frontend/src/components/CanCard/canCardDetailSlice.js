@@ -1,19 +1,19 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    can: {},
+    canTotalFunding: {},
 };
 
 const canCardDetailSlice = createSlice({
-    name: "canCardDetail",
+    name: "canCardDetails", // This should match what's defined in the store.js
     initialState,
     reducers: {
-        setCan: (state, action) => {
-            state.can = action.payload;
+        setCanTotalFunding: (state, action) => {
+            state.canTotalFunding = action.payload;
         },
     },
 });
 
-export const { setCan } = canCardDetailSlice.actions;
+export const { setCanTotalFunding } = canCardDetailSlice.actions;
 
 export default canCardDetailSlice.reducer;
