@@ -2,8 +2,14 @@ import style from "./styles.module.css";
 import CurrencyWithSmallCents from "../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
 import Tag from "../UI/Tag/Tag";
 import CANFundingYTD from "../CANFundingYTD/CANFundingYTD";
+import { useEffect } from "react";
+import { getCanTotalFundingandSetState } from "./getCanCardDetails";
+import { useDispatch, useSelector } from "react-redux";
+import { setCanTotalFunding } from "./canCardDetailSlice";
+import constants from "../../constants";
 
-const CanCard = () => {
+const CanCard = (props) => {
+    /* Styling */
     const sectionClasses = `${style.container}`;
     const leftMarginClasses = `padding-left-2 padding-top-1 ${style.leftMarginContainer}`;
     const cardBodyClasses = `padding-left-3 padding-top-2 ${style.cardBodyDiv}`;
@@ -12,30 +18,35 @@ const CanCard = () => {
     const budgetStatusClasses = `${style.budgetStatus}`;
     const budgetStatusTableClasses = `usa-table usa-table--borderless ${style.budgetStatusTable}`;
     const tagClasses = `grid-col-1`;
+    /* vars */
+    const dispatch = useDispatch();
+    const canTotalFunding = useSelector((state) => state.canCardDetails.canTotalFunding);
+
+    useEffect(() => {
+        dispatch(getCanTotalFundingandSetState(props.can.id, props.fiscalYear));
+
+        return () => {
+            dispatch(setCanTotalFunding({}));
+        };
+    }, [dispatch, props.can.id, props.fiscalYear]);
 
     return (
         <section>
-            <h2>Portfolio Budget Details by CAN </h2>
-            <p>
-                The list of CANs below are specific to this portfolio’s budget. It does not include funding from other
-                CANs outside of this portfolio that might occur during cross-portfolio collaborations on research
-                projects.
-            </p>
             <div className={sectionClasses}>
                 <div className={leftMarginClasses}>
                     <div className={leftMarginBlockClasses}>
                         <div className="font-sans-3xs">CAN</div>
-                        <div className="font-sans-md text-bold">G99PHS9</div>
+                        <div className="font-sans-md text-bold">{props.can.number}</div>
                     </div>
                     <div className={leftMarginBlockClasses}>
                         <div className="font-sans-3xs">Description</div>
-                        <div className="font-sans-md text-bold">SSRD-5 YR</div>
+                        <div className="font-sans-md text-bold">{props.can.nickname}</div>
                     </div>
                     <div className={leftMarginBlockClasses}>
                         <div className="font-sans-3xs">FY Total Budget</div>
                         <div className="font-sans-md text-bold">
                             <CurrencyWithSmallCents
-                                amount="7019379.60"
+                                amount={canTotalFunding.total_fiscal_year_funding || constants.notFilledInText}
                                 dollarsClasses="font-sans-md text-bold"
                                 centsStyles={{ fontSize: "10px" }}
                             />
@@ -67,12 +78,12 @@ const CanCard = () => {
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>$0</td>
-                                        <td>$0</td>
-                                        <td>$5,677,279.24</td>
-                                        <td>$1,352,100.36</td>
-                                        <td>5 Years</td>
-                                        <td>09/30/2027</td>
+                                        <td>$0*</td>
+                                        <td>$0*</td>
+                                        <td>$5,677,279.24*</td>
+                                        <td>$1,352,100.36*</td>
+                                        <td>5 Years*</td>
+                                        <td>09/30/2027*</td>
                                     </tr>
                                 </tbody>
                             </table>

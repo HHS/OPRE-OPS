@@ -19,6 +19,13 @@ def load_can(pk: int) -> Response:
     return response
 
 
+def get_portfolio_cans(portfolio_id: int) -> Response:
+    cans = CAN.query.filter(CAN.managing_portfolio_id == portfolio_id).all()
+    response = jsonify([can.to_dict() for can in cans])
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
+
+
 def all_can_fiscal_years() -> Response:
     canFiscalYears = CANFiscalYear.query.all()
     response = jsonify([cfy.to_dict() for cfy in canFiscalYears])

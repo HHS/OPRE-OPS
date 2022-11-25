@@ -1,4 +1,4 @@
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { getPortfolioAndSetState } from "./getPortfolio";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -21,7 +21,7 @@ import styles from "./styles.module.css";
 
 const PortfolioDetail = () => {
     const dispatch = useDispatch();
-    const portfolio = useSelector((state) => state.portfolioDetail.portfolio);
+    //const portfolio = useSelector((state) => state.portfolioDetail.portfolio);
     const urlPathParams = useParams();
     const portfolioId = parseInt(urlPathParams.id);
     const canId = 1;
@@ -51,7 +51,6 @@ const PortfolioDetail = () => {
     ];
     useEffect(() => {
         dispatch(getPortfolioAndSetState(portfolioId));
-
         return () => {
             dispatch(setPortfolio({}));
         };
