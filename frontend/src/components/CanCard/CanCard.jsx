@@ -5,7 +5,7 @@ import CANFundingYTD from "../CANFundingYTD/CANFundingYTD";
 import { useEffect } from "react";
 import { getCanTotalFundingandSetState } from "./getCanCardDetails";
 import { useDispatch, useSelector } from "react-redux";
-import { setCanTotalFunding } from "./canCardDetailSlice";
+import { setCanFundingData } from "./canCardDetailSlice";
 import constants from "../../constants";
 
 const CanCard = (props) => {
@@ -20,13 +20,13 @@ const CanCard = (props) => {
     const tagClasses = `grid-col-1`;
     /* vars */
     const dispatch = useDispatch();
-    const canTotalFunding = useSelector((state) => state.canCardDetails.canTotalFunding);
+    const canFiscalyear = useSelector((state) => state.canCardDetails.canFundingData);
 
     useEffect(() => {
         dispatch(getCanTotalFundingandSetState(props.can.id, props.fiscalYear));
 
         return () => {
-            dispatch(setCanTotalFunding({}));
+            dispatch(setCanFundingData({}));
         };
     }, [dispatch, props.can.id, props.fiscalYear]);
 
@@ -46,7 +46,7 @@ const CanCard = (props) => {
                         <div className="font-sans-3xs">FY Total Budget</div>
                         <div className="font-sans-md text-bold">
                             <CurrencyWithSmallCents
-                                amount={canTotalFunding.total_fiscal_year_funding || constants.notFilledInText}
+                                amount={canFiscalyear?.total_funding || constants.notFilledInText}
                                 dollarsClasses="font-sans-md text-bold"
                                 centsStyles={{ fontSize: "10px" }}
                             />
@@ -78,12 +78,12 @@ const CanCard = (props) => {
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>$0*</td>
-                                        <td>$0*</td>
-                                        <td>$5,677,279.24*</td>
-                                        <td>$1,352,100.36*</td>
-                                        <td>5 Years*</td>
-                                        <td>09/30/2027*</td>
+                                        <td>{canFiscalyear?.planned_funding || constants.notFilledInText}</td>
+                                        <td>{canFiscalyear?.in_execution_funding || constants.notFilledInText}</td>
+                                        <td>{canFiscalyear?.obligated_funding || constants.notFilledInText}</td>
+                                        <td>{canFiscalyear?.available_funding || constants.notFilledInText}</td>
+                                        <td>{canFiscalyear?.can?.appropriation_term || "-"} Years</td>
+                                        <td>{canFiscalyear?.expiration_date?.toDateString() || "---"}</td>
                                     </tr>
                                 </tbody>
                             </table>
