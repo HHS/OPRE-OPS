@@ -32,12 +32,14 @@ const PortfolioDescription = () => {
 
     return (
         <div>
-            <p style={buttonStyle}>
-                {portfolio.description?.[0].text}...
-                <span className={cssStyles.readMore} onClick={expandCollapse}>
-                    read more
-                </span>
-            </p>
+            <button onClick={expandCollapse} style={buttonStyle}>
+                <p>
+                    {portfolio.description?.[0].text}...
+                    <span className={cssStyles.readMore} onClick={expandCollapse}>
+                        read more
+                    </span>
+                </p>
+            </button>
             <span style={textStyle}>
                 {portfolio.description?.map(
                     (description_line) =>
