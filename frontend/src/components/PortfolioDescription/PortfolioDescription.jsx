@@ -57,7 +57,7 @@ const PortfolioDescription = () => {
                 ))}
                 <p>
                     <span className={cssStyles.readMore} onClick={collapseExpand}>
-                        read less
+                        show less
                     </span>
                 </p>
             </span>
