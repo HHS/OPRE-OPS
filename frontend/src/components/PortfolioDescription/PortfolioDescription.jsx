@@ -25,11 +25,19 @@ const PortfolioDescription = () => {
         setButtonStyle(styles.hidden);
     };
 
+    const collapseExpand = () => {
+        setTextStyle(styles.hidden);
+        setButtonStyle(styles.visible);
+    };
+
     return (
         <div>
             <button onClick={expandCollapse} style={buttonStyle}>
                 <p>
-                    {portfolio.description?.[0].text}...<span className={cssStyles.readMore}>read more</span>
+                    {portfolio.description?.[0].text}...
+                    <span className={cssStyles.readMore} onClick={expandCollapse}>
+                        read more
+                    </span>
                 </p>
             </button>
             <span style={textStyle}>
@@ -47,6 +55,11 @@ const PortfolioDescription = () => {
                         </a>
                     </p>
                 ))}
+                <p>
+                    <span className={cssStyles.readMore} onClick={collapseExpand}>
+                        show less
+                    </span>
+                </p>
             </span>
         </div>
     );

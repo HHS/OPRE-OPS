@@ -1,9 +1,0 @@
-from ops_api.ops.cans.models import FundingPartner
-import pytest
-
-
-@pytest.mark.django_db
-def test_FundingPartner_str():
-    name = "FundingPartnerName"
-    fundingPartner = FundingPartner.objects.create(name=name, nickname="NotTheRealName")
-    assert name == str(fundingPartner)
