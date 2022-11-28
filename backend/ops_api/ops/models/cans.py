@@ -4,6 +4,8 @@ from ops.portfolio.models import portfolio_cans
 from ops.utils import BaseModel
 from sqlalchemy import (
     Column,
+    Date,
+    DateTime,
     Integer,
     String,
     Numeric,
@@ -104,15 +106,15 @@ class CANFiscalYear(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN."""
 
     __tablename__ = "can_fiscal_year"
-    can_id = db.Column(db.Integer, db.ForeignKey("can.id"), primary_key=True)
-    fiscal_year = db.Column(db.Integer, primary_key=True)
-    can = db.relationship("CAN", lazy="joined")
-    total_fiscal_year_funding = db.Column(db.Numeric(12, 2))
-    current_funding = db.Column(db.Numeric(12, 2))
-    expected_funding = db.Column(db.Numeric(12, 2))
-    potential_additional_funding = db.Column(db.Numeric(12, 2))
-    can_lead = db.Column(db.String)
-    notes = db.Column(db.String, default="")
+    can_id = Column(Integer, ForeignKey("can.id"), primary_key=True)
+    fiscal_year = Column(Integer, primary_key=True)
+    can = relationship("CAN", lazy="joined")
+    total_fiscal_year_funding = Column(Numeric(12, 2))
+    current_funding = Column(Numeric(12, 2))
+    expected_funding = Column(Numeric(12, 2))
+    potential_additional_funding = Column(Numeric(12, 2))
+    can_lead = Column(String)
+    notes = Column(String, default="")
     total_funding = column_property(current_funding + expected_funding)
 
 
@@ -120,13 +122,13 @@ class CANFiscalYearCarryOver(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN carried over from a previous fiscal year."""
 
     __tablename__ = "can_fiscal_year_carry_over"
-    id = db.Column(db.Integer, primary_key=True)
-    can_id = db.Column(db.Integer, db.ForeignKey("can.id"))
-    can = db.relationship("CAN", lazy="joined")
-    from_fiscal_year = db.Column(db.Integer)
-    to_fiscal_year = db.Column(db.Integer)
-    amount = db.Column(db.Numeric(12, 2))
-    notes = db.Column(db.String, default="")
+    id = Column(Integer, primary_key=True)
+    can_id = Column(Integer, ForeignKey("can.id"))
+    can = relationship("CAN", lazy="joined")
+    from_fiscal_year = Column(Integer)
+    to_fiscal_year = Column(Integer)
+    amount = Column(Numeric(12, 2))
+    notes = Column(String, default="")
 
 
 class Agreement(BaseModel):
@@ -225,16 +227,16 @@ class CAN(BaseModel):
     """
 
     __tablename__ = "can"
-    id = db.Column(db.Integer, primary_key=True)
-    number = db.Column(db.String(30), nullable=False)
-    description = db.Column(db.String)
-    purpose = db.Column(db.String, default="")
-    nickname = db.Column(db.String(30))
-    expiration_date = db.Column(db.DateTime, default="1/1/1972")
-    appropriation_term = db.Column(db.Integer, default="1")
-    arrangement_type_id = db.Column(
-        db.Integer,
-        db.ForeignKey("can_arrangement_type.id"),
+    id = Column(Integer, primary_key=True)
+    number = Column(String(30), nullable=False)
+    description = Column(String)
+    purpose = Column(String, default="")
+    nickname = Column(String(30))
+    expiration_date = Column(DateTime, default="1/1/1972")
+    appropriation_term = Column(Integer, default="1")
+    arrangement_type_id = Column(
+        Integer,
+        ForeignKey("can_arrangement_type.id"),
     )
     arrangement_type = relationship(CANArrangementType)
     funding_sources = relationship(
