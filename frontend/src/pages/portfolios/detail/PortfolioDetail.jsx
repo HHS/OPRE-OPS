@@ -1,4 +1,4 @@
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getPortfolioAndSetState } from "./getPortfolio";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -11,7 +11,7 @@ import PortfolioHeader from "../../../components/PortfolioHeader/PortfolioHeader
 import CanCard from "../../../components/CanCard/CanCard";
 
 import styles from "./styles.module.css";
-import { getPortfolioBudgetDetailsByCan } from "./getPortfolioCans";
+import { getPortfolioCansAndSetState } from "./getPortfolioCans";
 
 const PortfolioDetail = () => {
     const dispatch = useDispatch();
@@ -19,29 +19,29 @@ const PortfolioDetail = () => {
     const urlPathParams = useParams();
     const portfolioId = parseInt(urlPathParams.id);
     const currentFiscalYear = getCurrentFiscalYear(new Date());
-    //const portfolioCans = useSelector((state) => state.portfolioDetail.portfolioCans);
-    const portfolioCans = [
-        {
-            arrangement_type_id: 3,
-            authorizer_id: 26,
-            description: "Incoming Interagency Agreements",
-            id: 2,
-            managing_portfolio_id: 1,
-            nickname: "IAA-Incoming",
-            number: "G99IA14",
-            purpose: null,
-        },
-        {
-            arrangement_type_id: 4,
-            authorizer_id: 26,
-            description: "Child Development Research Fellowship Grant Program",
-            id: 4,
-            managing_portfolio_id: 1,
-            nickname: "ASPE SRCD-IDDA",
-            number: "G990136",
-            purpose: null,
-        },
-    ];
+    const portfolioCans = useSelector((state) => state.portfolioDetail.portfolioCans);
+    // const portfolioCans = [
+    //     {
+    //         arrangement_type_id: 3,
+    //         authorizer_id: 26,
+    //         description: "Incoming Interagency Agreements",
+    //         id: 2,
+    //         managing_portfolio_id: 1,
+    //         nickname: "IAA-Incoming",
+    //         number: "G99IA14",
+    //         purpose: null,
+    //     },
+    //     {
+    //         arrangement_type_id: 4,
+    //         authorizer_id: 26,
+    //         description: "Child Development Research Fellowship Grant Program",
+    //         id: 4,
+    //         managing_portfolio_id: 1,
+    //         nickname: "ASPE SRCD-IDDA",
+    //         number: "G990136",
+    //         purpose: null,
+    //     },
+    // ];
     useEffect(() => {
         dispatch(getPortfolioAndSetState(portfolioId));
         return () => {
@@ -51,7 +51,7 @@ const PortfolioDetail = () => {
 
     useEffect(() => {
         try {
-            dispatch(getPortfolioBudgetDetailsByCan(portfolioId, currentFiscalYear));
+            dispatch(getPortfolioCansAndSetState(portfolioId, currentFiscalYear));
         } catch (error) {
             return () => {
                 dispatch(setPortfolioCans({}));
@@ -78,8 +78,8 @@ const PortfolioDetail = () => {
                                 funding from other CANs outside of this portfolio that might occur during
                                 cross-portfolio collaborations on research projects.
                             </p>
-                            {portfolioCans.map((can) => (
-                                <CanCard can={can} fiscalYear={currentFiscalYear} key={can.id} />
+                            {portfolioCans.map((can, i) => (
+                                <CanCard can={can} fiscalYear={currentFiscalYear} key={i} />
                             ))}
                         </section>
                     </div>
