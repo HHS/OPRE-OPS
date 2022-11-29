@@ -20,7 +20,7 @@ const CanCard = (props) => {
     const tagClasses = `grid-col-1`;
     /* vars */
     const dispatch = useDispatch();
-    const canFiscalyear = useSelector((state) => state.canCardDetails.canFundingData);
+    const canFundingData = useSelector((state) => state.canCardDetails.canFundingData);
 
     useEffect(() => {
         dispatch(getCanTotalFundingandSetState(props.can.id, props.fiscalYear));
@@ -46,7 +46,7 @@ const CanCard = (props) => {
                         <div className="font-sans-3xs">FY Total Budget</div>
                         <div className="font-sans-md text-bold">
                             <CurrencyWithSmallCents
-                                amount={canFiscalyear?.total_funding || constants.notFilledInText}
+                                amount={canFundingData?.total_funding || constants.notFilledInText}
                                 dollarsClasses="font-sans-md text-bold"
                                 centsStyles={{ fontSize: "10px" }}
                             />
@@ -78,12 +78,12 @@ const CanCard = (props) => {
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>{canFiscalyear?.planned_funding || constants.notFilledInText}</td>
-                                        <td>{canFiscalyear?.in_execution_funding || constants.notFilledInText}</td>
-                                        <td>{canFiscalyear?.obligated_funding || constants.notFilledInText}</td>
-                                        <td>{canFiscalyear?.available_funding || constants.notFilledInText}</td>
-                                        <td>{canFiscalyear?.can?.appropriation_term || "-"} Years</td>
-                                        <td>{canFiscalyear?.expiration_date?.toDateString() || "---"}</td>
+                                        <td>{canFundingData?.planned_funding || constants.notFilledInText}</td>
+                                        <td>{canFundingData?.in_execution_funding || constants.notFilledInText}</td>
+                                        <td>{canFundingData?.obligated_funding || constants.notFilledInText}</td>
+                                        <td>{canFundingData?.available_funding || constants.notFilledInText}</td>
+                                        <td>{canFundingData?.can?.appropriation_term || "-"} Years</td>
+                                        <td>{canFundingData?.expiration_date?.toDateString() || "---"}</td>
                                     </tr>
                                 </tbody>
                             </table>
