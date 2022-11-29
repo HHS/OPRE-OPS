@@ -4,6 +4,7 @@ from ops.utils import BaseModel
 from ops.utils import db
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import column_property
 
 can_funding_sources = db.Table(
     "can_funding_sources",
@@ -93,25 +94,16 @@ class CANFiscalYear(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN."""
 
     __tablename__ = "can_fiscal_year"
-    id = db.Column(db.Integer, primary_key=True)
-    can_id = db.Column(db.Integer, db.ForeignKey("can.id"))
+    can_id = db.Column(db.Integer, db.ForeignKey("can.id"), primary_key=True)
     can = db.relationship("CAN", lazy="joined")
-    fiscal_year = db.Column(db.Integer)
+    fiscal_year = db.Column(db.Integer, primary_key=True)
     total_fiscal_year_funding = db.Column(db.Numeric(12, 2))
+    current_funding = db.Column(db.Numeric(12, 2))
+    expected_funding = db.Column(db.Numeric(12, 2))
     potential_additional_funding = db.Column(db.Numeric(12, 2))
     can_lead = db.Column(db.String)
     notes = db.Column(db.String, default="")
-
-    def __repr__(self):
-        return f"""CANFiscalYear(
-            id={self.id!r},
-            can={self.can!r},
-            fiscal_year={self.fiscal_year!r},
-            total_fiscal_year_funding={self.total_fiscal_year_funding!r},
-            potential_additional_funding={self.potential_additional_funding!r},
-            can_lead={self.can_lead!r},
-            notes={self.notes!r}
-        )"""
+    total_funding = column_property(current_funding + expected_funding)
 
 
 class Agreement(BaseModel):
@@ -161,15 +153,15 @@ class BudgetLineItemStatus(BaseModel):
 
     @hybrid_property
     def Planned(self):
-        return self.status == "Planned"
+        return self.id == 1  # Planned
 
     @hybrid_property
     def In_Execution(self):
-        return self.status == "In Execution"
+        return self.id == 2  # In Execution
 
     @hybrid_property
     def Obligated(self):
-        return self.status == "Obligated"
+        return self.id == 3  # Obligated
 
 
 class CANArrangementType(BaseModel):
@@ -215,6 +207,8 @@ class CAN(BaseModel):
     description = db.Column(db.String)
     purpose = db.Column(db.String, default="")
     nickname = db.Column(db.String(30))
+    expiration_date = db.Column(db.Date, default="1/1/1972")
+    appropriation_term = db.Column(db.Integer, default="1")
     arrangement_type_id = db.Column(
         db.Integer,
         db.ForeignKey("can_arrangement_type.id"),

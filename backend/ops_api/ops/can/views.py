@@ -6,6 +6,10 @@ from ops.can.models import CANFiscalYear
 
 
 def all_cans() -> Response:
+    get_all_cans()
+
+
+def get_all_cans() -> Response:
     cans = CAN.query.all()
     response = jsonify([can.to_dict() for can in cans])
     response.headers.add("Access-Control-Allow-Origin", "*")
@@ -15,6 +19,13 @@ def all_cans() -> Response:
 def load_can(pk: int) -> Response:
     can = CAN.query.filter(CAN.id == pk).one()
     response = jsonify(can.to_dict(nested=True))
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
+
+
+def get_portfolio_cans(pk: int) -> Response:
+    cans = CAN.query.filter(CAN.managing_portfolio_id == pk).all()
+    response = jsonify([can.to_dict() for can in cans])
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 

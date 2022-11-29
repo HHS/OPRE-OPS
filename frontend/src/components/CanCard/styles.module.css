@@ -6,6 +6,7 @@
     /*width: 100%;*/
     /*float: left;*/
     display: flex;
+    margin: 1rem 0;
  }
 
 .clear {
@@ -37,7 +38,7 @@
     /*box-sizing: border-box;*/
     display: inline-block;
     /*float: left;*/
-    flex: 3;
+    flex: 6;
 }
 
 .leftMarginSubContainer {
@@ -59,6 +60,7 @@
     font-weight: 100;
     line-height: 1;
     margin: 0.25rem 0;
+    width: 778px;
 }
 
 .budgetStatusTable thead th {
@@ -70,8 +72,6 @@
 .budgetStatusTable td {
     border-bottom: 0px solid #ddd;
 }
-
-.usa-table:margin-top-05 {}
 
 .tag {
     /*flex: 1;*/

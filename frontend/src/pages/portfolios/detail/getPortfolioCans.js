@@ -1,10 +1,5 @@
 import { setPortfolioCans } from "./portfolioDetailSlice";
-import ApplicationContext from "../../../applicationContext/ApplicationContext";
-
-export const getPortfolioCans = async (id) => {
-    const responseData = await ApplicationContext.get().helpers().callBackend(`/ops/cans/portfolio/${id}`, "get");
-    return responseData;
-};
+import { getPortfolioCans } from "../../../helpers/api";
 
 export const getPortfolioCansAndSetState = (id) => {
     return async (dispatch, getState) => {

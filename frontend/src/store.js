@@ -7,7 +7,6 @@ import portfolioDetailSlice from "./pages/portfolios/detail/portfolioDetailSlice
 import portfolioFundingSummarySlice from "./components/PortfolioFundingSummary/portfolioFundingSummarySlice";
 // eslint-disable-next-line import/no-named-as-default
 import authSlice from "./components/Auth/authSlice";
-import canCardDetailSlice from "./components/CanCard/canCardDetailSlice";
 
 export default configureStore({
     reducer: {
@@ -17,7 +16,6 @@ export default configureStore({
         portfolioList: portfolioListSlice,
         portfolioDetail: portfolioDetailSlice,
         portfolioFundingSummary: portfolioFundingSummarySlice,
-        canCardDetail: canCardDetailSlice,
         auth: authSlice,
     },
 });
