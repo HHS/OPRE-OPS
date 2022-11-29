@@ -63,7 +63,11 @@ const CanCard = (props) => {
                             <Tag text="Funding YTD" className={tagClasses} />
                         </div>
                         <div>
-                            <CANFundingYTD className={style.canFundingYTD} />
+                            <CANFundingYTD
+                                className={style.canFundingYTD}
+                                current_funding={canFundingData?.current_funding}
+                                expected_funding={canFundingData?.expected_funding}
+                            />
                         </div>
                     </div>
                     <div className={budgetStatusClasses}>

@@ -2,17 +2,11 @@ import styles from "./styles.module.css";
 import { useEffect } from "react";
 import { calculateRatio } from "./util";
 
-// Putting this here for now - the work to populate this from the backend is on another branch
-const fakeData = {
-    received: 1000000.0,
-    expected: 1000000.0,
-};
-
-const CANFundingBar = ({ data }) => {
+const CANFundingBar = ({ current_funding, expected_funding }) => {
     useEffect(() => {
-        const ratio = calculateRatio(fakeData);
+        const ratio = calculateRatio({ received: current_funding, expected: expected_funding });
         document.documentElement.style.setProperty("--can-funding-bar-ratio", ratio);
-    }, []);
+    }, [current_funding, expected_funding]);
 
     return (
         <div className={styles.barBox}>

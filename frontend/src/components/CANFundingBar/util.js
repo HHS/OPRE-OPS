@@ -4,7 +4,7 @@ export const calculateRatio = (data) => {
         return 0;
     }
 
-    if (data.expected == 0) {
+    if (data.expected === 0) {
         return 10000;
     } else {
         return data.received / data.expected;
