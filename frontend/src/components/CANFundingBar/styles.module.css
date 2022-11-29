@@ -1,14 +1,10 @@
-:root {
-    --can-funding-bar-ratio: 1;
-}
-
 .barBox {
     display: flex;
     height: 25px;
 }
 
 .leftBar {
-    flex: var(--can-funding-bar-ratio);
+    flex: 1;
     border-width: 1px;
     background-color: #A1D0BE;
     border-bottom-left-radius: 4px;
