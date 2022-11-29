@@ -20,28 +20,7 @@ const PortfolioDetail = () => {
     const portfolioId = parseInt(urlPathParams.id);
     const currentFiscalYear = getCurrentFiscalYear(new Date());
     const portfolioCans = useSelector((state) => state.portfolioDetail.portfolioCans);
-    // const portfolioCans = [
-    //     {
-    //         arrangement_type_id: 3,
-    //         authorizer_id: 26,
-    //         description: "Incoming Interagency Agreements",
-    //         id: 2,
-    //         managing_portfolio_id: 1,
-    //         nickname: "IAA-Incoming",
-    //         number: "G99IA14",
-    //         purpose: null,
-    //     },
-    //     {
-    //         arrangement_type_id: 4,
-    //         authorizer_id: 26,
-    //         description: "Child Development Research Fellowship Grant Program",
-    //         id: 4,
-    //         managing_portfolio_id: 1,
-    //         nickname: "ASPE SRCD-IDDA",
-    //         number: "G990136",
-    //         purpose: null,
-    //     },
-    // ];
+
     useEffect(() => {
         dispatch(getPortfolioAndSetState(portfolioId));
         return () => {
@@ -58,6 +37,10 @@ const PortfolioDetail = () => {
             };
         }
     }, [dispatch, portfolioId, currentFiscalYear]);
+
+    const canCards = portfolioCans.length
+        ? portfolioCans.map((can, i) => <CanCard can={can} fiscalYear={currentFiscalYear} key={i} />)
+        : "";
 
     return (
         <>
@@ -78,9 +61,7 @@ const PortfolioDetail = () => {
                                 funding from other CANs outside of this portfolio that might occur during
                                 cross-portfolio collaborations on research projects.
                             </p>
-                            {portfolioCans.map((can, i) => (
-                                <CanCard can={can} fiscalYear={currentFiscalYear} key={i} />
-                            ))}
+                            {canCards.length ? canCards : <span>No CANs to display.</span>}
                         </section>
                     </div>
                 </div>

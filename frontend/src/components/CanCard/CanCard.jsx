@@ -2,10 +2,8 @@ import style from "./styles.module.css";
 import CurrencyWithSmallCents from "../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
 import Tag from "../UI/Tag/Tag";
 import CANFundingYTD from "../CANFundingYTD/CANFundingYTD";
-import { useEffect } from "react";
-import { getCanTotalFundingandSetState } from "./getCanCardDetails";
-import { useDispatch, useSelector } from "react-redux";
-import { setCanFundingData } from "./canCardDetailSlice";
+import { useEffect, useState } from "react";
+import { getCanFundingSummary } from "../../helpers/api";
 import constants from "../../constants";
 
 const CanCard = (props) => {
@@ -19,16 +17,22 @@ const CanCard = (props) => {
     const budgetStatusTableClasses = `usa-table usa-table--borderless ${style.budgetStatusTable}`;
     const tagClasses = `grid-col-1`;
     /* vars */
-    const dispatch = useDispatch();
-    const canFundingData = useSelector((state) => state.canCardDetails.canFundingData);
+    const [canFundingData, setCanFundingDataLocal] = useState({});
 
     useEffect(() => {
-        dispatch(getCanTotalFundingandSetState(props.can.id, props.fiscalYear));
-
+        getCanTotalFundingandSetState(props.can.id, props.fiscalYear);
         return () => {
-            dispatch(setCanFundingData({}));
+            setCanFundingDataLocal({});
         };
-    }, [dispatch, props.can.id, props.fiscalYear]);
+    }, [props.can.id, props.fiscalYear]);
+
+    const getCanTotalFundingandSetState = async (id, fiscalYear) => {
+        if (id && fiscalYear) {
+            const results = await getCanFundingSummary(id, fiscalYear);
+            setCanFundingDataLocal(results);
+            return results;
+        }
+    };
 
     return (
         <section>
@@ -83,7 +87,7 @@ const CanCard = (props) => {
                                         <td>{canFundingData?.obligated_funding || constants.notFilledInText}</td>
                                         <td>{canFundingData?.available_funding || constants.notFilledInText}</td>
                                         <td>{canFundingData?.can?.appropriation_term || "-"} Years</td>
-                                        <td>{canFundingData?.expiration_date?.toDateString() || "---"}</td>
+                                        <td>{canFundingData?.expiration_date || "---"}</td>
                                     </tr>
                                 </tbody>
                             </table>
