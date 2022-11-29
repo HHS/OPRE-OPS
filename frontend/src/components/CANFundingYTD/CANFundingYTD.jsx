@@ -3,14 +3,11 @@ import CurrencyWithSmallCents from "../UI/CurrencyWithSmallCents/CurrencyWithSma
 import CANFundingBar from "../CANFundingBar/CANFundingBar";
 
 const CANFundingYTD = (props) => {
-    const gridRow = `grid-row`;
-    const gridRowText = `grid-row ${styles.gridRowText}`;
-    const barBox = `${styles.barBox}`;
-    const rightAlign = `${styles.right}`;
+    const gridRowText = `grid-row padding-top-1 ${styles.gridRowText}`;
 
     return (
         <div>
-            <div className={gridRow}>
+            <div className="grid-row padding-top-1 padding-bottom-1">
                 <div className="grid-col-2">
                     <CurrencyWithSmallCents
                         amount="14000000.00"
@@ -19,7 +16,7 @@ const CANFundingYTD = (props) => {
                     />
                 </div>
                 <div className="grid-col-2 grid-offset-8">
-                    <div className={rightAlign}>
+                    <div className={styles.right}>
                         <CurrencyWithSmallCents
                             amount="3000000.00"
                             dollarsClasses="font-sans-3xs text-bold"
@@ -28,7 +25,7 @@ const CANFundingYTD = (props) => {
                     </div>
                 </div>
             </div>
-            <div className={barBox}>
+            <div className={styles.barBox}>
                 <CANFundingBar />
             </div>
             <div className={gridRowText}>
@@ -36,7 +33,7 @@ const CANFundingYTD = (props) => {
                     <span>Received</span>
                 </div>
                 <div className="grid-col-2 grid-offset-8">
-                    <span className={rightAlign}>Expected</span>
+                    <span className={styles.right}>Expected</span>
                 </div>
             </div>
         </div>

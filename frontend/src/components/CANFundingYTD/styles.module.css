@@ -1,9 +1,6 @@
 .barBox {
-    /*display: flex;*/
-    /*flex-row: row wrap;*/
-    /*width: 1000px;*/
     height: 25px;
-    margin: 1 0;
+    /*margin: 1 0;*/
 }
 
 .gridRowText {
@@ -13,33 +10,4 @@
 .right {
     position: absolute;
     right: 0px;
-}
-
-/*.alignLeft {*/
-/*    width: 33.33333%;*/
-/*    text-align: left;*/
-/*}*/
-
-/*.alignRight {*/
-/*    width: 33.33333%;*/
-/*    text-align: right;*/
-/*}*/
-
-/*.alignLeft {*/
-/*    !*float: left;*!*/
-/*    !*width: 33.33333%;*!*/
-/*    flex: 1;*/
-/*    text-align: left;*/
-/*}*/
-
-/*.alignRight {*/
-/*    !*float: left;*!*/
-/*    !*width: 33.33333%;*!*/
-/*    flex: 1;*/
-/*    text-align: right;*/
-/*}*/
-
-.blah {
-    flex: 1;
-    background-color: #8b0a03;
 }
