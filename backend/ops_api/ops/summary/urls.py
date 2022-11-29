@@ -22,15 +22,17 @@ def funding_summary() -> Response:
 
 
 def get_can_funding_summary(pk: int, fiscal_year: int) -> Response:
-    print(pk)
-    print(fiscal_year)
     can = CAN.query.filter(CAN.id == pk).one()
-    return jsonify(get_can_funding(can, fiscal_year))
+    response = jsonify(get_can_funding(can, fiscal_year))
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 
 def get_portfolio_funding_summary(pk: int, fiscal_year: int) -> Response:
     portfolio = Portfolio.query.filter(Portfolio.id == pk).one()
-    return jsonify(get_portfolio_funding(portfolio, fiscal_year))
+    response = jsonify(get_portfolio_funding(portfolio, fiscal_year))
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 
 bp = Blueprint(

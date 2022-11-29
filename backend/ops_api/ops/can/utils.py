@@ -10,11 +10,14 @@ class CanFundingSummary(TypedDict):
     """Dict type hint for total finding"""
 
     can: CAN
+    current_funding: float
+    expected_funding: float
     total_funding: float
     planned_funding: float
     obligated_funding: float
     in_execution_funding: float
     available_funding: float
+    expiration_date: str
 
 
 def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> None:
@@ -27,9 +30,13 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> None
             CANFiscalYear.fiscal_year == fiscal_year
         ).all()
 
-    total_funding = (
-        sum([c.total_fiscal_year_funding for c in can_fiscal_year_query]) or 0
-    )
+    # total_funding = (
+    #     sum([c.total_fiscal_year_funding for c in can_fiscal_year_query]) or 0
+    # )
+    current_funding = sum([c.current_funding for c in can_fiscal_year_query]) or 0
+
+    expected_funding = sum([c.expected_funding for c in can_fiscal_year_query]) or 0
+    total_funding = current_funding + expected_funding
 
     # Amount available to a Portfolio budget is the sum of the BLI minus the Portfolio total (above)
     budget_line_items = BudgetLineItem.query.filter(
@@ -68,9 +75,12 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> None
 
     return {
         "can": can.to_dict(),
+        "current_funding": current_funding,
+        "expected_funding": expected_funding,
         "total_funding": total_funding,
         "planned_funding": planned_funding,
         "obligated_funding": obligated_funding,
         "in_execution_funding": in_execution_funding,
         "available_funding": available_funding,
+        "expiration_date": can.expiration_date.strftime("%m/%d/%Y"),
     }
