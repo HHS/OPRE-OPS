@@ -165,8 +165,8 @@
       number: "G99XXX4",
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nickname: "HMRF-OFA",
-      expiration_date: "9/1/2024",
-      appropriation_term: 1,
+      expiration_date: "10/1/2027",
+      appropriation_term: 5,
       arrangement_type_id: 2,
       authorizer_id: 23,
       managing_portfolio_id: 6
@@ -176,8 +176,8 @@
       number: "G99XXX7",
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nickname: "HMRF-OFA",
-      expiration_date: "9/1/2024",
-      appropriation_term: 1,
+      expiration_date: "10/1/2027",
+      appropriation_term: 5,
       arrangement_type_id: 2,
       authorizer_id: 23,
       managing_portfolio_id: 6
@@ -189,6 +189,7 @@
       fiscal_year: 2023,
       total_fiscal_year_funding: 11400000.00,
       current_funding: 880000.00,
+      carry_over_funding: null,
       expected_funding: 260000.00,
       potential_additional_funding: 1300000.00,
       notes: ""
@@ -198,6 +199,7 @@
       fiscal_year: 2021,
       total_fiscal_year_funding: 200000.00,
       current_funding: 200000.00,
+      carry_over_funding: null,
       expected_funding: 0.00,
       potential_additional_funding: 0.00,
       notes: "147-OPRE-FY21 $150K from ASPE; 149-OPRE-FY21 $50K from SSA\n\nNote to us: This distinction is in budget lines, not sure how it ties into CANs"
@@ -207,6 +209,7 @@
       fiscal_year: 2022,
       total_fiscal_year_funding: 7512000.00,
       current_funding: 6880000.00,
+      carry_over_funding: null,
       expected_funding: 632000.00,
       potential_additional_funding: 3000000.00,
       notes: ""
@@ -216,6 +219,7 @@
       fiscal_year: 2023,
       total_fiscal_year_funding: 7512000.00,
       current_funding: 6880000.00,
+      carry_over_funding: null,
       expected_funding: 632000.00,
       potential_additional_funding: 3000000.00,
       notes: ""
@@ -225,6 +229,7 @@
       fiscal_year: 2024,
       total_fiscal_year_funding: 7512000.00,
       current_funding: 6880000.00,
+      carry_over_funding: null,
       expected_funding: 632000.00,
       potential_additional_funding: 3000000.00,
       notes: ""
@@ -234,6 +239,7 @@
       fiscal_year: 2021,
       total_fiscal_year_funding: 126476.00,
       current_funding: 126476.00,
+      carry_over_funding: null,
       expected_funding: 0.00,
       potential_additional_funding: 0.00,
       notes: ""
@@ -243,6 +249,7 @@
       fiscal_year: 2021,
       total_fiscal_year_funding: 20000000.00,
       current_funding: 2000000.00,
+      carry_over_funding: null,
       expected_funding: 0.00,
       potential_additional_funding: 1000000.00,
       notes: ""
@@ -252,6 +259,7 @@
       fiscal_year: 2022,
       total_fiscal_year_funding: 126476.00,
       current_funding: 126476.00,
+      carry_over_funding: null,
       expected_funding: 0.00,
       potential_additional_funding: 0.00,
       notes: ""
@@ -261,6 +269,7 @@
       fiscal_year: 2023,
       total_fiscal_year_funding: 126476.00,
       current_funding: 126476.00,
+      carry_over_funding: null,
       expected_funding: 0.00,
       potential_additional_funding: 0.00,
       notes: ""
@@ -270,6 +279,7 @@
       fiscal_year: 2024,
       total_fiscal_year_funding: 20000000.00,
       current_funding: 126476.00,
+      carry_over_funding: null,
       expected_funding: 0.00,
       potential_additional_funding: 0.00,
       notes: ""
@@ -279,6 +289,7 @@
       fiscal_year: 2021,
       total_fiscal_year_funding: 126476.00,
       current_funding: 126476.00,
+      carry_over_funding: null,
       expected_funding: 0.00,
       potential_additional_funding: 0.00,
       notes: ""
@@ -288,6 +299,7 @@
       fiscal_year: 2023,
       total_fiscal_year_funding: 126476.00,
       current_funding: 126476.00,
+      carry_over_funding: null,
       expected_funding: 20000.00,
       potential_additional_funding: 0.00,
       notes: ""
@@ -297,6 +309,7 @@
       fiscal_year: 2023,
       total_fiscal_year_funding: 126476.00,
       current_funding: 126476.00,
+      carry_over_funding: null,
       expected_funding: 20000.00,
       potential_additional_funding: 0.00,
       notes: ""
@@ -306,10 +319,50 @@
       fiscal_year: 2023,
       total_fiscal_year_funding: 126476.00,
       current_funding: 106476.00,
+      carry_over_funding: null,
       expected_funding: 20000.00,
       potential_additional_funding: 0.00,
       notes: ""
+    },
+    {
+      can_id: 11,
+      fiscal_year: 2022,
+      total_fiscal_year_funding: 697036.58,
+      current_funding: 697036.58,
+      carry_over_funding: null,
+      expected_funding: 0,
+      potential_additional_funding: 0,
+      notes: ""
+    },
+    {
+      can_id: 11,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 1149088.76,
+      current_funding: 849088.76,
+      carry_over_funding: 300000.00,
+      expected_funding: 0,
+      potential_additional_funding: 0,
+      notes: ""
+    },
+    {
+      can_id: 12,
+      fiscal_year: 2022,
+      total_fiscal_year_funding: 7404029.57,
+      current_funding: 7404029.57,
+      carry_over_funding: null,
+      expected_funding: 0,
+      potential_additional_funding: 0.00,
+      notes: ""
+    },
+    {
+      can_id: 12,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 3487064.45,
+      current_funding: 1487064.45,
+      carry_over_funding: 1000000.00,
+      expected_funding: 1000000,
+      potential_additional_funding: 0.00,
+      notes: ""
     }
-
   ]
 }
