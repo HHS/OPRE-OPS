@@ -6,12 +6,13 @@ from ops.can.models import CANFiscalYear
 
 
 def all_cans() -> Response:
-    get_all_cans()
+    return get_all_cans()
 
 
 def get_all_cans() -> Response:
     cans = CAN.query.all()
     response = jsonify([can.to_dict() for can in cans])
+    print(response)
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
