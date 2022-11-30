@@ -6,8 +6,10 @@ const CANFundingBar = ({ current_funding, expected_funding }) => {
     const [ratio, setRatio] = useState(1);
 
     useEffect(() => {
-        if (current_funding && expected_funding) {
-            const calculatedRatio = calculateRatio({ received: current_funding, expected: expected_funding });
+        const calculatedRatio = calculateRatio({ received: current_funding, expected: expected_funding });
+
+        // css/flex will throw a warning here if depending on the data calculatedRatio is NaN
+        if (calculatedRatio !== undefined && !Number.isNaN(calculatedRatio)) {
             setRatio(calculatedRatio);
         }
     }, [current_funding, expected_funding]);
