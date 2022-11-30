@@ -95,9 +95,10 @@ class CANFiscalYear(BaseModel):
 
     __tablename__ = "can_fiscal_year"
     can_id = db.Column(db.Integer, db.ForeignKey("can.id"), primary_key=True)
-    can = db.relationship("CAN", lazy="joined")
     fiscal_year = db.Column(db.Integer, primary_key=True)
+    can = db.relationship("CAN", lazy="joined")
     total_fiscal_year_funding = db.Column(db.Numeric(12, 2))
+    carry_over_funding = db.Column(db.Numeric(12, 2))
     current_funding = db.Column(db.Numeric(12, 2))
     expected_funding = db.Column(db.Numeric(12, 2))
     potential_additional_funding = db.Column(db.Numeric(12, 2))
