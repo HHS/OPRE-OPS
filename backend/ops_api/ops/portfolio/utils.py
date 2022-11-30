@@ -59,6 +59,8 @@ def get_total_funding(
         sum([c.total_fiscal_year_funding for c in can_fiscal_year_query]) or 0
     )
 
+    carry_over_funding = sum([c.carry_over_funding if c.carry_over_funding else 0 for c in can_fiscal_year_query]) or 0
+
     # Amount available to a Portfolio budget is the sum of the BLI minus the Portfolio total (above)
     budget_line_items = BudgetLineItem.query.filter(
         BudgetLineItem.can.has(CAN.managing_portfolio == portfolio)
@@ -98,6 +100,10 @@ def get_total_funding(
         "total_funding": {
             "amount": float(total_funding),
             "percent": "Total",
+        },
+        "carry_over_funding": {
+            "amount": float(carry_over_funding),
+            "percent": "Carry Over",
         },
         "planned_funding": {
             "amount": float(planned_funding),

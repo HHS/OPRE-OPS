@@ -36,6 +36,9 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> None
     current_funding = sum([c.current_funding for c in can_fiscal_year_query]) or 0
 
     expected_funding = sum([c.expected_funding for c in can_fiscal_year_query]) or 0
+
+    carry_over_funding = sum([c.carry_over_funding if c.carry_over_funding else 0 for c in can_fiscal_year_query]) or 0
+
     total_funding = current_funding + expected_funding
 
     # Amount available to a Portfolio budget is the sum of the BLI minus the Portfolio total (above)
@@ -78,6 +81,7 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> None
         "current_funding": current_funding,
         "expected_funding": expected_funding,
         "total_funding": total_funding,
+        "carry_over_funding": carry_over_funding,
         "planned_funding": planned_funding,
         "obligated_funding": obligated_funding,
         "in_execution_funding": in_execution_funding,
