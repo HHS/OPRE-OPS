@@ -5,11 +5,13 @@ import { dispatchUsecase } from "../../../helpers/test";
 
 test("successfully gets the Portfolio CAN from the backend and directly puts it into state", async () => {
     const mockCanId = "G99IA14";
-    const mockBackendResponse = {
-        id: 2,
-        number: mockCanId,
-        otherStuff: "DogCow",
-    };
+    const mockBackendResponse = [
+        {
+            id: 2,
+            number: mockCanId,
+            otherStuff: "DogCow",
+        },
+    ];
     TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
         return mockBackendResponse;
     });
@@ -18,6 +20,6 @@ test("successfully gets the Portfolio CAN from the backend and directly puts it 
 
     await dispatchUsecase(actualGetCan);
 
-    const can = store.getState().canDetail.can;
+    const can = store.getState().portfolioDetail.portfolioCans;
     expect(can).toEqual(mockBackendResponse);
 });
