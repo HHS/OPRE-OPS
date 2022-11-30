@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 
 from ops import create_app
 from ops.can.models import Agreement
