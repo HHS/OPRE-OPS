@@ -46,12 +46,6 @@ We have a Docker Compose configuration that makes it easy to run the application
 docker compose up
 ```
 
-To create an admin user, use the Django management tool from within the container.
-
-```shell
-docker compose exec backend python ./ops_api/manage.py createsuperuser
-```
-
 ## Access
 
 Whether you run the application through Docker or locally, you can access the frontend at `http://localhost:3000` and
