@@ -207,7 +207,7 @@ class CAN(BaseModel):
     description = db.Column(db.String)
     purpose = db.Column(db.String, default="")
     nickname = db.Column(db.String(30))
-    expiration_date = db.Column(db.Date, default="1/1/1972")
+    expiration_date = db.Column(db.DateTime, default="1/1/1972")
     appropriation_term = db.Column(db.Integer, default="1")
     arrangement_type_id = db.Column(
         db.Integer,

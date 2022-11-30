@@ -44,7 +44,7 @@ def test_can_creation():
 def test_can_get_all(client, loaded_db):
     assert loaded_db.session.query(CAN).count() == 2
 
-    response = client.get("/ops/cans/")
+    response = client.get("/ops/cans")
     assert response.status_code == 200
     assert len(response.json) == 2
 
