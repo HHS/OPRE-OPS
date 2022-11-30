@@ -7,7 +7,7 @@ bp = Blueprint(
     url_prefix="/ops",
 )
 # CANs
-bp.add_url_rule("/cans", view_func=views.all_cans)
+bp.add_url_rule("/cans/", view_func=views.get_all_cans)
 bp.add_url_rule("/cans/<int:pk>", view_func=views.load_can)
 bp.add_url_rule(
     "/cans/portfolio/<int:portfolio_id>", view_func=views.get_portfolio_cans

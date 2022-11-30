@@ -3,10 +3,7 @@ from flask import Response
 from ops.can.models import BudgetLineItem
 from ops.can.models import CAN
 from ops.can.models import CANFiscalYear
-
-
-def all_cans() -> Response:
-    return get_all_cans()
+from sqlalchemy.exc import NoResultFound
 
 
 def get_all_cans() -> Response:
@@ -39,16 +36,16 @@ def all_can_fiscal_years() -> Response:
 
 
 def get_can_fiscal_year(can_id: int, year: int) -> Response:
-    canFiscalYear = CANFiscalYear.query.filter(
-        CANFiscalYear.can_id == can_id, CANFiscalYear.fiscal_year == year
-    ).one()
+    try:
+        canFiscalYear = CANFiscalYear.query.filter(
+            CANFiscalYear.can_id == can_id, CANFiscalYear.fiscal_year == year
+        ).one()
 
-    if canFiscalYear:
         response = jsonify(canFiscalYear.to_dict())
-    else:  # No records returned
+        response.headers.add("Access-Control-Allow-Origin", "*")
+    except NoResultFound:
         response = {}
 
-    response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
 
