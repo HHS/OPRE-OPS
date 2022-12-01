@@ -10,6 +10,7 @@ jobs:
   deployment:
     name: Deploy to Development
     runs-on: ubuntu-latest
+    environment: cloud_gov_dev
     env:
       NODE_ENV: production
     steps:
@@ -22,8 +23,8 @@ jobs:
         id: deploy-backend
         uses: ./.github/actions/deploy-backend
         with:
-          USERNAME: ${{ secrets.DEV_USER }}
-          PASSWORD: ${{ secrets.DEV_PASSWORD }}
+          USERNAME: ${{ secrets.CF_USER }}
+          PASSWORD: ${{ secrets.CF_PASS }}
           ORG_NAME: ${{ secrets.ORG_NAME }}
           SPACE_NAME: dev
           APP_NAME: ops-backend
@@ -31,8 +32,8 @@ jobs:
       - name: Deploy data-tools to cloud.gov
         uses: ./.github/actions/deploy-data-tools
         with:
-          USERNAME: ${{ secrets.DEV_USER }}
-          PASSWORD: ${{ secrets.DEV_PASSWORD }}
+          USERNAME: ${{ secrets.CF_USER }}
+          PASSWORD: ${{ secrets.CF_PASS }}
           ORG_NAME: ${{ secrets.ORG_NAME }}
           SPACE_NAME: dev
           APP_NAME: ops-data-tools
@@ -43,8 +44,8 @@ jobs:
       - name: Load Sample Data
         uses: ./.github/actions/cf-run-task
         with:
-          USERNAME: ${{ secrets.DEV_USER }}
-          PASSWORD: ${{ secrets.DEV_PASSWORD }}
+          USERNAME: ${{ secrets.CF_USER }}
+          PASSWORD: ${{ secrets.CF_PASS }}
           ORG_NAME: ${{ secrets.ORG_NAME }}
           SPACE_NAME: dev
           APP_NAME: ops-data-tools
@@ -61,8 +62,8 @@ jobs:
       - name: Deploy frontend
         uses: ./.github/actions/deploy-frontend
         with:
-          USERNAME: ${{ secrets.DEV_USER }}
-          PASSWORD: ${{ secrets.DEV_PASSWORD }}
+          USERNAME: ${{ secrets.CF_USER }}
+          PASSWORD: ${{ secrets.CF_PASS }}
           ORG_NAME: ${{ secrets.ORG_NAME }}
           SPACE_NAME: dev
           APP_NAME: ops-frontend
