@@ -11,4 +11,4 @@ jobs:
     name: Deploy to cloud.gov
     uses: ./.github/workflows/deploy_reusable.yml
     with:
-      environment: dev
+      env-space: dev
