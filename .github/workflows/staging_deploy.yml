@@ -11,4 +11,5 @@ jobs:
     name: Deploy to cloud.gov
     uses: ./.github/workflows/deploy_reusable.yml
     with:
-      env-space: staging
+      environment: cloud_gov_staging
+      space: staging

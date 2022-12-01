@@ -1,20 +1,22 @@
 on:
   workflow_call:
     inputs:
-      env-space:
+      environment:
+        description: "The GitHub Environment to use."
+        required: true
+        type: string
+      space:
         description: "The CF Space to deploy to"
-        default: "dev"
-        required: false
+        default: dev
+        required: true
         type: string
 
 jobs:
-
   deployment:
     name: Deploy to ${{ inputs.env-space }}
     runs-on: ubuntu-latest
     environment: ${{ inputs.env-space }}
-    env:
-      NODE_ENV: production
+
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup-python
@@ -56,6 +58,8 @@ jobs:
 
       - name: Build frontend
         working-directory: ./frontend
+        env:
+          NODE_ENV: production
         run: |
           echo ${{steps.get-backend-uri.outputs.BACKEND_DOMAIN}}
           REACT_APP_BACKEND_DOMAIN=https://${{steps.deploy-backend.outputs.BACKEND_DOMAIN}} yarn build
