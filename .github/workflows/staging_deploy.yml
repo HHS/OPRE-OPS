@@ -18,7 +18,4 @@ jobs:
     with:
       environment: cloud_gov_staging
       space: staging
-    secrets:
-      CF_USER: ${{ secrets.CF_USER }}
-      CF_PASS: ${{ secrets.CF_PASS }}
-      CF_ORG: ${{ secrets.CF_ORG }}
+    secrets: inherit # This will allow the jobs to inherit from the envrionment secrets; which are limited to only deployment items anyway.
