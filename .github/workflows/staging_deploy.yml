@@ -8,8 +8,11 @@ on:
 jobs:
 
   deployment:
+    permissions:
+      contents: read
     name: Deploy to cloud.gov
     uses: ./.github/workflows/deploy_reusable.yml
     with:
       environment: cloud_gov_staging
       space: staging
+    secrets: inherit
