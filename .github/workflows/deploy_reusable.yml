@@ -15,7 +15,8 @@ jobs:
   deployment:
     name: Deploy to ${{ inputs.env-space }}
     runs-on: ubuntu-latest
-    environment: ${{ inputs.env-space }}
+    environment: ${{ inputs.environment }}
+    concurrency: ${{ inputs.environment }}
 
     steps:
       - uses: actions/checkout@v3
@@ -30,7 +31,7 @@ jobs:
           USERNAME: ${{ secrets.CF_USER }}
           PASSWORD: ${{ secrets.CF_PASS }}
           ORG_NAME: ${{ secrets.CF_ORG }}
-          SPACE_NAME: ${{ inputs.env-space }}
+          SPACE_NAME: ${{ inputs.space }}
           APP_NAME: ops-backend
 
       - name: Deploy data-tools to cloud.gov
@@ -39,7 +40,7 @@ jobs:
           USERNAME: ${{ secrets.CF_USER }}
           PASSWORD: ${{ secrets.CF_PASS }}
           ORG_NAME: ${{ secrets.CF_ORG }}
-          SPACE_NAME: ${{ inputs.env-space }}
+          SPACE_NAME: ${{ inputs.space }}
           APP_NAME: ops-data-tools
 
       # This is where the actual 'data-tools' script is run
@@ -51,7 +52,7 @@ jobs:
           USERNAME: ${{ secrets.CF_USER }}
           PASSWORD: ${{ secrets.CF_PASS }}
           ORG_NAME: ${{ secrets.CF_ORG }}
-          SPACE_NAME: ${{ inputs.env-space }}
+          SPACE_NAME: ${{ inputs.space }}
           APP_NAME: ops-data-tools
           CF_TASKNAME: 'Load-Sample-Data'
           CF_COMMAND: "ENV=cloudgov VERBOSE=True ./scripts/import_data.sh"
@@ -71,5 +72,5 @@ jobs:
           USERNAME: ${{ secrets.CF_USER }}
           PASSWORD: ${{ secrets.CF_PASS }}
           ORG_NAME: ${{ secrets.CF_ORG }}
-          SPACE_NAME: ${{ inputs.env-space }}
+          SPACE_NAME: ${{ inputs.space }}
           APP_NAME: ops-frontend
