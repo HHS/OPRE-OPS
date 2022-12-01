@@ -10,9 +10,15 @@ jobs:
   deployment:
     permissions:
       contents: read
+
+    # This uses a reusable_workflow a few special rules apply
+    # see ref: https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/reusing-workflows
     name: Deploy to cloud.gov
     uses: ./.github/workflows/deploy_reusable.yml
     with:
       environment: cloud_gov_staging
       space: staging
-    secrets: inherit
+    secrets:
+      CF_USER: ${{ secrets.CF_USER }}
+      CF_PASS: ${{ secrets.CF_PASS }}
+      CF_ORG: ${{ secrets.CF_ORG }}
