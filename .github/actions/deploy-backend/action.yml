@@ -29,7 +29,7 @@ runs:
       run: |
           export PATH=$HOME/bin:$PATH
           cf login -a https://api.fr.cloud.gov -u ${{ inputs.USERNAME }} -p ${{ inputs.PASSWORD }} -o ${{ inputs.ORG_NAME }} -s ${{ inputs.SPACE_NAME }}
-          cf push ${{ inputs.APP_NAME }} -f manifest.yml
+          cf push ${{ inputs.APP_NAME }} -f manifest.yml --hostname api-${{ inputs.SPACE_NAME }}
           BACKEND_GUID=$(cf app ${{ inputs.APP_NAME }} --guid)
           BACKEND_DOMAIN=$(cf curl /v3/apps/$BACKEND_GUID/env | jq -r .application_env_json.VCAP_APPLICATION.application_uris | jq -r '.[0]')
           echo "BACKEND_DOMAIN=${BACKEND_DOMAIN}" >> $GITHUB_OUTPUT

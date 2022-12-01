@@ -26,4 +26,4 @@ runs:
       run: |
         export PATH=$HOME/bin:$PATH
         cf login -a https://api.fr.cloud.gov -u ${{ inputs.USERNAME }} -p ${{ inputs.PASSWORD }} -o ${{ inputs.ORG_NAME }} -s ${{ inputs.SPACE_NAME }}
-        cf push ${{ inputs.APP_NAME }} -f manifest.yml
+        cf push ${{ inputs.APP_NAME }} -f manifest.yml --hostname ops-${{ inputs.SPACE_NAME }}

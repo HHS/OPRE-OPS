@@ -8,62 +8,14 @@ on:
 jobs:
 
   deployment:
-    name: Deploy to Development
-    runs-on: ubuntu-latest
-    environment: cloud_gov_dev
-    env:
-      NODE_ENV: production
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/setup-python
-      - uses: ./.github/actions/setup-javascript
-      - uses: ./.github/actions/setup-cloudfoundry
+    permissions:
+      contents: read
 
-      - name: Deploy backend to cloud.gov
-        id: deploy-backend
-        uses: ./.github/actions/deploy-backend
-        with:
-          USERNAME: ${{ secrets.CF_USER }}
-          PASSWORD: ${{ secrets.CF_PASS }}
-          ORG_NAME: ${{ secrets.ORG_NAME }}
-          SPACE_NAME: dev
-          APP_NAME: ops-backend
-
-      - name: Deploy data-tools to cloud.gov
-        uses: ./.github/actions/deploy-data-tools
-        with:
-          USERNAME: ${{ secrets.CF_USER }}
-          PASSWORD: ${{ secrets.CF_PASS }}
-          ORG_NAME: ${{ secrets.ORG_NAME }}
-          SPACE_NAME: dev
-          APP_NAME: ops-data-tools
-
-      # This is where the actual 'data-tools' script is run
-      # ENV (data-tools/environment/<name>.py): is the environment to run in, should always be cloudgov
-      # VERBOSE (True | False): can be used to surpress the SQL output.
-      - name: Load Sample Data
-        uses: ./.github/actions/cf-run-task
-        with:
-          USERNAME: ${{ secrets.CF_USER }}
-          PASSWORD: ${{ secrets.CF_PASS }}
-          ORG_NAME: ${{ secrets.ORG_NAME }}
-          SPACE_NAME: dev
-          APP_NAME: ops-data-tools
-          CF_TASKNAME: 'Load-Sample-Data'
-          CF_COMMAND: "ENV=cloudgov VERBOSE=True ./scripts/import_data.sh"
-
-      - name: Build frontend
-        working-directory: ./frontend
-        run: |
-          echo ${{steps.get-backend-uri.outputs.BACKEND_DOMAIN}}
-          REACT_APP_BACKEND_DOMAIN=https://${{steps.deploy-backend.outputs.BACKEND_DOMAIN}} yarn build
-          cp ./Staticfile ./build/
-
-      - name: Deploy frontend
-        uses: ./.github/actions/deploy-frontend
-        with:
-          USERNAME: ${{ secrets.CF_USER }}
-          PASSWORD: ${{ secrets.CF_PASS }}
-          ORG_NAME: ${{ secrets.ORG_NAME }}
-          SPACE_NAME: dev
-          APP_NAME: ops-frontend
+    # This uses a reusable_workflow a few special rules apply
+    # see ref: https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/reusing-workflows
+    name: Deploy to cloud.gov
+    uses: ./.github/workflows/deploy_reusable.yml
+    with:
+      environment: cloud_gov_dev
+      space: dev
+    secrets: inherit # This will allow the jobs to inherit from the envrionment secrets; which are limited to only deployment items anyway.
