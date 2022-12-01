@@ -9,7 +9,7 @@
 
 
 ### example:
-`cf create-service aws-rds micro-psql ops-db -c {"version":"12"} -t dev`
+`cf create-service aws-rds micro-psql ops-db -c '{"version":"12"}' -t dev`
 
 ## Bind Service (DB)
 `cf bind-service <app-name> <service-name>`
@@ -43,6 +43,7 @@
 
 ## Allow App to connect to DB
 ### Assign the trusted_local_networks_egress Application Security Group
+`cf bind-security-group SECURITY_GROUP ORG [SPACE] [--lifecycle (running | staging)]`
 `cf bind-security-group public_networks_egress sandbox-gsa --space SPACE`
 
 

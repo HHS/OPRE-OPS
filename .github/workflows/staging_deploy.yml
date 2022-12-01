@@ -1,0 +1,21 @@
+name: Deployment
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+
+  deployment:
+    name: Deploy to Cloud
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Deploy to cloud.gov
+        id: deploy
+        uses: ./.github/workflows/deploy_reusable.yml
+        with:
+          environment: dev
