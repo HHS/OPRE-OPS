@@ -10,7 +10,7 @@ on:
 jobs:
 
   deployment:
-    name: Deploy to Development
+    name: Deploy to ${{ inputs.env-space }}
     runs-on: ubuntu-latest
     environment: ${{ inputs.env-space }}
     env:
