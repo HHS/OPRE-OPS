@@ -1,0 +1,13 @@
+.barBox {
+    height: 25px;
+    /*margin: 1 0;*/
+}
+
+.gridRowText {
+    font-size: 12px;
+}
+
+.right {
+    position: absolute;
+    right: 0px;
+}

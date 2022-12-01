@@ -23,18 +23,18 @@ const CanDetail = () => {
                     <BreadcrumbItem isCurrent pageName="CANs" />
                 </BreadcrumbList>
                 <h1>
-                    {can.number} ({can.nickname})
+                    {can?.number} ({can?.nickname})
                 </h1>
 
                 <div className="grid-container">
                     <div className="grid-row">
                         <div className="grid-col">
                             <h2>CAN description</h2>
-                            {can.description}
+                            {can?.description}
                             <h2>CAN purpose</h2>
                             {can.purpose || constants.notFilledInText}
                             <h2>Arrangement type</h2>
-                            {can.arrangement_type}
+                            {can?.arrangement_type?.name}
                             <h2>Funding source</h2>
                             {can.funding_source?.[0]?.nickname || constants.notFilledInText}
                             <h2>OPRE point of contact</h2>

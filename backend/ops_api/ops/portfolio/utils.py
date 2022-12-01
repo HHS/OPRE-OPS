@@ -70,27 +70,17 @@ def get_total_funding(
         )
 
     planned_budget_line_items = budget_line_items.filter(
-        BudgetLineItem.status
-        == BudgetLineItemStatus.query.filter(
-            BudgetLineItemStatus.status == "Planned"
-        ).one()
+        BudgetLineItem.status.has(BudgetLineItemStatus.Planned)
     ).all()
-
     planned_funding = sum([b.funding for b in planned_budget_line_items]) or 0
 
     obligated_budget_line_items = budget_line_items.filter(
-        BudgetLineItem.status
-        == BudgetLineItemStatus.query.filter(
-            BudgetLineItemStatus.status == "Obligated"
-        ).one()
+        BudgetLineItem.status.has(BudgetLineItemStatus.Obligated)
     ).all()
     obligated_funding = sum([b.funding for b in obligated_budget_line_items]) or 0
 
     in_execution_budget_line_items = budget_line_items.filter(
-        BudgetLineItem.status
-        == BudgetLineItemStatus.query.filter(
-            BudgetLineItemStatus.status == "In Execution"
-        ).one()
+        BudgetLineItem.status.has(BudgetLineItemStatus.In_Execution)
     ).all()
     in_execution_funding = sum([b.funding for b in in_execution_budget_line_items]) or 0
 
@@ -104,27 +94,6 @@ def get_total_funding(
 
     available_funding = float(total_funding) - float(total_accounted_for)
 
-    planned_funding_result = (
-        0
-        if total_funding == 0
-        else f"{round(float(planned_funding) / float(total_funding), 2) * 100}"
-    )
-    obligated_funding_result = (
-        0
-        if total_funding == 0
-        else f"{round(float(obligated_funding) / float(total_funding), 2) * 100}"
-    )
-    in_execution_funding_result = (
-        0
-        if total_funding == 0
-        else f"{round(float(in_execution_funding) / float(total_funding), 2) * 100}"
-    )
-    available_funding_result = (
-        0
-        if total_funding == 0
-        else f"{round(float(available_funding) / float(total_funding), 2) * 100}"
-    )
-
     return {
         "total_funding": {
             "amount": float(total_funding),
@@ -132,18 +101,26 @@ def get_total_funding(
         },
         "planned_funding": {
             "amount": float(planned_funding),
-            "percent": planned_funding_result,
+            "percent": get_percentage(total_funding, planned_funding),
         },
         "obligated_funding": {
             "amount": float(obligated_funding),
-            "percent": obligated_funding_result,
+            "percent": get_percentage(total_funding, obligated_funding),
         },
         "in_execution_funding": {
             "amount": float(in_execution_funding),
-            "percent": in_execution_funding_result,
+            "percent": get_percentage(total_funding, in_execution_funding),
         },
         "available_funding": {
             "amount": float(available_funding),
-            "percent": available_funding_result,
+            "percent": get_percentage(total_funding, available_funding),
         },
     }
+
+
+def get_percentage(total_funding: float, specific_funding: float) -> float:
+    return (
+        0
+        if total_funding == 0
+        else f"{round(float(specific_funding) / float(total_funding), 2) * 100}"
+    )
