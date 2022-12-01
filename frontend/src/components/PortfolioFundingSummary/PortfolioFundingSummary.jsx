@@ -1,9 +1,11 @@
-import PortfolioFundingTotal from "../PortfolioFundingTotal/PortfolioFundingTotal";
+import PortfolioFundingTotal from "../PortfolioSummaryCards/PortfolioFundingTotal";
 import PortfolioFundingByBudgetStatus from "../PortfolioFundingByBudgetStatus/PortfolioFundingByBudgetStatus";
 import { useDispatch, useSelector } from "react-redux";
 import { defaultPortfolioFunding, setPortfolio, setPortfolioFunding } from "./portfolioFundingSummarySlice";
 import { useEffect } from "react";
 import { getPortfolioAndSetState, getPortfolioFundingAndSetState } from "./util";
+import PortfolioNewFunding from "../PortfolioSummaryCards/PortfolioNewFunding";
+import PortfolioCarryForwardFunding from "../PortfolioSummaryCards/PortfolioCarryForwardFunding";
 
 const PortfolioFundingSummary = (props) => {
     const portfolio = useSelector((state) => state.portfolioFundingSummary.portfolio);
@@ -28,11 +30,10 @@ const PortfolioFundingSummary = (props) => {
     }, [dispatch, props.portfolioId, props.fiscalYear]);
 
     const styles = {
-        cardGroup: {
-            margin: "auto",
-            width: "1000px",
+        fundingCard: {
+            height: "220px",
         },
-        card: {
+        donutCard: {
             height: "220px",
         },
     };
@@ -44,11 +45,19 @@ const PortfolioFundingSummary = (props) => {
                 The graph below shows a summary of the total budget for this portfolio, not including additional funding
                 from other portfolios.
             </p>
-            <ul className="usa-card-group grid-gap">
-                <li className="usa-card desktop:grid-col-5" style={styles.card}>
+            <ul className="usa-card-group">
+                <li className="usa-card grid-col-4" style={styles.fundingCard}>
                     <PortfolioFundingTotal portfolioId={portfolio.id} fiscalYear={props.fiscalYear} />
                 </li>
-                <li className="usa-card usa-card--flag desktop:grid-col-7 usa-card--media-right" style={styles.card}>
+                <li className="usa-card grid-col-4" style={styles.fundingCard}>
+                    <PortfolioNewFunding portfolioId={portfolio.id} fiscalYear={props.fiscalYear} />
+                </li>
+                <li className="usa-card grid-col-4" style={styles.fundingCard}>
+                    <PortfolioCarryForwardFunding portfolioId={portfolio.id} fiscalYear={props.fiscalYear} />
+                </li>
+            </ul>
+            <ul className="usa-card-group grid-gap">
+                <li className="usa-card usa-card--flag usa-card--media-right" style={styles.donutCard}>
                     <PortfolioFundingByBudgetStatus portfolioId={portfolio.id} fiscalYear={props.fiscalYear} />
                 </li>
             </ul>
