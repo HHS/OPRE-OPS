@@ -14,7 +14,7 @@ const CanCard = (props) => {
     const leftMarginBlockClasses = `font-sans-3xs padding-top-1 ${style.leftMarginSubContainer}`;
     const fundingYTDClasses = `padding-left-0 grid-container ${style.fundingYTD}`;
     const budgetStatusClasses = `${style.budgetStatus}`;
-    const budgetStatusTableClasses = `usa-table usa-table--borderless ${style.budgetStatusTable}`;
+    const budgetStatusTableClasses = `usa-table usa-table--borderless text-bold font-sans-3xs ${style.budgetStatusTable}`;
     const tagClasses = `grid-col-1`;
     /* vars */
     const [canFundingData, setCanFundingDataLocal] = useState({});
@@ -86,12 +86,40 @@ const CanCard = (props) => {
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>{canFundingData?.planned_funding || constants.notFilledInText}</td>
-                                        <td>{canFundingData?.in_execution_funding || constants.notFilledInText}</td>
-                                        <td>{canFundingData?.obligated_funding || constants.notFilledInText}</td>
-                                        <td>{canFundingData?.available_funding || constants.notFilledInText}</td>
-                                        <td>{canFundingData?.can?.appropriation_term || "-"} Years</td>
-                                        <td>{canFundingData?.expiration_date || "---"}</td>
+                                        <td>
+                                            <CurrencyWithSmallCents
+                                                amount={canFundingData?.planned_funding || 0}
+                                                dollarsClasses="font-sans-3xs"
+                                                centsStyles={{ fontSize: "10px" }}
+                                            />
+                                        </td>
+                                        <td>
+                                            <CurrencyWithSmallCents
+                                                amount={canFundingData?.in_execution_funding || 0}
+                                                dollarsClasses="font-sans-3xs"
+                                                centsStyles={{ fontSize: "10px" }}
+                                            />
+                                        </td>
+                                        <td>
+                                            <CurrencyWithSmallCents
+                                                amount={canFundingData?.obligated_funding || 0}
+                                                dollarsClasses="font-sans-3xs"
+                                                centsStyles={{ fontSize: "10px" }}
+                                            />
+                                        </td>
+                                        <td>
+                                            <CurrencyWithSmallCents
+                                                amount={canFundingData?.available_funding || 0}
+                                                dollarsClasses="font-sans-3xs"
+                                                centsStyles={{ fontSize: "10px" }}
+                                            />
+                                        </td>
+                                        <td>
+                                            <b>{canFundingData?.can?.appropriation_term || "-"} Years</b>
+                                        </td>
+                                        <td>
+                                            <b>{canFundingData?.expiration_date || "---"}</b>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
