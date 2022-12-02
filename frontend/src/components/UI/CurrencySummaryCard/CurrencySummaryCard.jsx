@@ -3,7 +3,7 @@ import CurrencyWithSmallCents from "../CurrencyWithSmallCents/CurrencyWithSmallC
 const CurrencySummaryCard = ({ headerText, amount }) => {
     return (
         <div className="usa-card__container bg-base-lightest font-family-sans padding-left-2">
-            <div className="usa-card__header padding-top-2">
+            <div className="usa-card__header padding-top-3">
                 <div className="use-card__heading">
                     <h3 className="margin-0 font-sans-3xs text-normal">{headerText}</h3>
                 </div>
