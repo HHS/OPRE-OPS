@@ -48,7 +48,8 @@
 
 
 ### example:
-`cf bind-security-group trusted_local_networks_egress acf-opre-prototyping —space dev`
+`cf bind-security-group trusted_local_networks acf-opre-prototyping --space staging`
+`cf bind-security-group public_networks acf-opre-prototyping --space staging`
 
 
 ## Execute a Task
