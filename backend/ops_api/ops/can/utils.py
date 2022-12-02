@@ -4,6 +4,7 @@ from ops.can.models import BudgetLineItem
 from ops.can.models import BudgetLineItemStatus
 from ops.can.models import CAN
 from ops.can.models import CANFiscalYear
+from ops.can.models import CANFiscalYearCarryOver
 
 
 class CanFundingSummary(TypedDict):
@@ -20,6 +21,10 @@ class CanFundingSummary(TypedDict):
 def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> None:
     can_fiscal_year_query = CANFiscalYear.query.filter(
         CANFiscalYear.can.has(CAN.id == can.id)
+    )
+
+    can_fiscal_year_carry_over_query = CANFiscalYearCarryOver.query.filter(
+        CANFiscalYearCarryOver.can.has(CAN.id == can.id)
     )
 
     if fiscal_year:

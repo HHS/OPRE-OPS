@@ -110,7 +110,6 @@ class CANFiscalYear(BaseModel):
     fiscal_year = Column(Integer, primary_key=True)
     can = relationship("CAN", lazy="joined")
     total_fiscal_year_funding = Column(Numeric(12, 2))
-    carry_over_funding = Column(Numeric(12, 2))
     current_funding = Column(Numeric(12, 2))
     expected_funding = Column(Numeric(12, 2))
     potential_additional_funding = Column(Numeric(12, 2))
