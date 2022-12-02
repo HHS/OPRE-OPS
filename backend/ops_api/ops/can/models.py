@@ -98,13 +98,25 @@ class CANFiscalYear(BaseModel):
     fiscal_year = db.Column(db.Integer, primary_key=True)
     can = db.relationship("CAN", lazy="joined")
     total_fiscal_year_funding = db.Column(db.Numeric(12, 2))
-    carry_over_funding = db.Column(db.Numeric(12, 2))
     current_funding = db.Column(db.Numeric(12, 2))
     expected_funding = db.Column(db.Numeric(12, 2))
     potential_additional_funding = db.Column(db.Numeric(12, 2))
     can_lead = db.Column(db.String)
     notes = db.Column(db.String, default="")
     total_funding = column_property(current_funding + expected_funding)
+
+
+class CANFiscalYearCarryOver(BaseModel):
+    """Contains the relevant financial info by fiscal year for a given CAN carried over from a previous fiscal year."""
+
+    __tablename__ = "can_fiscal_year_carry_over"
+    id = db.Column(db.Integer, primary_key=True)
+    can_id = db.Column(db.Integer, db.ForeignKey("can.id"))
+    can = db.relationship("CAN", lazy="joined")
+    from_fiscal_year = db.Column(db.Integer)
+    to_fiscal_year = db.Column(db.Integer)
+    amount = db.Column(db.Numeric(12, 2))
+    notes = db.Column(db.String, default="")
 
 
 class Agreement(BaseModel):
