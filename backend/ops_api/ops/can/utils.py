@@ -14,7 +14,6 @@ class CanFundingSummary(TypedDict):
     current_funding: float
     expected_funding: float
     total_funding: float
-    carry_over_funding: float
     planned_funding: float
     obligated_funding: float
     in_execution_funding: float
