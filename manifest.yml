@@ -7,7 +7,6 @@ applications:
     buildpack: python_buildpack
     path: ./backend/ops_api
     command: ./deployed_run.sh
-    no-route: true
 
   - name: ops-data-tools
     env:
@@ -24,7 +23,6 @@ applications:
     memory: 64M
     buildpack: https://github.com/cloudfoundry/staticfile-buildpack
     path: ./frontend/build/
-    no-route: true
 
 services:
  - ops-db
