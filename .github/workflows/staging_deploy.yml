@@ -3,7 +3,7 @@ name: Deployment
 on:
   push:
     branches:
-      - development
+      - staging
 
 jobs:
 
@@ -16,6 +16,6 @@ jobs:
     name: Deploy to cloud.gov
     uses: ./.github/workflows/deploy_reusable.yml
     with:
-      environment: cloud_gov_dev
-      space: dev
+      environment: cloud_gov_staging
+      space: staging
     secrets: inherit # This will allow the jobs to inherit from the envrionment secrets; which are limited to only deployment items anyway.
