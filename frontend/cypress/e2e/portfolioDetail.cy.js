@@ -12,18 +12,14 @@ it("loads", () => {
     cy.get("span").should("contain", "$");
 });
 
-it("passes a11y checks", () => {
-    cy.checkA11y();
+it("loads the Poftfolio Budget Details component", () => {
+    cy.get("h2").should("contain", "Portfolio Budget Details by CAN");
+    cy.get("section").should("contain", "G99IA14");
+    cy.get("[class*='leftMarginSubContainer']").contains("146,476");
 });
 
-it.skip("flask rework required", () => {
-    //it("goes to the CAN detail page after clicking on it", () => {
-    const canNumber = "G99PHS9";
-
-    cy.contains(canNumber).click();
-
-    cy.url().should("include", "/cans/3");
-    cy.get("h1").should("contain", canNumber);
+it("passes a11y checks", () => {
+    cy.checkA11y();
 });
 
 it("expands the description when one clicks read more", () => {

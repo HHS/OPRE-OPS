@@ -23,6 +23,7 @@ ALLOWED_TABLES = [
     "can_arrangement_type",
     "agreement_type",
     "agreement",
+    "agreement_cans",
     "budget_line_item",
     "budget_line_item_status",
     "portfolio_description_text",

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from ops import create_app
 from ops.can.models import Agreement
 from ops.can.models import BudgetLineItem
@@ -126,6 +128,8 @@ def loaded_db(app):
         managing_portfolio_id=1,
         agreements=[ag1],
         funding_sources=[funding_source1],
+        expiration_date=datetime.strptime("1/1/2025", "%d/%m/%Y"),
+        appropriation_term=1,
     )
     can2 = CAN(
         number="G990205",
@@ -136,6 +140,8 @@ def loaded_db(app):
         authorizer_id=1,
         managing_portfolio_id=2,
         agreements=[ag1],
+        expiration_date=datetime.strptime("1/1/2025", "%d/%m/%Y"),
+        appropriation_term=1,
     )
     # pc1 = portfolio_cans.insert().values({"portfolio_id": "1", "can_id": "1"})
     # pc2 = portfolio_cans.insert().values({"portfolio_id": "1", "can_id": "2"})
@@ -143,14 +149,18 @@ def loaded_db(app):
         can_id=1,
         fiscal_year=2022,
         total_fiscal_year_funding=1233123,
+        current_funding=1000000,
+        expected_funding=233123,
         potential_additional_funding=89000,
         can_lead="Tim",
         notes="No notes here.",
     )
     cfy2 = CANFiscalYear(
         can_id=1,
-        fiscal_year=2022,
+        fiscal_year=2023,
         total_fiscal_year_funding=4333123,
+        current_funding=4000000,
+        expected_funding=333123,
         potential_additional_funding=12000,
         can_lead="John",
         notes="No notes here.",
@@ -159,6 +169,8 @@ def loaded_db(app):
         can_id=2,
         fiscal_year=2022,
         total_fiscal_year_funding=123123,
+        current_funding=1000000,
+        expected_funding=233123,
         potential_additional_funding=89000,
         can_lead="Tim",
         notes="No notes here.",
@@ -167,6 +179,8 @@ def loaded_db(app):
         can_id=2,
         fiscal_year=2023,
         total_fiscal_year_funding=4433123,
+        current_funding=4000000,
+        expected_funding=233123,
         potential_additional_funding=12000,
         can_lead="John",
         notes="No notes here.",

@@ -170,30 +170,6 @@ TBD.
 
 ## Data Model
 
-The data model diagram below shows all the tables used by the application and  relationships between those tables.
-Lines between tables mean they are related.  If a line has a circle on one end, that means the table _without a circle_
-has a one-to-many relationship with the table _with a circle_ (modeled with a foreign key from the circle-table to the
-not-circle-table).  If a line has circles on both ends, the tables have a many-to-many relationship (modeled with
-mapping/cross-reference tables).
+TBD
 
-![the data model](docs/models.png)
-
-This diagram is also available as a [DOT file](docs/models.dot) (DOT is a
-[graph description language](https://en.wikipedia.org/wiki/DOT_(graph_description_language)).  It can be used to
-represent graph relationships in plain text).  To update this visualization, first use the django-extensions module to
-create a new DOT file.
-
-```shell
-cd ./backend/
-DJANGO_SETTINGS_MODULE=ops_api.django_config.settings.local PYTHONPATH=. \
-  pipenv run python ./ops_api/manage.py graph_models -a \
-  -X LogEntry,AbstractUser,Permission,Group,User,ContentType,AbstractBaseSession,Session \
-  > ../docs/models.dot
-```
-
-Then use graphviz to convert the dotfile to a PNG image:
-
-```shell
-docker run -it --rm -v "$(pwd)/docs":/work -w /work fgrehm/graphviz \
-  dot -Tpng models.dot -omodels.png
-```
+With the move away from Django, we need to create a new process/tooling for generating the Data Model diagrams from SQLAlchemy or directly from the DB.
