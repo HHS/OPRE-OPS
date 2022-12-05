@@ -1,0 +1,77 @@
+name: Deploy App
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "The GitHub Environment to use."
+        required: true
+        type: string
+      space:
+        description: "The CF Space to deploy to"
+        required: true
+        type: string
+
+jobs:
+  deployment:
+    name: Deploy to ${{ inputs.space }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    concurrency: ${{ inputs.environment }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup-python
+      - uses: ./.github/actions/setup-javascript
+      - uses: ./.github/actions/setup-cloudfoundry
+
+      - name: Deploy backend to cloud.gov
+        id: deploy-backend
+        uses: ./.github/actions/deploy-backend
+        with:
+          USERNAME: ${{ secrets.CF_USER }}
+          PASSWORD: ${{ secrets.CF_PASS }}
+          ORG_NAME: ${{ secrets.CF_ORG }}
+          SPACE_NAME: ${{ inputs.space }}
+          APP_NAME: ops-backend
+
+      - name: Deploy data-tools to cloud.gov
+        uses: ./.github/actions/deploy-data-tools
+        with:
+          USERNAME: ${{ secrets.CF_USER }}
+          PASSWORD: ${{ secrets.CF_PASS }}
+          ORG_NAME: ${{ secrets.CF_ORG }}
+          SPACE_NAME: ${{ inputs.space }}
+          APP_NAME: ops-data-tools
+
+      # This is where the actual 'data-tools' script is run
+      # ENV (data-tools/environment/<name>.py): is the environment to run in, should always be cloudgov
+      # VERBOSE (True | False): can be used to surpress the SQL output.
+      - name: Load Sample Data
+        uses: ./.github/actions/cf-run-task
+        with:
+          USERNAME: ${{ secrets.CF_USER }}
+          PASSWORD: ${{ secrets.CF_PASS }}
+          ORG_NAME: ${{ secrets.CF_ORG }}
+          SPACE_NAME: ${{ inputs.space }}
+          APP_NAME: ops-data-tools
+          CF_TASKNAME: 'Load-Sample-Data'
+          CF_COMMAND: "ENV=cloudgov VERBOSE=True ./scripts/import_data.sh"
+
+      - name: Build frontend
+        working-directory: ./frontend
+        env:
+          NODE_ENV: production
+        run: |
+          echo ${{steps.get-backend-uri.outputs.BACKEND_DOMAIN}}
+          REACT_APP_BACKEND_DOMAIN=https://${{steps.deploy-backend.outputs.BACKEND_DOMAIN}} yarn build
+          cp ./Staticfile ./build/
+
+      - name: Deploy frontend
+        uses: ./.github/actions/deploy-frontend
+        with:
+          USERNAME: ${{ secrets.CF_USER }}
+          PASSWORD: ${{ secrets.CF_PASS }}
+          ORG_NAME: ${{ secrets.CF_ORG }}
+          SPACE_NAME: ${{ inputs.space }}
+          APP_NAME: ops-frontend

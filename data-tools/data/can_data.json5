@@ -137,8 +137,8 @@
       number: "G99XXX4",
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nickname: "HMRF-OFA",
-      expiration_date: "9/1/2024",
-      appropriation_term: 1,
+      expiration_date: "10/1/2027",
+      appropriation_term: 5,
       arrangement_type_id: 2,
       authorizer_id: 23,
       managing_portfolio_id: 6
@@ -148,8 +148,8 @@
       number: "G99XXX7",
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nickname: "HMRF-OFA",
-      expiration_date: "9/1/2024",
-      appropriation_term: 1,
+      expiration_date: "10/1/2027",
+      appropriation_term: 5,
       arrangement_type_id: 2,
       authorizer_id: 23,
       managing_portfolio_id: 6
@@ -281,7 +281,58 @@
       expected_funding: 20000.00,
       potential_additional_funding: 0.00,
       notes: ""
+    },
+    {
+      can_id: 11,
+      fiscal_year: 2022,
+      total_fiscal_year_funding: 697036.58,
+      current_funding: 697036.58,
+      expected_funding: 0,
+      potential_additional_funding: 0,
+      notes: ""
+    },
+    {
+      can_id: 11,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 1149088.76,
+      current_funding: 849088.76,
+      expected_funding: 0,
+      potential_additional_funding: 0,
+      notes: ""
+    },
+    {
+      can_id: 12,
+      fiscal_year: 2022,
+      total_fiscal_year_funding: 7404029.57,
+      current_funding: 7404029.57,
+      expected_funding: 0,
+      potential_additional_funding: 0.00,
+      notes: ""
+    },
+    {
+      can_id: 12,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 3487064.45,
+      current_funding: 1487064.45,
+      expected_funding: 1000000,
+      potential_additional_funding: 0.00,
+      notes: ""
     }
-
+  ],
+  "can_fiscal_year_carry_over": [
+    {
+      id: 1,
+      can_id: 11,
+      from_fiscal_year: 2022,
+      to_fiscal_year: 2023,
+      amount: 300000.00,
+    },
+    {
+      id: 2,
+      can_id: 12,
+      from_fiscal_year: 2022,
+      to_fiscal_year: 2023,
+      amount: 1000000.00,
+    }
   ]
 }

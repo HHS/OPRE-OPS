@@ -1,9 +1,17 @@
 import { ResponsivePie } from "@nivo/pie";
 import { useEffect } from "react";
 
-export const ResponsiveDonutWithInnerPercent = ({ data, width, height, margin, CustomLayerComponent, setPercent }) => {
+export const ResponsiveDonutWithInnerPercent = ({
+    data,
+    width,
+    height,
+    margin,
+    CustomLayerComponent,
+    setPercent,
+    container_id,
+}) => {
     const setA11y = async () => {
-        const container = document.querySelector(".usa-card__img");
+        const container = document.querySelector(`#${container_id}`);
         const elem = container.querySelector("svg");
 
         if (elem !== null) {
