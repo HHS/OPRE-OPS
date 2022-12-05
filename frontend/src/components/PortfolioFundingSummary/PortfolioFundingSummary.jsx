@@ -32,6 +32,9 @@ const PortfolioFundingSummary = (props) => {
     }, [dispatch, props.portfolioId, props.fiscalYear]);
 
     const fundingCard = `usa-card grid-col-4 ${styles.fundingCard}`;
+    const budgetStatusCard = `grid-col-2 ${styles.budgetStatusCard}`;
+    const leftBudgetCard = `${styles.leftBudgetCard}`;
+    const rightBudgetCard = `${styles.rightBudgetCard}`;
 
     return (
         <div>
@@ -54,7 +57,14 @@ const PortfolioFundingSummary = (props) => {
                 </ul>
             </section>
             <section>
-                <PortfolioFundingByBudgetStatus portfolioId={portfolio.id} fiscalYear={props.fiscalYear} />
+                <div className={budgetStatusCard}>
+                    <div className={leftBudgetCard}>
+                        <PortfolioFundingByBudgetStatus portfolioId={portfolio.id} fiscalYear={props.fiscalYear} />
+                    </div>
+                    <div className={rightBudgetCard}>
+                        <PortfolioFundingByBudgetStatus portfolioId={portfolio.id} fiscalYear={props.fiscalYear} />
+                    </div>
+                </div>
             </section>
         </div>
     );

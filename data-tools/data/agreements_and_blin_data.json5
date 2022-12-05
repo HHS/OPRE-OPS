@@ -70,7 +70,7 @@
       fiscal_year: 2021,
       agreement_id: 1,
       can_id: 5,
-      funding: 1745000.00,
+      funding: 1000000.00,
       status_id: 1
     },
     {
@@ -79,7 +79,7 @@
       fiscal_year: 2022,
       agreement_id: 1,
       can_id: 5,
-      funding: 8725.00,
+      funding: 1000000.00,
       status_id: 1
     },
     {
@@ -88,7 +88,7 @@
       fiscal_year: 2023,
       agreement_id: 2,
       can_id: 8,
-      funding: 5671006.14,
+      funding: 1000000.00,
       status_id: 1
     },
     {
@@ -97,7 +97,7 @@
       fiscal_year: 2023,
       agreement_id: 2,
       can_id: 8,
-      funding: 2642511.17,
+      funding: 1000000.00,
       status_id: 1
     },
     {
@@ -106,7 +106,7 @@
       fiscal_year: 2023,
       agreement_id: 2,
       can_id: 9,
-      funding: 9839001.11,
+      funding: 1000000.00,
       status_id: 1
     },
     {
@@ -115,7 +115,7 @@
       fiscal_year: 2023,
       agreement_id: 2,
       can_id: 9,
-      funding: 7122458.44,
+      funding: 1000000.00,
       status_id: 1
     },
     {
@@ -124,7 +124,7 @@
       fiscal_year: 2023,
       agreement_id: 2,
       can_id: 9,
-      funding: 5303898.12,
+      funding: 1000000.00,
       status_id: 1
     },
     {
@@ -133,7 +133,7 @@
       fiscal_year: 2023,
       agreement_id: 2,
       can_id: 9,
-      funding: 8974267.94,
+      funding: 2000000.00,
       status_id: 2
     },
     {
@@ -142,7 +142,7 @@
       fiscal_year: 2023,
       agreement_id: 2,
       can_id: 1,
-      funding: 74267.94,
+      funding: 2000000.00,
       status_id: 2
     },
     {
@@ -151,7 +151,7 @@
       fiscal_year: 2023,
       agreement_id: 2,
       can_id: 4,
-      funding: 1554267.94,
+      funding: 2000000.00,
       status_id: 2
     },
     {
@@ -160,7 +160,7 @@
       fiscal_year: 2023,
       agreement_id: 2,
       can_id: 2,
-      funding: 1114267.94,
+      funding: 2000000.00,
       status_id: 2
     },
     {
@@ -169,7 +169,7 @@
       fiscal_year: 2023,
       agreement_id: 2,
       can_id: 3,
-      funding: 2224267.94,
+      funding: 2000000.00,
       status_id: 2
     },
     {
@@ -178,7 +178,7 @@
       fiscal_year: 2023,
       agreement_id: 2,
       can_id: 5,
-      funding: 3334267.94,
+      funding: 2000000.00,
       status_id: 2
     },
     {
@@ -187,7 +187,7 @@
       fiscal_year: 2023,
       agreement_id: 2,
       can_id: 6,
-      funding: 4974267.94,
+      funding: 2000000.00,
       status_id: 2
     },
     {
@@ -196,7 +196,7 @@
       fiscal_year: 2023,
       agreement_id: 2,
       can_id: 7,
-      funding: 504267.94,
+      funding: 2000000.00,
       status_id: 2
     },
     {
@@ -205,7 +205,7 @@
       fiscal_year: 2023,
       agreement_id: 2,
       can_id: 2,
-      funding: 74267.94,
+      funding: 1000000.00,
       status_id: 1
     },
     {
@@ -214,7 +214,25 @@
       fiscal_year: 2023,
       agreement_id: 2,
       can_id: 2,
-      funding: 14267.94,
+      funding: 3000000.00,
+      status_id: 3
+    },
+    {
+      id: 18,
+      name: "Line Item 2",
+      fiscal_year: 2023,
+      agreement_id: 2,
+      can_id: 3,
+      funding: 7000000.00,
+      status_id: 1
+    },
+    {
+      id: 19,
+      name: "Line Item 2",
+      fiscal_year: 2023,
+      agreement_id: 2,
+      can_id: 3,
+      funding: 500000.00,
       status_id: 3
     },
   ]
