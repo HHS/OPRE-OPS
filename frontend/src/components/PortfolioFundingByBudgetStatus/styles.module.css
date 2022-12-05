@@ -1,0 +1,19 @@
+.container {
+    display: flex;
+    height: 220px;
+    width: 466px;
+    border-radius: 0.5rem;
+    border-width: 2px;
+    border-color: #dfe1e2;
+    border-style: solid;
+}
+
+.cardBody {
+    flex: 3;
+}
+
+.chartArea {
+    align-items: center;
+    justify-content: center;
+    flex: 2;
+}
