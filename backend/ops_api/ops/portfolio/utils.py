@@ -4,6 +4,7 @@ from ops.can.models import BudgetLineItem
 from ops.can.models import BudgetLineItemStatus
 from ops.can.models import CAN
 from ops.can.models import CANFiscalYear
+from ops.can.models import CANFiscalYearCarryOver
 from ops.portfolio.models import Portfolio
 
 
@@ -50,13 +51,26 @@ def get_total_funding(
         CANFiscalYear.can.has(CAN.managing_portfolio == portfolio)
     )
 
+    can_fiscal_year_carry_over_query = CANFiscalYearCarryOver.query.filter(
+        CANFiscalYearCarryOver.can.has(CAN.managing_portfolio == portfolio)
+    )
+
     if fiscal_year:
         can_fiscal_year_query = can_fiscal_year_query.filter(
             CANFiscalYear.fiscal_year == fiscal_year
         ).all()
 
+        can_fiscal_year_carry_over_query = can_fiscal_year_carry_over_query.filter(
+            CANFiscalYearCarryOver.to_fiscal_year == fiscal_year
+        ).all()
+
     total_funding = (
         sum([c.total_fiscal_year_funding for c in can_fiscal_year_query]) or 0
+    )
+
+    carry_over_funding = (
+        sum([c.amount if c.amount else 0 for c in can_fiscal_year_carry_over_query])
+        or 0
     )
 
     # Amount available to a Portfolio budget is the sum of the BLI minus the Portfolio total (above)
@@ -98,6 +112,10 @@ def get_total_funding(
         "total_funding": {
             "amount": float(total_funding),
             "percent": "Total",
+        },
+        "carry_over_funding": {
+            "amount": float(carry_over_funding),
+            "percent": "Carry Over",
         },
         "planned_funding": {
             "amount": float(planned_funding),

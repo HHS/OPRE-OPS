@@ -6,6 +6,7 @@ from ops.can.models import BudgetLineItem
 from ops.can.models import BudgetLineItemStatus
 from ops.can.models import CAN
 from ops.can.models import CANFiscalYear
+from ops.can.models import CANFiscalYearCarryOver
 from ops.can.models import FundingPartner
 from ops.can.models import FundingSource
 from ops.portfolio.models import Division
@@ -185,6 +186,21 @@ def loaded_db(app):
         can_lead="John",
         notes="No notes here.",
     )
+
+    cfyco1 = CANFiscalYearCarryOver(
+        can_id=1,
+        from_fiscal_year=2022,
+        to_fiscal_year=2023,
+        amount=10,
+    )
+
+    cfyco2 = CANFiscalYearCarryOver(
+        can_id=1,
+        from_fiscal_year=2023,
+        to_fiscal_year=2024,
+        amount=5,
+    )
+
     bli1 = BudgetLineItem(
         name="Grant Expendeture GA112",
         fiscal_year=2022,
@@ -247,6 +263,10 @@ def loaded_db(app):
         db.session.add(cfy2)
         db.session.add(cfy3)
         db.session.add(cf42)
+        db.session.flush()
+
+        db.session.add(cfyco1)
+        db.session.add(cfyco2)
         db.session.flush()
 
         db.session.add(bli1)
