@@ -5,7 +5,6 @@ from typing import Optional
 from flask import Blueprint
 from flask import Flask
 from flask_cors import CORS
-import ops.auth.urls
 from ops.auth.utils import jwtMgr
 from ops.auth.utils import oauth
 import ops.can.urls
@@ -50,9 +49,7 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     if config_overrides is not None:
         app.config.from_mapping(config_overrides)
 
-    app.register_blueprint(ops.auth.urls.bp)
     app.register_blueprint(ops.can.urls.bp)
-    app.register_blueprint(ops.portfolio.urls.bp_portfolio)
     app.register_blueprint(ops.portfolio.urls.bp_portfolio_status)
     app.register_blueprint(ops.portfolio.urls.bp_division)
     app.register_blueprint(ops.user.urls.bp)

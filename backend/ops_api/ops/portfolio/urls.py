@@ -1,13 +1,6 @@
 from flask import Blueprint
 from ops.portfolio import views
 
-bp_portfolio = Blueprint("portfolio", __name__, url_prefix="/ops/portfolios")
-# bp_portfolio.add_url_rule("/", view_func=views.portfolio_list)
-# bp_portfolio.add_url_rule("/<int:pk>/", view_func=views.get_portfolio)
-# bp_portfolio.add_url_rule("/<int:pk>/calcFunding/", view_func=views.calc_funding)
-# bp_portfolio.add_url_rule("/<int:pk>/cans/", view_func=can_views.get_portfolio_cans)
-
-
 bp_portfolio_status = Blueprint(
     "portfolio_status", __name__, url_prefix="/ops/portfolio_status"
 )
