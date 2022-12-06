@@ -2,6 +2,7 @@ import logging.config
 import os
 from typing import Optional
 
+from flask import Blueprint
 from flask import Flask
 from flask_cors import CORS
 import ops.auth.urls
@@ -11,6 +12,7 @@ import ops.can.urls
 from ops.home_page.views import home
 import ops.portfolio.urls
 import ops.summary.urls
+from ops.urls import register_api
 from ops.user.models import db
 import ops.user.urls
 
@@ -56,6 +58,12 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     app.register_blueprint(ops.user.urls.bp)
     app.register_blueprint(ops.summary.urls.bp)
     app.register_blueprint(home)
+
+    api_bp = Blueprint(
+        "api", __name__, url_prefix=f"/api/{app.config.get('API_VERSION', 'v1')}"
+    )
+    register_api(api_bp)
+    app.register_blueprint(api_bp)
 
     jwtMgr.init_app(app)
     db.init_app(app)

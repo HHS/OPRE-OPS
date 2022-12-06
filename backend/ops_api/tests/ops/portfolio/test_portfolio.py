@@ -1,21 +1,6 @@
 from ops.portfolio.models import Portfolio
 import pytest
 
-# @pytest.fixture(scope="module")
-# def new_portfolio():
-#     return Portfolio(
-#         name="WRGB (CCE)",
-#         description="",
-#         status_id=1,
-#     )
-
-
-# @pytest.fixture(scope="session")
-# def portfolio_table(db_engine):
-#     Portfolio.metadata.create_all(db_engine)
-#     yield
-#     Portfolio.metadata.drop_all(db_engine)
-
 
 @pytest.mark.usefixtures("app_ctx")
 def test_portfolio_retrieve(loaded_db):
@@ -32,16 +17,22 @@ def test_portfolio_retrieve(loaded_db):
 def test_portfolio_get_all(client, loaded_db):
     assert loaded_db.session.query(Portfolio).count() == 2
 
-    response = client.get("/ops/portfolios/")
+    response = client.get("/api/v1/portfolios/")
     assert response.status_code == 200
     assert len(response.json) == 2
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_portfolio_get_by_id(client, loaded_db):
-    response = client.get("/ops/portfolios/1/")
+    response = client.get("/api/v1/portfolios/1")
     assert response.status_code == 200
     assert response.json["name"] == "WRGB (CCE)"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_portfolio_get_by_id_404(client, loaded_db):
+    response = client.get("/api/v1/portfolios/10000000")
+    assert response.status_code == 404
 
 
 @pytest.mark.usefixtures("app_ctx")
