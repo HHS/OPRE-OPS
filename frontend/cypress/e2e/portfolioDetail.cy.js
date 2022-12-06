@@ -18,7 +18,6 @@ it("loads", () => {
 it("loads the Poftfolio Budget Details component", () => {
     cy.get("h2").should("contain", "Portfolio Budget Details by CAN");
     cy.get("section").should("contain", "G99IA14");
-    cy.get("[class*='leftMarginSubContainer']").contains("146,476");
 });
 
 it("passes a11y checks", () => {

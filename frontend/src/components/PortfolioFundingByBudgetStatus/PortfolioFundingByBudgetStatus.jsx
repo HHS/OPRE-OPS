@@ -12,6 +12,7 @@ import CustomLayerComponent from "../UI/ResponsiveDonutWithInnerPercent/CustomLa
 import CurrencyWithSmallCents from "../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
 
 import cssClasses from "./styles.module.css";
+import RoundedBox from "../RoundedBox/RoundedBox";
 
 library.add(faSquare);
 
@@ -48,12 +49,10 @@ const PortfolioFundingByBudgetStatus = (props) => {
     const portfolioFundingChart = useSelector((state) => state.portfolioFundingSummary.portfolioFundingChart);
     const [percent, setPercent] = useState("");
 
-    const cardContainer = `bg-base-lightest font-family-sans ${cssClasses.container}`;
-
     const cardBody = `padding-top-2 padding-left-4 ${styles.cardBody}`;
 
     return (
-        <div className={cardContainer}>
+        <RoundedBox>
             <div className={cardBody}>
                 <div className="padding-bottom-1">
                     <h3 className="font-sans-3xs text-normal">FY {props.fiscalYear} Budget Status</h3>
@@ -140,7 +139,7 @@ const PortfolioFundingByBudgetStatus = (props) => {
                     </div>
                 </div>
             </div>
-        </div>
+        </RoundedBox>
     );
 };
 
