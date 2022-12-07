@@ -14,10 +14,10 @@ bp = Blueprint(
 # )
 
 # can-fiscal-year
-bp.add_url_rule("/can-fiscal-year", view_func=views.all_can_fiscal_years)
-bp.add_url_rule(
-    "/can-fiscal-year/<int:can_id>/<int:year>", view_func=views.get_can_fiscal_year
-)
+# bp.add_url_rule("/can-fiscal-year", view_func=views.all_can_fiscal_years)
+# bp.add_url_rule(
+#     "/can-fiscal-year/<int:can_id>/<int:year>", view_func=views.get_can_fiscal_year
+# )
 
 # budget-line-items
 bp.add_url_rule("/budget-line-items", view_func=views.all_budget_line_items)

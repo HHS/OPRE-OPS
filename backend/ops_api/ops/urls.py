@@ -1,7 +1,10 @@
 from ops.can.models import CAN
+from ops.can.models import CANFiscalYear
 from ops.portfolio.models import Portfolio
 from ops.resources.auth import AuthLoginAPI
 from ops.resources.auth import AuthRefreshAPI
+from ops.resources.can_fiscal_year import CANFiscalYearItemAPI
+from ops.resources.can_fiscal_year import CANFiscalYearListAPI
 from ops.resources.cans import CANItemAPI
 from ops.resources.cans import CANListAPI
 from ops.resources.cans import CANsByPortfolioAPI
@@ -18,6 +21,7 @@ def register_api(api_bp):
     register_portfolio_endpoints(api_bp)
     register_auth_endpoints(api_bp)
     register_cans_endpoints(api_bp)
+    register_can_fiscal_year_endpoints(api_bp)
 
 
 def register_auth_endpoints(api_bp):
@@ -64,4 +68,18 @@ def register_cans_endpoints(api_bp):
         "/cans/",
         view_func=CANListAPI.as_view("can-group", CAN),
     )
-    api_bp.add_url_rule("/cans/portfolio/<int:id>", view_func=CANsByPortfolioAPI.as_view("can-portfolio", BaseModel), )
+    api_bp.add_url_rule(
+        "/cans/portfolio/<int:id>",
+        view_func=CANsByPortfolioAPI.as_view("can-portfolio", BaseModel),
+    )
+
+
+def register_can_fiscal_year_endpoints(api_bp):
+    api_bp.add_url_rule(
+        "/can-fiscal-year/<int:id>",
+        view_func=CANFiscalYearItemAPI.as_view("can-fiscal-year-item", CANFiscalYear),
+    )
+    api_bp.add_url_rule(
+        "/can-fiscal-year/",
+        view_func=CANFiscalYearListAPI.as_view("can-fiscal-year-group", CANFiscalYear),
+    )
