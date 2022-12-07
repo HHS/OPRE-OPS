@@ -54,6 +54,7 @@ const PortfolioDescription = () => {
                             </p>
                         );
                     }
+                    return null;
                 })}
                 {portfolio.urls?.map((url) => (
                     <p key={url.id}>

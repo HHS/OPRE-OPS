@@ -4,10 +4,14 @@ import cssClasses from "./styles.module.css";
 
 library.add(faSquare);
 
-const RoundedBox = (props) => {
+const RoundedBox = ({ ...props }) => {
     const cardContainer = `bg-base-lightest font-family-sans ${cssClasses.container}`;
 
-    return <div className={cardContainer}>{props.children}</div>;
+    return (
+        <div className={cardContainer} {...props}>
+            {props.children}
+        </div>
+    );
 };
 
 export default RoundedBox;

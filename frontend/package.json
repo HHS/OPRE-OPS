@@ -26,16 +26,29 @@
     "sass-loader": "13.2.0"
   },
   "devDependencies": {
+    "@storybook/addon-actions": "^6.5.14",
+    "@storybook/addon-essentials": "^6.5.14",
+    "@storybook/addon-interactions": "^6.5.14",
+    "@storybook/addon-links": "^6.5.14",
+    "@storybook/builder-webpack5": "^6.5.14",
+    "@storybook/manager-webpack5": "^6.5.14",
+    "@storybook/node-logger": "^6.5.14",
+    "@storybook/preset-create-react-app": "^4.1.2",
+    "@storybook/react": "^6.5.14",
+    "@storybook/testing-library": "^0.0.13",
     "@testing-library/react": "^13.4.0",
     "@uswds/compile": "^1.0.0-beta.3",
     "axe-core": "4.5.2",
+    "babel-plugin-named-exports-order": "^0.0.2",
     "cypress": "11.1.0",
     "cypress-axe": "1.0.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-cypress": "2.12.1",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-prettier": "4.2.1",
-    "prettier": "2.7.1"
+    "prettier": "2.7.1",
+    "prop-types": "^15.8.1",
+    "webpack": "^5.75.0"
   },
   "scripts": {
     "start": "DISABLE_ESLINT_PLUGIN=true react-scripts start ",
@@ -47,7 +60,9 @@
     "eject": "react-scripts eject",
     "lint": "eslint './src/**'",
     "cypress:open": "cypress open",
-    "uswds:update": "npx gulp compile"
+    "uswds:update": "npx gulp compile",
+    "storybook": "start-storybook -p 6006 -s public",
+    "build-storybook": "build-storybook -s public"
   },
   "jest": {
     "coverageThreshold": {
@@ -76,6 +91,18 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
+    ]
+  },
+  "eslintConfig": {
+    "overrides": [
+      {
+        "files": [
+          "**/*.stories.*"
+        ],
+        "rules": {
+          "import/no-anonymous-default-export": "off"
+        }
+      }
     ]
   }
 }

@@ -34,7 +34,7 @@ const Header = () => {
                         <Menu />
                         <div className="usa-nav__secondary">
                             <AuthSection />
-                            <Search />
+                            <Search label="Search" />
                         </div>
                     </div>
                 </nav>

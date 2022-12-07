@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 
-export const Search = () => {
+export const Search = ({ ...props }) => {
     return (
         <section aria-label="Small search component">
             <form className="usa-search usa-search--small" role="search">
