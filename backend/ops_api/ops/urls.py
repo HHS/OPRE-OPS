@@ -1,8 +1,11 @@
+from ops.can.models import BudgetLineItem
 from ops.can.models import CAN
 from ops.can.models import CANFiscalYear
 from ops.portfolio.models import Portfolio
 from ops.resources.auth import AuthLoginAPI
 from ops.resources.auth import AuthRefreshAPI
+from ops.resources.budget_line_items import BudgetLineItemsItemAPI
+from ops.resources.budget_line_items import BudgetLineItemsListAPI
 from ops.resources.can_fiscal_year import CANFiscalYearItemAPI
 from ops.resources.can_fiscal_year import CANFiscalYearListAPI
 from ops.resources.cans import CANItemAPI
@@ -22,6 +25,7 @@ def register_api(api_bp):
     register_auth_endpoints(api_bp)
     register_cans_endpoints(api_bp)
     register_can_fiscal_year_endpoints(api_bp)
+    register_budget_line_items_endpoints(api_bp)
 
 
 def register_auth_endpoints(api_bp):
@@ -82,4 +86,19 @@ def register_can_fiscal_year_endpoints(api_bp):
     api_bp.add_url_rule(
         "/can-fiscal-year/",
         view_func=CANFiscalYearListAPI.as_view("can-fiscal-year-group", CANFiscalYear),
+    )
+
+
+def register_budget_line_items_endpoints(api_bp):
+    api_bp.add_url_rule(
+        "/budget-line-items/<int:id>",
+        view_func=BudgetLineItemsItemAPI.as_view(
+            "budget-line-items-item", BudgetLineItem
+        ),
+    )
+    api_bp.add_url_rule(
+        "/budget-line-items/",
+        view_func=BudgetLineItemsListAPI.as_view(
+            "budget-line-items-group", BudgetLineItem
+        ),
     )

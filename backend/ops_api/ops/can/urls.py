@@ -1,5 +1,4 @@
 from flask import Blueprint
-from ops.can import views
 
 bp = Blueprint(
     "cans",
@@ -20,8 +19,8 @@ bp = Blueprint(
 # )
 
 # budget-line-items
-bp.add_url_rule("/budget-line-items", view_func=views.all_budget_line_items)
-bp.add_url_rule(
-    "/budget-line-items/<int:can_id>/<int:fiscal_year>",
-    view_func=views.get_budget_line_items_by_can_and_fiscal_year,
-)
+# bp.add_url_rule("/budget-line-items", view_func=views.all_budget_line_items)
+# bp.add_url_rule(
+#     "/budget-line-items/<int:can_id>/<int:fiscal_year>",
+#     view_func=views.get_budget_line_items_by_can_and_fiscal_year,
+# )
