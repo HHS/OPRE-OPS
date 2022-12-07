@@ -1,5 +1,5 @@
-from ops.views import BaseItemAPI
-from ops.views import BaseListAPI
+from ops.base_views import BaseItemAPI
+from ops.base_views import BaseListAPI
 
 
 class PortfolioItemAPI(BaseItemAPI):

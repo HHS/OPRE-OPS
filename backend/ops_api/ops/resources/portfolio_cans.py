@@ -1,5 +1,5 @@
 from flask import jsonify
-from ops.views import BaseItemAPI
+from ops.base_views import BaseItemAPI
 
 
 class PortfolioCansAPI(BaseItemAPI):

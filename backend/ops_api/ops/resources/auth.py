@@ -2,7 +2,7 @@ from flask import jsonify
 from flask import request
 from ops.auth.views import login
 from ops.auth.views import refresh
-from ops.views import BaseListAPI
+from ops.base_views import BaseListAPI
 
 
 class AuthLoginAPI(BaseListAPI):
