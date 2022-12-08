@@ -1,6 +1,6 @@
+from ops.models.base import BaseModel
 from ops.models.portfolios import Portfolio
 from ops.models.portfolios import portfolio_cans
-from ops.utils import BaseModel
 from sqlalchemy import (
     Column,
     Date,

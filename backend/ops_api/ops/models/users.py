@@ -1,5 +1,5 @@
 """User models."""
-from ops.utils import BaseModel
+from ops.models.base import BaseModel
 from sqlalchemy import (
     Column,
     Integer,

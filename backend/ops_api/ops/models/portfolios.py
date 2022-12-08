@@ -1,6 +1,6 @@
 """Portfolio Models."""
 from typing import Any
-from ops.utils import BaseModel
+from ops.models.base import BaseModel
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -119,7 +119,7 @@ class Portfolio(BaseModel):
     @override
     def to_dict(self):
         d = super().to_dict()
-        
+
         d.update(
             {
                 "description": [
