@@ -4,9 +4,10 @@ import constants from "../../../../constants";
 
 export const getCanFiscalYearByCan = (can_id, fiscal_year) => {
     return async (dispatch, getState) => {
+        const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;
         const responseData = await ApplicationContext.get()
             .helpers()
-            .callBackend(`/api/v1/can-fiscal-year/?can_id=${can_id}&year=${fiscal_year}`, "get");
+            .callBackend(`/api/${api_version}/can-fiscal-year/?can_id=${can_id}&year=${fiscal_year}`, "get");
 
         const canFiscalYear = responseData[0];
         dispatch(setCanFiscalYear(canFiscalYear));
