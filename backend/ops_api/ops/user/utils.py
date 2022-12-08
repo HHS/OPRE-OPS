@@ -1,6 +1,6 @@
 from typing import Optional, TypedDict, cast
 
-from ops.user.models import User
+from ops.models.users import User
 from ops.utils import db
 
 
@@ -11,7 +11,6 @@ class UserInfoDict(TypedDict):
 
 
 def process_user(userinfo: UserInfoDict) -> User:
-    # TODO: Is this even used?
     user = User.query.filter_by(email=userinfo["email"]).one_or_none()
     print(f"User: {user}")
     if not user:
