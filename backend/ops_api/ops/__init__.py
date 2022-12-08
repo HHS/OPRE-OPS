@@ -49,8 +49,7 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     if config_overrides is not None:
         app.config.from_mapping(config_overrides)
 
-    # app.register_blueprint(ops.can.urls.bp)
-    app.register_blueprint(ops.portfolio.urls.bp_portfolio_status)
+    # app.register_blueprint(ops.portfolio.urls.bp_portfolio_status)
     app.register_blueprint(ops.portfolio.urls.bp_division)
     app.register_blueprint(ops.user.urls.bp)
     app.register_blueprint(ops.summary.urls.bp)
