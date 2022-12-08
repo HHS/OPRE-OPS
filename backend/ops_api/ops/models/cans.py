@@ -1,5 +1,5 @@
-from ops.portfolio.models import Portfolio
-from ops.portfolio.models import portfolio_cans
+from ops.models.portfolios import Portfolio
+from ops.models.portfolios import portfolio_cans
 from ops.utils import BaseModel
 from ops.utils import db
 from sqlalchemy.engine import Connection

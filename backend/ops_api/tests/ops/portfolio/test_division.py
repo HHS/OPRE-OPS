@@ -1,4 +1,4 @@
-from ops.portfolio.models import Division
+from ops.models.portfolios import Division
 import pytest
 
 

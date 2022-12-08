@@ -1,4 +1,4 @@
-from ops.portfolio.models import PortfolioStatus
+from ops.models.portfolios import PortfolioStatus
 import pytest
 
 

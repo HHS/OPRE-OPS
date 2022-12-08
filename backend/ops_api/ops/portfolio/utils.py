@@ -5,7 +5,7 @@ from ops.models.cans import BudgetLineItemStatus
 from ops.models.cans import CAN
 from ops.models.cans import CANFiscalYear
 from ops.models.cans import CANFiscalYearCarryOver
-from ops.portfolio.models import Portfolio
+from ops.models.portfolios import Portfolio
 
 
 class PortfolioDict(TypedDict):
@@ -31,18 +31,6 @@ class TotalFunding(TypedDict):
     obligated_funding: FundingLineItem
     in_execution_funding: FundingLineItem
     available_funding: FundingLineItem
-
-
-def portfolio_dumper(portfolio: Portfolio) -> PortfolioDict:
-    return {
-        "id": portfolio.id,
-        "name": portfolio.name,
-        "description": [desc.to_dict() for desc in portfolio.description],
-        "status": portfolio.status.name,
-        "cans": portfolio.cans,
-        "urls": [url.to_dict() for url in portfolio.urls],
-        "division": portfolio.division.to_dict(),
-    }
 
 
 def get_total_funding(

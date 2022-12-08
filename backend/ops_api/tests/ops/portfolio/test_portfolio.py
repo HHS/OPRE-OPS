@@ -1,4 +1,4 @@
-from ops.portfolio.models import Portfolio
+from ops.models.portfolios import Portfolio
 import pytest
 
 

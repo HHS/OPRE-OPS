@@ -9,10 +9,10 @@ from ops.models.cans import CANFiscalYear
 from ops.models.cans import CANFiscalYearCarryOver
 from ops.models.cans import FundingPartner
 from ops.models.cans import FundingSource
-from ops.portfolio.models import Division
-from ops.portfolio.models import Portfolio
-from ops.portfolio.models import PortfolioDescriptionText
-from ops.portfolio.models import PortfolioUrl
+from ops.models.portfolios import Division
+from ops.models.portfolios import Portfolio
+from ops.models.portfolios import PortfolioDescriptionText
+from ops.models.portfolios import PortfolioUrl
 from ops.user.models import db
 from ops.user.models import User
 import pytest
