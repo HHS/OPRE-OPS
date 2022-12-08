@@ -11,6 +11,7 @@ from ops.can.models import FundingPartner
 from ops.can.models import FundingSource
 from ops.portfolio.models import Division
 from ops.portfolio.models import Portfolio
+from ops.portfolio.models import PortfolioDescriptionText
 from ops.portfolio.models import PortfolioUrl
 from ops.user.models import db
 from ops.user.models import User
@@ -119,6 +120,8 @@ def loaded_db(app):
 
     p_url1 = PortfolioUrl(portfolio_id=1, url="/ops/portfolio/1")
     p_url2 = PortfolioUrl(portfolio_id=2, url="/ops/portfolio/2")
+
+    p_description_1 = PortfolioDescriptionText(id=1, portfolio_id=1, text="blah blah")
 
     can1 = CAN(
         number="G99WRGB",
@@ -239,6 +242,9 @@ def loaded_db(app):
 
         db.session.add(p_url1)
         db.session.add(p_url2)
+        db.session.flush()
+
+        db.session.add(p_description_1)
         db.session.flush()
 
         db.session.add(planned_status)
