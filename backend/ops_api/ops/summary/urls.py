@@ -41,4 +41,4 @@ bp = Blueprint(
     url_prefix="/ops",
 )
 # fundingSummary
-bp.add_url_rule("/fundingSummary", view_func=funding_summary)
+# bp.add_url_rule("/fundingSummary", view_func=funding_summary)

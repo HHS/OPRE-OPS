@@ -7,13 +7,9 @@ from flask import Flask
 from flask_cors import CORS
 from ops.auth.utils import jwtMgr
 from ops.auth.utils import oauth
-import ops.can.urls
 from ops.home_page.views import home
-import ops.portfolio.urls
-import ops.summary.urls
 from ops.urls import register_api
 from ops.user.models import db
-import ops.user.urls
 
 
 def configure_logging() -> None:
@@ -49,8 +45,7 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     if config_overrides is not None:
         app.config.from_mapping(config_overrides)
 
-    # app.register_blueprint(ops.user.urls.bp)
-    app.register_blueprint(ops.summary.urls.bp)
+    # app.register_blueprint(ops.summary.urls.bp)
     app.register_blueprint(home)
 
     api_bp = Blueprint(

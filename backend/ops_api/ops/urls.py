@@ -10,6 +10,7 @@ from ops.resources.budget_line_items import BudgetLineItemsItemAPI
 from ops.resources.budget_line_items import BudgetLineItemsListAPI
 from ops.resources.can_fiscal_year import CANFiscalYearItemAPI
 from ops.resources.can_fiscal_year import CANFiscalYearListAPI
+from ops.resources.can_funding_summary import CANFundingSummaryItemAPI
 from ops.resources.cans import CANItemAPI
 from ops.resources.cans import CANListAPI
 from ops.resources.cans import CANsByPortfolioAPI
@@ -38,6 +39,7 @@ def register_api(api_bp):
     register_portfolio_status_endpoints(api_bp)
     register_divisions_endpoints(api_bp)
     register_users_endpoints(api_bp)
+    register_summary_endpoints(api_bp)
 
 
 def register_auth_endpoints(api_bp):
@@ -150,4 +152,11 @@ def register_users_endpoints(api_bp):
     api_bp.add_url_rule(
         "/users/",
         view_func=UsersListAPI.as_view("users-group", User),
+    )
+
+
+def register_summary_endpoints(api_bp):
+    api_bp.add_url_rule(
+        "/can-funding-summary/<int:id>",
+        view_func=CANFundingSummaryItemAPI.as_view("can-funding-summary-item", CAN),
     )
