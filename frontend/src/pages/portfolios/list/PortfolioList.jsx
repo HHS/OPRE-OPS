@@ -31,7 +31,6 @@ const PortfolioList = () => {
                         <tr>
                             <th scope="col">name</th>
                             <th scope="col">status</th>
-                            <th scope="col">description</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -41,7 +40,6 @@ const PortfolioList = () => {
                                     <Link to={"./" + portfolio.id}>{portfolio.name}</Link>
                                 </th>
                                 <td>{portfolio.status}</td>
-                                <td>{portfolio.description}</td>
                             </tr>
                         ))}
                     </tbody>
