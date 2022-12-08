@@ -11,11 +11,6 @@ class PortfolioItemAPI(BaseItemAPI):
     @override
     def _get_item(self, id):
         portfolio = self.model.query.filter_by(id=id).first_or_404()
-
-        # Nest with description, division, and status
-        # division = Division.query.filter_by(id=portfolio.division_id).first_or_404()
-        # portfolio_descriptions = PortfolioDescriptionText.query.filter_by(portfolio_id=id).all()
-
         return portfolio.to_dict()
 
     @override

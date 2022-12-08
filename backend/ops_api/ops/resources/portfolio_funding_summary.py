@@ -4,32 +4,6 @@ from ops.base_views import BaseItemAPI
 from ops.utils.portfolios import get_total_funding
 from typing_extensions import override
 
-# def funding_summary() -> Response:
-#     can_id = request.args.get("can_id")
-#     portfolio_id = request.args.get("portfolio_id")
-#     fiscal_year = request.args.get("fiscal_year")
-#     if can_id:
-#         return get_can_funding_summary(can_id, fiscal_year)
-#
-#     if portfolio_id:
-#         return get_portfolio_funding(portfolio_id, fiscal_year)
-#
-#     return {}
-
-
-# def get_can_funding_summary(pk: int, fiscal_year: int) -> Response:
-#     can = CAN.query.filter(CAN.id == pk).one()
-#     response = jsonify(get_can_funding(can, fiscal_year))
-#     response.headers.add("Access-Control-Allow-Origin", "*")
-#     return response
-#
-#
-# def get_portfolio_funding_summary(pk: int, fiscal_year: int) -> Response:
-#     portfolio = Portfolio.query.filter(Portfolio.id == pk).one()
-#     response = jsonify(get_portfolio_funding(portfolio, fiscal_year))
-#     response.headers.add("Access-Control-Allow-Origin", "*")
-#     return response
-
 
 class PortfolioFundingSummaryItemAPI(BaseItemAPI):
     def __init__(self, model):
