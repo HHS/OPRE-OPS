@@ -25,6 +25,18 @@ class TotalFunding(TypedDict):
     available_funding: FundingLineItem
 
 
+def portfolio_dumper(portfolio: Portfolio) -> PortfolioDict:
+    return {
+        "id": portfolio.id,
+        "name": portfolio.name,
+        "description": [desc.to_dict() for desc in portfolio.description],
+        "status": portfolio.status.name,
+        "cans": portfolio.cans,
+        "urls": [url.to_dict() for url in portfolio.urls],
+        "division": portfolio.division.to_dict(),
+    }
+
+
 def get_total_funding(
     portfolio: Portfolio, fiscal_year: Optional[int] = None
 ) -> TotalFunding:

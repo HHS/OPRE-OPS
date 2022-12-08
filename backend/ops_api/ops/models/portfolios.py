@@ -11,6 +11,7 @@ from sqlalchemy import (
     event,
 )
 from sqlalchemy.engine import Connection
+from typing_extensions import override
 from sqlalchemy.orm import relationship
 from typing_extensions import override
 
@@ -101,16 +102,7 @@ class Portfolio(BaseModel):
     status_id = Column(Integer, ForeignKey("portfolio_status.id"))
     status = relationship("PortfolioStatus")
     cans = relationship(
-        "CAN",
-        back_populates="shared_portfolios",
-        secondary=portfolio_cans,
-    )
-    division_id = Column(Integer, ForeignKey("division.id"))
-    division = relationship("Division", back_populates="portfolio")
-    urls = relationship("PortfolioUrl")
-    description = relationship(
-        "PortfolioDescriptionText",
-        back_populates="portfolio",
+        "CAN", back_populates="shared_portfolios", secondary=portfolio_cans
     )
     team_leaders = relationship(
         "User",
@@ -118,8 +110,11 @@ class Portfolio(BaseModel):
         secondary=portfolio_team_leaders,
     )
 
-    def to_dict(self) -> dict[str, Any]:
-        """Serialize the Portfolio."""
-        ret: dict[str, Any] = super().to_dict()
-        ret["team_leaders"] = [team_lead.to_dict() for team_lead in self.team_leaders]
-        return ret
+
+class PortfolioDescriptionText(Model):
+    __tablename__ = "portfolio_description_text"
+    id = Column(Integer, primary_key=True)
+    portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
+    paragraph_number = Column(Integer)
+    text = Column(Text)
+    portfolio = relationship("Portfolio", back_populates="description")
