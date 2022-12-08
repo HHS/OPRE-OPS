@@ -1,4 +1,4 @@
-from ops.can.models import FundingSource
+from ops.models.cans import FundingSource
 import pytest
 
 

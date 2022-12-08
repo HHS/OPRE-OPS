@@ -2,8 +2,8 @@ from flask import Blueprint
 from flask import jsonify
 from flask import request
 from flask import Response
-from ops.can.models import CAN
 from ops.can.utils import get_can_funding_summary as get_can_funding
+from ops.models.cans import CAN
 from ops.portfolio.models import Portfolio
 from ops.portfolio.utils import get_total_funding as get_portfolio_funding
 

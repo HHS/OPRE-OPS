@@ -1,7 +1,7 @@
 from flask import jsonify
 from ops.base_views import BaseItemAPI
 from ops.base_views import BaseListAPI
-from ops.can.models import CAN
+from ops.models.cans import CAN
 from typing_extensions import override
 
 

@@ -1,10 +1,10 @@
 from typing import Optional, TypedDict
 
-from ops.can.models import BudgetLineItem
-from ops.can.models import BudgetLineItemStatus
-from ops.can.models import CAN
-from ops.can.models import CANFiscalYear
-from ops.can.models import CANFiscalYearCarryOver
+from ops.models.cans import BudgetLineItem
+from ops.models.cans import BudgetLineItemStatus
+from ops.models.cans import CAN
+from ops.models.cans import CANFiscalYear
+from ops.models.cans import CANFiscalYearCarryOver
 from ops.portfolio.models import Portfolio
 
 

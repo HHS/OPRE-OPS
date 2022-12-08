@@ -1,4 +1,4 @@
-from ops.can.models import CAN
+from ops.models.cans import CAN
 import pytest
 
 

@@ -1,4 +1,4 @@
-from ops.can.models import CANFiscalYear
+from ops.models.cans import CANFiscalYear
 import pytest
 
 

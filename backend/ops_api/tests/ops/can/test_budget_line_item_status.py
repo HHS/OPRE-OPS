@@ -1,4 +1,4 @@
-from ops.can.models import BudgetLineItemStatus
+from ops.models.cans import BudgetLineItemStatus
 import pytest
 
 

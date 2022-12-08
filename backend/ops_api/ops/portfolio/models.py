@@ -84,7 +84,7 @@ class Portfolio(BaseModel):
                     description.to_dict() for description in self.description
                 ],
                 "urls": [url.to_dict() for url in self.urls],
-                "division": self.division.to_dict(),
+                "division": self.division.to_dict() if self.division else None,
                 "cans": [can.to_dict() for can in self.cans],
                 "status": self.status.name,
             }
