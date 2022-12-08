@@ -109,6 +109,30 @@ class Portfolio(BaseModel):
         back_populates="portfolios",
         secondary=portfolio_team_leaders,
     )
+    division_id = Column(Integer, ForeignKey("division.id"))
+    division = relationship("Division", back_populates="portfolio")
+    urls = relationship("PortfolioUrl")
+    description = relationship(
+        "PortfolioDescriptionText", back_populates="portfolio"
+    )
+
+    @override
+    def to_dict(self):
+        d = super().to_dict()
+        
+        d.update(
+            {
+                "description": [
+                    description.to_dict() for description in self.description
+                ],
+                "urls": [url.to_dict() for url in self.urls],
+                "division": self.division.to_dict() if self.division else None,
+                "cans": [can.to_dict() for can in self.cans],
+                "status": self.status.name,
+            }
+        )
+
+        return d
 
 
 class PortfolioDescriptionText(Model):
