@@ -21,6 +21,9 @@ from ops.resources.portfolio_status import PortfolioStatusItemAPI
 from ops.resources.portfolio_status import PortfolioStatusListAPI
 from ops.resources.portfolios import PortfolioItemAPI
 from ops.resources.portfolios import PortfolioListAPI
+from ops.resources.users import UsersItemAPI
+from ops.resources.users import UsersListAPI
+from ops.user.models import User
 from ops.utils import BaseModel
 
 # Ideas from Flask docs: https://flask.palletsprojects.com/en/2.2.x/views/#method-dispatching-and-apis
@@ -34,6 +37,7 @@ def register_api(api_bp):
     register_budget_line_items_endpoints(api_bp)
     register_portfolio_status_endpoints(api_bp)
     register_divisions_endpoints(api_bp)
+    register_users_endpoints(api_bp)
 
 
 def register_auth_endpoints(api_bp):
@@ -135,4 +139,15 @@ def register_divisions_endpoints(api_bp):
     api_bp.add_url_rule(
         "/divisions/",
         view_func=DivisionsListAPI.as_view("divisions-group", Division),
+    )
+
+
+def register_users_endpoints(api_bp):
+    api_bp.add_url_rule(
+        "/users/<int:id>",
+        view_func=UsersItemAPI.as_view("users-item", User),
+    )
+    api_bp.add_url_rule(
+        "/users/",
+        view_func=UsersListAPI.as_view("users-group", User),
     )

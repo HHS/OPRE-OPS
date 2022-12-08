@@ -13,6 +13,7 @@ from ops.portfolio.models import Division
 from ops.portfolio.models import Portfolio
 from ops.portfolio.models import PortfolioUrl
 from ops.user.models import db
+from ops.user.models import User
 import pytest
 
 TEST_DB_NAME = "testdb"
@@ -218,6 +219,8 @@ def loaded_db(app):
         status_id=1,
     )
 
+    user1 = User(id=1, oidc_id="sadhfhdasgfhsadhughd", email="user1@example.com")
+
     with app.app_context():
         db.session.add(division1)
         db.session.add(division2)
@@ -273,6 +276,9 @@ def loaded_db(app):
         db.session.add(bli2)
         # db_session.add(pc1)
         # db_session.add(pc2)
+        db.session.commit()
+
+        db.session.add(user1)
         db.session.commit()
 
         yield db
