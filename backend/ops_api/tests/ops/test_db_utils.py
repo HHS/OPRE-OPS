@@ -1,5 +1,5 @@
-from ops.utils import BaseModel
-from ops.utils import db
+from ops.models.base import BaseModel
+from ops.models.base import db
 import pytest
 from sqlalchemy import Column
 from sqlalchemy import ForeignKey

@@ -1,4 +1,4 @@
-from ops.utils import db
+from ops.models.base import db
 
 
 class User(db.Model):

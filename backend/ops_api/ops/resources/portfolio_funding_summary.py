@@ -1,7 +1,7 @@
 from flask import jsonify
 from flask import request
 from ops.base_views import BaseItemAPI
-from ops.portfolio.utils import get_total_funding
+from ops.utils.portfolios import get_total_funding
 from typing_extensions import override
 
 # def funding_summary() -> Response:

@@ -8,9 +8,9 @@ from flask_jwt_extended import create_access_token
 from flask_jwt_extended import create_refresh_token
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
-from ops.auth.utils import get_jwt
-from ops.auth.utils import oauth
-from ops.user.utils import process_user
+from ops.utils.auth import get_jwt
+from ops.utils.auth import oauth
+from ops.utils.user import process_user
 import requests
 
 

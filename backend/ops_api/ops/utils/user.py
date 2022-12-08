@@ -1,7 +1,7 @@
 from typing import Optional, TypedDict
 
+from ops.models.base import db
 from ops.models.users import User
-from ops.utils import db
 
 
 class UserInfoDict(TypedDict):
