@@ -8,8 +8,8 @@ from flask_cors import CORS
 from ops.auth.utils import jwtMgr
 from ops.auth.utils import oauth
 from ops.home_page.views import home
+from ops.models.users import db
 from ops.urls import register_api
-from ops.user.models import db
 
 
 def configure_logging() -> None:

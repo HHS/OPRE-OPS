@@ -13,8 +13,8 @@ from ops.models.portfolios import Division
 from ops.models.portfolios import Portfolio
 from ops.models.portfolios import PortfolioDescriptionText
 from ops.models.portfolios import PortfolioUrl
-from ops.user.models import db
-from ops.user.models import User
+from ops.models.users import db
+from ops.models.users import User
 import pytest
 
 TEST_DB_NAME = "testdb"

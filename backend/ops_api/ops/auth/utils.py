@@ -6,7 +6,7 @@ from authlib.integrations.flask_client import OAuth
 from authlib.jose import jwt
 from flask import current_app
 from flask_jwt_extended import JWTManager
-from ops.user.models import User
+from ops.models.users import User
 
 jwtMgr = JWTManager()
 oauth = OAuth()

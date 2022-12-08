@@ -4,6 +4,7 @@ from ops.models.cans import CANFiscalYear
 from ops.models.portfolios import Division
 from ops.models.portfolios import Portfolio
 from ops.models.portfolios import PortfolioStatus
+from ops.models.users import User
 from ops.resources.auth import AuthLoginAPI
 from ops.resources.auth import AuthRefreshAPI
 from ops.resources.budget_line_items import BudgetLineItemsItemAPI
@@ -25,7 +26,6 @@ from ops.resources.portfolios import PortfolioItemAPI
 from ops.resources.portfolios import PortfolioListAPI
 from ops.resources.users import UsersItemAPI
 from ops.resources.users import UsersListAPI
-from ops.user.models import User
 from ops.utils import BaseModel
 
 # Ideas from Flask docs: https://flask.palletsprojects.com/en/2.2.x/views/#method-dispatching-and-apis
