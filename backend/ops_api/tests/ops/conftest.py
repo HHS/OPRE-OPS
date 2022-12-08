@@ -11,8 +11,10 @@ from ops.can.models import FundingPartner
 from ops.can.models import FundingSource
 from ops.portfolio.models import Division
 from ops.portfolio.models import Portfolio
+from ops.portfolio.models import PortfolioDescriptionText
 from ops.portfolio.models import PortfolioUrl
 from ops.user.models import db
+from ops.user.models import User
 import pytest
 
 TEST_DB_NAME = "testdb"
@@ -119,6 +121,8 @@ def loaded_db(app):
     p_url1 = PortfolioUrl(portfolio_id=1, url="/ops/portfolio/1")
     p_url2 = PortfolioUrl(portfolio_id=2, url="/ops/portfolio/2")
 
+    p_description_1 = PortfolioDescriptionText(id=1, portfolio_id=1, text="blah blah")
+
     can1 = CAN(
         number="G99WRGB",
         description="Secondary Analyses Data On Child Care & Early Edu",
@@ -218,6 +222,8 @@ def loaded_db(app):
         status_id=1,
     )
 
+    user1 = User(id=1, oidc_id="sadhfhdasgfhsadhughd", email="user1@example.com")
+
     with app.app_context():
         db.session.add(division1)
         db.session.add(division2)
@@ -236,6 +242,9 @@ def loaded_db(app):
 
         db.session.add(p_url1)
         db.session.add(p_url2)
+        db.session.flush()
+
+        db.session.add(p_description_1)
         db.session.flush()
 
         db.session.add(planned_status)
@@ -273,6 +282,9 @@ def loaded_db(app):
         db.session.add(bli2)
         # db_session.add(pc1)
         # db_session.add(pc2)
+        db.session.commit()
+
+        db.session.add(user1)
         db.session.commit()
 
         yield db

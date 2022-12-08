@@ -5,6 +5,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy import Table
 from sqlalchemy import Text
 from sqlalchemy.engine import Connection
+from typing_extensions import override
 
 
 class Division(BaseModel):
@@ -61,7 +62,6 @@ class Portfolio(BaseModel):
     __tablename__ = "portfolio"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
-    description = db.Column(db.String, default="")
     status_id = db.Column(db.Integer, db.ForeignKey("portfolio_status.id"))
     status = db.relationship("PortfolioStatus")
     cans = db.relationship(
@@ -73,6 +73,24 @@ class Portfolio(BaseModel):
     description = db.relationship(
         "PortfolioDescriptionText", back_populates="portfolio"
     )
+
+    @override
+    def to_dict(self):
+        d = super().to_dict()
+
+        d.update(
+            {
+                "description": [
+                    description.to_dict() for description in self.description
+                ],
+                "urls": [url.to_dict() for url in self.urls],
+                "division": self.division.to_dict(),
+                "cans": [can.to_dict() for can in self.cans],
+                "status": self.status.name,
+            }
+        )
+
+        return d
 
 
 class PortfolioDescriptionText(db.Model):

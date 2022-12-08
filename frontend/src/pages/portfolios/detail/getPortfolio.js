@@ -2,7 +2,7 @@ import { setPortfolio } from "./portfolioDetailSlice";
 import ApplicationContext from "../../../applicationContext/ApplicationContext";
 
 export const getPortfolio = async (id) => {
-    const responseData = await ApplicationContext.get().helpers().callBackend(`/ops/portfolios/${id}`, "get");
+    const responseData = await ApplicationContext.get().helpers().callBackend(`/api/v1/portfolios/${id}`, "get");
     return responseData;
 };
 
