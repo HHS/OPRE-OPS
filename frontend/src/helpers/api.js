@@ -5,7 +5,7 @@ export const getCanFundingSummary = async (id, fiscalYear) => {
     if (id && fiscalYear) {
         const responseData = await ApplicationContext.get()
             .helpers()
-            .callBackend(`/api/v1/can-funding-summary/${id}/?fiscal_year=${fiscalYear}`, "get");
+            .callBackend(`/api/v1/can-funding-summary/${id}?fiscal_year=${fiscalYear}`, "get");
         return responseData;
     }
 };
