@@ -5,7 +5,7 @@ export const getCanFundingSummary = async (id, fiscalYear) => {
     if (id && fiscalYear) {
         const responseData = await ApplicationContext.get()
             .helpers()
-            .callBackend(`/ops/fundingSummary?can_id=${id}&fiscal_year=${fiscalYear}`, "get");
+            .callBackend(`/api/v1/can-funding-summary/${id}/?fiscal_year=${fiscalYear}`, "get");
         return responseData;
     }
 };
@@ -13,6 +13,6 @@ export const getCanFundingSummary = async (id, fiscalYear) => {
 export const getPortfolioCans = async (id) => {
     const responseData = await ApplicationContext.get()
         .helpers()
-        .callBackend(`/ops/portfolios/${id}/cans`, "get");
+        .callBackend(`/api/v1/portfolios/${id}/cans`, "get");
     return responseData;
 };
