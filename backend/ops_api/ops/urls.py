@@ -1,6 +1,7 @@
 from ops.can.models import BudgetLineItem
 from ops.can.models import CAN
 from ops.can.models import CANFiscalYear
+from ops.portfolio.models import Division
 from ops.portfolio.models import Portfolio
 from ops.portfolio.models import PortfolioStatus
 from ops.resources.auth import AuthLoginAPI
@@ -12,6 +13,8 @@ from ops.resources.can_fiscal_year import CANFiscalYearListAPI
 from ops.resources.cans import CANItemAPI
 from ops.resources.cans import CANListAPI
 from ops.resources.cans import CANsByPortfolioAPI
+from ops.resources.divisions import DivisionsItemAPI
+from ops.resources.divisions import DivisionsListAPI
 from ops.resources.portfolio_calculate_funding import PortfolioCalculateFundingAPI
 from ops.resources.portfolio_cans import PortfolioCansAPI
 from ops.resources.portfolio_status import PortfolioStatusItemAPI
@@ -30,6 +33,7 @@ def register_api(api_bp):
     register_can_fiscal_year_endpoints(api_bp)
     register_budget_line_items_endpoints(api_bp)
     register_portfolio_status_endpoints(api_bp)
+    register_divisions_endpoints(api_bp)
 
 
 def register_auth_endpoints(api_bp):
@@ -120,4 +124,15 @@ def register_portfolio_status_endpoints(api_bp):
         view_func=PortfolioStatusListAPI.as_view(
             "portfolio-status-group", PortfolioStatus
         ),
+    )
+
+
+def register_divisions_endpoints(api_bp):
+    api_bp.add_url_rule(
+        "/divisions/<int:id>",
+        view_func=DivisionsItemAPI.as_view("divisions-item", Division),
+    )
+    api_bp.add_url_rule(
+        "/divisions/",
+        view_func=DivisionsListAPI.as_view("divisions-group", Division),
     )
