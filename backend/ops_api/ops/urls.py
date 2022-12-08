@@ -18,6 +18,7 @@ from ops.resources.divisions import DivisionsItemAPI
 from ops.resources.divisions import DivisionsListAPI
 from ops.resources.portfolio_calculate_funding import PortfolioCalculateFundingAPI
 from ops.resources.portfolio_cans import PortfolioCansAPI
+from ops.resources.portfolio_funding_summary import PortfolioFundingSummaryItemAPI
 from ops.resources.portfolio_status import PortfolioStatusItemAPI
 from ops.resources.portfolio_status import PortfolioStatusListAPI
 from ops.resources.portfolios import PortfolioItemAPI
@@ -159,4 +160,10 @@ def register_summary_endpoints(api_bp):
     api_bp.add_url_rule(
         "/can-funding-summary/<int:id>",
         view_func=CANFundingSummaryItemAPI.as_view("can-funding-summary-item", CAN),
+    )
+    api_bp.add_url_rule(
+        "/portfolio-funding-summary/<int:id>",
+        view_func=PortfolioFundingSummaryItemAPI.as_view(
+            "portfolio-funding-summary-item", Portfolio
+        ),
     )
