@@ -3,7 +3,7 @@ import { getPortfolioAndSetState } from "./getPortfolio";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import PortfolioFundingSummary from "../../../components/PortfolioFundingSummary/PortfolioFundingSummary";
-import { setPortfolio, setPortfolioCans } from "./portfolioDetailSlice";
+import { setPortfolio, setPortfolioCans, setPortfolioCansFundingDetails } from "./portfolioDetailSlice";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 import App from "../../../App";
 import { BreadcrumbItem, BreadcrumbList } from "../../../components/Header/Breadcrumb";
@@ -21,7 +21,6 @@ import styles from "./styles.module.css";
 
 const PortfolioDetail = () => {
     const dispatch = useDispatch();
-    //const portfolio = useSelector((state) => state.portfolioDetail.portfolio);
     const urlPathParams = useParams();
     const portfolioId = parseInt(urlPathParams.id);
     const canId = 1;
