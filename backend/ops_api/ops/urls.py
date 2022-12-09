@@ -32,138 +32,153 @@ from ops.resources.users import UsersListAPI
 
 
 def register_api(api_bp):
-    register_portfolio_endpoints(api_bp)
-    register_auth_endpoints(api_bp)
-    register_cans_endpoints(api_bp)
-    register_can_fiscal_year_endpoints(api_bp)
-    register_budget_line_items_endpoints(api_bp)
-    register_portfolio_status_endpoints(api_bp)
-    register_divisions_endpoints(api_bp)
-    register_users_endpoints(api_bp)
-    register_summary_endpoints(api_bp)
-
-
-def register_auth_endpoints(api_bp):
     api_bp.add_url_rule(
         "/auth/login/",
-        view_func=AuthLoginAPI.as_view("auth-login", BaseModel),
+        view_func=AUTH_LOGIN_API_VIEW_FUNC,
     )
-
     api_bp.add_url_rule(
         "/auth/refresh/",
-        view_func=AuthRefreshAPI.as_view("auth-refresh", BaseModel),
+        view_func=AUTH_REFRESH_API_VIEW_FUNC,
     )
 
-
-def register_portfolio_endpoints(api_bp):
     api_bp.add_url_rule(
         "/portfolios/<int:id>/calcFunding/",
-        view_func=PortfolioCalculateFundingAPI.as_view(
-            "portfolio-calculate-funding", Portfolio
-        ),
+        view_func=PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC,
     )
-
     api_bp.add_url_rule(
         "/portfolios/<int:id>/cans/",
-        view_func=PortfolioCansAPI.as_view("portfolio-cans", CAN),
+        view_func=PORTFOLIO_CANS_API_VIEW_FUNC,
     )
-
     api_bp.add_url_rule(
         "/portfolios/<int:id>",
-        view_func=PortfolioItemAPI.as_view("portfolio-item", Portfolio),
+        view_func=PORTFOLIO_ITEM_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/portfolios/",
-        view_func=PortfolioListAPI.as_view("portfolio-group", Portfolio),
+        view_func=PORTFOLIO_LIST_API_VIEW_FUNC,
     )
 
-
-def register_cans_endpoints(api_bp):
     api_bp.add_url_rule(
         "/cans/<int:id>",
-        view_func=CANItemAPI.as_view("can-item", CAN),
+        view_func=CAN_ITEM_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/cans/",
-        view_func=CANListAPI.as_view("can-group", CAN),
+        view_func=CAN_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/cans/portfolio/<int:id>",
-        view_func=CANsByPortfolioAPI.as_view("can-portfolio", BaseModel),
+        view_func=CANS_BY_PORTFOLIO_API_VIEW_FUNC,
     )
 
-
-def register_can_fiscal_year_endpoints(api_bp):
     api_bp.add_url_rule(
         "/can-fiscal-year/<int:id>",
-        view_func=CANFiscalYearItemAPI.as_view("can-fiscal-year-item", CANFiscalYear),
+        view_func=CAN_FISCAL_YEAR_ITEM_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/can-fiscal-year/",
-        view_func=CANFiscalYearListAPI.as_view("can-fiscal-year-group", CANFiscalYear),
+        view_func=CAN_FISCAL_YEAR_LIST_API_VIEW_FUNC,
     )
 
-
-def register_budget_line_items_endpoints(api_bp):
     api_bp.add_url_rule(
         "/budget-line-items/<int:id>",
-        view_func=BudgetLineItemsItemAPI.as_view(
-            "budget-line-items-item", BudgetLineItem
-        ),
+        view_func=BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/budget-line-items/",
-        view_func=BudgetLineItemsListAPI.as_view(
-            "budget-line-items-group", BudgetLineItem
-        ),
+        view_func=BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC,
     )
 
-
-def register_portfolio_status_endpoints(api_bp):
     api_bp.add_url_rule(
         "/portfolio-status/<int:id>",
-        view_func=PortfolioStatusItemAPI.as_view(
-            "portfolio-status-item", PortfolioStatus
-        ),
+        view_func=PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/portfolio-status/",
-        view_func=PortfolioStatusListAPI.as_view(
-            "portfolio-status-group", PortfolioStatus
-        ),
+        view_func=PORTFOLIO_STATUS_LIST_API_VIEW_FUNC,
     )
 
-
-def register_divisions_endpoints(api_bp):
     api_bp.add_url_rule(
         "/divisions/<int:id>",
-        view_func=DivisionsItemAPI.as_view("divisions-item", Division),
+        view_func=DIVISIONS_ITEM_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/divisions/",
-        view_func=DivisionsListAPI.as_view("divisions-group", Division),
+        view_func=DIVISIONS_LIST_API_VIEW_FUNC,
     )
 
-
-def register_users_endpoints(api_bp):
     api_bp.add_url_rule(
         "/users/<int:id>",
-        view_func=UsersItemAPI.as_view("users-item", User),
+        view_func=USERS_ITEM_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/users/",
-        view_func=UsersListAPI.as_view("users-group", User),
+        view_func=USERS_LIST_API_VIEW_FUNC,
     )
 
-
-def register_summary_endpoints(api_bp):
     api_bp.add_url_rule(
         "/can-funding-summary/<int:id>",
-        view_func=CANFundingSummaryItemAPI.as_view("can-funding-summary-item", CAN),
+        view_func=CAN_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/portfolio-funding-summary/<int:id>",
-        view_func=PortfolioFundingSummaryItemAPI.as_view(
-            "portfolio-funding-summary-item", Portfolio
-        ),
+        view_func=PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
     )
+
+
+# Auth endpoints
+AUTH_LOGIN_API_VIEW_FUNC = AuthLoginAPI.as_view("auth-login", BaseModel)
+AUTH_REFRESH_API_VIEW_FUNC = AuthRefreshAPI.as_view("auth-refresh", BaseModel)
+
+# Portfolio endpoints
+PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC = PortfolioCalculateFundingAPI.as_view(
+    "portfolio-calculate-funding", Portfolio
+)
+PORTFOLIO_CANS_API_VIEW_FUNC = PortfolioCansAPI.as_view("portfolio-cans", CAN)
+PORTFOLIO_ITEM_API_VIEW_FUNC = PortfolioItemAPI.as_view("portfolio-item", Portfolio)
+PORTFOLIO_LIST_API_VIEW_FUNC = PortfolioListAPI.as_view("portfolio-group", Portfolio)
+
+# CAN ENDPOINTS
+CAN_ITEM_API_VIEW_FUNC = CANItemAPI.as_view("can-item", CAN)
+CAN_LIST_API_VIEW_FUNC = CANListAPI.as_view("can-group", CAN)
+CANS_BY_PORTFOLIO_API_VIEW_FUNC = CANsByPortfolioAPI.as_view("can-portfolio", BaseModel)
+
+# CAN FISCAL YEAR ENDPOINTS
+CAN_FISCAL_YEAR_ITEM_API_VIEW_FUNC = CANFiscalYearItemAPI.as_view(
+    "can-fiscal-year-item", CANFiscalYear
+)
+CAN_FISCAL_YEAR_LIST_API_VIEW_FUNC = CANFiscalYearListAPI.as_view(
+    "can-fiscal-year-group", CANFiscalYear
+)
+
+# BUDGET LINE ITEM ENDPOINTS
+BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC = BudgetLineItemsItemAPI.as_view(
+    "budget-line-items-item", BudgetLineItem
+)
+BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC = BudgetLineItemsListAPI.as_view(
+    "budget-line-items-group", BudgetLineItem
+)
+
+# PORTFOLIO STATUS ENDPOINTS
+PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC = PortfolioStatusItemAPI.as_view(
+    "portfolio-status-item", PortfolioStatus
+)
+PORTFOLIO_STATUS_LIST_API_VIEW_FUNC = PortfolioStatusListAPI.as_view(
+    "portfolio-status-group", PortfolioStatus
+)
+
+# DIVISION ENDPOINTS
+DIVISIONS_ITEM_API_VIEW_FUNC = DivisionsItemAPI.as_view("divisions-item", Division)
+DIVISIONS_LIST_API_VIEW_FUNC = DivisionsListAPI.as_view("divisions-group", Division)
+
+# USER ENDPOINTS
+USERS_ITEM_API_VIEW_FUNC = UsersItemAPI.as_view("users-item", User)
+USERS_LIST_API_VIEW_FUNC = UsersListAPI.as_view("users-group", User)
+
+# FUNDING SUMMARY ENDPOINTS
+CAN_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = CANFundingSummaryItemAPI.as_view(
+    "can-funding-summary-item", CAN
+)
+PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = PortfolioFundingSummaryItemAPI.as_view(
+    "portfolio-funding-summary-item", Portfolio
+)
