@@ -9,13 +9,19 @@ export const getPortfolioCansAndSetState = (id) => {
     };
 };
 
-export const getPortfolioCansFundingDetailsAndSetState = (id, fiscalYear) => {
+export const getPortfolioCansFundingDetailsAndSetState = async (item) => {
+    if (item.id) {
+        const responseData = await ApplicationContext.get()
+            .helpers()
+            .callBackend(`/ops/fundingSummary?can_id=${item.id}&fiscal_year=${item.fiscalYear}`, "get");
+        return responseData;
+    }
+    return {};
+};
+
+export const getPortfolioCansFundingDetails = (canData) => {
     return async (dispatch, getState) => {
-        if (id && fiscalYear) {
-            const responseData = await ApplicationContext.get()
-                .helpers()
-                .callBackend(`/ops/fundingSummary?can_id=${id}&fiscal_year=${fiscalYear}`, "get");
-            dispatch(setPortfolioCansFundingDetails(responseData));
-        }
+        const result = await Promise.all(canData.map(getPortfolioCansFundingDetailsAndSetState));
+        dispatch(setPortfolioCansFundingDetails(result));
     };
 };
