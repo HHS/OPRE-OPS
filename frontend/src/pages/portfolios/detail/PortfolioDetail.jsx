@@ -11,7 +11,11 @@ import PortfolioHeader from "../../../components/PortfolioHeader/PortfolioHeader
 import CanCard from "../../../components/CanCard/CanCard";
 
 import styles from "./styles.module.css";
-import { getPortfolioCansAndSetState, getPortfolioCansFundingDetailsAndSetState } from "./getPortfolioCans";
+import {
+    getPortfolioCansAndSetState,
+    getPortfolioCansFundingDetails,
+    getPortfolioCansFundingDetailsAndSetState,
+} from "./getPortfolioCans";
 
 const PortfolioDetail = () => {
     const dispatch = useDispatch();
@@ -38,13 +42,14 @@ const PortfolioDetail = () => {
     }, [dispatch, portfolioId, currentFiscalYear]);
 
     useEffect(() => {
-        portfolioCans.map((can) => {
-            dispatch(getPortfolioCansFundingDetailsAndSetState(can.id, currentFiscalYear));
-        });
+        const canData = portfolioCans.map((can) => ({ id: can.id, fiscalYear: currentFiscalYear }));
+        if (canData.length > 0) {
+            dispatch(getPortfolioCansFundingDetails(canData));
+        }
         return () => {
             dispatch(setPortfolioCansFundingDetails([]));
         };
-    }, [dispatch, currentFiscalYear, portfolioCans]);
+    }, [dispatch, currentFiscalYear, portfolioCans, currentFiscalYear]);
 
     const canCards = portfolioCans.length
         ? portfolioCans.map((can, i) => <CanCard can={can} fiscalYear={currentFiscalYear} key={i} />)

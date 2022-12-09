@@ -17,13 +17,7 @@ const portfolioDetailSlice = createSlice({
             state.portfolioCans = action.payload;
         },
         setPortfolioCansFundingDetails: (state, action) => {
-            // do not add to list if the API response is empty or if we already have the can in state
-            if (
-                action.payload.length !== 0 &&
-                !state.portfolioCansFundingDetails.some((item) => item.can.id === action.payload.can.id)
-            ) {
-                state.portfolioCansFundingDetails = [...state.portfolioCansFundingDetails, action.payload];
-            }
+            state.portfolioCansFundingDetails = action.payload;
         },
     },
 });
