@@ -58,6 +58,7 @@ const PortfolioFundingByCAN = (props) => {
         if (portfolio_total_funding) {
             const data = portfolioCansFundingDetails
                 .filter((item) => item.total_funding)
+                //eslint-disable-next-line array-callback-return
                 .map((item, index) => {
                     if (item.total_funding) {
                         return {
