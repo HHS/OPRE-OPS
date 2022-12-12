@@ -1,7 +1,11 @@
+from typing import List
+
 from flask import jsonify
 from flask import request
+from flask import Response
 from ops.base_views import BaseItemAPI
 from ops.base_views import BaseListAPI
+from ops.models.cans import BudgetLineItem
 from typing_extensions import override
 
 
@@ -14,7 +18,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
     def __init__(self, model):
         super().__init__(model)
 
-    def _get_items(self, can_id=None, year=None):
+    def _get_items(self, can_id=None, year=None) -> List[BudgetLineItem]:
         budget_line_items_query = self.model.query
 
         if can_id:
@@ -28,7 +32,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
         return budget_line_items_query.all()
 
     @override
-    def get(self):
+    def get(self) -> Response:
         can_id = request.args.get("can_id")
         year = request.args.get("year")
         budget_line_items = self._get_items(can_id, year)

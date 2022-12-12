@@ -1,5 +1,8 @@
+from typing import Dict
+
 from flask import jsonify
 from flask import request
+from flask import Response
 from ops.base_views import BaseItemAPI
 from ops.utils.portfolios import get_total_funding
 from typing_extensions import override
@@ -10,13 +13,13 @@ class PortfolioFundingSummaryItemAPI(BaseItemAPI):
         super().__init__(model)
 
     @override
-    def _get_item(self, id, fiscal_year):
+    def _get_item(self, id, fiscal_year) -> Dict[str, object]:
         portfolio = self.model.query.filter_by(id=id).first_or_404()
         portfolio_funding = get_total_funding(portfolio, fiscal_year)
         return portfolio_funding
 
     @override
-    def get(self, id):
+    def get(self, id) -> Response:
         fiscal_year = request.args.get("fiscal_year")
         portfolio_funding_summary = self._get_item(id, fiscal_year)
         response = jsonify(portfolio_funding_summary)
