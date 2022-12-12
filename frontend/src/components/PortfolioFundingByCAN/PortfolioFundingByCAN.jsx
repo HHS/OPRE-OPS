@@ -71,8 +71,6 @@ const PortfolioFundingByCAN = (props) => {
                     }
                 });
 
-            console.log(`data=${JSON.stringify(data)}`);
-
             setCanChartData(data);
         }
 
