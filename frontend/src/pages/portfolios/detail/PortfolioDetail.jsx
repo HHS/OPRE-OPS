@@ -3,7 +3,7 @@ import { getPortfolioAndSetState } from "./getPortfolio";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import PortfolioFundingSummary from "../../../components/PortfolioFundingSummary/PortfolioFundingSummary";
-import { setPortfolio, setPortfolioCans } from "./portfolioDetailSlice";
+import { setPortfolio, setPortfolioCans, setPortfolioCansFundingDetails } from "./portfolioDetailSlice";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 import App from "../../../App";
 import { BreadcrumbItem, BreadcrumbList } from "../../../components/Header/Breadcrumb";
@@ -11,11 +11,14 @@ import PortfolioHeader from "../../../components/PortfolioHeader/PortfolioHeader
 import CanCard from "../../../components/CanCard/CanCard";
 
 import styles from "./styles.module.css";
-import { getPortfolioCansAndSetState } from "./getPortfolioCans";
+import {
+    getPortfolioCansAndSetState,
+    getPortfolioCansFundingDetails,
+    getPortfolioCansFundingDetailsAndSetState,
+} from "./getPortfolioCans";
 
 const PortfolioDetail = () => {
     const dispatch = useDispatch();
-    //const portfolio = useSelector((state) => state.portfolioDetail.portfolio);
     const urlPathParams = useParams();
     const portfolioId = parseInt(urlPathParams.id);
     const currentFiscalYear = getCurrentFiscalYear(new Date());
@@ -37,6 +40,16 @@ const PortfolioDetail = () => {
             };
         }
     }, [dispatch, portfolioId, currentFiscalYear]);
+
+    useEffect(() => {
+        const canData = portfolioCans.map((can) => ({ id: can.id, fiscalYear: currentFiscalYear }));
+        if (canData.length > 0) {
+            dispatch(getPortfolioCansFundingDetails(canData));
+        }
+        return () => {
+            dispatch(setPortfolioCansFundingDetails([]));
+        };
+    }, [dispatch, currentFiscalYear, portfolioCans, currentFiscalYear]);
 
     const canCards = portfolioCans.length
         ? portfolioCans.map((can, i) => <CanCard can={can} fiscalYear={currentFiscalYear} key={i} />)

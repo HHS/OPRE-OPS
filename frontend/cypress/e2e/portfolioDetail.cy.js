@@ -12,6 +12,9 @@ it("loads", () => {
     cy.get("h3").should("contain", "New Funding");
     cy.get("h3").should("contain", "Carry-Forward Funding");
     cy.get("h3").should("contain", "Budget Status");
+    cy.get("h3").should("contain", "Portfolio CANs");
+    cy.get("#portfolioCANChart").should("be.visible");
+    cy.get("#portfolioBudgetStatusChart").should("be.visible");
     cy.get("span").should("contain", "$");
 });
 
