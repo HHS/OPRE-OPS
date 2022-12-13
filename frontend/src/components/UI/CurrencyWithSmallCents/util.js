@@ -1,18 +1,19 @@
 const getCents = (amount) => {
     const getCentsSubstring = (s) => {
-        return s.substring(s.indexOf(".") + 1, s.indexOf(".") + 3);
+        if (s.includes(".")) {
+            return s.substring(s.indexOf(".") + 1, s.indexOf(".") + 3).padEnd(2, "0");
+        } else {
+            return "00";
+        }
     };
 
     if (amount === 0) return "00";
 
-    // amount is a float currency value - returns the cents as an string
+    if (!amount.toString().includes(".")) return "00";
+
     const amount_str = parseFloat(amount).toString();
 
-    return amount_str.includes(".")
-        ? parseInt(getCentsSubstring(amount_str)) < 10
-            ? (parseInt(getCentsSubstring(amount_str)) * 10).toString()
-            : getCentsSubstring(amount_str)
-        : "00";
+    return getCentsSubstring(amount_str);
 };
 
 export { getCents };
