@@ -4,22 +4,23 @@ from flask import jsonify
 from flask import request
 from flask import Response
 from ops.base_views import BaseItemAPI
+from ops.models.base import BaseModel
 from ops.utils.cans import get_can_funding_summary
 from typing_extensions import override
 
 
 class CANFundingSummaryItemAPI(BaseItemAPI):
-    def __init__(self, model):
+    def __init__(self, model: BaseModel):
         super().__init__(model)
 
     @override
-    def _get_item(self, id, fiscal_year) -> Dict[str, object]:
+    def _get_item(self, id: int, fiscal_year: int) -> Dict[str, object]:
         can = self.model.query.filter_by(id=id).first_or_404()
         can_funding = get_can_funding_summary(can, fiscal_year)
         return can_funding
 
     @override
-    def get(self, id) -> Response:
+    def get(self, id: int) -> Response:
         fiscal_year = request.args.get("fiscal_year")
         can_funding_summary = self._get_item(id, fiscal_year)
         response = jsonify(can_funding_summary)

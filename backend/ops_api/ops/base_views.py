@@ -11,14 +11,14 @@ def generate_validator(model: BaseModel) -> BaseModel.Validator:
 class BaseItemAPI(MethodView):
     init_every_request = False
 
-    def __init__(self, model):
+    def __init__(self, model: BaseModel):
         self.model = model
         self.validator = generate_validator(model)
 
-    def _get_item(self, id) -> BaseModel:
+    def _get_item(self, id: int) -> BaseModel:
         return self.model.query.filter_by(id=id).first_or_404()
 
-    def get(self, id) -> Response:
+    def get(self, id: int) -> Response:
         item = self._get_item(id)
         return jsonify(item.to_dict())
 
@@ -26,7 +26,7 @@ class BaseItemAPI(MethodView):
 class BaseListAPI(MethodView):
     init_every_request = False
 
-    def __init__(self, model):
+    def __init__(self, model: BaseModel):
         self.model = model
         self.validator = generate_validator(model)
 

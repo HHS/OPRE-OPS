@@ -5,20 +5,21 @@ from flask import request
 from flask import Response
 from ops.base_views import BaseItemAPI
 from ops.base_views import BaseListAPI
+from ops.models.base import BaseModel
 from ops.models.cans import BudgetLineItem
 from typing_extensions import override
 
 
 class BudgetLineItemsItemAPI(BaseItemAPI):
-    def __init__(self, model):
+    def __init__(self, model: BaseModel):
         super().__init__(model)
 
 
 class BudgetLineItemsListAPI(BaseListAPI):
-    def __init__(self, model):
+    def __init__(self, model: BaseModel):
         super().__init__(model)
 
-    def _get_items(self, can_id=None, year=None) -> List[BudgetLineItem]:
+    def _get_items(self, can_id: int = None, year: int = None) -> List[BudgetLineItem]:
         budget_line_items_query = self.model.query
 
         if can_id:
