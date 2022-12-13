@@ -2,15 +2,14 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.serialization import Encoding
 from cryptography.hazmat.primitives.serialization import NoEncryption
 from cryptography.hazmat.primitives.serialization import PrivateFormat
-from ops.auth.utils import get_jwt
+from ops.utils.auth import get_jwt
 import pytest
 
 
-@pytest.mark.skip(reason="requires backend server to be running")
 def test_auth_post_fails(client):
     data = {"code": "abc1234"}
 
-    res = client.post("http://localhost:8080/auth/login", json=data)
+    res = client.post("/api/v1/auth/login/", json=data)
     assert res.status_code == 400
 
 

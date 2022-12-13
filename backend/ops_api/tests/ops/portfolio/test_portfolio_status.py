@@ -1,4 +1,4 @@
-from ops.portfolio.models import PortfolioStatus
+from ops.models.portfolios import PortfolioStatus
 import pytest
 
 
@@ -20,3 +20,17 @@ def test_portfolio_status_count(loaded_db):
 def test_portfolio_status_lookup(loaded_db, id, name):
     portfolio_status = loaded_db.session.query(PortfolioStatus).get(id)
     assert portfolio_status.name == name
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_status_list(client):
+    response = client.get("/api/v1/portfolio-status/")
+    assert response.status_code == 200
+    assert len(response.json) == 3
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_portfolio_status_by_id(client):
+    response = client.get("/api/v1/portfolio-status/1")
+    assert response.status_code == 200
+    assert response.json["id"] == 1

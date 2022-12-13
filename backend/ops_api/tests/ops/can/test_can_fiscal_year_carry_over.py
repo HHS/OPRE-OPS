@@ -1,4 +1,4 @@
-from ops.can.models import CANFiscalYearCarryOver
+from ops.models.cans import CANFiscalYearCarryOver
 import pytest
 
 
