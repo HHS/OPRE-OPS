@@ -149,9 +149,9 @@ will have a staging and production environment.
 
 ### Development Environment
 
-The development environment is deployed at https://opre-ops-frontend-test.app.cloud.gov
+The development environment is deployed at https://ops-dev.fr.cloud.gov
 
-This environment can be deployed to by anyone with write access to the repository.  You accomplish this by force pushing
+This environment can be deployed to by authorized committers in the repository.  You accomplish this by force pushing
 an existing commit to the `development` branch.
 
 ```shell
@@ -162,7 +162,16 @@ git push --force --set-upstream origin development
 
 ### Staging Environment
 
-TBD.
+The staging environment is deployed at https://ops-staging.app.cloud.gov
+
+This environment can be deployed to by authorized committers in the repository.  You accomplish this by force pushing
+an existing commit to the `staging` branch.
+
+```shell
+git branch -d staging  # deletes the development branch if it was already checked out locally
+git checkout -b staging
+git push --force --set-upstream origin staging
+```
 
 ### Production Environment
 
