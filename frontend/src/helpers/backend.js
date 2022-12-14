@@ -23,3 +23,7 @@ export const authConfig = {
     scope: "openid email profile",
     redirect_uri: "http://localhost:3000",
 };
+
+export const backEndConfig = {
+    apiVersion: "v1",
+};

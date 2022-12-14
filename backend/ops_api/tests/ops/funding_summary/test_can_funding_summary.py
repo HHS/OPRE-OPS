@@ -1,8 +1,8 @@
 import datetime
 from decimal import Decimal
 
-from ops.can.models import CAN
-from ops.can.utils import get_can_funding_summary
+from ops.models.cans import CAN
+from ops.utils.cans import get_can_funding_summary
 import pytest
 
 
@@ -64,3 +64,10 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db):
         "planned_funding": Decimal("22222.00"),
         "total_funding": Decimal("4333123.00"),
     }
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_can_funding_summary(client):
+    response = client.get("/api/v1/can-funding-summary/1")
+    assert response.status_code == 200
+    assert response.json["can"]["id"] == 1

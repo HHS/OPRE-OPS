@@ -1,4 +1,4 @@
-from ops.portfolio.models import PortfolioUrl
+from ops.models.portfolios import PortfolioUrl
 import pytest
 
 

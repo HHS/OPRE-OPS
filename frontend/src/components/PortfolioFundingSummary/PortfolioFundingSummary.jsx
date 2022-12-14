@@ -8,7 +8,7 @@ import PortfolioNewFunding from "../PortfolioSummaryCards/PortfolioNewFunding";
 import PortfolioCarryForwardFunding from "../PortfolioSummaryCards/PortfolioCarryForwardFunding";
 
 import styles from "./styles.module.css";
-import RoundedBox from "../RoundedBox/RoundedBox";
+import PortfolioFundingByCAN from "../PortfolioFundingByCAN/PortfolioFundingByCAN";
 
 const PortfolioFundingSummary = (props) => {
     const portfolio = useSelector((state) => state.portfolioFundingSummary.portfolio);
@@ -63,9 +63,7 @@ const PortfolioFundingSummary = (props) => {
                         <PortfolioFundingByBudgetStatus portfolioId={portfolio.id} fiscalYear={props.fiscalYear} />
                     </div>
                     <div className={rightBudgetCard}>
-                        <RoundedBox>
-                            <h2 className={rightBudgetCard}>Placeholder</h2>
-                        </RoundedBox>
+                        <PortfolioFundingByCAN portfolioId={portfolio.id} fiscalYear={props.fiscalYear} />
                     </div>
                 </div>
             </section>

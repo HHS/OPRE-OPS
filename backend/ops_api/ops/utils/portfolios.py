@@ -1,11 +1,11 @@
 from typing import Optional, TypedDict
 
-from ops.can.models import BudgetLineItem
-from ops.can.models import BudgetLineItemStatus
-from ops.can.models import CAN
-from ops.can.models import CANFiscalYear
-from ops.can.models import CANFiscalYearCarryOver
-from ops.portfolio.models import Portfolio
+from ops.models.cans import BudgetLineItem
+from ops.models.cans import BudgetLineItemStatus
+from ops.models.cans import CAN
+from ops.models.cans import CANFiscalYear
+from ops.models.cans import CANFiscalYearCarryOver
+from ops.models.portfolios import Portfolio
 
 
 class PortfolioDict(TypedDict):
@@ -31,16 +31,6 @@ class TotalFunding(TypedDict):
     obligated_funding: FundingLineItem
     in_execution_funding: FundingLineItem
     available_funding: FundingLineItem
-
-
-def portfolio_dumper(portfolio: Portfolio) -> PortfolioDict:
-    return {
-        "id": portfolio.id,
-        "name": portfolio.name,
-        "description": portfolio.description,
-        "status": portfolio.status.name,
-        "cans": portfolio.cans,
-    }
 
 
 def get_total_funding(
