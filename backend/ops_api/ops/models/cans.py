@@ -1,6 +1,7 @@
+from typing import Any
+from ops.portfolio.models import Portfolio
+from ops.portfolio.models import portfolio_cans
 from ops.models.base import BaseModel
-from ops.models.portfolios import Portfolio
-from ops.models.portfolios import portfolio_cans
 from sqlalchemy import (
     Column,
     Date,
@@ -9,6 +10,7 @@ from sqlalchemy import (
     String,
     Numeric,
     ForeignKey,
+    DateTime,
     Table,
     event,
 )
@@ -176,15 +178,15 @@ class BudgetLineItemStatus(BaseModel):
         )
 
     @hybrid_property
-    def Planned(self):
+    def Planned(self) -> bool:
         return self.id == 1  # Planned
 
     @hybrid_property
-    def In_Execution(self):
+    def In_Execution(self) -> bool:
         return self.id == 2  # In Execution
 
     @hybrid_property
-    def Obligated(self):
+    def Obligated(self) -> bool:
         return self.id == 3  # Obligated
 
 
@@ -256,5 +258,5 @@ class CAN(BaseModel):
     )
 
     @hybrid_property
-    def arrangementType(self):
+    def arrangementType(self) -> str:
         return self.arrangement_type.name

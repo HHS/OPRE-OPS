@@ -1,6 +1,6 @@
-"""Portfolio Models."""
+from typing_extensions import override
 from typing import Any
-from ops.models.base import BaseModel
+from ops.utils import BaseModel
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -11,7 +11,6 @@ from sqlalchemy import (
     event,
 )
 from sqlalchemy.engine import Connection
-from typing_extensions import override
 from sqlalchemy.orm import relationship
 from typing_extensions import override
 
@@ -76,16 +75,6 @@ portfolio_cans = Table(
 )
 
 
-class PortfolioDescriptionText(BaseModel):
-    """Portfolio Description sub model."""
-    __tablename__ = "portfolio_description_text"
-    id = Column(Integer, primary_key=True)
-    portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
-    paragraph_number = Column(Integer)
-    text = Column(Text)
-    portfolio = relationship("Portfolio", back_populates="description")
-
-
 portfolio_team_leaders = Table(
     "portfolio_team_leaders",
     BaseModel.metadata,
@@ -102,18 +91,21 @@ class Portfolio(BaseModel):
     status_id = Column(Integer, ForeignKey("portfolio_status.id"))
     status = relationship("PortfolioStatus")
     cans = relationship(
-        "CAN", back_populates="shared_portfolios", secondary=portfolio_cans
-    )
-    team_leaders = relationship(
-        "User",
-        back_populates="portfolios",
-        secondary=portfolio_team_leaders,
+        "CAN",
+        back_populates="shared_portfolios",
+        secondary=portfolio_cans,
     )
     division_id = Column(Integer, ForeignKey("division.id"))
     division = relationship("Division", back_populates="portfolio")
     urls = relationship("PortfolioUrl")
     description = relationship(
-        "PortfolioDescriptionText", back_populates="portfolio"
+        "PortfolioDescriptionText",
+        back_populates="portfolio",
+    )
+    team_leaders = relationship(
+        "User",
+        back_populates="portfolios",
+        secondary=portfolio_team_leaders,
     )
 
     @override
@@ -135,7 +127,8 @@ class Portfolio(BaseModel):
         return d
 
 
-class PortfolioDescriptionText(Model):
+class PortfolioDescriptionText(BaseModel):
+    """Portfolio Description sub model."""
     __tablename__ = "portfolio_description_text"
     id = Column(Integer, primary_key=True)
     portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
