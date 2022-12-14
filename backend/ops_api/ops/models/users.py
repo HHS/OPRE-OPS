@@ -1,13 +1,30 @@
-from ops.models.base import db
+"""User models."""
+from ops.utils import BaseModel
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DateTime,
+    ForeignKey,
+    func,
+)
+from sqlalchemy.orm import relationship
 
 
-class User(db.Model):
-    __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True)
-    oidc_id = db.Column(db.String(128), unique=True, index=True)
-    email = db.Column(db.String, index=True, nullable=False)
-    first_name = db.Column(db.String)
-    date_joined = db.Column(db.DateTime, server_default=db.func.now())
-    updated = db.Column(db.DateTime, onupdate=db.func.now())
-    role = db.Column(db.String(255), index=True)
-    division = db.Column(db.Integer, db.ForeignKey("division.id"))
+class User(BaseModel):
+    """Main User model."""
+    __tablename__ = "user"
+    id = Column(Integer, primary_key=True)
+    oidc_id = Column(String(128), unique=True, index=True)
+    email = Column(String, index=True, nullable=False)
+    first_name = Column(String)
+    date_joined = Column(DateTime, server_default=func.now())
+    updated = Column(DateTime, onupdate=func.now())
+    role = Column(String(255), index=True)
+    division = Column(Integer, ForeignKey("division.id"))
+
+    portfolios = relationship(
+        "Portfolio",
+        back_populates="team_leaders",
+        secondary="portfolio_team_leaders",
+    )
