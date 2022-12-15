@@ -48,6 +48,7 @@ const PortfolioDetail = () => {
         };
     }, [dispatch, portfolioId, currentFiscalYear]);
 
+    // Get CAN Funding Data (dependent on fiscal year)
     useEffect(() => {
         const getPortfolioCansFundingDetailsAndSetState = async (data) => {
             const result = await Promise.all(data.map(getPortfolioCansFundingDetails));
