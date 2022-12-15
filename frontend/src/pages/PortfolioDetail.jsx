@@ -10,7 +10,6 @@ import { BreadcrumbItem, BreadcrumbList } from "../components/Header/Breadcrumb"
 import PortfolioHeader from "../components/PortfolioHeader/PortfolioHeader";
 import CanCard from "../components/CanCard/CanCard";
 
-// import styles from "./styles.module.css";
 import { getPortfolioCansFundingDetails } from "../api/getCanFundingSummary";
 
 const PortfolioDetail = () => {
