@@ -1,6 +1,6 @@
-import { setPortfolioCans, setPortfolioCansFundingDetails } from "./portfolioDetailSlice";
-import { getPortfolioCans } from "../../../helpers/api";
-import ApplicationContext from "../../../applicationContext/ApplicationContext";
+import { setPortfolioCans, setPortfolioCansFundingDetails } from "../store/portfolioDetailSlice";
+import { getPortfolioCans } from "../helpers/api";
+import ApplicationContext from "../applicationContext/ApplicationContext";
 
 export const getPortfolioCansAndSetState = (id) => {
     return async (dispatch, getState) => {
