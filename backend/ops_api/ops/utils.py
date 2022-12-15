@@ -1,5 +1,5 @@
 """App-wide utility functions/classes."""
-from typing import Any
+from typing import Any, Generator
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy_mixins import ReprMixin
@@ -8,7 +8,7 @@ from sqlalchemy_mixins import SerializeMixin
 Base = declarative_base()
 
 
-def keyvalgen(obj: object) -> tuple[str, Any]:
+def keyvalgen(obj: object) -> Generator[tuple[str, Any], None, None]:
     """Generate attr name/val pairs, filtering out SQLA attrs."""
     excl = ("_sa_adapter", "_sa_instance_state")
     for k, v in vars(obj).items():
@@ -16,7 +16,8 @@ def keyvalgen(obj: object) -> tuple[str, Any]:
             yield k, v
 
 
-class BaseModel(Base, SerializeMixin, ReprMixin):
+class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc,valid-type]
+    """Base class for all application Models."""
     __abstract__ = True
     __repr__ = ReprMixin.__repr__
 

@@ -75,6 +75,16 @@ portfolio_cans = Table(
 )
 
 
+class PortfolioDescriptionText(BaseModel):
+    """Portfolio Description sub model."""
+    __tablename__ = "portfolio_description_text"
+    id = Column(Integer, primary_key=True)
+    portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
+    paragraph_number = Column(Integer)
+    text = Column(Text)
+    portfolio = relationship("Portfolio", back_populates="description")
+
+
 portfolio_team_leaders = Table(
     "portfolio_team_leaders",
     BaseModel.metadata,
@@ -108,12 +118,8 @@ class Portfolio(BaseModel):
         secondary=portfolio_team_leaders,
     )
 
-
-class PortfolioDescriptionText(BaseModel):
-    """Portfolio Description sub model."""
-    __tablename__ = "portfolio_description_text"
-    id = Column(Integer, primary_key=True)
-    portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
-    paragraph_number = Column(Integer)
-    text = Column(Text)
-    portfolio = relationship("Portfolio", back_populates="description")
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize the Portfolio."""
+        ret: dict[str, Any] = super().to_dict()
+        ret["team_leaders"] = [team_lead.to_dict() for team_lead in self.team_leaders]
+        return ret
