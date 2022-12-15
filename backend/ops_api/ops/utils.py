@@ -17,6 +17,8 @@ def keyvalgen(obj: object) -> Generator[tuple[str, Any], None, None]:
 
 
 class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc,valid-type]
+    """Base class for all application Models."""
+    
     __abstract__ = True
     __repr__ = ReprMixin.__repr__
 
