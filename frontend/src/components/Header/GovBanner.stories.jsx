@@ -1,6 +1,6 @@
 import { GovBanner } from "./GovBanner";
 const output = {
-    title: "Core/GovBanner",
+    title: "Header/GovBanner",
     component: GovBanner,
     args: {},
 };

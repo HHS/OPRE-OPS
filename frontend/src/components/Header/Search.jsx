@@ -11,6 +11,9 @@ export const Search = ({ ...props }) => {
                 <input className="usa-input" id="search-field-en-small" type="search" name="search" tabIndex="0" />
                 <button className="usa-button" type="submit" value="Search">
                     <FontAwesomeIcon icon={solid("magnifying-glass")} title="Search" />
+                    {/* <svg className="usa-icon" aria-hidden="true" focusable="false" role="img">
+                        <use xlinkHref="/uswds/img/sprite.svg#search"></use>
+                    </svg> */}
                 </button>
             </form>
         </section>

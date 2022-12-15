@@ -1,3 +1,6 @@
+import "../src/uswds/css/styles.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },
   controls: {

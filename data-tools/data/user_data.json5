@@ -79,6 +79,14 @@
       division: 3,
       email: "Tia.Brown@example.com",
       role: "Team Leader"
+    },
+    {
+      id: 10,
+      first_name: "Tim",
+      last_name: "Developer",
+      division: 3,
+      email: "tdonaworth@flexion.us",
+      role: "Admin"
     }
   ]
 }

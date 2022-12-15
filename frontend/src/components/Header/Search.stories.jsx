@@ -1,7 +1,7 @@
 import { Search } from "./Search";
 
 const output = {
-    title: "Core/Search",
+    title: "Header/Search",
     component: Search,
     argTypes: {},
 };

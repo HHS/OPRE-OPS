@@ -2,7 +2,7 @@ import { Menu } from "./Menu";
 import { BrowserRouter as Router } from "react-router-dom";
 
 const story = {
-    title: "Core/Menu",
+    title: "Header/Menu",
     component: Menu,
     argTypes: {},
 };

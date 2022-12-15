@@ -2,7 +2,7 @@ import { Breadcrumb } from "./Breadcrumb";
 import { BrowserRouter as Router } from "react-router-dom";
 
 const output = {
-    title: "Core/Breadcrumb",
+    title: "Header/Breadcrumb",
     component: Breadcrumb,
     args: {},
 };
