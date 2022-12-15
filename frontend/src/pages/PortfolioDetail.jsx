@@ -1,17 +1,17 @@
 import { useDispatch, useSelector } from "react-redux";
-import { getPortfolioAndSetState } from "./getPortfolio";
+import { getPortfolioAndSetState } from "../api/getPortfolio";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import PortfolioFundingSummary from "../../../components/PortfolioFundingSummary/PortfolioFundingSummary";
-import { setPortfolio, setPortfolioCans, setPortfolioCansFundingDetails } from "./portfolioDetailSlice";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
-import App from "../../../App";
-import { BreadcrumbItem, BreadcrumbList } from "../../../components/Header/Breadcrumb";
-import PortfolioHeader from "../../../components/PortfolioHeader/PortfolioHeader";
-import CanCard from "../../../components/CanCard/CanCard";
+import PortfolioFundingSummary from "../components/PortfolioFundingSummary/PortfolioFundingSummary";
+import { setPortfolio, setPortfolioCans, setPortfolioCansFundingDetails } from "../store/portfolioDetailSlice";
+import { getCurrentFiscalYear } from "../helpers/utils";
+import App from "../App";
+import { BreadcrumbItem, BreadcrumbList } from "../components/Header/Breadcrumb";
+import PortfolioHeader from "../components/PortfolioHeader/PortfolioHeader";
+import CanCard from "../components/CanCard/CanCard";
 
-import styles from "./styles.module.css";
-import { getPortfolioCansAndSetState, getPortfolioCansFundingDetails } from "./getPortfolioCans";
+// import styles from "./styles.module.css";
+import { getPortfolioCansAndSetState, getPortfolioCansFundingDetails } from "../api/getPortfolioCans";
 
 const PortfolioDetail = () => {
     const dispatch = useDispatch();
@@ -57,7 +57,7 @@ const PortfolioDetail = () => {
                 <BreadcrumbList>
                     <BreadcrumbItem isCurrent pageName="Portfolios" />
                 </BreadcrumbList>
-                <div style={styles.body}>
+                <div>
                     <div className="margin-left-2 margin-right-2">
                         <PortfolioHeader />
                         <section>
