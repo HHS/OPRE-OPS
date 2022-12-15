@@ -144,14 +144,13 @@ from succeeding.  Fix the problem and try the commit again.
 This application is deployed to [Cloud.gov](https://cloud.gov) through [Cloud Foundry](https://www.cloudfoundry.org)
 though a [manifest.yml](manifest.yml) file.
 
-For now, while we are waiting for full Cloud.gov access, we only have access to a development space.  Eventually, we
-will have a staging and production environment.
+For now, while we are waiting for full Cloud.gov access, we only have access to a non-production environment.  Eventually, we will have a production environment.
 
 ### Development Environment
 
 The development environment is deployed at https://ops-dev.fr.cloud.gov
 
-This environment can be deployed to by authorized committers in the repository.  You accomplish this by force pushing
+This environment can be deployed to by authorized committers in the repository. You accomplish this by force pushing
 an existing commit to the `development` branch.
 
 ```shell
@@ -164,7 +163,7 @@ git push --force --set-upstream origin development
 
 The staging environment is deployed at https://ops-staging.app.cloud.gov
 
-This environment can be deployed to by authorized committers in the repository.  You accomplish this by force pushing
+This environment can be deployed to by authorized committers in the repository. You accomplish this by force pushing
 an existing commit to the `staging` branch.
 
 ```shell
