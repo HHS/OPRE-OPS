@@ -34,10 +34,10 @@ const PortfolioDetail = () => {
         };
     }, [dispatch, portfolioId]);
 
-    // Get CAN data for the Portfolio
+    // Get CAN data for the Portfolio (dependent on fiscal year)
     useEffect(() => {
         const getPortfolioCansAndSetState = async () => {
-            const result = await getPortfolioCans(portfolioId);
+            const result = await getPortfolioCans(portfolioId, currentFiscalYear);
             dispatch(setPortfolioCans(result));
         };
 

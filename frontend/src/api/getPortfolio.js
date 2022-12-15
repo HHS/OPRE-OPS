@@ -8,10 +8,10 @@ export const getPortfolio = async (id) => {
     return responseData;
 };
 
-export const getPortfolioCans = async (id) => {
+export const getPortfolioCans = async (id, year) => {
     const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;
     const responseData = await ApplicationContext.get()
         .helpers()
-        .callBackend(`/api/${api_version}/portfolios/${id}/cans/`, "get");
+        .callBackend(`/api/${api_version}/portfolios/${id}/cans/?year=${year}`, "get");
     return responseData;
 };
