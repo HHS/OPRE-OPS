@@ -6,7 +6,7 @@ const PortfolioNewFunding = ({ fiscalYear }) => {
 
     const newFunding = portfolioFunding.total_funding?.amount - portfolioFunding.carry_over_funding?.amount;
 
-    const headerText = `FY ${fiscalYear} New Budget`;
+    const headerText = `FY ${fiscalYear} New Funding`;
 
     return <CurrencySummaryCard headerText={headerText} amount={newFunding} />;
 };

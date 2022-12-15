@@ -9,7 +9,7 @@ it("loads", () => {
     cy.get("p").should("contain", "The promotion of children’s safety, permanence, and well-being");
     cy.get("h2").should("contain", "Portfolio Budget Summary");
     cy.get("h3").should("contain", "Total Budget");
-    cy.get("h3").should("contain", "New Budget");
+    cy.get("h3").should("contain", "New Funding");
     cy.get("h3").should("contain", "Previous FYs Carry-Forward");
     cy.get("h3").should("contain", "Budget Status");
     cy.get("h3").should("contain", "Portfolio CANs");
