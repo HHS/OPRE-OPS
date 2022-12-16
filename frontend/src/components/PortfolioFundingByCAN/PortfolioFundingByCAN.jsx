@@ -45,7 +45,7 @@ const styles = {
 };
 
 const PortfolioFundingByCAN = (props) => {
-    const portfolioFunding = useSelector((state) => state.portfolioFundingSummary.portfolioFunding);
+    const portfolioFunding = useSelector((state) => state.portfolioBudgetSummary.portfolioBudget);
     const portfolioCansFundingDetails = useSelector((state) => state.portfolioDetail.portfolioCansFundingDetails);
     const [percent, setPercent] = useState("");
     const [canChartData, setCanChartData] = useState([]);

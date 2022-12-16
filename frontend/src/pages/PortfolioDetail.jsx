@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getPortfolio, getPortfolioCans } from "../api/getPortfolio";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import PortfolioFundingSummary from "../components/PortfolioFundingSummary/PortfolioFundingSummary";
+import PortfolioBudgetSummary from "../components/PortfolioBudgetSummary/PortfolioBudgetSummary";
 import { setPortfolio, setPortfolioCans, setPortfolioCansFundingDetails } from "../store/portfolioDetailSlice";
 import { getCurrentFiscalYear } from "../helpers/utils";
 import App from "../App";
@@ -78,7 +78,7 @@ const PortfolioDetail = () => {
                     <div className="margin-left-2 margin-right-2">
                         <PortfolioHeader />
                         <section>
-                            <PortfolioFundingSummary portfolioId={portfolioId} fiscalYear={currentFiscalYear} />
+                            <PortfolioBudgetSummary portfolioId={portfolioId} fiscalYear={currentFiscalYear} />
                         </section>
                         <section>
                             <h2>Portfolio Budget Details by CAN </h2>

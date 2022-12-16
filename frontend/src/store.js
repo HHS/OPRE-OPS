@@ -4,7 +4,7 @@ import canDetailSlice from "./pages/cans/detail/canDetailSlice";
 import canFiscalYearSlice from "./pages/cans/detail/budgetSummary/canFiscalYearSlice";
 import portfolioListSlice from "./pages/portfolios/list/portfolioListSlice";
 import portfolioDetailSlice from "./store/portfolioDetailSlice";
-import portfolioFundingSummarySlice from "./components/PortfolioFundingSummary/portfolioFundingSummarySlice";
+import portfolioBudgetSummarySlice from "./components/PortfolioBudgetSummary/portfolioBudgetSummarySlice";
 // eslint-disable-next-line import/no-named-as-default
 import authSlice from "./components/Auth/authSlice";
 
@@ -15,7 +15,7 @@ export default configureStore({
         canFiscalYearDetail: canFiscalYearSlice,
         portfolioList: portfolioListSlice,
         portfolioDetail: portfolioDetailSlice,
-        portfolioFundingSummary: portfolioFundingSummarySlice,
+        portfolioBudgetSummary: portfolioBudgetSummarySlice,
         auth: authSlice,
     },
 });

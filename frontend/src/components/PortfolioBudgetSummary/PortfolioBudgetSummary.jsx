@@ -1,7 +1,7 @@
 import PortfolioFundingTotal from "../PortfolioSummaryCards/PortfolioFundingTotal";
 import PortfolioFundingByBudgetStatus from "../PortfolioFundingByBudgetStatus/PortfolioFundingByBudgetStatus";
 import { useDispatch, useSelector } from "react-redux";
-import { defaultPortfolioFunding, setPortfolio, setPortfolioFunding } from "./portfolioFundingSummarySlice";
+import { defaultPortfolioBudget, setPortfolio, setPortfolioBudget } from "./portfolioBudgetSummarySlice";
 import { useEffect } from "react";
 import { getPortfolioAndSetState, getPortfolioFundingAndSetState } from "./util";
 import PortfolioNewFunding from "../PortfolioSummaryCards/PortfolioNewFunding";
@@ -10,8 +10,8 @@ import PortfolioCarryForwardFunding from "../PortfolioSummaryCards/PortfolioCarr
 import styles from "./styles.module.css";
 import PortfolioFundingByCAN from "../PortfolioFundingByCAN/PortfolioFundingByCAN";
 
-const PortfolioFundingSummary = (props) => {
-    const portfolio = useSelector((state) => state.portfolioFundingSummary.portfolio);
+const PortfolioBudgetSummary = (props) => {
+    const portfolio = useSelector((state) => state.portfolioBudgetSummary.portfolio);
     const dispatch = useDispatch();
 
     // fetch initial Portfolio details
@@ -28,7 +28,7 @@ const PortfolioFundingSummary = (props) => {
         dispatch(getPortfolioFundingAndSetState(props.portfolioId, props.fiscalYear));
 
         return () => {
-            dispatch(setPortfolioFunding(defaultPortfolioFunding));
+            dispatch(setPortfolioBudget(defaultPortfolioBudget));
         };
     }, [dispatch, props.portfolioId, props.fiscalYear]);
 
@@ -71,4 +71,4 @@ const PortfolioFundingSummary = (props) => {
     );
 };
 
-export default PortfolioFundingSummary;
+export default PortfolioBudgetSummary;

@@ -45,8 +45,8 @@ const styles = {
 };
 
 const PortfolioFundingByBudgetStatus = (props) => {
-    const portfolioFunding = useSelector((state) => state.portfolioFundingSummary.portfolioFunding);
-    const portfolioFundingChart = useSelector((state) => state.portfolioFundingSummary.portfolioFundingChart);
+    const portfolioFunding = useSelector((state) => state.portfolioBudgetSummary.portfolioBudget);
+    const portfolioFundingChart = useSelector((state) => state.portfolioBudgetSummary.portfolioBudgetChart);
     const [percent, setPercent] = useState("");
 
     const cardBody = `padding-top-2 padding-left-4 ${styles.cardBody}`;
