@@ -1,17 +1,16 @@
 import { useDispatch, useSelector } from "react-redux";
-import { getPortfolioAndSetState } from "./getPortfolio";
+import { getPortfolio, getPortfolioCans } from "../api/getPortfolio";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import PortfolioFundingSummary from "../../../components/PortfolioFundingSummary/PortfolioFundingSummary";
-import { setPortfolio, setPortfolioCans, setPortfolioCansFundingDetails } from "./portfolioDetailSlice";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
-import App from "../../../App";
-import { BreadcrumbItem, BreadcrumbList } from "../../../components/Header/Breadcrumb";
-import PortfolioHeader from "../../../components/PortfolioHeader/PortfolioHeader";
-import CanCard from "../../../components/CanCard/CanCard";
+import PortfolioFundingSummary from "../components/PortfolioFundingSummary/PortfolioFundingSummary";
+import { setPortfolio, setPortfolioCans, setPortfolioCansFundingDetails } from "../store/portfolioDetailSlice";
+import { getCurrentFiscalYear } from "../helpers/utils";
+import App from "../App";
+import { BreadcrumbItem, BreadcrumbList } from "../components/Header/Breadcrumb";
+import PortfolioHeader from "../components/PortfolioHeader/PortfolioHeader";
+import CanCard from "../components/CanCard/CanCard";
 
-import styles from "./styles.module.css";
-import { getPortfolioCansAndSetState, getPortfolioCansFundingDetails } from "./getPortfolioCans";
+import { getPortfolioCansFundingDetails } from "../api/getCanFundingSummary";
 
 const PortfolioDetail = () => {
     const dispatch = useDispatch();
@@ -20,27 +19,45 @@ const PortfolioDetail = () => {
     const currentFiscalYear = getCurrentFiscalYear(new Date());
     const portfolioCans = useSelector((state) => state.portfolioDetail.portfolioCans);
 
+    // Get initial Portfolio data (not dependent on fiscal year)
     useEffect(() => {
-        dispatch(getPortfolioAndSetState(portfolioId));
+        const getPortfolioAndSetState = async () => {
+            const result = await getPortfolio(portfolioId);
+            dispatch(setPortfolio(result));
+        };
+
+        getPortfolioAndSetState().catch(console.error);
+
         return () => {
             dispatch(setPortfolio({}));
         };
     }, [dispatch, portfolioId]);
 
+    // Get CAN data for the Portfolio (dependent on fiscal year)
     useEffect(() => {
-        try {
-            dispatch(getPortfolioCansAndSetState(portfolioId, currentFiscalYear));
-        } catch (error) {
-            return () => {
-                dispatch(setPortfolioCans({}));
-            };
-        }
+        const getPortfolioCansAndSetState = async () => {
+            const result = await getPortfolioCans(portfolioId, currentFiscalYear);
+            dispatch(setPortfolioCans(result));
+        };
+
+        getPortfolioCansAndSetState().catch(console.error);
+
+        return () => {
+            dispatch(setPortfolioCans([]));
+        };
     }, [dispatch, portfolioId, currentFiscalYear]);
 
+    // Get CAN Funding Data (dependent on fiscal year)
     useEffect(() => {
+        const getPortfolioCansFundingDetailsAndSetState = async (data) => {
+            const result = await Promise.all(data.map(getPortfolioCansFundingDetails));
+            dispatch(setPortfolioCansFundingDetails(result));
+        };
+
         const canData = portfolioCans.map((can) => ({ id: can.id, fiscalYear: currentFiscalYear }));
+
         if (canData.length > 0) {
-            dispatch(getPortfolioCansFundingDetails(canData));
+            getPortfolioCansFundingDetailsAndSetState(canData).catch(console.error);
         }
         return () => {
             dispatch(setPortfolioCansFundingDetails([]));
@@ -57,7 +74,7 @@ const PortfolioDetail = () => {
                 <BreadcrumbList>
                     <BreadcrumbItem isCurrent pageName="Portfolios" />
                 </BreadcrumbList>
-                <div style={styles.body}>
+                <div>
                     <div className="margin-left-2 margin-right-2">
                         <PortfolioHeader />
                         <section>
