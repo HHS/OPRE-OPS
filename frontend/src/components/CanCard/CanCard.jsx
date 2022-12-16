@@ -3,10 +3,10 @@ import CurrencyWithSmallCents from "../UI/CurrencyWithSmallCents/CurrencyWithSma
 import Tag from "../UI/Tag/Tag";
 import CANFundingYTD from "../CANFundingYTD/CANFundingYTD";
 import { useEffect, useState } from "react";
-import { getCanFundingSummary } from "../../helpers/api";
 import constants from "../../constants";
+import { getPortfolioCansFundingDetails } from "../../api/getCanFundingSummary";
 
-const CanCard = (props) => {
+const CanCard = ({ can, fiscalYear }) => {
     /* Styling */
     const sectionClasses = `${style.container}`;
     const leftMarginClasses = `padding-left-2 padding-top-1 ${style.leftMarginContainer}`;
@@ -20,19 +20,17 @@ const CanCard = (props) => {
     const [canFundingData, setCanFundingDataLocal] = useState({});
 
     useEffect(() => {
-        getCanTotalFundingandSetState(props.can.id, props.fiscalYear);
+        const getCanTotalFundingandSetState = async () => {
+            const results = await getPortfolioCansFundingDetails({ id: can.id, fiscalYear: fiscalYear });
+            setCanFundingDataLocal(results);
+        };
+
+        getCanTotalFundingandSetState().catch(console.error);
+
         return () => {
             setCanFundingDataLocal({});
         };
-    }, [props.can.id, props.fiscalYear]);
-
-    const getCanTotalFundingandSetState = async (id, fiscalYear) => {
-        if (id && fiscalYear) {
-            const results = await getCanFundingSummary(id, fiscalYear);
-            setCanFundingDataLocal(results);
-            return results;
-        }
-    };
+    }, [can.id, fiscalYear]);
 
     return (
         <section>
@@ -40,11 +38,11 @@ const CanCard = (props) => {
                 <div className={leftMarginClasses}>
                     <div className={leftMarginBlockClasses}>
                         <div className="font-sans-3xs">CAN</div>
-                        <div className="font-sans-md text-bold">{props.can.number}</div>
+                        <div className="font-sans-md text-bold">{can.number}</div>
                     </div>
                     <div className={leftMarginBlockClasses}>
                         <div className="font-sans-3xs">Description</div>
-                        <div className="font-sans-md text-bold">{props.can.nickname}</div>
+                        <div className="font-sans-md text-bold">{can.nickname}</div>
                     </div>
                     <div className={leftMarginBlockClasses}>
                         <div className="font-sans-3xs">FY Total Budget</div>

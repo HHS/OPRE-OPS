@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     portfolio: {},
-    portfolioCans: [{}],
+    portfolioCans: [],
     portfolioCansFundingDetails: [],
 };
 
