@@ -1,6 +1,6 @@
 from typing import Any
-from ops.portfolio.models import Portfolio
-from ops.portfolio.models import portfolio_cans
+from ops.models.portfolios import Portfolio
+from ops.models.portfolios import portfolio_cans
 from ops.models.base import BaseModel
 from sqlalchemy import (
     Column,

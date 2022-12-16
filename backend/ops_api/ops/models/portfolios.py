@@ -1,6 +1,6 @@
 from typing_extensions import override
 from typing import Any
-from ops.utils import BaseModel
+from ops.models.base import BaseModel
 from sqlalchemy import (
     Column,
     ForeignKey,
