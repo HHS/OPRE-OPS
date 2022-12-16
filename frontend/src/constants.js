@@ -12,6 +12,7 @@ const constants = {
         "#D67625",
         "#429195",
     ],
+    fiscalYears: [2020, 2021, 2022, 2023, 2024],
 };
 
 export default constants;
