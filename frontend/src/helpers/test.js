@@ -15,3 +15,7 @@ export const authConfig = {
     scope: "blah blah",
     redirect_uri: "http://uri/login",
 };
+
+export const backEndConfig = {
+    apiVersion: "v1",
+};

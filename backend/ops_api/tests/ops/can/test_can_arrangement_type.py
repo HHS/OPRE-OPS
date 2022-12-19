@@ -1,4 +1,4 @@
-from ops.can.models import CANArrangementType
+from ops.models.cans import CANArrangementType
 import pytest
 
 

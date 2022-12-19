@@ -10,8 +10,14 @@ it("loads", () => {
     cy.get("h2").should("contain", "Portfolio Budget Summary");
     cy.get("h3").should("contain", "Total Budget");
     cy.get("h3").should("contain", "New Funding");
-    cy.get("h3").should("contain", "Carry-Forward Funding");
+    cy.get("h3").should("contain", "Previous FYs Carry-Forward");
     cy.get("h3").should("contain", "Budget Status");
+    cy.get("h3").should("contain", "Portfolio CANs");
+    cy.get("option").should("contain", "2022");
+    cy.get("option").should("contain", "2023");
+    cy.get("#portfolioCANChart").should("be.visible");
+    cy.get("#portfolioBudgetStatusChart").should("be.visible");
+    cy.get(".usa-select").should("be.visible");
     cy.get("span").should("contain", "$");
 });
 

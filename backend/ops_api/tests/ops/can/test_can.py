@@ -1,4 +1,4 @@
-from ops.can.models import CAN
+from ops.models.cans import CAN
 import pytest
 
 
@@ -44,13 +44,21 @@ def test_can_creation():
 def test_can_get_all(client, loaded_db):
     assert loaded_db.session.query(CAN).count() == 2
 
-    response = client.get("/ops/cans/")
+    response = client.get("/api/v1/cans/")
     assert response.status_code == 200
     assert len(response.json) == 2
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_can_get_by_id(client, loaded_db):
-    response = client.get("/ops/cans/1")
+    response = client.get("/api/v1/cans/1")
     assert response.status_code == 200
     assert response.json["number"] == "G99WRGB"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_portfolio_cans(client, loaded_db):
+    response = client.get("/api/v1/cans/portfolio/1")
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["id"] == 1

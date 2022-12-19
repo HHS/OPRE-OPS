@@ -2,11 +2,14 @@ import { useSelector } from "react-redux";
 import CurrencySummaryCard from "../UI/CurrencySummaryCard/CurrencySummaryCard";
 
 const PortfolioNewFunding = () => {
-    const portfolioFunding = useSelector((state) => state.portfolioFundingSummary.portfolioFunding);
+    const portfolioBudget = useSelector((state) => state.portfolioBudgetSummary.portfolioBudget);
+    const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
 
-    const newFunding = portfolioFunding.total_funding?.amount - portfolioFunding.carry_over_funding?.amount;
+    const newFunding = portfolioBudget.total_funding?.amount - portfolioBudget.carry_over_funding?.amount;
 
-    return <CurrencySummaryCard headerText="New Funding" amount={newFunding} />;
+    const headerText = `FY ${fiscalYear.value} New Funding`;
+
+    return <CurrencySummaryCard headerText={headerText} amount={newFunding} />;
 };
 
 export default PortfolioNewFunding;

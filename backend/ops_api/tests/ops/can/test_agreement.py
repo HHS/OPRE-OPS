@@ -1,4 +1,4 @@
-from ops.can.models import Agreement
+from ops.models.cans import Agreement
 import pytest
 
 

@@ -1,4 +1,4 @@
-from ops.can.models import BudgetLineItem
+from ops.models.cans import BudgetLineItem
 import pytest
 
 
@@ -25,3 +25,44 @@ def test_budget_line_item_creation():
         status_id=2,
     )
     assert bli.to_dict()["fiscal_year"] == 2023
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_budget_line_items_list(client):
+    response = client.get("/api/v1/budget-line-items/")
+    assert response.status_code == 200
+    assert len(response.json) == 2
+    assert response.json[0]["id"] == 1
+    assert response.json[1]["id"] == 2
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_budget_line_items_list_by_id(client):
+    response = client.get("/api/v1/budget-line-items/1")
+    assert response.status_code == 200
+    assert response.json["id"] == 1
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_budget_line_items_list_by_year(client):
+    response = client.get("/api/v1/budget-line-items/?year=2022")
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["id"] == 1
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_budget_line_items_list_by_can(client):
+    response = client.get("/api/v1/budget-line-items/?can_id=1")
+    assert response.status_code == 200
+    assert len(response.json) == 2
+    assert response.json[0]["can_id"] == 1
+    assert response.json[1]["can_id"] == 1
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_budget_line_items_list_by_can_and_year(client):
+    response = client.get("/api/v1/budget-line-items/?can_id=1&year=2022")
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["can_id"] == 1

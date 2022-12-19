@@ -3,10 +3,11 @@ import canListSlice from "./pages/cans/list/canListSlice";
 import canDetailSlice from "./pages/cans/detail/canDetailSlice";
 import canFiscalYearSlice from "./pages/cans/detail/budgetSummary/canFiscalYearSlice";
 import portfolioListSlice from "./pages/portfolios/list/portfolioListSlice";
-import portfolioDetailSlice from "./pages/portfolios/detail/portfolioDetailSlice";
-import portfolioFundingSummarySlice from "./components/PortfolioFundingSummary/portfolioFundingSummarySlice";
+import portfolioDetailSlice from "./store/portfolioDetailSlice";
+import portfolioBudgetSummarySlice from "./components/PortfolioBudgetSummary/portfolioBudgetSummarySlice";
 // eslint-disable-next-line import/no-named-as-default
 import authSlice from "./components/Auth/authSlice";
+import portfolioSlice from "./store/portfolioSlice";
 
 export default configureStore({
     reducer: {
@@ -15,7 +16,8 @@ export default configureStore({
         canFiscalYearDetail: canFiscalYearSlice,
         portfolioList: portfolioListSlice,
         portfolioDetail: portfolioDetailSlice,
-        portfolioFundingSummary: portfolioFundingSummarySlice,
+        portfolioBudgetSummary: portfolioBudgetSummarySlice,
         auth: authSlice,
+        portfolio: portfolioSlice,
     },
 });
