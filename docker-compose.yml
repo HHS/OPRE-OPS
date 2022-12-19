@@ -3,7 +3,7 @@ version: "3.8"
 services:
 
   db:
-    image: "postgres:12"
+    image: "postgres:15"
     platform: linux/amd64
     container_name: ops-db
     security_opt:
