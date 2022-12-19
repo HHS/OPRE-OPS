@@ -1,7 +1,7 @@
 import constants from "../../../constants";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelectedFiscalYear } from "../../../store/portfolioSlice";
-import styles from "./styles.module.css";
+import styles from "./FiscalYear.module.css";
 
 const FiscalYear = () => {
     const dispatch = useDispatch();
@@ -14,21 +14,18 @@ const FiscalYear = () => {
     const fiscalYearClasses = `usa-select ${styles.fiscalYearSelector}`;
 
     return (
-        <select className={fiscalYearClasses} onChange={onChangeFiscalYear} value={fiscalYear.value}>
+        <select
+            aria-label="Selected Fiscal Year"
+            className={fiscalYearClasses}
+            onChange={onChangeFiscalYear}
+            value={fiscalYear.value}
+        >
             {constants.fiscalYears.map((year) => {
-                if (year.toString() === fiscalYear) {
-                    return (
-                        <option key={year} value={year} selected>
-                            Fiscal Year {year}
-                        </option>
-                    );
-                } else {
-                    return (
-                        <option key={year} value={year}>
-                            Fiscal Year {year}
-                        </option>
-                    );
-                }
+                return (
+                    <option key={year} value={year}>
+                        Fiscal Year {year}
+                    </option>
+                );
             })}
         </select>
     );
