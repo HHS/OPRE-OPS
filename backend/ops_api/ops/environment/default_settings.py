@@ -15,3 +15,6 @@ AUTHLIB_OAUTH_CLIENTS = {
 JWT_PRIVATE_KEY = os.getenv("JWT_PRIVATE_KEY")
 JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
 JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=1)
+
+OPA_URL = os.getenv("OPA_ADDR", "http://localhost:8181")
+POLICY_PATH = os.getenv("/v1/data/httpapi/authz")

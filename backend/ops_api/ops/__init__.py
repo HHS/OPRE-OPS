@@ -60,7 +60,7 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     # Add some basic data to test with
     # TODO change this out for a proper fixture.
     with app.app_context():
-        db.drop_all()
+        # db.drop_all()
         db.create_all()
         db.session.commit()
 

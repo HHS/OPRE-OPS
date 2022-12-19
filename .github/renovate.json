@@ -1,5 +1,5 @@
 {
-    "extends": ["config:base"],
+    "extends": ["config:base", "helpers:pinGitHubActionDigests"],
     "dependencyDashboard": false,
     "labels": ["dependencies"],
     "automergeType": "pr",
@@ -22,6 +22,10 @@
     "packageRules": [{
         "matchPackageNames": ["python"],
         "enabled": false
+    },
+    {
+        "matchManagers": ["github-actions"],
+        "automerge": true
     }],
     "prBodyTemplate": "{{{header}}}{{{table}}}{{{notes}}}{{{changelogs}}}{{{controls}}}{{{footer}}}"
 }

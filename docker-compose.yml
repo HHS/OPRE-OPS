@@ -20,6 +20,23 @@ services:
       timeout: 5s
       retries: 5
 
+  opa:
+    image: openpolicyagent/opa:0.47.3-rootless
+    ports:
+      - "8181:8181"
+    volumes:
+      - ./policy:/policy
+    command:
+      - "run"
+      - "--server"
+      - "--log-format=json-pretty"
+      - "--set=decision_logs.console=true"
+    healthcheck:
+      test: curl --fail http://opa:8181/health || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   data-import:
     build:
       context: ./data-tools/
@@ -62,8 +79,10 @@ services:
     volumes:
       - ./backend/ops_api/ops:/home/app/ops
     depends_on:
-         db:
-           condition: service_healthy
+      db:
+        condition: service_healthy
+
+
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
       interval: 10s
