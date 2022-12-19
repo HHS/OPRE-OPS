@@ -45,8 +45,9 @@ const styles = {
 };
 
 const PortfolioFundingByBudgetStatus = (props) => {
-    const portfolioFunding = useSelector((state) => state.portfolioFundingSummary.portfolioFunding);
-    const portfolioFundingChart = useSelector((state) => state.portfolioFundingSummary.portfolioFundingChart);
+    const portfolioFunding = useSelector((state) => state.portfolioBudgetSummary.portfolioBudget);
+    const portfolioFundingChart = useSelector((state) => state.portfolioBudgetSummary.portfolioBudgetChart);
+    const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
     const [percent, setPercent] = useState("");
 
     const cardBody = `padding-top-2 padding-left-4 ${styles.cardBody}`;
@@ -55,7 +56,7 @@ const PortfolioFundingByBudgetStatus = (props) => {
         <RoundedBox>
             <div className={cardBody}>
                 <div className="padding-bottom-1">
-                    <h3 className="font-sans-3xs text-normal">FY {props.fiscalYear} Budget Status</h3>
+                    <h3 className="font-sans-3xs text-normal">FY {fiscalYear.value} Budget Status</h3>
                 </div>
                 <div className="font-sans-3xs">
                     <div style={styles.cardGroup}>
