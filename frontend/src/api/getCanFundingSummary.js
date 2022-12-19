@@ -1,7 +1,7 @@
 import ApplicationContext from "../applicationContext/ApplicationContext";
 
 export const getPortfolioCansFundingDetails = async (item) => {
-    if (item.id) {
+    if (item.id && item.fiscalYear) {
         const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;
         const responseData = await ApplicationContext.get()
             .helpers()

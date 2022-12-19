@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-export const defaultPortfolioFunding = {
+export const defaultPortfolioBudget = {
     total_funding: {
         amount: 0,
         percent: "",
@@ -23,7 +23,7 @@ export const defaultPortfolioFunding = {
     },
 };
 
-export const defaultPortfolioFundingChart = [
+export const defaultPortfolioBudgetChart = [
     {
         id: "planned_funding",
         value: 0,
@@ -52,20 +52,20 @@ export const defaultPortfolioFundingChart = [
 
 const initialState = {
     portfolio: {},
-    portfolioFunding: defaultPortfolioFunding,
-    portfolioFundingChart: defaultPortfolioFundingChart,
+    portfolioBudget: defaultPortfolioBudget,
+    portfolioBudgetChart: defaultPortfolioBudgetChart,
 };
 
-const portfolioFundingSummarySlice = createSlice({
+const portfolioBudgetSummarySlice = createSlice({
     name: "portfolioFunding",
     initialState,
     reducers: {
         setPortfolio: (state, action) => {
             state.portfolio = action.payload;
         },
-        setPortfolioFunding: (state, action) => {
-            state.portfolioFunding = action.payload;
-            state.portfolioFundingChart = [
+        setPortfolioBudget: (state, action) => {
+            state.portfolioBudget = action.payload;
+            state.portfolioBudgetChart = [
                 {
                     id: "planned_funding",
                     value: action.payload.planned_funding.amount,
@@ -95,6 +95,6 @@ const portfolioFundingSummarySlice = createSlice({
     },
 });
 
-export const { setPortfolio, setPortfolioFunding } = portfolioFundingSummarySlice.actions;
+export const { setPortfolio, setPortfolioBudget } = portfolioBudgetSummarySlice.actions;
 
-export default portfolioFundingSummarySlice.reducer;
+export default portfolioBudgetSummarySlice.reducer;

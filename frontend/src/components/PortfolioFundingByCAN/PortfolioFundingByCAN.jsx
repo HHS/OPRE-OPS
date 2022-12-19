@@ -45,8 +45,9 @@ const styles = {
 };
 
 const PortfolioFundingByCAN = (props) => {
-    const portfolioFunding = useSelector((state) => state.portfolioFundingSummary.portfolioFunding);
+    const portfolioFunding = useSelector((state) => state.portfolioBudgetSummary.portfolioBudget);
     const portfolioCansFundingDetails = useSelector((state) => state.portfolioDetail.portfolioCansFundingDetails);
+    const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
     const [percent, setPercent] = useState("");
     const [canChartData, setCanChartData] = useState([]);
 
@@ -83,7 +84,7 @@ const PortfolioFundingByCAN = (props) => {
         <RoundedBox>
             <div className={cardBody}>
                 <div className="padding-bottom-1">
-                    <h3 className="font-sans-3xs text-normal">FY {props.fiscalYear} Portfolio CANs</h3>
+                    <h3 className="font-sans-3xs text-normal">FY {fiscalYear.value} Portfolio CANs</h3>
                 </div>
                 <div className="font-sans-3xs">
                     {canChartData.slice(0, 5).map((item) => (

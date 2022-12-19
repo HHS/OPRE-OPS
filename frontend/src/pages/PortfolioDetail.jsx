@@ -2,9 +2,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { getPortfolio, getPortfolioCans } from "../api/getPortfolio";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import PortfolioFundingSummary from "../components/PortfolioFundingSummary/PortfolioFundingSummary";
+import PortfolioBudgetSummary from "../components/PortfolioBudgetSummary/PortfolioBudgetSummary";
 import { setPortfolio, setPortfolioCans, setPortfolioCansFundingDetails } from "../store/portfolioDetailSlice";
-import { getCurrentFiscalYear } from "../helpers/utils";
 import App from "../App";
 import { BreadcrumbItem, BreadcrumbList } from "../components/Header/Breadcrumb";
 import PortfolioHeader from "../components/PortfolioHeader/PortfolioHeader";
@@ -16,8 +15,8 @@ const PortfolioDetail = () => {
     const dispatch = useDispatch();
     const urlPathParams = useParams();
     const portfolioId = parseInt(urlPathParams.id);
-    const currentFiscalYear = getCurrentFiscalYear(new Date());
     const portfolioCans = useSelector((state) => state.portfolioDetail.portfolioCans);
+    const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
 
     // Get initial Portfolio data (not dependent on fiscal year)
     useEffect(() => {
@@ -36,7 +35,7 @@ const PortfolioDetail = () => {
     // Get CAN data for the Portfolio (dependent on fiscal year)
     useEffect(() => {
         const getPortfolioCansAndSetState = async () => {
-            const result = await getPortfolioCans(portfolioId, currentFiscalYear);
+            const result = await getPortfolioCans(portfolioId, fiscalYear.value);
             dispatch(setPortfolioCans(result));
         };
 
@@ -45,7 +44,7 @@ const PortfolioDetail = () => {
         return () => {
             dispatch(setPortfolioCans([]));
         };
-    }, [dispatch, portfolioId, currentFiscalYear]);
+    }, [dispatch, portfolioId, fiscalYear]);
 
     // Get CAN Funding Data (dependent on fiscal year)
     useEffect(() => {
@@ -54,7 +53,8 @@ const PortfolioDetail = () => {
             dispatch(setPortfolioCansFundingDetails(result));
         };
 
-        const canData = portfolioCans.map((can) => ({ id: can.id, fiscalYear: currentFiscalYear }));
+        console.log(`fiscalYear.value=${fiscalYear.value}`);
+        const canData = portfolioCans.map((can) => ({ id: can.id, fiscalYear: fiscalYear.value }));
 
         if (canData.length > 0) {
             getPortfolioCansFundingDetailsAndSetState(canData).catch(console.error);
@@ -62,10 +62,10 @@ const PortfolioDetail = () => {
         return () => {
             dispatch(setPortfolioCansFundingDetails([]));
         };
-    }, [dispatch, currentFiscalYear, portfolioCans]);
+    }, [dispatch, fiscalYear, portfolioCans]);
 
     const canCards = portfolioCans.length
-        ? portfolioCans.map((can, i) => <CanCard can={can} fiscalYear={currentFiscalYear} key={i} />)
+        ? portfolioCans.map((can, i) => <CanCard can={can} fiscalYear={fiscalYear.value} key={i} />)
         : "";
 
     return (
@@ -78,7 +78,7 @@ const PortfolioDetail = () => {
                     <div className="margin-left-2 margin-right-2">
                         <PortfolioHeader />
                         <section>
-                            <PortfolioFundingSummary portfolioId={portfolioId} fiscalYear={currentFiscalYear} />
+                            <PortfolioBudgetSummary portfolioId={portfolioId} />
                         </section>
                         <section>
                             <h2>Portfolio Budget Details by CAN </h2>
