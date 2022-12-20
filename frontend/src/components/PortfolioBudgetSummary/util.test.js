@@ -16,7 +16,7 @@ test("successfully gets the Portfolio from the backend and directly puts it into
 
     const actualGetPortfolio = getPortfolioAndSetState(mockPortfolioId);
     await dispatchUsecase(actualGetPortfolio);
-    const portfolio = store.getState().portfolioFundingSummary.portfolio;
+    const portfolio = store.getState().portfolioBudgetSummary.portfolio;
     expect(portfolio).toEqual(mockBackendResponse);
 });
 
@@ -50,6 +50,6 @@ test("successfully gets the Portfolio budget details directly puts it into state
 
     const portfolioBudget = getPortfolioFundingAndSetState(mockPortfolioId);
     await dispatchUsecase(portfolioBudget);
-    const portfolioFunding = store.getState().portfolioFundingSummary.portfolioFunding;
+    const portfolioFunding = store.getState().portfolioBudgetSummary.portfolioBudget;
     expect(portfolioFunding).toEqual(mockBackendResponse);
 });

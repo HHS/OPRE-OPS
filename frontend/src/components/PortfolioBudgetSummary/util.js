@@ -1,5 +1,5 @@
-import { getPortfolio } from "../../pages/portfolios/detail/getPortfolio";
-import { setPortfolio, setPortfolioFunding } from "./portfolioFundingSummarySlice";
+import { getPortfolio } from "../../api/getPortfolio";
+import { setPortfolio, setPortfolioBudget } from "./portfolioBudgetSummarySlice";
 import ApplicationContext from "../../applicationContext/ApplicationContext";
 
 export const getPortfolioAndSetState = (portfolioId) => {
@@ -22,6 +22,6 @@ export const getPortfolioFundingAndSetState = (portfolioId, fiscalYear) => {
                 { fiscal_year: fiscalYear }
             );
 
-        dispatch(setPortfolioFunding(data));
+        dispatch(setPortfolioBudget(data));
     };
 };

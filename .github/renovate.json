@@ -1,5 +1,8 @@
 {
-    "extends": ["config:base", "helpers:pinGitHubActionDigests"],
+    "extends": [
+        "config:base",
+        "helpers:pinGitHubActionDigests"
+    ],
     "dependencyDashboard": false,
     "labels": ["dependencies"],
     "automergeType": "pr",
