@@ -1,15 +1,20 @@
 import { createSlice } from "@reduxjs/toolkit";
+import constants from "../constants";
 
 const initialState = {
+    can: {},
     canFiscalYearObj: {},
-    pendingFunds: 0,
+    pendingFunds: constants.notFilledInText,
     selectedFiscalYear: new Date().getFullYear(),
 };
 
-const canFiscalYearSlice = createSlice({
-    name: "canFiscalYearDetail",
+const canDetailSlice = createSlice({
+    name: "canDetail",
     initialState,
     reducers: {
+        setCan: (state, action) => {
+            state.can = action.payload;
+        },
         setCanFiscalYear: (state, action) => {
             state.canFiscalYearObj = action.payload;
         },
@@ -22,6 +27,6 @@ const canFiscalYearSlice = createSlice({
     },
 });
 
-export const { setCanFiscalYear, setPendingFunds, setSelectedFiscalYear } = canFiscalYearSlice.actions;
+export const { setCan, setCanFiscalYear, setPendingFunds, setSelectedFiscalYear } = canDetailSlice.actions;
 
-export default canFiscalYearSlice.reducer;
+export default canDetailSlice.reducer;

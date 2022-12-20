@@ -1,11 +1,11 @@
 import { useSelector, useDispatch } from "react-redux";
 import { getCanFiscalYearByCan } from "./getCanFiscalYear";
-import { setSelectedFiscalYear } from "./canFiscalYearSlice";
+import { setSelectedFiscalYear } from "../../store/canDetailSlice";
 import Select from "react-select";
 import { useParams } from "react-router-dom";
 import { useEffect } from "react";
-import styles from "./BudgetSummary.module.css";
-import constants from "../../../../constants";
+import styles from "./CANBudgetSummary.module.css";
+import constants from "../../constants";
 
 const fiscalYearOptions = [
     { label: "FY 2020", value: 2020 },
@@ -16,11 +16,11 @@ const fiscalYearOptions = [
 ];
 const defaultOption = fiscalYearOptions[2];
 
-const BudgetSummary = () => {
+const CANBudgetSummary = () => {
     const dispatch = useDispatch();
-    const canFiscalYear = useSelector((state) => state.canFiscalYearDetail.canFiscalYearObj);
-    const pendingFunds = useSelector((state) => state.canFiscalYearDetail.pendingFunds);
-    const selectedFiscalYear = useSelector((state) => state.canFiscalYearDetail.selectedFiscalYear);
+    const canFiscalYear = useSelector((state) => state.canDetail.canFiscalYearObj);
+    const pendingFunds = useSelector((state) => state.canDetail.pendingFunds);
+    const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
     const urlPathParams = useParams();
     const canFiscalYearId = parseInt(urlPathParams.id);
 
@@ -98,4 +98,4 @@ const BudgetSummary = () => {
     );
 };
 
-export default BudgetSummary;
+export default CANBudgetSummary;

@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 
 const PortfolioDescription = () => {
-    const portfolio = useSelector((state) => state.portfolioDetail.portfolio);
+    const portfolio = useSelector((state) => state.portfolio.portfolio);
 
     const styles = {
         hidden: {

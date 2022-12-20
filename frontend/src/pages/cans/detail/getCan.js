@@ -1,4 +1,4 @@
-import { setCan } from "./canDetailSlice";
+import { setCan } from "../../../store/canDetailSlice";
 import ApplicationContext from "../../../applicationContext/ApplicationContext";
 
 export const getCan = (id) => {

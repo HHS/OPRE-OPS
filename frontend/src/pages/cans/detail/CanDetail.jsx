@@ -2,7 +2,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { getCan } from "./getCan";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import BudgetSummary from "./budgetSummary/BudgetSummary.jsx";
+import CANBudgetSummary from "../../../components/CANBudgetSummary/CANBudgetSummary.jsx";
 import constants from "../../../constants";
 import App from "../../../App";
 import { BreadcrumbItem, BreadcrumbList } from "../../../components/Header/Breadcrumb";
@@ -44,7 +44,7 @@ const CanDetail = () => {
                         </div>
 
                         <div className="grid-col">
-                            <BudgetSummary />
+                            <CANBudgetSummary />
                         </div>
                     </div>
                 </div>
