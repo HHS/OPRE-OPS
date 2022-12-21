@@ -1,16 +1,16 @@
 {
-    "administrators": [
-        "tdonaworth@flexion.us",
-        "jdeangelis@flexion.us",
-        "chill@flexion.us",
-        "jnally@flexion.us",
-        "sheila.celentano@acf.hhs.gov"
-    ],
-    "users": [
-        "Anonymous",
-        "kschulke@flexion.us",
-        "fpigeon@flexion.us",
-        "camille.wilson@acf.hhs.gov",
-        "acurvelodasilva@flexion.us"
-    ]
+    "users" : {
+        "Anonymous" : {
+            "name": "Anonymous",
+            "role": "Anonymous"
+        },
+        "jdoe@email.com" : {
+            "name": "John Doe",
+            "role": "Admin"
+        },
+        "sam.tester@email.com" : {
+            "name": "Sam Tester",
+            "role": "User"
+        }
+    }
 }
