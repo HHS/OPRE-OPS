@@ -1,4 +1,9 @@
-FROM node:18-slim
+# v18 LTS
+FROM node:lts-slim
+
+RUN apt-get update -y \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
 RUN useradd -ms /bin/bash app
 USER app

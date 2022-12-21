@@ -5,11 +5,12 @@ from typing import Optional
 from flask import Blueprint
 from flask import Flask
 from flask_cors import CORS
-from ops.home_page.views import home
+from flask_opa import OPA
 from ops.models.base import db
 from ops.urls import register_api
 from ops.utils.auth import jwtMgr
 from ops.utils.auth import oauth
+from ops.utils.auth_views import parse_input
 
 
 def configure_logging() -> None:
@@ -36,7 +37,10 @@ def configure_logging() -> None:
 def create_app(config_overrides: Optional[dict] = None) -> Flask:
     configure_logging()  # should be configured before any access to app.logger
     app = Flask(__name__)
+
     CORS(app)
+
+    # Configs
     app.config.from_object("ops.environment.default_settings")
     if os.getenv("OPS_CONFIG"):
         app.config.from_envvar("OPS_CONFIG")
@@ -45,14 +49,13 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     if config_overrides is not None:
         app.config.from_mapping(config_overrides)
 
-    app.register_blueprint(home)
-
+    # Initialize Blueprints
     api_bp = Blueprint(
         "api", __name__, url_prefix=f"/api/{app.config.get('API_VERSION', 'v1')}"
     )
     register_api(api_bp)
-    app.register_blueprint(api_bp)
 
+    # Initialize Plugins
     jwtMgr.init_app(app)
     db.init_app(app)
     oauth.init_app(app)
@@ -63,5 +66,7 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
         # db.drop_all()
         db.create_all()
         db.session.commit()
+        app.register_blueprint(api_bp)
+        app.opa = OPA(app, input_function=parse_input).secured()
 
     return app

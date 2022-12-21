@@ -19,6 +19,7 @@ def process_user(userinfo: UserInfoDict) -> User:
             email=userinfo["email"],
             username=userinfo["sub"],
             first_name=userinfo["given_name"],
+            last_name=userinfo["family_name"],
         )
 
         db.session.add(user)
