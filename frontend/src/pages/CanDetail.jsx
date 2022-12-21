@@ -1,19 +1,26 @@
 import { useSelector, useDispatch } from "react-redux";
-import { getCan } from "./getCan";
+import { getCan } from "../api/getCan";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import CANBudgetSummary from "../../../components/CANBudgetSummary/CANBudgetSummary.jsx";
-import constants from "../../../constants";
-import App from "../../../App";
-import { BreadcrumbItem, BreadcrumbList } from "../../../components/Header/Breadcrumb";
+import CANBudgetSummary from "../components/CANBudgetSummary/CANBudgetSummary.jsx";
+import constants from "../constants";
+import App from "../App";
+import { BreadcrumbItem, BreadcrumbList } from "../components/Header/Breadcrumb";
+import { setCan } from "../store/canDetailSlice";
 
 const CanDetail = () => {
     const dispatch = useDispatch();
     const can = useSelector((state) => state.canDetail.can);
     const urlPathParams = useParams();
     const canId = parseInt(urlPathParams.id);
+
     useEffect(() => {
-        dispatch(getCan(canId));
+        const getCANAndSetState = async (canId) => {
+            const results = await getCan(canId);
+            dispatch(setCan(results));
+        };
+
+        getCANAndSetState(canId).catch(console.error);
     }, [dispatch, canId]);
 
     return (

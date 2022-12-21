@@ -12,7 +12,7 @@ import Home from "./pages/Home";
 import PortfolioList from "./pages/portfolios/list/PortfolioList";
 import PortfolioDetail from "./pages/PortfolioDetail";
 import CanList from "./pages/cans/list/CanList";
-import CanDetail from "./pages/cans/detail/CanDetail";
+import CanDetail from "./pages/CanDetail";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
