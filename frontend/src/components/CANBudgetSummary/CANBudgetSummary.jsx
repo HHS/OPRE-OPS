@@ -1,11 +1,14 @@
 import { useSelector, useDispatch } from "react-redux";
-import { getCanFiscalYearByCan } from "./getCanFiscalYear";
-import { setSelectedFiscalYear } from "../../store/canDetailSlice";
+import { getCanFiscalYearByCan } from "../../api/getCanFiscalYear";
+import { setCanFiscalYear, setPendingFunds, setSelectedFiscalYear } from "../../store/canDetailSlice";
 import Select from "react-select";
 import { useParams } from "react-router-dom";
 import { useEffect } from "react";
 import styles from "./CANBudgetSummary.module.css";
 import constants from "../../constants";
+import { getPortfolio } from "../../api/getPortfolio";
+import { setPortfolio } from "../../store/portfolioSlice";
+import { getPendingFunds } from "./util";
 
 const fiscalYearOptions = [
     { label: "FY 2020", value: 2020 },
@@ -25,12 +28,26 @@ const CANBudgetSummary = () => {
     const canFiscalYearId = parseInt(urlPathParams.id);
 
     const handleFiscalYearChange = (e) => {
-        dispatch(getCanFiscalYearByCan(canFiscalYearId, e.value));
         dispatch(setSelectedFiscalYear(e.value));
     };
 
     useEffect(() => {
-        dispatch(getCanFiscalYearByCan(canFiscalYearId, defaultOption.value));
+        const getCanFiscalYearByCanAndSetState = async () => {
+            const result = await getCanFiscalYearByCan(canFiscalYearId, defaultOption.value);
+
+            const canFiscalYear = result[0];
+
+            canFiscalYear ? dispatch(setCanFiscalYear(canFiscalYear)) : dispatch(setCanFiscalYear({}));
+
+            dispatch(setPendingFunds(getPendingFunds(canFiscalYear)));
+        };
+
+        getCanFiscalYearByCanAndSetState().catch(console.error);
+
+        return () => {
+            dispatch(setCanFiscalYear({}));
+            dispatch(setPendingFunds(constants.notFilledInText));
+        };
     }, [dispatch, canFiscalYearId]);
 
     const totalFiscalYearFundingTableData = (
