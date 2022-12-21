@@ -1,14 +1,16 @@
 package httpapi.authz
+import future.keywords
 
-default allow = true
+default allow = false
 
-# Allow all users to view all endpoints.
-allow {
-    some username
+allow if {
     input.method == "GET"
-    input.path = ["api", "v1",]
-    token.payload.email == username
-    user_owns_token
+    input.path == ["api", "v1", "cans"]
+}
+
+allow if {
+    input.method == "GET"
+    input.path == ["api", "v1", "portfolios"]
 }
 
 # # Ensure that the token was issued to the user supplying it.
