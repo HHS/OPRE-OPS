@@ -1,5 +1,6 @@
+"""Portfolio models."""
 from typing_extensions import override
-from typing import Any
+from typing import Any, cast
 from ops.models.base import BaseModel
 from sqlalchemy import (
     Column,
@@ -121,10 +122,13 @@ class Portfolio(BaseModel):
                 "division": self.division.to_dict() if self.division else None,
                 "cans": [can.to_dict() for can in self.cans],
                 "status": self.status.name,
+                "team_leaders": [
+                    team_lead.to_dict() for team_lead in self.team_leaders
+                ],
             }
         )
 
-        return d
+        return cast(dict[str, Any], d)
 
 
 class PortfolioDescriptionText(BaseModel):

@@ -1,3 +1,4 @@
+"""CAN models."""
 from typing import Any
 from ops.models.portfolios import Portfolio
 from ops.models.portfolios import portfolio_cans
