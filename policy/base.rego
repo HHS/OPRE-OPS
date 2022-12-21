@@ -15,6 +15,12 @@ allow if {
     is_user
 }
 
+allow if {
+    input.method == "GET"
+    input.path == ["api", "v1", "admin"]
+    is_admin
+}
+
 # # Ensure that the token was issued to the user supplying it.
 user_owns_token { input.user == token.payload.username }
 
