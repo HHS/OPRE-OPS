@@ -3,8 +3,6 @@ import future.keywords
 
 default allow = false
 
-users := {"jdoe@email.com", "sam.tester@email.com"}
-
 allow if {
     input.method == "GET"
     input.path == ["api", "v1", "cans"]
@@ -21,11 +19,11 @@ allow if {
 user_owns_token { input.user == token.payload.username }
 
 is_admin {
-  data.users[token.payload.email].role == "Admin"
+  data.users[token.payload.username].role == "Admin"
 }
 
 is_user {
-  data.users[token.payload.email].role in ["Admin", "User"]
+  data.users[token.payload.username].role in ["Admin", "User"]
 }
 
 # # Helper to get the token payload.
