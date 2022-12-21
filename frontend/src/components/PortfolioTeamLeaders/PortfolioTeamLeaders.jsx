@@ -6,7 +6,7 @@ const PortfolioTeamLeaders = () => {
     const LeaderName = (props) => <span>{props.value}</span>
 
     return (
-        <div>
+        <div id="PortfolioTeamLeaders">
             <strong>Team leaders</strong>
             {portfolio.team_leaders.map(item => <LeaderName key={item.first_name} value={item.first_name} />)}
         </div>

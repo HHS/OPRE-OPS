@@ -109,7 +109,7 @@ class Portfolio(BaseModel):
     )
 
     @override
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Any]:
         d = super().to_dict()
 
         d.update(
