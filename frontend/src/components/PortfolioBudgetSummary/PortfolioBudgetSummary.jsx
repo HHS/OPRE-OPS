@@ -44,7 +44,7 @@ const PortfolioBudgetSummary = ({ portfolioId }) => {
             <section>
                 <div className={styles.summaryHeader}>
                     <h2 className="font-sans-lg">Portfolio Budget Summary</h2>
-                    <FiscalYear className={styles.fiscalYearSelect} />
+                    <FiscalYear className={styles.fiscalYearSelect} fiscalYear={fiscalYear} />
                 </div>
                 <p className="font-sans-sm">
                     The graph below shows a summary of the total budget for this portfolio, not including additional

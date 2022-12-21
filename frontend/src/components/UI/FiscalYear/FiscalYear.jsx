@@ -3,9 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { setSelectedFiscalYear } from "../../../store/portfolioSlice";
 import styles from "./FiscalYear.module.css";
 
-const FiscalYear = () => {
+const FiscalYear = ({ fiscalYear }) => {
     const dispatch = useDispatch();
-    const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
+    // const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
 
     const onChangeFiscalYear = (event) => {
         dispatch(setSelectedFiscalYear({ value: event.target.value }));
