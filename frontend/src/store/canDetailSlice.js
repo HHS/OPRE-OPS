@@ -1,11 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 import constants from "../constants";
+import { getCurrentFiscalYear } from "../helpers/utils";
 
 const initialState = {
     can: {},
     canFiscalYearObj: {},
     pendingFunds: constants.notFilledInText,
-    selectedFiscalYear: new Date().getFullYear(),
+    selectedFiscalYear: { value: getCurrentFiscalYear(new Date()) },
 };
 
 const canDetailSlice = createSlice({
