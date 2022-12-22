@@ -4,7 +4,7 @@ import style from "./styles.module.css";
 import PortfolioDescription from "../PortfolioDescription/PortfolioDescription";
 
 const PortfolioHeader = () => {
-    const portfolio = useSelector((state) => state.portfolioDetail.portfolio);
+    const portfolio = useSelector((state) => state.portfolio.portfolio);
 
     const sectionClasses = `padding-3 ${style.background}`;
     const divisionClasses = `font-sans-3xs ${style.division}`;

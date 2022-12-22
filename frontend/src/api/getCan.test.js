@@ -1,7 +1,5 @@
 import { getCan } from "./getCan";
-import store from "../../../store";
-import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
-import { dispatchUsecase } from "../../../helpers/test";
+import TestApplicationContext from "../applicationContext/TestApplicationContext";
 
 test("successfully gets the CAN from the backend and directly puts it into state", async () => {
     const mockCanId = "G99IA14";
@@ -14,10 +12,6 @@ test("successfully gets the CAN from the backend and directly puts it into state
         return mockBackendResponse;
     });
 
-    const actualGetCan = getCan(mockCanId);
-
-    await dispatchUsecase(actualGetCan);
-
-    const can = store.getState().canDetail.can;
-    expect(can).toEqual(mockBackendResponse);
+    const actualGetCan = await getCan(mockCanId);
+    expect(actualGetCan).toBe(mockBackendResponse);
 });

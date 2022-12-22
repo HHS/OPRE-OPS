@@ -3,7 +3,7 @@ import { getPortfolio, getPortfolioCans } from "../api/getPortfolio";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import PortfolioBudgetSummary from "../components/PortfolioBudgetSummary/PortfolioBudgetSummary";
-import { setPortfolio, setPortfolioCans, setPortfolioCansFundingDetails } from "../store/portfolioDetailSlice";
+import { setPortfolio, setPortfolioCans, setPortfolioCansFundingDetails } from "../store/portfolioSlice";
 import App from "../App";
 import { BreadcrumbItem, BreadcrumbList } from "../components/Header/Breadcrumb";
 import PortfolioHeader from "../components/PortfolioHeader/PortfolioHeader";
@@ -15,7 +15,7 @@ const PortfolioDetail = () => {
     const dispatch = useDispatch();
     const urlPathParams = useParams();
     const portfolioId = parseInt(urlPathParams.id);
-    const portfolioCans = useSelector((state) => state.portfolioDetail.portfolioCans);
+    const portfolioCans = useSelector((state) => state.portfolio.portfolioCans);
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
 
     // Get initial Portfolio data (not dependent on fiscal year)
