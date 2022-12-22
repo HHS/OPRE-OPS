@@ -6,6 +6,7 @@ default allow = false
 allow if {
     input.method == "GET"
     input.path == ["api", "v1", "cans"]
+    user_owns_token
 }
 
 allow if {
