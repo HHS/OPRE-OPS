@@ -1,39 +1,59 @@
 package httpapi.authz
+
 import future.keywords
 
 default allow = false
 
 allow if {
-    input.method == "GET"
-    input.path == ["api", "v1", "cans"]
-    user_owns_token
+	input.method == "GET"
+	input.path == ["api", "v1", "cans"]
+	user_owns_token
 }
 
 allow if {
-    input.method == "GET"
-    input.path == ["api", "v1", "portfolios"]
-    is_user
+	input.method == "GET"
+	input.path == ["api", "v1", "portfolios"]
+	is_user
 }
 
 allow if {
-    input.method == "GET"
-    input.path == ["api", "v1", "admin"]
-    is_admin
+	input.method == "GET"
+	input.path == ["api", "v1", "admin"]
+	is_admin
 }
+
+allow if claims.user in admin_users
+
+admin_users := {""}
 
 # # Ensure that the token was issued to the user supplying it.
-user_owns_token { input.user == token.payload.username }
+user_owns_token if input.user == token.payload.username
 
-is_admin {
-  data.users[token.payload.username].role == "Admin"
+is_admin if {
+	data.users[token.payload.username].role in admin_roles
 }
 
-is_user {
-  data.users[token.payload.username].role in ["Admin", "User"]
+is_user if {
+	data.users[token.payload.username].role in all_roles
 }
+
+all_roles := {"Admin", "User"}
+
+admin_roles := {"Admin"}
 
 # # Helper to get the token payload.
-token = {"payload": payload} {
-  io.jwt.verify_hs256(input.jwt, "secret")
-  [header, payload, signature] := io.jwt.decode(input.jwt)
+token = {"payload": payload} if {
+	io.jwt.verify_hs256(input.jwt, "secret")
+	[_, payload, _] := io.jwt.decode(input.jwt)
+}
+
+claims := payload if {
+	v := input.attributes.request.http.headers.authorization
+  print(v)
+	startswith(v, "Bearer ")
+	t := substring(v, count("Bearer "), -1)
+  print(t)
+	io.jwt.verify_hs256(t, "secret")
+	[_, payload, _] := io.jwt.decode(t)
+  print(payload)
 }
