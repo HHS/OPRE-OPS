@@ -30,6 +30,7 @@ is_admin if {
 }
 
 is_user if {
+  print(claims.payload)
 	data.users[claims.payload.username].role in all_roles
 }
 
@@ -45,11 +46,8 @@ token = {"payload": payload} if {
 
 claims := payload if {
 	v := input.attributes.request.http.headers.authorization
-  print(v)
 	startswith(v, "Bearer ")
 	t := substring(v, count("Bearer "), -1)
-  print(t)
 	io.jwt.verify_hs256(t, "secret")
 	[_, payload, _] := io.jwt.decode(t)
-  print(payload)
 }
