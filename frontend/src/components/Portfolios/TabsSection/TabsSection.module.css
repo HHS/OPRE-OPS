@@ -1,0 +1,10 @@
+.tabsList {
+    list-style: none;
+    text-align: center;
+    padding-left: 0;
+}
+
+.listItem {
+    display: inline-block;
+    padding: 5px;
+}
