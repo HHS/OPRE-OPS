@@ -9,8 +9,6 @@ import PortfolioCarryForwardFunding from "../PortfolioSummaryCards/PortfolioCarr
 
 import styles from "./PortfolioBudgetSummary.module.css";
 import PortfolioFundingByCAN from "../PortfolioFundingByCAN/PortfolioFundingByCAN";
-import FiscalYear from "../../UI/FiscalYear/FiscalYear";
-import { setSelectedFiscalYear } from "../../../store/portfolioSlice";
 
 const PortfolioBudgetSummary = ({ portfolioId }) => {
     const portfolio = useSelector((state) => state.portfolioBudgetSummary.portfolio);
