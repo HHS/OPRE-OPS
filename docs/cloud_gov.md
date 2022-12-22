@@ -59,7 +59,13 @@
 Run the command `./scripts/import_data.sh` within the `ops-data-tools` app.
 `cf run-task ops-data-tools --command "ENV=cloudgov ./scripts/import_data.sh" --name load_sample_data`
 
+### Secrets:
+For whatever reason secrets, including service-account keys, are referred to as services.
+The expectation is to use [User-Provided Services](https://docs.cloudfoundry.org/devguide/services/user-provided.html) for managing secrets/credentials.
 
+`cf create-user-provided-service <name-of-service> -p '{"key1":"value1","key2":"value2"}'`
+`cf cups ops-backend-jwt-secret -p '{"private":"--PRIVATE KEY--", "public":"--PUBLIC KEY--"}'`
+Tags can be added via `-t <TAG>`
 
 
 ## Creating a new deployment:

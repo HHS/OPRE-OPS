@@ -1,16 +1,1 @@
-{
-    "users" : {
-        "Anonymous" : {
-            "name": "Anonymous",
-            "role": "Anonymous"
-        },
-        "jdoe@email.com" : {
-            "name": "John Doe",
-            "role": "Admin"
-        },
-        "sam.tester@email.com" : {
-            "name": "Sam Tester",
-            "role": "User"
-        }
-    }
-}
+{"users" : {"Anonymous" : {"name": "Anonymous","role": "Anonymous"},"jdoe@email.com" : {"name": "John Doe","role": "Admin"},"sam.tester@email.com" : {"name": "Sam Tester","role": "User"}}}

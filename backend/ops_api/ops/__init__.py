@@ -5,12 +5,13 @@ from typing import Optional
 from flask import Blueprint
 from flask import Flask
 from flask_cors import CORS
-from flask_opa import OPA
+# from flask_opa import OPA
 from ops.models.base import db
 from ops.urls import register_api
 from ops.utils.auth import jwtMgr
 from ops.utils.auth import oauth
-from ops.utils.auth_views import parse_input
+
+# from ops.utils.auth_views import parse_input
 
 
 def configure_logging() -> None:
@@ -67,6 +68,6 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
         db.create_all()
         db.session.commit()
         app.register_blueprint(api_bp)
-        app.opa = OPA(app, input_function=parse_input).secured()
+        # app.opa = OPA(app, input_function=parse_input).secured()
 
     return app

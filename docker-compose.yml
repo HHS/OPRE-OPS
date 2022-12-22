@@ -22,6 +22,8 @@ services:
 
   opal_server:
     image: permitio/opal-server:latest
+    platform: linux/amd64
+    container_name: ops-opal-server
     environment:
       # number of uvicorn workers to run inside the opal-server container
       - UVICORN_NUM_WORKERS=1
@@ -29,7 +31,9 @@ services:
       # - if this repo is not public, you can pass an ssh key via `OPAL_POLICY_REPO_SSH_KEY`)
       # - the repo we pass in this example is *public* and acts as an example repo with dummy rego policy
       # - for more info, see: https://docs.opal.ac/tutorials/track_a_git_repo
-      - OPAL_POLICY_REPO_URL=https://github.com/HHS/OPRE-OPS/tree/opa-experiment
+      - OPAL_POLICY_REPO_URL=https://github.com/HHS/OPRE-OPS
+      - OPAL_POLICY_REPO_MAIN_BRANCH=opa-experiment
+      - OPAL_POLICY_REPO_CLONE_PATH=/policy
       # in this example we will use a polling interval of 30 seconds to check for new policy updates (git commits affecting the rego policy).
       # however, it is better to utilize a git *webhook* to trigger the server to check for changes only when the repo has new commits.
       # for more info see: https://docs.opal.ac/tutorials/track_a_git_repo
@@ -39,17 +43,31 @@ services:
       # after the initial sources are fetched, the client will subscribe only to update notifications sent by the server.
       - OPAL_DATA_CONFIG_SOURCES={"config":{"entries":[{"url":"http://opal_server:7002/policy-data","topics":["policy_data"],"dst_path":"/static"}]}}
       - OPAL_LOG_FORMAT_INCLUDE_PID=true
+      - OPAL_AUTH_MASTER_TOKEN=$OPAL_MASTER_TOKEN
     ports:
       # exposes opal server on the host machine, you can access the server at: http://localhost:7002
       - "7002:7002"
+    volumes:
+      - ./policy:/policy
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: curl --fail 'http://opal_server:7002/healthcheck' || exit 1
+      interval: 3s
+      timeout: 5s
+      retries: 60
 
   opal_client:
     # by default we run opal-client from latest official image
     image: permitio/opal-client:latest
+    platform: linux/amd64
+    container_name: ops-opal-client
     environment:
       - OPAL_SERVER_URL=http://opal_server:7002
       - OPAL_LOG_FORMAT_INCLUDE_PID=true
       - OPAL_INLINE_OPA_LOG_FORMAT=http
+      - OPAL_OPA_HEALTH_CHECK_POLICY_ENABLED=True
     ports:
       # exposes opal client on the host machine, you can access the client at: http://localhost:7000
       - "7000:7000"
@@ -57,8 +75,16 @@ services:
       # you can access the OPA api that you know and love at: http://localhost:8181
       # OPA api docs are at: https://www.openpolicyagent.org/docs/latest/rest-api/
       - "8181:8181"
-    depends_on:
-      - opal_server
+    # healthcheck:
+    #   test: curl --fail --request POST 'http://localhost:8181/v1/data/system/opal/healthy' || exit 1
+    #   interval: 1s
+    #   timeout: 5s
+    #   retries: 50
+    #   start_period: 10s
+    # depends_on:
+    #   opal_server:
+    #     condition: service_started
+    command: sh -c "./wait-for.sh opal_server:7002 --timeout=20 -- ./start.sh"
 
   # opa:
   #   image: openpolicyagent/opa:0.47.3-rootless
@@ -101,8 +127,7 @@ services:
       # having to rebuild the migration container.
       - ./backend/ops_api:/home/app/ops_api
     depends_on:
-      backend:
-        condition: service_healthy
+      - backend
 
   backend:
     build:
@@ -116,18 +141,14 @@ services:
     environment:
       - JWT_PRIVATE_KEY
       - OPS_CONFIG=environment/local.py
+      - OPA_ADDR=http://localhost:8181
     volumes:
       - ./backend/ops_api/ops:/home/app/ops
     depends_on:
       db:
         condition: service_healthy
-
-
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
-      interval: 10s
-      timeout: 10s
-      retries: 10
+      opal_client:
+        condition: service_started
 
   frontend:
     build:
