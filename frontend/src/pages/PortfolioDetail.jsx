@@ -3,13 +3,21 @@ import { getPortfolio, getPortfolioCans } from "../api/getPortfolio";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import PortfolioBudgetSummary from "../components/Portfolios/PortfolioBudgetSummary/PortfolioBudgetSummary";
-import { setPortfolio, setPortfolioCans, setPortfolioCansFundingDetails } from "../store/portfolioSlice";
+import {
+    setPortfolio,
+    setPortfolioCans,
+    setPortfolioCansFundingDetails,
+    setSelectedFiscalYear,
+} from "../store/portfolioSlice";
 import App from "../App";
 import { BreadcrumbItem, BreadcrumbList } from "../components/UI/Header/Breadcrumb";
 import PortfolioHeader from "../components/Portfolios/PortfolioHeader/PortfolioHeader";
 import CanCard from "../components/CANs/CanCard/CanCard";
 
 import { getPortfolioCansFundingDetails } from "../api/getCanFundingSummary";
+import TabsSection from "../components/Portfolios/TabsSection/TabsSection";
+import styles from "../styles/PortfolioDetail.module.css";
+import FiscalYear from "../components/UI/FiscalYear/FiscalYear";
 
 const PortfolioDetail = () => {
     const dispatch = useDispatch();
@@ -77,6 +85,14 @@ const PortfolioDetail = () => {
                 <div>
                     <div className="margin-left-2 margin-right-2">
                         <PortfolioHeader />
+                        <section className={styles.tabSection}>
+                            <TabsSection />
+                            <FiscalYear
+                                className={styles.fiscalYearSelect}
+                                fiscalYear={fiscalYear}
+                                handleChangeFiscalYear={setSelectedFiscalYear}
+                            />
+                        </section>
                         <section>
                             <PortfolioBudgetSummary portfolioId={portfolioId} />
                         </section>

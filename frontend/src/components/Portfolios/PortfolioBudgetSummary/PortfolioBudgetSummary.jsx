@@ -7,7 +7,7 @@ import { getPortfolioAndSetState, getPortfolioFundingAndSetState } from "./util"
 import PortfolioNewFunding from "../PortfolioSummaryCards/PortfolioNewFunding";
 import PortfolioCarryForwardFunding from "../PortfolioSummaryCards/PortfolioCarryForwardFunding";
 
-import styles from "./styles.module.css";
+import styles from "./PortfolioBudgetSummary.module.css";
 import PortfolioFundingByCAN from "../PortfolioFundingByCAN/PortfolioFundingByCAN";
 import FiscalYear from "../../UI/FiscalYear/FiscalYear";
 import { setSelectedFiscalYear } from "../../../store/portfolioSlice";
@@ -45,11 +45,6 @@ const PortfolioBudgetSummary = ({ portfolioId }) => {
             <section>
                 <div className={styles.summaryHeader}>
                     <h2 className="font-sans-lg">Portfolio Budget Summary</h2>
-                    <FiscalYear
-                        className={styles.fiscalYearSelect}
-                        fiscalYear={fiscalYear}
-                        handleChangeFiscalYear={setSelectedFiscalYear}
-                    />
                 </div>
                 <p className="font-sans-sm">
                     The graph below shows a summary of the total budget for this portfolio, not including additional
