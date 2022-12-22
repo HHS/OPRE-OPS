@@ -1,3 +1,10 @@
 .fiscalYearSelector {
-    width: 173px;
+    width: 90px;
+    display: inline-block;
+    margin-left: 20px;
+}
+
+.container {
+    list-style: none;
+    text-align: center;
 }

@@ -12,20 +12,23 @@ const FiscalYear = ({ fiscalYear, handleChangeFiscalYear }) => {
     const fiscalYearClasses = `usa-select ${styles.fiscalYearSelector}`;
 
     return (
-        <select
-            aria-label="Selected Fiscal Year"
-            className={fiscalYearClasses}
-            onChange={onChangeFiscalYear}
-            value={fiscalYear?.value}
-        >
-            {constants.fiscalYears.map((year) => {
-                return (
-                    <option key={year} value={year}>
-                        Fiscal Year {year}
-                    </option>
-                );
-            })}
-        </select>
+        <div className={styles.container}>
+            <label htmlFor="fiscal-year-select">Fiscal Year</label>
+            <select
+                id="fiscal-year-select"
+                className={fiscalYearClasses}
+                onChange={onChangeFiscalYear}
+                value={fiscalYear?.value}
+            >
+                {constants.fiscalYears.map((year) => {
+                    return (
+                        <option key={year} value={year}>
+                            {year}
+                        </option>
+                    );
+                })}
+            </select>
+        </div>
     );
 };
 
