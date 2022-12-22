@@ -23,7 +23,7 @@ allow if {
 }
 
 # # Ensure that the token was issued to the user supplying it.
-user_owns_token if input.user == token.payload.username
+user_owns_token if input.user == claims.payload.username
 
 is_admin if {
 	data.users[claims.payload.username].role in admin_roles
