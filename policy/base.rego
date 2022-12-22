@@ -2,7 +2,7 @@ package httpapi.authz
 
 import future.keywords
 
-default allow = false
+default allow := false
 
 allow if {
 	input.method == "GET"
