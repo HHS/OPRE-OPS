@@ -2,12 +2,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { getPortfolio, getPortfolioCans } from "../api/getPortfolio";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import PortfolioBudgetSummary from "../components/PortfolioBudgetSummary/PortfolioBudgetSummary";
+import PortfolioBudgetSummary from "../components/Portfolios/PortfolioBudgetSummary/PortfolioBudgetSummary";
 import { setPortfolio, setPortfolioCans, setPortfolioCansFundingDetails } from "../store/portfolioSlice";
 import App from "../App";
-import { BreadcrumbItem, BreadcrumbList } from "../components/Header/Breadcrumb";
-import PortfolioHeader from "../components/PortfolioHeader/PortfolioHeader";
-import CanCard from "../components/CanCard/CanCard";
+import { BreadcrumbItem, BreadcrumbList } from "../components/UI/Header/Breadcrumb";
+import PortfolioHeader from "../components/Portfolios/PortfolioHeader/PortfolioHeader";
+import CanCard from "../components/CANs/CanCard/CanCard";
 
 import { getPortfolioCansFundingDetails } from "../api/getCanFundingSummary";
 

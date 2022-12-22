@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, Outlet } from "react-router-dom";
 import App from "../../../App";
-import { BreadcrumbItem, BreadcrumbList } from "../../../components/Header/Breadcrumb";
+import { BreadcrumbItem, BreadcrumbList } from "../../../components/UI/Header/Breadcrumb";
 import { getCanList } from "./getCanList";
 import styles from "./styles.module.css";
 
