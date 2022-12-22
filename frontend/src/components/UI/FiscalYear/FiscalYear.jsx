@@ -1,5 +1,5 @@
 import constants from "../../../constants";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import styles from "./FiscalYear.module.css";
 
 const FiscalYear = ({ fiscalYear, handleChangeFiscalYear }) => {
