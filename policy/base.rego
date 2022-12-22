@@ -13,8 +13,7 @@ allow if {
 allow if {
 	input.method == "GET"
 	input.path == ["api", "v1", "portfolios"]
-	print(claims.payload)
-  data.users[claims.payload.username].role in all_roles
+  user_owns_token
 }
 
 allow if {
