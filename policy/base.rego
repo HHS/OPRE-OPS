@@ -22,19 +22,15 @@ allow if {
 	is_admin
 }
 
-allow if claims.user in admin_users
-
-admin_users := {""}
-
 # # Ensure that the token was issued to the user supplying it.
 user_owns_token if input.user == token.payload.username
 
 is_admin if {
-	data.users[token.payload.username].role in admin_roles
+	data.users[claims.payload.username].role in admin_roles
 }
 
 is_user if {
-	data.users[token.payload.username].role in all_roles
+	data.users[claims.payload.username].role in all_roles
 }
 
 all_roles := {"Admin", "User"}
