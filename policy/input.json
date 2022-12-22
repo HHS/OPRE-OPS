@@ -1,0 +1,13 @@
+{
+    "input": {
+        "jwt2": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwidXNlcm5hbWUiOiJqZG9lQGVtYWlsLmNvbSIsImlhdCI6MTUxNjIzOTAyMn0.-ewI4v0zbrPMnus0djOhxOjSu3kfQbvNqCasyjJwBZQ",
+        "jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlNhbSBUZXN0ZXIiLCJ1c2VybmFtZSI6InNhbS50ZXN0ZXJAZW1haWwuY29tIiwiaWF0IjoxNTE2MjM5MDIyfQ.UIi-RVy5l1BSrhW_2xg2mHEB0Qcj1bSykngZo6OCogo",
+        "user": "sam.tester@email.com",
+        "path": [
+            "api",
+            "v1",
+            "portfolios"
+        ],
+        "method": "GET"
+    }
+}

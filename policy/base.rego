@@ -13,7 +13,7 @@ allow if {
 allow if {
 	input.method == "GET"
 	input.path == ["api", "v1", "portfolios"]
-  user_owns_token
+	user_owns_token
 }
 
 allow if {
@@ -22,16 +22,21 @@ allow if {
 	is_admin
 }
 
+allow if {
+	input.method == "GET"
+	input.path == ["api", "v1"]
+}
+
 # # Ensure that the token was issued to the user supplying it.
 user_owns_token if input.user == claims.payload.username
 
 is_admin if {
-	data.users[claims.payload.username].role in admin_roles
+	data.policy.users[claims.payload.username].role in admin_roles
 }
 
 is_user if {
-  print(claims.payload)
-	data.users[claims.payload.username].role in all_roles
+	print(claims.payload)
+	data.policy.users[claims.payload.username].role in all_roles
 }
 
 all_roles := {"Admin", "User"}
