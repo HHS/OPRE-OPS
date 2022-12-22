@@ -30,24 +30,21 @@ allow if {
 # # Ensure that the token was issued to the user supplying it.
 user_owns_token if input.user == claims.payload.username
 
+has_role if {
+	data.policy.users[claims.payload.username].role in all_roles
+}
+
 is_admin if {
 	data.policy.users[claims.payload.username].role in admin_roles
 }
 
 is_user if {
-	print(claims.payload)
-	data.policy.users[claims.payload.username].role in all_roles
+	data.policy.users[claims.payload.username].role == "User"
 }
 
 all_roles := {"Admin", "User"}
 
 admin_roles := {"Admin"}
-
-# # Helper to get the token payload.
-token = {"payload": payload} if {
-	io.jwt.verify_hs256(input.jwt, "secret")
-	[_, payload, _] := io.jwt.decode(input.jwt)
-}
 
 claims := payload if {
 	v := input.attributes.request.http.headers.authorization
