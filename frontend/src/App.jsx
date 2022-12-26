@@ -1,5 +1,5 @@
-import { Footer } from "./components/Footer/Footer";
-import Header from "./components/Header/Header";
+import { Footer } from "./components/UI/Footer/Footer";
+import Header from "./components/UI/Header/Header";
 
 function App(props) {
     return (

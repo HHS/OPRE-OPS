@@ -2,14 +2,22 @@ import { useDispatch, useSelector } from "react-redux";
 import { getPortfolio, getPortfolioCans } from "../api/getPortfolio";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import PortfolioBudgetSummary from "../components/PortfolioBudgetSummary/PortfolioBudgetSummary";
-import { setPortfolio, setPortfolioCans, setPortfolioCansFundingDetails } from "../store/portfolioSlice";
+import {
+    setPortfolio,
+    setPortfolioCans,
+    setPortfolioCansFundingDetails,
+    setSelectedFiscalYear,
+} from "../store/portfolioSlice";
 import App from "../App";
-import { BreadcrumbItem, BreadcrumbList } from "../components/Header/Breadcrumb";
-import PortfolioHeader from "../components/PortfolioHeader/PortfolioHeader";
-import CanCard from "../components/CanCard/CanCard";
+import { BreadcrumbItem, BreadcrumbList } from "../components/UI/Header/Breadcrumb";
+import PortfolioHeader from "../components/Portfolios/PortfolioHeader/PortfolioHeader";
+import CanCard from "../components/CANs/CanCard/CanCard";
 
 import { getPortfolioCansFundingDetails } from "../api/getCanFundingSummary";
+import TabsSection from "../components/Portfolios/TabsSection/TabsSection";
+import styles from "../styles/PortfolioDetail.module.css";
+import FiscalYear from "../components/UI/FiscalYear/FiscalYear";
+import BudgetAndFunding from "../components/Portfolios/BudgetAndFunding/BudgetAndFunding";
 
 const PortfolioDetail = () => {
     const dispatch = useDispatch();
@@ -74,22 +82,17 @@ const PortfolioDetail = () => {
                 <BreadcrumbList>
                     <BreadcrumbItem isCurrent pageName="Portfolios" />
                 </BreadcrumbList>
-                <div>
-                    <div className="margin-left-2 margin-right-2">
-                        <PortfolioHeader />
-                        <section>
-                            <PortfolioBudgetSummary portfolioId={portfolioId} />
-                        </section>
-                        <section>
-                            <h2>Portfolio Budget Details by CAN </h2>
-                            <p>
-                                The list of CANs below are specific to this portfolio’s budget. It does not include
-                                funding from other CANs outside of this portfolio that might occur during
-                                cross-portfolio collaborations on research projects.
-                            </p>
-                            {canCards.length ? canCards : <span>No CANs to display.</span>}
-                        </section>
-                    </div>
+                <div className="margin-left-2 margin-right-2">
+                    <PortfolioHeader />
+                    <section className={styles.tabSection}>
+                        <TabsSection />
+                        <FiscalYear
+                            className={styles.fiscalYearSelect}
+                            fiscalYear={fiscalYear}
+                            handleChangeFiscalYear={setSelectedFiscalYear}
+                        />
+                    </section>
+                    <BudgetAndFunding portfolioId={portfolioId} canCards={canCards} />
                 </div>
             </App>
         </>

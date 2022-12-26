@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, Outlet } from "react-router-dom";
 import App from "../../../App";
-import { BreadcrumbList, BreadcrumbItem } from "../../../components/Header/Breadcrumb";
+import { BreadcrumbList, BreadcrumbItem } from "../../../components/UI/Header/Breadcrumb";
 import { getPortfolioList } from "./getPortfolioList";
 import styles from "./styles.module.css";
 

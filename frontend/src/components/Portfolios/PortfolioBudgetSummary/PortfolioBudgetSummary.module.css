@@ -1,0 +1,24 @@
+.fundingCard {
+    height: 220px;
+    margin-bottom: 20px !important;
+}
+
+.budgetStatusCard {
+    width: 992px;
+    display:flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.leftBudgetCard {
+    padding: 1em;
+}
+
+.rightBudgetCard {
+    padding: 1em;
+}
+
+.summaryHeader {
+    display: flex;
+    justify-content: space-between;
+}
