@@ -8,16 +8,23 @@ default allow := false
 
 
 # Allow if user endpoint is self
-allow if {
+allow {
 	input.method == "GET"
 	input.path == ["api", "v1", "users"]
-	input.user_id == token.sub
+	user_owns_token
 }
 
 # verify token
+user_owns_token { input.user_id == token.payload.sub}
 
-# # # Helper to get the token payload.
-token = {"payload": payload} if {
+# Helper to get the token payload.
+# token = {"payload": payload} if {
+# 	io.jwt.verify_hs256(input.token, "this-should-be-secret")
+# 	[_, payload, _] := io.jwt.decode(input.token)
+# }
+
+# Helper to get the token payload.
+token := {"payload": payload} {
 	io.jwt.verify_hs256(input.token, "this-should-be-secret")
-	[_, payload, _] := io.jwt.decode(input.token)
+    [header, payload, signature] := io.jwt.decode(input.token)
 }
