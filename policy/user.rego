@@ -13,14 +13,8 @@ allow if {
 	user_owns_token
 }
 
-# verify token
+# Does the token belong to the requested user
 user_owns_token if input.user_id == token.payload.sub
-
-# Helper to get the token payload.
-# token = {"payload": payload} if {
-# 	io.jwt.verify_hs256(input.token, "this-should-be-secret")
-# 	[_, payload, _] := io.jwt.decode(input.token)
-# }
 
 # Helper to get the token payload.
 token := {"payload": payload} if {

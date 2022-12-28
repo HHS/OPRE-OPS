@@ -19,6 +19,6 @@ JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
 JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=1)
 
 OPA_URL = os.getenv("OPA_ADDR", "http://localhost:8181")
-POLICY_PATH = os.getenv("v1/data/httpapi/authz")
+POLICY_PATH = os.getenv("OPA_PATH", "v1/data/httpapi/authz")
 OPA_URL_LOGGING = f"{OPA_URL}/v1/data/logging/allow"
 OPA_SECURED = False

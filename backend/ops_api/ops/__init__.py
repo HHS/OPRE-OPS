@@ -8,8 +8,8 @@ from flask_cors import CORS
 # from flask_opa import OPA
 from ops.models.base import db
 from ops.urls import register_api
-from ops.utils.auth import jwtMgr
-from ops.utils.auth import oauth
+from ops.utils.authn import jwtMgr
+from ops.utils.authn import oauth
 
 # from ops.utils.auth_views import parse_input
 
@@ -60,6 +60,7 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     jwtMgr.init_app(app)
     db.init_app(app)
     oauth.init_app(app)
+    # app.opa = OPA(app, input_function=parse_input).secured()
 
     # Add some basic data to test with
     # TODO change this out for a proper fixture.
@@ -68,6 +69,5 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
         db.create_all()
         db.session.commit()
         app.register_blueprint(api_bp)
-        # app.opa = OPA(app, input_function=parse_input).secured()
 
     return app

@@ -68,6 +68,8 @@ services:
       - OPAL_LOG_FORMAT_INCLUDE_PID=true
       - OPAL_INLINE_OPA_LOG_FORMAT=http
       - OPAL_OPA_HEALTH_CHECK_POLICY_ENABLED=True
+      - OPAL_INLINE_OPA_CONFIG='{"config_file":"./policy/opa-config.yaml"}'
+      - JWT_PRIVATE_KEY
     ports:
       # exposes opal client on the host machine, you can access the client at: http://localhost:7000
       - "7000:7000"
@@ -142,6 +144,7 @@ services:
       - JWT_PRIVATE_KEY
       - OPS_CONFIG=environment/local.py
       - OPA_ADDR=http://localhost:8181
+      - FLASK_APP=ops
     volumes:
       - ./backend/ops_api/ops:/home/app/ops
     depends_on:

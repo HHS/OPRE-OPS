@@ -22,4 +22,4 @@ ENV PYTHONUNBUFFERED=1
 ENV FLASK_APP=ops
 ENV FLASK_DEBUG=true
 
-CMD ["python", "-m", "gunicorn", "-b", ":8080", "ops:create_app()"]
+CMD ["pyhon", "-m", "gunicorn", "-b", ":8080", "ops:create_app()"]

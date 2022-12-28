@@ -24,6 +24,18 @@ def user_lookup_callback(_jwt_header: dict, jwt_data: dict) -> Optional[User]:
 
 
 def get_jwt(key: Optional[str] = None) -> str:
+    """Used to get a  JWT from another source, specifically a 3rd party login service (Oauth)
+
+    Args:
+        key (Optional[str], optional): Private Key used to encrypt the JWT. Defaults to None.
+
+    Raises:
+        NotImplementedError: If no key is provided, or found within the app config,
+        then a Not Implemented Error is thrown
+
+    Returns:
+        jws: Returns the loaded, and encrypted JWT values.
+    """
     jwt_private_key = current_app.config.get("JWT_PRIVATE_KEY") or key
     if not jwt_private_key:
         raise NotImplementedError

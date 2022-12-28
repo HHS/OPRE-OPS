@@ -18,10 +18,6 @@ class BaseItemAPI(MethodView):
     def _get_item(self, id: int) -> BaseModel:
         return self.model.query.filter_by(id=id).first_or_404()
 
-    def get(self, id: int) -> Response:
-        item = self._get_item(id)
-        return jsonify(item.to_dict())
-
 
 class BaseListAPI(MethodView):
     init_every_request = False

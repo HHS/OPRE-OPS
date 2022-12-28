@@ -1,4 +1,4 @@
-from ops.utils.auth import get_jwt
+from ops.utils.authn import get_jwt
 import pytest
 
 
