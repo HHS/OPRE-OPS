@@ -1,0 +1,5 @@
+keys:
+  global_key:
+    algorithm: RS256
+    key: ${JWT_PRIVATE_KEY}
+    scope: read

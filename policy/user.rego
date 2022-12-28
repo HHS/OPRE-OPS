@@ -30,11 +30,10 @@ IPj6hYX9wVPjJis9My7jCfUbkF9xbg==
 allow if {
 	input.method == "GET"
 	input.path == ["api", "v1", "users"]
-    input.user_id == token.sub
+	input.user_id == token.sub
 }
 
 # verify token
-is_valid_
 
 # # # Helper to get the token payload.
 token = {"payload": payload} if {
