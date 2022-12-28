@@ -25,6 +25,6 @@ user_owns_token { input.user_id == token.payload.sub}
 
 # Helper to get the token payload.
 token := {"payload": payload} {
-	io.jwt.verify_hs256(input.token, "this-should-be-secret")
+	# io.jwt.verify_hs256(input.token, "this-should-be-secret")
     [header, payload, signature] := io.jwt.decode(input.token)
 }
