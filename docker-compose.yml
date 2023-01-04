@@ -143,7 +143,7 @@ services:
     environment:
       - JWT_PRIVATE_KEY
       - OPS_CONFIG=environment/local.py
-      - OPA_ADDR=http://localhost:8181
+      - OPA_ADDR=http://opal_client:8181
       - FLASK_APP=ops
     volumes:
       - ./backend/ops_api/ops:/home/app/ops

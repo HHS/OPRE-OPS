@@ -36,12 +36,16 @@ class UsersListAPI(BaseListAPI):
 
     @override
     # @jwt_required
+    # @policy_check("v1/data/httpapi/authz")
     def get(self) -> Response:
         oidc_id = request.args.get("oidc_id", type=str)
         # Remove leading '/', then split into array by each remaining '/'
         path_as_array = request.path.strip("/").split("/")
         if oidc_id:
-            if check_auth(request.method, path_as_array, oidc_id):
+            authorized = check_auth(
+                "v1/data/httpapi/authz", request.method, path_as_array, oidc_id
+            )
+            if authorized:
                 user = self._get_item_by_oidc(oidc_id)
                 response = jsonify(user.to_dict())
                 response.headers.add("Access-Control-Allow-Origin", "*")

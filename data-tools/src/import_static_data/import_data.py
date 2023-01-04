@@ -27,7 +27,7 @@ ALLOWED_TABLES = [
     "budget_line_item",
     "budget_line_item_status",
     "portfolio_description_text",
-    "can_fiscal_year_carry_over"
+    "can_fiscal_year_carry_over",
 ]
 
 ALLOWED_ENVIRONMENTS = [
@@ -68,7 +68,7 @@ def get_data_to_import(file_name: str = data) -> Dict:
     return json5.load(open(file_name))
 
 
-def exists(conn, table): # pragma: no cover
+def exists(conn, table):  # pragma: no cover
     return inspect(conn).has_table(table)
 
 
