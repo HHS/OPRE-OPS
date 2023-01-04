@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { getPortfolio, getPortfolioCans } from "../api/getPortfolio";
-import React, { useEffect } from "react";
-import { Outlet, Route, Routes, useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { Outlet, useParams } from "react-router-dom";
 import {
     setPortfolio,
     setPortfolioCans,

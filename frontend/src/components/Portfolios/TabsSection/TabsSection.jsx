@@ -1,6 +1,5 @@
 import styles from "./TabsSection.module.css";
 import { Link, useLocation } from "react-router-dom";
-import React from "react";
 
 const TabsSection = ({ portfolioId }) => {
     const location = useLocation();
