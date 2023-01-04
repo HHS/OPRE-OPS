@@ -5,7 +5,7 @@
     margin-top: 10px;
 }
 
-.listItemSelected, .listItemNotSelected:visited {
+.listItemSelected {
     display: inline-block;
     padding: 5px;
     text-underline-offset: 16px;
@@ -14,15 +14,13 @@
     text-decoration-thickness: 4px;
     text-decoration-color: #005EA2;
     color: #005EA2;
-    /*font-size: 14px;*/
     outline: none;
 }
 
-.listItemNotSelected, .listItemNotSelected:visited {
+.listItemNotSelected {
     display: inline-block;
     padding: 5px;
     text-decoration-line: none;
     color: #565C65;
-    /*font-size: 14px;*/
     outline: none;
 }
