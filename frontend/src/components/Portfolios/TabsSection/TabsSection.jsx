@@ -4,9 +4,9 @@ import { Link, useLocation } from "react-router-dom";
 const TabsSection = ({ portfolioId }) => {
     const location = useLocation();
 
-    const selected = `font-sans-2xs ${styles.listItemSelected}`;
+    const selected = `font-sans-2xs text-bold ${styles.listItemSelected}`;
 
-    const notSelected = `font-sans-2xs ${styles.listItemNotSelected}`;
+    const notSelected = `font-sans-2xs text-bold ${styles.listItemNotSelected}`;
 
     const paths = [
         {
