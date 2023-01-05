@@ -5,6 +5,6 @@
 }
 
 .container {
-    list-style: none;
-    text-align: center;
+    align-items: center;
+    justify-content: center;
 }

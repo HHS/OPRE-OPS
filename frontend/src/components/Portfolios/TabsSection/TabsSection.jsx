@@ -1,14 +1,44 @@
 import styles from "./TabsSection.module.css";
+import { Link, useLocation } from "react-router-dom";
 
-const TabsSection = () => {
+const TabsSection = ({ portfolioId }) => {
+    const location = useLocation();
+
+    const selected = `font-sans-2xs text-bold ${styles.listItemSelected}`;
+
+    const notSelected = `font-sans-2xs text-bold ${styles.listItemNotSelected}`;
+
+    const paths = [
+        {
+            name: "/budget-and-funding",
+            label: "Budget And Funding",
+        },
+        {
+            name: "/research-projects",
+            label: "Research Projects",
+        },
+        {
+            name: "/people-and-teams",
+            label: "People and Teams",
+        },
+    ];
+
+    const links = paths.map((path) => {
+        const pathName = `/portfolios/${portfolioId}${path.name}`;
+
+        return (
+            <Link to={pathName} className={location.pathname === pathName ? selected : notSelected} key={pathName}>
+                {path.label}
+            </Link>
+        );
+    });
+
     return (
-        <nav>
-            <ul className={styles.tabsList}>
-                <li className={styles.listItem}>Budget and Funding</li>
-                <li className={styles.listItem}>Research Projects</li>
-                <li className={styles.listItem}>People and Teams</li>
-            </ul>
-        </nav>
+        <>
+            <nav className={styles.tabsList} aria-label={"Portfolio Tab Sections"} role={"navigation"}>
+                {links}
+            </nav>
+        </>
     );
 };
 
