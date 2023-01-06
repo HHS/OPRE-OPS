@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 
 const PortfolioTeamLeaders = () => {
-    const portfolio = useSelector((state) => state.portfolioDetail.portfolio);
+    const portfolio = useSelector((state) => state.portfolio.portfolio);
 
     const LeaderName = (props) => <span>{props.value}</span>
 
