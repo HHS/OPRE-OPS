@@ -1,4 +1,4 @@
-import { getCurrentFiscalYear } from "./utils";
+import { getCurrentFiscalYear } from "./util";
 
 test("current federal fiscal year is calculated correctly", async () => {
     const lastDay = new Date("September 30, 2022");
