@@ -479,15 +479,5 @@
       portfolio_id: 7,
       url: "https://www.acf.hhs.gov/opre/topic/home-visiting"
     }
-  ],
-  portfolio_team_leaders: [
-    {
-      portfolio_id: 1,
-      team_lead_id: 1
-    },
-    {
-      portfolio_id: 1,
-      team_lead_id: 2
-    }
   ]
 }
