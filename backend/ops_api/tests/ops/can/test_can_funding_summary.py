@@ -1,8 +1,8 @@
 import datetime
 from decimal import Decimal
 
-from ops.can.models import CAN
-from ops.can.utils import get_can_funding_summary
+from ops.models.cans import CAN
+from ops.utils.cans import get_can_funding_summary
 import pytest
 
 
