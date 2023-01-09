@@ -8,16 +8,21 @@ from sqlalchemy import (
     ForeignKey,
     func,
 )
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import (
+    relationship,
+    column_property,
+)
 
 
 class User(BaseModel):
     """Main User model."""
-    __tablename__ = "user"
+    __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     oidc_id = Column(String(128), unique=True, index=True)
     email = Column(String, index=True, nullable=False)
     first_name = Column(String)
+    last_name = Column(String)
+    full_name = column_property(f"{first_name} {last_name}")
     date_joined = Column(DateTime, server_default=func.now())
     updated = Column(DateTime, onupdate=func.now())
     role = Column(String(255), index=True)

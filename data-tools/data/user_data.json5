@@ -80,7 +80,8 @@
       email: "Tia.Brown@example.com",
       role: "Team Leader"
     }
-  ],
+  ]
+  ,
   portfolio_team_leaders: [
     {
       portfolio_id: 1,

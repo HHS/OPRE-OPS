@@ -13,7 +13,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.engine import Connection
 from sqlalchemy.orm import relationship
-from typing_extensions import override
 
 
 class Division(BaseModel):
@@ -80,7 +79,7 @@ portfolio_team_leaders = Table(
     "portfolio_team_leaders",
     BaseModel.metadata,
     Column("portfolio_id", ForeignKey("portfolio.id"), primary_key=True),
-    Column("team_lead_id", ForeignKey("user.id"), primary_key=True),
+    Column("team_lead_id", ForeignKey("users.id"), primary_key=True),
 )
 
 
