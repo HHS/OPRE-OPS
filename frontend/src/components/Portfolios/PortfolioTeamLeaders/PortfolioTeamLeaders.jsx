@@ -5,12 +5,15 @@ const PortfolioTeamLeaders = () => {
 
     const LeaderName = (props) => <span>{props.value}</span>;
 
-    if(portfolio.team_leaders) {
+    if (portfolio.team_leaders) {
         return (
             <div id="PortfolioTeamLeaders">
-                <strong>Team leaders: </strong>
+                <strong>Team Leaders: </strong>
                 {portfolio.team_leaders.map((item, index) => (
-                    <LeaderName key={(`${item.first_name} ${item.last_name}`, index)} value={(index ? ", " : "") + `${item.first_name} ${item.last_name}`} />
+                    <LeaderName
+                        key={(`${item.first_name} ${item.last_name}`, index)}
+                        value={(index ? ", " : "") + `${item.first_name} ${item.last_name}`}
+                    />
                 ))}
             </div>
         );

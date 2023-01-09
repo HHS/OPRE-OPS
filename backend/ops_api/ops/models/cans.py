@@ -5,13 +5,11 @@ from ops.models.portfolios import portfolio_cans
 from ops.models.base import BaseModel
 from sqlalchemy import (
     Column,
-    Date,
     DateTime,
     Integer,
     String,
     Numeric,
     ForeignKey,
-    DateTime,
     Table,
     event,
 )
