@@ -50,8 +50,8 @@ db.event.listen(
 )
 
 
-portfolio_cans = Table(
-    "portfolio_cans",
+shared_portfolio_cans = Table(
+    "shared_portfolio_cans",
     db.Model.metadata,
     Column("portfolio_id", ForeignKey("portfolio.id"), primary_key=True),
     Column("can_id", ForeignKey("can.id"), primary_key=True),
@@ -64,8 +64,8 @@ class Portfolio(BaseModel):
     name = db.Column(db.String, nullable=False)
     status_id = db.Column(db.Integer, db.ForeignKey("portfolio_status.id"))
     status = db.relationship("PortfolioStatus")
-    cans = db.relationship(
-        "CAN", back_populates="shared_portfolios", secondary=portfolio_cans
+    shared_cans = db.relationship(
+        "CAN", back_populates="shared_portfolios", secondary=shared_portfolio_cans
     )
     division_id = db.Column(db.Integer, db.ForeignKey("division.id"))
     division = db.relationship("Division", back_populates="portfolio")
@@ -73,6 +73,7 @@ class Portfolio(BaseModel):
     description = db.relationship(
         "PortfolioDescriptionText", back_populates="portfolio"
     )
+    research_project = db.relationship("ResearchProject", back_populates="portfolio")
 
     @override
     def to_dict(self):

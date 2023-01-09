@@ -1,7 +1,7 @@
 from ops.models.base import BaseModel
 from ops.models.base import db
 from ops.models.portfolios import Portfolio
-from ops.models.portfolios import portfolio_cans
+from ops.models.portfolios import shared_portfolio_cans
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import column_property
@@ -237,7 +237,7 @@ class CAN(BaseModel):
     managing_portfolio_id = db.Column(db.Integer, db.ForeignKey("portfolio.id"))
     managing_portfolio = db.relationship(Portfolio, back_populates="cans")
     shared_portfolios = db.relationship(
-        Portfolio, secondary=portfolio_cans, back_populates="cans"
+        Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans"
     )
     budget_line_items = db.relationship("BudgetLineItem", back_populates="can")
     agreements = db.relationship(
