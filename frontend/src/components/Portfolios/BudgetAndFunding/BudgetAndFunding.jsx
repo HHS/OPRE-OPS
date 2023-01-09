@@ -1,6 +1,9 @@
 import PortfolioBudgetSummary from "../PortfolioBudgetSummary/PortfolioBudgetSummary";
+import { useOutletContext } from "react-router-dom";
 
-const BudgetAndFunding = ({ portfolioId, canCards }) => {
+const BudgetAndFunding = () => {
+    const [portfolioId, canCards] = useOutletContext();
+
     return (
         <div>
             <section>

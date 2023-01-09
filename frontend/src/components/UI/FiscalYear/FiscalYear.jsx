@@ -13,7 +13,9 @@ const FiscalYear = ({ fiscalYear, handleChangeFiscalYear }) => {
 
     return (
         <div className={styles.container}>
-            <label htmlFor="fiscal-year-select">Fiscal Year</label>
+            <label className="font-sans-xs text-bold" htmlFor="fiscal-year-select">
+                Fiscal Year
+            </label>
             <select
                 id="fiscal-year-select"
                 className={fiscalYearClasses}

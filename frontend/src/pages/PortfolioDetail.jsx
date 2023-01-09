@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { getPortfolio, getPortfolioCans } from "../api/getPortfolio";
 import { useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { Outlet, useParams } from "react-router-dom";
 import {
     setPortfolio,
     setPortfolioCans,
@@ -17,7 +17,6 @@ import { getPortfolioCansFundingDetails } from "../api/getCanFundingSummary";
 import TabsSection from "../components/Portfolios/TabsSection/TabsSection";
 import styles from "../styles/PortfolioDetail.module.css";
 import FiscalYear from "../components/UI/FiscalYear/FiscalYear";
-import BudgetAndFunding from "../components/Portfolios/BudgetAndFunding/BudgetAndFunding";
 
 const PortfolioDetail = () => {
     const dispatch = useDispatch();
@@ -85,14 +84,14 @@ const PortfolioDetail = () => {
                 <div className="margin-left-2 margin-right-2">
                     <PortfolioHeader />
                     <section className={styles.tabSection}>
-                        <TabsSection />
+                        <TabsSection portfolioId={portfolioId} />
                         <FiscalYear
                             className={styles.fiscalYearSelect}
                             fiscalYear={fiscalYear}
                             handleChangeFiscalYear={setSelectedFiscalYear}
                         />
                     </section>
-                    <BudgetAndFunding portfolioId={portfolioId} canCards={canCards} />
+                    <Outlet context={[portfolioId, canCards]} />
                 </div>
             </App>
         </>
