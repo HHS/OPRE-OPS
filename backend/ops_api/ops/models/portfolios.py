@@ -64,6 +64,7 @@ class Portfolio(BaseModel):
     name = db.Column(db.String, nullable=False)
     status_id = db.Column(db.Integer, db.ForeignKey("portfolio_status.id"))
     status = db.relationship("PortfolioStatus")
+    cans = db.relationship("CAN", back_populates="managing_portfolio")
     shared_cans = db.relationship(
         "CAN", back_populates="shared_portfolios", secondary=shared_portfolio_cans
     )
