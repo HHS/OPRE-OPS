@@ -12,7 +12,7 @@ class BaseModel(Base, SerializeMixin, ReprMixin):
 
     class Validator:
         @staticmethod
-        def validate(item, data):
+        def validate(item, data):  # type: ignore [no-untyped-def]
             pass
 
 

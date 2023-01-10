@@ -8,14 +8,6 @@ from ops.models.cans import CANFiscalYearCarryOver
 from ops.models.portfolios import Portfolio
 
 
-class PortfolioDict(TypedDict):
-    id: int
-    name: str
-    description: Optional[str]
-    status: Optional[str]
-    cans: list[CAN]
-
-
 class FundingLineItem(TypedDict):
     """Dict type hint for line items in total funding."""
 

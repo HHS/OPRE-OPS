@@ -13,7 +13,8 @@ from ops.models.portfolios import Division
 from ops.models.portfolios import Portfolio
 from ops.models.portfolios import PortfolioDescriptionText
 from ops.models.portfolios import PortfolioUrl
-from ops.models.users import db
+from ops.models.portfolios import portfolio_team_leaders
+from ops.models.base import db
 from ops.models.users import User
 import pytest
 
@@ -222,7 +223,18 @@ def loaded_db(app):
         status_id=1,
     )
 
-    user1 = User(id=1, oidc_id="sadhfhdasgfhsadhughd", email="user1@example.com")
+    user1 = User(
+        id=1,
+        oidc_id="sadhfhdasgfhsadhughd",
+        email="user1@example.com",
+        first_name="Mister",
+        last_name="Nobody",
+    )
+
+    team_leader1 = db.insert(portfolio_team_leaders).values(
+        portfolio_id=1,
+        team_lead_id=1,
+    )
 
     with app.app_context():
         db.session.add(division1)
@@ -285,6 +297,9 @@ def loaded_db(app):
         db.session.commit()
 
         db.session.add(user1)
+        db.session.commit()
+
+        db.session.execute(team_leader1)
         db.session.commit()
 
         yield db
