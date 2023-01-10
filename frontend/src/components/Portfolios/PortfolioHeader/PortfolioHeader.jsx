@@ -1,6 +1,7 @@
 import { useSelector } from "react-redux";
 
 import style from "./styles.module.css";
+import PortfolioTeamLeaders from "../PortfolioTeamLeaders/PortfolioTeamLeaders";
 import PortfolioDescription from "../PortfolioDescription/PortfolioDescription";
 
 const PortfolioHeader = () => {
@@ -13,6 +14,7 @@ const PortfolioHeader = () => {
         <section className={sectionClasses}>
             <h1 className="font-sans-2xl margin-0">{portfolio.name}</h1>
             <h2 className={divisionClasses}>{portfolio.division?.name}</h2>
+            <PortfolioTeamLeaders />
             <PortfolioDescription />
         </section>
     );
