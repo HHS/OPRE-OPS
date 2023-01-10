@@ -18,6 +18,8 @@ from ops.views import PORTFOLIO_ITEM_API_VIEW_FUNC
 from ops.views import PORTFOLIO_LIST_API_VIEW_FUNC
 from ops.views import PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC
 from ops.views import PORTFOLIO_STATUS_LIST_API_VIEW_FUNC
+from ops.views import RESEARCH_PROJECT_ITEM_API_VIEW_FUNC
+from ops.views import RESEARCH_PROJECT_LIST_API_VIEW_FUNC
 from ops.views import USERS_ITEM_API_VIEW_FUNC
 from ops.views import USERS_LIST_API_VIEW_FUNC
 
@@ -116,4 +118,13 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/portfolio-funding-summary/<int:id>",
         view_func=PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
+    )
+
+    api_bp.add_url_rule(
+        "/research-projects/<int:id>",
+        view_func=RESEARCH_PROJECT_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/research-projects/",
+        view_func=RESEARCH_PROJECT_LIST_API_VIEW_FUNC,
     )
