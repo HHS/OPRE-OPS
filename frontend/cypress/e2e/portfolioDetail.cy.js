@@ -6,7 +6,7 @@ before(() => {
 it("loads", () => {
     cy.get("h1").should("contain", "Child Welfare Research");
     cy.get("h2").should("contain", "Division of Child and Family Development");
-    cy.get("strong").should("contain", "Team Leaders:");
+    cy.get("span").should("contain", "Team Leaders:");
     cy.get("span").should("contain", "Emily Ball");
     cy.get("p").should("contain", "The promotion of children’s safety, permanence, and well-being");
     cy.get("a").should("contain", "Budget And Funding");
