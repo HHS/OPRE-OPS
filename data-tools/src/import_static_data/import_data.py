@@ -27,7 +27,10 @@ ALLOWED_TABLES = [
     "budget_line_item",
     "budget_line_item_status",
     "portfolio_description_text",
-    "can_fiscal_year_carry_over"
+    "can_fiscal_year_carry_over",
+    "research_project",
+    "research_project_methodologies",
+    "research_project_populations"
 ]
 
 ALLOWED_ENVIRONMENTS = [
