@@ -50,6 +50,14 @@ class ResearchProject(BaseModel):
     @override
     def to_dict(self):
         d = super().to_dict()
+
+        d.update(
+            origination_date=self.origination_date.isoformat(),
+            cans=[can.to_dict() for can in self.cans],
+            methodologies=[methodologies.to_dict() for methodologies in self.methodologies],
+            populations=[populations.to_dict() for populations in self.populations]
+        )
+
         return d
 
 
