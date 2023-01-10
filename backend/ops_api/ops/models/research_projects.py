@@ -45,6 +45,7 @@ class ResearchProject(BaseModel):
     populations = db.relationship(
         "PopulationType", secondary=research_project_populations
     )
+    cans = db.relationship("CAN", back_populates="managing_research_project")
 
     @override
     def to_dict(self):

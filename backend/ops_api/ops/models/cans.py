@@ -2,6 +2,7 @@ from ops.models.base import BaseModel
 from ops.models.base import db
 from ops.models.portfolios import Portfolio
 from ops.models.portfolios import shared_portfolio_cans
+from ops.models.research_projects import ResearchProject
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import column_property
@@ -243,6 +244,8 @@ class CAN(BaseModel):
     agreements = db.relationship(
         Agreement, secondary=agreement_cans, back_populates="cans"
     )
+    managing_research_project_id = db.Column(db.Integer, db.ForeignKey("research_project.id"))
+    managing_research_project = db.relationship(ResearchProject, back_populates="cans")
 
     @hybrid_property
     def arrangementType(self):
