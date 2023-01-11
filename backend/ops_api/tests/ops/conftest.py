@@ -1,7 +1,5 @@
 from ops import create_app
 from ops.models.base import db
-from ops.models.cans import FundingPartner
-from ops.models.cans import FundingSource
 from ops.models.portfolios import Division
 from ops.models.portfolios import Portfolio
 from ops.models.portfolios import portfolio_team_leaders
@@ -42,9 +40,9 @@ def loaded_db(app):
 
     division1 = Division(name="Division-1", abbreviation="DV1")
     division2 = Division(name="Division-2", abbreviation="DV2")
-    funding_source1 = FundingSource(name="Funding-Source-1", nickname="FS1")
-    funding_source2 = FundingSource(name="Funding-Source-2", nickname="FS2")
-    funding_partner1 = FundingPartner(name="Funding-Partner-1", nickname="FP1")
+    # funding_source1 = FundingSource(name="Funding-Source-1", nickname="FS1")
+    # funding_source2 = FundingSource(name="Funding-Source-2", nickname="FS2")
+    # funding_partner1 = FundingPartner(name="Funding-Partner-1", nickname="FP1")
     # planned_status = BudgetLineItemStatus(status="Planned")
     # in_execution_status = BudgetLineItemStatus(status="In Execution")
     # obligated_status = BudgetLineItemStatus(status="Obligated")
@@ -173,12 +171,12 @@ def loaded_db(app):
         db.session.add(division2)
         db.session.flush()
 
-        db.session.add(funding_source1)
-        db.session.add(funding_source2)
-        db.session.flush()
+        # db.session.add(funding_source1)
+        # db.session.add(funding_source2)
+        # db.session.flush()
 
-        db.session.add(funding_partner1)
-        db.session.flush()
+        # db.session.add(funding_partner1)
+        # db.session.flush()
 
         db.session.add(p1)
         db.session.add(p2)

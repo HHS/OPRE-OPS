@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from ops.models.base import db
 from ops.models.cans import Agreement
 from ops.models.cans import BudgetLineItem
 from ops.models.cans import BudgetLineItemStatus
@@ -15,15 +14,16 @@ TEST_DB_NAME = "testdb"
 
 
 @pytest.fixture()
-def loaded_db_with_cans(app):
-    funding_source1 = FundingSource(name="Funding-Source-1", nickname="FS1")
-    funding_source2 = FundingSource(name="Funding-Source-2", nickname="FS2")
-    funding_partner1 = FundingPartner(name="Funding-Partner-1", nickname="FP1")
-    planned_status = BudgetLineItemStatus(status="Planned")
-    in_execution_status = BudgetLineItemStatus(status="In Execution")
-    obligated_status = BudgetLineItemStatus(status="Obligated")
-    ag1 = Agreement(name="Agreement A11", agreement_type_id=2)
+def loaded_db_with_cans(app, loaded_db):
+    funding_source1 = FundingSource(id=1, name="Funding-Source-1", nickname="FS1")
+    funding_source2 = FundingSource(id=2, name="Funding-Source-2", nickname="FS2")
+    funding_partner1 = FundingPartner(id=1, name="Funding-Partner-1", nickname="FP1")
+    planned_status = BudgetLineItemStatus(id=1, status="Planned")
+    in_execution_status = BudgetLineItemStatus(id=2, status="In Execution")
+    obligated_status = BudgetLineItemStatus(id=3, status="Obligated")
+    ag1 = Agreement(id=1, name="Agreement A11", agreement_type_id=2)
     can1 = CAN(
+        id=1,
         number="G99WRGB",
         description="Secondary Analyses Data On Child Care & Early Edu",
         purpose="Secondary Analyses of Child Care and Early Education Data (2022)",
@@ -37,6 +37,7 @@ def loaded_db_with_cans(app):
         appropriation_term=1,
     )
     can2 = CAN(
+        id=2,
         number="G990205",
         description="Secondary Analyses Data On Child Care & Early Edu",
         purpose="Secondary Analyses of Child Care and Early Education Data (2022)",
@@ -104,6 +105,7 @@ def loaded_db_with_cans(app):
     )
 
     bli1 = BudgetLineItem(
+        id=1,
         name="Grant Expendeture GA112",
         fiscal_year=2022,
         agreement_id=1,
@@ -112,6 +114,7 @@ def loaded_db_with_cans(app):
         status_id=2,
     )
     bli2 = BudgetLineItem(
+        id=2,
         name="Line-Item-1",
         fiscal_year=2023,
         agreement_id=1,
@@ -121,34 +124,34 @@ def loaded_db_with_cans(app):
     )
 
     with app.app_context():
-        db.session.add(funding_source1)
-        db.session.add(funding_source2)
-        db.session.flush()
+        loaded_db.session.add(funding_source1)
+        loaded_db.session.add(funding_source2)
+        loaded_db.session.flush()
 
-        db.session.add(funding_partner1)
-        db.session.flush()
+        loaded_db.session.add(funding_partner1)
+        loaded_db.session.flush()
 
-        db.session.add(planned_status)
-        db.session.add(in_execution_status)
-        db.session.add(obligated_status)
-        db.session.flush()
+        loaded_db.session.add(planned_status)
+        loaded_db.session.add(in_execution_status)
+        loaded_db.session.add(obligated_status)
+        loaded_db.session.flush()
 
-        db.session.add(can1)
-        db.session.add(can2)
-        db.session.flush()
+        loaded_db.session.add(can1)
+        loaded_db.session.add(can2)
+        loaded_db.session.flush()
 
-        db.session.add(cfy1)
-        db.session.add(cfy2)
-        db.session.add(cfy3)
-        db.session.add(cf42)
-        db.session.flush()
+        loaded_db.session.add(cfy1)
+        loaded_db.session.add(cfy2)
+        loaded_db.session.add(cfy3)
+        loaded_db.session.add(cf42)
+        loaded_db.session.flush()
 
-        db.session.add(cfyco1)
-        db.session.add(cfyco2)
-        db.session.flush()
+        loaded_db.session.add(cfyco1)
+        loaded_db.session.add(cfyco2)
+        loaded_db.session.flush()
 
-        db.session.add(bli1)
-        db.session.add(bli2)
-        db.session.commit()
+        loaded_db.session.add(bli1)
+        loaded_db.session.add(bli2)
+        loaded_db.session.commit()
 
-        yield db
+        yield loaded_db
