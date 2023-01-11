@@ -1,18 +1,17 @@
 """Portfolio models."""
-from typing_extensions import override
 from typing import Any, cast
+
 from ops.models.base import BaseModel
-from sqlalchemy import (
-    Column,
-    ForeignKey,
-    Table,
-    Text,
-    Integer,
-    String,
-    event,
-)
+from sqlalchemy import Column
+from sqlalchemy import event
+from sqlalchemy import ForeignKey
+from sqlalchemy import Integer
+from sqlalchemy import String
+from sqlalchemy import Table
+from sqlalchemy import Text
 from sqlalchemy.engine import Connection
 from sqlalchemy.orm import relationship
+from typing_extensions import override
 
 
 class Division(BaseModel):
@@ -67,8 +66,8 @@ event.listen(
 )
 
 
-portfolio_cans = Table(
-    "portfolio_cans",
+shared_portfolio_cans = Table(
+    "shared_portfolio_cans",
     BaseModel.metadata,
     Column("portfolio_id", ForeignKey("portfolio.id"), primary_key=True),
     Column("can_id", ForeignKey("can.id"), primary_key=True),
@@ -92,9 +91,9 @@ class Portfolio(BaseModel):
     status = relationship("PortfolioStatus")
     cans = relationship(
         "CAN",
-        back_populates="shared_portfolios",
-        secondary=portfolio_cans,
+        back_populates="managing_portfolio",
     )
+    shared_cans = relationship("CAN", back_populates="shared_portfolios", secondary=shared_portfolio_cans)
     division_id = Column(Integer, ForeignKey("division.id"))
     division = relationship("Division", back_populates="portfolio")
     urls = relationship("PortfolioUrl")
@@ -107,6 +106,7 @@ class Portfolio(BaseModel):
         back_populates="portfolios",
         secondary=portfolio_team_leaders,
     )
+    research_project = relationship("ResearchProject", back_populates="portfolio")
 
     @override
     def to_dict(self) -> dict[str, Any]:
