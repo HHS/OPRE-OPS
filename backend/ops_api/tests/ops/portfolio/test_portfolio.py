@@ -36,7 +36,7 @@ def test_portfolio_get_by_id_404(client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_portfolio_calc_funding_amounts_2022(client, loaded_db):
+def test_portfolio_calc_funding_amounts_2022(client, loaded_db_with_portfolios):
     response = client.get("/api/v1/portfolios/1/calcFunding/?fiscal_year=2022")
 
     assert response.status_code == 200
@@ -49,7 +49,7 @@ def test_portfolio_calc_funding_amounts_2022(client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_portfolio_calc_funding_amounts_2023(client, loaded_db):
+def test_portfolio_calc_funding_amounts_2023(client, loaded_db_with_portfolios):
     response = client.get("/api/v1/portfolios/1/calcFunding/?fiscal_year=2023")
 
     assert response.status_code == 200
@@ -62,7 +62,7 @@ def test_portfolio_calc_funding_amounts_2023(client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_portfolio_calc_funding_percents(client, loaded_db):
+def test_portfolio_calc_funding_percents(client, loaded_db_with_portfolios):
     response = client.get("/api/v1/portfolios/1/calcFunding/?fiscal_year=2022")
     assert response.status_code == 200
     assert response.json["available_funding"]["percent"] == "31.0"
@@ -72,7 +72,7 @@ def test_portfolio_calc_funding_percents(client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_portfolio_nested_members(client, loaded_db):
+def test_portfolio_nested_members(client, loaded_db_with_portfolios):
     response = client.get("/api/v1/portfolios/1")
     assert response.status_code == 200
     assert len(response.json["description"]) == 1

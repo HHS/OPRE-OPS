@@ -3,9 +3,9 @@ import pytest
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_can_fiscal_year_carry_over_lookup(loaded_db):
+def test_can_fiscal_year_carry_over_lookup(loaded_db_with_cans):
     cfyco = (
-        loaded_db.session.query(CANFiscalYearCarryOver)
+        loaded_db_with_cans.session.query(CANFiscalYearCarryOver)
         .filter(
             CANFiscalYearCarryOver.can_id == 1,
             CANFiscalYearCarryOver.from_fiscal_year == 2022,
