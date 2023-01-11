@@ -1,10 +1,10 @@
 from datetime import date
 
+from ops.models.base import db
 from ops.models.cans import CAN
 from ops.models.research_projects import MethodologyType
 from ops.models.research_projects import PopulationType
 from ops.models.research_projects import ResearchProject
-from ops.models.users import db
 import pytest
 
 
