@@ -3,9 +3,9 @@ import pytest
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_funding_source_lookup(loaded_db_with_cans):
+def test_funding_source_lookup(loaded_db):
     funding_source = (
-        loaded_db_with_cans.session.query(FundingSource).filter(FundingSource.id == 1).one()
+        loaded_db.session.query(FundingSource).filter(FundingSource.id == 1).one()
     )
     assert funding_source is not None
     assert funding_source.id == 1

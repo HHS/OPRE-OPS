@@ -7,8 +7,8 @@ import pytest
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_can_funding_summary_no_fiscal_year(loaded_db_with_cans):
-    can = loaded_db_with_cans.session.query(CAN).get(1)
+def test_get_can_funding_summary_no_fiscal_year(loaded_db):
+    can = loaded_db.session.query(CAN).get(1)
 
     assert get_can_funding_summary(can) == {
         "available_funding": 4693574.0,
@@ -38,7 +38,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db_with_cans):
 
 
 @pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db_with_cans")
+@pytest.mark.usefixtures("loaded_db")
 def test_get_can_funding_summary_with_fiscal_year(loaded_db):
     can = loaded_db.session.query(CAN).get(1)
 
@@ -70,7 +70,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db_with_cans")
+@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_funding_summary(client):
     response = client.get("/api/v1/can-funding-summary/1")
     assert response.status_code == 200

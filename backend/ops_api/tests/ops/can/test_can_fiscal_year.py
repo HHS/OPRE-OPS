@@ -3,9 +3,9 @@ import pytest
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_can_fiscal_year_lookup(loaded_db_with_cans):
+def test_can_fiscal_year_lookup(loaded_db):
     cfy = (
-        loaded_db_with_cans.session.query(CANFiscalYear)
+        loaded_db.session.query(CANFiscalYear)
         .filter(CANFiscalYear.can_id == 1, CANFiscalYear.fiscal_year == 2022)
         .one()
     )
@@ -30,7 +30,7 @@ def test_can_fiscal_year_create():
 
 
 @pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db_with_cans")
+@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_fiscal_year_list(client):
     response = client.get("/api/v1/can-fiscal-year/")
     assert response.status_code == 200
@@ -42,7 +42,7 @@ def test_can_get_can_fiscal_year_list(client):
 
 
 @pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db_with_cans")
+@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_fiscal_year_by_id(client):
     response = client.get("/api/v1/can-fiscal-year/1")
     assert response.status_code == 200
@@ -52,7 +52,7 @@ def test_can_get_can_fiscal_year_by_id(client):
 
 
 @pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db_with_cans")
+@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_fiscal_year_by_year(client):
     response = client.get("/api/v1/can-fiscal-year/?year=2022")
     assert response.status_code == 200
@@ -62,7 +62,7 @@ def test_can_get_can_fiscal_year_by_year(client):
 
 
 @pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db_with_cans")
+@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_fiscal_year_by_can(client):
     response = client.get("/api/v1/can-fiscal-year/?can_id=1")
     assert response.status_code == 200
@@ -72,7 +72,7 @@ def test_can_get_can_fiscal_year_by_can(client):
 
 
 @pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db_with_cans")
+@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_fiscal_year_by_can_and_year(client):
     response = client.get("/api/v1/can-fiscal-year/?can_id=1&year=2022")
     assert response.status_code == 200

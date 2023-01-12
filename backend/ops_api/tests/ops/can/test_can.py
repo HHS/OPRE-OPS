@@ -3,8 +3,8 @@ import pytest
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_can_retrieve(loaded_db_with_cans):
-    can = loaded_db_with_cans.session.query(CAN).filter(CAN.number == "G990205").one()
+def test_can_retrieve(loaded_db):
+    can = loaded_db.session.query(CAN).filter(CAN.number == "G990205").one()
 
     assert can is not None
     assert can.number == "G990205"
@@ -41,23 +41,23 @@ def test_can_creation():
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_can_get_all(client, loaded_db_with_cans):
-    assert loaded_db_with_cans.session.query(CAN).count() == 2
+def test_can_get_all(client, loaded_db):
+    assert loaded_db.session.query(CAN).count() == 3
 
     response = client.get("/api/v1/cans/")
     assert response.status_code == 200
-    assert len(response.json) == 2
+    assert len(response.json) == 3
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_can_get_by_id(client, loaded_db_with_cans):
+def test_can_get_by_id(client, loaded_db):
     response = client.get("/api/v1/cans/1")
     assert response.status_code == 200
     assert response.json["number"] == "G99WRGB"
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_can_get_portfolio_cans(client, loaded_db_with_cans):
+def test_can_get_portfolio_cans(client, loaded_db):
     response = client.get("/api/v1/cans/portfolio/1")
     assert response.status_code == 200
     assert len(response.json) == 1

@@ -3,8 +3,8 @@ import pytest
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_can_arrangement_type_retrieve_all(loaded_db_with_cans):
-    can_at = loaded_db_with_cans.session.query(CANArrangementType).all()
+def test_can_arrangement_type_retrieve_all(loaded_db):
+    can_at = loaded_db.session.query(CANArrangementType).all()
     assert len(can_at) == 5
 
 
@@ -13,6 +13,6 @@ def test_can_arrangement_type_retrieve_all(loaded_db_with_cans):
     [(1, "OPRE Appropriation"), (2, "Cost Share"), (3, "IAA"), (4, "IDDA"), (5, "MOU")],
 )
 @pytest.mark.usefixtures("app_ctx")
-def test_can_arrangement_type_lookup(loaded_db_with_cans, id, name):
-    can_at = loaded_db_with_cans.session.query(CANArrangementType).get(id)
+def test_can_arrangement_type_lookup(loaded_db, id, name):
+    can_at = loaded_db.session.query(CANArrangementType).get(id)
     assert can_at.name == name

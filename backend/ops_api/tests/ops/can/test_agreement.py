@@ -3,8 +3,8 @@ import pytest
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreement_lookup(loaded_db_with_cans):
-    agreement = loaded_db_with_cans.session.query(Agreement).get(1)
+def test_agreement_lookup(loaded_db):
+    agreement = loaded_db.session.query(Agreement).get(1)
     assert agreement is not None
     assert agreement.name == "Agreement A11"
 
