@@ -12,21 +12,12 @@
     "rules": {
         "react/prop-types": "off"
     },
-    "plugins": [
-    ],
-    "ignorePatterns": [
-        "**/*.css",
-        "**/*.svg",
-        "**/*.png",
-        "**/uswds/**"
-    ],
-    "settings" : {
+    "plugins": [],
+    "ignorePatterns": ["**/*.css", "**/*.svg", "**/*.png", "**/*.jpg", "**/uswds/**"],
+    "settings": {
         "import/resolver": {
             "node": {
-                "extensions": [
-                    ".js",
-                    ".jsx"
-                ]
+                "extensions": [".js", ".jsx"]
             }
         }
     }

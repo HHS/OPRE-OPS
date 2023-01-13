@@ -1,3 +1,5 @@
+import Logo from "../../../images/hhs-logo.jpg";
+
 export const Identifier = () => {
     return (
         <div className="usa-identifier">
@@ -7,18 +9,15 @@ export const Identifier = () => {
             >
                 <div className="usa-identifier__container">
                     <div className="usa-identifier__logos">
-                        <a href="src/components/UI/Footer#top" className="usa-identifier__logo">
-                            <img
-                                className="usa-identifier__logo-img"
-                                src="/assets/img/circle-gray-20.svg"
-                                alt="Parent agency logo"
-                            />
+                        <a href="https://www.hhs.gov/" className="usa-identifier__logo">
+                            <img className="usa-identifier__logo-img radius-pill" src={Logo} alt="HHS Logo" />
                         </a>
                     </div>
                     <section className="usa-identifier__identity" aria-label="Agency description">
-                        <p className="usa-identifier__identity-domain">domain.gov</p>
+                        <p className="usa-identifier__identity-domain">hhs.gov</p>
                         <p className="usa-identifier__identity-disclaimer">
-                            An official website of the <a href="src/components/UI/Footer#top">&lt;Parent agency&gt;</a>
+                            An official website of the{" "}
+                            <a href="https://www.hhs.gov/">U.S. Department of Health & Human Services</a>
                         </p>
                     </section>
                 </div>
@@ -30,8 +29,11 @@ export const Identifier = () => {
                 <div className="usa-identifier__container">
                     <ul className="usa-identifier__required-links-list">
                         <li className="usa-identifier__required-links-item">
-                            <a href="src/components/UI/Footer#top" className="usa-identifier__required-link usa-link">
-                                About OPRE
+                            <a
+                                href="https://www.hhs.gov/about/index.html/"
+                                className="usa-identifier__required-link usa-link"
+                            >
+                                About HHS
                             </a>
                         </li>
                         <li className="usa-identifier__required-links-item">
@@ -74,10 +76,10 @@ export const Identifier = () => {
                 <div className="usa-identifier__container">
                     <div className="usa-identifier__usagov-description">
                         Looking for U.S. government information and services?
+                        <a href="https://www.usa.gov/" className="usa-link margin-left-1">
+                            Visit USA.gov
+                        </a>
                     </div>
-                    <a href="https://www.usa.gov/" className="usa-link">
-                        Visit USA.gov
-                    </a>
                 </div>
             </section>
         </div>
