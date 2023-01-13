@@ -1,4 +1,5 @@
 from ops.models.research_projects import ResearchProject
+from ops.resources.research_projects import ResearchProjectListAPI
 import pytest
 
 
@@ -37,3 +38,51 @@ def test_research_projects_serialization(client, loaded_db):
     assert response.json["methodologies"][0]["name"] == "type 1"
     assert len(response.json["populations"]) == 1
     assert response.json["populations"][0]["name"] == "pop 1"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_research_projects_with_fiscal_year_found(client, loaded_db):
+    response = client.get("/api/v1/research-projects/?fiscal_year=2023")
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["title"] == "Project 1"
+    assert response.json[0]["id"] == 1
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_research_projects_with_fiscal_year_not_found(client, loaded_db):
+    response = client.get("/api/v1/research-projects/?fiscal_year=2000")
+    assert response.status_code == 200
+    assert len(response.json) == 0
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_query_for_fiscal_year_with_fiscal_year_found(client, loaded_db):
+    stmt = ResearchProjectListAPI.get_query_for_fiscal_year(2023)
+    result = loaded_db.session.execute(stmt).fetchall()
+    assert len(result) == 1
+    assert result[0][0].title == "Project 1"
+    assert result[0][0].id == 1
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_query_for_fiscal_year_with_fiscal_year_not_found(client, loaded_db):
+    stmt = ResearchProjectListAPI.get_query_for_fiscal_year(2022)
+    result = loaded_db.session.execute(stmt).fetchall()
+    assert len(result) == 0
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_query_for_fiscal_year_with_project_id_found(client, loaded_db):
+    stmt = ResearchProjectListAPI.get_query_for_fiscal_year(2023, 1)
+    result = loaded_db.session.execute(stmt).fetchall()
+    assert len(result) == 1
+    assert result[0][0].title == "Project 1"
+    assert result[0][0].id == 1
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_query_for_fiscal_year_with_project_id_not_found(client, loaded_db):
+    stmt = ResearchProjectListAPI.get_query_for_fiscal_year(2023, 2)
+    result = loaded_db.session.execute(stmt).fetchall()
+    assert len(result) == 0
