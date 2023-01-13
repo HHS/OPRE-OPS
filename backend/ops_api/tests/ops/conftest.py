@@ -70,6 +70,7 @@ def loaded_db(app):
     p_description_1 = PortfolioDescriptionText(id=1, portfolio_id=1, text="blah blah")
 
     can1 = CAN(
+        id=1,
         number="G99WRGB",
         description="Secondary Analyses Data On Child Care & Early Edu",
         purpose="Secondary Analyses of Child Care and Early Education Data (2022)",
@@ -83,6 +84,7 @@ def loaded_db(app):
         appropriation_term=1,
     )
     can2 = CAN(
+        id=2,
         number="G990205",
         description="Secondary Analyses Data On Child Care & Early Edu",
         purpose="Secondary Analyses of Child Care and Early Education Data (2022)",
@@ -124,7 +126,7 @@ def loaded_db(app):
         can_lead="Tim",
         notes="No notes here.",
     )
-    cf42 = CANFiscalYear(
+    cfy4 = CANFiscalYear(
         can_id=2,
         fiscal_year=2023,
         total_fiscal_year_funding=4433123,
@@ -193,7 +195,18 @@ def loaded_db(app):
 
     pop_1 = PopulationType(name="pop 1", description="Emeritis parmas ducunt ad rumor.")
 
-    can = CAN(number="ABCDEFG", expiration_date=date(2000, 1, 1))
+    can = CAN(id=3, number="ABCDEFG", expiration_date=date(2000, 1, 1))
+
+    cfy5 = CANFiscalYear(
+        can_id=3,
+        fiscal_year=2023,
+        total_fiscal_year_funding=1233123,
+        current_funding=1000000,
+        expected_funding=233123,
+        potential_additional_funding=89000,
+        can_lead="Tim",
+        notes="No notes here.",
+    )
 
     proj_1.methodologies.append(method_1)
     proj_1.populations.append(pop_1)
@@ -234,7 +247,8 @@ def loaded_db(app):
         db.session.add(cfy1)
         db.session.add(cfy2)
         db.session.add(cfy3)
-        db.session.add(cf42)
+        db.session.add(cfy4)
+        db.session.add(cfy5)
         db.session.flush()
 
         db.session.add(cfyco1)
