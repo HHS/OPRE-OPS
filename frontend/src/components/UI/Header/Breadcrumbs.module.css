@@ -1,0 +1,6 @@
+.usaBreadcrumbVisited {
+    color: #005ea2 !important;
+    &:visited {
+        color: #005ea2 !important;
+    }
+}

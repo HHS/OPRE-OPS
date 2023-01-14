@@ -31,7 +31,7 @@ const PortfolioDescription = () => {
     };
 
     return (
-        <div>
+        <div className="margin-top-1">
             <button onClick={expandCollapse} style={buttonStyle}>
                 <p>
                     {portfolio.description?.[0].text}...
