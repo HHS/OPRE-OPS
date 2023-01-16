@@ -1,6 +1,9 @@
 .box {
     margin-top: 25px;
-    margin-bottom: 9px;
+    margin-bottom: 9px;  /* Lower text block has top margin of 16px. (16 + 9 = 25) */
+    display: flex;
+    align-items: center;
+    height: 2em;
 }
 
 .title {
@@ -12,11 +15,20 @@
 
 .leader {
     padding-right: 20px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+}
+
+.leaderName{
     font-style: normal;
     font-weight: 400;
     font-size: 16px;
+    line-height: 18px;
 }
 
 .icon {
+    height: 25px;
+    width: 25px;
     padding-right: 7px;
 }

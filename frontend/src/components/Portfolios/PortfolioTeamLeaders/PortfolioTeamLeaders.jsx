@@ -11,7 +11,9 @@ const PortfolioTeamLeaders = () => {
     const LeaderName = (props) => (
         <span className={cssClasses.leader}>
             <FontAwesomeIcon icon={faCircleUser} className={cssClasses.icon} />
-            <a href=".">{props.value}</a>
+            <span className={cssClasses.leaderName}>
+                <a href=".">{props.value}</a>
+            </span>
         </span>
     );
 
