@@ -39,7 +39,7 @@ const PortfolioBudgetSummary = ({ portfolioId }) => {
     const rightBudgetCard = `${styles.rightBudgetCard}`;
 
     return (
-        <div>
+        <div className="margin-top-3">
             <section>
                 <div className={styles.summaryHeader}>
                     <h2 className="font-sans-lg">Portfolio Budget Summary</h2>
