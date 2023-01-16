@@ -52,7 +52,7 @@ class ResearchProject(BaseModel):
         d = super().to_dict()
 
         d.update(
-            origination_date=self.origination_date.isoformat(),
+            origination_date=self.origination_date.isoformat() if self.origination_date else None,
             cans=[can.to_dict() for can in self.cans],
             methodologies=[methodologies.to_dict() for methodologies in self.methodologies],
             populations=[populations.to_dict() for populations in self.populations]
