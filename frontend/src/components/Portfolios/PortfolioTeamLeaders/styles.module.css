@@ -1,18 +1,22 @@
+.box {
+    margin-top: 25px;
+    margin-bottom: 9px;
+}
+
 .title {
     font-weight: 700;
     font-size: 15px;
     font-style: normal;
-    line-height: 18px;
+    padding-right: 15px;
 }
 
 .leader {
-    padding: 0 0.25em;
+    padding-right: 20px;
     font-style: normal;
     font-weight: 400;
     font-size: 16px;
-    line-height: 150%;
 }
 
 .icon {
-    padding: 0 0.25em;
+    padding-right: 7px;
 }

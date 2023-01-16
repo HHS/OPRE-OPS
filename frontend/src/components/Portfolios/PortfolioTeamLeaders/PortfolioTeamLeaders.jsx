@@ -17,7 +17,7 @@ const PortfolioTeamLeaders = () => {
 
     if (portfolio.team_leaders) {
         return (
-            <div id="PortfolioTeamLeaders">
+            <div id="PortfolioTeamLeaders" className={cssClasses.box}>
                 <span className={cssClasses.title}>Team Leaders </span>
                 {portfolio.team_leaders.map((item) => (
                     <LeaderName
