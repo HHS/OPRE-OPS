@@ -34,7 +34,11 @@ class ResearchProjectListAPI(BaseListAPI):
 
     @staticmethod
     def get_query(fiscal_year=None, portfolio_id=None):
-        stmt = select(ResearchProject).join(ResearchProject.cans).join(CANFiscalYear)
+        stmt = (
+            select(ResearchProject)
+            .join(ResearchProject.cans, isouter=True)
+            .join(CANFiscalYear, isouter=True)
+        )
 
         if portfolio_id:
             stmt = stmt.where(ResearchProject.portfolio_id == portfolio_id)
