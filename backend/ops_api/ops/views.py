@@ -89,5 +89,9 @@ PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = PortfolioFundingSummaryItemAPI.as
 )
 
 # RESEARCH PROJECT ENDPOINTS
-RESEARCH_PROJECT_ITEM_API_VIEW_FUNC = ResearchProjectItemAPI.as_view("research-projects-item", ResearchProject)
-RESEARCH_PROJECT_LIST_API_VIEW_FUNC = ResearchProjectListAPI.as_view("research-projects-group", ResearchProject)
+RESEARCH_PROJECT_ITEM_API_VIEW_FUNC = ResearchProjectItemAPI.as_view(
+    "research-projects-item", ResearchProject
+)
+RESEARCH_PROJECT_LIST_API_VIEW_FUNC = ResearchProjectListAPI.as_view(
+    "research-projects-group", ResearchProject
+)

@@ -16,6 +16,7 @@ from typing_extensions import override
 
 class Division(BaseModel):
     """Portfolio Division sub model."""
+
     __tablename__ = "division"
     id = Column(Integer, primary_key=True)
     name = Column(String(100), unique=True)
@@ -28,6 +29,7 @@ class PortfolioUrl(BaseModel):
 
     Used to list the URL/links associated with the Portfolio.
     """
+
     __tablename__ = "portfolio_url"
     id = Column(Integer, primary_key=True)
     portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
@@ -40,6 +42,7 @@ class PortfolioStatus(BaseModel):
 
     This is automatically populated with the initial options on table creation.
     """
+
     __tablename__ = "portfolio_status"
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False, unique=True)
@@ -84,6 +87,7 @@ portfolio_team_leaders = Table(
 
 class Portfolio(BaseModel):
     """Main Portfolio model."""
+
     __tablename__ = "portfolio"
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
@@ -93,7 +97,9 @@ class Portfolio(BaseModel):
         "CAN",
         back_populates="managing_portfolio",
     )
-    shared_cans = relationship("CAN", back_populates="shared_portfolios", secondary=shared_portfolio_cans)
+    shared_cans = relationship(
+        "CAN", back_populates="shared_portfolios", secondary=shared_portfolio_cans
+    )
     division_id = Column(Integer, ForeignKey("division.id"))
     division = relationship("Division", back_populates="portfolio")
     urls = relationship("PortfolioUrl")
@@ -132,6 +138,7 @@ class Portfolio(BaseModel):
 
 class PortfolioDescriptionText(BaseModel):
     """Portfolio Description sub model."""
+
     __tablename__ = "portfolio_description_text"
     id = Column(Integer, primary_key=True)
     portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
