@@ -1,12 +1,18 @@
 .title {
     font-weight: 700;
     font-size: 15px;
+    font-style: normal;
+    line-height: 18px;
 }
 
 .leader {
-    padding: 0 0.5em;
+    padding: 0 0.25em;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 150%;
 }
 
 .icon {
-    padding: 0 0.5em;
+    padding: 0 0.25em;
 }
