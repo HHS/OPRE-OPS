@@ -7,13 +7,6 @@ html {
     scroll-behavior: smooth;
 }
 
-// TODO:  Remove this once we have a better solution container
-
-body {
-    width: 1024px;
-    margin: auto;
-}
-
 :root {
     --primary-light: hsl(204, 58%, 83%);
     --primary: hsl(205, 48%, 38%);

@@ -14,8 +14,8 @@ const Header = () => {
     };
 
     return (
-        <header className="usa-header usa-header--extended padding-top-6">
-            <div className="usa-navbar">
+        <header className="usa-header usa-header--extended  bg-base-lightest">
+            <div className="usa-navbar padding-top-6 bg-white">
                 <div className="usa-logo" style={styles.logo} id="-logo">
                     <a href="/" style={styles.textlogo} title="Portfolio Management System">
                         <img src={logo} alt="OPRE Logo" />
@@ -26,8 +26,8 @@ const Header = () => {
                     Menu
                 </button>
             </div>
-            <nav aria-label="Primary navigation" className="usa-nav">
-                <div className="usa-nav__inner">
+            <nav aria-label="Primary navigation" className="usa-nav bg-base-lightest">
+                <div className="usa-nav__inner bg-white">
                     <Menu />
                     <div className="usa-nav__secondary">
                         <AuthSection />
