@@ -58,7 +58,7 @@ def test_research_projects_with_fiscal_year_not_found(client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_get_query_for_fiscal_year_with_fiscal_year_found(client, loaded_db):
-    stmt = ResearchProjectListAPI.get_query_for_fiscal_year(2023)
+    stmt = ResearchProjectListAPI.get_query(2023)
     result = loaded_db.session.execute(stmt).fetchall()
     assert len(result) == 1
     assert result[0][0].title == "Project 1"
@@ -67,14 +67,14 @@ def test_get_query_for_fiscal_year_with_fiscal_year_found(client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_get_query_for_fiscal_year_with_fiscal_year_not_found(client, loaded_db):
-    stmt = ResearchProjectListAPI.get_query_for_fiscal_year(2022)
+    stmt = ResearchProjectListAPI.get_query(2022)
     result = loaded_db.session.execute(stmt).fetchall()
     assert len(result) == 0
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_get_query_for_fiscal_year_with_project_id_found(client, loaded_db):
-    stmt = ResearchProjectListAPI.get_query_for_fiscal_year(2023, 1)
+    stmt = ResearchProjectListAPI.get_query(2023, 1)
     result = loaded_db.session.execute(stmt).fetchall()
     assert len(result) == 1
     assert result[0][0].title == "Project 1"
@@ -83,6 +83,6 @@ def test_get_query_for_fiscal_year_with_project_id_found(client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_get_query_for_fiscal_year_with_project_id_not_found(client, loaded_db):
-    stmt = ResearchProjectListAPI.get_query_for_fiscal_year(2023, 2)
+    stmt = ResearchProjectListAPI.get_query(2023, 2)
     result = loaded_db.session.execute(stmt).fetchall()
     assert len(result) == 0

@@ -33,31 +33,14 @@ class ResearchProjectListAPI(BaseListAPI):
         super().__init__(model)
 
     @staticmethod
-    def get_query_for_fiscal_year(fiscal_year=None, portfolio_id=None):
-        if portfolio_id and fiscal_year:
-            stmt = (
-                select(ResearchProject)
-                .join(ResearchProject.cans)
-                .join(CANFiscalYear)
-                .where(CANFiscalYear.fiscal_year == fiscal_year)
-                .where(ResearchProject.portfolio_id == portfolio_id)
-            )
-        elif fiscal_year:
-            stmt = (
-                select(ResearchProject)
-                .join(ResearchProject.cans)
-                .join(CANFiscalYear)
-                .where(CANFiscalYear.fiscal_year == fiscal_year)
-            )
-        elif portfolio_id:
-            stmt = (
-                select(ResearchProject)
-                .join(ResearchProject.cans)
-                .join(CANFiscalYear)
-                .where(ResearchProject.portfolio_id == portfolio_id)
-            )
-        else:
-            stmt = select(ResearchProject)
+    def get_query(fiscal_year=None, portfolio_id=None):
+        stmt = select(ResearchProject).join(ResearchProject.cans).join(CANFiscalYear)
+
+        if portfolio_id:
+            stmt = stmt.where(ResearchProject.portfolio_id == portfolio_id)
+
+        if fiscal_year:
+            stmt = stmt.where(CANFiscalYear.fiscal_year == fiscal_year)
 
         return stmt
 
@@ -65,9 +48,7 @@ class ResearchProjectListAPI(BaseListAPI):
         fiscal_year = request.args.get("fiscal_year")
         portfolio_id = request.args.get("portfolio_id")
 
-        stmt = ResearchProjectListAPI.get_query_for_fiscal_year(
-            fiscal_year, portfolio_id
-        )
+        stmt = ResearchProjectListAPI.get_query(fiscal_year, portfolio_id)
         result = db.session.execute(stmt).all()
 
         return jsonify([i.to_dict() for item in result for i in item])
