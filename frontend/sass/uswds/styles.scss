@@ -3,7 +3,11 @@
 @forward "uswds-theme-custom-styles";
 @forward "uswds-utilities";
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
-  width: 1024px;
-  margin: auto;
+    width: 1024px;
+    margin: auto;
 }

@@ -1,18 +1,30 @@
-from ops.models.base import BaseModel
-from ops.models.base import db
+"""CAN models."""
+from typing import Any
 from ops.models.portfolios import Portfolio
 from ops.models.portfolios import portfolio_cans
+from ops.models.base import BaseModel
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Integer,
+    String,
+    Numeric,
+    ForeignKey,
+    Table,
+    event,
+)
+from sqlalchemy.orm import relationship
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import column_property
 
-can_funding_sources = db.Table(
+can_funding_sources = Table(
     "can_funding_sources",
-    db.Model.metadata,
-    db.Column("can_id", db.ForeignKey("can.id"), primary_key=True),
-    db.Column(
+    BaseModel.metadata,
+    Column("can_id", ForeignKey("can.id"), primary_key=True),
+    Column(
         "funding_source_id",
-        db.ForeignKey("funding_source.id"),
+        ForeignKey("funding_source.id"),
         primary_key=True,
     ),
 )
@@ -28,10 +40,10 @@ class FundingSource(BaseModel):
     """
 
     __tablename__ = "funding_source"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    nickname = db.Column(db.String(100))
-    cans = db.relationship(
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    nickname = Column(String(100))
+    cans = relationship(
         "CAN",
         secondary=can_funding_sources,
         back_populates="funding_sources",
@@ -45,21 +57,21 @@ class FundingPartner(BaseModel):
     """
 
     __tablename__ = "funding_partner"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    nickname = db.Column(db.String(100))
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    nickname = Column(String(100))
 
 
 class AgreementType(BaseModel):
     __tablename__ = "agreement_type"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
 
     @staticmethod
     def initial_data(
-        target: db.Table,
+        target: Table,
         connection: Connection,
-        **kwargs: dict,
+        **kwargs: dict[str, Any],
     ) -> None:
         connection.execute(
             target.insert(),
@@ -71,22 +83,22 @@ class AgreementType(BaseModel):
         )
 
 
-db.event.listen(
+event.listen(
     AgreementType.__table__,
     "after_create",
     AgreementType.initial_data,
 )
 
 
-agreement_cans = db.Table(
+agreement_cans = Table(
     "agreement_cans",
-    db.Model.metadata,
-    db.Column(
+    BaseModel.metadata,
+    Column(
         "agreement_id",
-        db.ForeignKey("agreement.id"),
+        ForeignKey("agreement.id"),
         primary_key=True,
     ),
-    db.Column("can_id", db.ForeignKey("can.id"), primary_key=True),
+    Column("can_id", ForeignKey("can.id"), primary_key=True),
 )
 
 
@@ -94,15 +106,15 @@ class CANFiscalYear(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN."""
 
     __tablename__ = "can_fiscal_year"
-    can_id = db.Column(db.Integer, db.ForeignKey("can.id"), primary_key=True)
-    fiscal_year = db.Column(db.Integer, primary_key=True)
-    can = db.relationship("CAN", lazy="joined")
-    total_fiscal_year_funding = db.Column(db.Numeric(12, 2))
-    current_funding = db.Column(db.Numeric(12, 2))
-    expected_funding = db.Column(db.Numeric(12, 2))
-    potential_additional_funding = db.Column(db.Numeric(12, 2))
-    can_lead = db.Column(db.String)
-    notes = db.Column(db.String, default="")
+    can_id = Column(Integer, ForeignKey("can.id"), primary_key=True)
+    fiscal_year = Column(Integer, primary_key=True)
+    can = relationship("CAN", lazy="joined")
+    total_fiscal_year_funding = Column(Numeric(12, 2))
+    current_funding = Column(Numeric(12, 2))
+    expected_funding = Column(Numeric(12, 2))
+    potential_additional_funding = Column(Numeric(12, 2))
+    can_lead = Column(String)
+    notes = Column(String, default="")
     total_funding = column_property(current_funding + expected_funding)
 
 
@@ -110,52 +122,52 @@ class CANFiscalYearCarryOver(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN carried over from a previous fiscal year."""
 
     __tablename__ = "can_fiscal_year_carry_over"
-    id = db.Column(db.Integer, primary_key=True)
-    can_id = db.Column(db.Integer, db.ForeignKey("can.id"))
-    can = db.relationship("CAN", lazy="joined")
-    from_fiscal_year = db.Column(db.Integer)
-    to_fiscal_year = db.Column(db.Integer)
-    amount = db.Column(db.Numeric(12, 2))
-    notes = db.Column(db.String, default="")
+    id = Column(Integer, primary_key=True)
+    can_id = Column(Integer, ForeignKey("can.id"))
+    can = relationship("CAN", lazy="joined")
+    from_fiscal_year = Column(Integer)
+    to_fiscal_year = Column(Integer)
+    amount = Column(Numeric(12, 2))
+    notes = Column(String, default="")
 
 
 class Agreement(BaseModel):
     __tablename__ = "agreement"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
-    agreement_type_id = db.Column(
-        db.Integer,
-        db.ForeignKey("agreement_type.id"),
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    agreement_type_id = Column(
+        Integer,
+        ForeignKey("agreement_type.id"),
     )
-    agreement_type = db.relationship("AgreementType")
-    cans = db.relationship("CAN", secondary=agreement_cans, back_populates="agreements")
+    agreement_type = relationship("AgreementType")
+    cans = relationship("CAN", secondary=agreement_cans, back_populates="agreements")
 
 
 class BudgetLineItem(BaseModel):
     __tablename__ = "budget_line_item"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
-    fiscal_year = db.Column(db.Integer)
-    agreement_id = db.Column(db.Integer, db.ForeignKey("agreement.id"))
-    agreement = db.relationship(Agreement)
-    can_id = db.Column(db.Integer, db.ForeignKey("can.id"))
-    can = db.relationship("CAN", back_populates="budget_line_items")
-    funding = db.Column(db.Numeric(12, 2))
-    status_id = db.Column(db.Integer, db.ForeignKey("budget_line_item_status.id"))
-    status = db.relationship("BudgetLineItemStatus", back_populates="budget_line_item")
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    fiscal_year = Column(Integer)
+    agreement_id = Column(Integer, ForeignKey("agreement.id"))
+    agreement = relationship(Agreement)
+    can_id = Column(Integer, ForeignKey("can.id"))
+    can = relationship("CAN", back_populates="budget_line_items")
+    funding = Column(Numeric(12, 2))
+    status_id = Column(Integer, ForeignKey("budget_line_item_status.id"))
+    status = relationship("BudgetLineItemStatus", back_populates="budget_line_item")
 
 
 class BudgetLineItemStatus(BaseModel):
     __tablename__ = "budget_line_item_status"
-    id = db.Column(db.Integer, primary_key=True)
-    status = db.Column(db.String, nullable=False, unique=True)
-    budget_line_item = db.relationship("BudgetLineItem")
+    id = Column(Integer, primary_key=True)
+    status = Column(String, nullable=False, unique=True)
+    budget_line_item = relationship("BudgetLineItem")
 
     @staticmethod
     def initial_data(
-        target: db.Table,
+        target: Table,
         connection: Connection,
-        **kwargs: dict,
+        **kwargs: dict[str, Any],
     ) -> None:
         connection.execute(
             target.insert(),
@@ -165,28 +177,28 @@ class BudgetLineItemStatus(BaseModel):
         )
 
     @hybrid_property
-    def Planned(self):
+    def Planned(self) -> bool:
         return self.id == 1  # Planned
 
     @hybrid_property
-    def In_Execution(self):
+    def In_Execution(self) -> bool:
         return self.id == 2  # In Execution
 
     @hybrid_property
-    def Obligated(self):
+    def Obligated(self) -> bool:
         return self.id == 3  # Obligated
 
 
 class CANArrangementType(BaseModel):
     __tablename__ = "can_arrangement_type"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(), nullable=False, unique=True)
+    id = Column(Integer, primary_key=True)
+    name = Column(String(), nullable=False, unique=True)
 
     @staticmethod
     def initial_data(
-        target: db.Table,
+        target: Table,
         connection: Connection,
-        **kwargs: dict,
+        **kwargs: dict[str, Any],
     ) -> None:
         connection.execute(
             target.insert(),
@@ -198,7 +210,7 @@ class CANArrangementType(BaseModel):
         )
 
 
-db.event.listen(
+event.listen(
     CANArrangementType.__table__,
     "after_create",
     CANArrangementType.initial_data,
@@ -215,35 +227,35 @@ class CAN(BaseModel):
     """
 
     __tablename__ = "can"
-    id = db.Column(db.Integer, primary_key=True)
-    number = db.Column(db.String(30), nullable=False)
-    description = db.Column(db.String)
-    purpose = db.Column(db.String, default="")
-    nickname = db.Column(db.String(30))
-    expiration_date = db.Column(db.DateTime, default="1/1/1972")
-    appropriation_term = db.Column(db.Integer, default="1")
-    arrangement_type_id = db.Column(
-        db.Integer,
-        db.ForeignKey("can_arrangement_type.id"),
+    id = Column(Integer, primary_key=True)
+    number = Column(String(30), nullable=False)
+    description = Column(String)
+    purpose = Column(String, default="")
+    nickname = Column(String(30))
+    expiration_date = Column(DateTime, default="1/1/1972")
+    appropriation_term = Column(Integer, default="1")
+    arrangement_type_id = Column(
+        Integer,
+        ForeignKey("can_arrangement_type.id"),
     )
-    arrangement_type = db.relationship(CANArrangementType)
-    funding_sources = db.relationship(
+    arrangement_type = relationship(CANArrangementType)
+    funding_sources = relationship(
         FundingSource,
         secondary=can_funding_sources,
         back_populates="cans",
     )
-    authorizer_id = db.Column(db.Integer, db.ForeignKey("funding_partner.id"))
-    authorizer = db.relationship(FundingPartner)
-    managing_portfolio_id = db.Column(db.Integer, db.ForeignKey("portfolio.id"))
-    managing_portfolio = db.relationship(Portfolio, back_populates="cans")
-    shared_portfolios = db.relationship(
+    authorizer_id = Column(Integer, ForeignKey("funding_partner.id"))
+    authorizer = relationship(FundingPartner)
+    managing_portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
+    managing_portfolio = relationship(Portfolio, back_populates="cans")
+    shared_portfolios = relationship(
         Portfolio, secondary=portfolio_cans, back_populates="cans"
     )
-    budget_line_items = db.relationship("BudgetLineItem", back_populates="can")
-    agreements = db.relationship(
+    budget_line_items = relationship("BudgetLineItem", back_populates="can")
+    agreements = relationship(
         Agreement, secondary=agreement_cans, back_populates="cans"
     )
 
     @hybrid_property
-    def arrangementType(self):
+    def arrangementType(self) -> str:
         return self.arrangement_type.name
