@@ -167,7 +167,7 @@ This environment can be deployed to by authorized committers in the repository. 
 an existing commit to the `staging` branch.
 
 ```shell
-git branch -d staging  # deletes the development branch if it was already checked out locally
+git branch -d staging  # deletes the staging branch if it was already checked out locally
 git checkout -b staging
 git push --force --set-upstream origin staging
 ```
