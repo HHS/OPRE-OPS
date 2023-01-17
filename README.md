@@ -51,8 +51,6 @@ docker compose up
 Whether you run the application through Docker or locally, you can access the frontend at `http://localhost:3000` and
 the backend at `http://localhost:8080`.
 
-There remains an administrative interface for the backend that you can access at `http://localhost:8080/admin/`
-
 ## Checks
 
 ### Unit Tests
