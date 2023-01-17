@@ -36,6 +36,7 @@ class ResearchProjectListAPI(BaseListAPI):
     def get_query(fiscal_year=None, portfolio_id=None):
         stmt = (
             select(ResearchProject)
+            .distinct(ResearchProject.id)
             .join(ResearchProject.cans, isouter=True)
             .join(CANFiscalYear, isouter=True)
         )
