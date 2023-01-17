@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getCurrentFiscalYear } from "../helpers/utils";
+import { getCurrentFiscalYear } from "../../../helpers/utils";
 
 const initialState = {
     portfolio: {},

@@ -1,4 +1,4 @@
-import ApplicationContext from "../applicationContext/ApplicationContext";
+import ApplicationContext from "../../../applicationContext/ApplicationContext";
 
 export const getPortfolio = async (id) => {
     const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;

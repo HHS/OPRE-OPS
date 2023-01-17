@@ -2,7 +2,7 @@ import styles from "./ResearchProjects.module.css";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 // eslint-disable-next-line import/named
-import { setResearchProjects } from "../../../store/portfolioSlice";
+import { setResearchProjects } from "../../../pages/portfolios/detail/portfolioSlice";
 import { useParams } from "react-router-dom";
 // eslint-disable-next-line import/named
 import { getResearchProjects } from "../../../api/getResearchProjects";
