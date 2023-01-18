@@ -35,7 +35,11 @@ const TabsSection = ({ portfolioId }) => {
 
     return (
         <>
-            <nav className={styles.tabsList} aria-label={"Portfolio Tab Sections"} role={"navigation"}>
+            <nav
+                className={`margin-bottom-4 ${styles.tabsList}`}
+                aria-label={"Portfolio Tab Sections"}
+                role={"navigation"}
+            >
                 {links}
             </nav>
         </>
