@@ -16,6 +16,7 @@ import CanDetail from "./pages/CanDetail";
 import ResearchProjects from "./components/Portfolios/ResearchProjects/ResearchProjects";
 import PeopleAndTeams from "./components/Portfolios/PeopleAndTeams/PeopleAndTeams";
 import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAndFunding";
+import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProjectDetail";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -35,6 +36,7 @@ root.render(
                     </Route>
                     <Route path="/cans" element={<CanList />} />
                     <Route path="/cans/:id" element={<CanDetail />} />
+                    <Route path="/research-project/:id" element={<ResearchProjectDetail />} />
                 </Routes>
             </BrowserRouter>
         </Provider>
