@@ -3,16 +3,10 @@ before(() => {
     cy.injectAxe();
 });
 
-// it("loads", () => {
-//
-// });
+it("loads", () => {
+    cy.get("h1").should("contain", "Research Project");
+});
 
 it("passes a11y checks", () => {
     cy.checkA11y();
 });
-
-// it("expands the description when one clicks read more", () => {
-//     cy.contains("read more").click();
-//     cy.get("a").should("contain", "See more on the website");
-//     cy.checkA11y();
-// });

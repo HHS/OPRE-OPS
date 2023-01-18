@@ -1,4 +1,4 @@
-import ApplicationContext from "../applicationContext/ApplicationContext";
+import ApplicationContext from "../../../applicationContext/ApplicationContext";
 
 export const getResearchProjects = async (portfolioId, fiscalYear) => {
     const queryParams = {

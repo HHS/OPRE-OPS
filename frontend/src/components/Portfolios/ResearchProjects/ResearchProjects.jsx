@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setResearchProjects } from "../../../pages/portfolios/detail/portfolioSlice";
 import { Link, useParams } from "react-router-dom";
 // eslint-disable-next-line import/named
-import { getResearchProjects } from "../../../api/getResearchProjects";
+import { getResearchProjects } from "../../../pages/portfolios/detail/getResearchProjects";
 
 const ResearchProjects = () => {
     const dispatch = useDispatch();
