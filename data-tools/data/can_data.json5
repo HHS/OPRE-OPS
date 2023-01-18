@@ -31,7 +31,8 @@
       appropriation_term: 1,
       arrangement_type_id: 5,
       authorizer_id: 26,
-      managing_portfolio_id: 6
+      managing_portfolio_id: 6,
+      managing_research_project_id: null
     },
     {
       id: 2,
@@ -42,7 +43,8 @@
       appropriation_term: 1,
       arrangement_type_id: 3,
       authorizer_id: 26,
-      managing_portfolio_id: 1
+      managing_portfolio_id: 1,
+      managing_research_project_id: null
     },
     {
       id: 3,
@@ -53,7 +55,8 @@
       appropriation_term: 1,
       arrangement_type_id: 1,
       authorizer_id: 26,
-      managing_portfolio_id: 8
+      managing_portfolio_id: 8,
+      managing_research_project_id: null
     },
     {
       id: 4,
@@ -64,7 +67,8 @@
       appropriation_term: 1,
       arrangement_type_id: 4,
       authorizer_id: 26,
-      managing_portfolio_id: 1
+      managing_portfolio_id: 1,
+      managing_research_project_id: 1
     },
     {
       id: 5,
@@ -75,7 +79,8 @@
       appropriation_term: 1,
       arrangement_type_id: 1,
       authorizer_id: 26,
-      managing_portfolio_id: 2
+      managing_portfolio_id: 2,
+      managing_research_project_id: null
     },
     {
       id: 6,
@@ -86,7 +91,8 @@
       appropriation_term: 1,
       arrangement_type_id: 2,
       authorizer_id: 1,
-      managing_portfolio_id: 6
+      managing_portfolio_id: 6,
+      managing_research_project_id: null
     },
     {
       id: 7,
@@ -97,7 +103,8 @@
       appropriation_term: 1,
       arrangement_type_id: 2,
       authorizer_id: 23,
-      managing_portfolio_id: 6
+      managing_portfolio_id: 6,
+      managing_research_project_id: null
     },
     {
       id: 8,
@@ -108,7 +115,8 @@
       appropriation_term: 1,
       arrangement_type_id: 2,
       authorizer_id: 23,
-      managing_portfolio_id: 6
+      managing_portfolio_id: 6,
+      managing_research_project_id: null
     },
     {
       id: 9,
@@ -119,7 +127,8 @@
       appropriation_term: 1,
       arrangement_type_id: 2,
       authorizer_id: 23,
-      managing_portfolio_id: 6
+      managing_portfolio_id: 6,
+      managing_research_project_id: null
     },
     {
       id: 10,
@@ -130,7 +139,8 @@
       appropriation_term: 1,
       arrangement_type_id: 2,
       authorizer_id: 23,
-      managing_portfolio_id: 6
+      managing_portfolio_id: 6,
+      managing_research_project_id: null
     },
     {
       id: 11,
@@ -141,7 +151,8 @@
       appropriation_term: 5,
       arrangement_type_id: 2,
       authorizer_id: 23,
-      managing_portfolio_id: 6
+      managing_portfolio_id: 6,
+      managing_research_project_id: null
     },
     {
       id: 12,
@@ -152,7 +163,20 @@
       appropriation_term: 5,
       arrangement_type_id: 2,
       authorizer_id: 23,
-      managing_portfolio_id: 6
+      managing_portfolio_id: 6,
+      managing_research_project_id: null
+    },
+    {
+      id: 13,
+      number: "116e2e37",
+      description: "Pol, danista!",
+      nickname: "",
+      expiration_date: "9/1/2023",
+      appropriation_term: 1,
+      arrangement_type_id: 5,
+      authorizer_id: 26,
+      managing_portfolio_id: 3,
+      managing_research_project_id: 1
     }
   ],
   "can_fiscal_year": [
@@ -317,6 +341,24 @@
       expected_funding: 4000000.00,
       potential_additional_funding: 3000000.00,
       notes: ""
+    },
+    {
+      can_id: 13,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 11400000.00,
+      current_funding: 880000.00,
+      expected_funding: 260000.00,
+      potential_additional_funding: 1300000.00,
+      notes: ""
+    },
+    {
+      can_id: 13,
+      fiscal_year: 2024,
+      total_fiscal_year_funding: 11400000.00,
+      current_funding: 880000.00,
+      expected_funding: 260000.00,
+      potential_additional_funding: 1300000.00,
+      notes: ""
     }
   ],
   "can_fiscal_year_carry_over": [
@@ -333,6 +375,12 @@
       from_fiscal_year: 2022,
       to_fiscal_year: 2023,
       amount: 1000000.00,
+    },
+  ],
+  "research_project_cans": [
+    {
+      research_project_id: 1,
+      can_id: 13
     }
   ]
 }

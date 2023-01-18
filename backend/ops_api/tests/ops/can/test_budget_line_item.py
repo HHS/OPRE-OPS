@@ -28,6 +28,7 @@ def test_budget_line_item_creation():
 
 
 @pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
 def test_get_budget_line_items_list(client):
     response = client.get("/api/v1/budget-line-items/")
     assert response.status_code == 200
@@ -37,6 +38,7 @@ def test_get_budget_line_items_list(client):
 
 
 @pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
 def test_get_budget_line_items_list_by_id(client):
     response = client.get("/api/v1/budget-line-items/1")
     assert response.status_code == 200
@@ -44,6 +46,7 @@ def test_get_budget_line_items_list_by_id(client):
 
 
 @pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
 def test_get_budget_line_items_list_by_year(client):
     response = client.get("/api/v1/budget-line-items/?year=2022")
     assert response.status_code == 200
@@ -52,6 +55,7 @@ def test_get_budget_line_items_list_by_year(client):
 
 
 @pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
 def test_get_budget_line_items_list_by_can(client):
     response = client.get("/api/v1/budget-line-items/?can_id=1")
     assert response.status_code == 200
@@ -61,6 +65,7 @@ def test_get_budget_line_items_list_by_can(client):
 
 
 @pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
 def test_get_budget_line_items_list_by_can_and_year(client):
     response = client.get("/api/v1/budget-line-items/?can_id=1&year=2022")
     assert response.status_code == 200

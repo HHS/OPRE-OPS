@@ -1,22 +1,22 @@
 """CAN models."""
 from typing import Any
-from ops.models.portfolios import Portfolio
-from ops.models.portfolios import portfolio_cans
+
 from ops.models.base import BaseModel
-from sqlalchemy import (
-    Column,
-    DateTime,
-    Integer,
-    String,
-    Numeric,
-    ForeignKey,
-    Table,
-    event,
-)
-from sqlalchemy.orm import relationship
+from ops.models.portfolios import Portfolio
+from ops.models.portfolios import shared_portfolio_cans
+from ops.models.research_projects import ResearchProject
+from sqlalchemy import Column
+from sqlalchemy import DateTime
+from sqlalchemy import event
+from sqlalchemy import ForeignKey
+from sqlalchemy import Integer
+from sqlalchemy import Numeric
+from sqlalchemy import String
+from sqlalchemy import Table
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import column_property
+from sqlalchemy.orm import relationship
 
 can_funding_sources = Table(
     "can_funding_sources",
@@ -249,12 +249,14 @@ class CAN(BaseModel):
     managing_portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
     managing_portfolio = relationship(Portfolio, back_populates="cans")
     shared_portfolios = relationship(
-        Portfolio, secondary=portfolio_cans, back_populates="cans"
+        Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans"
     )
     budget_line_items = relationship("BudgetLineItem", back_populates="can")
     agreements = relationship(
         Agreement, secondary=agreement_cans, back_populates="cans"
     )
+    managing_research_project_id = Column(Integer, ForeignKey("research_project.id"))
+    managing_research_project = relationship(ResearchProject, back_populates="cans")
 
     @hybrid_property
     def arrangementType(self) -> str:

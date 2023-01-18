@@ -5,6 +5,7 @@ from ops.models.cans import CANFiscalYear
 from ops.models.portfolios import Division
 from ops.models.portfolios import Portfolio
 from ops.models.portfolios import PortfolioStatus
+from ops.models.research_projects import ResearchProject
 from ops.models.users import User
 from ops.resources.auth import AuthLoginAPI
 from ops.resources.auth import AuthRefreshAPI
@@ -25,6 +26,8 @@ from ops.resources.portfolio_status import PortfolioStatusItemAPI
 from ops.resources.portfolio_status import PortfolioStatusListAPI
 from ops.resources.portfolios import PortfolioItemAPI
 from ops.resources.portfolios import PortfolioListAPI
+from ops.resources.research_projects import ResearchProjectItemAPI
+from ops.resources.research_projects import ResearchProjectListAPI
 from ops.resources.users import UsersItemAPI
 from ops.resources.users import UsersListAPI
 
@@ -83,4 +86,12 @@ CAN_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = CANFundingSummaryItemAPI.as_view(
 )
 PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = PortfolioFundingSummaryItemAPI.as_view(
     "portfolio-funding-summary-item", Portfolio
+)
+
+# RESEARCH PROJECT ENDPOINTS
+RESEARCH_PROJECT_ITEM_API_VIEW_FUNC = ResearchProjectItemAPI.as_view(
+    "research-projects-item", ResearchProject
+)
+RESEARCH_PROJECT_LIST_API_VIEW_FUNC = ResearchProjectListAPI.as_view(
+    "research-projects-group", ResearchProject
 )

@@ -2,7 +2,7 @@ from datetime import timedelta
 import os
 
 DEBUG = False  # make sure DEBUG is off unless enabled explicitly otherwise
-SQLALCHEMY_DATABASE_URI = "sqlite:///ops_test.db"
+SQLALCHEMY_DATABASE_URI = "sqlite://"
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 FLASK_PORT = 8080
 AUTHLIB_OAUTH_CLIENTS = {
