@@ -12,6 +12,9 @@ DATA=data/funding_partner_data.json5 python src/import_static_data/import_data.p
 echo "Loading 'funding_source_data.json5'..."
 DATA=data/funding_source_data.json5 python src/import_static_data/import_data.py
 
+echo "Loading 'research_project_data.json5'..."
+DATA=./data/research_project_data.json5 python src/import_static_data/import_data.py &&
+
 echo "Loading 'user_data.json5'..."
 DATA=data/user_data.json5 python src/import_static_data/import_data.py
 
