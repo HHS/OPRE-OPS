@@ -36,7 +36,7 @@ root.render(
                     </Route>
                     <Route path="/cans" element={<CanList />} />
                     <Route path="/cans/:id" element={<CanDetail />} />
-                    <Route path="/research-project/:id" element={<ResearchProjectDetail />} />
+                    <Route path="/research-projects/:id" element={<ResearchProjectDetail />} />
                 </Routes>
             </BrowserRouter>
         </Provider>

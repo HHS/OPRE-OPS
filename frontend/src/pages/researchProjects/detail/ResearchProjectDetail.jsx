@@ -25,9 +25,9 @@ const ResearchProjectDetail = () => {
     }, [dispatch, researchProjectId]);
 
     return (
-        <>
-            <App></App>
-        </>
+        <App>
+            <h1>Research Project</h1>
+        </App>
     );
 };
 
