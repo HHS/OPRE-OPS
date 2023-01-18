@@ -34,14 +34,11 @@ const PortfolioBudgetSummary = ({ portfolioId }) => {
     }, [dispatch, portfolioId, fiscalYear]);
 
     const fundingCard = `usa-card grid-col-4 ${styles.fundingCard}`;
-    const budgetStatusCard = `grid-col-2 ${styles.budgetStatusCard}`;
-    const leftBudgetCard = `${styles.leftBudgetCard}`;
-    const rightBudgetCard = `${styles.rightBudgetCard}`;
 
     return (
-        <div className="margin-top-3">
+        <div>
             <section>
-                <div className={styles.summaryHeader}>
+                <div>
                     <h2 className="font-sans-lg">Portfolio Budget Summary</h2>
                 </div>
                 <p className="font-sans-sm">
@@ -61,11 +58,11 @@ const PortfolioBudgetSummary = ({ portfolioId }) => {
                 </ul>
             </section>
             <section>
-                <div className={budgetStatusCard}>
-                    <div className={leftBudgetCard}>
+                <div className="display-flex flex-justify">
+                    <div>
                         <PortfolioFundingByBudgetStatus portfolioId={portfolio.id} />
                     </div>
-                    <div className={rightBudgetCard}>
+                    <div>
                         <PortfolioFundingByCAN portfolioId={portfolio.id} />
                     </div>
                 </div>
