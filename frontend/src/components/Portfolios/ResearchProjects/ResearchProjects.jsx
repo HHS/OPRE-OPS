@@ -37,9 +37,9 @@ const ResearchProjects = () => {
     }, [dispatch, fiscalYear]);
 
     return (
-        <div className={styles.container}>
+        <div className={`padding-y-1 $styles.container`}>
             {researchProjectData && <ul>{researchProjectData}</ul>}
-            {!researchProjectData && <div>There are no Research Projects.</div>}
+            {!researchProjectData && <p>There are no Research Projects.</p>}
         </div>
     );
 };
