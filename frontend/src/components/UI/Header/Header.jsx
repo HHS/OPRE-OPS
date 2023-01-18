@@ -14,7 +14,7 @@ const Header = () => {
     };
 
     return (
-        <header className="usa-header usa-header--extended  bg-base-lightest">
+        <header className="usa-header usa-header--extended bg-brand-primary">
             <div className="usa-navbar padding-top-6 bg-white">
                 <div className="usa-logo" style={styles.logo} id="-logo">
                     <a href="/" style={styles.textlogo} title="Portfolio Management System">
