@@ -81,7 +81,7 @@ const PortfolioDetail = () => {
                 <BreadcrumbList>
                     <BreadcrumbItem isCurrent pageName="Portfolios" />
                 </BreadcrumbList>
-                <div className="margin-left-2 margin-right-2">
+                <div>
                     <PortfolioHeader />
                     <section className={styles.tabSection}>
                         <TabsSection portfolioId={portfolioId} />
