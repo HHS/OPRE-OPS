@@ -3,7 +3,7 @@ import axios from "axios";
 const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
 
 export const callBackend = async (urlPath, action, requestBody, queryParams) => {
-    console.log(`Calling backend at ${urlPath}`);
+    console.log(`Calling backend at ${urlPath} ${queryParams ? "with params:" + JSON.stringify(queryParams) : ""}`);
 
     const response = await axios({
         method: action,
