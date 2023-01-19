@@ -33,7 +33,17 @@ const router = createBrowserRouter(
         <>
             <Route path="/" element={<Home />} />
             <Route path="/portfolios" element={<PortfolioList />} />
-            <Route path="/portfolios/:id" element={<PortfolioDetail />}>
+            <Route
+                path="/portfolios/:id"
+                element={<PortfolioDetail />}
+                handle={{
+                    // you can put whatever you want on a route handle
+                    // here we use "crumb" and return some elements,
+                    // this is what we'll render in the breadcrumbs
+                    // for this route
+                    crumb: () => <Link to="/portfolios">Portfolios</Link>,
+                }}
+            >
                 {/* Default to BudgetAndFunding */}
                 <Route exact path="" element={<Navigate to={"budget-and-funding"} />} />
                 <Route path="budget-and-funding" element={<BudgetAndFunding />} />
