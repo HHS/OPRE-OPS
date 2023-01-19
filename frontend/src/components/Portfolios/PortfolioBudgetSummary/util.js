@@ -1,4 +1,4 @@
-import { getPortfolio } from "../../../api/getPortfolio";
+import { getPortfolio } from "../../../pages/portfolios/detail/getPortfolio";
 import { setPortfolio, setPortfolioBudget } from "./portfolioBudgetSummarySlice";
 import ApplicationContext from "../../../applicationContext/ApplicationContext";
 

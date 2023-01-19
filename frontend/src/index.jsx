@@ -10,12 +10,13 @@ import "./uswds/css/styles.css";
 
 import Home from "./pages/Home";
 import PortfolioList from "./pages/portfolios/list/PortfolioList";
-import PortfolioDetail from "./pages/PortfolioDetail";
+import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
 import CanList from "./pages/cans/list/CanList";
 import CanDetail from "./pages/CanDetail";
 import ResearchProjects from "./components/Portfolios/ResearchProjects/ResearchProjects";
 import PeopleAndTeams from "./components/Portfolios/PeopleAndTeams/PeopleAndTeams";
 import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAndFunding";
+import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProjectDetail";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -35,6 +36,7 @@ root.render(
                     </Route>
                     <Route path="/cans" element={<CanList />} />
                     <Route path="/cans/:id" element={<CanDetail />} />
+                    <Route path="/research-projects/:id" element={<ResearchProjectDetail />} />
                 </Routes>
             </BrowserRouter>
         </Provider>
