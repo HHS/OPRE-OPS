@@ -39,7 +39,7 @@ const ResearchProjectDetail = () => {
             <div className="margin-left-2 margin-right-2">
                 <h1 className={`font-sans-2xl ${styles.titleContainer}`}>{researchProject.title}</h1>
                 <h2 className="font-sans-3xs margin-top-0 margin-bottom-0 text-normal">{portfolio.division?.name}</h2>
-                <TeamLeaders />
+                <TeamLeaders teamLeaders={researchProject.team_leaders} />
             </div>
         </App>
     );
