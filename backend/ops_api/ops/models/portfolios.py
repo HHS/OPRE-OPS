@@ -1,22 +1,22 @@
 """Portfolio models."""
-from typing_extensions import override
 from typing import Any, cast
+
 from ops.models.base import BaseModel
-from sqlalchemy import (
-    Column,
-    ForeignKey,
-    Table,
-    Text,
-    Integer,
-    String,
-    event,
-)
+from sqlalchemy import Column
+from sqlalchemy import event
+from sqlalchemy import ForeignKey
+from sqlalchemy import Integer
+from sqlalchemy import String
+from sqlalchemy import Table
+from sqlalchemy import Text
 from sqlalchemy.engine import Connection
 from sqlalchemy.orm import relationship
+from typing_extensions import override
 
 
 class Division(BaseModel):
     """Portfolio Division sub model."""
+
     __tablename__ = "division"
     id = Column(Integer, primary_key=True)
     name = Column(String(100), unique=True)
@@ -29,6 +29,7 @@ class PortfolioUrl(BaseModel):
 
     Used to list the URL/links associated with the Portfolio.
     """
+
     __tablename__ = "portfolio_url"
     id = Column(Integer, primary_key=True)
     portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
@@ -41,6 +42,7 @@ class PortfolioStatus(BaseModel):
 
     This is automatically populated with the initial options on table creation.
     """
+
     __tablename__ = "portfolio_status"
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False, unique=True)
@@ -67,8 +69,8 @@ event.listen(
 )
 
 
-portfolio_cans = Table(
-    "portfolio_cans",
+shared_portfolio_cans = Table(
+    "shared_portfolio_cans",
     BaseModel.metadata,
     Column("portfolio_id", ForeignKey("portfolio.id"), primary_key=True),
     Column("can_id", ForeignKey("can.id"), primary_key=True),
@@ -85,6 +87,7 @@ portfolio_team_leaders = Table(
 
 class Portfolio(BaseModel):
     """Main Portfolio model."""
+
     __tablename__ = "portfolio"
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
@@ -92,8 +95,10 @@ class Portfolio(BaseModel):
     status = relationship("PortfolioStatus")
     cans = relationship(
         "CAN",
-        back_populates="shared_portfolios",
-        secondary=portfolio_cans,
+        back_populates="managing_portfolio",
+    )
+    shared_cans = relationship(
+        "CAN", back_populates="shared_portfolios", secondary=shared_portfolio_cans
     )
     division_id = Column(Integer, ForeignKey("division.id"))
     division = relationship("Division", back_populates="portfolio")
@@ -107,6 +112,7 @@ class Portfolio(BaseModel):
         back_populates="portfolios",
         secondary=portfolio_team_leaders,
     )
+    research_project = relationship("ResearchProject", back_populates="portfolio")
 
     @override
     def to_dict(self) -> dict[str, Any]:
@@ -132,6 +138,7 @@ class Portfolio(BaseModel):
 
 class PortfolioDescriptionText(BaseModel):
     """Portfolio Description sub model."""
+
     __tablename__ = "portfolio_description_text"
     id = Column(Integer, primary_key=True)
     portfolio_id = Column(Integer, ForeignKey("portfolio.id"))

@@ -1,6 +1,8 @@
+from datetime import date
 from datetime import datetime
 
 from ops import create_app
+from ops.models.base import db
 from ops.models.cans import Agreement
 from ops.models.cans import BudgetLineItem
 from ops.models.cans import BudgetLineItemStatus
@@ -11,10 +13,12 @@ from ops.models.cans import FundingPartner
 from ops.models.cans import FundingSource
 from ops.models.portfolios import Division
 from ops.models.portfolios import Portfolio
+from ops.models.portfolios import portfolio_team_leaders
 from ops.models.portfolios import PortfolioDescriptionText
 from ops.models.portfolios import PortfolioUrl
-from ops.models.portfolios import portfolio_team_leaders
-from ops.models.base import db
+from ops.models.research_projects import MethodologyType
+from ops.models.research_projects import PopulationType
+from ops.models.research_projects import ResearchProject
 from ops.models.users import User
 import pytest
 
@@ -25,8 +29,7 @@ TEST_DB_NAME = "testdb"
 def app():
     app = create_app({"TESTING": True})
     # set up here
-    yield app
-    # tear down here
+    yield app  # tear down here
 
 
 @pytest.fixture()
@@ -43,54 +46,6 @@ def pytest_addoption(parser):
     )
 
 
-#
-# @pytest.fixture(scope="session")
-# def db_engine(request):
-#     """yields a SQLAlchemy engine which is suppressed after the test session"""
-#     db_url = request.config.getoption("--dburl")
-#     engine_ = create_engine(db_url, echo=True)
-#
-#     yield engine_
-#
-#     engine_.dispose()
-
-
-# @pytest.fixture(scope="session")
-# def db_session_factory(db_engine):
-#     """returns a SQLAlchemy scoped session factory"""
-#     return scoped_session(sessionmaker(bind=db_engine))
-
-#
-# @pytest.fixture(scope="function")
-# def db_session(db_session_factory):
-#     """yields a SQLAlchemy connection which is rollbacked after the test"""
-#     session_ = db_session_factory()
-#
-#     yield session_
-#
-#     session_.rollback()
-#     session_.close()
-
-
-# @pytest.fixture(scope="function")
-# def db_tables(db_engine):
-#     # AgreementType.metadata.create_all(db_engine)
-#     # Agreement.metadata.create_all(db_engine)
-#     # CAN.metadata.create_all(db_engine)
-#     # CANFiscalYear.metadata.create_all(db_engine)
-#     # BudgetLineItem.metadata.create_all(db_engine)
-#     # Portfolio.metadata.create_all(db_engine)
-#     BaseModel.metadata.create_all(db_engine)
-#     yield
-#     BaseModel.metadata.drop_all(db_engine)
-#     # AgreementType.metadata.drop_all(db_engine)
-#     # Agreement.metadata.drop_all(db_engine)
-#     # CAN.metadata.drop_all(db_engine)
-#     # CANFiscalYear.metadata.drop_all(db_engine)
-#     # BudgetLineItem.metadata.drop_all(db_engine)
-#     # Portfolio.metadata.drop_all(db_engine)
-
-
 @pytest.fixture()
 def loaded_db(app):
     # Using the db_session fixture, we have a session, with a SQLAlchemy db_engine
@@ -104,16 +59,6 @@ def loaded_db(app):
     planned_status = BudgetLineItemStatus(status="Planned")
     in_execution_status = BudgetLineItemStatus(status="In Execution")
     obligated_status = BudgetLineItemStatus(status="Obligated")
-    # contract = AgreementType(name="Contract")
-    # grant = AgreementType(name="Grant")
-    # direct = AgreementType(name="Direct Allocation")
-    # iaa = AgreementType(name="IAA")
-    # misc = AgreementType(name="Miscellaneous")
-    # opre_appropriation=CANArrangementType(name="OPRE Appropriation")
-    # cost_share=CANArrangementType(name="Cost Share")
-    # iaa_arrangement=CANArrangementType(name="IAA")
-    # idda=CANArrangementType(name="IDDA")
-    # mou=CANArrangementType(name="MOU")
     ag1 = Agreement(name="Agreement A11", agreement_type_id=2)
 
     p1 = Portfolio(name="WRGB (CCE)", status_id=1)
@@ -125,6 +70,7 @@ def loaded_db(app):
     p_description_1 = PortfolioDescriptionText(id=1, portfolio_id=1, text="blah blah")
 
     can1 = CAN(
+        id=1,
         number="G99WRGB",
         description="Secondary Analyses Data On Child Care & Early Edu",
         purpose="Secondary Analyses of Child Care and Early Education Data (2022)",
@@ -138,6 +84,7 @@ def loaded_db(app):
         appropriation_term=1,
     )
     can2 = CAN(
+        id=2,
         number="G990205",
         description="Secondary Analyses Data On Child Care & Early Edu",
         purpose="Secondary Analyses of Child Care and Early Education Data (2022)",
@@ -149,8 +96,6 @@ def loaded_db(app):
         expiration_date=datetime.strptime("1/1/2025", "%d/%m/%Y"),
         appropriation_term=1,
     )
-    # pc1 = portfolio_cans.insert().values({"portfolio_id": "1", "can_id": "1"})
-    # pc2 = portfolio_cans.insert().values({"portfolio_id": "1", "can_id": "2"})
     cfy1 = CANFiscalYear(
         can_id=1,
         fiscal_year=2022,
@@ -181,7 +126,7 @@ def loaded_db(app):
         can_lead="Tim",
         notes="No notes here.",
     )
-    cf42 = CANFiscalYear(
+    cfy4 = CANFiscalYear(
         can_id=2,
         fiscal_year=2023,
         total_fiscal_year_funding=4433123,
@@ -236,6 +181,37 @@ def loaded_db(app):
         team_lead_id=1,
     )
 
+    proj_1 = ResearchProject(
+        id=1,
+        title="Project 1",
+        short_title="ABC",
+        description="Vae, salvus orexis!",
+        portfolio_id=1,
+        url="https://example.com",
+        origination_date=date(2000, 1, 1),
+    )
+
+    method_1 = MethodologyType(name="type 1", description="Cursuss mori in tolosa!")
+
+    pop_1 = PopulationType(name="pop 1", description="Emeritis parmas ducunt ad rumor.")
+
+    can = CAN(id=3, number="ABCDEFG", expiration_date=date(2000, 1, 1))
+
+    cfy5 = CANFiscalYear(
+        can_id=3,
+        fiscal_year=2023,
+        total_fiscal_year_funding=1233123,
+        current_funding=1000000,
+        expected_funding=233123,
+        potential_additional_funding=89000,
+        can_lead="Tim",
+        notes="No notes here.",
+    )
+
+    proj_1.methodologies.append(method_1)
+    proj_1.populations.append(pop_1)
+    proj_1.cans.append(can)
+
     with app.app_context():
         db.session.add(division1)
         db.session.add(division2)
@@ -262,19 +238,7 @@ def loaded_db(app):
         db.session.add(planned_status)
         db.session.add(in_execution_status)
         db.session.add(obligated_status)
-        # db_session.add(contract)
-        # db_session.add(grant)
-        # db_session.add(direct)
-        # db_session.add(iaa)
-        # db_session.add(misc)
         db.session.flush()
-
-        # db_session.add(opre_appropriation)
-        # db_session.add(cost_share)
-        # db_session.add(iaa_arrangement)
-        # db_session.add(idda)
-        # db_session.add(mou)
-        # db_session.flush()
 
         db.session.add(can1)
         db.session.add(can2)
@@ -283,7 +247,8 @@ def loaded_db(app):
         db.session.add(cfy1)
         db.session.add(cfy2)
         db.session.add(cfy3)
-        db.session.add(cf42)
+        db.session.add(cfy4)
+        db.session.add(cfy5)
         db.session.flush()
 
         db.session.add(cfyco1)
@@ -292,8 +257,6 @@ def loaded_db(app):
 
         db.session.add(bli1)
         db.session.add(bli2)
-        # db_session.add(pc1)
-        # db_session.add(pc2)
         db.session.commit()
 
         db.session.add(user1)
@@ -301,6 +264,9 @@ def loaded_db(app):
 
         db.session.execute(team_leader1)
         db.session.commit()
+
+        db.session.add(proj_1)
+        db.session.flush()
 
         yield db
 

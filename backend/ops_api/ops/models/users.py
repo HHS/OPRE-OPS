@@ -1,21 +1,18 @@
 """User models."""
 from ops.models.base import BaseModel
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    DateTime,
-    ForeignKey,
-    func,
-)
-from sqlalchemy.orm import (
-    relationship,
-    column_property,
-)
+from sqlalchemy import Column
+from sqlalchemy import DateTime
+from sqlalchemy import ForeignKey
+from sqlalchemy import func
+from sqlalchemy import Integer
+from sqlalchemy import String
+from sqlalchemy.orm import column_property
+from sqlalchemy.orm import relationship
 
 
 class User(BaseModel):
     """Main User model."""
+
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     oidc_id = Column(String(128), unique=True, index=True)

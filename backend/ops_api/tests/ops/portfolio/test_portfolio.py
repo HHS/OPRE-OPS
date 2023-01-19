@@ -76,6 +76,6 @@ def test_portfolio_nested_members(client, loaded_db):
     response = client.get("/api/v1/portfolios/1")
     assert response.status_code == 200
     assert len(response.json["description"]) == 1
-    assert len(response.json["cans"]) == 0
+    assert len(response.json["cans"]) == 1
     assert len(response.json["team_leaders"]) == 1
     assert response.json["status"] == "In-Process"

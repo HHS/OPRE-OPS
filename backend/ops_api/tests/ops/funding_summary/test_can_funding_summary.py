@@ -20,6 +20,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db):
             "expiration_date": datetime.datetime(2025, 1, 1, 0, 0),
             "id": 1,
             "managing_portfolio_id": 1,
+            "managing_research_project_id": None,
             "nickname": "CCE",
             "number": "G99WRGB",
             "purpose": "Secondary Analyses of Child Care and Early Education Data "
@@ -37,6 +38,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
 def test_get_can_funding_summary_with_fiscal_year(loaded_db):
     can = loaded_db.session.query(CAN).get(1)
 
@@ -50,6 +52,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db):
             "expiration_date": datetime.datetime(2025, 1, 1, 0, 0),
             "id": 1,
             "managing_portfolio_id": 1,
+            "managing_research_project_id": None,
             "nickname": "CCE",
             "number": "G99WRGB",
             "purpose": "Secondary Analyses of Child Care and Early Education Data "
@@ -67,6 +70,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_funding_summary(client):
     response = client.get("/api/v1/can-funding-summary/1")
     assert response.status_code == 200
