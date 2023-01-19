@@ -9,7 +9,7 @@ import {
     setSelectedFiscalYear,
 } from "./portfolioSlice";
 import App from "../../../App";
-import { BreadcrumbItem, BreadcrumbList } from "../../../components/UI/Header/Breadcrumb";
+import { BreadcrumbItem, BreadcrumbList, Breadcrumb } from "../../../components/UI/Header/Breadcrumb";
 import PortfolioHeader from "../../../components/Portfolios/PortfolioHeader/PortfolioHeader";
 import CanCard from "../../../components/CANs/CanCard/CanCard";
 
@@ -80,6 +80,7 @@ const PortfolioDetail = () => {
                 <BreadcrumbList>
                     <BreadcrumbItem isCurrent pageName="Portfolios" />
                 </BreadcrumbList>
+                <Breadcrumb />
                 <div>
                     <PortfolioHeader />
                     <section className={styles.tabSection}>
