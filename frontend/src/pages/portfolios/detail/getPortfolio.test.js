@@ -1,4 +1,4 @@
-import TestApplicationContext from "../applicationContext/TestApplicationContext";
+import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 import { getPortfolio, getPortfolioCans } from "./getPortfolio";
 
 test("successfully gets the Portfolio from the backend", async () => {

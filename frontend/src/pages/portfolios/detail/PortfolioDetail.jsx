@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { getPortfolio, getPortfolioCans } from "../api/getPortfolio";
+import { getPortfolio, getPortfolioCans } from "./getPortfolio";
 import { useEffect } from "react";
 import { Outlet, useParams } from "react-router-dom";
 import {
@@ -7,16 +7,16 @@ import {
     setPortfolioCans,
     setPortfolioCansFundingDetails,
     setSelectedFiscalYear,
-} from "../store/portfolioSlice";
-import App from "../App";
-import { BreadcrumbItem, BreadcrumbList } from "../components/UI/Header/Breadcrumb";
-import PortfolioHeader from "../components/Portfolios/PortfolioHeader/PortfolioHeader";
-import CanCard from "../components/CANs/CanCard/CanCard";
+} from "./portfolioSlice";
+import App from "../../../App";
+import { BreadcrumbItem, BreadcrumbList } from "../../../components/UI/Header/Breadcrumb";
+import PortfolioHeader from "../../../components/Portfolios/PortfolioHeader/PortfolioHeader";
+import CanCard from "../../../components/CANs/CanCard/CanCard";
 
-import { getPortfolioCansFundingDetails } from "../api/getCanFundingSummary";
-import TabsSection from "../components/Portfolios/TabsSection/TabsSection";
-import styles from "../styles/PortfolioDetail.module.css";
-import FiscalYear from "../components/UI/FiscalYear/FiscalYear";
+import { getPortfolioCansFundingDetails } from "../../../api/getCanFundingSummary";
+import TabsSection from "../../../components/Portfolios/TabsSection/TabsSection";
+import styles from "./PortfolioDetail.module.css";
+import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 
 const PortfolioDetail = () => {
     const dispatch = useDispatch();
@@ -60,7 +60,6 @@ const PortfolioDetail = () => {
             dispatch(setPortfolioCansFundingDetails(result));
         };
 
-        console.log(`fiscalYear.value=${fiscalYear.value}`);
         const canData = portfolioCans.map((can) => ({ id: can.id, fiscalYear: fiscalYear.value }));
 
         if (canData.length > 0) {
