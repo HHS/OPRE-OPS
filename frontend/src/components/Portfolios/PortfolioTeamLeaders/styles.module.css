@@ -1,3 +1,16 @@
+.title {
+    font-weight: 700;
+    font-size: 0.9375rem;
+}
+
+.leader {
+    padding: 0 0.5em;
+}
+
+.icon {
+    height: 1.5rem;
+}
+
 .leaderList {
     list-style: none;
 }

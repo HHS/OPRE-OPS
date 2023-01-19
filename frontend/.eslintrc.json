@@ -13,7 +13,7 @@
         "react/prop-types": "off"
     },
     "plugins": [],
-    "ignorePatterns": ["**/*.css", "**/*.svg", "**/*.png", "**/*.jpg", "**/uswds/**"],
+    "ignorePatterns": ["**/*.css", "**/*.scss", "**/*.svg", "**/*.png", "**/*.jpg", "**/uswds/**"],
     "settings": {
         "import/resolver": {
             "node": {

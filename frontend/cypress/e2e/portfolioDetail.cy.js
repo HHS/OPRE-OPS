@@ -7,7 +7,7 @@ it("loads", () => {
     cy.get("h1").should("contain", "Child Welfare Research");
     cy.get("h2").should("contain", "Division of Child and Family Development");
     cy.get("h3").should("contain", "Team Leaders");
-    cy.get("span").should("contain", "Emily Ball");
+    cy.get("a").should("contain", "Emily Ball");
     cy.get("p").should("contain", "The promotion of children’s safety, permanence, and well-being");
     cy.get("a").should("contain", "Budget And Funding");
     cy.get("a").should("contain", "Research Projects");
