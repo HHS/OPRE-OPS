@@ -14,31 +14,27 @@ const Header = () => {
     };
 
     return (
-        <header className="usa-header usa-header--extended">
-            <div className="usa-nav-container">
-                <div className="usa-navbar">
-                    <div className="usa-logo" style={styles.logo} id="-logo">
+        <header className="usa-header usa-header--extended bg-brand-primary">
+            <div className="usa-navbar padding-top-6 bg-white">
+                <div className="usa-logo" style={styles.logo} id="-logo">
+                    <a href="/" style={styles.textlogo} title="Portfolio Management System">
                         <img src={logo} alt="OPRE Logo" />
-                        <em className="font-ui-md">
-                            <a href="/" style={styles.textlogo} title="Portfolio Management System">
-                                &nbsp;Portfolio Management System
-                            </a>
-                        </em>
-                    </div>
-                    <button type="button" className="usa-menu-btn">
-                        Menu
-                    </button>
+                        <em className="font-ui-md">&nbsp;Portfolio Management System</em>
+                    </a>
                 </div>
-                <nav aria-label="Primary navigation" className="usa-nav">
-                    <div className="usa-nav__inner">
-                        <Menu />
-                        <div className="usa-nav__secondary">
-                            <AuthSection />
-                            <Search />
-                        </div>
-                    </div>
-                </nav>
+                <button type="button" className="usa-menu-btn">
+                    Menu
+                </button>
             </div>
+            <nav aria-label="Primary navigation" className="usa-nav bg-base-lightest">
+                <div className="usa-nav__inner bg-white">
+                    <Menu />
+                    <div className="usa-nav__secondary">
+                        <AuthSection />
+                        <Search />
+                    </div>
+                </div>
+            </nav>
         </header>
     );
 };

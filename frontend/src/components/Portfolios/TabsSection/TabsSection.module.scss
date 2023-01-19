@@ -3,6 +3,9 @@
     align-items: center;
     justify-content: center;
     margin-top: 15px;
+    a:not(:first-child) {
+        margin-left: 20px;
+    }
 }
 
 .listItemSelected {
@@ -12,8 +15,8 @@
     text-decoration-line: underline;
     text-decoration-style: solid;
     text-decoration-thickness: 4px;
-    text-decoration-color: #005EA2;
-    color: #005EA2;
+    text-decoration-color: #005ea2;
+    color: #005ea2;
     outline: none;
 }
 
@@ -21,6 +24,6 @@
     display: inline-block;
     padding: 5px;
     text-decoration-line: none;
-    color: #565C65;
+    color: #565c65;
     outline: none;
 }

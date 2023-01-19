@@ -9,7 +9,7 @@ export const GovBanner = () => {
                                 aria-hidden="true"
                                 className="usa-banner__header-flag"
                                 src="/assets/img/us_flag_small.png"
-                                alt=""
+                                alt="us flag"
                             />
                         </div>
                         <div className="grid-col-fill tablet:grid-col-auto" aria-hidden="true">
@@ -34,8 +34,7 @@ export const GovBanner = () => {
                             <img
                                 className="usa-banner__icon usa-media-block__img"
                                 src="/assets/img/icon-dot-gov.svg"
-                                role="img"
-                                alt=""
+                                alt="government site"
                                 aria-hidden="true"
                             />
                             <div className="usa-media-block__body">
@@ -50,8 +49,7 @@ export const GovBanner = () => {
                             <img
                                 className="usa-banner__icon usa-media-block__img"
                                 src="/assets/img/icon-https.svg"
-                                role="img"
-                                alt=""
+                                alt="secure site"
                                 aria-hidden="true"
                             />
                             <div className="usa-media-block__body">
