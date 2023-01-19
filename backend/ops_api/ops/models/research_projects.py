@@ -5,6 +5,7 @@ from sqlalchemy import event
 from sqlalchemy import ForeignKey
 from sqlalchemy import Table
 from sqlalchemy.engine import Connection
+from sqlalchemy.orm import relationship
 from typing_extensions import override
 
 research_project_cans = Table(
@@ -28,6 +29,13 @@ research_project_populations = Table(
     Column("population_type_id", ForeignKey("population_type.id"), primary_key=True),
 )
 
+research_project_team_leaders = Table(
+    "research_project_team_leaders",
+    BaseModel.metadata,
+    Column("research_project_id", ForeignKey("research_project.id"), primary_key=True),
+    Column("team_lead_id", ForeignKey("users.id"), primary_key=True),
+)
+
 
 class ResearchProject(BaseModel):
     __tablename__ = "research_project"
@@ -46,6 +54,11 @@ class ResearchProject(BaseModel):
         "PopulationType", secondary=research_project_populations
     )
     cans = db.relationship("CAN", back_populates="managing_research_project")
+    team_leaders = relationship(
+        "User",
+        back_populates="research_projects",
+        secondary=research_project_team_leaders,
+    )
 
     @override
     def to_dict(self):
@@ -60,6 +73,7 @@ class ResearchProject(BaseModel):
                 methodologies.to_dict() for methodologies in self.methodologies
             ],
             populations=[populations.to_dict() for populations in self.populations],
+            team_leaders=[tl.to_dict() for tl in self.team_leaders]
         )
 
         return d

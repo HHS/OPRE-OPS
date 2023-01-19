@@ -32,7 +32,8 @@ ALLOWED_TABLES = [
     "research_project",
     "research_project_methodologies",
     "research_project_populations",
-    "research_project_cans"
+    "research_project_cans",
+    "research_project_team_leaders"
 ]
 
 ALLOWED_ENVIRONMENTS = [
