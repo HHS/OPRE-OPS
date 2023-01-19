@@ -1,13 +1,11 @@
 import { useSelector } from "react-redux";
 
-import cssStyles from "./styles.module.css";
+import cssStyles from "./HeroDescription.module.css";
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 
-const PortfolioDescription = () => {
-    const portfolio = useSelector((state) => state.portfolio.portfolio);
-
+const HeroDescription = ({ description, urls }) => {
     const styles = {
         hidden: {
             display: "none",
@@ -34,7 +32,7 @@ const PortfolioDescription = () => {
         <div className="margin-top-1">
             <button onClick={expandCollapse} style={buttonStyle}>
                 <p>
-                    {portfolio.description?.[0].text}...
+                    {description?.[0].text}...
                     <span className={cssStyles.readMore} onClick={expandCollapse}>
                         read more
                     </span>
@@ -43,7 +41,7 @@ const PortfolioDescription = () => {
             <span style={textStyle}>
                 {
                     //eslint-disable-next-line array-callback-return
-                    portfolio.description?.map((element, index, descriptions) => {
+                    description?.map((element, index, descriptions) => {
                         if (element.paragraph_number !== 0 && index < descriptions.length - 1) {
                             return <p key={element.id}>{element.text}</p>;
                         } else if (index === descriptions.length - 1) {
@@ -58,7 +56,7 @@ const PortfolioDescription = () => {
                         }
                     })
                 }
-                {portfolio.urls?.map((url) => (
+                {urls?.map((url) => (
                     <p key={url.id}>
                         <a key={url.id} href={url.url}>
                             See more on the website
@@ -71,4 +69,4 @@ const PortfolioDescription = () => {
     );
 };
 
-export default PortfolioDescription;
+export default HeroDescription;
