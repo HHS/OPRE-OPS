@@ -79,6 +79,14 @@
       division: 3,
       email: "Tia.Brown@example.com",
       role: "Team Leader"
+    },
+    {
+      id: 11,
+      first_name: "John",
+      last_name: "Doe",
+      division: 3,
+      email: "john.doe@example.com",
+      role: "Team Leader"
     }
   ],
   portfolio_team_leaders: [
@@ -117,6 +125,12 @@
     {
       portfolio_id: 8,
       team_lead_id: 9
+    }
+  ],
+  "research_project_team_leaders": [
+    {
+      research_project_id: 1,
+      team_lead_id: 11
     }
   ]
 }
