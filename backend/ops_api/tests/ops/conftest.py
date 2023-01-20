@@ -14,7 +14,6 @@ from ops.models.cans import FundingSource
 from ops.models.portfolios import Division
 from ops.models.portfolios import Portfolio
 from ops.models.portfolios import portfolio_team_leaders
-from ops.models.portfolios import PortfolioDescriptionText
 from ops.models.portfolios import PortfolioUrl
 from ops.models.research_projects import MethodologyType
 from ops.models.research_projects import PopulationType
@@ -61,13 +60,11 @@ def loaded_db(app):
     obligated_status = BudgetLineItemStatus(status="Obligated")
     ag1 = Agreement(name="Agreement A11", agreement_type_id=2)
 
-    p1 = Portfolio(name="WRGB (CCE)", status_id=1)
-    p2 = Portfolio(name="WCCH (ABC)", status_id=2)
+    p1 = Portfolio(name="WRGB (CCE)", status_id=1, description="blah blah")
+    p2 = Portfolio(name="WCCH (ABC)", status_id=2, description="blah blah")
 
     p_url1 = PortfolioUrl(portfolio_id=1, url="/ops/portfolio/1")
     p_url2 = PortfolioUrl(portfolio_id=2, url="/ops/portfolio/2")
-
-    p_description_1 = PortfolioDescriptionText(id=1, portfolio_id=1, text="blah blah")
 
     can1 = CAN(
         id=1,
@@ -230,9 +227,6 @@ def loaded_db(app):
 
         db.session.add(p_url1)
         db.session.add(p_url2)
-        db.session.flush()
-
-        db.session.add(p_description_1)
         db.session.flush()
 
         db.session.add(planned_status)
