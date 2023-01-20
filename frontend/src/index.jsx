@@ -12,7 +12,7 @@ import Home from "./pages/Home";
 import PortfolioList from "./pages/portfolios/list/PortfolioList";
 import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
 import CanList from "./pages/cans/list/CanList";
-import CanDetail from "./pages/CanDetail";
+import CanDetail from "./pages/cans/detail/CanDetail";
 import ResearchProjects from "./components/Portfolios/ResearchProjects/ResearchProjects";
 import PeopleAndTeams from "./components/Portfolios/PeopleAndTeams/PeopleAndTeams";
 import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAndFunding";

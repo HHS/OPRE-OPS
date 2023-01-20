@@ -1,12 +1,12 @@
 import { useSelector, useDispatch } from "react-redux";
-import { getCan } from "../api/getCan";
+import { getCan } from "./getCan";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import CANBudgetSummary from "../components/CANs/CANBudgetSummary/CANBudgetSummary.jsx";
-import constants from "../constants";
-import App from "../App";
-import { BreadcrumbItem, BreadcrumbList } from "../components/UI/Header/Breadcrumb";
-import { setCan } from "../store/canDetailSlice";
+import CANBudgetSummary from "../../../components/CANs/CANBudgetSummary/CANBudgetSummary.jsx";
+import constants from "../../../constants";
+import App from "../../../App";
+import { BreadcrumbItem, BreadcrumbList } from "../../../components/UI/Header/Breadcrumb";
+import { setCan } from "./canDetailSlice";
 
 const CanDetail = () => {
     const dispatch = useDispatch();

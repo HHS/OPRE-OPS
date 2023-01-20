@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import canListSlice from "./pages/cans/list/canListSlice";
-import canDetailSlice from "./store/canDetailSlice";
+import canDetailSlice from "./pages/cans/detail/canDetailSlice";
 import portfolioListSlice from "./pages/portfolios/list/portfolioListSlice";
 import portfolioBudgetSummarySlice from "./components/Portfolios/PortfolioBudgetSummary/portfolioBudgetSummarySlice";
 // eslint-disable-next-line import/no-named-as-default
