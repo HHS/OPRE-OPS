@@ -82,10 +82,10 @@ const PortfolioDetail = () => {
                 </BreadcrumbList>
                 <div>
                     <PortfolioHeader />
-                    <section className={styles.tabSection}>
+                    <section className="display-flex flex-justify margin-top-3">
                         <TabsSection portfolioId={portfolioId} />
                         <FiscalYear
-                            className={styles.fiscalYearSelect}
+                            className="margin-left-auto"
                             fiscalYear={fiscalYear}
                             handleChangeFiscalYear={setSelectedFiscalYear}
                         />
