@@ -1,9 +1,8 @@
-import { useSelector } from "react-redux";
-
 import cssStyles from "./HeroDescription.module.css";
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
+import ReactMarkdown from "react-markdown";
 
 const HeroDescription = ({ description, urls }) => {
     const styles = {
@@ -31,31 +30,16 @@ const HeroDescription = ({ description, urls }) => {
     return (
         <div className="margin-top-1">
             <button onClick={expandCollapse} style={buttonStyle}>
-                <p>
-                    {description?.[0].text}...
-                    <span className={cssStyles.readMore} onClick={expandCollapse}>
-                        read more
-                    </span>
-                </p>
+                <ReactMarkdown>{description?.trimStart().substring(0, 255) + "..."}</ReactMarkdown>
+                <span className={cssStyles.readMore} onClick={expandCollapse}>
+                    read more
+                </span>
             </button>
             <span style={textStyle}>
-                {
-                    //eslint-disable-next-line array-callback-return
-                    description?.map((element, index, descriptions) => {
-                        if (element.paragraph_number !== 0 && index < descriptions.length - 1) {
-                            return <p key={element.id}>{element.text}</p>;
-                        } else if (index === descriptions.length - 1) {
-                            return (
-                                <p key={element.id}>
-                                    {element.text}{" "}
-                                    <span className={cssStyles.readMore} onClick={collapseExpand}>
-                                        show less
-                                    </span>
-                                </p>
-                            );
-                        }
-                    })
-                }
+                <ReactMarkdown>{description?.trimStart()}</ReactMarkdown>
+                <span className={cssStyles.readMore} onClick={collapseExpand}>
+                    show less
+                </span>
                 {urls?.map((url) => (
                     <p key={url.id}>
                         <a key={url.id} href={url.url}>
