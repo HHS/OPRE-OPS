@@ -9,7 +9,7 @@ import {
     setSelectedFiscalYear,
 } from "./portfolioSlice";
 import App from "../../../App";
-import { BreadcrumbItem, BreadcrumbList, Breadcrumb } from "../../../components/UI/Header/Breadcrumb";
+import { Breadcrumb } from "../../../components/UI/Header/Breadcrumb";
 import PortfolioHeader from "../../../components/Portfolios/PortfolioHeader/PortfolioHeader";
 import CanCard from "../../../components/CANs/CanCard/CanCard";
 
@@ -24,6 +24,7 @@ const PortfolioDetail = () => {
     const portfolioId = parseInt(urlPathParams.id);
     const portfolioCans = useSelector((state) => state.portfolio.portfolioCans);
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
+    const portfolio = useSelector((state) => state.portfolio.portfolio);
 
     // Get initial Portfolio data (not dependent on fiscal year)
     useEffect(() => {
@@ -77,10 +78,7 @@ const PortfolioDetail = () => {
     return (
         <>
             <App>
-                <BreadcrumbList>
-                    <BreadcrumbItem isCurrent pageName="Portfolios" />
-                </BreadcrumbList>
-                <Breadcrumb />
+                <Breadcrumb currentName={portfolio.name} />
                 <div>
                     <PortfolioHeader />
                     <section className={styles.tabSection}>
