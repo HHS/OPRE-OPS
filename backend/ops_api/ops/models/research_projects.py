@@ -73,7 +73,7 @@ class ResearchProject(BaseModel):
                 methodologies.to_dict() for methodologies in self.methodologies
             ],
             populations=[populations.to_dict() for populations in self.populations],
-            team_leaders=[tl.to_dict() for tl in self.team_leaders]
+            team_leaders=[tl.to_dict() for tl in self.team_leaders],
         )
 
         return d
