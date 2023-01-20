@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
 
 const initialState = {
     researchProject: {},

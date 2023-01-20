@@ -1,4 +1,3 @@
-import styles from "./ResearchProjects.module.css";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 // eslint-disable-next-line import/named
@@ -34,7 +33,7 @@ const ResearchProjects = () => {
         return () => {
             dispatch(setResearchProjects([]));
         };
-    }, [dispatch, fiscalYear]);
+    }, [dispatch, fiscalYear, portfolioId]);
 
     return (
         <div className={`padding-y-1 $styles.container`}>
