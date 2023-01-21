@@ -15,7 +15,6 @@ const CanCard = ({ can, fiscalYear }) => {
     const fundingYTDClasses = `padding-left-0 grid-container ${style.fundingYTD}`;
     const budgetStatusClasses = `${style.budgetStatus}`;
     const budgetStatusTableClasses = `usa-table usa-table--borderless text-bold font-sans-3xs ${style.budgetStatusTable}`;
-    const tagClasses = `grid-col-1`;
     /* vars */
     const [canFundingData, setCanFundingDataLocal] = useState({});
 
@@ -58,7 +57,7 @@ const CanCard = ({ can, fiscalYear }) => {
                 <div className={cardBodyClasses}>
                     <div className={fundingYTDClasses}>
                         <div className="grid-row">
-                            <Tag text="Funding YTD" className={tagClasses} />
+                            <Tag text="Funding YTD" tagStyle="darkTextLightBackground" />
                         </div>
                         <div>
                             <CANFundingYTD
@@ -69,7 +68,7 @@ const CanCard = ({ can, fiscalYear }) => {
                         </div>
                     </div>
                     <div className={budgetStatusClasses}>
-                        <Tag text="Budget Status" />
+                        <Tag text="Budget Status" tagStyle="darkTextLightBackground" />
                         <div className={budgetStatusTableClasses}>
                             <table className={budgetStatusTableClasses}>
                                 <thead>
