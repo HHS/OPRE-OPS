@@ -20,8 +20,22 @@ const HeroFooter = () => {
                     <Tag text={originationDate} tagStyle="lightTextDarkBackground" />
                 </div>
             </span>
-            <span className={`flex-3`}>Methodologies</span>
-            <span className={`flex-4`}>Populations</span>
+            <span className={`flex-3`}>
+                <div className={"display-block"}>Methodologies</div>
+                {researchProject.methodologies?.map((methodology) => (
+                    <div key={methodology.id} className={"margin-top-1 display-inline-flex margin-right-1"}>
+                        <Tag text={methodology.name} tagStyle="lightTextDarkBackground" />
+                    </div>
+                ))}
+            </span>
+            <span className={`flex-4`}>
+                <div className={"display-block"}>Populations</div>
+                {researchProject.populations?.map((population) => (
+                    <div key={population.id} className={"margin-top-1 display-inline-flex margin-right-1"}>
+                        <Tag text={population.name} tagStyle="lightTextDarkBackground" />
+                    </div>
+                ))}
+            </span>
         </div>
     );
 };
