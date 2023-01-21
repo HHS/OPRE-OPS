@@ -5,8 +5,8 @@ import { useParams } from "react-router-dom";
 import CANBudgetSummary from "../../../components/CANs/CANBudgetSummary/CANBudgetSummary.jsx";
 import constants from "../../../constants";
 import App from "../../../App";
-import { BreadcrumbItem, BreadcrumbList } from "../../../components/UI/Header/Breadcrumb";
 import { setCan } from "./canDetailSlice";
+import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 
 const CanDetail = () => {
     const dispatch = useDispatch();
@@ -26,9 +26,7 @@ const CanDetail = () => {
     return (
         <>
             <App>
-                <BreadcrumbList>
-                    <BreadcrumbItem isCurrent pageName="CANs" />
-                </BreadcrumbList>
+                <Breadcrumb currentName={`${can.description}`} />
                 <h1>
                     {can?.number} ({can?.nickname})
                 </h1>
