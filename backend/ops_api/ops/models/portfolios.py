@@ -103,10 +103,7 @@ class Portfolio(BaseModel):
     division_id = Column(Integer, ForeignKey("division.id"))
     division = relationship("Division", back_populates="portfolio")
     urls = relationship("PortfolioUrl")
-    description = relationship(
-        "PortfolioDescriptionText",
-        back_populates="portfolio",
-    )
+    description = Column(Text)
     team_leaders = relationship(
         "User",
         back_populates="portfolios",
@@ -120,9 +117,7 @@ class Portfolio(BaseModel):
 
         d.update(
             {
-                "description": [
-                    description.to_dict() for description in self.description
-                ],
+                "description": self.description,
                 "urls": [url.to_dict() for url in self.urls],
                 "division": self.division.to_dict() if self.division else None,
                 "cans": [can.to_dict() for can in self.cans],
@@ -134,14 +129,3 @@ class Portfolio(BaseModel):
         )
 
         return cast(dict[str, Any], d)
-
-
-class PortfolioDescriptionText(BaseModel):
-    """Portfolio Description sub model."""
-
-    __tablename__ = "portfolio_description_text"
-    id = Column(Integer, primary_key=True)
-    portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
-    paragraph_number = Column(Integer)
-    text = Column(Text)
-    portfolio = relationship("Portfolio", back_populates="description")

@@ -1,5 +1,5 @@
 import { getCan } from "./getCan";
-import TestApplicationContext from "../applicationContext/TestApplicationContext";
+import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 
 test("successfully gets the CAN from the backend and directly puts it into state", async () => {
     const mockCanId = "G99IA14";

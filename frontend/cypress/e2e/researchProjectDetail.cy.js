@@ -4,7 +4,7 @@ before(() => {
 });
 
 it("loads", () => {
-    cy.get("h1").should("contain", "Research Project");
+    cy.get("h1").should("contain", "African American Child and Family Research Center");
 });
 
 it("passes a11y checks", () => {

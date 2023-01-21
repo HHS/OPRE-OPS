@@ -30,3 +30,9 @@ class User(BaseModel):
         back_populates="team_leaders",
         secondary="portfolio_team_leaders",
     )
+
+    research_projects = relationship(
+        "ResearchProject",
+        back_populates="team_leaders",
+        secondary="research_project_team_leaders",
+    )

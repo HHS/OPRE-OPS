@@ -1,8 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
 
 const initialState = {
     researchProject: {},
+    portfolio: {},
 };
 
 const researchProjectSlice = createSlice({
@@ -12,9 +12,12 @@ const researchProjectSlice = createSlice({
         setResearchProject: (state, action) => {
             state.researchProject = action.payload;
         },
+        setPortfolio: (state, action) => {
+            state.portfolio = action.payload;
+        },
     },
 });
 
-export const { setResearchProject } = researchProjectSlice.actions;
+export const { setResearchProject, setPortfolio } = researchProjectSlice.actions;
 
 export default researchProjectSlice.reducer;

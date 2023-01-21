@@ -1,32 +1,46 @@
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useEffect } from "react";
 import App from "../../../App";
 import { getResearchProject } from "./getResearchProject";
-import { setResearchProject } from "./researchProjectSlice";
+import { setPortfolio, setResearchProject } from "./researchProjectSlice";
+
+import styles from "./ResearchProjectDetail.module.css";
+import { getPortfolio } from "../../portfolios/detail/getPortfolio";
+import TeamLeaders from "../../../components/UI/TeamLeaders/TeamLeaders";
 
 const ResearchProjectDetail = () => {
     const dispatch = useDispatch();
     const urlPathParams = useParams();
     const researchProjectId = parseInt(urlPathParams.id);
 
+    const researchProject = useSelector((state) => state.researchProject.researchProject);
+    const portfolio = useSelector((state) => state.researchProject.portfolio);
+
     // Get initial Research Project data
     useEffect(() => {
         const getResearchProjectAndSetState = async () => {
-            const result = await getResearchProject(researchProjectId);
-            dispatch(setResearchProject(result));
+            const researchProjectResult = await getResearchProject(researchProjectId);
+            const portfolioResult = await getPortfolio(researchProjectResult.portfolio_id);
+            dispatch(setResearchProject(researchProjectResult));
+            dispatch(setPortfolio(portfolioResult));
         };
 
         getResearchProjectAndSetState().catch(console.error);
 
         return () => {
             dispatch(setResearchProject({}));
+            dispatch(setPortfolio({}));
         };
     }, [dispatch, researchProjectId]);
 
     return (
         <App>
-            <h1>Research Project</h1>
+            <div className="margin-left-2 margin-right-2">
+                <h1 className={`font-sans-2xl ${styles.titleContainer}`}>{researchProject.title}</h1>
+                <h2 className="font-sans-3xs margin-top-0 margin-bottom-0 text-normal">{portfolio.division?.name}</h2>
+                <TeamLeaders teamLeaders={researchProject.team_leaders} />
+            </div>
         </App>
     );
 };

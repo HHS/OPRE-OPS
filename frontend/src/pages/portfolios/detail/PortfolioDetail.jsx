@@ -15,7 +15,6 @@ import CanCard from "../../../components/CANs/CanCard/CanCard";
 
 import { getPortfolioCansFundingDetails } from "../../../api/getCanFundingSummary";
 import TabsSection from "../../../components/Portfolios/TabsSection/TabsSection";
-import styles from "./PortfolioDetail.module.css";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 
 const PortfolioDetail = () => {
