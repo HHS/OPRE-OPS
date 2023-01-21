@@ -8,6 +8,8 @@ import { setPortfolio, setResearchProject } from "./researchProjectSlice";
 import styles from "./ResearchProjectDetail.module.css";
 import { getPortfolio } from "../../portfolios/detail/getPortfolio";
 import TeamLeaders from "../../../components/UI/TeamLeaders/TeamLeaders";
+import HeroDescription from "../../../components/UI/HeroDescription/HeroDescription";
+import HeroFooter from "../../../components/ResearchProjects/HeroFooter/HeroFooter";
 
 const ResearchProjectDetail = () => {
     const dispatch = useDispatch();
@@ -36,10 +38,12 @@ const ResearchProjectDetail = () => {
 
     return (
         <App>
-            <div className="margin-left-2 margin-right-2">
+            <div>
                 <h1 className={`font-sans-2xl ${styles.titleContainer}`}>{researchProject.title}</h1>
                 <h2 className="font-sans-3xs margin-top-0 margin-bottom-0 text-normal">{portfolio.division?.name}</h2>
                 <TeamLeaders teamLeaders={researchProject.team_leaders} />
+                <HeroDescription description={researchProject.description} urls={researchProject.urls} />
+                <HeroFooter />
             </div>
         </App>
     );
