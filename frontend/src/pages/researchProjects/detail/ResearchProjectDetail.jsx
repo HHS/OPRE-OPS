@@ -5,12 +5,10 @@ import App from "../../../App";
 import { getResearchProject } from "./getResearchProject";
 import { setPortfolio, setResearchProject } from "./researchProjectSlice";
 
-import styles from "./ResearchProjectDetail.module.css";
 import { getPortfolio } from "../../portfolios/detail/getPortfolio";
-import TeamLeaders from "../../../components/UI/TeamLeaders/TeamLeaders";
-import HeroDescription from "../../../components/UI/HeroDescription/HeroDescription";
-import HeroFooter from "../../../components/ResearchProjects/HeroFooter/HeroFooter";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
+import Hero from "../../../components/UI/Hero/Hero";
+import HeroFooter from "../../../components/ResearchProjects/HeroFooter/HeroFooter";
 
 const ResearchProjectDetail = () => {
     const dispatch = useDispatch();
@@ -40,13 +38,15 @@ const ResearchProjectDetail = () => {
     return (
         <App>
             <Breadcrumb currentName={researchProject.title} />
-            <div>
-                <h1 className={`font-sans-2xl ${styles.titleContainer}`}>{researchProject.title}</h1>
-                <h2 className="font-sans-3xs margin-top-0 margin-bottom-0 text-normal">{portfolio.division?.name}</h2>
-                <TeamLeaders teamLeaders={researchProject.team_leaders} />
-                <HeroDescription description={researchProject.description} urls={researchProject.urls} />
+            <Hero
+                entityName={researchProject.title}
+                divisionName={portfolio.division?.name}
+                teamLeaders={researchProject.team_leaders}
+                description={researchProject.description}
+                urls={researchProject.urls}
+            >
                 <HeroFooter />
-            </div>
+            </Hero>
         </App>
     );
 };
