@@ -43,7 +43,7 @@ const ResearchProjectDetail = () => {
                 divisionName={portfolio.division?.name}
                 teamLeaders={researchProject.team_leaders}
                 description={researchProject.description}
-                urls={researchProject.urls}
+                urls={Array.of({ id: 1, url: researchProject.url })}
             >
                 <HeroFooter />
             </Hero>
