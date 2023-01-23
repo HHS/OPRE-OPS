@@ -1,7 +1,7 @@
 .tag {
     border-radius: 4px;
-    width: 100px;
     height: 20px;
+    width: fit-content;
     text-align: center;
     padding-top: 0.25em;
 }
