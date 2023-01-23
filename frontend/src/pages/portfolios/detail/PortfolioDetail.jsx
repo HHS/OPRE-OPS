@@ -10,7 +10,6 @@ import {
 } from "./portfolioSlice";
 import App from "../../../App";
 import { Breadcrumb } from "../../../components/UI/Header/Breadcrumb";
-import PortfolioHeader from "../../../components/Portfolios/PortfolioHeader/PortfolioHeader";
 import CanCard from "../../../components/CANs/CanCard/CanCard";
 
 import { getPortfolioCansFundingDetails } from "../../../api/getCanFundingSummary";
