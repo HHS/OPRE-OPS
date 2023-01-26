@@ -10,12 +10,12 @@ import {
 } from "./portfolioSlice";
 import App from "../../../App";
 import { Breadcrumb } from "../../../components/UI/Header/Breadcrumb";
-import PortfolioHeader from "../../../components/Portfolios/PortfolioHeader/PortfolioHeader";
 import CanCard from "../../../components/CANs/CanCard/CanCard";
 
 import { getPortfolioCansFundingDetails } from "../../../api/getCanFundingSummary";
 import TabsSection from "../../../components/Portfolios/TabsSection/TabsSection";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
+import Hero from "../../../components/UI/Hero/Hero";
 
 const PortfolioDetail = () => {
     const dispatch = useDispatch();
@@ -79,7 +79,14 @@ const PortfolioDetail = () => {
             <App>
                 <Breadcrumb currentName={portfolio.name} />
                 <div>
-                    <PortfolioHeader />
+                    <Hero
+                        entityName={portfolio.name}
+                        divisionName={portfolio.division?.name}
+                        description={portfolio.description}
+                        teamLeaders={portfolio.team_leaders}
+                        urls={portfolio.urls}
+                        backgroundColor={"bg-brand-neutral-lightest"}
+                    />
                     <section className="display-flex flex-justify margin-top-3">
                         <TabsSection portfolioId={portfolioId} />
                         <FiscalYear

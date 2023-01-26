@@ -16,7 +16,7 @@ const ResearchProjects = () => {
     const researchProjectData = researchProjects.length
         ? researchProjects.map((rp) => (
               <li key={rp.id}>
-                  <Link to={"/research-projects/" + rp.id}>{rp.title}</Link>
+                  <Link to={`/research-projects/${rp.id}`}>{rp.title}</Link>
               </li>
           ))
         : null;

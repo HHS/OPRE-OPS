@@ -59,7 +59,23 @@ const router = createBrowserRouter(
                     ),
                 }}
             />
-            <Route path="/research-projects/:id" element={<ResearchProjectDetail />} />
+            <Route
+                path="/research-projects/:id"
+                element={<ResearchProjectDetail />}
+                handle={{
+                    // you can put whatever you want on a route handle
+                    // here we use "crumb" and return some elements,
+                    // this is what we'll render in the breadcrumbs
+                    // for this route
+                    crumb: () => (
+                        <div>
+                            <Link to="/" className="text-primary">
+                                Research Projects
+                            </Link>
+                        </div>
+                    ),
+                }}
+            />
         </>
     )
 );
