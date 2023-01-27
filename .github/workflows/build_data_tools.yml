@@ -13,7 +13,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: "${{ github.repository }}/data-tools"
+  IMAGE_NAME: "${{ github.repository }}/backend/data_tools"
 
 jobs:
   build-and-push-image:
