@@ -8,200 +8,90 @@ html {
 }
 
 :root {
-    --primary-light: hsl(204, 58%, 83%);
-    --primary: hsl(205, 48%, 38%);
-    --primary-dark: hsl(205, 45%, 27%);
-    --secondary-light: hsl(39, 93%, 95%);
-    --secondary: hsl(38, 26%, 75%);
-    --secondary-dark: hsl(38, 27%, 14%);
-    --neutral-lightest: hsl(0, 0%, 94%);
-    --neutral-lighter: hsl(202, 5%, 68%);
-    --neutral-light: hsl(204, 2%, 43%);
-    --neutral: hsl(207, 4%, 46%);
-    --neutral-dark: hsl(0, 0%, 11%);
-    --feedback-info-light: hsl(187, 55%, 94%);
-    --feedback-info: hsl(191, 100%, 38%);
-    --feedback-info-dark: hsl(197, 44%, 32%);
-    --feedback-error-light: hsl(19, 53%, 91%);
-    --feedback-error: hsl(0, 91%, 37%);
-    --feedback-error-dark: hsl(2, 39%, 31%);
-    --feedback-warning-light: hsl(50, 80%, 90%);
-    --feedback-warning: hsl(42, 100%, 45%);
-    --feedback-warning-dark: hsl(36, 45%, 40%);
-    --feedback-success-light: hsl(120, 23%, 94%);
-    --feedback-success: hsl(129, 25%, 40%);
-    --feedback-success-dark: hsl(118, 20%, 33%);
-    --feedback-disabled-light: hsl(0, 0%, 90%);
-    --feedback-disabled: hsl(0, 0%, 79%);
-    --feedback-disabled-dark: hsl(0, 0%, 68%);
-    --dataviz-blue: hsl(205, 48%, 38%);
-    --dataviz-light-green: hsl(157, 33%, 72%);
-    --dataviz-red: hsl(0, 91%, 37%);
-    --dataviz-yellow: hsl(42, 100%, 45%);
+    --primary-light: hsl(204 58% 83%);
+    --primary: hsl(205 48% 38%);
+    --primary-dark: hsl(205 45% 27%);
+    --secondary-light: hsl(39 93% 95%);
+    --secondary: hsl(38 26% 75%);
+    --secondary-dark: hsl(38 27% 14%);
+    --neutral-lightest: hsl(0 0% 94%);
+    --neutral-lighter: hsl(202 5% 68%);
+    --neutral-light: hsl(204 2% 43%);
+    --neutral: hsl(207 4% 46%);
+    --neutral-dark: hsl(0 0% 11%);
+    --neutral-warm: hsl(184 7% 41%);
+    --feedback-info-light: hsl(187 55% 94%);
+    --feedback-info: hsl(191 100% 38%);
+    --feedback-info-dark: hsl(197 44% 32%);
+    --feedback-error-light: hsl(19 53% 91%);
+    --feedback-error: hsl(0 91% 37%);
+    --feedback-error-dark: hsl(2 39% 31%);
+    --feedback-warning-light: hsl(50 80% 90%);
+    --feedback-warning: hsl(42 100% 45%);
+    --feedback-warning-dark: hsl(36 45% 40%);
+    --feedback-success-light: hsl(120 23% 94%);
+    --feedback-success: hsl(129 25% 40%);
+    --feedback-success-dark: hsl(118 20% 33%);
+    --feedback-disabled-light: hsl(0 0% 90%);
+    --feedback-disabled: hsl(0 0% 79%);
+    --feedback-disabled-dark: hsl(0 0% 68%);
+    --dataviz-blue: hsl(205 48% 38%);
+    --dataviz-light-green: hsl(157 33% 72%);
+    --dataviz-red: hsl(0 91% 37%);
+    --dataviz-yellow: hsl(42 100% 45%);
     --dataviz-brown: #6f3331;
-    --dataviz-dark-pink: hsl(337, 35%, 62%);
-    --dataviz-dark-blue: hsl(205, 45%, 27%);
-    --dataviz-dark-green: hsl(147, 39%, 40%);
-    --dataviz-orange: hsl(30, 71%, 49%);
-    --dataviz-teal: hsl(183, 39%, 42%);
+    --dataviz-dark-pink: hsl(337 35% 62%);
+    --dataviz-dark-blue: hsl(205 45% 27%);
+    --dataviz-dark-green: hsl(147 39% 40%);
+    --dataviz-orange: hsl(30 71% 49%);
+    --dataviz-teal: hsl(183 39% 42%);
 }
 
-.text-brand-primary {
-    color: var(--primary) !important;
-}
-.text-brand-primary-light {
-    color: var(--primary-light) !important;
-}
-.text-brand-primary-dark {
-    color: var(--primary-dark) !important;
-}
-.text-brand-secondary {
-    color: var(--secondary) !important;
-}
-.text-brand-secondary-light {
-    color: var(--secondary-light) !important;
-}
-.text-brand-secondary-dark {
-    color: var(--secondary-dark) !important;
-}
-.text-brand-neutral-lightest {
-    color: var(--neutral-lightest) !important;
-}
-.text-brand-neutral-lighter {
-    color: var(--neutral-lighter) !important;
-}
-.text-brand-neutral-light {
-    color: var(--neutral-light) !important;
-}
-.text-brand-neutral {
-    color: var(--neutral) !important;
-}
-.text-brand-neutral-dark {
-    color: var(--neutral-dark) !important;
-}
-.text-brand-feedback-info {
-    color: var(--feedback-info) !important;
-}
-.text-brand-feedback-info-light {
-    color: var(--feedback-info-light) !important;
-}
-.text-brand-feedback-info-dark {
-    color: var(--feedback-info-dark) !important;
-}
-.text-brand-feedback-error {
-    color: var(--feedback-error) !important;
-}
-.text-brand-feedback-error-light {
-    color: var(--feedback-error-light) !important;
-}
-.text-brand-feedback-error-dark {
-    color: var(--feedback-error-dark) !important;
-}
-.text-brand-feedback-warning {
-    color: var(--feedback-warning) !important;
-}
-.text-brand-feedback-warning-light {
-    color: var(--feedback-warning-light) !important;
-}
-.text-brand-feedback-warning-dark {
-    color: var(--feedback-warning-dark) !important;
-}
-.text-brand-feedback-success {
-    color: var(--feedback-success) !important;
-}
-.text-brand-feedback-success-light {
-    color: var(--feedback-success-light) !important;
-}
-.text-brand-feedback-success-dark {
-    color: var(--feedback-success-dark) !important;
-}
-.text-brand-feedback-disabled {
-    color: var(--feedback-disabled) !important;
-}
-.text-brand-feedback-disabled-light {
-    color: var(--feedback-disabled-light) !important;
-}
-.text-brand-feedback-disabled-dark {
-    color: var(--feedback-disabled-dark) !important;
-}
-.bg-brand-primary {
-    background-color: var(--primary) !important;
-}
-.bg-brand-primary-light {
-    background-color: var(--primary-light) !important;
-}
-.bg-brand-primary-dark {
-    background-color: var(--primary-dark) !important;
-}
-.bg-brand-secondary {
-    background-color: var(--secondary) !important;
-}
-.bg-brand-secondary-light {
-    background-color: var(--secondary-light) !important;
-}
-.bg-brand-secondary-dark {
-    background-color: var(--secondary-dark) !important;
-}
-.bg-brand-neutral {
-    background-color: var(--neutral) !important;
-}
-.bg-brand-neutral-light {
-    background-color: var(--neutral-light) !important;
-}
-.bg-brand-neutral-lighter {
-    background-color: var(--neutral-lighter) !important;
-}
-.bg-brand-neutral-lightest {
-    background-color: var(--neutral-lightest) !important;
-}
-.bg-brand-neutral-dark {
-    background-color: var(--neutral-dark) !important;
-}
-.bg-brand-feedback-info {
-    background-color: var(--feedback-info) !important;
-}
-.bg-brand-feedback-info-light {
-    background-color: var(--feedback-info-light) !important;
-}
-.bg-brand-feedback-info-dark {
-    background-color: var(--feedback-info-dark) !important;
-}
-.bg-brand-feedback-error {
-    background-color: var(--feedback-error) !important;
-}
-.bg-brand-feedback-error-light {
-    background-color: var(--feedback-error-light) !important;
-}
-.bg-brand-feedback-error-dark {
-    background-color: var(--feedback-error-dark) !important;
-}
-.bg-brand-feedback-warning {
-    background-color: var(--feedback-warning) !important;
-}
-.bg-brand-feedback-warning-light {
-    background-color: var(--feedback-warning-light) !important;
-}
-.bg-brand-feedback-warning-dark {
-    background-color: var(--feedback-warning-dark) !important;
-}
-.bg-brand-feedback-success {
-    background-color: var(--feedback-success) !important;
-}
-.bg-brand-feedback-success-light {
-    background-color: var(--feedback-success-light) !important;
-}
-.bg-brand-feedback-success-dark {
-    background-color: var(--feedback-success-dark) !important;
-}
-.bg-brand-feedback-disabled {
-    background-color: var(--feedback-disabled) !important;
-}
-.bg-brand-feedback-disabled-light {
-    background-color: var(--feedback-disabled-light) !important;
-}
-.bg-brand-feedback-disabled-dark {
-    background-color: var(--feedback-disabled-dark) !important;
-}
-.bg-brand-dataviz-dark-blue {
-    background-color: var(--dataviz-dark-blue) !important;
+$themeColors: (
+    "primary-light": var(--primary-light),
+    "primary": var(--primary),
+    "primary-dark": var(--primary-dark),
+    "secondary-light": var(--secondary-light),
+    "secondary": var(--secondary),
+    "secondary-dark": var(--secondary-dark),
+    "neutral-lightest": var(--neutral-lightest),
+    "neutral-lighter": var(--neutral-lighter),
+    "neutral-light": var(--neutral-light),
+    "neutral": var(--neutral),
+    "neutral-dark": var(--neutral-dark),
+    "neutral-warm": var(--neutral-warm),
+    "feedback-info-light": var(--feedback-info-light),
+    "feedback-info": var(--feedback-info),
+    "feedback-info-dark": var(--feedback-info-dark),
+    "feedback-error-light": var(--feedback-error-light),
+    "feedback-error": var(--feedback-error),
+    "feedback-error-dark": var(--feedback-error-dark),
+    "feedback-warning-light": var(--feedback-warning-light),
+    "feedback-warning": var(--feedback-warning),
+    "feedback-warning-dark": var(--feedback-warning-dark),
+    "feedback-success-light": var(--feedback-success-light),
+    "feedback-success": var(--feedback-success),
+    "feedback-success-dark": var(--feedback-success-dark),
+    "feedback-disabled-light": var(--feedback-disabled-light),
+    "feedback-disabled": var(--feedback-disabled),
+    "feedback-disabled-dark": var(--feedback-disabled-dark),
+    "dataviz-blue": var(--dataviz-blue),
+    "dataviz-light-green": var(--dataviz-light-green),
+    "dataviz-red": var(--dataviz-red),
+    "dataviz-yellow": var(--dataviz-yellow),
+    "dataviz-brown": var(--dataviz-brown),
+    "dataviz-dark-pink": var(--dataviz-dark-pink),
+    "dataviz-dark-blue": var(--dataviz-dark-blue),
+    "dataviz-dark-green": var(--dataviz-dark-green),
+    "dataviz-orange": var(--dataviz-orange),
+    "dataviz-teal": var(--dataviz-teal),
+);
+
+@each $name, $color in $themeColors {
+    .bg-brand-#{$name} {
+        background-color: $color !important;
+    }
+    .text-brand-#{$name} {
+        color: $color !important;
+    }
 }
