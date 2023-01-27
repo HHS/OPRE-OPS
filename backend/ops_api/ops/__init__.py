@@ -4,13 +4,10 @@ from typing import Optional
 
 from flask import Blueprint, Flask
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
-from models.base import BaseModel
+from ops_api.ops.db import db
 from ops_api.ops.home_page.views import home
 from ops_api.ops.urls import register_api
 from ops_api.ops.utils.auth import jwtMgr, oauth
-
-db = SQLAlchemy(model_class=BaseModel)
 
 
 def configure_logging() -> None:
@@ -36,6 +33,8 @@ def configure_logging() -> None:
 
 def create_app(config_overrides: Optional[dict] = None) -> Flask:
     configure_logging()  # should be configured before any access to app.logger
+
+    print("created app !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
     app = Flask(__name__)
     CORS(app)

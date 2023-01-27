@@ -1,5 +1,6 @@
 import pytest
-from models.base import BaseModel, db
+from models.base import BaseModel
+from ops_api.ops import db
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 

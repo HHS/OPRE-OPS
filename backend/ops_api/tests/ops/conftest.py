@@ -1,7 +1,6 @@
 from datetime import date, datetime
 
 import pytest
-from models.base import db
 from models.cans import (
     CAN,
     Agreement,
@@ -15,16 +14,14 @@ from models.cans import (
 from models.portfolios import Division, Portfolio, PortfolioUrl, portfolio_team_leaders
 from models.research_projects import MethodologyType, PopulationType, ResearchProject
 from models.users import User
-from ops import create_app
+from ops_api.ops import create_app, db
 
 TEST_DB_NAME = "testdb"
 
 
 @pytest.fixture()
 def app():
-    app = create_app({"TESTING": True})
-    # set up here
-    yield app  # tear down here
+    yield create_app({"TESTING": True})
 
 
 @pytest.fixture()
