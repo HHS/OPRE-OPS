@@ -1,5 +1,5 @@
-from ops.models.cans import CANArrangementType
 import pytest
+from models.cans import CANArrangementType
 
 
 @pytest.mark.usefixtures("app_ctx")

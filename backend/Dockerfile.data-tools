@@ -9,9 +9,9 @@ ENV PYTHONUNBUFFERED=1
 
 # Copy the Pipfile(s) only, so that we can cache dependencies
 # in the next step
-COPY ./Pipfile ./Pipfile.lock /home/app/
+COPY ./data_tools/Pipfile ./data_tools/Pipfile.lock /home/app/
 RUN pipenv install --dev --system --deploy
 
 # Now copy the rest of the app files, again to better support caching
 # of prior steps.
-COPY ./ /home/app/
+COPY . /home/app/

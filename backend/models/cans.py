@@ -1,22 +1,13 @@
 """CAN models."""
 from typing import Any
 
-from ops.models.base import BaseModel
-from ops.models.portfolios import Portfolio
-from ops.models.portfolios import shared_portfolio_cans
-from ops.models.research_projects import ResearchProject
-from sqlalchemy import Column
-from sqlalchemy import DateTime
-from sqlalchemy import event
-from sqlalchemy import ForeignKey
-from sqlalchemy import Integer
-from sqlalchemy import Numeric
-from sqlalchemy import String
-from sqlalchemy import Table
+from models.base import BaseModel
+from models.portfolios import Portfolio, shared_portfolio_cans
+from models.research_projects import ResearchProject
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Numeric, String, Table, event
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import column_property
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import column_property, relationship
 
 can_funding_sources = Table(
     "can_funding_sources",
@@ -75,11 +66,13 @@ class AgreementType(BaseModel):
     ) -> None:
         connection.execute(
             target.insert(),
-            {"id": 1, "name": "Contract"},
-            {"id": 2, "name": "Grant"},
-            {"id": 3, "name": "Direct Allocation"},
-            {"id": 4, "name": "IAA"},
-            {"id": 5, "name": "Miscellaneous"},
+            (
+                {"id": 1, "name": "Contract"},
+                {"id": 2, "name": "Grant"},
+                {"id": 3, "name": "Direct Allocation"},
+                {"id": 4, "name": "IAA"},
+                {"id": 5, "name": "Miscellaneous"},
+            ),
         )
 
 
@@ -88,7 +81,6 @@ event.listen(
     "after_create",
     AgreementType.initial_data,
 )
-
 
 agreement_cans = Table(
     "agreement_cans",
@@ -202,11 +194,13 @@ class CANArrangementType(BaseModel):
     ) -> None:
         connection.execute(
             target.insert(),
-            {"id": 1, "name": "OPRE Appropriation"},
-            {"id": 2, "name": "Cost Share"},
-            {"id": 3, "name": "IAA"},
-            {"id": 4, "name": "IDDA"},
-            {"id": 5, "name": "MOU"},
+            (
+                {"id": 1, "name": "OPRE Appropriation"},
+                {"id": 2, "name": "Cost Share"},
+                {"id": 3, "name": "IAA"},
+                {"id": 4, "name": "IDDA"},
+                {"id": 5, "name": "MOU"},
+            ),
         )
 
 
@@ -248,13 +242,9 @@ class CAN(BaseModel):
     authorizer = relationship(FundingPartner)
     managing_portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
     managing_portfolio = relationship(Portfolio, back_populates="cans")
-    shared_portfolios = relationship(
-        Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans"
-    )
+    shared_portfolios = relationship(Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans")
     budget_line_items = relationship("BudgetLineItem", back_populates="can")
-    agreements = relationship(
-        Agreement, secondary=agreement_cans, back_populates="cans"
-    )
+    agreements = relationship(Agreement, secondary=agreement_cans, back_populates="cans")
     managing_research_project_id = Column(Integer, ForeignKey("research_project.id"))
     managing_research_project = relationship(ResearchProject, back_populates="cans")
 

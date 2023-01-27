@@ -1,15 +1,12 @@
-from ops.models.research_projects import ResearchProject
-from ops.resources.research_projects import ResearchProjectListAPI
 import pytest
+from models.research_projects import ResearchProject
+
+from backend.ops_api.ops.resources.research_projects import ResearchProjectListAPI
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_research_project_retrieve(loaded_db):
-    research_project = (
-        loaded_db.session.query(ResearchProject)
-        .filter(ResearchProject.title == "Project 1")
-        .one()
-    )
+    research_project = loaded_db.session.query(ResearchProject).filter(ResearchProject.title == "Project 1").one()
 
     assert research_project is not None
     assert research_project.title == "Project 1"

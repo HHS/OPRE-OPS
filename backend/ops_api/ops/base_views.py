@@ -1,7 +1,6 @@
-from flask import jsonify
-from flask import Response
+from flask import Response, jsonify
 from flask.views import MethodView
-from ops.models.base import BaseModel
+from models.base import BaseModel
 
 
 def generate_validator(model: BaseModel) -> BaseModel.Validator:

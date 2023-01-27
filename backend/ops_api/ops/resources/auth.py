@@ -1,10 +1,7 @@
-from flask import jsonify
-from flask import request
-from flask import Response
-from ops.base_views import BaseListAPI
-from ops.models.base import BaseModel
-from ops.utils.auth_views import login
-from ops.utils.auth_views import refresh
+from flask import Response, jsonify, request
+from models.base import BaseModel
+from ops_api.ops.base_views import BaseListAPI
+from ops_api.ops.utils.auth_views import login, refresh
 
 
 class AuthLoginAPI(BaseListAPI):

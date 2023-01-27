@@ -1,14 +1,8 @@
 """Portfolio models."""
 from typing import Any, cast
 
-from ops.models.base import BaseModel
-from sqlalchemy import Column
-from sqlalchemy import event
-from sqlalchemy import ForeignKey
-from sqlalchemy import Integer
-from sqlalchemy import String
-from sqlalchemy import Table
-from sqlalchemy import Text
+from models.base import BaseModel
+from sqlalchemy import Column, ForeignKey, Integer, String, Table, Text, event
 from sqlalchemy.engine import Connection
 from sqlalchemy.orm import relationship
 from typing_extensions import override
@@ -56,9 +50,11 @@ class PortfolioStatus(BaseModel):
         """Static method to initialize the table with default data."""
         connection.execute(
             target.insert(),
-            {"id": 1, "name": "In-Process"},
-            {"id": 2, "name": "Not-Started"},
-            {"id": 3, "name": "Sandbox"},
+            (
+                {"id": 1, "name": "In-Process"},
+                {"id": 2, "name": "Not-Started"},
+                {"id": 3, "name": "Sandbox"},
+            ),
         )
 
 
@@ -68,14 +64,12 @@ event.listen(
     PortfolioStatus.initial_data,
 )
 
-
 shared_portfolio_cans = Table(
     "shared_portfolio_cans",
     BaseModel.metadata,
     Column("portfolio_id", ForeignKey("portfolio.id"), primary_key=True),
     Column("can_id", ForeignKey("can.id"), primary_key=True),
 )
-
 
 portfolio_team_leaders = Table(
     "portfolio_team_leaders",
@@ -97,9 +91,7 @@ class Portfolio(BaseModel):
         "CAN",
         back_populates="managing_portfolio",
     )
-    shared_cans = relationship(
-        "CAN", back_populates="shared_portfolios", secondary=shared_portfolio_cans
-    )
+    shared_cans = relationship("CAN", back_populates="shared_portfolios", secondary=shared_portfolio_cans)
     division_id = Column(Integer, ForeignKey("division.id"))
     division = relationship("Division", back_populates="portfolio")
     urls = relationship("PortfolioUrl")
@@ -122,9 +114,7 @@ class Portfolio(BaseModel):
                 "division": self.division.to_dict() if self.division else None,
                 "cans": [can.to_dict() for can in self.cans],
                 "status": self.status.name,
-                "team_leaders": [
-                    team_lead.to_dict() for team_lead in self.team_leaders
-                ],
+                "team_leaders": [team_lead.to_dict() for team_lead in self.team_leaders],
             }
         )
 

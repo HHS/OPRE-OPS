@@ -25,6 +25,7 @@ ipython = "==8.7.0"
 types-all = "==1.0.0"
 pytest-flask = "==1.2.0"
 black = {extras = ["d"], version = "==22.12.0"}
+flake8-black = "*"
 
 [requires]
 python_version = "3.10"

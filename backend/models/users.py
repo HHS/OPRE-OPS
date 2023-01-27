@@ -1,13 +1,7 @@
 """User models."""
-from ops.models.base import BaseModel
-from sqlalchemy import Column
-from sqlalchemy import DateTime
-from sqlalchemy import ForeignKey
-from sqlalchemy import func
-from sqlalchemy import Integer
-from sqlalchemy import String
-from sqlalchemy.orm import column_property
-from sqlalchemy.orm import relationship
+from models.base import BaseModel
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy.orm import column_property, relationship
 
 
 class User(BaseModel):

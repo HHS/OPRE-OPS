@@ -1,17 +1,7 @@
 from environment.dev import DATABASE_URL
-from sqlalchemy import Column
-from sqlalchemy import create_engine
-from sqlalchemy import DateTime
-from sqlalchemy import ForeignKey
-from sqlalchemy import func
-from sqlalchemy import Integer
-from sqlalchemy import Numeric
-from sqlalchemy import String
-from sqlalchemy import Table
-from sqlalchemy import Text
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Numeric, String, Table, Text, create_engine, func
 from sqlalchemy.engine import Connection
-from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import declarative_base, relationship
 
 # Models here are for testing/development purposes while backend is being
 # ported to SQLAlchemy
@@ -40,9 +30,7 @@ class Portfolios(Base):
     name = Column(String(50), unique=True)
     abbreviation = Column(String(10), unique=True)
     division_id = Column(Integer, ForeignKey("division.id"))
-    division = relationship(
-        "Division", back_populates="divisions", cascade="all, delete-orphan"
-    )
+    division = relationship("Division", back_populates="divisions", cascade="all, delete-orphan")
     description = Column(Text, default="")
     status_id = Column(Integer, ForeignKey("portfolio_status.id"))
     status = relationship("PortfolioStatus", back_populates="portfolios")
@@ -130,9 +118,7 @@ class CAN(Base):
     nickname = Column(String(30))
     arrangement_type_id = Column(Integer, ForeignKey("can_arrangement_type.id"))
     arrangement_type = relationship(CANArrangementType)
-    funding_sources = relationship(
-        FundingSource, secondary=can_funding_sources, back_populates="cans"
-    )
+    funding_sources = relationship(FundingSource, secondary=can_funding_sources, back_populates="cans")
     authorizer_id = Column(Integer, ForeignKey("funding_partner.id"))
     authorizer = relationship(FundingPartner)
     managing_portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
@@ -163,9 +149,7 @@ class Agreement(Base):
     name = Column(String, nullable=False)
     agreement_type_id = Column(Integer, ForeignKey("agreement_type.id"))
     agreement_type = relationship("AgreementType")
-    owning_portfolio_id = managing_portfolio_id = Column(
-        Integer, ForeignKey("portfolio.id")
-    )
+    owning_portfolio_id = managing_portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
 
 
 class BudgetLineItem(Base):
