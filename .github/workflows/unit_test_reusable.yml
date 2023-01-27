@@ -25,7 +25,7 @@ jobs:
       - uses: ./.github/actions/setup-python
       - name: Run backend unit tests
         working-directory: ./backend/data_tools/
-        run: pipenv run pytest
+        run: pipenv install --dev && pipenv run pytest
 
 
   frontend:

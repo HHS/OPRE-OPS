@@ -25,7 +25,6 @@ pytest = "==7.2.0"
 pytest-cov = "==4.0.0"
 pytest-mock = "==3.10.0"
 ipython = "==8.7.0"
-install = "*"
 pytest-docker = {extras = ["docker-compose-v2"], version = "*"}
 
 [requires]
