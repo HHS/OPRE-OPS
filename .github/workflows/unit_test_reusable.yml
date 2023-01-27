@@ -3,7 +3,7 @@ on:
 
 jobs:
 
-  backend:
+  backend-api:
     name: Backend Unit Tests
     runs-on: ubuntu-latest
     env:
@@ -13,6 +13,18 @@ jobs:
       - uses: ./.github/actions/setup-python
       - name: Run backend unit tests
         working-directory: ./backend/ops_api/
+        run: pipenv run pytest
+
+  backend-data-tools:
+    name: Backend Unit Tests
+    runs-on: ubuntu-latest
+    env:
+      JWT_PRIVATE_KEY: "__blank__"
+    steps:
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # v3
+      - uses: ./.github/actions/setup-python
+      - name: Run backend unit tests
+        working-directory: ./backend/data_tools/
         run: pipenv run pytest
 
 
