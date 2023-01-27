@@ -9,7 +9,7 @@ import { getPortfolioCansFundingDetails } from "../../../api/getCanFundingSummar
 const CanCard = ({ can, fiscalYear }) => {
     /* Styling */
     const sectionClasses = `${style.container}`;
-    const leftMarginClasses = `padding-left-2 padding-top-1 ${style.leftMarginContainer}`;
+    const leftMarginClasses = `padding-y-205 padding-x-105 ${style.leftMarginContainer}`;
     const cardBodyClasses = `padding-left-3 padding-top-2 ${style.cardBodyDiv}`;
     const leftMarginBlockClasses = `font-sans-3xs padding-top-1 ${style.leftMarginSubContainer}`;
     const fundingYTDClasses = `padding-left-0 grid-container ${style.fundingYTD}`;
@@ -35,24 +35,35 @@ const CanCard = ({ can, fiscalYear }) => {
         <section>
             <div className={sectionClasses}>
                 <div className={leftMarginClasses}>
-                    <div className={leftMarginBlockClasses}>
-                        <div className="font-sans-3xs">CAN</div>
-                        <div className="font-sans-md text-bold">{can.number}</div>
+                    <div className="margin-bottom-2">
+                        <h2 className="font-sans-3xs margin-0 text-brand-neutral-warm">CAN</h2>
+                        <p className="font-sans-3xs text-semibold margin-0">{can.number}</p>
                     </div>
-                    <div className={leftMarginBlockClasses}>
-                        <div className="font-sans-3xs">Description</div>
-                        <div className="font-sans-md text-bold">{can.nickname}</div>
+                    <div className="margin-y-1">
+                        <h2 className="font-sans-3xs margin-0 text-brand-neutral-warm">Description</h2>
+                        <p className="font-sans-3xs text-semibold margin-0">{can.nickname}</p>
                     </div>
-                    <div className={leftMarginBlockClasses}>
-                        <div className="font-sans-3xs">FY Total Budget</div>
-                        <div className="font-sans-md text-bold">
+                    <div className="margin-y-1">
+                        <h2 className="font-sans-3xs margin-0 text-brand-neutral-warm">Appropriation</h2>
+                        {/* TODO: Find out how to get this */}
+                        <p className="font-sans-3xs text-semibold margin-0">TODO</p>
+                    </div>
+                    <div className="margin-y-1">
+                        <h2 className="font-sans-3xs margin-0 text-brand-neutral-warm">Expiration</h2>
+                        <p className="font-sans-3xs text-semibold margin-0">
+                            {canFundingData?.expiration_date || "---"}
+                        </p>
+                    </div>
+                    {/* <div className="margin-y-2">
+                        <h2 className="font-sans-3xs margin-0 text-brand-neutral-warm">FY Total Budget</h2>
+                        <p className="font-sans-3xs text-semibold margin-0">
                             <CurrencyWithSmallCents
                                 amount={canFundingData?.total_funding || constants.notFilledInText}
-                                dollarsClasses="font-sans-md text-bold"
+                                dollarsClasses="font-sans-3xs text-bold"
                                 centsStyles={{ fontSize: "10px" }}
                             />
-                        </div>
-                    </div>
+                        </p>
+                    </div> */}
                 </div>
                 <div className={cardBodyClasses}>
                     <div className={fundingYTDClasses}>
