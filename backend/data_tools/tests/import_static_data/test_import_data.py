@@ -1,6 +1,3 @@
-from unittest import mock
-
-import pytest
 import sqlalchemy.engine
 from data_tools.environment.test import TestConfig
 from data_tools.src.import_static_data.import_data import init_db
