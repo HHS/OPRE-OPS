@@ -8,6 +8,7 @@ export FLASK_DEBUG=true
 
 ls -la
 cd ops_api
+pip install --no-cache-dir --upgrade pip==22.2.2 pipenv==2022.10.12
 pipenv install --dev --system --deploy
 cd ..
 python -m gunicorn -b ":8080" --log-level DEBUG "ops_api.ops:create_app()"
