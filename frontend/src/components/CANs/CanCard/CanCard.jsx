@@ -11,7 +11,6 @@ const CanCard = ({ can, fiscalYear }) => {
     const sectionClasses = `${style.container}`;
     const leftMarginClasses = `padding-y-205 padding-x-105 ${style.leftMarginContainer}`;
     const cardBodyClasses = `padding-left-3 padding-top-2 ${style.cardBodyDiv}`;
-    const leftMarginBlockClasses = `font-sans-3xs padding-top-1 ${style.leftMarginSubContainer}`;
     const fundingYTDClasses = `padding-left-0 grid-container ${style.fundingYTD}`;
     const budgetStatusClasses = `${style.budgetStatus}`;
     const budgetStatusTableClasses = `usa-table usa-table--borderless text-bold font-sans-3xs ${style.budgetStatusTable}`;
@@ -34,25 +33,28 @@ const CanCard = ({ can, fiscalYear }) => {
     return (
         <section>
             <div className={sectionClasses}>
-                <div className={leftMarginClasses}>
-                    <div className="margin-bottom-2">
-                        <h2 className="font-sans-3xs margin-0 text-brand-neutral-warm">CAN</h2>
-                        <p className="font-sans-3xs text-semibold margin-0">{can.number}</p>
+                <dl className={`margin-0 ${leftMarginClasses}`}>
+                    <div>
+                        <dt className="font-sans-3xs margin-0 text-brand-neutral-warm">CAN</dt>
+                        <dd className="font-sans-3xs text-semibold margin-0">{can.number}</dd>
                     </div>
-                    <div className="margin-y-1">
-                        <h2 className="font-sans-3xs margin-0 text-brand-neutral-warm">Description</h2>
-                        <p className="font-sans-3xs text-semibold margin-0">{can.nickname}</p>
+                    <div className="margin-y-3">
+                        <dt className="font-sans-3xs margin-0 text-brand-neutral-warm">Description</dt>
+                        <dd className="font-sans-3xs text-semibold margin-0">{can.nickname}</dd>
                     </div>
-                    <div className="margin-y-1">
-                        <h2 className="font-sans-3xs margin-0 text-brand-neutral-warm">Appropriation</h2>
-                        {/* TODO: Find out how to get this */}
-                        <p className="font-sans-3xs text-semibold margin-0">TODO</p>
+                    <div className="margin-y-3">
+                        <dt className="font-sans-3xs margin-0 text-brand-neutral-warm">Appropriation</dt>
+                        <dd className="font-sans-3xs text-semibold margin-0">
+                            {/* TODO: Get value from backend */}
+                            {can.appropriation_date ? can.appropriation_date : "01/01/2021"} ({can.appropriation_term}{" "}
+                            {can.appropriation_term > 1 ? "years" : "year"})
+                        </dd>
                     </div>
-                    <div className="margin-y-1">
-                        <h2 className="font-sans-3xs margin-0 text-brand-neutral-warm">Expiration</h2>
-                        <p className="font-sans-3xs text-semibold margin-0">
+                    <div className="margin-y-3">
+                        <dt className="font-sans-3xs margin-0 text-brand-neutral-warm">Expiration</dt>
+                        <dd className="font-sans-3xs text-semibold margin-0">
                             {canFundingData?.expiration_date || "---"}
-                        </p>
+                        </dd>
                     </div>
                     {/* <div className="margin-y-2">
                         <h2 className="font-sans-3xs margin-0 text-brand-neutral-warm">FY Total Budget</h2>
@@ -64,7 +66,8 @@ const CanCard = ({ can, fiscalYear }) => {
                             />
                         </p>
                     </div> */}
-                </div>
+                </dl>
+
                 <div className={cardBodyClasses}>
                     <div className={fundingYTDClasses}>
                         <div className="grid-row">

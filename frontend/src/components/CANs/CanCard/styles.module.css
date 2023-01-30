@@ -1,18 +1,18 @@
 .container {
     display: flex;
     margin: 1rem 0;
- }
+}
 
 .clear {
     clear: both;
 }
 
 .leftMarginContainer {
-    background: #F0F0F0;
+    background: #f0f0f0;
     /* removed border-right, to keep from having doubled up borders between left and right. */
-    border-top: 1px solid #A9AEB1;
-    border-bottom: 1px solid #A9AEB1;
-    border-left: 1px solid #A9AEB1;
+    border-top: 1px solid #a9aeb1;
+    border-bottom: 1px solid #a9aeb1;
+    border-left: 1px solid #a9aeb1;
     border-bottom-left-radius: 4px;
     border-top-left-radius: 4px;
     height: 250px;
@@ -21,16 +21,12 @@
 }
 
 .cardBodyDiv {
-    border: 1px solid #A9AEB1;
+    border: 1px solid #a9aeb1;
     border-bottom-right-radius: 4px;
     border-top-right-radius: 4px;
     height: 250px;
     display: inline-block;
     flex: 6;
-}
-
-.leftMarginSubContainer {
-    height: 70px;
 }
 
 .fundingYTD {
@@ -51,7 +47,7 @@
 .budgetStatusTable thead th {
     font-weight: 100;
     line-height: 1;
-    font-size: .81rem;
+    font-size: 0.81rem;
 }
 
 .budgetStatusTable td {
