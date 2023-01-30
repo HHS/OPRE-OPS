@@ -15,7 +15,7 @@ applications:
     no-route: true
     memory: 700M
     buildpack: python_buildpack
-    path: ./data-tools
+    path: ./backend/data_tools
     command: ./scripts/import_data.sh
     timeout: 90
 
