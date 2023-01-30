@@ -33,9 +33,6 @@ def configure_logging() -> None:
 
 def create_app(config_overrides: Optional[dict] = None) -> Flask:
     configure_logging()  # should be configured before any access to app.logger
-
-    print("created app !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-
     app = Flask(__name__)
     CORS(app)
     app.config.from_object("ops_api.ops.environment.default_settings")

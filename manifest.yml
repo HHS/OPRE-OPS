@@ -15,8 +15,8 @@ applications:
     no-route: true
     memory: 700M
     buildpack: python_buildpack
-    path: ./backend/data_tools
-    command: ./scripts/import_data.sh
+    path: ./backend
+    command: ./data_tools/scripts/import_data.sh
     timeout: 90
 
   - name: ops-frontend
