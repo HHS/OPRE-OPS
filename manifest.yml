@@ -6,7 +6,7 @@ applications:
     memory: 700M
     buildpack: python_buildpack
     path: ./backend/ops_api
-    command: ./deployed_run.sh
+    command: cd .. && ./ops_api/deployed_run.sh
 
   - name: ops-data-tools
     env:
