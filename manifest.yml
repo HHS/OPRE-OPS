@@ -5,8 +5,8 @@ applications:
       OPS_CONFIG: environment/cloud.py
     memory: 700M
     buildpack: python_buildpack
-    path: ./backend
-    command: ./ops_api/deployed_run.sh
+    path: ./backend/ops_api
+    command: ./deployed_run.sh
 
   - name: ops-data-tools
     env:
