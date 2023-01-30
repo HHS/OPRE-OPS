@@ -56,8 +56,8 @@
 `cf run-task <app-name> --name <task-name> --command <command-to-run>
 
 ### example:
-Run the command `./scripts/import_data.sh` within the `ops-data-tools` app.
-`cf run-task ops-data-tools --command "ENV=cloudgov ./scripts/import_data.sh" --name load_sample_data`
+Run the command `./data_tools/scripts/import_data.sh` within the `backend` app.
+`cf run-task ops-data-tools --command "ENV=cloudgov ./data_tools/scripts/import_data.sh" --name load_sample_data`
 
 
 

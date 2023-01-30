@@ -56,7 +56,7 @@ jobs:
           SPACE_NAME: ${{ inputs.space }}
           APP_NAME: ops-data-tools
           CF_TASKNAME: 'Load-Sample-Data'
-          CF_COMMAND: "ENV=cloudgov VERBOSE=True ./scripts/import_data.sh"
+          CF_COMMAND: "ENV=cloudgov VERBOSE=True ./data_tools/scripts/import_data.sh"
 
       - name: Build frontend
         working-directory: ./frontend
