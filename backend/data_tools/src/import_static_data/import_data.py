@@ -55,14 +55,16 @@ def init_db(
     config: DataToolsConfig, db: Optional[Engine] = None
 ) -> Tuple[sqlalchemy.engine.Engine, sqlalchemy.MetaData]:
     if not db:
-        engine = create_engine(config.db_connection_string, echo=config.verbosity, future=True)
+        engine = create_engine(
+            config.db_connection_string, echo=config.verbosity, future=True
+        )
     else:
         engine = db
     BaseModel.metadata.create_all(engine)
     return engine, BaseModel.metadata
 
 
-def get_config(environment_name: str):
+def get_config(environment_name: str = None):
     match environment_name:
         case "cloudgov":
             config = CloudGovConfig()
@@ -95,7 +97,9 @@ def delete_existing_data(conn: sqlalchemy.engine.Engine.connect, data: Dict):
             return "Table does not exist"
 
 
-def load_new_data(conn: sqlalchemy.engine.Engine, data, metadata_obj: sqlalchemy.MetaData):
+def load_new_data(
+    conn: sqlalchemy.engine.Engine, data, metadata_obj: sqlalchemy.MetaData
+):
     for ops_table in data:
         d = data[ops_table]
         conn.execute(
