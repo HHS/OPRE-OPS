@@ -23,7 +23,7 @@ class CloudGovConfig(DataToolsConfig):
 
     @property
     def opre_excel_connection_string(self):
-        return "excel:///?Excel File='/Users/jdeangelis/PycharmProjects/OPRE-OPS-2/data-tools/data/REDACTED - FY22 Budget Summary -10-12-22.xlsm'"
+        return ""
 
     @property
     def verbosity(self):
