@@ -56,7 +56,7 @@ services:
     container_name: ops-backend
     ports:
       - "8080:8080"
-#    command: ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=8080"]
+    command: ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=8080"]
     environment:
       - JWT_PRIVATE_KEY
       - OPS_CONFIG=environment/local.py
