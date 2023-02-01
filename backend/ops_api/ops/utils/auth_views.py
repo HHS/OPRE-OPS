@@ -1,17 +1,11 @@
 import traceback
 from typing import Union
 
-from flask import jsonify
-from flask import request
-from flask import Response
-from flask_jwt_extended import create_access_token
-from flask_jwt_extended import create_refresh_token
-from flask_jwt_extended import get_jwt_identity
-from flask_jwt_extended import jwt_required
-from ops.utils.auth import get_jwt
-from ops.utils.auth import oauth
-from ops.utils.user import process_user
 import requests
+from flask import Response, jsonify, request
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
+from ops_api.ops.utils.auth import get_jwt, oauth
+from ops_api.ops.utils.user import process_user
 
 
 def login() -> Union[Response, tuple[str, int]]:
@@ -24,19 +18,14 @@ def login() -> Union[Response, tuple[str, int]]:
         oauth.register(
             "logingov",
             client_id="urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
-            server_metadata_url=(
-                "https://idp.int.identitysandbox.gov"
-                "/.well-known/openid-configuration"
-            ),
+            server_metadata_url=("https://idp.int.identitysandbox.gov" "/.well-known/openid-configuration"),
             client_kwargs={"scope": "openid email profile"},
         )
 
         token = oauth.logingov.fetch_access_token(
             "",
             client_assertion=get_jwt(),
-            client_assertion_type=(
-                "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
-            ),
+            client_assertion_type=("urn:ietf:params:oauth:client-assertion-type:jwt-bearer"),
             grant_type="authorization_code",
             code=authCode,
         )

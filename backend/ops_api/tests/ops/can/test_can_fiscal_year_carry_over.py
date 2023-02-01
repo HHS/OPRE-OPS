@@ -1,5 +1,5 @@
-from ops.models.cans import CANFiscalYearCarryOver
 import pytest
+from models.cans import CANFiscalYearCarryOver
 
 
 @pytest.mark.usefixtures("app_ctx")

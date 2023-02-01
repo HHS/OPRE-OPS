@@ -1,12 +1,8 @@
-from flask import jsonify
-from flask import request
-from flask import Response
-from ops import db
-from ops.base_views import BaseItemAPI
-from ops.base_views import BaseListAPI
-from ops.models.base import BaseModel
-from ops.models.cans import CANFiscalYear
-from ops.models.research_projects import ResearchProject
+from flask import Response, jsonify, request
+from models.base import BaseModel
+from models.cans import CANFiscalYear
+from models.research_projects import ResearchProject
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from sqlalchemy.future import select
 from typing_extensions import override
 
@@ -54,6 +50,8 @@ class ResearchProjectListAPI(BaseListAPI):
         portfolio_id = request.args.get("portfolio_id")
 
         stmt = ResearchProjectListAPI.get_query(fiscal_year, portfolio_id)
+        from ops_api.ops import db
+
         result = db.session.execute(stmt).all()
 
         return jsonify([i.to_dict() for item in result for i in item])

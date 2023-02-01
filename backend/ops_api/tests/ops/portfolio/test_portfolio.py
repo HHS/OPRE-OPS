@@ -1,12 +1,10 @@
-from ops.models.portfolios import Portfolio
 import pytest
+from models.portfolios import Portfolio
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_portfolio_retrieve(loaded_db):
-    portfolio = (
-        loaded_db.session.query(Portfolio).filter(Portfolio.name == "WRGB (CCE)").one()
-    )
+    portfolio = loaded_db.session.query(Portfolio).filter(Portfolio.name == "WRGB (CCE)").one()
 
     assert portfolio is not None
     assert portfolio.name == "WRGB (CCE)"

@@ -1,5 +1,5 @@
-from ops.models.cans import BudgetLineItem
 import pytest
+from models.cans import BudgetLineItem
 
 
 @pytest.mark.usefixtures("app_ctx")

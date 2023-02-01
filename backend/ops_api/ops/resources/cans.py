@@ -1,11 +1,9 @@
 from typing import List
 
-from flask import jsonify
-from flask import Response
-from ops.base_views import BaseItemAPI
-from ops.base_views import BaseListAPI
-from ops.models.base import BaseModel
-from ops.models.cans import CAN
+from flask import Response, jsonify
+from models.base import BaseModel
+from models.cans import CAN
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from typing_extensions import override
 
 
