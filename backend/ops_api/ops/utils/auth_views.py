@@ -3,7 +3,7 @@ import sys
 import traceback
 from typing import Union
 
-from flask import current_app
+# from flask import current_app
 from flask import jsonify
 from flask import request
 from flask import Response
@@ -26,30 +26,41 @@ def login() -> Union[Response, tuple[str, int]]:
 
     try:
         # authlib_client_config = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"]
-        client_id = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"][
-            "client_id"
-        ][0]
-        server_metadata_url = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"][
-            "server_metadata_url"
-        ]
-        client_kwargs = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"][
-            "client_kwargs"
-        ]
-        user_info_url = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"][
-            "user_info_url"
-        ]
-        logging.info(f"client_id: {client_id}")
-        logging.info(f"server_metadata_url: {server_metadata_url}")
-        logging.info(f"client_kwargs: {client_kwargs}")
-        logging.info(f"user_info_url: {user_info_url}")
+        # client_id = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"][
+        #     "client_id"
+        # ]
+        # server_metadata_url = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"][
+        #     "server_metadata_url"
+        # ]
+        # client_kwargs = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"][
+        #     "client_kwargs"
+        # ]
+        # user_info_url = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"][
+        #     "user_info_url"
+        # ]
+        # logging.info(f"client_id: {client_id}")
+        # logging.info(f"server_metadata_url: {server_metadata_url}")
+        # logging.info(f"client_kwargs: {client_kwargs}")
+        # logging.info(f"user_info_url: {user_info_url}")
 
+        # oauth.register(
+        #     "logingov",
+        #     client_id="urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
+        #     server_metadata_url=server_metadata_url,
+        #     client_kwargs=client_kwargs,
+        # )
+        # logging.info("client registered")
+
+        # reverted back to what's in main, just to test...
         oauth.register(
             "logingov",
             client_id="urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
-            server_metadata_url=server_metadata_url,
-            client_kwargs=client_kwargs,
+            server_metadata_url=(
+                "https://idp.int.identitysandbox.gov"
+                "/.well-known/openid-configuration"
+            ),
+            client_kwargs={"scope": "openid email profile"},
         )
-        logging.info("client registered")
 
         token = oauth.logingov.fetch_access_token(
             "",
@@ -63,7 +74,7 @@ def login() -> Union[Response, tuple[str, int]]:
         header = {"Authorization": f'Bearer {token["access_token"]}'}
         logging.debug(f"Header: {header}")
         user_data = requests.get(
-            user_info_url,
+            "https://idp.int.identitysandbox.gov/api/openid_connect/userinfo",
             headers=header,
         ).json()
         logging.debug(f"User Data: {user_data}")

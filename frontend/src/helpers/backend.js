@@ -7,7 +7,7 @@ export const callBackend = async (urlPath, action, requestBody, queryParams) => 
 
     const response = await axios({
         method: action,
-        url: `${BACKEND_DOMAIN}/${urlPath}`,
+        url: `${BACKEND_DOMAIN}${urlPath}`,
         data: requestBody,
         params: queryParams,
     });
