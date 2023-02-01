@@ -69,7 +69,7 @@ const CanCard = ({ can, fiscalYear }) => {
                         </p>
                     </div> */}
                 </dl>
-                <div className="grid-row border-accent-cool border-1px padding-205">
+                <div className={`grid-row padding-205 ${style.rightContainer}`}>
                     {/*NOTE: LEFT SIDE */}
                     <div className="grid-col-5">
                         <h4 className="font-sans-3xs text-normal">FY {fiscalYear} CAN Total Funding</h4>

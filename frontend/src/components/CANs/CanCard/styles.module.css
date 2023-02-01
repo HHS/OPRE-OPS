@@ -9,19 +9,22 @@
 
 .leftMarginContainer {
     background: #f0f0f0;
-    /* removed border-right, to keep from having doubled up borders between left and right. */
-    border-top: 1px solid #a9aeb1;
-    border-bottom: 1px solid #a9aeb1;
-    border-left: 1px solid #a9aeb1;
+    border: 1px solid #a9aeb1;
     border-bottom-left-radius: 4px;
     border-top-left-radius: 4px;
     /* height: 250px; */
     /* width: 100%; */
     max-width: 147px;
-    /* flex: 1; */
+    flex: 1;
     font-size: 0.75rem;
     padding-left: 12px;
-    padding-right: 24px;
+    padding-right: 21px;
+}
+.rightContainer {
+    flex: 5;
+    border-top: 1px solid #a9aeb1;
+    border-bottom: 1px solid #a9aeb1;
+    border-right: 1px solid #a9aeb1;
 }
 
 .cardBodyDiv {
