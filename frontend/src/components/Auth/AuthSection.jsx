@@ -15,7 +15,7 @@ const AuthSection = () => {
 
     const callBackend = useCallback(
         async (authCode) => {
-            const response = await ApplicationContext.get().helpers().callBackend(`/login`, "post", {
+            const response = await ApplicationContext.get().helpers().callBackend(`api/v1/auth/login/`, "post", {
                 callbackUrl: window.location.href,
                 code: authCode,
             });

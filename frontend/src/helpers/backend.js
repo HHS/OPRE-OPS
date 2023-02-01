@@ -7,7 +7,7 @@ export const callBackend = async (urlPath, action, requestBody, queryParams) => 
 
     const response = await axios({
         method: action,
-        url: `${BACKEND_DOMAIN}${urlPath}`,
+        url: `${BACKEND_DOMAIN}/${urlPath}`,
         data: requestBody,
         params: queryParams,
     });
@@ -17,10 +17,10 @@ export const callBackend = async (urlPath, action, requestBody, queryParams) => 
 
 export const authConfig = {
     loginGovAuthorizationEndpoint: "https://idp.int.identitysandbox.gov/openid_connect/authorize",
-    acr_values: "http://idmanagement.gov/ns/assurance/ial/2",
+    acr_values: "http://idmanagement.gov/ns/assurance/ial/1",
     client_id: "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
     response_type: "code",
-    scope: "openid email profile",
+    scope: "openid email",
     redirect_uri: "http://localhost:3000",
 };
 

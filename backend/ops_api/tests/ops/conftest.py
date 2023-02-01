@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from ops import create_app
+from ops.models.base import db
 from ops.models.cans import Agreement
 from ops.models.cans import BudgetLineItem
 from ops.models.cans import BudgetLineItemStatus
@@ -11,10 +12,9 @@ from ops.models.cans import FundingPartner
 from ops.models.cans import FundingSource
 from ops.models.portfolios import Division
 from ops.models.portfolios import Portfolio
+from ops.models.portfolios import portfolio_team_leaders
 from ops.models.portfolios import PortfolioDescriptionText
 from ops.models.portfolios import PortfolioUrl
-from ops.models.portfolios import portfolio_team_leaders
-from ops.models.base import db
 from ops.models.users import User
 import pytest
 
