@@ -6,11 +6,11 @@ Base = declarative_base()
 
 
 # an example mapping using the base
-class AllBudgetCur(Base):
+class AllBudgetCurrent(Base):
     __tablename__ = "staging_all_budget"
 
     CAN = Column(String)
-    Sys_Budget_ID = Column(String)
+    Sys_Budget_ID = Column(String, primary_key=True)
     Project_Title = Column(String)
     CIG_Name = Column(String)
     CIG_Type = Column(String)
