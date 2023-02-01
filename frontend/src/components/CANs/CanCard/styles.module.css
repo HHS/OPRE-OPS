@@ -16,8 +16,12 @@
     border-bottom-left-radius: 4px;
     border-top-left-radius: 4px;
     /* height: 250px; */
-    width: 135px;
-    flex: 1;
+    /* width: 100%; */
+    max-width: 147px;
+    /* flex: 1; */
+    font-size: 0.75rem;
+    padding-left: 12px;
+    padding-right: 24px;
 }
 
 .cardBodyDiv {
