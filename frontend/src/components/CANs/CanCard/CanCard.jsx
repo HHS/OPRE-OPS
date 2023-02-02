@@ -20,7 +20,32 @@ const CanCard = ({ can, fiscalYear }) => {
     const budgetStatusTableClasses = `usa-table usa-table--borderless text-bold font-sans-3xs ${style.budgetStatusTable}`;
     /* vars */
     const [canFundingData, setCanFundingDataLocal] = useState({});
-
+    const canFunds = [
+        {
+            label: "Available",
+            value: canFundingData.available_funding || 0,
+            color: "text-brand-dataviz-level-1",
+            percent: "20%",
+        },
+        {
+            label: "Planned",
+            value: canFundingData.planned_funding || 0,
+            color: "text-brand-dataviz-level-2",
+            percent: "20%",
+        },
+        {
+            label: "Executing",
+            value: canFundingData.executing_funding || 0,
+            color: "text-brand-dataviz-level-3",
+            percent: "20%",
+        },
+        {
+            label: "Obligated",
+            value: canFundingData.obligated_funding || 0,
+            color: "text-brand-dataviz-level-4",
+            percent: "20%",
+        },
+    ];
     useEffect(() => {
         const getCanTotalFundingandSetState = async () => {
             const results = await getPortfolioCansFundingDetails({ id: can.id, fiscalYear: fiscalYear });
@@ -33,6 +58,34 @@ const CanCard = ({ can, fiscalYear }) => {
             setCanFundingDataLocal({});
         };
     }, [can.id, fiscalYear]);
+
+    const BudgetItem = ({ label, value, color, percent }) => {
+        return (
+            <>
+                <div className="grid-col-5">
+                    <div className="display-flex flex-align-center">
+                        <FontAwesomeIcon
+                            icon={faCircle}
+                            className={`height-1 width-1 margin-right-1px text-brand-dataviz-level-1 ${color}`}
+                        />
+                        <span>{label}</span>
+                    </div>
+                </div>
+                <div className="grid-col-5">
+                    <CurrencyFormat
+                        value={value}
+                        displayType={"text"}
+                        thousandSeparator={true}
+                        prefix={"$ "}
+                        renderText={(value) => <span className="">{value}</span>}
+                    />
+                </div>
+                <div className="grid-col-2">
+                    <Tag tagStyle="darkTextLightBackground" text={percent} />
+                </div>
+            </>
+        );
+    };
 
     return (
         <section>
@@ -78,157 +131,22 @@ const CanCard = ({ can, fiscalYear }) => {
                             current_funding={canFundingData?.current_funding}
                             expected_funding={canFundingData?.expected_funding}
                         />
-
-                        <div className={budgetStatusClasses}>
-                            <div className={budgetStatusTableClasses}>
-                                {/* <table className={budgetStatusTableClasses}>
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">Planned</th>
-                                                <th scope="col">in Execution</th>
-                                                <th scope="col">Obligated</th>
-                                                <th scope="col">Remaining</th>
-                                                <th scope="col">Appropriation Term</th>
-                                                <th scope="col">Expiration</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>
-                                                    <CurrencyWithSmallCents
-                                                        amount={canFundingData?.planned_funding || 0}
-                                                        dollarsClasses="font-sans-3xs"
-                                                        centsStyles={{ fontSize: "10px" }}
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <CurrencyWithSmallCents
-                                                        amount={canFundingData?.in_execution_funding || 0}
-                                                        dollarsClasses="font-sans-3xs"
-                                                        centsStyles={{ fontSize: "10px" }}
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <CurrencyWithSmallCents
-                                                        amount={canFundingData?.obligated_funding || 0}
-                                                        dollarsClasses="font-sans-3xs"
-                                                        centsStyles={{ fontSize: "10px" }}
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <CurrencyWithSmallCents
-                                                        amount={canFundingData?.available_funding || 0}
-                                                        dollarsClasses="font-sans-3xs"
-                                                        centsStyles={{ fontSize: "10px" }}
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <b>{canFundingData?.can?.appropriation_term || "-"} Years</b>
-                                                </td>
-                                                <td>
-                                                    <b>{canFundingData?.expiration_date || "---"}</b>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table> */}
-                            </div>
-                        </div>
                     </div>
                     {/* NOTE: RIGHT SIDE */}
                     <div className="grid-col margin-left-5">
                         <h4 className="font-sans-3xs text-normal">FY {fiscalYear} CAN Budget Status</h4>
-
                         <div className="display-flex flex-justify">
                             <div className="grid-row maxw-card-lg font-12px">
-                                <div className="grid-col-5">
-                                    <div className="display-flex flex-align-center">
-                                        <FontAwesomeIcon
-                                            icon={faCircle}
-                                            className="height-1 width-1 margin-right-1px text-brand-dataviz-level-1"
-                                        />
-                                        <span>Available</span>
-                                    </div>
-                                </div>
-                                <div className="grid-col-5">
-                                    <CurrencyFormat
-                                        value={canFundingData?.available_funding}
-                                        displayType={"text"}
-                                        thousandSeparator={true}
-                                        prefix={"$ "}
-                                        renderText={(value) => <span className="">{value}</span>}
+                                {canFunds.map((canFundItem) => (
+                                    <BudgetItem
+                                        key={canFundItem.label}
+                                        label={canFundItem.label}
+                                        value={canFundItem.value}
+                                        color={canFundItem.color}
+                                        percent={canFundItem.percent}
                                     />
-                                </div>
-                                <div className="grid-col-2">
-                                    <Tag tagStyle="darkTextLightBackground" text="20%" />
-                                </div>
-                                {/* loop2 */}
-                                <div className="grid-col-5">
-                                    <div className="display-flex flex-align-center">
-                                        <FontAwesomeIcon
-                                            icon={faCircle}
-                                            className="height-1 width-1 margin-right-1px text-brand-dataviz-level-2"
-                                        />
-                                        <span>Planned</span>
-                                    </div>
-                                </div>
-                                <div className="grid-col-5">
-                                    <CurrencyFormat
-                                        value={canFundingData?.planned_funding}
-                                        displayType={"text"}
-                                        thousandSeparator={true}
-                                        prefix={"$ "}
-                                        renderText={(value) => <span>{value}</span>}
-                                    />
-                                </div>
-                                <div className="grid-col-2">
-                                    <Tag tagStyle="darkTextLightBackground" text="20%" />
-                                </div>
-                                {/* loop3 */}
-                                <div className="grid-col-5">
-                                    <div className="display-flex flex-align-center">
-                                        <FontAwesomeIcon
-                                            icon={faCircle}
-                                            className="height-1 width-1 margin-right-1px text-brand-dataviz-level-3"
-                                        />
-                                        <span>Executing</span>
-                                    </div>
-                                </div>
-                                <div className="grid-col-5">
-                                    <CurrencyFormat
-                                        value={canFundingData?.in_execution_funding}
-                                        displayType={"text"}
-                                        thousandSeparator={true}
-                                        prefix={"$ "}
-                                        renderText={(value) => <span>{value}</span>}
-                                    />
-                                </div>
-                                <div className="grid-col-2">
-                                    <Tag tagStyle="darkTextLightBackground" text="20%" />
-                                </div>
-                                {/* loop4 */}
-                                <div className="grid-col-5">
-                                    <div className="display-flex flex-align-center">
-                                        <FontAwesomeIcon
-                                            icon={faCircle}
-                                            className="height-1 width-1 margin-right-1px text-brand-dataviz-level-4"
-                                        />
-                                        <span>Obligated</span>
-                                    </div>
-                                </div>
-                                <div className="grid-col-5">
-                                    <CurrencyFormat
-                                        value={canFundingData?.obligated_funding}
-                                        displayType={"text"}
-                                        thousandSeparator={true}
-                                        prefix={"$ "}
-                                        renderText={(value) => <span>{value}</span>}
-                                    />
-                                </div>
-                                <div className="grid-col-2">
-                                    <Tag tagStyle="darkTextLightBackground" text="20%" />
-                                </div>
+                                ))}
                             </div>
-
                             {/*
                                 TODO: add  donut chart
                                 <ResponsiveDonutWithInnerPercent />
