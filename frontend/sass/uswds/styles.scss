@@ -7,6 +7,8 @@ html {
     scroll-behavior: smooth;
 }
 
+// COLORS
+
 :root {
     --primary-light: #bbd9ed;
     --primary: #32698f;
@@ -44,6 +46,10 @@ html {
     --dataviz-dark-green: #3e8e62;
     --dataviz-orange: #d67d24;
     --dataviz-teal: #419195;
+    --dataviz-level-1: #c07b96;
+    --dataviz-level-2: #336a90;
+    --dataviz-level-3: #e5a000;
+    --dataviz-level-4: #3e8d61;
 }
 
 $themeColors: (
@@ -83,6 +89,10 @@ $themeColors: (
     "dataviz-dark-green": var(--dataviz-dark-green),
     "dataviz-orange": var(--dataviz-orange),
     "dataviz-teal": var(--dataviz-teal),
+    "dataviz-level-1": var(--dataviz-level-1),
+    "dataviz-level-2": var(--dataviz-level-2),
+    "dataviz-level-3": var(--dataviz-level-3),
+    "dataviz-level-4": var(--dataviz-level-4),
 );
 
 @each $name, $color in $themeColors {
@@ -92,4 +102,9 @@ $themeColors: (
     .text-brand-#{$name} {
         color: $color !important;
     }
+}
+
+//FONTS
+.font-12px {
+    font-size: 0.75rem;
 }
