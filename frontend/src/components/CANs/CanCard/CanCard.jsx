@@ -20,30 +20,37 @@ const CanCard = ({ can, fiscalYear }) => {
     const budgetStatusTableClasses = `usa-table usa-table--borderless text-bold font-sans-3xs ${style.budgetStatusTable}`;
     /* vars */
     const [canFundingData, setCanFundingDataLocal] = useState({});
+
+    const calculatePercent = (value) => {
+        // if (value === 0) {
+        //     return 0;
+        // }
+        return (value / canFundingData.total_funding) * 100;
+    };
     const canFunds = [
         {
             label: "Available",
             value: canFundingData.available_funding || 0,
             color: "text-brand-dataviz-level-1",
-            percent: "20%",
+            percent: calculatePercent(canFundingData.available_funding),
         },
         {
             label: "Planned",
             value: canFundingData.planned_funding || 0,
             color: "text-brand-dataviz-level-2",
-            percent: "20%",
+            percent: calculatePercent(canFundingData.planned_funding),
         },
         {
             label: "Executing",
-            value: canFundingData.executing_funding || 0,
+            value: canFundingData.in_execution_funding || 0,
             color: "text-brand-dataviz-level-3",
-            percent: "20%",
+            percent: calculatePercent(canFundingData.in_execution_funding),
         },
         {
             label: "Obligated",
             value: canFundingData.obligated_funding || 0,
             color: "text-brand-dataviz-level-4",
-            percent: "20%",
+            percent: calculatePercent(canFundingData.obligated_funding),
         },
     ];
     useEffect(() => {
@@ -81,7 +88,7 @@ const CanCard = ({ can, fiscalYear }) => {
                     />
                 </div>
                 <div className="grid-col-2">
-                    <Tag tagStyle="darkTextLightBackground" text={percent} />
+                    <Tag tagStyle="darkTextLightBackground" text={`${percent}%`} />
                 </div>
             </>
         );
