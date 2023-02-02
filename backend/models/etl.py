@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import declarative_base
 
 # declarative base class
@@ -9,8 +9,9 @@ Base = declarative_base()
 class AllBudgetCurrent(Base):
     __tablename__ = "staging_all_budget"
 
+    id = Column(Integer, primary_key=True)
     CAN = Column(String)
-    Sys_Budget_ID = Column(String, primary_key=True)
+    Sys_Budget_ID = Column(String)
     Project_Title = Column(String)
     CIG_Name = Column(String)
     CIG_Type = Column(String)
@@ -23,3 +24,4 @@ class AllBudgetCurrent(Base):
     Total_Bud_Cur = Column(String)
     All_Bud_Prev = Column(String)
     Delta = Column(String)
+    verif = Column(String)
