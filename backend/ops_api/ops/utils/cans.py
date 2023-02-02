@@ -1,4 +1,3 @@
-from decimal import Decimal
 from typing import Optional, TypedDict
 
 from ops.models.cans import BudgetLineItem
@@ -84,7 +83,7 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> None
         )
     )
 
-    available_funding = Decimal(float(total_funding) - float(total_accounted_for))
+    available_funding = float(total_funding) - float(total_accounted_for)
 
     return {
         "can": can.to_dict(),
@@ -95,6 +94,6 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> None
         "planned_funding": planned_funding,
         "obligated_funding": obligated_funding,
         "in_execution_funding": in_execution_funding,
-        "available_funding": available_funding,
+        "available_funding": f"{available_funding:.2f}",
         "expiration_date": can.expiration_date.strftime("%m/%d/%Y"),
     }

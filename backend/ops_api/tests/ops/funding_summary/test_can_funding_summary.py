@@ -12,7 +12,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db):
     can_funding_summary = get_can_funding_summary(can)
 
     assert can_funding_summary == {
-        "available_funding": Decimal("4693574.00"),
+        "available_funding": "4693574.00",
         "can": {
             "appropriation_term": 1,
             "arrangement_type_id": 3,
@@ -44,7 +44,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db):
     can = loaded_db.session.query(CAN).get(1)
 
     assert get_can_funding_summary(can, 2023) == {
-        "available_funding": Decimal("4310901.00"),
+        "available_funding": "4310901.00",
         "can": {
             "appropriation_term": 1,
             "arrangement_type_id": 3,
