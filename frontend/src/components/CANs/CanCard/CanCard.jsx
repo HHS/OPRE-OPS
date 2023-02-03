@@ -158,7 +158,16 @@ const CanCard = ({ can, fiscalYear }) => {
                                 TODO: add  donut chart
                                 <ResponsiveDonutWithInnerPercent />
                             */}
-                            <div className="bg-base-light width-card height-card radius-pill" />
+
+                            <div id="test" className="bg-base-light width-card height-card">
+                                <ResponsiveDonutWithInnerPercent
+                                    data={canFunds}
+                                    width={100}
+                                    height={100}
+                                    setPercent={100}
+                                    container_id="test"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
