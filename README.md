@@ -46,18 +46,10 @@ We have a Docker Compose configuration that makes it easy to run the application
 docker compose up
 ```
 
-To create an admin user, use the Django management tool from within the container.
-
-```shell
-docker compose exec backend python ./opre_ops/manage.py createsuperuser
-```
-
 ## Access
 
 Whether you run the application through Docker or locally, you can access the frontend at `http://localhost:3000` and
 the backend at `http://localhost:8080`.
-
-There remains an administrative interface for the backend that you can access at `http://localhost:8080/admin/`
 
 ## Checks
 
@@ -104,7 +96,7 @@ the runner to execute `flake8`.
 To run linting...
 
 ```shell
-cd ./backend/
+cd ./backend/ops_api
 pipenv run nox -s lint
 ```
 
@@ -112,7 +104,7 @@ The linter may complain about violations in the [Black](https://black.readthedoc
 fix these issues, run...
 
 ```shell
-cd ./backend/
+cd ./backend/ops_api
 pipenv run nox -s black
 ```
 
@@ -150,14 +142,13 @@ from succeeding.  Fix the problem and try the commit again.
 This application is deployed to [Cloud.gov](https://cloud.gov) through [Cloud Foundry](https://www.cloudfoundry.org)
 though a [manifest.yml](manifest.yml) file.
 
-For now, while we are waiting for full Cloud.gov access, we only have access to a development space.  Eventually, we
-will have a staging and production environment.
+For now, while we are waiting for full Cloud.gov access, we only have access to a non-production environment.  Eventually, we will have a production environment.
 
 ### Development Environment
 
-The development environment is deployed at https://opre-ops-frontend-test.app.cloud.gov
+The development environment is deployed at https://ops-dev.fr.cloud.gov
 
-This environment can be deployed to by anyone with write access to the repository.  You accomplish this by force pushing
+This environment can be deployed to by authorized committers in the repository. You accomplish this by force pushing
 an existing commit to the `development` branch.
 
 ```shell
@@ -168,7 +159,16 @@ git push --force --set-upstream origin development
 
 ### Staging Environment
 
-TBD.
+The staging environment is deployed at https://ops-staging.app.cloud.gov
+
+This environment can be deployed to by authorized committers in the repository. You accomplish this by force pushing
+an existing commit to the `staging` branch.
+
+```shell
+git branch -d staging  # deletes the staging branch if it was already checked out locally
+git checkout -b staging
+git push --force --set-upstream origin staging
+```
 
 ### Production Environment
 
@@ -176,30 +176,6 @@ TBD.
 
 ## Data Model
 
-The data model diagram below shows all the tables used by the application and  relationships between those tables.
-Lines between tables mean they are related.  If a line has a circle on one end, that means the table _without a circle_
-has a one-to-many relationship with the table _with a circle_ (modeled with a foreign key from the circle-table to the
-not-circle-table).  If a line has circles on both ends, the tables have a many-to-many relationship (modeled with
-mapping/cross-reference tables).
+TBD
 
-![the data model](docs/models.png)
-
-This diagram is also available as a [DOT file](docs/models.dot) (DOT is a
-[graph description language](https://en.wikipedia.org/wiki/DOT_(graph_description_language)).  It can be used to
-represent graph relationships in plain text).  To update this visualization, first use the django-extensions module to
-create a new DOT file.
-
-```shell
-cd ./backend/
-DJANGO_SETTINGS_MODULE=opre_ops.django_config.settings.local PYTHONPATH=. \
-  pipenv run python ./opre_ops/manage.py graph_models -a \
-  -X LogEntry,AbstractUser,Permission,Group,User,ContentType,AbstractBaseSession,Session \
-  > ../docs/models.dot
-```
-
-Then use graphviz to convert the dotfile to a PNG image:
-
-```shell
-docker run -it --rm -v "$(pwd)/docs":/work -w /work fgrehm/graphviz \
-  dot -Tpng models.dot -omodels.png
-```
+With the move away from Django, we need to create a new process/tooling for generating the Data Model diagrams from SQLAlchemy or directly from the DB.

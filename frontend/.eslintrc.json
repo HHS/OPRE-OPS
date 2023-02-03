@@ -6,24 +6,18 @@
         "plugin:react/recommended",
         "plugin:react/jsx-runtime",
         "plugin:import/recommended",
-        "plugin:prettier/recommended"
+        "plugin:prettier/recommended",
+        "plugin:cypress/recommended"
     ],
     "rules": {
         "react/prop-types": "off"
     },
-    "plugins": [
-    ],
-    "ignorePatterns": [
-        "**/*.css",
-        "**/*.svg"
-    ],
-    "settings" : {
+    "plugins": [],
+    "ignorePatterns": ["**/*.css", "**/*.scss", "**/*.svg", "**/*.png", "**/*.jpg", "**/uswds/**"],
+    "settings": {
         "import/resolver": {
             "node": {
-                "extensions": [
-                    ".js",
-                    ".jsx"
-                ]
+                "extensions": [".js", ".jsx"]
             }
         }
     }

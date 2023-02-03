@@ -1,9 +1,7 @@
-import { getPortfolio } from "./getPortfolio";
-import store from "../../../store";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
-import { dispatchUsecase } from "../../../helpers/test";
+import { getPortfolio, getPortfolioCans } from "./getPortfolio";
 
-test("successfully gets the Portfolio from the backend and directly puts it into state", async () => {
+test("successfully gets the Portfolio from the backend", async () => {
     const mockPortfolioId = "2";
     const mockBackendResponse = {
         id: mockPortfolioId,
@@ -14,10 +12,25 @@ test("successfully gets the Portfolio from the backend and directly puts it into
         return mockBackendResponse;
     });
 
-    const actualGetPortfolio = getPortfolio(mockPortfolioId);
+    const actualGetPortfolio = await getPortfolio(mockPortfolioId);
 
-    await dispatchUsecase(actualGetPortfolio);
+    expect(actualGetPortfolio).toEqual(mockBackendResponse);
+});
 
-    const portfolio = store.getState().portfolioDetail.portfolio;
-    expect(portfolio).toEqual(mockBackendResponse);
+test("successfully gets the Portfolio CAN from the backend and directly puts it into state", async () => {
+    const mockCanId = "G99IA14";
+    const mockBackendResponse = [
+        {
+            id: 2,
+            number: mockCanId,
+            otherStuff: "DogCow",
+        },
+    ];
+    TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+        return mockBackendResponse;
+    });
+
+    const actualGetCan = await getPortfolioCans(mockCanId);
+
+    expect(actualGetCan).toEqual(mockBackendResponse);
 });

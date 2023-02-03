@@ -1,14 +1,28 @@
 ---
 applications:
-  - name: opre-ops-test
+  - name: ops-backend
+    env:
+      OPS_CONFIG: environment/cloud.py
     memory: 700M
     buildpack: python_buildpack
-    path: ./backend/
-    command: ./deployed_run.sh
-  - name: opre-ops-frontend-test
+    path: ./backend
+    command: ./ops_api/deployed_run.sh
+
+  - name: ops-data-tools
+    env:
+      ENV: cloudgov.py
+    instances: 0
+    no-route: true
+    memory: 700M
+    buildpack: python_buildpack
+    path: ./backend
+    command: ./data_tools/scripts/import_data.sh
+    timeout: 90
+
+  - name: ops-frontend
     memory: 64M
     buildpack: https://github.com/cloudfoundry/staticfile-buildpack
     path: ./frontend/build/
 
 services:
- - opre-ops-psql-db
+ - ops-db

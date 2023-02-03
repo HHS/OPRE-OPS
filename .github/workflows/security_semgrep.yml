@@ -12,31 +12,20 @@ jobs:
       image: returntocorp/semgrep
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # v3
 
+      # We've changed the behavior a little, instead of forcing a fail on `semgrep scan` step
+      # we force the upload, and manage any results in the sencondary CodeQL Analysis of the
+      # uploaded files. Configuration is handled in Settings --> Security --> CodeQL
       - name: Semgrep Scan
         run: |
           echo "SEMGREP_TO_UPLOAD=semgrep.sarif" >> $GITHUB_ENV
-          semgrep scan --sarif --output=semgrep.sarif --error
+          semgrep scan --sarif --output=semgrep.sarif --exclude="frontend/src/uswds" --metrics=off
         env:
-          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
           SEMGREP_RULES: "p/default"
 
-        # There's a bug in semgrep that even if there are ignored findings, there will still be a SARIF file created that has the findings.
-        # So, if we get to this step, the previous scan step succeeded, and we actually don't have any findings.
-        # Delete the findings in the SARIF file.
-      - name: Install jq
-        run: |
-          wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -O /usr/local/bin/jq
-          chmod +x /usr/local/bin/jq
-
-      - name: SARIF clean-up
-        run: |
-          cat ./semgrep.sarif | jq 'del(.runs[].results[])' > semgrep_clean.sarif
-          echo "SEMGREP_TO_UPLOAD=semgrep_clean.sarif" >> $GITHUB_ENV
-
       - name: Upload SARIF file for GitHub Advanced Security Dashboard
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@959cbb7472c4d4ad70cdfe6f4976053fe48ab394 # v2
         with:
           sarif_file: ${{ env.SEMGREP_TO_UPLOAD }}
         if: always()

@@ -1,40 +1,103 @@
 import { useDispatch, useSelector } from "react-redux";
-import { getPortfolio } from "./getPortfolio";
+import { getPortfolio, getPortfolioCans } from "./getPortfolio";
 import { useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { Outlet, useParams } from "react-router-dom";
+import {
+    setPortfolio,
+    setPortfolioCans,
+    setPortfolioCansFundingDetails,
+    setSelectedFiscalYear,
+} from "./portfolioSlice";
+import App from "../../../App";
+import { Breadcrumb } from "../../../components/UI/Header/Breadcrumb";
+import CanCard from "../../../components/CANs/CanCard/CanCard";
 
-const CanList = ({ id, name }) => {
-    return (
-        <li>
-            <Link to={`/cans/${id}`}>{name}</Link>
-        </li>
-    );
-};
+import { getPortfolioCansFundingDetails } from "../../../api/getCanFundingSummary";
+import TabsSection from "../../../components/Portfolios/TabsSection/TabsSection";
+import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
+import Hero from "../../../components/UI/Hero/Hero";
 
 const PortfolioDetail = () => {
     const dispatch = useDispatch();
-    const portfolio = useSelector((state) => state.portfolioDetail.portfolio);
     const urlPathParams = useParams();
     const portfolioId = parseInt(urlPathParams.id);
+    const portfolioCans = useSelector((state) => state.portfolio.portfolioCans);
+    const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
+    const portfolio = useSelector((state) => state.portfolio.portfolio);
+
+    // Get initial Portfolio data (not dependent on fiscal year)
     useEffect(() => {
-        dispatch(getPortfolio(portfolioId));
+        const getPortfolioAndSetState = async () => {
+            const result = await getPortfolio(portfolioId);
+            dispatch(setPortfolio(result));
+        };
+
+        getPortfolioAndSetState().catch(console.error);
+
+        return () => {
+            dispatch(setPortfolio({}));
+        };
     }, [dispatch, portfolioId]);
+
+    // Get CAN data for the Portfolio (dependent on fiscal year)
+    useEffect(() => {
+        const getPortfolioCansAndSetState = async () => {
+            const result = await getPortfolioCans(portfolioId, fiscalYear.value);
+            dispatch(setPortfolioCans(result));
+        };
+
+        getPortfolioCansAndSetState().catch(console.error);
+
+        return () => {
+            dispatch(setPortfolioCans([]));
+        };
+    }, [dispatch, portfolioId, fiscalYear]);
+
+    // Get CAN Funding Data (dependent on fiscal year)
+    useEffect(() => {
+        const getPortfolioCansFundingDetailsAndSetState = async (data) => {
+            const result = await Promise.all(data.map(getPortfolioCansFundingDetails));
+            dispatch(setPortfolioCansFundingDetails(result));
+        };
+
+        const canData = portfolioCans.map((can) => ({ id: can.id, fiscalYear: fiscalYear.value }));
+
+        if (canData.length > 0) {
+            getPortfolioCansFundingDetailsAndSetState(canData).catch(console.error);
+        }
+        return () => {
+            dispatch(setPortfolioCansFundingDetails([]));
+        };
+    }, [dispatch, fiscalYear, portfolioCans]);
+
+    const canCards = portfolioCans.length
+        ? portfolioCans.map((can, i) => <CanCard can={can} fiscalYear={fiscalYear.value} key={i} />)
+        : "";
 
     return (
         <>
-            <h1>{portfolio.name}</h1>
-            <h2>Portfolio description</h2>
-            {portfolio.description}
-            <h2>Status</h2>
-            {portfolio.status}
-            <h2>Fiscal Year Funding</h2>
-            {portfolio.current_fiscal_year_funding}
-            <h2>CANs</h2>
-            <ul className="usa-list">
-                {portfolio.cans?.map((can) => (
-                    <CanList key={can.id} id={can.id} name={can.number} />
-                ))}
-            </ul>
+            <App>
+                <Breadcrumb currentName={portfolio.name} />
+                <div>
+                    <Hero
+                        entityName={portfolio.name}
+                        divisionName={portfolio.division?.name}
+                        description={portfolio.description}
+                        teamLeaders={portfolio.team_leaders}
+                        urls={portfolio.urls}
+                        backgroundColor={"bg-brand-neutral-lightest"}
+                    />
+                    <section className="display-flex flex-justify margin-top-3">
+                        <TabsSection portfolioId={portfolioId} />
+                        <FiscalYear
+                            className="margin-left-auto"
+                            fiscalYear={fiscalYear}
+                            handleChangeFiscalYear={setSelectedFiscalYear}
+                        />
+                    </section>
+                    <Outlet context={[portfolioId, canCards]} />
+                </div>
+            </App>
         </>
     );
 };

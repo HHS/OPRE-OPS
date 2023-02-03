@@ -1,3 +1,25 @@
+# Vim
+
+# Swap
+[._]*.s[a-v][a-z]
+!*.svg  # comment out if you don't need vector files
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+
+# Session
+Session.vim
+Sessionx.vim
+
+# Temporary
+.netrwhist
+*~
+# Auto-generated tag files
+tags
+# Persistent undo
+[._]*.un
+
 # Python
 
 # Byte-compiled / optimized / DLL files
@@ -111,6 +133,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.envrc
 
 # Spyder project settings
 .spyderproject
@@ -174,9 +197,11 @@ yarn-error.log*
 *.core
 
 # Root level flake8 only
-.flake8
+#.flake8
 
 # Dev local only files
-backend/opre_ops/django_config/static
+backend/ops_api/django_config/static
 *.pem
 *.crt
+*.drawio.bkp
+*.db

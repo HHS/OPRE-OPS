@@ -7,43 +7,15 @@ on:
 
 jobs:
 
-  unit-tests:
-    name: Unit Tests
-    uses: ./.github/workflows/unit_test_reusable.yml
+  deployment:
+    permissions:
+      contents: read
 
-  development:
-    name: Deploy to Development
-    needs:
-      - unit-tests
-    runs-on: ubuntu-latest
-    env:
-      NODE_ENV: production
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/setup-python
-      - uses: ./.github/actions/setup-javascript
-      - uses: ./.github/actions/setup-cloudfoundry
-
-      - name: Deploy Backend
-        uses: ./.github/actions/deploy-backend
-        with:
-          USERNAME: ${{ secrets.DEV_USER }}
-          PASSWORD: ${{ secrets.DEV_PASSWORD }}
-          ORG_NAME: ${{ secrets.ORG_NAME }}
-          SPACE_NAME: ${{ secrets.SPACE_NAME }}
-          APP_NAME: opre-ops-test
-
-      - name: Build frontend
-        working-directory: ./frontend
-        run: |
-          REACT_APP_BACKEND_DOMAIN=https://${{steps.backend-deploy.outputs.BACKEND_DOMAIN}} yarn build
-          cp ./frontend/Staticfile ./frontend/build/
-
-      - name: Deploy frontend
-        uses: ./.github/actions/deploy-frontend
-        with:
-          USERNAME: ${{ secrets.DEV_USER }}
-          PASSWORD: ${{ secrets.DEV_PASSWORD }}
-          ORG_NAME: ${{ secrets.ORG_NAME }}
-          SPACE_NAME: ${{ secrets.SPACE_NAME }}
-          APP_NAME: opre-ops-frontend-test
+    # This uses a reusable_workflow a few special rules apply
+    # see ref: https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/reusing-workflows
+    name: Deploy to cloud.gov
+    uses: ./.github/workflows/deploy_reusable.yml
+    with:
+      environment: cloud_gov_dev
+      space: dev
+    secrets: inherit # This will allow the jobs to inherit from the envrionment secrets; which are limited to only deployment items anyway.
