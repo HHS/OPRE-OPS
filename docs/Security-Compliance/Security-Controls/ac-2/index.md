@@ -1,5 +1,7 @@
 # Access Control
 ## AC-02 - Account Management
+TODO: OPRE Tech Lead indicates further disucssion is needed on multiple items with the PO
+
 The organization:
 
 a. Identifies and selects the following types of information system accounts to support organizational missions/business functions: (individual, shared, group, system, guest/anonymous, emergency, developer/manufacturer/vendor, temporary, and service);
@@ -35,9 +37,9 @@ k. Establishes a process for reissuing shared/group account credentials (if depl
 For CSP Only: AC-2 (j) [at least annually]
 
 ## OPS Implementation
-a. The OPS system accounts are System Admin, OPS Admin and <system account>.  OPS Implementation is still in-porogress.
+a. The OPS system accounts are System Admin, OPS Admin and <system account>.  OPS Implementation is still in-progress.
 
-b. The System Admin is responsible for managing the system accounts.  
+b. The System Admin is responsible for managing the system accounts.
 
 c. Members in the roles of System Admin, OPS Admin are based on their job responsibilities.  The activities of each of the roles can be found in [AC-05](../ac-5/index.md)
 
@@ -51,7 +53,7 @@ g. The System Admin reviews the list of OPS application users on a monthly basis
 
 h. For the OPS MVP, internal processes are done to satisfy this, including the System Admin manually checking the list of active/expected users with those registered in the system on a periodic basis.
 
-i. All users must submit a request through the OPS application to be able to perform their duties.  Users identify their intended system usage in the request.  The System Admin reviews and approves/disapproves all requests. 
+i. All users must submit a request through the OPS application to be able to perform their duties.  Users identify their intended system usage in the request.  The System Admin reviews and approves/disapproves all requests.
 
 j. The System Admin reviews the OPS application users list every 180 days.
 

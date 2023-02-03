@@ -5,4 +5,4 @@ This subdirectory contains documentation that describes our protocols for respon
 
 ## Table of Contents
 * **[Secret Key Management](./Secret-Key-Mgmt.md)** - lays out OPS's standards for minimizing the risk of leaking secret keys (i.e. sensitive information that--if exposed--opens the door for unauthorized access to the system and/or data therein).
-* **[System Admin Account Restoration](./Sys-Admin-Acct-Mgmt.md)** - lays out steps for restoring permissions for a OPS sys admin if their account has been compromised. 
+* **[System Admin Account Restoration](./Sys-Admin-Acct-Mgmt.md)** - lays out steps for restoring permissions for a OPS sys admin if their account has been compromised.
