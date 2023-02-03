@@ -16,16 +16,18 @@ TODO: This is basically documentation of what application roles (System Admin, F
 **Part a.**
 The TANF Data Portal (TDP) system has explicitly defined the roles and responsibilities that accounts perform to operate and maintain the system. This includes data creation and processing, software development, maintenance, and security implementation.
 
-The TDP system has three roles: System Admin, OFA Admin and Data Prepper.
-  * System Admin can access Django Admin and manage TDP accounts, including provisioning new user accounts on request.
-  * OFA Admin can upload data on behalf of Data Preppers and upload data files locally into the web application
-  * Data Prepper roles are users from the states, tribes, and territories (STT) who will be uploading data.  Data Preppers collect TANF data, create data files, and transmit final data to OFA through the TANF application.  Data Preppers reads data over assigned region and are able to upload and submit new TANF reports, replace and resubmit TANF reports.Data Preppers do not have access to Django Admin, cannot provision new TDP accounts, and do not have access to the account management functionality.
+The OPS system has four application roles: System Admin, Final Approver, Editor/Approver, and Viewer/Submitter.
+  * System Admin can review and manage user accounts including provisioning new user accounts and role change requests.
+  * Final Approver can overseeing all approvals from Editor/Approvers and override, if needed. They can view, submit, edit, and process final approvals.
+  * Editor/Approver can view, submit, edit and approve items such as invoices, acquisition pacakges, and spending plans.
+  * Viewer/Submitter can view all information by default, submit edits for review and approval.
 
-Developers of the TDP application are responsible for the software development and maintenance of the system.
+Developers of the OPS application are responsible for the software development and maintenance of the system.
   * Developers are granted only enough permission in GitHub and Cloud.gov to support their duties.
 
 **Part b.**
 
+TODO: in part b, fill in more detailed version/scenarios with part a as a guide
 **System Admin**
 The System Admin can access Django Admin and has the ability to manage TDP accounts.  System Admin approves new users, updates profile information, deactivates, and reactivates users (Data Preppers (STTs) do not have access to this).
 
