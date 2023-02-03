@@ -11,11 +11,9 @@ Requirement: The service provider defines the time period for non-user accounts 
 
 ### OPS Implementation
 
-The System Admin reviews the list of OPS application users on a monthly basis and/or when the status of a user is changed to inactive or terminated. Inactive accounts are removed from the system manually if their status has changed.
+The System Admin reviews the list of OPS application users on a monthly basis and/or when the status of a user is changed to inactive or terminated. Inactive accounts are disabled automatically from the system after 60 days.
 
-TODO: Not Django
+TODO: Not Django.
 The Django Admin interface tells us when a user last logged in to the OPS Application, so we can determine the last date of a user's activity by checking the user's profile there.
-
-Because most of the users of the OPS application will only need to log in every 90 days, we will disable inactive accounts after 180 days.
 
 #### Related Files
