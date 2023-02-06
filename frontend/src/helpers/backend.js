@@ -5,6 +5,8 @@ const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
 export const callBackend = async (urlPath, action, requestBody, queryParams) => {
     console.log(`Calling backend at ${urlPath}`);
 
+    axios.defaults.headers.common["Authorization"] = `Bearer ${localStorage.getItem("access_token")}`;
+
     const response = await axios({
         method: action,
         url: `${BACKEND_DOMAIN}${urlPath}`,

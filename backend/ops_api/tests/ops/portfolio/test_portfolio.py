@@ -4,9 +4,7 @@ import pytest
 
 @pytest.mark.usefixtures("app_ctx")
 def test_portfolio_retrieve(loaded_db):
-    portfolio = (
-        loaded_db.session.query(Portfolio).filter(Portfolio.name == "WRGB (CCE)").one()
-    )
+    portfolio = loaded_db.session.query(Portfolio).filter(Portfolio.name == "WRGB (CCE)").one()
 
     assert portfolio is not None
     assert portfolio.name == "WRGB (CCE)"

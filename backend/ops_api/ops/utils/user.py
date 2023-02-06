@@ -11,17 +11,16 @@ class UserInfoDict(TypedDict):
 
 
 def process_user(userinfo: UserInfoDict) -> User:
-    user = User.query.filter_by(email=userinfo["email"]).one_or_none()
-    print(f"User: {user}")
+    user = User.query.filter_by(oidc_id=userinfo["sub"]).one_or_none()
+    print(f"User Lookup Response: {user}")
     if not user:
         # Create new user
         user = User(
+            id=userinfo["sub"],
             email=userinfo["email"],
-            username=userinfo["sub"],
-            first_name=userinfo["given_name"],
+            oidc_id=userinfo["sub"],
         )
 
         db.session.add(user)
         db.session.commit()
-        print(f"User: {user}")
     return user

@@ -13,6 +13,7 @@ import PortfolioList from "./pages/portfolios/list/PortfolioList";
 import PortfolioDetail from "./pages/PortfolioDetail";
 import CanList from "./pages/cans/list/CanList";
 import CanDetail from "./pages/CanDetail";
+import UserDetail from "./pages/UserDetail";
 import ResearchProjects from "./components/Portfolios/ResearchProjects/ResearchProjects";
 import PeopleAndTeams from "./components/Portfolios/PeopleAndTeams/PeopleAndTeams";
 import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAndFunding";
@@ -35,6 +36,7 @@ root.render(
                     </Route>
                     <Route path="/cans" element={<CanList />} />
                     <Route path="/cans/:id" element={<CanDetail />} />
+                    <Route path="/users/:id" element={<UserDetail />} />
                 </Routes>
             </BrowserRouter>
         </Provider>

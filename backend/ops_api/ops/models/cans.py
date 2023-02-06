@@ -247,13 +247,9 @@ class CAN(BaseModel):
     authorizer = relationship(FundingPartner)
     managing_portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
     managing_portfolio = relationship(Portfolio, back_populates="cans")
-    shared_portfolios = relationship(
-        Portfolio, secondary=portfolio_cans, back_populates="cans"
-    )
+    shared_portfolios = relationship(Portfolio, secondary=portfolio_cans, back_populates="cans")
     budget_line_items = relationship("BudgetLineItem", back_populates="can")
-    agreements = relationship(
-        Agreement, secondary=agreement_cans, back_populates="cans"
-    )
+    agreements = relationship(Agreement, secondary=agreement_cans, back_populates="cans")
 
     @hybrid_property
     def arrangementType(self) -> str:

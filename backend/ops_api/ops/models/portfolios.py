@@ -117,16 +117,12 @@ class Portfolio(BaseModel):
 
         d.update(
             {
-                "description": [
-                    description.to_dict() for description in self.description
-                ],
+                "description": [description.to_dict() for description in self.description],
                 "urls": [url.to_dict() for url in self.urls],
                 "division": self.division.to_dict() if self.division else None,
                 "cans": [can.to_dict() for can in self.cans],
                 "status": self.status.name,
-                "team_leaders": [
-                    team_lead.to_dict() for team_lead in self.team_leaders
-                ],
+                "team_leaders": [team_lead.to_dict() for team_lead in self.team_leaders],
             }
         )
 

@@ -1,4 +1,5 @@
 import AuthSection from "../../Auth/AuthSection";
+import User from "./User";
 import { Menu } from "./Menu";
 import { Search } from "./Search";
 import logo from "./OPRE_Logo.png";

@@ -1,7 +1,9 @@
+from uuid import UUID
+
 from flask import jsonify
 from flask import request
 from flask import Response
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import verify_jwt_in_request
 from ops.base_views import BaseItemAPI
 from ops.base_views import BaseListAPI
 from ops.models.base import BaseModel
@@ -14,17 +16,25 @@ class UsersItemAPI(BaseItemAPI):
         super().__init__(model)
 
     @override
-    def _get_item(self, id: int) -> User:
+    def _get_item(self, id: UUID) -> User:
         user = self.model.query.filter_by(id=id).first_or_404()
         return user
 
-    # @jwt_required
     @override
-    def get(self, id: int) -> Response:
-        user = self._get_item(id)
-        response = jsonify(user.to_dict())
-        response.headers.add("Access-Control-Allow-Origin", "*")
-        return response
+    def get(self, id: UUID) -> Response:
+        token = verify_jwt_in_request()
+        sub = UUID(token[1]["sub"])
+        if sub == id:
+            user = self._get_item(id)
+            response = jsonify(user.to_dict())
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            response.status_code = 200
+            return response
+        else:
+            response = jsonify({})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            response.status_code = 401
+            return response
 
 
 class UsersListAPI(BaseListAPI):
@@ -35,7 +45,6 @@ class UsersListAPI(BaseListAPI):
         user = self.model.query.filter_by(oidc_id=id).first_or_404()
         return user
 
-    @jwt_required(optional=True)
     @override
     def get(self) -> Response:
         oidc_id = request.args.get("oidc_id", type=str)

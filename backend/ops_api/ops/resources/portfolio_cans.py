@@ -13,9 +13,7 @@ class PortfolioCansAPI(BaseItemAPI):
         super().__init__(model)
 
     def _get_item(self, id: int, year: Optional[int] = None) -> List[CAN]:
-        can_fiscal_year_query = self.model.query.filter(
-            self.model.can.has(managing_portfolio_id=id)
-        )
+        can_fiscal_year_query = self.model.query.filter(self.model.can.has(managing_portfolio_id=id))
 
         if year:
             can_fiscal_year_query = can_fiscal_year_query.filter_by(fiscal_year=year)

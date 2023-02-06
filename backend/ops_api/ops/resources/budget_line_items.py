@@ -26,9 +26,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
             budget_line_items_query = budget_line_items_query.filter_by(can_id=can_id)
 
         if year:
-            budget_line_items_query = budget_line_items_query.filter_by(
-                fiscal_year=year
-            )
+            budget_line_items_query = budget_line_items_query.filter_by(fiscal_year=year)
 
         return budget_line_items_query.all()
 

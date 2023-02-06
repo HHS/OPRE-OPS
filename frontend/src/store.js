@@ -6,6 +6,7 @@ import portfolioBudgetSummarySlice from "./components/Portfolios/PortfolioBudget
 // eslint-disable-next-line import/no-named-as-default
 import authSlice from "./components/Auth/authSlice";
 import portfolioSlice from "./store/portfolioSlice";
+import userSlice from "./store/userSlice";
 
 export default configureStore({
     reducer: {
@@ -15,5 +16,6 @@ export default configureStore({
         portfolioBudgetSummary: portfolioBudgetSummarySlice,
         auth: authSlice,
         portfolio: portfolioSlice,
+        activeUser: userSlice,
     },
 });
