@@ -1,15 +1,22 @@
 import { AgencyInfo } from "./AgencyInfo";
 import { Identifier } from "./Idnetifier";
 import { NavFooter } from "./NavFooter";
-import { Link } from "react-router-dom";
 
 export const Footer = () => {
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    };
     return (
         <footer className="usa-footer">
-            <div className="grid-container usa-footer__return-to-top">
-                <Link to="#">Return to top</Link>
+            <div className="grid-container usa-footer__return-to-top bg-white">
+                <button className="text-underline text-primary cursor-pointer" onClick={scrollToTop}>
+                    Return to top
+                </button>
             </div>
-            <div className="usa-footer__primary-section">
+            <div className="usa-footer__primary-section bg-base-light">
                 <NavFooter />
             </div>
             <div className="usa-footer__secondary-section">

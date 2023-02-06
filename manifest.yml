@@ -5,8 +5,8 @@ applications:
       OPS_CONFIG: environment/cloud.py
     memory: 700M
     buildpack: python_buildpack
-    path: ./backend/ops_api
-    command: ./deployed_run.sh
+    path: ./backend
+    command: ./ops_api/deployed_run.sh
 
   - name: ops-data-tools
     env:
@@ -15,8 +15,8 @@ applications:
     no-route: true
     memory: 700M
     buildpack: python_buildpack
-    path: ./data-tools
-    command: ./scripts/import_data.sh
+    path: ./backend
+    command: ./data_tools/scripts/import_data.sh
     timeout: 90
 
   - name: ops-frontend

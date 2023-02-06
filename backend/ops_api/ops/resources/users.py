@@ -1,13 +1,10 @@
 from uuid import UUID
 
-from flask import jsonify
-from flask import request
-from flask import Response
+from flask import Response, jsonify, request
 from flask_jwt_extended import verify_jwt_in_request
-from ops.base_views import BaseItemAPI
-from ops.base_views import BaseListAPI
-from ops.models.base import BaseModel
-from ops.models.users import User
+from models.base import BaseModel
+from models.users import User
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from typing_extensions import override
 
 
@@ -28,12 +25,10 @@ class UsersItemAPI(BaseItemAPI):
             user = self._get_item(id)
             response = jsonify(user.to_dict())
             response.headers.add("Access-Control-Allow-Origin", "*")
-            response.status_code = 200
             return response
         else:
-            response = jsonify({})
+            response = jsonify({}), 401
             response.headers.add("Access-Control-Allow-Origin", "*")
-            response.status_code = 401
             return response
 
 

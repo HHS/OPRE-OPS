@@ -2,14 +2,12 @@ import logging.config
 import os
 from typing import Optional
 
-from flask import Blueprint
-from flask import Flask
+from flask import Blueprint, Flask
 from flask_cors import CORS
-from ops.home_page.views import home
-from ops.models.base import db
-from ops.urls import register_api
-from ops.utils.auth import jwtMgr
-from ops.utils.auth import oauth
+from ops_api.ops.db import db
+from ops_api.ops.home_page.views import home
+from ops_api.ops.urls import register_api
+from ops_api.ops.utils.auth import jwtMgr, oauth
 
 
 def configure_logging() -> None:
@@ -37,10 +35,13 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     configure_logging()  # should be configured before any access to app.logger
     app = Flask(__name__)
     CORS(app)
-    app.config.from_object("ops.environment.default_settings")
+    app.config.from_object("ops_api.ops.environment.default_settings")
     if os.getenv("OPS_CONFIG"):
         app.config.from_envvar("OPS_CONFIG")
     app.config.from_prefixed_env()
+
+    # manually setting the public key path here, until we know where it will live longterm
+    app.config.setdefault("JWT_PUBLIC_KEY", app.open_resource("static/public.pem").read())
 
     if config_overrides is not None:
         app.config.from_mapping(config_overrides)
@@ -58,7 +59,7 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     # Add some basic data to test with
     # TODO change this out for a proper fixture.
     with app.app_context():
-        # db.drop_all()
+        db.drop_all()
         db.create_all()
         db.session.commit()
 

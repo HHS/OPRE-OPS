@@ -1,0 +1,73 @@
+{
+  "research_project": [
+    {
+      id: 1,
+      title: "African American Child and Family Research Center",
+      short_title: "",
+      description: "\
+        The National African American Child and Family Research Center, supported by a five-year OPRE\
+        grant (2021 — 2026), will provide national leadership and excellence by investigating the assets, needs,\
+        and experiences of the diverse population of African American families and children served (or potentially\
+        served) by ACF programs, as well as promising approaches to address economic and social inequities and,\
+        ultimately, promote social and economic well-being.  The primary focus of this Center will be on childcare\
+        assistance, TANF, and Head Start and Early Head Start programs and the populations they serve. The work of\
+        the Center will draw on interdisciplinary approaches to accomplish the three goals listed below.\
+        \n\n1. Advance Research\
+        The Center will plan, initiate, and maintain a community-engaged, focused, and high-caliber research program.\
+        The Center’s program of research will build on the existing literature related to African American children\
+        and families and should be directly relevant to the needs and interests of ACF areas of programmatic concern.\
+        \n\n2. Build Research Capacity\
+        The Center will build research capacity and infrastructure to conduct research relevant to ACF program and\
+        policy goals that is culturally rigorous and informed by an understanding of current and historical\
+        circumstances that shape the experiences of African Americans. In addition, the Center will contribute to the\
+        development and expansion of the pool of researchers reflective of the communities being studied by the Center.\
+        \n\n3. Communicate Research\
+        The Center will develop and implement a dissemination strategy that broadly and efficiently communicates\
+        findings from research conducted within and outside of the Center and increases the use of research, data, and\
+        relevant resources for a wide audience including researchers, federal and state policymakers, ACF grantees,\
+        program administrators, and communities participating in the research.\
+        \n\nThe Center is led by the Morehouse School of Medicine.\
+        \n\nThe OPRE point of contact is Megan Reid.\
+        ",
+      portfolio_id: 3,
+      url: "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center",
+      origination_date: "01-01-2022"
+    },
+  ],
+  "research_project_methodologies": [
+    {
+      research_project_id: 1,
+      methodology_type_id: 1
+    },
+    {
+      research_project_id: 1,
+      methodology_type_id: 2
+    },
+    {
+      research_project_id: 1,
+      methodology_type_id: 3
+    },
+    {
+      research_project_id: 1,
+      methodology_type_id: 4
+    },
+    {
+      research_project_id: 1,
+      methodology_type_id: 5
+    },
+    {
+      research_project_id: 1,
+      methodology_type_id: 6
+    },
+    {
+      research_project_id: 1,
+      methodology_type_id: 7
+    }
+  ],
+  "research_project_populations": [
+    {
+      research_project_id: 1,
+      population_type_id: 1
+    }
+  ],
+}

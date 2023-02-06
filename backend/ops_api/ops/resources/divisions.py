@@ -1,6 +1,5 @@
-from ops.base_views import BaseItemAPI
-from ops.base_views import BaseListAPI
-from ops.models.base import BaseModel
+from models.base import BaseModel
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 
 
 class DivisionsItemAPI(BaseItemAPI):

@@ -1,25 +1,29 @@
 from flask import Blueprint
-from ops.views import AUTH_LOGIN_API_VIEW_FUNC
-from ops.views import AUTH_REFRESH_API_VIEW_FUNC
-from ops.views import BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC
-from ops.views import BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC
-from ops.views import CAN_FISCAL_YEAR_ITEM_API_VIEW_FUNC
-from ops.views import CAN_FISCAL_YEAR_LIST_API_VIEW_FUNC
-from ops.views import CAN_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC
-from ops.views import CAN_ITEM_API_VIEW_FUNC
-from ops.views import CAN_LIST_API_VIEW_FUNC
-from ops.views import CANS_BY_PORTFOLIO_API_VIEW_FUNC
-from ops.views import DIVISIONS_ITEM_API_VIEW_FUNC
-from ops.views import DIVISIONS_LIST_API_VIEW_FUNC
-from ops.views import PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC
-from ops.views import PORTFOLIO_CANS_API_VIEW_FUNC
-from ops.views import PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC
-from ops.views import PORTFOLIO_ITEM_API_VIEW_FUNC
-from ops.views import PORTFOLIO_LIST_API_VIEW_FUNC
-from ops.views import PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC
-from ops.views import PORTFOLIO_STATUS_LIST_API_VIEW_FUNC
-from ops.views import USERS_ITEM_API_VIEW_FUNC
-from ops.views import USERS_LIST_API_VIEW_FUNC
+from ops_api.ops.views import (
+    AUTH_LOGIN_API_VIEW_FUNC,
+    AUTH_REFRESH_API_VIEW_FUNC,
+    BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC,
+    BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC,
+    CAN_FISCAL_YEAR_ITEM_API_VIEW_FUNC,
+    CAN_FISCAL_YEAR_LIST_API_VIEW_FUNC,
+    CAN_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
+    CAN_ITEM_API_VIEW_FUNC,
+    CAN_LIST_API_VIEW_FUNC,
+    CANS_BY_PORTFOLIO_API_VIEW_FUNC,
+    DIVISIONS_ITEM_API_VIEW_FUNC,
+    DIVISIONS_LIST_API_VIEW_FUNC,
+    PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC,
+    PORTFOLIO_CANS_API_VIEW_FUNC,
+    PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
+    PORTFOLIO_ITEM_API_VIEW_FUNC,
+    PORTFOLIO_LIST_API_VIEW_FUNC,
+    PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC,
+    PORTFOLIO_STATUS_LIST_API_VIEW_FUNC,
+    RESEARCH_PROJECT_ITEM_API_VIEW_FUNC,
+    RESEARCH_PROJECT_LIST_API_VIEW_FUNC,
+    USERS_ITEM_API_VIEW_FUNC,
+    USERS_LIST_API_VIEW_FUNC,
+)
 
 # Ideas from Flask docs: https://flask.palletsprojects.com/en/2.2.x/views/#method-dispatching-and-apis
 
@@ -116,4 +120,13 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/portfolio-funding-summary/<int:id>",
         view_func=PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
+    )
+
+    api_bp.add_url_rule(
+        "/research-projects/<int:id>",
+        view_func=RESEARCH_PROJECT_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/research-projects/",
+        view_func=RESEARCH_PROJECT_LIST_API_VIEW_FUNC,
     )

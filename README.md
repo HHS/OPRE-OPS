@@ -51,8 +51,6 @@ docker compose up
 Whether you run the application through Docker or locally, you can access the frontend at `http://localhost:3000` and
 the backend at `http://localhost:8080`.
 
-There remains an administrative interface for the backend that you can access at `http://localhost:8080/admin/`
-
 ## Checks
 
 ### Unit Tests
@@ -98,7 +96,7 @@ the runner to execute `flake8`.
 To run linting...
 
 ```shell
-cd ./backend/
+cd ./backend/ops_api
 pipenv run nox -s lint
 ```
 
@@ -106,7 +104,7 @@ The linter may complain about violations in the [Black](https://black.readthedoc
 fix these issues, run...
 
 ```shell
-cd ./backend/
+cd ./backend/ops_api
 pipenv run nox -s black
 ```
 
@@ -167,7 +165,7 @@ This environment can be deployed to by authorized committers in the repository. 
 an existing commit to the `staging` branch.
 
 ```shell
-git branch -d staging  # deletes the development branch if it was already checked out locally
+git branch -d staging  # deletes the staging branch if it was already checked out locally
 git checkout -b staging
 git push --force --set-upstream origin staging
 ```

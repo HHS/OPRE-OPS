@@ -1,0 +1,97 @@
+{
+  users: [
+    {
+      id: "00000000-0000-1111-a111-000000000001",
+      first_name: "Emily",
+      last_name: "Ball",
+      division: 1,
+      email: "emily.ball@example.com",
+      role: "COR",
+      oidc_id: "00000000-0000-1111-a111-000000000001",
+    },
+    {
+      id: "00000000-0000-1111-a111-000000000002",
+      first_name: "Bethanne",
+      last_name: "Barnes",
+      division: 4,
+      email: "Bethanne.Barnes@example.com",
+      role: "Division Director",
+      oidc_id: "00000000-0000-1111-a111-000000000002",
+    },
+    {
+      id: "00000000-0000-1111-a111-000000000003",
+      first_name: "Meryl",
+      last_name: "Barofsky",
+      division: 1,
+      email: "Meryl.Barofsky@example.com",
+      role: "COR",
+      oidc_id: "00000000-0000-1111-a111-000000000003",
+    },
+    {
+      id: "00000000-0000-1111-a111-000000000004",
+      first_name: "Anne",
+      last_name: "Bergan",
+      division: 3,
+      email: "Anne.Bergan@example.com",
+      role: "COR",
+      oidc_id: "00000000-0000-1111-a111-000000000004",
+    },
+    {
+      id: "e5711101-bc3e-41e5-a6a2-051874b307ca",
+      first_name: "Tim",
+      last_name: "Donaworth",
+      division: 3,
+      email: "tdonaworth+dev@flexion.us",
+      role: "Tech Lead",
+      oidc_id: "e5711101-bc3e-41e5-a6a2-051874b307ca",
+    },
+  ],
+  portfolio_team_leaders: [
+    {
+      portfolio_id: 1,
+      team_lead_id: "00000000-0000-1111-a111-000000000001"
+    },
+    {
+      portfolio_id: 2,
+      team_lead_id: "00000000-0000-1111-a111-000000000002"
+    },
+    {
+      portfolio_id: 3,
+      team_lead_id: "00000000-0000-1111-a111-000000000003"
+    },
+    {
+      portfolio_id: 4,
+      team_lead_id: "00000000-0000-1111-a111-000000000004"
+    },
+    {
+      portfolio_id: 5,
+      team_lead_id: "00000000-0000-1111-a111-000000000001"
+    },
+    {
+      portfolio_id: 6,
+      team_lead_id: "00000000-0000-1111-a111-000000000002"
+    },
+    {
+      portfolio_id: 7,
+      team_lead_id: "00000000-0000-1111-a111-000000000003"
+    },
+    {
+      portfolio_id: 8,
+      team_lead_id: "00000000-0000-1111-a111-000000000004"
+    },
+    {
+      portfolio_id: 8,
+      team_lead_id: "00000000-0000-1111-a111-000000000001"
+    },
+    {
+      portfolio_id: 8,
+      team_lead_id: "00000000-0000-1111-a111-000000000003"
+    }
+  ],
+  "research_project_team_leaders": [
+    {
+      research_project_id: 1,
+      team_lead_id: "00000000-0000-1111-a111-000000000001"
+    }
+  ]
+}

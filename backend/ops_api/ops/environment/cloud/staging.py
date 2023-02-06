@@ -1,7 +1,7 @@
 import json
 import os
 
-from ops.environment.default_settings import *  # noqa: F403, F401
+from ops_api.ops.environment.default_settings import *  # noqa: F403, F401
 
 DEBUG = False
 

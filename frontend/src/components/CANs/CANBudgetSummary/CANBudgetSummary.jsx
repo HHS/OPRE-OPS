@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from "react-redux";
 import { getCanFiscalYearByCan } from "../../../api/getCanFiscalYear";
-import { setCanFiscalYear, setPendingFunds, setSelectedFiscalYear } from "../../../store/canDetailSlice";
+import { setCanFiscalYear, setPendingFunds, setSelectedFiscalYear } from "../../../pages/cans/detail/canDetailSlice";
 import { useParams } from "react-router-dom";
 import { useEffect } from "react";
 import styles from "./CANBudgetSummary.module.css";

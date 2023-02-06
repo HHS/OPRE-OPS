@@ -1,7 +1,6 @@
 from typing import Optional, TypedDict
 
-from ops.models.base import db
-from ops.models.users import User
+from models.users import User
 
 
 class UserInfoDict(TypedDict):
@@ -20,6 +19,8 @@ def process_user(userinfo: UserInfoDict) -> User:
             email=userinfo["email"],
             oidc_id=userinfo["sub"],
         )
+
+        from ops_api.ops import db
 
         db.session.add(user)
         db.session.commit()

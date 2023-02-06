@@ -1,5 +1,5 @@
-from ops.models.cans import FundingSource
 import pytest
+from models.cans import FundingSource
 
 
 @pytest.mark.usefixtures("app_ctx")

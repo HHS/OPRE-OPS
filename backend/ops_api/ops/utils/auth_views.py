@@ -3,18 +3,11 @@ import sys
 import traceback
 from typing import Union
 
-from flask import current_app
-from flask import jsonify
-from flask import request
-from flask import Response
-from flask_jwt_extended import create_access_token
-from flask_jwt_extended import create_refresh_token
-from flask_jwt_extended import get_jwt_identity
-from flask_jwt_extended import jwt_required
-from ops.utils.auth import get_jwt
-from ops.utils.auth import oauth
-from ops.utils.user import process_user
 import requests
+from flask import Response, current_app, jsonify, request
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
+from ops_api.ops.utils.auth import create_oauth_jwt, oauth
+from ops_api.ops.utils.user import process_user
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
@@ -35,20 +28,17 @@ def login() -> Union[Response, tuple[str, int]]:
 
         token = oauth.logingov.fetch_access_token(
             "",
-            client_assertion=get_jwt(),
+            client_assertion=create_oauth_jwt(),
             client_assertion_type="urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
             grant_type="authorization_code",
             code=authCode,
         )
-        logging.debug(f"token: {token}")
 
         header = {"Authorization": f'Bearer {token["access_token"]}'}
-        logging.debug(f"Header: {header}")
         user_data = requests.get(
             authlib_client_config["user_info_url"],
             headers=header,
         ).json()
-        logging.debug(f"User Data: {user_data}")
 
         # Generate internal backend-JWT
         # - user meta data
@@ -59,22 +49,16 @@ def login() -> Union[Response, tuple[str, int]]:
 
         # See if user exists
         user = process_user(user_data)  # Refactor me
-        # user.auth_token = str(token)
-        # user.last_login = datetime.datetime.now()
-        # user.save()
 
         # TODO
         # Do we want to embed the user's roles or permissions in the scope: [read write]?
 
+        # The next two tokens are specific to our backend API, these are used for our API
+        # authZ, given a valid login from the prior AuthN steps above.
         access_token = create_access_token(identity=user)
-        logging.info(f"access_token: {access_token}")
-
         refresh_token = create_refresh_token(identity=user)
-        logging.debug(f"refresh_token: {refresh_token}")
-
         response = jsonify(access_token=access_token, refresh_token=refresh_token)
         response.headers.add("Access-Control-Allow-Origin", "*")
-        logging.debug(f"response: {response}")
         return response
 
     except Exception as err:

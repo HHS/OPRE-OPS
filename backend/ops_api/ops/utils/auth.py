@@ -1,12 +1,12 @@
 import time
-from typing import Optional
 import uuid
+from typing import Optional
 
 from authlib.integrations.flask_client import OAuth
 from authlib.jose import jwt as jose_jwt
 from flask import current_app
 from flask_jwt_extended import JWTManager
-from ops.models.users import User
+from models.users import User
 
 jwtMgr = JWTManager()
 oauth = OAuth()
@@ -23,7 +23,7 @@ def user_lookup_callback(_jwt_header: dict, jwt_data: dict) -> Optional[User]:
     return User.query.filter_by(id=identity).one_or_none()
 
 
-def get_jwt(key: Optional[str] = None, header: Optional[str] = None, payload: Optional[str] = None) -> str:
+def create_oauth_jwt(key: Optional[str] = None, header: Optional[str] = None, payload: Optional[str] = None) -> str:
     """
     Returns an Access Token JWS from the configured OAuth Client
     :param key: OPTIONAL - Private Key used for encoding the JWS

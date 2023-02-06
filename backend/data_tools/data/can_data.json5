@@ -1,0 +1,386 @@
+{
+  "can_arrangement_type": [
+    {
+      id: 1,
+      name: "OPRE Appropriation"
+    },
+    {
+      id: 2,
+      name: "Cost Share"
+    },
+    {
+      id: 3,
+      name: "IAA"
+    },
+    {
+      id: 4,
+      name: "IDDA"
+    },
+    {
+      id: 5,
+      name: "MOU"
+    }
+  ],
+  "can": [
+    {
+      id: 1,
+      number: "G99HRF2",
+      description: "Healthy Marriages Responsible Fatherhood - OPRE",
+      nickname: "HMRF-OPRE",
+      expiration_date: "9/1/2023",
+      appropriation_term: 1,
+      arrangement_type_id: 5,
+      authorizer_id: 26,
+      managing_portfolio_id: 6,
+      managing_research_project_id: null
+    },
+    {
+      id: 2,
+      number: "G99IA14",
+      description: "Incoming Interagency Agreements",
+      nickname: "IAA-Incoming",
+      expiration_date: "9/1/2024",
+      appropriation_term: 1,
+      arrangement_type_id: 3,
+      authorizer_id: 26,
+      managing_portfolio_id: 1,
+      managing_research_project_id: null
+    },
+    {
+      id: 3,
+      number: "G99PHS9",
+      description: "Social Science Research and Development",
+      nickname: "SSRD",
+      expiration_date: "9/1/2024",
+      appropriation_term: 1,
+      arrangement_type_id: 1,
+      authorizer_id: 26,
+      managing_portfolio_id: 8,
+      managing_research_project_id: null
+    },
+    {
+      id: 4,
+      number: "G990136",
+      description: "Child Development Research Fellowship Grant Program",
+      nickname: "ASPE SRCD-IDDA",
+      expiration_date: "9/1/2023",
+      appropriation_term: 1,
+      arrangement_type_id: 4,
+      authorizer_id: 26,
+      managing_portfolio_id: 1,
+      managing_research_project_id: 1
+    },
+    {
+      id: 5,
+      number: "G994426",
+      description: "Head Start Research",
+      nickname: "HS",
+      expiration_date: "9/1/2024",
+      appropriation_term: 1,
+      arrangement_type_id: 1,
+      authorizer_id: 26,
+      managing_portfolio_id: 2,
+      managing_research_project_id: null
+    },
+    {
+      id: 6,
+      number: "G994648",
+      description: "Kinship Navigation",
+      nickname: "Kin-Nav",
+      expiration_date: "9/1/2028",
+      appropriation_term: 1,
+      arrangement_type_id: 2,
+      authorizer_id: 1,
+      managing_portfolio_id: 6,
+      managing_research_project_id: null
+    },
+    {
+      id: 7,
+      number: "G996125",
+      description: "Healthy Marriages Responsible Fatherhood - OFA",
+      nickname: "HMRF-OFA",
+      expiration_date: "9/1/2024",
+      appropriation_term: 1,
+      arrangement_type_id: 2,
+      authorizer_id: 23,
+      managing_portfolio_id: 6,
+      managing_research_project_id: null
+    },
+    {
+      id: 8,
+      number: "G99XXX1",
+      description: "Healthy Marriages Responsible Fatherhood - OFA",
+      nickname: "HMRF-OFA",
+      expiration_date: "9/1/2024",
+      appropriation_term: 1,
+      arrangement_type_id: 2,
+      authorizer_id: 23,
+      managing_portfolio_id: 6,
+      managing_research_project_id: null
+    },
+    {
+      id: 9,
+      number: "G99XXX2",
+      description: "Healthy Marriages Responsible Fatherhood - OFA",
+      nickname: "HMRF-OFA",
+      expiration_date: "9/1/2024",
+      appropriation_term: 1,
+      arrangement_type_id: 2,
+      authorizer_id: 23,
+      managing_portfolio_id: 6,
+      managing_research_project_id: null
+    },
+    {
+      id: 10,
+      number: "G99XXX3",
+      description: "Healthy Marriages Responsible Fatherhood - OFA",
+      nickname: "HMRF-OFA",
+      expiration_date: "9/1/2024",
+      appropriation_term: 1,
+      arrangement_type_id: 2,
+      authorizer_id: 23,
+      managing_portfolio_id: 6,
+      managing_research_project_id: null
+    },
+    {
+      id: 11,
+      number: "G99XXX4",
+      description: "Healthy Marriages Responsible Fatherhood - OFA",
+      nickname: "HMRF-OFA",
+      expiration_date: "10/1/2027",
+      appropriation_term: 5,
+      arrangement_type_id: 2,
+      authorizer_id: 23,
+      managing_portfolio_id: 6,
+      managing_research_project_id: null
+    },
+    {
+      id: 12,
+      number: "G99XXX7",
+      description: "Healthy Marriages Responsible Fatherhood - OFA",
+      nickname: "HMRF-OFA",
+      expiration_date: "10/1/2027",
+      appropriation_term: 5,
+      arrangement_type_id: 2,
+      authorizer_id: 23,
+      managing_portfolio_id: 6,
+      managing_research_project_id: null
+    },
+    {
+      id: 13,
+      number: "116e2e37",
+      description: "Pol, danista!",
+      nickname: "",
+      expiration_date: "9/1/2023",
+      appropriation_term: 1,
+      arrangement_type_id: 5,
+      authorizer_id: 26,
+      managing_portfolio_id: 3,
+      managing_research_project_id: 1
+    }
+  ],
+  "can_fiscal_year": [
+    {
+      can_id: 1,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 11400000.00,
+      current_funding: 880000.00,
+      expected_funding: 260000.00,
+      potential_additional_funding: 1300000.00,
+      notes: ""
+    },
+    {
+      can_id: 2,
+      fiscal_year: 2021,
+      total_fiscal_year_funding: 200000.00,
+      current_funding: 200000.00,
+      expected_funding: 0.00,
+      potential_additional_funding: 0.00,
+      notes: "147-OPRE-FY21 $150K from ASPE; 149-OPRE-FY21 $50K from SSA\n\nNote to us: This distinction is in budget lines, not sure how it ties into CANs"
+    },
+    {
+      can_id: 3,
+      fiscal_year: 2022,
+      total_fiscal_year_funding: 7000000.00,
+      current_funding: 6000000.00,
+      expected_funding: 1000000.00,
+      potential_additional_funding: 3000000.00,
+      notes: ""
+    },
+    {
+      can_id: 3,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 10000000.00,
+      current_funding: 7000000.00,
+      expected_funding: 3000000.00,
+      potential_additional_funding: 3000000.00,
+      notes: ""
+    },
+    {
+      can_id: 3,
+      fiscal_year: 2024,
+      total_fiscal_year_funding: 7000000.00,
+      current_funding: 6000000.00,
+      expected_funding: 1000000.00,
+      potential_additional_funding: 3000000.00,
+      notes: ""
+    },
+    {
+      can_id: 4,
+      fiscal_year: 2021,
+      total_fiscal_year_funding: 10000000.00,
+      current_funding: 6000000.00,
+      expected_funding: 4000000.00,
+      potential_additional_funding: 3000000.00,
+      notes: ""
+    },
+    {
+      can_id: 5,
+      fiscal_year: 2021,
+      total_fiscal_year_funding: 10000000.00,
+      current_funding: 6000000.00,
+      expected_funding: 4000000.00,
+      potential_additional_funding: 3000000.00,
+      notes: ""
+    },
+    {
+      can_id: 5,
+      fiscal_year: 2022,
+      total_fiscal_year_funding: 10000000.00,
+      current_funding: 6000000.00,
+      expected_funding: 4000000.00,
+      potential_additional_funding: 3000000.00,
+      notes: ""
+    },
+    {
+      can_id: 5,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 10000000.00,
+      current_funding: 6000000.00,
+      expected_funding: 4000000.00,
+      potential_additional_funding: 3000000.00,
+      notes: ""
+    },
+    {
+      can_id: 5,
+      fiscal_year: 2024,
+      total_fiscal_year_funding: 10000000.00,
+      current_funding: 6000000.00,
+      expected_funding: 4000000.00,
+      potential_additional_funding: 3000000.00,
+      notes: ""
+    },
+    {
+      can_id: 6,
+      fiscal_year: 2021,
+      total_fiscal_year_funding: 10000000.00,
+      current_funding: 6000000.00,
+      expected_funding: 4000000.00,
+      potential_additional_funding: 3000000.00,
+      notes: ""
+    },
+    {
+      can_id: 7,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 10000000.00,
+      current_funding: 6000000.00,
+      expected_funding: 4000000.00,
+      potential_additional_funding: 3000000.00,
+      notes: ""
+    },
+    {
+      can_id: 2,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 10000000.00,
+      current_funding: 6000000.00,
+      expected_funding: 4000000.00,
+      potential_additional_funding: 3000000.00,
+      notes: ""
+    },
+    {
+      can_id: 4,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 10000000.00,
+      current_funding: 6000000.00,
+      expected_funding: 4000000.00,
+      potential_additional_funding: 3000000.00,
+      notes: ""
+    },
+    {
+      can_id: 11,
+      fiscal_year: 2022,
+      total_fiscal_year_funding: 10000000.00,
+      current_funding: 6000000.00,
+      expected_funding: 4000000.00,
+      potential_additional_funding: 3000000.00,
+      notes: ""
+    },
+    {
+      can_id: 11,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 10000000.00,
+      current_funding: 6000000.00,
+      expected_funding: 4000000.00,
+      potential_additional_funding: 3000000.00,
+      notes: ""
+    },
+    {
+      can_id: 12,
+      fiscal_year: 2022,
+      total_fiscal_year_funding: 10000000.00,
+      current_funding: 6000000.00,
+      expected_funding: 4000000.00,
+      potential_additional_funding: 3000000.00,
+      notes: ""
+    },
+    {
+      can_id: 12,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 10000000.00,
+      current_funding: 6000000.00,
+      expected_funding: 4000000.00,
+      potential_additional_funding: 3000000.00,
+      notes: ""
+    },
+    {
+      can_id: 13,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 11400000.00,
+      current_funding: 880000.00,
+      expected_funding: 260000.00,
+      potential_additional_funding: 1300000.00,
+      notes: ""
+    },
+    {
+      can_id: 13,
+      fiscal_year: 2024,
+      total_fiscal_year_funding: 11400000.00,
+      current_funding: 880000.00,
+      expected_funding: 260000.00,
+      potential_additional_funding: 1300000.00,
+      notes: ""
+    }
+  ],
+  "can_fiscal_year_carry_over": [
+    {
+      id: 1,
+      can_id: 11,
+      from_fiscal_year: 2022,
+      to_fiscal_year: 2023,
+      amount: 300000.00,
+    },
+    {
+      id: 2,
+      can_id: 12,
+      from_fiscal_year: 2022,
+      to_fiscal_year: 2023,
+      amount: 1000000.00,
+    },
+  ],
+  "research_project_cans": [
+    {
+      research_project_id: 1,
+      can_id: 13
+    }
+  ]
+}
