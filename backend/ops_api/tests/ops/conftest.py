@@ -15,12 +15,16 @@ from models.portfolios import Division, Portfolio, PortfolioUrl, portfolio_team_
 from models.research_projects import MethodologyType, PopulationType, ResearchProject
 from models.users import User
 from ops_api.ops import create_app, db
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import OperationalError
 
-TEST_DB_NAME = "testdb"
+# TEST_DB_NAME = "testdb"
 
 
+@pytest.mark.usefixtures("db_service")
 @pytest.fixture()
-def app():
+def app(db_service):
+    app
     yield create_app({"TESTING": True})
 
 
@@ -29,13 +33,32 @@ def client(app, loaded_db):
     return app.test_client()
 
 
-def pytest_addoption(parser):
-    parser.addoption(
-        "--dburl",
-        action="store",
-        default=f"sqlite:///{TEST_DB_NAME}.db",
-        help="url of the database to use for tests",
-    )
+def is_responsive(db):
+    try:
+        with db.connect() as connection:
+            connection.execute(text("SELECT 1"))
+        return True
+    except OperationalError:
+        return False
+
+
+@pytest.fixture(scope="session")
+def db_service(docker_ip, docker_services):
+    """Ensure that DB is up and responsive."""
+
+    connection_string = "postgresql://postgres:local_password@db:54321/postgres"  # pragma: allowlist secret
+    engine = create_engine(connection_string, echo=True, future=True)
+    docker_services.wait_until_responsive(timeout=30.0, pause=0.1, check=lambda: is_responsive(engine))
+    return engine
+
+
+# def pytest_addoption(parser):
+#     parser.addoption(
+#         "--dburl",
+#         action="store",
+#         default=f"sqlite:///{TEST_DB_NAME}.db",
+#         help="url of the database to use for tests",
+#     )
 
 
 @pytest.fixture()
@@ -159,7 +182,7 @@ def loaded_db(app):
     )
 
     user1 = User(
-        id=1,
+        id="00000000-0000-1111-a111-000000000004",
         oidc_id="sadhfhdasgfhsadhughd",
         email="user1@example.com",
         first_name="Mister",
@@ -167,8 +190,8 @@ def loaded_db(app):
     )
 
     team_leader1 = db.insert(portfolio_team_leaders).values(
-        portfolio_id=1,
-        team_lead_id=1,
+        portfolio_id=p1.id,
+        team_lead_id=user1.id,
     )
 
     proj_1 = ResearchProject(
@@ -176,7 +199,7 @@ def loaded_db(app):
         title="Project 1",
         short_title="ABC",
         description="Vae, salvus orexis!",
-        portfolio_id=1,
+        portfolio_id=p1.id,
         url="https://example.com",
         origination_date=date(2000, 1, 1),
     )
