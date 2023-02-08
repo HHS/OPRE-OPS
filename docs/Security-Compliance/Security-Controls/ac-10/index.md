@@ -1,8 +1,7 @@
 # Access Control
-## AC-11 - Device Lock
+## AC-10 - Concurrent Session Control
 
-a. Prevent further access to the system by [Selection (one or more): initiating a device lock after [Assignment: organization-defined time period] of inactivity; requiring the user to initiate a device lock before leaving the system unattended]; and
-b. Retain the device lock until the user reestablishes access using established identification and authentication procedures.
+TODO: Find out what HHS specifed requirements are
+Limit the number of concurrent sessions for each [Assignment: organization-defined account and/or account type] to [Assignment: organization-defined number].
 
 ### OPS Implementation
-This control is inherited from HHS
