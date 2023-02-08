@@ -76,7 +76,7 @@ const CanCard = ({ can, fiscalYear }) => {
                     <div className="display-flex flex-align-center">
                         <FontAwesomeIcon
                             icon={faCircle}
-                            className={`height-1 width-1 margin-right-1px`}
+                            className={`height-1 width-1 margin-right-05`}
                             style={{ color: color }}
                         />
                         <span>{label}</span>
@@ -123,10 +123,12 @@ const CanCard = ({ can, fiscalYear }) => {
                         <dd className="text-semibold margin-0">{canFundingData?.expiration_date || "---"}</dd>
                     </div>
                 </dl>
-                <div className={`grid-row padding-205 ${style.rightContainer}`}>
+                <div className={`grid-row  padding-y-205 padding-left-205 padding-right-05 ${style.rightContainer}`}>
                     {/*NOTE: LEFT SIDE */}
                     <div className="grid-col-5">
-                        <h4 className="font-sans-3xs text-normal">FY {fiscalYear} CAN Total Funding</h4>
+                        <h4 className="font-sans-3xs text-normal text-brand-neutral">
+                            FY {fiscalYear} CAN Total Funding
+                        </h4>
                         <CANFundingYTD
                             className="margin-top-5"
                             current_funding={canFundingData?.current_funding}
@@ -135,7 +137,9 @@ const CanCard = ({ can, fiscalYear }) => {
                     </div>
                     {/* NOTE: RIGHT SIDE */}
                     <div className="grid-col margin-left-5">
-                        <h4 className="font-sans-3xs text-normal">FY {fiscalYear} CAN Budget Status</h4>
+                        <h4 className="font-sans-3xs text-normal text-brand-neutral margin-bottom-4">
+                            FY {fiscalYear} CAN Budget Status
+                        </h4>
                         <div className="display-flex flex-justify">
                             <div className="grid-row maxw-card-lg font-12px">
                                 {canFunds.map((canFundItem) => (
@@ -151,7 +155,7 @@ const CanCard = ({ can, fiscalYear }) => {
 
                             <div
                                 id="can-graph"
-                                className="bg-base-light width-card height-card"
+                                className="width-full height-full margin-left-2 margin-top-neg-2"
                                 aria-label="This is a Donut Chart that displays the percent by budget line status in the center."
                                 role="img"
                             >
