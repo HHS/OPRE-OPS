@@ -11,7 +11,7 @@ def test_auth_post_fails(client):
     assert res.status_code == 400
 
 
-@pytest.mark.skip(reason="needs CI updating")
+@pytest.mark.usefixtures("app_ctx")
 def test_get_jwt_not_none(app):
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     encoded = key.private_bytes(Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption())

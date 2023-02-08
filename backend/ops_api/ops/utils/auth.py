@@ -35,14 +35,14 @@ def create_oauth_jwt(key: Optional[str] = None, header: Optional[str] = None, pa
     if not jwt_private_key:
         raise NotImplementedError
 
-    client_id = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"]["client_id"]
+    # client_id = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"]["client_id"]
     _payload = payload or {
-        "iss": client_id,
-        "sub": client_id,
+        "iss": current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"]["client_id"],
+        "sub": current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"]["client_id"],
         "aud": "https://idp.int.identitysandbox.gov/api/openid_connect/token",
         "jti": str(uuid.uuid4()),
         "exp": int(time.time()) + 300,
     }
-    header = header or {"alg": "RS256"}
-    jws = jose_jwt.encode(header, _payload, jwt_private_key)
+    _header = header or {"alg": "RS256"}
+    jws = jose_jwt.encode(header=_header, payload=_payload, key=jwt_private_key)
     return jws

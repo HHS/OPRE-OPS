@@ -17,14 +17,14 @@ def test_division_create():
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_divisions_list(client):
-    response = client.get("/api/v1/divisions/")
+def test_get_divisions_list(auth_client):
+    response = auth_client.get("/api/v1/divisions/")
     assert response.status_code == 200
     assert len(response.json) == 4
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_divisions_by_id(client):
-    response = client.get("/api/v1/divisions/1")
+def test_get_divisions_by_id(auth_client):
+    response = auth_client.get("/api/v1/divisions/1")
     assert response.status_code == 200
     assert response.json["id"] == 1
