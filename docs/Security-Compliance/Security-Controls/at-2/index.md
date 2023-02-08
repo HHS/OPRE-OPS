@@ -15,9 +15,9 @@ The content should:
 For CSP Only
 AT-2(c) [at least annually]
 
-## TDP Implementation
+## OPS Implementation
 
-TDP's privileged users, as ACF staff, are required to complete the following trainings annually:
+OPS's privileged users, as ACF staff, are required to complete the following trainings annually:
 - HHS Records Management Training
 - ACF Privacy 101 Training 
 - ACF Cybersecurity Awareness Training
