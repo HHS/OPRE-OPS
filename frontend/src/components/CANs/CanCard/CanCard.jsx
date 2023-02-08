@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import constants from "../../../constants";
 import { getPortfolioCansFundingDetails } from "../../../api/getCanFundingSummary";
 import { ResponsiveDonutWithInnerPercent } from "../../UI/ResponsiveDonutWithInnerPercent/ResponsiveDonutWithInnerPercent";
+import CustomLayerComponent from "../../UI/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 
@@ -20,37 +21,39 @@ const CanCard = ({ can, fiscalYear }) => {
     const budgetStatusTableClasses = `usa-table usa-table--borderless text-bold font-sans-3xs ${style.budgetStatusTable}`;
     /* vars */
     const [canFundingData, setCanFundingDataLocal] = useState({});
+    const [percent, setPercent] = useState("");
 
     const calculatePercent = (value) => {
-        // if (value === 0) {
-        //     return 0;
-        // }
         return (value / canFundingData.total_funding) * 100;
     };
     const canFunds = [
         {
+            id: 1,
             label: "Available",
             value: canFundingData.available_funding || 0,
-            color: "text-brand-dataviz-level-1",
-            percent: calculatePercent(canFundingData.available_funding),
+            color: "#C07B96",
+            percent: `${calculatePercent(canFundingData.available_funding)}%`,
         },
         {
+            id: 2,
             label: "Planned",
             value: canFundingData.planned_funding || 0,
-            color: "text-brand-dataviz-level-2",
-            percent: calculatePercent(canFundingData.planned_funding),
+            color: "#336A90",
+            percent: `${calculatePercent(canFundingData.planned_funding)}%`,
         },
         {
+            id: 3,
             label: "Executing",
             value: canFundingData.in_execution_funding || 0,
-            color: "text-brand-dataviz-level-3",
-            percent: calculatePercent(canFundingData.in_execution_funding),
+            color: "#E5A000",
+            percent: `${calculatePercent(canFundingData.in_execution_funding)}%`,
         },
         {
+            id: 4,
             label: "Obligated",
             value: canFundingData.obligated_funding || 0,
-            color: "text-brand-dataviz-level-4",
-            percent: calculatePercent(canFundingData.obligated_funding),
+            color: "#3E8D61",
+            percent: `${calculatePercent(canFundingData.obligated_funding)}%`,
         },
     ];
     useEffect(() => {
@@ -73,7 +76,8 @@ const CanCard = ({ can, fiscalYear }) => {
                     <div className="display-flex flex-align-center">
                         <FontAwesomeIcon
                             icon={faCircle}
-                            className={`height-1 width-1 margin-right-1px text-brand-dataviz-level-1 ${color}`}
+                            className={`height-1 width-1 margin-right-1px`}
+                            style={{ color: color }}
                         />
                         <span>{label}</span>
                     </div>
@@ -88,7 +92,7 @@ const CanCard = ({ can, fiscalYear }) => {
                     />
                 </div>
                 <div className="grid-col-2">
-                    <Tag tagStyle="darkTextLightBackground" text={`${percent}%`} />
+                    <Tag tagStyle="darkTextLightBackground" text={percent} />
                 </div>
             </>
         );
@@ -118,16 +122,6 @@ const CanCard = ({ can, fiscalYear }) => {
                         <dt className="margin-0 text-brand-neutral">Expiration</dt>
                         <dd className="text-semibold margin-0">{canFundingData?.expiration_date || "---"}</dd>
                     </div>
-                    {/* <div className="margin-y-2">
-                        <h2 className="font-sans-3xs margin-0 text-brand-neutral">FY Total Budget</h2>
-                        <p className="font-sans-3xs text-semibold margin-0">
-                            <CurrencyWithSmallCents
-                                amount={canFundingData?.total_funding || constants.notFilledInText}
-                                dollarsClasses="font-sans-3xs text-bold"
-                                centsStyles={{ fontSize: "10px" }}
-                            />
-                        </p>
-                    </div> */}
                 </dl>
                 <div className={`grid-row padding-205 ${style.rightContainer}`}>
                     {/*NOTE: LEFT SIDE */}
@@ -154,18 +148,21 @@ const CanCard = ({ can, fiscalYear }) => {
                                     />
                                 ))}
                             </div>
-                            {/*
-                                TODO: add  donut chart
-                                <ResponsiveDonutWithInnerPercent />
-                            */}
 
-                            <div id="test" className="bg-base-light width-card height-card">
+                            <div
+                                id="can-graph"
+                                className="bg-base-light width-card height-card"
+                                aria-label="This is a Donut Chart that displays the percent by budget line status in the center."
+                                role="img"
+                            >
                                 <ResponsiveDonutWithInnerPercent
                                     data={canFunds}
-                                    width={100}
-                                    height={100}
-                                    setPercent={100}
-                                    container_id="test"
+                                    width={175}
+                                    height={175}
+                                    margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+                                    setPercent={setPercent}
+                                    CustomLayerComponent={CustomLayerComponent(percent)}
+                                    container_id="can-graph"
                                 />
                             </div>
                         </div>
