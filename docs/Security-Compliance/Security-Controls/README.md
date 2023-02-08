@@ -12,7 +12,13 @@
 8. [AC-2(10)](ac-2-10/index.md)
 9. [AC-5](ac-5/index.md)
 10. [AC-6](ac-6/index.md)
-11. [AC-7](ac-7/index.md)
+11. [AC-6-1](ac-6-1/index.md)
+12. [AC-6-2](ac-6-2/index.md)
+13. [AC-6-3](ac-6-3/index.md)
+14. [AC-6-5](ac-6-5/index.md)
+15. [AC-6-9](ac-6-9/index.md)
+16. [AC-6-10](ac-6-10/index.md)
+17. [AC-7](ac-7/index.md)
 
 ### Audit
 
