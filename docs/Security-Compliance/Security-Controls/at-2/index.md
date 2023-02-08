@@ -23,7 +23,7 @@ OPS's privileged users, as ACF staff, are required to complete the following tra
 - ACF Cybersecurity Awareness Training
 - 2022 Introductory Role Based Training for IT Administrators
 
-Per TDP's IPT meeting on April 6, 2022, the abovementioned trainings are sufficient for satisfying AT-2 as well as [Related controls](https://csrc.nist.gov/Projects/risk-management/sp800-53-controls/release-search#!/controls?version=4.0&family=AT): AT-01 (security training policy), AT-03 (role-based security), and AT-04 (security training record-keeping). Copies of certificates of completion are managed in [TDP's Sharepoint site](https://hhsgov.sharepoint.com/:f:/r/sites/TANFDataPortalOFA/Shared%20Documents/compliance/TDP%20System%20Admin%20Trainings?csf=1&web=1&e=cwteMG). :lock:
+NOTE: Per TDP's IPT meeting on April 6, 2022, the abovementioned trainings are sufficient for satisfying AT-2 as well as [Related controls](https://csrc.nist.gov/Projects/risk-management/sp800-53-controls/release-search#!/controls?version=4.0&family=AT): AT-01 (security training policy), AT-03 (role-based security), and AT-04 (security training record-keeping). Copies of certificates of completion are managed in [TDP's Sharepoint site](https://hhsgov.sharepoint.com/:f:/r/sites/TANFDataPortalOFA/Shared%20Documents/compliance/TDP%20System%20Admin%20Trainings?csf=1&web=1&e=cwteMG). :lock:
 
 
 ### Related Files
