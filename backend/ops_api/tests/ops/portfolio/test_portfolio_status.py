@@ -5,20 +5,19 @@ from models.portfolios import PortfolioStatus
 @pytest.mark.usefixtures("app_ctx")
 def test_portfolio_status_count(loaded_db):
     portfolio_status_count = loaded_db.session.query(PortfolioStatus).all()
-    assert len(portfolio_status_count) == 3
+    assert len(portfolio_status_count) == 2
 
 
 @pytest.mark.parametrize(
     "id,name",
     [
-        (1, "In-Process"),
-        (2, "Not-Started"),
-        (3, "Sandbox"),
+        (1, "Active"),
+        (2, "Inactive"),
     ],
 )
 @pytest.mark.usefixtures("app_ctx")
 def test_portfolio_status_lookup(loaded_db, id, name):
-    portfolio_status = loaded_db.session.query(PortfolioStatus).get(id)
+    portfolio_status = loaded_db.session.get(PortfolioStatus, id)
     assert portfolio_status.name == name
 
 
@@ -26,7 +25,7 @@ def test_portfolio_status_lookup(loaded_db, id, name):
 def test_get_portfolio_status_list(client):
     response = client.get("/api/v1/portfolio-status/")
     assert response.status_code == 200
-    assert len(response.json) == 3
+    assert len(response.json) == 2
 
 
 @pytest.mark.usefixtures("app_ctx")

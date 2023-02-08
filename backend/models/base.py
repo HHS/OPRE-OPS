@@ -1,5 +1,7 @@
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy_mixins import ReprMixin, SerializeMixin
+#from sqlalchemy_mixins import ReprMixin, SerializeMixin
+from models.mixins.repr import ReprMixin
+from models.mixins.serialize import SerializeMixin
+from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 

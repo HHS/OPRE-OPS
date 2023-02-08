@@ -4,10 +4,10 @@ from models.portfolios import Division
 
 @pytest.mark.usefixtures("app_ctx")
 def test_division_lookup(loaded_db):
-    division = loaded_db.session.query(Division).get(1)
+    division = loaded_db.session.get(Division, 1)
     assert division is not None
-    assert division.name == "Division-1"
-    assert division.abbreviation == "DV1"
+    assert division.name == "Division of Child and Family Development"
+    assert division.abbreviation == "DFCD"
 
 
 def test_division_create():
@@ -20,7 +20,7 @@ def test_division_create():
 def test_get_divisions_list(client):
     response = client.get("/api/v1/divisions/")
     assert response.status_code == 200
-    assert len(response.json) == 2
+    assert len(response.json) == 4
 
 
 @pytest.mark.usefixtures("app_ctx")

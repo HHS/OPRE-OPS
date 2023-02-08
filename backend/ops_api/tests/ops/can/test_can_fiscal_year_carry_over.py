@@ -7,7 +7,7 @@ def test_can_fiscal_year_carry_over_lookup(loaded_db):
     cfyco = (
         loaded_db.session.query(CANFiscalYearCarryOver)
         .filter(
-            CANFiscalYearCarryOver.can_id == 1,
+            CANFiscalYearCarryOver.can_id == 11,
             CANFiscalYearCarryOver.from_fiscal_year == 2022,
         )
         .one()
@@ -15,7 +15,7 @@ def test_can_fiscal_year_carry_over_lookup(loaded_db):
     assert cfyco is not None
     assert cfyco.from_fiscal_year == 2022
     assert cfyco.to_fiscal_year == 2023
-    assert cfyco.amount == 10
+    assert cfyco.amount == 300000.00
 
 
 def test_can_fiscal_year_carry_over_create():

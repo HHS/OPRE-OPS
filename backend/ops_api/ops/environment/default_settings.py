@@ -3,7 +3,7 @@ from datetime import timedelta
 
 DEBUG = False  # make sure DEBUG is off unless enabled explicitly otherwise
 
-SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:local_password@localhost:5432/postgres"
+# SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:local_password@localhost:5432/postgres"
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 FLASK_PORT = 8080
 

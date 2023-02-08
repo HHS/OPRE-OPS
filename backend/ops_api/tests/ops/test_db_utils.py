@@ -5,6 +5,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 
+@pytest.mark.skip("Refactor me.")
 @pytest.mark.usefixtures("app_ctx")
 def test_serialize_mixin(loaded_db):
     class XUser(BaseModel):

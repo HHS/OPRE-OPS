@@ -43,7 +43,9 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     # manually setting the public key path here, until we know where it will live longterm
     app.config.setdefault("JWT_PUBLIC_KEY", app.open_resource("static/public.pem").read())
     # fall back for pytest to use
-    app.config.setdefault("SQLALCHEMY_DATABASE_URI", "postgresql+psycopg2://postgres:local_password@db:5432/postgres")
+    app.config.setdefault(
+        "SQLALCHEMY_DATABASE_URI", "postgresql+psycopg2://postgres:local_password@localhost:5432/postgres"
+    )
 
     if config_overrides is not None:
         app.config.from_mapping(config_overrides)
@@ -61,7 +63,6 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     # Add some basic data to test with
     # TODO change this out for a proper fixture.
     with app.app_context():
-        db.drop_all()
         db.create_all()
         db.session.commit()
 

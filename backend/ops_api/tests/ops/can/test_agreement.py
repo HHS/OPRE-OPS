@@ -4,9 +4,9 @@ from models.cans import Agreement
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreement_lookup(loaded_db):
-    agreement = loaded_db.session.query(Agreement).get(1)
+    agreement = loaded_db.session.get(Agreement, 1)
     assert agreement is not None
-    assert agreement.name == "Agreement A11"
+    assert agreement.name == "NIH VIQI"
 
 
 def test_agreement_creation():
