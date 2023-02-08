@@ -6,9 +6,9 @@ information output from the system in accordance with applicable federal laws,
 Executive Orders, directives, policies, regulations, standards, and operational 
 requirements.
 
-### TDP Implementation
+### OPS Implementation
 
-TDP handles and retains information within the information system and information output in accordance with all applicable federal laws, Executive Orders, directives, policies, regulations, standards, and operational requirements including but not limited to:
+OPS handles and retains information within the information system and information output in accordance with all applicable federal laws, Executive Orders, directives, policies, regulations, standards, and operational requirements including but not limited to:
 
 - Federal Information Security Management Act (FISMA) of 2002
 - Computer Fraud and Abuse Act of 1986.
