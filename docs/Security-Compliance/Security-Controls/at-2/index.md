@@ -1,8 +1,11 @@
 # Awareness and Training (AT)
 ## AT-2c - Security Awareness Training
 The organization provides basic security awareness training to information system(IS) users (including managers, senior executives, and contractors):
+
 a. As part of initial training for new users;
+
 b. When required by information system changes; and
+
 c. [At least every 365 days] thereafter.
 
 The content should:
