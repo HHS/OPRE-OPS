@@ -3,7 +3,8 @@
 
 The information system uniquely identifies and authenticates non-organizational users (or processes acting on behalf of non-organizational users).
 
-### TDP Implementation
+### OPS Implementation
+
 a. Authentication is inherited from login.gov
 
 #### Related Files
