@@ -6,7 +6,9 @@ The information system protects the [Selection (one or more): confidentiality; i
 For CSP Only  
 SC-8 [confidentiality AND integrity]  
 
-### TDP Implementation
+### OPS Implementation
+
+TODO: Update as applicable - is PII stored in OPRE?
 
 Data file uploads and downloads with PII are transmitted through connections encrypted via 
 [Transport Layer Security (TLS)](https://www.cloudflare.com/learning/ssl/transport-layer-security-tls/).
