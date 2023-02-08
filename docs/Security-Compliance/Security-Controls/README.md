@@ -20,8 +20,10 @@
 16. [AC-6-10](ac-6-10/index.md)
 17. [AC-7](ac-7/index.md)
 18. [AC-8](ac-8/index.md)
-19. [AC-11](ac-11/index.md)
+19. [AC-10](ac-10/index.md)
 20. [AC-12](ac-12/index.md)
+21. [AC-14](ac-14/index.md)
+22. [AC-17](ac-17/index.md)
 
 ### Audit
 
