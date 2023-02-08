@@ -9,8 +9,8 @@ Guidance: The organization supports the capability to use cryptographic mechanis
 For CSP Only  
 SC-28 [confidentiality AND integrity]  
 
-### TDP Implementation
+### OPS Implementation
 
-TDP stores sensitive information in cloud.gov S3 buckets, which are encrypted by default with [AES-256](https://www.idera.com/glossary/aes-256-bit-encryption) encryption.
+OPS stores sensitive information in cloud.gov S3 buckets, when applicable, which are encrypted by default with [AES-256](https://www.idera.com/glossary/aes-256-bit-encryption) encryption.
 	
 #### Related Files
