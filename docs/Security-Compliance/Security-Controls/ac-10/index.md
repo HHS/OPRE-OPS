@@ -5,3 +5,5 @@ TODO: Find out what HHS specifed requirements are
 Limit the number of concurrent sessions for each [Assignment: organization-defined account and/or account type] to [Assignment: organization-defined number].
 
 ### OPS Implementation
+
+[Issue 659](../../../../../issues/659)

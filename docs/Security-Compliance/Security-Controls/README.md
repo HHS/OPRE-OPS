@@ -3,8 +3,8 @@
 ### Access Controls
 
 1. [AC-2](ac-2/index.md)
-2. [AC-2](ac-2-1/index.md)
-3. [AC-2](ac-2-2/index.md)
+2. [AC-2-1](ac-2-1/index.md)
+3. [AC-2-2](ac-2-2/index.md)
 4. [AC-2(3)](ac-2-3/index.md)
 5. [AC-2(5)](ac-2-5/index.md)
 6. [AC-2(7)](ac-2-7/index.md)
