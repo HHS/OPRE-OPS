@@ -6,4 +6,4 @@ Limit the number of concurrent sessions for each [Assignment: organization-defin
 
 ### OPS Implementation
 
-[Issue 659](../../../../../issues/659)
+HHS/OPRE-OPS#659
