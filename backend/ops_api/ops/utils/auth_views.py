@@ -1,5 +1,3 @@
-import logging
-import sys
 import traceback
 from typing import Union
 
@@ -9,7 +7,7 @@ from flask_jwt_extended import create_access_token, create_refresh_token, get_jw
 from ops_api.ops.utils.auth import create_oauth_jwt, oauth
 from ops_api.ops.utils.user import process_user
 
-logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+logging = current_app.logger
 
 
 def login() -> Union[Response, tuple[str, int]]:

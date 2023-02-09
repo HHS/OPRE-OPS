@@ -15,8 +15,8 @@ JWT_PUBLIC_KEY_PATH = "./static/public.pem"
 JWT_ALGORITHM = "RS256"
 JWT_DECODE_ALGORITHMS = "RS256"
 JWT_TOKEN_LOCATION = "headers"  # noqa: S105 "Not a secret"
-JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
-JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=1)
+JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=15)
+JWT_REFRESH_TOKEN_EXPIRES = timedelta(hours=12)
 
 AUTHLIB_OAUTH_CLIENTS = {
     "logingov": {

@@ -1,4 +1,3 @@
-import time
 import uuid
 from typing import Optional
 
@@ -41,7 +40,7 @@ def create_oauth_jwt(key: Optional[str] = None, header: Optional[str] = None, pa
         "sub": current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"]["client_id"],
         "aud": "https://idp.int.identitysandbox.gov/api/openid_connect/token",
         "jti": str(uuid.uuid4()),
-        "exp": int(time.time()) + 300,
+        "exp": current_app.config["JWT_ACCESS_TOKEN_EXPIRES"],
     }
     _header = header or {"alg": "RS256"}
     jws = jose_jwt.encode(header=_header, payload=_payload, key=jwt_private_key)
