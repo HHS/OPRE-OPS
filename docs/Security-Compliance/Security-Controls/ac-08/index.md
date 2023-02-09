@@ -2,6 +2,7 @@
 ## AC-08 - System Use Notification
 
 a. Display [Assignment: organization-defined system use notification message or banner] to users before granting access to the system that provides privacy and security notices consistent with applicable laws, executive orders, directives, regulations, policies, standards, and guidelines and state that:
+
 1. Users are accessing a U.S. Government system;
 2. System usage may be monitored, recorded, and subject to audit;
 3. Unauthorized use of the system is prohibited and subject to criminal and civil penalties; and
@@ -10,15 +11,17 @@ a. Display [Assignment: organization-defined system use notification message or 
 b. Retain the notification message or banner on the screen until users acknowledge the usage conditions and take explicit actions to log on to or further access the system; and
 
 c. For publicly accessible systems:
+
 1. Display system use information [Assignment: organization-defined conditions], before granting further access to the publicly accessible system;
 2. Display references, if any, to monitoring, recording, or auditing that are consistent with privacy accommodations for such systems that generally prohibit those activities; and
 3. Include a description of the authorized uses of the system.
 
-
 ### OPS Implementation
 
 a. OPS will use the HHS/ACF OCIO approved pre-login warning banner text. TODO: provide screenshot
+
 b. TODO: provide screenshot
+
 c. TODO: provide screenshot
 
 #### Related Files
