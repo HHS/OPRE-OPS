@@ -22,6 +22,7 @@ const CanCard = ({ can, fiscalYear }) => {
     /* vars */
     const [canFundingData, setCanFundingDataLocal] = useState({});
     const [percent, setPercent] = useState("");
+    const [hoverId, setHoverId] = useState("");
 
     const calculatePercent = (value) => {
         return (value / canFundingData.total_funding) * 100;
@@ -69,7 +70,8 @@ const CanCard = ({ can, fiscalYear }) => {
         };
     }, [can.id, fiscalYear]);
 
-    const BudgetItem = ({ label, value, color, percent }) => {
+    const BudgetItem = ({ id, label, value, color, percent }) => {
+        const isHovered = hoverId === id;
         return (
             <>
                 <div className="grid-col-5">
@@ -79,7 +81,7 @@ const CanCard = ({ can, fiscalYear }) => {
                             className={`height-1 width-1 margin-right-05`}
                             style={{ color: color }}
                         />
-                        <span>{label}</span>
+                        <span className={isHovered && "text-bold"}>{label}</span>
                     </div>
                 </div>
                 <div className="grid-col-5">
@@ -144,7 +146,8 @@ const CanCard = ({ can, fiscalYear }) => {
                             <div className="grid-row maxw-card-lg font-12px">
                                 {canFunds.map((canFundItem) => (
                                     <BudgetItem
-                                        key={canFundItem.label}
+                                        key={canFundItem.id}
+                                        id={canFundItem.id}
                                         label={canFundItem.label}
                                         value={canFundItem.value}
                                         color={canFundItem.color}
@@ -165,6 +168,7 @@ const CanCard = ({ can, fiscalYear }) => {
                                     height={175}
                                     margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
                                     setPercent={setPercent}
+                                    setHoverId={setHoverId}
                                     CustomLayerComponent={CustomLayerComponent(percent)}
                                     container_id="can-graph"
                                 />

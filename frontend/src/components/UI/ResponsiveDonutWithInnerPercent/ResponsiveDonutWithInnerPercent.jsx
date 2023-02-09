@@ -8,6 +8,7 @@ export const ResponsiveDonutWithInnerPercent = ({
     margin,
     CustomLayerComponent,
     setPercent,
+    setHoverId,
     container_id,
 }) => {
     const setA11y = async () => {
@@ -44,9 +45,11 @@ export const ResponsiveDonutWithInnerPercent = ({
             layers={["arcs", "slices", "sliceLabels", "radialLabels", "legends", CustomLayerComponent]}
             onMouseEnter={(node) => {
                 setPercent(node.data.percent);
+                setHoverId(node.data.id);
             }}
             onMouseLeave={() => {
                 setPercent("");
+                setHoverId("");
             }}
         />
     );
