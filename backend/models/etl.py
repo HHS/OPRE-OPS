@@ -1,15 +1,11 @@
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import declarative_base
-
-# declarative base class
-Base = declarative_base()
+from models import BaseModel
+from sqlalchemy import Column, DateTime, Identity, Integer, String, func
 
 
-# an example mapping using the base
-class AllBudgetCurrent(Base):
+class AllBudgetCurrent(BaseModel):
     __tablename__ = "staging_all_budget"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, Identity(), primary_key=True)
     CAN = Column(String)
     Sys_Budget_ID = Column(String)
     Project_Title = Column(String)
@@ -25,3 +21,13 @@ class AllBudgetCurrent(Base):
     All_Bud_Prev = Column(String)
     Delta = Column(String)
     verif = Column(String)
+
+
+class ETLTaskStatus(BaseModel):
+    __tablename__ = "staging_task_status"
+
+    workflow_name = Column(String, primary_key=True)
+    task_name = Column(String, primary_key=True)
+    run_at = Column(DateTime, primary_key=True)
+    created_at = Column(DateTime, server_default=func.now())
+    comments = Column(String)
