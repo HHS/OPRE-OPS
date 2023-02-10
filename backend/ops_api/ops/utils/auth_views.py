@@ -7,13 +7,11 @@ from flask_jwt_extended import create_access_token, create_refresh_token, get_jw
 from ops_api.ops.utils.auth import create_oauth_jwt, oauth
 from ops_api.ops.utils.user import process_user
 
-logging = current_app.logger
-
 
 def login() -> Union[Response, tuple[str, int]]:
     authCode = request.json.get("code", None)
-
-    print(f"Got an OIDC request with the code of {authCode}")
+    logging = current_app.logger
+    logging.debug(f"Got an OIDC request with the code of {authCode}")
 
     try:
         authlib_client_config = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"]

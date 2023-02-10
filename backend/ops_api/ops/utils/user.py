@@ -1,5 +1,6 @@
 from typing import Optional, TypedDict
 
+from flask import current_app
 from models.users import User
 
 
@@ -11,7 +12,7 @@ class UserInfoDict(TypedDict):
 
 def process_user(userinfo: UserInfoDict) -> User:
     user = User.query.filter_by(oidc_id=userinfo["sub"]).one_or_none()
-    print(f"User Lookup Response: {user}")
+    current_app.logger.debug(f"User Lookup Response: {user}")
     if not user:
         # Create new user
         user = User(
