@@ -50,6 +50,9 @@ html {
     --dataviz-level-2: #336a90;
     --dataviz-level-3: #e5a000;
     --dataviz-level-4: #3e8d61;
+    --line-graph-level-1: #429195;
+    --line-graph-level-2: #a1d0be;
+    --line-graph-level-6: #90be6d;
 }
 
 $themeColors: (
@@ -93,6 +96,9 @@ $themeColors: (
     "dataviz-level-2": var(--dataviz-level-2),
     "dataviz-level-3": var(--dataviz-level-3),
     "dataviz-level-4": var(--dataviz-level-4),
+    "line-graph-level-1": var(--line-graph-level-1),
+    "line-graph-level-2": var(--line-graph-level-2),
+    "line-graph-level-6": var(--line-graph-level-6),
 );
 
 @each $name, $color in $themeColors {
