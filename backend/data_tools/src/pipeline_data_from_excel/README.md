@@ -33,6 +33,10 @@ using log files and data should be produced.
 It should support the basic case of periodically polling for files in cloud.gov object storage, processing the
 files in stages, and sending a notification of the results in a secure manner.
 
+* The pipeline should easily integrate with BDD and Acceptance Tests to verify the data requirements.
+
+Assumptions in the data should be minimized by writing extensive BDD specifications and unit tests and
+reviewed with stakeholders.
 
 
 ### How to run
