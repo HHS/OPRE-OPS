@@ -66,7 +66,7 @@ const CanCard = ({ can, fiscalYear }) => {
     }, [can.id, fiscalYear]);
 
     const BudgetItem = ({ id, label, value, color, percent }) => {
-        const isHovered = hoverId === id;
+        const isGraphActive = hoverId === id;
         return (
             <>
                 <div className="grid-col-5">
@@ -76,7 +76,7 @@ const CanCard = ({ can, fiscalYear }) => {
                             className={`height-1 width-1 margin-right-05`}
                             style={{ color: color }}
                         />
-                        <span className={isHovered ? "text-bold" : undefined}>{label}</span>
+                        <span className={isGraphActive ? "text-bold" : undefined}>{label}</span>
                     </div>
                 </div>
                 <div className="grid-col-5">
@@ -85,11 +85,11 @@ const CanCard = ({ can, fiscalYear }) => {
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$ "}
-                        renderText={(value) => <span className={isHovered ? "text-bold" : undefined}>{value}</span>}
+                        renderText={(value) => <span className={isGraphActive ? "text-bold" : undefined}>{value}</span>}
                     />
                 </div>
                 <div className="grid-col-2">
-                    <Tag tagStyle="darkTextLightBackground" text={percent} label={label} active={isHovered} />
+                    <Tag tagStyle="darkTextLightBackground" text={percent} label={label} active={isGraphActive} />
                 </div>
             </>
         );
