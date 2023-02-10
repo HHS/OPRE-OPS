@@ -5,8 +5,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import Tag from "../../UI/Tag/Tag";
 
-const CANFundingYTD = ({ total_funding = "0", current_funding = "0", expected_funding = "0", className = "" }) => {
-    // const gridRowText = `grid-row padding-top-1 ${styles.gridRowText}`;
+const CANFundingYTD = ({
+    fiscalYear = "9999",
+    total_funding = "0",
+    current_funding = "0",
+    expected_funding = "0",
+    className = "",
+}) => {
     const calculatePercent = (value) => {
         return (value / total_funding) * 100;
     };
@@ -14,14 +19,14 @@ const CANFundingYTD = ({ total_funding = "0", current_funding = "0", expected_fu
     const data = [
         {
             id: 1,
-            label: "FY 2022 Funding Received YTD",
+            label: `FY ${fiscalYear} Funding Received YTD`,
             value: current_funding,
             color: "#264a64",
             percent: `${calculatePercent(current_funding)}%`,
         },
         {
             id: 2,
-            label: "FY 2022 Funding Expected",
+            label: `FY ${fiscalYear} Funding Expected`,
             value: expected_funding,
             color: "#a1d0be",
             percent: `${calculatePercent(expected_funding)}%`,
@@ -67,35 +72,10 @@ const CANFundingYTD = ({ total_funding = "0", current_funding = "0", expected_fu
                 renderText={(value) => <span className="text-semibold font-sans-lg margin-bottom-105">{value}</span>}
             />
 
-            {/* <div className="grid-row">
-                <div className="grid-col-3">
-                    <CurrencyWithSmallCents
-                        amount={current_funding || 0}
-                        dollarsClasses="font-sans-3xs text-bold"
-                        centsStyles={{ fontSize: "8px" }}
-                    />
-                </div>
-                <div className="grid-col-3 grid-offset-6">
-                    <div className={styles.right}>
-                        <CurrencyWithSmallCents
-                            amount={expected_funding || 0}
-                            dollarsClasses="font-sans-3xs text-bold"
-                            centsStyles={{ fontSize: "8px" }}
-                        />
-                    </div>
-                </div>
-            </div> */}
             <div className={styles.barBox}>
                 <CANFundingBar current_funding={current_funding} expected_funding={expected_funding} />
             </div>
-            {/* <div className={gridRowText}>
-                <div className="grid-col-2">
-                    <span>Received</span>
-                </div>
-                <div className="grid-col-2 grid-offset-8">
-                    <span className={styles.right}>Expected</span>
-                </div>
-            </div> */}
+
             <div className="font-12px margin-top-2">
                 {data.map((item) => (
                     <BudgetItem

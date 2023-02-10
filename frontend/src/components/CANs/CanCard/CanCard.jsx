@@ -128,6 +128,7 @@ const CanCard = ({ can, fiscalYear }) => {
                         </h4>
                         <CANFundingYTD
                             className="margin-top-5"
+                            fiscalYear={fiscalYear}
                             total_funding={canFundingData?.total_funding}
                             current_funding={canFundingData?.current_funding}
                             expected_funding={canFundingData?.expected_funding}
