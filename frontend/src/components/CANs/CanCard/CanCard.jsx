@@ -1,10 +1,8 @@
 import style from "./styles.module.css";
-import CurrencyWithSmallCents from "../../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
 import CurrencyFormat from "react-currency-format";
 import Tag from "../../UI/Tag/Tag";
 import CANFundingYTD from "../CANFundingYTD/CANFundingYTD";
 import { useEffect, useState } from "react";
-import constants from "../../../constants";
 import { getPortfolioCansFundingDetails } from "../../../api/getCanFundingSummary";
 import { ResponsiveDonutWithInnerPercent } from "../../UI/ResponsiveDonutWithInnerPercent/ResponsiveDonutWithInnerPercent";
 import CustomLayerComponent from "../../UI/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
@@ -15,10 +13,7 @@ const CanCard = ({ can, fiscalYear }) => {
     /* Styling */
     const sectionClasses = `${style.container}`;
     const leftMarginClasses = `padding-y-205 ${style.leftMarginContainer}`;
-    const cardBodyClasses = `padding-left-3 padding-top-2 ${style.cardBodyDiv}`;
-    const fundingYTDClasses = `padding-left-0 grid-container ${style.fundingYTD}`;
-    const budgetStatusClasses = `${style.budgetStatus}`;
-    const budgetStatusTableClasses = `usa-table usa-table--borderless text-bold font-sans-3xs ${style.budgetStatusTable}`;
+
     /* vars */
     const [canFundingData, setCanFundingDataLocal] = useState({});
     const [percent, setPercent] = useState("");
@@ -81,7 +76,7 @@ const CanCard = ({ can, fiscalYear }) => {
                             className={`height-1 width-1 margin-right-05`}
                             style={{ color: color }}
                         />
-                        <span className={isHovered && "text-bold"}>{label}</span>
+                        <span className={isHovered ? "text-bold" : undefined}>{label}</span>
                     </div>
                 </div>
                 <div className="grid-col-5">
@@ -90,11 +85,11 @@ const CanCard = ({ can, fiscalYear }) => {
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$ "}
-                        renderText={(value) => <span className="">{value}</span>}
+                        renderText={(value) => <span className={isHovered ? "text-bold" : undefined}>{value}</span>}
                     />
                 </div>
                 <div className="grid-col-2">
-                    <Tag tagStyle="darkTextLightBackground" text={percent} />
+                    <Tag tagStyle="darkTextLightBackground" text={percent} label={label} active={isHovered} />
                 </div>
             </>
         );
@@ -159,6 +154,8 @@ const CanCard = ({ can, fiscalYear }) => {
                             <div
                                 id="can-graph"
                                 className="width-full height-full margin-left-2 margin-top-neg-2"
+                                // NOTE: Toggle this class to get chart to render correctly if it disappears
+                                // className="width-card height-card"
                                 aria-label="This is a Donut Chart that displays the percent by budget line status in the center."
                                 role="img"
                             >
