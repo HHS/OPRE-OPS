@@ -1,10 +1,10 @@
 from typing import List
 
-from data_tools.src.etl_data_from_excel.etl_business_rules import ETLBusinessRules
+from data_tools.src.pipeline_data_from_excel.etl_business_rules import PipelineBusinessRules
 from models import *
 
 
-class LoadResearchProjectsBusinessRules(ETLBusinessRules):
+class LoadResearchProjectsBusinessRules(PipelineBusinessRules):
     @staticmethod
     def apply_business_rules(
         data: List[AllBudgetCurrent],

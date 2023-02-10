@@ -5,7 +5,7 @@ SourceEntity = TypeVar("SourceTable")
 DestinationEntity = TypeVar("DestinationEntity")
 
 
-class ETLBusinessRules(ABC):
+class PipelineBusinessRules(ABC):
     @staticmethod
     def apply_business_rules(
         data: List[SourceEntity],

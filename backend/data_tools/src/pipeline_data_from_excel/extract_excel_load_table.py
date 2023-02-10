@@ -2,7 +2,8 @@ import sys
 
 import luigi.contrib.postgres
 import openpyxl
-from data_tools.src.etl_data_from_excel.utils import clean_rows
+from data_tools.src.pipeline_data_from_excel.ops_task import OPSTask
+from data_tools.src.pipeline_data_from_excel.utils import clean_rows
 from models import *
 from pyexcel_io import save_data
 from pyexcel_io.constants import DB_SQL
@@ -11,12 +12,13 @@ from sqlalchemy.future import create_engine
 from sqlalchemy.orm import Session
 
 
-class ExtractExcelLoadTable(luigi.Task):
+class ExtractExcelLoadTable(OPSTask):
     run_date = luigi.DateSecondParameter()
     _task_complete = False
-    _engine = create_engine(
-        "postgresql://postgres:local_password@localhost:5432/postgres"  # pragma: allowlist secret
-    )
+    _task_meta = {"log_messages": []}
+
+    def __init__(self, run_date):
+        super().__init__(run_date)
 
     def complete(self):
         return self._task_complete
@@ -72,23 +74,23 @@ class ExtractExcelLoadTable(luigi.Task):
                 importer, {adapter.get_name(): non_empty_data_rows}, file_type=DB_SQL
             )
 
-        # add task metadata
-        with Session(self._engine) as session, session.begin():
-            session.add(
-                ETLTaskStatus(
-                    workflow_name="etl_data_from_excel",
-                    task_name="extract_excel_load_table",
-                    run_at=self.run_date,
-                    comments="",
-                )
-            )
+        # # add task metadata
+        # with Session(self._engine) as session, session.begin():
+        #     session.add(
+        #         ETLTaskStatus(
+        #             workflow_name="etl_data_from_excel",
+        #             task_name="extract_excel_load_table",
+        #             run_at=self.run_date,
+        #             task_meta=self._task_meta,
+        #         )
+        #     )
 
         self._task_complete = True
 
 
 if __name__ == "__main__":
-    import datetime
+    from dateutil import parser
 
-    run_date = datetime.datetime.fromisoformat(sys.argv[2])
+    run_date_from_cmd = parser.parse(sys.argv[2])
 
-    luigi.build([ExtractExcelLoadTable(run_date)], local_scheduler=True)
+    luigi.build([ExtractExcelLoadTable(run_date_from_cmd)], local_scheduler=True)
