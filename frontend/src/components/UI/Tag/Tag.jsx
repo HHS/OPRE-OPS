@@ -1,8 +1,8 @@
 import styles from "./styles.module.css";
 import PropTypes from "prop-types";
-const Tag = ({ tagStyle, text, active = false, label }) => {
-    let tagClasses;
-    let activeStyle = "";
+const Tag = ({ tagStyle = "", text = "", active = false, label = "" }) => {
+    let tagClasses = "",
+        activeClass = "";
 
     if (tagStyle === "darkTextLightBackground") {
         tagClasses = `${styles.tag} bg-brand-neutral-lightest text-brand-neutral-dark font-12px padding-05`;
@@ -11,19 +11,20 @@ const Tag = ({ tagStyle, text, active = false, label }) => {
     }
 
     if (active && label === "Available") {
-        activeStyle = "bg-brand-dataviz-level-1 text-white text-bold";
-    }
-    if (active && label === "Planned") {
-        activeStyle = "bg-brand-dataviz-level-2 text-white text-bold";
-    }
-    if (active && label === "Executing") {
-        activeStyle = "bg-brand-dataviz-level-3 text-bold";
-    }
-    if (active && label === "Obligated") {
-        activeStyle = "bg-brand-dataviz-level-4 text-white text-bold";
+        activeClass = "bg-brand-dataviz-level-1 text-white text-bold";
+    } else if (active && label === "Planned") {
+        activeClass = "bg-brand-dataviz-level-2 text-white text-bold";
+    } else if (active && label === "Executing") {
+        activeClass = "bg-brand-dataviz-level-3 text-bold";
+    } else if (active && label === "Obligated") {
+        activeClass = "bg-brand-dataviz-level-4 text-white text-bold";
+    } else if (active && label.includes("Received")) {
+        activeClass = "bg-brand-line-graph-level-1 text-white text-bold";
+    } else if (active && label.includes("Expected")) {
+        activeClass = "bg-brand-line-graph-level-2 text-bold";
     }
 
-    return <span className={`${tagClasses} ${activeStyle}`}>{text}</span>;
+    return <span className={`${tagClasses} ${activeClass}`}>{text}</span>;
 };
 
 export default Tag;

@@ -1,3 +1,4 @@
+import React from "react";
 import styles from "./styles.module.css";
 import CurrencyFormat from "react-currency-format";
 import CANFundingBar from "../CANFundingBar/CANFundingBar";
@@ -32,8 +33,10 @@ const CANFundingYTD = ({
             percent: `${calculatePercent(expected_funding)}%`,
         },
     ];
+    const [activeId, setActiveId] = React.useState(0);
+
     const BudgetItem = ({ id, label, value, color, percent }) => {
-        const isGraphActive = false;
+        const isGraphActive = activeId === id;
         return (
             <div className="grid-row margin-top-2">
                 <div className="grid-col-7">
@@ -43,6 +46,7 @@ const CANFundingYTD = ({
                             className={`height-1 width-1 margin-right-05`}
                             style={{ color: color }}
                         />
+
                         <span className={isGraphActive ? "text-bold" : undefined}>{label}</span>
                     </div>
                 </div>
@@ -73,13 +77,19 @@ const CANFundingYTD = ({
             />
 
             <div className={styles.barBox}>
-                <CANFundingBar current_funding={current_funding} expected_funding={expected_funding} />
+                <CANFundingBar
+                    current_funding={current_funding}
+                    expected_funding={expected_funding}
+                    setActiveId={setActiveId}
+                    data={data}
+                />
             </div>
 
             <div className="font-12px margin-top-2">
                 {data.map((item) => (
                     <BudgetItem
                         key={item.id}
+                        id={item.id}
                         label={item.label}
                         value={item.value}
                         color={item.color}
