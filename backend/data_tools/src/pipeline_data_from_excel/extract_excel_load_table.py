@@ -10,6 +10,8 @@ from pyexcel_io.constants import DB_SQL
 from pyexcel_io.database.common import SQLTableImportAdapter, SQLTableImporter
 from sqlalchemy.orm import Session
 
+EXCEL_FILE_NAME = "data_tools/data/REDACTED-FY22_Budget_Summary-10-12-22.xlsm"
+
 
 class ExtractExcelLoadTable(OPSTask):
     run_date = luigi.DateSecondParameter()
@@ -22,31 +24,33 @@ class ExtractExcelLoadTable(OPSTask):
         return self._task_complete
 
     def run(self):
+        self._log_message("Running --> ExtractExcelLoadTable")
+
+        self._log_message(f"Extracting from Excel file --> {EXCEL_FILE_NAME}")
         workbook = openpyxl.load_workbook(
-            "data_tools/data/REDACTED-FY22_Budget_Summary-10-12-22.xlsm",
+            EXCEL_FILE_NAME,
             data_only=True,
             read_only=True,
             keep_vba=False,
             keep_links=False,
         )
-        sheet = workbook["All Budget - Cur"]
+        self._log_message("Excel file successfully extracted.")
 
-        # header_row = [
-        #     item.replace(" ", "_")
-        #     for row in sheet.iter_rows(max_row=1, values_only=True)
-        #     for item in row
-        #     if item
-        # ]
+        sheet = workbook["All Budget - Cur"]
 
         data_rows = [list(row) for row in sheet.iter_rows(min_row=2, values_only=True)]
 
         non_empty_data_rows = clean_rows(data_rows)
 
+        self._log_message("Creating All Tables...")
         BaseModel.metadata.create_all(self.engine)
+        self._log_message("...Tables created.")
 
         # Delete all pre-existing records
         with Session(self.engine) as session, session.begin():
+            self._log_message("Deleting --> existing staging data.")
             session.query(AllBudgetCurrent).delete()
+            self._log_message("Staging data deleted.")
 
         with Session(self.engine) as session, session.begin():
             importer = SQLTableImporter(session)
@@ -68,10 +72,14 @@ class ExtractExcelLoadTable(OPSTask):
                 "Delta",
             ]
             importer.append(adapter)
+
+            self._log_message("Loading --> Data to staging table.")
             save_data(
                 importer, {adapter.get_name(): non_empty_data_rows}, file_type=DB_SQL
             )
+            self._log_message("Data loaded to staging table.")
 
+        self._log_message("ExtractExcelLoadTable --> COMPLETE")
         self._task_complete = True
 
 
