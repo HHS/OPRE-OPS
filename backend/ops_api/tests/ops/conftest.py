@@ -1,39 +1,14 @@
 import os
 import subprocess
-from datetime import datetime
 
 # from datetime import date, datetime
 from subprocess import CalledProcessError
 
 import pytest
-from flask.testing import FlaskClient
-from flask_jwt_extended import create_access_token
-from models.users import User
 from ops_api.ops import create_app, db
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError
-
-# from sqlalchemy.orm import Session
-
-# TEST_DB_NAME = "testdb"
-
-
-class AuthClient(FlaskClient):
-    def open(self, *args, **kwargs):
-        user = User(
-            id="00000000-0000-1111-a111-000000000004",
-            oidc_id="00000000-0000-1111-a111-000000000004",
-            email="unit-test@ops-api.gov",
-            first_name="Unit",
-            last_name="Test",
-            date_joined=datetime.now(),
-            updated=datetime.now(),
-            role="Admin",
-            division=1,
-        )
-        access_token = create_access_token(identity=user)
-        kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
-        return super().open(*args, **kwargs)
+from tests.ops.auth_client import AuthClient
 
 
 @pytest.mark.usefixtures("db_service")
@@ -51,8 +26,6 @@ def client(app, loaded_db):
 @pytest.fixture()
 def auth_client(app):
     app.testing = True
-    # builder = EnvironBuilder(auth=access_token)
-    # env = builder.get_environ()
     app.test_client_class = AuthClient
     return app.test_client()
 
@@ -83,13 +56,13 @@ def is_loaded(db):
 def db_service(docker_ip, docker_services):
     """Ensure that DB is up and responsive."""
 
-    connection_string = "postgresql://postgres:local_password@localhost:5433/postgres"  # pragma: allowlist secret
+    connection_string = f"postgresql://postgres:local_password@{docker_ip}:5433/postgres"  # pragma: allowlist secret
     engine = create_engine(connection_string, echo=True, future=True)
     docker_services.wait_until_responsive(timeout=40.0, pause=1.0, check=lambda: is_responsive(engine))
     return engine
 
 
-# If you need the test container to stick around, change this to return False
+# If you need the 'test container' to stick around, change this to return False
 @pytest.fixture(scope="session")
 def docker_cleanup():
     return True
@@ -97,7 +70,9 @@ def docker_cleanup():
 
 @pytest.fixture(scope="session")
 def docker_compose_file(pytestconfig):
-    return os.path.join(str(pytestconfig.rootdir), "docker-compose.yml")
+    compose_file = os.path.join(str(pytestconfig.rootdir), "docker-compose.yml")
+    print(f"docker-compose-path: {compose_file}")
+    return compose_file
 
 
 # def pytest_addoption(parser):
