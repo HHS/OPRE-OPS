@@ -77,12 +77,7 @@ const CANFundingYTD = ({
             />
 
             <div className={styles.barBox}>
-                <CANFundingBar
-                    current_funding={current_funding}
-                    expected_funding={expected_funding}
-                    setActiveId={setActiveId}
-                    data={data}
-                />
+                <CANFundingBar setActiveId={setActiveId} data={data} />
             </div>
 
             <div className="font-12px margin-top-2">
