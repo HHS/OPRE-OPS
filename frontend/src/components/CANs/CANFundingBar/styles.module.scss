@@ -11,7 +11,7 @@
     border-top-left-radius: 4px;
 
     &:hover {
-        scale: 1.1;
+        transform: scaleY(1.2);
     }
 }
 
@@ -23,6 +23,6 @@
     border-top-right-radius: 4px;
 
     &:hover {
-        scale: 1.1;
+        transform: scaleY(1.2);
     }
 }
