@@ -53,6 +53,7 @@ html {
     --line-graph-level-1: #429195;
     --line-graph-level-2: #a1d0be;
     --line-graph-level-6: #90be6d;
+    --line-graph-level-7: #264a64;
 }
 
 $themeColors: (
@@ -99,6 +100,7 @@ $themeColors: (
     "line-graph-level-1": var(--line-graph-level-1),
     "line-graph-level-2": var(--line-graph-level-2),
     "line-graph-level-6": var(--line-graph-level-6),
+    "line-graph-level-7": var(--line-graph-level-7),
 );
 
 @each $name, $color in $themeColors {
