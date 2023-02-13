@@ -11,17 +11,17 @@ const Tag = ({ tagStyle = "", text = "", active = false, label = "" }) => {
     }
 
     if (active && label === "Available") {
-        activeClass = "bg-brand-dataviz-level-1 text-white text-bold";
+        activeClass = "bg-brand-dataviz-level-1 text-white fake-bold";
     } else if (active && label === "Planned") {
-        activeClass = "bg-brand-dataviz-level-2 text-white text-bold";
+        activeClass = "bg-brand-dataviz-level-2 text-white fake-bold";
     } else if (active && label === "Executing") {
-        activeClass = "bg-brand-dataviz-level-3 text-bold";
+        activeClass = "bg-brand-dataviz-level-3 fake-bold";
     } else if (active && label === "Obligated") {
-        activeClass = "bg-brand-dataviz-level-4 text-white text-bold";
+        activeClass = "bg-brand-dataviz-level-4 text-white fake-bold";
     } else if (active && label.includes("Funding Received")) {
-        activeClass = "bg-brand-line-graph-level-7 text-white text-bold";
+        activeClass = "bg-brand-line-graph-level-7 text-white fake-bold";
     } else if (active && label.includes("Funding Expected")) {
-        activeClass = "bg-brand-line-graph-level-2 text-bold";
+        activeClass = "bg-brand-line-graph-level-2 fake-bold";
     }
 
     return <span className={`${tagClasses} ${activeClass}`}>{text}</span>;

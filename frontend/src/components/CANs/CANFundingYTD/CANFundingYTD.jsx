@@ -47,7 +47,7 @@ const CANFundingYTD = ({
                             style={{ color: color }}
                         />
 
-                        <span className={isGraphActive ? "text-bold" : undefined}>{label}</span>
+                        <span className={isGraphActive ? "fake-bold" : undefined}>{label}</span>
                     </div>
                 </div>
                 <div className="grid-col-4">
@@ -56,7 +56,7 @@ const CANFundingYTD = ({
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$ "}
-                        renderText={(value) => <span className={isGraphActive ? "text-bold" : undefined}>{value}</span>}
+                        renderText={(value) => <span className={isGraphActive ? "fake-bold" : undefined}>{value}</span>}
                     />
                 </div>
                 <div className="grid-col-1">
