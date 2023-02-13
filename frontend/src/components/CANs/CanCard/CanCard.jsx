@@ -155,9 +155,7 @@ const CanCard = ({ can, fiscalYear }) => {
 
                             <div
                                 id="can-graph"
-                                className="width-full height-full margin-left-2 margin-top-neg-2"
-                                // NOTE: Toggle this class to get chart to render correctly if it disappears
-                                // className="width-card height-card"
+                                className="width-card height-card margin-right-2 margin-top-neg-2"
                                 aria-label="This is a Donut Chart that displays the percent by budget line status in the center."
                                 role="img"
                             >
