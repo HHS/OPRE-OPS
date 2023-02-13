@@ -1,5 +1,5 @@
-from ops.models.cans import AgreementType
 import pytest
+from models.cans import AgreementType
 
 
 @pytest.mark.usefixtures("app_ctx")

@@ -1,5 +1,5 @@
-from ops.models.portfolios import PortfolioUrl
 import pytest
+from models.portfolios import PortfolioUrl
 
 
 @pytest.mark.usefixtures("app_ctx")

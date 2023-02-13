@@ -1,12 +1,10 @@
 from typing import List
 
-from flask import jsonify
-from flask import request
-from flask import Response
-from ops.base_views import BaseItemAPI
-from ops.models.base import BaseModel
-from ops.models.portfolios import Portfolio
-from ops.utils.portfolios import get_total_funding
+from flask import Response, jsonify, request
+from models.base import BaseModel
+from models.portfolios import Portfolio
+from ops_api.ops.base_views import BaseItemAPI
+from ops_api.ops.utils.portfolios import get_total_funding
 from typing_extensions import override
 
 

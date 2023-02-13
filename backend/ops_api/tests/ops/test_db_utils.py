@@ -1,10 +1,7 @@
-from ops.models.base import BaseModel
-from ops.models.base import db
 import pytest
-from sqlalchemy import Column
-from sqlalchemy import ForeignKey
-from sqlalchemy import Integer
-from sqlalchemy import String
+from models.base import BaseModel
+from ops_api.ops import db
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 

@@ -3,12 +3,14 @@ import Header from "./components/UI/Header/Header";
 
 function App(props) {
     return (
-        <>
+        <div className="bg-base-lightest">
             <div className="usa-overlay"></div>
             <Header />
-            <main id="main-content">{props.children}</main>
+            <main id="main-content" className="grid-container bg-white padding-bottom-6">
+                {props.children}
+            </main>
             <Footer />
-        </>
+        </div>
     );
 }
 

@@ -1,11 +1,9 @@
 from typing import Dict
 
-from flask import jsonify
-from flask import request
-from flask import Response
-from ops.base_views import BaseItemAPI
-from ops.models.base import BaseModel
-from ops.utils.cans import get_can_funding_summary
+from flask import Response, jsonify, request
+from models.base import BaseModel
+from ops_api.ops.base_views import BaseItemAPI
+from ops_api.ops.utils.cans import get_can_funding_summary
 from typing_extensions import override
 
 

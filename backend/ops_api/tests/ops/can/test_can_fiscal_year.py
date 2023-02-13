@@ -1,5 +1,5 @@
-from ops.models.cans import CANFiscalYear
 import pytest
+from models.cans import CANFiscalYear
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -30,17 +30,20 @@ def test_can_fiscal_year_create():
 
 
 @pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_fiscal_year_list(client):
     response = client.get("/api/v1/can-fiscal-year/")
     assert response.status_code == 200
-    assert len(response.json) == 4
+    assert len(response.json) == 5
     assert response.json[0]["can_id"] == 1
     assert response.json[1]["can_id"] == 1
     assert response.json[2]["can_id"] == 2
     assert response.json[3]["can_id"] == 2
+    assert response.json[4]["can_id"] == 3
 
 
 @pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_fiscal_year_by_id(client):
     response = client.get("/api/v1/can-fiscal-year/1")
     assert response.status_code == 200
@@ -50,6 +53,7 @@ def test_can_get_can_fiscal_year_by_id(client):
 
 
 @pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_fiscal_year_by_year(client):
     response = client.get("/api/v1/can-fiscal-year/?year=2022")
     assert response.status_code == 200
@@ -59,6 +63,7 @@ def test_can_get_can_fiscal_year_by_year(client):
 
 
 @pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_fiscal_year_by_can(client):
     response = client.get("/api/v1/can-fiscal-year/?can_id=1")
     assert response.status_code == 200
@@ -68,6 +73,7 @@ def test_can_get_can_fiscal_year_by_can(client):
 
 
 @pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_fiscal_year_by_can_and_year(client):
     response = client.get("/api/v1/can-fiscal-year/?can_id=1&year=2022")
     assert response.status_code == 200

@@ -1,5 +1,5 @@
-from ops.models.cans import CAN
 import pytest
+from models.cans import CAN
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -9,10 +9,7 @@ def test_can_retrieve(loaded_db):
     assert can is not None
     assert can.number == "G990205"
     assert can.description == "Secondary Analyses Data On Child Care & Early Edu"
-    assert (
-        can.purpose
-        == "Secondary Analyses of Child Care and Early Education Data (2022)"
-    )
+    assert can.purpose == "Secondary Analyses of Child Care and Early Education Data (2022)"
     assert can.nickname == "ABCD"
     assert can.arrangement_type_id == 2
     assert can.authorizer_id == 1
@@ -42,11 +39,11 @@ def test_can_creation():
 
 @pytest.mark.usefixtures("app_ctx")
 def test_can_get_all(client, loaded_db):
-    assert loaded_db.session.query(CAN).count() == 2
+    assert loaded_db.session.query(CAN).count() == 3
 
     response = client.get("/api/v1/cans/")
     assert response.status_code == 200
-    assert len(response.json) == 2
+    assert len(response.json) == 3
 
 
 @pytest.mark.usefixtures("app_ctx")

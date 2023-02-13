@@ -1,5 +1,5 @@
-from ops.models.portfolios import Division
 import pytest
+from models.portfolios import Division
 
 
 @pytest.mark.usefixtures("app_ctx")
