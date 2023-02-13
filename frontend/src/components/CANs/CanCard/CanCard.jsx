@@ -68,7 +68,7 @@ const CanCard = ({ can, fiscalYear }) => {
     const BudgetItem = ({ id, label, value, color, percent }) => {
         const isGraphActive = hoverId === id;
         return (
-            <>
+            <div className="grid-row margin-top-2">
                 <div className="grid-col-5">
                     <div className="display-flex flex-align-center">
                         <FontAwesomeIcon
@@ -76,22 +76,22 @@ const CanCard = ({ can, fiscalYear }) => {
                             className={`height-1 width-1 margin-right-05`}
                             style={{ color: color }}
                         />
-                        <span className={isGraphActive ? "text-bold" : undefined}>{label}</span>
+                        <span className={isGraphActive ? "fake-bold" : undefined}>{label}</span>
                     </div>
                 </div>
-                <div className="grid-col-5">
+                <div className="grid-col-6">
                     <CurrencyFormat
                         value={value}
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$ "}
-                        renderText={(value) => <span className={isGraphActive ? "text-bold" : undefined}>{value}</span>}
+                        renderText={(value) => <span className={isGraphActive ? "fake-bold" : undefined}>{value}</span>}
                     />
                 </div>
-                <div className="grid-col-2">
+                <div className="grid-col-1">
                     <Tag tagStyle="darkTextLightBackground" text={percent} label={label} active={isGraphActive} />
                 </div>
-            </>
+            </div>
         );
     };
 
@@ -140,7 +140,7 @@ const CanCard = ({ can, fiscalYear }) => {
                             FY {fiscalYear} CAN Budget Status
                         </h4>
                         <div className="display-flex flex-justify">
-                            <div className="grid-row maxw-card-lg font-12px">
+                            <div className="maxw-card-lg font-12px">
                                 {canFunds.map((canFundItem) => (
                                     <BudgetItem
                                         key={canFundItem.id}
