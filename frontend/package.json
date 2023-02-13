@@ -4,13 +4,13 @@
   "license": "CC0-1.0",
   "private": true,
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "6.2.1",
-    "@fortawesome/free-regular-svg-icons": "6.2.1",
-    "@fortawesome/free-solid-svg-icons": "6.2.1",
+    "@fortawesome/fontawesome-svg-core": "6.3.0",
+    "@fortawesome/free-regular-svg-icons": "6.3.0",
+    "@fortawesome/free-solid-svg-icons": "6.3.0",
     "@fortawesome/react-fontawesome": "0.2.0",
     "@nivo/core": "^0.80.0",
     "@nivo/pie": "^0.80.0",
-    "@reduxjs/toolkit": "1.9.1",
+    "@reduxjs/toolkit": "1.9.2",
     "@uswds/uswds": "3.3.0",
     "axios": "1.2.1",
     "babel-plugin-macros": "3.1.0",
@@ -21,7 +21,7 @@
     "react-dom": "18.2.0",
     "react-markdown": "^8.0.5",
     "react-redux": "8.0.5",
-    "react-router-dom": "6.5.0",
+    "react-router-dom": "6.8.1",
     "react-scripts": "5.0.1",
     "react-select": "5.7.0",
     "sass": "1.57.1",
@@ -30,14 +30,14 @@
   "devDependencies": {
     "@testing-library/react": "^13.4.0",
     "@uswds/compile": "^1.0.0-beta.3",
-    "axe-core": "4.6.1",
+    "axe-core": "4.6.3",
     "cypress": "11.2.0",
     "cypress-axe": "1.2.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-cypress": "2.12.1",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-prettier": "4.2.1",
-    "prettier": "2.8.1"
+    "prettier": "2.8.4"
   },
   "scripts": {
     "start": "DISABLE_ESLINT_PLUGIN=true react-scripts start ",
