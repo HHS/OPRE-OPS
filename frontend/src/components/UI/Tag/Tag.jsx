@@ -18,9 +18,9 @@ const Tag = ({ tagStyle = "", text = "", active = false, label = "" }) => {
         activeClass = "bg-brand-dataviz-level-3 text-bold";
     } else if (active && label === "Obligated") {
         activeClass = "bg-brand-dataviz-level-4 text-white text-bold";
-    } else if (active && label.includes("Received")) {
-        activeClass = "bg-brand-line-graph-level-1 text-white text-bold";
-    } else if (active && label.includes("Expected")) {
+    } else if (active && label.includes("Funding Received")) {
+        activeClass = "bg-brand-line-graph-level-7 text-white text-bold";
+    } else if (active && label.includes("Funding Expected")) {
         activeClass = "bg-brand-line-graph-level-2 text-bold";
     }
 
