@@ -14,16 +14,10 @@ from sqlalchemy.orm import Session
 
 class LoadResearchProjects(OPSTask):
     run_date = luigi.DateSecondParameter()
-    task_meta = {"log_messages": []}
     _task_complete = False
 
     def __init__(self, run_date):
         super().__init__(run_date)
-
-    def _log_message(self, message):
-        logger = logging.getLogger("luigi-interface")
-        logger.info(message)
-        self.task_meta["log_messages"].append(message)
 
     def complete(self):
         return self._task_complete
@@ -34,10 +28,10 @@ class LoadResearchProjects(OPSTask):
     def run(self):
         self._log_message("Running --> LoadResearchProjects")
         self._log_message("Creating All Tables...")
-        BaseModel.metadata.create_all(self._engine)
+        BaseModel.metadata.create_all(self.engine)
         self._log_message("...Tables created.")
 
-        with Session(self._engine) as session, session.begin():
+        with Session(self.engine) as session, session.begin():
             all_budget_current = session.scalars(
                 select(AllBudgetCurrent)
                 .where(AllBudgetCurrent.Project_Title != "Placeholder")
@@ -61,6 +55,34 @@ class LoadResearchProjects(OPSTask):
 
         self._log_message("LoadResearchProjects --> COMPLETE")
         self._task_complete = True
+
+
+@LoadResearchProjects.event_handler(luigi.Event.SUCCESS)
+def success(task):
+    with Session(task.engine) as session, session.begin():
+        session.add(
+            ETLTaskStatus(
+                workflow_name="etl_data_from_excel",
+                task_name=task.task_module,
+                run_at=task.run_date,
+                task_meta=task.task_meta,
+                status="SUCCESS",
+            )
+        )
+
+
+@LoadResearchProjects.event_handler(luigi.Event.FAILURE)
+def fail(task):
+    with Session(task.engine) as session, session.begin():
+        session.add(
+            ETLTaskStatus(
+                workflow_name="etl_data_from_excel",
+                task_name=task.task_module,
+                run_at=task.run_date,
+                task_meta=task.task_meta,
+                status="FAIL",
+            )
+        )
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 from typing import List
 
-from data_tools.src.pipeline_data_from_excel.etl_business_rules import PipelineBusinessRules
+from data_tools.src.pipeline_data_from_excel.pipeline_business_rules import PipelineBusinessRules
 from models import *
 
 

@@ -8,14 +8,12 @@ from models import *
 from pyexcel_io import save_data
 from pyexcel_io.constants import DB_SQL
 from pyexcel_io.database.common import SQLTableImportAdapter, SQLTableImporter
-from sqlalchemy.future import create_engine
 from sqlalchemy.orm import Session
 
 
 class ExtractExcelLoadTable(OPSTask):
     run_date = luigi.DateSecondParameter()
     _task_complete = False
-    _task_meta = {"log_messages": []}
 
     def __init__(self, run_date):
         super().__init__(run_date)
@@ -44,13 +42,13 @@ class ExtractExcelLoadTable(OPSTask):
 
         non_empty_data_rows = clean_rows(data_rows)
 
-        BaseModel.metadata.create_all(self._engine)
+        BaseModel.metadata.create_all(self.engine)
 
         # Delete all pre-existing records
-        with Session(self._engine) as session, session.begin():
+        with Session(self.engine) as session, session.begin():
             session.query(AllBudgetCurrent).delete()
 
-        with Session(self._engine) as session, session.begin():
+        with Session(self.engine) as session, session.begin():
             importer = SQLTableImporter(session)
             adapter = SQLTableImportAdapter(AllBudgetCurrent)
             adapter.column_names = [
@@ -74,18 +72,35 @@ class ExtractExcelLoadTable(OPSTask):
                 importer, {adapter.get_name(): non_empty_data_rows}, file_type=DB_SQL
             )
 
-        # # add task metadata
-        # with Session(self._engine) as session, session.begin():
-        #     session.add(
-        #         ETLTaskStatus(
-        #             workflow_name="etl_data_from_excel",
-        #             task_name="extract_excel_load_table",
-        #             run_at=self.run_date,
-        #             task_meta=self._task_meta,
-        #         )
-        #     )
-
         self._task_complete = True
+
+
+@ExtractExcelLoadTable.event_handler(luigi.Event.SUCCESS)
+def success(task):
+    with Session(task.engine) as session, session.begin():
+        session.add(
+            ETLTaskStatus(
+                workflow_name="etl_data_from_excel",
+                task_name=task.task_module,
+                run_at=task.run_date,
+                task_meta=task.task_meta,
+                status="SUCCESS",
+            )
+        )
+
+
+@ExtractExcelLoadTable.event_handler(luigi.Event.FAILURE)
+def fail(task):
+    with Session(task.engine) as session, session.begin():
+        session.add(
+            ETLTaskStatus(
+                workflow_name="etl_data_from_excel",
+                task_name=task.task_module,
+                run_at=task.run_date,
+                task_meta=task.task_meta,
+                status="FAIL",
+            )
+        )
 
 
 if __name__ == "__main__":
