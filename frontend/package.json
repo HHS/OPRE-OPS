@@ -20,7 +20,7 @@
     "react-dom": "18.2.0",
     "react-markdown": "^8.0.5",
     "react-redux": "8.0.5",
-    "react-router-dom": "6.5.0",
+    "react-router-dom": "6.8.1",
     "react-scripts": "5.0.1",
     "react-select": "5.7.0",
     "sass": "1.57.1",
