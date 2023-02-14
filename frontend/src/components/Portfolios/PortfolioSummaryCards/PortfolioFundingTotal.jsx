@@ -5,9 +5,14 @@ const PortfolioFundingTotal = () => {
     const portfolioBudget = useSelector((state) => state.portfolioBudgetSummary.portfolioBudget);
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
 
-    const headerText = `FY ${fiscalYear.value} Total Budget`;
+    const headerText = `FY ${fiscalYear.value} Budget`;
 
-    return <CurrencySummaryCard headerText={headerText} amount={portfolioBudget.total_funding.amount} />;
+    return (
+        <CurrencySummaryCard
+            headerText={headerText}
+            amount={portfolioBudget.total_funding.amount}
+        ></CurrencySummaryCard>
+    );
 };
 
 export default PortfolioFundingTotal;
