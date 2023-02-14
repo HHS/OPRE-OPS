@@ -5,6 +5,7 @@ import CANFundingBar from "../CANFundingBar/CANFundingBar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import Tag from "../../UI/Tag/Tag";
+import { calculatePercent } from "../../../helpers/utils";
 
 const CANFundingYTD = ({
     fiscalYear = "9999",
@@ -13,24 +14,20 @@ const CANFundingYTD = ({
     expected_funding = "0",
     className = "",
 }) => {
-    const calculatePercent = (value) => {
-        return (value / total_funding) * 100;
-    };
-
     const data = [
         {
             id: 1,
             label: `FY ${fiscalYear} Funding Received YTD`,
             value: current_funding,
             color: "#264a64",
-            percent: `${calculatePercent(current_funding)}%`,
+            percent: `${calculatePercent(current_funding, total_funding)}%`,
         },
         {
             id: 2,
             label: `FY ${fiscalYear} Funding Expected`,
             value: expected_funding,
             color: "#a1d0be",
-            percent: `${calculatePercent(expected_funding)}%`,
+            percent: `${calculatePercent(expected_funding, total_funding)}%`,
         },
     ];
     const [activeId, setActiveId] = React.useState(0);

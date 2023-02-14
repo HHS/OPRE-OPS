@@ -8,6 +8,7 @@ import { ResponsiveDonutWithInnerPercent } from "../../UI/ResponsiveDonutWithInn
 import CustomLayerComponent from "../../UI/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
+import { calculatePercent } from "../../../helpers/utils";
 
 const CanCard = ({ can, fiscalYear }) => {
     /* Styling */
@@ -19,37 +20,34 @@ const CanCard = ({ can, fiscalYear }) => {
     const [percent, setPercent] = useState("");
     const [hoverId, setHoverId] = useState("");
 
-    const calculatePercent = (value) => {
-        return (value / canFundingData.total_funding) * 100;
-    };
     const canFunds = [
         {
             id: 1,
             label: "Available",
             value: canFundingData.available_funding || 0,
             color: "#C07B96",
-            percent: `${calculatePercent(canFundingData.available_funding)}%`,
+            percent: `${calculatePercent(canFundingData.available_funding, canFundingData?.total_funding)}%`,
         },
         {
             id: 2,
             label: "Planned",
             value: canFundingData.planned_funding || 0,
             color: "#336A90",
-            percent: `${calculatePercent(canFundingData.planned_funding)}%`,
+            percent: `${calculatePercent(canFundingData.planned_funding, canFundingData?.total_funding)}%`,
         },
         {
             id: 3,
             label: "Executing",
             value: canFundingData.in_execution_funding || 0,
             color: "#E5A000",
-            percent: `${calculatePercent(canFundingData.in_execution_funding)}%`,
+            percent: `${calculatePercent(canFundingData.in_execution_funding, canFundingData?.total_funding)}%`,
         },
         {
             id: 4,
             label: "Obligated",
             value: canFundingData.obligated_funding || 0,
             color: "#3E8D61",
-            percent: `${calculatePercent(canFundingData.obligated_funding)}%`,
+            percent: `${calculatePercent(canFundingData.obligated_funding, canFundingData?.total_funding)}%`,
         },
     ];
     useEffect(() => {
