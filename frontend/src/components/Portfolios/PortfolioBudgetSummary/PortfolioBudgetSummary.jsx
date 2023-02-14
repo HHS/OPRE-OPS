@@ -45,17 +45,11 @@ const PortfolioBudgetSummary = ({ portfolioId }) => {
                     The graph below shows a summary of the total budget for this portfolio, not including additional
                     funding from other portfolios.
                 </p>
-                <ul className="usa-card-group">
-                    <li className={fundingCard}>
-                        <PortfolioFundingTotal portfolioId={portfolio.id} />
-                    </li>
-                    <li className={fundingCard}>
-                        <PortfolioNewFunding portfolioId={portfolio.id} />
-                    </li>
-                    <li className={fundingCard}>
-                        <PortfolioCarryForwardFunding portfolioId={portfolio.id} />
-                    </li>
-                </ul>
+                <div className="display-flex flex-justify">
+                    <PortfolioFundingTotal portfolioId={portfolio.id} />
+                    {/* <PortfolioNewFunding portfolioId={portfolio.id} />
+                    <PortfolioCarryForwardFunding portfolioId={portfolio.id} /> */}
+                </div>
             </section>
             <section>
                 <div className="display-flex flex-justify">
