@@ -36,24 +36,17 @@ html {
     --feedback-disabled-light: #e6e6e6;
     --feedback-disabled: #c9c9c9;
     --feedback-disabled-dark: #adadad;
-    --dataviz-blue: #32698f;
-    --dataviz-light-green: #a0cfbd;
-    --dataviz-red: #b40808;
-    --dataviz-yellow: #e6a100;
-    --dataviz-brown: #6e3230;
-    --dataviz-dark-pink: #c07c96;
-    --dataviz-dark-blue: #264a64;
-    --dataviz-dark-green: #3e8e62;
-    --dataviz-orange: #d67d24;
-    --dataviz-teal: #419195;
-    --dataviz-level-1: #c07b96;
-    --dataviz-level-2: #336a90;
-    --dataviz-level-3: #e5a000;
-    --dataviz-level-4: #3e8d61;
-    --line-graph-level-1: #429195;
-    --line-graph-level-2: #a1d0be;
-    --line-graph-level-6: #90be6d;
-    --line-graph-level-7: #264a64;
+    --data-viz-primary-1: #754295;
+    --data-viz-primary-2: #90be6d;
+    --data-viz-primary-3: #d67625;
+    --data-viz-primary-4: #264a64;
+    --data-viz-primary-5: #c07b96;
+    --data-viz-primary-6: #3e8d61;
+    --data-viz-primary-7: #6f3331;
+    --data-viz-primary-8: #e5a000;
+    --data-viz-primary-9: #b50909;
+    --data-viz-primary-10: #a1d0be;
+    --data-viz-primary-11: #336a90;
 }
 
 $themeColors: (
@@ -83,24 +76,17 @@ $themeColors: (
     "feedback-disabled-light": var(--feedback-disabled-light),
     "feedback-disabled": var(--feedback-disabled),
     "feedback-disabled-dark": var(--feedback-disabled-dark),
-    "dataviz-blue": var(--dataviz-blue),
-    "dataviz-light-green": var(--dataviz-light-green),
-    "dataviz-red": var(--dataviz-red),
-    "dataviz-yellow": var(--dataviz-yellow),
-    "dataviz-brown": var(--dataviz-brown),
-    "dataviz-dark-pink": var(--dataviz-dark-pink),
-    "dataviz-dark-blue": var(--dataviz-dark-blue),
-    "dataviz-dark-green": var(--dataviz-dark-green),
-    "dataviz-orange": var(--dataviz-orange),
-    "dataviz-teal": var(--dataviz-teal),
-    "dataviz-level-1": var(--dataviz-level-1),
-    "dataviz-level-2": var(--dataviz-level-2),
-    "dataviz-level-3": var(--dataviz-level-3),
-    "dataviz-level-4": var(--dataviz-level-4),
-    "line-graph-level-1": var(--line-graph-level-1),
-    "line-graph-level-2": var(--line-graph-level-2),
-    "line-graph-level-6": var(--line-graph-level-6),
-    "line-graph-level-7": var(--line-graph-level-7),
+    "data-viz-primary-1": var(--data-viz-primary-1),
+    "data-viz-primary-2": var(--data-viz-primary-2),
+    "data-viz-primary-3": var(--data-viz-primary-3),
+    "data-viz-primary-4": var(--data-viz-primary-4),
+    "data-viz-primary-5": var(--data-viz-primary-5),
+    "data-viz-primary-6": var(--data-viz-primary-6),
+    "data-viz-primary-7": var(--data-viz-primary-7),
+    "data-viz-primary-8": var(--data-viz-primary-8),
+    "data-viz-primary-9": var(--data-viz-primary-9),
+    "data-viz-primary-10": var(--data-viz-primary-10),
+    "data-viz-primary-11": var(--data-viz-primary-11),
 );
 
 @each $name, $color in $themeColors {

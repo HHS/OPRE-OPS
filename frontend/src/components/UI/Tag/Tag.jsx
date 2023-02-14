@@ -7,21 +7,21 @@ const Tag = ({ tagStyle = "", text = "", active = false, label = "" }) => {
     if (tagStyle === "darkTextLightBackground") {
         tagClasses = `${styles.tag} bg-brand-neutral-lightest text-brand-neutral-dark font-12px padding-05`;
     } else if (tagStyle === "lightTextDarkBackground") {
-        tagClasses = `${styles.tag} bg-brand-dataviz-dark-blue text-brand-neutral-lightest font-12px padding-05`;
+        tagClasses = `${styles.tag} bg-brand-dataviz-primary-4 text-brand-neutral-lightest font-12px padding-05`;
     }
 
     if (active && label === "Available") {
-        activeClass = "bg-brand-dataviz-level-1 text-white fake-bold";
+        activeClass = "bg-brand-data-viz-primary-5 text-white fake-bold";
     } else if (active && label === "Planned") {
-        activeClass = "bg-brand-dataviz-level-2 text-white fake-bold";
+        activeClass = "bg-brand-data-viz-primary-11 text-white fake-bold";
     } else if (active && label === "Executing") {
-        activeClass = "bg-brand-dataviz-level-3 fake-bold";
+        activeClass = "bg-brand-data-viz-primary-8 fake-bold";
     } else if (active && label === "Obligated") {
-        activeClass = "bg-brand-dataviz-level-4 text-white fake-bold";
+        activeClass = "bg-brand-data-viz-primary-6 text-white fake-bold";
     } else if (active && label.includes("Funding Received")) {
-        activeClass = "bg-brand-line-graph-level-7 text-white fake-bold";
+        activeClass = "bg-brand-data-viz-primary-4 text-white fake-bold";
     } else if (active && label.includes("Funding Expected")) {
-        activeClass = "bg-brand-line-graph-level-2 fake-bold";
+        activeClass = "bg-brand-data-viz-primary-10 fake-bold";
     }
 
     return <span className={`${tagClasses} ${activeClass}`}>{text}</span>;
