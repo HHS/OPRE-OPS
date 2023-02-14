@@ -1,6 +1,6 @@
 .barBox {
     display: flex;
-    height: 25px;
+    height: 15px;
 }
 
 .leftBar {
@@ -10,7 +10,7 @@
     border-top-left-radius: 4px;
 
     &:hover {
-        transform: scaleY(1.2);
+        transform: scaleY(1.4);
     }
 }
 
@@ -21,6 +21,6 @@
     border-top-right-radius: 4px;
 
     &:hover {
-        transform: scaleY(1.2);
+        transform: scaleY(1.4);
     }
 }
