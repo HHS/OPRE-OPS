@@ -7,26 +7,20 @@ import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import Tag from "../../UI/Tag/Tag";
 import { calculatePercent } from "../../../helpers/utils";
 
-const CANFundingYTD = ({
-    fiscalYear = "9999",
-    total_funding = "0",
-    current_funding = "0",
-    expected_funding = "0",
-    className = "",
-}) => {
+const CANFundingYTD = ({ total_funding = "0", current_funding = "0", expected_funding = "0", className = "" }) => {
     const data = [
         {
             id: 1,
-            label: `FY ${fiscalYear} Funding Received YTD`,
+            label: "Funding Received YTD",
             value: current_funding,
-            color: "#264a64",
+            color: "#D47D2D",
             percent: `${calculatePercent(current_funding, total_funding)}%`,
         },
         {
             id: 2,
-            label: `FY ${fiscalYear} Funding Expected`,
+            label: "Funding Expected",
             value: expected_funding,
-            color: "#a1d0be",
+            color: "#A9AEB1",
             percent: `${calculatePercent(expected_funding, total_funding)}%`,
         },
     ];

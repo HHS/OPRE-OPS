@@ -19,9 +19,9 @@ const Tag = ({ tagStyle = "", text = "", active = false, label = "" }) => {
     } else if (active && label === "Obligated") {
         activeClass = "bg-brand-data-viz-primary-6 text-white fake-bold";
     } else if (active && label.includes("Funding Received")) {
-        activeClass = "bg-brand-data-viz-primary-4 text-white fake-bold";
+        activeClass = "bg-brand-data-viz-primary-3 text-white fake-bold";
     } else if (active && label.includes("Funding Expected")) {
-        activeClass = "bg-brand-data-viz-primary-10 fake-bold";
+        activeClass = "bg-brand-neutral-lighter text-white fake-bold";
     }
 
     return <span className={`${tagClasses} ${activeClass}`}>{text}</span>;

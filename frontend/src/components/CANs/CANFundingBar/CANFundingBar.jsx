@@ -20,12 +20,13 @@ const CANFundingBar = ({ data = [], setActiveId = () => {} }) => {
         <div className={styles.barBox}>
             <div
                 className={styles.leftBar}
-                style={{ flex: ratio }}
+                style={{ flex: ratio, backgroundColor: data[0].color }}
                 onMouseEnter={() => setActiveId(data[0].id)}
                 onMouseLeave={() => setActiveId(0)}
             />
             <div
                 className={styles.rightBar}
+                style={{ flex: 1 - ratio, backgroundColor: data[1].color }}
                 onMouseEnter={() => setActiveId(data[1].id)}
                 onMouseLeave={() => setActiveId(0)}
             />
