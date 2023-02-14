@@ -64,10 +64,10 @@ const CANFundingYTD = ({ total_funding = "0", current_funding = "0", expected_fu
                 displayType={"text"}
                 thousandSeparator={true}
                 prefix={"$ "}
-                renderText={(value) => <span className="text-semibold font-sans-lg margin-bottom-105">{value}</span>}
+                renderText={(value) => <span className="text-semibold font-sans-lg">{value}</span>}
             />
 
-            <div className={styles.barBox}>
+            <div className={`margin-top-2 ${styles.barBox}`}>
                 <CANFundingBar setActiveId={setActiveId} data={data} />
             </div>
 
