@@ -26,7 +26,7 @@ const CANFundingBar = ({ data = [], setActiveId = () => {} }) => {
             />
             <div
                 className={styles.rightBar}
-                style={{ flex: 1 - ratio, backgroundColor: data[1].color }}
+                style={{ backgroundColor: data[1].color }}
                 onMouseEnter={() => setActiveId(data[1].id)}
                 onMouseLeave={() => setActiveId(0)}
             />
