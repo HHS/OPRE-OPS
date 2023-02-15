@@ -7,4 +7,6 @@ Limit the number of concurrent sessions for each [Assignment: organization-defin
 
 ### OPS Implementation
 
+This control is not selected by FedRAMP nor HHS.
+
 HHS/OPRE-OPS#659

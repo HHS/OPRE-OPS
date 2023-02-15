@@ -5,4 +5,4 @@ Automatically terminate a user session after [Assignment: organization-defined c
 
 ### OPS Implementation
 
-The OPS application will automatically log out users after 30 minutes of inactivity. HHS/OPRE-OPS#443
+The OPS application will automatically log out users after 15 minutes of inactivity. HHS/OPRE-OPS#443

@@ -3,15 +3,26 @@
 
 The information system:
 
-a. Enforces a limit of [five (5)] consecutive invalid logon attempts by a user during a [120-minute time period]; and
+a. Enforces a limit of five (5) consecutive invalid logon attempts by a user during a 120-minute time period; and
 
-b. Automatically [locks the account and delays the next logon prompt for 15 minutes or until released by an administrator] when the maximum number of unsuccessful attempts is exceeded.
+For all two-factor authentications using a PIV card, configure the maximum allowable login attempts as specified by the type of card and trusting certificate. The maximum allowed PIN attempts for each PIV card stock is specified below:
+     • Fifteen (15) attempts – for 64k card stock in either Cybertrust / Verizon Business CA or those converted to Entrust     certificates (64k card stock only); and
+     •Ten (10) attempts – for modern 128k cards issued by the Entrust CA.]; and
+
+b. When the maximum number of unsuccessful attempts is exceeded, automatically enforces the following: 
+	Low - locks the account/node for 15 minutes.
+    Moderate - locks the account/node for 15 minutes
+    High - locks the account/node until released by an administrator.
+
+Automatically [locks the account and delays the next logon prompt for 15 minutes or until released by an administrator] when the maximum number of unsuccessful attempts is exceeded.
+
+Note: The maximum Personal Identification Number (PIN) attempts allowed for PIV cards is specified by policies implemented within the Smart Card Management System (SCMS) during issuance. These policies vary depending on a combination of card stock (64k, 128k), and certificate issuer for HHS (Cybertrust/Verizon Business CA or Entrust) and type of credential (PIV, RLA, ALT)
 
 ### OPS Implementation
 
-	TODO: Is the time period or number of login attemps configurable on login.gov?  HHS may have different prescriptive values?
-	a. This is inherited from login.gov
+TODO: Is the time period or number of login attemps configurable on login.gov?  HHS may have different prescriptive values?  Is there any inheritence from login.gov ?
 
+	
 
 #### Related Files
 a. Evidence of login attempts (examples - TODO: update these once determined.)
