@@ -20,7 +20,7 @@ const CanCard = ({ can, fiscalYear }) => {
     const [percent, setPercent] = useState("");
     const [hoverId, setHoverId] = useState("");
 
-    const canFunds = [
+    const data = [
         {
             id: 1,
             label: "Available",
@@ -63,7 +63,7 @@ const CanCard = ({ can, fiscalYear }) => {
         };
     }, [can.id, fiscalYear]);
 
-    const BudgetItem = ({ id, label, value, color, percent }) => {
+    const LegendItem = ({ id, label, value, color, percent }) => {
         const isGraphActive = hoverId === id;
         return (
             <div className="grid-row margin-top-2">
@@ -138,8 +138,8 @@ const CanCard = ({ can, fiscalYear }) => {
                         </h4>
                         <div className="display-flex flex-justify">
                             <div className="maxw-card-lg font-12px">
-                                {canFunds.map((canFundItem) => (
-                                    <BudgetItem
+                                {data.map((canFundItem) => (
+                                    <LegendItem
                                         key={canFundItem.id}
                                         id={canFundItem.id}
                                         label={canFundItem.label}
@@ -157,7 +157,7 @@ const CanCard = ({ can, fiscalYear }) => {
                                 role="img"
                             >
                                 <ResponsiveDonutWithInnerPercent
-                                    data={canFunds}
+                                    data={data}
                                     width={175}
                                     height={175}
                                     margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
