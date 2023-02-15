@@ -59,7 +59,7 @@ const PortfolioFundingTotal = ({ portfolioId }) => {
                     />
                 </div>
                 <div className="grid-col-1">
-                    <Tag tagStyle="darkTextLightBackground" text={percent} label={label} active={isGraphActive} />
+                    <Tag tagStyle="darkTextWhiteBackground" text={percent} label={label} active={isGraphActive} />
                 </div>
             </div>
         );
