@@ -19,6 +19,8 @@ const CanCard = ({ can, fiscalYear }) => {
     const [canFundingData, setCanFundingDataLocal] = useState({});
     const [percent, setPercent] = useState("");
     const [hoverId, setHoverId] = useState("");
+    // generate a random number between 0 and 100
+    const randomCanId = Math.floor(Math.random() * 100);
 
     const data = [
         {
@@ -94,7 +96,7 @@ const CanCard = ({ can, fiscalYear }) => {
     };
 
     return (
-        <section>
+        <>
             <div className={sectionClasses}>
                 <dl className={`margin-0 ${leftMarginClasses}`}>
                     <div>
@@ -121,9 +123,9 @@ const CanCard = ({ can, fiscalYear }) => {
                 <div className={`grid-row  padding-y-205 padding-left-205 padding-right-05 ${style.rightContainer}`}>
                     {/*NOTE: LEFT SIDE */}
                     <div className="grid-col-5">
-                        <h4 className="font-sans-3xs text-normal text-brand-neutral">
+                        <h3 className="font-sans-3xs text-normal text-brand-neutral">
                             FY {fiscalYear} CAN Total Funding
-                        </h4>
+                        </h3>
                         <CANFundingYTD
                             className="margin-top-5"
                             total_funding={canFundingData?.total_funding}
@@ -133,9 +135,9 @@ const CanCard = ({ can, fiscalYear }) => {
                     </div>
                     {/* NOTE: RIGHT SIDE */}
                     <div className="grid-col margin-left-5">
-                        <h4 className="font-sans-3xs text-normal text-brand-neutral margin-bottom-4">
+                        <h3 className="font-sans-3xs text-normal text-brand-neutral margin-bottom-4">
                             FY {fiscalYear} CAN Budget Status
-                        </h4>
+                        </h3>
                         <div className="display-flex flex-justify">
                             <div className="maxw-card-lg font-12px">
                                 {data.map((canFundItem) => (
@@ -151,7 +153,7 @@ const CanCard = ({ can, fiscalYear }) => {
                             </div>
 
                             <div
-                                id="can-graph"
+                                id={`can-graph-${randomCanId}`}
                                 className="width-card height-card margin-right-2 margin-top-neg-2"
                                 aria-label="This is a Donut Chart that displays the percent by budget line status in the center."
                                 role="img"
@@ -164,14 +166,14 @@ const CanCard = ({ can, fiscalYear }) => {
                                     setPercent={setPercent}
                                     setHoverId={setHoverId}
                                     CustomLayerComponent={CustomLayerComponent(percent)}
-                                    container_id="can-graph"
+                                    container_id={`can-graph-${randomCanId}`}
                                 />
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
+        </>
     );
 };
 

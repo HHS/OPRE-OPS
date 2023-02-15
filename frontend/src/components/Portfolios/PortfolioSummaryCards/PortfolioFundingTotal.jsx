@@ -67,7 +67,7 @@ const PortfolioFundingTotal = ({ portfolioId }) => {
 
     return (
         <CurrencySummaryCard headerText={headerText} amount={portfolioBudget.total_funding.amount}>
-            <div className="margin-top-2">
+            <div id="currency-summary-card" className="margin-top-2">
                 <CANFundingBar setActiveId={setActiveId} data={data} />
             </div>
 
