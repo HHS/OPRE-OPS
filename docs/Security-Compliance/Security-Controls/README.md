@@ -30,7 +30,8 @@
 1. [au-2](au-2/index.md)
 2. [au-3](au-3/index.md)
 3. [au-3-1](au-3-1/index.md)
-4. [au-11](au-11/index.md)
+4. [au-4](au-4/index.md)
+5. [au-11](au-11/index.md)
 
 ### Identification and Authentication
 
