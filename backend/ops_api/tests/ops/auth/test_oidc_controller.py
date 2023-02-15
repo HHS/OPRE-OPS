@@ -1,7 +1,7 @@
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.serialization import Encoding, NoEncryption, PrivateFormat
-from ops.utils.auth import create_oauth_jwt
+from ops_api.ops.utils.auth import create_oauth_jwt
 
 
 def test_auth_post_fails(client):

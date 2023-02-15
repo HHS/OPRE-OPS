@@ -8,7 +8,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from flask import current_app
 from flask_jwt_extended import create_access_token
 from models.users import User
-from ops.utils.auth import create_oauth_jwt
+from ops_api.ops.utils.auth import create_oauth_jwt
 
 key = rsa.generate_private_key(backend=default_backend(), public_exponent=65537, key_size=2048)
 

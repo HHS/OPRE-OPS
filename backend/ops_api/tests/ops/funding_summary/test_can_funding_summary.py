@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pytest
 from models.cans import CAN
-from ops.utils.cans import get_can_funding_summary
+from ops_api.ops.utils.cans import get_can_funding_summary
 
 
 @pytest.mark.usefixtures("app_ctx")

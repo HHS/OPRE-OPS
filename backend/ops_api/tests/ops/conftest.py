@@ -1,4 +1,3 @@
-import os
 import subprocess
 
 # from datetime import date, datetime
@@ -13,9 +12,9 @@ from tests.ops.auth_client import AuthClient
 
 @pytest.mark.usefixtures("db_service")
 @pytest.fixture()
-def app():
-    app
-    yield create_app({"TESTING": True})
+def app(db_service):
+    app = create_app({"TESTING": True})
+    yield app
 
 
 @pytest.fixture()
@@ -56,23 +55,30 @@ def is_loaded(db):
 def db_service(docker_ip, docker_services):
     """Ensure that DB is up and responsive."""
 
-    connection_string = f"postgresql://postgres:local_password@{docker_ip}:5433/postgres"  # pragma: allowlist secret
+    connection_string = f"postgresql://postgres:local_password@{docker_ip}:5432/postgres"  # pragma: allowlist secret
     engine = create_engine(connection_string, echo=True, future=True)
-    docker_services.wait_until_responsive(timeout=40.0, pause=1.0, check=lambda: is_responsive(engine))
+    docker_services.wait_until_responsive(timeout=40.0, pause=1.0, check=lambda: is_loaded(engine))
     return engine
 
 
 # If you need the 'test container' to stick around, change this to return False
 @pytest.fixture(scope="session")
 def docker_cleanup():
-    return True
+    # return False
+    return "down -v"
 
 
+# Overwrite the default 'docker-compose' command with the v2 'docker compose' command.
 @pytest.fixture(scope="session")
-def docker_compose_file(pytestconfig):
-    compose_file = os.path.join(str(pytestconfig.rootdir), "docker-compose.yml")
-    print(f"docker-compose-path: {compose_file}")
-    return compose_file
+def docker_compose_command():
+    return "docker compose"
+
+
+# @pytest.fixture(scope="session")
+# def docker_compose_file(pytestconfig):
+#     compose_file = os.path.join(str(pytestconfig.rootdir),"../../", "docker-compose.yml")
+#     print(f"docker-compose-path: {compose_file}")
+#     return compose_file
 
 
 # def pytest_addoption(parser):
