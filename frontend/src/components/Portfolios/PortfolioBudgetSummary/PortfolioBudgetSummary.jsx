@@ -47,18 +47,7 @@ const PortfolioBudgetSummary = ({ portfolioId }) => {
                 </p>
                 <div className="display-flex flex-justify">
                     <PortfolioFundingTotal portfolioId={portfolio.id} />
-                    {/* <PortfolioNewFunding portfolioId={portfolio.id} />
-                    <PortfolioCarryForwardFunding portfolioId={portfolio.id} /> */}
-                </div>
-            </section>
-            <section>
-                <div className="display-flex flex-justify">
-                    <div>
-                        <PortfolioFundingByBudgetStatus portfolioId={portfolio.id} />
-                    </div>
-                    <div>
-                        <PortfolioFundingByCAN portfolioId={portfolio.id} />
-                    </div>
+                    <PortfolioFundingByBudgetStatus portfolioId={portfolio.id} />
                 </div>
             </section>
         </div>
