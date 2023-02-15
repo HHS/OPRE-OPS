@@ -1,5 +1,5 @@
-from ops.models.cans import CAN
 import pytest
+from models.cans import CAN
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -9,10 +9,7 @@ def test_can_retrieve(loaded_db):
     assert can is not None
     assert can.number == "G990205"
     assert can.description == "Secondary Analyses Data On Child Care & Early Edu"
-    assert (
-        can.purpose
-        == "Secondary Analyses of Child Care and Early Education Data (2022)"
-    )
+    assert can.purpose == "Secondary Analyses of Child Care and Early Education Data (2022)"
     assert can.nickname == "ABCD"
     assert can.arrangement_type_id == 2
     assert can.authorizer_id == 1

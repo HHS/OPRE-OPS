@@ -96,7 +96,7 @@ the runner to execute `flake8`.
 To run linting...
 
 ```shell
-cd ./backend/
+cd ./backend/ops_api
 pipenv run nox -s lint
 ```
 
@@ -104,7 +104,7 @@ The linter may complain about violations in the [Black](https://black.readthedoc
 fix these issues, run...
 
 ```shell
-cd ./backend/
+cd ./backend/ops_api
 pipenv run nox -s black
 ```
 

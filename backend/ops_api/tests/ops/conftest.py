@@ -1,34 +1,27 @@
-from datetime import date
-from datetime import datetime
+from datetime import date, datetime
 
-from ops import create_app
-from ops.models.base import db
-from ops.models.cans import Agreement
-from ops.models.cans import BudgetLineItem
-from ops.models.cans import BudgetLineItemStatus
-from ops.models.cans import CAN
-from ops.models.cans import CANFiscalYear
-from ops.models.cans import CANFiscalYearCarryOver
-from ops.models.cans import FundingPartner
-from ops.models.cans import FundingSource
-from ops.models.portfolios import Division
-from ops.models.portfolios import Portfolio
-from ops.models.portfolios import portfolio_team_leaders
-from ops.models.portfolios import PortfolioUrl
-from ops.models.research_projects import MethodologyType
-from ops.models.research_projects import PopulationType
-from ops.models.research_projects import ResearchProject
-from ops.models.users import User
 import pytest
+from models.cans import (
+    CAN,
+    Agreement,
+    BudgetLineItem,
+    BudgetLineItemStatus,
+    CANFiscalYear,
+    CANFiscalYearCarryOver,
+    FundingPartner,
+    FundingSource,
+)
+from models.portfolios import Division, Portfolio, PortfolioUrl, portfolio_team_leaders
+from models.research_projects import MethodologyType, PopulationType, ResearchProject
+from models.users import User
+from ops_api.ops import create_app, db
 
 TEST_DB_NAME = "testdb"
 
 
 @pytest.fixture()
 def app():
-    app = create_app({"TESTING": True})
-    # set up here
-    yield app  # tear down here
+    yield create_app({"TESTING": True})
 
 
 @pytest.fixture()

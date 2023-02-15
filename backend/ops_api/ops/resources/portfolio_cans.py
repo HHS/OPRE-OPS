@@ -1,11 +1,9 @@
 from typing import List, Optional
 
-from flask import jsonify
-from flask import request
-from flask import Response
-from ops.base_views import BaseItemAPI
-from ops.models.base import BaseModel
-from ops.models.cans import CAN
+from flask import Response, jsonify, request
+from models.base import BaseModel
+from models.cans import CAN
+from ops_api.ops.base_views import BaseItemAPI
 
 
 class PortfolioCansAPI(BaseItemAPI):
@@ -13,9 +11,7 @@ class PortfolioCansAPI(BaseItemAPI):
         super().__init__(model)
 
     def _get_item(self, id: int, year: Optional[int] = None) -> List[CAN]:
-        can_fiscal_year_query = self.model.query.filter(
-            self.model.can.has(managing_portfolio_id=id)
-        )
+        can_fiscal_year_query = self.model.query.filter(self.model.can.has(managing_portfolio_id=id))
 
         if year:
             can_fiscal_year_query = can_fiscal_year_query.filter_by(fiscal_year=year)

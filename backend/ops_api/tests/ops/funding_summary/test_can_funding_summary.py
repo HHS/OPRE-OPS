@@ -1,9 +1,9 @@
 import datetime
 from decimal import Decimal
 
-from ops.models.cans import CAN
-from ops.utils.cans import get_can_funding_summary
 import pytest
+from models.cans import CAN
+from ops.utils.cans import get_can_funding_summary
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -24,8 +24,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db):
             "managing_research_project_id": None,
             "nickname": "CCE",
             "number": "G99WRGB",
-            "purpose": "Secondary Analyses of Child Care and Early Education Data "
-            "(2022)",
+            "purpose": "Secondary Analyses of Child Care and Early Education Data " "(2022)",
         },
         "carry_over_funding": Decimal("15.00"),
         "current_funding": Decimal("5000000.00"),
@@ -56,8 +55,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db):
             "managing_research_project_id": None,
             "nickname": "CCE",
             "number": "G99WRGB",
-            "purpose": "Secondary Analyses of Child Care and Early Education Data "
-            "(2022)",
+            "purpose": "Secondary Analyses of Child Care and Early Education Data " "(2022)",
         },
         "carry_over_funding": Decimal("10.00"),
         "current_funding": Decimal("4000000.00"),

@@ -1,5 +1,5 @@
-from ops.models.cans import CANFiscalYear
 import pytest
+from models.cans import CANFiscalYear
 
 
 @pytest.mark.usefixtures("app_ctx")

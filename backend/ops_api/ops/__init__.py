@@ -2,14 +2,12 @@ import logging.config
 import os
 from typing import Optional
 
-from flask import Blueprint
-from flask import Flask
+from flask import Blueprint, Flask
 from flask_cors import CORS
-from ops.home_page.views import home
-from ops.models.base import db
-from ops.urls import register_api
-from ops.utils.auth import jwtMgr
-from ops.utils.auth import oauth
+from ops_api.ops.db import db
+from ops_api.ops.home_page.views import home
+from ops_api.ops.urls import register_api
+from ops_api.ops.utils.auth import jwtMgr, oauth
 
 
 def configure_logging() -> None:
@@ -37,7 +35,7 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     configure_logging()  # should be configured before any access to app.logger
     app = Flask(__name__)
     CORS(app)
-    app.config.from_object("ops.environment.default_settings")
+    app.config.from_object("ops_api.ops.environment.default_settings")
     if os.getenv("OPS_CONFIG"):
         app.config.from_envvar("OPS_CONFIG")
     app.config.from_prefixed_env()
@@ -47,9 +45,7 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
 
     app.register_blueprint(home)
 
-    api_bp = Blueprint(
-        "api", __name__, url_prefix=f"/api/{app.config.get('API_VERSION', 'v1')}"
-    )
+    api_bp = Blueprint("api", __name__, url_prefix=f"/api/{app.config.get('API_VERSION', 'v1')}")
     register_api(api_bp)
     app.register_blueprint(api_bp)
 
