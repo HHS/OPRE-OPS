@@ -7,7 +7,7 @@ const Tag = ({ tagStyle = "", text = "", active = false, label = "" }) => {
     if (tagStyle === "darkTextLightBackground") {
         tagClasses = `${styles.tag} bg-brand-neutral-lightest text-brand-neutral-dark font-12px padding-05`;
     } else if (tagStyle === "lightTextDarkBackground") {
-        tagClasses = `${styles.tag} bg-brand-dataviz-primary-4 text-brand-neutral-lightest font-12px padding-05`;
+        tagClasses = `${styles.tag} bg-brand-data-viz-primary-4 text-brand-neutral-lightest font-12px padding-05`;
     } else if (tagStyle === "darkTextWhiteBackground") {
         tagClasses = `${styles.tag} bg-white text-brand-neutral-dark font-12px padding-05`;
     }
