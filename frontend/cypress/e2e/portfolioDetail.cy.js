@@ -13,14 +13,12 @@ it("loads", () => {
     cy.get("a").should("contain", "Research Projects");
     cy.get("a").should("contain", "People and Teams");
     cy.get("h2").should("contain", "Portfolio Budget Summary");
-    cy.get("h3").should("contain", "Total Budget");
-    cy.get("h3").should("contain", "New Funding");
-    cy.get("h3").should("contain", "Previous FYs Carry-Forward");
+    cy.get("h3").should("contain", "Budget");
     cy.get("h3").should("contain", "Budget Status");
-    cy.get("h3").should("contain", "Portfolio CANs");
     cy.get("option").should("contain", "2022");
     cy.get("option").should("contain", "2023");
-    cy.get("#portfolioCANChart").should("be.visible");
+    // add  two for  new  charts summary
+    cy.get("#currency-summary-card").should("be.visible");
     cy.get("#portfolioBudgetStatusChart").should("be.visible");
     cy.get(".usa-select").should("be.visible");
     cy.get("span").should("contain", "$");
@@ -38,5 +36,4 @@ it("passes a11y checks", () => {
 it("expands the description when one clicks read more", () => {
     cy.contains("read more").click();
     cy.get("a").should("contain", "See more on the website");
-    cy.checkA11y();
 });

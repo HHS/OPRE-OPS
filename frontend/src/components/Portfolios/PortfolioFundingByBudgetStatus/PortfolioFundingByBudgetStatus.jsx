@@ -1,143 +1,120 @@
 import { useSelector } from "react-redux";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { library } from "@fortawesome/fontawesome-svg-core";
-import { faSquare } from "@fortawesome/free-solid-svg-icons";
+import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
-
+import CurrencyFormat from "react-currency-format";
 import { ResponsiveDonutWithInnerPercent } from "../../UI/ResponsiveDonutWithInnerPercent/ResponsiveDonutWithInnerPercent";
-
-import constants from "../../../constants";
 import CustomLayerComponent from "../../UI/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
-import CurrencyWithSmallCents from "../../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
-
-import cssClasses from "./styles.module.css";
+import Tag from "../../UI/Tag/Tag";
+import styles from "./styles.module.css";
 import RoundedBox from "../../UI/RoundedBox/RoundedBox";
 
-library.add(faSquare);
-
-const styles = {
-    root: {
-        width: 175,
-        height: 175,
-    },
-    cardBody: {
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "left",
-        borderColor: "#FFF",
-    },
-    cardGroup: {
-        display: "flex",
-        marginBottom: "7%",
-        flexDirection: "row",
-        justifyContent: "space-evenly",
-        width: "250px",
-    },
-    cardItem: {
-        display: "flex",
-        flex: "1",
-    },
-    iconStyle: {
-        verticalAlign: "middle",
-        paddingRight: "4px",
-    },
-};
-
-const PortfolioFundingByBudgetStatus = (props) => {
+const PortfolioFundingByBudgetStatus = ({ portfolioId }) => {
     const portfolioFunding = useSelector((state) => state.portfolioBudgetSummary.portfolioBudget);
-    const portfolioFundingChart = useSelector((state) => state.portfolioBudgetSummary.portfolioBudgetChart);
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
     const [percent, setPercent] = useState("");
+    const [hoverId, setHoverId] = useState("");
+    const totalFunding = portfolioFunding.total_funding.amount;
+    const data = [
+        {
+            id: 1,
+            label: "Available",
+            value: portfolioFunding.available_funding.amount || 0,
+            color: "#C07B96",
+            percent: Math.round(portfolioFunding.available_funding.percent) + "%",
+        },
+        {
+            id: 2,
+            label: "Planned",
+            value: portfolioFunding.planned_funding.amount || 0,
+            color: "#336A90",
+            percent: Math.round(portfolioFunding.planned_funding.percent) + "%",
+        },
+        {
+            id: 3,
+            label: "Executing",
+            value: portfolioFunding.in_execution_funding.amount || 0,
+            color: "#E5A000",
+            percent: Math.round(portfolioFunding.in_execution_funding.percent) + "%",
+        },
+        {
+            id: 4,
+            label: "Obligated",
+            value: portfolioFunding.obligated_funding.amount || 0,
+            color: "#3E8D61",
+            percent: Math.round(portfolioFunding.obligated_funding.percent) + "%",
+        },
+    ];
 
-    const cardBody = `padding-top-2 padding-left-4 ${styles.cardBody}`;
-
-    return (
-        <RoundedBox>
-            <div className={cardBody}>
-                <div className="padding-bottom-1">
-                    <h3 className="font-sans-3xs text-normal">FY {fiscalYear.value} Budget Status</h3>
+    const LegendItem = ({ id, label, value, color, percent }) => {
+        const isGraphActive = hoverId === id;
+        return (
+            <div className="grid-row margin-top-2">
+                <div className="grid-col-5">
+                    <div className="display-flex flex-align-center">
+                        <FontAwesomeIcon
+                            icon={faCircle}
+                            className={`height-1 width-1 margin-right-05`}
+                            style={{ color: color }}
+                        />
+                        <span className={isGraphActive ? "fake-bold" : undefined}>{label}</span>
+                    </div>
                 </div>
-                <div className="font-sans-3xs">
-                    <div style={styles.cardGroup}>
-                        <div style={styles.cardItem}>
-                            <span style={styles.iconStyle}>
-                                <FontAwesomeIcon icon={faSquare} style={{ color: constants.colors[0] }} />
-                            </span>
-                            <span>Planned</span>
-                        </div>
-                        <div style={styles.cardItem}>
-                            <CurrencyWithSmallCents
-                                amount={portfolioFunding.planned_funding.amount}
-                                dollarsClasses="font-sans-3xs"
-                                centsStyles={{ fontSize: "10px" }}
-                            />
-                        </div>
-                    </div>
-                    <div style={styles.cardGroup}>
-                        <div style={styles.cardItem}>
-                            <span style={styles.iconStyle}>
-                                <FontAwesomeIcon icon={faSquare} style={{ color: constants.colors[1] }} />
-                            </span>
-                            <span>In Execution</span>
-                        </div>
-                        <div style={styles.cardItem}>
-                            <CurrencyWithSmallCents
-                                amount={portfolioFunding.in_execution_funding.amount}
-                                dollarsClasses="font-sans-3xs"
-                                centsStyles={{ fontSize: "10px" }}
-                            />
-                        </div>
-                    </div>
-                    <div style={styles.cardGroup}>
-                        <div style={styles.cardItem}>
-                            <span style={styles.iconStyle}>
-                                <FontAwesomeIcon icon={faSquare} style={{ color: constants.colors[2] }} />
-                            </span>
-                            <span>Obligated</span>
-                        </div>
-                        <div style={styles.cardItem}>
-                            <CurrencyWithSmallCents
-                                amount={portfolioFunding.obligated_funding.amount}
-                                dollarsClasses="font-sans-3xs"
-                                centsStyles={{ fontSize: "10px" }}
-                            />
-                        </div>
-                    </div>
-                    <div style={styles.cardGroup}>
-                        <div style={styles.cardItem}>
-                            <span style={styles.iconStyle}>
-                                <FontAwesomeIcon icon={faSquare} style={{ color: constants.colors[3] }} />
-                            </span>
-                            <span>Remaining</span>
-                        </div>
-                        <div style={styles.cardItem}>
-                            <CurrencyWithSmallCents
-                                amount={portfolioFunding.available_funding.amount}
-                                dollarsClasses="font-sans-3xs"
-                                centsStyles={{ fontSize: "10px" }}
-                            />
-                        </div>
-                    </div>
+                <div className="grid-col-6">
+                    <CurrencyFormat
+                        value={value}
+                        displayType={"text"}
+                        thousandSeparator={true}
+                        prefix={"$ "}
+                        renderText={(value) => <span className={isGraphActive ? "fake-bold" : undefined}>{value}</span>}
+                    />
+                </div>
+                <div className="grid-col-1">
+                    <Tag tagStyle="darkTextWhiteBackground" text={percent} label={label} active={isGraphActive} />
                 </div>
             </div>
-            <div className={cssClasses.chartArea} id="portfolioBudgetStatusChart">
-                <div className="padding-top-4">
-                    <div
-                        style={styles.root}
-                        aria-label="This is a Donut Chart that displays the percent by budget line status in the center."
-                        role="img"
-                    >
-                        <ResponsiveDonutWithInnerPercent
-                            data={portfolioFundingChart}
-                            width={styles.root.width}
-                            height={styles.root.height}
-                            margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
-                            CustomLayerComponent={CustomLayerComponent(percent)}
-                            setPercent={setPercent}
-                            container_id="portfolioBudgetStatusChart"
+        );
+    };
+
+    return (
+        <RoundedBox className=" padding-y-205 padding-x-4 display-inline-block">
+            <h3 className="margin-0 margin-bottom-3 font-12px text-base-darker text-normal">
+                FY {fiscalYear.value} Budget Status
+            </h3>
+
+            <div className="display-flex flex-justify">
+                <div
+                    className={
+                        totalFunding > 0 ? `${styles.widthLegend} maxw-card-lg font-12px` : "width-card-lg font-12px"
+                    }
+                >
+                    {data.map((item) => (
+                        <LegendItem
+                            key={item.id}
+                            id={item.id}
+                            label={item.label}
+                            value={item.value}
+                            color={item.color}
+                            percent={item.percent}
                         />
-                    </div>
+                    ))}
+                </div>
+                <div
+                    id="portfolioBudgetStatusChart"
+                    className="width-card height-card margin-top-neg-2"
+                    aria-label="This is a Donut Chart that displays the percent by budget line status in the center."
+                    role="img"
+                >
+                    <ResponsiveDonutWithInnerPercent
+                        data={data}
+                        width={175}
+                        height={175}
+                        margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+                        setPercent={setPercent}
+                        setHoverId={setHoverId}
+                        CustomLayerComponent={CustomLayerComponent(percent)}
+                        container_id="portfolioBudgetStatusChart"
+                    />
                 </div>
             </div>
         </RoundedBox>
