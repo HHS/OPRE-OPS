@@ -7,9 +7,12 @@ The goal of these efforts is to help prevent unintended secret key leakage. Thou
 _See [secret key leakage post-mortem summary](https://hhsgov.sharepoint.com/sites/TANFDataPortalOFA/_layouts/15/Doc.aspx?sourcedoc={cbce2e75-17b2-4e70-b422-60d034fcd4af}&action=edit&wd=target%28Dev%20Notes.one%7C3dbb7d3a-694d-4f1c-a656-f907991c1f7d%2FSecret%20Key%20Leakage%20Post-Mortem%20Synthesis%7C0496800f-8810-4159-95e4-9fc605dc86d4%2F%29) for more details on how this strategy was informed._
 
 Herein the following is described:
-- [what secret keys are and how these can be leaked](#What-are-secret-keys-and-how-can-these-be-leaked)
-- [steps we are taking to minimize potential for secret key leakage](#Mitigation-practices)
-- [incident response protocol if secret keys are leaked or at risk of exposure](#Communication-protocol-if-secret-keys-are-leaked)
+- [Secret Key Management Strategy](#secret-key-management-strategy)
+  - [What are secret keys and how can these be leaked?](#what-are-secret-keys-and-how-can-these-be-leaked)
+  - [Mitigation practices](#mitigation-practices)
+    - [Manual steps](#manual-steps)
+    - [Automated steps](#automated-steps)
+  - [Communication protocol if secret keys are leaked](#communication-protocol-if-secret-keys-are-leaked)
 
 ## What are secret keys and how can these be leaked?
 
@@ -28,7 +31,7 @@ This may be updated over time, as additional or alternative solutions are adopte
 ### Manual steps
 - Use `git status` terminal command before any commits and pushes to github repo. This should help detect any secret key files that have been modified prior to `git commit`.
 
-- Use `pre-commit` [Hooks](https://pre-commit.com/) specifically [IBM Detect-Secrets](https://github.com/ibm/detect-secrets), which runs prior to commits, and does an extensive job of looking for specific secret types.
+- Use `pre-commit` [Hooks](https://pre-commit.com/) specifically [git-leaks](https://github.com/zricethezav/gitleaks), which runs prior to commits, and does an extensive job of looking for specific secret types.
 
 - Secret keys are to be retrieved from cloud.gov for local development purposes. Cloud.gov is a platform that requires these keys, and the dev team has access to the keys stored in the dev environment space. Therefore, this is a more secure approach for retrieving keys than relying on team members to share keys across other platforms/tools.
 
@@ -42,11 +45,13 @@ This may be updated over time, as additional or alternative solutions are adopte
 
 ### Automated steps
 
-- detect-secrets
+- [git-leaks](https://github.com/zricethezav/gitleaks)
+
+- [GitHub Native Secret Scanning](https://docs.github.com/en/developers/overview/secret-scanning)
 
 - `DJANGO_SECRET_KEY` is [now](https://github.com/raft-tech/TANF-app/pull/1151) automatically generated for initial deployments to Cloud.gov. This ensures that the key is not shared across any environments and never needs to be exposed to developers or stored outside of Cloud.gov.
 
-- The `JWT_KEY (JWT_CERT_TEST)` that is used for unit testing is [now](https://github.com/raft-tech/TANF-app/pull/1243) dynamically generated to allow us to reduce the number of keys stored in CI/CD environment variables.
+- `JWT_PRIVATE_KEY` TODO: say something
 
 
 ## Communication protocol if secret keys are leaked
