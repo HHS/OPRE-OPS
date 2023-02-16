@@ -111,7 +111,7 @@ const CanCard = ({ can, fiscalYear }) => {
                         <dt className="margin-0 text-base-darker">Appropriation</dt>
                         <dd className="text-semibold margin-0">
                             {/* TODO: Get value from backend */}
-                            {can.appropriation_date ? can.appropriation_date : "99/99/9999"} ({can.appropriation_term}{" "}
+                            {can.appropriation_date || "---"} ({can.appropriation_term}{" "}
                             {can.appropriation_term > 1 ? "years" : "year"})
                         </dd>
                     </div>
