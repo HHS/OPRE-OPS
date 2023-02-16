@@ -28,9 +28,11 @@ def client(app, loaded_db):
 def auth_client(app):
     private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     pem_public_key = private_key.public_key().public_bytes(
-        encoding=serialization.Encoding.PEM, format=serialization.PublicFormat.SubjectPublicKeyInfo
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
     )
     app.config.update(JWT_PRIVATE_KEY=private_key, JWT_PUBLIC_KEY=pem_public_key)
+
     app.testing = True
     app.test_client_class = AuthClient
     return app.test_client()
@@ -50,7 +52,9 @@ def is_loaded(db):
         if is_responsive(db):
             # This will wait until the data-import is complete
             result = subprocess.run(
-                'docker ps -f "name=pytest-data-import" -a | grep "Exited (0)"', shell=True, check=True
+                'docker ps -f "name=pytest-data-import" -a | grep "Exited (0)"',
+                shell=True,
+                check=True,
             )
             print(f"result: {result}")
             return True
