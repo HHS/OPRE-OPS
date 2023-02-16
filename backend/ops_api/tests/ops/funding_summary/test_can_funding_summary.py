@@ -1,4 +1,3 @@
-import datetime
 from decimal import Decimal
 
 import pytest
@@ -19,7 +18,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db):
             "arrangement_type_id": 3,
             "authorizer_id": 1,
             "description": "Secondary Analyses Data On Child Care & Early Edu",
-            "expiration_date": datetime.datetime(2025, 1, 1, 0, 0),
+            "expiration_date": "01/01/2025",
             "id": 1,
             "managing_portfolio_id": 1,
             "managing_research_project_id": None,
@@ -51,7 +50,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db):
             "arrangement_type_id": 3,
             "authorizer_id": 1,
             "description": "Secondary Analyses Data On Child Care & Early Edu",
-            "expiration_date": datetime.datetime(2025, 1, 1, 0, 0),
+            "expiration_date": "01/01/2025",
             "id": 1,
             "managing_portfolio_id": 1,
             "managing_research_project_id": None,
