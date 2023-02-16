@@ -4,6 +4,8 @@ import subprocess
 from subprocess import CalledProcessError
 
 import pytest
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from ops_api.ops import create_app, db
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError
@@ -24,6 +26,11 @@ def client(app, loaded_db):
 
 @pytest.fixture()
 def auth_client(app):
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    pem_public_key = private_key.public_key().public_bytes(
+        encoding=serialization.Encoding.PEM, format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+    app.config.update(JWT_PRIVATE_KEY=private_key, JWT_PUBLIC_KEY=pem_public_key)
     app.testing = True
     app.test_client_class = AuthClient
     return app.test_client()
