@@ -226,7 +226,8 @@ class CAN(BaseModel):
     description = Column(String)
     purpose = Column(String, default="")
     nickname = Column(String(30))
-    expiration_date = Column(DateTime, default="1/1/1972")
+    expiration_date = Column(DateTime)
+    appropriation_date = Column(DateTime)
     appropriation_term = Column(Integer, default="1")
     arrangement_type_id = Column(
         Integer,
@@ -242,9 +243,13 @@ class CAN(BaseModel):
     authorizer = relationship(FundingPartner)
     managing_portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
     managing_portfolio = relationship(Portfolio, back_populates="cans")
-    shared_portfolios = relationship(Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans")
+    shared_portfolios = relationship(
+        Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans"
+    )
     budget_line_items = relationship("BudgetLineItem", back_populates="can")
-    agreements = relationship(Agreement, secondary=agreement_cans, back_populates="cans")
+    agreements = relationship(
+        Agreement, secondary=agreement_cans, back_populates="cans"
+    )
     managing_research_project_id = Column(Integer, ForeignKey("research_project.id"))
     managing_research_project = relationship(ResearchProject, back_populates="cans")
 
