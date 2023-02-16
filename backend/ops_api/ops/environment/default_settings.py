@@ -10,7 +10,6 @@ SQLALCHEMY_ECHO = False
 FLASK_PORT = 8080
 
 JWT_PRIVATE_KEY = os.getenv("JWT_PRIVATE_KEY")
-# JWT_SECRET_KEY = "adfadfasdasfasdfasdfasfasdfasdfadfadfadfasdfasffasff"
 JWT_PUBLIC_KEY_PATH = "./static/public.pem"
 JWT_ALGORITHM = "RS256"
 JWT_DECODE_ALGORITHMS = "RS256"

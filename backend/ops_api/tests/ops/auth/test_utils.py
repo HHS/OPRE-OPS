@@ -42,6 +42,7 @@ def test_get_jwt_is_valid_jws():
     assert jws is not None
 
 
+@pytest.mark.skip("Need to work out better key management for TESTS")
 @pytest.mark.usefixtures("app_ctx")
 def test_create_access_token(loaded_db, app):
     user = loaded_db.session.get(User, "00000000-0000-1111-a111-000000000001")

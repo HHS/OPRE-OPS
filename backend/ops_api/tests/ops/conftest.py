@@ -27,12 +27,11 @@ def client(app, loaded_db):
 @pytest.fixture()
 def auth_client(app):
     private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    pem_public_key = private_key.public_key().public_bytes(
+    public_key = private_key.public_key().public_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo,
     )
-    app.config.update(JWT_PRIVATE_KEY=private_key, JWT_PUBLIC_KEY=pem_public_key)
-
+    app.config.update(JWT_PRIVATE_KEY=private_key, JWT_PUBLIC_KEY=public_key)
     app.testing = True
     app.test_client_class = AuthClient
     return app.test_client()
