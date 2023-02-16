@@ -9,7 +9,7 @@ Guidance: Should use a shorter timeframe than AC-12
 
 ### OPS Implementation
 
-The OPS application will automatically log out users after 30 minutes of inactivity. Additional enforcement of idle sessions is addressed by [AC-11](ac-11/index.md) and [AC-12](ac-12/index.md).
+The OPS application will automatically log out users after 15 minutes of inactivity. Additional enforcement of idle sessions is addressed by [AC-11](ac-11/index.md) and [AC-12](ac-12/index.md).
 
 ### Related Content
 
