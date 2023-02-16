@@ -14,6 +14,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db):
     assert can_funding_summary == {
         "available_funding": "4693574.00",
         "can": {
+            "appropriation_date": None,
             "appropriation_term": 1,
             "arrangement_type_id": 3,
             "authorizer_id": 1,
@@ -45,6 +46,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db):
     assert get_can_funding_summary(can, 2023) == {
         "available_funding": "4310901.00",
         "can": {
+            "appropriation_date": None,
             "appropriation_term": 1,
             "arrangement_type_id": 3,
             "authorizer_id": 1,
