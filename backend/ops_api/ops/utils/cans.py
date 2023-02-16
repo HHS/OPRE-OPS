@@ -77,6 +77,6 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> None
         "planned_funding": planned_funding,
         "obligated_funding": obligated_funding,
         "in_execution_funding": in_execution_funding,
-        "available_funding": available_funding,
+        "available_funding": f"{available_funding:.2f}",
         "expiration_date": can.expiration_date.strftime("%m/%d/%Y"),
     }

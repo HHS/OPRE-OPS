@@ -9,9 +9,10 @@ from ops.utils.cans import get_can_funding_summary
 @pytest.mark.usefixtures("app_ctx")
 def test_get_can_funding_summary_no_fiscal_year(loaded_db):
     can = loaded_db.session.query(CAN).get(1)
+    can_funding_summary = get_can_funding_summary(can)
 
-    assert get_can_funding_summary(can) == {
-        "available_funding": 4693574.0,
+    assert can_funding_summary == {
+        "available_funding": "4693574.00",
         "can": {
             "appropriation_term": 1,
             "arrangement_type_id": 3,
@@ -42,7 +43,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db):
     can = loaded_db.session.query(CAN).get(1)
 
     assert get_can_funding_summary(can, 2023) == {
-        "available_funding": 4310901.0,
+        "available_funding": "4310901.00",
         "can": {
             "appropriation_term": 1,
             "arrangement_type_id": 3,
