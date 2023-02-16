@@ -239,9 +239,13 @@ class CAN(BaseModel):
     authorizer = relationship(FundingPartner)
     managing_portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
     managing_portfolio = relationship(Portfolio, back_populates="cans")
-    shared_portfolios = relationship(Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans")
+    shared_portfolios = relationship(
+        Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans"
+    )
     budget_line_items = relationship("BudgetLineItem", back_populates="can")
-    agreements = relationship(Agreement, secondary=agreement_cans, back_populates="cans")
+    agreements = relationship(
+        Agreement, secondary=agreement_cans, back_populates="cans"
+    )
     managing_research_project_id = Column(Integer, ForeignKey("research_project.id"))
     managing_research_project = relationship(ResearchProject, back_populates="cans")
 

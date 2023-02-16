@@ -17,5 +17,5 @@ import "cypress-axe";
 import "./commands";
 
 Cypress.Commands.add("login", () => {
-    window.localStorage.setItem("jwt", "123");
+    window.localStorage.setItem("access_token", "123");
 });

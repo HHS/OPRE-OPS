@@ -9,6 +9,7 @@ from sqlalchemy.orm import column_property, relationship
 
 class User(BaseModel):
     """Main User model."""
+
     __tablename__ = "users"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     oidc_id = Column(String(128), unique=True, index=True)
