@@ -1,4 +1,4 @@
 .fundingCard {
-    height: 220px;
+    min-height: 220px;
     margin-bottom: 20px !important;
 }
