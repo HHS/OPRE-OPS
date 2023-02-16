@@ -4,7 +4,6 @@ import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import CurrencyFormat from "react-currency-format";
 import { ResponsiveDonutWithInnerPercent } from "../../UI/ResponsiveDonutWithInnerPercent/ResponsiveDonutWithInnerPercent";
-import { calculatePercent } from "../../../helpers/utils";
 import CustomLayerComponent from "../../UI/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
 import Tag from "../../UI/Tag/Tag";
 import styles from "./styles.module.css";
@@ -12,7 +11,6 @@ import RoundedBox from "../../UI/RoundedBox/RoundedBox";
 
 const PortfolioFundingByBudgetStatus = ({ portfolioId }) => {
     const portfolioFunding = useSelector((state) => state.portfolioBudgetSummary.portfolioBudget);
-    const portfolioFundingChart = useSelector((state) => state.portfolioBudgetSummary.portfolioBudgetChart);
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
     const [percent, setPercent] = useState("");
     const [hoverId, setHoverId] = useState("");

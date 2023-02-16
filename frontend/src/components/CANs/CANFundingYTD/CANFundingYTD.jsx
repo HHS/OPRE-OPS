@@ -26,7 +26,7 @@ const CANFundingYTD = ({ total_funding = "0", current_funding = "0", expected_fu
     ];
     const [activeId, setActiveId] = React.useState(0);
 
-    const BudgetItem = ({ id, label, value, color, percent }) => {
+    const LegendItem = ({ id, label, value, color, percent }) => {
         const isGraphActive = activeId === id;
         return (
             <div className="grid-row margin-top-2">
@@ -73,7 +73,7 @@ const CANFundingYTD = ({ total_funding = "0", current_funding = "0", expected_fu
 
             <div className="font-12px margin-top-2">
                 {data.map((item) => (
-                    <BudgetItem
+                    <LegendItem
                         key={item.id}
                         id={item.id}
                         label={item.label}
