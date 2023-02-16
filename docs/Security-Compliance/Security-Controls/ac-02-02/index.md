@@ -7,7 +7,7 @@ AC-02(2) Management of temporary and emergency accounts includes the removal or 
 
 ### OPS Implementation
 
-The OPS application allows for temporary accounts for users in specific scenarios (i.e. before PIV card issuance). All temporary accounts are automatically disabled after 60 days following their creation.
+The OPS application allows for temporary accounts for users in specific scenarios (i.e. before PIV card issuance). All temporary accounts are automatically disabled 60 days or less following their creation.
 
 The OPS application does not utilize emergency accounts.
 
