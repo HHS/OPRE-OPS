@@ -24,6 +24,18 @@ class AllBudgetCurrent(BaseModel):
     verif = Column(String)
 
 
+# Commented this out for now until we remove Sqlite (does not support JSONB, ENUM, etc.)
+# class ETLTaskStatus(BaseModel):
+#     __tablename__ = "staging_etl_task_status"
+#
+#     workflow_name = Column(String, primary_key=True)
+#     task_name = Column(String, primary_key=True)
+#     run_at = Column(DateTime, primary_key=True)
+#     created_at = Column(DateTime, server_default=func.now())
+#     task_meta = Column(JSONB)
+#     status = Column(ENUM("SUCCESS", "FAIL", name="staging_task_status_enum"))
+
+
 class ETLTaskStatus(BaseModel):
     __tablename__ = "staging_etl_task_status"
 
@@ -31,5 +43,5 @@ class ETLTaskStatus(BaseModel):
     task_name = Column(String, primary_key=True)
     run_at = Column(DateTime, primary_key=True)
     created_at = Column(DateTime, server_default=func.now())
-    task_meta = Column(JSONB)
-    status = Column(ENUM("SUCCESS", "FAIL", name="staging_task_status_enum"))
+    task_meta = Column(String)
+    status = Column(String)

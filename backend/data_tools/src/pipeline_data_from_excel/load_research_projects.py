@@ -1,4 +1,4 @@
-import logging
+import json
 import sys
 
 import luigi
@@ -65,7 +65,7 @@ def success(task):
                 workflow_name="etl_data_from_excel",
                 task_name=task.task_module,
                 run_at=task.run_date,
-                task_meta=task.task_meta,
+                task_meta=json.dumps(task.task_meta),
                 status="SUCCESS",
             )
         )
@@ -79,7 +79,7 @@ def fail(task):
                 workflow_name="etl_data_from_excel",
                 task_name=task.task_module,
                 run_at=task.run_date,
-                task_meta=task.task_meta,
+                task_meta=json.dumps(task.task_meta),
                 status="FAIL",
             )
         )
