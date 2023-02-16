@@ -2,12 +2,13 @@ import { ResponsivePie } from "@nivo/pie";
 import { useEffect } from "react";
 
 export const ResponsiveDonutWithInnerPercent = ({
-    data,
-    width,
-    height,
+    data = [{ id: "", label: "", value: "", color: "", percent: "" }],
+    width = 175,
+    height = 175,
     margin,
     CustomLayerComponent,
-    setPercent,
+    setPercent = () => {},
+    setHoverId = () => {},
     container_id,
 }) => {
     const setA11y = async () => {
@@ -44,9 +45,11 @@ export const ResponsiveDonutWithInnerPercent = ({
             layers={["arcs", "slices", "sliceLabels", "radialLabels", "legends", CustomLayerComponent]}
             onMouseEnter={(node) => {
                 setPercent(node.data.percent);
+                setHoverId(node.data.id);
             }}
             onMouseLeave={() => {
                 setPercent("");
+                setHoverId("");
             }}
         />
     );
