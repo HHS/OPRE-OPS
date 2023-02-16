@@ -4,11 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { defaultPortfolioBudget, setPortfolio, setPortfolioBudget } from "./portfolioBudgetSummarySlice";
 import { useEffect } from "react";
 import { getPortfolioAndSetState, getPortfolioFundingAndSetState } from "./util";
-import PortfolioNewFunding from "../PortfolioSummaryCards/PortfolioNewFunding";
-import PortfolioCarryForwardFunding from "../PortfolioSummaryCards/PortfolioCarryForwardFunding";
-
-import styles from "./PortfolioBudgetSummary.module.css";
-import PortfolioFundingByCAN from "../PortfolioFundingByCAN/PortfolioFundingByCAN";
 
 const PortfolioBudgetSummary = ({ portfolioId }) => {
     const portfolio = useSelector((state) => state.portfolioBudgetSummary.portfolio);
@@ -32,8 +27,6 @@ const PortfolioBudgetSummary = ({ portfolioId }) => {
             dispatch(setPortfolioBudget(defaultPortfolioBudget));
         };
     }, [dispatch, portfolioId, fiscalYear]);
-
-    const fundingCard = `usa-card grid-col-4 ${styles.fundingCard}`;
 
     return (
         <div>
