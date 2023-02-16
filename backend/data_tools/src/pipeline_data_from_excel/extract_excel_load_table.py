@@ -1,13 +1,10 @@
 import sys
 
 import luigi.contrib.postgres
-import openpyxl
+import pandas as pd
 from data_tools.src.pipeline_data_from_excel.ops_task import OPSTask
-from data_tools.src.pipeline_data_from_excel.utils import clean_rows
 from models import *
-from pyexcel_io import save_data
-from pyexcel_io.constants import DB_SQL
-from pyexcel_io.database.common import SQLTableImportAdapter, SQLTableImporter
+from sqlalchemy import insert
 from sqlalchemy.orm import Session
 
 EXCEL_FILE_NAME = "data_tools/data/REDACTED-FY22_Budget_Summary-10-12-22.xlsm"
@@ -27,20 +24,30 @@ class ExtractExcelLoadTable(OPSTask):
         self._log_message("Running --> ExtractExcelLoadTable")
 
         self._log_message(f"Extracting from Excel file --> {EXCEL_FILE_NAME}")
-        workbook = openpyxl.load_workbook(
-            EXCEL_FILE_NAME,
-            data_only=True,
-            read_only=True,
-            keep_vba=False,
-            keep_links=False,
+        colnames = [
+            "CAN",
+            "Sys_Budget_ID",
+            "Project Title",
+            "CIG Name",
+            "CIG Type",
+            "Line Desc",
+            "Date Needed",
+            "Amount",
+            "PSCFee Amount",
+            "Status",
+            "Comments",
+            "Total Bud Cur",
+            "All Bud Prev",
+            "Delta",
+        ]
+        df = pd.read_excel(
+            EXCEL_FILE_NAME, sheet_name="All Budget - Cur", usecols=colnames, dtype=str
         )
+
+        coldict = {col: col.replace(" ", "_") for col in colnames}
+        df.rename(columns=coldict, inplace=True)
+
         self._log_message("Excel file successfully extracted.")
-
-        sheet = workbook["All Budget - Cur"]
-
-        data_rows = [list(row) for row in sheet.iter_rows(min_row=2, values_only=True)]
-
-        non_empty_data_rows = clean_rows(data_rows)
 
         self._log_message("Creating All Tables...")
         BaseModel.metadata.create_all(self.engine)
@@ -53,30 +60,10 @@ class ExtractExcelLoadTable(OPSTask):
             self._log_message("Staging data deleted.")
 
         with Session(self.engine) as session, session.begin():
-            importer = SQLTableImporter(session)
-            adapter = SQLTableImportAdapter(AllBudgetCurrent)
-            adapter.column_names = [
-                "CAN",
-                "Sys_Budget_ID",
-                "Project_Title",
-                "CIG_Name",
-                "CIG_Type",
-                "Line_Desc",
-                "Date_Needed",
-                "Amount",
-                "PSCFee_Amount",
-                "Status",
-                "Comments",
-                "Total_Bud_Cur",
-                "All_Bud_Prev",
-                "Delta",
-            ]
-            importer.append(adapter)
-
             self._log_message("Loading --> Data to staging table.")
-            save_data(
-                importer, {adapter.get_name(): non_empty_data_rows}, file_type=DB_SQL
-            )
+            data_to_write = df.to_dict(orient="records")
+            insert_stmt = insert(AllBudgetCurrent).values(data_to_write)
+            session.execute(insert_stmt)
             self._log_message("Data loaded to staging table.")
 
         self._log_message("ExtractExcelLoadTable --> COMPLETE")
