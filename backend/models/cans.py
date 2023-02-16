@@ -8,6 +8,7 @@ from sqlalchemy import Column, DateTime, ForeignKey, Integer, Numeric, String, T
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import column_property, relationship
+from typing_extensions import override
 
 can_funding_sources = Table(
     "can_funding_sources",
@@ -226,7 +227,8 @@ class CAN(BaseModel):
     description = Column(String)
     purpose = Column(String, default="")
     nickname = Column(String(30))
-    expiration_date = Column(DateTime, default="1/1/1972")
+    expiration_date = Column(DateTime)
+    appropriation_date = Column(DateTime)
     appropriation_term = Column(Integer, default="1")
     arrangement_type_id = Column(
         Integer,
@@ -242,12 +244,31 @@ class CAN(BaseModel):
     authorizer = relationship(FundingPartner)
     managing_portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
     managing_portfolio = relationship(Portfolio, back_populates="cans")
-    shared_portfolios = relationship(Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans")
+    shared_portfolios = relationship(
+        Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans"
+    )
     budget_line_items = relationship("BudgetLineItem", back_populates="can")
-    agreements = relationship(Agreement, secondary=agreement_cans, back_populates="cans")
+    agreements = relationship(
+        Agreement, secondary=agreement_cans, back_populates="cans"
+    )
     managing_research_project_id = Column(Integer, ForeignKey("research_project.id"))
     managing_research_project = relationship(ResearchProject, back_populates="cans")
 
     @hybrid_property
     def arrangementType(self) -> str:
         return self.arrangement_type.name
+
+    @override
+    def to_dict(self):
+        d = super().to_dict()
+
+        d.update(
+            appropriation_date=self.appropriation_date.strftime("%d/%m/%Y")
+            if self.appropriation_date
+            else None,
+            expiration_date=self.expiration_date.strftime("%d/%m/%Y")
+            if self.expiration_date
+            else None,
+        )
+
+        return d
