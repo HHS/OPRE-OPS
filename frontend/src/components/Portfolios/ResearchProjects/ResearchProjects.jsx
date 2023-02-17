@@ -36,10 +36,16 @@ const ResearchProjects = () => {
     }, [dispatch, fiscalYear, portfolioId]);
 
     return (
-        <div className={`padding-y-1 $styles.container`}>
+        <section>
+            <h2 className="font-sans-lg">Projects & Spending Summary</h2>
+            <p className="font-sans-sm">
+                The summary below displays all active projects, spending and agreements within this portfolio for the
+                selected fiscal year. An active project has active work happening. It might have funding from a previous
+                fiscal year or no funding within the fiscal year.
+            </p>
             {researchProjectData && <ul>{researchProjectData}</ul>}
             {!researchProjectData && <p>There are no Research Projects.</p>}
-        </div>
+        </section>
     );
 };
 
