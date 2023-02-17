@@ -9,6 +9,7 @@ import { getResearchProjects } from "../../../pages/portfolios/detail/getResearc
 const ResearchProjects = () => {
     const dispatch = useDispatch();
     const urlPathParams = useParams();
+    const portfolio = useSelector((state) => state.portfolioBudgetSummary.portfolio);
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
     const portfolioId = parseInt(urlPathParams.id);
     const researchProjects = useSelector((state) => state.portfolio.researchProjects);
@@ -43,6 +44,8 @@ const ResearchProjects = () => {
                 selected fiscal year. An active project has active work happening. It might have funding from a previous
                 fiscal year or no funding within the fiscal year.
             </p>
+            <pre>{JSON.stringify(setResearchProjects, null, 2)}</pre>
+            <pre>{setResearchProjects}</pre>
             {researchProjectData && <ul>{researchProjectData}</ul>}
             {!researchProjectData && <p>There are no Research Projects.</p>}
         </section>
