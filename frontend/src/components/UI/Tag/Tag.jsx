@@ -22,7 +22,7 @@ const Tag = ({ tagStyle = "", text = "", active = false, label = "" }) => {
         activeClass = "bg-brand-data-viz-primary-6 text-white fake-bold";
     } else if (active && label.includes("Funding Received")) {
         activeClass = "bg-brand-data-viz-primary-3 text-white fake-bold";
-    } else if (active && label.includes("Funding Expected")) {
+    } else if (active && (label.includes("Funding Expected") || label.includes("Remaining Budget"))) {
         activeClass = "bg-brand-neutral-lighter fake-bold";
     } else if (active && label.includes("Carry-Forward")) {
         activeClass = "bg-brand-data-viz-primary-10 fake-bold";
@@ -30,8 +30,6 @@ const Tag = ({ tagStyle = "", text = "", active = false, label = "" }) => {
         activeClass = "bg-brand-data-viz-secondary-20 text-white fake-bold";
     } else if (active && label.includes("Total Spending")) {
         activeClass = "bg-brand-data-viz-secondary-26 text-white fake-bold";
-    } else if (active && label.includes("Remaining Budget")) {
-        activeClass = "bg-brand-neutral-lighter fake-bold";
     }
 
     return <span className={`${tagClasses} ${activeClass}`}>{text}</span>;
