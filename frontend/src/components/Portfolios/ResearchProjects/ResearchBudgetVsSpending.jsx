@@ -30,7 +30,7 @@ const ResearchBudgetVsSpending = ({ portfolioId }) => {
             id: 2,
             label: `FY ${fiscalYear.value} Remaining Budget`,
             value: "2000000.00",
-            color: "#A9AEB1",
+            color: "#A9AEB1 ",
             percent: `${calculatePercent("2000000.00", totalFunding)}%`,
         },
     ];

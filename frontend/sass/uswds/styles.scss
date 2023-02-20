@@ -48,6 +48,7 @@ html {
     --data-viz-primary-10: #a1d0be;
     --data-viz-primary-11: #336a90;
     --data-viz-secondary-20: #534c9c;
+    --data-viz-secondary-26: #b6406c;
 }
 
 $themeColors: (
@@ -89,6 +90,7 @@ $themeColors: (
     "data-viz-primary-10": var(--data-viz-primary-10),
     "data-viz-primary-11": var(--data-viz-primary-11),
     "data-viz-secondary-20": var(--data-viz-secondary-20),
+    "data-viz-secondary-26": var(--data-viz-secondary-26),
 );
 
 @each $name, $color in $themeColors {
