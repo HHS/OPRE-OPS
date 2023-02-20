@@ -8,3 +8,9 @@ export const getCurrentFiscalYear = (today) => {
 
     return fiscalYear;
 };
+
+export const calculatePercent = (numerator, denominator) => {
+    if (denominator === 0) return 0;
+
+    return Math.round((numerator / denominator) * 100);
+};
