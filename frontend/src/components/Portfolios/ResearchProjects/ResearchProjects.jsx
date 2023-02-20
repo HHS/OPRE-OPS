@@ -5,6 +5,7 @@ import { setResearchProjects } from "../../../pages/portfolios/detail/portfolioS
 import { Link, useParams } from "react-router-dom";
 // eslint-disable-next-line import/named
 import { getResearchProjects } from "../../../pages/portfolios/detail/getResearchProjects";
+import ResearchBudgetVsSpending from "./ResearchBudgetVsSpending";
 
 const ResearchProjects = () => {
     const dispatch = useDispatch();
@@ -43,6 +44,9 @@ const ResearchProjects = () => {
                 fiscal year or no funding within the fiscal year.
             </p>
             {/* <pre>{JSON.stringify(researchProjects, null, 2)}</pre> */}
+            <div className="display-flex flex-justify">
+                <ResearchBudgetVsSpending portfolioId={portfolioId} />
+            </div>
             {researchProjects.length > 0 && <ul>{researchProjectData}</ul>}
             {!researchProjectData && <p>There are no Research Projects.</p>}
         </section>
