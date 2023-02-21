@@ -12,6 +12,10 @@ const ProjectsAndAgreements = ({
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
     const projectHeading = `FY ${fiscalYear.value} Projects`;
     const agreementHeading = `FY ${fiscalYear.value} Agreements`;
+    const plannedAgreements = "3";
+    const executingAgreements = "2";
+    const obligatedAgreements = "2";
+    const numberOfAgreements = "7";
 
     return (
         <CurrencySummaryCard>
@@ -38,7 +42,20 @@ const ProjectsAndAgreements = ({
                     <h3 className="margin-0 margin-bottom-3 font-12px text-base-darker text-normal">
                         {agreementHeading}
                     </h3>
-                    <pre className="font-12px">tags go here</pre>
+                    <div className="display-flex flex-justify">
+                        <span className="font-sans-xl text-bold">{numberOfAgreements}</span>
+                        <div className="display-flex flex-column margin-left-2 grid-gap">
+                            <Tag className="bg-brand-primary text-white" text={`${plannedAgreements} Planned`} />
+                            <Tag
+                                className="bg-brand-feedback-warning text-white margin-top-1"
+                                text={`${executingAgreements} Executing`}
+                            />
+                            <Tag
+                                className="bg-brand-data-viz-primary-6 text-white margin-top-1"
+                                text={`${obligatedAgreements} Obligated`}
+                            />
+                        </div>
+                    </div>
                 </article>
             </div>
         </CurrencySummaryCard>
