@@ -8,7 +8,7 @@ import CANFundingBar from "../../CANs/CANFundingBar/CANFundingBar";
 import { calculatePercent } from "../../../helpers/utils";
 import Tag from "../../UI/Tag/Tag";
 
-const ResearchBudgetVsSpending = ({ portfolioId }) => {
+const ResearchBudgetVsSpending = ({ portfolioId = 0 }) => {
     const portfolioBudget = useSelector((state) => state.portfolioBudgetSummary.portfolioBudget);
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
     // const totalFunding = portfolioBudget.total_funding?.amount;
