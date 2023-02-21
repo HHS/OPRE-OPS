@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from decimal import Decimal
 
 import pytest
@@ -17,7 +17,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db):
             "arrangement_type_id": 5,
             "authorizer_id": 26,
             "description": "Healthy Marriages Responsible Fatherhood - OPRE",
-            "expiration_date": datetime.datetime(2023, 9, 1, 0, 0),
+            "expiration_date": datetime(2023, 9, 1, 0, 0),
             "id": 1,
             "managing_portfolio_id": 6,
             "managing_research_project_id": None,
@@ -48,7 +48,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db):
             "arrangement_type_id": 5,
             "authorizer_id": 26,
             "description": "Healthy Marriages Responsible Fatherhood - OPRE",
-            "expiration_date": datetime.datetime(2023, 9, 1, 0, 0),
+            "expiration_date": datetime(2023, 9, 1, 0, 0),
             "id": 1,
             "managing_portfolio_id": 6,
             "managing_research_project_id": None,
