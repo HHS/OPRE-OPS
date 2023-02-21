@@ -28,13 +28,9 @@ Cypress.Commands.add("fakeLogin", async () => {
     });
 
     const alg = "RS256";
-    const keyBase64 = Cypress.env("testkey"); // process.env.JWT_TEST_KEY;
-
+    const keyBase64 = Cypress.env("testkey");
     const key = Buffer.from(keyBase64, "base64");
-    //console.log(`key: ${key}`);
-
     const privateKey = await jose.importPKCS8(key.toString(), "RS256");
-    //console.log(`privateKey: ${privateKey}`);
 
     const jwt = await new jose.SignJWT({ type: "access" })
         .setProtectedHeader({ alg })
@@ -45,6 +41,5 @@ Cypress.Commands.add("fakeLogin", async () => {
 
     console.log(jwt);
 
-    //cy.setLocalStorage("access_token", jwt);
     window.localStorage.setItem("access_token", jwt);
 });

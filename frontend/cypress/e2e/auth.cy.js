@@ -6,11 +6,7 @@ beforeEach(() => {
 it("access_token is present within localstorage", () => {
     cy.fakeLogin();
     cy.visit("/");
-    //window.localStorage.getItem("access_token").shoul("exist");
     cy.getLocalStorage("access_token").should("exist");
-    // cy.getLocalStorage("access_token").then((token) => {
-    //     console.log("access token", token);
-    // });
 });
 
 it("sign in button visible at page load when there is no jwt", () => {

@@ -6,7 +6,6 @@ import App from "../App";
 import { BreadcrumbItem, BreadcrumbList } from "../components/UI/Header/Breadcrumb";
 import { setUser } from "../store/userSlice";
 import UserInfo from "../components/Users/UserInfo/UserInfo";
-import jwt_decode from "jwt-decode";
 
 const UserDetail = () => {
     const dispatch = useDispatch();
