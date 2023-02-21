@@ -66,7 +66,12 @@ const ResearchProjects = () => {
             {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}
             <div className="display-flex flex-justify">
                 <ResearchBudgetVsSpending portfolioId={portfolioId} />
-                <ProjectsAndAgreements portfolioId={portfolioId} numberOfProjects={numberOfProjects} />
+                <ProjectsAndAgreements
+                    portfolioId={portfolioId}
+                    numberOfProjects={numberOfProjects}
+                    numOfResearchProjects={filteredResearchProjects.length}
+                    numOfAdminAndSupportProjects={filteredAdminAndSupportProjects.length}
+                />
             </div>
             <h2 className="font-sans-lg">Research Projects</h2>
             <p className="font-sans-sm">

@@ -1,45 +1,55 @@
-import React from "react";
+import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircle } from "@fortawesome/free-solid-svg-icons";
-import CurrencyFormat from "react-currency-format";
 import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
-import CANFundingBar from "../../CANs/CANFundingBar/CANFundingBar";
-import { calculatePercent } from "../../../helpers/utils";
 import Tag from "../../UI/Tag/Tag";
-import { data } from "./data";
 
-const ProjectsAndAgreements = ({ portfolioId = 0, numberOfProjects = 0 }) => {
-    const portfolioBudget = useSelector((state) => state.portfolioBudgetSummary.portfolioBudget);
+const ProjectsAndAgreements = ({
+    portfolioId = 0,
+    numberOfProjects = 0,
+    numOfResearchProjects = 0,
+    numOfAdminAndSupportProjects = 0,
+}) => {
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
-    // const totalFunding = portfolioBudget.total_funding?.amount;
-    const totalFunding = "10000000.00";
-    const carryForwardFunding = portfolioBudget.carry_over_funding?.amount || 0;
-    const newFunding = portfolioBudget.total_funding?.amount - portfolioBudget.carry_over_funding?.amount;
     const projectHeading = `FY ${fiscalYear.value} Projects`;
     const agreementHeading = `FY ${fiscalYear.value} Agreements`;
 
     return (
         <CurrencySummaryCard>
             <div className="display-flex flex-justify">
-                <div className="section">
+                <article>
                     <h3 className="margin-0 margin-bottom-3 font-12px text-base-darker text-normal">
                         {projectHeading}
                     </h3>
-                    <div className="display-flex">
-                        <h4 className="font-sans-xl text-bold">{numberOfProjects}</h4>
-                        <Tag className="margin-left-1 bg-accent-cool-dark" text="3 Research" />
+                    <div className="display-flex flex-justify">
+                        <span className="font-sans-xl text-bold">{numberOfProjects}</span>
+                        <div className="display-flex flex-column margin-left-2 grid-gap">
+                            <Tag
+                                className="bg-brand-primary-light text-brand-primary-dark"
+                                text={`${numOfResearchProjects} Research`}
+                            />
+                            <Tag
+                                className="bg-brand-primary-light text-brand-primary-dark margin-top-1"
+                                text={`${numOfAdminAndSupportProjects} Admin & Support`}
+                            />
+                        </div>
                     </div>
-                </div>
-                <div className="section">
+                </article>
+                <article>
                     <h3 className="margin-0 margin-bottom-3 font-12px text-base-darker text-normal">
                         {agreementHeading}
                     </h3>
                     <pre className="font-12px">tags go here</pre>
-                </div>
+                </article>
             </div>
         </CurrencySummaryCard>
     );
 };
 
 export default ProjectsAndAgreements;
+
+ProjectsAndAgreements.propTypes = {
+    portfolioId: PropTypes.number,
+    numberOfProjects: PropTypes.number,
+    numOfResearchProjects: PropTypes.number,
+    numOfAdminAndSupportProjects: PropTypes.number,
+};
