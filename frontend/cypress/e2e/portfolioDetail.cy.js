@@ -10,7 +10,7 @@ it("loads", () => {
     cy.get("a").should("contain", "Chris Fortunato");
     cy.get("p").should("contain", "The promotion of children’s safety, permanence, and well-being");
     cy.get("a").should("contain", "Budget And Funding");
-    cy.get("a").should("contain", "Research Projects");
+    cy.get("a").should("contain", "Projects and Spending");
     cy.get("a").should("contain", "People and Teams");
     cy.get("h2").should("contain", "Portfolio Budget Summary");
     cy.get("h3").should("contain", "Budget");
