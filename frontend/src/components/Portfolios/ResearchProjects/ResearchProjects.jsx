@@ -6,6 +6,8 @@ import { Link, useParams } from "react-router-dom";
 // eslint-disable-next-line import/named
 import { getResearchProjects } from "../../../pages/portfolios/detail/getResearchProjects";
 import ResearchBudgetVsSpending from "./ResearchBudgetVsSpending";
+import ProjectsAndAgreements from "./ProjectsAndAgreements";
+import { data } from "./data";
 
 const ResearchProjects = () => {
     const dispatch = useDispatch();
@@ -14,71 +16,23 @@ const ResearchProjects = () => {
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
     const portfolioId = parseInt(urlPathParams.id);
     const researchProjects = useSelector((state) => state.portfolio.researchProjects);
-    const data = [
-        {
-            id: 1,
-            name: "Center for Research on Learning and Teaching",
-            type: "research",
-            funding: "6000000",
-            fundingToDate: "1900000",
-            firstAwardDate: "2018-01-01",
-            cans: "3",
-            agreement: "Grant",
-        },
-        {
-            id: 2,
-            name: "Project Two that is kinda long",
-            type: "research",
-            funding: "8000000",
-            fundingToDate: "1000000",
-            firstAwardDate: "2020-01-01",
-            cans: "2",
-            agreement: "Mixed",
-        },
-        {
-            id: 3,
-            name: "Project Three that is kinda long",
-            type: "research",
-            funding: "1000000",
-            fundingToDate: "0",
-            firstAwardDate: "2022-01-01",
-            cans: "1",
-            agreement: "Contract",
-        },
-        {
-            id: 4,
-            name: "OPRE Website Development",
-            type: "admin_and_support",
-            funding: "1000000",
-            fundingToDate: "0",
-            firstAwardDate: "2022-01-01",
-            cans: "4",
-            agreement: "Contract",
-        },
-        {
-            id: 5,
-            name: "OPRE OPS",
-            type: "admin_and_support",
-            funding: "0",
-            fundingToDate: "1000000",
-            firstAwardDate: "2022-01-01",
-            cans: "5",
-            agreement: "Contract",
-        },
-    ];
 
     const filteredResearchProjects = data.filter((project) => project.type === "research");
     const filteredAdminAndSupportProjects = data.filter((project) => project.type === "admin_and_support");
-
+    const numberOfProjects = filteredResearchProjects.length + filteredAdminAndSupportProjects.length;
     const researchProjectData = researchProjects.map((rp) => (
         <li key={rp.id}>
             <Link to={`/research-projects/${rp.id}`}>{rp.title}</Link>
         </li>
     ));
 
-    const TableRow = ({ name, funding, fundingToDate, firstAwardDate, cans, agreement }) => (
+    const TableRow = ({ name, link, funding, fundingToDate, firstAwardDate, cans, agreement }) => (
         <tr>
-            <th scope="row">{name}</th>
+            <th scope="row">
+                <Link className="text-ink text-no-underline hover:text-underline" to={link}>
+                    {name}
+                </Link>
+            </th>
             <td data-sort-value="">{funding}</td>
             <td data-sort-value="">{fundingToDate}</td>
             <td data-sort-value="">{firstAwardDate}</td>
@@ -112,13 +66,14 @@ const ResearchProjects = () => {
             {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}
             <div className="display-flex flex-justify">
                 <ResearchBudgetVsSpending portfolioId={portfolioId} />
+                <ProjectsAndAgreements portfolioId={portfolioId} numberOfProjects={numberOfProjects} />
             </div>
             <h2 className="font-sans-lg">Research Projects</h2>
             <p className="font-sans-sm">
                 This is a list of all active research projects that this portfolio contributes to for the selected
                 fiscal year.
             </p>
-
+            {/* NOTE: Research projects table */}
             <div className="usa-table-container--scrollable" tabIndex="0">
                 <table className="usa-table usa-table--borderless">
                     <caption></caption>
@@ -177,7 +132,7 @@ const ResearchProjects = () => {
                 This is a list of all active administrative & support projects that this portfolio contributes to for
                 the selected fiscal year.
             </p>
-            {/* TODO: add Admin and Support table */}
+            {/* NOTE: Admin and Support table */}
             <div className="usa-table-container--scrollable" tabIndex="0">
                 <table className="usa-table usa-table--borderless">
                     <caption></caption>
