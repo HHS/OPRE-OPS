@@ -1,9 +1,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-// eslint-disable-next-line import/named
-import { setResearchProjects } from "../../../pages/portfolios/detail/portfolioSlice";
 import { Link, useParams } from "react-router-dom";
-// eslint-disable-next-line import/named
+import { setResearchProjects } from "../../../pages/portfolios/detail/portfolioSlice";
 import { getResearchProjects } from "../../../pages/portfolios/detail/getResearchProjects";
 import ResearchBudgetVsSpending from "./ResearchBudgetVsSpending";
 import ProjectsAndAgreements from "./ProjectsAndAgreements";
@@ -16,10 +14,11 @@ const ResearchProjects = () => {
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
     const portfolioId = parseInt(urlPathParams.id);
     const researchProjects = useSelector((state) => state.portfolio.researchProjects);
-
     const filteredResearchProjects = data.filter((project) => project.type === "research");
     const filteredAdminAndSupportProjects = data.filter((project) => project.type === "admin_and_support");
     const numberOfProjects = filteredResearchProjects.length + filteredAdminAndSupportProjects.length;
+
+    // Comps
     const researchProjectData = researchProjects.map((rp) => (
         <li key={rp.id}>
             <Link to={`/research-projects/${rp.id}`}>{rp.title}</Link>
@@ -79,7 +78,6 @@ const ResearchProjects = () => {
                     This is a list of all active research projects that this portfolio contributes to for the selected
                     fiscal year.
                 </p>
-                {/* NOTE: Research projects table */}
                 <div className="usa-table-container--scrollable" tabIndex="0">
                     <table className="usa-table usa-table--borderless">
                         <thead>
@@ -144,7 +142,6 @@ const ResearchProjects = () => {
                     This is a list of all active administrative & support projects that this portfolio contributes to
                     for the selected fiscal year.
                 </p>
-                {/* NOTE: Admin and Support table */}
                 <div className="usa-table-container--scrollable" tabIndex="0">
                     <table className="usa-table usa-table--borderless">
                         <thead>
