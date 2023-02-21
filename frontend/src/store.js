@@ -5,7 +5,7 @@ import portfolioListSlice from "./pages/portfolios/list/portfolioListSlice";
 import portfolioBudgetSummarySlice from "./components/Portfolios/PortfolioBudgetSummary/portfolioBudgetSummarySlice";
 // eslint-disable-next-line import/no-named-as-default
 import authSlice from "./components/Auth/authSlice";
-import userSlice from "./store/userSlice";
+import userSlice from "./pages/users/detail/userSlice";
 import portfolioSlice from "./pages/portfolios/detail/portfolioSlice";
 import researchProjectSlice from "./pages/researchProjects/detail/researchProjectSlice";
 
@@ -17,7 +17,7 @@ export default configureStore({
         portfolioBudgetSummary: portfolioBudgetSummarySlice,
         auth: authSlice,
         portfolio: portfolioSlice,
-        activeUser: userSlice,
+        userDetail: userSlice,
         researchProject: researchProjectSlice,
     },
 });
