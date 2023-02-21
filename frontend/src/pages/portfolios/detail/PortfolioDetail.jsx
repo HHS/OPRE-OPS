@@ -77,7 +77,7 @@ const PortfolioDetail = () => {
     return (
         <>
             <App>
-                <Breadcrumb currentName={portfolio.name} />
+                <Breadcrumb currentName={"Tim-is-awesome"} />
                 <div>
                     <Hero
                         entityName={portfolio.name}

@@ -91,15 +91,6 @@ def docker_compose_command():
 #     return compose_file
 
 
-# def pytest_addoption(parser):
-#     parser.addoption(
-#         "--dburl",
-#         action="store",
-#         default=f"sqlite:///{TEST_DB_NAME}.db",
-#         help="url of the database to use for tests",
-#     )
-
-
 @pytest.fixture()
 def loaded_db(app):
     # Using the db_session fixture, we have a session, with a SQLAlchemy db_engine

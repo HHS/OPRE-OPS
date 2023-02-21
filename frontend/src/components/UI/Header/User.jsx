@@ -6,8 +6,6 @@ export const User = () => {
 
     return (
         // eslint-disable-next-line jsx-a11y/anchor-is-valid
-        <Link to={"./users/" + user?.id}>
-            {user?.first_name} {user?.last_name}
-        </Link>
+        <Link to={"/users/" + user?.id}>{user ? `${user.first_name} ${user.last_name}` : "---->"}</Link>
     );
 };

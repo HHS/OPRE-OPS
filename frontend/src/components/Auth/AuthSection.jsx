@@ -10,6 +10,14 @@ import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { User } from "../UI/Header/User";
 import jwt_decode from "jwt-decode";
 
+async function setActiveUser(token, dispatch) {
+    const decodedJwt = jwt_decode(token);
+    const userId = decodedJwt["sub"];
+    const userDetails = await ApplicationContext.get().helpers().callBackend(`/api/v1/users/${userId}`, "get");
+    console.log(`Logged In User: ${userDetails}`);
+    dispatch(setUserDetails(userDetails));
+}
+
 const AuthSection = () => {
     const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
     const dispatch = useDispatch();
@@ -25,11 +33,7 @@ const AuthSection = () => {
             localStorage.setItem("access_token", response.access_token);
             dispatch(login());
 
-            const decodedJwt = jwt_decode(response.access_token);
-            const userId = decodedJwt["sub"];
-            const userDetails = await ApplicationContext.get().helpers().callBackend(`/api/v1/users/${userId}`, "get");
-            console.log(`Logged In User: ${userDetails}`);
-            dispatch(setUserDetails(userDetails));
+            await setActiveUser(response.access_token, dispatch);
 
             navigate("/");
         },
@@ -42,6 +46,7 @@ const AuthSection = () => {
         if (currentJWT) {
             // TODO: we should validate the JWT here and set it on state if valid else logout
             dispatch(login());
+            setActiveUser(currentJWT, dispatch);
             return;
         }
 

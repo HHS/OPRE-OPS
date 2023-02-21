@@ -13,10 +13,10 @@ const UserDetail = () => {
     const user = useSelector((state) => state.activeUser.user);
     const urlPathParams = useParams();
     //const userId = parseInt(urlPathParams.id)
-    const access_jwt = localStorage.getItem("access_token");
-    const decoded_token = jwt_decode(access_jwt);
-    const userId = decoded_token["sub"] || parseInt(urlPathParams.id);
-    console.log(decoded_token);
+    // const access_jwt = localStorage.getItem("access_token");
+    // const decoded_token = jwt_decode(access_jwt);
+    // const userId = decoded_token["sub"] || parseInt(urlPathParams.id);
+    // console.log(decoded_token);
 
     useEffect(() => {
         const getUserAndSetState = async (userId) => {
@@ -24,8 +24,8 @@ const UserDetail = () => {
             dispatch(setUser(results));
         };
 
-        getUserAndSetState(userId).catch(console.error);
-    }, [dispatch, userId]);
+        //getUserAndSetState(userId).catch(console.error);
+    }, [dispatch]);
 
     return (
         <>

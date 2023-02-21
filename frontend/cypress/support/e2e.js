@@ -13,9 +13,39 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
+import "cypress-localstorage-commands";
 import "cypress-axe";
 import "./commands";
+import * as jose from "jose";
 
 Cypress.Commands.add("login", () => {
     window.localStorage.setItem("access_token", "123");
+});
+
+Cypress.Commands.add("fakeLogin", async () => {
+    Cypress.log({
+        name: "fakeLogin",
+    });
+
+    const alg = "RS256";
+    console.log(`CYPRES_ENV: ${Cypress.env("key")}`);
+    const keyBase64 = Cypress.env("key"); // process.env.JWT_TEST_KEY;
+    console.log(`keyBase64: ${keyBase64}`);
+    const key = Buffer.from(keyBase64, "base64");
+    const privateKey = await jose.importPKCS8(key, "RS256");
+
+    const jwt = await new jose.SignJWT({ type: "access" })
+        .setProtectedHeader({ alg })
+        .setIssuedAt()
+        .setSubject("00000000-0000-1111-a111-000000000004")
+        .setExpirationTime("2h")
+        .sign(privateKey);
+
+    console.log(jwt);
+
+    //cy.setLocalStorage("access_token", jwt);
+    window.localStorage.setItem("access_token", jwt);
+    Cypress.log({
+        name: "fakeLogin Success!!!!",
+    });
 });
