@@ -5,15 +5,15 @@ const Tag = ({ tagStyle = "", text = "", active = false, label = "", className =
         activeClass = "fake-bold";
 
     if (tagStyle === "darkTextLightBackground") {
-        tagClasses += ` ${styles.tag} bg-brand-neutral-lightest text-brand-neutral-dark `;
+        tagClasses += ` ${styles.tag} bg-brand-neutral-lightest text-brand-neutral-dark`;
     } else if (tagStyle === "lightTextDarkBackground") {
-        tagClasses += ` ${styles.tag} bg-brand-data-viz-primary-4 text-brand-neutral-lightest `;
+        tagClasses += ` ${styles.tag} bg-brand-data-viz-primary-4 text-brand-neutral-lightest`;
     } else if (tagStyle === "darkTextWhiteBackground") {
-        tagClasses += ` ${styles.tag} bg-white text-brand-neutral-dark `;
+        tagClasses += ` ${styles.tag} bg-white text-brand-neutral-dark`;
     }
 
     if (active && label === "Available") {
-        activeClass += " bg-brand-data-viz-primary-5 text-white ";
+        activeClass += " bg-brand-data-viz-primary-5 text-white";
     } else if (active && label === "Planned") {
         activeClass += " bg-brand-data-viz-primary-11 text-white fake-bold";
     } else if (active && label === "Executing") {
