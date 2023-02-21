@@ -60,7 +60,9 @@ def login() -> Union[Response, tuple[str, int]]:
     except Exception as err:
         logging.error(err)
         traceback.print_exc()
-        return f"Login Error: {err}", 400
+        response = jsonify(f"Login Error: {err}"), 400
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response
 
 
 # We are using the `refresh=True` options in jwt_required to only allow
