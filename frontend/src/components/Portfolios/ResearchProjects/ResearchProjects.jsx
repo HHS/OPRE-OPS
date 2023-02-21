@@ -14,7 +14,58 @@ const ResearchProjects = () => {
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
     const portfolioId = parseInt(urlPathParams.id);
     const researchProjects = useSelector((state) => state.portfolio.researchProjects);
-
+    const data = [
+        {
+            id: 1,
+            name: "Center for Research on Learning and Teaching",
+            type: "research",
+            funding: "6000000",
+            fundingToDate: "1900000",
+            firstAwardDate: "2018-01-01",
+            cans: 3,
+            agreement: "Grant",
+        },
+        {
+            id: 2,
+            name: "Project Two that is kinda long",
+            type: "research",
+            funding: "8000000",
+            fundingToDate: "1000000",
+            firstAwardDate: "2020-01-01",
+            cans: 2,
+            agreement: "Mixed",
+        },
+        {
+            id: 3,
+            name: "Project Three that is kinda long",
+            type: "research",
+            funding: "1000000",
+            fundingToDate: "0",
+            firstAwardDate: "2022-01-01",
+            cans: 1,
+            agreement: "Contract",
+        },
+        {
+            id: 4,
+            name: "OPRE Website Development",
+            type: "admin_and_support",
+            funding: "1000000",
+            fundingToDate: "0",
+            firstAwardDate: "2022-01-01",
+            cans: 4,
+            agreement: "Contract",
+        },
+        {
+            id: 5,
+            name: "OPRE OPS",
+            type: "admin_and_support",
+            funding: "0",
+            fundingToDate: "1000000",
+            firstAwardDate: "2022-01-01",
+            cans: 5,
+            agreement: "Contract",
+        },
+    ];
     const researchProjectData = researchProjects.map((rp) => (
         <li key={rp.id}>
             <Link to={`/research-projects/${rp.id}`}>{rp.title}</Link>
@@ -43,7 +94,7 @@ const ResearchProjects = () => {
                 selected fiscal year. An active project has active work happening. It might have funding from a previous
                 fiscal year or no funding within the fiscal year.
             </p>
-            {/* <pre>{JSON.stringify(researchProjects, null, 2)}</pre> */}
+            {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}
             <div className="display-flex flex-justify">
                 <ResearchBudgetVsSpending portfolioId={portfolioId} />
             </div>
