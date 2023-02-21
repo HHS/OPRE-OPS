@@ -1,4 +1,3 @@
-from datetime import datetime
 from decimal import Decimal
 
 import pytest
@@ -18,7 +17,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db):
             "arrangement_type_id": 5,
             "authorizer_id": 26,
             "description": "Healthy Marriages Responsible Fatherhood - OPRE",
-            "expiration_date": datetime(2023, 9, 1, 0, 0),
+            "expiration_date": "01/09/2023",
             "id": 1,
             "managing_portfolio_id": 6,
             "managing_research_project_id": None,
@@ -26,13 +25,13 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db):
             "number": "G99HRF2",
             "purpose": "",
         },
-        "carry_over_funding": Decimal("0"),
+        "carry_over_funding": 0,
         "current_funding": Decimal("880000.00"),
         "expected_funding": Decimal("260000.00"),
         "expiration_date": "09/01/2023",
         "in_execution_funding": Decimal("2000000.00"),
         "obligated_funding": 0,
-        "planned_funding": Decimal("0"),
+        "planned_funding": 0,
         "total_funding": Decimal("1140000.00"),
     }
 
@@ -50,7 +49,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db):
             "arrangement_type_id": 5,
             "authorizer_id": 26,
             "description": "Healthy Marriages Responsible Fatherhood - OPRE",
-            "expiration_date": datetime(2023, 9, 1, 0, 0),
+            "expiration_date": "01/09/2023",
             "id": 1,
             "managing_portfolio_id": 6,
             "managing_research_project_id": None,
@@ -58,13 +57,13 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db):
             "number": "G99HRF2",
             "purpose": "",
         },
-        "carry_over_funding": Decimal("0"),
+        "carry_over_funding": 0,
         "current_funding": Decimal("880000.00"),
         "expected_funding": Decimal("260000.00"),
         "expiration_date": "09/01/2023",
         "in_execution_funding": Decimal("2000000.00"),
         "obligated_funding": 0,
-        "planned_funding": Decimal("0"),
+        "planned_funding": 0,
         "total_funding": Decimal("1140000.00"),
     }
 
