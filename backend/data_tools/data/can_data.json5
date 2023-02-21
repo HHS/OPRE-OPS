@@ -1,27 +1,27 @@
 {
-  "can_arrangement_type": [
+  can_arrangement_type: [
     {
       id: 1,
-      name: "OPRE Appropriation"
+      name: "OPRE Appropriation",
     },
     {
       id: 2,
-      name: "Cost Share"
+      name: "Cost Share",
     },
     {
       id: 3,
-      name: "IAA"
+      name: "IAA",
     },
     {
       id: 4,
-      name: "IDDA"
+      name: "IDDA",
     },
     {
       id: 5,
-      name: "MOU"
-    }
+      name: "MOU",
+    },
   ],
-  "can": [
+  can: [
     {
       id: 1,
       number: "G99HRF2",
@@ -33,7 +33,7 @@
       arrangement_type_id: 5,
       authorizer_id: 26,
       managing_portfolio_id: 6,
-      managing_research_project_id: null
+      managing_research_project_id: null,
     },
     {
       id: 2,
@@ -46,7 +46,7 @@
       arrangement_type_id: 3,
       authorizer_id: 26,
       managing_portfolio_id: 1,
-      managing_research_project_id: null
+      managing_research_project_id: null,
     },
     {
       id: 3,
@@ -59,7 +59,7 @@
       arrangement_type_id: 1,
       authorizer_id: 26,
       managing_portfolio_id: 8,
-      managing_research_project_id: null
+      managing_research_project_id: null,
     },
     {
       id: 4,
@@ -72,7 +72,7 @@
       arrangement_type_id: 4,
       authorizer_id: 26,
       managing_portfolio_id: 1,
-      managing_research_project_id: 1
+      managing_research_project_id: 1,
     },
     {
       id: 5,
@@ -85,7 +85,7 @@
       arrangement_type_id: 1,
       authorizer_id: 26,
       managing_portfolio_id: 2,
-      managing_research_project_id: null
+      managing_research_project_id: null,
     },
     {
       id: 6,
@@ -98,7 +98,7 @@
       arrangement_type_id: 2,
       authorizer_id: 1,
       managing_portfolio_id: 6,
-      managing_research_project_id: null
+      managing_research_project_id: null,
     },
     {
       id: 7,
@@ -111,7 +111,7 @@
       arrangement_type_id: 2,
       authorizer_id: 23,
       managing_portfolio_id: 6,
-      managing_research_project_id: null
+      managing_research_project_id: null,
     },
     {
       id: 8,
@@ -124,7 +124,7 @@
       arrangement_type_id: 2,
       authorizer_id: 23,
       managing_portfolio_id: 6,
-      managing_research_project_id: null
+      managing_research_project_id: null,
     },
     {
       id: 9,
@@ -137,7 +137,7 @@
       arrangement_type_id: 2,
       authorizer_id: 23,
       managing_portfolio_id: 6,
-      managing_research_project_id: null
+      managing_research_project_id: null,
     },
     {
       id: 10,
@@ -150,7 +150,7 @@
       arrangement_type_id: 2,
       authorizer_id: 23,
       managing_portfolio_id: 6,
-      managing_research_project_id: null
+      managing_research_project_id: null,
     },
     {
       id: 11,
@@ -163,7 +163,7 @@
       arrangement_type_id: 2,
       authorizer_id: 23,
       managing_portfolio_id: 6,
-      managing_research_project_id: null
+      managing_research_project_id: null,
     },
     {
       id: 12,
@@ -177,7 +177,7 @@
       arrangement_type_id: 2,
       authorizer_id: 23,
       managing_portfolio_id: 6,
-      managing_research_project_id: null
+      managing_research_project_id: null,
     },
     {
       id: 13,
@@ -190,211 +190,275 @@
       arrangement_type_id: 5,
       authorizer_id: 26,
       managing_portfolio_id: 3,
-      managing_research_project_id: 1
-    }
+      managing_research_project_id: 1,
+    },
   ],
-  "can_fiscal_year": [
+  can_funding_sources: [
+    {
+      can_id: 1,
+      funding_source_id: 26,
+    },
+    {
+      can_id: 1,
+      funding_source_id: 24,
+    },
+    {
+      can_id: 2,
+      funding_source_id: 26,
+    },
+    {
+      can_id: 3,
+      funding_source_id: 26,
+    },
+    {
+      can_id: 4,
+      funding_source_id: 26,
+    },
+    {
+      can_id: 5,
+      funding_source_id: 26,
+    },
+    {
+      can_id: 6,
+      funding_source_id: 26,
+    },
+    {
+      can_id: 7,
+      funding_source_id: 26,
+    },
+    {
+      can_id: 8,
+      funding_source_id: 26,
+    },
+    {
+      can_id: 9,
+      funding_source_id: 26,
+    },
+    {
+      can_id: 10,
+      funding_source_id: 26,
+    },
+    {
+      can_id: 11,
+      funding_source_id: 26,
+    },
+    {
+      can_id: 12,
+      funding_source_id: 26,
+    },
+    {
+      can_id: 13,
+      funding_source_id: 26,
+    },
+  ],
+  can_fiscal_year: [
     {
       can_id: 1,
       fiscal_year: 2023,
-      total_fiscal_year_funding: 11400000.00,
-      current_funding: 880000.00,
-      expected_funding: 260000.00,
-      potential_additional_funding: 1300000.00,
-      notes: ""
+      total_fiscal_year_funding: 11400000.0,
+      current_funding: 880000.0,
+      expected_funding: 260000.0,
+      potential_additional_funding: 1300000.0,
+      notes: "",
     },
     {
       can_id: 2,
       fiscal_year: 2021,
-      total_fiscal_year_funding: 200000.00,
-      current_funding: 200000.00,
-      expected_funding: 0.00,
-      potential_additional_funding: 0.00,
-      notes: "147-OPRE-FY21 $150K from ASPE; 149-OPRE-FY21 $50K from SSA\n\nNote to us: This distinction is in budget lines, not sure how it ties into CANs"
+      total_fiscal_year_funding: 200000.0,
+      current_funding: 200000.0,
+      expected_funding: 0.0,
+      potential_additional_funding: 0.0,
+      notes: "147-OPRE-FY21 $150K from ASPE; 149-OPRE-FY21 $50K from SSA\n\nNote to us: This distinction is in budget lines, not sure how it ties into CANs",
     },
     {
       can_id: 3,
       fiscal_year: 2022,
-      total_fiscal_year_funding: 7000000.00,
-      current_funding: 6000000.00,
-      expected_funding: 1000000.00,
-      potential_additional_funding: 3000000.00,
-      notes: ""
+      total_fiscal_year_funding: 7000000.0,
+      current_funding: 6000000.0,
+      expected_funding: 1000000.0,
+      potential_additional_funding: 3000000.0,
+      notes: "",
     },
     {
       can_id: 3,
       fiscal_year: 2023,
-      total_fiscal_year_funding: 10000000.00,
-      current_funding: 7000000.00,
-      expected_funding: 3000000.00,
-      potential_additional_funding: 3000000.00,
-      notes: ""
+      total_fiscal_year_funding: 10000000.0,
+      current_funding: 7000000.0,
+      expected_funding: 3000000.0,
+      potential_additional_funding: 3000000.0,
+      notes: "",
     },
     {
       can_id: 3,
       fiscal_year: 2024,
-      total_fiscal_year_funding: 7000000.00,
-      current_funding: 6000000.00,
-      expected_funding: 1000000.00,
-      potential_additional_funding: 3000000.00,
-      notes: ""
+      total_fiscal_year_funding: 7000000.0,
+      current_funding: 6000000.0,
+      expected_funding: 1000000.0,
+      potential_additional_funding: 3000000.0,
+      notes: "",
     },
     {
       can_id: 4,
       fiscal_year: 2021,
-      total_fiscal_year_funding: 10000000.00,
-      current_funding: 6000000.00,
-      expected_funding: 4000000.00,
-      potential_additional_funding: 3000000.00,
-      notes: ""
+      total_fiscal_year_funding: 10000000.0,
+      current_funding: 6000000.0,
+      expected_funding: 4000000.0,
+      potential_additional_funding: 3000000.0,
+      notes: "",
     },
     {
       can_id: 5,
       fiscal_year: 2021,
-      total_fiscal_year_funding: 10000000.00,
-      current_funding: 6000000.00,
-      expected_funding: 4000000.00,
-      potential_additional_funding: 3000000.00,
-      notes: ""
+      total_fiscal_year_funding: 10000000.0,
+      current_funding: 6000000.0,
+      expected_funding: 4000000.0,
+      potential_additional_funding: 3000000.0,
+      notes: "",
     },
     {
       can_id: 5,
       fiscal_year: 2022,
-      total_fiscal_year_funding: 10000000.00,
-      current_funding: 6000000.00,
-      expected_funding: 4000000.00,
-      potential_additional_funding: 3000000.00,
-      notes: ""
+      total_fiscal_year_funding: 10000000.0,
+      current_funding: 6000000.0,
+      expected_funding: 4000000.0,
+      potential_additional_funding: 3000000.0,
+      notes: "",
     },
     {
       can_id: 5,
       fiscal_year: 2023,
-      total_fiscal_year_funding: 10000000.00,
-      current_funding: 6000000.00,
-      expected_funding: 4000000.00,
-      potential_additional_funding: 3000000.00,
-      notes: ""
+      total_fiscal_year_funding: 10000000.0,
+      current_funding: 6000000.0,
+      expected_funding: 4000000.0,
+      potential_additional_funding: 3000000.0,
+      notes: "",
     },
     {
       can_id: 5,
       fiscal_year: 2024,
-      total_fiscal_year_funding: 10000000.00,
-      current_funding: 6000000.00,
-      expected_funding: 4000000.00,
-      potential_additional_funding: 3000000.00,
-      notes: ""
+      total_fiscal_year_funding: 10000000.0,
+      current_funding: 6000000.0,
+      expected_funding: 4000000.0,
+      potential_additional_funding: 3000000.0,
+      notes: "",
     },
     {
       can_id: 6,
       fiscal_year: 2021,
-      total_fiscal_year_funding: 10000000.00,
-      current_funding: 6000000.00,
-      expected_funding: 4000000.00,
-      potential_additional_funding: 3000000.00,
-      notes: ""
+      total_fiscal_year_funding: 10000000.0,
+      current_funding: 6000000.0,
+      expected_funding: 4000000.0,
+      potential_additional_funding: 3000000.0,
+      notes: "",
     },
     {
       can_id: 7,
       fiscal_year: 2023,
-      total_fiscal_year_funding: 10000000.00,
-      current_funding: 6000000.00,
-      expected_funding: 4000000.00,
-      potential_additional_funding: 3000000.00,
-      notes: ""
+      total_fiscal_year_funding: 10000000.0,
+      current_funding: 6000000.0,
+      expected_funding: 4000000.0,
+      potential_additional_funding: 3000000.0,
+      notes: "",
     },
     {
       can_id: 2,
       fiscal_year: 2023,
-      total_fiscal_year_funding: 10000000.00,
-      current_funding: 6000000.00,
-      expected_funding: 4000000.00,
-      potential_additional_funding: 3000000.00,
-      notes: ""
+      total_fiscal_year_funding: 10000000.0,
+      current_funding: 6000000.0,
+      expected_funding: 4000000.0,
+      potential_additional_funding: 3000000.0,
+      notes: "",
     },
     {
       can_id: 4,
       fiscal_year: 2023,
-      total_fiscal_year_funding: 10000000.00,
-      current_funding: 6000000.00,
-      expected_funding: 4000000.00,
-      potential_additional_funding: 3000000.00,
-      notes: ""
+      total_fiscal_year_funding: 10000000.0,
+      current_funding: 6000000.0,
+      expected_funding: 4000000.0,
+      potential_additional_funding: 3000000.0,
+      notes: "",
     },
     {
       can_id: 11,
       fiscal_year: 2022,
-      total_fiscal_year_funding: 10000000.00,
-      current_funding: 6000000.00,
-      expected_funding: 4000000.00,
-      potential_additional_funding: 3000000.00,
-      notes: ""
+      total_fiscal_year_funding: 10000000.0,
+      current_funding: 6000000.0,
+      expected_funding: 4000000.0,
+      potential_additional_funding: 3000000.0,
+      notes: "",
     },
     {
       can_id: 11,
       fiscal_year: 2023,
-      total_fiscal_year_funding: 10000000.00,
-      current_funding: 6000000.00,
-      expected_funding: 4000000.00,
-      potential_additional_funding: 3000000.00,
-      notes: ""
+      total_fiscal_year_funding: 10000000.0,
+      current_funding: 6000000.0,
+      expected_funding: 4000000.0,
+      potential_additional_funding: 3000000.0,
+      notes: "",
     },
     {
       can_id: 12,
       fiscal_year: 2022,
-      total_fiscal_year_funding: 10000000.00,
-      current_funding: 6000000.00,
-      expected_funding: 4000000.00,
-      potential_additional_funding: 3000000.00,
-      notes: ""
+      total_fiscal_year_funding: 10000000.0,
+      current_funding: 6000000.0,
+      expected_funding: 4000000.0,
+      potential_additional_funding: 3000000.0,
+      notes: "",
     },
     {
       can_id: 12,
       fiscal_year: 2023,
-      total_fiscal_year_funding: 10000000.00,
-      current_funding: 6000000.00,
-      expected_funding: 4000000.00,
-      potential_additional_funding: 3000000.00,
-      notes: ""
+      total_fiscal_year_funding: 10000000.0,
+      current_funding: 6000000.0,
+      expected_funding: 4000000.0,
+      potential_additional_funding: 3000000.0,
+      notes: "",
     },
     {
       can_id: 13,
       fiscal_year: 2023,
-      total_fiscal_year_funding: 11400000.00,
-      current_funding: 880000.00,
-      expected_funding: 260000.00,
-      potential_additional_funding: 1300000.00,
-      notes: ""
+      total_fiscal_year_funding: 11400000.0,
+      current_funding: 880000.0,
+      expected_funding: 260000.0,
+      potential_additional_funding: 1300000.0,
+      notes: "",
     },
     {
       can_id: 13,
       fiscal_year: 2024,
-      total_fiscal_year_funding: 11400000.00,
-      current_funding: 880000.00,
-      expected_funding: 260000.00,
-      potential_additional_funding: 1300000.00,
-      notes: ""
-    }
+      total_fiscal_year_funding: 11400000.0,
+      current_funding: 880000.0,
+      expected_funding: 260000.0,
+      potential_additional_funding: 1300000.0,
+      notes: "",
+    },
   ],
-  "can_fiscal_year_carry_over": [
+  shared_portfolio_cans: [
+    {
+      portfolio_id: 2,
+      can_id: 8,
+    },
+  ],
+  can_fiscal_year_carry_over: [
     {
       id: 1,
       can_id: 11,
       from_fiscal_year: 2022,
       to_fiscal_year: 2023,
-      amount: 300000.00,
+      amount: 300000.0,
     },
     {
       id: 2,
       can_id: 12,
       from_fiscal_year: 2022,
       to_fiscal_year: 2023,
-      amount: 1000000.00,
+      amount: 1000000.0,
     },
   ],
-  "research_project_cans": [
+  research_project_cans: [
     {
       research_project_id: 1,
-      can_id: 13
-    }
-  ]
+      can_id: 13,
+    },
+  ],
 }
