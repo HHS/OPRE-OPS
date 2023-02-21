@@ -1,15 +1,14 @@
-import styles from "./styles.module.css";
 import PropTypes from "prop-types";
 const Tag = ({ tagStyle = "", text = "", active = false, label = "", className = "" }) => {
-    let tagClasses = "font-12px padding-05",
+    let tagClasses = "font-12px padding-05 height-205 radius-md",
         activeClass = "fake-bold";
 
     if (tagStyle === "darkTextLightBackground") {
-        tagClasses += ` ${styles.tag} bg-brand-neutral-lightest text-brand-neutral-dark`;
+        tagClasses += " bg-brand-neutral-lightest text-brand-neutral-dark";
     } else if (tagStyle === "lightTextDarkBackground") {
-        tagClasses += ` ${styles.tag} bg-brand-data-viz-primary-4 text-brand-neutral-lightest`;
+        tagClasses += " bg-brand-data-viz-primary-4 text-brand-neutral-lightest";
     } else if (tagStyle === "darkTextWhiteBackground") {
-        tagClasses += ` ${styles.tag} bg-white text-brand-neutral-dark`;
+        tagClasses += " bg-white text-brand-neutral-dark";
     }
 
     if (active && label === "Available") {
@@ -32,7 +31,11 @@ const Tag = ({ tagStyle = "", text = "", active = false, label = "", className =
         activeClass += " bg-brand-data-viz-secondary-26 text-white fake-bold";
     }
 
-    return <span className={`${tagClasses} ${activeClass} ${className}`}>{text}</span>;
+    return (
+        <span className={`${tagClasses} ${activeClass} ${className}`} style={{ width: "fit-content" }}>
+            {text}
+        </span>
+    );
 };
 
 export default Tag;
