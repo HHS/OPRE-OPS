@@ -26,12 +26,24 @@
         "platformAutomerge": true,
         "stabilityDays": 0
     },
+    "digest": {
+        "automerge": true,
+        "groupName": "digest dependencies",
+        "groupSlug": "all-digest",
+        "platformAutomerge": true,
+        "stabilityDays": 0
+    },
+
     "lockFileMaintenance": {
         "enabled": true,
         "automerge": true,
         "platformAutomerge": true
     },
     "packageRules": [
+        {
+            "matchPackageNames": ["python"],
+            "enabled": false
+        },
         {
             "matchPackageNames": [
                 "python"
@@ -48,5 +60,7 @@
             "platformAutomerge": true
         }
     ],
+
+
     "prBodyTemplate": "{{{header}}}{{{table}}}{{{notes}}}{{{changelogs}}}{{{controls}}}{{{footer}}}"
 }
