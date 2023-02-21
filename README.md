@@ -100,7 +100,7 @@ docker compose -f docker-compose.e2e.yml up
 ```
 
 The E2E uses it's own TEST keys for generating and validating JWT Signatures, as it bypasses any live OAuth providers.
-The test-private-key is currently configured within the `cypress.config.js` directly (base64url encoded). This key is also retained in `PKCS8` format in `test-private-key-pkcs8.pem`.  The `backend`, then requires the test-public-key in order to validate the signatures of the JWT. This is configured within the `/ops/environment/local/e2e.py` (path); which points to the `/static/test-public-key.pem`.
+The test-private-key is currently configured within the `cypress.config.js` directly (base64url encoded).  The `backend`, then requires the test-public-key in order to validate the signatures of the JWT. This is configured within the `/ops/environment/local/e2e.py` (path); which points to the `/static/test-public-key.pem`.
 
 These keys are ONLY used for End-to-end testing, and are not pushed to any LIVE system outside of local testing.
 
