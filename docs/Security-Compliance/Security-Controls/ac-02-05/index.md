@@ -2,7 +2,7 @@
 
 ## AC-02(05) - ACCOUNT MANAGEMENT | INACTIVITY LOGOUT
 
-The organization requires that users log out when [Assignment: organization-defined time-period of expected inactivity or description of when to log out].
+The organization requires that users log out at the end of their normal work period.
 
 AC-2 (5) Additional FedRAMP Requirements and Guidance:
 Guidance: Should use a shorter timeframe than AC-12
