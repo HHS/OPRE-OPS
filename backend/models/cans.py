@@ -1,5 +1,5 @@
 """CAN models."""
-from typing import Any
+from typing import Any, cast
 
 from models.base import BaseModel
 from models.portfolios import Portfolio, shared_portfolio_cans
@@ -129,7 +129,8 @@ class CANFiscalYearCarryOver(BaseModel):
     can = relationship("CAN", lazy="joined")
     from_fiscal_year = Column(Integer)
     to_fiscal_year = Column(Integer)
-    amount = Column(Numeric(12, 2))
+    current_amount = Column(Numeric(12, 2))
+    expected_amount = Column(Numeric(12, 2))
     notes = Column(String, default="")
 
 
@@ -166,17 +167,17 @@ class BudgetLineItemStatus(BaseModel):
             {"id": 3, "status": "Obligated"},
         )
 
-    @hybrid_property
+    @hybrid_property  # type: ignore [misc]
     def Planned(self) -> bool:
-        return self.id == 1  # Planned
+        return cast(bool, self.id == 1)  # Planned
 
-    @hybrid_property
+    @hybrid_property  # type: ignore [misc]
     def In_Execution(self) -> bool:
-        return self.id == 2  # In Execution
+        return cast(bool, self.id == 2)  # In Execution
 
-    @hybrid_property
+    @hybrid_property  # type: ignore [misc]
     def Obligated(self) -> bool:
-        return self.id == 3  # Obligated
+        return cast(bool, self.id == 3)  # Obligated
 
 
 class CANArrangementType(BaseModel):
@@ -251,9 +252,24 @@ class CAN(BaseModel):
     managing_research_project_id = Column(Integer, ForeignKey("research_project.id"))
     managing_research_project = relationship(ResearchProject, back_populates="cans")
 
-    @hybrid_property
+    @hybrid_property  # type: ignore [misc]
     def arrangementType(self) -> str:
-        return self.arrangement_type.name
+        return cast(str, self.arrangement_type.name)
+
+    @override
+    def to_dict(self):
+        d = super().to_dict()
+
+        d.update(
+            appropriation_date=self.appropriation_date.strftime("%d/%m/%Y")
+            if self.appropriation_date
+            else None,
+            expiration_date=self.expiration_date.strftime("%d/%m/%Y")
+            if self.expiration_date
+            else None,
+        )
+
+        return d
 
     @override
     def to_dict(self):
