@@ -2,11 +2,15 @@
 ## AC-05 - Separation of Duties
 
 The organization:
-a. Separates [at a minimum, data creation and control, software development and maintenance, and security functions];
+a.Identify and document 
+[i. Security administration is an independent responsibility and shall not be assigned to a system/application programmer, database administrator, system administrator, system operator, or security auditor. Functions performed by security administrators shall be
+entirely separated from the functions performed by system/application programmers, database administrators, system administrators, system operators, and security auditors.
+ii. Security administrators’ functions shall be separated security auditors’ functions to reduce the likelihood of fraudulent action (i.e., failing to report on or mitigate security issues).
+iii. Security auditors shall have full administrative control over all security audit and log files. These personnel, however, will not have data altering capability for security devices, security management devices, audit and security logs, or ACF infrastructure devices.]; and
 
-b. Documents separation of duties of individuals; and
+b. Define system access authorizations to support separation of duties.
 
-c. Defines information system access authorizations to support separation of duties.
+Note: Separation of duties addresses the potential for abuse of authorized privileges and helps to reduce the risk of malevolent activity without collusion. Separation of duties includes, for example: (i) dividing mission functions and information system support functions among different individuals and/or roles; (ii) conducting information system support functions with different individuals (e.g., system management, programming, configuration management, quality assurance and testing, and network security); and (iii) ensuring system administrators do not also perform independent audit functions.
 
 AC-5 Additional FedRAMP Requirements and Guidance:  Guidance: CSPs have the option to provide a separation of duties matrix as an attachment to the SSP.  Directions for attaching the Separation of Duties Matrix document may be found in Section 15.11 ATTACHMENT 11 - Separation of Duties Matrix.
 
