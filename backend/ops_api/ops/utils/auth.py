@@ -20,7 +20,7 @@ def user_identity_lookup(user: User) -> str:
 @jwtMgr.user_lookup_loader
 def user_lookup_callback(_jwt_header: dict, jwt_data: dict) -> Optional[User]:
     identity = jwt_data["sub"]
-    return User.query.filter_by(id=identity).one_or_none()
+    return User.query.filter_by(oidc_id=identity).one_or_none()
 
 
 def create_oauth_jwt(key: Optional[str] = None, header: Optional[str] = None, payload: Optional[str] = None) -> str:

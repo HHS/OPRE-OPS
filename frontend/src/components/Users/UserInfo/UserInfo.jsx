@@ -3,11 +3,11 @@ import RoundedBox from "../../UI/RoundedBox/RoundedBox";
 import { useSelector } from "react-redux";
 
 const UserInfo = () => {
-    const user = useSelector((state) => state.activeUser.user);
+    const user = useSelector((state) => state.userDetail.user);
 
     return (
         <div className={styles.container}>
-            User Info:
+            <h1>User Details:</h1>
             <RoundedBox>
                 <div className="cardBody">
                     <table>
@@ -21,7 +21,9 @@ const UserInfo = () => {
                         </tr>
                         <tr>
                             <td>Name</td>
-                            <td>: {user?.fullname}</td>
+                            <td>
+                                : {user?.first_name} {user?.last_name}
+                            </td>
                         </tr>
                         <tr>
                             <td>Date Joined</td>

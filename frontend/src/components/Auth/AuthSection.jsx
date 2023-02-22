@@ -2,18 +2,19 @@ import { login, logout, setUserDetails } from "./authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import ApplicationContext from "../../applicationContext/ApplicationContext";
 import cryptoRandomString from "crypto-random-string";
 import { getAuthorizationCode } from "./auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { User } from "../UI/Header/User";
 import jwt_decode from "jwt-decode";
+import { getUserByOidc } from "../../api/getUser";
+import { apiLogin } from "../../api/apiLogin";
 
 async function setActiveUser(token, dispatch) {
     const decodedJwt = jwt_decode(token);
     const userId = decodedJwt["sub"];
-    const userDetails = await ApplicationContext.get().helpers().callBackend(`/api/v1/users/${userId}`, "get");
+    const userDetails = await getUserByOidc(userId);
     console.log(`Logged In User: ${userDetails}`);
     dispatch(setUserDetails(userDetails));
 }
@@ -25,10 +26,7 @@ const AuthSection = () => {
 
     const callBackend = useCallback(
         async (authCode) => {
-            const response = await ApplicationContext.get().helpers().callBackend(`/api/v1/auth/login/`, "post", {
-                callbackUrl: window.location.href,
-                code: authCode,
-            });
+            const response = await apiLogin(authCode);
 
             localStorage.setItem("access_token", response.access_token);
             dispatch(login());
