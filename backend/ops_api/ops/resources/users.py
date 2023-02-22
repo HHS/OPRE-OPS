@@ -15,20 +15,23 @@ class UsersItemAPI(BaseItemAPI):
         user = self.model.query.filter_by(oidc_id=oidc).first_or_404()
         return user
 
-    @jwt_required()
     @override
     def get(self, id: int) -> Response:
         token = verify_jwt_in_request()
+        # Get the user from the token to see who's making the request
         sub = str(token[1]["sub"])
         oidc_id = request.args.get("oidc_id", type=str)
+
+        # Grab the user, based on which ID is being queried (id or oidc_id)
         if oidc_id:
             user = self._get_item_by_oidc(oidc_id)
         else:
             user = self._get_item(id)
 
-        print(f"user: {user}")
-        if sub == user.oidc_id:
-            user = self._get_item(id)
+        # Users can only see their own user details
+        # Update this authZ checks once we determine additional
+        # roles that can view other users details.
+        if sub == str(user.oidc_id):
             response = jsonify(user.to_dict())
             response.headers.add("Access-Control-Allow-Origin", "*")
             return response
