@@ -1,4 +1,4 @@
-import { login, logout } from "./authSlice";
+import { login, logout, setUserDetails } from "./authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +7,16 @@ import cryptoRandomString from "crypto-random-string";
 import { getAuthorizationCode } from "./auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
+import { User } from "../UI/Header/User";
+import jwt_decode from "jwt-decode";
+
+async function setActiveUser(token, dispatch) {
+    const decodedJwt = jwt_decode(token);
+    const userId = decodedJwt["sub"];
+    const userDetails = await ApplicationContext.get().helpers().callBackend(`/api/v1/users/${userId}`, "get");
+    console.log(`Logged In User: ${userDetails}`);
+    dispatch(setUserDetails(userDetails));
+}
 
 const AuthSection = () => {
     const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
@@ -15,15 +25,15 @@ const AuthSection = () => {
 
     const callBackend = useCallback(
         async (authCode) => {
-            const response = await ApplicationContext.get().helpers().callBackend(`/login`, "post", {
+            const response = await ApplicationContext.get().helpers().callBackend(`/api/v1/auth/login/`, "post", {
                 callbackUrl: window.location.href,
                 code: authCode,
             });
 
-            localStorage.setItem("jwt", response.jwt);
-            console.log({ jwt: response.jwt });
-
+            localStorage.setItem("access_token", response.access_token);
             dispatch(login());
+
+            await setActiveUser(response.access_token, dispatch);
 
             navigate("/");
         },
@@ -31,11 +41,12 @@ const AuthSection = () => {
     );
 
     useEffect(() => {
-        const currentJWT = localStorage.getItem("jwt");
+        const currentJWT = localStorage.getItem("access_token");
 
         if (currentJWT) {
             // TODO: we should validate the JWT here and set it on state if valid else logout
             dispatch(login());
+            setActiveUser(currentJWT, dispatch);
             return;
         }
 
@@ -68,7 +79,7 @@ const AuthSection = () => {
 
     const logoutHandler = () => {
         dispatch(logout());
-        localStorage.removeItem("jwt");
+        localStorage.removeItem("access_token");
     };
 
     return (
@@ -88,6 +99,7 @@ const AuthSection = () => {
             )}
             {isLoggedIn && (
                 <div>
+                    <User />
                     <button className="usa-button fa-solid fa-arrow-right-to-bracket margin-1" onClick={logoutHandler}>
                         <span className="margin-1">Sign-out</span>
                     </button>

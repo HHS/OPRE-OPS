@@ -1,9 +1,18 @@
 import json
 import os
 
-from ops_api.ops.environment.default_settings import *  # noqa: F403, F401
+from ops.environment.default_settings import *  # noqa: F403, F401
 
 DEBUG = False
+
+AUTHLIB_OAUTH_CLIENTS = {
+    "logingov": {
+        "server_metadata_url": "https://idp.int.identitysandbox.gov/.well-known/openid-configuration",
+        "user_info_url": "https://idp.int.identitysandbox.gov/api/openid_connect/userinfo",
+        "client_id": "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops_prod",
+        "client_kwargs": {"scope": "openid email profile"},
+    },
+}
 
 
 # Helper function
@@ -22,13 +31,3 @@ database_service = vcap_services["aws-rds"][0]
 database_creds = database_service["credentials"]
 
 SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{database_creds['username']}:{database_creds['password']}@{database_creds['host']}:{database_creds['port']}/{database_creds['db_name']}"  # noqa: B950
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": database_creds["db_name"],
-#         "USER": database_creds["username"],
-#         "PASSWORD": database_creds["password"],
-#         "HOST": database_creds["host"],
-#         "PORT": database_creds["port"],
-#     }
-# }

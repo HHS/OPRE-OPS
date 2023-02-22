@@ -40,18 +40,10 @@ def test_delete_existing_data():
 
         mock_conn = mock.MagicMock()
         with pytest.raises(RuntimeError):
-            delete_existing_data(
-                mock_conn, {"division": [], "portfolio": [], "table3": []}
-            )
+            delete_existing_data(mock_conn, {"division": [], "portfolio": [], "table3": []})
             assert mock_conn.execute.call_count == 3
-            assert (
-                mock_conn.execute.call_args_list[0].args[0].text
-                == "TRUNCATE division CASCADE;"
-            )
-            assert (
-                mock_conn.execute.call_args_list[1].args[0].text
-                == "TRUNCATE portfolio CASCADE;"
-            )
+            assert mock_conn.execute.call_args_list[0].args[0].text == "TRUNCATE division CASCADE;"
+            assert mock_conn.execute.call_args_list[1].args[0].text == "TRUNCATE portfolio CASCADE;"
 
 
 def test_delete_existing_data_nonexistant_table():
@@ -60,9 +52,7 @@ def test_delete_existing_data_nonexistant_table():
 
         with pytest.raises(RuntimeError) as e:
             mock_conn = mock.MagicMock()
-            delete_existing_data(
-                mock_conn, {"division": [], "portfolio": [], "table3": []}
-            )
+            delete_existing_data(mock_conn, {"division": [], "portfolio": [], "table3": []})
             assert e.value.message == "Table not allowed"
 
 
@@ -85,12 +75,8 @@ def test_load_new_data():
 def test_import_data(mocker):
     mock_engine = mocker.MagicMock()
     mock_meta = mocker.MagicMock()
-    mock_delete = mocker.patch(
-        "data_tools.src.import_static_data.import_data.delete_existing_data"
-    )
-    mock_load = mocker.patch(
-        "data_tools.src.import_static_data.import_data.load_new_data"
-    )
+    mock_delete = mocker.patch("data_tools.src.import_static_data.import_data.delete_existing_data")
+    mock_load = mocker.patch("data_tools.src.import_static_data.import_data.load_new_data")
 
     import_data(mock_engine, mock_meta, {})
 

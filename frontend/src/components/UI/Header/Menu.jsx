@@ -8,10 +8,10 @@ export const Menu = () => {
             </button>
             <ul className="usa-nav__primary usa-accordion">
                 <li className="usa-nav__primary-item">
-                    <Link to="/portfolios">Portfolios</Link>
+                    <Link to="/portfolios/">Portfolios</Link>
                 </li>
                 <li className="usa-nav__primary-item">
-                    <Link to="/cans">CANs</Link>
+                    <Link to="/cans/">CANs</Link>
                 </li>
             </ul>
         </div>
