@@ -88,6 +88,6 @@ d.
 
 e. Review and update is the responsibility of the ACF OCIO
 
-#### Related Files
+### Related Files
 
 TODO: so many screenshots
