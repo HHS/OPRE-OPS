@@ -7,9 +7,9 @@ def test_funding_source_lookup(loaded_db):
     funding_source = loaded_db.session.query(FundingSource).filter(FundingSource.id == 1).one()
     assert funding_source is not None
     assert funding_source.id == 1
-    assert funding_source.name == "Funding-Source-1"
-    assert funding_source.nickname == "FS1"
-    assert funding_source.cans != []  # CAN(#1) was assigned this funding source
+    assert funding_source.name == "Children's Bureau"
+    assert funding_source.nickname == "Children's Bureau"
+    assert funding_source.cans == []  # CAN(#1) was assigned this funding source
 
 
 def test_finding_source_creation():

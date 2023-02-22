@@ -14,5 +14,5 @@ def test_can_arrangement_type_retrieve_all(loaded_db):
 )
 @pytest.mark.usefixtures("app_ctx")
 def test_can_arrangement_type_lookup(loaded_db, id, name):
-    can_at = loaded_db.session.query(CANArrangementType).get(id)
+    can_at = loaded_db.session.get(CANArrangementType, id)
     assert can_at.name == name

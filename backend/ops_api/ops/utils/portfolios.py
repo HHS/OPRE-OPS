@@ -22,7 +22,6 @@ class TotalFunding(TypedDict):
 
 
 def get_total_funding(portfolio: Portfolio, fiscal_year: Optional[int] = None) -> TotalFunding:
-
     can_fiscal_year_query = CANFiscalYear.query.filter(CANFiscalYear.can.has(CAN.managing_portfolio == portfolio))
 
     can_fiscal_year_carry_over_query = CANFiscalYearCarryOver.query.filter(

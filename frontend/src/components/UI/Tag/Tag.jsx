@@ -23,7 +23,7 @@ const Tag = ({ tagStyle = "", text = "", active = false, label = "" }) => {
     } else if (active && label.includes("Funding Received")) {
         activeClass = "bg-brand-data-viz-primary-3 text-white fake-bold";
     } else if (active && label.includes("Funding Expected")) {
-        activeClass = "bg-brand-neutral-lighter text-white fake-bold";
+        activeClass = "bg-brand-neutral-lighter fake-bold";
     } else if (active && label.includes("Carry-Forward")) {
         activeClass = "bg-brand-data-viz-primary-10 fake-bold";
     } else if (active && label.includes("New Funding")) {

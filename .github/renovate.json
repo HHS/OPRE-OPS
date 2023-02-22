@@ -4,7 +4,9 @@
         "helpers:pinGitHubActionDigests"
     ],
     "dependencyDashboard": false,
-    "labels": ["dependencies"],
+    "labels": [
+        "dependencies"
+    ],
     "automergeType": "pr",
     "automergeStrategy": "auto",
     "major": {
@@ -14,17 +16,51 @@
         "automerge": true,
         "groupName": "minor dependencies",
         "groupSlug": "all-minor",
+        "platformAutomerge": true,
         "stabilityDays": 3
     },
     "patch": {
         "automerge": true,
         "groupName": "patch dependencies",
         "groupSlug": "all-patch",
+        "platformAutomerge": true,
         "stabilityDays": 0
     },
-    "packageRules": [{
-        "matchPackageNames": ["python"],
-        "enabled": false
-    }],
+    "digest": {
+        "automerge": true,
+        "groupName": "digest dependencies",
+        "groupSlug": "all-digest",
+        "platformAutomerge": true,
+        "stabilityDays": 0
+    },
+
+    "lockFileMaintenance": {
+        "enabled": true,
+        "automerge": true,
+        "platformAutomerge": true
+    },
+    "packageRules": [
+        {
+            "matchPackageNames": ["python"],
+            "enabled": false
+        },
+        {
+            "matchPackageNames": [
+                "python"
+            ],
+            "enabled": false,
+            "platformAutomerge": true
+        },
+        {
+            "matchDepTypes": [
+                "devDependencies",
+                "dev-packages"
+            ],
+            "automerge": true,
+            "platformAutomerge": true
+        }
+    ],
+
+
     "prBodyTemplate": "{{{header}}}{{{table}}}{{{notes}}}{{{changelogs}}}{{{controls}}}{{{footer}}}"
 }

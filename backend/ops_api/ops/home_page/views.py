@@ -1,6 +1,4 @@
-from flask import abort
-from flask import Blueprint
-from flask import render_template
+from flask import Blueprint, abort, render_template
 from jinja2 import TemplateNotFound
 
 home = Blueprint("home", __name__, template_folder="templates")

@@ -3,6 +3,12 @@ beforeEach(() => {
     cy.injectAxe();
 });
 
+it("access_token is present within localstorage", () => {
+    cy.fakeLogin();
+    cy.visit("/");
+    cy.getLocalStorage("access_token").should("exist");
+});
+
 it("sign in button visible at page load when there is no jwt", () => {
     // cannot click on/test sign in button because of cross origin security
     cy.visit("/");
@@ -10,16 +16,16 @@ it("sign in button visible at page load when there is no jwt", () => {
 });
 
 it("sign out button visible when there is a jwt", () => {
-    cy.login();
+    cy.fakeLogin();
     cy.visit("/");
     cy.contains("Sign-out");
 });
 
 it("clicking logout removes the jwt and displays sign-in", () => {
-    cy.login();
+    cy.fakeLogin();
     cy.visit("/");
     cy.contains("Sign-out").click();
-    cy.window().its("localStorage").invoke("getItem", "jwt").should("not.exist");
+    cy.window().its("localStorage").invoke("getItem", "access_token").should("not.exist");
     cy.contains("Sign-in");
     cy.url("/");
 });
@@ -31,9 +37,8 @@ it("isLoggedIn is false when there is no jwt", () => {
         .should("deep.include", { isLoggedIn: false });
 });
 
-// this test currently doesn't work - not sure why - maybe the state is getting cached?
 it.skip("isLoggedIn is true when there is a jwt", () => {
-    cy.login();
+    cy.fakeLogin();
     cy.visit("/");
     cy.window()
         .then((win) => win.store.getState().auth)
@@ -41,7 +46,7 @@ it.skip("isLoggedIn is true when there is a jwt", () => {
 });
 
 it("sign out button visible when there is a jwt", () => {
-    cy.login();
+    cy.fakeLogin();
     cy.visit("/");
     cy.contains("Sign-out");
 });
