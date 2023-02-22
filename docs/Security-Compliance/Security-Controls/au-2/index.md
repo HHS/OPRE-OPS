@@ -1,8 +1,8 @@
-# Audit and Accountability  
-## AU-02 - Audit Events  
+# Audit and Accountability
+## AU-02 - Audit Events
 
 a. Identify the types of events that the system is capable of logging in support of the audit function: [Assignment: organization-defined event types that the system is capable of logging];
- [i. The following events must be identified within server audit logs: 
+ [i. The following events must be identified within server audit logs:
 * Server startup and shutdown;
 * Loading and unloading of services;
 * Installation and removal of software;
@@ -15,7 +15,7 @@ a. Identify the types of events that the system is capable of logging in support
 * Additional security-related events, as required by the System Owner (SO) or to support the nature of the supported business and applications.
 
 ii. The following events must be identified within application and database audit logs:
- Modifications to the application;
+* Modifications to the application;
 * Application alerts and error messages;
 * User logon and logoff (successful or unsuccessful);
 * System administration activities;
@@ -39,11 +39,11 @@ c. Specify the following event types for logging within the system: [Unsuccessfu
 d. Provide a rationale for why the event types selected for logging are deemed to be adequate to support after-the-fact investigations of incidents; and
 e. Review and update the event types selected for logging within every 365 days and whenever there is a significant system modification.
 
-## OPS Implementation  
+## OPS Implementation
 
-OPS inherits audit tools and capabilities from Cloud.gov and login.gov to audit the logs of Developer and OPS user account actions, respectively. 
+OPS inherits audit tools and capabilities from Cloud.gov and login.gov to audit the logs of Developer and OPS user account actions, respectively.
 
-TODO: Get SSP from cloud.gov and verify what we can inherit
+TODO: Get SSP from cloud.gov and login.gov and verify what we can inherit
 
 a.i The following events must be identified within server audit logs:
 - a.i.1 | *inherited from Cloud.gov*
@@ -52,19 +52,22 @@ a.i The following events must be identified within server audit logs:
 - a.i.4 | *inherited from Cloud.gov*
 - a.i.5 | *inherited from Login.gov*
 - a.i.6 | *inherited from Cloud.gov*
-- a.i.7 | Access logged in Cloud.gov | OPRE Admin activity needs to be logged.
-- a.i.8 | Account creation through Login.gov, modification and deletion logged in OPS
+- a.i.7 | Access logged in Cloud.gov | OPRE User activity is auditable via logs TODO: refine
+- a.i.8 | Account creation through Login.gov. Modification, role assignment(s), and deletion logged in OPS
 - a.i.9 | Logged in OPS
 - a.i.10 | Uploading and downloading of data files is logged to Cloud.gov system logs
 
-a.ii The following events must be identified within application and database audit logs: 
-- a.ii.1 | Modifications to the application are tracked in the open source repository hosted on GitHub.com
-- a.ii.2 | Frontend alerts and errors send a logging message to the backend to log to the server. Backend errors are logged to the server.
-- a.ii.3 | *inherited from Login.gov*
-- a.ii.4 | Logged in OPS
-- a.ii.5 | Access is logged through the backend
-- a.ii.6 | Account creation is inherited from Login.gov. Account modification and deletion is logged in OPRE.
-- a.ii.7 | Logged in OPS
+a.ii The following events must be identified within application and database audit logs:
+- a.ii.1 | Modifications to the application are tracked in the open source repository hosted within the HHS organization on GitHub.com
+- a.ii.2 | Frontend alerts and errors send a logging message to the backend to log to the server. Backend errors are logged to the server. TODO: make sure we are doing the former or update language
+- a.ii.3 | inherited from Login.gov in terms of login and explicit log off?  Session expiry/timeout and teardown would also be stored in OPS logs ? TODO:
+- a.ii.4 | Logged in OPS, TODO: Any cloud.gov inheritance?
+- a.ii.5 | TODO: what exactly are we going to log?
+- a.ii.6 | Account creation is inherited from Login.gov. Modification, role assignment(s), and deletion logged in OPS
+- a.ii.7 | Logged and auditable withinin OPS
+- a.ii.8 | Logged and auditable within OPS
+- a.ii.9 | Logged and auditable within OPS
+- a.ii.10 | TODO: Printing... ?
 
 a.iii The following events must be identified within network device (e.g., router, firewall, switch, wireless access point) audit logs:
 
@@ -75,18 +78,16 @@ b. Inherited from Cloud.gov
 c. Inherited from Cloud.gov
 
 d.
-- Login lockouts are inherited from Login.gov
+- Log in lockouts are inherited from Login.gov
 - Configuration changes are inherited from Cloud.gov
-- Application alerts and error messages are logged to server logs.
-- System Administration activities are logged in OPS
-- Modifications of privileges and access are logged in OPSOPRE
+- Application alerts and error messages are logged within OPS.
+- System Administration activities are logged within OPS
+- Modifications of privileges and access are logged within OPS
 - Account creation is inherited from Login.gov
-- Account modification and deletion is logged in OPS
+- Account modification, role assignment(s), and deletion is logged within OPS
 
-e. Review and update should be the responsibility of ACF OCIO
+e. Review and update is the responsibility of the ACF OCIO
 
-#### Related Files  
+#### Related Files
 
-Django Admin Logging Example
-
-![](images/django_admin.png)
+TODO: so many screenshots
