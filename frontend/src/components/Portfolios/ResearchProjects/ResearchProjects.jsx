@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
 import CurrencyFormat from "react-currency-format";
@@ -18,6 +18,7 @@ const ResearchProjects = () => {
     const filteredResearchProjects = data.filter((project) => project.type === "research");
     const filteredAdminAndSupportProjects = data.filter((project) => project.type === "admin_and_support");
     const numberOfProjects = filteredResearchProjects.length + filteredAdminAndSupportProjects.length;
+    const [isTableSorted, setIsTableSorted] = useState(null);
 
     // Comps
     const researchProjectData = researchProjects.map((rp) => (
@@ -49,9 +50,9 @@ const ResearchProjects = () => {
         </button>
     );
 
-    const TableRow = ({ name, link, funding, fundingToDate, firstAwardDate, cans, agreement }) => (
+    const TableRow = ({ id, name, link, funding, fundingToDate, firstAwardDate, cans, agreement }) => (
         <tr>
-            <th scope="row" data-sort-value={name}>
+            <th scope="row" data-sort-value={name} data-sort-active={isTableSorted}>
                 <Link
                     to={link}
                     className="text-ink text-no-underline hover:text-underline usa-tooltip"
@@ -63,6 +64,7 @@ const ResearchProjects = () => {
                     {name.length > 30 ? name.substring(0, 30) + "..." : name}
                 </Link>
             </th>
+
             <td data-sort-value={funding}>
                 <CurrencyFormat value={funding} displayType={"text"} thousandSeparator={true} prefix={"$"} />
             </td>
@@ -114,31 +116,48 @@ const ResearchProjects = () => {
                     This is a list of all active research projects that this portfolio contributes to for the selected
                     fiscal year.
                 </p>
+                <button className="usa-button" onClick={() => setIsTableSorted(!isTableSorted)}>
+                    Sort table
+                </button>
+                {isTableSorted ? "Table is sorted" : "Table is not sorted"}
                 <div className="usa-table-container--scrollable" tabIndex="0">
                     <table className="usa-table usa-table--borderless">
                         <thead>
                             <tr>
-                                <th
-                                    data-sortable=""
-                                    scope="col"
-                                    role="columnheader"
-                                    style={{ paddingRight: 0, width: "32%" }}
-                                >
-                                    Project Name
-                                </th>
-                                <th data-sortable="" scope="col" role="columnheader" style={{ paddingRight: 0 }}>
+                                {isTableSorted ? (
+                                    <th
+                                        data-sortable
+                                        scope="col"
+                                        role="columnheader"
+                                        style={{ paddingRight: 0, width: "32%" }}
+                                        aria-sort={isTableSorted ? "descending" : "ascending"}
+                                    >
+                                        Project Name
+                                    </th>
+                                ) : (
+                                    <th
+                                        data-sortable
+                                        scope="col"
+                                        role="columnheader"
+                                        style={{ paddingRight: 0, width: "32%" }}
+                                    >
+                                        Project Name
+                                    </th>
+                                )}
+
+                                <th scope="col" role="columnheader" style={{ paddingRight: 0 }}>
                                     FY {fiscalYear.value} Funding
                                 </th>
-                                <th data-sortable="" scope="col" role="columnheader" style={{ paddingRight: 0 }}>
+                                <th scope="col" role="columnheader" style={{ paddingRight: 0 }}>
                                     Funding to Date
                                 </th>
-                                <th data-sortable="" scope="col" role="columnheader" style={{ paddingRight: 0 }}>
+                                <th scope="col" role="columnheader" style={{ paddingRight: 0 }}>
                                     First Award
                                 </th>
-                                <th data-sortable="" scope="col" role="columnheader" style={{ paddingRight: 0 }}>
+                                <th scope="col" role="columnheader" style={{ paddingRight: 0 }}>
                                     CANs
                                 </th>
-                                <th data-sortable="" scope="col" role="columnheader">
+                                <th scope="col" role="columnheader">
                                     Agreements
                                 </th>
                             </tr>
@@ -149,7 +168,9 @@ const ResearchProjects = () => {
                             ))}
                         </tbody>
                     </table>
-                    <div className="usa-sr-only usa-table__announcement-region" aria-live="polite"></div>
+                    <div className="usa-sr-only usa-table__announcement-region" aria-live="polite">
+                        {isTableSorted ? "table is sorted" : "Table  is not sorted"}
+                    </div>
                 </div>
             </article>
 

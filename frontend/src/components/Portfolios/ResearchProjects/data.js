@@ -1,7 +1,7 @@
 export const data = [
     {
         id: 1,
-        name: "Center for Research on Learning and Teaching",
+        name: "Zulu for Research on Learning and Teaching",
         link: "/projects/1",
         type: "research",
         funding: "6000000.00",
@@ -12,7 +12,7 @@ export const data = [
     },
     {
         id: 2,
-        name: "Project Two that is kinda long",
+        name: "Delta for Research on Learning and Teaching",
         link: "/projects/2",
         type: "research",
         funding: "8000000.00",
@@ -23,7 +23,7 @@ export const data = [
     },
     {
         id: 3,
-        name: "Project Three that is kinda long",
+        name: "Center for Research on Learning and Teaching",
         link: "/projects/3",
         type: "research",
         funding: "1000000.00",
