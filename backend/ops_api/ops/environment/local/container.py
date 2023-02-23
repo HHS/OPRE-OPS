@@ -1,3 +1,5 @@
+from ops_api.ops.environment.default_settings import *  # noqa: F403, F401
+
 DEBUG = True  # make sure DEBUG is off unless enabled explicitly otherwise
 
 # pragma: allowlist secret
