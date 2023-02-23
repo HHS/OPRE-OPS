@@ -1,6 +1,7 @@
 """User models."""
 from models.base import BaseModel
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import column_property, relationship
 
 
@@ -9,7 +10,7 @@ class User(BaseModel):
 
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
-    oidc_id = Column(String(128), unique=True, index=True)
+    oidc_id = Column(UUID(as_uuid=True), unique=True, index=True)
     email = Column(String, index=True, nullable=False)
     first_name = Column(String)
     last_name = Column(String)

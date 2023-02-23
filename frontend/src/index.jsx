@@ -12,6 +12,7 @@ import PortfolioList from "./pages/portfolios/list/PortfolioList";
 import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
 import CanList from "./pages/cans/list/CanList";
 import CanDetail from "./pages/cans/detail/CanDetail";
+import UserDetail from "./pages/users/detail/UserDetail";
 import ResearchProjects from "./components/Portfolios/ResearchProjects/ResearchProjects";
 import PeopleAndTeams from "./components/Portfolios/PeopleAndTeams/PeopleAndTeams";
 import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAndFunding";
@@ -71,6 +72,19 @@ const router = createBrowserRouter(
                         <div>
                             <Link to="/" className="text-primary">
                                 Research Projects
+                            </Link>
+                        </div>
+                    ),
+                }}
+            />
+            <Route
+                path="/users/:id"
+                element={<UserDetail />}
+                handle={{
+                    crumb: () => (
+                        <div>
+                            <Link to="/" className="text-primary">
+                                Users
                             </Link>
                         </div>
                     ),

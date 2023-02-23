@@ -95,6 +95,15 @@ agreement_cans = Table(
 )
 
 
+class Agreement(BaseModel):
+    __tablename__ = "agreement"
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    agreement_type_id = Column(Integer, ForeignKey("agreement_type.id"))
+    agreement_type = relationship("AgreementType")
+    cans = relationship("CAN", secondary=agreement_cans, back_populates="agreements")
+
+
 class CANFiscalYear(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN."""
 
@@ -122,18 +131,6 @@ class CANFiscalYearCarryOver(BaseModel):
     to_fiscal_year = Column(Integer)
     amount = Column(Numeric(12, 2))
     notes = Column(String, default="")
-
-
-class Agreement(BaseModel):
-    __tablename__ = "agreement"
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
-    agreement_type_id = Column(
-        Integer,
-        ForeignKey("agreement_type.id"),
-    )
-    agreement_type = relationship("AgreementType")
-    cans = relationship("CAN", secondary=agreement_cans, back_populates="agreements")
 
 
 class BudgetLineItem(BaseModel):

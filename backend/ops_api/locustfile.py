@@ -1,10 +1,7 @@
-from locust import between
-from locust import HttpUser
-from locust import task
+from locust import HttpUser, between, task
 
 
 class CanUser(HttpUser):
-
     wait_time = between(1, 5)
 
     @task

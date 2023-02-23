@@ -1,9 +1,11 @@
 before(() => {
+    cy.fakeLogin();
     cy.visit("/cans");
     cy.injectAxe();
 });
 
 it("loads", () => {
+    cy.fakeLogin();
     cy.get("h1").should("have.text", "CANs");
     cy.get('a[href="/cans/3"]').should("exist");
 });
@@ -13,6 +15,7 @@ it("passes a11y checks", () => {
 });
 
 it("clicking on a CAN takes you to the detail page", () => {
+    cy.fakeLogin();
     const canNumber = "G99PHS9";
 
     cy.contains(canNumber).click();

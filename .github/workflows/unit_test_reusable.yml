@@ -4,19 +4,20 @@ on:
 jobs:
 
   backend-api:
-    name: Backend Unit Tests
+    name: Backend API Unit Tests
     runs-on: ubuntu-latest
     env:
       JWT_PRIVATE_KEY: "__blank__"
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
       - uses: ./.github/actions/setup-python
+      # Stand up the system stack, to have something to poke
       - name: Run backend unit tests
         working-directory: ./backend/ops_api/
         run: pipenv run pytest
 
   backend-data-tools:
-    name: Backend Unit Tests
+    name: Data-Tools Unit Tests
     runs-on: ubuntu-latest
     env:
       JWT_PRIVATE_KEY: "__blank__"
@@ -34,11 +35,13 @@ jobs:
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
       - uses: ./.github/actions/setup-javascript
+      # Stand up the system stack, to have something to poke
       - name: Run frontend unit tests
         working-directory: ./frontend
         run: yarn test
 
   e2e:
+    name: End-to-End Testing
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
