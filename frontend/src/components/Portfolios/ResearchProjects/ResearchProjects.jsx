@@ -51,7 +51,7 @@ const ResearchProjects = () => {
 
     const TableRow = ({ name, link, funding, fundingToDate, firstAwardDate, cans, agreement }) => (
         <tr>
-            <th scope="row">
+            <th scope="row" data-sort-value={name}>
                 <Link
                     to={link}
                     className="text-ink text-no-underline hover:text-underline usa-tooltip"
@@ -63,15 +63,15 @@ const ResearchProjects = () => {
                     {name.length > 30 ? name.substring(0, 30) + "..." : name}
                 </Link>
             </th>
-            <td data-sort-value="">
+            <td data-sort-value={funding}>
                 <CurrencyFormat value={funding} displayType={"text"} thousandSeparator={true} prefix={"$"} />
             </td>
-            <td data-sort-value="">
+            <td data-sort-value={fundingToDate}>
                 <CurrencyFormat value={fundingToDate} displayType={"text"} thousandSeparator={true} prefix={"$"} />
             </td>
-            <td data-sort-value="">{firstAwardDate}</td>
-            <td data-sort-value="">{cans}</td>
-            <td data-sort-value="">{agreement}</td>
+            <td data-sort-value={firstAwardDate}>{firstAwardDate}</td>
+            <td data-sort-value={cans}>{cans}</td>
+            <td data-sort-value={agreement}>{agreement}</td>
         </tr>
     );
 
@@ -119,26 +119,26 @@ const ResearchProjects = () => {
                         <thead>
                             <tr>
                                 <th
-                                    data-sortable
+                                    data-sortable=""
                                     scope="col"
                                     role="columnheader"
                                     style={{ paddingRight: 0, width: "32%" }}
                                 >
                                     Project Name
                                 </th>
-                                <th data-sortable scope="col" role="columnheader" style={{ paddingRight: 0 }}>
+                                <th data-sortable="" scope="col" role="columnheader" style={{ paddingRight: 0 }}>
                                     FY {fiscalYear.value} Funding
                                 </th>
-                                <th data-sortable scope="col" role="columnheader" style={{ paddingRight: 0 }}>
+                                <th data-sortable="" scope="col" role="columnheader" style={{ paddingRight: 0 }}>
                                     Funding to Date
                                 </th>
-                                <th data-sortable scope="col" role="columnheader" style={{ paddingRight: 0 }}>
+                                <th data-sortable="" scope="col" role="columnheader" style={{ paddingRight: 0 }}>
                                     First Award
                                 </th>
-                                <th data-sortable scope="col" role="columnheader" style={{ paddingRight: 0 }}>
+                                <th data-sortable="" scope="col" role="columnheader" style={{ paddingRight: 0 }}>
                                     CANs
                                 </th>
-                                <th data-sortable scope="col" role="columnheader">
+                                <th data-sortable="" scope="col" role="columnheader">
                                     Agreements
                                 </th>
                             </tr>
