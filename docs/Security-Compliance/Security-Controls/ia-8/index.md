@@ -7,4 +7,6 @@ The information system uniquely identifies and authenticates non-organizational 
 
 a. Authentication is inherited from login.gov
 
+TODO: What is a non-organizational user?  If no non-organization users are using OPS, should we just say that?
+
 #### Related Files

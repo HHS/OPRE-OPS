@@ -22,9 +22,9 @@ ii. The following events must be identified within application and database audi
 * Accesses to information and files
 * Account creation, modification, or deletion; and,
 * Modifications of privileges and access controls.
-* (Moderate and High only) Read access to sensitive information
-* (Moderate and High only) Modification to sensitive information
-* (Moderate and High only) Printing sensitive information
+* Read access to sensitive information
+* Modification to sensitive information
+* Printing sensitive information
 
 iii. The following events must be identified within network device (e.g., router, firewall, switch, wireless access point) audit logs:
 * Device startup and shutdown;
@@ -59,23 +59,23 @@ a.i The following events must be identified within server audit logs:
 
 a.ii The following events must be identified within application and database audit logs:
 - a.ii.1 | Modifications to the application are tracked in the open source repository hosted within the HHS organization on GitHub.com
-- a.ii.2 | Frontend alerts and errors send a logging message to the backend to log to the server. Backend errors are logged to the server. TODO: make sure we are doing the former or update language
-- a.ii.3 | inherited from Login.gov in terms of login and explicit log off?  Session expiry/timeout and teardown would also be stored in OPS logs ? TODO:
-- a.ii.4 | Logged in OPS, TODO: Any cloud.gov inheritance?
-- a.ii.5 | TODO: what exactly are we going to log?
+- a.ii.2 | Frontend alerts and errors send a logging message to the backend to log to the server. Backend errors are logged to the server. Database logs would be inherited from the cloud.gov. TODO: make sure we are doing the former or update language
+- a.ii.3 | inherited from Login.gov/AMS in terms of login and user-initiated explicit log off. Session expiry/timeout and teardown would also be stored in OPS logs ? TODO: confirm and link a relevant story down below
+- a.ii.4 | Not applicable. cloud.gov is Platform-as-a-service
+- a.ii.5 | Inherited from cloud.gov
 - a.ii.6 | Account creation is inherited from Login.gov. Modification, role assignment(s), and deletion logged in OPS
-- a.ii.7 | Logged and auditable withinin OPS
+- a.ii.7 | Logged and auditable within OPS
 - a.ii.8 | Logged and auditable within OPS
 - a.ii.9 | Logged and auditable within OPS
-- a.ii.10 | TODO: Printing... ?
+- a.ii.10 | TODO: Seek out policies we can inherit from ACF OCIO
 
 a.iii The following events must be identified within network device (e.g., router, firewall, switch, wireless access point) audit logs:
 
-- All are inherited from Cloud.gov
+- All are inherited from cloud.gov
 
-b. Inherited from Cloud.gov
+b. Inherited from cloud.gov
 
-c. Inherited from Cloud.gov
+c. Inherited from cloud.gov
 
 d.
 - Log in lockouts are inherited from Login.gov

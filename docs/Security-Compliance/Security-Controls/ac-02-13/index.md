@@ -1,0 +1,10 @@
+# Account Management
+## Disable Accounts for High-risk Individuals
+
+Disable accounts of individuals within [immediately (maximum of 24 hours) after discovery of significant risk or security incident as defined in HHS Incident Response Policy and Procedure].
+
+Note: Users posing a significant risk include individuals for whom reliable evidence or intelligence indicates either the intention to use authorized access to information systems to cause harm or through whom adversaries will cause harm. Harm includes potential adverse impacts to organizational operations and assets, individuals, other organizations, or the Nation. Close coordination between AOs, network/system administrators, supervisors, and HR managers is essential in order for timely execution of this control enhancement.
+
+### OPS Implementation
+
+TODO: Determine wording
