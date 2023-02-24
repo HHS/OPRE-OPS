@@ -257,23 +257,8 @@ class CAN(BaseModel):
         return cast(str, self.arrangement_type.name)
 
     @override
-    def to_dict(self):
-        d = super().to_dict()
-
-        d.update(
-            appropriation_date=self.appropriation_date.strftime("%d/%m/%Y")
-            if self.appropriation_date
-            else None,
-            expiration_date=self.expiration_date.strftime("%d/%m/%Y")
-            if self.expiration_date
-            else None,
-        )
-
-        return d
-
-    @override
-    def to_dict(self):
-        d = super().to_dict()
+    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
 
         d.update(
             appropriation_date=self.appropriation_date.strftime("%d/%m/%Y")

@@ -445,14 +445,16 @@
       can_id: 11,
       from_fiscal_year: 2022,
       to_fiscal_year: 2023,
-      amount: 300000.0,
+      current_amount: 200000.0,
+      expected_amount: 100000.0,
     },
     {
       id: 2,
       can_id: 12,
       from_fiscal_year: 2022,
       to_fiscal_year: 2023,
-      amount: 1000000.0,
+      current_amount: 500000.0,
+      expected_amount: 500000.0,
     },
   ],
   research_project_cans: [

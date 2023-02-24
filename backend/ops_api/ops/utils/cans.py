@@ -10,14 +10,15 @@ class CanFundingSummary(TypedDict):
     current_funding: float
     expected_funding: float
     total_funding: float
+    carry_over_funding: float
     planned_funding: float
     obligated_funding: float
     in_execution_funding: float
-    available_funding: float
+    available_funding: str
     expiration_date: str
 
 
-def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> None:
+def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanFundingSummary:
     can_fiscal_year_query = CANFiscalYear.query.filter(CANFiscalYear.can.has(CAN.id == can.id))
 
     can_fiscal_year_carry_over_query = CANFiscalYearCarryOver.query.filter(
@@ -35,7 +36,15 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> None
 
     expected_funding = sum([c.expected_funding for c in can_fiscal_year_query]) or 0
 
-    carry_over_funding = sum([c.amount if c.amount else 0 for c in can_fiscal_year_carry_over_query]) or 0
+    carry_over_funding = (
+        sum(
+            [
+                (c.current_amount if c.current_amount else 0) + (c.expected_amount if c.expected_amount else 0)
+                for c in can_fiscal_year_carry_over_query
+            ]
+        )
+        or 0
+    )
 
     total_funding = current_funding + expected_funding
 
