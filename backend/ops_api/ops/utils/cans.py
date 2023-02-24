@@ -11,6 +11,7 @@ class CanFundingSummary(TypedDict):
     expected_funding: float
     total_funding: float
     carry_over_funding: float
+    carry_over_label: str
     planned_funding: float
     obligated_funding: float
     in_execution_funding: float
@@ -36,15 +37,23 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
 
     expected_funding = sum([c.expected_funding for c in can_fiscal_year_query]) or 0
 
-    carry_over_funding = (
-        sum(
-            [
-                (c.current_amount if c.current_amount else 0) + (c.expected_amount if c.expected_amount else 0)
-                for c in can_fiscal_year_carry_over_query
-            ]
-        )
-        or 0
-    )
+    carry_over_data = [
+        {
+            "amount": ((c.current_amount if c.current_amount else 0) + (c.expected_amount if c.expected_amount else 0)),
+            "fy": c.from_fiscal_year,
+        }
+        for c in can_fiscal_year_carry_over_query
+    ]
+
+    if carry_over_data:
+        carry_over_funding = sum(c["amount"] for c in carry_over_data)
+
+        carry_over_years = sorted({c["fy"] for c in carry_over_data})
+
+        carry_over_label = ", ".join(f"FY {c}" for c in carry_over_years) + " Carry-Forward"
+    else:
+        carry_over_funding = 0
+        carry_over_label = "Carry-Forward"
 
     total_funding = current_funding + expected_funding
 
@@ -83,6 +92,7 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
         "expected_funding": expected_funding,
         "total_funding": total_funding,
         "carry_over_funding": carry_over_funding,
+        "carry_over_label": carry_over_label,
         "planned_funding": planned_funding,
         "obligated_funding": obligated_funding,
         "in_execution_funding": in_execution_funding,

@@ -131,6 +131,8 @@ const CanCard = ({ can, fiscalYear }) => {
                             total_funding={canFundingData?.total_funding}
                             current_funding={canFundingData?.current_funding}
                             expected_funding={canFundingData?.expected_funding}
+                            carry_over_funding={canFundingData?.carry_over_funding}
+                            carry_over_label={canFundingData?.carry_over_label}
                         />
                     </div>
                     {/* NOTE: RIGHT SIDE */}

@@ -7,7 +7,14 @@ import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import Tag from "../../UI/Tag/Tag";
 import { calculatePercent } from "../../../helpers/utils";
 
-const CANFundingYTD = ({ total_funding = "0", current_funding = "0", expected_funding = "0", className = "" }) => {
+const CANFundingYTD = ({
+    total_funding = "0",
+    current_funding = "0",
+    expected_funding = "0",
+    carry_over_funding = "0",
+    carry_over_label = "",
+    className = "",
+}) => {
     const data = [
         {
             id: 1,
@@ -25,6 +32,21 @@ const CANFundingYTD = ({ total_funding = "0", current_funding = "0", expected_fu
         },
     ];
     const [activeId, setActiveId] = React.useState(0);
+
+    const CarryOverLabel = ({ funding, label }) => {
+        if (funding > 0) {
+            return (
+                <div
+                    className="margin-left-05 height-25 padding-05 font-sans-3xs display-inline-block"
+                    style={{ background: "#A1D0BE" }}
+                >
+                    {label}
+                </div>
+            );
+        } else {
+            return "";
+        }
+    };
 
     const LegendItem = ({ id, label, value, color, percent }) => {
         const isGraphActive = activeId === id;
@@ -66,7 +88,7 @@ const CANFundingYTD = ({ total_funding = "0", current_funding = "0", expected_fu
                 prefix={"$ "}
                 renderText={(value) => <span className="text-semibold font-sans-lg">{value}</span>}
             />
-
+            <CarryOverLabel funding={carry_over_funding} label={carry_over_label} />
             <div className={`margin-top-2 ${styles.barBox}`}>
                 <CANFundingBar setActiveId={setActiveId} data={data} />
             </div>
