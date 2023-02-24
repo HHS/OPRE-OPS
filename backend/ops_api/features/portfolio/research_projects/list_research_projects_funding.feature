@@ -27,7 +27,7 @@ Feature: List Research Projects and their funding for a given Portfolio and FY.
       | 1                | 2           | 2022   | $5      |
       | 2                | 4           | 2023   | $5      |
 
-    When I calculate the total funding for a Research Project in FY 2023
+    When I calculate the total funding for Research Project 1 in FY 2023
     Then the result should be $15.
 
   Scenario: Calculate Research Project funding to date.
