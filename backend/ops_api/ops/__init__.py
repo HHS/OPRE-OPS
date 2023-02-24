@@ -6,6 +6,7 @@ from flask import Blueprint, Flask
 from flask_cors import CORS
 from ops_api.ops.db import db
 from ops_api.ops.home_page.views import home
+from ops_api.ops.serializer import ma
 from ops_api.ops.urls import register_api
 from ops_api.ops.utils.auth import jwtMgr, oauth
 
@@ -41,10 +42,14 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     app.config.from_prefixed_env()
 
     # manually setting the public key path here, until we know where it will live longterm
-    app.config.setdefault("JWT_PUBLIC_KEY", app.open_resource(app.config.get("JWT_PUBLIC_KEY_PATH")).read())
+    app.config.setdefault(
+        "JWT_PUBLIC_KEY",
+        app.open_resource(app.config.get("JWT_PUBLIC_KEY_PATH")).read(),
+    )
     # fall back for pytest to use
     app.config.setdefault(
-        "SQLALCHEMY_DATABASE_URI", "postgresql+psycopg2://postgres:local_password@localhost:5432/postgres"
+        "SQLALCHEMY_DATABASE_URI",
+        "postgresql+psycopg2://postgres:local_password@localhost:5432/postgres",
     )
 
     if config_overrides is not None:
@@ -58,6 +63,7 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
 
     jwtMgr.init_app(app)
     db.init_app(app)
+    ma.init_app(app)
     oauth.init_app(app)
 
     # Add some basic data to test with
