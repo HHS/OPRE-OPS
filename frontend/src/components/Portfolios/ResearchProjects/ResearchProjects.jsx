@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
 import CurrencyFormat from "react-currency-format";
@@ -19,6 +19,47 @@ const ResearchProjects = () => {
     const filteredAdminAndSupportProjects = data.filter((project) => project.type === "admin_and_support");
     const numberOfProjects = filteredResearchProjects.length + filteredAdminAndSupportProjects.length;
     const [isTableSorted, setIsTableSorted] = useState(null);
+
+    // const [sortedField, setSortedField] = useState(null);
+    // const [sortConfig, setSortConfig] = useState(null);
+
+    const useSortableData = (items, config = null) => {
+        const [sortConfig, setSortConfig] = useState(config);
+
+        const sortedItems = useMemo(() => {
+            let sortableItems = [...items];
+            if (sortConfig !== null) {
+                sortableItems.sort((a, b) => {
+                    if (a[sortConfig.key] < b[sortConfig.key]) {
+                        return sortConfig.direction === "ascending" ? -1 : 1;
+                    }
+                    if (a[sortConfig.key] > b[sortConfig.key]) {
+                        return sortConfig.direction === "ascending" ? 1 : -1;
+                    }
+                    return 0;
+                });
+            }
+            return sortableItems;
+        }, [items, sortConfig]);
+
+        const requestSort = (key) => {
+            let direction = "ascending";
+            if (sortConfig && sortConfig.key === key && sortConfig.direction === "ascending") {
+                direction = "descending";
+            }
+            setSortConfig({ key, direction });
+        };
+
+        return { items: sortedItems, requestSort, sortConfig };
+    };
+
+    const { items, requestSort, sortConfig } = useSortableData(data);
+    const getClassNamesFor = (name) => {
+        if (!sortConfig) {
+            return;
+        }
+        return sortConfig.key === name ? sortConfig.direction : undefined;
+    };
 
     // Comps
     const researchProjectData = researchProjects.map((rp) => (
@@ -124,46 +165,71 @@ const ResearchProjects = () => {
                     <table className="usa-table usa-table--borderless">
                         <thead>
                             <tr>
-                                {isTableSorted ? (
-                                    <th
-                                        data-sortable
-                                        scope="col"
-                                        role="columnheader"
-                                        style={{ paddingRight: 0, width: "32%" }}
-                                        aria-sort={isTableSorted ? "descending" : "ascending"}
+                                <th
+                                    data-sortable
+                                    scope="col"
+                                    role="columnheader"
+                                    style={{ paddingRight: 0, width: "32%" }}
+                                    // aria-sort={isTableSorted ? "descending" : "ascending"}
+                                >
+                                    <button
+                                        className="usa-button usa-button--outline usa-button--unstyled"
+                                        type="button"
+                                        onClick={() => requestSort("name")}
                                     >
                                         Project Name
-                                    </th>
-                                ) : (
-                                    <th
-                                        data-sortable
-                                        scope="col"
-                                        role="columnheader"
-                                        style={{ paddingRight: 0, width: "32%" }}
-                                    >
-                                        Project Name
-                                    </th>
-                                )}
+                                    </button>
+                                </th>
 
                                 <th scope="col" role="columnheader" style={{ paddingRight: 0 }}>
-                                    FY {fiscalYear.value} Funding
+                                    <button
+                                        className="usa-button usa-button--outline usa-button--unstyled"
+                                        type="button"
+                                        onClick={() => requestSort("fundingFY")}
+                                    >
+                                        FY {fiscalYear.value} Funding
+                                    </button>
                                 </th>
                                 <th scope="col" role="columnheader" style={{ paddingRight: 0 }}>
-                                    Funding to Date
+                                    <button
+                                        className="usa-button usa-button--outline usa-button--unstyled"
+                                        type="button"
+                                        onClick={() => requestSort("fundingToDate")}
+                                    >
+                                        Funding to Date
+                                    </button>
                                 </th>
                                 <th scope="col" role="columnheader" style={{ paddingRight: 0 }}>
-                                    First Award
+                                    <button
+                                        className="usa-button usa-button--outline usa-button--unstyled"
+                                        type="button"
+                                        onClick={() => requestSort("firstAwardDate")}
+                                    >
+                                        First Award
+                                    </button>
                                 </th>
                                 <th scope="col" role="columnheader" style={{ paddingRight: 0 }}>
-                                    CANs
+                                    <button
+                                        className="usa-button usa-button--outline usa-button--unstyled"
+                                        type="button"
+                                        onClick={() => requestSort("can")}
+                                    >
+                                        CANs
+                                    </button>
                                 </th>
                                 <th scope="col" role="columnheader">
-                                    Agreements
+                                    <button
+                                        className="usa-button usa-button--outline usa-button--unstyled"
+                                        type="button"
+                                        onClick={() => requestSort("agreement")}
+                                    >
+                                        Agreements
+                                    </button>
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredResearchProjects.map((tableData) => (
+                            {items.map((tableData) => (
                                 <TableRow key={tableData.id} {...tableData} />
                             ))}
                         </tbody>
@@ -174,7 +240,7 @@ const ResearchProjects = () => {
                 </div>
             </article>
 
-            <article className="margin-top-4">
+            {/* <article className="margin-top-4">
                 <h2 className="font-sans-lg">Administrative & Support Projects</h2>
                 <p className="font-sans-sm">
                     This is a list of all active administrative & support projects that this portfolio contributes to
@@ -217,7 +283,7 @@ const ResearchProjects = () => {
                     </table>
                     <div className="usa-sr-only usa-table__announcement-region" aria-live="polite"></div>
                 </div>
-            </article>
+            </article> */}
             {/* NOTE: Not sure what to do with this */}
             {researchProjects.length > 0 && <ul>{researchProjectData}</ul>}
             {!researchProjectData && <p>There are no Research Projects.</p>}
