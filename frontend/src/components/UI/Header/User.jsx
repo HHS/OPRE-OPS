@@ -2,7 +2,7 @@ import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
 export const User = () => {
-    const user = useSelector((state) => state.auth.userDetails);
+    const user = useSelector((state) => state.auth.activeUser);
 
     return (
         // eslint-disable-next-line jsx-a11y/anchor-is-valid

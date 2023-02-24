@@ -6,17 +6,12 @@ import App from "../../../App";
 import { Breadcrumb } from "../../../components/UI/Header/Breadcrumb";
 import { setUser } from "./userSlice";
 import UserInfo from "../../../components/Users/UserInfo/UserInfo";
-import jwt_decode from "jwt-decode";
 
 const UserDetail = () => {
     const dispatch = useDispatch();
-    const user = useSelector((state) => state.activeUser.user);
+    const user = useSelector((state) => state.userDetail.user);
     const urlPathParams = useParams();
-    //const userId = parseInt(urlPathParams.id)
-    const access_jwt = localStorage.getItem("access_token");
-    const decoded_token = jwt_decode(access_jwt);
-    const userId = decoded_token["sub"] || parseInt(urlPathParams.id);
-    console.log(decoded_token);
+    const userId = parseInt(urlPathParams.id);
 
     useEffect(() => {
         const getUserAndSetState = async (userId) => {
@@ -30,7 +25,7 @@ const UserDetail = () => {
     return (
         <>
             <App>
-                <Breadcrumb currentName={user.email} />
+                <Breadcrumb currentName={user?.email} />
                 <UserInfo user={user} />
             </App>
         </>
