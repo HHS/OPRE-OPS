@@ -6,6 +6,7 @@ import { setResearchProjects } from "../../../pages/portfolios/detail/portfolioS
 import { getResearchProjects } from "../../../pages/portfolios/detail/getResearchProjects";
 import ResearchBudgetVsSpending from "./ResearchBudgetVsSpending";
 import ProjectsAndAgreements from "./ProjectsAndAgreements";
+import useSortableData from "../../../helpers/useSortableData";
 import { data } from "./data";
 
 const ResearchProjects = () => {
@@ -20,40 +21,8 @@ const ResearchProjects = () => {
     const numberOfProjects = filteredResearchProjects.length + filteredAdminAndSupportProjects.length;
     const [isTableSorted, setIsTableSorted] = useState(null);
 
-    // const [sortedField, setSortedField] = useState(null);
-    // const [sortConfig, setSortConfig] = useState(null);
+    const { items: projectTableData, requestSort, sortConfig } = useSortableData(filteredResearchProjects);
 
-    const useSortableData = (items, config = null) => {
-        const [sortConfig, setSortConfig] = useState(config);
-
-        const sortedItems = useMemo(() => {
-            let sortableItems = [...items];
-            if (sortConfig !== null) {
-                sortableItems.sort((a, b) => {
-                    if (a[sortConfig.key] < b[sortConfig.key]) {
-                        return sortConfig.direction === "ascending" ? -1 : 1;
-                    }
-                    if (a[sortConfig.key] > b[sortConfig.key]) {
-                        return sortConfig.direction === "ascending" ? 1 : -1;
-                    }
-                    return 0;
-                });
-            }
-            return sortableItems;
-        }, [items, sortConfig]);
-
-        const requestSort = (key) => {
-            let direction = "ascending";
-            if (sortConfig && sortConfig.key === key && sortConfig.direction === "ascending") {
-                direction = "descending";
-            }
-            setSortConfig({ key, direction });
-        };
-
-        return { items: sortedItems, requestSort, sortConfig };
-    };
-
-    const { items, requestSort, sortConfig } = useSortableData(data);
     const getClassNamesFor = (name) => {
         if (!sortConfig) {
             return;
@@ -140,8 +109,7 @@ const ResearchProjects = () => {
                 selected fiscal year. An active project has active work happening. It might have funding from a previous
                 fiscal year or no funding within the fiscal year.
             </p>
-            {/* TODO: remove when done TS */}
-            {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}
+
             <div className="display-flex flex-justify">
                 <ResearchBudgetVsSpending portfolioId={portfolioId} />
                 <ProjectsAndAgreements
@@ -157,10 +125,10 @@ const ResearchProjects = () => {
                     This is a list of all active research projects that this portfolio contributes to for the selected
                     fiscal year.
                 </p>
-                <button className="usa-button" onClick={() => setIsTableSorted(!isTableSorted)}>
+                {/* <button className="usa-button" onClick={() => setIsTableSorted(!isTableSorted)}>
                     Sort table
                 </button>
-                {isTableSorted ? "Table is sorted" : "Table is not sorted"}
+                {isTableSorted ? "Table is sorted" : "Table is not sorted"} */}
                 <div className="usa-table-container--scrollable" tabIndex="0">
                     <table className="usa-table usa-table--borderless">
                         <thead>
@@ -185,7 +153,7 @@ const ResearchProjects = () => {
                                     <button
                                         className="usa-button usa-button--outline usa-button--unstyled"
                                         type="button"
-                                        onClick={() => requestSort("fundingFY")}
+                                        onClick={() => requestSort("funding")}
                                     >
                                         FY {fiscalYear.value} Funding
                                     </button>
@@ -212,7 +180,7 @@ const ResearchProjects = () => {
                                     <button
                                         className="usa-button usa-button--outline usa-button--unstyled"
                                         type="button"
-                                        onClick={() => requestSort("can")}
+                                        onClick={() => requestSort("cans")}
                                     >
                                         CANs
                                     </button>
@@ -229,7 +197,7 @@ const ResearchProjects = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {items.map((tableData) => (
+                            {projectTableData.map((tableData) => (
                                 <TableRow key={tableData.id} {...tableData} />
                             ))}
                         </tbody>
