@@ -18,7 +18,7 @@ c. For publicly accessible systems:
 
 ### OPS Implementation
 
-a. OPS will use the HHS/ACF OCIO approved pre-login warning banner text. TODO: provide screenshot
+a. OPS uses the HHS/ACF OCIO approved pre-login warning banner text. TODO: provide screenshot
 
 b. TODO: provide screenshot
 
