@@ -5,8 +5,12 @@ Require that users of system accounts (or roles) with access to [the security fu
 
 ### OPS Implementation
 
-OPS will log transactions and data changes made by users.
+OPS logs transactional user events and data changes made by users.
 
 Implementation details related to hardware and firmware are inherited from cloud.gov and ACF OCIO Infrastructure.
 
-TODO: Provide links to AU and other controls that are similar.
+TODO: user would only have one user account... how to word properly ?
+
+### Related Content
+
+[AC-6-10](ac-06-10/index.md)

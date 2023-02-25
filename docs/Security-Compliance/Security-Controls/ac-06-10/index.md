@@ -9,4 +9,6 @@ The built in user roles and role-based access control within OPS contrains users
 
 ### Related Content
 
-TODO: Provide links to AC and other controls that are similar. Provide screenshots
+TODO: Provide screenshots
+
+[AC-6-2](ac-06-02/index.md)
