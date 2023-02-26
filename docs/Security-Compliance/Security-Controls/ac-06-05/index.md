@@ -5,7 +5,7 @@ Restrict privileged accounts on the system to [personnel or roles with a legitim
 
 ### OPS Implementation
 
-OPS System Admins are responsible for granting that access to individuals who require the same access.
+Users possessing the OPS System Admin role are responsible for granting that access to individuals who require the same access.
 
 This is also partially inherited from cloud.gov and ACF OCIO.
 

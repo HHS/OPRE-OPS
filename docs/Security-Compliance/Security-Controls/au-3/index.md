@@ -12,7 +12,7 @@ f. Identity of any individuals, subjects, or objects/entities associated with th
 
 ## OPS Implementation
 
-OPS stores and provides a mechanism to consume application logs of transactional user events including the attempted alteration of and request to change data
+OPS provides a mechanism to consume its application logs of transactional user events including the attempted alteration of and request to change data
 
 ### Related Files
 

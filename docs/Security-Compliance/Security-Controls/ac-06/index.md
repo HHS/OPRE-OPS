@@ -10,7 +10,9 @@ AC-6 (2) Additional FedRAMP Requirements and Guidance: Examples of security func
 In order to access the OPS application, users must login through the chosen and approved authentication provider using Multi-Factor Authentication (MFA).  Only authorized users can access OPS.
 
 AC-6 (2)
-Once users are logged in the application, users can only perform tasks associated to their role as described in [AC-5, Part (b)](docs/controls/access_control/ac-05.md).  Privileged functions can only be performed by System Admins.  New user accounts are established with no privileges upon creation and only System Admins can assign a role(s) or permissions to those users.
+
+Once users are logged in to the application, users can only perform tasks associated to their role as described in [AC-5, Part (b)](../ac-05/index.md).  Privileged functions can only be performed by System Admins.  New user accounts are established with no privileges upon creation and only System Admins can assign a role(s) or permissions to those users.
 
 #### Related Files
-[AC-5 | Separation of Duties](docs/controls/access_control/ac-05.md)
+
+[AC-5 | Separation of Duties](../ac-05/index.md)

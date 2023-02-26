@@ -11,4 +11,10 @@ The built in user roles and role-based access control within OPS contrains users
 
 TODO: Provide screenshots
 
-[AC-6-2](ac-06-02/index.md)
+[AC-6-1](../ac-06-01/index.md)
+
+[AC-6-2](../ac-06-02/index.md)
+
+[AC-6-5](../ac-06-05/index.md)
+
+[AC-6-9](../ac-06-09/index.md)
