@@ -22,6 +22,9 @@ def db_loaded_with_research_projects(app, loaded_db):
         research_project_100 = ResearchProject(id=100, title="RP100")
         research_project_200 = ResearchProject(id=200, title="RP200")
 
+        research_project_100.portfolio_id = 1
+        research_project_200.portfolio_id = 1
+
         instances.extend([research_project_100, research_project_200])
 
         can_100 = CAN(id=100, number="CAN100")
@@ -69,4 +72,38 @@ def test_get_research_project_funding_summary(auth_client):
     query_string = {"portfolioId": 1, "fiscalYear": 2023}
     response = auth_client.get("/api/v1/research-project-funding-summary/", query_string=query_string)
     assert response.status_code == 200
-    assert response.json["total_funding"] == 15
+    assert response.json["total_funding"] == 20
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("db_loaded_with_research_projects")
+def test_get_research_project_funding_summary_invalid_query_string(auth_client):
+    query_string = {"portfolioId": "blah", "fiscalYear": "blah"}
+    response = auth_client.get("/api/v1/research-project-funding-summary/", query_string=query_string)
+    assert response.status_code == 400
+    assert response.json == {
+        "portfolio_id": ["Not a valid integer."],
+        "fiscal_year": ["Not a valid integer."],
+    }
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("db_loaded_with_research_projects")
+def test_get_research_project_funding_summary_invalid_query_string_portfolio_id(
+    auth_client,
+):
+    query_string = {"portfolioId": 0, "fiscalYear": 2020}
+    response = auth_client.get("/api/v1/research-project-funding-summary/", query_string=query_string)
+    assert response.status_code == 400
+    assert response.json == {"portfolio_id": ["Must be greater than or equal to 1."]}
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("db_loaded_with_research_projects")
+def test_get_research_project_funding_summary_invalid_query_string_fiscal_year(
+    auth_client,
+):
+    query_string = {"portfolioId": 1, "fiscalYear": 1899}
+    response = auth_client.get("/api/v1/research-project-funding-summary/", query_string=query_string)
+    assert response.status_code == 400
+    assert response.json == {"fiscal_year": ["Must be greater than or equal to 1900."]}
