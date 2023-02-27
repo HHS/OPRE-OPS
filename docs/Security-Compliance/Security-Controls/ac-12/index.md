@@ -8,4 +8,4 @@ Note: Conditions or trigger events requiring automatic session termination can i
 
 The OPS application will automatically log out users after 15 minutes of inactivity.
 
-HHS/OPRE-OPS#443
+HHS/OPRE-OPS#708

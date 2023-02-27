@@ -15,6 +15,6 @@ The OPS application will automatically log out users after 15 minutes of inactiv
 
 Session Management Implementation Description - TODO: link to wiki or `/doc`
 
-HHS/OPRE-OPS#443
+HHS/OPRE-OPS#708
 
 Screenshots:
