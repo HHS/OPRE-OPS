@@ -1,10 +1,12 @@
 from dataclasses import dataclass
-from typing import List, Optional
 
-from models.portfolios import Portfolio
+from marshmallow import fields
+from marshmallow.validate import Range
+from models.cans import CAN, CANFiscalYear
 from models.research_projects import ResearchProject
-from ops_api.ops.serializer import ma
+from ops_api.ops import db, ma
 from sqlalchemy import select
+from sqlalchemy.sql.functions import sum
 
 
 @dataclass
@@ -17,13 +19,22 @@ class ResearchProjectFundingSummarySchema(ma.Schema):
         fields = ("total_funding",)
 
 
+class GetResearchProjectFundingSummaryInputSchema(ma.Schema):
+    portfolio_id = fields.Int(validate=Range(min=1))
+    fiscal_year = fields.Int(validate=Range(min=1900))
+
+
 class ResearchProjectHelper:
     @staticmethod
-    def get_list(portfolio: Portfolio, fiscal_year: int) -> Optional[List[ResearchProject]]:
-        stmt = select(ResearchProject)
+    def get_funding_summary(portfolio_id: int, fiscal_year: int) -> ResearchProjectFundingSummary:
+        total_funding_stmt = (
+            select(sum(CANFiscalYear.current_funding))
+            .join(CAN, CAN.id == CANFiscalYear.can_id)
+            .join(ResearchProject, ResearchProject.id == CAN.managing_research_project_id)
+            .where(CANFiscalYear.fiscal_year == int(fiscal_year))
+            .where(ResearchProject.portfolio_id == int(portfolio_id))
+        )
 
-        return stmt
+        total_funding = db.session.execute(total_funding_stmt).all()
 
-    @staticmethod
-    def get_funding_summary(portfolio_id: id, fiscal_year: int) -> ResearchProjectFundingSummary:
-        return ResearchProjectFundingSummary(total_funding=1)
+        return ResearchProjectFundingSummary(total_funding=float(total_funding[0][0]))
