@@ -1,16 +1,12 @@
 from flask import Response, jsonify, request
-from marshmallow import fields
-from marshmallow.validate import Range
 from models.base import BaseModel
-from ops_api.ops import ma
 from ops_api.ops.base_views import BaseListAPI
-from ops_api.ops.utils.research_project_helper import ResearchProjectFundingSummarySchema, ResearchProjectHelper
+from ops_api.ops.utils.research_project_helper import (
+    GetResearchProjectFundingSummaryInputSchema,
+    ResearchProjectFundingSummarySchema,
+    ResearchProjectHelper,
+)
 from typing_extensions import override
-
-
-class GetResearchProjectFundingSummaryInputSchema(ma.Schema):
-    portfolio_id = fields.Int(validate=Range(min=1))
-    fiscal_year = fields.Int(validate=Range(min=1900))
 
 
 class ResearchProjectFundingSummaryListAPI(BaseListAPI):
