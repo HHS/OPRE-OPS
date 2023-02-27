@@ -13,13 +13,13 @@ servers:
 paths:
   /api/v1/cans/:
     get:
-      description: Auto generated using Swagger Inspector
+      description: Get CANs
       responses:
         '200':
-          description: Auto generated using Swagger Inspector
+          description: OK
   /api/v1/cans/{can_id}:
     get:
-      description: Auto generated using Swagger Inspector
+      description: Get CAN by Id
       parameters:
         - in: path
           name: can_id
@@ -29,26 +29,26 @@ paths:
             type: integer
             format: int32
             minimum: 0
-            default: 0
+            default: 1
       responses:
         '200':
-          description: Auto generated using Swagger Inspector
+          description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CAN'
-              examples:
+              example:
                 '0':
                   $ref: '#/components/examples/CAN'
   /api/v1/portfolios:
     get:
-      description: Auto generated using Swagger Inspector
+      description: Get Portfolios
       responses:
         '200':
-          description: Auto generated using Swagger Inspector
+          description: OK
   /api/v1/portfolios/{portfolio_id}:
     get:
-      description: Auto generated using Swagger Inspector
+      description: Get Portfolio by Id
       parameters:
         - in: path
           name: portfolio_id
@@ -58,7 +58,7 @@ paths:
             type: integer
             format: int32
             minimum: 0
-            default: 0
+            default: 1
       responses:
         '200':
           description: OK
@@ -69,10 +69,19 @@ paths:
               examples:
                 '0':
                   $ref: '#/components/examples/Portfolio'
-  /api/v1/portfolios/1/calcFunding/:
+  /api/v1/portfolios/{portfolio_id}/calcFunding/:
     get:
-      description: Auto generated using Swagger Inspector
+      description: Get Total Funding by Id
       parameters:
+        - in: path
+          name: portfolio_id
+          description: portfolio Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
         - name: fiscal_year
           in: query
           schema:
@@ -80,7 +89,7 @@ paths:
           example: '2023'
       responses:
         '200':
-          description: Auto generated using Swagger Inspector
+          description: OK
           content:
             application/json:
               schema:
@@ -159,7 +168,7 @@ paths:
                     }
   /api/v1/portfolios/{portfolio_id}/cans/:
     get:
-      description: Auto generated using Swagger Inspector
+      description: Get CANs associated with a Portfolio
       parameters:
         - name: year
           in: query
@@ -174,15 +183,17 @@ paths:
             type: integer
             format: int32
             minimum: 0
-            default: 0
+            default: 1
       responses:
         '200':
-          description: Auto generated using Swagger Inspector
+          description: OK
           content:
             application/json:
               schema:
-                type: object
+                type: array
                 properties: {}
+                items:
+                  type: string
               examples:
                 '0':
                   value: |
@@ -218,7 +229,7 @@ paths:
                     ]
   /api/v1/can-funding-summary/{can_id}:
     get:
-      description: Auto generated using Swagger Inspector
+      description: Get Funding Totals by CAN Id
       parameters:
         - name: fiscal_year
           in: query
@@ -236,7 +247,7 @@ paths:
             default: 0
       responses:
         '200':
-          description: Auto generated using Swagger Inspector
+          description: OK
           content:
             application/json:
               schema:
@@ -317,7 +328,7 @@ paths:
                     }
   /api/v1/users/:
     get:
-      description: Auto generated using Swagger Inspector
+      description: Get all Users
       parameters:
         - name: oidc_id
           in: query
@@ -326,7 +337,7 @@ paths:
           example: e5711101-bc3e-41e5-a6a2-051874b307ca
       responses:
         '200':
-          description: Auto generated using Swagger Inspector
+          description: OK
           content:
             application/json:
               schema:
@@ -432,7 +443,7 @@ paths:
                     ]
   /api/v1/users/{user_id}:
     get:
-      description: Auto generated using Swagger Inspector
+      description: Get User by Id
       parameters:
         - in: path
           name: user_id
@@ -445,7 +456,7 @@ paths:
             default: 0
       responses:
         '200':
-          description: Auto generated using Swagger Inspector
+          description: OK
           content:
             application/json:
               schema:
@@ -455,7 +466,7 @@ paths:
                   $ref: '#/components/examples/User'
   /api/v1/auth/login/:
     post:
-      description: Auto generated using Swagger Inspector
+      description: API Authentication
       requestBody:
         content:
           application/json:
@@ -471,11 +482,13 @@ paths:
                 value: >-
                   {"callbackUrl":"http://localhost:3000/?code=fd6a4ef9-686b-4dca-84a9-f2e9c8cb44a7&state=b0c4a75ec9405edc88f13e9de8807d3daa7d2202ed94ca04cb5b77698cdcc782","code":"fd6a4ef9-686b-4dca-84a9-f2e9c8cb44a7"}
       responses:
-        default:
-          description: Auto generated using Swagger Inspector
+          '200':
+            description: OK
+          '204':
+            description: Created
   /api/v1/research-projects/:
     get:
-      description: Auto generated using Swagger Inspector
+      description: Get all ResearchProjects
       parameters:
         - name: fiscal_year
           in: query
@@ -493,13 +506,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: array
                 properties: {}
               examples:
                 '0':
                   value: |
                     []
-  /research-project-funding-summary/:
+  /api/v1/research-project-funding-summary/:
     get:
       description: ''
       parameters:
@@ -569,6 +582,8 @@ components:
           type: string
         date_joined:
           type: string
+          pattern: ^example-[0-9a-z]+$
+          maxLength: 32
         id:
           type: integer
         first_name:
@@ -578,21 +593,19 @@ components:
           type: string
   examples:
     CAN:
-      value: |
-        {
-          "appropriation_date": null,
-          "appropriation_term": 1,
-          "arrangement_type_id": 5,
-          "authorizer_id": 26,
-          "description": "Healthy Marriages Responsible Fatherhood - OPRE",
-          "expiration_date": "01/09/2023",
-          "id": 1,
-          "managing_portfolio_id": 6,
-          "managing_research_project_id": null,
-          "nickname": "HMRF-OPRE",
-          "number": "G99HRF2",
-          "purpose": ""
-        }
+      value:
+        - appropriation_date: "01/10/2023"
+        - appropriation_term: 1
+        - arrangement_type_id: 2
+        - authorizer_id: 23
+        - description: "Healthy Marriages Responsible Fatherhood - OFA"
+        - expiration_date: "01/09/2024"
+        - id: 10
+        - managing_portfolio_id: 6
+        - managing_research_project_id: null
+        - nickname: "HMRF-OFA"
+        - number: "G99XXX3"
+        - purpose: ""
     Portfolio:
       value: |
         {
