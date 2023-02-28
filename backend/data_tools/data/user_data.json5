@@ -1,7 +1,6 @@
 {
   users: [
     {
-      id: "1",
       first_name: "Emily",
       last_name: "Ball",
       division: 1,
@@ -10,7 +9,6 @@
       oidc_id: "00000000-0000-1111-a111-000000000001",
     },
     {
-      id: "2",
       first_name: "Bethanne",
       last_name: "Barnes",
       division: 4,
@@ -19,7 +17,6 @@
       oidc_id: "00000000-0000-1111-a111-000000000002",
     },
     {
-      id: "3",
       first_name: "Meryl",
       last_name: "Barofsky",
       division: 1,
@@ -28,7 +25,6 @@
       oidc_id: "00000000-0000-1111-a111-000000000003",
     },
     {
-      id: "4",
       first_name: "Anne",
       last_name: "Bergan",
       division: 3,
@@ -37,7 +33,6 @@
       oidc_id: "00000000-0000-1111-a111-000000000004",
     },
     {
-      id: "5",
       first_name: "Tim",
       last_name: "Donaworth",
       division: 3,
