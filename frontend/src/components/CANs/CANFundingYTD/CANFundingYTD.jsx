@@ -35,14 +35,7 @@ const CANFundingYTD = ({
 
     const CarryOverLabel = ({ funding, label }) => {
         if (funding > 0) {
-            return (
-                <div
-                    className="margin-left-05 height-25 padding-05 font-sans-3xs display-inline-block"
-                    style={{ background: "#A1D0BE" }}
-                >
-                    {label}
-                </div>
-            );
+            return <Tag tagStyle="darkTextGreenBackground" text={label} label={label} />;
         } else {
             return "";
         }
@@ -81,14 +74,16 @@ const CANFundingYTD = ({
 
     return (
         <div className={className}>
-            <CurrencyFormat
-                value={total_funding}
-                displayType={"text"}
-                thousandSeparator={true}
-                prefix={"$ "}
-                renderText={(value) => <span className="text-semibold font-sans-lg">{value}</span>}
-            />
-            <CarryOverLabel funding={carry_over_funding} label={carry_over_label} />
+            <div className="display-flex flex-justify flex-align-center">
+                <CurrencyFormat
+                    value={total_funding}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"$ "}
+                    renderText={(value) => <span className="text-semibold font-sans-lg">{value}</span>}
+                />
+                <CarryOverLabel funding={carry_over_funding} label={carry_over_label} />
+            </div>
             <div className={`margin-top-2 ${styles.barBox}`}>
                 <CANFundingBar setActiveId={setActiveId} data={data} />
             </div>
