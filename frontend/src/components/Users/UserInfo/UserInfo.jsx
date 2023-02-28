@@ -16,6 +16,10 @@ const UserInfo = () => {
                             <td>: {user?.id}</td>
                         </tr>
                         <tr>
+                            <td>OIDC</td>
+                            <td>: {user?.oidc_id}</td>
+                        </tr>
+                        <tr>
                             <td>User Email</td>
                             <td>: {user?.email}</td>
                         </tr>
