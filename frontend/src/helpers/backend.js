@@ -20,7 +20,7 @@ export const callBackend = async (urlPath, action, requestBody, queryParams) => 
 export const authConfig = {
     loginGovAuthorizationEndpoint: "https://idp.int.identitysandbox.gov/openid_connect/authorize",
     acr_values: "http://idmanagement.gov/ns/assurance/ial/1",
-    client_id: "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
+    client_id: "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops_staging",
     response_type: "code",
     scope: "openid email",
     redirect_uri: window.location.href,
