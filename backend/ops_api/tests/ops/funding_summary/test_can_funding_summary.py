@@ -2,70 +2,69 @@ from decimal import Decimal
 
 import pytest
 from models.cans import CAN
-from ops.utils.cans import get_can_funding_summary
+from ops_api.ops.utils.cans import get_can_funding_summary
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_get_can_funding_summary_no_fiscal_year(loaded_db):
-    can = loaded_db.session.query(CAN).get(1)
-    can_funding_summary = get_can_funding_summary(can)
+    can = loaded_db.session.get(CAN, 1)
 
-    assert can_funding_summary == {
-        "available_funding": "4693574.00",
+    assert get_can_funding_summary(can) == {
+        "available_funding": "-860000.00",
         "can": {
             "appropriation_date": None,
             "appropriation_term": 1,
-            "arrangement_type_id": 3,
-            "authorizer_id": 1,
-            "description": "Secondary Analyses Data On Child Care & Early Edu",
-            "expiration_date": "01/01/2025",
+            "arrangement_type_id": 5,
+            "authorizer_id": 26,
+            "description": "Healthy Marriages Responsible Fatherhood - OPRE",
+            "expiration_date": "01/09/2023",
             "id": 1,
-            "managing_portfolio_id": 1,
+            "managing_portfolio_id": 6,
             "managing_research_project_id": None,
-            "nickname": "CCE",
-            "number": "G99WRGB",
-            "purpose": "Secondary Analyses of Child Care and Early Education Data " "(2022)",
+            "nickname": "HMRF-OPRE",
+            "number": "G99HRF2",
+            "purpose": "",
         },
-        "carry_over_funding": Decimal("15.00"),
-        "current_funding": Decimal("5000000.00"),
-        "expected_funding": Decimal("566246.00"),
-        "expiration_date": "01/01/2025",
-        "in_execution_funding": Decimal("850450.00"),
+        "carry_over_funding": 0,
+        "current_funding": Decimal("880000.00"),
+        "expected_funding": Decimal("260000.00"),
+        "expiration_date": "09/01/2023",
+        "in_execution_funding": Decimal("2000000.00"),
         "obligated_funding": 0,
-        "planned_funding": Decimal("22222.00"),
-        "total_funding": Decimal("5566246.00"),
+        "planned_funding": 0,
+        "total_funding": Decimal("1140000.00"),
     }
 
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_get_can_funding_summary_with_fiscal_year(loaded_db):
-    can = loaded_db.session.query(CAN).get(1)
+    can = loaded_db.session.get(CAN, 1)
 
     assert get_can_funding_summary(can, 2023) == {
-        "available_funding": "4310901.00",
+        "available_funding": "-860000.00",
         "can": {
             "appropriation_date": None,
             "appropriation_term": 1,
-            "arrangement_type_id": 3,
-            "authorizer_id": 1,
-            "description": "Secondary Analyses Data On Child Care & Early Edu",
-            "expiration_date": "01/01/2025",
+            "arrangement_type_id": 5,
+            "authorizer_id": 26,
+            "description": "Healthy Marriages Responsible Fatherhood - OPRE",
+            "expiration_date": "01/09/2023",
             "id": 1,
-            "managing_portfolio_id": 1,
+            "managing_portfolio_id": 6,
             "managing_research_project_id": None,
-            "nickname": "CCE",
-            "number": "G99WRGB",
-            "purpose": "Secondary Analyses of Child Care and Early Education Data " "(2022)",
+            "nickname": "HMRF-OPRE",
+            "number": "G99HRF2",
+            "purpose": "",
         },
-        "carry_over_funding": Decimal("10.00"),
-        "current_funding": Decimal("4000000.00"),
-        "expected_funding": Decimal("333123.00"),
-        "expiration_date": "01/01/2025",
-        "in_execution_funding": 0,
+        "carry_over_funding": 0,
+        "current_funding": Decimal("880000.00"),
+        "expected_funding": Decimal("260000.00"),
+        "expiration_date": "09/01/2023",
+        "in_execution_funding": Decimal("2000000.00"),
         "obligated_funding": 0,
-        "planned_funding": Decimal("22222.00"),
-        "total_funding": Decimal("4333123.00"),
+        "planned_funding": 0,
+        "total_funding": Decimal("1140000.00"),
     }
 
 

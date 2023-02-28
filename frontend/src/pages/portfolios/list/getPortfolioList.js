@@ -6,7 +6,7 @@ export const getPortfolioList = () => {
         const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;
         const responseData = await ApplicationContext.get()
             .helpers()
-            .callBackend(`/api/${api_version}/portfolios`, "get");
+            .callBackend(`/api/${api_version}/portfolios/`, "get");
         dispatch(setPortfolioList(responseData));
     };
 };

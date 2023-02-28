@@ -1,13 +1,15 @@
 before(() => {
+    cy.fakeLogin();
     cy.visit("/portfolios/1");
     cy.injectAxe();
 });
 
 it("loads", () => {
+    cy.fakeLogin();
     cy.get("h1").should("contain", "Child Welfare Research");
     cy.get("h2").should("contain", "Division of Child and Family Development");
     cy.get("h3").should("contain", "Team Leaders");
-    cy.get("a").should("contain", "Chris Fortunato");
+    cy.get("a").should("contain", "Emily Ball");
     cy.get("p").should("contain", "The promotion of children’s safety, permanence, and well-being");
     cy.get("a").should("contain", "Budget and Funding");
     cy.get("a").should("contain", "Projects and Spending");
@@ -25,6 +27,7 @@ it("loads", () => {
 });
 
 it("loads the Poftfolio Budget Details component", () => {
+    cy.fakeLogin();
     cy.get("h2").should("contain", "Portfolio Budget Details by CAN");
     cy.get("section").should("contain", "G99IA14");
 });
@@ -34,6 +37,7 @@ it("passes a11y checks", () => {
 });
 
 it("expands the description when one clicks read more", () => {
+    cy.fakeLogin();
     cy.contains("read more").click();
     cy.get("a").should("contain", "See more on the website");
 });

@@ -59,7 +59,8 @@ services:
     command: ["python", "-m", "flask", "run", "--debug", "--host=0.0.0.0", "--port=8080"]
     environment:
       - JWT_PRIVATE_KEY
-      - OPS_CONFIG=environment/local.py
+      - JWT_PUBLIC_KEY
+      - OPS_CONFIG=environment/local/container.py
     volumes:
       - ./backend/ops_api/ops:/home/app/ops
     depends_on:

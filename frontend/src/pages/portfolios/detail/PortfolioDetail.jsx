@@ -77,14 +77,14 @@ const PortfolioDetail = () => {
     return (
         <>
             <App>
-                <Breadcrumb currentName={portfolio.name} />
+                <Breadcrumb currentName={portfolio?.name} />
                 <div>
                     <Hero
-                        entityName={portfolio.name}
+                        entityName={portfolio?.name}
                         divisionName={portfolio.division?.name}
-                        description={portfolio.description}
-                        teamLeaders={portfolio.team_leaders}
-                        urls={portfolio.urls}
+                        description={portfolio?.description}
+                        teamLeaders={portfolio?.team_leaders}
+                        urls={portfolio?.urls}
                         backgroundColor={"bg-brand-neutral-lightest"}
                     />
                     <section className="display-flex flex-justify margin-top-3">

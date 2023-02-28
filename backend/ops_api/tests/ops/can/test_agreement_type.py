@@ -20,5 +20,5 @@ def test_agreement_type_retrieve_all(loaded_db):
 )
 @pytest.mark.usefixtures("app_ctx")
 def test_agreement_type_lookup(loaded_db, id, name):
-    agreement_type = loaded_db.session.query(AgreementType).get(id)
+    agreement_type = loaded_db.session.get(AgreementType, id)
     assert agreement_type.name == name

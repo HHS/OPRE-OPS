@@ -1,0 +1,11 @@
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+
+export const User = () => {
+    const user = useSelector((state) => state.auth.activeUser);
+
+    if (user) {
+        return <Link to={`/users/${user?.id}`}>{user?.email}</Link>;
+    }
+    return <span></span>;
+};

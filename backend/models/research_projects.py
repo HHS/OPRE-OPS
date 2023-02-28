@@ -43,7 +43,9 @@ class ResearchProject(BaseModel):
     portfolio = relationship("Portfolio", back_populates="research_project")
     url = Column(String)
     origination_date = Column(Date)
-    methodologies = relationship("MethodologyType", secondary=research_project_methodologies)
+    methodologies = relationship(
+        "MethodologyType", secondary=research_project_methodologies
+    )
     populations = relationship("PopulationType", secondary=research_project_populations)
     cans = relationship("CAN", back_populates="managing_research_project")
     team_leaders = relationship(
@@ -57,9 +59,13 @@ class ResearchProject(BaseModel):
         d = super().to_dict()
 
         d.update(
-            origination_date=self.origination_date.isoformat() if self.origination_date else None,
+            origination_date=self.origination_date.isoformat()
+            if self.origination_date
+            else None,
             cans=[can.to_dict() for can in self.cans],
-            methodologies=[methodologies.to_dict() for methodologies in self.methodologies],
+            methodologies=[
+                methodologies.to_dict() for methodologies in self.methodologies
+            ],
             populations=[populations.to_dict() for populations in self.populations],
             team_leaders=[tl.to_dict() for tl in self.team_leaders],
         )

@@ -11,6 +11,7 @@ from data_tools.environment.cloudgov import CloudGovConfig
 from data_tools.environment.common import DataToolsConfig
 from data_tools.environment.dev import DevConfig
 from data_tools.environment.local import LocalConfig
+from data_tools.environment.pytest import PytestConfig
 from data_tools.environment.test import TestConfig
 from models.base import BaseModel
 from sqlalchemy import create_engine, insert, inspect, text
@@ -34,6 +35,7 @@ ALLOWED_TABLES = [
     "can",
     "can_fiscal_year",
     "can_arrangement_type",
+    "can_funding_sources",
     "agreement_type",
     "agreement",
     "agreement_cans",
@@ -46,6 +48,7 @@ ALLOWED_TABLES = [
     "research_project_populations",
     "research_project_cans",
     "research_project_team_leaders",
+    "shared_portfolio_cans",
 ]
 
 data = os.getenv("DATA")
@@ -55,9 +58,7 @@ def init_db(
     config: DataToolsConfig, db: Optional[Engine] = None
 ) -> Tuple[sqlalchemy.engine.Engine, sqlalchemy.MetaData]:
     if not db:
-        engine = create_engine(
-            config.db_connection_string, echo=config.verbosity, future=True
-        )
+        engine = create_engine(config.db_connection_string, echo=config.verbosity, future=True)
     else:
         engine = db
     BaseModel.metadata.create_all(engine)
@@ -72,6 +73,8 @@ def get_config(environment_name: str = None):
             config = LocalConfig()
         case "test":
             config = TestConfig()
+        case "pytest":
+            config = PytestConfig()
         case _:
             config = DevConfig()
     return config
@@ -97,9 +100,7 @@ def delete_existing_data(conn: sqlalchemy.engine.Engine.connect, data: Dict):
             return "Table does not exist"
 
 
-def load_new_data(
-    conn: sqlalchemy.engine.Engine, data, metadata_obj: sqlalchemy.MetaData
-):
+def load_new_data(conn: sqlalchemy.engine.Engine, data, metadata_obj: sqlalchemy.MetaData):
     for ops_table in data:
         d = data[ops_table]
         conn.execute(
@@ -120,6 +121,8 @@ def import_data(engine, metadata_obj, data):
 if __name__ == "__main__":
     script_env = os.getenv("ENV")
     script_config = get_config(script_env)
+
+    print(f"Data-Tools Config: {script_config.db_connection_string}")
 
     db_engine, db_metadata_obj = init_db(script_config)
 
