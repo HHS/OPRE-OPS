@@ -16,7 +16,6 @@ def process_user(userinfo: UserInfoDict) -> User:
     if not user:
         # Create new user
         user = User(
-            id=userinfo["sub"],
             email=userinfo["email"],
             oidc_id=userinfo["sub"],
         )

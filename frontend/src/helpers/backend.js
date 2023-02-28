@@ -23,7 +23,6 @@ export const authConfig = {
     client_id: "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
     response_type: "code",
     scope: "openid email",
-    //redirect_uri: "http://localhost:3000",
     redirect_uri: window.location.href,
 };
 
