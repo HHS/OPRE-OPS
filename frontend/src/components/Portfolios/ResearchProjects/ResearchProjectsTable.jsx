@@ -2,6 +2,7 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import useSortableData from "../../../helpers/useSortableData";
 import CurrencyFormat from "react-currency-format";
+import "./tables.scss";
 
 const ResearchProjectsTable = ({ fiscalYear, data }) => {
     const { items: projectTableData, requestSort, sortConfig } = useSortableData(data);
@@ -13,29 +14,6 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
         }
         return sortConfig.key === name ? sortConfig.direction : undefined;
     };
-
-    const SortIcon = () => (
-        <button
-            tabIndex="0"
-            className="usa-table__header__button"
-            title="Click to sort by Alphabetical in ascending order."
-        >
-            <svg className="usa-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <g className="descending" fill="transparent">
-                    <path d="M17 17L15.59 15.59L12.9999 18.17V2H10.9999V18.17L8.41 15.58L7 17L11.9999 22L17 17Z"></path>
-                </g>
-                <g className="ascending" fill="transparent">
-                    <path
-                        transform="rotate(180, 12, 12)"
-                        d="M17 17L15.59 15.59L12.9999 18.17V2H10.9999V18.17L8.41 15.58L7 17L11.9999 22L17 17Z"
-                    ></path>
-                </g>
-                <g className="unsorted" fill="transparent">
-                    <polygon points="15.17 15 13 17.17 13 6.83 15.17 9 16.58 7.59 12 3 7.41 7.59 8.83 9 11 6.83 11 17.17 8.83 15 7.42 16.41 12 21 16.59 16.41 15.17 15"></polygon>
-                </g>
-            </svg>
-        </button>
-    );
 
     const TableRow = ({ id, name, link, funding, fundingToDate, firstAwardDate, cans, agreement }) => (
         <tr>
@@ -81,7 +59,7 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
                             // aria-sort={isTableSorted ? "descending" : "ascending"}
                         >
                             <button
-                                className="usa-button usa-button--outline usa-button--unstyled"
+                                className={getClassNamesFor("name")}
                                 type="button"
                                 onClick={() => requestSort("name")}
                             >
@@ -91,7 +69,7 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
 
                         <th scope="col" role="columnheader" style={{ paddingRight: 0 }}>
                             <button
-                                className="usa-button usa-button--outline usa-button--unstyled"
+                                className={getClassNamesFor("funding")}
                                 type="button"
                                 onClick={() => requestSort("funding")}
                             >
@@ -100,7 +78,7 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
                         </th>
                         <th scope="col" role="columnheader" style={{ paddingRight: 0 }}>
                             <button
-                                className="usa-button usa-button--outline usa-button--unstyled"
+                                className={getClassNamesFor("fundingToDate")}
                                 type="button"
                                 onClick={() => requestSort("fundingToDate")}
                             >
@@ -109,7 +87,7 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
                         </th>
                         <th scope="col" role="columnheader" style={{ paddingRight: 0 }}>
                             <button
-                                className="usa-button usa-button--outline usa-button--unstyled"
+                                className={getClassNamesFor("firstAwardDate")}
                                 type="button"
                                 onClick={() => requestSort("firstAwardDate")}
                             >
@@ -118,7 +96,7 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
                         </th>
                         <th scope="col" role="columnheader" style={{ paddingRight: 0 }}>
                             <button
-                                className="usa-button usa-button--outline usa-button--unstyled"
+                                className={getClassNamesFor("cans")}
                                 type="button"
                                 onClick={() => requestSort("cans")}
                             >
@@ -127,7 +105,7 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
                         </th>
                         <th scope="col" role="columnheader">
                             <button
-                                className="usa-button usa-button--outline usa-button--unstyled"
+                                className={getClassNamesFor("agreement")}
                                 type="button"
                                 onClick={() => requestSort("agreement")}
                             >

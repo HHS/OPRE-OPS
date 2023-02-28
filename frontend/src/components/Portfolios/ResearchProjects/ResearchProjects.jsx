@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
 import { setResearchProjects } from "../../../pages/portfolios/detail/portfolioSlice";
@@ -20,8 +20,6 @@ const ResearchProjects = () => {
     const filteredResearchProjects = data.filter((project) => project.type === "research");
     const filteredAdminAndSupportProjects = data.filter((project) => project.type === "admin_and_support");
     const numberOfProjects = filteredResearchProjects.length + filteredAdminAndSupportProjects.length;
-
-    const [isTableSorted, setIsTableSorted] = useState(null);
 
     // Comps
     const researchProjectData = researchProjects.map((rp) => (
@@ -68,10 +66,6 @@ const ResearchProjects = () => {
                     This is a list of all active research projects that this portfolio contributes to for the selected
                     fiscal year.
                 </p>
-                {/* <button className="usa-button" onClick={() => setIsTableSorted(!isTableSorted)}>
-                    Sort table
-                </button>
-                {isTableSorted ? "Table is sorted" : "Table is not sorted"} */}
                 <ResearchProjectsTable fiscalYear={fiscalYear} data={filteredResearchProjects} />
             </article>
 
