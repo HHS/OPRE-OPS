@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
-from marshmallow import fields
-from marshmallow.validate import Range
+import desert
+import marshmallow
 from models.cans import CAN, CANFiscalYear
 from models.research_projects import ResearchProject
-from ops_api.ops import db, ma
+from ops_api.ops import db
 from sqlalchemy import select
 from sqlalchemy.sql.functions import sum
 
@@ -14,14 +14,10 @@ class ResearchProjectFundingSummary:
     total_funding: float
 
 
-class ResearchProjectFundingSummarySchema(ma.Schema):
-    class Meta:
-        fields = ("total_funding",)
-
-
-class GetResearchProjectFundingSummaryInputSchema(ma.Schema):
-    portfolio_id = fields.Int(validate=Range(min=1))
-    fiscal_year = fields.Int(validate=Range(min=1900))
+@dataclass
+class GetResearchProjectFundingSummaryQueryParams:
+    portfolio_id: int = desert.field(marshmallow.fields.Int(validate=marshmallow.validate.Range(min=1)))
+    fiscal_year: int = desert.field(marshmallow.fields.Int(validate=marshmallow.validate.Range(min=1900)))
 
 
 class ResearchProjectHelper:
