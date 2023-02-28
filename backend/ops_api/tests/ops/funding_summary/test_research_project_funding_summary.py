@@ -107,3 +107,12 @@ def test_get_research_project_funding_summary_invalid_query_string_fiscal_year(
     response = auth_client.get("/api/v1/research-project-funding-summary/", query_string=query_string)
     assert response.status_code == 400
     assert response.json == {"fiscal_year": ["Must be greater than or equal to 1900."]}
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("db_loaded_with_research_projects")
+def test_get_research_project_funding_summary_no_data(auth_client):
+    query_string = {"portfolioId": 1000, "fiscalYear": 1910}
+    response = auth_client.get("/api/v1/research-project-funding-summary/", query_string=query_string)
+    assert response.status_code == 200
+    assert response.json["total_funding"] == 0

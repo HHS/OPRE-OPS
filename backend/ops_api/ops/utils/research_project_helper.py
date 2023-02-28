@@ -37,4 +37,6 @@ class ResearchProjectHelper:
 
         total_funding = db.session.execute(total_funding_stmt).all()
 
-        return ResearchProjectFundingSummary(total_funding=float(total_funding[0][0]))
+        total_funding_amount = float(total_funding[0][0]) if total_funding != [(None,)] else 0
+
+        return ResearchProjectFundingSummary(total_funding=total_funding_amount)
