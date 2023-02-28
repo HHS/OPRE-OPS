@@ -9,19 +9,19 @@ import { calculatePercent } from "../../../helpers/utils";
 
 const CANFundingYTD = ({
     total_funding = "0",
-    current_funding = "0",
+    received_funding = "0",
     expected_funding = "0",
-    carry_over_funding = "0",
-    carry_over_label = "",
+    carry_forward_funding = "0",
+    carry_forward_label = "",
     className = "",
 }) => {
     const data = [
         {
             id: 1,
             label: "Funding Received YTD",
-            value: current_funding,
+            value: received_funding,
             color: "#D47D2D",
-            percent: `${calculatePercent(current_funding, total_funding)}%`,
+            percent: `${calculatePercent(received_funding, total_funding)}%`,
         },
         {
             id: 2,
@@ -33,7 +33,7 @@ const CANFundingYTD = ({
     ];
     const [activeId, setActiveId] = React.useState(0);
 
-    const CarryOverLabel = ({ funding, label }) => {
+    const CarryForwardTag = ({ funding, label }) => {
         if (funding > 0) {
             return <Tag tagStyle="darkTextGreenBackground" text={label} label={label} />;
         } else {
@@ -82,7 +82,7 @@ const CANFundingYTD = ({
                     prefix={"$ "}
                     renderText={(value) => <span className="text-semibold font-sans-lg">{value}</span>}
                 />
-                <CarryOverLabel funding={carry_over_funding} label={carry_over_label} />
+                <CarryForwardTag funding={carry_forward_funding} label={carry_forward_label} />
             </div>
             <div className={`margin-top-2 ${styles.barBox}`}>
                 <CANFundingBar setActiveId={setActiveId} data={data} />

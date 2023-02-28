@@ -112,24 +112,24 @@ class CANFiscalYear(BaseModel):
     fiscal_year = Column(Integer, primary_key=True)
     can = relationship("CAN", lazy="joined")
     total_fiscal_year_funding = Column(Numeric(12, 2))
-    current_funding = Column(Numeric(12, 2))
+    received_funding = Column(Numeric(12, 2))
     expected_funding = Column(Numeric(12, 2))
     potential_additional_funding = Column(Numeric(12, 2))
     can_lead = Column(String)
     notes = Column(String, default="")
-    total_funding = column_property(current_funding + expected_funding)
+    total_funding = column_property(received_funding + expected_funding)
 
 
-class CANFiscalYearCarryOver(BaseModel):
+class CANFiscalYearCarryForward(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN carried over from a previous fiscal year."""
 
-    __tablename__ = "can_fiscal_year_carry_over"
+    __tablename__ = "can_fiscal_year_carry_forward"
     id = Column(Integer, primary_key=True)
     can_id = Column(Integer, ForeignKey("can.id"))
     can = relationship("CAN", lazy="joined")
     from_fiscal_year = Column(Integer)
     to_fiscal_year = Column(Integer)
-    current_amount = Column(Numeric(12, 2))
+    received_amount = Column(Numeric(12, 2))
     expected_amount = Column(Numeric(12, 2))
     notes = Column(String, default="")
 

@@ -1,14 +1,14 @@
 import pytest
-from models.cans import CANFiscalYearCarryOver
+from models.cans import CANFiscalYearCarryForward
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_can_fiscal_year_carry_over_lookup(loaded_db):
+def test_can_fiscal_year_carry_forward_lookup(loaded_db):
     cfyco = (
-        loaded_db.session.query(CANFiscalYearCarryOver)
+        loaded_db.session.query(CANFiscalYearCarryForward)
         .filter(
-            CANFiscalYearCarryOver.can_id == 11,
-            CANFiscalYearCarryOver.from_fiscal_year == 2022,
+            CANFiscalYearCarryForward.can_id == 11,
+            CANFiscalYearCarryForward.from_fiscal_year == 2022,
         )
         .one()
     )
@@ -18,8 +18,8 @@ def test_can_fiscal_year_carry_over_lookup(loaded_db):
     assert cfyco.amount == 300000.00
 
 
-def test_can_fiscal_year_carry_over_create():
-    cfyco = CANFiscalYearCarryOver(
+def test_can_fiscal_year_carry_forward_create():
+    cfyco = CANFiscalYearCarryForward(
         can_id=1,
         from_fiscal_year=2023,
         to_fiscal_year=2024,
