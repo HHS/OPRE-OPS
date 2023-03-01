@@ -15,6 +15,8 @@ flask-cors = "==3.0.10"
 psycopg2-binary = "==2.9.5"
 gunicorn = "==20.1.0"
 sqlalchemy-mixins = "==1.5.3"
+flask-marshmallow = "==0.14.0"
+desert = "==2022.9.22"
 
 [dev-packages]
 flake8 = "==6.0.0"
