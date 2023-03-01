@@ -111,7 +111,6 @@ def loaded_db(app_ctx: None) -> SQLAlchemy:
     """Get SQLAlchemy through flask with the db_engine and session."""
     # Using the db_session fixture, we have a session, with a SQLAlchemy db_engine
     # binding.
-    # with app.app_context():
     yield db
 
 
