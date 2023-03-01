@@ -1160,7 +1160,7 @@
                 "sha256:f3d07edb912a978915576a776756069dede66d012baa503022d3a0adba1b6afa",
                 "sha256:fac6343bae03b176e9b58104a9810df3cdccd5cfed19f99adfa807ffbf43cf9b"
             ],
-            "markers": "python_full_version >= '3.7.0'",
+            "markers": "python_version >= '3.7'",
             "version": "==7.2.1"
         },
         "cryptography": {
@@ -1690,7 +1690,7 @@
                 "sha256:accc3665857288317f32c7bebb5a8e482ba717b474f3fc1d18ca7f9214be0cef"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==3.1.0"
+            "version": "==3.0.0"
         },
         "pluggy": {
             "hashes": [
