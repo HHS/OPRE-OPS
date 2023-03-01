@@ -14,7 +14,7 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
         return sortConfig.key === name ? sortConfig.direction : undefined;
     };
 
-    const TableRow = ({ id, name, link, funding, fundingToDate, firstAwardDate, cans, agreement }) => (
+    const TableRow = ({ name, link, funding, fundingToDate, firstAwardDate, cans, agreement }) => (
         <tr>
             <th scope="row" data-sort-value={name} data-sort-active={getClassNamesFor("name")}>
                 <Link
@@ -60,7 +60,7 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                             data-sortable
                             scope="col"
                             role="columnheader"
-                            style={{ paddingRight: 0, width: "32%" }}
+                            style={{ width: "32%" }}
                             aria-label={
                                 getClassNamesFor("name")
                                     ? `Project Name, sortable column, sorted in ${getClassNamesFor("name")} order`
@@ -79,7 +79,6 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                         <th
                             scope="col"
                             role="columnheader"
-                            style={{ paddingRight: 0 }}
                             aria-label={
                                 getClassNamesFor("funding")
                                     ? `FY ${fiscalYear.value} Funding, sortable column, sorted in ${getClassNamesFor(
@@ -100,7 +99,6 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                         <th
                             scope="col"
                             role="columnheader"
-                            style={{ paddingRight: 0 }}
                             aria-label={
                                 getClassNamesFor("fundingToDate")
                                     ? `Funding to Date, sortable column, sorted in ${getClassNamesFor(
@@ -121,7 +119,6 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                         <th
                             scope="col"
                             role="columnheader"
-                            style={{ paddingRight: 0 }}
                             aria-label={
                                 getClassNamesFor("firstAwardDate")
                                     ? `First Award, sortable column, sorted in ${getClassNamesFor(
@@ -142,7 +139,6 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                         <th
                             scope="col"
                             role="columnheader"
-                            style={{ paddingRight: 0 }}
                             aria-label={
                                 getClassNamesFor("cans")
                                     ? `CANs, sortable column, sorted in ${getClassNamesFor("cans")} order`
@@ -185,6 +181,7 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                 </tbody>
             </table>
             <div className="usa-sr-only usa-table__announcement-region" aria-live="polite">
+                {/* TODO:  screen reader message here */}
                 {/* {isTableSorted ? "table is sorted" : "Table  is not sorted"} */}
             </div>
         </div>
