@@ -12,10 +12,12 @@ import { getUserByOidc } from "../../api/getUser";
 import { apiLogin } from "../../api/apiLogin";
 
 async function setActiveUser(token, dispatch) {
+    // TODO: Vefiry the Token!
+    //const isValidToken = validateTooken(token);
     const decodedJwt = jwt_decode(token);
     const userId = decodedJwt["sub"];
     const userDetails = await getUserByOidc(userId);
-    console.log(`Logged In User: ${userDetails}`);
+
     dispatch(setUserDetails(userDetails));
 }
 
@@ -75,9 +77,13 @@ const AuthSection = () => {
         }
     }, [callBackend, dispatch]);
 
-    const logoutHandler = () => {
+    const logoutHandler = async () => {
         dispatch(logout());
         localStorage.removeItem("access_token");
+        // TODO: ⬇ Logout from Auth Provider ⬇
+        // const output = await logoutUser(localStorage.getItem("ops-state-key"));
+        // console.log(output);
+        // TODO: Add the current access_token's 'jti' to a revocation list, to prevent replay attacks
     };
 
     return (
