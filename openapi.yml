@@ -280,7 +280,7 @@ paths:
                         type: string
                       managing_research_project_id:
                         type: integer
-                  current_funding:
+                  received_funding:
                     type: string
                   planned_funding:
                     type: integer
@@ -318,7 +318,7 @@ paths:
                         "purpose": ""
                       },
                       "carry_over_funding": 0,
-                      "current_funding": "6000000.00",
+                      "received_funding": "6000000.00",
                       "expected_funding": "4000000.00",
                       "expiration_date": "09/01/2023",
                       "in_execution_funding": "2000000.00",

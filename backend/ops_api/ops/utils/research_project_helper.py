@@ -24,7 +24,7 @@ class ResearchProjectHelper:
     @staticmethod
     def get_funding_summary(portfolio_id: int, fiscal_year: int) -> ResearchProjectFundingSummary:
         total_funding_stmt = (
-            select(sum(CANFiscalYear.current_funding))
+            select(sum(CANFiscalYear.received_funding))
             .join(CAN, CAN.id == CANFiscalYear.can_id)
             .join(ResearchProject, ResearchProject.id == CAN.managing_research_project_id)
             .where(CANFiscalYear.fiscal_year == int(fiscal_year))
