@@ -520,15 +520,38 @@ paths:
           in: query
           schema:
             type: integer
-          example: '5'
+          example: 5
         - name: fiscalYear
           in: query
           schema:
-            type: string
-          example: '2023'
+            type: integer
+          example: 2023
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResearchProjectFundingSummary'
+              example: { total_funding: 1000000.01 }
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  portfolio_id:
+                    type: array
+                    items:
+                      type: string
+                      example: 'Must be greater than or equal to 1.'
+                  fiscal_year:
+                    type: array
+                    items:
+                      type: string
+                      example: 'Must be greater than or equal to 1900.'
+
 components:
   securitySchemes:
       bearerAuth:            # arbitrary name for the security scheme
@@ -591,6 +614,13 @@ components:
         updated: {}
         email:
           type: string
+
+    ResearchProjectFundingSummary:
+      description: Research Project funding data for a Portfolio
+      type: object
+      properties:
+        total_funding:
+          type: number
   examples:
     CAN:
       value:
