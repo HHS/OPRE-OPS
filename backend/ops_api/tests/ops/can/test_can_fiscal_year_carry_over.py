@@ -1,7 +1,7 @@
 """FY carry forward tests."""
 import pytest
+from flask_sqlalchemy import SQLAlchemy
 from models.cans import CANFiscalYearCarryForward
-from sqlalchemy import SQLAlchemy
 
 
 @pytest.mark.usefixtures("app_ctx")

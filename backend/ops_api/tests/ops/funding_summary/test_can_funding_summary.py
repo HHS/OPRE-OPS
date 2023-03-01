@@ -1,12 +1,14 @@
 from decimal import Decimal
 
 import pytest
+from flask.testing import FlaskClient
+from flask_sqlalchemy import SQLAlchemy
 from models.cans import CAN
 from ops_api.ops.utils.cans import get_can_funding_summary
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_can_funding_summary_no_fiscal_year(loaded_db):
+def test_get_can_funding_summary_no_fiscal_year(loaded_db: SQLAlchemy) -> None:
     can = loaded_db.session.get(CAN, 1)
 
     assert get_can_funding_summary(can) == {
@@ -26,6 +28,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db):
             "purpose": "",
         },
         "carry_forward_funding": 0,
+        "carry_forward_label": "Carry-Forward",
         "received_funding": Decimal("880000.00"),
         "expected_funding": Decimal("260000.00"),
         "expiration_date": "09/01/2023",
@@ -38,7 +41,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_get_can_funding_summary_with_fiscal_year(loaded_db):
+def test_get_can_funding_summary_with_fiscal_year(loaded_db: SQLAlchemy) -> None:
     can = loaded_db.session.get(CAN, 1)
 
     assert get_can_funding_summary(can, 2023) == {
@@ -58,6 +61,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db):
             "purpose": "",
         },
         "carry_forward_funding": 0,
+        "carry_forward_label": "Carry-Forward",
         "received_funding": Decimal("880000.00"),
         "expected_funding": Decimal("260000.00"),
         "expiration_date": "09/01/2023",
@@ -70,7 +74,9 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_can_get_can_funding_summary(client):
+def test_can_get_can_funding_summary(
+    client: FlaskClient,  # type: ignore [type-arg]
+) -> None:
     response = client.get("/api/v1/can-funding-summary/1")
     assert response.status_code == 200
     assert response.json["can"]["id"] == 1
