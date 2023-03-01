@@ -6,7 +6,8 @@ import "./tables.scss";
 
 const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
     const { items: projectTableData, requestSort, sortConfig } = useSortableData(data);
-    const [isTableSorted, setIsTableSorted] = React.useState(null);
+
+    // const [isTableSorted, setIsTableSorted] = React.useState(null);
 
     const getClassNamesFor = (name) => {
         if (!sortConfig) {
@@ -45,6 +46,11 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
             <td data-sort-value={agreement}>{agreement}</td>
         </tr>
     );
+
+    // useeffect to sort  by name on initial render
+    React.useEffect(() => {
+        requestSort("name");
+    }, []);
 
     return (
         <div className="usa-table-container--scrollable" tabIndex="0">
@@ -121,7 +127,7 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                 </tbody>
             </table>
             <div className="usa-sr-only usa-table__announcement-region" aria-live="polite">
-                {isTableSorted ? "table is sorted" : "Table  is not sorted"}
+                {/* {isTableSorted ? "table is sorted" : "Table  is not sorted"} */}
             </div>
         </div>
     );
