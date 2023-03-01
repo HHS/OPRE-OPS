@@ -6,7 +6,6 @@ import "./tables.scss";
 
 const ResearchProjectsTable = ({ fiscalYear, data }) => {
     const { items: projectTableData, requestSort, sortConfig } = useSortableData(data);
-    // const [isTableSorted, setIsTableSorted] = React.useState(null);
 
     const getClassNamesFor = (name) => {
         if (!sortConfig) {
@@ -48,7 +47,7 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
         </tr>
     );
 
-    // useeffect to sort  by name on initial render
+    // sort Table by name on initial render
     React.useEffect(() => {
         requestSort("name");
     }, []);
@@ -187,6 +186,7 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
                 </tbody>
             </table>
             <div className="usa-sr-only usa-table__announcement-region" aria-live="polite">
+                {/* TODO:  screen reader message here */}
                 {/* {isTableSorted ? "table is sorted" : "Table  is not sorted"} */}
             </div>
         </div>
