@@ -6,8 +6,9 @@ from subprocess import CalledProcessError
 import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
+from flask import Flask
 from ops_api.ops import create_app, db
-from sqlalchemy import create_engine, text
+from sqlalchemy import SQLAlchemy, create_engine, text
 from sqlalchemy.exc import OperationalError
 from tests.ops.auth_client import AuthClient
 
@@ -92,7 +93,7 @@ def docker_compose_command():
 
 
 @pytest.fixture()
-def loaded_db(app):
+def loaded_db(app: Flask) -> SQLAlchemy:
     # Using the db_session fixture, we have a session, with a SQLAlchemy db_engine
     # binding.
     with app.app_context():
