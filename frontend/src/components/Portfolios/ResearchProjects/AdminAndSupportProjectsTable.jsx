@@ -7,6 +7,8 @@ import "./tables.scss";
 const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
     const { items: projectTableData, requestSort, sortConfig } = useSortableData(data);
 
+    const srMsg = `The table named Research Projects is now sorted by ${sortConfig?.key} in ${sortConfig?.direction} order.`;
+
     const getClassNamesFor = (name) => {
         if (!sortConfig) {
             return;
@@ -181,8 +183,7 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                 </tbody>
             </table>
             <div className="usa-sr-only usa-table__announcement-region" aria-live="polite">
-                {/* TODO:  screen reader message here */}
-                {/* {isTableSorted ? "table is sorted" : "Table  is not sorted"} */}
+                {srMsg}
             </div>
         </div>
     );
