@@ -28,7 +28,6 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
                     {name.length > 30 ? name.substring(0, 30) + "..." : name}
                 </Link>
             </th>
-
             <td data-sort-value={funding} data-sort-active={getClassNamesFor("funding")}>
                 <CurrencyFormat value={funding} displayType={"text"} thousandSeparator={true} prefix={"$"} />
             </td>

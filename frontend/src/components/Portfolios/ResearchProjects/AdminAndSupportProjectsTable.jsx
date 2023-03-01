@@ -7,8 +7,6 @@ import "./tables.scss";
 const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
     const { items: projectTableData, requestSort, sortConfig } = useSortableData(data);
 
-    // const [isTableSorted, setIsTableSorted] = React.useState(null);
-
     const getClassNamesFor = (name) => {
         if (!sortConfig) {
             return;
@@ -18,11 +16,7 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
 
     const TableRow = ({ id, name, link, funding, fundingToDate, firstAwardDate, cans, agreement }) => (
         <tr>
-            <th
-                scope="row"
-                data-sort-value={name}
-                // data-sort-active={isTableSorted}
-            >
+            <th scope="row" data-sort-value={name} data-sort-active={getClassNamesFor("name")}>
                 <Link
                     to={link}
                     className="text-ink text-no-underline hover:text-underline usa-tooltip"
@@ -34,20 +28,25 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                     {name.length > 30 ? name.substring(0, 30) + "..." : name}
                 </Link>
             </th>
-
-            <td data-sort-value={funding}>
+            <td data-sort-value={funding} data-sort-active={getClassNamesFor("funding")}>
                 <CurrencyFormat value={funding} displayType={"text"} thousandSeparator={true} prefix={"$"} />
             </td>
-            <td data-sort-value={fundingToDate}>
+            <td data-sort-value={fundingToDate} data-sort-active={getClassNamesFor("fundingToDate")}>
                 <CurrencyFormat value={fundingToDate} displayType={"text"} thousandSeparator={true} prefix={"$"} />
             </td>
-            <td data-sort-value={firstAwardDate}>{firstAwardDate}</td>
-            <td data-sort-value={cans}>{cans}</td>
-            <td data-sort-value={agreement}>{agreement}</td>
+            <td data-sort-value={firstAwardDate} data-sort-active={getClassNamesFor("firstAwardDate")}>
+                {firstAwardDate}
+            </td>
+            <td data-sort-value={cans} data-sort-active={getClassNamesFor("cans")}>
+                {cans}
+            </td>
+            <td data-sort-value={agreement} data-sort-active={getClassNamesFor("agreement")}>
+                {agreement}
+            </td>
         </tr>
     );
 
-    // useeffect to sort  by name on initial render
+    // sort Table by name on initial render
     React.useEffect(() => {
         requestSort("name");
     }, []);
@@ -62,7 +61,12 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                             scope="col"
                             role="columnheader"
                             style={{ paddingRight: 0, width: "32%" }}
-                            // aria-sort={isTableSorted ? "descending" : "ascending"}
+                            aria-label={
+                                getClassNamesFor("name")
+                                    ? `Project Name, sortable column, sorted in ${getClassNamesFor("name")} order`
+                                    : `Project Name, sortable column, currently unsorted`
+                            }
+                            aria-sort={getClassNamesFor("name")}
                         >
                             <button
                                 type="button"
@@ -72,8 +76,19 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                                 Project Name
                             </button>
                         </th>
-
-                        <th scope="col" role="columnheader" style={{ paddingRight: 0 }}>
+                        <th
+                            scope="col"
+                            role="columnheader"
+                            style={{ paddingRight: 0 }}
+                            aria-label={
+                                getClassNamesFor("funding")
+                                    ? `FY ${fiscalYear.value} Funding, sortable column, sorted in ${getClassNamesFor(
+                                          "funding"
+                                      )} order`
+                                    : `FY ${fiscalYear.value} Funding, sortable column, currently unsorted`
+                            }
+                            aria-sort={getClassNamesFor("funding")}
+                        >
                             <button
                                 className={getClassNamesFor("funding")}
                                 type="button"
@@ -82,7 +97,19 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                                 FY {fiscalYear.value} Funding
                             </button>
                         </th>
-                        <th scope="col" role="columnheader" style={{ paddingRight: 0 }}>
+                        <th
+                            scope="col"
+                            role="columnheader"
+                            style={{ paddingRight: 0 }}
+                            aria-label={
+                                getClassNamesFor("fundingToDate")
+                                    ? `Funding to Date, sortable column, sorted in ${getClassNamesFor(
+                                          "fundingToDate"
+                                      )} order`
+                                    : `Funding to Date, sortable column, currently unsorted`
+                            }
+                            aria-sort={getClassNamesFor("fundingToDate")}
+                        >
                             <button
                                 className={getClassNamesFor("fundingToDate")}
                                 type="button"
@@ -91,7 +118,19 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                                 Funding to Date
                             </button>
                         </th>
-                        <th scope="col" role="columnheader" style={{ paddingRight: 0 }}>
+                        <th
+                            scope="col"
+                            role="columnheader"
+                            style={{ paddingRight: 0 }}
+                            aria-label={
+                                getClassNamesFor("firstAwardDate")
+                                    ? `First Award, sortable column, sorted in ${getClassNamesFor(
+                                          "firstAwardDate"
+                                      )} order`
+                                    : `First Award, sortable column, currently unsorted`
+                            }
+                            aria-sort={getClassNamesFor("firstAwardDate")}
+                        >
                             <button
                                 className={getClassNamesFor("firstAwardDate")}
                                 type="button"
@@ -100,7 +139,17 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                                 First Award
                             </button>
                         </th>
-                        <th scope="col" role="columnheader" style={{ paddingRight: 0 }}>
+                        <th
+                            scope="col"
+                            role="columnheader"
+                            style={{ paddingRight: 0 }}
+                            aria-label={
+                                getClassNamesFor("cans")
+                                    ? `CANs, sortable column, sorted in ${getClassNamesFor("cans")} order`
+                                    : `CANs, sortable column, currently unsorted`
+                            }
+                            aria-sort={getClassNamesFor("cans")}
+                        >
                             <button
                                 className={getClassNamesFor("cans")}
                                 type="button"
@@ -109,7 +158,16 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                                 CANs
                             </button>
                         </th>
-                        <th scope="col" role="columnheader">
+                        <th
+                            scope="col"
+                            role="columnheader"
+                            aria-label={
+                                getClassNamesFor("agreement")
+                                    ? `Agreements, sortable column, sorted in ${getClassNamesFor("agreement")} order`
+                                    : `Agreements, sortable column, currently unsorted`
+                            }
+                            aria-sort={getClassNamesFor("agreement")}
+                        >
                             <button
                                 className={getClassNamesFor("agreement")}
                                 type="button"
