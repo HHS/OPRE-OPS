@@ -26,6 +26,9 @@ it("clicking logout removes the jwt and displays sign-in", () => {
     cy.visit("/");
     cy.contains("Sign-out").click();
     cy.window().its("localStorage").invoke("getItem", "access_token").should("not.exist");
+    cy.window()
+        .then((win) => win.store.getState().auth)
+        .should("deep.include", { isLoggedIn: false });
     cy.contains("Sign-in");
     cy.url("/");
 });

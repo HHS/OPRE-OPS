@@ -120,6 +120,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     </React.StrictMode>
 );
 
+// Expose redux store when running in Cypress (e2e)
 if (window.Cypress) {
     window.store = store;
 }

@@ -39,7 +39,6 @@ Cypress.Commands.add("fakeLogin", async () => {
         .setExpirationTime("2h")
         .sign(privateKey);
 
-    console.log(jwt);
 
     window.localStorage.setItem("access_token", jwt);
 });

@@ -13,7 +13,9 @@ export const Menu = () => {
                         <Link to="/portfolios/">Portfolios</Link>
                     </li>
                 ) : (
-                    <span></span>
+                    <li>
+                        <span></span>
+                    </li>
                 )}
                 <li className="usa-nav__primary-item">
                     <Link to="/cans/">CANs</Link>

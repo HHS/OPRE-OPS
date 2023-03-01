@@ -1,7 +1,13 @@
 beforeEach(() => {
-    cy.fakeLogin();
     cy.visit("/");
     cy.injectAxe();
+});
+
+it("has expected state on load", () => {
+    cy.visit("/");
+    cy.window()
+        .then((win) => win.store.getState().auth)
+        .should("deep.include", { isLoggedIn: false });
 });
 
 it("loads", () => {
