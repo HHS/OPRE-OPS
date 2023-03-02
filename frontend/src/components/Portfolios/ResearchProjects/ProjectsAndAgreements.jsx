@@ -49,7 +49,7 @@ const ProjectsAndAgreements = ({
                         <div className="display-flex flex-column margin-left-2 grid-gap">
                             <Tag className="bg-brand-primary text-white" text={`${plannedAgreements} Planned`} />
                             <Tag
-                                className="bg-brand-feedback-warning text-white margin-top-1"
+                                className="bg-brand-feedback-warning margin-top-1"
                                 text={`${executingAgreements} Executing`}
                             />
                             <Tag
