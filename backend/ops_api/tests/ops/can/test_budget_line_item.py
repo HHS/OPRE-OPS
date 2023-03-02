@@ -18,14 +18,14 @@ def test_budget_line_item_lookup(loaded_db):
 
 def test_budget_line_item_creation():
     bli = BudgetLineItem(
-        name="Grant Expendeture GA999",
-        fiscal_year=2023,
+        line_description="Grant Expendeture GA999",
+        can_fiscal_year_fiscal_year=2023,
         agreement_id=1,
-        can_id=1,
-        funding=850450.00,
+        can_fiscal_year_can_id=1,
+        amount=850450.00,
         status_id=2,
     )
-    assert bli.to_dict()["fiscal_year"] == 2023
+    assert bli.to_dict()["can_fiscal_year_fiscal_year"] == 2023
 
 
 @pytest.mark.usefixtures("app_ctx")
