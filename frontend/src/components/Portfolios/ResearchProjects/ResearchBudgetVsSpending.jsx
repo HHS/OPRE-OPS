@@ -1,5 +1,5 @@
 import React from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import CurrencyFormat from "react-currency-format";
@@ -7,15 +7,31 @@ import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCar
 import CANFundingBar from "../../CANs/CANFundingBar/CANFundingBar";
 import { calculatePercent } from "../../../helpers/utils";
 import Tag from "../../UI/Tag/Tag";
+import { getResearchFunding } from "./getResearchProjectsFunding.js";
+import { setResearchProjectFundingDetails } from "./ResearchProjectFundingSlice";
 
 const ResearchBudgetVsSpending = ({ portfolioId = 0 }) => {
+    const dispatch = useDispatch();
     const portfolioBudget = useSelector((state) => state.portfolioBudgetSummary.portfolioBudget);
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
-    // const totalFunding = portfolioBudget.total_funding?.amount;
-    const totalFunding = "10000000.00";
+    const researchProjectFunding = useSelector((state) => state.researchProjectFunding.researchProjectFundingDetails);
+    const totalFunding = researchProjectFunding?.total_funding?.toString() || "0.00";
     const carryForwardFunding = portfolioBudget.carry_over_funding?.amount || 0;
     const newFunding = portfolioBudget.total_funding?.amount - portfolioBudget.carry_over_funding?.amount;
     const headerText = `FY ${fiscalYear.value} Budget vs Spending`;
+
+    React.useEffect(() => {
+        const getResearchProjectsFundingAndSetState = async () => {
+            const result = await getResearchFunding(portfolioId, fiscalYear.value);
+            dispatch(setResearchProjectFundingDetails(result));
+        };
+
+        getResearchProjectsFundingAndSetState().catch(console.error);
+
+        return () => {
+            dispatch(setResearchProjectFundingDetails({}));
+        };
+    }, [dispatch, fiscalYear, portfolioId]);
 
     // portfolioCansFundingDetails
     const data = [
