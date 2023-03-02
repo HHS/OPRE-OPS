@@ -4,7 +4,19 @@ from typing import Any
 from models.base import BaseModel
 from models.portfolios import Portfolio, shared_portfolio_cans
 from models.research_projects import ResearchProject
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, Numeric, String, Table, event
+from sqlalchemy import (
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    ForeignKeyConstraint,
+    Integer,
+    Numeric,
+    String,
+    Table,
+    Text,
+    event,
+)
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import column_property, relationship
@@ -118,6 +130,7 @@ class CANFiscalYear(BaseModel):
     can_lead = Column(String)
     notes = Column(String, default="")
     total_funding = column_property(current_funding + expected_funding)
+    budget_line_items = relationship("BudgetLineItem", back_populates="can_fiscal_year")
 
 
 class CANFiscalYearCarryOver(BaseModel):
@@ -135,16 +148,35 @@ class CANFiscalYearCarryOver(BaseModel):
 
 class BudgetLineItem(BaseModel):
     __tablename__ = "budget_line_item"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["can_fiscal_year_can_id", "can_fiscal_year_fiscal_year"],
+            ["can_fiscal_year.can_id", "can_fiscal_year.fiscal_year"],
+        ),
+    )
+
     id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
-    fiscal_year = Column(Integer)
+    line_description = Column(String)
+    comments = Column(Text)
+
     agreement_id = Column(Integer, ForeignKey("agreement.id"))
     agreement = relationship(Agreement)
-    can_id = Column(Integer, ForeignKey("can.id"))
-    can = relationship("CAN", back_populates="budget_line_items")
-    funding = Column(Numeric(12, 2))
+
+    can_fiscal_year_can_id = Column(Integer)
+    can_fiscal_year_fiscal_year = Column(Integer)
+    can_fiscal_year = relationship(
+        "CANFiscalYear",
+        foreign_keys="[BudgetLineItem.can_fiscal_year_can_id, BudgetLineItem.can_fiscal_year_fiscal_year]",
+        back_populates="budget_line_items",
+    )
+
+    amount = Column(Numeric(12, 2))
+
     status_id = Column(Integer, ForeignKey("budget_line_item_status.id"))
     status = relationship("BudgetLineItemStatus", back_populates="budget_line_item")
+
+    date_needed = Column(Date)
+    psc_fee_amount = Column(Numeric(12, 2))
 
 
 class BudgetLineItemStatus(BaseModel):
@@ -244,7 +276,6 @@ class CAN(BaseModel):
     shared_portfolios = relationship(
         Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans"
     )
-    budget_line_items = relationship("BudgetLineItem", back_populates="can")
     agreements = relationship(
         Agreement, secondary=agreement_cans, back_populates="cans"
     )
