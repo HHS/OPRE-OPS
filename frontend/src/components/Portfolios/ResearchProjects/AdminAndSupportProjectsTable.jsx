@@ -7,7 +7,7 @@ import "./tables.scss";
 const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
     const { items: projectTableData, requestSort, sortConfig } = useSortableData(data);
 
-    const srMsg = `The table named Research Projects is now sorted by ${sortConfig?.key} in ${sortConfig?.direction} order.`;
+    const srMsg = `The table named Admin and Support Projects is now sorted by ${sortConfig?.key} in ${sortConfig?.direction} order.`;
 
     const getClassNamesFor = (name) => {
         if (!sortConfig) {
