@@ -432,6 +432,33 @@
       potential_additional_funding: 1300000.0,
       notes: "",
     },
+    {
+      can_id: 8,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 11400000.0,
+      current_funding: 880000.0,
+      expected_funding: 260000.0,
+      potential_additional_funding: 1300000.0,
+      notes: "",
+    },
+    {
+      can_id: 9,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 11400000.0,
+      current_funding: 880000.0,
+      expected_funding: 260000.0,
+      potential_additional_funding: 1300000.0,
+      notes: "",
+    },
+    {
+      can_id: 6,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 11400000.0,
+      current_funding: 880000.0,
+      expected_funding: 260000.0,
+      potential_additional_funding: 1300000.0,
+      notes: "",
+    }
   ],
   shared_portfolio_cans: [
     {
