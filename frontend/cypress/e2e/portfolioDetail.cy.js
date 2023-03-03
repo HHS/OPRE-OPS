@@ -59,12 +59,19 @@ it("expands the description when one clicks read more", () => {
 });
 
 it("loads the Poftfolio Budget Details component", () => {
-    cy.fakeLogin();
+    cy.window().then((win) => {
+        cy.fakeLogin();
+        cy.setIsLoggedIn(win);
+    });
     cy.get("h2").should("contain", "Portfolio Budget Details by CAN");
     cy.get("section").should("contain", "G99IA14");
 });
 
 it("shows the Portfolio Projects and Spending tab", () => {
+    cy.window().then((win) => {
+        cy.fakeLogin();
+        cy.setIsLoggedIn(win);
+    });
     cy.visit("/portfolios/1/research-projects/");
     // summary cards
     cy.get("h2").should("contain", "Projects & Spending Summary");
