@@ -53,5 +53,6 @@ it("expands the description when one clicks read more", () => {
 });
 
 it("passes a11y checks", () => {
+    cy.injectAxe();
     cy.checkA11y();
 });

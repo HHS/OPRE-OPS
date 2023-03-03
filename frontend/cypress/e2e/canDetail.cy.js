@@ -18,6 +18,7 @@ it("loads", () => {
 });
 
 it("passes a11y checks", () => {
+    cy.injectAxe();
     cy.checkA11y();
 });
 
