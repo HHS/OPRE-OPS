@@ -26,6 +26,10 @@ it("loads", () => {
     cy.get("span").should("contain", "$");
 });
 
+it("passes a11y checks", () => {
+    cy.checkA11y();
+});
+
 it("expands the description when one clicks read more", () => {
     cy.fakeLogin();
     cy.contains("read more").click();
@@ -48,8 +52,4 @@ it("shows the Portfolio Projects and Spending tab", () => {
     // tables
     cy.get("h2").should("contain", "Research Projects");
     cy.get("h2").should("contain", "Administrative & Support Projects");
-});
-
-it("passes a11y checks", () => {
-    cy.checkA11y();
 });
