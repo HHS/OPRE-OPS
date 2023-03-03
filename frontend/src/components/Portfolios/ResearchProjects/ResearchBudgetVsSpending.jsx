@@ -12,12 +12,9 @@ import { setResearchProjectFundingDetails } from "./ResearchProjectFundingSlice"
 
 const ResearchBudgetVsSpending = ({ portfolioId = 0 }) => {
     const dispatch = useDispatch();
-    const portfolioBudget = useSelector((state) => state.portfolioBudgetSummary.portfolioBudget);
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
     const researchProjectFunding = useSelector((state) => state.researchProjectFunding.researchProjectFundingDetails);
     const totalFunding = researchProjectFunding?.total_funding?.toString() || "0.00";
-    const carryForwardFunding = portfolioBudget.carry_over_funding?.amount || 0;
-    const newFunding = portfolioBudget.total_funding?.amount - portfolioBudget.carry_over_funding?.amount;
     const headerText = `FY ${fiscalYear.value} Budget vs Spending`;
 
     React.useEffect(() => {
@@ -85,7 +82,6 @@ const ResearchBudgetVsSpending = ({ portfolioId = 0 }) => {
 
     return (
         <CurrencySummaryCard headerText={headerText} amount={totalFunding}>
-            {/* <pre>{JSON.stringify(portfolioBudget, null, 2)}</pre> */}
             <div id="currency-summary-card" className="margin-top-2">
                 <CANFundingBar setActiveId={setActiveId} data={data} />
             </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
 import { setResearchProjects } from "../../../pages/portfolios/detail/portfolioSlice";
@@ -7,13 +7,11 @@ import ResearchBudgetVsSpending from "./ResearchBudgetVsSpending";
 import ProjectsAndAgreements from "./ProjectsAndAgreements";
 import ResearchProjectsTable from "./ResearchProjectsTable";
 import AdminAndSupportProjectsTable from "./AdminAndSupportProjectsTable";
-
 import { data } from "./data";
 
 const ResearchProjects = () => {
     const dispatch = useDispatch();
     const urlPathParams = useParams();
-    const portfolio = useSelector((state) => state.portfolioBudgetSummary.portfolio);
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
     const portfolioId = parseInt(urlPathParams.id);
     const researchProjects = useSelector((state) => state.portfolio.researchProjects);
