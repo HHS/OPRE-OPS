@@ -17,16 +17,13 @@ import "cypress-localstorage-commands";
 import "cypress-axe";
 import "./commands";
 import * as jose from "jose";
+import { login } from "../../src/components/Auth/authSlice";
 
 Cypress.Commands.add("login", () => {
     window.localStorage.setItem("access_token", "123");
 });
 
 Cypress.Commands.add("fakeLogin", async () => {
-    Cypress.log({
-        name: "fakeLogin",
-    });
-
     const alg = "RS256";
     const keyBase64 = Cypress.env("testkey");
     const key = Buffer.from(keyBase64, "base64");
@@ -39,6 +36,9 @@ Cypress.Commands.add("fakeLogin", async () => {
         .setExpirationTime("2h")
         .sign(privateKey);
 
-
     window.localStorage.setItem("access_token", jwt);
+});
+
+Cypress.Commands.add("setIsLoggedIn", (win) => {
+    win.store.dispatch(login());
 });

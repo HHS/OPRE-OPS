@@ -19,7 +19,8 @@ it("passes a11y checks", () => {
 });
 
 it("clicking on /cans nav takes you to CAN page", () => {
-    cy.fakeLogin();
+    // For this test, we've altered the busienss rule so that /cans loads unauthed.
+    // cy.fakeLogin();
     cy.contains("CANs").click();
 
     cy.url().should("include", "/cans/");
@@ -27,7 +28,10 @@ it("clicking on /cans nav takes you to CAN page", () => {
 });
 
 it("clicking on /portfolio nav takes you to Portfolio page", () => {
-    cy.fakeLogin();
+    cy.window().then((win) => {
+        cy.fakeLogin();
+        cy.setIsLoggedIn(win);
+    });
     cy.contains("Portfolios").click();
 
     cy.url().should("include", "/portfolios/");
