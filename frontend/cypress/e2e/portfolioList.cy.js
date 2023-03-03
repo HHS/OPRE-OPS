@@ -1,11 +1,18 @@
 before(() => {
-    cy.fakeLogin();
+    cy.visit("/");
+    cy.window().then((win) => {
+        cy.fakeLogin();
+        cy.setIsLoggedIn(win);
+    });
     cy.visit("/portfolios");
     cy.injectAxe();
 });
 
 it("loads", () => {
-    cy.fakeLogin();
+    cy.window().then((win) => {
+        cy.fakeLogin();
+        cy.setIsLoggedIn(win);
+    });
     cy.get("h1").should("have.text", "Portfolios");
     cy.get('a[href="/portfolios/1"]').should("exist");
 });
@@ -15,7 +22,10 @@ it("passes a11y checks", () => {
 });
 
 it("clicking on a Portfolio takes you to the detail page", () => {
-    cy.fakeLogin();
+    cy.window().then((win) => {
+        cy.fakeLogin();
+        cy.setIsLoggedIn(win);
+    });
     const portfolioName = "Healthy Marriage & Responsible Fatherhood";
 
     cy.contains(portfolioName).click();
