@@ -15,7 +15,7 @@ const TabsSection = ({ portfolioId }) => {
         },
         {
             name: "/research-projects",
-            label: "Research Projects",
+            label: "Projects and Spending",
         },
         {
             name: "/people-and-teams",

@@ -10,11 +10,12 @@ html {
 // COLORS
 
 :root {
-    --primary-light: #bbd9ed;
-    --primary: #32698f;
+    --primary-light: #bcd9ed;
+    --primary: #336a90;
     --primary-dark: #264a64;
-    --secondary-light: #fef6e6;
-    --secondary: #d0c4af;
+    --secondary-lighter: #fef5e4;
+    --secondary-light: #f6f3ee;
+    --secondary: #cfc3ae;
     --secondary-dark: #2d261a;
     --neutral-lightest: #f0f0f0;
     --neutral-lighter: #a9aeb1;
@@ -22,17 +23,17 @@ html {
     --neutral: #71767a;
     --neutral-dark: #1c1c1c;
     --feedback-info-light: #e7f6f8;
-    --feedback-info: #009ec2;
-    --feedback-info-dark: #2e6176;
-    --feedback-error-light: #f4e4dc;
-    --feedback-error: #b40808;
-    --feedback-error-dark: #6e3230;
+    --feedback-info: #009ec1;
+    --feedback-info-dark: #2e6276;
+    --feedback-error-light: #f4e3db;
+    --feedback-error: #b50909;
+    --feedback-error-dark: #6f3331;
     --feedback-warning-light: #faf3d1;
-    --feedback-warning: #e6a100;
-    --feedback-warning-dark: #946f38;
+    --feedback-warning: #e5a000;
+    --feedback-warning-dark: #936f38;
     --feedback-success-light: #ecf3ec;
-    --feedback-success: #4d8054;
-    --feedback-success-dark: #446543;
+    --feedback-success: #4d8055;
+    --feedback-success-dark: #446443;
     --feedback-disabled-light: #e6e6e6;
     --feedback-disabled: #c9c9c9;
     --feedback-disabled-dark: #adadad;
@@ -48,12 +49,14 @@ html {
     --data-viz-primary-10: #a1d0be;
     --data-viz-primary-11: #336a90;
     --data-viz-secondary-20: #534c9c;
+    --data-viz-secondary-26: #b6406c;
 }
 
 $themeColors: (
     "primary-light": var(--primary-light),
     "primary": var(--primary),
     "primary-dark": var(--primary-dark),
+    "secondary-lighter": var(--secondary-lighter),
     "secondary-light": var(--secondary-light),
     "secondary": var(--secondary),
     "secondary-dark": var(--secondary-dark),
@@ -89,6 +92,7 @@ $themeColors: (
     "data-viz-primary-10": var(--data-viz-primary-10),
     "data-viz-primary-11": var(--data-viz-primary-11),
     "data-viz-secondary-20": var(--data-viz-secondary-20),
+    "data-viz-secondary-26": var(--data-viz-secondary-26),
 );
 
 @each $name, $color in $themeColors {
