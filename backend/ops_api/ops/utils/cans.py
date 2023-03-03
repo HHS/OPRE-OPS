@@ -4,7 +4,7 @@ from models.cans import CAN, BudgetLineItem, BudgetLineItemStatus, CANFiscalYear
 
 
 class CanFundingSummary(TypedDict):
-    """Dict type hint for total finding"""
+    """Dict type hint for total funding"""
 
     can: CAN
     received_funding: float
@@ -15,7 +15,7 @@ class CanFundingSummary(TypedDict):
     planned_funding: float
     obligated_funding: float
     in_execution_funding: float
-    available_funding: str
+    available_funding: float
     expiration_date: str
 
 
@@ -98,6 +98,6 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
         "planned_funding": planned_funding,
         "obligated_funding": obligated_funding,
         "in_execution_funding": in_execution_funding,
-        "available_funding": f"{available_funding:.2f}",
+        "available_funding": available_funding,
         "expiration_date": can.expiration_date.strftime("%m/%d/%Y"),
     }
