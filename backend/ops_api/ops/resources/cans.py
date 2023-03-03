@@ -1,6 +1,7 @@
 from typing import List
 
 from flask import Response, jsonify
+from flask_jwt_extended import jwt_required
 from models.base import BaseModel
 from models.cans import CAN
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -15,6 +16,11 @@ class CANItemAPI(BaseItemAPI):
 class CANListAPI(BaseListAPI):
     def __init__(self, model):
         super().__init__(model)
+
+    @jwt_required(True)  # For an example case, we're allowing CANs to be queried unauthed
+    def get(self) -> Response:
+        items = self.model.query.all()
+        return jsonify([item.to_dict() for item in items])
 
 
 class CANsByPortfolioAPI(BaseItemAPI):
