@@ -34,6 +34,11 @@ it("loads", () => {
     cy.get("span").should("contain", "$");
 });
 
+it("passes a11y checks", () => {
+    cy.injectAxe();
+    cy.checkA11y();
+});
+
 it("loads the Poftfolio Budget Details component", () => {
     cy.window().then((win) => {
         cy.fakeLogin();
@@ -50,9 +55,4 @@ it("expands the description when one clicks read more", () => {
     });
     cy.contains("read more").click();
     cy.get("a").should("contain", "See more on the website");
-});
-
-it("passes a11y checks", () => {
-    cy.injectAxe();
-    cy.checkA11y();
 });
