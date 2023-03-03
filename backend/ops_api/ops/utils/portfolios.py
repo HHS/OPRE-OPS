@@ -1,7 +1,11 @@
+from decimal import Decimal
 from typing import Optional, TypedDict
 
 from models.cans import CAN, BudgetLineItem, BudgetLineItemStatus, CANFiscalYear, CANFiscalYearCarryOver
 from models.portfolios import Portfolio
+from ops_api.ops import db
+from sqlalchemy import and_, select
+from sqlalchemy.sql.functions import coalesce, sum
 
 
 class FundingLineItem(TypedDict):
@@ -19,6 +23,24 @@ class TotalFunding(TypedDict):
     obligated_funding: FundingLineItem
     in_execution_funding: FundingLineItem
     available_funding: FundingLineItem
+
+
+def _get_total_fiscal_year_funding(portfolio_id: int, fiscal_year: int) -> Decimal:
+    stmt = (
+        select(coalesce(sum(CANFiscalYear.total_fiscal_year_funding), 0))
+        .join(CAN)
+        .join(
+            BudgetLineItem,
+            and_(
+                BudgetLineItem.can_fiscal_year_can_id == CANFiscalYear.can_id,
+                BudgetLineItem.can_fiscal_year_fiscal_year == CANFiscalYear.fiscal_year,
+            ),
+        )
+        .where(CAN.managing_portfolio_id == portfolio_id)
+        .where(CANFiscalYear.fiscal_year == fiscal_year)
+    )
+
+    return db.session.execute(stmt).scalar()
 
 
 def get_total_funding(portfolio: Portfolio, fiscal_year: Optional[int] = None) -> TotalFunding:
