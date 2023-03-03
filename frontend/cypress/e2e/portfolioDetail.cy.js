@@ -1,11 +1,19 @@
 before(() => {
-    cy.fakeLogin();
+    cy.visit("/");
+    cy.window().then((win) => {
+        cy.fakeLogin();
+        cy.setIsLoggedIn(win);
+    });
     cy.visit("/portfolios/1");
     cy.injectAxe();
 });
 
 it("loads", () => {
-    cy.fakeLogin();
+    cy.window().then((win) => {
+        cy.fakeLogin();
+        cy.setIsLoggedIn(win);
+    });
+    cy.visit("/portfolios/1");
     cy.get("h1").should("contain", "Child Welfare Research");
     cy.get("h2").should("contain", "Division of Child and Family Development");
     cy.get("h3").should("contain", "Team Leaders");
@@ -26,18 +34,25 @@ it("loads", () => {
     cy.get("span").should("contain", "$");
 });
 
+it("passes a11y checks", () => {
+    cy.injectAxe();
+    cy.checkA11y();
+});
+
 it("loads the Poftfolio Budget Details component", () => {
-    cy.fakeLogin();
+    cy.window().then((win) => {
+        cy.fakeLogin();
+        cy.setIsLoggedIn(win);
+    });
     cy.get("h2").should("contain", "Portfolio Budget Details by CAN");
     cy.get("section").should("contain", "G99IA14");
 });
 
-it("passes a11y checks", () => {
-    cy.checkA11y();
-});
-
 it("expands the description when one clicks read more", () => {
-    cy.fakeLogin();
+    cy.window().then((win) => {
+        cy.fakeLogin();
+        cy.setIsLoggedIn(win);
+    });
     cy.contains("read more").click();
     cy.get("a").should("contain", "See more on the website");
 });
