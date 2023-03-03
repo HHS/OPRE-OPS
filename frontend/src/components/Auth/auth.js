@@ -35,11 +35,11 @@ export const CheckAuth = () => {
     // TODO: We'll most likely want to include multiple checks here to determine if
     // the user is correctly authenticated and authorized. Hook into the Auth service
     // at some point.
-    const isLoggedIn = useSelector((state) => state.auth.isLoggedIn) || false;
+    // const isLoggedIn = useSelector((state) => state.auth.isLoggedIn) || false;
     const tokenExists = localStorage.getItem("access_token");
     // TODO: Verify access_token's signature
     // TODO: Verify access_token's claims
     // TODO: Verify access_token's expiration - maybe perform a refresh()?
     // TODO: Check Authorization
-    return isLoggedIn && tokenExists; // && payload;
+    return tokenExists; // && payload;
 };
