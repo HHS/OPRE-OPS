@@ -26,18 +26,30 @@ it("loads", () => {
     cy.get("span").should("contain", "$");
 });
 
+it("expands the description when one clicks read more", () => {
+    cy.fakeLogin();
+    cy.contains("read more").click();
+    cy.get("a").should("contain", "See more on the website");
+});
+
 it("loads the Poftfolio Budget Details component", () => {
     cy.fakeLogin();
     cy.get("h2").should("contain", "Portfolio Budget Details by CAN");
     cy.get("section").should("contain", "G99IA14");
 });
 
-it("passes a11y checks", () => {
-    cy.checkA11y();
+it("shows the Portfolio Projects and Spending tab", () => {
+    cy.visit("/portfolios/1/research-projects/");
+    // summary cards
+    cy.get("h2").should("contain", "Projects & Spending Summary");
+    cy.get("h3").should("contain", "FY 2023 Budget vs Spending");
+    cy.get("h3").should("contain", "FY 2023 Projects");
+    cy.get("h3").should("contain", "FY 2023 Agreements");
+    // tables
+    cy.get("h2").should("contain", "Research Projects");
+    cy.get("h2").should("contain", "Administrative & Support Projects");
 });
 
-it("expands the description when one clicks read more", () => {
-    cy.fakeLogin();
-    cy.contains("read more").click();
-    cy.get("a").should("contain", "See more on the website");
+it("passes a11y checks", () => {
+    cy.checkA11y();
 });
