@@ -21,7 +21,7 @@ desert = "==2022.9.22"
 [dev-packages]
 flake8 = "==6.0.0"
 isort = "==5.11.4"
-pytest = "==7.2.1"
+pytest = "==7.2.2"
 nox = "==2022.11.21"
 ipython = "==8.10.0"
 types-all = "==1.0.0"
