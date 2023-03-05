@@ -41,10 +41,14 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     app.config.from_prefixed_env()
 
     # manually setting the public key path here, until we know where it will live longterm
-    app.config.setdefault("JWT_PUBLIC_KEY", app.open_resource(app.config.get("JWT_PUBLIC_KEY_PATH")).read())
+    app.config.setdefault(
+        "JWT_PUBLIC_KEY",
+        app.open_resource(app.config.get("JWT_PUBLIC_KEY_PATH")).read(),
+    )
     # fall back for pytest to use
     app.config.setdefault(
-        "SQLALCHEMY_DATABASE_URI", "postgresql+psycopg2://postgres:local_password@localhost:5432/postgres"
+        "SQLALCHEMY_DATABASE_URI",
+        "postgresql+psycopg2://postgres:local_password@localhost:5432/postgres",
     )
 
     if config_overrides is not None:

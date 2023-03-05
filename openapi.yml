@@ -1,0 +1,721 @@
+openapi: '3.0.2'
+info:
+  title: OPRE OPS API
+  description: OPRE OPS API Specification
+  version: '0.1'
+servers:
+  - url: https://localhost:8080
+    description: Localhost
+  - url: https://ops-backend.app.cloud.gov
+    description: Development Server (Live)
+  - url: https://ops-api-staging.app.cloud.gov
+    description: Staging Server (Live)
+paths:
+  /api/v1/cans/:
+    get:
+      description: Get CANs
+      responses:
+        '200':
+          description: OK
+  /api/v1/cans/{can_id}:
+    get:
+      description: Get CAN by Id
+      parameters:
+        - in: path
+          name: can_id
+          description: CAN Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CAN'
+              example:
+                '0':
+                  $ref: '#/components/examples/CAN'
+  /api/v1/portfolios:
+    get:
+      description: Get Portfolios
+      responses:
+        '200':
+          description: OK
+  /api/v1/portfolios/{portfolio_id}:
+    get:
+      description: Get Portfolio by Id
+      parameters:
+        - in: path
+          name: portfolio_id
+          description: portfolio Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Portfolio'
+              examples:
+                '0':
+                  $ref: '#/components/examples/Portfolio'
+  /api/v1/portfolios/{portfolio_id}/calcFunding/:
+    get:
+      description: Get Total Funding by Id
+      parameters:
+        - in: path
+          name: portfolio_id
+          description: portfolio Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+        - name: fiscal_year
+          in: query
+          schema:
+            type: string
+          example: '2023'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  planned_funding:
+                    type: object
+                    properties:
+                      amount:
+                        type: number
+                      percent:
+                        type: string
+                  obligated_funding:
+                    type: object
+                    properties:
+                      amount:
+                        type: number
+                      percent:
+                        type: string
+                  available_funding:
+                    type: object
+                    properties:
+                      amount:
+                        type: number
+                      percent:
+                        type: string
+                  total_funding:
+                    type: object
+                    properties:
+                      amount:
+                        type: number
+                      percent:
+                        type: string
+                  in_execution_funding:
+                    type: object
+                    properties:
+                      amount:
+                        type: number
+                      percent:
+                        type: string
+                  carry_over_funding:
+                    type: object
+                    properties:
+                      amount:
+                        type: number
+                      percent:
+                        type: string
+              examples:
+                '0':
+                  value: |
+                    {
+                      "available_funding": {
+                        "amount": 12000000.0,
+                        "percent": "60.0"
+                      },
+                      "carry_over_funding": {
+                        "amount": 0.0,
+                        "percent": "Carry Over"
+                      },
+                      "in_execution_funding": {
+                        "amount": 4000000.0,
+                        "percent": "20.0"
+                      },
+                      "obligated_funding": {
+                        "amount": 3000000.0,
+                        "percent": "15.0"
+                      },
+                      "planned_funding": {
+                        "amount": 1000000.0,
+                        "percent": "5.0"
+                      },
+                      "total_funding": {
+                        "amount": 20000000.0,
+                        "percent": "Total"
+                      }
+                    }
+  /api/v1/portfolios/{portfolio_id}/cans/:
+    get:
+      description: Get CANs associated with a Portfolio
+      parameters:
+        - name: year
+          in: query
+          schema:
+            type: string
+          example: '2023'
+        - in: path
+          name: portfolio_id
+          description: portfolio Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                properties: {}
+                items:
+                  type: string
+              examples:
+                '0':
+                  value: |
+                    [
+                      {
+                        "appropriation_date": "01/10/2023",
+                        "appropriation_term": 1,
+                        "arrangement_type_id": 3,
+                        "authorizer_id": 26,
+                        "description": "Incoming Interagency Agreements",
+                        "expiration_date": "01/09/2024",
+                        "id": 2,
+                        "managing_portfolio_id": 1,
+                        "managing_research_project_id": null,
+                        "nickname": "IAA-Incoming",
+                        "number": "G99IA14",
+                        "purpose": ""
+                      },
+                      {
+                        "appropriation_date": "01/10/2022",
+                        "appropriation_term": 1,
+                        "arrangement_type_id": 4,
+                        "authorizer_id": 26,
+                        "description": "Child Development Research Fellowship Grant Program",
+                        "expiration_date": "01/09/2023",
+                        "id": 4,
+                        "managing_portfolio_id": 1,
+                        "managing_research_project_id": 1,
+                        "nickname": "ASPE SRCD-IDDA",
+                        "number": "G990136",
+                        "purpose": ""
+                      }
+                    ]
+  /api/v1/can-funding-summary/{can_id}:
+    get:
+      description: Get Funding Totals by CAN Id
+      parameters:
+        - name: fiscal_year
+          in: query
+          schema:
+            type: string
+          example: '2023'
+        - in: path
+          name: can_id
+          description: CAN Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  can:
+                    type: object
+                    properties:
+                      appropriation_term:
+                        type: integer
+                      authorizer_id:
+                        type: integer
+                      arrangement_type_id:
+                        type: integer
+                      number:
+                        type: string
+                      purpose:
+                        type: string
+                      managing_portfolio_id:
+                        type: integer
+                      nickname:
+                        type: string
+                      appropriation_date:
+                        type: string
+                      description:
+                        type: string
+                      id:
+                        type: integer
+                      expiration_date:
+                        type: string
+                      managing_research_project_id:
+                        type: integer
+                  current_funding:
+                    type: string
+                  planned_funding:
+                    type: integer
+                  obligated_funding:
+                    type: integer
+                  available_funding:
+                    type: string
+                  total_funding:
+                    type: string
+                  expiration_date:
+                    type: string
+                  in_execution_funding:
+                    type: string
+                  carry_over_funding:
+                    type: integer
+                  expected_funding:
+                    type: string
+              examples:
+                '0':
+                  value: |
+                    {
+                      "available_funding": "8000000.00",
+                      "can": {
+                        "appropriation_date": "01/10/2022",
+                        "appropriation_term": 1,
+                        "arrangement_type_id": 4,
+                        "authorizer_id": 26,
+                        "description": "Child Development Research Fellowship Grant Program",
+                        "expiration_date": "01/09/2023",
+                        "id": 4,
+                        "managing_portfolio_id": 1,
+                        "managing_research_project_id": 1,
+                        "nickname": "ASPE SRCD-IDDA",
+                        "number": "G990136",
+                        "purpose": ""
+                      },
+                      "carry_over_funding": 0,
+                      "current_funding": "6000000.00",
+                      "expected_funding": "4000000.00",
+                      "expiration_date": "09/01/2023",
+                      "in_execution_funding": "2000000.00",
+                      "obligated_funding": 0,
+                      "planned_funding": 0,
+                      "total_funding": "10000000.00"
+                    }
+  /api/v1/users/:
+    get:
+      description: Get all Users
+      parameters:
+        - name: oidc_id
+          in: query
+          schema:
+            type: string
+          example: e5711101-bc3e-41e5-a6a2-051874b307ca
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  division:
+                    type: integer
+                  oidc_id:
+                    type: string
+                  full_name:
+                    type: string
+                  role:
+                    type: string
+                  last_name:
+                    type: string
+                  date_joined:
+                    type: string
+                  id:
+                    type: integer
+                  first_name:
+                    type: string
+                  updated: {}
+                  email:
+                    type: string
+              examples:
+                '0':
+                  value: |
+                    {
+                      "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                      "division": 3,
+                      "email": "tdonaworth+dev@flexion.us",
+                      "first_name": "Tim",
+                      "full_name": "(no name) (no name)",
+                      "id": 5,
+                      "last_name": "Donaworth",
+                      "oidc_id": "e5711101-bc3e-41e5-a6a2-051874b307ca",
+                      "role": "Tech Lead",
+                      "updated": null
+                    }
+                '1':
+                  value: |
+                    [
+                      {
+                        "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                        "division": 1,
+                        "email": "emily.ball@example.com",
+                        "first_name": "Emily",
+                        "full_name": "(no name) (no name)",
+                        "id": 1,
+                        "last_name": "Ball",
+                        "oidc_id": "00000000-0000-1111-a111-000000000001",
+                        "role": "COR",
+                        "updated": null
+                      },
+                      {
+                        "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                        "division": 4,
+                        "email": "Bethanne.Barnes@example.com",
+                        "first_name": "Bethanne",
+                        "full_name": "(no name) (no name)",
+                        "id": 2,
+                        "last_name": "Barnes",
+                        "oidc_id": "00000000-0000-1111-a111-000000000002",
+                        "role": "Division Director",
+                        "updated": null
+                      },
+                      {
+                        "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                        "division": 1,
+                        "email": "Meryl.Barofsky@example.com",
+                        "first_name": "Meryl",
+                        "full_name": "(no name) (no name)",
+                        "id": 3,
+                        "last_name": "Barofsky",
+                        "oidc_id": "00000000-0000-1111-a111-000000000003",
+                        "role": "COR",
+                        "updated": null
+                      },
+                      {
+                        "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                        "division": 3,
+                        "email": "Anne.Bergan@example.com",
+                        "first_name": "Anne",
+                        "full_name": "(no name) (no name)",
+                        "id": 4,
+                        "last_name": "Bergan",
+                        "oidc_id": "00000000-0000-1111-a111-000000000004",
+                        "role": "COR",
+                        "updated": null
+                      },
+                      {
+                        "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                        "division": 3,
+                        "email": "tdonaworth+dev@flexion.us",
+                        "first_name": "Tim",
+                        "full_name": "(no name) (no name)",
+                        "id": 5,
+                        "last_name": "Donaworth",
+                        "oidc_id": "e5711101-bc3e-41e5-a6a2-051874b307ca",
+                        "role": "Tech Lead",
+                        "updated": null
+                      }
+                    ]
+  /api/v1/users/{user_id}:
+    get:
+      description: Get User by Id
+      parameters:
+        - in: path
+          name: user_id
+          description: User Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                '0':
+                  $ref: '#/components/examples/User'
+  /api/v1/auth/login/:
+    post:
+      description: API Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                callbackUrl:
+                  type: string
+            examples:
+              '0':
+                value: >-
+                  {"callbackUrl":"http://localhost:3000/?code=fd6a4ef9-686b-4dca-84a9-f2e9c8cb44a7&state=b0c4a75ec9405edc88f13e9de8807d3daa7d2202ed94ca04cb5b77698cdcc782","code":"fd6a4ef9-686b-4dca-84a9-f2e9c8cb44a7"}
+      responses:
+          '200':
+            description: OK
+          '204':
+            description: Created
+  /api/v1/research-projects/:
+    get:
+      description: Get all ResearchProjects
+      parameters:
+        - name: fiscal_year
+          in: query
+          schema:
+            type: string
+          example: '2023'
+        - name: portfolio_id
+          in: query
+          schema:
+            type: string
+          example: '1'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                properties: {}
+              examples:
+                '0':
+                  value: |
+                    []
+  /api/v1/research-project-funding-summary/:
+    get:
+      description: ''
+      parameters:
+        - name: portfolioId
+          in: query
+          schema:
+            type: integer
+          example: 5
+        - name: fiscalYear
+          in: query
+          schema:
+            type: integer
+          example: 2023
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResearchProjectFundingSummary'
+              example: { total_funding: 1000000.01 }
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  portfolio_id:
+                    type: array
+                    items:
+                      type: string
+                      example: 'Must be greater than or equal to 1.'
+                  fiscal_year:
+                    type: array
+                    items:
+                      type: string
+                      example: 'Must be greater than or equal to 1900.'
+
+components:
+  securitySchemes:
+      bearerAuth:            # arbitrary name for the security scheme
+        type: http
+        scheme: bearer
+        bearerFormat: JWT
+  schemas:
+    CAN:
+      description: Common Accounting Number (CAN) Object
+      type: object
+      properties:
+        appropriation_term:
+          type: integer
+        authorizer_id:
+          type: integer
+        arrangement_type_id:
+          type: integer
+        number:
+          type: string
+        purpose:
+          type: string
+        managing_portfolio_id:
+          type: integer
+        nickname:
+          type: string
+        appropriation_date: {}
+        description:
+          type: string
+        id:
+          type: integer
+        expiration_date:
+          type: string
+        managing_research_project_id: {}
+
+    Portfolio:
+      description: Portfolio Object
+
+    User:
+      description: OPRE User Object
+      type: object
+      properties:
+        division:
+          type: integer
+        oidc_id:
+          type: string
+        full_name:
+          type: string
+        role:
+          type: string
+        last_name:
+          type: string
+        date_joined:
+          type: string
+          pattern: ^example-[0-9a-z]+$
+          maxLength: 32
+        id:
+          type: integer
+        first_name:
+          type: string
+        updated: {}
+        email:
+          type: string
+
+    ResearchProjectFundingSummary:
+      description: Research Project funding data for a Portfolio
+      type: object
+      properties:
+        total_funding:
+          type: number
+  examples:
+    CAN:
+      value:
+        - appropriation_date: "01/10/2023"
+        - appropriation_term: 1
+        - arrangement_type_id: 2
+        - authorizer_id: 23
+        - description: "Healthy Marriages Responsible Fatherhood - OFA"
+        - expiration_date: "01/09/2024"
+        - id: 10
+        - managing_portfolio_id: 6
+        - managing_research_project_id: null
+        - nickname: "HMRF-OFA"
+        - number: "G99XXX3"
+        - purpose: ""
+    Portfolio:
+      value: |
+        {
+          "cans": [
+              {
+                  "appropriation_date": "01/10/2023",
+                  "appropriation_term": 1,
+                  "arrangement_type_id": 3,
+                  "authorizer_id": 26,
+                  "description": "Incoming Interagency Agreements",
+                  "expiration_date": "01/09/2024",
+                  "id": 2,
+                  "managing_portfolio_id": 1,
+                  "managing_research_project_id": null,
+                  "nickname": "IAA-Incoming",
+                  "number": "G99IA14",
+                  "purpose": ""
+              },
+              {
+                  "appropriation_date": "01/10/2022",
+                  "appropriation_term": 1,
+                  "arrangement_type_id": 4,
+                  "authorizer_id": 26,
+                  "description": "Child Development Research Fellowship Grant Program",
+                  "expiration_date": "01/09/2023",
+                  "id": 4,
+                  "managing_portfolio_id": 1,
+                  "managing_research_project_id": 1,
+                  "nickname": "ASPE SRCD-IDDA",
+                  "number": "G990136",
+                  "purpose": ""
+              }
+          ],
+          "description": "The promotion of childrens safety, ... to the attention of child welfare.",
+          "division": {
+              "abbreviation": "DFCD",
+              "id": 1,
+              "name": "Division of Child and Family Development"
+          },
+          "division_id": 1,
+          "id": 1,
+          "name": "Child Welfare Research",
+          "status": "Active",
+          "status_id": 1,
+          "team_leaders": [
+              {
+                  "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                  "division": 1,
+                  "email": "emily.ball@example.com",
+                  "first_name": "Emily",
+                  "full_name": "(no name) (no name)",
+                  "id": 1,
+                  "last_name": "Ball",
+                  "oidc_id": "00000000-0000-1111-a111-000000000001",
+                  "role": "COR",
+                  "updated": null
+              }
+          ],
+          "urls": [
+              {
+                  "id": 1,
+                  "portfolio_id": 1,
+                  "url": "https://www.acf.hhs.gov/opre/topic/overview/abuse-neglect-adoption-foster-care"
+              }
+          ]
+        }
+    User:
+      value: |
+        {
+          "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+          "division": 3,
+          "email": "user@email.com",
+          "first_name": "Jon",
+          "full_name": "Jon Doe",
+          "id": 5,
+          "last_name": "Doe",
+          "oidc_id": "00000000-aaaa-bbbb-0000-000000000001",
+          "role": "Administrator",
+          "updated": null
+        }
+
+security:
+  - bearerAuth: []

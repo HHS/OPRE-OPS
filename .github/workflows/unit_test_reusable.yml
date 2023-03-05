@@ -4,7 +4,7 @@ on:
 jobs:
 
   backend-api:
-    name: Backend Unit Tests
+    name: Backend API Unit Tests
     runs-on: ubuntu-latest
     env:
       JWT_PRIVATE_KEY: "__blank__"
@@ -17,7 +17,7 @@ jobs:
         run: pipenv run pytest
 
   backend-data-tools:
-    name: Backend Unit Tests
+    name: Data-Tools Unit Tests
     runs-on: ubuntu-latest
     env:
       JWT_PRIVATE_KEY: "__blank__"
@@ -41,6 +41,7 @@ jobs:
         run: yarn test
 
   e2e:
+    name: End-to-End Testing
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

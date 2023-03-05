@@ -11,11 +11,11 @@ const TabsSection = ({ portfolioId }) => {
     const paths = [
         {
             name: "/budget-and-funding",
-            label: "Budget And Funding",
+            label: "Budget and Funding",
         },
         {
             name: "/research-projects",
-            label: "Research Projects",
+            label: "Projects and Spending",
         },
         {
             name: "/people-and-teams",

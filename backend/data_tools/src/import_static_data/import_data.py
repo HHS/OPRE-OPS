@@ -95,7 +95,7 @@ def delete_existing_data(conn: sqlalchemy.engine.Engine.connect, data: Dict):
         # Only truncate if it actually exists
         if exists(conn, ops_table):
             # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
-            conn.execute(text(f"TRUNCATE TABLE {ops_table} CASCADE;"))
+            conn.execute(text(f"TRUNCATE TABLE {ops_table} RESTART IDENTITY CASCADE;"))
         else:
             return "Table does not exist"
 

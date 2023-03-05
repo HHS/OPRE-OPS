@@ -45,7 +45,7 @@ services:
       # having to rebuild the migration container.
       - ./backend/ops_api:/home/app/ops_api
     depends_on:
-      backend:
+      db:
         condition: service_healthy
 
   backend:

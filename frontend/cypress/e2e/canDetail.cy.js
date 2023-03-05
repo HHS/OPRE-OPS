@@ -1,15 +1,24 @@
 before(() => {
-    cy.fakeLogin();
+    cy.visit("/");
+    cy.window().then((win) => {
+        cy.fakeLogin();
+        cy.setIsLoggedIn(win);
+    });
     cy.visit("/cans/3/");
     cy.injectAxe();
 });
 
 it("loads", () => {
-    cy.fakeLogin();
+    cy.window().then((win) => {
+        cy.fakeLogin();
+        cy.setIsLoggedIn(win);
+    });
+    cy.visit("/cans/3/");
     cy.get("h1").should("contain", "G99PHS9");
 });
 
 it("passes a11y checks", () => {
+    cy.injectAxe();
     cy.checkA11y();
 });
 

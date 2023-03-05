@@ -2,7 +2,7 @@
 applications:
   - name: ops-backend
     env:
-      OPS_CONFIG: environment/cloud.py
+      OPS_CONFIG: environment/cloud/dev.py
     memory: 700M
     buildpack: python_buildpack
     path: ./backend

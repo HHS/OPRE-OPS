@@ -1850,10 +1850,10 @@
     redux-thunk "^2.4.2"
     reselect "^4.1.7"
 
-"@remix-run/router@1.3.2":
-  version "1.3.2"
-  resolved "https://registry.yarnpkg.com/@remix-run/router/-/router-1.3.2.tgz#58cd2bd25df2acc16c628e1b6f6150ea6c7455bc"
-  integrity sha512-t54ONhl/h75X94SWsHGQ4G/ZrCEguKSRQr7DrjTciJXW0YU1QhlwYeycvK5JgkzlxmvrK7wq1NB/PLtHxoiDcA==
+"@remix-run/router@1.3.3":
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/@remix-run/router/-/router-1.3.3.tgz#d6d531d69c0fa3a44fda7dc00b20d49b44549164"
+  integrity sha512-YRHie1yQEj0kqqCTCJEfHqYSSNlZQ696QJG+MMiW4mxSl9I0ojz/eRhJS4fs88Z5i6D1SmoF9d3K99/QOhI8/w==
 
 "@rollup/plugin-babel@^5.2.0":
   version "5.3.1"
@@ -2042,6 +2042,14 @@
     dom-accessibility-api "^0.5.9"
     lz-string "^1.4.4"
     pretty-format "^27.0.2"
+
+"@testing-library/react-hooks@^8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@testing-library/react-hooks/-/react-hooks-8.0.1.tgz#0924bbd5b55e0c0c0502d1754657ada66947ca12"
+  integrity sha512-Aqhl2IVmLt8IovEVarNDFuJDVWVvhnr9/GCU6UUnrYXwgDFF9h2L2o2P9KBni1AST5sT6riAyoukFLyjQUgD/g==
+  dependencies:
+    "@babel/runtime" "^7.12.5"
+    react-error-boundary "^3.1.0"
 
 "@testing-library/react@^14.0.0":
   version "14.0.0"
@@ -7915,10 +7923,10 @@ jest@^27.4.3:
     import-local "^3.0.2"
     jest-cli "^27.5.1"
 
-jose@4.12.0:
-  version "4.12.0"
-  resolved "https://registry.yarnpkg.com/jose/-/jose-4.12.0.tgz#7f00cd2f82499b91623cd413b7b5287fd52651ed"
-  integrity sha512-wW1u3cK81b+SFcHjGC8zw87yuyUweEFe0UJirrXEw1NasW00eF7sZjeG3SLBGz001ozxQ46Y9sofDvhBmWFtXQ==
+jose@4.12.2:
+  version "4.12.2"
+  resolved "https://registry.yarnpkg.com/jose/-/jose-4.12.2.tgz#45894e27079ebebe211300c5e59cc4ce7bd96347"
+  integrity sha512-DGcMJCoICP0/yP/KLTfJ1dgyyHXVkiEwDPUdUsej4+8ywnutO3Q7SIL6UY1l67Ox0nzOs/sC2BkbIcdfy/nWYw==
 
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"
@@ -10359,6 +10367,13 @@ react-dom@18.2.0:
     loose-envify "^1.1.0"
     scheduler "^0.23.0"
 
+react-error-boundary@^3.1.0:
+  version "3.1.4"
+  resolved "https://registry.yarnpkg.com/react-error-boundary/-/react-error-boundary-3.1.4.tgz#255db92b23197108757a888b01e5b729919abde0"
+  integrity sha512-uM9uPzZJTF6wRQORmSrvOIgt4lJ9MC1sNgEOj2XGsDTRE4kmpWxg7ENK9EWNKJRMAOY9z0MuF4yIfl6gp4sotA==
+  dependencies:
+    "@babel/runtime" "^7.12.5"
+
 react-error-overlay@^6.0.11:
   version "6.0.11"
   resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-6.0.11.tgz#92835de5841c5cf08ba00ddd2d677b6d17ff9adb"
@@ -10422,20 +10437,20 @@ react-refresh@^0.11.0:
   resolved "https://registry.yarnpkg.com/react-refresh/-/react-refresh-0.11.0.tgz#77198b944733f0f1f1a90e791de4541f9f074046"
   integrity sha512-F27qZr8uUqwhWZboondsPx8tnC3Ct3SxZA3V5WyEvujRyyNv0VYPhoBg1gZ8/MV5tubQp76Trw8lTv9hzRBa+A==
 
-react-router-dom@6.8.1:
-  version "6.8.1"
-  resolved "https://registry.yarnpkg.com/react-router-dom/-/react-router-dom-6.8.1.tgz#7e136b67d9866f55999e9a8482c7008e3c575ac9"
-  integrity sha512-67EXNfkQgf34P7+PSb6VlBuaacGhkKn3kpE51+P6zYSG2kiRoumXEL6e27zTa9+PGF2MNXbgIUHTVlleLbIcHQ==
+react-router-dom@6.8.2:
+  version "6.8.2"
+  resolved "https://registry.yarnpkg.com/react-router-dom/-/react-router-dom-6.8.2.tgz#a6654a3400be9aafd504d7125573568921b78b57"
+  integrity sha512-N/oAF1Shd7g4tWy+75IIufCGsHBqT74tnzHQhbiUTYILYF0Blk65cg+HPZqwC+6SqEyx033nKqU7by38v3lBZg==
   dependencies:
-    "@remix-run/router" "1.3.2"
-    react-router "6.8.1"
+    "@remix-run/router" "1.3.3"
+    react-router "6.8.2"
 
-react-router@6.8.1:
-  version "6.8.1"
-  resolved "https://registry.yarnpkg.com/react-router/-/react-router-6.8.1.tgz#e362caf93958a747c649be1b47cd505cf28ca63e"
-  integrity sha512-Jgi8BzAJQ8MkPt8ipXnR73rnD7EmZ0HFFb7jdQU24TynGW1Ooqin2KVDN9voSC+7xhqbbCd2cjGUepb6RObnyg==
+react-router@6.8.2:
+  version "6.8.2"
+  resolved "https://registry.yarnpkg.com/react-router/-/react-router-6.8.2.tgz#98f83582a73f316a3287118b440f0cee30ed6f33"
+  integrity sha512-lF7S0UmXI5Pd8bmHvMdPKI4u4S5McxmHnzJhrYi9ZQ6wE+DA8JN5BzVC5EEBuduWWDaiJ8u6YhVOCmThBli+rw==
   dependencies:
-    "@remix-run/router" "1.3.2"
+    "@remix-run/router" "1.3.3"
 
 react-scripts@5.0.1:
   version "5.0.1"

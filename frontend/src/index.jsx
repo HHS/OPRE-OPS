@@ -17,79 +17,97 @@ import ResearchProjects from "./components/Portfolios/ResearchProjects/ResearchP
 import PeopleAndTeams from "./components/Portfolios/PeopleAndTeams/PeopleAndTeams";
 import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAndFunding";
 import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProjectDetail";
+import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
         <>
             <Route path="/" element={<Home />} />
-            <Route path="/portfolios" element={<PortfolioList />} />
             <Route
-                path="/portfolios/:id"
-                element={<PortfolioDetail />}
-                handle={{
-                    // you can put whatever you want on a route handle
-                    // here we use "crumb" and return some elements,
-                    // this is what we'll render in the breadcrumbs
-                    // for this route
-                    crumb: () => (
-                        <Link to="/portfolios" className="text-primary">
-                            Portfolios
-                        </Link>
-                    ),
-                }}
+                element={
+                    // This demonstrates a Protected Route. All children within this Route
+                    // will have to be processed by the Protection rules before rendering.
+                    // by default, we redirect back to "/" if they're not allowed. This can
+                    // overwritten with a 'redirectPath="/whatever"' prop.
+                    //
+                    // In this example, all /portfolio routes are currently protected.
+                    // See below for a mixed example, where /cans is allowed, but all
+                    // children of /cans ie: /cans/{id} are not allowed unless authenticated.
+                    <ProtectedRoute />
+                }
             >
-                {/* Default to BudgetAndFunding */}
-                <Route exact path="" element={<Navigate to={"budget-and-funding"} />} />
-                <Route path="budget-and-funding" element={<BudgetAndFunding />} />
-                <Route path="research-projects" element={<ResearchProjects />} />
-                <Route path="people-and-teams" element={<PeopleAndTeams />} />
+                <Route path="/portfolios" element={<PortfolioList />} />
+                <Route
+                    path="/portfolios/:id"
+                    element={<PortfolioDetail />}
+                    handle={{
+                        // you can put whatever you want on a route handle
+                        // here we use "crumb" and return some elements,
+                        // this is what we'll render in the breadcrumbs
+                        // for this route
+                        crumb: () => (
+                            <Link to="/portfolios" className="text-primary">
+                                Portfolios
+                            </Link>
+                        ),
+                    }}
+                >
+                    {/* Default to BudgetAndFunding */}
+                    <Route exact path="" element={<Navigate to={"budget-and-funding"} />} />
+                    <Route path="budget-and-funding" element={<BudgetAndFunding />} />
+                    <Route path="research-projects" element={<ResearchProjects />} />
+                    <Route path="people-and-teams" element={<PeopleAndTeams />} />
+                </Route>
+                <Route
+                    path="/research-projects/:id"
+                    element={<ResearchProjectDetail />}
+                    handle={{
+                        // you can put whatever you want on a route handle
+                        // here we use "crumb" and return some elements,
+                        // this is what we'll render in the breadcrumbs
+                        // for this route
+                        crumb: () => (
+                            <div>
+                                <Link to="/" className="text-primary">
+                                    Research Projects
+                                </Link>
+                            </div>
+                        ),
+                    }}
+                />
+                <Route
+                    path="/users/:id"
+                    element={<UserDetail />}
+                    handle={{
+                        crumb: () => (
+                            <div>
+                                <Link to="/" className="text-primary">
+                                    Users
+                                </Link>
+                            </div>
+                        ),
+                    }}
+                />
+            </Route>
+            <Route element={<ProtectedRoute redirectPath="/cans" />}>
+                <Route
+                    path="/cans/:id"
+                    element={<CanDetail />}
+                    handle={{
+                        // you can put whatever you want on a route handle
+                        // here we use "crumb" and return some elements,
+                        // this is what we'll render in the breadcrumbs
+                        // for this route
+                        crumb: () => (
+                            <Link to="/cans" className="text-primary">
+                                Cans
+                            </Link>
+                        ),
+                    }}
+                />
             </Route>
             <Route path="/cans" element={<CanList />} />
-            <Route
-                path="/cans/:id"
-                element={<CanDetail />}
-                handle={{
-                    // you can put whatever you want on a route handle
-                    // here we use "crumb" and return some elements,
-                    // this is what we'll render in the breadcrumbs
-                    // for this route
-                    crumb: () => (
-                        <Link to="/cans" className="text-primary">
-                            Cans
-                        </Link>
-                    ),
-                }}
-            />
-            <Route
-                path="/research-projects/:id"
-                element={<ResearchProjectDetail />}
-                handle={{
-                    // you can put whatever you want on a route handle
-                    // here we use "crumb" and return some elements,
-                    // this is what we'll render in the breadcrumbs
-                    // for this route
-                    crumb: () => (
-                        <div>
-                            <Link to="/" className="text-primary">
-                                Research Projects
-                            </Link>
-                        </div>
-                    ),
-                }}
-            />
-            <Route
-                path="/users/:id"
-                element={<UserDetail />}
-                handle={{
-                    crumb: () => (
-                        <div>
-                            <Link to="/" className="text-primary">
-                                Users
-                            </Link>
-                        </div>
-                    ),
-                }}
-            />
+            <Route path="/login" handle={{}} />
         </>
     )
 );
@@ -102,6 +120,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     </React.StrictMode>
 );
 
+// Expose redux store when running in Cypress (e2e)
 if (window.Cypress) {
     window.store = store;
 }
