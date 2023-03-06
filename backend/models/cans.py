@@ -1,5 +1,5 @@
 """CAN models."""
-from typing import Any
+from typing import Any, cast
 
 from models.base import BaseModel
 from models.portfolios import Portfolio, shared_portfolio_cans
@@ -112,24 +112,25 @@ class CANFiscalYear(BaseModel):
     fiscal_year = Column(Integer, primary_key=True)
     can = relationship("CAN", lazy="joined")
     total_fiscal_year_funding = Column(Numeric(12, 2))
-    current_funding = Column(Numeric(12, 2))
+    received_funding = Column(Numeric(12, 2))
     expected_funding = Column(Numeric(12, 2))
     potential_additional_funding = Column(Numeric(12, 2))
     can_lead = Column(String)
     notes = Column(String, default="")
-    total_funding = column_property(current_funding + expected_funding)
+    total_funding = column_property(received_funding + expected_funding)
 
 
-class CANFiscalYearCarryOver(BaseModel):
+class CANFiscalYearCarryForward(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN carried over from a previous fiscal year."""
 
-    __tablename__ = "can_fiscal_year_carry_over"
+    __tablename__ = "can_fiscal_year_carry_forward"
     id = Column(Integer, primary_key=True)
     can_id = Column(Integer, ForeignKey("can.id"))
     can = relationship("CAN", lazy="joined")
     from_fiscal_year = Column(Integer)
     to_fiscal_year = Column(Integer)
-    amount = Column(Numeric(12, 2))
+    received_amount = Column(Numeric(12, 2))
+    expected_amount = Column(Numeric(12, 2))
     notes = Column(String, default="")
 
 
@@ -166,17 +167,17 @@ class BudgetLineItemStatus(BaseModel):
             {"id": 3, "status": "Obligated"},
         )
 
-    @hybrid_property
+    @hybrid_property  # type: ignore [misc]
     def Planned(self) -> bool:
-        return self.id == 1  # Planned
+        return cast(bool, self.id == 1)  # Planned
 
-    @hybrid_property
+    @hybrid_property  # type: ignore [misc]
     def In_Execution(self) -> bool:
-        return self.id == 2  # In Execution
+        return cast(bool, self.id == 2)  # In Execution
 
-    @hybrid_property
+    @hybrid_property  # type: ignore [misc]
     def Obligated(self) -> bool:
-        return self.id == 3  # Obligated
+        return cast(bool, self.id == 3)  # Obligated
 
 
 class CANArrangementType(BaseModel):
@@ -251,13 +252,13 @@ class CAN(BaseModel):
     managing_research_project_id = Column(Integer, ForeignKey("research_project.id"))
     managing_research_project = relationship(ResearchProject, back_populates="cans")
 
-    @hybrid_property
+    @hybrid_property  # type: ignore [misc]
     def arrangementType(self) -> str:
-        return self.arrangement_type.name
+        return cast(str, self.arrangement_type.name)
 
     @override
-    def to_dict(self):
-        d = super().to_dict()
+    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
 
         d.update(
             appropriation_date=self.appropriation_date.strftime("%d/%m/%Y")

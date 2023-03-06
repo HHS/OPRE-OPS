@@ -32,6 +32,7 @@ it("loads", () => {
     cy.get("#portfolioBudgetStatusChart").should("be.visible");
     cy.get(".usa-select").should("be.visible");
     cy.get("span").should("contain", "$");
+    cy.get("span").should("contain", "Carry-Forward");
 });
 
 it("passes a11y checks", () => {

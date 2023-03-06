@@ -1,6 +1,6 @@
 from typing import Optional, TypedDict
 
-from models.cans import CAN, BudgetLineItem, BudgetLineItemStatus, CANFiscalYear, CANFiscalYearCarryOver
+from models.cans import CAN, BudgetLineItem, BudgetLineItemStatus, CANFiscalYear, CANFiscalYearCarryForward
 from models.portfolios import Portfolio
 
 
@@ -8,13 +8,14 @@ class FundingLineItem(TypedDict):
     """Dict type hint for line items in total funding."""
 
     amount: float
-    label: str
+    percent: str
 
 
 class TotalFunding(TypedDict):
     """Dict type hint for total finding"""
 
     total_funding: FundingLineItem
+    carry_forward_funding: FundingLineItem
     planned_funding: FundingLineItem
     obligated_funding: FundingLineItem
     in_execution_funding: FundingLineItem
@@ -24,20 +25,28 @@ class TotalFunding(TypedDict):
 def get_total_funding(portfolio: Portfolio, fiscal_year: Optional[int] = None) -> TotalFunding:
     can_fiscal_year_query = CANFiscalYear.query.filter(CANFiscalYear.can.has(CAN.managing_portfolio == portfolio))
 
-    can_fiscal_year_carry_over_query = CANFiscalYearCarryOver.query.filter(
-        CANFiscalYearCarryOver.can.has(CAN.managing_portfolio == portfolio)
+    can_fiscal_year_carry_forward_query = CANFiscalYearCarryForward.query.filter(
+        CANFiscalYearCarryForward.can.has(CAN.managing_portfolio == portfolio)
     )
 
     if fiscal_year:
         can_fiscal_year_query = can_fiscal_year_query.filter(CANFiscalYear.fiscal_year == fiscal_year).all()
 
-        can_fiscal_year_carry_over_query = can_fiscal_year_carry_over_query.filter(
-            CANFiscalYearCarryOver.to_fiscal_year == fiscal_year
+        can_fiscal_year_carry_forward_query = can_fiscal_year_carry_forward_query.filter(
+            CANFiscalYearCarryForward.to_fiscal_year == fiscal_year
         ).all()
 
     total_funding = sum([c.total_fiscal_year_funding for c in can_fiscal_year_query]) or 0
 
-    carry_over_funding = sum([c.amount if c.amount else 0 for c in can_fiscal_year_carry_over_query]) or 0
+    carry_forward_funding = (
+        sum(
+            [
+                (c.received_amount if c.received_amount else 0) + (c.expected_amount if c.expected_amount else 0)
+                for c in can_fiscal_year_carry_forward_query
+            ]
+        )
+        or 0
+    )
 
     # Amount available to a Portfolio budget is the sum of the BLI minus the Portfolio total (above)
     budget_line_items = BudgetLineItem.query.filter(BudgetLineItem.can.has(CAN.managing_portfolio == portfolio))
@@ -73,9 +82,9 @@ def get_total_funding(portfolio: Portfolio, fiscal_year: Optional[int] = None) -
             "amount": float(total_funding),
             "percent": "Total",
         },
-        "carry_over_funding": {
-            "amount": float(carry_over_funding),
-            "percent": "Carry Over",
+        "carry_forward_funding": {
+            "amount": float(carry_forward_funding),
+            "percent": "Carry-Forward",
         },
         "planned_funding": {
             "amount": float(planned_funding),
@@ -96,5 +105,5 @@ def get_total_funding(portfolio: Portfolio, fiscal_year: Optional[int] = None) -
     }
 
 
-def get_percentage(total_funding: float, specific_funding: float) -> float:
-    return 0 if total_funding == 0 else f"{round(float(specific_funding) / float(total_funding), 2) * 100}"
+def get_percentage(total_funding: float, specific_funding: float) -> str:
+    return f"{round(float(specific_funding) / float(total_funding), 2) * 100}" if total_funding else "0"

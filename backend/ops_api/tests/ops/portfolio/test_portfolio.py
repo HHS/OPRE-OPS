@@ -43,7 +43,7 @@ def test_portfolio_calc_funding_amounts_2022(auth_client, loaded_db):
     assert response.json["in_execution_funding"]["amount"] == 0.00
     assert response.json["obligated_funding"]["amount"] == 0.00
     assert response.json["planned_funding"]["amount"] == 0.00
-    assert response.json["carry_over_funding"]["amount"] == 0.00
+    assert response.json["carry_forward_funding"]["amount"] == 0.00
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -56,7 +56,7 @@ def test_portfolio_calc_funding_amounts_2023(auth_client, loaded_db):
     assert response.json["in_execution_funding"]["amount"] == 4000000.0
     assert response.json["obligated_funding"]["amount"] == 3000000.00
     assert response.json["planned_funding"]["amount"] == 1000000.0
-    assert response.json["carry_over_funding"]["amount"] == 0.0
+    assert response.json["carry_forward_funding"]["amount"] == 0.0
 
 
 @pytest.mark.usefixtures("app_ctx")

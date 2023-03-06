@@ -37,12 +37,12 @@ def db_loaded_with_research_projects(app, loaded_db):
 
         instances.extend([can_100, can_200, can_300, can_400])
 
-        can_fy_100_2023 = CANFiscalYear(can_id=can_100.id, fiscal_year=2023, current_funding=5)
-        can_fy_200_2023 = CANFiscalYear(can_id=can_200.id, fiscal_year=2023, current_funding=7)
-        can_fy_300_2023 = CANFiscalYear(can_id=can_300.id, fiscal_year=2023, current_funding=3)
-        can_fy_100_2022 = CANFiscalYear(can_id=can_100.id, fiscal_year=2022, current_funding=5)
-        can_fy_200_2022 = CANFiscalYear(can_id=can_200.id, fiscal_year=2022, current_funding=5)
-        can_fy_400_2023 = CANFiscalYear(can_id=can_400.id, fiscal_year=2023, current_funding=5)
+        can_fy_100_2023 = CANFiscalYear(can_id=can_100.id, fiscal_year=2023, received_funding=5)
+        can_fy_200_2023 = CANFiscalYear(can_id=can_200.id, fiscal_year=2023, received_funding=7)
+        can_fy_300_2023 = CANFiscalYear(can_id=can_300.id, fiscal_year=2023, received_funding=3)
+        can_fy_100_2022 = CANFiscalYear(can_id=can_100.id, fiscal_year=2022, received_funding=5)
+        can_fy_200_2022 = CANFiscalYear(can_id=can_200.id, fiscal_year=2022, received_funding=5)
+        can_fy_400_2023 = CANFiscalYear(can_id=can_400.id, fiscal_year=2023, received_funding=5)
 
         instances.extend(
             [
