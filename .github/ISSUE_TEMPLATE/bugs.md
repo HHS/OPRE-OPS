@@ -6,7 +6,7 @@
 ## Current Behavior
 <!--- Tell us what happens instead of the expected behavior -->
 
-## Possible Solution
+## Possible Cause
 <!--- Not obligatory, but suggest a fix/reason for the bug, -->
 
 ## Steps to Reproduce
@@ -17,11 +17,10 @@
 3.
 4.
 
-## Context (Environment)
+## Context
 <!--- How has this issue affected you? What are you trying to accomplish? -->
+<!--  What environment of OPS were you experiencing this in? -->
 <!--- Providing context helps us come up with a solution that is most useful in the real world -->
-
-<!--- Provide a general summary of the issue in the Title above -->
 
 ## Detailed Description
 <!--- Provide a detailed description of the change or addition you are proposing -->
