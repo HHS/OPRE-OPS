@@ -12,7 +12,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db: SQLAlchemy) -> None:
     can = loaded_db.session.get(CAN, 1)
 
     assert get_can_funding_summary(can) == {
-        "available_funding": "-860000.00",
+        "available_funding": Decimal("-860000.00"),
         "can": {
             "appropriation_date": None,
             "appropriation_term": 1,
@@ -45,7 +45,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db: SQLAlchemy) -> None
     can = loaded_db.session.get(CAN, 1)
 
     assert get_can_funding_summary(can, 2023) == {
-        "available_funding": "-860000.00",
+        "available_funding": Decimal("-860000.00"),
         "can": {
             "appropriation_date": None,
             "appropriation_term": 1,
