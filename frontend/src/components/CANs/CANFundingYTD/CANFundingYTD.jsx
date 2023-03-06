@@ -7,14 +7,21 @@ import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import Tag from "../../UI/Tag/Tag";
 import { calculatePercent } from "../../../helpers/utils";
 
-const CANFundingYTD = ({ total_funding = "0", current_funding = "0", expected_funding = "0", className = "" }) => {
+const CANFundingYTD = ({
+    total_funding = "0",
+    received_funding = "0",
+    expected_funding = "0",
+    carry_forward_funding = "0",
+    carry_forward_label = "",
+    className = "",
+}) => {
     const data = [
         {
             id: 1,
             label: "Funding Received YTD",
-            value: current_funding,
+            value: received_funding,
             color: "#D47D2D",
-            percent: `${calculatePercent(current_funding, total_funding)}%`,
+            percent: `${calculatePercent(received_funding, total_funding)}%`,
         },
         {
             id: 2,
@@ -25,6 +32,14 @@ const CANFundingYTD = ({ total_funding = "0", current_funding = "0", expected_fu
         },
     ];
     const [activeId, setActiveId] = React.useState(0);
+
+    const CarryForwardTag = ({ funding, label }) => {
+        if (funding > 0) {
+            return <Tag tagStyle="darkTextGreenBackground" text={label} label={label} />;
+        } else {
+            return "";
+        }
+    };
 
     const LegendItem = ({ id, label, value, color, percent }) => {
         const isGraphActive = activeId === id;
@@ -59,14 +74,16 @@ const CANFundingYTD = ({ total_funding = "0", current_funding = "0", expected_fu
 
     return (
         <div className={className}>
-            <CurrencyFormat
-                value={total_funding}
-                displayType={"text"}
-                thousandSeparator={true}
-                prefix={"$ "}
-                renderText={(value) => <span className="text-semibold font-sans-lg">{value}</span>}
-            />
-
+            <div className="display-flex flex-justify flex-align-center">
+                <CurrencyFormat
+                    value={total_funding}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"$ "}
+                    renderText={(value) => <span className="text-semibold font-sans-lg">{value}</span>}
+                />
+                <CarryForwardTag funding={carry_forward_funding} label={carry_forward_label} />
+            </div>
             <div className={`margin-top-2 ${styles.barBox}`}>
                 <CANFundingBar setActiveId={setActiveId} data={data} />
             </div>

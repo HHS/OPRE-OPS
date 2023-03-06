@@ -9,6 +9,8 @@ const Tag = ({ tagStyle = "", text = "", active = false, label = "", className =
         tagClasses += " bg-brand-data-viz-primary-4 text-brand-neutral-lightest";
     } else if (tagStyle === "darkTextWhiteBackground") {
         tagClasses += " bg-white text-brand-neutral-dark";
+    } else if (tagStyle === "darkTextGreenBackground") {
+        tagClasses += " bg-brand-data-viz-primary-10 text-brand-neutral-dark";
     }
 
     if (active && label === "Available") {
