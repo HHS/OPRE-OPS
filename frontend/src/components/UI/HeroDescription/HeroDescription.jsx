@@ -29,13 +29,13 @@ const HeroDescription = ({ description, urls }) => {
 
     return (
         <div className="margin-top-1">
-            <button onClick={expandCollapse} style={buttonStyle}>
+            <div style={buttonStyle}>
                 <ReactMarkdown>{description?.trimStart().substring(0, 255) + "..."}</ReactMarkdown>
-                <button className="usa-button usa-button--unstyled margin-top-2" onClick={expandCollapse} type="button">
+                <button className="usa-button usa-button--unstyled" onClick={expandCollapse} type="button">
                     read more
                 </button>
-            </button>
-            <span style={textStyle}>
+            </div>
+            <div style={textStyle}>
                 <ReactMarkdown>{description?.trimStart()}</ReactMarkdown>
                 <button className="usa-button usa-button--unstyled" onClick={collapseExpand} type="button">
                     show less
@@ -49,7 +49,7 @@ const HeroDescription = ({ description, urls }) => {
                         />
                     </a>
                 ))}
-            </span>
+            </div>
         </div>
     );
 };
