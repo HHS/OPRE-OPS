@@ -1,3 +1,11 @@
+---
+name: Bug report
+about: Use this template for reporting details about an application bug
+title: ''
+labels: bug
+assignees: ''
+---
+
 <!--- Provide a general summary of the issue in the Title above -->
 
 ## Expected Behavior
