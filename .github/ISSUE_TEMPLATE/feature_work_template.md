@@ -2,13 +2,13 @@
 name: Feature work template
 about: Use this template to capture the User Story, Acceptance Criteria, Tasks, and Definition of Done associated with feature work
 title: ''
-labels: ''
+labels: draft, story
 assignees: ''
 
 ---
 
 ### User Story
-_As a [type of user], I want to [do something] so that [this outcome]_
+_As a [type of user], I want to [do something] [to produce this outcome]_
 
 ### Acceptance Criteria
 - [ ] _How will we know when this story is done?  List here the desired behavior that must be enabled for this story to be considered done_
