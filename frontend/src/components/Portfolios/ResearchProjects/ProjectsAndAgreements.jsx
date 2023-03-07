@@ -53,7 +53,7 @@ const ProjectsAndAgreements = ({
                                 text={`${executingAgreements} Executing`}
                             />
                             <Tag
-                                className="bg-brand-data-viz-primary-6 text-white margin-top-1"
+                                className="bg-brand-data-viz-primary-6 margin-top-1"
                                 text={`${obligatedAgreements} Obligated`}
                             />
                         </div>
