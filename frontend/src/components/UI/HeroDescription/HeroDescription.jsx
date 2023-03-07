@@ -31,22 +31,23 @@ const HeroDescription = ({ description, urls }) => {
         <div className="margin-top-1">
             <button onClick={expandCollapse} style={buttonStyle}>
                 <ReactMarkdown>{description?.trimStart().substring(0, 255) + "..."}</ReactMarkdown>
-                <span className={cssStyles.readMore} onClick={expandCollapse}>
+                <button className="usa-button usa-button--unstyled margin-top-2" onClick={expandCollapse} type="button">
                     read more
-                </span>
+                </button>
             </button>
             <span style={textStyle}>
                 <ReactMarkdown>{description?.trimStart()}</ReactMarkdown>
-                <span className={cssStyles.readMore} onClick={collapseExpand}>
+                <button className="usa-button usa-button--unstyled" onClick={collapseExpand} type="button">
                     show less
-                </span>
+                </button>
                 {urls?.map((url) => (
-                    <p key={url.id}>
-                        <a key={url.id} href={url.url}>
-                            See more on the website
-                            <FontAwesomeIcon icon={solid("up-right-from-square")} className={cssStyles.upRightIcon} />
-                        </a>
-                    </p>
+                    <a key={url.id} href={url.url} className="display-block margin-top-2 width-fit-content">
+                        See more on the website
+                        <FontAwesomeIcon
+                            icon={solid("up-right-from-square")}
+                            className={`h-9  ${cssStyles.upRightIcon}`}
+                        />
+                    </a>
                 ))}
             </span>
         </div>
