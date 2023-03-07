@@ -1,11 +1,18 @@
 before(() => {
-    cy.fakeLogin();
+    cy.visit("/");
+    cy.window().then((win) => {
+        cy.fakeLogin();
+        cy.setIsLoggedIn(win);
+    });
     cy.visit("/cans");
     cy.injectAxe();
 });
 
 it("loads", () => {
-    cy.fakeLogin();
+    cy.window().then((win) => {
+        cy.fakeLogin();
+        cy.setIsLoggedIn(win);
+    });
     cy.get("h1").should("have.text", "CANs");
     cy.get('a[href="/cans/3"]').should("exist");
 });
@@ -15,7 +22,10 @@ it("passes a11y checks", () => {
 });
 
 it("clicking on a CAN takes you to the detail page", () => {
-    cy.fakeLogin();
+    cy.window().then((win) => {
+        cy.fakeLogin();
+        cy.setIsLoggedIn(win);
+    });
     const canNumber = "G99PHS9";
 
     cy.contains(canNumber).click();

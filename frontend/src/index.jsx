@@ -89,6 +89,7 @@ const router = createBrowserRouter(
                     }}
                 />
             </Route>
+            <Route path="/cans" element={<CanList />} />
             <Route element={<ProtectedRoute redirectPath="/cans" />}>
                 <Route
                     path="/cans/:id"
@@ -106,7 +107,6 @@ const router = createBrowserRouter(
                     }}
                 />
             </Route>
-            <Route path="/cans" element={<CanList />} />
             <Route path="/login" handle={{}} />
         </>
     )
