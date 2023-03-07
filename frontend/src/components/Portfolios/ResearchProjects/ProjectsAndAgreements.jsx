@@ -52,10 +52,10 @@ const ProjectsAndAgreements = ({
                                 className="bg-brand-feedback-warning margin-top-1"
                                 text={`${executingAgreements} Executing`}
                             />
-                            {/* <Tag
+                            <Tag
                                 className="bg-brand-data-viz-primary-6 text-white margin-top-1"
                                 text={`${obligatedAgreements} Obligated`}
-                            /> */}
+                            />
                         </div>
                     </div>
                 </article>
