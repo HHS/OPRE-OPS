@@ -65,7 +65,6 @@
   ],
   "budget_line_item": [
     {
-      id: 1,
       line_description: "LI 1",
       comments: "",
       can_fiscal_year_fiscal_year: 2021,
@@ -77,7 +76,6 @@
       psc_fee_amount: null
     },
     {
-      id: 2,
       line_description: "LI 2",
       comments: "",
       can_fiscal_year_fiscal_year: 2022,
@@ -89,7 +87,6 @@
       psc_fee_amount: null
     },
     {
-      id: 3,
       line_description: "Line Item 1",
       comments: "",
       can_fiscal_year_fiscal_year: 2023,
@@ -101,7 +98,6 @@
       psc_fee_amount: null
     },
     {
-      id: 4,
       line_description: "Line Item 2",
       comments: "",
       can_fiscal_year_fiscal_year: 2023,
@@ -113,7 +109,6 @@
       psc_fee_amount: null
     },
     {
-      id: 5,
       line_description: "Line Item 1",
       comments: "",
       can_fiscal_year_fiscal_year: 2023,
@@ -125,7 +120,6 @@
       psc_fee_amount: null
     },
     {
-      id: 6,
       line_description: "Line Item 2",
       comments: "",
       can_fiscal_year_fiscal_year: 2023,
@@ -137,7 +131,6 @@
       psc_fee_amount: null
     },
     {
-      id: 7,
       line_description: "Line Item 1",
       comments: "",
       can_fiscal_year_fiscal_year: 2023,
@@ -149,7 +142,6 @@
       psc_fee_amount: null
     },
     {
-      id: 8,
       line_description: "Line Item 2",
       comments: "",
       can_fiscal_year_fiscal_year: 2023,
@@ -161,7 +153,6 @@
       psc_fee_amount: null
     },
     {
-      id: 9,
       line_description: "Line Item 2",
       comments: "",
       can_fiscal_year_fiscal_year: 2023,
@@ -173,7 +164,6 @@
       psc_fee_amount: null
     },
     {
-      id: 10,
       line_description: "Line Item 2",
       comments: "",
       can_fiscal_year_fiscal_year: 2023,
@@ -186,7 +176,6 @@
       psc_fee_amount: null
     },
     {
-      id: 11,
       line_description: "Line Item 2",
       comments: "",
       can_fiscal_year_fiscal_year: 2023,
@@ -198,7 +187,6 @@
       psc_fee_amount: null
     },
     {
-      id: 12,
       line_description: "Line Item 2",
       comments: "",
       can_fiscal_year_fiscal_year: 2023,
@@ -210,7 +198,6 @@
       psc_fee_amount: null
     },
     {
-      id: 13,
       line_description: "Line Item 2",
       comments: "",
       can_fiscal_year_fiscal_year: 2023,
@@ -222,7 +209,6 @@
       psc_fee_amount: null
     },
     {
-      id: 14,
       line_description: "Line Item 2",
       comments: "",
       can_fiscal_year_fiscal_year: 2023,
@@ -234,7 +220,6 @@
       psc_fee_amount: null
     },
     {
-      id: 15,
       line_description: "Line Item 2",
       comments: "",
       can_fiscal_year_fiscal_year: 2023,
@@ -246,7 +231,6 @@
       psc_fee_amount: null
     },
     {
-      id: 16,
       line_description: "Line Item 2",
       comments: "",
       can_fiscal_year_fiscal_year: 2023,
@@ -258,7 +242,6 @@
       psc_fee_amount: null
     },
     {
-      id: 17,
       line_description: "Line Item 2",
       comments: "",
       can_fiscal_year_fiscal_year: 2023,
@@ -270,7 +253,6 @@
       psc_fee_amount: null
     },
     {
-      id: 18,
       line_description: "Line Item 2",
       comments: "",
       can_fiscal_year_fiscal_year: 2023,
@@ -282,7 +264,6 @@
       psc_fee_amount: null
     },
     {
-      id: 19,
       line_description: "Line Item 2",
       comments: "",
       can_fiscal_year_fiscal_year: 2023,
