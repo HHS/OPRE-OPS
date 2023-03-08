@@ -6,6 +6,12 @@ Generate audit records containing the following additional information:
 * Name of the accessed file
 * program or command used to initiate the event
 * source and destination addresses
+* what type of event occurred
+* when the event occurred
+* where the event occurred
+* the source of the event
+* the outcome of the event
+* and the identity of any individuals or subjects associated with the event].
 
 ## OPS Implementation
 
