@@ -98,9 +98,9 @@ def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
         portfolio_100.cans.append(can_100)
         can_100_fy_2023 = CANFiscalYear(can=can_100, fiscal_year=2023, total_fiscal_year_funding=2.0)
 
-        blin_1 = BudgetLineItem(id=100, amount=1.0, status_id=1)
-        blin_2 = BudgetLineItem(id=101, amount=2.0, status_id=2)
-        blin_3 = BudgetLineItem(id=102, amount=3.0, status_id=3)
+        blin_1 = BudgetLineItem(amount=1.0, status_id=1)
+        blin_2 = BudgetLineItem(amount=2.0, status_id=2)
+        blin_3 = BudgetLineItem(amount=3.0, status_id=3)
         blin_1.can_fiscal_year = can_100_fy_2023
         blin_2.can_fiscal_year = can_100_fy_2023
         blin_3.can_fiscal_year = can_100_fy_2023
