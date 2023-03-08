@@ -1,0 +1,14 @@
+# Audit and Accountability
+## AU-09-04 - Protection of Audit Information | Access by Subset of Privileged Users
+
+Authorize access to management of audit logging functionality to only [the SO, authorized system administrators, and designated security officials].
+
+## OPS Implementation
+
+OPS limits access to audit records to authorized personnel.
+
+TODO: provide screenshots/command output.
+
+### Related Content
+
+[AC-5](ac-05/index.md)

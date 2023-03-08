@@ -1,0 +1,14 @@
+# Audit and Accountability
+## AU-06 - Audit Record Review, Analysis, and Reporting
+
+a. Review and analyze system audit records at least monthly for indications of [inappropriate or unusual activity; Assurance that logging is functioning properly; Adherence to logging standards identified in this procedure] and the potential impact of the inappropriate or unusual activity;
+
+b. Report findings to [the ACF Incident Response Team]; and
+
+c. Adjust the level of audit record review, analysis, and reporting within the system when there is a change in risk based on law enforcement information, intelligence information, or other credible sources of information.
+
+## OPS Implementation
+
+TODO: Seek what level of involvement ACF OCIO will have for a-c. Draft language around shared responsibility. Who will audit, review, and analyze application-level audit records?
+
+TODO: Seek any cloud.gov inheritance

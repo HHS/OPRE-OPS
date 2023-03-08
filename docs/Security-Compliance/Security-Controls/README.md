@@ -28,15 +28,46 @@
 
 ### Audit
 
-1. [au-2](au-2/index.md)
-2. [au-3](au-3/index.md)
-3. [au-3-1](au-3-1/index.md)
-4. [au-4](au-4/index.md)
-5. [au-11](au-11/index.md)
+1. [au-2](au-02/index.md)
+2. [au-3](au-03/index.md)
+3. [au-3-1](au-03-1/index.md)
+4. [au-4](au-04/index.md)
+5. [au-5](au-05/index.md)
+6. [au-6](au-06/index.md)
+7. [au-7](au-07/index.md)
+8. [au-7-1](au-07-1/index.md)
+9. [au-8](au-08/index.md)
+10. [au-9](au-09/index.md)
+11. [au-9-4](au-09-4/index.md)
+12. [au-11](au-11/index.md)
+13. [au-12](au-12/index.md)
 
 ### Identification and Authentication
 
-1. [ia-8](ia-8/index.md)
+1. [ia-1](ia-01/index.md)
+2. [ia-2](ia-02/index.md)
+3. [ia-2-1](ia-02-1/index.md)
+4. [ia-2-2](ia-02-2/index.md)
+5. [ia-2-8](ia-02-8/index.md)
+6. [ia-2-12](ia-02-12/index.md)
+7. [ia-3](ia-03/index.md)
+8. [ia-4](ia-04/index.md)
+9. [ia-4-4](ia-04-4/index.md)
+10. [ia-5](ia-05/index.md)
+11. [ia-5-1](ia-05-1/index.md)
+12. [ia-5-2](ia-05-2/index.md)
+13. [ia-5-6](ia-05-6/index.md)
+14. [ia-6](ia-06/index.md)
+15. [ia-7](ia-07/index.md)
+16. [ia-8](ia-08/index.md)
+17. [ia-8-1](ia-08-1/index.md)
+18. [ia-8-2](ia-08-2/index.md)
+19. [ia-8-4](ia-08-4/index.md)
+20. [ia-11](ia-11/index.md)
+21. [ia-12](ia-11/index.md)
+22. [ia-12-2](ia-11/index.md)
+23. [ia-12-3](ia-11/index.md)
+24. [ia-12-5](ia-11/index.md)
 
 ### Risk Assessment
 

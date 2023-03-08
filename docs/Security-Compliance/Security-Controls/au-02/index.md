@@ -35,8 +35,11 @@ iii. The following events must be identified within network device (e.g., router
 * System alerts and error messages.];
 
 b. Coordinate the event logging function with other organizational entities requiring audit-related information to guide and inform the selection criteria for events to be logged;
+
 c. Specify the following event types for logging within the system: [Unsuccessful log-on attempts that result in a locked account/node;  Configuration changes;  Application alerts and error messages; System administration activities; Modification of privileges and access; and Account creation, modification, or deletion];
+
 d. Provide a rationale for why the event types selected for logging are deemed to be adequate to support after-the-fact investigations of incidents; and
+
 e. Review and update the event types selected for logging within every 365 days and whenever there is a significant system modification.
 
 ## OPS Implementation
