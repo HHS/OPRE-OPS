@@ -1,10 +1,11 @@
 from decimal import Decimal
-from typing import Any, TypedDict
+from typing import Any, Optional, TypedDict
 
 from models.cans import CAN, BudgetLineItem, BudgetLineItemStatus, CANFiscalYear, CANFiscalYearCarryOver
+from models.portfolios import Portfolio
 from ops_api.ops import db
-from sqlalchemy import Select, and_, select
-from sqlalchemy.sql.functions import coalesce, sum
+from sqlalchemy import Select, and_, select, sql
+from sqlalchemy.sql.functions import coalesce
 
 
 class FundingLineItem(TypedDict):
@@ -26,7 +27,7 @@ class TotalFunding(TypedDict):
 
 def _get_total_fiscal_year_funding(portfolio_id: int, fiscal_year: int) -> Decimal:
     stmt = (
-        select(coalesce(sum(CANFiscalYear.total_fiscal_year_funding), 0))
+        select(coalesce(sql.functions.sum(CANFiscalYear.total_fiscal_year_funding), 0))
         .join(CAN)
         .where(CAN.managing_portfolio_id == portfolio_id)
         .where(CANFiscalYear.fiscal_year == fiscal_year)
@@ -37,7 +38,7 @@ def _get_total_fiscal_year_funding(portfolio_id: int, fiscal_year: int) -> Decim
 
 def _get_carry_forward_total(portfolio_id: int, fiscal_year: int) -> Decimal:
     stmt = (
-        select(coalesce(sum(CANFiscalYearCarryOver.amount), 0))
+        select(coalesce(sql.functions.sum(CANFiscalYearCarryOver.amount), 0))
         .join(CAN)
         .where(CAN.managing_portfolio_id == portfolio_id)
         .where(CANFiscalYearCarryOver.to_fiscal_year == fiscal_year)
@@ -55,7 +56,7 @@ def _get_budget_line_item_total_by_status(portfolio_id: int, fiscal_year: int, s
 
 def _get_budget_line_item_total(portfolio_id: int, fiscal_year: int) -> Select[Any]:
     stmt = (
-        select(coalesce(sum(BudgetLineItem.amount), 0))
+        select(coalesce(sql.functions.sum(BudgetLineItem.amount), 0))
         .join(
             CANFiscalYear,
             and_(
@@ -72,101 +73,59 @@ def _get_budget_line_item_total(portfolio_id: int, fiscal_year: int) -> Select[A
     return stmt
 
 
-# def get_total_funding(
-#     portfolio: Portfolio, fiscal_year: Optional[int] = None
-# ) -> TotalFunding:
-#
-#     can_fiscal_year_query = CANFiscalYear.query.filter(
-#         CANFiscalYear.can.has(CAN.managing_portfolio == portfolio)
-#     )
-#
-#     can_fiscal_year_carry_over_query = CANFiscalYearCarryOver.query.filter(
-#         CANFiscalYearCarryOver.can.has(CAN.managing_portfolio == portfolio)
-#     )
-#
-#     if fiscal_year:
-#         can_fiscal_year_query = can_fiscal_year_query.filter(
-#             CANFiscalYear.fiscal_year == fiscal_year
-#         ).all()
-#
-#         can_fiscal_year_carry_over_query = can_fiscal_year_carry_over_query.filter(
-#             CANFiscalYearCarryOver.to_fiscal_year == fiscal_year
-#         ).all()
-#
-#     total_funding = (
-#         sum([c.total_fiscal_year_funding for c in can_fiscal_year_query]) or 0
-#     )
-#     total_funding = _get_total_fiscal_year_funding(
-#         portfolio_id=portfolio.id, fiscal_year=fiscal_year
-#     )
-#
-#     carry_over_funding = _get_carry_forward_total(
-#         portfolio_id=portfolio.id, fiscal_year=fiscal_year
-#     )
-#
-#     # Amount; available; to; a; Portfolio; budget is the; sum; of; the; BLI; minus; the; Portfolio; total(above)
-#     budget_line_items = BudgetLineItem.query.filter(
-#         BudgetLineItem.can_fiscal_year.has(
-#             CANFiscalYear.can.managing_portfolio == portfolio
-#         )
-#     )
-#
-#     if fiscal_year:
-#         budget_line_items = budget_line_items.filter(
-#             BudgetLineItem.can_fiscal_year.fiscal_year == fiscal_year
-#         )
-#
-#     planned_budget_line_items = budget_line_items.filter(
-#         BudgetLineItem.status.has(BudgetLineItemStatus.Planned)
-#     ).all()
-#     planned_funding = sum([b.funding for b in planned_budget_line_items]) or 0
-#
-#     obligated_budget_line_items = budget_line_items.filter(
-#         BudgetLineItem.status.has(BudgetLineItemStatus.Obligated)
-#     ).all()
-#     obligated_funding = sum([b.funding for b in obligated_budget_line_items]) or 0
-#
-#     in_execution_budget_line_items = budget_line_items.filter(
-#         BudgetLineItem.status.has(BudgetLineItemStatus.In_Execution)
-#     ).all()
-#     in_execution_funding = sum([b.funding for b in in_execution_budget_line_items]) or 0
-#
-#     total_accounted_for = sum(
-#         (
-#             planned_funding,
-#             obligated_funding,
-#             in_execution_funding,
-#         )
-#     )
-#
-#     available_funding = float(total_funding) - float(total_accounted_for)
-#
-#     return {
-#         "total_funding": {
-#             "amount": float(total_funding),
-#             "percent": "Total",
-#         },
-#         "carry_over_funding": {
-#             "amount": float(carry_over_funding),
-#             "percent": "Carry Over",
-#         },
-#         "planned_funding": {
-#             "amount": float(planned_funding),
-#             "percent": get_percentage(total_funding, planned_funding),
-#         },
-#         "obligated_funding": {
-#             "amount": float(obligated_funding),
-#             "percent": get_percentage(total_funding, obligated_funding),
-#         },
-#         "in_execution_funding": {
-#             "amount": float(in_execution_funding),
-#             "percent": get_percentage(total_funding, in_execution_funding),
-#         },
-#         "available_funding": {
-#             "amount": float(available_funding),
-#             "percent": get_percentage(total_funding, available_funding),
-#         },
-#     }
+def get_total_funding(portfolio: Portfolio, fiscal_year: Optional[int] = None) -> TotalFunding:
+    total_funding = _get_total_fiscal_year_funding(portfolio_id=portfolio.id, fiscal_year=fiscal_year)
+
+    carry_over_funding = _get_carry_forward_total(portfolio_id=portfolio.id, fiscal_year=fiscal_year)
+
+    planned_funding = _get_budget_line_item_total_by_status(
+        portfolio_id=portfolio.id, fiscal_year=fiscal_year, status="Planned"
+    )
+
+    obligated_funding = _get_budget_line_item_total_by_status(
+        portfolio_id=portfolio.id, fiscal_year=fiscal_year, status="Obligated"
+    )
+
+    in_execution_funding = _get_budget_line_item_total_by_status(
+        portfolio_id=portfolio.id, fiscal_year=fiscal_year, status="In Execution"
+    )
+
+    total_accounted_for = sum(
+        (
+            planned_funding,
+            obligated_funding,
+            in_execution_funding,
+        )
+    )
+
+    available_funding = float(total_funding) - float(total_accounted_for)
+
+    return {
+        "total_funding": {
+            "amount": float(total_funding),
+            "percent": "Total",
+        },
+        "carry_over_funding": {
+            "amount": float(carry_over_funding),
+            "percent": "Carry Over",
+        },
+        "planned_funding": {
+            "amount": float(planned_funding),
+            "percent": get_percentage(total_funding, planned_funding),
+        },
+        "obligated_funding": {
+            "amount": float(obligated_funding),
+            "percent": get_percentage(total_funding, obligated_funding),
+        },
+        "in_execution_funding": {
+            "amount": float(in_execution_funding),
+            "percent": get_percentage(total_funding, in_execution_funding),
+        },
+        "available_funding": {
+            "amount": float(available_funding),
+            "percent": get_percentage(total_funding, available_funding),
+        },
+    }
 
 
 def get_percentage(total_funding: float, specific_funding: float) -> float:
