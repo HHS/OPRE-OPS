@@ -6,9 +6,9 @@ import { CreateBudgetLineFlow } from "./CreateBudgetLineFlow";
 
 const StepOne = ({ goBack, goToNext }) => (
     <>
-        <StepIndicator />
         <h2 className="font-sans-lg">Create New Budget Line</h2>
         <p>Step One</p>
+        <StepIndicator />
         <div className="float-right">
             <button className="usa-button usa-button--outline" onClick={() => goBack()}>
                 Back
@@ -21,9 +21,9 @@ const StepOne = ({ goBack, goToNext }) => (
 );
 const StepTwo = ({ goBack, goToNext }) => (
     <>
-        <StepIndicator />
         <h2 className="font-sans-lg">Create New Budget Line</h2>
         <p>Step Two</p>
+        <StepIndicator />
         <div className="float-right">
             <button className="usa-button usa-button--outline" onClick={() => goBack()}>
                 Back
@@ -36,9 +36,9 @@ const StepTwo = ({ goBack, goToNext }) => (
 );
 const StepThree = ({ goBack, goToNext }) => (
     <>
-        <StepIndicator />
         <h2 className="font-sans-lg">Create New Budget Line</h2>
         <p>Step Three</p>
+        <StepIndicator />
         <div className="float-right">
             <button className="usa-button usa-button--outline" onClick={() => goBack()}>
                 Back
