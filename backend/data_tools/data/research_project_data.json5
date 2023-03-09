@@ -31,43 +31,9 @@
         ",
       portfolio_id: 3,
       url: "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center",
-      origination_date: "01-01-2022"
+      origination_date: "01-01-2022",
+      methodologies: ["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION", "ETHNOGRAPHY", "EXPERIMENT", "SECONDARY_DATA_ANALYSIS", "CASE_STUDY"],
+      populations: ["POPULATION_1"]
     },
-  ],
-  "research_project_methodologies": [
-    {
-      research_project_id: 1,
-      methodology_type: "SURVEY"
-    },
-    {
-      research_project_id: 1,
-      methodology_type: "FIELD_RESEARCH"
-    },
-    {
-      research_project_id: 1,
-      methodology_type: "PARTICIPANT_OBSERVATION"
-    },
-    {
-      research_project_id: 1,
-      methodology_type: "ETHNOGRAPHY"
-    },
-    {
-      research_project_id: 1,
-      methodology_type: "EXPERIMENT"
-    },
-    {
-      research_project_id: 1,
-      methodology_type: "SECONDARY_DATA_ANALYSIS"
-    },
-    {
-      research_project_id: 1,
-      methodology_type: "CASE_STUDY"
-    }
-  ],
-  "research_project_populations": [
-    {
-      research_project_id: 1,
-      population_type: "POPULATION_1"
-    }
   ],
 }

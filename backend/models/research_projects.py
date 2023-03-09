@@ -1,6 +1,7 @@
 from enum import Enum
 
 import sqlalchemy as sa
+import sqlalchemy.dialects.postgresql as pg
 from models.base import BaseModel
 from sqlalchemy import Column, Date, ForeignKey, Integer, String, Table, Text
 from sqlalchemy.orm import relationship
@@ -32,20 +33,6 @@ research_project_cans = Table(
     Column("can_id", ForeignKey("can.id"), primary_key=True),
 )
 
-research_project_methodologies = Table(
-    "research_project_methodologies",
-    BaseModel.metadata,
-    Column("research_project_id", ForeignKey("research_project.id"), primary_key=True),
-    Column("methodology_type", sa.Enum(MethodologyType), primary_key=True),
-)
-
-research_project_populations = Table(
-    "research_project_populations",
-    BaseModel.metadata,
-    Column("research_project_id", ForeignKey("research_project.id"), primary_key=True),
-    Column("population_type", sa.Enum(PopulationType), primary_key=True),
-)
-
 research_project_team_leaders = Table(
     "research_project_team_leaders",
     BaseModel.metadata,
@@ -64,12 +51,8 @@ class ResearchProject(BaseModel):
     portfolio = relationship("Portfolio", back_populates="research_project")
     url = Column(String)
     origination_date = Column(Date)
-    # methodologies = relationship(
-    #     sa.Enum(MethodologyType), secondary=research_project_methodologies
-    # )
-    # populations = relationship(
-    #     sa.Enum(PopulationType), secondary=research_project_populations
-    # )
+    methodologies = Column(pg.ARRAY(sa.Enum(MethodologyType)))
+    populations = Column(pg.ARRAY(sa.Enum(PopulationType)))
     cans = relationship("CAN", back_populates="managing_research_project")
     team_leaders = relationship(
         "User",
@@ -86,10 +69,8 @@ class ResearchProject(BaseModel):
             if self.origination_date
             else None,
             cans=[can.to_dict() for can in self.cans],
-            methodologies=[
-                methodologies.to_dict() for methodologies in self.methodologies
-            ],
-            populations=[populations.to_dict() for populations in self.populations],
+            methodologies=[methodologies.name for methodologies in self.methodologies],
+            populations=[populations.name for populations in self.populations],
             team_leaders=[tl.to_dict() for tl in self.team_leaders],
         )
 

@@ -113,9 +113,6 @@ def test_research_project_no_cans(client, loaded_db):
 
 
 def test_research_project_no_cans_with_query_string(client, loaded_db):
-    # rp = ResearchProject(title="blah blah")
-
-    # loaded_db.session.add(rp)
     response = client.get("/api/v1/research-projects/?fiscal_year=2023")
 
     assert response.status_code == 200
