@@ -14,7 +14,7 @@ from data_tools.environment.local import LocalConfig
 from data_tools.environment.pytest import PytestConfig
 from data_tools.environment.test import TestConfig
 from models.base import BaseModel
-from sqlalchemy import create_engine, insert, inspect, text
+from sqlalchemy import create_engine, insert, inspect
 from sqlalchemy.engine import Engine
 
 # Adding these print statements to suppress unused import warnings
@@ -28,27 +28,23 @@ ALLOWED_TABLES = [
     "division",
     "portfolio_url",
     "portfolio",
-    "portfolio_status",
     "funding_partner",
     "funding_source",
     "users",
     "can",
     "can_fiscal_year",
-    "can_arrangement_type",
     "can_funding_sources",
-    "agreement_type",
     "agreement",
     "agreement_cans",
     "budget_line_item",
-    "budget_line_item_status",
     "can_fiscal_year_carry_over",
     "portfolio_team_leaders",
     "research_project",
-    "research_project_methodologies",
-    "research_project_populations",
     "research_project_cans",
     "research_project_team_leaders",
     "shared_portfolio_cans",
+    "research_project_methodologies",
+    "research_project_populations",
 ]
 
 data = os.getenv("DATA")
@@ -58,7 +54,9 @@ def init_db(
     config: DataToolsConfig, db: Optional[Engine] = None
 ) -> Tuple[sqlalchemy.engine.Engine, sqlalchemy.MetaData]:
     if not db:
-        engine = create_engine(config.db_connection_string, echo=config.verbosity, future=True)
+        engine = create_engine(
+            config.db_connection_string, echo=config.verbosity, future=True
+        )
     else:
         engine = db
     BaseModel.metadata.create_all(engine)
@@ -88,19 +86,9 @@ def exists(conn, table):  # pragma: no cover
     return inspect(conn).has_table(table)
 
 
-def delete_existing_data(conn: sqlalchemy.engine.Engine.connect, data: Dict):
-    for ops_table in data:
-        if ops_table not in ALLOWED_TABLES:
-            raise RuntimeError("Table not allowed")
-        # Only truncate if it actually exists
-        if exists(conn, ops_table):
-            # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
-            conn.execute(text(f"TRUNCATE TABLE {ops_table} CASCADE;"))
-        else:
-            return "Table does not exist"
-
-
-def load_new_data(conn: sqlalchemy.engine.Engine, data, metadata_obj: sqlalchemy.MetaData):
+def load_new_data(
+    conn: sqlalchemy.engine.Engine, data, metadata_obj: sqlalchemy.MetaData
+):
     for ops_table in data:
         d = data[ops_table]
         conn.execute(
@@ -111,9 +99,6 @@ def load_new_data(conn: sqlalchemy.engine.Engine, data, metadata_obj: sqlalchemy
 
 def import_data(engine, metadata_obj, data):
     with engine.connect() as conn:
-        delete_existing_data(conn, data)
-        conn.commit()
-
         load_new_data(conn, data, metadata_obj)
         conn.commit()
 
