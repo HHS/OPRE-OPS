@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 const Tag = ({ tagStyle = "", text = "", active = false, label = "", className = "" }) => {
     let tagClasses = "font-12px padding-05 height-205 radius-md",
         activeClass = "fake-bold";
-
+    // OVERRIDES FOR DEFAULT CLASSES
     if (tagStyle === "darkTextLightBackground") {
         tagClasses += " bg-brand-neutral-lightest text-brand-neutral-dark";
     } else if (tagStyle === "lightTextDarkBackground") {
@@ -12,7 +12,7 @@ const Tag = ({ tagStyle = "", text = "", active = false, label = "", className =
     } else if (tagStyle === "darkTextGreenBackground") {
         tagClasses += " bg-brand-data-viz-primary-10 text-brand-neutral-dark";
     }
-
+    // ACTIVE CLASSES FOR GRAPH LEGEND
     if (active && label === "Available") {
         activeClass += " bg-brand-data-viz-primary-5 text-white";
     } else if (active && label === "Planned") {

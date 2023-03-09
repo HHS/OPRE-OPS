@@ -5,17 +5,12 @@ button {
     padding: 0;
 }
 
-button > p:nth-last-of-type(-n+2) {
+button > p:nth-last-of-type(-n + 2) {
     display: inline;
 }
 
 p {
     line-height: 24px;
-}
-
-.readMore {
-    color: #069;
-    text-decoration: underline;
 }
 
 .hidden {
