@@ -4,7 +4,7 @@ runs:
   using: composite
   steps:
     - name: Set up node
-      uses: actions/setup-node@7c29869aec4da703a571b27bcd84d4f15af0b56e # tag: v3.5.1
+      uses: actions/setup-node@962678f22cdec338fba2a277a33cf81d5e28f7b9 # tag: v3.5.1
       with:
         node-version: 18
         cache: 'yarn'
