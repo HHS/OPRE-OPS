@@ -21,23 +21,13 @@
       abbreviation: "DDI",
     },
   ],
-  portfolio_status: [
-    {
-      id: 1,
-      name: "Active",
-    },
-    {
-      id: 2,
-      name: "Inactive",
-    },
-  ],
   portfolio: [
     {
       id: 1,
       name: "Child Welfare Research",
       abbreviation: "CWR",
       division_id: 1,
-      status_id: 1,
+      status: "IN_PROCESS",
       description: "\
              The promotion of children’s safety, permanence, and well-being are the principles that guide child\
              welfare practice and policy. ACF seeks to improve the safety, permanency, and well-being of children through\
@@ -74,7 +64,7 @@
       name: "Head Start",
       abbreviation: "HS",
       division_id: 1,
-      status_id: 1,
+      status: "IN_PROCESS",
       description: "\
              Established in 1965, Head Start was designed to promote the school readiness of children, ages\
              three to five, from families with low income, by supporting the development of the whole child through\
@@ -97,7 +87,7 @@
       name: "Child Care",
       abbreviation: "CC",
       division_id: 1,
-      status_id: 1,
+      status: "IN_PROCESS",
       description: "\
             Quality child care and early education programs are a critical resource for families, support young\
             children’s development in a variety of domains, and assist parents in accessing comprehensive services\
@@ -123,7 +113,7 @@
       name: "Welfare Research",
       abbreviation: "WR",
       division_id: 2,
-      status_id: 1,
+      status: "IN_PROCESS",
       description: "\
             ACF’s Office of Family Assistance administers the Temporary Assistance for Needy Families (TANF)\
             program. Established by the Personal Responsibility and Work Opportunity Reconciliation Act (PRWORA)\
@@ -157,7 +147,7 @@
       name: "Adolescent Development Research",
       abbreviation: "ADR",
       division_id: 3,
-      status_id: 1,
+      status: "IN_PROCESS",
       description: "\
             Despite recent declines in teen childbirth rates, teen pregnancy rates in the United States are much\
             higher than in other western industrialized nations. More research and programming innovations are needed\
@@ -196,7 +186,7 @@
       name: "Healthy Marriage & Responsible Fatherhood",
       abbreviation: "HMRF",
       division_id: 3,
-      status_id: 1,
+      status: "IN_PROCESS",
       description: "\
             The Healthy Marriage and Responsible Fatherhood (HMRF) program is part of ACF’s strategy to improve the\
             long-term well-being of children and families. HMRF is a $150 million discretionary grant program\
@@ -225,7 +215,7 @@
       name: "Home Visiting",
       abbreviation: "HV",
       division_id: 3,
-      status_id: 1,
+      status: "IN_PROCESS",
       description: "\
             Home visiting is a service delivery strategy that aims to support the healthy development and well-being\
             of children and families. While each home visiting model has its unique aspects, in general, home\
@@ -256,7 +246,7 @@
       name: "Social Science Research Demonstration",
       abbreviation: "SSRD",
       division_id: 4,
-      status_id: 1,
+      status: "IN_PROCESS",
       description: "\
             The Social Science Research and Demonstration appropriation is used to fund research or demonstration\
             projects such as those relating to the prevention and reduction of dependency, or which will aid in\

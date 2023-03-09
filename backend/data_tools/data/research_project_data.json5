@@ -37,37 +37,37 @@
   "research_project_methodologies": [
     {
       research_project_id: 1,
-      methodology_type_id: 1
+      methodology_type: "SURVEY"
     },
     {
       research_project_id: 1,
-      methodology_type_id: 2
+      methodology_type: "FIELD_RESEARCH"
     },
     {
       research_project_id: 1,
-      methodology_type_id: 3
+      methodology_type: "PARTICIPANT_OBSERVATION"
     },
     {
       research_project_id: 1,
-      methodology_type_id: 4
+      methodology_type: "ETHNOGRAPHY"
     },
     {
       research_project_id: 1,
-      methodology_type_id: 5
+      methodology_type: "EXPERIMENT"
     },
     {
       research_project_id: 1,
-      methodology_type_id: 6
+      methodology_type: "SECONDARY_DATA_ANALYSIS"
     },
     {
       research_project_id: 1,
-      methodology_type_id: 7
+      methodology_type: "CASE_STUDY"
     }
   ],
   "research_project_populations": [
     {
       research_project_id: 1,
-      population_type_id: 1
+      population_type: "POPULATION_1"
     }
   ],
 }

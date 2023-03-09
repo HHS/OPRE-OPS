@@ -1,37 +1,15 @@
 {
-  "agreement_type": [
-    {
-      id: 1,
-      name: "Contract"
-    },
-    {
-      id: 2,
-      name: "Grant"
-    },
-    {
-      id: 3,
-      name: "Direct Allocation"
-    },
-    {
-      id: 4,
-      name: "IAA"
-    },
-    {
-      id: 5,
-      name: "Miscellaneous"
-    }
-  ],
   "agreement": [
     {
       id: 1,
       name: "NIH VIQI",
-      agreement_type_id: 1,
+      agreement_type:  "CONTRACT",
       owning_portfolio_id: 1
     },
     {
       id: 2,
       name: "NIH ABCD",
-      agreement_type_id: 1,
+      agreement_type: "CONTRACT",
       owning_portfolio_id: 1
     }
   ],
@@ -49,20 +27,6 @@
     {agreement_id: 1, can_id: 11},
     {agreement_id: 1, can_id: 12},
   ],
-  "budget_line_item_status": [
-    {
-      id: 1,
-      status: "Planned"
-    },
-    {
-      id: 2,
-      status: "In Execution"
-    },
-    {
-      id: 3,
-      status: "Obligated"
-    }
-  ],
   "budget_line_item": [
     {
       line_description: "LI 1",
@@ -71,7 +35,7 @@
       can_fiscal_year_can_id: 5,
       agreement_id: 1,
       amount: 1000000.00,
-      status_id: 1,
+      status: "PLANNED",
       date_needed: null,
       psc_fee_amount: null
     },
@@ -82,7 +46,7 @@
       can_fiscal_year_can_id: 5,
       agreement_id: 1,
       amount: 1000000.00,
-      status_id: 1,
+      status: "PLANNED",
       date_needed: null,
       psc_fee_amount: null
     },
@@ -93,7 +57,7 @@
       can_fiscal_year_can_id: 8,
       agreement_id: 2,
       amount: 1000000.00,
-      status_id: 1,
+      status: "PLANNED",
       date_needed: null,
       psc_fee_amount: null
     },
@@ -104,7 +68,7 @@
       can_fiscal_year_can_id: 8,
       agreement_id: 2,
       amount: 1000000.00,
-      status_id: 1,
+      status: "PLANNED",
       date_needed: null,
       psc_fee_amount: null
     },
@@ -115,7 +79,7 @@
       can_fiscal_year_can_id: 9,
       agreement_id: 2,
       amount: 1000000.00,
-      status_id: 1,
+      status: "PLANNED",
       date_needed: null,
       psc_fee_amount: null
     },
@@ -126,7 +90,7 @@
       can_fiscal_year_can_id: 9,
       agreement_id: 2,
       amount: 1000000.00,
-      status_id: 1,
+      status: "PLANNED",
       date_needed: null,
       psc_fee_amount: null
     },
@@ -137,7 +101,7 @@
       can_fiscal_year_can_id: 9,
       agreement_id: 2,
       amount: 1000000.00,
-      status_id: 1,
+      status: "PLANNED",
       date_needed: null,
       psc_fee_amount: null
     },
@@ -148,7 +112,7 @@
       can_fiscal_year_can_id: 9,
       agreement_id: 2,
       amount: 2000000.00,
-      status_id: 2,
+      status: "IN_EXECUTION",
       date_needed: null,
       psc_fee_amount: null
     },
@@ -159,7 +123,7 @@
       can_fiscal_year_can_id: 1,
       agreement_id: 2,
       amount: 2000000.00,
-      status_id: 2,
+      status: "IN_EXECUTION",
       date_needed: null,
       psc_fee_amount: null
     },
@@ -171,7 +135,7 @@
       agreement_id: 2,
       can_fiscal_year_can_id: 4,
       amount: 2000000.00,
-      status_id: 2,
+      status: "IN_EXECUTION",
       date_needed: null,
       psc_fee_amount: null
     },
@@ -182,7 +146,7 @@
       can_fiscal_year_can_id: 2,
       agreement_id: 2,
       amount: 2000000.00,
-      status_id: 2,
+      status: "IN_EXECUTION",
       date_needed: null,
       psc_fee_amount: null
     },
@@ -193,7 +157,7 @@
       can_fiscal_year_can_id: 3,
       agreement_id: 2,
       amount: 2000000.00,
-      status_id: 2,
+      status: "IN_EXECUTION",
       date_needed: null,
       psc_fee_amount: null
     },
@@ -204,7 +168,7 @@
       can_fiscal_year_can_id: 5,
       agreement_id: 2,
       amount: 2000000.00,
-      status_id: 2,
+      status: "IN_EXECUTION",
       date_needed: null,
       psc_fee_amount: null
     },
@@ -215,7 +179,7 @@
       can_fiscal_year_can_id: 6,
       agreement_id: 2,
       amount: 2000000.00,
-      status_id: 2,
+      status: "IN_EXECUTION",
       date_needed: null,
       psc_fee_amount: null
     },
@@ -226,7 +190,7 @@
       can_fiscal_year_can_id: 7,
       agreement_id: 2,
       amount: 2000000.00,
-      status_id: 2,
+      status: "IN_EXECUTION",
       date_needed: null,
       psc_fee_amount: null
     },
@@ -237,7 +201,7 @@
       can_fiscal_year_can_id: 2,
       agreement_id: 2,
       amount: 1000000.00,
-      status_id: 1,
+      status: "PLANNED",
       date_needed: null,
       psc_fee_amount: null
     },
@@ -248,7 +212,7 @@
       can_fiscal_year_can_id: 2,
       agreement_id: 2,
       amount: 3000000.00,
-      status_id: 3,
+      status: "OBLIGATED",
       date_needed: null,
       psc_fee_amount: null
     },
@@ -259,7 +223,7 @@
       can_fiscal_year_can_id: 3,
       agreement_id: 2,
       amount: 7000000.00,
-      status_id: 1,
+      status: "PLANNED",
       date_needed: null,
       psc_fee_amount: null
     },
@@ -270,7 +234,7 @@
       can_fiscal_year_can_id: 3,
       agreement_id: 2,
       amount: 500000.00,
-      status_id: 3,
+      status: "OBLIGATED",
       date_needed: null,
       psc_fee_amount: null
     },
