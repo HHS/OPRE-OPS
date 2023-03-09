@@ -4,7 +4,7 @@ from typing import Any, Optional, TypedDict
 from models.cans import CAN, BudgetLineItem, BudgetLineItemStatus, CANFiscalYear, CANFiscalYearCarryOver
 from models.portfolios import Portfolio
 from ops_api.ops import db
-from sqlalchemy import Select, and_, select, sql
+from sqlalchemy import Select, select, sql
 from sqlalchemy.sql.functions import coalesce
 
 
@@ -47,27 +47,18 @@ def _get_carry_forward_total(portfolio_id: int, fiscal_year: int) -> Decimal:
     return db.session.execute(stmt).scalar()
 
 
-def _get_budget_line_item_total_by_status(portfolio_id: int, fiscal_year: int, status: str) -> Decimal:
-    stmt = _get_budget_line_item_total(portfolio_id, fiscal_year)
-    stmt = stmt.where(BudgetLineItemStatus.status == status)
+def _get_budget_line_item_total_by_status(portfolio_id: int, status: BudgetLineItemStatus) -> Decimal:
+    stmt = _get_budget_line_item_total(portfolio_id)
+    stmt = stmt.where(BudgetLineItem.status == status)
 
     return db.session.execute(stmt).scalar()
 
 
-def _get_budget_line_item_total(portfolio_id: int, fiscal_year: int) -> Select[Any]:
+def _get_budget_line_item_total(portfolio_id: int) -> Select[Any]:
     stmt = (
         select(coalesce(sql.functions.sum(BudgetLineItem.amount), 0))
-        .join(
-            CANFiscalYear,
-            and_(
-                BudgetLineItem.can_fiscal_year_can_id == CANFiscalYear.can_id,
-                BudgetLineItem.can_fiscal_year_fiscal_year == CANFiscalYear.fiscal_year,
-            ),
-        )
         .join(CAN)
-        .join(BudgetLineItemStatus)
         .where(CAN.managing_portfolio_id == portfolio_id)
-        .where(CANFiscalYear.fiscal_year == fiscal_year)
     )
 
     return stmt
@@ -78,17 +69,11 @@ def get_total_funding(portfolio: Portfolio, fiscal_year: Optional[int] = None) -
 
     carry_over_funding = _get_carry_forward_total(portfolio_id=portfolio.id, fiscal_year=fiscal_year)
 
-    planned_funding = _get_budget_line_item_total_by_status(
-        portfolio_id=portfolio.id, fiscal_year=fiscal_year, status="Planned"
-    )
+    planned_funding = _get_budget_line_item_total_by_status(portfolio_id=portfolio.id, status="Planned")
 
-    obligated_funding = _get_budget_line_item_total_by_status(
-        portfolio_id=portfolio.id, fiscal_year=fiscal_year, status="Obligated"
-    )
+    obligated_funding = _get_budget_line_item_total_by_status(portfolio_id=portfolio.id, status="Obligated")
 
-    in_execution_funding = _get_budget_line_item_total_by_status(
-        portfolio_id=portfolio.id, fiscal_year=fiscal_year, status="In Execution"
-    )
+    in_execution_funding = _get_budget_line_item_total_by_status(portfolio_id=portfolio.id, status="In Execution")
 
     total_accounted_for = sum(
         (
