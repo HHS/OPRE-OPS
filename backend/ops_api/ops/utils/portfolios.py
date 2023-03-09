@@ -69,11 +69,17 @@ def get_total_funding(portfolio: Portfolio, fiscal_year: Optional[int] = None) -
 
     carry_over_funding = _get_carry_forward_total(portfolio_id=portfolio.id, fiscal_year=fiscal_year)
 
-    planned_funding = _get_budget_line_item_total_by_status(portfolio_id=portfolio.id, status="Planned")
+    planned_funding = _get_budget_line_item_total_by_status(
+        portfolio_id=portfolio.id, status=BudgetLineItemStatus.PLANNED
+    )
 
-    obligated_funding = _get_budget_line_item_total_by_status(portfolio_id=portfolio.id, status="Obligated")
+    obligated_funding = _get_budget_line_item_total_by_status(
+        portfolio_id=portfolio.id, status=BudgetLineItemStatus.OBLIGATED
+    )
 
-    in_execution_funding = _get_budget_line_item_total_by_status(portfolio_id=portfolio.id, status="In Execution")
+    in_execution_funding = _get_budget_line_item_total_by_status(
+        portfolio_id=portfolio.id, status=BudgetLineItemStatus.IN_EXECUTION
+    )
 
     total_accounted_for = sum(
         (
