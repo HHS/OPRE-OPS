@@ -7,7 +7,9 @@ from ops_api.ops.resources.research_projects import ResearchProjectListAPI
 def test_research_project_retrieve(loaded_db):
     research_project = (
         loaded_db.session.query(ResearchProject)
-        .filter(ResearchProject.title == "African American Child and Family Research Center")
+        .filter(
+            ResearchProject.title == "African American Child and Family Research Center"
+        )
         .one()
     )
 
@@ -58,7 +60,9 @@ def test_research_projects_with_fiscal_year_found(auth_client, loaded_db):
     response = auth_client.get("/api/v1/research-projects/?fiscal_year=2023")
     assert response.status_code == 200
     assert len(response.json) == 1
-    assert response.json[0]["title"] == "African American Child and Family Research Center"
+    assert (
+        response.json[0]["title"] == "African American Child and Family Research Center"
+    )
     assert response.json[0]["id"] == 1
 
 

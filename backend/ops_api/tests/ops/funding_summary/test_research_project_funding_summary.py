@@ -37,12 +37,24 @@ def db_loaded_with_research_projects(app, loaded_db):
 
         instances.extend([can_100, can_200, can_300, can_400])
 
-        can_fy_100_2023 = CANFiscalYear(can_id=can_100.id, fiscal_year=2023, received_funding=5)
-        can_fy_200_2023 = CANFiscalYear(can_id=can_200.id, fiscal_year=2023, received_funding=7)
-        can_fy_300_2023 = CANFiscalYear(can_id=can_300.id, fiscal_year=2023, received_funding=3)
-        can_fy_100_2022 = CANFiscalYear(can_id=can_100.id, fiscal_year=2022, received_funding=5)
-        can_fy_200_2022 = CANFiscalYear(can_id=can_200.id, fiscal_year=2022, received_funding=5)
-        can_fy_400_2023 = CANFiscalYear(can_id=can_400.id, fiscal_year=2023, received_funding=5)
+        can_fy_100_2023 = CANFiscalYear(
+            can_id=can_100.id, fiscal_year=2023, received_funding=5
+        )
+        can_fy_200_2023 = CANFiscalYear(
+            can_id=can_200.id, fiscal_year=2023, received_funding=7
+        )
+        can_fy_300_2023 = CANFiscalYear(
+            can_id=can_300.id, fiscal_year=2023, received_funding=3
+        )
+        can_fy_100_2022 = CANFiscalYear(
+            can_id=can_100.id, fiscal_year=2022, received_funding=5
+        )
+        can_fy_200_2022 = CANFiscalYear(
+            can_id=can_200.id, fiscal_year=2022, received_funding=5
+        )
+        can_fy_400_2023 = CANFiscalYear(
+            can_id=can_400.id, fiscal_year=2023, received_funding=5
+        )
 
         instances.extend(
             [
@@ -70,7 +82,9 @@ def db_loaded_with_research_projects(app, loaded_db):
 @pytest.mark.usefixtures("db_loaded_with_research_projects")
 def test_get_research_project_funding_summary(auth_client):
     query_string = {"portfolioId": 1, "fiscalYear": 2023}
-    response = auth_client.get("/api/v1/research-project-funding-summary/", query_string=query_string)
+    response = auth_client.get(
+        "/api/v1/research-project-funding-summary/", query_string=query_string
+    )
     assert response.status_code == 200
     assert response.json["total_funding"] == 20
 
@@ -79,7 +93,9 @@ def test_get_research_project_funding_summary(auth_client):
 @pytest.mark.usefixtures("db_loaded_with_research_projects")
 def test_get_research_project_funding_summary_invalid_query_string(auth_client):
     query_string = {"portfolioId": "blah", "fiscalYear": "blah"}
-    response = auth_client.get("/api/v1/research-project-funding-summary/", query_string=query_string)
+    response = auth_client.get(
+        "/api/v1/research-project-funding-summary/", query_string=query_string
+    )
     assert response.status_code == 400
     assert response.json == {
         "portfolio_id": ["Not a valid integer."],
@@ -93,7 +109,9 @@ def test_get_research_project_funding_summary_invalid_query_string_portfolio_id(
     auth_client,
 ):
     query_string = {"portfolioId": 0, "fiscalYear": 2020}
-    response = auth_client.get("/api/v1/research-project-funding-summary/", query_string=query_string)
+    response = auth_client.get(
+        "/api/v1/research-project-funding-summary/", query_string=query_string
+    )
     assert response.status_code == 400
     assert response.json == {"portfolio_id": ["Must be greater than or equal to 1."]}
 
@@ -104,7 +122,9 @@ def test_get_research_project_funding_summary_invalid_query_string_fiscal_year(
     auth_client,
 ):
     query_string = {"portfolioId": 1, "fiscalYear": 1899}
-    response = auth_client.get("/api/v1/research-project-funding-summary/", query_string=query_string)
+    response = auth_client.get(
+        "/api/v1/research-project-funding-summary/", query_string=query_string
+    )
     assert response.status_code == 400
     assert response.json == {"fiscal_year": ["Must be greater than or equal to 1900."]}
 
@@ -113,7 +133,9 @@ def test_get_research_project_funding_summary_invalid_query_string_fiscal_year(
 @pytest.mark.usefixtures("db_loaded_with_research_projects")
 def test_get_research_project_funding_summary_no_data(auth_client):
     query_string = {"portfolioId": 1000, "fiscalYear": 1910}
-    response = auth_client.get("/api/v1/research-project-funding-summary/", query_string=query_string)
+    response = auth_client.get(
+        "/api/v1/research-project-funding-summary/", query_string=query_string
+    )
     assert response.status_code == 200
     assert response.json["total_funding"] == 0
 

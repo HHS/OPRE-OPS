@@ -1,8 +1,10 @@
 from models.base import BaseModel
 from models.cans import CAN, Agreement, BudgetLineItem, CANFiscalYear
-from models.portfolios import Division, Portfolio
+from models.portfolios import Division, Portfolio, PortfolioStatus
+from models.procurement_shop import ProcurementShop
 from models.research_projects import ResearchProject
 from models.users import User
+from ops.api.ops.resources.procurement_shops import ProcurementShopItemAPI, ProcurementShopListAPI
 from ops_api.ops.resources.agreements import AgreementItemAPI, AgreementListAPI
 from ops_api.ops.resources.auth import AuthLoginAPI, AuthRefreshAPI
 from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, BudgetLineItemsListAPI
@@ -41,16 +43,36 @@ CAN_LIST_API_VIEW_FUNC = CANListAPI.as_view("can-group", CAN)
 CANS_BY_PORTFOLIO_API_VIEW_FUNC = CANsByPortfolioAPI.as_view("can-portfolio", BaseModel)
 
 # CAN FISCAL YEAR ENDPOINTS
-CAN_FISCAL_YEAR_ITEM_API_VIEW_FUNC = CANFiscalYearItemAPI.as_view("can-fiscal-year-item", CANFiscalYear)
-CAN_FISCAL_YEAR_LIST_API_VIEW_FUNC = CANFiscalYearListAPI.as_view("can-fiscal-year-group", CANFiscalYear)
+CAN_FISCAL_YEAR_ITEM_API_VIEW_FUNC = CANFiscalYearItemAPI.as_view(
+    "can-fiscal-year-item", CANFiscalYear
+)
+CAN_FISCAL_YEAR_LIST_API_VIEW_FUNC = CANFiscalYearListAPI.as_view(
+    "can-fiscal-year-group", CANFiscalYear
+)
 
 # BUDGET LINE ITEM ENDPOINTS
-BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC = BudgetLineItemsItemAPI.as_view("budget-line-items-item", BudgetLineItem)
-BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC = BudgetLineItemsListAPI.as_view("budget-line-items-group", BudgetLineItem)
+BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC = BudgetLineItemsItemAPI.as_view(
+    "budget-line-items-item", BudgetLineItem
+)
+BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC = BudgetLineItemsListAPI.as_view(
+    "budget-line-items-group", BudgetLineItem
+)
+
+# PROCUREMENT SHOP ENDPOINTS
+PROCUREMENT_SHOP_ITEM_API_VIEW_FUNC = ProcurementShopItemAPI.as_view(
+    "procurement-shop-item", ProcurementShop
+)
+PROCUREMENT_SHOP_LIST_API_VIEW_FUNC = ProcurementShopListAPI.as_view(
+    "procurement-shop-group", ProcurementShop
+)
 
 # PORTFOLIO STATUS ENDPOINTS
-PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC = PortfolioStatusItemAPI.as_view("portfolio-status-item", BaseModel)
-PORTFOLIO_STATUS_LIST_API_VIEW_FUNC = PortfolioStatusListAPI.as_view("portfolio-status-group", BaseModel)
+PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC = PortfolioStatusItemAPI.as_view(
+    "portfolio-status-item", PortfolioStatus,
+)
+PORTFOLIO_STATUS_LIST_API_VIEW_FUNC = PortfolioStatusListAPI.as_view(
+    "portfolio-status-group", PortfolioStatus,
+)
 
 # DIVISION ENDPOINTS
 DIVISIONS_ITEM_API_VIEW_FUNC = DivisionsItemAPI.as_view("divisions-item", Division)
@@ -61,14 +83,22 @@ USERS_ITEM_API_VIEW_FUNC = UsersItemAPI.as_view("users-item", User)
 USERS_LIST_API_VIEW_FUNC = UsersListAPI.as_view("users-group", User)
 
 # FUNDING SUMMARY ENDPOINTS
-CAN_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = CANFundingSummaryItemAPI.as_view("can-funding-summary-item", CAN)
+CAN_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = CANFundingSummaryItemAPI.as_view(
+    "can-funding-summary-item", CAN
+)
 PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = PortfolioFundingSummaryItemAPI.as_view(
     "portfolio-funding-summary-item", Portfolio
 )
-RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC = ResearchProjectFundingSummaryListAPI.as_view(
-    "research-project-funding-summary-group", ResearchProject
+RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC = (
+    ResearchProjectFundingSummaryListAPI.as_view(
+        "research-project-funding-summary-group", ResearchProject
+    )
 )
 
 # RESEARCH PROJECT ENDPOINTS
-RESEARCH_PROJECT_ITEM_API_VIEW_FUNC = ResearchProjectItemAPI.as_view("research-projects-item", ResearchProject)
-RESEARCH_PROJECT_LIST_API_VIEW_FUNC = ResearchProjectListAPI.as_view("research-projects-group", ResearchProject)
+RESEARCH_PROJECT_ITEM_API_VIEW_FUNC = ResearchProjectItemAPI.as_view(
+    "research-projects-item", ResearchProject
+)
+RESEARCH_PROJECT_LIST_API_VIEW_FUNC = ResearchProjectListAPI.as_view(
+    "research-projects-group", ResearchProject
+)

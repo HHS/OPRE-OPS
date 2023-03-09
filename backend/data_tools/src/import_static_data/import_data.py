@@ -57,7 +57,9 @@ def init_db(
 ) -> Tuple[sqlalchemy.engine.Engine, sqlalchemy.MetaData]:
     if not db:
         engine = create_engine(
-            config.db_connection_string, echo=config.verbosity, future=True
+            config.db_connection_string,
+            echo=config.verbosity,
+            future=True,
         )
     else:
         engine = db
@@ -87,8 +89,22 @@ def exists(conn, table):  # pragma: no cover
     return inspect(conn).has_table(table)
 
 
+def delete_existing_data(conn: sqlalchemy.engine.Engine.connect, data: Dict):
+    for ops_table in data:
+        if ops_table not in ALLOWED_TABLES:
+            raise RuntimeError("Table not allowed")
+        # Only truncate if it actually exists
+        if exists(conn, ops_table):
+            # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
+            conn.execute(text(f"TRUNCATE TABLE {ops_table} RESTART IDENTITY CASCADE;"))
+        else:
+            return "Table does not exist"
+
+
 def load_new_data(
-    conn: sqlalchemy.engine.Engine, data, metadata_obj: sqlalchemy.MetaData
+    conn: sqlalchemy.engine.Engine,
+    data,
+    metadata_obj: sqlalchemy.MetaData,
 ):
     for ops_table in data:
         d = data[ops_table]

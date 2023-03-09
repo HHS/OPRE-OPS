@@ -57,7 +57,9 @@ def create_app(config_overrides: Optional[dict] = {}) -> Flask:
 
     app.register_blueprint(home)
 
-    api_bp = Blueprint("api", __name__, url_prefix=f"/api/{app.config.get('API_VERSION', 'v1')}")
+    api_bp = Blueprint(
+        "api", __name__, url_prefix=f"/api/{app.config.get('API_VERSION', 'v1')}"
+    )
     register_api(api_bp)
     app.register_blueprint(api_bp)
 

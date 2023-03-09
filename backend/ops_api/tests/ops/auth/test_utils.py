@@ -11,7 +11,9 @@ from models.users import User
 from ops_api.ops.utils.auth import create_oauth_jwt
 from ops_api.ops.utils.authorization import AuthorizationGateway, AuthorizationProvider
 
-key = rsa.generate_private_key(backend=default_backend(), public_exponent=65537, key_size=2048)
+key = rsa.generate_private_key(
+    backend=default_backend(), public_exponent=65537, key_size=2048
+)
 
 
 def test_get_jwt_no_key(app):

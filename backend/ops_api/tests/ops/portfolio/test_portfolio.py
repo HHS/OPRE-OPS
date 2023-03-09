@@ -12,7 +12,9 @@ from ops_api.ops.utils.portfolios import (
 
 @pytest.mark.usefixtures("app_ctx")
 def test_portfolio_retrieve(loaded_db):
-    portfolio = loaded_db.session.query(Portfolio).filter(Portfolio.name == "Child Care").one()
+    portfolio = (
+        loaded_db.session.query(Portfolio).filter(Portfolio.name == "Child Care").one()
+    )
 
     assert portfolio is not None
     assert portfolio.name == "Child Care"
