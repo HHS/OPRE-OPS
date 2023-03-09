@@ -1,6 +1,5 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-
 import { Provider } from "react-redux";
 import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider, Link, Navigate } from "react-router-dom";
 import store from "./store";
@@ -17,6 +16,7 @@ import ResearchProjects from "./components/Portfolios/ResearchProjects/ResearchP
 import PeopleAndTeams from "./components/Portfolios/PeopleAndTeams/PeopleAndTeams";
 import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAndFunding";
 import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProjectDetail";
+import { CreateBudgetLine } from "./pages/budgetLines/CreateBudgetLine";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
 
 const router = createBrowserRouter(
@@ -108,6 +108,7 @@ const router = createBrowserRouter(
             </Route>
             <Route path="/cans" element={<CanList />} />
             <Route path="/login" handle={{}} />
+            <Route path="/budget-lines/create" element={<CreateBudgetLine />} />
         </>
     )
 );
