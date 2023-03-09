@@ -1,8 +1,29 @@
+from enum import Enum
+
+import sqlalchemy as sa
 from models.base import BaseModel
-from sqlalchemy import Column, Date, ForeignKey, Integer, String, Table, Text, event
-from sqlalchemy.engine import Connection
+from sqlalchemy import Column, Date, ForeignKey, Integer, String, Table, Text
 from sqlalchemy.orm import relationship
 from typing_extensions import override
+
+
+# These are example methodologies derived from:
+# https://openstax.org/books/introduction-sociology-3e/pages/2-2-research-methods
+class MethodologyType(Enum):
+    SURVEY = 1
+    FIELD_RESEARCH = 2
+    PARTICIPANT_OBSERVATION = 3
+    ETHNOGRAPHY = 4
+    EXPERIMENT = 5
+    SECONDARY_DATA_ANALYSIS = 6
+    CASE_STUDY = 7
+
+
+class PopulationType(Enum):
+    POPULATION_1 = 1
+    POPULATION_2 = 2
+    POPULATION_3 = 3
+
 
 research_project_cans = Table(
     "research_project_cans",
@@ -15,14 +36,14 @@ research_project_methodologies = Table(
     "research_project_methodologies",
     BaseModel.metadata,
     Column("research_project_id", ForeignKey("research_project.id"), primary_key=True),
-    Column("methodology_type_id", ForeignKey("methodology_type.id"), primary_key=True),
+    Column("methodology_type", sa.Enum(MethodologyType), primary_key=True),
 )
 
 research_project_populations = Table(
     "research_project_populations",
     BaseModel.metadata,
     Column("research_project_id", ForeignKey("research_project.id"), primary_key=True),
-    Column("population_type_id", ForeignKey("population_type.id"), primary_key=True),
+    Column("population_type", sa.Enum(PopulationType), primary_key=True),
 )
 
 research_project_team_leaders = Table(
@@ -71,57 +92,3 @@ class ResearchProject(BaseModel):
         )
 
         return d
-
-
-class MethodologyType(BaseModel):
-    __tablename__ = "methodology_type"
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False, unique=True)
-    description = Column(Text)
-
-
-class PopulationType(BaseModel):
-    __tablename__ = "population_type"
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False, unique=True)
-    description = Column(Text)
-
-
-@event.listens_for(BaseModel.metadata.tables["methodology_type"], "after_create")
-def initial_data_methodology_type(
-    target: Table,
-    connection: Connection,
-    **kwargs: dict,
-) -> None:
-    # These are example methodologies derived from:
-    # https://openstax.org/books/introduction-sociology-3e/pages/2-2-research-methods
-    connection.execute(
-        target.insert(),
-        (
-            {"id": 1, "name": "Survey"},
-            {"id": 2, "name": "Field Research"},
-            {"id": 3, "name": "Participant Observation"},
-            {"id": 4, "name": "Ethnography"},
-            {"id": 5, "name": "Experiment"},
-            {"id": 6, "name": "Secondary Data Analysis"},
-            {"id": 7, "name": "Case Study"},
-        ),
-    )
-
-
-@event.listens_for(BaseModel.metadata.tables["population_type"], "after_create")
-def initial_data_population_type(
-    target: Table,
-    connection: Connection,
-    **kwargs: dict,
-) -> None:
-    # These are example methodologies derived from:
-    # https://openstax.org/books/introduction-sociology-3e/pages/2-2-research-methods
-    connection.execute(
-        target.insert(),
-        (
-            {"id": 1, "name": "Population #1"},
-            {"id": 2, "name": "Population #2"},
-            {"id": 3, "name": "Population #3"},
-        ),
-    )
