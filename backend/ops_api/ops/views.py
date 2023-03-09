@@ -1,6 +1,6 @@
 from models.base import BaseModel
 from models.cans import CAN, BudgetLineItem, CANFiscalYear
-from models.portfolios import Division, Portfolio, PortfolioStatus
+from models.portfolios import Division, Portfolio
 from models.research_projects import ResearchProject
 from models.users import User
 from ops_api.ops.resources.auth import AuthLoginAPI, AuthRefreshAPI
@@ -44,8 +44,8 @@ BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC = BudgetLineItemsItemAPI.as_view("budget-li
 BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC = BudgetLineItemsListAPI.as_view("budget-line-items-group", BudgetLineItem)
 
 # PORTFOLIO STATUS ENDPOINTS
-PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC = PortfolioStatusItemAPI.as_view("portfolio-status-item", PortfolioStatus)
-PORTFOLIO_STATUS_LIST_API_VIEW_FUNC = PortfolioStatusListAPI.as_view("portfolio-status-group", PortfolioStatus)
+PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC = PortfolioStatusItemAPI.as_view("portfolio-status-item", BaseModel)
+PORTFOLIO_STATUS_LIST_API_VIEW_FUNC = PortfolioStatusListAPI.as_view("portfolio-status-group", BaseModel)
 
 # DIVISION ENDPOINTS
 DIVISIONS_ITEM_API_VIEW_FUNC = DivisionsItemAPI.as_view("divisions-item", Division)
