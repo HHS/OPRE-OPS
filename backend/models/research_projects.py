@@ -64,10 +64,12 @@ class ResearchProject(BaseModel):
     portfolio = relationship("Portfolio", back_populates="research_project")
     url = Column(String)
     origination_date = Column(Date)
-    methodologies = relationship(
-        "MethodologyType", secondary=research_project_methodologies
-    )
-    populations = relationship("PopulationType", secondary=research_project_populations)
+    # methodologies = relationship(
+    #     sa.Enum(MethodologyType), secondary=research_project_methodologies
+    # )
+    # populations = relationship(
+    #     sa.Enum(PopulationType), secondary=research_project_populations
+    # )
     cans = relationship("CAN", back_populates="managing_research_project")
     team_leaders = relationship(
         "User",

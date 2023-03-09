@@ -31,8 +31,7 @@
     {
       line_description: "LI 1",
       comments: "",
-      can_fiscal_year_fiscal_year: 2021,
-      can_fiscal_year_can_id: 5,
+      can_id: 5,
       agreement_id: 1,
       amount: 1000000.00,
       status: "PLANNED",
@@ -42,8 +41,7 @@
     {
       line_description: "LI 2",
       comments: "",
-      can_fiscal_year_fiscal_year: 2022,
-      can_fiscal_year_can_id: 5,
+      can_id: 5,
       agreement_id: 1,
       amount: 1000000.00,
       status: "PLANNED",
@@ -53,8 +51,7 @@
     {
       line_description: "Line Item 1",
       comments: "",
-      can_fiscal_year_fiscal_year: 2023,
-      can_fiscal_year_can_id: 8,
+      can_id: 8,
       agreement_id: 2,
       amount: 1000000.00,
       status: "PLANNED",
@@ -64,30 +61,7 @@
     {
       line_description: "Line Item 2",
       comments: "",
-      can_fiscal_year_fiscal_year: 2023,
-      can_fiscal_year_can_id: 8,
-      agreement_id: 2,
-      amount: 1000000.00,
-      status: "PLANNED",
-      date_needed: null,
-      psc_fee_amount: null
-    },
-    {
-      line_description: "Line Item 1",
-      comments: "",
-      can_fiscal_year_fiscal_year: 2023,
-      can_fiscal_year_can_id: 9,
-      agreement_id: 2,
-      amount: 1000000.00,
-      status: "PLANNED",
-      date_needed: null,
-      psc_fee_amount: null
-    },
-    {
-      line_description: "Line Item 2",
-      comments: "",
-      can_fiscal_year_fiscal_year: 2023,
-      can_fiscal_year_can_id: 9,
+      can_id: 8,
       agreement_id: 2,
       amount: 1000000.00,
       status: "PLANNED",
@@ -97,8 +71,7 @@
     {
       line_description: "Line Item 1",
       comments: "",
-      can_fiscal_year_fiscal_year: 2023,
-      can_fiscal_year_can_id: 9,
+      can_id: 9,
       agreement_id: 2,
       amount: 1000000.00,
       status: "PLANNED",
@@ -108,8 +81,27 @@
     {
       line_description: "Line Item 2",
       comments: "",
-      can_fiscal_year_fiscal_year: 2023,
-      can_fiscal_year_can_id: 9,
+      can_id: 9,
+      agreement_id: 2,
+      amount: 1000000.00,
+      status: "PLANNED",
+      date_needed: null,
+      psc_fee_amount: null
+    },
+    {
+      line_description: "Line Item 1",
+      comments: "",
+      can_id: 9,
+      agreement_id: 2,
+      amount: 1000000.00,
+      status: "PLANNED",
+      date_needed: null,
+      psc_fee_amount: null
+    },
+    {
+      line_description: "Line Item 2",
+      comments: "",
+      can_id: 9,
       agreement_id: 2,
       amount: 2000000.00,
       status: "IN_EXECUTION",
@@ -119,8 +111,7 @@
     {
       line_description: "Line Item 2",
       comments: "",
-      can_fiscal_year_fiscal_year: 2023,
-      can_fiscal_year_can_id: 1,
+      can_id: 1,
       agreement_id: 2,
       amount: 2000000.00,
       status: "IN_EXECUTION",
@@ -130,8 +121,7 @@
     {
       line_description: "Line Item 2",
       comments: "",
-      can_fiscal_year_fiscal_year: 2023,
-      can_fiscal_year_can_id: 4,
+      can_id: 4,
       agreement_id: 2,
       can_fiscal_year_can_id: 4,
       amount: 2000000.00,
@@ -142,8 +132,7 @@
     {
       line_description: "Line Item 2",
       comments: "",
-      can_fiscal_year_fiscal_year: 2023,
-      can_fiscal_year_can_id: 2,
+      can_id: 2,
       agreement_id: 2,
       amount: 2000000.00,
       status: "IN_EXECUTION",
@@ -153,8 +142,7 @@
     {
       line_description: "Line Item 2",
       comments: "",
-      can_fiscal_year_fiscal_year: 2023,
-      can_fiscal_year_can_id: 3,
+      can_id: 3,
       agreement_id: 2,
       amount: 2000000.00,
       status: "IN_EXECUTION",
@@ -164,8 +152,7 @@
     {
       line_description: "Line Item 2",
       comments: "",
-      can_fiscal_year_fiscal_year: 2023,
-      can_fiscal_year_can_id: 5,
+      can_id: 5,
       agreement_id: 2,
       amount: 2000000.00,
       status: "IN_EXECUTION",
@@ -175,8 +162,7 @@
     {
       line_description: "Line Item 2",
       comments: "",
-      can_fiscal_year_fiscal_year: 2023,
-      can_fiscal_year_can_id: 6,
+      can_id: 6,
       agreement_id: 2,
       amount: 2000000.00,
       status: "IN_EXECUTION",
@@ -186,8 +172,7 @@
     {
       line_description: "Line Item 2",
       comments: "",
-      can_fiscal_year_fiscal_year: 2023,
-      can_fiscal_year_can_id: 7,
+      can_id: 7,
       agreement_id: 2,
       amount: 2000000.00,
       status: "IN_EXECUTION",
@@ -197,8 +182,7 @@
     {
       line_description: "Line Item 2",
       comments: "",
-      can_fiscal_year_fiscal_year: 2023,
-      can_fiscal_year_can_id: 2,
+      can_id: 2,
       agreement_id: 2,
       amount: 1000000.00,
       status: "PLANNED",
@@ -208,8 +192,7 @@
     {
       line_description: "Line Item 2",
       comments: "",
-      can_fiscal_year_fiscal_year: 2023,
-      can_fiscal_year_can_id: 2,
+      can_id: 2,
       agreement_id: 2,
       amount: 3000000.00,
       status: "OBLIGATED",
@@ -219,8 +202,7 @@
     {
       line_description: "Line Item 2",
       comments: "",
-      can_fiscal_year_fiscal_year: 2023,
-      can_fiscal_year_can_id: 3,
+      can_id: 3,
       agreement_id: 2,
       amount: 7000000.00,
       status: "PLANNED",
@@ -230,8 +212,7 @@
     {
       line_description: "Line Item 2",
       comments: "",
-      can_fiscal_year_fiscal_year: 2023,
-      can_fiscal_year_can_id: 3,
+      can_id: 3,
       agreement_id: 2,
       amount: 500000.00,
       status: "OBLIGATED",

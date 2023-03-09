@@ -1,6 +1,7 @@
 """CAN models."""
-from typing import Any
+from enum import Enum
 
+import sqlalchemy as sa
 from models.base import BaseModel
 from models.portfolios import Portfolio, shared_portfolio_cans
 from models.research_projects import ResearchProject
@@ -10,17 +11,31 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     ForeignKeyConstraint,
+    Identity,
     Integer,
     Numeric,
     String,
     Table,
     Text,
-    event,
 )
-from sqlalchemy.engine import Connection
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import column_property, relationship
 from typing_extensions import override
+
+
+class BudgetLineItemStatus(Enum):
+    DRAFT = 1
+    PLANNED = 2
+    IN_EXECUTION = 3
+    OBLIGATED = 4
+
+
+class CANArrangementType(Enum):
+    OPRE_APPROPRIATION = 1
+    COST_SHARE = 2
+    IAA = 3
+    IDDA = 4
+    MOU = 5
+
 
 can_funding_sources = Table(
     "can_funding_sources",
@@ -66,34 +81,13 @@ class FundingPartner(BaseModel):
     nickname = Column(String(100))
 
 
-class AgreementType(BaseModel):
-    __tablename__ = "agreement_type"
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
+class AgreementType(Enum):
+    CONTRACT = 1
+    GRANT = 2
+    DIRECT_ALLOCATION = 3
+    IAA = 4
+    MISCELLANEOUS = 5
 
-    @staticmethod
-    def initial_data(
-        target: Table,
-        connection: Connection,
-        **kwargs: dict[str, Any],
-    ) -> None:
-        connection.execute(
-            target.insert(),
-            (
-                {"id": 1, "name": "Contract"},
-                {"id": 2, "name": "Grant"},
-                {"id": 3, "name": "Direct Allocation"},
-                {"id": 4, "name": "IAA"},
-                {"id": 5, "name": "Miscellaneous"},
-            ),
-        )
-
-
-event.listen(
-    AgreementType.__table__,
-    "after_create",
-    AgreementType.initial_data,
-)
 
 agreement_cans = Table(
     "agreement_cans",
@@ -111,8 +105,7 @@ class Agreement(BaseModel):
     __tablename__ = "agreement"
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
-    agreement_type_id = Column(Integer, ForeignKey("agreement_type.id"))
-    agreement_type = relationship("AgreementType")
+    agreement_type = Column(sa.Enum(AgreementType))
     cans = relationship("CAN", secondary=agreement_cans, back_populates="agreements")
 
 
@@ -130,7 +123,6 @@ class CANFiscalYear(BaseModel):
     can_lead = Column(String)
     notes = Column(String, default="")
     total_funding = column_property(current_funding + expected_funding)
-    budget_line_items = relationship("BudgetLineItem", back_populates="can_fiscal_year")
 
 
 class CANFiscalYearCarryOver(BaseModel):
@@ -148,97 +140,25 @@ class CANFiscalYearCarryOver(BaseModel):
 
 class BudgetLineItem(BaseModel):
     __tablename__ = "budget_line_item"
-    __table_args__ = (
-        ForeignKeyConstraint(
-            ["can_fiscal_year_can_id", "can_fiscal_year_fiscal_year"],
-            ["can_fiscal_year.can_id", "can_fiscal_year.fiscal_year"],
-        ),
-    )
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, Identity(), primary_key=True)
     line_description = Column(String)
     comments = Column(Text)
 
     agreement_id = Column(Integer, ForeignKey("agreement.id"))
     agreement = relationship(Agreement)
 
-    can_fiscal_year_can_id = Column(Integer)
-    can_fiscal_year_fiscal_year = Column(Integer)
-    can_fiscal_year = relationship(
-        "CANFiscalYear",
-        foreign_keys="[BudgetLineItem.can_fiscal_year_can_id, BudgetLineItem.can_fiscal_year_fiscal_year]",
-        back_populates="budget_line_items",
-    )
+    can_id = Column(Integer, ForeignKey("can.id"))
+    can = relationship("CAN", back_populates="budget_line_items")
 
     amount = Column(Numeric(12, 2))
 
-    status_id = Column(Integer, ForeignKey("budget_line_item_status.id"))
-    status = relationship("BudgetLineItemStatus", back_populates="budget_line_item")
+    status = Column(sa.Enum(BudgetLineItemStatus))
 
     date_needed = Column(Date)
-    psc_fee_amount = Column(Numeric(12, 2))
-
-
-class BudgetLineItemStatus(BaseModel):
-    __tablename__ = "budget_line_item_status"
-    id = Column(Integer, primary_key=True)
-    status = Column(String, nullable=False, unique=True)
-    budget_line_item = relationship("BudgetLineItem")
-
-    @staticmethod
-    def initial_data(
-        target: Table,
-        connection: Connection,
-        **kwargs: dict[str, Any],
-    ) -> None:
-        connection.execute(
-            target.insert(),
-            {"id": 1, "status": "Planned"},
-            {"id": 2, "status": "In Execution"},
-            {"id": 3, "status": "Obligated"},
-        )
-
-    @hybrid_property
-    def Planned(self) -> bool:
-        return self.id == 1  # Planned
-
-    @hybrid_property
-    def In_Execution(self) -> bool:
-        return self.id == 2  # In Execution
-
-    @hybrid_property
-    def Obligated(self) -> bool:
-        return self.id == 3  # Obligated
-
-
-class CANArrangementType(BaseModel):
-    __tablename__ = "can_arrangement_type"
-    id = Column(Integer, primary_key=True)
-    name = Column(String(), nullable=False, unique=True)
-
-    @staticmethod
-    def initial_data(
-        target: Table,
-        connection: Connection,
-        **kwargs: dict[str, Any],
-    ) -> None:
-        connection.execute(
-            target.insert(),
-            (
-                {"id": 1, "name": "OPRE Appropriation"},
-                {"id": 2, "name": "Cost Share"},
-                {"id": 3, "name": "IAA"},
-                {"id": 4, "name": "IDDA"},
-                {"id": 5, "name": "MOU"},
-            ),
-        )
-
-
-event.listen(
-    CANArrangementType.__table__,
-    "after_create",
-    CANArrangementType.initial_data,
-)
+    psc_fee_amount = Column(
+        Numeric(12, 2)
+    )  # may need to be a different object, i.e. flat rate or percentage
 
 
 class CAN(BaseModel):
@@ -259,11 +179,7 @@ class CAN(BaseModel):
     expiration_date = Column(DateTime)
     appropriation_date = Column(DateTime)
     appropriation_term = Column(Integer, default="1")
-    arrangement_type_id = Column(
-        Integer,
-        ForeignKey("can_arrangement_type.id"),
-    )
-    arrangement_type = relationship(CANArrangementType)
+    arrangement_type = Column(sa.Enum(CANArrangementType))
     funding_sources = relationship(
         FundingSource,
         secondary=can_funding_sources,
@@ -282,9 +198,7 @@ class CAN(BaseModel):
     managing_research_project_id = Column(Integer, ForeignKey("research_project.id"))
     managing_research_project = relationship(ResearchProject, back_populates="cans")
 
-    @hybrid_property
-    def arrangementType(self) -> str:
-        return self.arrangement_type.name
+    budget_line_items = relationship("BudgetLineItem", back_populates="can")
 
     @override
     def to_dict(self):
