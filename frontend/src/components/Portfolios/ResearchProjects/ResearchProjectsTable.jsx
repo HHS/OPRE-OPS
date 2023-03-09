@@ -71,7 +71,7 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
                             aria-sort={getClassNamesFor("name")}
                         >
                             <button
-                                className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink fake-bold ${getClassNamesFor(
+                                className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink hover:text-ink fake-bold ${getClassNamesFor(
                                     "name"
                                 )}`}
                                 type="button"
@@ -94,7 +94,7 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
                             aria-sort={getClassNamesFor("funding")}
                         >
                             <button
-                                className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink fake-bold ${getClassNamesFor(
+                                className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink hover:text-ink fake-bold ${getClassNamesFor(
                                     "funding"
                                 )}`}
                                 type="button"
@@ -116,7 +116,7 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
                             aria-sort={getClassNamesFor("fundingToDate")}
                         >
                             <button
-                                className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink fake-bold ${getClassNamesFor(
+                                className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink hover:text-ink fake-bold ${getClassNamesFor(
                                     "fundingToDate"
                                 )}`}
                                 type="button"
@@ -138,7 +138,7 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
                             aria-sort={getClassNamesFor("firstAwardDate")}
                         >
                             <button
-                                className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink fake-bold ${getClassNamesFor(
+                                className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink hover:text-ink fake-bold ${getClassNamesFor(
                                     "firstAwardDate"
                                 )}`}
                                 type="button"
@@ -158,7 +158,7 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
                             aria-sort={getClassNamesFor("cans")}
                         >
                             <button
-                                className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink fake-bold ${getClassNamesFor(
+                                className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink hover:text-ink fake-bold ${getClassNamesFor(
                                     "cans"
                                 )}`}
                                 type="button"
@@ -178,7 +178,7 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
                             aria-sort={getClassNamesFor("agreement")}
                         >
                             <button
-                                className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink fake-bold ${getClassNamesFor(
+                                className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink hover:text-ink fake-bold ${getClassNamesFor(
                                     "agreement"
                                 )}`}
                                 type="button"
