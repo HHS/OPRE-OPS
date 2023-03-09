@@ -48,9 +48,9 @@ def test_research_projects_serialization(client, loaded_db):
     assert len(response.json["cans"]) == 2
     assert response.json["cans"][0]["number"] == "G990136"
     assert len(response.json["methodologies"]) == 7
-    assert response.json["methodologies"][0]["name"] == "Survey"
+    assert response.json["methodologies"][0] == "SURVEY"
     assert len(response.json["populations"]) == 1
-    assert response.json["populations"][0]["name"] == "Population #1"
+    assert response.json["populations"][0] == "POPULATION_1"
 
 
 @pytest.mark.usefixtures("app_ctx")
