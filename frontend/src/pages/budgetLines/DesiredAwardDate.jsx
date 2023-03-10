@@ -17,7 +17,7 @@ export const DesiredAwardDate = () => {
                             pattern="[0-9]*"
                             inputMode="numeric"
                             placeholder="MM"
-                            value=""
+                            // value=""
                         />
                     </div>
                     <div className="usa-form-group usa-form-group--day margin-top-0">
@@ -33,7 +33,7 @@ export const DesiredAwardDate = () => {
                             pattern="[0-9]*"
                             inputMode="numeric"
                             placeholder="DD"
-                            value=""
+                            // value=""
                         />
                     </div>
                     <div className="usa-form-group usa-form-group--year margin-top-0">
@@ -50,7 +50,7 @@ export const DesiredAwardDate = () => {
                             pattern="[0-9]*"
                             inputMode="numeric"
                             placeholder="YYYY"
-                            value=""
+                            // value=""
                         />
                     </div>
                 </div>

@@ -79,11 +79,36 @@ const StepTwo = ({ goBack, goToNext }) => (
                     <input className="usa-input" id="bl-amount" name="bl-amount" type="number" />
                 </div>
             </div>
-
-            <div className="grid-col-4">Row Three</div>
+            <div className="grid-col-4">
+                <div className="usa-character-count">
+                    <div className="usa-form-group">
+                        <label className="usa-label" htmlFor="with-hint-textarea">
+                            Notes (optional)
+                        </label>
+                        <span id="with-hint-textarea-hint" className="usa-hint">
+                            Maximum 150 characters
+                        </span>
+                        <textarea
+                            className="usa-textarea usa-character-count__field"
+                            id="with-hint-textarea"
+                            maxLength="150"
+                            name="with-hint-textarea"
+                            rows="5"
+                            aria-describedby="with-hint-textarea-info with-hint-textarea-hint"
+                            style={{ height: "7rem" }}
+                        ></textarea>
+                    </div>
+                    <span id="with-hint-textarea-info" className="usa-character-count__message sr-only">
+                        You can enter up to 150 characters
+                    </span>
+                </div>
+                <button className="usa-button usa-button--outline margin-top-2 float-right margin-right-0">
+                    Add Budget Line
+                </button>
+            </div>
         </div>
 
-        <div className="grid-row flex-justify-end">
+        <div className="grid-row flex-justify-end margin-top-1">
             <button className="usa-button usa-button--outline" onClick={() => goBack()}>
                 Back
             </button>
@@ -98,6 +123,7 @@ const StepThree = ({ goBack, goToNext }) => (
         <h2 className="font-sans-lg">Create New Budget Line</h2>
         <p>Step Three: Text explaining this page</p>
         <StepIndicatorThree />
+
         <div className="grid-row flex-justify-end">
             <button className="usa-button usa-button--outline" onClick={() => goBack()}>
                 Back
