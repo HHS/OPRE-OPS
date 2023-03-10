@@ -1,7 +1,7 @@
-import React from "react";
-
 import App from "../../App";
-import { StepIndicator } from "../../components/UI/StepIndicator/StepIndicator";
+import { StepIndicatorOne } from "../../components/UI/StepIndicator/StepIndicatorOne";
+import { StepIndicatorTwo } from "../../components/UI/StepIndicator/StepIndicatorTwo";
+import { StepIndicatorThree } from "../../components/UI/StepIndicator/StepIndicatorThree";
 import { CreateBudgetLineFlow } from "./CreateBudgetLineFlow";
 import { ProjectSelect } from "./ProjectSelect";
 
@@ -9,7 +9,7 @@ const StepOne = ({ goBack, goToNext }) => (
     <>
         <h2 className="font-sans-lg">Create New Budget Line</h2>
         <p>Step One</p>
-        <StepIndicator />
+        <StepIndicatorOne />
         <h2 className="font-sans-lg">Select a Project or Create a New One</h2>
         <p>
             Select the project this budget line should be associated with. If you need to create a new project, click
@@ -30,7 +30,7 @@ const StepTwo = ({ goBack, goToNext }) => (
     <>
         <h2 className="font-sans-lg">Create New Budget Line</h2>
         <p>Step Two</p>
-        <StepIndicator />
+        <StepIndicatorTwo />
         <div className="float-right">
             <button className="usa-button usa-button--outline" onClick={() => goBack()}>
                 Back
@@ -45,7 +45,7 @@ const StepThree = ({ goBack, goToNext }) => (
     <>
         <h2 className="font-sans-lg">Create New Budget Line</h2>
         <p>Step Three</p>
-        <StepIndicator />
+        <StepIndicatorThree />
         <div className="float-right">
             <button className="usa-button usa-button--outline" onClick={() => goBack()}>
                 Back
