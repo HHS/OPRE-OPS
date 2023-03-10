@@ -53,7 +53,7 @@ export const CanSelect = () => {
                     className="usa-combo-box__list"
                     role="listbox"
                     aria-labelledby="agreement-label"
-                    hidden="true"
+                    hidden
                 >
                     <li
                         aria-setsize="64"

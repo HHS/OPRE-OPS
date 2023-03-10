@@ -56,7 +56,7 @@ export const ProjectSelect = () => {
                     className="usa-combo-box__list"
                     role="listbox"
                     aria-labelledby="project-label"
-                    hidden="true"
+                    hidden
                 >
                     <li
                         aria-setsize="64"

@@ -6,6 +6,7 @@ import { CreateBudgetLineFlow } from "./CreateBudgetLineFlow";
 import { ProjectSelect } from "./ProjectSelect";
 import { AgreementSelect } from "./AgreementSelect";
 import { CanSelect } from "./CanSelect";
+import { DateOfProcurement } from "./DateOfProcurement";
 
 const StepOne = ({ goBack, goToNext }) => (
     <>
@@ -57,8 +58,8 @@ const StepTwo = ({ goBack, goToNext }) => (
             Complete the information below to create new budget lines. Select Add Budget Line to create multiple budget
             lines.
         </p>
-        <div className="grid-row">
-            <div className="grid-col-4 border-1px border-red">
+        <div className="grid-row grid-gap">
+            <div className="grid-col-4">
                 <div className="usa-form-group">
                     <label className="usa-label" htmlFor="bl-description">
                         Label
@@ -67,8 +68,10 @@ const StepTwo = ({ goBack, goToNext }) => (
                 </div>
                 <CanSelect />
             </div>
-            <div className="grid-col-4 border-1px border-red">Row Two</div>
-            <div className="grid-col-4 border-1px border-red">Row Three</div>
+            <div className="grid-col-4">
+                <DateOfProcurement />
+            </div>
+            <div className="grid-col-4">Row Three</div>
         </div>
 
         <div className="grid-row flex-justify-end">
