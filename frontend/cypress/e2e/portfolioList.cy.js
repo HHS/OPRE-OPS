@@ -1,10 +1,13 @@
 import { testLogin } from "./utils";
 
-before(() => {
-    cy.visit("/");
+beforeEach(() => {
     testLogin("admin");
     cy.visit("/portfolios");
+});
+
+afterEach(() => {
     cy.injectAxe();
+    cy.checkA11y();
 });
 
 it("loads", () => {
@@ -12,12 +15,7 @@ it("loads", () => {
     cy.get('a[href="/portfolios/1"]').should("exist");
 });
 
-it("passes a11y checks", () => {
-    cy.checkA11y();
-});
-
 it("clicking on a Portfolio takes you to the detail page", () => {
-    testLogin("admin");
     const portfolioName = "Healthy Marriage & Responsible Fatherhood";
 
     cy.contains(portfolioName).click();
