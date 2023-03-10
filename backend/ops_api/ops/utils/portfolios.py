@@ -39,7 +39,7 @@ def _get_total_fiscal_year_funding(portfolio_id: int, fiscal_year: int) -> Decim
 
 def _get_carry_forward_total(portfolio_id: int, fiscal_year: int) -> Decimal:
     stmt = (
-        select(coalesce(sql.functions.sum(CANFiscalYearCarryForward.amount), 0))
+        select(coalesce(sql.functions.sum(CANFiscalYearCarryForward.total_amount), 0))
         .join(CAN)
         .where(CAN.managing_portfolio_id == portfolio_id)
         .where(CANFiscalYearCarryForward.to_fiscal_year == fiscal_year)
