@@ -135,9 +135,10 @@ class CANFiscalYearCarryForward(BaseModel):
     can = relationship("CAN", lazy="joined")
     from_fiscal_year = Column(Integer)
     to_fiscal_year = Column(Integer)
-    received_amount = Column(Numeric(12, 2))
-    expected_amount = Column(Numeric(12, 2))
+    received_amount = Column(Numeric(12, 2), default=0, nullable=False)
+    expected_amount = Column(Numeric(12, 2), default=0, nullable=False)
     notes = Column(String, default="")
+    total_amount = column_property(received_amount + expected_amount)
 
 
 class BudgetLineItem(BaseModel):
