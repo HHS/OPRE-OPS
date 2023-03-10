@@ -20,5 +20,3 @@ TODO: Inherit from cloud.gov
 * [IA-9](ia-09/index.md)
 * [IA-11](ia-11/index.md)
 * [SI-4](si-4/index.md)
-
-AC-17, AC-18, AC-19, AU-6, CA-3, CA-9, IA-4, IA-5, IA-9, IA-11, SI-4.
