@@ -5,6 +5,7 @@ import { StepIndicatorThree } from "../../components/UI/StepIndicator/StepIndica
 import { CreateBudgetLineFlow } from "./CreateBudgetLineFlow";
 import { ProjectSelect } from "./ProjectSelect";
 import { AgreementSelect } from "./AgreementSelect";
+import { CanSelect } from "./CanSelect";
 
 const StepOne = ({ goBack, goToNext }) => (
     <>
@@ -64,6 +65,7 @@ const StepTwo = ({ goBack, goToNext }) => (
                     </label>
                     <input className="usa-input" id="bl-description" name="bl-description" type="text" />
                 </div>
+                <CanSelect />
             </div>
             <div className="grid-col-4 border-1px border-red">Row Two</div>
             <div className="grid-col-4 border-1px border-red">Row Three</div>
