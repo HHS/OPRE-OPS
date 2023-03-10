@@ -29,7 +29,7 @@ services:
       - ENV=pytest
     command: >
       bash -c "
-      python ./data_tools/src/import_static_data/drop_data.py &&
+      python ./data_tools/src/import_static_data/load_db.py &&
       DATA=./data_tools/data/portfolio_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/funding_partner_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/funding_source_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
