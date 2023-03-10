@@ -71,7 +71,9 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
                             aria-sort={getClassNamesFor("name")}
                         >
                             <button
-                                className={getClassNamesFor("name")}
+                                className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink hover:text-ink fake-bold ${getClassNamesFor(
+                                    "name"
+                                )}`}
                                 type="button"
                                 onClick={() => requestSort("name")}
                             >
@@ -92,7 +94,9 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
                             aria-sort={getClassNamesFor("funding")}
                         >
                             <button
-                                className={getClassNamesFor("funding")}
+                                className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink hover:text-ink fake-bold ${getClassNamesFor(
+                                    "funding"
+                                )}`}
                                 type="button"
                                 onClick={() => requestSort("funding")}
                             >
@@ -112,7 +116,9 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
                             aria-sort={getClassNamesFor("fundingToDate")}
                         >
                             <button
-                                className={getClassNamesFor("fundingToDate")}
+                                className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink hover:text-ink fake-bold ${getClassNamesFor(
+                                    "fundingToDate"
+                                )}`}
                                 type="button"
                                 onClick={() => requestSort("fundingToDate")}
                             >
@@ -132,7 +138,9 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
                             aria-sort={getClassNamesFor("firstAwardDate")}
                         >
                             <button
-                                className={getClassNamesFor("firstAwardDate")}
+                                className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink hover:text-ink fake-bold ${getClassNamesFor(
+                                    "firstAwardDate"
+                                )}`}
                                 type="button"
                                 onClick={() => requestSort("firstAwardDate")}
                             >
@@ -150,7 +158,9 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
                             aria-sort={getClassNamesFor("cans")}
                         >
                             <button
-                                className={getClassNamesFor("cans")}
+                                className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink hover:text-ink fake-bold ${getClassNamesFor(
+                                    "cans"
+                                )}`}
                                 type="button"
                                 onClick={() => requestSort("cans")}
                             >
@@ -168,7 +178,9 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
                             aria-sort={getClassNamesFor("agreement")}
                         >
                             <button
-                                className={getClassNamesFor("agreement")}
+                                className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink hover:text-ink fake-bold ${getClassNamesFor(
+                                    "agreement"
+                                )}`}
                                 type="button"
                                 onClick={() => requestSort("agreement")}
                             >
