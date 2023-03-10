@@ -62,23 +62,14 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
     # Amount available to a Portfolio budget is the sum of the BLI minus the Portfolio total (above)
     budget_line_items = BudgetLineItem.query.filter(BudgetLineItem.can.has(CAN.id == can.id))
 
-    # planned_budget_line_items = budget_line_items.filter(
-    #     BudgetLineItem.status.has(BudgetLineItemStatus.PLANNED)
-    # ).all()
     planned_budget_line_items = budget_line_items.where(BudgetLineItem.status == BudgetLineItemStatus.PLANNED).all()
     planned_funding = sum([b.amount for b in planned_budget_line_items]) or 0
 
-    # obligated_budget_line_items = budget_line_items.filter(
-    #     BudgetLineItem.status.has(BudgetLineItemStatus.OBLIGATED)
-    # ).all()
     obligated_budget_line_items = budget_line_items.filter(
         BudgetLineItem.status == BudgetLineItemStatus.OBLIGATED
     ).all()
     obligated_funding = sum([b.amount for b in obligated_budget_line_items]) or 0
 
-    # in_execution_budget_line_items = budget_line_items.filter(
-    #     BudgetLineItem.status.has(BudgetLineItemStatus.IN_EXECUTION)
-    # ).all()
     in_execution_budget_line_items = budget_line_items.filter(
         BudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION
     ).all()
