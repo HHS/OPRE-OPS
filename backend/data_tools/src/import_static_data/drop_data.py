@@ -1,6 +1,10 @@
 import os
 from typing import Optional, Tuple
 
+import models.cans
+import models.portfolios
+import models.research_projects
+import models.users
 import sqlalchemy.engine
 from data_tools.environment.cloudgov import CloudGovConfig
 from data_tools.environment.common import DataToolsConfig
@@ -11,6 +15,12 @@ from data_tools.environment.test import TestConfig
 from models.base import BaseModel
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
+
+# Adding these print statements to suppress unused import warnings
+print("Loading models for CANs", models.cans)
+print("Loading models for Portfolios", models.portfolios)
+print("Loading models for Research Projects", models.research_projects)
+print("Loading models for Users", models.users)
 
 
 def init_db(
@@ -40,8 +50,9 @@ def get_config(environment_name: str = None):
     return config
 
 
-def delete_existing_data(engine: sqlalchemy.engine.Engine):
+def delete_and_create(engine: sqlalchemy.engine.Engine):
     BaseModel.metadata.drop_all(engine)
+    BaseModel.metadata.create_all(engine)
 
 
 if __name__ == "__main__":
@@ -52,6 +63,6 @@ if __name__ == "__main__":
 
     db_engine, db_metadata_obj = init_db(script_config)
 
-    delete_existing_data(db_engine)
+    delete_and_create(db_engine)
 
     print(f"Data removed from DB.")

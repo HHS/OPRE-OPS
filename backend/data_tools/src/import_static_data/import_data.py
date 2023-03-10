@@ -60,7 +60,6 @@ def init_db(
         )
     else:
         engine = db
-    BaseModel.metadata.create_all(engine)
     return engine, BaseModel.metadata
 
 
