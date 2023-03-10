@@ -37,6 +37,38 @@ const StepTwo = ({ goBack, goToNext }) => (
         <h2 className="font-sans-lg">Create New Budget Line</h2>
         <p>Step Two: Text explaining this page</p>
         <StepIndicatorTwo />
+        <h2 className="font-sans-lg">Procurement Shop</h2>
+        <p>Select the Procurement Shop, and the fee rates will be populated in the table below.</p>
+        <label className="usa-label" htmlFor="options">
+            Procurement Shop
+        </label>
+        <div className="display-flex flex-align-center margin-top-1">
+            <select className="usa-select margin-top-0 width-card-lg" name="options" id="options">
+                <option value>- Select -</option>
+                <option value="dio">DOI</option>
+                <option value="option-b">Option B</option>
+                <option value="option-c">Option C</option>
+            </select>
+            <span className="margin-left-1 text-base-dark font-12px">Fee Rate: 4.8%</span>
+        </div>
+        <h2 className="font-sans-lg margin-top-3">Budget Line Details</h2>
+        <p>
+            Complete the information below to create new budget lines. Select Add Budget Line to create multiple budget
+            lines.
+        </p>
+        <div className="grid-row">
+            <div className="grid-col-4 border-1px border-red">
+                <div className="usa-form-group">
+                    <label className="usa-label" htmlFor="bl-description">
+                        Label
+                    </label>
+                    <input className="usa-input" id="bl-description" name="bl-description" type="text" />
+                </div>
+            </div>
+            <div className="grid-col-4 border-1px border-red">Row Two</div>
+            <div className="grid-col-4 border-1px border-red">Row Three</div>
+        </div>
+
         <div className="grid-row flex-justify-end">
             <button className="usa-button usa-button--outline" onClick={() => goBack()}>
                 Back
