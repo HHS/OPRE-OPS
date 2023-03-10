@@ -48,7 +48,7 @@ const CanCard = ({ can, fiscalYear }) => {
             id: 4,
             label: "Obligated",
             value: canFundingData.obligated_funding || 0,
-            color: "#3E8D61",
+            color: "#3A835B",
             percent: `${calculatePercent(canFundingData.obligated_funding, canFundingData?.total_funding)}%`,
         },
     ];
@@ -159,6 +159,7 @@ const CanCard = ({ can, fiscalYear }) => {
                                 className="width-card height-card margin-right-2 margin-top-neg-2"
                                 aria-label="This is a Donut Chart that displays the percent by budget line status in the center."
                                 role="img"
+                                title="Donut Chart"
                             >
                                 <ResponsiveDonutWithInnerPercent
                                     data={data}

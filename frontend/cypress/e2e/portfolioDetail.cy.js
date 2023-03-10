@@ -1,7 +1,6 @@
 import { testLogin } from "./utils";
 
 beforeEach(() => {
-    cy.visit("/");
     testLogin("admin");
     cy.visit("/portfolios/1");
 });

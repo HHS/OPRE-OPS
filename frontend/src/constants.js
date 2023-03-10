@@ -8,7 +8,7 @@ const constants = {
         "#6F3331",
         "#C07B96",
         "#264A64",
-        "#3E8D61",
+        "#3A835B", // Tim: Changed this from #3E8D61 to meet WCAG 2 AA a11y testing
         "#D67625",
         "#429195",
     ],
