@@ -17,7 +17,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db: SQLAlchemy) -> None:
     del result["can"]["updated_on"]
 
     assert result == {
-        "available_funding": "-860000.00",
+        "available_funding": -860000.0,
         "can": {
             "appropriation_date": None,
             "appropriation_term": 1,
@@ -56,7 +56,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db: SQLAlchemy) -> None
     del result["can"]["updated_on"]
 
     assert result == {
-        "available_funding": "-860000.00",
+        "available_funding": -860000.0,
         "can": {
             "appropriation_date": None,
             "appropriation_term": 1,
