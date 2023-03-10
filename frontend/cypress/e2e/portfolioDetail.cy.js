@@ -31,6 +31,7 @@ it("loads", () => {
     cy.get("#portfolioBudgetStatusChart").should("be.visible");
     cy.get(".usa-select").should("be.visible");
     cy.get("span").should("contain", "$");
+    cy.get("span").should("contain", "Carry-Forward");
 });
 
 it("loads the Poftfolio Budget Details component", () => {

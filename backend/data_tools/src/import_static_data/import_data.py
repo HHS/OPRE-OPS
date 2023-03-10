@@ -41,7 +41,7 @@ ALLOWED_TABLES = [
     "agreement_cans",
     "budget_line_item",
     "budget_line_item_status",
-    "can_fiscal_year_carry_over",
+    "can_fiscal_year_carry_forward",
     "portfolio_team_leaders",
     "research_project",
     "research_project_methodologies",

@@ -12,8 +12,8 @@ const PortfolioFundingTotal = ({ portfolioId }) => {
     const portfolioBudget = useSelector((state) => state.portfolioBudgetSummary.portfolioBudget);
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
     const totalFunding = portfolioBudget.total_funding?.amount;
-    const carryForwardFunding = portfolioBudget.carry_over_funding?.amount || 0;
-    const newFunding = portfolioBudget.total_funding?.amount - portfolioBudget.carry_over_funding?.amount;
+    const carryForwardFunding = portfolioBudget.carry_forward_funding?.amount || 0;
+    const newFunding = portfolioBudget.total_funding?.amount - portfolioBudget.carry_forward_funding?.amount;
     const headerText = `FY ${fiscalYear.value} Budget`;
 
     const data = [
