@@ -1,11 +1,11 @@
-export const DateOfProcurement = () => {
+export const DesiredAwardDate = () => {
     return (
         <div className="usa-form-group">
             <fieldset className="usa-fieldset">
-                <legend className="usa-legend">Date of Procurement</legend>
-                <div className="usa-memorable-date">
-                    <div className="usa-form-group usa-form-group--month usa-form-group--select">
-                        <label className="usa-label" htmlFor="procurement_month">
+                <legend className="usa-legend">Desired Award Date</legend>
+                <div className="display-flex">
+                    <div className="usa-form-group usa-form-group--month margin-top-0">
+                        <label className="usa-label sr-only" htmlFor="procurement_month">
                             Month
                         </label>
                         <input
@@ -16,11 +16,12 @@ export const DateOfProcurement = () => {
                             maxLength="2"
                             pattern="[0-9]*"
                             inputMode="numeric"
-                            // value=""
+                            placeholder="MM"
+                            value=""
                         />
                     </div>
-                    <div className="usa-form-group usa-form-group--day">
-                        <label className="usa-label" htmlFor="procurement_day">
+                    <div className="usa-form-group usa-form-group--day margin-top-0">
+                        <label className="usa-label sr-only" htmlFor="procurement_day">
                             Day
                         </label>
                         <input
@@ -31,11 +32,12 @@ export const DateOfProcurement = () => {
                             maxLength="2"
                             pattern="[0-9]*"
                             inputMode="numeric"
-                            // value=""
+                            placeholder="DD"
+                            value=""
                         />
                     </div>
-                    <div className="usa-form-group usa-form-group--year">
-                        <label className="usa-label" htmlFor="procurement_year">
+                    <div className="usa-form-group usa-form-group--year margin-top-0">
+                        <label className="usa-label sr-only" htmlFor="procurement_year">
                             Year
                         </label>
                         <input
@@ -47,7 +49,8 @@ export const DateOfProcurement = () => {
                             maxLength="4"
                             pattern="[0-9]*"
                             inputMode="numeric"
-                            // value=""
+                            placeholder="YYYY"
+                            value=""
                         />
                     </div>
                 </div>

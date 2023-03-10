@@ -6,7 +6,7 @@ import { CreateBudgetLineFlow } from "./CreateBudgetLineFlow";
 import { ProjectSelect } from "./ProjectSelect";
 import { AgreementSelect } from "./AgreementSelect";
 import { CanSelect } from "./CanSelect";
-import { DateOfProcurement } from "./DateOfProcurement";
+import { DesiredAwardDate } from "./DesiredAwardDate";
 
 const StepOne = ({ goBack, goToNext }) => (
     <>
@@ -62,15 +62,24 @@ const StepTwo = ({ goBack, goToNext }) => (
             <div className="grid-col-4">
                 <div className="usa-form-group">
                     <label className="usa-label" htmlFor="bl-description">
-                        Label
+                        Description
                     </label>
                     <input className="usa-input" id="bl-description" name="bl-description" type="text" />
                 </div>
-                <CanSelect />
+                <div className="usa-form-group">
+                    <CanSelect />
+                </div>
             </div>
             <div className="grid-col-4">
-                <DateOfProcurement />
+                <DesiredAwardDate />
+                <div className="usa-form-group">
+                    <label className="usa-label" htmlFor="bl-amount">
+                        Amount
+                    </label>
+                    <input className="usa-input" id="bl-amount" name="bl-amount" type="number" />
+                </div>
             </div>
+
             <div className="grid-col-4">Row Three</div>
         </div>
 
