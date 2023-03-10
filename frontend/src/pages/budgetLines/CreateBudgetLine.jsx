@@ -4,11 +4,12 @@ import { StepIndicatorTwo } from "../../components/UI/StepIndicator/StepIndicato
 import { StepIndicatorThree } from "../../components/UI/StepIndicator/StepIndicatorThree";
 import { CreateBudgetLineFlow } from "./CreateBudgetLineFlow";
 import { ProjectSelect } from "./ProjectSelect";
+import { AgreementSelect } from "./AgreementSelect";
 
 const StepOne = ({ goBack, goToNext }) => (
     <>
         <h2 className="font-sans-lg">Create New Budget Line</h2>
-        <p>Step One</p>
+        <p>Step One: Text explaining this page</p>
         <StepIndicatorOne />
         <h2 className="font-sans-lg">Select a Project or Create a New One</h2>
         <p>
@@ -16,7 +17,27 @@ const StepOne = ({ goBack, goToNext }) => (
             Add New Project.
         </p>
         <ProjectSelect />
-        <div className="grid-row">
+        <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">Add New Project</button>
+        <h2 className="font-sans-lg">Select an Agreement or Create a New One</h2>
+        <p>Select the project and agreement this budget line should be associated with.</p>
+        <AgreementSelect />
+        <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">Add New Agreement</button>
+        <div className="grid-row flex-justify-end">
+            <button className="usa-button usa-button--outline" onClick={() => goBack()}>
+                Back
+            </button>
+            <button className="usa-button" onClick={() => goToNext({ project: "Red X 2.0" })}>
+                Continue
+            </button>
+        </div>
+    </>
+);
+const StepTwo = ({ goBack, goToNext }) => (
+    <>
+        <h2 className="font-sans-lg">Create New Budget Line</h2>
+        <p>Step Two: Text explaining this page</p>
+        <StepIndicatorTwo />
+        <div className="grid-row flex-justify-end">
             <button className="usa-button usa-button--outline" onClick={() => goBack()}>
                 Back
             </button>
@@ -26,31 +47,16 @@ const StepOne = ({ goBack, goToNext }) => (
         </div>
     </>
 );
-const StepTwo = ({ goBack, goToNext }) => (
-    <>
-        <h2 className="font-sans-lg">Create New Budget Line</h2>
-        <p>Step Two</p>
-        <StepIndicatorTwo />
-        <div className="float-right">
-            <button className="usa-button usa-button--outline" onClick={() => goBack()}>
-                Back
-            </button>
-            <button className="usa-button" onClick={() => goToNext({ age: 100 })}>
-                Continue
-            </button>
-        </div>
-    </>
-);
 const StepThree = ({ goBack, goToNext }) => (
     <>
         <h2 className="font-sans-lg">Create New Budget Line</h2>
-        <p>Step Three</p>
+        <p>Step Three: Text explaining this page</p>
         <StepIndicatorThree />
-        <div className="float-right">
+        <div className="grid-row flex-justify-end">
             <button className="usa-button usa-button--outline" onClick={() => goBack()}>
                 Back
             </button>
-            <button className="usa-button" onClick={() => goToNext({ hairColor: "brown" })}>
+            <button className="usa-button" onClick={() => goToNext({ name: "John Doe" })}>
                 Continue
             </button>
         </div>
