@@ -1,5 +1,3 @@
-import { testLogin } from "./utils";
-
 beforeEach(() => {
     cy.visit("/");
 });
