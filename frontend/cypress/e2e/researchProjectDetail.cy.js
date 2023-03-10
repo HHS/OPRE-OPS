@@ -1,11 +1,12 @@
+import { testLogin } from "./utils";
+
 before(() => {
-    cy.fakeLogin();
     cy.visit("/research-projects/1");
     cy.injectAxe();
 });
 
 it("loads", () => {
-    cy.fakeLogin();
+    testLogin("admin");
     cy.get("h1").should("contain", "African American Child and Family Research Center");
     cy.get("h2").should("contain", "Division of Child and Family Development");
     cy.get("span").should("contain", "Emily Ball");
