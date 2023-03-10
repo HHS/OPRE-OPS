@@ -160,6 +160,14 @@ class BudgetLineItem(BaseModel):
         Numeric(12, 2)
     )  # may need to be a different object, i.e. flat rate or percentage
 
+    @override
+    def to_dict(self):
+        d = super().to_dict()
+
+        d.update(status=self.status.name if self.status else None)
+
+        return d
+
 
 class CAN(BaseModel):
     """
