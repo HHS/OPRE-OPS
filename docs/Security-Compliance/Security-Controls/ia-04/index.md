@@ -18,5 +18,3 @@ TODO: Inherit from cloud.gov
 * [AU-12](au-12/index.md)
 * [AU-14](au-14/index.md)
 * [SI-4](si-4/index.md)
-
-AU-2, AU-5, AU-6, AU-7, AU-9, AU-11, AU-12, AU-14, SI-4.
