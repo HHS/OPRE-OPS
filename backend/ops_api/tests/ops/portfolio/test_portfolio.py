@@ -104,7 +104,11 @@ def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
         blin_3 = BudgetLineItem(amount=3.0, status=BudgetLineItemStatus.OBLIGATED, can=can_100)
 
         can_100_fy_2022_co = CANFiscalYearCarryForward(
-            id=100, amount=1.0, from_fiscal_year=2022, to_fiscal_year=2023, can=can_100
+            id=100,
+            received_amount=1.0,
+            from_fiscal_year=2022,
+            to_fiscal_year=2023,
+            can=can_100,
         )
 
         instances.extend(
