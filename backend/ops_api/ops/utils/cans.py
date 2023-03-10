@@ -62,21 +62,27 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
     # Amount available to a Portfolio budget is the sum of the BLI minus the Portfolio total (above)
     budget_line_items = BudgetLineItem.query.filter(BudgetLineItem.can.has(CAN.id == can.id))
 
-    if fiscal_year:
-        budget_line_items = budget_line_items.filter(BudgetLineItem.fiscal_year == fiscal_year)
+    # planned_budget_line_items = budget_line_items.filter(
+    #     BudgetLineItem.status.has(BudgetLineItemStatus.PLANNED)
+    # ).all()
+    planned_budget_line_items = budget_line_items.where(BudgetLineItem.status == BudgetLineItemStatus.PLANNED).all()
+    planned_funding = sum([b.amount for b in planned_budget_line_items]) or 0
 
-    planned_budget_line_items = budget_line_items.filter(BudgetLineItem.status.has(BudgetLineItemStatus.Planned)).all()
-    planned_funding = sum([b.funding for b in planned_budget_line_items]) or 0
-
+    # obligated_budget_line_items = budget_line_items.filter(
+    #     BudgetLineItem.status.has(BudgetLineItemStatus.OBLIGATED)
+    # ).all()
     obligated_budget_line_items = budget_line_items.filter(
-        BudgetLineItem.status.has(BudgetLineItemStatus.Obligated)
+        BudgetLineItem.status == BudgetLineItemStatus.OBLIGATED
     ).all()
-    obligated_funding = sum([b.funding for b in obligated_budget_line_items]) or 0
+    obligated_funding = sum([b.amount for b in obligated_budget_line_items]) or 0
 
+    # in_execution_budget_line_items = budget_line_items.filter(
+    #     BudgetLineItem.status.has(BudgetLineItemStatus.IN_EXECUTION)
+    # ).all()
     in_execution_budget_line_items = budget_line_items.filter(
-        BudgetLineItem.status.has(BudgetLineItemStatus.In_Execution)
+        BudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION
     ).all()
-    in_execution_funding = sum([b.funding for b in in_execution_budget_line_items]) or 0
+    in_execution_funding = sum([b.amount for b in in_execution_budget_line_items]) or 0
 
     total_accounted_for = sum(
         (

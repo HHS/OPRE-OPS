@@ -30,6 +30,18 @@ Feature: List Research Projects and their funding for a given Portfolio and FY.
     When I calculate the total funding for Research Project 1 in FY 2023
     Then the result should be $15.
 
+  Scenario: Calculate Research Project total spending for a given FY.
+    Given a set of ResearchProject/CAN/Funding data below with the current FY 2023
+      | Research Project | Managed CAN | CAN FY | BLIN | BLIN Amount |
+      | 1                | 1           | 2023   | 1    | $1          |
+      | 1                | 2           | 2023   | 2    | $2          |
+      | 1                | 3           | 2022   | 3    | $3          |
+      | 1                | 3           | 2023   | 4    | $4          |
+      | 2                | 4           | 2023   | 5    | $5          |
+
+    When I calculate the total spending for Research Project 1 in FY 2023
+    Then the result should be $7.
+
   Scenario: Calculate Research Project funding to date.
     Given a set of ResearchProject with dates data below
       | Research Project | RP Origination Date | Managed CAN | CAN Appropriation Date | CAN FY | Funding |

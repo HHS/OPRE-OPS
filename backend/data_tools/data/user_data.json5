@@ -40,53 +40,13 @@
       role: "Tech Lead",
       oidc_id: "e5711101-bc3e-41e5-a6a2-051874b307ca",
     },
-  ],
-  portfolio_team_leaders: [
     {
-      portfolio_id: 1,
-      team_lead_id: 1,
-    },
-    {
-      portfolio_id: 2,
-      team_lead_id: 2,
-    },
-    {
-      portfolio_id: 3,
-      team_lead_id: 3,
-    },
-    {
-      portfolio_id: 4,
-      team_lead_id: 4,
-    },
-    {
-      portfolio_id: 5,
-      team_lead_id: 1,
-    },
-    {
-      portfolio_id: 6,
-      team_lead_id: 2,
-    },
-    {
-      portfolio_id: 7,
-      team_lead_id: 3,
-    },
-    {
-      portfolio_id: 8,
-      team_lead_id: 4,
-    },
-    {
-      portfolio_id: 8,
-      team_lead_id: 1,
-    },
-    {
-      portfolio_id: 8,
-      team_lead_id: 3,
-    },
-  ],
-  research_project_team_leaders: [
-    {
-      research_project_id: 1,
-      team_lead_id: "1",
-    },
+      first_name: "John",
+      last_name: "DeAngelis",
+      division: 3,
+      email: "jdeangelis@flexion.us",
+      role: "Software Engineer",
+      oidc_id: "838861c4-8bee-427d-8b49-0892875483ba",
+    }
   ]
 }
