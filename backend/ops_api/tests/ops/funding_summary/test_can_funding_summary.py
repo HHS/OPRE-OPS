@@ -8,14 +8,20 @@ from ops_api.ops.utils.cans import get_can_funding_summary
 @pytest.mark.usefixtures("app_ctx")
 def test_get_can_funding_summary_no_fiscal_year(loaded_db):
     can = loaded_db.session.get(CAN, 1)
+    result = get_can_funding_summary(can)
 
-    assert get_can_funding_summary(can) == {
+    # Remove these because they are set according to when the test was run
+    del result["can"]["created_on"]
+    del result["can"]["updated_on"]
+
+    assert result == {
         "available_funding": "-860000.00",
         "can": {
             "appropriation_date": None,
             "appropriation_term": 1,
-            "arrangement_type_id": 5,
+            "arrangement_type": "OPRE_APPROPRIATION",
             "authorizer_id": 26,
+            "created_by": None,
             "description": "Healthy Marriages Responsible Fatherhood - OPRE",
             "expiration_date": "01/09/2023",
             "id": 1,
@@ -40,14 +46,20 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db):
 @pytest.mark.usefixtures("loaded_db")
 def test_get_can_funding_summary_with_fiscal_year(loaded_db):
     can = loaded_db.session.get(CAN, 1)
+    result = get_can_funding_summary(can, 2023)
 
-    assert get_can_funding_summary(can, 2023) == {
+    # Remove these because they are set according to when the test was run
+    del result["can"]["created_on"]
+    del result["can"]["updated_on"]
+
+    assert result == {
         "available_funding": "-860000.00",
         "can": {
             "appropriation_date": None,
             "appropriation_term": 1,
-            "arrangement_type_id": 5,
+            "arrangement_type": "OPRE_APPROPRIATION",
             "authorizer_id": 26,
+            "created_by": None,
             "description": "Healthy Marriages Responsible Fatherhood - OPRE",
             "expiration_date": "01/09/2023",
             "id": 1,
