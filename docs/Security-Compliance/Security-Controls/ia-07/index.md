@@ -14,5 +14,3 @@ TODO: Inherit from OPS OAuth provider
 * [SA-4](sa-04/index.md)
 * [SC-12](sc-12/index.md)
 * [SC-13](sc-13/index.md)
-
-AC-3, IA-5, SA-4, SC-12, SC-13.
