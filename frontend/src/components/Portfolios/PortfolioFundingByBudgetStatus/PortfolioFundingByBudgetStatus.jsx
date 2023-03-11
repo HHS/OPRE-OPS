@@ -41,7 +41,7 @@ const PortfolioFundingByBudgetStatus = ({ portfolioId }) => {
             id: 4,
             label: "Obligated",
             value: portfolioFunding.obligated_funding.amount || 0,
-            color: "#3E8D61",
+            color: "#3A835B",
             percent: Math.round(portfolioFunding.obligated_funding.percent) + "%",
         },
     ];
