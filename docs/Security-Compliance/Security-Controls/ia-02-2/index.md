@@ -9,4 +9,4 @@ The oauth authentication provider used by OPS is configured to require multi-fac
 
 ### Related Content
 
-[AC-5](ac-05/index.md)
+[AC-5](../ac-05/index.md)

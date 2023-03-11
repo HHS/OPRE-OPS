@@ -9,4 +9,4 @@ OPS is only intended to be used by ACF employees and would only accept HHS-issue
 
 ### Related Content
 
-* [PE-3](pe-3/index.md)
+* [PE-3](../pe-3/index.md)

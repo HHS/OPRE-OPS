@@ -64,10 +64,10 @@
 18. [ia-8-2](ia-08-2/index.md)
 19. [ia-8-4](ia-08-4/index.md)
 20. [ia-11](ia-11/index.md)
-21. [ia-12](ia-11/index.md)
-22. [ia-12-2](ia-11/index.md)
-23. [ia-12-3](ia-11/index.md)
-24. [ia-12-5](ia-11/index.md)
+21. [ia-12](ia-12/index.md)
+22. [ia-12-2](ia-12-2/index.md)
+23. [ia-12-3](ia-12-3/index.md)
+24. [ia-12-5](ia-12-5/index.md)
 
 ### Risk Assessment
 

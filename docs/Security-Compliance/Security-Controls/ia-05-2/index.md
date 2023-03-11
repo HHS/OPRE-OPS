@@ -19,5 +19,5 @@ Public-key based authentication is not used for authenticating to OPS itself.
 
 ### Related Content
 
-* [IA-3](ia-03/index.md)
-* [SC-17](sc-17/index.md)
+* [IA-3](../ia-03/index.md)
+* [SC-17](../sc-17/index.md)

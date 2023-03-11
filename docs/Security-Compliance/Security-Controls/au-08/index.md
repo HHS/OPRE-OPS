@@ -10,7 +10,7 @@ TODO: Seek cloud.gov inheritance
 
 ### Related Content
 
-* [AU-3](au-03/index.md)
-* [AU-12](au-12/index.md)
-* [AU-14](au-14/index.md)
-* [SC-3](sc-45/index.md)
+* [AU-3](../au-03/index.md)
+* [AU-12](../au-12/index.md)
+* [AU-14](../au-14/index.md)
+* [SC-3](../sc-45/index.md)

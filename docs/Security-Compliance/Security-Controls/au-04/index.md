@@ -5,4 +5,4 @@ Allocate audit log storage capacity to accommodate and sufficient to meet the re
 
 ## OPS Implementation
 
-See [AU-11](au-11/index.md)
+See [AU-11](../au-11/index.md)

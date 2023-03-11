@@ -17,4 +17,4 @@ TODO: inherit from OPS Oauth provider for all sub-parts
 
 ### Related Content
 
-* [IA-6](ia-06/index.md)
+* [IA-6](../ia-06/index.md)

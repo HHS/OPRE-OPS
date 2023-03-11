@@ -10,4 +10,4 @@ TODO: Seek cloud.gov partial inheritance and draft language for our own oversigh
 
 ### Related Content
 
-[AC-6](ac-06/index.md)
+[AC-6](../ac-06/index.md)

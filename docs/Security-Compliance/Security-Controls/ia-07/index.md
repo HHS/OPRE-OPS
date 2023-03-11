@@ -9,8 +9,8 @@ TODO: Inherit from OPS OAuth provider
 
 ### Related Content
 
-* [AC-3](ac-03/index.md)
-* [IA-5](ia-05/index.md)
-* [SA-4](sa-04/index.md)
-* [SC-12](sc-12/index.md)
-* [SC-13](sc-13/index.md)
+* [AC-3](../ac-03/index.md)
+* [IA-5](../ia-05/index.md)
+* [SA-4](../sa-04/index.md)
+* [SC-12](../sc-12/index.md)
+* [SC-13](../sc-13/index.md)

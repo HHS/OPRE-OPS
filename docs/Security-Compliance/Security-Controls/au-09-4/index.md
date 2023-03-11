@@ -11,4 +11,4 @@ TODO: provide screenshots/command output.
 
 ### Related Content
 
-[AC-5](ac-05/index.md)
+[AC-5](../ac-05/index.md)

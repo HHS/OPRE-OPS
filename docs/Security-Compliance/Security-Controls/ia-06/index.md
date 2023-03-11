@@ -9,4 +9,4 @@ TODO: Inherit from OPS OAuth provider
 
 ### Related Content
 
-* [AC-3](ac-03/index.md)
+* [AC-3](../ac-03/index.md)
