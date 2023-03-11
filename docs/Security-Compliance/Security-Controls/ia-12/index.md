@@ -1,0 +1,21 @@
+# Identification and Authentication
+## IA-12 - Identity Proofing
+
+a. Identity proof users that require accounts for logical access to systems based on appropriate identity assurance level requirements as specified in applicable standards and guidelines; <br />>
+b. Resolve user identities to a unique individual; and<br />
+c. Collect, validate, and verify identity evidence.
+
+## OPS Implementation
+
+TODO: Inherit from OPS OAuth provider
+
+### Related Content
+
+* [AC-5](../ac-05/index.md)
+* [IA-1](../ia-01/index.md)
+* [IA-2](../ia-02/index.md)
+* [IA-3](../ia-03/index.md)
+* [IA-4](../ia-04/index.md)
+* [IA-5](../ia-05/index.md)
+* [IA-6](../ia-06/index.md)
+* [IA-8](../ia-08/index.md)
