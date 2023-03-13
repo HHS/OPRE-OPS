@@ -1,7 +1,7 @@
 # Identification and Authentication
 ## IA-03 - Device Identification and Authentication
 
-Uniquely identify and authenticate [Assignment: organization-defined devices and/or types of devices] before establishing a [Selection (one or more): local; remote; network] connection.
+Uniquely identify and authenticate [end user-operated devices (e.g. workstations, laptops, Voice over Internet Protocol (VoIP) phones, smartphones) and servers] before establishing a [remote] network connection.
 
 ## OPS Implementation
 
