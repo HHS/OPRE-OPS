@@ -18,7 +18,7 @@ class User(BaseModel):
     date_joined = Column(DateTime, server_default=func.now())
     updated = Column(DateTime, onupdate=func.now())
     role = Column(String(255), index=True)
-    division = Column(Integer, ForeignKey("division.id"))
+    division = Column(Integer, ForeignKey("division.id", name="fk_user_division"))
 
     portfolios = relationship(
         "Portfolio",

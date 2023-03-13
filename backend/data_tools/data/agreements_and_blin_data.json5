@@ -1,37 +1,15 @@
 {
-  "agreement_type": [
-    {
-      id: 1,
-      name: "Contract"
-    },
-    {
-      id: 2,
-      name: "Grant"
-    },
-    {
-      id: 3,
-      name: "Direct Allocation"
-    },
-    {
-      id: 4,
-      name: "IAA"
-    },
-    {
-      id: 5,
-      name: "Miscellaneous"
-    }
-  ],
   "agreement": [
     {
       id: 1,
       name: "NIH VIQI",
-      agreement_type_id: 1,
+      agreement_type:  "CONTRACT",
       owning_portfolio_id: 1
     },
     {
       id: 2,
       name: "NIH ABCD",
-      agreement_type_id: 1,
+      agreement_type: "CONTRACT",
       owning_portfolio_id: 1
     }
   ],
@@ -49,191 +27,197 @@
     {agreement_id: 1, can_id: 11},
     {agreement_id: 1, can_id: 12},
   ],
-  "budget_line_item_status": [
-    {
-      id: 1,
-      status: "Planned"
-    },
-    {
-      id: 2,
-      status: "In Execution"
-    },
-    {
-      id: 3,
-      status: "Obligated"
-    }
-  ],
   "budget_line_item": [
     {
-      id: 1,
-      name: "LI 1",
-      fiscal_year: 2021,
-      agreement_id: 1,
+      line_description: "LI 1",
+      comments: "",
       can_id: 5,
-      funding: 1000000.00,
-      status_id: 1
-    },
-    {
-      id: 2,
-      name: "LI 2",
-      fiscal_year: 2022,
       agreement_id: 1,
+      amount: 1000000.00,
+      status: "PLANNED",
+      date_needed: null,
+      psc_fee_amount: null
+    },
+    {
+      line_description: "LI 2",
+      comments: "",
       can_id: 5,
-      funding: 1000000.00,
-      status_id: 1
+      agreement_id: 1,
+      amount: 1000000.00,
+      status: "PLANNED",
+      date_needed: null,
+      psc_fee_amount: null
     },
     {
-      id: 3,
-      name: "Line Item 1",
-      fiscal_year: 2023,
-      agreement_id: 2,
+      line_description: "Line Item 1",
+      comments: "",
       can_id: 8,
-      funding: 1000000.00,
-      status_id: 1
+      agreement_id: 2,
+      amount: 1000000.00,
+      status: "PLANNED",
+      date_needed: null,
+      psc_fee_amount: null
     },
     {
-      id: 4,
-      name: "Line Item 2",
-      fiscal_year: 2023,
-      agreement_id: 2,
+      line_description: "Line Item 2",
+      comments: "",
       can_id: 8,
-      funding: 1000000.00,
-      status_id: 1
+      agreement_id: 2,
+      amount: 1000000.00,
+      status: "PLANNED",
+      date_needed: null,
+      psc_fee_amount: null
     },
     {
-      id: 5,
-      name: "Line Item 1",
-      fiscal_year: 2023,
-      agreement_id: 2,
+      line_description: "Line Item 1",
+      comments: "",
       can_id: 9,
-      funding: 1000000.00,
-      status_id: 1
+      agreement_id: 2,
+      amount: 1000000.00,
+      status: "PLANNED",
+      date_needed: null,
+      psc_fee_amount: null
     },
     {
-      id: 6,
-      name: "Line Item 2",
-      fiscal_year: 2023,
-      agreement_id: 2,
+      line_description: "Line Item 2",
+      comments: "",
       can_id: 9,
-      funding: 1000000.00,
-      status_id: 1
+      agreement_id: 2,
+      amount: 1000000.00,
+      status: "PLANNED",
+      date_needed: null,
+      psc_fee_amount: null
     },
     {
-      id: 7,
-      name: "Line Item 1",
-      fiscal_year: 2023,
-      agreement_id: 2,
+      line_description: "Line Item 1",
+      comments: "",
       can_id: 9,
-      funding: 1000000.00,
-      status_id: 1
+      agreement_id: 2,
+      amount: 1000000.00,
+      status: "PLANNED",
+      date_needed: null,
+      psc_fee_amount: null
     },
     {
-      id: 8,
-      name: "Line Item 2",
-      fiscal_year: 2023,
-      agreement_id: 2,
+      line_description: "Line Item 2",
+      comments: "",
       can_id: 9,
-      funding: 2000000.00,
-      status_id: 2
+      agreement_id: 2,
+      amount: 2000000.00,
+      status: "IN_EXECUTION",
+      date_needed: null,
+      psc_fee_amount: null
     },
     {
-      id: 9,
-      name: "Line Item 2",
-      fiscal_year: 2023,
-      agreement_id: 2,
+      line_description: "Line Item 2",
+      comments: "",
       can_id: 1,
-      funding: 2000000.00,
-      status_id: 2
+      agreement_id: 2,
+      amount: 2000000.00,
+      status: "IN_EXECUTION",
+      date_needed: null,
+      psc_fee_amount: null
     },
     {
-      id: 10,
-      name: "Line Item 2",
-      fiscal_year: 2023,
-      agreement_id: 2,
+      line_description: "Line Item 2",
+      comments: "",
       can_id: 4,
-      funding: 2000000.00,
-      status_id: 2
+      agreement_id: 2,
+      can_fiscal_year_can_id: 4,
+      amount: 2000000.00,
+      status: "IN_EXECUTION",
+      date_needed: null,
+      psc_fee_amount: null
     },
     {
-      id: 11,
-      name: "Line Item 2",
-      fiscal_year: 2023,
-      agreement_id: 2,
+      line_description: "Line Item 2",
+      comments: "",
       can_id: 2,
-      funding: 2000000.00,
-      status_id: 2
+      agreement_id: 2,
+      amount: 2000000.00,
+      status: "IN_EXECUTION",
+      date_needed: null,
+      psc_fee_amount: null
     },
     {
-      id: 12,
-      name: "Line Item 2",
-      fiscal_year: 2023,
-      agreement_id: 2,
+      line_description: "Line Item 2",
+      comments: "",
       can_id: 3,
-      funding: 2000000.00,
-      status_id: 2
+      agreement_id: 2,
+      amount: 2000000.00,
+      status: "IN_EXECUTION",
+      date_needed: null,
+      psc_fee_amount: null
     },
     {
-      id: 13,
-      name: "Line Item 2",
-      fiscal_year: 2023,
-      agreement_id: 2,
+      line_description: "Line Item 2",
+      comments: "",
       can_id: 5,
-      funding: 2000000.00,
-      status_id: 2
+      agreement_id: 2,
+      amount: 2000000.00,
+      status: "IN_EXECUTION",
+      date_needed: null,
+      psc_fee_amount: null
     },
     {
-      id: 14,
-      name: "Line Item 2",
-      fiscal_year: 2023,
-      agreement_id: 2,
+      line_description: "Line Item 2",
+      comments: "",
       can_id: 6,
-      funding: 2000000.00,
-      status_id: 2
+      agreement_id: 2,
+      amount: 2000000.00,
+      status: "IN_EXECUTION",
+      date_needed: null,
+      psc_fee_amount: null
     },
     {
-      id: 15,
-      name: "Line Item 2",
-      fiscal_year: 2023,
-      agreement_id: 2,
+      line_description: "Line Item 2",
+      comments: "",
       can_id: 7,
-      funding: 2000000.00,
-      status_id: 2
+      agreement_id: 2,
+      amount: 2000000.00,
+      status: "IN_EXECUTION",
+      date_needed: null,
+      psc_fee_amount: null
     },
     {
-      id: 16,
-      name: "Line Item 2",
-      fiscal_year: 2023,
-      agreement_id: 2,
+      line_description: "Line Item 2",
+      comments: "",
       can_id: 2,
-      funding: 1000000.00,
-      status_id: 1
+      agreement_id: 2,
+      amount: 1000000.00,
+      status: "PLANNED",
+      date_needed: null,
+      psc_fee_amount: null
     },
     {
-      id: 17,
-      name: "Line Item 2",
-      fiscal_year: 2023,
-      agreement_id: 2,
+      line_description: "Line Item 2",
+      comments: "",
       can_id: 2,
-      funding: 3000000.00,
-      status_id: 3
+      agreement_id: 2,
+      amount: 3000000.00,
+      status: "OBLIGATED",
+      date_needed: null,
+      psc_fee_amount: null
     },
     {
-      id: 18,
-      name: "Line Item 2",
-      fiscal_year: 2023,
-      agreement_id: 2,
+      line_description: "Line Item 2",
+      comments: "",
       can_id: 3,
-      funding: 7000000.00,
-      status_id: 1
+      agreement_id: 2,
+      amount: 7000000.00,
+      status: "PLANNED",
+      date_needed: null,
+      psc_fee_amount: null
     },
     {
-      id: 19,
-      name: "Line Item 2",
-      fiscal_year: 2023,
-      agreement_id: 2,
+      line_description: "Line Item 2",
+      comments: "",
       can_id: 3,
-      funding: 500000.00,
-      status_id: 3
+      agreement_id: 2,
+      amount: 500000.00,
+      status: "OBLIGATED",
+      date_needed: null,
+      psc_fee_amount: null
     },
   ]
 }
