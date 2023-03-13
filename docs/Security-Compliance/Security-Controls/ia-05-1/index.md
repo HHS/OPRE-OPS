@@ -1,15 +1,15 @@
 # Identification and Authentication
 ## IA-05-01 - Authenticator Management | Password-based Authentication
 
-For password-based authentication:
-(a) Maintain a list of commonly-used, expected, or compromised passwords and update the list [ACF-defined frequency] and when organizational passwords are suspected to have been compromised directly or indirectly;
-(b) Verify, when users create or update passwords, that the passwords are not found on the list of commonly-used, expected, or compromised passwords in IA-5(1)(a);
-(c) Transmit passwords only over cryptographically-protected channels;
-(d) Store passwords using an approved salted key derivation function, preferably using a keyed hash;
-(e) Require immediate selection of a new password upon account recovery;
-(f) Allow user selection of long passwords and passphrases, including spaces and all printable characters;
-(g) Employ automated tools to assist the user in selecting strong password authenticators; and
-(h) Enforce the following composition and complexity rules: [at least one (1) character from each of the four (4) character categories (A-Z, a-z, 0-9, special characters), minimum length of eight (8) characters for regular user passwords, and minimum length of fifteen (15) characters for administrators or privileged user].<br />
+For password-based authentication:<br />
+(a) Maintain a list of commonly-used, expected, or compromised passwords and update the list [ACF-defined frequency] and when organizational passwords are suspected to have been compromised directly or indirectly;<br />
+(b) Verify, when users create or update passwords, that the passwords are not found on the list of commonly-used, expected, or compromised passwords in IA-5(1)(a);<br />
+(c) Transmit passwords only over cryptographically-protected channels;<br />
+(d) Store passwords using an approved salted key derivation function, preferably using a keyed hash;<br />
+(e) Require immediate selection of a new password upon account recovery;<br />
+(f) Allow user selection of long passwords and passphrases, including spaces and all printable characters;<br />
+(g) Employ automated tools to assist the user in selecting strong password authenticators; and<br />
+(h) Enforce the following composition and complexity rules: [at least one (1) character from each of the four (4) character categories (A-Z, a-z, 0-9, special characters), minimum length of eight (8) characters for regular user passwords, and minimum length of fifteen (15) characters for administrators or privileged user].
 
 ## OPS Implementation
 

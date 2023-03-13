@@ -2,6 +2,7 @@
 ## AU-05 - Response to Audit Logging Process Failures
 
 a. Alert [the system/network administrator, database administrator, Information System Security Officer, OS Incident Response Team, and other appropriate personnel/roles] within [ACF-defined time period] in the event of an audit logging process failure; and
+
 b. Take the following additional actions: [overwrite the oldest audit records or automatically shut down in an effort to eliminate the chance of an incident, in the absence of auditing and accountability. In the case of security audit log processing failure, information system processing must be halted (for Moderate and High only)].
 
 ## OPS Implementation
