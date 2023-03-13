@@ -7,7 +7,7 @@ b. Establishing initial authenticator content for any authenticators issued by t
 c. Ensuring that authenticators have sufficient strength of mechanism for their intended use;<br />
 d. Establishing and implementing administrative procedures for initial authenticator distribution, for lost or compromised or damaged authenticators, and for revoking authenticators;<br />
 e. Changing default authenticators prior to first use;<br />
-f. Changing or refreshing authenticators [Assignment: organization-defined time period by authenticator type] or when [Assignment: organization-defined events] occur;<br />
+f. Changing or refreshing authenticators at least every 60 days; PIV (smart card) certificates must be renewed every five (5) years or when organization-defined events occur;<br />
 g. Protecting authenticator content from unauthorized disclosure and modification;<br />
 h. Requiring individuals to take, and having devices implement, specific controls to protect authenticators; and<br />
 i. Changing authenticators for group or role accounts when membership to those accounts changes.
