@@ -604,6 +604,54 @@ paths:
                     items:
                       type: string
                       example: 'Must be greater than or equal to 1900.'
+  /api/v1/procurement-shops/:
+    get:
+      description: Get all Procurement Shops
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  shortname:
+                    type: string
+                  fee:
+                    type: number
+              examples:
+                '1':
+                  value: |
+                    [
+                      {
+                        "id": 0,
+                        "name": "Product Service Center",
+                        "shortname": "PSC",
+                        "fee": 0
+                      },
+                      {
+                        "id": 1,
+                        "name": "Government Contracting Services",
+                        "shortname": "GCS",
+                        "fee": 0
+                      },
+                      {
+                        "id": 2,
+                        "name": "National Institute of Health",
+                        "shortname": "NIH",
+                        "fee": 0.5
+                      },
+                      {
+                        "id": 3,
+                        "name": "Interior Business Center",
+                        "shortname": "IBC",
+                        "fee": 4.8
+                      }
+                    ]
 
 components:
   securitySchemes:

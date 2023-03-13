@@ -1,12 +1,19 @@
+"""Module containing views for Procurement Shops."""
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 
 
-class ProcurementShopItemAPI(BaseItemAPI):  # type: ignore [misc]
+class ProcurementShopsItemAPI(BaseItemAPI):  # type: ignore [misc]
+    """View to get individual Procurement Shop item."""
+
     def __init__(self, model: BaseModel):
+        """Initialize the class."""
         super().__init__(model)
 
 
-class ProcurementShopListAPI(BaseListAPI):  # type: ignore [misc]
+class ProcurementShopsListAPI(BaseListAPI):  # type: ignore [misc]
+    """View to get list of Procurement Shop items."""
+
     def __init__(self, model: BaseModel):
+        """Initialize the class."""
         super().__init__(model)

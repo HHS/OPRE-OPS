@@ -1,10 +1,10 @@
 from models.base import BaseModel
 from models.cans import CAN, Agreement, BudgetLineItem, CANFiscalYear
 from models.portfolios import Division, Portfolio, PortfolioStatus
-from models.procurement_shop import ProcurementShop
+from models.procurement_shops import ProcurementShop
 from models.research_projects import ResearchProject
 from models.users import User
-from ops.api.ops.resources.procurement_shops import ProcurementShopItemAPI, ProcurementShopListAPI
+from ops.api.ops.resources.procurement_shops import ProcurementShopsItemAPI, ProcurementShopsListAPI
 from ops_api.ops.resources.agreements import AgreementItemAPI, AgreementListAPI
 from ops_api.ops.resources.auth import AuthLoginAPI, AuthRefreshAPI
 from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, BudgetLineItemsListAPI
@@ -59,11 +59,11 @@ BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC = BudgetLineItemsListAPI.as_view(
 )
 
 # PROCUREMENT SHOP ENDPOINTS
-PROCUREMENT_SHOP_ITEM_API_VIEW_FUNC = ProcurementShopItemAPI.as_view(
-    "procurement-shop-item", ProcurementShop
+PROCUREMENT_SHOPS_ITEM_API_VIEW_FUNC = ProcurementShopsItemAPI.as_view(
+    "procurement-shops-item", ProcurementShop
 )
-PROCUREMENT_SHOP_LIST_API_VIEW_FUNC = ProcurementShopListAPI.as_view(
-    "procurement-shop-group", ProcurementShop
+PROCUREMENT_SHOPS_LIST_API_VIEW_FUNC = ProcurementShopsListAPI.as_view(
+    "procurement-shops-group", ProcurementShop
 )
 
 # PORTFOLIO STATUS ENDPOINTS

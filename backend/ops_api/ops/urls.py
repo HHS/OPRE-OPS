@@ -21,8 +21,8 @@ from ops_api.ops.views import (
     PORTFOLIO_LIST_API_VIEW_FUNC,
     PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC,
     PORTFOLIO_STATUS_LIST_API_VIEW_FUNC,
-    PROCUREMENT_SHOP_ITEM_API_VIEW_FUNC,
-    PROCUREMENT_SHOP_LIST_API_VIEW_FUNC,
+    PROCUREMENT_SHOPS_ITEM_API_VIEW_FUNC,
+    PROCUREMENT_SHOPS_LIST_API_VIEW_FUNC,
     RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
     RESEARCH_PROJECT_ITEM_API_VIEW_FUNC,
     RESEARCH_PROJECT_LIST_API_VIEW_FUNC,
@@ -92,12 +92,12 @@ def register_api(api_bp: Blueprint) -> None:
     )
 
     api_bp.add_url_rule(
-        "/procurement-shop/<int:id>",
-        view_func=PROCUREMENT_SHOP_ITEM_API_VIEW_FUNC,
+        "/procurement-shops/<int:id>",
+        view_func=PROCUREMENT_SHOPS_ITEM_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
-        "/procurement-shop/",
-        view_func=PROCUREMENT_SHOP_LIST_API_VIEW_FUNC,
+        "/procurement-shops/",
+        view_func=PROCUREMENT_SHOPS_LIST_API_VIEW_FUNC,
     )
 
     api_bp.add_url_rule(

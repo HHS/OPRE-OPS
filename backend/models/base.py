@@ -1,5 +1,5 @@
 """Base model and other useful tools for project models."""
-from typing import Annotated, Final, Self, TypeAlias, TypedDict, TypeVar
+from typing import Annotated, Final, Self, TypeAlias, TypedDict, TypeVar, cast
 
 from desert import schema
 from marshmallow import Schema as MMSchema
@@ -95,19 +95,19 @@ class BaseData:
 
     def to_dict(self) -> "Self.Dict":  # type: ignore [name-defined]
         """Dump the instance data into a dict structure."""
-        return self.Schema.dump(self)``
+        return self.Schema.dump(self)
 
     @classmethod
-    def from_json(cls, data: str) -> Self:
+    def from_json(cls, data: str) -> Self:  # type: ignore [valid-type]
         """Load the instance data from the given json string."""
         return cls.Schema.loads(data)  # type: ignore [no-any-return]
 
     def to_json(self) -> str:
         """Dump the instance data into a json string."""
-        return self.Schema.dumps(self)``
+        return cast(str, self.Schema.dumps(self))
 
 
-class BaseModel(Base, SerializeMixin, ReprMixin):
+class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc, valid-type]
     __abstract__ = True
     __repr__ = ReprMixin.__repr__
 
