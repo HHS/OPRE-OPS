@@ -5,4 +5,4 @@ Accept and electronically verify Personal Identity Verification-compliant creden
 
 ## OPS Implementation
 
-Inherited from login.gov
+Inherited from login.gov or HHS/ACF OCIO approved authentication Providere. 
