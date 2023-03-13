@@ -1,10 +1,11 @@
 # Identification and Authentication
 ## IA-04-4 - Identifier Management | Identify User Status
 
-Manage individual identifiers by uniquely identifying each individual as [Assignment: organization-defined characteristic identifying individual status].
+Manage individual identifiers by uniquely identifying each individual as per ACF-defined characteristic identifying individual status.
 
 ## OPS Implementation
 
-TODO: ???
+TODO: Hybrid -ACF OCIO/ OPRE-OPS ???
 
 ### Related Content
+Characteristics that identify the status of individuals include contractors, foreign nationals, and non-organizational users. Identifying the status of individuals by these characteristics provides additional information about the people with whom organizational personnel are communicating. For example, it might be useful for a government employee to know that one of the individuals on an email message is a contractor.
