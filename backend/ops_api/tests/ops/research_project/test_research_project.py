@@ -18,11 +18,11 @@ def test_research_project_retrieve(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_research_projects_get_all(client, loaded_db):
-    assert loaded_db.session.query(ResearchProject).count() == 1
+    assert loaded_db.session.query(ResearchProject).count() == 3
 
     response = client.get("/api/v1/research-projects/")
     assert response.status_code == 200
-    assert len(response.json) == 1
+    assert len(response.json) == 3
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -117,3 +117,10 @@ def test_research_project_no_cans_with_query_string(client, loaded_db):
 
     assert response.status_code == 200
     assert len(response.json) == 1
+
+
+def test_research_project_search(client, loaded_db):
+    response = client.get("/api/v1/research-projects/?search=fa")
+
+    assert response.status_code == 200
+    assert len(response.json) == 2
