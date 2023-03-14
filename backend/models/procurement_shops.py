@@ -12,5 +12,5 @@ class ProcurementShop(BaseData):
 
     id: Mapped[intpk]
     name: Mapped[str]
-    shortname: Mapped[str]
+    abbr: Mapped[str]
     fee: Mapped[float] = mapped_column(default=0.0)
