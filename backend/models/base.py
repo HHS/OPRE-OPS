@@ -1,5 +1,5 @@
 """Base model and other useful tools for project models."""
-from typing import Annotated, Final, Self, TypeAlias, TypedDict, TypeVar, cast
+from typing import Annotated, Final, TypeAlias, TypedDict, TypeVar, cast
 
 from desert import schema
 from marshmallow import Schema as MMSchema
@@ -89,16 +89,16 @@ class BaseData:
     Dict: Final[TypeAlias] = _DictVar()  # type: ignore [valid-type]
 
     @classmethod
-    def from_dict(cls, data: "Self.Dict") -> Self:  # type: ignore [valid-type, name-defined]
+    def from_dict(cls, data: "BaseData.Dict") -> "BaseData":  # type: ignore [name-defined]
         """Load the instance data from the given dict structure."""
         return cls.Schema.load(data)  # type: ignore [no-any-return]
 
-    def to_dict(self) -> "Self.Dict":  # type: ignore [name-defined]
+    def to_dict(self) -> "BaseData.Dict":  # type: ignore [name-defined]
         """Dump the instance data into a dict structure."""
         return self.Schema.dump(self)
 
     @classmethod
-    def from_json(cls, data: str) -> Self:  # type: ignore [valid-type]
+    def from_json(cls, data: str) -> "BaseData":
         """Load the instance data from the given json string."""
         return cls.Schema.loads(data)  # type: ignore [no-any-return]
 

@@ -12,6 +12,7 @@ cfenv = "==0.5.3"
 sqlalchemy-mixins = "==1.5.3"
 typing-extensions = "==4.4.0"
 pytest-docker = {extras = ["docker-compose-v2"], version = "*"}
+desert = "*"
 
 [dev-packages]
 nox = "==2022.11.21"
