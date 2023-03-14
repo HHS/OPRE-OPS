@@ -88,6 +88,14 @@
       role: "Tech Lead",
       oidc_id: "e5711101-bc3e-41e5-a6a2-051874b307ca",
     },
+    {
+      first_name: "John",
+      last_name: "DeAngelis",
+      division: 3,
+      email: "jdeangelis@flexion.us",
+      role: "Software Engineer",
+      oidc_id: "838861c4-8bee-427d-8b49-0892875483ba",
+    }
   ],
   portfolio_team_leaders: [
     {
