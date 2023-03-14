@@ -8,7 +8,7 @@ class AuthorizationProvider(ABC):
 
 
 class BasicAuthorizationPrivider(AuthorizationProvider):
-    def __init__(self, authirized_users: list[str]):
+    def __init__(self, authirized_users: list[str] = []):
         self.authorized_users = authirized_users
 
     def is_authorized(self, oidc_id: str, permission: list[str]) -> bool:
@@ -90,10 +90,12 @@ class AuthorizationGateway:
         if not self.is_authorized(oidc_id, permission):
             # TODO Perform a logging action, so we can audit this invalid
             # authorization attempt somewhere.
-            raise ValueError("User is not authorized")
+            # raise ValueError("User is not authorized")
+            return False
         # If the user is authorized, do any necessary authorization tasks here
         # For example, logging the user in, setting session data, etc.
         # ...
 
         # Return a success message
-        return f"User {oidc_id} has been authorized for {permission}"
+        # print(f"User {oidc_id} has been authorized for {permission}")
+        return True

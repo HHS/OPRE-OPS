@@ -9,6 +9,7 @@ from flask import current_app
 from flask_jwt_extended import create_access_token
 from models.users import User
 from ops_api.ops.utils.auth import create_oauth_jwt
+from ops_api.ops.utils.authorization import AuthorizationGateway, AuthorizationProvider
 
 key = rsa.generate_private_key(backend=default_backend(), public_exponent=65537, key_size=2048)
 
@@ -57,3 +58,17 @@ def test_create_access_token(loaded_db, app):
     pub_key = current_app.config.get("JWT_PUBLIC_KEY")
     decoded = jwt.decode(access_token, pub_key)
     assert decoded["sub"] == user.oidc_id
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("app_ctx")
+def test_authorization_gateway_authorize_successful(mocker):
+    class MockAuthorizationProvider(AuthorizationProvider):
+        def is_authorized(self, user_id: str, permission: list[str]):
+            return True
+
+    mock_basic_provider = MockAuthorizationProvider()
+    mocker.patch.object(mock_basic_provider, "is_authorized")
+    authorization_gateway = AuthorizationGateway(mock_basic_provider)
+    result = authorization_gateway.authorize("1234-5432-1234", ["can_read", "portfolio_read"])
+    assert result is True
