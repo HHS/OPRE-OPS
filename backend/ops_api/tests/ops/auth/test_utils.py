@@ -16,7 +16,14 @@ key = rsa.generate_private_key(backend=default_backend(), public_exponent=65537,
 def test_get_jwt_no_key(app):
     with app.test_request_context("/auth/login", method="POST", data={"code": ""}):
         jwt1 = create_oauth_jwt(
-            key, {"alg": "RS256"}, {"sub": "1234567890", "name": "John Doe", "admin": "true", "iat": 1516239022}
+            key,
+            {"alg": "RS256"},
+            {
+                "sub": "1234567890",
+                "name": "John Doe",
+                "admin": "true",
+                "iat": 1516239022,
+            },
         )
         print(jwt)
         assert jwt is not None
