@@ -1,5 +1,5 @@
 import pytest
-from models.cans import CAN
+from models.cans import CAN, CANArrangementType
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -14,7 +14,7 @@ def test_can_retrieve(loaded_db):
     assert can.appropriation_term == 1
     assert can.authorizer_id == 26
     assert can.managing_portfolio_id == 6
-    assert can.arrangement_type_id == 5
+    assert can.arrangement_type == CANArrangementType.OPRE_APPROPRIATION
     # assert can.funding_sources == []
     # assert can.shared_portfolios == [2]
     # assert can.budget_line_items == []
@@ -26,7 +26,7 @@ def test_can_creation():
         description="Secondary Analyses Data On Child Care & Early Edu",
         purpose="Secondary Analyses of Child Care and Early Education Data (2022)",
         nickname="ABCD",
-        arrangement_type_id=2,
+        arrangement_type=CANArrangementType.COST_SHARE,
         authorizer_id=1,
         managing_portfolio_id=2,
     )

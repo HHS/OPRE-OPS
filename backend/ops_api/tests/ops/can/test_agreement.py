@@ -1,5 +1,5 @@
 import pytest
-from models.cans import Agreement
+from models.cans import Agreement, AgreementType
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -10,5 +10,5 @@ def test_agreement_lookup(loaded_db):
 
 
 def test_agreement_creation():
-    agreement = Agreement(name="Agreement-2", agreement_type_id=4)
+    agreement = Agreement(name="Agreement-2", agreement_type=AgreementType.CONTRACT)
     assert agreement.to_dict()["name"] == "Agreement-2"
