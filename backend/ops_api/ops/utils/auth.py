@@ -7,9 +7,11 @@ from authlib.jose import jwt as jose_jwt
 from flask import current_app
 from flask_jwt_extended import JWTManager
 from models.users import User
+from ops_api.ops.utils.authorization import AuthorizationGateway, BasicAuthorizationPrivider
 
 jwtMgr = JWTManager()
 oauth = OAuth()
+auth_gateway = AuthorizationGateway(BasicAuthorizationPrivider())
 
 
 @jwtMgr.user_identity_loader
@@ -23,7 +25,11 @@ def user_lookup_callback(_jwt_header: dict, jwt_data: dict) -> Optional[User]:
     return User.query.filter_by(oidc_id=identity).one_or_none()
 
 
-def create_oauth_jwt(key: Optional[str] = None, header: Optional[str] = None, payload: Optional[str] = None) -> str:
+def create_oauth_jwt(
+    key: Optional[str] = None,
+    header: Optional[str] = None,
+    payload: Optional[str] = None,
+) -> str:
     """
     Returns an Access Token JWS from the configured OAuth Client
     :param key: OPTIONAL - Private Key used for encoding the JWS
