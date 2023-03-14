@@ -2,6 +2,7 @@ from flask import Response, jsonify, request
 from models.base import BaseModel
 from models.cans import CANFiscalYear
 from models.research_projects import ResearchProject
+from ops_api.ops import db
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from sqlalchemy.future import select
 from typing_extensions import override
@@ -29,7 +30,7 @@ class ResearchProjectListAPI(BaseListAPI):
         super().__init__(model)
 
     @staticmethod
-    def get_query(fiscal_year=None, portfolio_id=None):
+    def get_query(fiscal_year=None, portfolio_id=None, search=None):
         stmt = (
             select(ResearchProject)
             .distinct(ResearchProject.id)
@@ -43,14 +44,17 @@ class ResearchProjectListAPI(BaseListAPI):
         if fiscal_year:
             stmt = stmt.where(CANFiscalYear.fiscal_year == fiscal_year)
 
+        if search:
+            stmt = stmt.where(ResearchProject.title.ilike(f"%{search}%"))
+
         return stmt
 
     def get(self) -> Response:
         fiscal_year = request.args.get("fiscal_year")
         portfolio_id = request.args.get("portfolio_id")
+        search = request.args.get("search")
 
-        stmt = ResearchProjectListAPI.get_query(fiscal_year, portfolio_id)
-        from ops_api.ops import db
+        stmt = ResearchProjectListAPI.get_query(fiscal_year, portfolio_id, search)
 
         result = db.session.execute(stmt).all()
 
