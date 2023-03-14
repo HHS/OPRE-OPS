@@ -3,7 +3,7 @@ from enum import Enum
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 from models.base import BaseModel
-from sqlalchemy import Column, Date, ForeignKey, Integer, String, Table, Text
+from sqlalchemy import Column, Date, ForeignKey, Identity, Integer, String, Table, Text
 from sqlalchemy.orm import relationship
 from typing_extensions import override
 
@@ -43,7 +43,7 @@ research_project_team_leaders = Table(
 
 class ResearchProject(BaseModel):
     __tablename__ = "research_project"
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, Identity(), primary_key=True)
     title = Column(String, nullable=False)
     short_title = Column(String)
     description = Column(Text)
