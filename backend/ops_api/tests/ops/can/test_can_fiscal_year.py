@@ -34,7 +34,7 @@ def test_can_fiscal_year_create():
 def test_can_get_can_fiscal_year_list(client):
     response = client.get("/api/v1/can-fiscal-year/")
     assert response.status_code == 200
-    assert len(response.json) == 20
+    assert len(response.json) == 23
     assert response.json[0]["can_id"] == 1
     assert response.json[1]["can_id"] == 2
     assert response.json[2]["can_id"] == 3

@@ -1,7 +1,6 @@
 ---
 name: Generic issue template
-about: Use this template to request work and provide Goals, Tasks, Additional Context,
-  and/or Resources
+about: Use this template for devex/opex or tech debt backlog item that isn't a user story meeting a business need
 title: ''
 labels: ''
 assignees: ''

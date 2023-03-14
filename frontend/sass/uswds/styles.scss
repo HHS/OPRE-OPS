@@ -42,7 +42,7 @@ html {
     --data-viz-primary-3: #d67625;
     --data-viz-primary-4: #264a64;
     --data-viz-primary-5: #c07b96;
-    --data-viz-primary-6: #3e8d61;
+    --data-viz-primary-6: #3A835B;
     --data-viz-primary-7: #6f3331;
     --data-viz-primary-8: #e5a000;
     --data-viz-primary-9: #b50909;
@@ -111,4 +111,9 @@ $themeColors: (
 
 .fake-bold {
     text-shadow: 0 0 0.025rem;
+}
+
+// HELPERS
+.width-fit-content {
+    width: fit-content;
 }

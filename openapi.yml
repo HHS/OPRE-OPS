@@ -130,7 +130,7 @@ paths:
                         type: number
                       percent:
                         type: string
-                  carry_over_funding:
+                  carry_forward_funding:
                     type: object
                     properties:
                       amount:
@@ -145,7 +145,7 @@ paths:
                         "amount": 12000000.0,
                         "percent": "60.0"
                       },
-                      "carry_over_funding": {
+                      "carry_forward_funding": {
                         "amount": 0.0,
                         "percent": "Carry Over"
                       },
@@ -280,7 +280,7 @@ paths:
                         type: string
                       managing_research_project_id:
                         type: integer
-                  current_funding:
+                  received_funding:
                     type: string
                   planned_funding:
                     type: integer
@@ -294,8 +294,10 @@ paths:
                     type: string
                   in_execution_funding:
                     type: string
-                  carry_over_funding:
+                  carry_forward_funding:
                     type: integer
+                  carry_forward_label:
+                    type: string
                   expected_funding:
                     type: string
               examples:
@@ -317,8 +319,9 @@ paths:
                         "number": "G990136",
                         "purpose": ""
                       },
-                      "carry_over_funding": 0,
-                      "current_funding": "6000000.00",
+                      "carry_forward_funding": 0,
+                      "carry_forward_label": "Carry-Forward",
+                      "received_funding": "6000000.00",
                       "expected_funding": "4000000.00",
                       "expiration_date": "09/01/2023",
                       "in_execution_funding": "2000000.00",

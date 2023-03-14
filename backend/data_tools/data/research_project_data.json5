@@ -1,5 +1,5 @@
 {
-  research_project: [
+  "research_project": [
     {
       id: 1,
       title: "African American Child and Family Research Center",
@@ -32,42 +32,8 @@
       portfolio_id: 3,
       url: "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center",
       origination_date: "01-01-2022",
+      methodologies: ["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION", "ETHNOGRAPHY", "EXPERIMENT", "SECONDARY_DATA_ANALYSIS", "CASE_STUDY"],
+      populations: ["POPULATION_1"]
     },
   ],
-  research_project_methodologies: [
-    {
-      research_project_id: 1,
-      methodology_type_id: 1,
-    },
-    {
-      research_project_id: 1,
-      methodology_type_id: 2,
-    },
-    {
-      research_project_id: 1,
-      methodology_type_id: 3,
-    },
-    {
-      research_project_id: 1,
-      methodology_type_id: 4,
-    },
-    {
-      research_project_id: 1,
-      methodology_type_id: 5,
-    },
-    {
-      research_project_id: 1,
-      methodology_type_id: 6,
-    },
-    {
-      research_project_id: 1,
-      methodology_type_id: 7,
-    },
-  ],
-  research_project_populations: [
-    {
-      research_project_id: 1,
-      population_type_id: 1,
-    },
-  ]
 }

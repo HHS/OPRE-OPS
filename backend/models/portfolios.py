@@ -1,11 +1,18 @@
 """Portfolio models."""
+from enum import Enum
 from typing import Any, cast
 
+import sqlalchemy as sa
 from models.base import BaseModel
-from sqlalchemy import Column, ForeignKey, Integer, String, Table, Text, event
-from sqlalchemy.engine import Connection
+from sqlalchemy import Column, ForeignKey, Integer, String, Table, Text
 from sqlalchemy.orm import relationship
 from typing_extensions import override
+
+
+class PortfolioStatus(Enum):
+    IN_PROCESS = 1
+    NOT_STARTED = 2
+    SANDBOX = 3
 
 
 class Division(BaseModel):
@@ -31,39 +38,6 @@ class PortfolioUrl(BaseModel):
     url = Column(String)
 
 
-class PortfolioStatus(BaseModel):
-    """Portfolio Status sub model.
-
-    This is automatically populated with the initial options on table creation.
-    """
-
-    __tablename__ = "portfolio_status"
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False, unique=True)
-
-    @staticmethod
-    def initial_data(
-        target: Table,
-        connection: Connection,
-        **kwargs: dict[str, Any],
-    ) -> None:
-        """Static method to initialize the table with default data."""
-        connection.execute(
-            target.insert(),
-            (
-                {"id": 1, "name": "In-Process"},
-                {"id": 2, "name": "Not-Started"},
-                {"id": 3, "name": "Sandbox"},
-            ),
-        )
-
-
-event.listen(
-    PortfolioStatus.__table__,
-    "after_create",
-    PortfolioStatus.initial_data,
-)
-
 shared_portfolio_cans = Table(
     "shared_portfolio_cans",
     BaseModel.metadata,
@@ -85,8 +59,7 @@ class Portfolio(BaseModel):
     __tablename__ = "portfolio"
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
-    status_id = Column(Integer, ForeignKey("portfolio_status.id"))
-    status = relationship("PortfolioStatus")
+    status = Column(sa.Enum(PortfolioStatus))
     cans = relationship(
         "CAN",
         back_populates="managing_portfolio",
@@ -106,8 +79,8 @@ class Portfolio(BaseModel):
     research_project = relationship("ResearchProject", back_populates="portfolio")
 
     @override
-    def to_dict(self) -> dict[str, Any]:
-        d = super().to_dict()
+    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
+        d = super().to_dict()  # type: ignore [no-untyped-call]
 
         d.update(
             {
