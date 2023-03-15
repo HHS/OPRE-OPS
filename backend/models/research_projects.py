@@ -51,8 +51,8 @@ class ResearchProject(BaseModel):
     portfolio = relationship("Portfolio", back_populates="research_project")
     url = Column(String)
     origination_date = Column(Date)
-    methodologies = Column(pg.ARRAY(sa.Enum(MethodologyType)))
-    populations = Column(pg.ARRAY(sa.Enum(PopulationType)))
+    methodologies = Column(pg.ARRAY(sa.Enum(MethodologyType)), server_default="{}")
+    populations = Column(pg.ARRAY(sa.Enum(PopulationType)), server_default="{}")
     cans = relationship("CAN", back_populates="managing_research_project")
     team_leaders = relationship(
         "User",
