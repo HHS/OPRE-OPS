@@ -8,12 +8,17 @@ def generate_validator(model: BaseModel) -> BaseModel.Validator:
     return model.Validator()
 
 
-class BaseItemAPI(MethodView):
+class OPSMethodView(MethodView):
     init_every_request = False
 
     def __init__(self, model: BaseModel):
         self.model = model
         self.validator = generate_validator(model)
+
+
+class BaseItemAPI(OPSMethodView):
+    def __init__(self, model: BaseModel):
+        super().__init__(model)
 
     def _get_item(self, id: int) -> BaseModel:
         return self.model.query.filter_by(id=id).first_or_404()
@@ -24,12 +29,9 @@ class BaseItemAPI(MethodView):
         return jsonify(item.to_dict())
 
 
-class BaseListAPI(MethodView):
-    init_every_request = False
-
+class BaseListAPI(OPSMethodView):
     def __init__(self, model: BaseModel):
-        self.model = model
-        self.validator = generate_validator(model)
+        super().__init__(model)
 
     @jwt_required()
     def get(self) -> Response:
