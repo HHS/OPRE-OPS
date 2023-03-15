@@ -19,6 +19,7 @@ import PeopleAndTeams from "./components/Portfolios/PeopleAndTeams/PeopleAndTeam
 import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAndFunding";
 import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProjectDetail";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
+import BudgetLineItemWizard from "./pages/budgetLines/create/BudgetLineItemWizard";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -109,6 +110,7 @@ const router = createBrowserRouter(
             </Route>
             <Route path="/cans" element={<CanList />} />
             <Route path="/login" handle={{}} />
+            <Route path="/create-bli" element={<BudgetLineItemWizard />} />
         </>
     )
 );
