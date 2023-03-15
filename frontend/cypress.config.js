@@ -3,6 +3,22 @@ const { defineConfig } = require("cypress");
 module.exports = defineConfig({
     e2e: {
         baseUrl: "http://localhost:3000",
+        // Adding custom task logging, for better a11y output
+        // ref: https://docs.cypress.io/api/commands/task#Usage
+        // https://github.com/component-driven/cypress-axe#using-the-violationcallback-argument
+        setupNodeEvents(on, config) {
+            on("task", {
+                log(message) {
+                    console.log(message);
+                    return null;
+                },
+                table(message) {
+                    console.table(message);
+
+                    return null;
+                },
+            });
+        },
     },
     video: false,
     viewportHeight: 768,

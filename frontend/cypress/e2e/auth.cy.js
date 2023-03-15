@@ -1,9 +1,8 @@
 import { logout } from "../../src/components/Auth/authSlice";
-import { testLogin } from "./utils";
+import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
     cy.visit("/");
-    cy.injectAxe();
 });
 
 it("sign in button visible at page load when there is no jwt", () => {
@@ -49,12 +48,4 @@ it("Sign Out button visible when user is Authenticated", () => {
     cy.visit("/");
     testLogin("admin");
     cy.contains("Sign-out");
-
-    cy.injectAxe();
-    cy.checkA11y();
-});
-
-it("passes a11y checks", () => {
-    cy.injectAxe();
-    cy.checkA11y();
 });
