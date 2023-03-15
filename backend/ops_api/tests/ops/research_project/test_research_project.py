@@ -103,13 +103,13 @@ def test_get_query_for_fiscal_year_with_project_id_not_found(client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_research_project_no_cans(client, loaded_db):
-    # rp = ResearchProject(id=999,title="blah blah")
+    rp = ResearchProject(id=999, title="blah blah", portfolio_id=1)
+    loaded_db.session.add(rp)
 
-    # loaded_db.session.add(rp)
-    response = client.get("/api/v1/research-projects/")
+    response = client.get("/api/v1/research-projects/999")
 
     assert response.status_code == 200
-    assert len(response.json) == 1
+    assert response.json["id"] == 999
 
 
 def test_research_project_no_cans_with_query_string(client, loaded_db):
