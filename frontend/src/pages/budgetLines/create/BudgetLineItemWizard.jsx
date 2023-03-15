@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import DynamicSelector from "../../../components/UI/DynamicSelector/DynamicSelector";
+import ProjectSelector from "../../../components/BudgetLines/BudgetLinesWizard/ProjectSelector/ProjectSelector";
 
 const BudgetLineItemWizard = () => {
     const dispatch = useDispatch();
@@ -29,7 +30,7 @@ const BudgetLineItemWizard = () => {
                     Select the project and agreement the budget line(s) should be associated with. You must select the
                     project before an agreement.
                 </p>
-                <DynamicSelector></DynamicSelector>
+                <ProjectSelector />
             </App>
         </>
     );

@@ -1,0 +1,10 @@
+.dynamicSelector {
+    width: 50px;
+    display: inline-block;
+    margin-left: 20px;
+}
+
+.container {
+    align-items: center;
+    justify-content: center;
+}
