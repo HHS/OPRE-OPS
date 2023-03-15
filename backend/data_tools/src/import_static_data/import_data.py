@@ -31,6 +31,8 @@ ALLOWED_TABLES = [
     "funding_partner",
     "funding_source",
     "users",
+    "roles",
+    "user_role",
     "can",
     "can_fiscal_year",
     "can_funding_sources",

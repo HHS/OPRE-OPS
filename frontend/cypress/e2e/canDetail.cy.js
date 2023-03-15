@@ -1,4 +1,4 @@
-import { testLogin } from "./utils";
+import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
     testLogin("admin");
@@ -6,7 +6,7 @@ beforeEach(() => {
 
 afterEach(() => {
     cy.injectAxe();
-    cy.checkA11y();
+    cy.checkA11y(null, null, terminalLog);
 });
 
 it("loads", () => {
