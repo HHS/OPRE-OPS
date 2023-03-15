@@ -124,3 +124,18 @@ def test_research_project_search(client, loaded_db):
 
     assert response.status_code == 200
     assert len(response.json) == 2
+
+    response = client.get("/api/v1/research-projects/?search=father")
+
+    assert response.status_code == 200
+    assert len(response.json) == 1
+
+    response = client.get("/api/v1/research-projects/?search=ExCELS")
+
+    assert response.status_code == 200
+    assert len(response.json) == 1
+
+    response = client.get("/api/v1/research-projects/?search=blah")
+
+    assert response.status_code == 200
+    assert len(response.json) == 0
