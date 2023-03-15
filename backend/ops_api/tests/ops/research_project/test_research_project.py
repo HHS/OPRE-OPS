@@ -71,7 +71,7 @@ def test_research_projects_with_fiscal_year_not_found(client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_get_query_for_fiscal_year_with_fiscal_year_found(client, loaded_db):
-    stmt = ResearchProjectListAPI.get_query(2023)
+    stmt = ResearchProjectListAPI._get_query(2023)
     result = loaded_db.session.execute(stmt).fetchall()
     assert len(result) == 1
     assert result[0][0].title == "African American Child and Family Research Center"
@@ -80,23 +80,23 @@ def test_get_query_for_fiscal_year_with_fiscal_year_found(client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_get_query_for_fiscal_year_with_fiscal_year_not_found(client, loaded_db):
-    stmt = ResearchProjectListAPI.get_query(2022)
+    stmt = ResearchProjectListAPI._get_query(2022)
     result = loaded_db.session.execute(stmt).fetchall()
     assert len(result) == 0
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_query_for_fiscal_year_with_project_id_found(client, loaded_db):
-    stmt = ResearchProjectListAPI.get_query(2023, 1)
+def test_get_query_for_fiscal_year_with_portfolio_id_found(client, loaded_db):
+    stmt = ResearchProjectListAPI._get_query(2023, 3)
     result = loaded_db.session.execute(stmt).fetchall()
-    assert len(result) == 0
-    # assert result[0][0].title == "African American Child and Family Research Center"
-    # assert result[0][0].id == 1
+    assert len(result) == 1
+    assert result[0][0].title == "African American Child and Family Research Center"
+    assert result[0][0].id == 1
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_query_for_fiscal_year_with_project_id_not_found(client, loaded_db):
-    stmt = ResearchProjectListAPI.get_query(2023, 2)
+def test_get_query_for_fiscal_year_with_portfolio_id_not_found(client, loaded_db):
+    stmt = ResearchProjectListAPI._get_query(2023, 1)
     result = loaded_db.session.execute(stmt).fetchall()
     assert len(result) == 0
 
