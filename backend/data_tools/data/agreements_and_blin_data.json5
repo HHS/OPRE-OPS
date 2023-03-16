@@ -2,13 +2,13 @@
   "agreement": [
     {
       id: 1,
-      name: " Contract #1: African American Child and Family Research Center",
+      name: "Contract #1: African American Child and Family Research Center",
       agreement_type:  "CONTRACT",
       research_project_id: 1
     },
     {
       id: 2,
-      name: " Contract #2: African American Child and Family Research Center",
+      name: "Contract #2: African American Child and Family Research Center",
       agreement_type: "CONTRACT",
       research_project_id: 1
     },
