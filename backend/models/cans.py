@@ -90,24 +90,14 @@ class AgreementType(Enum):
     MISCELLANEOUS = 5
 
 
-agreement_cans = Table(
-    "agreement_cans",
-    BaseModel.metadata,
-    Column(
-        "agreement_id",
-        ForeignKey("agreement.id"),
-        primary_key=True,
-    ),
-    Column("can_id", ForeignKey("can.id"), primary_key=True),
-)
-
-
 class Agreement(BaseModel):
     __tablename__ = "agreement"
+
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     agreement_type = Column(sa.Enum(AgreementType))
-    cans = relationship("CAN", secondary=agreement_cans, back_populates="agreements")
+    research_project_id = Column(Integer, ForeignKey("research_project.id"))
+    research_project = relationship(ResearchProject, back_populates="agreements")
 
 
 class CANFiscalYear(BaseModel):
@@ -202,9 +192,6 @@ class CAN(BaseModel):
     managing_portfolio = relationship(Portfolio, back_populates="cans")
     shared_portfolios = relationship(
         Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans"
-    )
-    agreements = relationship(
-        Agreement, secondary=agreement_cans, back_populates="cans"
     )
     managing_research_project_id = Column(Integer, ForeignKey("research_project.id"))
     managing_research_project = relationship(ResearchProject, back_populates="cans")
