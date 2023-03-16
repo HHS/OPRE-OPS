@@ -1,24 +1,12 @@
 """CAN models."""
 from enum import Enum
-from typing import Any, cast
+from typing import Any
 
 import sqlalchemy as sa
 from models.base import BaseModel
 from models.portfolios import Portfolio, shared_portfolio_cans
 from models.research_projects import ResearchProject
-from sqlalchemy import (
-    Column,
-    Date,
-    DateTime,
-    ForeignKey,
-    ForeignKeyConstraint,
-    Identity,
-    Integer,
-    Numeric,
-    String,
-    Table,
-    Text,
-)
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Identity, Integer, Numeric, String, Table, Text
 from sqlalchemy.orm import column_property, relationship
 from typing_extensions import override
 
@@ -98,6 +86,20 @@ class Agreement(BaseModel):
     agreement_type = Column(sa.Enum(AgreementType))
     research_project_id = Column(Integer, ForeignKey("research_project.id"))
     research_project = relationship(ResearchProject, back_populates="agreements")
+
+    @override
+    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
+
+        d.update(
+            {
+                "agreement_type": self.agreement_type.name
+                if self.agreement_type
+                else None
+            }
+        )
+
+        return d
 
 
 class CANFiscalYear(BaseModel):
