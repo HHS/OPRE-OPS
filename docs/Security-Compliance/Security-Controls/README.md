@@ -26,6 +26,8 @@
 22. [AC-12](ac-12/index.md)
 23. [AC-14](ac-14/index.md)
 24. [AC-17](ac-17/index.md)
+25. [AC-20](ac-20/index.md)
+26. [AC-20-1](ac-20-1/index.md)
 
 ### Audit
 
@@ -72,7 +74,7 @@
 
 ### Risk Assessment
 
-1. [ra-5](ra-5/index.md)
+1. [ra-5](ra-05/index.md)
 
 ### System and Communications Protection
 
@@ -88,4 +90,18 @@
 
 ### Configuration Management
 
-1. [cm-07(02)](cm-7-2/index.md)
+1. [cm-2](cm-02/index.md)
+2. [cm-2-2](cm-02-2/index.md)
+3. [cm-2-3](cm-02-3/index.md)
+4. [cm-2-7](cm-02-7/index.md)
+5. [cm-3](cm-03/index.md)
+6. [cm-3-2](cm-03-2/index.md)
+7. [cm-3-4](cm-03-4/index.md)
+8. [cm-4](cm-04/index.md)
+9. [cm-4-2](cm-04-2/index.md)
+10. [cm-5](cm-05/index.md)
+11. [cm-6](cm-06/index.md)
+12. [cm-7](cm-07/index.md)
+13. [cm-7-1](cm-07-1/index.md)
+14. [cm-7-2](cm-07-2/index.md)
+15. [cm-7-5](cm-07-5/index.md)

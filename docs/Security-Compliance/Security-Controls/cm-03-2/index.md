@@ -1,0 +1,10 @@
+# Configuration Management
+## CM-3-2 - Configuration Change Control | Testing, Validation, and Documentation of Changes
+
+Test, validate, and document changes to the system before finalizing the implementation of the changes.
+
+## OPS Implementation
+
+OPS utilizes a Continuous Integration (CI) and Continuous Deployment (CD) process which includes end-to-end and unit testing of OPS functionality that must satisfy all test conditions successfully before allowing a deployment or promotion to any environment. The deployment and promotion process includes changes to documentation persisted in the OPS GitHub repository.
+
+### Related Content
