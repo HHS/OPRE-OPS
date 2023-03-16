@@ -1,6 +1,5 @@
 import ApplicationContext from "../../applicationContext/ApplicationContext";
 import cryptoRandomString from "crypto-random-string";
-import { useSelector } from "react-redux";
 
 const authConfig = ApplicationContext.get().helpers().authConfig;
 

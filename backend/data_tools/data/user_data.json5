@@ -40,53 +40,49 @@
       role: "Tech Lead",
       oidc_id: "e5711101-bc3e-41e5-a6a2-051874b307ca",
     },
-  ],
-  portfolio_team_leaders: [
     {
-      portfolio_id: 1,
-      team_lead_id: 1,
-    },
-    {
-      portfolio_id: 2,
-      team_lead_id: 2,
-    },
-    {
-      portfolio_id: 3,
-      team_lead_id: 3,
-    },
-    {
-      portfolio_id: 4,
-      team_lead_id: 4,
-    },
-    {
-      portfolio_id: 5,
-      team_lead_id: 1,
-    },
-    {
-      portfolio_id: 6,
-      team_lead_id: 2,
-    },
-    {
-      portfolio_id: 7,
-      team_lead_id: 3,
-    },
-    {
-      portfolio_id: 8,
-      team_lead_id: 4,
-    },
-    {
-      portfolio_id: 8,
-      team_lead_id: 1,
-    },
-    {
-      portfolio_id: 8,
-      team_lead_id: 3,
+      first_name: "John",
+      last_name: "DeAngelis",
+      division: 3,
+      email: "jdeangelis@flexion.us",
+      role: "Software Engineer",
+      oidc_id: "838861c4-8bee-427d-8b49-0892875483ba",
     },
   ],
-  research_project_team_leaders: [
+  roles: [
     {
-      research_project_id: 1,
-      team_lead_id: "1",
+      name: "admin",
+      permissions: ["can_read", "can_write", "can_update", "can_delete"],
     },
-  ]
+    {
+      name: "user",
+      permissions: ["can_read", "portfolio_read", "user_read", "project_read"],
+    },
+  ],
+  user_role: [
+    {
+      user_id: 1,
+      role_id: 1,
+    },
+    {
+      user_id: 2,
+      role_id: 1,
+    },
+    {
+      user_id: 3,
+      role_id: 2,
+    },
+    {
+      user_id: 4,
+      role_id: 1,
+    },
+    {
+      user_id: 5,
+      role_id: 1,
+    },
+    {
+      user_id: 6,
+      role_id: 1,
+    },
+  ],
 }

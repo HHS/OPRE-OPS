@@ -32,7 +32,7 @@ it("renders without crashing", () => {
             id: 4,
             label: "Obligated",
             value: "6000",
-            color: "#3E8D61",
+            color: "#3A835B",
             percent: "6%",
         },
     ];

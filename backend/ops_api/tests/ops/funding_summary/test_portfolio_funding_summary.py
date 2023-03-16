@@ -6,4 +6,4 @@ import pytest
 def test_get_portfolio_funding_summary(client):
     response = client.get("/api/v1/portfolio-funding-summary/1")
     assert response.status_code == 200
-    assert response.json["available_funding"]["amount"] == 22200000.0
+    assert response.json["available_funding"]["amount"] == 12000000.0

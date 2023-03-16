@@ -1,7 +1,11 @@
-from typing import Optional, TypedDict
+from decimal import Decimal
+from typing import Any, Optional, TypedDict
 
 from models.cans import CAN, BudgetLineItem, BudgetLineItemStatus, CANFiscalYear, CANFiscalYearCarryForward
 from models.portfolios import Portfolio
+from ops_api.ops import db
+from sqlalchemy import Select, select, sql
+from sqlalchemy.sql.functions import coalesce
 
 
 class FundingLineItem(TypedDict):
@@ -22,50 +26,61 @@ class TotalFunding(TypedDict):
     available_funding: FundingLineItem
 
 
+def _get_total_fiscal_year_funding(portfolio_id: int, fiscal_year: int) -> Decimal:
+    stmt = (
+        select(coalesce(sql.functions.sum(CANFiscalYear.total_fiscal_year_funding), 0))
+        .join(CAN)
+        .where(CAN.managing_portfolio_id == portfolio_id)
+        .where(CANFiscalYear.fiscal_year == fiscal_year)
+    )
+
+    return db.session.execute(stmt).scalar()
+
+
+def _get_carry_forward_total(portfolio_id: int, fiscal_year: int) -> Decimal:
+    stmt = (
+        select(coalesce(sql.functions.sum(CANFiscalYearCarryForward.total_amount), 0))
+        .join(CAN)
+        .where(CAN.managing_portfolio_id == portfolio_id)
+        .where(CANFiscalYearCarryForward.to_fiscal_year == fiscal_year)
+    )
+
+    return db.session.execute(stmt).scalar()
+
+
+def _get_budget_line_item_total_by_status(portfolio_id: int, status: BudgetLineItemStatus) -> Decimal:
+    stmt = _get_budget_line_item_total(portfolio_id)
+    stmt = stmt.where(BudgetLineItem.status == status)
+
+    return db.session.execute(stmt).scalar()
+
+
+def _get_budget_line_item_total(portfolio_id: int) -> Select[Any]:
+    stmt = (
+        select(coalesce(sql.functions.sum(BudgetLineItem.amount), 0))
+        .join(CAN)
+        .where(CAN.managing_portfolio_id == portfolio_id)
+    )
+
+    return stmt
+
+
 def get_total_funding(portfolio: Portfolio, fiscal_year: Optional[int] = None) -> TotalFunding:
-    can_fiscal_year_query = CANFiscalYear.query.filter(CANFiscalYear.can.has(CAN.managing_portfolio == portfolio))
+    total_funding = _get_total_fiscal_year_funding(portfolio_id=portfolio.id, fiscal_year=fiscal_year)
 
-    can_fiscal_year_carry_forward_query = CANFiscalYearCarryForward.query.filter(
-        CANFiscalYearCarryForward.can.has(CAN.managing_portfolio == portfolio)
+    carry_forward_funding = _get_carry_forward_total(portfolio_id=portfolio.id, fiscal_year=fiscal_year)
+
+    planned_funding = _get_budget_line_item_total_by_status(
+        portfolio_id=portfolio.id, status=BudgetLineItemStatus.PLANNED
     )
 
-    if fiscal_year:
-        can_fiscal_year_query = can_fiscal_year_query.filter(CANFiscalYear.fiscal_year == fiscal_year).all()
-
-        can_fiscal_year_carry_forward_query = can_fiscal_year_carry_forward_query.filter(
-            CANFiscalYearCarryForward.to_fiscal_year == fiscal_year
-        ).all()
-
-    total_funding = sum([c.total_fiscal_year_funding for c in can_fiscal_year_query]) or 0
-
-    carry_forward_funding = (
-        sum(
-            [
-                (c.received_amount if c.received_amount else 0) + (c.expected_amount if c.expected_amount else 0)
-                for c in can_fiscal_year_carry_forward_query
-            ]
-        )
-        or 0
+    obligated_funding = _get_budget_line_item_total_by_status(
+        portfolio_id=portfolio.id, status=BudgetLineItemStatus.OBLIGATED
     )
 
-    # Amount available to a Portfolio budget is the sum of the BLI minus the Portfolio total (above)
-    budget_line_items = BudgetLineItem.query.filter(BudgetLineItem.can.has(CAN.managing_portfolio == portfolio))
-
-    if fiscal_year:
-        budget_line_items = budget_line_items.filter(BudgetLineItem.fiscal_year == fiscal_year)
-
-    planned_budget_line_items = budget_line_items.filter(BudgetLineItem.status.has(BudgetLineItemStatus.Planned)).all()
-    planned_funding = sum([b.funding for b in planned_budget_line_items]) or 0
-
-    obligated_budget_line_items = budget_line_items.filter(
-        BudgetLineItem.status.has(BudgetLineItemStatus.Obligated)
-    ).all()
-    obligated_funding = sum([b.funding for b in obligated_budget_line_items]) or 0
-
-    in_execution_budget_line_items = budget_line_items.filter(
-        BudgetLineItem.status.has(BudgetLineItemStatus.In_Execution)
-    ).all()
-    in_execution_funding = sum([b.funding for b in in_execution_budget_line_items]) or 0
+    in_execution_funding = _get_budget_line_item_total_by_status(
+        portfolio_id=portfolio.id, status=BudgetLineItemStatus.IN_EXECUTION
+    )
 
     total_accounted_for = sum(
         (
