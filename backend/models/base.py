@@ -9,8 +9,7 @@ from sqlalchemy import Column, DateTime, ForeignKey, func
 from sqlalchemy.orm import declarative_base, mapped_column, registry, declared_attr
 
 Base = declarative_base()
-
-reg = registry()
+reg = registry(metadata=Base.metadata)
 
 intpk = Annotated[int, mapped_column(init=False, primary_key=True)]
 # This is a simple type to make a standard int-base primary key field.

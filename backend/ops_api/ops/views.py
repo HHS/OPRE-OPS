@@ -17,6 +17,7 @@ from ops_api.ops.resources.portfolio_cans import PortfolioCansAPI
 from ops_api.ops.resources.portfolio_funding_summary import PortfolioFundingSummaryItemAPI
 from ops_api.ops.resources.portfolio_status import PortfolioStatusItemAPI, PortfolioStatusListAPI
 from ops_api.ops.resources.portfolios import PortfolioItemAPI, PortfolioListAPI
+from ops_api.ops.resources.procurement_shops import ProcurementShopsItemAPI, ProcurementShopsListAPI
 from ops_api.ops.resources.research_project_funding_summary import ResearchProjectFundingSummaryListAPI
 from ops_api.ops.resources.research_projects import ResearchProjectItemAPI, ResearchProjectListAPI
 from ops_api.ops.resources.users import UsersItemAPI, UsersListAPI

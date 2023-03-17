@@ -4,6 +4,7 @@ from typing import Dict, Optional, Tuple
 import json5
 import models.cans
 import models.portfolios
+import models.procurement_shops
 import models.research_projects
 import models.users
 import sqlalchemy.engine
@@ -47,6 +48,7 @@ ALLOWED_TABLES = [
     "shared_portfolio_cans",
     "research_project_methodologies",
     "research_project_populations",
+    "procurement_shop",
 ]
 
 data = os.getenv("DATA")
