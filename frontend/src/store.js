@@ -9,6 +9,7 @@ import userSlice from "./pages/users/detail/userSlice";
 import portfolioSlice from "./pages/portfolios/detail/portfolioSlice";
 import researchProjectSlice from "./pages/researchProjects/detail/researchProjectSlice";
 import ResearchProjectFundingSlice from "./components/Portfolios/ResearchProjects/ResearchProjectFundingSlice";
+import createBudgetLineSlice from "./pages/budgetLines/createBudgetLineSlice";
 
 export default configureStore({
     reducer: {
@@ -21,5 +22,6 @@ export default configureStore({
         userDetail: userSlice,
         researchProject: researchProjectSlice,
         researchProjectFunding: ResearchProjectFundingSlice,
+        createBudgetLine: createBudgetLineSlice,
     },
 });
