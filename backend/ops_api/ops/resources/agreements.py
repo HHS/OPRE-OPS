@@ -1,4 +1,5 @@
 from flask import Response, current_app, jsonify, request
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from models.base import BaseModel
 from models.cans import Agreement
 from ops_api.ops import db
@@ -18,9 +19,17 @@ class AgreementItemAPI(BaseItemAPI):
         return agreement
 
     @override
+    @jwt_required()
     def get(self, id: int) -> Response:
-        agreement = self._get_item(id)
-        response = jsonify(agreement.to_dict())
+        identity = get_jwt_identity()
+        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_AGREEMENT"])
+
+        if is_authorized:
+            agreement = self._get_item(id)
+            response = jsonify(agreement.to_dict())
+        else:
+            response = jsonify({}), 401
+
         response.headers.add("Access-Control-Allow-Origin", "*")
         return response
 
@@ -47,12 +56,22 @@ class AgreementListAPI(BaseListAPI):
 
         return stmt
 
+    @override
+    @jwt_required()
     def get(self) -> Response:
-        search = request.args.get("search")
-        research_project_id = request.args.get("research_project_id")
+        identity = get_jwt_identity()
+        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_AGREEMENTS"])
 
-        stmt = self._get_query(search, research_project_id)
+        if is_authorized:
+            search = request.args.get("search")
+            research_project_id = request.args.get("research_project_id")
 
-        result = db.session.execute(stmt).all()
+            stmt = self._get_query(search, research_project_id)
 
-        return jsonify([i.to_dict() for item in result for i in item])
+            result = db.session.execute(stmt).all()
+            response = jsonify([i.to_dict() for item in result for i in item])
+        else:
+            response = jsonify({}), 401
+
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response

@@ -14,32 +14,32 @@ def test_agreement_retrieve(loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_get_all(client, loaded_db):
+def test_agreements_get_all(auth_client, loaded_db):
     stmt = select(func.count()).select_from(Agreement)
     count = loaded_db.session.scalar(stmt)
     assert count == 6
 
-    response = client.get("/api/v1/agreements/")
+    response = auth_client.get("/api/v1/agreements/")
     assert response.status_code == 200
     assert len(response.json) == count
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_get_by_id(client, loaded_db):
-    response = client.get("/api/v1/agreements/1")
+def test_agreements_get_by_id(auth_client, loaded_db):
+    response = auth_client.get("/api/v1/agreements/1")
     assert response.status_code == 200
     assert response.json["name"] == "Contract #1: African American Child and Family Research Center"
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_get_by_id_404(client, loaded_db):
-    response = client.get("/api/v1/agreements/1000")
+def test_agreements_get_by_id_404(auth_client, loaded_db):
+    response = auth_client.get("/api/v1/agreements/1000")
     assert response.status_code == 404
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_serialization(client, loaded_db):
-    response = client.get("/api/v1/agreements/1")
+def test_agreements_serialization(auth_client, loaded_db):
+    response = auth_client.get("/api/v1/agreements/1")
     assert response.status_code == 200
 
     # Remove extra keys that make test flaky
@@ -57,15 +57,15 @@ def test_agreements_serialization(client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_with_research_project_empty(client, loaded_db):
-    response = client.get("/api/v1/agreements/?research_project_id=")
+def test_agreements_with_research_project_empty(auth_client, loaded_db):
+    response = auth_client.get("/api/v1/agreements/?research_project_id=")
     assert response.status_code == 200
     assert len(response.json) == 6
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_with_research_project_found(client, loaded_db):
-    response = client.get("/api/v1/agreements/?research_project_id=1")
+def test_agreements_with_research_project_found(auth_client, loaded_db):
+    response = auth_client.get("/api/v1/agreements/?research_project_id=1")
     assert response.status_code == 200
     assert len(response.json) == 2
 
@@ -74,24 +74,36 @@ def test_agreements_with_research_project_found(client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_with_research_project_not_found(client, loaded_db):
-    response = client.get("/api/v1/agreements/?research_project_id=1000")
+def test_agreements_with_research_project_not_found(auth_client, loaded_db):
+    response = auth_client.get("/api/v1/agreements/?research_project_id=1000")
     assert response.status_code == 200
     assert len(response.json) == 0
 
 
-def test_agreement_search(client, loaded_db):
-    response = client.get("/api/v1/agreements/?search=")
+def test_agreement_search(auth_client, loaded_db):
+    response = auth_client.get("/api/v1/agreements/?search=")
 
     assert response.status_code == 200
     assert len(response.json) == 0
 
-    response = client.get("/api/v1/agreements/?search=contract")
+    response = auth_client.get("/api/v1/agreements/?search=contract")
 
     assert response.status_code == 200
     assert len(response.json) == 2
 
-    response = client.get("/api/v1/agreements/?search=fcl")
+    response = auth_client.get("/api/v1/agreements/?search=fcl")
 
     assert response.status_code == 200
     assert len(response.json) == 2
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_get_by_id_auth(client, loaded_db):
+    response = client.get("/api/v1/agreements/1")
+    assert response.status_code == 401
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_auth(client, loaded_db):
+    response = client.get("/api/v1/agreements/")
+    assert response.status_code == 401
