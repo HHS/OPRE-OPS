@@ -120,6 +120,11 @@ def test_research_project_no_cans_with_query_string(client, loaded_db):
 
 
 def test_research_project_search(client, loaded_db):
+    response = client.get("/api/v1/research-projects/?search=")
+
+    assert response.status_code == 200
+    assert len(response.json) == 0
+
     response = client.get("/api/v1/research-projects/?search=fa")
 
     assert response.status_code == 200

@@ -47,7 +47,9 @@ class ResearchProjectListAPI(BaseListAPI):
         if fiscal_year:
             query_helper.add_column_equals(CANFiscalYear.fiscal_year, fiscal_year)
 
-        if search:
+        if search is not None and len(search) == 0:
+            query_helper.return_none()
+        elif search:
             query_helper.add_search(ResearchProject.title, search)
 
         stmt = query_helper.get_stmt()
