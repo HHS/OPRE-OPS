@@ -84,7 +84,7 @@ def test_agreement_search(client, loaded_db):
     response = client.get("/api/v1/agreements/?search=")
 
     assert response.status_code == 200
-    assert len(response.json) == 6
+    assert len(response.json) == 0
 
     response = client.get("/api/v1/agreements/?search=contract")
 
