@@ -30,12 +30,15 @@ class AgreementListAPI(BaseListAPI):
         super().__init__(model)
 
     @staticmethod
-    def _get_query(search=None):
-        stmt = select(Agreement)
+    def _get_query(search=None, research_project_id=None):
+        stmt = select(Agreement).order_by(Agreement.id)
         query_helper = QueryHelper(stmt)
 
         if search:
             query_helper.add_search(Agreement.name, search)
+
+        if research_project_id:
+            query_helper.add_column_equals(Agreement.research_project_id, research_project_id)
 
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")
@@ -44,8 +47,9 @@ class AgreementListAPI(BaseListAPI):
 
     def get(self) -> Response:
         search = request.args.get("search")
+        research_project_id = request.args.get("research_project_id")
 
-        stmt = self._get_query(search)
+        stmt = self._get_query(search, research_project_id)
 
         result = db.session.execute(stmt).all()
 
