@@ -34,7 +34,9 @@ class AgreementListAPI(BaseListAPI):
         stmt = select(Agreement).order_by(Agreement.id)
         query_helper = QueryHelper(stmt)
 
-        if search:
+        if search is not None and len(search) == 0:
+            query_helper.return_none()
+        elif search:
             query_helper.add_search(Agreement.name, search)
 
         if research_project_id:
