@@ -1,23 +1,21 @@
-before(() => {
-    cy.visit("/");
-    cy.window().then((win) => {
-        cy.fakeLogin();
-        cy.setIsLoggedIn(win);
-    });
+import { terminalLog, testLogin } from "./utils";
+
+beforeEach(() => {
+    testLogin("admin");
     cy.visit("/portfolios/1");
+});
+
+afterEach(() => {
     cy.injectAxe();
+    cy.checkA11y(null, null, terminalLog);
 });
 
 it("loads", () => {
-    cy.window().then((win) => {
-        cy.fakeLogin();
-        cy.setIsLoggedIn(win);
-    });
     cy.visit("/portfolios/1");
     cy.get("h1").should("contain", "Child Welfare Research");
     cy.get("h2").should("contain", "Division of Child and Family Development");
     cy.get("h3").should("contain", "Team Leaders");
-    cy.get("a").should("contain", "Emily Ball");
+    cy.get("a").should("contain", "Chris Fortunato");
     cy.get("p").should("contain", "The promotion of children’s safety, permanence, and well-being");
     cy.get("a").should("contain", "Budget and Funding");
     cy.get("a").should("contain", "Projects and Spending");
@@ -35,44 +33,22 @@ it("loads", () => {
     cy.get("span").should("contain", "Carry-Forward");
 });
 
-it("passes a11y checks", () => {
-
-    cy.injectAxe();
-    cy.checkA11y();
-});
-
 it("loads the Poftfolio Budget Details component", () => {
-    cy.window().then((win) => {
-        cy.fakeLogin();
-        cy.setIsLoggedIn(win);
-    });
     cy.get("h2").should("contain", "Portfolio Budget Details by CAN");
     cy.get("section").should("contain", "G99IA14");
 });
 
 it("expands the description when one clicks read more", () => {
-    cy.window().then((win) => {
-        cy.fakeLogin();
-        cy.setIsLoggedIn(win);
-    });
     cy.contains("read more").click();
     cy.get("a").should("contain", "See more on the website");
 });
 
 it("loads the Poftfolio Budget Details component", () => {
-    cy.window().then((win) => {
-        cy.fakeLogin();
-        cy.setIsLoggedIn(win);
-    });
     cy.get("h2").should("contain", "Portfolio Budget Details by CAN");
     cy.get("section").should("contain", "G99IA14");
 });
 
 it("shows the Portfolio Projects and Spending tab", () => {
-    cy.window().then((win) => {
-        cy.fakeLogin();
-        cy.setIsLoggedIn(win);
-    });
     cy.visit("/portfolios/1/research-projects/");
     // summary cards
     cy.get("h2").should("contain", "Projects & Spending Summary");

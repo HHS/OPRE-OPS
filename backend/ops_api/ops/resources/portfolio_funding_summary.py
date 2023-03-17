@@ -3,6 +3,7 @@ from typing import Dict
 from flask import Response, jsonify, request
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseItemAPI
+from ops_api.ops.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.utils.portfolios import get_total_funding
 from typing_extensions import override
 
@@ -20,6 +21,10 @@ class PortfolioFundingSummaryItemAPI(BaseItemAPI):
     @override
     def get(self, id: int) -> Response:
         fiscal_year = request.args.get("fiscal_year")
+
+        if not fiscal_year:
+            fiscal_year = get_current_fiscal_year()
+
         portfolio_funding_summary = self._get_item(id, fiscal_year)
         response = jsonify(portfolio_funding_summary)
         response.headers.add("Access-Control-Allow-Origin", "*")
