@@ -86,6 +86,7 @@ class Agreement(BaseModel):
     agreement_type = Column(sa.Enum(AgreementType))
     research_project_id = Column(Integer, ForeignKey("research_project.id"))
     research_project = relationship(ResearchProject, back_populates="agreements")
+    budget_line_items = relationship("BudgetLineItem", back_populates="agreement")
 
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
@@ -141,7 +142,7 @@ class BudgetLineItem(BaseModel):
     comments = Column(Text)
 
     agreement_id = Column(Integer, ForeignKey("agreement.id"))
-    agreement = relationship(Agreement)
+    agreement = relationship(Agreement, back_populates="budget_line_items")
 
     can_id = Column(Integer, ForeignKey("can.id"))
     can = relationship("CAN", back_populates="budget_line_items")
