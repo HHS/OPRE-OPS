@@ -6,10 +6,11 @@ import { StepIndicatorTwo } from "../../components/UI/StepIndicator/StepIndicato
 import { StepIndicatorThree } from "../../components/UI/StepIndicator/StepIndicatorThree";
 import { CreateBudgetLineFlow } from "./CreateBudgetLineFlow";
 import { ProjectSelect } from "./ProjectSelect";
+import { DynamicSelect } from "./DynamicSelect";
 import { AgreementSelect } from "./AgreementSelect";
 import { CanSelect } from "./CanSelect";
 import { DesiredAwardDate } from "./DesiredAwardDate";
-import { getAllResearchProjects, getResearchProjectByName } from "../../api/getResearchProjects";
+import { getResearchProjectByName } from "../../api/getResearchProjects";
 import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
 import {
     setSelectedProject,
@@ -28,7 +29,8 @@ const StepOne = ({ goBack, goToNext }) => (
             Select the project this budget line should be associated with. If you need to create a new project, click
             Add New Project.
         </p>
-        <ProjectSelect />
+        {/* <ProjectSelect /> */}
+        <DynamicSelect />
         <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">Add New Project</button>
         <h2 className="font-sans-lg">Select an Agreement or Create a New One</h2>
         <p>Select the project and agreement this budget line should be associated with.</p>
