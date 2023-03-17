@@ -24,7 +24,7 @@ export const authConfig = {
     client_id: "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
     response_type: "code",
     scope: "openid email",
-    redirect_uri: window.location.href.split("?")[0],
+    redirect_uri: window.location.origin,
     logoutEndpoint: "https://idp.int.identitysandbox.gov/openid_connect/logout",
 };
 
