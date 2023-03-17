@@ -36,7 +36,7 @@ def test_get_all_users_with_auth(auth_client, loaded_db):
 
     response = auth_client.get("/api/v1/users/", headers={"Authorization": f"Bearer {str(access_token)}"})
     assert response.status_code == 200
-    assert len(response.json) == 6
+    assert len(response.json) == 12
 
 
 @pytest.mark.usefixtures("app_ctx")
