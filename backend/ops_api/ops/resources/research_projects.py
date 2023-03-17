@@ -29,11 +29,10 @@ class ResearchProjectItemAPI(BaseItemAPI):
             research_project = self._get_item(id)
 
             response = jsonify(research_project.to_dict())
-            response.headers.add("Access-Control-Allow-Origin", "*")
         else:
             response = jsonify({}), 401
-            response.headers.add("Access-Control-Allow-Origin", "*")
 
+        response.headers.add("Access-Control-Allow-Origin", "*")
         return response
 
 
@@ -83,9 +82,8 @@ class ResearchProjectListAPI(BaseListAPI):
 
             result = db.session.execute(stmt).all()
             response = jsonify([i.to_dict() for item in result for i in item])
-            response.headers.add("Access-Control-Allow-Origin", "*")
         else:
             response = jsonify([]), 401
-            response.headers.add("Access-Control-Allow-Origin", "*")
 
+        response.headers.add("Access-Control-Allow-Origin", "*")
         return response
