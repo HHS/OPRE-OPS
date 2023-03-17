@@ -1,4 +1,26 @@
+import { useDispatch, useSelector } from "react-redux";
+import { setResearchProjectsFilter, setSelectedProject } from "./createBudgetLineSlice";
+
 export const ProjectSelect = () => {
+    const dispatch = useDispatch();
+    const researchProjects = useSelector((state) => state.createBudgetLine.research_projects);
+
+    const onChangeResearchProjectSelection = (event) => {
+        console.log(`Click-Event: ${event.target.value}`);
+        dispatch(setSelectedProject({ id: event.target.id, value: event.target.value }));
+        event.preventDefault();
+    };
+
+    const onChangeResearchProjectFilter = (event) => {
+        console.log(`Filter-Change: ${event.target.value}`);
+        dispatch(setResearchProjectsFilter({ value: event.target.value }));
+        event.preventDefault();
+    };
+
+    // useEffect(() => {
+    //     //dispatch(getResearchProjectByName(this.state.filterText));
+    // }, [dispatch, researchProjects]);
+
     return (
         <>
             <label className="usa-label" htmlFor="project">
@@ -11,14 +33,15 @@ export const ProjectSelect = () => {
                     id=""
                     aria-hidden="true"
                     tabIndex="-1"
+                    onChange={onChangeResearchProjectSelection}
                 >
-                    <option value="">Select a project</option>
-                    <option value="red-x 2.0">Red-X 2.0</option>
-                    <option value="red-x 3.0">Red-X 3.0</option>
-                    <option value="white-x 1.0">White-X 1.0</option>
-                    <option value="white-x 2.0">White-X 2.0</option>
-                    <option value="blue-x 1.0">Blue-X 1.0</option>
-                    <option value="blue-x 2.0">Blue-X 2.0</option>
+                    {researchProjects.map((project) => {
+                        return (
+                            <option key={project?.id} value={project?.title}>
+                                {project?.title}
+                            </option>
+                        );
+                    })}
                 </select>
                 <input
                     id="project"
@@ -33,6 +56,7 @@ export const ProjectSelect = () => {
                     type="text"
                     role="combobox"
                     aria-activedescendant=""
+                    onChange={onChangeResearchProjectFilter}
                 />
                 <span className="usa-combo-box__clear-input__wrapper" tabIndex="-1">
                     <button type="button" className="usa-combo-box__clear-input" aria-label="Clear the select contents">

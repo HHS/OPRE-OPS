@@ -1,4 +1,6 @@
 import App from "../../App";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { StepIndicatorOne } from "../../components/UI/StepIndicator/StepIndicatorOne";
 import { StepIndicatorTwo } from "../../components/UI/StepIndicator/StepIndicatorTwo";
 import { StepIndicatorThree } from "../../components/UI/StepIndicator/StepIndicatorThree";
@@ -7,6 +9,14 @@ import { ProjectSelect } from "./ProjectSelect";
 import { AgreementSelect } from "./AgreementSelect";
 import { CanSelect } from "./CanSelect";
 import { DesiredAwardDate } from "./DesiredAwardDate";
+import { getAllResearchProjects, getResearchProjectByName } from "../../api/getResearchProjects";
+import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
+import {
+    setSelectedProject,
+    setResearchProjects,
+    setAgreements,
+    setResearchProjectsFilter,
+} from "./createBudgetLineSlice";
 
 const StepOne = ({ goBack, goToNext }) => (
     <>
@@ -136,6 +146,47 @@ const StepThree = ({ goBack, goToNext }) => (
 );
 
 export const CreateBudgetLine = () => {
+    const dispatch = useDispatch();
+    const selectedProject = useSelector((state) => state.createBudgetLine.selectedProject);
+    const selectedAgreement = useSelector((state) => state.createBudgetLine.selectedAgreement);
+    const researchProjectsFilter = useSelector((state) => state.createBudgetLine.research_projects_filter);
+    //const researchProjects = useSelector((state) => state.createBudgetLine.research_projects);
+
+    // const onResearchProjectFilterChange = (payload) => {
+    //     dispatch(setResearchProjectsFilter(payload));
+    // };
+    // Get initial list of all Research Projects
+    // TODO: Currently loading all Research Projects at start - we might want this to be empty
+    // ONLY DOING FOR DEV TESTING
+    useEffect(() => {
+        const getResearchProjectsAndSetState = async () => {
+            const projects = await getResearchProjectByName(researchProjectsFilter.value);
+            dispatch(setResearchProjects(projects));
+        };
+
+        getResearchProjectsAndSetState().catch(console.error);
+
+        return () => {
+            dispatch(setResearchProjects([]));
+        };
+    }, [dispatch, researchProjectsFilter]);
+
+    // Get initial list of Agreements (dependent on Research Project Selection)
+    useEffect(() => {
+        const getAgreementsAndSetState = async () => {
+            if (selectedProject) {
+                const agreements = await getAgreementsByResearchProjectFilter(selectedProject?.id);
+                dispatch(setAgreements(agreements));
+            }
+        };
+
+        getAgreementsAndSetState().catch(console.error);
+
+        return () => {
+            dispatch(setAgreements([]));
+        };
+    }, [dispatch, selectedProject]);
+
     return (
         <App>
             <CreateBudgetLineFlow
@@ -144,7 +195,7 @@ export const CreateBudgetLine = () => {
                     alert("Budget Line Created!");
                 }}
             >
-                <StepOne />
+                <StepOne handleFilterChange={setResearchProjectsFilter} handleSelectionChange={setSelectedProject} />
                 <StepTwo />
                 <StepThree />
             </CreateBudgetLineFlow>
