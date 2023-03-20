@@ -62,7 +62,7 @@ export const DynamicSelect = () => {
                     type="text"
                     role="combobox"
                     aria-activedescendant=""
-                    onChange={onFilterChange}
+                    // onChange={onFilterChange}
                 />
                 <span className="usa-combo-box__clear-input__wrapper" tabIndex="-1">
                     <button type="button" className="usa-combo-box__clear-input" aria-label="Clear the select contents">
@@ -88,78 +88,23 @@ export const DynamicSelect = () => {
                     aria-labelledby="dynamicselect-label"
                     hidden
                 >
-                    <li
-                        aria-setsize="64"
-                        aria-posinset="1"
-                        aria-selected="false"
-                        id="dynamicselect--list--option-1"
-                        className="usa-combo-box__list-option"
-                        tabIndex="0"
-                        role="option"
-                        data-value="Red-X 2.0"
-                    >
-                        Red-X 2.0
-                    </li>
-                    <li
-                        aria-setsize="64"
-                        aria-posinset="2"
-                        aria-selected="false"
-                        id="dynamicselect--list--option-2"
-                        className="usa-combo-box__list-option"
-                        tabIndex="-1"
-                        role="option"
-                        data-value="red-x 3.0"
-                    >
-                        Red-x 3.0
-                    </li>
-                    <li
-                        aria-setsize="64"
-                        aria-posinset="3"
-                        aria-selected="false"
-                        id="dynamicselect--list--option-3"
-                        className="usa-combo-box__list-option"
-                        tabIndex="-1"
-                        role="option"
-                        data-value="white-x 1.0"
-                    >
-                        White-x 1.0
-                    </li>
-                    <li
-                        aria-setsize="64"
-                        aria-posinset="4"
-                        aria-selected="false"
-                        id="dynamicselect--list--option-4"
-                        className="usa-combo-box__list-option"
-                        tabIndex="-1"
-                        role="option"
-                        data-value="white-x 2.0"
-                    >
-                        White-x 2.0
-                    </li>
-                    <li
-                        aria-setsize="64"
-                        aria-posinset="5"
-                        aria-selected="false"
-                        id="dynamicselect--list--option-5"
-                        className="usa-combo-box__list-option"
-                        tabIndex="-1"
-                        role="option"
-                        data-value="blue-x 1.0"
-                    >
-                        Blue-x 1.0
-                    </li>
-                    <li
-                        aria-setsize="64"
-                        aria-posinset="6"
-                        aria-selected="false"
-                        id="dynamicselect--list--option-6"
-                        className="usa-combo-box__list-option"
-                        tabIndex="-1"
-                        role="option"
-                        data-value="blue-x 2.0"
-                    >
-                        Blue-x 2.0
-                    </li>
+                    {researchProjects.map((project, index) => {
+                        return (
+                            <li
+                                key={project?.id}
+                                aria-setsize={project?.length}
+                                aria-posinset={index + 1}
+                                aria-selected="false"
+                                id={`dynamicselect--list--option-${index}`}
+                                className="usa-combo-box__list-option"
+                                tabIndex={index === 0 ? "0" : "-1"}
+                                role="option"
+                                data-value={project?.title}
+                            >
+                                {project?.title}
+                            </li>
+                        );
+                    })}
                 </ul>
                 <div className="usa-combo-box__status usa-sr-only" role="status"></div>
                 <span id="dynamicselect--assistiveHint" className="usa-sr-only">
