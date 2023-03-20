@@ -1,21 +1,19 @@
 import { useDispatch, useSelector } from "react-redux";
 import { setResearchProjectsFilter, setSelectedProject } from "./createBudgetLineSlice";
-// import { combobox } from "@uswds/uswds/js/usa-combo-box";
 
 export const DynamicSelect = () => {
     const dispatch = useDispatch();
     const researchProjects = useSelector((state) => state.createBudgetLine.research_projects);
-
     const onSelectionChange = (event) => {
+        event.preventDefault();
         console.log(`Click-Event: ${event.target.value}`);
         dispatch(setSelectedProject({ id: event.target.id, value: event.target.value }));
-        event.preventDefault();
     };
 
     const onFilterChange = (event) => {
+        event.preventDefault();
         console.log(`Filter-Change: ${event.target.value}`);
         dispatch(setResearchProjectsFilter({ value: event.target.value }));
-        event.preventDefault();
     };
 
     // useEffect(() => {
@@ -27,15 +25,10 @@ export const DynamicSelect = () => {
             <label className="usa-label" htmlFor="project">
                 Project
             </label>
-            <div
-                className="usa-combo-box"
-                data-placeholder="--- Select a Research Project ---"
-                data-disable-filtering="true"
-                data-enhanced="true"
-            >
+            <div className="usa-combo-box" data-enhanced="true">
                 <select
                     className="usa-select usa-sr-only usa-combo-box__select"
-                    name="dynamicselect"
+                    name="dynamic-select"
                     id=""
                     aria-hidden="true"
                     tabIndex="-1"
@@ -50,11 +43,11 @@ export const DynamicSelect = () => {
                     })}
                 </select>
                 <input
-                    id="dynamicselect"
-                    aria-owns="dynamicselect--list"
-                    aria-controls="dynamicselect--list"
+                    id="dynamic-select"
+                    aria-owns="dynamic-select--list"
+                    aria-controls="dynamic-select--list"
                     aria-autocomplete="list"
-                    aria-describedby="dynamicselect--assistiveHint"
+                    aria-describedby="dynamic-select--assistiveHint"
                     aria-expanded="false"
                     autoCapitalize="off"
                     autoComplete="off"
@@ -62,7 +55,7 @@ export const DynamicSelect = () => {
                     type="text"
                     role="combobox"
                     aria-activedescendant=""
-                    // onChange={onFilterChange}
+                    // onChange={(e) => onFilterChange(e)}
                 />
                 <span className="usa-combo-box__clear-input__wrapper" tabIndex="-1">
                     <button type="button" className="usa-combo-box__clear-input" aria-label="Clear the select contents">
@@ -80,12 +73,13 @@ export const DynamicSelect = () => {
                         &nbsp;
                     </button>
                 </span>
+
                 <ul
                     tabIndex="-1"
-                    id="dynamicselect--list"
+                    id="dynamic-select--list"
                     className="usa-combo-box__list"
                     role="listbox"
-                    aria-labelledby="dynamicselect-label"
+                    aria-labelledby="dynamic-select-label"
                     hidden
                 >
                     {researchProjects.map((project, index) => {
@@ -95,7 +89,7 @@ export const DynamicSelect = () => {
                                 aria-setsize={project?.length}
                                 aria-posinset={index + 1}
                                 aria-selected="false"
-                                id={`dynamicselect--list--option-${index}`}
+                                id={`dynamic-select--list--option-${index}`}
                                 className="usa-combo-box__list-option"
                                 tabIndex={index === 0 ? "0" : "-1"}
                                 role="option"
@@ -107,7 +101,7 @@ export const DynamicSelect = () => {
                     })}
                 </ul>
                 <div className="usa-combo-box__status usa-sr-only" role="status"></div>
-                <span id="dynamicselect--assistiveHint" className="usa-sr-only">
+                <span id="dynamic-select--assistiveHint" className="usa-sr-only">
                     When autocomplete results are available use up and down arrows to review and enter to select. Touch
                     device users, explore by touch or with swipe gestures.
                 </span>
