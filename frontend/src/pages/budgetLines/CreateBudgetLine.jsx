@@ -29,8 +29,8 @@ const StepOne = ({ goBack, goToNext }) => (
             Select the project this budget line should be associated with. If you need to create a new project, click
             Add New Project.
         </p>
-        {/* <ProjectSelect /> */}
-        <DynamicSelect />
+        <ProjectSelect />
+        {/* <DynamicSelect /> */}
         <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">Add New Project</button>
         <h2 className="font-sans-lg">Select an Agreement or Create a New One</h2>
         <p>Select the project and agreement this budget line should be associated with.</p>
@@ -157,13 +157,18 @@ export const CreateBudgetLine = () => {
     // const onResearchProjectFilterChange = (payload) => {
     //     dispatch(setResearchProjectsFilter(payload));
     // };
+
     // Get initial list of all Research Projects
-    // TODO: Currently loading all Research Projects at start - we might want this to be empty
-    // ONLY DOING FOR DEV TESTING
     useEffect(() => {
         const getResearchProjectsAndSetState = async () => {
-            const projects = await getResearchProjectByName(researchProjectsFilter.value);
-            dispatch(setResearchProjects(projects));
+            if (researchProjectsFilter) {
+                //console.log(`researchProjectsFilter: ${researchProjectsFilter.value}`);
+                if (researchProjectsFilter.value.toString().length >= 3) {
+                    const projects = await getResearchProjectByName(researchProjectsFilter.value);
+                    //console.log(`filtered-projects: ${JSON.stringify(projects)}`);
+                    dispatch(setResearchProjects(projects));
+                }
+            }
         };
 
         getResearchProjectsAndSetState().catch(console.error);
