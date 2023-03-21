@@ -1,0 +1,23 @@
+FROM python:3.10-slim
+
+LABEL org.opencontainers.image.source=https://github.com/HHS/OPRE-OPS/tree/main/backend
+LABEL org.opencontainers.image.description="OPRE-OPS API Data Tools"
+LABEL org.opencontainers.image.licenses=CC0-1.0
+
+RUN apt-get update && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir --upgrade pip==22.2.2 pipenv==2022.7.24 && useradd -ms /bin/bash app
+USER app
+WORKDIR /home/app
+
+ENV PYTHONPATH=/home/app
+ENV PYTHONUNBUFFERED=1
+ENV ENV=cloud
+
+# Copy the Pipfile(s) only, so that we can cache dependencies
+# in the next step
+COPY ./data_tools/Pipfile ./data_tools/Pipfile.lock /home/app/
+RUN pipenv install --dev --system --deploy
+
+# Now copy the rest of the app files, again to better support caching
+# of prior steps.
+COPY ./ /home/app
