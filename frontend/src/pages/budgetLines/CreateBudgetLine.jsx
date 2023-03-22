@@ -6,7 +6,7 @@ import { StepIndicatorTwo } from "../../components/UI/StepIndicator/StepIndicato
 import { StepIndicatorThree } from "../../components/UI/StepIndicator/StepIndicatorThree";
 import { CreateBudgetLineFlow } from "./CreateBudgetLineFlow";
 import { ProjectSelect } from "./ProjectSelect";
-import { DynamicSelect } from "./DynamicSelect";
+// import { DynamicSelect } from "./DynamicSelect";
 import { AgreementSelect } from "./AgreementSelect";
 import { CanSelect } from "./CanSelect";
 import { DesiredAwardDate } from "./DesiredAwardDate";
@@ -144,7 +144,6 @@ const StepThree = ({ goBack, goToNext }) => (
 export const CreateBudgetLine = () => {
     const dispatch = useDispatch();
     const selectedProject = useSelector((state) => state.createBudgetLine.selectedProject);
-    const selectedAgreement = useSelector((state) => state.createBudgetLine.selectedAgreement);
 
     // Get initial list of Agreements (dependent on Research Project Selection)
     useEffect(() => {
