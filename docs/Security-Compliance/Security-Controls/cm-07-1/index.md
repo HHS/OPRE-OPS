@@ -10,3 +10,4 @@ a) Review the system [upon encountering a significant risk, or at least every 30
 TODO: Seek inheritance from cloud.gov and seek review text from ACF OCIO
 
 ### Related Content
+The review includes functions, ports, protocols, and services provided by systems or system components to determine the functions and services that are candidates for elimination. The review can either decide the relative security of the function, port, protocol, and/or service or base the security decision on the assessment of other entities- unsecure protocols include Bluetooth, FTP, and peer-to-peer networking.
