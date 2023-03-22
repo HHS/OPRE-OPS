@@ -1,0 +1,21 @@
+# Configuration Management
+## CM-10 - Software Usage Restrictions
+
+a. Use software and associated documentation in accordance with contract agreements and copyright laws;
+
+b. Track the use of software and associated documentation protected by quantity licenses to control copying and distribution; and
+
+c. Control and document the use of peer-to-peer file sharing technology to ensure that this capability is not used for the unauthorized distribution, display, performance, or reproduction of copyrighted work.
+
+## OPS Implementation
+
+a. OPS is an open-source application. The [OPS license file](../../../LICENSE.md) can be viewed publicly. OPS utilizes open-source components with varying open-source licensing of their own.
+
+b. OPS is not utilizing any software protected by quantity licenses or limited by distribution.
+
+c. OPS does not utilize peer-to-peer file sharing technology.
+
+### Control Orgination:
+Hybrid with cloud.gov and OPS
+
+### Related Content

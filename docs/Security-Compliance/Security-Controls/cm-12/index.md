@@ -1,0 +1,19 @@
+# Configuration Management
+## CM-12 - Information Location
+
+a. Identify and document the location of [ACF-defined information] and the specific system components on which the information is processed and stored;
+
+b. Identify and document the users who have access to the system and system components where the information is processed and stored; and
+
+c. Document changes to the location (i.e., system or system components) where the information is processed and stored.
+
+## OPS Implementation
+
+TODO: does ACF OCIO have a template for any of these items ?
+
+### Control Orgination:
+Hybrid with cloud.gov and OPS
+
+### Related Content
+
+Information location addresses the need to understand where information is being processed and stored. Information location includes identifying where specific information types and information reside in system components and how information is being processed so that information flow can be understood and adequate protection and policy management provided for such information and system components. The security category of the information is also a factor in determining the controls necessary to protect the information and the system component where the information resides (see FIPS 199). The location of the information and system components is also a factor in the architecture and design of the system (see SA-4, SA-8, SA-17).

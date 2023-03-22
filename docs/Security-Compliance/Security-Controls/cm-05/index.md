@@ -11,7 +11,7 @@ Once users are logged in to the application, users can only perform tasks associ
 
 Authorized developers of OPS are granted only enough permissions in GitHub and Cloud.gov to support their duties.
 
-### Related Content
+### Compensating Controls
 
 * [ac-3](../ac-03/index.md)
 * [ac-5](../ac-05/index.md)

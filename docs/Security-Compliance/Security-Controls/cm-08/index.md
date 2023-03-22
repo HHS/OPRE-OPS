@@ -1,0 +1,24 @@
+# Configuration Management
+## CM-8 - System Component Inventory
+
+a. Develop and document an inventory of system components that:
+
+1. Accurately reflects the system;<br />
+2. Includes all components within the system;<br />
+3. Does not include duplicate accounting of components or components assigned to any other system;<br />
+4. Is at the level of granularity deemed necessary for tracking and reporting; and<br />
+5. Includes the following information to achieve system component accountability: [information identified in Appendix H of the HHS IS2P]; and<br />
+
+b. Review and update the system component inventory [at least every 180 days].
+
+Reference:
+HHS Standard for System Inventory Management
+
+## OPS Implementation
+
+TODO: Review GSA templates for this inventory from the application perspective
+
+### Control Orgination:
+Hybrid with cloud.gov and OPS
+
+### Related Content
