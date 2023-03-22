@@ -108,8 +108,6 @@ if __name__ == "__main__":
     script_env = os.getenv("ENV")
     script_config = get_config(script_env)
 
-    print(f"Data-Tools Config: {script_config.db_connection_string}")
-
     db_engine, db_metadata_obj = init_db(script_config)
 
     global_data = get_data_to_import()
