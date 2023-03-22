@@ -61,7 +61,6 @@ services:
     command: ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=8080"]
     environment:
       - JWT_PRIVATE_KEY
-      - JWT_PUBLIC_KEY
       - OPS_CONFIG=environment/local/e2e.py
     volumes:
       - ./backend/ops_api/ops:/home/app/ops
