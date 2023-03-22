@@ -5,8 +5,9 @@ Retain [five (5) or more older versions of baseline configurations (as deemed ne
 
 ## OPS Implementation
 
-TODO: Seek hybrid inheritance from cloud.gov/OPS and review with ACF OCIO
+TODO: Seek hybrid- inheritance from cloud.gov/OPS
 
-GitHub maintains full revision and release history for OPS
+GitHub maintains full revision and release history for OPS 
 
 ### Related Content
+Retaining previous versions of baseline configurations to support rollback include hardware, software, firmware, configuration files, configuration records, and associated documentation.
