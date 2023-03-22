@@ -4,22 +4,29 @@ import { setResearchProjectsFilter, setSelectedProject } from "./createBudgetLin
 export const ProjectSelect = () => {
     const dispatch = useDispatch();
     const researchProjects = useSelector((state) => state.createBudgetLine.research_projects);
-
+    const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
     const onChangeResearchProjectSelection = (event) => {
-        console.log(`Click-Event: ${event.target.value}`);
+        //console.log(`Click-Event: ${event.target.value}`);
         dispatch(setSelectedProject({ id: event.target.id, value: event.target.value }));
         event.preventDefault();
     };
 
     const onChangeResearchProjectFilter = (event) => {
-        console.log(`Filter-Change: ${event.target.value}`);
+        //console.log(`Input-Changed: ${event.target.value}`);
         dispatch(setResearchProjectsFilter({ value: event.target.value }));
+
+        // let timeoutId;
+        // console.log(`Filter-Change: ${event.target.value}`);
+        // const inputValue = event.target.value;
+
+        // window.cancelAnimationFrame(timeoutId);
+
+        // timeoutId = window.requestAnimationFrame(() => {
+        //     console.log("1 second has passed");
+        //     dispatch(setResearchProjectsFilter({ value: inputValue }));
+        // }, 1500);
         event.preventDefault();
     };
-
-    // useEffect(() => {
-    //     //dispatch(getResearchProjectByName(this.state.filterText));
-    // }, [dispatch, researchProjects]);
 
     return (
         <>
@@ -56,7 +63,7 @@ export const ProjectSelect = () => {
                     type="text"
                     role="combobox"
                     aria-activedescendant=""
-                    onChange={onChangeResearchProjectFilter}
+                    // onChange={onChangeResearchProjectFilter}
                 />
                 <span className="usa-combo-box__clear-input__wrapper" tabIndex="-1">
                     <button type="button" className="usa-combo-box__clear-input" aria-label="Clear the select contents">

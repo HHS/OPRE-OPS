@@ -10,14 +10,8 @@ import { DynamicSelect } from "./DynamicSelect";
 import { AgreementSelect } from "./AgreementSelect";
 import { CanSelect } from "./CanSelect";
 import { DesiredAwardDate } from "./DesiredAwardDate";
-import { getResearchProjectByName } from "../../api/getResearchProjects";
 import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
-import {
-    setSelectedProject,
-    setResearchProjects,
-    setAgreements,
-    setResearchProjectsFilter,
-} from "./createBudgetLineSlice";
+import { setAgreements } from "./createBudgetLineSlice";
 
 const StepOne = ({ goBack, goToNext }) => (
     <>
@@ -151,32 +145,6 @@ export const CreateBudgetLine = () => {
     const dispatch = useDispatch();
     const selectedProject = useSelector((state) => state.createBudgetLine.selectedProject);
     const selectedAgreement = useSelector((state) => state.createBudgetLine.selectedAgreement);
-    const researchProjectsFilter = useSelector((state) => state.createBudgetLine.research_projects_filter);
-    //const researchProjects = useSelector((state) => state.createBudgetLine.research_projects);
-
-    // const onResearchProjectFilterChange = (payload) => {
-    //     dispatch(setResearchProjectsFilter(payload));
-    // };
-
-    // Get initial list of all Research Projects
-    useEffect(() => {
-        const getResearchProjectsAndSetState = async () => {
-            if (researchProjectsFilter) {
-                //console.log(`researchProjectsFilter: ${researchProjectsFilter.value}`);
-                if (researchProjectsFilter.value.toString().length >= 3) {
-                    const projects = await getResearchProjectByName(researchProjectsFilter.value);
-                    //console.log(`filtered-projects: ${JSON.stringify(projects)}`);
-                    dispatch(setResearchProjects(projects));
-                }
-            }
-        };
-
-        getResearchProjectsAndSetState().catch(console.error);
-
-        return () => {
-            dispatch(setResearchProjects([]));
-        };
-    }, [dispatch, researchProjectsFilter]);
 
     // Get initial list of Agreements (dependent on Research Project Selection)
     useEffect(() => {
@@ -202,7 +170,7 @@ export const CreateBudgetLine = () => {
                     alert("Budget Line Created!");
                 }}
             >
-                <StepOne handleFilterChange={setResearchProjectsFilter} handleSelectionChange={setSelectedProject} />
+                <StepOne />
                 <StepTwo />
                 <StepThree />
             </CreateBudgetLineFlow>
