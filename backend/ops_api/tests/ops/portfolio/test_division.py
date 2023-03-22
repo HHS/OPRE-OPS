@@ -4,7 +4,7 @@ from models.portfolios import Division
 
 @pytest.mark.usefixtures("app_ctx")
 def test_division_lookup(loaded_db):
-    division = loaded_db.session.get(Division, 1)
+    division = loaded_db.get(Division, 1)
     assert division is not None
     assert division.name == "Division of Child and Family Development"
     assert division.abbreviation == "DFCD"

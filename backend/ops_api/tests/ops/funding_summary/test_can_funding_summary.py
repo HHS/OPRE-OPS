@@ -2,14 +2,13 @@ from decimal import Decimal
 
 import pytest
 from flask.testing import FlaskClient
-from flask_sqlalchemy import SQLAlchemy
 from models.cans import CAN
 from ops_api.ops.utils.cans import get_can_funding_summary
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_can_funding_summary_no_fiscal_year(loaded_db: SQLAlchemy) -> None:
-    can = loaded_db.session.get(CAN, 1)
+def test_get_can_funding_summary_no_fiscal_year(loaded_db) -> None:
+    can = loaded_db.get(CAN, 1)
     result = get_can_funding_summary(can)
 
     # Remove these because they are set according to when the test was run
@@ -47,8 +46,8 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db: SQLAlchemy) -> None:
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_get_can_funding_summary_with_fiscal_year(loaded_db: SQLAlchemy) -> None:
-    can = loaded_db.session.get(CAN, 1)
+def test_get_can_funding_summary_with_fiscal_year(loaded_db) -> None:
+    can = loaded_db.get(CAN, 1)
     result = get_can_funding_summary(can, 2023)
 
     # Remove these because they are set according to when the test was run

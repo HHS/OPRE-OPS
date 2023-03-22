@@ -55,15 +55,15 @@ def db_loaded_with_research_projects(app, loaded_db):
             ]
         )
 
-        loaded_db.session.add_all(instances)
+        loaded_db.add_all(instances)
 
-        loaded_db.session.commit()
+        loaded_db.commit()
         yield loaded_db
 
         # Cleanup
         for instance in instances:
-            loaded_db.session.delete(instance)
-        loaded_db.session.commit()
+            loaded_db.delete(instance)
+        loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -170,12 +170,12 @@ def db_loaded_with_research_projects_for_total_spending(app, loaded_db):
         blin_3.can_fiscal_year.append(can_300_fy_2023)
         blin_4.can_fiscal_year.append(can_400_fy_2023)
 
-        loaded_db.session.add_all(instances)
+        loaded_db.add_all(instances)
 
-        loaded_db.session.commit()
+        loaded_db.commit()
         yield loaded_db
 
         # Cleanup
         for instance in instances:
-            loaded_db.session.delete(instance)
-        loaded_db.session.commit()
+            loaded_db.delete(instance)
+        loaded_db.commit()

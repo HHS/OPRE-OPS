@@ -2,6 +2,7 @@ from typing import Optional, TypedDict
 
 from flask import current_app
 from models.users import User
+from sqlalchemy import select
 
 
 class UserInfoDict(TypedDict):
@@ -11,7 +12,12 @@ class UserInfoDict(TypedDict):
 
 
 def process_user(userinfo: UserInfoDict) -> User:
-    user = User.query.filter_by(oidc_id=userinfo["sub"]).one_or_none()
+    stmt = select(User).where(User.oidc_id == userinfo["sub"])
+    users = current_app.db_session.execute(stmt).all()
+    if users and len(users) == 1:
+        user = users[0][0]
+    else:
+        user = None
     current_app.logger.debug(f"User Lookup Response: {user}")
     if not user:
         # Create new user
@@ -20,8 +26,6 @@ def process_user(userinfo: UserInfoDict) -> User:
             oidc_id=userinfo["sub"],
         )
 
-        from ops_api.ops import db
-
-        db.session.add(user)
-        db.session.commit()
+        current_app.db_session.add(user)
+        current_app.db_session.commit()
     return user

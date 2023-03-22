@@ -12,7 +12,7 @@ from ops_api.ops.utils.portfolios import (
 
 @pytest.mark.usefixtures("app_ctx")
 def test_portfolio_retrieve(loaded_db):
-    portfolio = loaded_db.session.query(Portfolio).filter(Portfolio.name == "Child Care").one()
+    portfolio = loaded_db.query(Portfolio).filter(Portfolio.name == "Child Care").one()
 
     assert portfolio is not None
     assert portfolio.name == "Child Care"
@@ -21,7 +21,7 @@ def test_portfolio_retrieve(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_portfolio_get_all(auth_client, loaded_db):
-    assert loaded_db.session.query(Portfolio).count() == 8
+    assert loaded_db.query(Portfolio).count() == 8
 
     response = auth_client.get("/api/v1/portfolios/")
     assert response.status_code == 200
@@ -123,15 +123,15 @@ def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
             ]
         )
 
-        loaded_db.session.add_all(instances)
+        loaded_db.add_all(instances)
 
-        loaded_db.session.commit()
+        loaded_db.commit()
         yield loaded_db
 
         # Cleanup
         for instance in instances:
-            loaded_db.session.delete(instance)
-        loaded_db.session.commit()
+            loaded_db.delete(instance)
+        loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")

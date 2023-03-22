@@ -2,9 +2,9 @@ from dataclasses import dataclass
 
 import desert
 import marshmallow
+from flask import current_app
 from models.cans import CAN, CANFiscalYear
 from models.research_projects import ResearchProject
-from ops_api.ops import db
 from sqlalchemy import select
 from sqlalchemy.sql.functions import sum
 
@@ -31,7 +31,7 @@ class ResearchProjectHelper:
             .where(ResearchProject.portfolio_id == int(portfolio_id))
         )
 
-        total_funding = db.session.execute(total_funding_stmt).all()
+        total_funding = current_app.db_session.execute(total_funding_stmt).all()
 
         total_funding_amount = float(total_funding[0][0]) if total_funding != [(None,)] else 0
 
