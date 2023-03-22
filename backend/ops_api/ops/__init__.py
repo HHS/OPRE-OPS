@@ -67,4 +67,8 @@ def create_app(config_overrides: Optional[dict] = {}) -> Flask:
 
     app.db_session = init_db(app.config.get("SQLALCHEMY_DATABASE_URI"), is_unit_test)
 
+    @app.teardown_appcontext
+    def shutdown_session(exception=None):
+        app.db_session.remove()
+
     return app
