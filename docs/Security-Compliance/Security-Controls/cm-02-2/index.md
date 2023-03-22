@@ -5,7 +5,7 @@ Maintain the currency, completeness, accuracy, and availability of the baseline 
 
 ## OPS Implementation
 
-TODO: Seek hybrid inheritance from cloud.gov/OPS and review with ACF OCIO
+TODO: Seek hybrid inheritance from cloud.gov/OPS and ACF OCIO
 
 OPS utilizes a Continuous Integration (CI) and Continuous Deployment (CD) process which includes end-to-end and unit testing of OPS functionality that must satisfy all test conditions successfully before allowing a deployment or promotion to any environment. The deployment and promotion process includes changes to documentation persisted in the OPS GitHub repository.
 
