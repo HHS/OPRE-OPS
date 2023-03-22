@@ -2065,6 +2065,11 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
+"@trussworks/react-uswds@4.1.1":
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/@trussworks/react-uswds/-/react-uswds-4.1.1.tgz#57cba59dad7d252a563522ca9a1b970054a31958"
+  integrity sha512-J68eM8HtCYngLPsWCdPFERC6AvEAVPZUBUP0/Rk8QEhOGxWJqEtepZo7Xv1pOFhZDOX647/392ZMIQw8y5TW8g==
+
 "@trysound/sax@0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@trysound/sax/-/sax-0.2.0.tgz#cccaab758af56761eb7bf37af6f03f326dd798ad"
@@ -2563,12 +2568,13 @@
     postcss-csso "6.0.1"
     sass-embedded "1.56.1"
 
-"@uswds/uswds@3.3.0":
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/@uswds/uswds/-/uswds-3.3.0.tgz#19097ada5bb07cd51269811d0309b021604823e9"
-  integrity sha512-qiugkbwrO+eIIwi4lbEdH15LCHuAjfUMDRQNBBujakR99Ka3iqmrLpPllffdKaJJnnYkt75v0lltnJ5Nnd/obQ==
+"@uswds/uswds@3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@uswds/uswds/-/uswds-3.1.0.tgz#764d6053ea6d2a3b80bd4023d408f726608a2a97"
+  integrity sha512-6XTeaQD/ipc3x4713mud4Rrr+lRc4nJ1Qw5Oy35dbVEXuKr7DjN4EBoAkbze9OoV0UdmAIvoxolBF/UcpFVKOg==
   dependencies:
     classlist-polyfill "1.0.3"
+    domready "1.0.8"
     object-assign "4.1.1"
     receptor "1.0.0"
     resolve-id-refs "0.1.0"
@@ -4965,6 +4971,11 @@ domhandler@^5.0.1, domhandler@^5.0.2, domhandler@^5.0.3:
   integrity sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==
   dependencies:
     domelementtype "^2.3.0"
+
+domready@1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/domready/-/domready-1.0.8.tgz#91f252e597b65af77e745ae24dd0185d5e26d58c"
+  integrity sha512-uIzsOJUNk+AdGE9a6VDeessoMCzF8RrZvJCX/W8QtyfgdR6Uofn/MvRonih3OtCO79b2VDzDOymuiABrQ4z3XA==
 
 domutils@^1.7.0:
   version "1.7.0"

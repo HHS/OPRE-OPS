@@ -1,12 +1,17 @@
 import App from "../../App";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { StepIndicatorOne } from "../../components/UI/StepIndicator/StepIndicatorOne";
 import { StepIndicatorTwo } from "../../components/UI/StepIndicator/StepIndicatorTwo";
 import { StepIndicatorThree } from "../../components/UI/StepIndicator/StepIndicatorThree";
 import { CreateBudgetLineFlow } from "./CreateBudgetLineFlow";
 import { ProjectSelect } from "./ProjectSelect";
+// import { DynamicSelect } from "./DynamicSelect";
 import { AgreementSelect } from "./AgreementSelect";
 import { CanSelect } from "./CanSelect";
 import { DesiredAwardDate } from "./DesiredAwardDate";
+import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
+import { setAgreements } from "./createBudgetLineSlice";
 
 const StepOne = ({ goBack, goToNext }) => (
     <>
@@ -19,6 +24,7 @@ const StepOne = ({ goBack, goToNext }) => (
             Add New Project.
         </p>
         <ProjectSelect />
+        {/* <DynamicSelect /> */}
         <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">Add New Project</button>
         <h2 className="font-sans-lg">Select an Agreement or Create a New One</h2>
         <p>Select the project and agreement this budget line should be associated with.</p>
@@ -136,6 +142,25 @@ const StepThree = ({ goBack, goToNext }) => (
 );
 
 export const CreateBudgetLine = () => {
+    const dispatch = useDispatch();
+    const selectedProject = useSelector((state) => state.createBudgetLine.selectedProject);
+
+    // Get initial list of Agreements (dependent on Research Project Selection)
+    useEffect(() => {
+        const getAgreementsAndSetState = async () => {
+            if (selectedProject) {
+                const agreements = await getAgreementsByResearchProjectFilter(selectedProject?.id);
+                dispatch(setAgreements(agreements));
+            }
+        };
+
+        getAgreementsAndSetState().catch(console.error);
+
+        return () => {
+            dispatch(setAgreements([]));
+        };
+    }, [dispatch, selectedProject]);
+
     return (
         <App>
             <CreateBudgetLineFlow

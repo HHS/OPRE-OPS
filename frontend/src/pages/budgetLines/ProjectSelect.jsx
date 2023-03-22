@@ -1,4 +1,33 @@
+import { useDispatch, useSelector } from "react-redux";
+import { setResearchProjectsFilter, setSelectedProject } from "./createBudgetLineSlice";
+
 export const ProjectSelect = () => {
+    const dispatch = useDispatch();
+    const researchProjects = useSelector((state) => state.createBudgetLine.research_projects);
+    const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
+    const onChangeResearchProjectSelection = (event) => {
+        //console.log(`Click-Event: ${event.target.value}`);
+        dispatch(setSelectedProject({ id: event.target.id, value: event.target.value }));
+        event.preventDefault();
+    };
+
+    const onChangeResearchProjectFilter = (event) => {
+        //console.log(`Input-Changed: ${event.target.value}`);
+        dispatch(setResearchProjectsFilter({ value: event.target.value }));
+
+        // let timeoutId;
+        // console.log(`Filter-Change: ${event.target.value}`);
+        // const inputValue = event.target.value;
+
+        // window.cancelAnimationFrame(timeoutId);
+
+        // timeoutId = window.requestAnimationFrame(() => {
+        //     console.log("1 second has passed");
+        //     dispatch(setResearchProjectsFilter({ value: inputValue }));
+        // }, 1500);
+        event.preventDefault();
+    };
+
     return (
         <>
             <label className="usa-label" htmlFor="project">
@@ -11,14 +40,15 @@ export const ProjectSelect = () => {
                     id=""
                     aria-hidden="true"
                     tabIndex="-1"
+                    onChange={onChangeResearchProjectSelection}
                 >
-                    <option value="">Select a project</option>
-                    <option value="red-x 2.0">Red-X 2.0</option>
-                    <option value="red-x 3.0">Red-X 3.0</option>
-                    <option value="white-x 1.0">White-X 1.0</option>
-                    <option value="white-x 2.0">White-X 2.0</option>
-                    <option value="blue-x 1.0">Blue-X 1.0</option>
-                    <option value="blue-x 2.0">Blue-X 2.0</option>
+                    {researchProjects.map((project) => {
+                        return (
+                            <option key={project?.id} value={project?.title}>
+                                {project?.title}
+                            </option>
+                        );
+                    })}
                 </select>
                 <input
                     id="project"
@@ -33,6 +63,7 @@ export const ProjectSelect = () => {
                     type="text"
                     role="combobox"
                     aria-activedescendant=""
+                    // onChange={onChangeResearchProjectFilter}
                 />
                 <span className="usa-combo-box__clear-input__wrapper" tabIndex="-1">
                     <button type="button" className="usa-combo-box__clear-input" aria-label="Clear the select contents">
@@ -58,78 +89,23 @@ export const ProjectSelect = () => {
                     aria-labelledby="project-label"
                     hidden
                 >
-                    <li
-                        aria-setsize="64"
-                        aria-posinset="1"
-                        aria-selected="false"
-                        id="project--list--option-1"
-                        className="usa-combo-box__list-option"
-                        tabIndex="0"
-                        role="option"
-                        data-value="Red-X 2.0"
-                    >
-                        Red-X 2.0
-                    </li>
-                    <li
-                        aria-setsize="64"
-                        aria-posinset="2"
-                        aria-selected="false"
-                        id="project--list--option-2"
-                        className="usa-combo-box__list-option"
-                        tabIndex="-1"
-                        role="option"
-                        data-value="red-x 3.0"
-                    >
-                        Red-x 3.0
-                    </li>
-                    <li
-                        aria-setsize="64"
-                        aria-posinset="3"
-                        aria-selected="false"
-                        id="project--list--option-3"
-                        className="usa-combo-box__list-option"
-                        tabIndex="-1"
-                        role="option"
-                        data-value="white-x 1.0"
-                    >
-                        White-x 1.0
-                    </li>
-                    <li
-                        aria-setsize="64"
-                        aria-posinset="4"
-                        aria-selected="false"
-                        id="project--list--option-4"
-                        className="usa-combo-box__list-option"
-                        tabIndex="-1"
-                        role="option"
-                        data-value="white-x 2.0"
-                    >
-                        White-x 2.0
-                    </li>
-                    <li
-                        aria-setsize="64"
-                        aria-posinset="5"
-                        aria-selected="false"
-                        id="project--list--option-5"
-                        className="usa-combo-box__list-option"
-                        tabIndex="-1"
-                        role="option"
-                        data-value="blue-x 1.0"
-                    >
-                        Blue-x 1.0
-                    </li>
-                    <li
-                        aria-setsize="64"
-                        aria-posinset="6"
-                        aria-selected="false"
-                        id="project--list--option-6"
-                        className="usa-combo-box__list-option"
-                        tabIndex="-1"
-                        role="option"
-                        data-value="blue-x 2.0"
-                    >
-                        Blue-x 2.0
-                    </li>
+                    {researchProjects?.map((project, index) => {
+                        return (
+                            <li
+                                key={project?.id}
+                                aria-setsize={project?.length}
+                                aria-posinset={index + 1}
+                                aria-selected="false"
+                                id={`dynamic-select--list--option-${index}`}
+                                className="usa-combo-box__list-option"
+                                tabIndex={index === 0 ? "0" : "-1"}
+                                role="option"
+                                data-value={project?.title}
+                            >
+                                {project?.title}
+                            </li>
+                        );
+                    })}
                 </ul>
                 <div className="usa-combo-box__status usa-sr-only" role="status"></div>
                 <span id="project--assistiveHint" className="usa-sr-only">

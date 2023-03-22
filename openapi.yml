@@ -11,6 +11,19 @@ servers:
   - url: https://ops-api-staging.app.cloud.gov
     description: Staging Server (Live)
 paths:
+  /api/v1/agreements/:
+    get:
+      description: Get All Agreements
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AGREEMENTS'
+              example:
+                '0':
+                  $ref: '#/components/examples/AGREEMENTS'
   /api/v1/cans/:
     get:
       description: Get CANs
@@ -565,6 +578,18 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    AGREEMENTS:
+      description: All Agreements
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        agreement_type:
+          type: string
+        cans: { }
+
     CAN:
       description: Common Accounting Number (CAN) Object
       type: object
@@ -718,6 +743,42 @@ components:
           - $ref: "#/components/schemas/ResearchProject"
 
   examples:
+    AGREEMENTS:
+      value: |
+        [
+        {
+          'id': 1,
+          'name': 'Agreement One',
+          agreement_type: 'CONTRACT',
+          cans: []
+        },
+        {
+          'id': 2,
+          'name': 'Agreement Two',
+          agreement_type: 'GRANT',
+          cans: []
+        },
+        {
+          'id': 3,
+          'name': 'Agreement Three',
+          agreement_type: 'DIRECT_ALLOCATION',
+          cans: []
+        },
+        {
+          'id': 4,
+          'name': 'Agreement Four',
+          agreement_type: 'IAA',
+          cans: []
+        },
+        {
+          'id': 5,
+          'name': 'Agreement Five',
+          agreement_type: 'MISCELLANEOUS',
+          cans: []
+        }
+
+        ]
+
     CAN:
       value:
         - appropriation_date: "01/10/2023"
