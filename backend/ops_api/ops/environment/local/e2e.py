@@ -15,5 +15,3 @@ AUTHLIB_OAUTH_CLIENTS = {
         "client_kwargs": {"scope": "openid email"},
     },
 }
-
-JWT_PUBLIC_KEY_PATH = "static/test-public-key.pem"
