@@ -46,6 +46,6 @@ class UsersListAPI(BaseListAPI):
         else:
             items = self.model.query.all()
             response = jsonify([item.to_dict() for item in items])
+            response.headers.add("Access-Control-Allow-Origin", "*")
 
-        response.headers.add("Access-Control-Allow-Origin", "*")
         return response
