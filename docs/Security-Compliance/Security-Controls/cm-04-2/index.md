@@ -8,3 +8,4 @@ After system changes, verify that the impacted controls are implemented correctl
 TODO: Discuss with ACF OCIO. Discuss or implement tooling for regression testing of changes to 800-53 controls
 
 ### Related Content
+Implementation in this context refers to installing changed code in the operational system that may have an impact on security or privacy controls.
