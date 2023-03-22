@@ -25,18 +25,22 @@ const StepOne = ({ goBack, goToNext }) => (
         </p>
         <ProjectSelect />
         {/* <DynamicSelect /> */}
-        <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">Add New Project</button>
         <h2 className="font-sans-lg">Select an Agreement or Create a New One</h2>
         <p>Select the project and agreement this budget line should be associated with.</p>
         <AgreementSelect />
-        <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">Add New Agreement</button>
         <div className="grid-row flex-justify-end">
-            <button className="usa-button usa-button--outline" onClick={() => goBack()}>
-                Back
-            </button>
             <button className="usa-button" onClick={() => goToNext({ project: "Red X 2.0" })}>
                 Continue
             </button>
+        </div>
+        <div className="display-flex flex-align-center margin-top-6">
+            <div className="border-bottom-1px border-base-light width-full" />
+            <span className="text-base-light margin-left-2 margin-right-2">or</span>
+            <div className="border-bottom-1px border-base-light width-full" />
+        </div>
+        <div className="grid-row flex-justify-end">
+            <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">Add New Project</button>
+            <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">Add New Agreement</button>
         </div>
     </>
 );
