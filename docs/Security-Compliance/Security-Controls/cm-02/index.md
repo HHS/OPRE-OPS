@@ -1,9 +1,8 @@
 # Configuration Management
 ## CM-2 - Baseline Configuration
 
-a. Develop, document, and maintain under configuration control, a current baseline configuration of the system; and
+a. Develop, document, and maintain under configuration control, a current baseline configuration of the system; and                                                    
 b. Review and update the baseline configuration of the system:
-
 1. [at least every 365 days];
 2. When required due to [changes in installed software and/or hardware]; and
 3. When system components are installed or upgraded.
