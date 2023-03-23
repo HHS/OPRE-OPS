@@ -11,11 +11,15 @@ export const ProjectSelect = () => {
         }
 
         dispatch(
-            setSelectedProject({ id: researchProjects[projectId - 1].id, value: researchProjects[projectId - 1].title })
+            setSelectedProject({
+                id: researchProjects[projectId - 1].id,
+                value: researchProjects[projectId - 1].title,
+                teamLeaders: researchProjects[projectId - 1].team_leaders,
+            })
         );
     };
 
-    const areThereTeamLeaders = researchProjects[selectedResearchProject?.id - 1]?.team_leaders?.length > 0;
+    const areThereTeamLeaders = selectedResearchProject?.teamLeaders?.length > 0;
 
     const ProjectSummaryCard = () => {
         return (
@@ -27,7 +31,7 @@ export const ProjectSelect = () => {
                     <dt className="margin-0 text-base-dark">Project</dt>
                     <dd className="text-semibold margin-0">{selectedResearchProject.value}</dd>
                     {areThereTeamLeaders && <dt className="margin-0 text-base-dark margin-top-2">Project Officer</dt>}
-                    {researchProjects[selectedResearchProject.id - 1]?.team_leaders?.map((leader) => (
+                    {selectedResearchProject?.teamLeaders?.map((leader) => (
                         <dd key={leader?.id} className="text-semibold margin-0">
                             {leader?.first_name} {leader?.last_name}
                         </dd>
