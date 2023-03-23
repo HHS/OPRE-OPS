@@ -9,7 +9,7 @@ from data_tools.environment.common import DataToolsConfig
 
 class CloudGovConfig(DataToolsConfig):
     @property
-    def db_connection_string(self):
+    def db_connection_string(self) -> str:
         # Cloud.gov exposes variables for the application and bound services via
         # VCAP_APPLICATION and VCAP_SERVICES environment variables, respectively.
         vcap_services = json.loads(os.getenv("VCAP_SERVICES", "{}"))
@@ -22,9 +22,9 @@ class CloudGovConfig(DataToolsConfig):
         return f'postgresql+psycopg2://{database_creds["username"]}:{database_creds["password"]}@{database_creds["host"]}:{database_creds["port"]}/{database_creds["db_name"]}'
 
     @property
-    def opre_excel_connection_string(self):
+    def opre_excel_connection_string(self) -> str:
         return ""
 
     @property
-    def verbosity(self):
+    def verbosity(self) -> bool:
         return True
