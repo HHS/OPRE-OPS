@@ -1,4 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
+import RoundedBox from "../../components/UI/RoundedBox/RoundedBox";
 import { setResearchProjectsFilter, setSelectedProject } from "./createBudgetLineSlice";
 
 export const ProjectSelect = () => {
@@ -32,7 +33,7 @@ export const ProjectSelect = () => {
         // }, 1500);
         event.preventDefault();
     };
-
+    const areThereTeamLeaders = researchProjects[selectedResearchProject?.id - 1]?.team_leaders?.length > 0;
     return (
         <div className="display-flex flex-justify">
             <div className="left-half width-full">
@@ -126,7 +127,22 @@ export const ProjectSelect = () => {
                 </div>
             </div>
             <div className="right-half">
-                <p>hello</p>
+                {selectedResearchProject?.id && (
+                    <RoundedBox className="display-inline-block">
+                        <dl className="margin-0 padding-y-2 padding-x-105">
+                            <dt className="margin-0 text-base-dark">Project</dt>
+                            <dd className="text-semibold margin-0">{selectedResearchProject.value}</dd>
+                            {areThereTeamLeaders && (
+                                <dt className="margin-0 text-base-dark margin-top-2">Project Officer</dt>
+                            )}
+                            {researchProjects[selectedResearchProject.id - 1]?.team_leaders?.map((leader) => (
+                                <dd key={leader?.id} className="text-semibold margin-0">
+                                    {leader?.first_name} {leader?.last_name}
+                                </dd>
+                            ))}
+                        </dl>
+                    </RoundedBox>
+                )}
             </div>
         </div>
     );
