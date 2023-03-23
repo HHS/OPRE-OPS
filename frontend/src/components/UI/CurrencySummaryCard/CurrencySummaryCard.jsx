@@ -6,7 +6,7 @@ const CurrencySummaryCard = ({ headerText, amount, children }) => {
         <RoundedBox className="padding-y-205 padding-x-4 padding-right-9 display-inline-block">
             <div className="">
                 {headerText && (
-                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-darker text-normal">{headerText}</h3>
+                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">{headerText}</h3>
                 )}
                 {amount && (
                     <CurrencyWithSmallCents

@@ -13,19 +13,19 @@ import { DesiredAwardDate } from "./DesiredAwardDate";
 import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
 import { setAgreements } from "./createBudgetLineSlice";
 
-const StepOne = ({ goBack, goToNext }) => (
+const StepOne = ({ goToNext }) => (
     <>
         <h2 className="font-sans-lg">Create New Budget Line</h2>
         <p>Step One: Text explaining this page</p>
         <StepIndicatorOne />
-        <h2 className="font-sans-lg">Select a Project or Create a New One</h2>
+        <h2 className="font-sans-lg">Select a Project</h2>
         <p>
             Select the project this budget line should be associated with. If you need to create a new project, click
             Add New Project.
         </p>
         <ProjectSelect />
         {/* <DynamicSelect /> */}
-        <h2 className="font-sans-lg">Select an Agreement or Create a New One</h2>
+        <h2 className="font-sans-lg">Select an Agreement</h2>
         <p>Select the project and agreement this budget line should be associated with.</p>
         <AgreementSelect />
         <div className="grid-row flex-justify-end">
@@ -38,7 +38,7 @@ const StepOne = ({ goBack, goToNext }) => (
             <span className="text-base-light margin-left-2 margin-right-2">or</span>
             <div className="border-bottom-1px border-base-light width-full" />
         </div>
-        <div className="grid-row flex-justify-end">
+        <div className="grid-row flex-justify-center">
             <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">Add New Project</button>
             <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">Add New Agreement</button>
         </div>
