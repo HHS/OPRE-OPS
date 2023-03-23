@@ -22,9 +22,7 @@ const ProjectsAndAgreements = ({
             <div className="display-flex flex-justify">
                 {/* NOTE: left side */}
                 <article>
-                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-darker text-normal">
-                        {projectHeading}
-                    </h3>
+                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">{projectHeading}</h3>
                     <div className="display-flex flex-justify">
                         <span className="font-sans-xl text-bold line-height-sans-1">{numberOfProjects}</span>
                         <div className="display-flex flex-column margin-left-2 grid-gap">
@@ -41,7 +39,7 @@ const ProjectsAndAgreements = ({
                 </article>
                 {/* NOTE: right side */}
                 <article>
-                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-darker text-normal">
+                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
                         {agreementHeading}
                     </h3>
                     <div className="display-flex flex-justify">

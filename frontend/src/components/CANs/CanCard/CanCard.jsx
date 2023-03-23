@@ -100,15 +100,15 @@ const CanCard = ({ can, fiscalYear }) => {
             <div className={sectionClasses}>
                 <dl className={`margin-0 ${leftMarginClasses}`}>
                     <div>
-                        <dt className="margin-0 text-base-darker">CAN</dt>
+                        <dt className="margin-0 text-base-dark">CAN</dt>
                         <dd className="text-semibold margin-0">{can.number}</dd>
                     </div>
                     <div className="margin-y-3">
-                        <dt className="margin-0 text-base-darker">Description</dt>
+                        <dt className="margin-0 text-base-dark">Description</dt>
                         <dd className="text-semibold margin-0">{can.nickname}</dd>
                     </div>
                     <div className="margin-y-3">
-                        <dt className="margin-0 text-base-darker">Appropriation</dt>
+                        <dt className="margin-0 text-base-dark">Appropriation</dt>
                         <dd className="text-semibold margin-0">
                             {/* TODO: Get value from backend */}
                             {can.appropriation_date || "---"} ({can.appropriation_term}{" "}
@@ -116,16 +116,14 @@ const CanCard = ({ can, fiscalYear }) => {
                         </dd>
                     </div>
                     <div className="margin-y-3">
-                        <dt className="margin-0 text-base-darker">Expiration</dt>
+                        <dt className="margin-0 text-base-dark">Expiration</dt>
                         <dd className="text-semibold margin-0">{canFundingData?.expiration_date || "---"}</dd>
                     </div>
                 </dl>
                 <div className={`grid-row  padding-y-205 padding-left-205 padding-right-05 ${style.rightContainer}`}>
                     {/*NOTE: LEFT SIDE */}
                     <div className="grid-col-5">
-                        <h3 className="font-sans-3xs text-normal text-base-darker">
-                            FY {fiscalYear} CAN Total Funding
-                        </h3>
+                        <h3 className="font-sans-3xs text-normal text-base-dark">FY {fiscalYear} CAN Total Funding</h3>
                         <CANFundingYTD
                             className="margin-top-5"
                             total_funding={canFundingData?.total_funding}
@@ -137,7 +135,7 @@ const CanCard = ({ can, fiscalYear }) => {
                     </div>
                     {/* NOTE: RIGHT SIDE */}
                     <div className="grid-col margin-left-5">
-                        <h3 className="font-sans-3xs text-normal text-base-darker margin-bottom-4">
+                        <h3 className="font-sans-3xs text-normal text-base-dark margin-bottom-4">
                             FY {fiscalYear} CAN Budget Status
                         </h3>
                         <div className="display-flex flex-justify">
