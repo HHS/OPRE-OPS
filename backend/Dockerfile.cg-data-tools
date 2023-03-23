@@ -11,7 +11,7 @@ WORKDIR /home/app
 
 ENV PYTHONPATH=/home/app
 ENV PYTHONUNBUFFERED=1
-ENV ENV=cloud
+ENV ENV=cloudgov
 
 # Copy the Pipfile(s) only, so that we can cache dependencies
 # in the next step

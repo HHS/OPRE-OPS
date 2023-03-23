@@ -10,8 +10,7 @@ applications:
 
   - name: ops-data-tools
     env:
-      ENV: cloudgov.py
-    instances: 1
+      ENV: cloudgov
     no-route: true
     memory: 700M
     docker:
@@ -20,7 +19,10 @@ applications:
     timeout: 90
 
   - name: ops-frontend
-    memory: 64M
+    memory: 700M
+    disk_quota: 2G  # This is needed to ensure enough size to decompress the container.
+    env:
+      REACT_APP_BACKEND_DOMAIN: ops-api-sandbox.app.cloud.gov
     docker:
       image: ghcr.io/hhs/opre-ops/ops-frontend:latest
 
