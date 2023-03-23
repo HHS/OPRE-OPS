@@ -35,9 +35,9 @@ export const ProjectSelect = () => {
     };
     const areThereTeamLeaders = researchProjects[selectedResearchProject?.id - 1]?.team_leaders?.length > 0;
     return (
-        <div className="display-flex flex-justify">
+        <div className="display-flex flex-justify padding-top-105">
             <div className="left-half width-full">
-                <label className="usa-label" htmlFor="project">
+                <label className="usa-label margin-top-0" htmlFor="project">
                     Project
                 </label>
                 <div className="usa-combo-box" data-enhanced="true">
@@ -128,7 +128,10 @@ export const ProjectSelect = () => {
             </div>
             <div className="right-half">
                 {selectedResearchProject?.id && (
-                    <RoundedBox className="display-inline-block">
+                    <div
+                        className="bg-base-lightest font-family-sans border-1px border-base-light radius-sm margin-top-4"
+                        style={{ width: "383px", minHeight: "121px" }}
+                    >
                         <dl className="margin-0 padding-y-2 padding-x-105">
                             <dt className="margin-0 text-base-dark">Project</dt>
                             <dd className="text-semibold margin-0">{selectedResearchProject.value}</dd>
@@ -141,7 +144,7 @@ export const ProjectSelect = () => {
                                 </dd>
                             ))}
                         </dl>
-                    </RoundedBox>
+                    </div>
                 )}
             </div>
         </div>
