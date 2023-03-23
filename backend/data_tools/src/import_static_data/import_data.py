@@ -17,7 +17,7 @@ from data_tools.environment.test import TestConfig
 from models.base import BaseModel
 from sqlalchemy import create_engine, insert, inspect, text
 from sqlalchemy.engine import Connection, Engine
-from sqlalchemy.schema import Metadata
+from sqlalchemy.schema import MetaData
 
 # Adding these print statements to suppress unused import warnings
 print("Loading models for CANs", models.cans)
@@ -120,7 +120,7 @@ def load_new_data(
         conn.execute(insert(metadata_obj.tables[name]), data)
 
 
-def import_data(engine: Engine, metadata_obj: Metadata, data: dict[str, Any]) -> None:
+def import_data(engine: Engine, metadata_obj: MetaData, data: dict[str, Any]) -> None:
     with engine.connect() as conn:
         load_new_data(conn, data, metadata_obj)
         conn.commit()
