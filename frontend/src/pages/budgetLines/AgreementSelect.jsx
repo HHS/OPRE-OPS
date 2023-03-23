@@ -1,11 +1,18 @@
 import { useDispatch, useSelector } from "react-redux";
-import { setAgreements } from "./createBudgetLineSlice";
+import { setAgreements, setSelectedAgreement } from "./createBudgetLineSlice";
 import { AGREEMENTS } from "./data";
 
 export const AgreementSelect = () => {
     const dispatch = useDispatch();
     const agreements = useSelector(() => AGREEMENTS);
     const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
+    const onChangeAgreementSelection = (agreementId = 0) => {
+        if (agreementId === 0) {
+            return;
+        }
+
+        dispatch(setSelectedAgreement({ id: agreements[agreementId - 1].id, value: agreements[agreementId - 1].name }));
+    };
 
     return (
         <>
@@ -19,8 +26,9 @@ export const AgreementSelect = () => {
                     id=""
                     aria-hidden="true"
                     tabIndex="-1"
+                    defaultValue={selectedAgreement?.value}
+                    onChange={(e) => onChangeAgreementSelection(e.target.value || 0)}
                 >
-                    <option value="">Select a agreement</option>
                     {agreements.map((agreement) => {
                         return (
                             <option key={agreement?.id} value={agreement?.id}>
@@ -42,9 +50,15 @@ export const AgreementSelect = () => {
                     type="text"
                     role="combobox"
                     aria-activedescendant=""
+                    defaultValue={selectedAgreement?.value}
                 />
                 <span className="usa-combo-box__clear-input__wrapper" tabIndex="-1">
-                    <button type="button" className="usa-combo-box__clear-input" aria-label="Clear the select contents">
+                    <button
+                        type="button"
+                        className="usa-combo-box__clear-input"
+                        aria-label="Clear the select contents"
+                        onClick={() => dispatch(setSelectedAgreement({}))}
+                    >
                         &nbsp;
                     </button>
                 </span>
@@ -84,42 +98,6 @@ export const AgreementSelect = () => {
                             </li>
                         );
                     })}
-                    <li
-                        aria-setsize="64"
-                        aria-posinset="1"
-                        aria-selected="false"
-                        id="agreement--list--option-1"
-                        className="usa-combo-box__list-option"
-                        tabIndex="0"
-                        role="option"
-                        data-value="using-innovative-data"
-                    >
-                        Using Innovative Data to Explore Racial...
-                    </li>
-                    <li
-                        aria-setsize="64"
-                        aria-posinset="2"
-                        aria-selected="false"
-                        id="agreement--list--option-2"
-                        className="usa-combo-box__list-option"
-                        tabIndex="-1"
-                        role="option"
-                        data-value="using-research"
-                    >
-                        Using Research
-                    </li>
-                    <li
-                        aria-setsize="64"
-                        aria-posinset="3"
-                        aria-selected="false"
-                        id="agreement--list--option-3"
-                        className="usa-combo-box__list-option"
-                        tabIndex="-1"
-                        role="option"
-                        data-value="using-data-to-explore"
-                    >
-                        Using Data to Explore
-                    </li>
                 </ul>
                 <div className="usa-combo-box__status usa-sr-only" role="status"></div>
                 <span id="agreement--assistiveHint" className="usa-sr-only">
