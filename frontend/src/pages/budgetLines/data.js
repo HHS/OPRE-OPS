@@ -3,7 +3,7 @@ export const AGREEMENTS = [
         id: 1,
         name: "Using Innovative Data to Explore Racial and Ethnic Disparities in Human Services",
         description:
-            "This will be a sole source to continue planned analyses for RED-X beyond RED-X's period of performance.",
+            "This will be a contract to continue planned analyses to explore racial and ethnic disparities in Human Services.",
         agreement_type: "CONTRACT",
         project_officer: "Ivelisse Martinez-Beck",
         period_of_performance_start: "2021-01-01",
