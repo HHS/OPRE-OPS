@@ -1,8 +1,16 @@
+import { useDispatch, useSelector } from "react-redux";
+import { setAgreements } from "./createBudgetLineSlice";
+import { AGREEMENTS } from "./data";
+
 export const AgreementSelect = () => {
+    const dispatch = useDispatch();
+    const agreements = useSelector(() => AGREEMENTS);
+    const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
+
     return (
         <>
             <label className="usa-label" htmlFor="agreement">
-                Agreement
+                {/* {JSON.stringify(agreements, 2, null)} */}
             </label>
             <div className="usa-combo-box" data-enhanced="true">
                 <select
@@ -13,9 +21,13 @@ export const AgreementSelect = () => {
                     tabIndex="-1"
                 >
                     <option value="">Select a agreement</option>
-                    <option value="using-innovative-data">Using Innovative Data to Explore Racial...</option>
-                    <option value="using-research">Using Research</option>
-                    <option value="using-data-to-explore">Using Data to Explore</option>
+                    {agreements.map((agreement) => {
+                        return (
+                            <option key={agreement?.id} value={agreement?.id}>
+                                {agreement?.name}
+                            </option>
+                        );
+                    })}
                 </select>
                 <input
                     id="agreement"
@@ -55,6 +67,23 @@ export const AgreementSelect = () => {
                     aria-labelledby="agreement-label"
                     hidden
                 >
+                    {agreements?.map((agreement, index) => {
+                        return (
+                            <li
+                                key={agreement?.id}
+                                aria-setsize={agreement?.length}
+                                aria-posinset={index + 1}
+                                aria-selected="false"
+                                id={`dynamic-select--list--option-${index}`}
+                                className="usa-combo-box__list-option"
+                                tabIndex={index === 0 ? "0" : "-1"}
+                                role="option"
+                                data-value={agreement?.name}
+                            >
+                                {agreement?.name}
+                            </li>
+                        );
+                    })}
                     <li
                         aria-setsize="64"
                         aria-posinset="1"
