@@ -5,10 +5,15 @@ export const ProjectSelect = () => {
     const dispatch = useDispatch();
     const researchProjects = useSelector((state) => state.createBudgetLine.research_projects);
     const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
-    const onChangeResearchProjectSelection = (event) => {
-        //console.log(`Click-Event: ${event.target.value}`);
-        dispatch(setSelectedProject({ id: event.target.id, value: event.target.value }));
-        event.preventDefault();
+    const onChangeResearchProjectSelection = (projectId = 0) => {
+        if (projectId === 0) {
+            return;
+        }
+
+        dispatch(
+            setSelectedProject({ id: researchProjects[projectId - 1].id, value: researchProjects[projectId - 1].title })
+        );
+        // event.preventDefault();
     };
 
     const onChangeResearchProjectFilter = (event) => {
@@ -40,11 +45,11 @@ export const ProjectSelect = () => {
                     id=""
                     aria-hidden="true"
                     tabIndex="-1"
-                    onChange={onChangeResearchProjectSelection}
+                    onChange={(e) => onChangeResearchProjectSelection(e.target.value || 0)}
                 >
                     {researchProjects.map((project) => {
                         return (
-                            <option key={project?.id} value={project?.title}>
+                            <option key={project?.id} value={project?.id}>
                                 {project?.title}
                             </option>
                         );
@@ -66,7 +71,12 @@ export const ProjectSelect = () => {
                     // onChange={onChangeResearchProjectFilter}
                 />
                 <span className="usa-combo-box__clear-input__wrapper" tabIndex="-1">
-                    <button type="button" className="usa-combo-box__clear-input" aria-label="Clear the select contents">
+                    <button
+                        type="button"
+                        className="usa-combo-box__clear-input"
+                        aria-label="Clear the select contents"
+                        onClick={() => dispatch(setSelectedProject({}))}
+                    >
                         &nbsp;
                     </button>
                 </span>
