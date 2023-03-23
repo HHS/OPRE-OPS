@@ -26,18 +26,24 @@ export const AgreementSelect = () => {
     const AgreementSummaryCard = () => {
         return (
             <div
-                className="bg-base-lightest font-family-sans border-1px border-base-light radius-sm margin-top-4"
-                style={{ width: "23.9375rem", minHeight: "7.5625rem" }}
+                className="bg-base-lightest font-family-sans font-12px border-1px border-base-light radius-sm margin-top-4"
+                style={{ width: "23.9375rem", minHeight: "11.75rem" }}
             >
                 <dl className="margin-0 padding-y-2 padding-x-105">
                     <dt className="margin-0 text-base-dark">Agreement</dt>
                     <dd className="text-semibold margin-0">{selectedAgreement.value}</dd>
-                    <dt className="margin-0 text-base-dark">Description</dt>
+                    <dt className="margin-0 text-base-dark margin-top-205">Description</dt>
                     <dd className="text-semibold margin-0">{selectedAgreement.description}</dd>
-                    <dt className="margin-0 text-base-dark">Project Officer</dt>
-                    <dd className="text-semibold margin-0">{selectedAgreement.projectOfficer}</dd>
-                    <dt className="margin-0 text-base-dark">Period of Performance</dt>
-                    <dd className="text-semibold margin-0">{selectedAgreement.periodOfPerformance}</dd>
+                    <div className="display-flex flex-justify margin-top-205">
+                        <div className="display-flex flex-column">
+                            <dt className="margin-0 text-base-dark">Project Officer</dt>
+                            <dd className="text-semibold margin-0">{selectedAgreement.projectOfficer}</dd>
+                        </div>
+                        <div className="display-flex flex-column">
+                            <dt className="margin-0 text-base-dark">Period of Performance</dt>
+                            <dd className="text-semibold margin-0">{selectedAgreement.periodOfPerformance}</dd>
+                        </div>
+                    </div>
                 </dl>
             </div>
         );
