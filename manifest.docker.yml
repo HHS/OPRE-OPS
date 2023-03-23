@@ -6,7 +6,6 @@ applications:
     memory: 700M
     docker:
       image: ghcr.io/hhs/opre-ops/ops-backend:latest
-      username: tdonaworth
     command: ./ops_api/deployed_run.sh
 
   - name: ops-data-tools
@@ -17,15 +16,13 @@ applications:
     memory: 700M
     docker:
       image: ghcr.io/hhs/opre-ops/ops-data-tools:latest
-      username: tdonaworth
     command: ./data_tools/scripts/import_data.sh
     timeout: 90
 
   - name: ops-frontend
     memory: 64M
     docker:
-      image:
-      username: tdonaworth
+      image: ghcr.io/hhs/opre-ops/ops-frontend:latest
 
 services:
  - ops-db
