@@ -2,7 +2,7 @@ openapi: '3.0.2'
 info:
   title: OPRE OPS API
   description: OPRE OPS API Specification
-  version: '0.1'
+  version: '0.2'
 servers:
   - url: https://localhost:8080
     description: Localhost
@@ -15,8 +15,15 @@ paths:
     get:
       description: Get CANs
       responses:
-        '200':
+        "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CAN"
+              examples:
+                "0":
+                  $ref: "#/components/examples/CANs"
   /api/v1/cans/{can_id}:
     get:
       description: Get CAN by Id
@@ -37,7 +44,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CAN'
-              example:
+              examples:
                 '0':
                   $ref: '#/components/examples/CAN'
   /api/v1/portfolios:
@@ -46,6 +53,13 @@ paths:
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Portfolios"
+              examples:
+                '0':
+                  $ref: '#/components/examples/Portfolios'
   /api/v1/portfolios/{portfolio_id}:
     get:
       description: Get Portfolio by Id
@@ -93,53 +107,10 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  planned_funding:
-                    type: object
-                    properties:
-                      amount:
-                        type: number
-                      percent:
-                        type: string
-                  obligated_funding:
-                    type: object
-                    properties:
-                      amount:
-                        type: number
-                      percent:
-                        type: string
-                  available_funding:
-                    type: object
-                    properties:
-                      amount:
-                        type: number
-                      percent:
-                        type: string
-                  total_funding:
-                    type: object
-                    properties:
-                      amount:
-                        type: number
-                      percent:
-                        type: string
-                  in_execution_funding:
-                    type: object
-                    properties:
-                      amount:
-                        type: number
-                      percent:
-                        type: string
-                  carry_forward_funding:
-                    type: object
-                    properties:
-                      amount:
-                        type: number
-                      percent:
-                        type: string
+                $ref: "#/components/schemas/PlannedFunding"
               examples:
                 '0':
-                  value: |
+                  value:
                     {
                       "available_funding": {
                         "amount": 12000000.0,
@@ -196,7 +167,7 @@ paths:
                   type: string
               examples:
                 '0':
-                  value: |
+                  value:
                     [
                       {
                         "appropriation_date": "01/10/2023",
@@ -302,7 +273,7 @@ paths:
                     type: string
               examples:
                 '0':
-                  value: |
+                  value:
                     {
                       "available_funding": "8000000.00",
                       "can": {
@@ -344,106 +315,14 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  division:
-                    type: integer
-                  oidc_id:
-                    type: string
-                  full_name:
-                    type: string
-                  role:
-                    type: string
-                  last_name:
-                    type: string
-                  date_joined:
-                    type: string
-                  id:
-                    type: integer
-                  first_name:
-                    type: string
-                  updated: { }
-                  email:
-                    type: string
+                $ref: "#/components/schemas/Users"
               examples:
                 '0':
-                  value: |
-                    {
-                      "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
-                      "division": 3,
-                      "email": "tdonaworth+dev@flexion.us",
-                      "first_name": "Tim",
-                      "full_name": "(no name) (no name)",
-                      "id": 5,
-                      "last_name": "Donaworth",
-                      "oidc_id": "e5711101-bc3e-41e5-a6a2-051874b307ca",
-                      "role": "Tech Lead",
-                      "updated": null
-                    }
+                  value:
+                    $ref: "#/components/examples/User"
                 '1':
-                  value: |
-                    [
-                      {
-                        "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
-                        "division": 1,
-                        "email": "emily.ball@example.com",
-                        "first_name": "Emily",
-                        "full_name": "(no name) (no name)",
-                        "id": 1,
-                        "last_name": "Ball",
-                        "oidc_id": "00000000-0000-1111-a111-000000000001",
-                        "role": "COR",
-                        "updated": null
-                      },
-                      {
-                        "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
-                        "division": 4,
-                        "email": "Bethanne.Barnes@example.com",
-                        "first_name": "Bethanne",
-                        "full_name": "(no name) (no name)",
-                        "id": 2,
-                        "last_name": "Barnes",
-                        "oidc_id": "00000000-0000-1111-a111-000000000002",
-                        "role": "Division Director",
-                        "updated": null
-                      },
-                      {
-                        "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
-                        "division": 1,
-                        "email": "Meryl.Barofsky@example.com",
-                        "first_name": "Meryl",
-                        "full_name": "(no name) (no name)",
-                        "id": 3,
-                        "last_name": "Barofsky",
-                        "oidc_id": "00000000-0000-1111-a111-000000000003",
-                        "role": "COR",
-                        "updated": null
-                      },
-                      {
-                        "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
-                        "division": 3,
-                        "email": "Anne.Bergan@example.com",
-                        "first_name": "Anne",
-                        "full_name": "(no name) (no name)",
-                        "id": 4,
-                        "last_name": "Bergan",
-                        "oidc_id": "00000000-0000-1111-a111-000000000004",
-                        "role": "COR",
-                        "updated": null
-                      },
-                      {
-                        "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
-                        "division": 3,
-                        "email": "tdonaworth+dev@flexion.us",
-                        "first_name": "Tim",
-                        "full_name": "(no name) (no name)",
-                        "id": 5,
-                        "last_name": "Donaworth",
-                        "oidc_id": "e5711101-bc3e-41e5-a6a2-051874b307ca",
-                        "role": "Tech Lead",
-                        "updated": null
-                      }
-                    ]
+                  value:
+                    $ref: "#/components/examples/Users"
   /api/v1/users/{user_id}:
     get:
       description: Get User by Id
@@ -591,10 +470,14 @@ components:
         expiration_date:
           type: string
         managing_research_project_id: { }
-
     Portfolio:
       description: Portfolio Object
-
+    Portfolios:
+      description: List of OPRE Portfolios
+      type: array
+      items:
+        anyOf:
+          - $ref: "#/components/schemas/Portfolio"
     User:
       description: OPRE User Object
       type: object
@@ -620,14 +503,18 @@ components:
         updated: { }
         email:
           type: string
-
+    Users:
+      description: List of OPRE Users
+      type: array
+      items:
+        anyOf:
+          - $ref: "#/components/schemas/User"
     ResearchProjectFundingSummary:
       description: Research Project funding data for a Portfolio
       type: object
       properties:
         total_funding:
           type: number
-
     TeamLeader:
       type: object
       properties:
@@ -655,7 +542,6 @@ components:
           type: string
         updated_on:
           type: string
-
     ResearchProject:
       type: object
       properties:
@@ -709,62 +595,112 @@ components:
         url:
           type: string
           example: 'https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center'
-
     ResearchProjects:
       description: OPRE List of Research Projects
       type: array
       items:
         anyOf:
           - $ref: "#/components/schemas/ResearchProject"
+    PlannedFunding:
+      description: Planned Funding
+      type: "object"
+      properties:
+        planned_funding:
+          type: object
+          properties:
+            amount:
+              type: number
+            percent:
+              type: string
+        obligated_funding:
+          type: object
+          properties:
+            amount:
+              type: number
+            percent:
+              type: string
+        available_funding:
+          type: object
+          properties:
+            amount:
+              type: number
+            percent:
+              type: string
+        total_funding:
+          type: object
+          properties:
+            amount:
+              type: number
+            percent:
+              type: string
+        in_execution_funding:
+          type: object
+          properties:
+            amount:
+              type: number
+            percent:
+              type: string
+        carry_forward_funding:
+          type: object
+          properties:
+            amount:
+              type: number
+            percent:
+              type: string
 
   examples:
     CAN:
       value:
-        - appropriation_date: "01/10/2023"
-        - appropriation_term: 1
-        - arrangement_type_id: 2
-        - authorizer_id: 23
-        - description: "Healthy Marriages Responsible Fatherhood - OFA"
-        - expiration_date: "01/09/2024"
-        - id: 10
-        - managing_portfolio_id: 6
-        - managing_research_project_id: null
-        - nickname: "HMRF-OFA"
-        - number: "G99XXX3"
-        - purpose: ""
-    Portfolio:
-      value: |
         {
-          "cans": [
-              {
-                  "appropriation_date": "01/10/2023",
-                  "appropriation_term": 1,
-                  "arrangement_type_id": 3,
-                  "authorizer_id": 26,
-                  "description": "Incoming Interagency Agreements",
-                  "expiration_date": "01/09/2024",
-                  "id": 2,
-                  "managing_portfolio_id": 1,
-                  "managing_research_project_id": null,
-                  "nickname": "IAA-Incoming",
-                  "number": "G99IA14",
-                  "purpose": ""
-              },
-              {
-                  "appropriation_date": "01/10/2022",
-                  "appropriation_term": 1,
-                  "arrangement_type_id": 4,
-                  "authorizer_id": 26,
-                  "description": "Child Development Research Fellowship Grant Program",
-                  "expiration_date": "01/09/2023",
-                  "id": 4,
-                  "managing_portfolio_id": 1,
-                  "managing_research_project_id": 1,
-                  "nickname": "ASPE SRCD-IDDA",
-                  "number": "G990136",
-                  "purpose": ""
-              }
-          ],
+          "appropriation_date": "01/10/2023",
+          "appropriation_term": 1,
+          "arrangement_type_id": 2,
+          "authorizer_id": 23,
+          "description": "Healthy Marriages Responsible Fatherhood - OFA",
+          "expiration_date": "01/09/2024",
+          "id": 10,
+          "managing_portfolio_id": 6,
+          "managing_research_project_id": null,
+          "nickname": "HMRF-OFA",
+          "number": "G99XXX3",
+          "purpose": ""
+        }
+    CANs:
+      value:
+        [
+          {
+            "appropriation_date": "01/10/2023",
+            "appropriation_term": 1,
+            "arrangement_type_id": 2,
+            "authorizer_id": 23,
+            "description": "Healthy Marriages Responsible Fatherhood - OFA",
+            "expiration_date": "01/09/2024",
+            "id": 10,
+            "managing_portfolio_id": 6,
+            "managing_research_project_id": null,
+            "nickname": "HMRF-OFA",
+            "number": "G99XXX3",
+            "purpose": ""
+          },
+          {
+            "appropriation_date": "01/10/2023",
+            "appropriation_term": 1,
+            "arrangement_type_id": 2,
+            "authorizer_id": 23,
+            "description": "Children Direct Decendent Ancestry - OFA",
+            "expiration_date": "01/09/2024",
+            "id": 1,
+            "managing_portfolio_id": 5,
+            "managing_research_project_id": null,
+            "nickname": "CDDA-OFA",
+            "number": "G99XXX2",
+            "purpose": ""
+          }
+        ]
+    Portfolio:
+      value:
+        {
+          "cans": ["$ref": "#/components/examples/CANs"],
           "description": "The promotion of childrens safety, ... to the attention of child welfare.",
           "division": {
               "abbreviation": "DFCD",
@@ -798,8 +734,82 @@ components:
               }
           ]
         }
+    Portfolios:
+      value:
+        [
+          {
+          "cans": ["$ref": "#/components/examples/CANs"],
+          "description": "The promotion of childrens safety, ... to the attention of child welfare.",
+          "division": {
+              "abbreviation": "DFCD",
+              "id": 1,
+              "name": "Division of Child and Family Development"
+          },
+          "division_id": 1,
+          "id": 1,
+          "name": "Portfolio 2",
+          "status": "Active",
+          "status_id": 1,
+          "team_leaders": [
+              {
+                  "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                  "division": 1,
+                  "email": "emily.ball@example.com",
+                  "first_name": "Emily",
+                  "full_name": "(no name) (no name)",
+                  "id": 1,
+                  "last_name": "Ball",
+                  "oidc_id": "00000000-0000-1111-a111-000000000001",
+                  "role": "COR",
+                  "updated": null
+              }
+          ],
+          "urls": [
+              {
+                  "id": 1,
+                  "portfolio_id": 1,
+                  "url": "https://www.acf.hhs.gov/opre/topic/overview/abuse-neglect-adoption-foster-care"
+              }
+          ]
+        },
+        {
+          "cans": ["$ref": "#/components/examples/CANs"],
+          "description": "The promotion of childrens safety, ... to the attention of child welfare.",
+          "division": {
+              "abbreviation": "DFCD",
+              "id": 1,
+              "name": "Division of Child and Family Development"
+          },
+          "division_id": 1,
+          "id": 2,
+          "name": "Child Welfare Research",
+          "status": "Active",
+          "status_id": 1,
+          "team_leaders": [
+              {
+                  "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                  "division": 1,
+                  "email": "emily.ball@example.com",
+                  "first_name": "Emily",
+                  "full_name": "(no name) (no name)",
+                  "id": 1,
+                  "last_name": "Ball",
+                  "oidc_id": "00000000-0000-1111-a111-000000000001",
+                  "role": "COR",
+                  "updated": null
+              }
+          ],
+          "urls": [
+              {
+                  "id": 1,
+                  "portfolio_id": 1,
+                  "url": "https://www.acf.hhs.gov/opre/topic/overview/abuse-neglect-adoption-foster-care"
+              }
+          ]
+        }
+        ]
     User:
-      value: |
+      value:
         {
           "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
           "division": 3,
@@ -812,109 +822,173 @@ components:
           "role": "Administrator",
           "updated": null
         }
+    Users:
+      value:
+        [
+          {
+            "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+            "division": 1,
+            "email": "emily.ball@example.com",
+            "first_name": "Emily",
+            "full_name": "(no name) (no name)",
+            "id": 1,
+            "last_name": "Ball",
+            "oidc_id": "00000000-0000-1111-a111-000000000001",
+            "role": "COR",
+            "updated": null
+          },
+          {
+            "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+            "division": 4,
+            "email": "Bethanne.Barnes@example.com",
+            "first_name": "Bethanne",
+            "full_name": "(no name) (no name)",
+            "id": 2,
+            "last_name": "Barnes",
+            "oidc_id": "00000000-0000-1111-a111-000000000002",
+            "role": "Division Director",
+            "updated": null
+          },
+          {
+            "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+            "division": 1,
+            "email": "Meryl.Barofsky@example.com",
+            "first_name": "Meryl",
+            "full_name": "(no name) (no name)",
+            "id": 3,
+            "last_name": "Barofsky",
+            "oidc_id": "00000000-0000-1111-a111-000000000003",
+            "role": "COR",
+            "updated": null
+          },
+          {
+            "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+            "division": 3,
+            "email": "Anne.Bergan@example.com",
+            "first_name": "Anne",
+            "full_name": "(no name) (no name)",
+            "id": 4,
+            "last_name": "Bergan",
+            "oidc_id": "00000000-0000-1111-a111-000000000004",
+            "role": "COR",
+            "updated": null
+          },
+          {
+            "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+            "division": 3,
+            "email": "tdonaworth+dev@flexion.us",
+            "first_name": "Tim",
+            "full_name": "(no name) (no name)",
+            "id": 5,
+            "last_name": "Donaworth",
+            "oidc_id": "e5711101-bc3e-41e5-a6a2-051874b307ca",
+            "role": "Tech Lead",
+            "updated": null
+          }
+        ]
     ResearchProjects:
-      value: |
-            [
+      value:
+        [
+          {
+            "cans": [
               {
-                "cans": [
-                  {
-                    "appropriation_date": "01/10/2022",
-                    "appropriation_term": 1,
-                    "arrangement_type": "OPRE_APPROPRIATION",
-                    "authorizer_id": 26,
-                    "created_by": None,
-                    "created_on": "Wed, 15 Mar 2023 17:41:54 GMT",
-                    "description": "Child Development Research Fellowship Grant Program",
-                    "expiration_date": "01/09/2023",
-                    "id": 4,
-                    "managing_portfolio_id": 1,
-                    "managing_research_project_id": 1,
-                    "nickname": "ASPE SRCD-IDDA",
-                    "number": "G990136",
-                    "purpose": "",
-                    "updated_on": "Wed, 15 Mar 2023 17:41:54 GMT",
-                  },
-                  {
-                    "appropriation_date": "01/10/2022",
-                    "appropriation_term": 1,
-                    "arrangement_type": "OPRE_APPROPRIATION",
-                    "authorizer_id": 26,
-                    "created_by": None,
-                    "created_on": "Wed, 15 Mar 2023 17:41:54 GMT",
-                    "description": "Example CAN",
-                    "expiration_date": "01/09/2023",
-                    "id": 13,
-                    "managing_portfolio_id": 3,
-                    "managing_research_project_id": 1,
-                    "nickname": "",
-                    "number": "G99XXX8",
-                    "purpose": "",
-                    "updated_on": "Wed, 15 Mar 2023 17:41:54 GMT",
-                  },
-                ],
+                "appropriation_date": "01/10/2022",
+                "appropriation_term": 1,
+                "arrangement_type": "OPRE_APPROPRIATION",
+                "authorizer_id": 26,
                 "created_by": None,
-                "created_on": "Wed, 15 Mar 2023 17:41:52 GMT",
-                "description": "        The National African American Child and Family Research Center, supported by a five-year OPRE        grant (2021 — 2026), will provide national leadership and excellence by investigating the assets, needs,        and experiences of the diverse population of African American families and children served (or potentially        served) by ACF programs, as well as promising approaches to address economic and social inequities and,        ultimately, promote social and economic well-being.  The primary focus of this Center will be on childcare        assistance, TANF, and Head Start and Early Head Start programs and the populations they serve. The work of        the Center will draw on interdisciplinary approaches to accomplish the three goals listed below.        \n\n1. Advance Research        The Center will plan, initiate, and maintain a community-engaged, focused, and high-caliber research program.        The Center’s program of research will build on the existing literature related to African American children        and families and should be directly relevant to the needs and interests of ACF areas of programmatic concern.        \n\n2. Build Research Capacity        The Center will build research capacity and infrastructure to conduct research relevant to ACF program and        policy goals that is culturally rigorous and informed by an understanding of current and historical        circumstances that shape the experiences of African Americans. In addition, the Center will contribute to the        development and expansion of the pool of researchers reflective of the communities being studied by the Center.        \n\n3. Communicate Research        The Center will develop and implement a dissemination strategy that broadly and efficiently communicates        findings from research conducted within and outside of the Center and increases the use of research, data, and        relevant resources for a wide audience including researchers, federal and state policymakers, ACF grantees,        program administrators, and communities participating in the research.        \n\nThe Center is led by the Morehouse School of Medicine.        \n\nThe OPRE point of contact is Megan Reid.        ",
+                "created_on": "Wed, 15 Mar 2023 17:41:54 GMT",
+                "description": "Child Development Research Fellowship Grant Program",
+                "expiration_date": "01/09/2023",
+                "id": 4,
+                "managing_portfolio_id": 1,
+                "managing_research_project_id": 1,
+                "nickname": "ASPE SRCD-IDDA",
+                "number": "G990136",
+                "purpose": "",
+                "updated_on": "Wed, 15 Mar 2023 17:41:54 GMT",
+              },
+              {
+                "appropriation_date": "01/10/2022",
+                "appropriation_term": 1,
+                "arrangement_type": "OPRE_APPROPRIATION",
+                "authorizer_id": 26,
+                "created_by": None,
+                "created_on": "Wed, 15 Mar 2023 17:41:54 GMT",
+                "description": "Example CAN",
+                "expiration_date": "01/09/2023",
+                "id": 13,
+                "managing_portfolio_id": 3,
+                "managing_research_project_id": 1,
+                "nickname": "",
+                "number": "G99XXX8",
+                "purpose": "",
+                "updated_on": "Wed, 15 Mar 2023 17:41:54 GMT",
+              },
+            ],
+            "created_by": None,
+            "created_on": "Wed, 15 Mar 2023 17:41:52 GMT",
+            "description": "        The National African American Child and Family Research Center, supported by a five-year OPRE        grant (2021 — 2026), will provide national leadership and excellence by investigating the assets, needs,        and experiences of the diverse population of African American families and children served (or potentially        served) by ACF programs, as well as promising approaches to address economic and social inequities and,        ultimately, promote social and economic well-being.  The primary focus of this Center will be on childcare        assistance, TANF, and Head Start and Early Head Start programs and the populations they serve. The work of        the Center will draw on interdisciplinary approaches to accomplish the three goals listed below.        \n\n1. Advance Research        The Center will plan, initiate, and maintain a community-engaged, focused, and high-caliber research program.        The Center’s program of research will build on the existing literature related to African American children        and families and should be directly relevant to the needs and interests of ACF areas of programmatic concern.        \n\n2. Build Research Capacity        The Center will build research capacity and infrastructure to conduct research relevant to ACF program and        policy goals that is culturally rigorous and informed by an understanding of current and historical        circumstances that shape the experiences of African Americans. In addition, the Center will contribute to the        development and expansion of the pool of researchers reflective of the communities being studied by the Center.        \n\n3. Communicate Research        The Center will develop and implement a dissemination strategy that broadly and efficiently communicates        findings from research conducted within and outside of the Center and increases the use of research, data, and        relevant resources for a wide audience including researchers, federal and state policymakers, ACF grantees,        program administrators, and communities participating in the research.        \n\nThe Center is led by the Morehouse School of Medicine.        \n\nThe OPRE point of contact is Megan Reid.        ",
+            "id": 1,
+            "methodologies": [
+              "SURVEY",
+              "FIELD_RESEARCH",
+              "PARTICIPANT_OBSERVATION",
+              "ETHNOGRAPHY",
+              "EXPERIMENT",
+              "SECONDARY_DATA_ANALYSIS",
+              "CASE_STUDY",
+            ],
+            "origination_date": "2022-01-01",
+            "populations": [ "POPULATION_1" ],
+            "portfolio_id": 3,
+            "short_title": "",
+            "team_leaders": [
+              {
+                "created_by": None,
+                "created_on": "Wed, 15 Mar 2023 17:41:53 GMT",
+                "date_joined": "Wed, 15 Mar 2023 17:41:53 GMT",
+                "division": 1,
+                "email": "emily.ball@example.com",
+                "first_name": "Emily",
+                "full_name": "(no name) (no name)",
                 "id": 1,
-                "methodologies": [
-                  "SURVEY",
-                  "FIELD_RESEARCH",
-                  "PARTICIPANT_OBSERVATION",
-                  "ETHNOGRAPHY",
-                  "EXPERIMENT",
-                  "SECONDARY_DATA_ANALYSIS",
-                  "CASE_STUDY",
-                ],
-                "origination_date": "2022-01-01",
-                "populations": [ "POPULATION_1" ],
-                "portfolio_id": 3,
-                "short_title": "",
-                "team_leaders": [
-                  {
-                    "created_by": None,
-                    "created_on": "Wed, 15 Mar 2023 17:41:53 GMT",
-                    "date_joined": "Wed, 15 Mar 2023 17:41:53 GMT",
-                    "division": 1,
-                    "email": "emily.ball@example.com",
-                    "first_name": "Emily",
-                    "full_name": "(no name) (no name)",
-                    "id": 1,
-                    "last_name": "Ball",
-                    "oidc_id": "00000000-0000-1111-a111-000000000001",
-                    "role": "COR",
-                    "updated": None,
-                    "updated_on": "Wed, 15 Mar 2023 17:41:53 GMT",
-                  }
-                ],
-                "title": "African American Child and Family Research Center",
-                "updated_on": "Wed, 15 Mar 2023 17:41:52 GMT",
-                "url": "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center",
-              },
-              {
-                "cans": [ ],
-                "created_by": None,
-                "created_on": "Wed, 15 Mar 2023 17:41:52 GMT",
-                "description": '         Evidence suggests that fathers play an important role in children\'s development and that they can serve as         a key source of emotional and financial support. In many social services, however, fathers are overlooked.         This is the case in the child welfare system, where data from the Child and Family Service Reviews indicate         that fathers and paternal relatives are minimally engaged and may be untapped resources.         \n\nThe purpose of this project is to bridge the gap between what we know about the importance of fathers         and practices in the child welfare system that may contribute to low levels of father and paternal relative         engagement. Partnering with the Office of Family Assistance (which oversees the Healthy Marriage and         Responsible Fatherhood discretionary grant program) and the Children’s Bureau, this project aims to: \n\n* Synthesize what we already know about a) efforts to engage fathers and paternal relatives of children         involved in the child welfare system, and b) Continuous Quality Improvement approaches within the child         welfare system;         \n* Map "touch points" within a child welfare case where fathers and/or paternal relatives could be more          fully engaged;         \n* Identify potential strategies and interventions that could be used at the touch points to increase their         engagement;         \n* Select a collaborative Continuous Quality Improvement approach and use it to work intensively with a few         sites to implement and test these father and paternal relative engagement strategies and interventions;         \n* Conduct a pilot study to examine the feasibility and implementation of the Continuous Quality Improvement         approach and the engagement strategies and interventions; and         \n* Conduct an evaluation of the selected continuous learning methodology and the engagement strategies and         interventions.        ',
-                "id": 3,
-                "methodologies": [
-                  "SURVEY",
-                  "FIELD_RESEARCH",
-                  "PARTICIPANT_OBSERVATION",
-                  "ETHNOGRAPHY",
-                  "EXPERIMENT",
-                  "SECONDARY_DATA_ANALYSIS",
-                  "CASE_STUDY",
-                ],
-                "origination_date": "2017-01-01",
-                "populations": [ "POPULATION_1" ],
-                "portfolio_id": 6,
-                "short_title": "",
-                "team_leaders": [ ],
-                "title": "Fathers and Continuous Learning (FCL)",
-                "updated_on": "Wed, 15 Mar 2023 17:41:52 GMT",
-                "url": "https://www.acf.hhs.gov/opre/project/fathers-and-continuous-learning",
-              },
-            ]
+                "last_name": "Ball",
+                "oidc_id": "00000000-0000-1111-a111-000000000001",
+                "role": "COR",
+                "updated": None,
+                "updated_on": "Wed, 15 Mar 2023 17:41:53 GMT",
+              }
+            ],
+            "title": "African American Child and Family Research Center",
+            "updated_on": "Wed, 15 Mar 2023 17:41:52 GMT",
+            "url": "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center",
+          },
+          {
+            "cans": [ ],
+            "created_by": None,
+            "created_on": "Wed, 15 Mar 2023 17:41:52 GMT",
+            "description": 'Evidence suggests that fathers play an important role in childrens development and that they can serve as a key source of emotional and financial support. In many social services, however, fathers are overlooked.',
+            "id": 3,
+            "methodologies": [
+              "SURVEY",
+              "FIELD_RESEARCH",
+              "PARTICIPANT_OBSERVATION",
+              "ETHNOGRAPHY",
+              "EXPERIMENT",
+              "SECONDARY_DATA_ANALYSIS",
+              "CASE_STUDY",
+            ],
+            "origination_date": "2017-01-01",
+            "populations": [ "POPULATION_1" ],
+            "portfolio_id": 6,
+            "short_title": "",
+            "team_leaders": [ ],
+            "title": "Fathers and Continuous Learning (FCL)",
+            "updated_on": "Wed, 15 Mar 2023 17:41:52 GMT",
+            "url": "https://www.acf.hhs.gov/opre/project/fathers-and-continuous-learning",
+          },
+        ]
 
 security:
   - bearerAuth: [ ]  # pragma: allowlist secret
