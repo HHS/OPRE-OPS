@@ -21,7 +21,7 @@ echo "Loading 'funding_source_data.json5'..."
 DATA=./data_tools/data/funding_source_data.json5 python ./data_tools/src/import_static_data/import_data.py
 
 echo "Loading 'research_project_data.json5'..."
-DATA=./data_tools/./data/research_project_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
+DATA=./data_tools/data/research_project_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
 
 echo "Loading 'user_data.json5'..."
 DATA=./data_tools/data/user_data.json5 python ./data_tools/src/import_static_data/import_data.py
