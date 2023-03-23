@@ -13,7 +13,7 @@ import { DesiredAwardDate } from "./DesiredAwardDate";
 import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
 import { setAgreements } from "./createBudgetLineSlice";
 
-const StepOne = ({ goBack, goToNext }) => (
+const StepOne = ({ goToNext }) => (
     <>
         <h2 className="font-sans-lg">Create New Budget Line</h2>
         <p>Step One: Text explaining this page</p>

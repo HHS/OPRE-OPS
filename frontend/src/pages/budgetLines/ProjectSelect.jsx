@@ -50,6 +50,7 @@ export const ProjectSelect = () => {
                         id=""
                         aria-hidden="true"
                         tabIndex="-1"
+                        value={selectedResearchProject?.value}
                         onChange={(e) => onChangeResearchProjectSelection(e.target.value || 0)}
                     >
                         {researchProjects.map((project) => {
@@ -73,6 +74,7 @@ export const ProjectSelect = () => {
                         type="text"
                         role="combobox"
                         aria-activedescendant=""
+                        defaultValue={selectedResearchProject?.value}
                         // onChange={onChangeResearchProjectFilter}
                     />
                     <span className="usa-combo-box__clear-input__wrapper" tabIndex="-1">
