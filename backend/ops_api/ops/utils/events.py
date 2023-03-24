@@ -1,3 +1,6 @@
+from types import TracebackType
+from typing import Optional, Type
+
 from flask import current_app, request
 from models.events import OpsEvent, OpsEventStatus, OpsEventType
 from ops_api.ops import db
@@ -21,10 +24,15 @@ class OpsEventHandler:
 
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
         if exc_val:
             event_status = OpsEventStatus.FAILED
-            self.metadata.update({"error_message": exc_val.error, "error_type": str(exc_type)})
+            self.metadata.update({"error_message": f"{exc_val}", "error_type": f"{exc_type}"})
         else:
             event_status = OpsEventStatus.SUCCESS
 
@@ -38,4 +46,4 @@ class OpsEventHandler:
         current_app.logger.info(f"EVENT: {event.to_dict()}")
 
         if isinstance(exc_val, Exception):
-            current_app.logger.error(f"EVENT ({exc_type}): {exc_val.error}")
+            current_app.logger.error(f"EVENT ({exc_type}): {exc_val}")
