@@ -5,11 +5,11 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - data-tools/**
+      - backend/data-tools/**
   push:
     branches: [main, develop]
     paths:
-      - data-tools/**
+      - backend/data-tools/**
 
 env:
   REGISTRY: ghcr.io
