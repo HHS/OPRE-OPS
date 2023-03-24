@@ -27,6 +27,9 @@ jobs:
         uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3
 
         # https://github.com/docker/login-action
+        # Make sure that the repo (OPRE-OPS) has correct permission to perform actions
+        # on the ghcr.io registry: {GH ORG} --> Packages --> {package} --> Package Settings:
+        # ensure the 'Manage Actions' has the correct repo/permissions set.
       - name: Log in to the Container registry
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # tag = v2.1.0
         with:
