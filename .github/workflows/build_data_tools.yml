@@ -23,4 +23,4 @@ jobs:
     with:
       image-name: ops-data-tools
       docker-file: backend/Dockerfile.cg-data-tools
-      docker-context: "{{defaultContext}}:backend"
+      docker-context: "{{defaultContext}}"
