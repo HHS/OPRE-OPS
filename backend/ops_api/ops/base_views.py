@@ -6,7 +6,10 @@ from ops_api.ops.utils.auth import auth_gateway
 
 
 def generate_validator(model: BaseModel) -> BaseModel.Validator:
-    return model.Validator()
+    try:
+        return model.Validator()
+    except AttributeError:
+        return None
 
 
 class OPSMethodView(MethodView):
