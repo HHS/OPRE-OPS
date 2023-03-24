@@ -27,7 +27,7 @@ jobs:
     uses: ./.github/workflows/build_reusable.yml
     with:
       image-name: ops-python-base
-      docker-file: Dockerfile.base
+      docker-file: backend/Dockerfile.base
       # docker-context: "{{defaultContext}}:backend"
 
     # steps:
