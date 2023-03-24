@@ -49,3 +49,16 @@ def test_get_all_users_without_auth(client):
 def test_get_all_users_with_auth_fixture(auth_client):
     response = auth_client.get("/api/v1/users/")
     assert response.status_code == 200
+
+
+def test_user_to_dict():
+    user = User(
+        id=1,
+        oidc_id="abcd",
+        email="example@example.com",
+        first_name="blah",
+        last_name="blah",
+        division=1,
+    )
+    assert user.to_dict()["id"] == 1
+    assert user.to_dict()["oidc_id"] == "abcd"
