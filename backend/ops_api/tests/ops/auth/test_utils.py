@@ -71,5 +71,7 @@ def test_authorization_gateway_authorize_successful(mocker):
     mock_basic_provider = MockAuthorizationProvider()
     mocker.patch.object(mock_basic_provider, "is_authorized")
     authorization_gateway = AuthorizationGateway(mock_basic_provider)
-    result = authorization_gateway.authorize("1234-5432-1234", ["can_read", "portfolio_read"])
+    result = authorization_gateway.authorize(
+        "1234-5432-1234", ["can_read", "portfolio_read"]
+    )
     assert result is True

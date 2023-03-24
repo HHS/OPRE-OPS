@@ -68,10 +68,12 @@ PROCUREMENT_SHOPS_LIST_API_VIEW_FUNC = ProcurementShopsListAPI.as_view(
 
 # PORTFOLIO STATUS ENDPOINTS
 PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC = PortfolioStatusItemAPI.as_view(
-    "portfolio-status-item", PortfolioStatus,
+    "portfolio-status-item",
+    PortfolioStatus,
 )
 PORTFOLIO_STATUS_LIST_API_VIEW_FUNC = PortfolioStatusListAPI.as_view(
-    "portfolio-status-group", PortfolioStatus,
+    "portfolio-status-group",
+    PortfolioStatus,
 )
 
 # DIVISION ENDPOINTS

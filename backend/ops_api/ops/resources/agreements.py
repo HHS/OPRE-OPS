@@ -49,7 +49,9 @@ class AgreementListAPI(BaseListAPI):
             query_helper.add_search(Agreement.name, search)
 
         if research_project_id:
-            query_helper.add_column_equals(Agreement.research_project_id, research_project_id)
+            query_helper.add_column_equals(
+                Agreement.research_project_id, research_project_id
+            )
 
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")
