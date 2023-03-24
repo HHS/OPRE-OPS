@@ -3,6 +3,7 @@ name: Build and Publish ops-python-base Image
 on:
   workflow_dispatch:
   push:
+    branches: [POC-Deploy-Docker]
     paths:
       - /backend/Dockerfile.base
     tags:
