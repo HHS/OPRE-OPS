@@ -1,7 +1,8 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+from typing import Protocol
 
 
-class DataToolsConfig(ABC):
+class DataToolsConfig(Protocol):
     @property
     @abstractmethod
     def db_connection_string(self) -> str:
