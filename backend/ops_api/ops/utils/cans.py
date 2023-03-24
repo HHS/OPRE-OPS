@@ -19,27 +19,19 @@ class CanFundingSummary(TypedDict):
     expiration_date: str
 
 
-def get_can_funding_summary(
-    can: CAN, fiscal_year: Optional[int] = None
-) -> CanFundingSummary:
-    can_fiscal_year_query = CANFiscalYear.query.filter(
-        CANFiscalYear.can.has(CAN.id == can.id)
-    )
+def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanFundingSummary:
+    can_fiscal_year_query = CANFiscalYear.query.filter(CANFiscalYear.can.has(CAN.id == can.id))
 
     can_fiscal_year_carry_forward_query = CANFiscalYearCarryForward.query.filter(
         CANFiscalYearCarryForward.can.has(CAN.id == can.id)
     )
 
     if fiscal_year:
-        can_fiscal_year_query = can_fiscal_year_query.filter(
-            CANFiscalYear.fiscal_year == fiscal_year
-        ).all()
+        can_fiscal_year_query = can_fiscal_year_query.filter(CANFiscalYear.fiscal_year == fiscal_year).all()
 
-        can_fiscal_year_carry_forward_query = (
-            can_fiscal_year_carry_forward_query.filter(
-                CANFiscalYearCarryForward.to_fiscal_year == fiscal_year
-            ).all()
-        )
+        can_fiscal_year_carry_forward_query = can_fiscal_year_carry_forward_query.filter(
+            CANFiscalYearCarryForward.to_fiscal_year == fiscal_year
+        ).all()
 
     received_funding = sum([c.received_funding for c in can_fiscal_year_query]) or 0
 
@@ -48,8 +40,7 @@ def get_can_funding_summary(
     carry_forward_data = [
         {
             "amount": (
-                (c.received_amount if c.received_amount else 0)
-                + (c.expected_amount if c.expected_amount else 0)
+                (c.received_amount if c.received_amount else 0) + (c.expected_amount if c.expected_amount else 0)
             ),
             "fy": c.from_fiscal_year,
         }
@@ -61,9 +52,7 @@ def get_can_funding_summary(
 
         carry_forward_years = sorted({c["fy"] for c in carry_forward_data})
 
-        carry_forward_label = (
-            ", ".join(f"FY {c}" for c in carry_forward_years) + " Carry-Forward"
-        )
+        carry_forward_label = ", ".join(f"FY {c}" for c in carry_forward_years) + " Carry-Forward"
     else:
         carry_forward_funding = 0
         carry_forward_label = "Carry-Forward"
@@ -71,19 +60,10 @@ def get_can_funding_summary(
     total_funding = received_funding + expected_funding
 
     # Amount available to a Portfolio budget is the sum of the BLI minus the Portfolio total (above)
-    budget_line_items = BudgetLineItem.query.filter(
-        BudgetLineItem.can.has(CAN.id == can.id)
-    )
+    budget_line_items = BudgetLineItem.query.filter(BudgetLineItem.can.has(CAN.id == can.id))
 
-    if fiscal_year:
-        budget_line_items = budget_line_items.filter(
-            BudgetLineItem.fiscal_year == fiscal_year
-        )
-
-    planned_budget_line_items = budget_line_items.filter(
-        BudgetLineItem.status.has(BudgetLineItemStatus.Planned)
-    ).all()
-    planned_funding = sum([b.funding for b in planned_budget_line_items]) or 0
+    planned_budget_line_items = budget_line_items.where(BudgetLineItem.status == BudgetLineItemStatus.PLANNED).all()
+    planned_funding = sum([b.amount for b in planned_budget_line_items]) or 0
 
     obligated_budget_line_items = budget_line_items.filter(
         BudgetLineItem.status == BudgetLineItemStatus.OBLIGATED
