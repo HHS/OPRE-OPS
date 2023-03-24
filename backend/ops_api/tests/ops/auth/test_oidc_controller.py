@@ -14,8 +14,6 @@ def test_auth_post_fails(client):
 @pytest.mark.usefixtures("app_ctx")
 def test_get_jwt_not_none(app):
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    encoded = key.private_bytes(
-        Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption()
-    )
+    encoded = key.private_bytes(Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption())
     with app.test_request_context("/auth/login", method="POST", data={"code": ""}):
         assert create_oauth_jwt(encoded) is not None

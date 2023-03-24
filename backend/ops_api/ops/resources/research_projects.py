@@ -23,9 +23,7 @@ class ResearchProjectItemAPI(BaseItemAPI):
     @jwt_required()
     def get(self, id: int) -> Response:
         identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(
-            identity, ["GET_RESEARCH_PROJECTS"]
-        )
+        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_RESEARCH_PROJECTS"])
 
         if is_authorized:
             research_project = self._get_item(id)
@@ -73,9 +71,7 @@ class ResearchProjectListAPI(BaseListAPI):
     @jwt_required()
     def get(self) -> Response:
         identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(
-            identity, ["GET_RESEARCH_PROJECTS"]
-        )
+        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_RESEARCH_PROJECTS"])
 
         if is_authorized:
             fiscal_year = request.args.get("fiscal_year")

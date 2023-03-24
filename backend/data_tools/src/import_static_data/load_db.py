@@ -29,9 +29,7 @@ def init_db(
     config: DataToolsConfig, db: Optional[Engine] = None
 ) -> Tuple[sqlalchemy.engine.Engine, sqlalchemy.MetaData]:
     if not db:
-        engine = create_engine(
-            config.db_connection_string, echo=config.verbosity, future=True
-        )
+        engine = create_engine(config.db_connection_string, echo=config.verbosity, future=True)
     else:
         engine = db
     return engine, BaseModel.metadata

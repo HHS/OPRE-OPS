@@ -12,9 +12,7 @@ from ops_api.ops.utils.portfolios import (
 
 @pytest.mark.usefixtures("app_ctx")
 def test_portfolio_retrieve(loaded_db):
-    portfolio = (
-        loaded_db.session.query(Portfolio).filter(Portfolio.name == "Child Care").one()
-    )
+    portfolio = loaded_db.session.query(Portfolio).filter(Portfolio.name == "Child Care").one()
 
     assert portfolio is not None
     assert portfolio.name == "Child Care"
@@ -99,19 +97,11 @@ def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
         can_100 = CAN(id=100, number="CAN100")
         portfolio_100.cans.append(can_100)
 
-        can_100_fy_2023 = CANFiscalYear(
-            can=can_100, fiscal_year=2023, total_fiscal_year_funding=2.0
-        )
+        can_100_fy_2023 = CANFiscalYear(can=can_100, fiscal_year=2023, total_fiscal_year_funding=2.0)
 
-        blin_1 = BudgetLineItem(
-            amount=1.0, status=BudgetLineItemStatus.PLANNED, can=can_100
-        )
-        blin_2 = BudgetLineItem(
-            amount=2.0, status=BudgetLineItemStatus.IN_EXECUTION, can=can_100
-        )
-        blin_3 = BudgetLineItem(
-            amount=3.0, status=BudgetLineItemStatus.OBLIGATED, can=can_100
-        )
+        blin_1 = BudgetLineItem(amount=1.0, status=BudgetLineItemStatus.PLANNED, can=can_100)
+        blin_2 = BudgetLineItem(amount=2.0, status=BudgetLineItemStatus.IN_EXECUTION, can=can_100)
+        blin_3 = BudgetLineItem(amount=3.0, status=BudgetLineItemStatus.OBLIGATED, can=can_100)
 
         can_100_fy_2022_co = CANFiscalYearCarryForward(
             id=100,
@@ -183,14 +173,10 @@ def test_get_budget_line_item_total_planned():
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("db_loaded_with_data_for_total_fiscal_year_funding")
 def test_get_budget_line_item_total_in_execution():
-    result = _get_budget_line_item_total_by_status(
-        100, BudgetLineItemStatus.IN_EXECUTION
-    )
+    result = _get_budget_line_item_total_by_status(100, BudgetLineItemStatus.IN_EXECUTION)
     assert result == Decimal(2), "$2 BLI"
 
-    result = _get_budget_line_item_total_by_status(
-        1000, BudgetLineItemStatus.IN_EXECUTION
-    )
+    result = _get_budget_line_item_total_by_status(1000, BudgetLineItemStatus.IN_EXECUTION)
     assert result == Decimal(0), "No Portfolio"
 
 

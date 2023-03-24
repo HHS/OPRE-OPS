@@ -19,7 +19,7 @@ class CloudGovConfig(DataToolsConfig):
         database_service = vcap_services["aws-rds"][0]
         database_creds = database_service["credentials"]
 
-        return f'postgresql+psycopg2://{database_creds["username"]}:{database_creds["password"]}@{database_creds["host"]}:{database_creds["port"]}/{database_creds["db_name"]}'
+        return f'postgresql+psycopg2://{database_creds["username"]}:{database_creds["password"]}@{database_creds["host"]}:{database_creds["port"]}/{database_creds["db_name"]}'  # noqa: B950
 
     @property
     def opre_excel_connection_string(self) -> str:

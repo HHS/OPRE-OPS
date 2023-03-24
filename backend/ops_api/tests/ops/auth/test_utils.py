@@ -11,9 +11,7 @@ from models.users import User
 from ops_api.ops.utils.auth import create_oauth_jwt
 from ops_api.ops.utils.authorization import AuthorizationGateway, AuthorizationProvider
 
-key = rsa.generate_private_key(
-    backend=default_backend(), public_exponent=65537, key_size=2048
-)
+key = rsa.generate_private_key(backend=default_backend(), public_exponent=65537, key_size=2048)
 
 
 def test_get_jwt_no_key(app):
@@ -71,7 +69,5 @@ def test_authorization_gateway_authorize_successful(mocker):
     mock_basic_provider = MockAuthorizationProvider()
     mocker.patch.object(mock_basic_provider, "is_authorized")
     authorization_gateway = AuthorizationGateway(mock_basic_provider)
-    result = authorization_gateway.authorize(
-        "1234-5432-1234", ["can_read", "portfolio_read"]
-    )
+    result = authorization_gateway.authorize("1234-5432-1234", ["can_read", "portfolio_read"])
     assert result is True

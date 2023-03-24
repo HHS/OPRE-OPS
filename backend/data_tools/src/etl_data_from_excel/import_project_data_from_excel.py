@@ -13,9 +13,7 @@ from sqlalchemy import MetaData, create_engine
 def init_db(
     config: DataToolsConfig,
 ) -> Tuple[sqlalchemy.engine.Engine, sqlalchemy.MetaData]:
-    engine = create_engine(
-        config.db_connection_string, echo=config.verbosity, future=True
-    )
+    engine = create_engine(config.db_connection_string, echo=config.verbosity, future=True)
     metadata_obj = MetaData()
     metadata_obj.reflect(bind=engine)
 

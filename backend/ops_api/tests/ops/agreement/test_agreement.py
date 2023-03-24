@@ -9,10 +9,7 @@ def test_agreement_retrieve(loaded_db):
     agreement = loaded_db.session.scalar(stmt)
 
     assert agreement is not None
-    assert (
-        agreement.name
-        == "Contract #1: African American Child and Family Research Center"
-    )
+    assert agreement.name == "Contract #1: African American Child and Family Research Center"
     assert agreement.id == 1
 
 
@@ -31,10 +28,7 @@ def test_agreements_get_all(auth_client, loaded_db):
 def test_agreements_get_by_id(auth_client, loaded_db):
     response = auth_client.get("/api/v1/agreements/1")
     assert response.status_code == 200
-    assert (
-        response.json["name"]
-        == "Contract #1: African American Child and Family Research Center"
-    )
+    assert response.json["name"] == "Contract #1: African American Child and Family Research Center"
 
 
 @pytest.mark.usefixtures("app_ctx")

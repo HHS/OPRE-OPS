@@ -8,7 +8,7 @@ class TestConfig(DataToolsConfig):
 
     @property
     def opre_excel_connection_string(self) -> str:
-        return "excel:///?Excel File='/Users/jdeangelis/PycharmProjects/OPRE-OPS-2/data-tools/data/REDACTED - FY22 Budget Summary -10-12-22.xlsm'"
+        return "excel:///?Excel File='/Users/jdeangelis/PycharmProjects/OPRE-OPS-2/data-tools/data/REDACTED - FY22 Budget Summary -10-12-22.xlsm'"  # noqa: B950
 
     @property
     def verbosity(self) -> bool:

@@ -41,9 +41,7 @@ def test_load_new_data():
 def test_import_data(mocker):
     mock_engine = mocker.MagicMock()
     mock_meta = mocker.MagicMock()
-    mock_load = mocker.patch(
-        "data_tools.src.import_static_data.import_data.load_new_data"
-    )
+    mock_load = mocker.patch("data_tools.src.import_static_data.import_data.load_new_data")
 
     import_data(mock_engine, mock_meta, {})
 

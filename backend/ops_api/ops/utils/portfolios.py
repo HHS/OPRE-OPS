@@ -136,8 +136,4 @@ def get_total_funding(
 
 def get_percentage(total_funding: float, specific_funding: float) -> str:
     """Convert a float to a rounded percentage as a string."""
-    return (
-        f"{round(float(specific_funding) / float(total_funding), 2) * 100}"
-        if total_funding
-        else "0"
-    )
+    return f"{round(float(specific_funding) / float(total_funding), 2) * 100}" if total_funding else "0"

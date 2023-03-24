@@ -17,9 +17,7 @@ class CANListAPI(BaseListAPI):
     def __init__(self, model):
         super().__init__(model)
 
-    @jwt_required(
-        True
-    )  # For an example case, we're allowing CANs to be queried unauthed
+    @jwt_required(True)  # For an example case, we're allowing CANs to be queried unauthed
     def get(self) -> Response:
         items = self.model.query.all()
         return jsonify([item.to_dict() for item in items])
