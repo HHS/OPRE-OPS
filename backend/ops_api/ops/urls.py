@@ -142,6 +142,7 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/health/",
         view_func=HEALTH_CHECK_VIEW_FUNC,
+    )
 
     api_bp.add_url_rule(
         "/agreements/<int:id>",
