@@ -12,6 +12,7 @@ from ops_api.ops.views import (
     CANS_BY_PORTFOLIO_API_VIEW_FUNC,
     DIVISIONS_ITEM_API_VIEW_FUNC,
     DIVISIONS_LIST_API_VIEW_FUNC,
+    HEALTH_CHECK_VIEW_FUNC,
     PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC,
     PORTFOLIO_CANS_API_VIEW_FUNC,
     PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
@@ -134,4 +135,8 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/research-projects/",
         view_func=RESEARCH_PROJECT_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/health/",
+        view_func=HEALTH_CHECK_VIEW_FUNC,
     )

@@ -9,6 +9,7 @@ from ops_api.ops.resources.can_fiscal_year import CANFiscalYearItemAPI, CANFisca
 from ops_api.ops.resources.can_funding_summary import CANFundingSummaryItemAPI
 from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANsByPortfolioAPI
 from ops_api.ops.resources.divisions import DivisionsItemAPI, DivisionsListAPI
+from ops_api.ops.resources.health_check import HealthCheckAPI
 from ops_api.ops.resources.portfolio_calculate_funding import PortfolioCalculateFundingAPI
 from ops_api.ops.resources.portfolio_cans import PortfolioCansAPI
 from ops_api.ops.resources.portfolio_funding_summary import PortfolioFundingSummaryItemAPI
@@ -67,3 +68,6 @@ RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC = ResearchProjectFundingSumm
 # RESEARCH PROJECT ENDPOINTS
 RESEARCH_PROJECT_ITEM_API_VIEW_FUNC = ResearchProjectItemAPI.as_view("research-projects-item", ResearchProject)
 RESEARCH_PROJECT_LIST_API_VIEW_FUNC = ResearchProjectListAPI.as_view("research-projects-group", ResearchProject)
+
+# HEALTH CHECK
+HEALTH_CHECK_VIEW_FUNC = HealthCheckAPI.as_view("health-check")
