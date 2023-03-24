@@ -24,3 +24,4 @@ jobs:
     with:
       image-name: ops-backend
       docker-file: backend/Dockerfile.cg-ops-api
+      docker-context: "{{defaultContext}}:backend"

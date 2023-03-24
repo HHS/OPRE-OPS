@@ -24,3 +24,4 @@ jobs:
     with:
       image-name: ops-python-base
       docker-file: backend/Dockerfile.base
+      docker-context: "{{defaultContext}}"
