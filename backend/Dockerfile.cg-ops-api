@@ -1,11 +1,9 @@
-FROM python:3.10-slim
+FROM ghcr.io/hhs/opre-ops/ops-python-base:1.0.0
 
 LABEL org.opencontainers.image.source=https://github.com/HHS/OPRE-OPS/tree/main/backend
 LABEL org.opencontainers.image.description="OPRE-OPS API Backend"
 LABEL org.opencontainers.image.licenses=CC0-1.0
-# hadolint ignore=DL3008
-RUN apt-get update && apt-get -y install curl --no-install-recommends && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir --upgrade pip==23.0.0 pipenv==2023.2.4 && useradd -ms /bin/bash app
+
 WORKDIR /home/app
 
 # Copy the Pipfile(s) only, so that we can cache dependencies

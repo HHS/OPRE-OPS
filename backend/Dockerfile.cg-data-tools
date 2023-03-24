@@ -1,11 +1,9 @@
-FROM python:3.10-slim
+FROM ghcr.io/hhs/opre-ops/ops-python-base:1.0.0
 
 LABEL org.opencontainers.image.source=https://github.com/HHS/OPRE-OPS/tree/main/backend
 LABEL org.opencontainers.image.description="OPRE-OPS API Data Tools"
 LABEL org.opencontainers.image.licenses=CC0-1.0
 
-RUN apt-get update && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir --upgrade pip==22.2.2 pipenv==2022.7.24 && useradd -ms /bin/bash app
 USER app
 WORKDIR /home/app
 
@@ -20,4 +18,6 @@ RUN pipenv install --dev --system --deploy
 
 # Now copy the rest of the app files, again to better support caching
 # of prior steps.
-COPY ./ /home/app
+# COPY ./ /home/app
+COPY ./data_tools /home/app/data_tools
+COPY ./models /home/app/models

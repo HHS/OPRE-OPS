@@ -4,6 +4,7 @@ applications:
     env:
       OPS_CONFIG: environment/cloud/dev.py
     memory: 700M
+    instances: 2
     docker:
       image: ghcr.io/hhs/opre-ops/ops-backend:latest
     command: ./ops_api/deployed_run.sh
@@ -11,6 +12,7 @@ applications:
   - name: ops-data-tools
     env:
       ENV: cloudgov
+    instances: 0
     no-route: true
     memory: 700M
     docker:
