@@ -11,23 +11,27 @@ export const ProjectSelect = () => {
         }
 
         dispatch(
-            setSelectedProject({ id: researchProjects[projectId - 1].id, value: researchProjects[projectId - 1].title })
+            setSelectedProject({
+                id: researchProjects[projectId - 1].id,
+                value: researchProjects[projectId - 1].title,
+                teamLeaders: researchProjects[projectId - 1].team_leaders,
+            })
         );
     };
 
-    const areThereTeamLeaders = researchProjects[selectedResearchProject?.id - 1]?.team_leaders?.length > 0;
+    const areThereTeamLeaders = selectedResearchProject?.teamLeaders?.length > 0;
 
     const ProjectSummaryCard = () => {
         return (
             <div
-                className="bg-base-lightest font-family-sans border-1px border-base-light radius-sm margin-top-4"
+                className="bg-base-lightest font-family-sans font-12px border-1px border-base-light radius-sm margin-top-4"
                 style={{ width: "23.9375rem", minHeight: "7.5625rem" }}
             >
                 <dl className="margin-0 padding-y-2 padding-x-105">
                     <dt className="margin-0 text-base-dark">Project</dt>
                     <dd className="text-semibold margin-0">{selectedResearchProject.value}</dd>
-                    {areThereTeamLeaders && <dt className="margin-0 text-base-dark margin-top-2">Project Officer</dt>}
-                    {researchProjects[selectedResearchProject.id - 1]?.team_leaders?.map((leader) => (
+                    {areThereTeamLeaders && <dt className="margin-0 text-base-dark margin-top-205">Project Officer</dt>}
+                    {selectedResearchProject?.teamLeaders?.map((leader) => (
                         <dd key={leader?.id} className="text-semibold margin-0">
                             {leader?.first_name} {leader?.last_name}
                         </dd>
@@ -50,7 +54,7 @@ export const ProjectSelect = () => {
                         id=""
                         aria-hidden="true"
                         tabIndex="-1"
-                        value={selectedResearchProject?.value}
+                        defaultValue={selectedResearchProject?.value}
                         onChange={(e) => onChangeResearchProjectSelection(e.target.value || 0)}
                     >
                         {researchProjects.map((project) => {

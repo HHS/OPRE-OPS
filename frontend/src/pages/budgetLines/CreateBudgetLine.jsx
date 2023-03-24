@@ -28,7 +28,7 @@ const StepOne = ({ goToNext }) => (
         <h2 className="font-sans-lg">Select an Agreement</h2>
         <p>Select the project and agreement this budget line should be associated with.</p>
         <AgreementSelect />
-        <div className="grid-row flex-justify-end">
+        <div className="grid-row flex-justify-end margin-top-8">
             <button className="usa-button" onClick={() => goToNext({ project: "Red X 2.0" })}>
                 Continue
             </button>
