@@ -22,4 +22,4 @@ jobs:
     with:
       image-name: ops-frontend
       docker-file: frontend/Dockerfile.cg-frontend
-      docker-context: "{{defaultContext}}:frontend"
+      docker-context: "{{defaultContext}}"
