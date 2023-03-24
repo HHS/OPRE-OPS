@@ -23,7 +23,7 @@
     "react-redux": "8.0.5",
     "react-router-dom": "6.9.0",
     "react-scripts": "5.0.1",
-    "react-select": "5.7.1",
+    "react-select": "5.7.2",
     "sass": "1.57.1",
     "sass-loader": "13.2.1"
   },
@@ -40,7 +40,7 @@
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-prettier": "4.2.1",
     "jose": "4.12.2",
-    "prettier": "2.8.6"
+    "prettier": "2.8.7"
   },
   "scripts": {
     "start": "DISABLE_ESLINT_PLUGIN=true react-scripts start",
