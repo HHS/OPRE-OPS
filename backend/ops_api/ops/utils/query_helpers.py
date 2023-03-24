@@ -13,5 +13,8 @@ class QueryHelper:
     def add_column_equals(self, column: Column, value: str) -> Select[Any]:
         self.stmt = self.stmt.where(column == value)
 
+    def return_none(self) -> Select[Any]:
+        self.stmt = self.stmt.where(0 == 1)
+
     def get_stmt(self):
         return self.stmt

@@ -54,6 +54,7 @@ class ResearchProject(BaseModel):
     methodologies = Column(pg.ARRAY(sa.Enum(MethodologyType)), server_default="{}")
     populations = Column(pg.ARRAY(sa.Enum(PopulationType)), server_default="{}")
     cans = relationship("CAN", back_populates="managing_research_project")
+    agreements = relationship("Agreement", back_populates="research_project")
     team_leaders = relationship(
         "User",
         back_populates="research_projects",

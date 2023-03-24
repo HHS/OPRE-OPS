@@ -11,6 +11,53 @@ servers:
   - url: https://ops-api-staging.app.cloud.gov
     description: Staging Server (Live)
 paths:
+  /api/v1/agreements/:
+    get:
+      description: Get Agreements
+      parameters:
+        - name: research_project_id
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: search
+          in: query
+          schema:
+            type: string
+          example: 'contract'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agreements'
+              examples:
+                '0':
+                  $ref: '#/components/examples/Agreements'
+  /api/v1/agreements/{agreement_id}:
+    get:
+      description: Get Agreement By Id
+      parameters:
+        - in: path
+          name: agreement_id
+          description: Agreement Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agreement'
+              examples:
+                '0':
+                  $ref: '#/components/examples/Agreement'
   /api/v1/cans/:
     get:
       description: Get CANs
@@ -370,7 +417,7 @@ paths:
           description: Created
   /api/v1/research-projects/:
     get:
-      description: Get all ResearchProjects
+      description: Get ResearchProjects
       parameters:
         - name: fiscal_year
           in: query
@@ -596,7 +643,7 @@ components:
           type: string
           example: 'https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center'
     ResearchProjects:
-      description: OPRE List of Research Projects
+      description: OPS List of Research Projects
       type: array
       items:
         anyOf:
@@ -648,7 +695,41 @@ components:
             percent:
               type: string
 
+    Agreement:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        agreement_type:
+          type: integer
+          example: "CONTRACT"
+        created_by:
+          type: integer
+          example: 1
+        created_on:
+          type: string
+          example: "Fri, 17 Mar 2023 15:01:09 GMT"
+        updated_on:
+          type: string
+          example: "Fri, 17 Mar 2023 15:01:09 GMT"
+        research_project_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Contract #2: African American Child and Family Research Center"
+
+    Agreements:
+      description: OPS List of Agreements
+      type: array
+      items:
+        anyOf:
+          - $ref: "#/components/schemas/Agreement"
+
+
   examples:
+
     CAN:
       value:
         {
@@ -989,6 +1070,31 @@ components:
             "url": "https://www.acf.hhs.gov/opre/project/fathers-and-continuous-learning",
           },
         ]
+
+
+    Agreements:
+      value: |
+        [{
+          "agreement_type": "CONTRACT",
+          "created_by": null,
+          "created_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+          "id": 2,
+          "name": "Contract #2: African American Child and Family Research Center",
+          "research_project_id": 1,
+          "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT"
+        }]
+
+    Agreement:
+      value: |
+        {
+          "agreement_type": "CONTRACT",
+          "created_by": null,
+          "created_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+          "id": 2,
+          "name": "Contract #2: African American Child and Family Research Center",
+          "research_project_id": 1,
+          "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT"
+        }
 
 security:
   - bearerAuth: [ ]  # pragma: allowlist secret
