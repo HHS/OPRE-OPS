@@ -29,21 +29,17 @@ const PortfolioBudgetSummary = ({ portfolioId }) => {
     }, [dispatch, portfolioId, fiscalYear]);
 
     return (
-        <div>
-            <section>
-                <div>
-                    <h2 className="font-sans-lg">Portfolio Budget Summary</h2>
-                </div>
-                <p className="font-sans-sm">
-                    The graph below shows a summary of the total budget for this portfolio, not including additional
-                    funding from other portfolios.
-                </p>
-                <div className="display-flex flex-justify">
-                    <PortfolioFundingTotal portfolioId={portfolio.id} />
-                    <PortfolioFundingByBudgetStatus portfolioId={portfolio.id} />
-                </div>
-            </section>
-        </div>
+        <section>
+            <h2 className="font-sans-lg">Portfolio Budget Summary</h2>
+            <p className="font-sans-sm">
+                The graph below shows a summary of the total budget for this portfolio, not including additional funding
+                from other portfolios.
+            </p>
+            <div className="display-flex flex-justify">
+                <PortfolioFundingTotal portfolioId={portfolio.id} />
+                <PortfolioFundingByBudgetStatus portfolioId={portfolio.id} />
+            </div>
+        </section>
     );
 };
 

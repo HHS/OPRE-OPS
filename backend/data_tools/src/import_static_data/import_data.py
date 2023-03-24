@@ -11,9 +11,10 @@ from data_tools.environment.cloudgov import CloudGovConfig
 from data_tools.environment.common import DataToolsConfig
 from data_tools.environment.dev import DevConfig
 from data_tools.environment.local import LocalConfig
+from data_tools.environment.pytest import PytestConfig
 from data_tools.environment.test import TestConfig
 from models.base import BaseModel
-from sqlalchemy import create_engine, insert, inspect, text
+from sqlalchemy import create_engine, insert, inspect
 from sqlalchemy.engine import Engine
 
 # Adding these print statements to suppress unused import warnings
@@ -27,25 +28,25 @@ ALLOWED_TABLES = [
     "division",
     "portfolio_url",
     "portfolio",
-    "portfolio_status",
     "funding_partner",
     "funding_source",
     "users",
+    "roles",
+    "user_role",
     "can",
     "can_fiscal_year",
-    "can_arrangement_type",
-    "agreement_type",
+    "can_funding_sources",
     "agreement",
-    "agreement_cans",
     "budget_line_item",
     "budget_line_item_status",
-    "can_fiscal_year_carry_over",
+    "can_fiscal_year_carry_forward",
     "portfolio_team_leaders",
     "research_project",
-    "research_project_methodologies",
-    "research_project_populations",
     "research_project_cans",
     "research_project_team_leaders",
+    "shared_portfolio_cans",
+    "research_project_methodologies",
+    "research_project_populations",
 ]
 
 data = os.getenv("DATA")
@@ -60,7 +61,6 @@ def init_db(
         )
     else:
         engine = db
-    BaseModel.metadata.create_all(engine)
     return engine, BaseModel.metadata
 
 
@@ -72,6 +72,8 @@ def get_config(environment_name: str = None):
             config = LocalConfig()
         case "test":
             config = TestConfig()
+        case "pytest":
+            config = PytestConfig()
         case _:
             config = DevConfig()
     return config
@@ -83,18 +85,6 @@ def get_data_to_import(file_name: str = data) -> Dict:
 
 def exists(conn, table):  # pragma: no cover
     return inspect(conn).has_table(table)
-
-
-def delete_existing_data(conn: sqlalchemy.engine.Engine.connect, data: Dict):
-    for ops_table in data:
-        if ops_table not in ALLOWED_TABLES:
-            raise RuntimeError("Table not allowed")
-        # Only truncate if it actually exists
-        if exists(conn, ops_table):
-            # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
-            conn.execute(text(f"TRUNCATE TABLE {ops_table} CASCADE;"))
-        else:
-            return "Table does not exist"
 
 
 def load_new_data(
@@ -110,9 +100,6 @@ def load_new_data(
 
 def import_data(engine, metadata_obj, data):
     with engine.connect() as conn:
-        delete_existing_data(conn, data)
-        conn.commit()
-
         load_new_data(conn, data, metadata_obj)
         conn.commit()
 
@@ -120,6 +107,8 @@ def import_data(engine, metadata_obj, data):
 if __name__ == "__main__":
     script_env = os.getenv("ENV")
     script_config = get_config(script_env)
+
+    print(f"Data-Tools Config: {script_config.db_connection_string}")
 
     db_engine, db_metadata_obj = init_db(script_config)
 

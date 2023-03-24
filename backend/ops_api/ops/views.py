@@ -1,8 +1,9 @@
 from models.base import BaseModel
-from models.cans import CAN, BudgetLineItem, CANFiscalYear
-from models.portfolios import Division, Portfolio, PortfolioStatus
+from models.cans import CAN, Agreement, BudgetLineItem, CANFiscalYear
+from models.portfolios import Division, Portfolio
 from models.research_projects import ResearchProject
 from models.users import User
+from ops_api.ops.resources.agreements import AgreementItemAPI, AgreementListAPI
 from ops_api.ops.resources.auth import AuthLoginAPI, AuthRefreshAPI
 from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, BudgetLineItemsListAPI
 from ops_api.ops.resources.can_fiscal_year import CANFiscalYearItemAPI, CANFiscalYearListAPI
@@ -14,8 +15,13 @@ from ops_api.ops.resources.portfolio_cans import PortfolioCansAPI
 from ops_api.ops.resources.portfolio_funding_summary import PortfolioFundingSummaryItemAPI
 from ops_api.ops.resources.portfolio_status import PortfolioStatusItemAPI, PortfolioStatusListAPI
 from ops_api.ops.resources.portfolios import PortfolioItemAPI, PortfolioListAPI
+from ops_api.ops.resources.research_project_funding_summary import ResearchProjectFundingSummaryListAPI
 from ops_api.ops.resources.research_projects import ResearchProjectItemAPI, ResearchProjectListAPI
 from ops_api.ops.resources.users import UsersItemAPI, UsersListAPI
+
+# AGREEMENT ENDPOINTS
+AGREEMENT_ITEM_API_VIEW_FUNC = AgreementItemAPI.as_view("agreements-item", Agreement)
+AGREEMENT_LIST_API_VIEW_FUNC = AgreementListAPI.as_view("agreements-group", Agreement)
 
 # Auth endpoints
 AUTH_LOGIN_API_VIEW_FUNC = AuthLoginAPI.as_view("auth-login", BaseModel)
@@ -43,8 +49,8 @@ BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC = BudgetLineItemsItemAPI.as_view("budget-li
 BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC = BudgetLineItemsListAPI.as_view("budget-line-items-group", BudgetLineItem)
 
 # PORTFOLIO STATUS ENDPOINTS
-PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC = PortfolioStatusItemAPI.as_view("portfolio-status-item", PortfolioStatus)
-PORTFOLIO_STATUS_LIST_API_VIEW_FUNC = PortfolioStatusListAPI.as_view("portfolio-status-group", PortfolioStatus)
+PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC = PortfolioStatusItemAPI.as_view("portfolio-status-item", BaseModel)
+PORTFOLIO_STATUS_LIST_API_VIEW_FUNC = PortfolioStatusListAPI.as_view("portfolio-status-group", BaseModel)
 
 # DIVISION ENDPOINTS
 DIVISIONS_ITEM_API_VIEW_FUNC = DivisionsItemAPI.as_view("divisions-item", Division)
@@ -58,6 +64,9 @@ USERS_LIST_API_VIEW_FUNC = UsersListAPI.as_view("users-group", User)
 CAN_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = CANFundingSummaryItemAPI.as_view("can-funding-summary-item", CAN)
 PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = PortfolioFundingSummaryItemAPI.as_view(
     "portfolio-funding-summary-item", Portfolio
+)
+RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC = ResearchProjectFundingSummaryListAPI.as_view(
+    "research-project-funding-summary-group", ResearchProject
 )
 
 # RESEARCH PROJECT ENDPOINTS

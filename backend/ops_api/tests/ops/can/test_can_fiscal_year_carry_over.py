@@ -1,29 +1,35 @@
+"""FY carry forward tests."""
 import pytest
-from models.cans import CANFiscalYearCarryOver
+from flask_sqlalchemy import SQLAlchemy
+from models.cans import CANFiscalYearCarryForward
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_can_fiscal_year_carry_over_lookup(loaded_db):
+def test_can_fiscal_year_carry_forward_lookup(loaded_db: SQLAlchemy) -> None:
+    """Test that FY carry forward lookups work."""
     cfyco = (
-        loaded_db.session.query(CANFiscalYearCarryOver)
+        loaded_db.session.query(CANFiscalYearCarryForward)
         .filter(
-            CANFiscalYearCarryOver.can_id == 1,
-            CANFiscalYearCarryOver.from_fiscal_year == 2022,
+            CANFiscalYearCarryForward.can_id == 11,
+            CANFiscalYearCarryForward.from_fiscal_year == 2022,
         )
         .one()
     )
     assert cfyco is not None
     assert cfyco.from_fiscal_year == 2022
     assert cfyco.to_fiscal_year == 2023
-    assert cfyco.amount == 10
+    assert cfyco.received_amount == 200000.00
+    assert cfyco.expected_amount == 100000.00
 
 
-def test_can_fiscal_year_carry_over_create():
-    cfyco = CANFiscalYearCarryOver(
+def test_can_fiscal_year_carry_forward_create() -> None:
+    """Test that FY carry forward creation works."""
+    cfyco = CANFiscalYearCarryForward(
         can_id=1,
         from_fiscal_year=2023,
         to_fiscal_year=2024,
-        amount=10,
+        received_amount=10,
+        expected_amount=5,
         notes="all-the-notes!",
     )
     assert cfyco.to_dict()["from_fiscal_year"] == 2023

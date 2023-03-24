@@ -10,7 +10,7 @@ from ops_api.ops.urls import register_api
 from ops_api.ops.utils.auth import jwtMgr, oauth
 
 
-def configure_logging() -> None:
+def configure_logging(log_level: str = "INFO") -> None:
     logging.config.dictConfig(
         {
             "version": 1,
@@ -26,19 +26,31 @@ def configure_logging() -> None:
                     "formatter": "default",
                 }
             },
-            "root": {"level": "INFO", "handlers": ["wsgi"]},
+            "root": {"level": f"{log_level}", "handlers": ["wsgi"]},
         }
     )
 
 
-def create_app(config_overrides: Optional[dict] = None) -> Flask:
-    configure_logging()  # should be configured before any access to app.logger
+def create_app(config_overrides: Optional[dict] = {}) -> Flask:
+    log_level = "INFO" if not config_overrides.get("TESTING") else "DEBUG"
+    configure_logging(log_level)  # should be configured before any access to app.logger
     app = Flask(__name__)
     CORS(app)
     app.config.from_object("ops_api.ops.environment.default_settings")
     if os.getenv("OPS_CONFIG"):
         app.config.from_envvar("OPS_CONFIG")
     app.config.from_prefixed_env()
+
+    # manually setting the public key path here, until we know where it will live longterm
+    app.config.setdefault(
+        "JWT_PUBLIC_KEY",
+        app.open_resource(app.config.get("JWT_PUBLIC_KEY_PATH")).read(),
+    )
+    # fall back for pytest to use
+    app.config.setdefault(
+        "SQLALCHEMY_DATABASE_URI",
+        "postgresql+psycopg2://postgres:local_password@localhost:5432/postgres",
+    )
 
     if config_overrides is not None:
         app.config.from_mapping(config_overrides)
@@ -56,7 +68,6 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     # Add some basic data to test with
     # TODO change this out for a proper fixture.
     with app.app_context():
-        db.drop_all()
         db.create_all()
         db.session.commit()
 

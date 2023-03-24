@@ -3,33 +3,23 @@
     {
       id: 1,
       name: "Division of Child and Family Development",
-      abbreviation: "DFCD"
+      abbreviation: "DFCD",
     },
     {
       id: 2,
       name: "Division of Economic Independence",
-      abbreviation: "DEI"
+      abbreviation: "DEI",
     },
     {
       id: 3,
       name: "Division of Family Strengthening",
-      abbreviation: "DFS"
+      abbreviation: "DFS",
     },
     {
       id: 4,
       name: "Division of Data and Improvement",
-      abbreviation: "DDI"
-    }
-  ],
-  portfolio_status: [
-    {
-      id: 1,
-      name: "Active"
+      abbreviation: "DDI",
     },
-    {
-      id: 2,
-      name: "Inactive"
-    }
   ],
   portfolio: [
     {
@@ -37,7 +27,7 @@
       name: "Child Welfare Research",
       abbreviation: "CWR",
       division_id: 1,
-      status_id: 1,
+      status: "IN_PROCESS",
       description: "\
              The promotion of children’s safety, permanence, and well-being are the principles that guide child\
              welfare practice and policy. ACF seeks to improve the safety, permanency, and well-being of children through\
@@ -67,14 +57,14 @@
              broad array of topics, including identification of antecedents and consequences of child maltreatment,\
              strategies for prevention of maltreatment, and service needs and service outcomes for children who come\
              to the attention of child welfare.\
-        "
+        ",
     },
     {
       id: 2,
       name: "Head Start",
       abbreviation: "HS",
       division_id: 1,
-      status_id: 1,
+      status: "IN_PROCESS",
       description: "\
              Established in 1965, Head Start was designed to promote the school readiness of children, ages\
              three to five, from families with low income, by supporting the development of the whole child through\
@@ -90,14 +80,14 @@
              curricular enhancements, caregiver-child interactions, dual-generation approaches, and other topics.\
              This growing research base provides valuable information not only for guiding program improvements in\
              Head Start itself, but also for the larger field of ECE.\
-      "
+      ",
     },
     {
       id: 3,
       name: "Child Care",
       abbreviation: "CC",
       division_id: 1,
-      status_id: 1,
+      status: "IN_PROCESS",
       description: "\
             Quality child care and early education programs are a critical resource for families, support young\
             children’s development in a variety of domains, and assist parents in accessing comprehensive services\
@@ -116,14 +106,14 @@
             development of children from birth through age 13. Research demonstrating the link between subsidies,\
             quality child care and early education, and positive child and family outcomes has encouraged efforts to\
             enhance early care and education programs through investments of CCDF quality set-aside funds.\
-      "
+      ",
     },
     {
       id: 4,
       name: "Welfare Research",
       abbreviation: "WR",
       division_id: 2,
-      status_id: 1,
+      status: "IN_PROCESS",
       description: "\
             ACF’s Office of Family Assistance administers the Temporary Assistance for Needy Families (TANF)\
             program. Established by the Personal Responsibility and Work Opportunity Reconciliation Act (PRWORA)\
@@ -150,14 +140,14 @@
             including alternative welfare-to-work strategies, career pathways and post-secondary training models,\
             employment retention and advancement approaches, subsidized employment and job search strategies, and\
             tests to understand the effects of employment coaching models.\
-      "
+      ",
     },
     {
       id: 5,
       name: "Adolescent Development Research",
       abbreviation: "ADR",
       division_id: 3,
-      status_id: 1,
+      status: "IN_PROCESS",
       description: "\
             Despite recent declines in teen childbirth rates, teen pregnancy rates in the United States are much\
             higher than in other western industrialized nations. More research and programming innovations are needed\
@@ -189,14 +179,14 @@
             \n\nOPRE’s youth services portfolio also includes research and evaluation of approaches to improve other\
             outcomes for at-risk youth, including unaccompanied refugee minors, youth at-risk of homelessness, and\
             youth with experience in the child welfare system.\
-      "
+      ",
     },
     {
       id: 6,
       name: "Healthy Marriage & Responsible Fatherhood",
       abbreviation: "HMRF",
       division_id: 3,
-      status_id: 1,
+      status: "IN_PROCESS",
       description: "\
             The Healthy Marriage and Responsible Fatherhood (HMRF) program is part of ACF’s strategy to improve the\
             long-term well-being of children and families. HMRF is a $150 million discretionary grant program\
@@ -218,14 +208,14 @@
             research and evaluation on topics such as family formation and stability, co-parenting, marriage,\
             fatherhood, and violence in relationships. Studies include a focus on the implications of programs and\
             policies (including welfare policies) for child, adult, and family well-being.\
-      "
+      ",
     },
     {
       id: 7,
       name: "Home Visiting",
       abbreviation: "HV",
       division_id: 3,
-      status_id: 1,
+      status: "IN_PROCESS",
       description: "\
             Home visiting is a service delivery strategy that aims to support the healthy development and well-being\
             of children and families. While each home visiting model has its unique aspects, in general, home\
@@ -249,58 +239,58 @@
             effects have varied across studies, overall, the research indicates that home visiting has had modest\
             benefits for families on average. However, there are still significant gaps in our understanding—and\
             even more still to learn if we want to keep improving the effectiveness and efficiency of services.\
-      "
+      ",
     },
     {
       id: 8,
       name: "Social Science Research Demonstration",
       abbreviation: "SSRD",
       division_id: 4,
-      status_id: 1,
+      status: "IN_PROCESS",
       description: "\
             The Social Science Research and Demonstration appropriation is used to fund research or demonstration\
             projects such as those relating to the prevention and reduction of dependency, or which will aid in\
             effecting coordination of planning between private and public welfare agencies or which will help improve\
             the administration and effectiveness of programs carried on or assisted under the Social Security Act\
             and programs related thereto.\
-      "
-    }
+      ",
+    },
   ],
   portfolio_url: [
     {
       id: 1,
       portfolio_id: 1,
-      url: "https://www.acf.hhs.gov/opre/topic/overview/abuse-neglect-adoption-foster-care"
+      url: "https://www.acf.hhs.gov/opre/topic/overview/abuse-neglect-adoption-foster-care",
     },
     {
       id: 2,
       portfolio_id: 2,
-      url: "https://www.acf.hhs.gov/opre/topic/head-start"
+      url: "https://www.acf.hhs.gov/opre/topic/head-start",
     },
     {
       id: 3,
       portfolio_id: 3,
-      url: "https://www.acf.hhs.gov/opre/topic/child-care"
+      url: "https://www.acf.hhs.gov/opre/topic/child-care",
     },
     {
       id: 4,
       portfolio_id: 4,
-      url: "https://www.acf.hhs.gov/opre/topic/self-sufficiency-welfare-employment"
+      url: "https://www.acf.hhs.gov/opre/topic/self-sufficiency-welfare-employment",
     },
     {
       id: 5,
       portfolio_id: 5,
-      url: "https://www.acf.hhs.gov/opre/topic/youth-services"
+      url: "https://www.acf.hhs.gov/opre/topic/youth-services",
     },
     {
       id: 6,
       portfolio_id: 6,
-      url: "https://www.acf.hhs.gov/opre/topic/strengthening-families-healthy-marriage-responsible-fatherhood"
+      url: "https://www.acf.hhs.gov/opre/topic/strengthening-families-healthy-marriage-responsible-fatherhood",
     },
     {
       id: 7,
       portfolio_id: 7,
-      url: "https://www.acf.hhs.gov/opre/topic/home-visiting"
-    }
-  ]
+      url: "https://www.acf.hhs.gov/opre/topic/home-visiting",
+    },
+  ],
 }

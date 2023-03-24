@@ -6,10 +6,10 @@ import pytest
 def test_portfolio_cans(client):
     response = client.get("/api/v1/portfolios/1/cans/")
     assert response.status_code == 200
-    assert len(response.json) == 2
-    assert response.json[0]["id"] == 1
+    assert len(response.json) == 4
+    assert response.json[0]["id"] == 2
     assert response.json[0]["managing_portfolio_id"] == 1
-    assert response.json[1]["id"] == 1
+    assert response.json[1]["id"] == 2
     assert response.json[0]["managing_portfolio_id"] == 1
 
 
@@ -18,9 +18,7 @@ def test_portfolio_cans(client):
 def test_portfolio_cans_with_year_2022(client):
     response = client.get("/api/v1/portfolios/1/cans/?year=2022")
     assert response.status_code == 200
-    assert len(response.json) == 1
-    assert response.json[0]["id"] == 1
-    assert response.json[0]["managing_portfolio_id"] == 1
+    assert len(response.json) == 0
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -28,6 +26,6 @@ def test_portfolio_cans_with_year_2022(client):
 def test_portfolio_cans_with_year_2023(client):
     response = client.get("/api/v1/portfolios/1/cans/?year=2023")
     assert response.status_code == 200
-    assert len(response.json) == 1
-    assert response.json[0]["id"] == 1
+    assert len(response.json) == 2
+    assert response.json[0]["id"] == 2
     assert response.json[0]["managing_portfolio_id"] == 1

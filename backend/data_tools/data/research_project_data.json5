@@ -1,7 +1,6 @@
 {
   "research_project": [
     {
-      id: 1,
       title: "African American Child and Family Research Center",
       short_title: "",
       description: "\
@@ -31,43 +30,76 @@
         ",
       portfolio_id: 3,
       url: "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center",
-      origination_date: "01-01-2022"
-    },
-  ],
-  "research_project_methodologies": [
-    {
-      research_project_id: 1,
-      methodology_type_id: 1
+      origination_date: "01-01-2022",
+      methodologies: ["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION", "ETHNOGRAPHY", "EXPERIMENT", "SECONDARY_DATA_ANALYSIS", "CASE_STUDY"],
+      populations: ["POPULATION_1"]
     },
     {
-      research_project_id: 1,
-      methodology_type_id: 2
+      title: "Early Care and Education Leadership Study (ExCELS)",
+      short_title: "",
+      description: "\
+        Leadership is widely recognized as an essential driver of organizational performance and improvement, but\
+        little is known about its role in driving quality of early childhood programs and outcomes for staff and\
+        families. In launching the Early Care and Education Leadership Study (ExCELS), the U.S. Department of Health\
+        and Human Services’ Office of Planning, Research, and Evaluation (OPRE) seeks to fill the definitional and\
+        measurement gaps to help the early childhood field understand how effective leaders can improve quality\
+        experiences for families in early care and education (ECE) settings.\
+        \n\nOPRE contracted with Mathematica Policy Research and its subcontractor, the University of Massachusetts,\
+        Boston, to conduct this study. The study team is identifying key leadership constructs, mapping out and testing\
+        their associations to outcomes, and developing a short-form instrument to measure ECE leadership in\
+        center-based settings. Project staff and OPRE will partner with substantive, technical, and practical experts\
+        as well as a range of stakeholders from government agencies and leadership development programs to inform the\
+        work. Project staff and OPRE will partner with substantive, technical, and practical experts as well as\
+        seeking input and engagement with leadership development programs (e.g., ECE teaching staff, ECE directors)\
+        as well as those from government agencies to inform the work.\
+        \n\nThe goals of this multi-phase study are to:\
+        \n\n\
+        \n* Review the existing research literature to identify the key features of effective ECE leadership and\
+        highlight gaps in our understanding\
+        \n* Construct a theory of change that shows how ECE leaders can act as change agents for quality improvement\
+        \n* Develop a compendium of existing measures aligned with the theory of change to identify measurement gaps\
+        \n* Identify promising leadership quality improvement initiatives and methods of evaluating them\
+        \n* Conduct a descriptive study in 100 centers that receive funding from Head Start or the Child Care and\
+          Development Fund to test hypothesized associations between leadership constructs and outcomes in the\
+          theory of change\
+        ",
+      portfolio_id: 2,
+      url: "https://www.acf.hhs.gov/opre/project/early-care-and-education-leadership-study-excels-2018-2023",
+      origination_date: "01-01-2018",
+      methodologies: ["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION", "ETHNOGRAPHY", "EXPERIMENT", "SECONDARY_DATA_ANALYSIS", "CASE_STUDY"],
+      populations: ["POPULATION_1"]
     },
     {
-      research_project_id: 1,
-      methodology_type_id: 3
-    },
-    {
-      research_project_id: 1,
-      methodology_type_id: 4
-    },
-    {
-      research_project_id: 1,
-      methodology_type_id: 5
-    },
-    {
-      research_project_id: 1,
-      methodology_type_id: 6
-    },
-    {
-      research_project_id: 1,
-      methodology_type_id: 7
-    }
-  ],
-  "research_project_populations": [
-    {
-      research_project_id: 1,
-      population_type_id: 1
+      title: "Fathers and Continuous Learning (FCL)",
+      short_title: "",
+      description: "\
+         Evidence suggests that fathers play an important role in children's development and that they can serve as\
+         a key source of emotional and financial support. In many social services, however, fathers are overlooked.\
+         This is the case in the child welfare system, where data from the Child and Family Service Reviews indicate\
+         that fathers and paternal relatives are minimally engaged and may be untapped resources.\
+         \n\nThe purpose of this project is to bridge the gap between what we know about the importance of fathers\
+         and practices in the child welfare system that may contribute to low levels of father and paternal relative\
+         engagement. Partnering with the Office of Family Assistance (which oversees the Healthy Marriage and\
+         Responsible Fatherhood discretionary grant program) and the Children’s Bureau, this project aims to:\
+         \n\n* Synthesize what we already know about a) efforts to engage fathers and paternal relatives of children\
+         involved in the child welfare system, and b) Continuous Quality Improvement approaches within the child\
+         welfare system;\
+         \n* Map \"touch points\" within a child welfare case where fathers and/or paternal relatives could be more \
+         fully engaged;\
+         \n* Identify potential strategies and interventions that could be used at the touch points to increase their\
+         engagement;\
+         \n* Select a collaborative Continuous Quality Improvement approach and use it to work intensively with a few\
+         sites to implement and test these father and paternal relative engagement strategies and interventions;\
+         \n* Conduct a pilot study to examine the feasibility and implementation of the Continuous Quality Improvement\
+         approach and the engagement strategies and interventions; and\
+         \n* Conduct an evaluation of the selected continuous learning methodology and the engagement strategies and\
+         interventions.\
+        ",
+      portfolio_id: 6,
+      url: "https://www.acf.hhs.gov/opre/project/fathers-and-continuous-learning",
+      origination_date: "01-01-2017",
+      methodologies: ["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION", "ETHNOGRAPHY", "EXPERIMENT", "SECONDARY_DATA_ANALYSIS", "CASE_STUDY"],
+      populations: ["POPULATION_1"]
     }
   ],
 }

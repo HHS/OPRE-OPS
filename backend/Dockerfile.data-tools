@@ -14,4 +14,4 @@ RUN pipenv install --dev --system --deploy
 
 # Now copy the rest of the app files, again to better support caching
 # of prior steps.
-COPY . /home/app/
+COPY ./ /home/app

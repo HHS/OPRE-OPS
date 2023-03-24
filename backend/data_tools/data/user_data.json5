@@ -1,140 +1,136 @@
 {
-  "users": [
+  users: [
     {
-      id: 1,
       first_name: "Chris",
       last_name: "Fortunato",
       division: 1,
       email: "chris.fortunato@example.com",
-      role: "COR"
+      role: "COR",
+      oidc_id: "00000000-0000-1111-a111-000000000001",
     },
     {
-      id: 2,
       first_name: "Amy",
       last_name: "Madigan",
       division: 1,
       email: "Amy.Madigan@example.com",
-      role: "Division Director"
+      role: "Division Director",
+      oidc_id: "00000000-0000-1111-a111-000000000002",
     },
     {
-      id: 3,
       first_name: "Ivelisse",
       last_name: "Martinez-Beck",
       division: 1,
       email: "Ivelisse.Martinez-Beck@example.com",
-      role: "COR"
+      role: "COR",
+      oidc_id: "00000000-0000-1111-a111-000000000003",
     },
     {
-      id: 4,
       first_name: "Amelia",
       last_name: "Popham",
       division: 2,
       email: "Amelia.Popham@example.com",
-      role: "COR"
+      role: "COR",
+      oidc_id: "00000000-0000-1111-a111-000000000004",
     },
     {
-      id: 5,
       first_name: "Tia",
       last_name: "Brown",
       division: 3,
       email: "Tia.Brown@example.com",
-      role: "Non-COR/Contractor"
+      role: "Non-COR/Contractor",
+      oidc_id: "00000000-0000-1111-a111-000000000005",
     },
     {
-      id: 6,
       first_name: "Katie",
       last_name: "Pahigiannis",
       division: 3,
       email: "Katie.Pahigiannis@example.com",
-      role: "COR"
+      role: "COR",
+      oidc_id: "00000000-0000-1111-a111-000000000006",
     },
     {
-      id: 7,
       first_name: "Nancy",
       last_name: "Margie",
       division: 3,
       email: "Nancy.Margie@example.com",
-      role: "Non-COR/Contractor"
+      role: "Non-COR/Contractor",
+      oidc_id: "00000000-0000-1111-a111-000000000007",
     },
     {
-      id: 8,
       first_name: "Nicole",
       last_name: "Deterding",
       division: 4,
       email: "Nicole.Deterding@example.com",
-      role: "Non-COR/Contractor"
+      role: "Non-COR/Contractor",
+      oidc_id: "00000000-0000-1111-a111-000000000008",
     },
     {
-      id: 9,
       first_name: "Valeria",
       last_name: "Butler",
       division: 4,
       email: "Valeria.Butler@example.com",
-      role: "Non-COR/Contractor"
+      role: "Non-COR/Contractor",
+      oidc_id: "00000000-0000-1111-a111-000000000009",
     },
     {
-      id: 10,
       first_name: "Beth Ann",
       last_name: "Barnes",
       division: 4,
       email: "BethAnn.Barnes@example.com",
-      role: "Team Leader"
+      role: "Team Leader",
+      oidc_id: "00000000-0000-1111-a111-000000000010",
     },
     {
-      id: 11,
-      first_name: "John",
-      last_name: "Doe",
+      first_name: "Tim",
+      last_name: "Donaworth",
       division: 3,
-      email: "john.doe@example.com",
-      role: "Team Leader"
-    }
+      email: "tdonaworth+dev@flexion.us",
+      role: "Tech Lead",
+      oidc_id: "e5711101-bc3e-41e5-a6a2-051874b307ca",
+    },
+    {
+      first_name: "John",
+      last_name: "DeAngelis",
+      division: 3,
+      email: "jdeangelis@flexion.us",
+      role: "Software Engineer",
+      oidc_id: "838861c4-8bee-427d-8b49-0892875483ba",
+    },
   ],
-  portfolio_team_leaders: [
+  roles: [
     {
-      portfolio_id: 1,
-      team_lead_id: 1
+      name: "admin",
+      permissions: ["can_read", "can_write", "can_update", "can_delete"],
     },
     {
-      portfolio_id: 2,
-      team_lead_id: 2
+      name: "user",
+      permissions: ["can_read", "portfolio_read", "user_read", "project_read"],
     },
-    {
-      portfolio_id: 3,
-      team_lead_id: 3
-    },
-    {
-      portfolio_id: 4,
-      team_lead_id: 4
-    },
-    {
-      portfolio_id: 5,
-      team_lead_id: 5
-    },
-    {
-      portfolio_id: 6,
-      team_lead_id: 6
-    },
-    {
-      portfolio_id: 7,
-      team_lead_id: 7
-    },
-    {
-      portfolio_id: 8,
-      team_lead_id: 8
-    },
-    {
-      portfolio_id: 8,
-      team_lead_id: 9
-    },
-    {
-      portfolio_id: 8,
-      team_lead_id: 10
-    }
   ],
-  "research_project_team_leaders": [
+  user_role: [
     {
-      research_project_id: 1,
-      team_lead_id: 11
-    }
-  ]
+      user_id: 1,
+      role_id: 1,
+    },
+    {
+      user_id: 2,
+      role_id: 1,
+    },
+    {
+      user_id: 3,
+      role_id: 2,
+    },
+    {
+      user_id: 4,
+      role_id: 1,
+    },
+    {
+      user_id: 5,
+      role_id: 1,
+    },
+    {
+      user_id: 6,
+      role_id: 1,
+    },
+  ],
 }

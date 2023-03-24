@@ -1,5 +1,7 @@
 from flask import Blueprint
 from ops_api.ops.views import (
+    AGREEMENT_ITEM_API_VIEW_FUNC,
+    AGREEMENT_LIST_API_VIEW_FUNC,
     AUTH_LOGIN_API_VIEW_FUNC,
     AUTH_REFRESH_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC,
@@ -19,6 +21,7 @@ from ops_api.ops.views import (
     PORTFOLIO_LIST_API_VIEW_FUNC,
     PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC,
     PORTFOLIO_STATUS_LIST_API_VIEW_FUNC,
+    RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
     RESEARCH_PROJECT_ITEM_API_VIEW_FUNC,
     RESEARCH_PROJECT_LIST_API_VIEW_FUNC,
     USERS_ITEM_API_VIEW_FUNC,
@@ -121,6 +124,10 @@ def register_api(api_bp: Blueprint) -> None:
         "/portfolio-funding-summary/<int:id>",
         view_func=PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
     )
+    api_bp.add_url_rule(
+        "/research-project-funding-summary/",
+        view_func=RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
+    )
 
     api_bp.add_url_rule(
         "/research-projects/<int:id>",
@@ -129,4 +136,13 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/research-projects/",
         view_func=RESEARCH_PROJECT_LIST_API_VIEW_FUNC,
+    )
+
+    api_bp.add_url_rule(
+        "/agreements/<int:id>",
+        view_func=AGREEMENT_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/agreements/",
+        view_func=AGREEMENT_LIST_API_VIEW_FUNC,
     )
