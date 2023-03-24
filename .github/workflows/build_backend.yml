@@ -5,12 +5,12 @@ on:
   push:
     branches:
       - POC-Deploy-Docker
-    paths:
-      - /backend/models/**
-      - /backend/ops_api/**
-      - /backend/Dockerfile.cg-ops-api
-    tags:
-      - "v*"
+    # paths:
+    #   - /backend/models/**
+    #   - /backend/ops_api/**
+    #   - /backend/Dockerfile.cg-ops-api
+    # tags:
+    #   - "v*"
 
 jobs:
   build-and-push:

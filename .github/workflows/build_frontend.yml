@@ -5,10 +5,10 @@ on:
   push:
     branches:
       - POC-Deploy-Docker
-    paths:
-      - /backend/Dockerfile.base
-    tags:
-      - 'v*'
+    # paths:
+    #   - /backend/Dockerfile.base
+    # tags:
+    #   - 'v*'
 
 jobs:
   build-and-push:

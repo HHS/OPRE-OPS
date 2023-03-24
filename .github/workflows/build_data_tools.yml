@@ -7,9 +7,9 @@ on:
     paths:
       - backend/data-tools/**
   push:
-    branches: [main, develop]
-    paths:
-      - backend/data-tools/**
+    # branches: [main, develop]
+    # paths:
+    #   - backend/data-tools/**
 
 jobs:
   build-and-push:
