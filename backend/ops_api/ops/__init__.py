@@ -10,7 +10,7 @@ from ops_api.ops.urls import register_api
 from ops_api.ops.utils.auth import jwtMgr, oauth
 
 
-def configure_logging() -> None:
+def configure_logging(log_level: str = "INFO") -> None:
     logging.config.dictConfig(
         {
             "version": 1,
@@ -26,13 +26,14 @@ def configure_logging() -> None:
                     "formatter": "default",
                 }
             },
-            "root": {"level": "INFO", "handlers": ["wsgi"]},
+            "root": {"level": f"{log_level}", "handlers": ["wsgi"]},
         }
     )
 
 
-def create_app(config_overrides: Optional[dict] = None) -> Flask:
-    configure_logging()  # should be configured before any access to app.logger
+def create_app(config_overrides: Optional[dict] = {}) -> Flask:
+    log_level = "INFO" if not config_overrides.get("TESTING") else "DEBUG"
+    configure_logging(log_level)  # should be configured before any access to app.logger
     app = Flask(__name__)
     CORS(app)
     app.config.from_object("ops_api.ops.environment.default_settings")

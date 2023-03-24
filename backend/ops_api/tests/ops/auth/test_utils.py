@@ -61,7 +61,6 @@ def test_create_access_token(loaded_db, app):
 
 
 @pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("app_ctx")
 def test_authorization_gateway_authorize_successful(mocker):
     class MockAuthorizationProvider(AuthorizationProvider):
         def is_authorized(self, user_id: str, permission: list[str]):
