@@ -56,9 +56,10 @@
 `cf run-task <app-name> --name <task-name> --command <command-to-run>
 
 ### example:
-Run the command `./data_tools/scripts/import_data.sh` within the `backend` app.
-`cf run-task ops-data-tools --command "ENV=cloudgov ./data_tools/scripts/import_data.sh" --name load_sample_data`
-
+Run the command `./data_tools/scripts/import_data.sh` within the `ops-data-tools` app.
+```bash
+cf run-task ops-data-tools --command "ENV=cloudgov ./data_tools/scripts/import_data.sh" --name load_sample_data
+```
 
 
 
@@ -72,6 +73,7 @@ DB_NAME=ops-db
 BACKEND=ops-backend
 FRONTEND=ops-frontend
 DATA_TOOLS=ops-data-tools
+APP_TYPE=docker # options { docker | buildpack }
 
 cf target -o $ORG -s $SPACE
 
@@ -79,9 +81,9 @@ echo "Creating RDS Service..."
 cf create-service aws-rds micro-psql $DB_NAME -c '{"version":"12"}' -t $SPACE
 
 echo "Creating App Definitions..."
-cf create-app $BACKEND --app-type buildpack
-cf create-app $FRONTEND --app-type buildpack
-cf create-app $DATA_TOOLS --app-type buildpack
+cf create-app $BACKEND --app-type $APP_TYPE
+cf create-app $FRONTEND --app-type $APP_TYPE
+cf create-app $DATA_TOOLS --app-type $APP_TYPE
 
 echo "Create/Map Routes..."
 cf map-route ops-backend app.cloud.gov --hostname ops-api-$SPACE
