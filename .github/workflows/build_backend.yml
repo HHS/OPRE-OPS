@@ -1,0 +1,26 @@
+name: Build and Publish ops-backend
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - POC-Deploy-Docker
+    paths:
+      - /backend/models/**
+      - /backend/ops_api/**
+      - /backend/Dockerfile.cg-ops-api
+    tags:
+      - "v*"
+
+jobs:
+  build-and-push:
+    # runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    name: Build & Publish ops-backend
+    uses: ./.github/workflows/build_reusable.yml
+    with:
+      image-name: ops-backend
+      docker-file: backend/Dockerfile.cg-ops-api

@@ -12,11 +12,6 @@ on:
         default: "Dockerfile"
         required: false
         type: string
-      docker-context:
-        description: "The context location, on where to locate the Dockerfile; ex: {{defaultcontext}}:backend"
-        default: "{{defaultContext}}:backend"
-        required: false
-        type: string
 
 env:
   REGISTRY: ghcr.io
@@ -50,11 +45,6 @@ jobs:
         uses: docker/metadata-action@57396166ad8aefe6098280995947635806a0e6ea # tag=v4.1.1
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          # tags: |
-          #   type=ref,event=branch
-          #   type=ref,event=pr
-          #   type=semver,pattern={{version}}
-          #   type=semver,pattern={{major}}.{{minor}}.{{patch}}
 
         # https://github.com/docker/build-push-action/
       - name: Build and push Docker image

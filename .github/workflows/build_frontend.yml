@@ -1,0 +1,24 @@
+name: Build and Publish ops-frontend
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - POC-Deploy-Docker
+    paths:
+      - /backend/Dockerfile.base
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-push:
+    # runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    name: Build & Publish ops-frontend
+    uses: ./.github/workflows/build_reusable.yml
+    with:
+      image-name: ops-frontend
+      docker-file: frontend/Dockerfile.cg-frontend

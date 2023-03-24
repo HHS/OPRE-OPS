@@ -12,10 +12,6 @@ on:
   schedule:
     - cron: "0 0 * * *" # runs every night at midnight UTC
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: "${{ github.repository }}/ops-python-base"
-
 jobs:
   build-and-push:
     # runs-on: ubuntu-latest
@@ -28,44 +24,3 @@ jobs:
     with:
       image-name: ops-python-base
       docker-file: backend/Dockerfile.base
-      # docker-context: "{{defaultContext}}:backend"
-
-    # steps:
-    #   - name: Checkout repository
-    #     uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3
-
-    #     # https://github.com/docker/metadata-action
-    #   - name: Extract metadata (tags, labels) for Docker
-    #     id: meta
-    #     uses: docker/metadata-action@57396166ad8aefe6098280995947635806a0e6ea # tag=v4.1.1
-    #     with:
-    #       images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-    #       # tags: |
-    #       #   type=ref,event=branch
-    #       #   type=ref,event=pr
-    #       #   type=semver,pattern={{version}}
-    #       #   type=semver,pattern={{major}}.{{minor}}.{{patch}}
-
-    #   - name: Set up Docker Buildx
-    #     uses: docker/setup-buildx-action@4b4e9c3e2d4531116a6f8ba8e71fc6e2cb6e6c8c # tag=v2.5.0
-
-    #     # https://github.com/docker/login-action
-    #     # Make sure that the repo (OPRE-OPS) has correct permission to perform actions
-    #     # on the ghcr.io registry: {GH ORG} --> Packages --> {package} --> Package Settings:
-    #     # ensure the 'Manage Actions' has the correct repo/permissions set.
-    #   - name: Login to GitHub Container Registry
-    #     uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # tag=v2.1.0
-    #     with:
-    #       registry: ${{ env.REGISTRY }}
-    #       username: ${{ github.actor }}
-    #       password: ${{ secrets.GITHUB_TOKEN }}
-
-    #     # https://github.com/docker/build-push-action/
-    #   - name: Build and push Docker image
-    #     uses: docker/build-push-action@c56af957549030174b10d6867f20e78cfd7debc5 # tag=v3.2.0
-    #     with:
-    #       # context: "{{defaultContext}}:backend" # https://github.com/docker/build-push-action#git-context
-    #       push: true
-    #       tags: ${{ steps.meta.outputs.tags }}
-    #       labels: ${{ steps.meta.outputs.labels }}
-    #       file: backend/Dockerfile.base
