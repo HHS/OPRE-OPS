@@ -483,6 +483,116 @@ paths:
                     items:
                       type: string
                       example: 'Must be greater than or equal to 1900.'
+  /api/v1/procurement-shops/:
+    get:
+      description: Get all Procurement Shops
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  abbr:
+                    type: string
+                  fee:
+                    type: number
+              examples:
+                '0':
+                  value: |
+                    [
+                      {
+                        "id": 0,
+                        "name": "Product Service Center",
+                        "abbr": "PSC",
+                        "fee": 0
+                      },
+                      {
+                        "id": 1,
+                        "name": "Government Contracting Services",
+                        "abbr": "GCS",
+                        "fee": 0
+                      },
+                      {
+                        "id": 2,
+                        "name": "National Institute of Health",
+                        "abbr": "NIH",
+                        "fee": 0.5
+                      },
+                      {
+                        "id": 3,
+                        "name": "Interior Business Center",
+                        "abbr": "IBC",
+                        "fee": 4.8
+                      }
+                    ]
+  /api/v1/procurement-shops/{id}:
+    get:
+      description: Get Procurement Shop by id
+      parameters:
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  abbr:
+                    type: string
+                  fee:
+                    type: number
+              examples:
+                '0':
+                  value: |
+                    {
+                      "id": 0,
+                      "name": "Product Service Center",
+                      "abbr": "PSC",
+                      "fee": 0
+                    }
+                '1':
+                  value: |
+                    {
+                      "id": 1,
+                      "name": "Government Contracting Services",
+                      "abbr": "GCS",
+                      "fee": 0
+                    }
+                '2':
+                  value: |
+                    {
+                      "id": 2,
+                      "name": "National Institute of Health",
+                      "abbr": "NIH",
+                      "fee": 0.5
+                    }
+                '3':
+                  value: |
+                    {
+                      "id": 3,
+                      "name": "Interior Business Center",
+                      "abbr": "IBC",
+                      "fee": 4.8
+                    }
 
 components:
   securitySchemes:
