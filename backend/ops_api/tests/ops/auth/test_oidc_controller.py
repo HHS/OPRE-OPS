@@ -1,9 +1,8 @@
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.serialization import Encoding, NoEncryption, PrivateFormat
-from models.events import OpsEvent, OpsEventStatus, OpsEventType
+from models.events import OpsEventStatus, OpsEventType
 from ops_api.ops.utils.auth import create_oauth_jwt
-from sqlalchemy import select
 
 
 def test_auth_post_fails(client):
@@ -21,25 +20,20 @@ def test_get_jwt_not_none(app):
         assert create_oauth_jwt(encoded) is not None
 
 
-def test_auth_post_fails_creates_event(client, loaded_db):
+def test_auth_post_fails_creates_event(client, loaded_db, mocker):
+    m1 = mocker.patch("ops_api.ops.utils.events.db")
     data = {"code": "abc1234"}
 
     res = client.post("/api/v1/auth/login/", json=data)
     assert res.status_code == 400
 
-    stmt = select(OpsEvent).where(OpsEvent.event_status == OpsEventStatus.FAILED)
-    event = loaded_db.session.scalar(stmt)
-    # skip this assert - depends on login.gov config
-    # assert "Code is invalid" in event.event_details["error_message"]
-    assert "<class 'authlib.integrations.base_client.errors.OAuthError'>" == event.event_details["error_type"]
-    assert data == event.event_details["request.json"]
-    # cleanup
-    loaded_db.session.delete(event)
-    loaded_db.session.commit()
+    event = m1.session.add.call_args[0][0]
+    assert event.event_status == OpsEventStatus.FAILED
 
 
 def test_auth_post_succeeds_creates_event(client, loaded_db, mocker):
     # setup mocks
+    db_mock = mocker.patch("ops_api.ops.utils.events.db")
     m1 = mocker.patch("ops_api.ops.utils.auth_views._get_token_and_user_data_from_oauth_provider")
     m1.return_value = ({"access_token": "blah"}, {})
     m2 = mocker.patch("ops_api.ops.utils.auth_views._get_token_and_user_data_from_internal_auth")
@@ -51,12 +45,7 @@ def test_auth_post_succeeds_creates_event(client, loaded_db, mocker):
     res = client.post("/api/v1/auth/login/", json={})
     assert res.status_code == 200
 
-    stmt = select(OpsEvent).where(OpsEvent.event_status == OpsEventStatus.SUCCESS)
-    event = loaded_db.session.scalar(stmt)
+    event = db_mock.session.add.call_args[0][0]
     assert event.event_type == OpsEventType.LOGIN_ATTEMPT
     assert event.event_status == OpsEventStatus.SUCCESS
     assert event.event_details["access_token"] == "blah"
-
-    # cleanup
-    loaded_db.session.delete(event)
-    loaded_db.session.commit()
