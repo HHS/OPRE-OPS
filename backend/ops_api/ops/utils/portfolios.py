@@ -65,10 +65,22 @@ def _get_budget_line_item_total(portfolio_id: int) -> Select[Any]:
     return stmt
 
 
-def get_total_funding(portfolio: Portfolio, fiscal_year: Optional[int] = None) -> TotalFunding:
-    total_funding = _get_total_fiscal_year_funding(portfolio_id=portfolio.id, fiscal_year=fiscal_year)
+def get_total_funding(
+    portfolio: Portfolio,
+    fiscal_year: Optional[int] = None,
+) -> TotalFunding:
+    """Get the portfolio total funding for the given fiscal year."""
+    if fiscal_year is None:
+        raise ValueError
+    total_funding = _get_total_fiscal_year_funding(
+        portfolio_id=portfolio.id,
+        fiscal_year=fiscal_year,
+    )
 
-    carry_forward_funding = _get_carry_forward_total(portfolio_id=portfolio.id, fiscal_year=fiscal_year)
+    carry_forward_funding = _get_carry_forward_total(
+        portfolio_id=portfolio.id,
+        fiscal_year=fiscal_year,
+    )
 
     planned_funding = _get_budget_line_item_total_by_status(
         portfolio_id=portfolio.id, status=BudgetLineItemStatus.PLANNED
@@ -121,4 +133,5 @@ def get_total_funding(portfolio: Portfolio, fiscal_year: Optional[int] = None) -
 
 
 def get_percentage(total_funding: float, specific_funding: float) -> str:
+    """Convert a float to a rounded percentage as a string."""
     return f"{round(float(specific_funding) / float(total_funding), 2) * 100}" if total_funding else "0"

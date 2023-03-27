@@ -1,4 +1,4 @@
-# 5. Back-end web framework
+# 17. Back-end web framework
 
 Date: 2022-11-07
 
@@ -35,7 +35,7 @@ With Flask, we also are using the SQLAlchemy database abstraction layer, which i
 
 Flask + SQLAlchemy gives more option-enabling flexibility with the application, where Django would require too many work-arounds to be beneficial. As such, we have decided to convert the existing codebase to Flask. We decided it would be best to do it before there is very much code, so the transition would be more painless and smoother.
 
-To address some of the counter-points against Flask in the previous ADR [005-use-django-for-back-end-web-framework](./005-use-django-for-back-end-web-framework.md):
+To address some of the counter-points against Flask in the previous ADR [005-use-django-for-back-end-web-framework](./deprecated/005-use-django-for-back-end-web-framework.md):
 ```
 It does not include a database abstraction layer out of the box
 ```

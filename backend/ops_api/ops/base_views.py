@@ -8,7 +8,10 @@ from sqlalchemy.exc import SQLAlchemyError
 
 
 def generate_validator(model: BaseModel) -> BaseModel.Validator:
-    return model.Validator()
+    try:
+        return model.Validator()
+    except AttributeError:
+        return None
 
 
 class OPSMethodView(MethodView):

@@ -1,6 +1,6 @@
 import logging.config
 import os
-from typing import Optional
+from typing import Any, Optional
 
 from flask import Blueprint, Flask
 from flask_cors import CORS
@@ -31,7 +31,7 @@ def configure_logging(log_level: str = "INFO") -> None:
     )
 
 
-def create_app(config_overrides: Optional[dict] = {}) -> Flask:
+def create_app(config_overrides: Optional[dict[str, Any]] = {}) -> Flask:
     is_unit_test = config_overrides.get("TESTING") is True
     log_level = "INFO" if not is_unit_test else "DEBUG"
     configure_logging(log_level)  # should be configured before any access to app.logger
@@ -40,7 +40,7 @@ def create_app(config_overrides: Optional[dict] = {}) -> Flask:
     app.config.from_object("ops_api.ops.environment.default_settings")
     if os.getenv("OPS_CONFIG"):
         app.config.from_envvar("OPS_CONFIG")
-    app.config.from_prefixed_env()
+    app.config.from_prefixed_env()  # type: ignore [attr-defined]
 
     # manually setting the public key path here, until we know where it will live longterm
     app.config.setdefault(
