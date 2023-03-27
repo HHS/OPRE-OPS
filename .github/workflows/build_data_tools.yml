@@ -22,5 +22,5 @@ jobs:
     uses: ./.github/workflows/build_reusable.yml
     with:
       image-name: ops-data-tools
-      docker-file: backend/Dockerfile.cg-data-tools
-      docker-context: "{{defaultContext}}"
+      docker-file: Dockerfile.cg-data-tools
+      docker-context: "backend"

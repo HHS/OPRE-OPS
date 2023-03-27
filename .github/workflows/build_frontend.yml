@@ -21,5 +21,5 @@ jobs:
     uses: ./.github/workflows/build_reusable.yml
     with:
       image-name: ops-frontend
-      docker-file: frontend/Dockerfile.cg-frontend
-      docker-context: "{{defaultContext}}"
+      docker-file: Dockerfile.cg-frontend
+      docker-context: "frontend"
