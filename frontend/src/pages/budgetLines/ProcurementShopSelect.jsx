@@ -8,9 +8,9 @@ export const ProcurementShopSelect = () => {
     const selectedProcurementShop = useSelector((state) => state.createBudgetLine.selected_procurement_shop);
 
     const onChangeProcurementShopSelection = (procurementShopId = "0") => {
-        console.log("procurementShopId: " + procurementShopId);
-        if (procurementShopId === "0" || procurementShopId === 0) {
+        if (procurementShopId === "0") {
             dispatch(setSelectedProcurementShop({}));
+            return;
         }
 
         dispatch(
@@ -31,7 +31,7 @@ export const ProcurementShopSelect = () => {
                     className="usa-select margin-top-0 width-card-lg"
                     name="options"
                     id="options"
-                    onChange={(e) => onChangeProcurementShopSelection(e.target.value || 0)}
+                    onChange={(e) => onChangeProcurementShopSelection(e.target.value || "0")}
                 >
                     <option value="0">- Select -</option>
                     {procurementShops.map((shop) => (
