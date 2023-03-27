@@ -3,14 +3,13 @@ name: Build and Publish ops-backend
 on:
   workflow_dispatch:
   push:
-    branches:
-      - POC-Deploy-Docker
-    # paths:
-    #   - /backend/models/**
-    #   - /backend/ops_api/**
-    #   - /backend/Dockerfile.cg-ops-api
-    # tags:
-    #   - "v*"
+    branches: [main]
+    paths:
+      - /backend/models/**
+      - /backend/ops_api/**
+      - /backend/Dockerfile.cg-ops-api
+    tags:
+      - "v*"
 
 jobs:
   build-and-push:
@@ -25,51 +24,3 @@ jobs:
       image-name: ops-backend
       docker-file: Dockerfile.cg-ops-api
       docker-context: "backend"
-# env:
-#   REGISTRY: ghcr.io
-#   IMAGE_NAME: "${{ github.repository }}/ops-backend"
-
-# jobs:
-#   build-and-push:
-#     runs-on: ubuntu-latest
-#     permissions:
-#       contents: read
-#       packages: write
-
-#     steps:
-#       - name: Checkout repository
-#         uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3
-
-#       - name: Set up Docker Buildx
-#         uses: docker/setup-buildx-action@v2
-
-#         # https://github.com/docker/login-action
-#         # Make sure that the repo (OPRE-OPS) has correct permission to perform actions
-#         # on the ghcr.io registry: {GH ORG} --> Packages --> {package} --> Package Settings:
-#         # ensure the 'Manage Actions' has the correct repo/permissions set.
-#       - name: Login to GitHub Container Registry
-#         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # tag=v2.1.0
-#         with:
-#           registry: ${{ env.REGISTRY }}
-#           username: ${{ github.actor }}
-#           password: ${{ secrets.GITHUB_TOKEN }}
-
-#         # https://github.com/docker/metadata-action
-#       - name: Extract metadata (tags, labels) for Docker
-#         id: meta
-#         uses: docker/metadata-action@57396166ad8aefe6098280995947635806a0e6ea # tag=v4.1.1
-#         with:
-#           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-#           labels: |
-#             org.opencontainers.image.licenses=CC0-1.0
-#           stdout: "json"
-
-#         # https://github.com/docker/build-push-action/
-#       - name: Build and push Docker image
-#         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671 # tag=v4.0.0
-#         with:
-#           context: "{{defaultContext}}:backend" # https://github.com/docker/build-push-action#git-context
-#           push: true
-#           tags: ${{ steps.meta.outputs.tags }}
-#           labels: ${{ steps.meta.outputs.labels }}
-#           file: Dockerfile.cg-ops-api

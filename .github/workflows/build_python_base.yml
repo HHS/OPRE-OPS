@@ -3,12 +3,11 @@ name: Build and Publish ops-python-base Image
 on:
   workflow_dispatch:
   push:
-    branches:
-      - POC-Deploy-Docker
-    # paths:
-    #   - /backend/Dockerfile.base
-    # tags:
-    #   - 'v*'
+    branches: [main]
+    paths:
+      - /backend/Dockerfile.base
+    tags:
+      - 'v*'
   schedule:
     - cron: "0 0 * * *" # runs every night at midnight UTC
 

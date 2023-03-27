@@ -3,12 +3,11 @@ name: Build and Publish ops-frontend
 on:
   workflow_dispatch:
   push:
-    branches:
-      - POC-Deploy-Docker
-    # paths:
-    #   - /backend/Dockerfile.base
-    # tags:
-    #   - 'v*'
+    branches: [main]
+    paths:
+      - /backend/Dockerfile.base
+    tags:
+      - 'v*'
 
 jobs:
   build-and-push:
