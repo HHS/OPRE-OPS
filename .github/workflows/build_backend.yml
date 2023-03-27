@@ -23,8 +23,8 @@ jobs:
     uses: ./.github/workflows/build_reusable.yml
     with:
       image-name: ops-backend
-      docker-file: backend/Dockerfile.cg-ops-api
-      docker-context: "{{defaultContext}}:backend"
+      docker-file: Dockerfile.cg-ops-api
+      docker-context: "backend"
 # env:
 #   REGISTRY: ghcr.io
 #   IMAGE_NAME: "${{ github.repository }}/ops-backend"
