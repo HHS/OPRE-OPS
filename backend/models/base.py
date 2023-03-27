@@ -6,7 +6,8 @@ from marshmallow import Schema as MMSchema
 from models.mixins.repr import ReprMixin
 from models.mixins.serialize import SerializeMixin
 from sqlalchemy import Column, DateTime, ForeignKey, func
-from sqlalchemy.orm import declarative_base, mapped_column, registry, declared_attr
+from sqlalchemy.orm import declarative_base, declared_attr, mapped_column, registry
+from typing_extensions import Any, override
 
 Base = declarative_base()
 reg = registry(metadata=Base.metadata)
@@ -121,3 +122,16 @@ class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc, valid-t
         @staticmethod
         def validate(item, data):  # type: ignore [no-untyped-def]
             pass
+
+    @override
+    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
+        d = super().to_dict()  # type: ignore [no-untyped-call]
+
+        d.update(
+            {
+                "created_on": self.created_on.isoformat() if self.created_on else None,
+                "updated_on": self.updated_on.isoformat() if self.updated_on else None,
+            }
+        )
+
+        return cast(dict[str, Any], d)

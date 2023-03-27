@@ -1,10 +1,11 @@
 """User models."""
-from typing import List
+from typing import Any, cast
 
 from models.base import BaseModel
 from sqlalchemy import Column, DateTime, ForeignKey, Identity, Integer, String, Table, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import column_property, relationship
+from typing_extensions import override
 
 # Define a many-to-many relationship between Users and Roles
 user_role_table = Table(
@@ -42,6 +43,21 @@ class User(BaseModel):
         back_populates="team_leaders",
         secondary="research_project_team_leaders",
     )
+
+    @override
+    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
+        d = super().to_dict()  # type: ignore [no-untyped-call]
+
+        d.update(
+            {
+                "oidc_id": f"{self.oidc_id}" if self.oidc_id else None,
+                "date_joined": self.date_joined.isoformat()
+                if self.date_joined
+                else None,
+            }
+        )
+
+        return cast(dict[str, Any], d)
 
 
 class Role(BaseModel):
