@@ -33,6 +33,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3
 
+        # This is required, if you want to use sub-directories in the `build-push-action` context.
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4b4e9c3e2d4531116a6f8ba8e71fc6e2cb6e6c8c # tag=v2.5.0
+
         # https://github.com/docker/login-action
         # Make sure that the repo (OPRE-OPS) has correct permission to perform actions
         # on the ghcr.io registry: {GH ORG} --> Packages --> {package} --> Package Settings:
