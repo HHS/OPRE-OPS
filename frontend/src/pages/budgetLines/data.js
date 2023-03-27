@@ -51,3 +51,30 @@ export const AGREEMENTS = [
         cans: [],
     },
 ];
+
+export const PROCUREMENT_SHOPS = [
+    {
+        id: 1,
+        name: "Product Service Center",
+        abbr: "PSC",
+        fee: 0,
+    },
+    {
+        id: 2,
+        name: "Government Contracting Services",
+        abbr: "GCS",
+        fee: 0,
+    },
+    {
+        id: 3,
+        name: "National Institute of Health",
+        abbr: "NIH",
+        fee: 0.5,
+    },
+    {
+        id: 4,
+        name: "Interior Business Center",
+        abbr: "IBC",
+        fee: 4.8,
+    },
+];

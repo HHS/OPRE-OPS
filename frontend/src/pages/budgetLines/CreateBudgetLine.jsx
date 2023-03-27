@@ -6,12 +6,12 @@ import { StepIndicatorTwo } from "../../components/UI/StepIndicator/StepIndicato
 import { StepIndicatorThree } from "../../components/UI/StepIndicator/StepIndicatorThree";
 import { CreateBudgetLineFlow } from "./CreateBudgetLineFlow";
 import { ProjectSelect } from "./ProjectSelect";
-// import { DynamicSelect } from "./DynamicSelect";
 import { AgreementSelect } from "./AgreementSelect";
 import { CanSelect } from "./CanSelect";
 import { DesiredAwardDate } from "./DesiredAwardDate";
 import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
 import { setAgreements } from "./createBudgetLineSlice";
+import { ProcurementShopSelect } from "./ProcurementShopSelect";
 
 const StepOne = ({ goToNext }) => (
     <>
@@ -24,7 +24,6 @@ const StepOne = ({ goToNext }) => (
             Add New Project.
         </p>
         <ProjectSelect />
-        {/* <DynamicSelect /> */}
         <h2 className="font-sans-lg">Select an Agreement</h2>
         <p>Select the project and agreement this budget line should be associated with.</p>
         <AgreementSelect />
@@ -50,19 +49,11 @@ const StepTwo = ({ goBack, goToNext }) => (
         <p>Step Two: Text explaining this page</p>
         <StepIndicatorTwo />
         <h2 className="font-sans-lg">Procurement Shop</h2>
-        <p>Select the Procurement Shop, and the fee rates will be populated in the table below.</p>
-        <label className="usa-label" htmlFor="options">
-            Procurement Shop
-        </label>
-        <div className="display-flex flex-align-center margin-top-1">
-            <select className="usa-select margin-top-0 width-card-lg" name="options" id="options">
-                <option value>- Select -</option>
-                <option value="dio">DOI</option>
-                <option value="option-b">Option B</option>
-                <option value="option-c">Option C</option>
-            </select>
-            <span className="margin-left-1 text-base-dark font-12px">Fee Rate: 4.8%</span>
-        </div>
+        <p>
+            Select the Procurement Shop, and the fee rates will be populated in the table below. If this is an active
+            agreement, it will default to the procurement shop currently being used.
+        </p>
+        <ProcurementShopSelect />
         <h2 className="font-sans-lg margin-top-3">Budget Line Details</h2>
         <p>
             Complete the information below to create new budget lines. Select Add Budget Line to create multiple budget
