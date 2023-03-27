@@ -14,7 +14,12 @@ class AuthLoginAPI(BaseListAPI):
         if errors:
             return jsonify(errors), 400
 
-        return login()
+        try:
+            return login()
+        except Exception as ex:
+            response = Response(f"Login Error: {ex}", 400)
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
 
 
 class AuthRefreshAPI(BaseListAPI):

@@ -14,5 +14,5 @@ AUTHLIB_OAUTH_CLIENTS = {
         "user_info_url": "https://idp.int.identitysandbox.gov/api/openid_connect/userinfo",
         "client_id": "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
         "client_kwargs": {"scope": "openid email"},
-    },
+    }
 }
