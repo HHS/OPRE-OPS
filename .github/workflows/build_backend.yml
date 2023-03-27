@@ -59,12 +59,13 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           labels: |
             org.opencontainers.image.licenses=CC0-1.0
+          stdout: "json"
 
         # https://github.com/docker/build-push-action/
       - name: Build and push Docker image
-        uses: docker/build-push-action@c56af957549030174b10d6867f20e78cfd7debc5 # tag=v3.2.0
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671 # tag=v4.0.0
         with:
-          context: "{{defaultContext}}/backend" # https://github.com/docker/build-push-action#git-context
+          context: "./backend" # https://github.com/docker/build-push-action#git-context
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
