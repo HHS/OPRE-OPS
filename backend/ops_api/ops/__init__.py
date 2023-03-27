@@ -1,6 +1,6 @@
 import logging.config
 import os
-from typing import Optional
+from typing import Any, Optional
 
 from flask import Blueprint, Flask
 from flask_cors import CORS
@@ -10,7 +10,7 @@ from ops_api.ops.urls import register_api
 from ops_api.ops.utils.auth import jwtMgr, oauth
 
 
-def configure_logging() -> None:
+def configure_logging(log_level: str = "INFO") -> None:
     logging.config.dictConfig(
         {
             "version": 1,
@@ -26,19 +26,19 @@ def configure_logging() -> None:
                     "formatter": "default",
                 }
             },
-            "root": {"level": "INFO", "handlers": ["wsgi"]},
+            "root": {"level": f"{log_level}", "handlers": ["wsgi"]},
         }
     )
 
 
-def create_app(config_overrides: Optional[dict] = None) -> Flask:
+def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
     configure_logging()  # should be configured before any access to app.logger
     app = Flask(__name__)
     CORS(app)
     app.config.from_object("ops_api.ops.environment.default_settings")
     if os.getenv("OPS_CONFIG"):
         app.config.from_envvar("OPS_CONFIG")
-    app.config.from_prefixed_env()
+    app.config.from_prefixed_env()  # type: ignore [attr-defined]
 
     # manually setting the public key path here, until we know where it will live longterm
     app.config.setdefault(

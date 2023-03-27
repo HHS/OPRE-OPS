@@ -11,7 +11,7 @@ Feature: Calculate Portfolio Funding By Research Project
     When I calculate the Total Portfolio Budget
     Then the result should be $500.
 
-  Scenario: Calculate FY Total Portfolio Budget With Carry-Over CANs
+  Scenario: Calculate FY Total Portfolio Budget With Carry-Forward CANs
   (Displayed on the "Projects and Spending" tab on the Portfolio details
   page in the FY XXXX Budget vs Spending container.)
     # assuming CAN 2 is re-used over the 5 fiscal years

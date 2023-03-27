@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+sqlalchemy = "==2.0.7"
 flask = "==2.2.3"
 mypy = "==0.991"
 flask-jwt-extended = {extras = ["asymmetric_crypto"], version = "==4.4.4"}

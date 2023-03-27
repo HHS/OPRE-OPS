@@ -2,10 +2,14 @@ from flask import Response, jsonify
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from models.base import BaseModel
+from ops_api.ops.utils.auth import auth_gateway
 
 
 def generate_validator(model: BaseModel) -> BaseModel.Validator:
-    return model.Validator()
+    try:
+        return model.Validator()
+    except AttributeError:
+        return None
 
 
 class OPSMethodView(MethodView):
@@ -14,6 +18,7 @@ class OPSMethodView(MethodView):
     def __init__(self, model: BaseModel):
         self.model = model
         self.validator = generate_validator(model)
+        self.auth_gateway = auth_gateway
 
 
 class BaseItemAPI(OPSMethodView):
