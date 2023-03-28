@@ -39,7 +39,7 @@ jobs:
           ORG_NAME: ${{ secrets.CF_ORG }}
           SPACE_NAME: ${{ inputs.space }}
           APP_NAME: ops-backend
-          MANIFEST: $ {{ inputs.manifest }}
+          MANIFEST: ${{ inputs.manifest }}
 
       - name: Deploy data-tools to cloud.gov
         uses: ./.github/actions/deploy-data-tools
