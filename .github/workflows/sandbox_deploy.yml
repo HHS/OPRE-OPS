@@ -16,7 +16,7 @@ jobs:
     name: Deploy to cloud.gov
     uses: ./.github/workflows/deploy_reusable.yml
     with:
-      environment: cloud_gov_dev
+      environment: cloud_gov_sandbox
       space: sandbox
       manifest: manifest.docker.yml # Relative to the root of the project
     secrets: inherit # This will allow the jobs to inherit from the envrionment secrets; which are limited to only deployment items anyway.
