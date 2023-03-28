@@ -86,8 +86,6 @@ const StepTwo = ({ goBack, goToNext }) => {
                             name="bl-description"
                             type="text"
                             defaultValue={description}
-                            // onChange convert to number
-
                             onChange={(e) => setDescription(e.target.value)}
                         />
                     </div>
