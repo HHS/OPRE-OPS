@@ -53,7 +53,7 @@ export const AgreementSelect = () => {
             <div className="left-half width-full">
                 {/* NOTE: Left side */}
                 <label className="usa-label" htmlFor="agreement">
-                    {/* {JSON.stringify(agreements, 2, null)} */}
+                    Agreements
                 </label>
                 <div className="usa-combo-box" data-enhanced="true">
                     <select
@@ -62,7 +62,7 @@ export const AgreementSelect = () => {
                         id=""
                         aria-hidden="true"
                         tabIndex="-1"
-                        defaultValue={selectedAgreement?.value}
+                        value={selectedAgreement?.value}
                         onChange={(e) => onChangeAgreementSelection(e.target.value || 0)}
                     >
                         {agreements.map((agreement) => {

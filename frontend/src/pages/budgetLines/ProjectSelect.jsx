@@ -54,7 +54,7 @@ export const ProjectSelect = () => {
                         id=""
                         aria-hidden="true"
                         tabIndex="-1"
-                        defaultValue={selectedResearchProject?.value}
+                        value={selectedResearchProject?.value}
                         onChange={(e) => onChangeResearchProjectSelection(e.target.value || 0)}
                     >
                         {researchProjects.map((project) => {
