@@ -1,0 +1,22 @@
+name: Sandbox Deployment
+
+on:
+  push:
+    branches:
+      - sandbox
+
+jobs:
+
+  deployment:
+    permissions:
+      contents: read
+
+    # This uses a reusable_workflow a few special rules apply
+    # see ref: https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/reusing-workflows
+    name: Deploy to cloud.gov
+    uses: ./.github/workflows/deploy_reusable.yml
+    with:
+      environment: cloud_gov_dev
+      space: sandbox
+      manifest: manifest.docker.yml # Relative to the root of the project
+    secrets: inherit # This will allow the jobs to inherit from the envrionment secrets; which are limited to only deployment items anyway.

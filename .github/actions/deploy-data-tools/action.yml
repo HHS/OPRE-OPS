@@ -16,6 +16,9 @@ inputs:
   APP_NAME:
     description: Application name (from manifest.yml).
     required: true
+  MANIFEST:
+    description: CF Manifest file to use.
+    required: true
 runs:
   using: composite
   steps:
@@ -26,4 +29,4 @@ runs:
           export PATH=$HOME/bin:$PATH
           cf auth ${{ inputs.USERNAME }} ${{ inputs.PASSWORD }}
           cf target -o ${{ inputs.ORG_NAME }} -s ${{ inputs.SPACE_NAME }}
-          cf push ${{ inputs.APP_NAME }} -f manifest.yml
+          cf push ${{ inputs.APP_NAME }} -f ${{ inputs.MANIFEST }}

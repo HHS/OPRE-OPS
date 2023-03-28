@@ -11,6 +11,11 @@ on:
         description: "The CF Space to deploy to"
         required: true
         type: string
+      manifest:
+        description: "Which Cloud Foundry manifest file to use."
+        required: true
+        type: string
+        default: manifest.yml
 
 jobs:
   deployment:
@@ -34,6 +39,7 @@ jobs:
           ORG_NAME: ${{ secrets.CF_ORG }}
           SPACE_NAME: ${{ inputs.space }}
           APP_NAME: ops-backend
+          MANIFEST: $ {{ inputs.manifest }}
 
       - name: Deploy data-tools to cloud.gov
         uses: ./.github/actions/deploy-data-tools
@@ -43,6 +49,7 @@ jobs:
           ORG_NAME: ${{ secrets.CF_ORG }}
           SPACE_NAME: ${{ inputs.space }}
           APP_NAME: ops-data-tools
+          MANIFEST: $ {{ inputs.manifest }}
 
       # This is where the actual 'data-tools' script is run
       # ENV (data-tools/environment/<name>.py): is the environment to run in, should always be cloudgov
@@ -75,3 +82,4 @@ jobs:
           ORG_NAME: ${{ secrets.CF_ORG }}
           SPACE_NAME: ${{ inputs.space }}
           APP_NAME: ops-frontend
+          MANIFEST: $ {{ inputs.manifest }}
