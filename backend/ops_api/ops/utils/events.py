@@ -3,7 +3,6 @@ from typing import Optional, Type
 
 from flask import current_app, request
 from models.events import OpsEvent, OpsEventStatus, OpsEventType
-from ops_api.ops import db
 
 
 class OpsEventHandler:
@@ -41,8 +40,8 @@ class OpsEventHandler:
             event_status=event_status,
             event_details=self.metadata,
         )
-        db.session.add(event)
-        db.session.commit()
+        current_app.db_session.add(event)
+        current_app.db_session.commit()
         current_app.logger.info(f"EVENT: {event.to_dict()}")
 
         if isinstance(exc_val, Exception):
