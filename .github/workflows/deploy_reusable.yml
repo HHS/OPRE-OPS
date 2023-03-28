@@ -49,7 +49,7 @@ jobs:
           ORG_NAME: ${{ secrets.CF_ORG }}
           SPACE_NAME: ${{ inputs.space }}
           APP_NAME: ops-data-tools
-          MANIFEST: $ {{ inputs.manifest }}
+          MANIFEST: ${{ inputs.manifest }}
 
       # This is where the actual 'data-tools' script is run
       # ENV (data-tools/environment/<name>.py): is the environment to run in, should always be cloudgov
@@ -82,4 +82,4 @@ jobs:
           ORG_NAME: ${{ secrets.CF_ORG }}
           SPACE_NAME: ${{ inputs.space }}
           APP_NAME: ops-frontend
-          MANIFEST: $ {{ inputs.manifest }}
+          MANIFEST: ${{ inputs.manifest }}
