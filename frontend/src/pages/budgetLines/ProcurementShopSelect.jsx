@@ -16,7 +16,7 @@ export const ProcurementShopSelect = () => {
         dispatch(
             setSelectedProcurementShop({
                 id: procurementShops[procurementShopId - 1].id,
-                value: procurementShops[procurementShopId - 1].name,
+                name: procurementShops[procurementShopId - 1].name,
                 fee: procurementShops[procurementShopId - 1].fee,
             })
         );
@@ -32,6 +32,7 @@ export const ProcurementShopSelect = () => {
                     name="options"
                     id="options"
                     onChange={(e) => onChangeProcurementShopSelection(e.target.value || "0")}
+                    value={selectedProcurementShop?.id}
                 >
                     <option value="0">- Select -</option>
                     {procurementShops.map((shop) => (
