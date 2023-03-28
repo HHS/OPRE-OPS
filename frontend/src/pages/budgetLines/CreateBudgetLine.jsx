@@ -46,6 +46,7 @@ const StepOne = ({ goToNext }) => (
 const StepTwo = ({ goBack, goToNext }) => {
     const dispatch = useDispatch();
     const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
+    const selectedCan = useSelector((state) => state.createBudgetLine.selected_can);
     const [description, setDescription] = useState("");
     const [amount, setAmount] = useState();
 
@@ -55,6 +56,7 @@ const StepTwo = ({ goBack, goToNext }) => {
             setBudgetLineAdded({
                 line_description: description,
                 amount,
+                can_id: selectedCan?.id,
             })
         );
     };

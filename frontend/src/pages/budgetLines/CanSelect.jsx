@@ -1,4 +1,28 @@
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setSelectedCan } from "./createBudgetLineSlice";
+import { getCanList } from "../cans/list/getCanList";
+
 export const CanSelect = () => {
+    const dispatch = useDispatch();
+    const canList = useSelector((state) => state.canList.cans);
+    const selectedCan = useSelector((state) => state.createBudgetLine.selected_can);
+    const onChangeCanSelection = (canId = 0) => {
+        if (canId === 0) {
+            return;
+        }
+        dispatch(
+            setSelectedCan({
+                id: canId,
+                number: canList[canId - 1].number,
+            })
+        );
+    };
+
+    React.useEffect(() => {
+        dispatch(getCanList());
+    }, [dispatch]);
+
     return (
         <>
             <label className="usa-label" htmlFor="can">
@@ -11,11 +35,15 @@ export const CanSelect = () => {
                     id="can"
                     aria-hidden="true"
                     tabIndex="-1"
+                    defaultValue={selectedCan?.number}
+                    onChange={(e) => onChangeCanSelection(e.target.value || 0)}
                 >
                     <option value="">Select a CAN</option>
-                    <option value="G99HS22">G99HS22</option>
-                    <option value="G99HS23">G99HS23</option>
-                    <option value="G99HS24">G99HS24</option>
+                    {canList.map((can) => (
+                        <option key={can.id} value={can.id}>
+                            {can.number}
+                        </option>
+                    ))}
                 </select>
                 <input
                     id="can"
@@ -30,9 +58,15 @@ export const CanSelect = () => {
                     type="text"
                     role="combobox"
                     aria-activedescendant=""
+                    defaultValue={selectedCan?.number}
                 />
                 <span className="usa-combo-box__clear-input__wrapper" tabIndex="-1">
-                    <button type="button" className="usa-combo-box__clear-input" aria-label="Clear the select contents">
+                    <button
+                        type="button"
+                        className="usa-combo-box__clear-input"
+                        aria-label="Clear the select contents"
+                        onClick={() => dispatch(setSelectedCan({}))}
+                    >
                         &nbsp;
                     </button>
                 </span>
@@ -55,42 +89,23 @@ export const CanSelect = () => {
                     aria-labelledby="agreement-label"
                     hidden
                 >
-                    <li
-                        aria-setsize="64"
-                        aria-posinset="1"
-                        aria-selected="false"
-                        id="can--list--option-1"
-                        className="usa-combo-box__list-option"
-                        tabIndex="0"
-                        role="option"
-                        data-value="G99HS22"
-                    >
-                        G99HS22
-                    </li>
-                    <li
-                        aria-setsize="64"
-                        aria-posinset="2"
-                        aria-selected="false"
-                        id="can--list--option-2"
-                        className="usa-combo-box__list-option"
-                        tabIndex="-1"
-                        role="option"
-                        data-value="G99HS23"
-                    >
-                        G99HS23
-                    </li>
-                    <li
-                        aria-setsize="64"
-                        aria-posinset="3"
-                        aria-selected="false"
-                        id="can--list--option-3"
-                        className="usa-combo-box__list-option"
-                        tabIndex="-1"
-                        role="option"
-                        data-value="G99HS24"
-                    >
-                        G99HS24
-                    </li>
+                    {canList?.map((can, index) => {
+                        return (
+                            <li
+                                key={can?.id}
+                                aria-setsize={can?.length}
+                                aria-posinset={index + 1}
+                                aria-selected="false"
+                                id={`dynamic-select--list--option-${index}`}
+                                className="usa-combo-box__list-option"
+                                tabIndex={index === 0 ? "0" : "-1"}
+                                role="option"
+                                data-value={can?.number}
+                            >
+                                {can?.number}
+                            </li>
+                        );
+                    })}
                 </ul>
                 <div className="usa-combo-box__status usa-sr-only" role="status"></div>
                 <span id="can--assistiveHint" className="usa-sr-only">
