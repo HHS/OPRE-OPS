@@ -47,12 +47,14 @@ const StepTwo = ({ goBack, goToNext }) => {
     const dispatch = useDispatch();
     const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
     const [description, setDescription] = useState("");
+    const [amount, setAmount] = useState();
 
     const handleSubmitForm = (e) => {
         e.preventDefault();
         dispatch(
             setBudgetLineAdded({
                 line_description: description,
+                amount,
             })
         );
     };
@@ -97,7 +99,15 @@ const StepTwo = ({ goBack, goToNext }) => {
                         <label className="usa-label" htmlFor="bl-amount">
                             Amount
                         </label>
-                        <input className="usa-input" id="bl-amount" name="bl-amount" type="number" />
+                        <input
+                            className="usa-input"
+                            id="bl-amount"
+                            name="bl-amount"
+                            type="number"
+                            value={amount}
+                            placeholder="$"
+                            onChange={(e) => setAmount(Number(e.target.value))}
+                        />
                     </div>
                 </div>
                 <div className="grid-col-4">
