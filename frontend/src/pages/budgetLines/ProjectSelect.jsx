@@ -13,7 +13,7 @@ export const ProjectSelect = () => {
         dispatch(
             setSelectedProject({
                 id: researchProjects[projectId - 1].id,
-                value: researchProjects[projectId - 1].title,
+                title: researchProjects[projectId - 1].title,
                 teamLeaders: researchProjects[projectId - 1].team_leaders,
             })
         );
@@ -29,7 +29,7 @@ export const ProjectSelect = () => {
             >
                 <dl className="margin-0 padding-y-2 padding-x-105">
                     <dt className="margin-0 text-base-dark">Project</dt>
-                    <dd className="text-semibold margin-0">{selectedResearchProject.value}</dd>
+                    <dd className="text-semibold margin-0">{selectedResearchProject.title}</dd>
                     {areThereTeamLeaders && <dt className="margin-0 text-base-dark margin-top-205">Project Officer</dt>}
                     {selectedResearchProject?.teamLeaders?.map((leader) => (
                         <dd key={leader?.id} className="text-semibold margin-0">
@@ -54,7 +54,7 @@ export const ProjectSelect = () => {
                         id=""
                         aria-hidden="true"
                         tabIndex="-1"
-                        value={selectedResearchProject?.value}
+                        defaultValue={selectedResearchProject?.title}
                         onChange={(e) => onChangeResearchProjectSelection(e.target.value || 0)}
                     >
                         {researchProjects.map((project) => {
@@ -78,8 +78,7 @@ export const ProjectSelect = () => {
                         type="text"
                         role="combobox"
                         aria-activedescendant=""
-                        defaultValue={selectedResearchProject?.value}
-                        // onChange={onChangeResearchProjectFilter}
+                        defaultValue={selectedResearchProject?.title}
                     />
                     <span className="usa-combo-box__clear-input__wrapper" tabIndex="-1">
                         <button
