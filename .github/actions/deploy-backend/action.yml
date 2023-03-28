@@ -37,3 +37,16 @@ runs:
           BACKEND_GUID=$(cf app ${{ inputs.APP_NAME }} --guid)
           BACKEND_DOMAIN=$(cf curl /v3/apps/$BACKEND_GUID/env | jq -r .application_env_json.VCAP_APPLICATION.application_uris | jq -r '.[0]')
           echo "BACKEND_DOMAIN=${BACKEND_DOMAIN}" >> $GITHUB_OUTPUT
+    # - name: Deploy backend to Cloud.gov
+    #   id: deploy-backend
+    #   uses: .github/actions/cf-cli
+    #   with:
+    #     cf_api: https://api.fr.cloud.gov
+    #     cf_username: ${{ inputs.USERNAME }}
+    #     cf_password: ${{ inputs.PASSWORD }}
+    #     cf_org: ${{ inputs.ORG_NAME }}
+    #     cf_space: ${{ inputs.SPACE_NAME }}
+    #     command: push ${{ inputs.APP_NAME }} -f ${{ inputs.MANIFEST }}
+    # - name: Get Backend GUID
+    #   id: backend-guid
+    #   uses

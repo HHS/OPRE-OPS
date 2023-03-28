@@ -78,7 +78,7 @@ APP_TYPE=docker # options { docker | buildpack }
 cf target -o $ORG -s $SPACE
 
 echo "Creating RDS Service..."
-cf create-service aws-rds micro-psql $DB_NAME -c '{"version":"12"}' -t $SPACE
+cf create-service aws-rds micro-psql $DB_NAME -c '{"version":"12"}' -t $SPACE --wait
 
 echo "Creating App Definitions..."
 cf create-app $BACKEND --app-type $APP_TYPE
@@ -90,8 +90,8 @@ cf map-route ops-backend app.cloud.gov --hostname ops-api-$SPACE
 cf map-route ops-frontend app.cloud.gov --hostname ops-$SPACE
 
 echo "Binding DB to Apps..."
-cf bind-service $BACKEND $DB_NAME
-cf bind-service $DATA_TOOLS $DB_NAME
+cf bind-service --wait $BACKEND $DB_NAME
+cf bind-service --wait $DATA_TOOLS $DB_NAME
 
 echo "Updating Security Groups..."
 cf bind-security-group trusted_local_networks $ORG --space $SPACE
