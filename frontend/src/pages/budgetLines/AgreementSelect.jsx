@@ -13,7 +13,7 @@ export const AgreementSelect = () => {
         dispatch(
             setSelectedAgreement({
                 id: agreements[agreementId - 1].id,
-                value: agreements[agreementId - 1].name,
+                name: agreements[agreementId - 1].name,
                 description: agreements[agreementId - 1].description,
                 projectOfficer: agreements[agreementId - 1].project_officer,
                 periodOfPerformance: `${agreements[agreementId - 1].period_of_performance_start} - ${
@@ -31,7 +31,7 @@ export const AgreementSelect = () => {
             >
                 <dl className="margin-0 padding-y-2 padding-x-105">
                     <dt className="margin-0 text-base-dark">Agreement</dt>
-                    <dd className="text-semibold margin-0">{selectedAgreement.value}</dd>
+                    <dd className="text-semibold margin-0">{selectedAgreement.name}</dd>
                     <dt className="margin-0 text-base-dark margin-top-205">Description</dt>
                     <dd className="text-semibold margin-0">{selectedAgreement.description}</dd>
                     <div className="display-flex flex-justify margin-top-205">
@@ -62,7 +62,7 @@ export const AgreementSelect = () => {
                         id=""
                         aria-hidden="true"
                         tabIndex="-1"
-                        value={selectedAgreement?.value}
+                        defaultValue={selectedAgreement?.name}
                         onChange={(e) => onChangeAgreementSelection(e.target.value || 0)}
                     >
                         {agreements.map((agreement) => {
@@ -86,7 +86,7 @@ export const AgreementSelect = () => {
                         type="text"
                         role="combobox"
                         aria-activedescendant=""
-                        defaultValue={selectedAgreement?.value}
+                        defaultValue={selectedAgreement?.name}
                     />
                     <span className="usa-combo-box__clear-input__wrapper" tabIndex="-1">
                         <button
