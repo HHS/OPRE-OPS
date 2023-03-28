@@ -6,11 +6,10 @@ runs:
     - name: Install CF
       shell: bash
       run: |
-        apt-get install -y ca-certificates
-        echo "deb [trusted=yes] https://packages.cloudfoundry.org/debian stable main" > /etc/apt/sources.list.d/cloudfoundry-cli.list
-        apt-get update
-        apt-get install -y cf8-cli
-        cf --version
+        wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | sudo apt-key add -
+        echo "deb https://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
+        sudo apt-get update
+        sudo apt-get install cf8-cli
 # mkdir -p $HOME/bin
 # export PATH=$HOME/bin:$PATH
 # curl -o /tmp/cf-cli.tgz -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=v8&source=github"
