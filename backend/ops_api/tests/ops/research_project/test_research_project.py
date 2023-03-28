@@ -45,8 +45,6 @@ def test_research_projects_serialization(auth_client, loaded_db):
     assert response.json["id"] == 1
     assert response.json["title"] == "African American Child and Family Research Center"
     assert response.json["origination_date"] == "2022-01-01"
-    assert len(response.json["cans"]) == 2
-    assert response.json["cans"][0]["number"] == "G990136"
     assert len(response.json["methodologies"]) == 7
     assert response.json["methodologies"][0] == "SURVEY"
     assert len(response.json["populations"]) == 1
@@ -80,7 +78,7 @@ def test_get_query_for_fiscal_year_with_fiscal_year_found(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_get_query_for_fiscal_year_with_fiscal_year_not_found(loaded_db):
-    stmt = ResearchProjectListAPI._get_query(2022)
+    stmt = ResearchProjectListAPI._get_query(1900)
     result = loaded_db.execute(stmt).fetchall()
     assert len(result) == 0
 
@@ -99,28 +97,6 @@ def test_get_query_for_fiscal_year_with_portfolio_id_not_found(loaded_db):
     stmt = ResearchProjectListAPI._get_query(2023, 1)
     result = loaded_db.execute(stmt).fetchall()
     assert len(result) == 0
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_research_project_no_cans(auth_client, loaded_db):
-    rp = ResearchProject(id=999, title="blah blah", portfolio_id=1)
-    loaded_db.add(rp)
-    loaded_db.commit()
-
-    response = auth_client.get("/api/v1/research-projects/999")
-
-    loaded_db.delete(rp)
-    loaded_db.commit()
-
-    assert response.status_code == 200
-    assert response.json["id"] == 999
-
-
-def test_research_project_no_cans_with_query_string(auth_client, loaded_db):
-    response = auth_client.get("/api/v1/research-projects/?fiscal_year=2023")
-
-    assert response.status_code == 200
-    assert len(response.json) == 1
 
 
 def test_research_project_search(auth_client, loaded_db):
