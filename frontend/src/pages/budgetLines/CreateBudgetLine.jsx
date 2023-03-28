@@ -65,12 +65,15 @@ const StepTwo = ({ goBack, goToNext }) => {
     const handleSubmitForm = (e) => {
         e.preventDefault();
         dispatch(
-            setBudgetLineAdded({
-                line_description: enteredDescription,
-                amount: enteredAmount,
-                can_id: selectedCan?.id,
-                date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}`,
-            })
+            setBudgetLineAdded([
+                ...budgetLinesAdded,
+                {
+                    line_description: enteredDescription,
+                    amount: enteredAmount,
+                    can_id: selectedCan?.id,
+                    date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}`,
+                },
+            ])
         );
         //reset form
         dispatch(setEnteredDescription(""));
