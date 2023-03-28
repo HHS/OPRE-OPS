@@ -10,7 +10,13 @@ import { AgreementSelect } from "./AgreementSelect";
 import { CanSelect } from "./CanSelect";
 import { DesiredAwardDate } from "./DesiredAwardDate";
 import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
-import { setAgreements, setBudgetLineAdded } from "./createBudgetLineSlice";
+import {
+    setAgreements,
+    setBudgetLineAdded,
+    setEnteredDescription,
+    setEnteredAmount,
+    setSelectedCan,
+} from "./createBudgetLineSlice";
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
 
 const StepOne = ({ goToNext }) => (
@@ -47,18 +53,23 @@ const StepTwo = ({ goBack, goToNext }) => {
     const dispatch = useDispatch();
     const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
     const selectedCan = useSelector((state) => state.createBudgetLine.selected_can);
-    const [description, setDescription] = useState("");
-    const [amount, setAmount] = useState();
+    const enteredDescription = useSelector((state) => state.createBudgetLine.entered_description);
+    const enteredAmount = useSelector((state) => state.createBudgetLine.entered_amount);
 
     const handleSubmitForm = (e) => {
         e.preventDefault();
         dispatch(
             setBudgetLineAdded({
-                line_description: description,
-                amount,
+                line_description: enteredDescription,
+                amount: enteredAmount,
                 can_id: selectedCan?.id,
             })
         );
+        //reset form
+        dispatch(setEnteredDescription(""));
+        dispatch(setEnteredAmount(null));
+        dispatch(setSelectedCan({}));
+        alert("Budget Line Added");
     };
     return (
         <>
@@ -87,8 +98,8 @@ const StepTwo = ({ goBack, goToNext }) => {
                             id="bl-description"
                             name="bl-description"
                             type="text"
-                            defaultValue={description}
-                            onChange={(e) => setDescription(e.target.value)}
+                            value={enteredDescription || ""}
+                            onChange={(e) => dispatch(setEnteredDescription(e.target.value))}
                         />
                     </div>
                     <div className="usa-form-group">
@@ -106,9 +117,9 @@ const StepTwo = ({ goBack, goToNext }) => {
                             id="bl-amount"
                             name="bl-amount"
                             type="number"
-                            value={amount}
+                            value={enteredAmount || ""}
                             placeholder="$"
-                            onChange={(e) => setAmount(Number(e.target.value))}
+                            onChange={(e) => dispatch(setEnteredAmount(Number(e.target.value)))}
                         />
                     </div>
                 </div>
