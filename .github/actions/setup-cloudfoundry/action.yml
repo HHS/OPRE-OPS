@@ -8,6 +8,6 @@ runs:
       run: |
         mkdir -p $HOME/bin
         export PATH=$HOME/bin:$PATH
-        curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=v8&source=github -o cf-cli.tgz"
+        curl -L -o cf-cli.tgz "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=v8&source=github"
         tar xzv -C $HOME/bin cf-cli.tgz
         cf --version
