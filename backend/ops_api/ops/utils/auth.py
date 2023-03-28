@@ -8,6 +8,7 @@ from flask import current_app
 from flask_jwt_extended import JWTManager
 from models.users import User
 from ops_api.ops.utils.authorization import AuthorizationGateway, BasicAuthorizationPrivider
+from sqlalchemy import select
 
 jwtMgr = JWTManager()
 oauth = OAuth()
@@ -22,7 +23,10 @@ def user_identity_lookup(user: User) -> str:
 @jwtMgr.user_lookup_loader
 def user_lookup_callback(_jwt_header: dict, jwt_data: dict) -> Optional[User]:
     identity = jwt_data["sub"]
-    return User.query.filter_by(oidc_id=identity).one_or_none()
+    stmt = select(User).where(User.oidc_id == identity)
+    users = current_app.db_session.execute(stmt).all()
+    if users and len(users) == 1:
+        return users[0][0]
 
 
 def create_oauth_jwt(

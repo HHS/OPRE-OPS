@@ -4,8 +4,8 @@ from models.cans import BudgetLineItem, BudgetLineItemStatus
 
 @pytest.mark.usefixtures("app_ctx")
 def test_budget_line_item_lookup(loaded_db):
-    # bli = loaded_db.session.query(BudgetLineItem).get(1)
-    bli = loaded_db.session.get(BudgetLineItem, 1)
+    # bli = loaded_db.query(BudgetLineItem).get(1)
+    bli = loaded_db.get(BudgetLineItem, 1)
     assert bli is not None
     assert bli.id == 1
     assert bli.line_description == "LI 1"

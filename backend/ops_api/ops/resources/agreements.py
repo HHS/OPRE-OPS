@@ -2,7 +2,6 @@ from flask import Response, current_app, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from models.base import BaseModel
 from models.cans import Agreement
-from ops_api.ops import db
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.utils.query_helpers import QueryHelper
 from sqlalchemy.future import select
@@ -14,23 +13,17 @@ class AgreementItemAPI(BaseItemAPI):
         super().__init__(model)
 
     @override
-    def _get_item(self, id: int) -> Agreement:
-        agreement = self.model.query.filter_by(id=id).first_or_404()
-        return agreement
-
-    @override
     @jwt_required()
     def get(self, id: int) -> Response:
         identity = get_jwt_identity()
         is_authorized = self.auth_gateway.is_authorized(identity, ["GET_AGREEMENT"])
 
         if is_authorized:
-            agreement = self._get_item(id)
-            response = jsonify(agreement.to_dict())
+            response = self._get_item_with_try(id)
         else:
             response = jsonify({}), 401
 
-        response.headers.add("Access-Control-Allow-Origin", "*")
+        response[0].headers.add("Access-Control-Allow-Origin", "*")
         return response
 
 
@@ -68,7 +61,7 @@ class AgreementListAPI(BaseListAPI):
 
             stmt = self._get_query(search, research_project_id)
 
-            result = db.session.execute(stmt).all()
+            result = current_app.db_session.execute(stmt).all()
             response = jsonify([i.to_dict() for item in result for i in item])
         else:
             response = jsonify({}), 401

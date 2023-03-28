@@ -1,7 +1,5 @@
 """Configuration for pytest tests."""
 import subprocess
-
-# from datetime import date, datetime
 from collections.abc import Generator
 
 import pytest
@@ -9,8 +7,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from flask import Flask
 from flask.testing import FlaskClient
-from flask_sqlalchemy import SQLAlchemy
-from ops_api.ops import create_app, db
+from ops_api.ops import create_app
 from pytest_docker.plugin import Services
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
@@ -27,7 +24,7 @@ def app(db_service: Engine) -> Generator[Flask, None, None]:
 
 
 @pytest.fixture()
-def client(app: Flask, loaded_db: SQLAlchemy) -> FlaskClient:  # type: ignore [type-arg]
+def client(app: Flask, loaded_db) -> FlaskClient:  # type: ignore [type-arg]
     """Get a test client for flask."""
     return app.test_client()
 
@@ -107,11 +104,9 @@ def docker_compose_command() -> str:
 
 
 @pytest.fixture()
-def loaded_db(app_ctx: None) -> SQLAlchemy:
-    """Get SQLAlchemy through flask with the db_engine and session."""
-    # Using the db_session fixture, we have a session, with a SQLAlchemy db_engine
-    # binding.
-    yield db
+def loaded_db(app: Flask, app_ctx: None):
+    """Get SQLAlchemy Session."""
+    yield app.db_session
 
 
 @pytest.fixture()

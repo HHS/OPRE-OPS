@@ -6,7 +6,7 @@ from sqlalchemy import func, select
 @pytest.mark.usefixtures("app_ctx")
 def test_agreement_retrieve(loaded_db):
     stmt = select(Agreement).where(Agreement.id == 1)
-    agreement = loaded_db.session.scalar(stmt)
+    agreement = loaded_db.scalar(stmt)
 
     assert agreement is not None
     assert agreement.name == "Contract #1: African American Child and Family Research Center"
@@ -16,7 +16,7 @@ def test_agreement_retrieve(loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_get_all(auth_client, loaded_db):
     stmt = select(func.count()).select_from(Agreement)
-    count = loaded_db.session.scalar(stmt)
+    count = loaded_db.scalar(stmt)
     assert count == 6
 
     response = auth_client.get("/api/v1/agreements/")

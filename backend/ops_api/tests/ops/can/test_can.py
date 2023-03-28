@@ -4,7 +4,7 @@ from models.cans import CAN, CANArrangementType
 
 @pytest.mark.usefixtures("app_ctx")
 def test_can_retrieve(loaded_db):
-    can = loaded_db.session.query(CAN).filter(CAN.number == "G99HRF2").one()
+    can = loaded_db.query(CAN).filter(CAN.number == "G99HRF2").one()
 
     assert can is not None
     assert can.number == "G99HRF2"
@@ -39,7 +39,7 @@ def test_can_creation():
 
 @pytest.mark.usefixtures("app_ctx")
 def test_can_get_all(auth_client, loaded_db):
-    assert loaded_db.session.query(CAN).count() == 13
+    assert loaded_db.query(CAN).count() == 13
 
     response = auth_client.get("/api/v1/cans/")
     assert response.status_code == 200
