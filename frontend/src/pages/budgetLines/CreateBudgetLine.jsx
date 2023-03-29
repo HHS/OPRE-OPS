@@ -19,6 +19,7 @@ import {
     setEnteredMonth,
     setEnteredYear,
     setEnteredDay,
+    setEnteredComments,
 } from "./createBudgetLineSlice";
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
 
@@ -61,6 +62,9 @@ const StepTwo = ({ goBack, goToNext }) => {
     const enteredMonth = useSelector((state) => state.createBudgetLine.entered_month);
     const enteredDay = useSelector((state) => state.createBudgetLine.entered_day);
     const enteredYear = useSelector((state) => state.createBudgetLine.entered_year);
+    const enteredComments = useSelector((state) => state.createBudgetLine.entered_comments);
+    const selectedProcurementShop = useSelector((state) => state.createBudgetLine.selected_procurement_shop);
+    const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
 
     const handleSubmitForm = (e) => {
         e.preventDefault();
@@ -69,9 +73,13 @@ const StepTwo = ({ goBack, goToNext }) => {
                 ...budgetLinesAdded,
                 {
                     line_description: enteredDescription,
-                    amount: enteredAmount,
+                    comments: enteredComments,
                     can_id: selectedCan?.id,
+                    agreement_id: selectedAgreement?.id,
+                    amount: enteredAmount,
+                    status: "DRAFT",
                     date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}`,
+                    psc_fee_amount: selectedProcurementShop?.fee,
                 },
             ])
         );
@@ -82,6 +90,7 @@ const StepTwo = ({ goBack, goToNext }) => {
         dispatch(setEnteredMonth(""));
         dispatch(setEnteredDay(""));
         dispatch(setEnteredYear(""));
+        dispatch(setEnteredComments(""));
         alert("Budget Line Added");
     };
     return (
@@ -153,6 +162,8 @@ const StepTwo = ({ goBack, goToNext }) => {
                                 rows="5"
                                 aria-describedby="with-hint-textarea-info with-hint-textarea-hint"
                                 style={{ height: "7rem" }}
+                                value={enteredComments || ""}
+                                onChange={(e) => dispatch(setEnteredComments(e.target.value))}
                             ></textarea>
                         </div>
                         <span id="with-hint-textarea-info" className="usa-character-count__message sr-only">
