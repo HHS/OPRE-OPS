@@ -64,6 +64,7 @@ const StepTwo = ({ goBack, goToNext }) => {
     const enteredYear = useSelector((state) => state.createBudgetLine.entered_year);
     const enteredComments = useSelector((state) => state.createBudgetLine.entered_comments);
     const selectedProcurementShop = useSelector((state) => state.createBudgetLine.selected_procurement_shop);
+    const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
     const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
 
     const handleSubmitForm = (e) => {
@@ -178,7 +179,57 @@ const StepTwo = ({ goBack, goToNext }) => {
                     </button>
                 </div>
             </form>
-
+            {/* NOTE: BLI Preview Table */}
+            <h2 className="font-sans-lg">Budget Lines</h2>
+            <p>
+                This is a list of all budget lines for the selected project and agreement. The budget lines you add will
+                display in draft status. The Fiscal Year (FY) will populate based on the election date you provide.
+            </p>
+            <div className="font-family-sans font-12px">
+                <dl className="margin-0 padding-y-2 padding-x-105">
+                    <dt className="margin-0 text-base-dark">Project</dt>
+                    <dd className="text-semibold margin-0">{selectedResearchProject?.title}</dd>
+                    <dt className="margin-0 text-base-dark margin-top-2">Agreement</dt>
+                    <dd className="text-semibold margin-0">{selectedAgreement?.name}</dd>
+                </dl>
+            </div>
+            <table className="usa-table usa-table--borderless">
+                <thead>
+                    <tr>
+                        <th scope="col">Document title</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Year</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">Declaration of Independence</th>
+                        <td>
+                            Statement adopted by the Continental Congress declaring independence from the British
+                            Empire.
+                        </td>
+                        <td>1776</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Bill of Rights</th>
+                        <td>The first ten amendments of the U.S. Constitution guaranteeing rights and freedoms.</td>
+                        <td>1791</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Declaration of Sentiments</th>
+                        <td>
+                            A document written during the Seneca Falls Convention outlining the rights that American
+                            women should be entitled to as citizens.
+                        </td>
+                        <td>1848</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Emancipation Proclamation</th>
+                        <td>An executive order granting freedom to slaves in designated southern states.</td>
+                        <td>1863</td>
+                    </tr>
+                </tbody>
+            </table>
             <div className="grid-row flex-justify-end margin-top-1">
                 <button className="usa-button usa-button--outline" onClick={() => goBack()}>
                     Back
