@@ -1,24 +1,12 @@
 """CAN models."""
 from enum import Enum
-from typing import Any, cast
+from typing import Any
 
 import sqlalchemy as sa
 from models.base import BaseModel
 from models.portfolios import Portfolio, shared_portfolio_cans
 from models.research_projects import ResearchProject
-from sqlalchemy import (
-    Column,
-    Date,
-    DateTime,
-    ForeignKey,
-    ForeignKeyConstraint,
-    Identity,
-    Integer,
-    Numeric,
-    String,
-    Table,
-    Text,
-)
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Identity, Integer, Numeric, String, Table, Text
 from sqlalchemy.orm import column_property, relationship
 from typing_extensions import override
 
@@ -90,24 +78,29 @@ class AgreementType(Enum):
     MISCELLANEOUS = 5
 
 
-agreement_cans = Table(
-    "agreement_cans",
-    BaseModel.metadata,
-    Column(
-        "agreement_id",
-        ForeignKey("agreement.id"),
-        primary_key=True,
-    ),
-    Column("can_id", ForeignKey("can.id"), primary_key=True),
-)
-
-
 class Agreement(BaseModel):
     __tablename__ = "agreement"
+
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     agreement_type = Column(sa.Enum(AgreementType))
-    cans = relationship("CAN", secondary=agreement_cans, back_populates="agreements")
+    research_project_id = Column(Integer, ForeignKey("research_project.id"))
+    research_project = relationship(ResearchProject, back_populates="agreements")
+    budget_line_items = relationship("BudgetLineItem", back_populates="agreement")
+
+    @override
+    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
+
+        d.update(
+            {
+                "agreement_type": self.agreement_type.name
+                if self.agreement_type
+                else None
+            }
+        )
+
+        return d
 
 
 class CANFiscalYear(BaseModel):
@@ -149,7 +142,7 @@ class BudgetLineItem(BaseModel):
     comments = Column(Text)
 
     agreement_id = Column(Integer, ForeignKey("agreement.id"))
-    agreement = relationship(Agreement)
+    agreement = relationship(Agreement, back_populates="budget_line_items")
 
     can_id = Column(Integer, ForeignKey("can.id"))
     can = relationship("CAN", back_populates="budget_line_items")
@@ -202,9 +195,6 @@ class CAN(BaseModel):
     managing_portfolio = relationship(Portfolio, back_populates="cans")
     shared_portfolios = relationship(
         Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans"
-    )
-    agreements = relationship(
-        Agreement, secondary=agreement_cans, back_populates="cans"
     )
     managing_research_project_id = Column(Integer, ForeignKey("research_project.id"))
     managing_research_project = relationship(ResearchProject, back_populates="cans")

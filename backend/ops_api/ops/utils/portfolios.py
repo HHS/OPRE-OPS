@@ -1,9 +1,9 @@
 from decimal import Decimal
 from typing import Any, Optional, TypedDict
 
+from flask import current_app
 from models.cans import CAN, BudgetLineItem, BudgetLineItemStatus, CANFiscalYear, CANFiscalYearCarryForward
 from models.portfolios import Portfolio
-from ops_api.ops import db
 from sqlalchemy import Select, select, sql
 from sqlalchemy.sql.functions import coalesce
 
@@ -34,7 +34,7 @@ def _get_total_fiscal_year_funding(portfolio_id: int, fiscal_year: int) -> Decim
         .where(CANFiscalYear.fiscal_year == fiscal_year)
     )
 
-    return db.session.execute(stmt).scalar()
+    return current_app.db_session.scalar(stmt)
 
 
 def _get_carry_forward_total(portfolio_id: int, fiscal_year: int) -> Decimal:
@@ -45,14 +45,14 @@ def _get_carry_forward_total(portfolio_id: int, fiscal_year: int) -> Decimal:
         .where(CANFiscalYearCarryForward.to_fiscal_year == fiscal_year)
     )
 
-    return db.session.execute(stmt).scalar()
+    return current_app.db_session.scalar(stmt)
 
 
 def _get_budget_line_item_total_by_status(portfolio_id: int, status: BudgetLineItemStatus) -> Decimal:
     stmt = _get_budget_line_item_total(portfolio_id)
     stmt = stmt.where(BudgetLineItem.status == status)
 
-    return db.session.execute(stmt).scalar()
+    return current_app.db_session.scalar(stmt)
 
 
 def _get_budget_line_item_total(portfolio_id: int) -> Select[Any]:
@@ -65,10 +65,22 @@ def _get_budget_line_item_total(portfolio_id: int) -> Select[Any]:
     return stmt
 
 
-def get_total_funding(portfolio: Portfolio, fiscal_year: Optional[int] = None) -> TotalFunding:
-    total_funding = _get_total_fiscal_year_funding(portfolio_id=portfolio.id, fiscal_year=fiscal_year)
+def get_total_funding(
+    portfolio: Portfolio,
+    fiscal_year: Optional[int] = None,
+) -> TotalFunding:
+    """Get the portfolio total funding for the given fiscal year."""
+    if fiscal_year is None:
+        raise ValueError
+    total_funding = _get_total_fiscal_year_funding(
+        portfolio_id=portfolio.id,
+        fiscal_year=fiscal_year,
+    )
 
-    carry_forward_funding = _get_carry_forward_total(portfolio_id=portfolio.id, fiscal_year=fiscal_year)
+    carry_forward_funding = _get_carry_forward_total(
+        portfolio_id=portfolio.id,
+        fiscal_year=fiscal_year,
+    )
 
     planned_funding = _get_budget_line_item_total_by_status(
         portfolio_id=portfolio.id, status=BudgetLineItemStatus.PLANNED
@@ -121,4 +133,5 @@ def get_total_funding(portfolio: Portfolio, fiscal_year: Optional[int] = None) -
 
 
 def get_percentage(total_funding: float, specific_funding: float) -> str:
+    """Convert a float to a rounded percentage as a string."""
     return f"{round(float(specific_funding) / float(total_funding), 2) * 100}" if total_funding else "0"

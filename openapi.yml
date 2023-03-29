@@ -11,6 +11,53 @@ servers:
   - url: https://ops-api-staging.app.cloud.gov
     description: Staging Server (Live)
 paths:
+  /api/v1/agreements/:
+    get:
+      description: Get Agreements
+      parameters:
+        - name: research_project_id
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: search
+          in: query
+          schema:
+            type: string
+          example: 'contract'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agreements'
+              examples:
+                '0':
+                  $ref: '#/components/examples/Agreements'
+  /api/v1/agreements/{agreement_id}:
+    get:
+      description: Get Agreement By Id
+      parameters:
+        - in: path
+          name: agreement_id
+          description: Agreement Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agreement'
+              examples:
+                '0':
+                  $ref: '#/components/examples/Agreement'
   /api/v1/cans/:
     get:
       description: Get CANs
@@ -491,7 +538,7 @@ paths:
           description: Created
   /api/v1/research-projects/:
     get:
-      description: Get all ResearchProjects
+      description: Get ResearchProjects
       parameters:
         - name: fiscal_year
           in: query
@@ -557,6 +604,116 @@ paths:
                     items:
                       type: string
                       example: 'Must be greater than or equal to 1900.'
+  /api/v1/procurement-shops/:
+    get:
+      description: Get all Procurement Shops
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  abbr:
+                    type: string
+                  fee:
+                    type: number
+              examples:
+                '0':
+                  value: |
+                    [
+                      {
+                        "id": 0,
+                        "name": "Product Service Center",
+                        "abbr": "PSC",
+                        "fee": 0
+                      },
+                      {
+                        "id": 1,
+                        "name": "Government Contracting Services",
+                        "abbr": "GCS",
+                        "fee": 0
+                      },
+                      {
+                        "id": 2,
+                        "name": "National Institute of Health",
+                        "abbr": "NIH",
+                        "fee": 0.5
+                      },
+                      {
+                        "id": 3,
+                        "name": "Interior Business Center",
+                        "abbr": "IBC",
+                        "fee": 4.8
+                      }
+                    ]
+  /api/v1/procurement-shops/{id}:
+    get:
+      description: Get Procurement Shop by id
+      parameters:
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  abbr:
+                    type: string
+                  fee:
+                    type: number
+              examples:
+                '0':
+                  value: |
+                    {
+                      "id": 0,
+                      "name": "Product Service Center",
+                      "abbr": "PSC",
+                      "fee": 0
+                    }
+                '1':
+                  value: |
+                    {
+                      "id": 1,
+                      "name": "Government Contracting Services",
+                      "abbr": "GCS",
+                      "fee": 0
+                    }
+                '2':
+                  value: |
+                    {
+                      "id": 2,
+                      "name": "National Institute of Health",
+                      "abbr": "NIH",
+                      "fee": 0.5
+                    }
+                '3':
+                  value: |
+                    {
+                      "id": 3,
+                      "name": "Interior Business Center",
+                      "abbr": "IBC",
+                      "fee": 4.8
+                    }
 
 components:
   securitySchemes:
@@ -711,13 +868,47 @@ components:
           example: 'https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center'
 
     ResearchProjects:
-      description: OPRE List of Research Projects
+      description: OPS List of Research Projects
       type: array
       items:
         anyOf:
           - $ref: "#/components/schemas/ResearchProject"
 
+    Agreement:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        agreement_type:
+          type: integer
+          example: "CONTRACT"
+        created_by:
+          type: integer
+          example: 1
+        created_on:
+          type: string
+          example: "Fri, 17 Mar 2023 15:01:09 GMT"
+        updated_on:
+          type: string
+          example: "Fri, 17 Mar 2023 15:01:09 GMT"
+        research_project_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Contract #2: African American Child and Family Research Center"
+
+    Agreements:
+      description: OPS List of Agreements
+      type: array
+      items:
+        anyOf:
+          - $ref: "#/components/schemas/Agreement"
+
+
   examples:
+
     CAN:
       value:
         - appropriation_date: "01/10/2023"
@@ -814,107 +1005,135 @@ components:
         }
     ResearchProjects:
       value: |
-            [
+        [
+          {
+            "cans": [
               {
-                "cans": [
-                  {
-                    "appropriation_date": "01/10/2022",
-                    "appropriation_term": 1,
-                    "arrangement_type": "OPRE_APPROPRIATION",
-                    "authorizer_id": 26,
-                    "created_by": None,
-                    "created_on": "Wed, 15 Mar 2023 17:41:54 GMT",
-                    "description": "Child Development Research Fellowship Grant Program",
-                    "expiration_date": "01/09/2023",
-                    "id": 4,
-                    "managing_portfolio_id": 1,
-                    "managing_research_project_id": 1,
-                    "nickname": "ASPE SRCD-IDDA",
-                    "number": "G990136",
-                    "purpose": "",
-                    "updated_on": "Wed, 15 Mar 2023 17:41:54 GMT",
-                  },
-                  {
-                    "appropriation_date": "01/10/2022",
-                    "appropriation_term": 1,
-                    "arrangement_type": "OPRE_APPROPRIATION",
-                    "authorizer_id": 26,
-                    "created_by": None,
-                    "created_on": "Wed, 15 Mar 2023 17:41:54 GMT",
-                    "description": "Example CAN",
-                    "expiration_date": "01/09/2023",
-                    "id": 13,
-                    "managing_portfolio_id": 3,
-                    "managing_research_project_id": 1,
-                    "nickname": "",
-                    "number": "G99XXX8",
-                    "purpose": "",
-                    "updated_on": "Wed, 15 Mar 2023 17:41:54 GMT",
-                  },
-                ],
+                "appropriation_date": "01/10/2022",
+                "appropriation_term": 1,
+                "arrangement_type": "OPRE_APPROPRIATION",
+                "authorizer_id": 26,
                 "created_by": None,
-                "created_on": "Wed, 15 Mar 2023 17:41:52 GMT",
-                "description": "        The National African American Child and Family Research Center, supported by a five-year OPRE        grant (2021 — 2026), will provide national leadership and excellence by investigating the assets, needs,        and experiences of the diverse population of African American families and children served (or potentially        served) by ACF programs, as well as promising approaches to address economic and social inequities and,        ultimately, promote social and economic well-being.  The primary focus of this Center will be on childcare        assistance, TANF, and Head Start and Early Head Start programs and the populations they serve. The work of        the Center will draw on interdisciplinary approaches to accomplish the three goals listed below.        \n\n1. Advance Research        The Center will plan, initiate, and maintain a community-engaged, focused, and high-caliber research program.        The Center’s program of research will build on the existing literature related to African American children        and families and should be directly relevant to the needs and interests of ACF areas of programmatic concern.        \n\n2. Build Research Capacity        The Center will build research capacity and infrastructure to conduct research relevant to ACF program and        policy goals that is culturally rigorous and informed by an understanding of current and historical        circumstances that shape the experiences of African Americans. In addition, the Center will contribute to the        development and expansion of the pool of researchers reflective of the communities being studied by the Center.        \n\n3. Communicate Research        The Center will develop and implement a dissemination strategy that broadly and efficiently communicates        findings from research conducted within and outside of the Center and increases the use of research, data, and        relevant resources for a wide audience including researchers, federal and state policymakers, ACF grantees,        program administrators, and communities participating in the research.        \n\nThe Center is led by the Morehouse School of Medicine.        \n\nThe OPRE point of contact is Megan Reid.        ",
+                "created_on": "Wed, 15 Mar 2023 17:41:54 GMT",
+                "description": "Child Development Research Fellowship Grant Program",
+                "expiration_date": "01/09/2023",
+                "id": 4,
+                "managing_portfolio_id": 1,
+                "managing_research_project_id": 1,
+                "nickname": "ASPE SRCD-IDDA",
+                "number": "G990136",
+                "purpose": "",
+                "updated_on": "Wed, 15 Mar 2023 17:41:54 GMT",
+              },
+              {
+                "appropriation_date": "01/10/2022",
+                "appropriation_term": 1,
+                "arrangement_type": "OPRE_APPROPRIATION",
+                "authorizer_id": 26,
+                "created_by": None,
+                "created_on": "Wed, 15 Mar 2023 17:41:54 GMT",
+                "description": "Example CAN",
+                "expiration_date": "01/09/2023",
+                "id": 13,
+                "managing_portfolio_id": 3,
+                "managing_research_project_id": 1,
+                "nickname": "",
+                "number": "G99XXX8",
+                "purpose": "",
+                "updated_on": "Wed, 15 Mar 2023 17:41:54 GMT",
+              },
+            ],
+            "created_by": None,
+            "created_on": "Wed, 15 Mar 2023 17:41:52 GMT",
+            "description": "        The National African American Child and Family Research Center, supported by a five-year OPRE        grant (2021 — 2026), will provide national leadership and excellence by investigating the assets, needs,        and experiences of the diverse population of African American families and children served (or potentially        served) by ACF programs, as well as promising approaches to address economic and social inequities and,        ultimately, promote social and economic well-being.  The primary focus of this Center will be on childcare        assistance, TANF, and Head Start and Early Head Start programs and the populations they serve. The work of        the Center will draw on interdisciplinary approaches to accomplish the three goals listed below.        \n\n1. Advance Research        The Center will plan, initiate, and maintain a community-engaged, focused, and high-caliber research program.        The Center’s program of research will build on the existing literature related to African American children        and families and should be directly relevant to the needs and interests of ACF areas of programmatic concern.        \n\n2. Build Research Capacity        The Center will build research capacity and infrastructure to conduct research relevant to ACF program and        policy goals that is culturally rigorous and informed by an understanding of current and historical        circumstances that shape the experiences of African Americans. In addition, the Center will contribute to the        development and expansion of the pool of researchers reflective of the communities being studied by the Center.        \n\n3. Communicate Research        The Center will develop and implement a dissemination strategy that broadly and efficiently communicates        findings from research conducted within and outside of the Center and increases the use of research, data, and        relevant resources for a wide audience including researchers, federal and state policymakers, ACF grantees,        program administrators, and communities participating in the research.        \n\nThe Center is led by the Morehouse School of Medicine.        \n\nThe OPRE point of contact is Megan Reid.        ",
+            "id": 1,
+            "methodologies": [
+              "SURVEY",
+              "FIELD_RESEARCH",
+              "PARTICIPANT_OBSERVATION",
+              "ETHNOGRAPHY",
+              "EXPERIMENT",
+              "SECONDARY_DATA_ANALYSIS",
+              "CASE_STUDY",
+            ],
+            "origination_date": "2022-01-01",
+            "populations": [ "POPULATION_1" ],
+            "portfolio_id": 3,
+            "short_title": "",
+            "team_leaders": [
+              {
+                "created_by": None,
+                "created_on": "Wed, 15 Mar 2023 17:41:53 GMT",
+                "date_joined": "Wed, 15 Mar 2023 17:41:53 GMT",
+                "division": 1,
+                "email": "emily.ball@example.com",
+                "first_name": "Emily",
+                "full_name": "(no name) (no name)",
                 "id": 1,
-                "methodologies": [
-                  "SURVEY",
-                  "FIELD_RESEARCH",
-                  "PARTICIPANT_OBSERVATION",
-                  "ETHNOGRAPHY",
-                  "EXPERIMENT",
-                  "SECONDARY_DATA_ANALYSIS",
-                  "CASE_STUDY",
-                ],
-                "origination_date": "2022-01-01",
-                "populations": [ "POPULATION_1" ],
-                "portfolio_id": 3,
-                "short_title": "",
-                "team_leaders": [
-                  {
-                    "created_by": None,
-                    "created_on": "Wed, 15 Mar 2023 17:41:53 GMT",
-                    "date_joined": "Wed, 15 Mar 2023 17:41:53 GMT",
-                    "division": 1,
-                    "email": "emily.ball@example.com",
-                    "first_name": "Emily",
-                    "full_name": "(no name) (no name)",
-                    "id": 1,
-                    "last_name": "Ball",
-                    "oidc_id": "00000000-0000-1111-a111-000000000001",
-                    "role": "COR",
-                    "updated": None,
-                    "updated_on": "Wed, 15 Mar 2023 17:41:53 GMT",
-                  }
-                ],
-                "title": "African American Child and Family Research Center",
-                "updated_on": "Wed, 15 Mar 2023 17:41:52 GMT",
-                "url": "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center",
-              },
-              {
-                "cans": [ ],
-                "created_by": None,
-                "created_on": "Wed, 15 Mar 2023 17:41:52 GMT",
-                "description": '         Evidence suggests that fathers play an important role in children\'s development and that they can serve as         a key source of emotional and financial support. In many social services, however, fathers are overlooked.         This is the case in the child welfare system, where data from the Child and Family Service Reviews indicate         that fathers and paternal relatives are minimally engaged and may be untapped resources.         \n\nThe purpose of this project is to bridge the gap between what we know about the importance of fathers         and practices in the child welfare system that may contribute to low levels of father and paternal relative         engagement. Partnering with the Office of Family Assistance (which oversees the Healthy Marriage and         Responsible Fatherhood discretionary grant program) and the Children’s Bureau, this project aims to: \n\n* Synthesize what we already know about a) efforts to engage fathers and paternal relatives of children         involved in the child welfare system, and b) Continuous Quality Improvement approaches within the child         welfare system;         \n* Map "touch points" within a child welfare case where fathers and/or paternal relatives could be more          fully engaged;         \n* Identify potential strategies and interventions that could be used at the touch points to increase their         engagement;         \n* Select a collaborative Continuous Quality Improvement approach and use it to work intensively with a few         sites to implement and test these father and paternal relative engagement strategies and interventions;         \n* Conduct a pilot study to examine the feasibility and implementation of the Continuous Quality Improvement         approach and the engagement strategies and interventions; and         \n* Conduct an evaluation of the selected continuous learning methodology and the engagement strategies and         interventions.        ',
-                "id": 3,
-                "methodologies": [
-                  "SURVEY",
-                  "FIELD_RESEARCH",
-                  "PARTICIPANT_OBSERVATION",
-                  "ETHNOGRAPHY",
-                  "EXPERIMENT",
-                  "SECONDARY_DATA_ANALYSIS",
-                  "CASE_STUDY",
-                ],
-                "origination_date": "2017-01-01",
-                "populations": [ "POPULATION_1" ],
-                "portfolio_id": 6,
-                "short_title": "",
-                "team_leaders": [ ],
-                "title": "Fathers and Continuous Learning (FCL)",
-                "updated_on": "Wed, 15 Mar 2023 17:41:52 GMT",
-                "url": "https://www.acf.hhs.gov/opre/project/fathers-and-continuous-learning",
-              },
-            ]
+                "last_name": "Ball",
+                "oidc_id": "00000000-0000-1111-a111-000000000001",
+                "role": "COR",
+                "updated": None,
+                "updated_on": "Wed, 15 Mar 2023 17:41:53 GMT",
+              }
+            ],
+            "title": "African American Child and Family Research Center",
+            "updated_on": "Wed, 15 Mar 2023 17:41:52 GMT",
+            "url": "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center",
+          },
+          {
+            "cans": [ ],
+            "created_by": None,
+            "created_on": "Wed, 15 Mar 2023 17:41:52 GMT",
+            "description": '         Evidence suggests that fathers play an important role in children\'s development and that they can serve as         a key source of emotional and financial support. In many social services, however, fathers are overlooked.         This is the case in the child welfare system, where data from the Child and Family Service Reviews indicate         that fathers and paternal relatives are minimally engaged and may be untapped resources.         \n\nThe purpose of this project is to bridge the gap between what we know about the importance of fathers         and practices in the child welfare system that may contribute to low levels of father and paternal relative         engagement. Partnering with the Office of Family Assistance (which oversees the Healthy Marriage and         Responsible Fatherhood discretionary grant program) and the Children’s Bureau, this project aims to: \n\n* Synthesize what we already know about a) efforts to engage fathers and paternal relatives of children         involved in the child welfare system, and b) Continuous Quality Improvement approaches within the child         welfare system;         \n* Map "touch points" within a child welfare case where fathers and/or paternal relatives could be more          fully engaged;         \n* Identify potential strategies and interventions that could be used at the touch points to increase their         engagement;         \n* Select a collaborative Continuous Quality Improvement approach and use it to work intensively with a few         sites to implement and test these father and paternal relative engagement strategies and interventions;         \n* Conduct a pilot study to examine the feasibility and implementation of the Continuous Quality Improvement         approach and the engagement strategies and interventions; and         \n* Conduct an evaluation of the selected continuous learning methodology and the engagement strategies and         interventions.        ',
+            "id": 3,
+            "methodologies": [
+              "SURVEY",
+              "FIELD_RESEARCH",
+              "PARTICIPANT_OBSERVATION",
+              "ETHNOGRAPHY",
+              "EXPERIMENT",
+              "SECONDARY_DATA_ANALYSIS",
+              "CASE_STUDY",
+            ],
+            "origination_date": "2017-01-01",
+            "populations": [ "POPULATION_1" ],
+            "portfolio_id": 6,
+            "short_title": "",
+            "team_leaders": [ ],
+            "title": "Fathers and Continuous Learning (FCL)",
+            "updated_on": "Wed, 15 Mar 2023 17:41:52 GMT",
+            "url": "https://www.acf.hhs.gov/opre/project/fathers-and-continuous-learning",
+          },
+        ]
+
+    Agreements:
+      value: |
+        [{
+          "agreement_type": "CONTRACT",
+          "created_by": null,
+          "created_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+          "id": 2,
+          "name": "Contract #2: African American Child and Family Research Center",
+          "research_project_id": 1,
+          "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT"
+        }]
+
+    Agreement:
+      value: |
+        {
+          "agreement_type": "CONTRACT",
+          "created_by": null,
+          "created_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+          "id": 2,
+          "name": "Contract #2: African American Child and Family Research Center",
+          "research_project_id": 1,
+          "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT"
+        }
+
+
+
+
 
 security:
   - bearerAuth: [ ]  # pragma: allowlist secret

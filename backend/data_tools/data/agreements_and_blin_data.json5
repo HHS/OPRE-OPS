@@ -2,30 +2,40 @@
   "agreement": [
     {
       id: 1,
-      name: "NIH VIQI",
+      name: "Contract #1: African American Child and Family Research Center",
       agreement_type:  "CONTRACT",
-      owning_portfolio_id: 1
+      research_project_id: 1
     },
     {
       id: 2,
-      name: "NIH ABCD",
+      name: "Contract #2: African American Child and Family Research Center",
       agreement_type: "CONTRACT",
-      owning_portfolio_id: 1
+      research_project_id: 1
+    },
+    {
+      id: 3,
+      name: "Grant #1: Early Care and Education Leadership Study (ExCELS)",
+      agreement_type: "GRANT",
+      research_project_id: 2
+    },
+    {
+      id: 4,
+      name: "Grant #2: Early Care and Education Leadership Study (ExCELS)",
+      agreement_type: "GRANT",
+      research_project_id: 2
+    },
+    {
+      id: 5,
+      name: "DIRECT_ALLOCATION #1: Fathers and Continuous Learning (FCL)",
+      agreement_type: "DIRECT_ALLOCATION",
+      research_project_id: 3
+    },
+    {
+      id: 6,
+      name: "DIRECT_ALLOCATION #2: Fathers and Continuous Learning (FCL)",
+      agreement_type: "DIRECT_ALLOCATION",
+      research_project_id: 3
     }
-  ],
-  "agreement_cans": [
-    {agreement_id: 1, can_id: 1},
-    {agreement_id: 1, can_id: 2},
-    {agreement_id: 1, can_id: 3},
-    {agreement_id: 1, can_id: 4},
-    {agreement_id: 1, can_id: 5},
-    {agreement_id: 1, can_id: 6},
-    {agreement_id: 1, can_id: 7},
-    {agreement_id: 1, can_id: 8},
-    {agreement_id: 1, can_id: 9},
-    {agreement_id: 1, can_id: 10},
-    {agreement_id: 1, can_id: 11},
-    {agreement_id: 1, can_id: 12},
   ],
   "budget_line_item": [
     {
@@ -218,6 +228,32 @@
       status: "OBLIGATED",
       date_needed: null,
       psc_fee_amount: null
+    },
+  ],
+  procurement_shop: [
+    {
+      id: 0,
+      name: "Product Service Center",
+      abbr: "PSC",
+      fee: 0,
+    },
+    {
+      id: 1,
+      name: "Government Contracting Services",
+      abbr: "GCS",
+      fee: 0,
+    },
+    {
+      id: 2,
+      name: "National Institute of Health",
+      abbr: "NIH",
+      fee: 0.5,
+    },
+    {
+      id: 3,
+      name: "Interior Business Center",
+      abbr: "IBC",
+      fee: 4.8,
     },
   ]
 }
