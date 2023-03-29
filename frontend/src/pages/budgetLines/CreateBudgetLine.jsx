@@ -16,6 +16,9 @@ import {
     setEnteredDescription,
     setEnteredAmount,
     setSelectedCan,
+    setEnteredMonth,
+    setEnteredYear,
+    setEnteredDay,
 } from "./createBudgetLineSlice";
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
 
@@ -55,20 +58,30 @@ const StepTwo = ({ goBack, goToNext }) => {
     const selectedCan = useSelector((state) => state.createBudgetLine.selected_can);
     const enteredDescription = useSelector((state) => state.createBudgetLine.entered_description);
     const enteredAmount = useSelector((state) => state.createBudgetLine.entered_amount);
+    const enteredMonth = useSelector((state) => state.createBudgetLine.entered_month);
+    const enteredDay = useSelector((state) => state.createBudgetLine.entered_day);
+    const enteredYear = useSelector((state) => state.createBudgetLine.entered_year);
 
     const handleSubmitForm = (e) => {
         e.preventDefault();
         dispatch(
-            setBudgetLineAdded({
-                line_description: enteredDescription,
-                amount: enteredAmount,
-                can_id: selectedCan?.id,
-            })
+            setBudgetLineAdded([
+                ...budgetLinesAdded,
+                {
+                    line_description: enteredDescription,
+                    amount: enteredAmount,
+                    can_id: selectedCan?.id,
+                    date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}`,
+                },
+            ])
         );
         //reset form
         dispatch(setEnteredDescription(""));
         dispatch(setEnteredAmount(null));
         dispatch(setSelectedCan({}));
+        dispatch(setEnteredMonth(""));
+        dispatch(setEnteredDay(""));
+        dispatch(setEnteredYear(""));
         alert("Budget Line Added");
     };
     return (

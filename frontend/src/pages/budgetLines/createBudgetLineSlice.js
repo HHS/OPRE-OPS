@@ -14,6 +14,9 @@ const initialState = {
     selected_procurement_shop: -1,
     entered_description: "",
     entered_amount: null,
+    entered_month: "",
+    entered_day: "",
+    entered_year: "",
 };
 
 const createBudgetLineSlice = createSlice({
@@ -59,6 +62,15 @@ const createBudgetLineSlice = createSlice({
         setEnteredAmount: (state, action) => {
             state.entered_amount = action.payload;
         },
+        setEnteredMonth: (state, action) => {
+            state.entered_month = action.payload;
+        },
+        setEnteredDay: (state, action) => {
+            state.entered_day = action.payload;
+        },
+        setEnteredYear: (state, action) => {
+            state.entered_year = action.payload;
+        },
     },
 });
 
@@ -76,6 +88,9 @@ export const {
     setSelectedProcurementShop,
     setEnteredDescription,
     setEnteredAmount,
+    setEnteredMonth,
+    setEnteredDay,
+    setEnteredYear,
 } = createBudgetLineSlice.actions;
 
 export default createBudgetLineSlice.reducer;
