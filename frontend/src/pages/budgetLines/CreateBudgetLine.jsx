@@ -73,9 +73,11 @@ const StepTwo = ({ goBack, goToNext }) => {
             setBudgetLineAdded([
                 ...budgetLinesAdded,
                 {
+                    id: crypto.getRandomValues(new Uint32Array(1))[0],
                     line_description: enteredDescription,
                     comments: enteredComments,
                     can_id: selectedCan?.id,
+                    can_number: selectedCan?.number,
                     agreement_id: selectedAgreement?.id,
                     amount: enteredAmount,
                     status: "DRAFT",
@@ -196,38 +198,54 @@ const StepTwo = ({ goBack, goToNext }) => {
             <table className="usa-table usa-table--borderless">
                 <thead>
                     <tr>
-                        <th scope="col">Document title</th>
                         <th scope="col">Description</th>
-                        <th scope="col">Year</th>
+                        <th scope="col">Need By</th>
+                        <th scope="col">FY</th>
+                        <th scope="col">CAN</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Fee</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <th scope="row">Declaration of Independence</th>
-                        <td>
-                            Statement adopted by the Continental Congress declaring independence from the British
-                            Empire.
-                        </td>
-                        <td>1776</td>
+                        <th scope="row">SC1</th>
+                        <td>9/30/2021</td>
+                        <td>2023</td>
+                        <td>G99CC23</td>
+                        <td>$500,000.00</td>
+                        <td>$10,000.00</td>
+                        <td>$510,000.00</td>
+                        <td>Draft</td>
                     </tr>
-                    <tr>
-                        <th scope="row">Bill of Rights</th>
-                        <td>The first ten amendments of the U.S. Constitution guaranteeing rights and freedoms.</td>
-                        <td>1791</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Declaration of Sentiments</th>
-                        <td>
-                            A document written during the Seneca Falls Convention outlining the rights that American
-                            women should be entitled to as citizens.
-                        </td>
-                        <td>1848</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Emancipation Proclamation</th>
-                        <td>An executive order granting freedom to slaves in designated southern states.</td>
-                        <td>1863</td>
-                    </tr>
+                    {budgetLinesAdded.map((bl) => {
+                        let date_needed = new Date(bl.date_needed);
+                        const formatted_date_needed = `${
+                            date_needed.getMonth() + 1
+                        }/${date_needed.getDate()}/${date_needed.getFullYear()}`;
+                        let month = date_needed.getMonth();
+                        let year = date_needed.getFullYear();
+                        let fiscalYear = month > 8 ? year + 1 : year;
+                        let feeTotal = bl.amount * (bl.psc_fee_amount / 10);
+                        let total = bl.amount + feeTotal;
+                        let status = bl.status.charAt(0).toUpperCase() + bl.status.slice(1).toLowerCase();
+                        let formattedAmount = `$${bl.amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
+                        let formattedFeeTotal = `$${feeTotal.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
+                        let formattedTotal = `$${total.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
+                        return (
+                            <tr key={bl.id}>
+                                <th scope="row">{bl.line_description}</th>
+                                <td>{formatted_date_needed}</td>
+                                <td>{fiscalYear}</td>
+                                <td>{bl.can_number}</td>
+                                <td>{formattedAmount}</td>
+                                <td>{feeTotal === 0 ? 0 : formattedFeeTotal}</td>
+                                <td>{total === 0 ? 0 : formattedTotal}</td>
+                                <td>{status}</td>
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </table>
             <div className="grid-row flex-justify-end margin-top-1">
