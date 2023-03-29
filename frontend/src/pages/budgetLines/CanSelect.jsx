@@ -36,7 +36,7 @@ export const CanSelect = () => {
                     aria-hidden="true"
                     tabIndex="-1"
                     defaultValue={selectedCan?.number}
-                    onChange={(e) => onChangeCanSelection(e.target.value || 0)}
+                    onChange={(e) => onChangeCanSelection(Number(e.target.value) || 0)}
                 >
                     <option value="">Select a CAN</option>
                     {canList.map((can) => (

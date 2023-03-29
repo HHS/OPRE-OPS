@@ -17,6 +17,7 @@ const initialState = {
     entered_month: "",
     entered_day: "",
     entered_year: "",
+    entered_comments: "",
 };
 
 const createBudgetLineSlice = createSlice({
@@ -71,6 +72,9 @@ const createBudgetLineSlice = createSlice({
         setEnteredYear: (state, action) => {
             state.entered_year = action.payload;
         },
+        setEnteredComments: (state, action) => {
+            state.entered_comments = action.payload;
+        },
     },
 });
 
@@ -91,6 +95,7 @@ export const {
     setEnteredMonth,
     setEnteredDay,
     setEnteredYear,
+    setEnteredComments,
 } = createBudgetLineSlice.actions;
 
 export default createBudgetLineSlice.reducer;
