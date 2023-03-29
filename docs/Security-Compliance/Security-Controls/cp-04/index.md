@@ -1,0 +1,19 @@
+# Contingency Plan
+## CP-4 - Contingency Plan Testing
+
+a. Test the contingency plan for the system [at least every 365 days] using the following tests to determine the effectiveness of the plan and the readiness to execute the plan: [NIST SP 800-34, NIST SP 800-84, and exercises (checklist or table-top exercises)].
+
+b. Review the contingency plan test results; and
+
+c. Initiate corrective actions, if needed.
+
+## OPS Implementation
+
+OPS conducts test exercises annually
+
+TODO: screenshots/evidence from tabletop
+
+### Control Origination
+OPS
+
+### Related Content

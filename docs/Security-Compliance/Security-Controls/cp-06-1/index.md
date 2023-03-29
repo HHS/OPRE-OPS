@@ -1,0 +1,14 @@
+# Contingency Plan
+## CP-6-1 - Alternate Storage Site | Separation from Primary Site
+
+Identify an alternate storage site that is sufficiently separated from the primary storage site to reduce susceptibility to the same threats.
+
+## OPS Implementation
+
+TODO:
+
+### Control Origination
+
+Inherit from cloud.gov
+
+### Related Content

@@ -1,0 +1,23 @@
+# Contingency Plan
+## CP-3 - Contingency Training
+
+a. Provide contingency training to system users consistent with assigned roles and responsibilities: <br />
+1. Within [three (3) months] of assuming a contingency role or responsibility;<br />
+2. When required by system changes; and<br />
+3. [Within every 365 days] thereafter; and
+
+b. Review and update contingency training content [ACF-defined frequency] and following [ACF-defined events].
+
+Note: The organization formally tracks contingency training to ensure full coverage and compliance.
+
+## OPS Implementation
+
+ACF OCIO conducts contingency training for OPS users
+
+### Control Origination
+
+Hybrid with ACF OCIO
+
+### Related Content
+
+The application owner is responsible for providing contingency training to application personnel.

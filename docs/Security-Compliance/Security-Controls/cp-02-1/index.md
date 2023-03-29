@@ -1,0 +1,18 @@
+# Contingency Plan
+## CP-2 - Contingency Plan |
+
+Coordinate contingency plan development with organizational elements responsible for related plans.
+
+## OPS Implementation
+
+OPS coordinates with ACF OCIO on the development of its CP.
+
+### Control Origination
+
+Hybrid with ACF OCIO and cloud.gov. OPS is responsible for coordinating the application's contingency plan development with organization elements responsible for related plans.
+
+### Related Content
+
+Note: The organization should consider that ITCPs support Continuity of Operations Plans (COOP), particularly for information systems that support the continuity of the Department’s critical business functions.
+
+Plans that are related to contingency plans include Business Continuity Plans, Disaster Recovery Plans, Critical Infrastructure Plans, Continuity of Operations Plans, Crisis Communications Plans, Insider Threat Implementation Plans, Data Breach Response Plans, Cyber Incident Response Plans, Breach Response Plans, and Occupant Emergency Plans.
