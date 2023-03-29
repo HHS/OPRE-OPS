@@ -58,7 +58,7 @@ export const CanSelect = () => {
                     type="text"
                     role="combobox"
                     aria-activedescendant=""
-                    value={selectedCan?.number || ""}
+                    defaultValue={selectedCan?.number || ""}
                 />
                 <span className="usa-combo-box__clear-input__wrapper" tabIndex="-1">
                     <button
