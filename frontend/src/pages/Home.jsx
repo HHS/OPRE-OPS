@@ -5,9 +5,6 @@ const Home = () => {
     return (
         <App>
             <h1 style={{ textAlign: "center" }}>This is the OPRE OPS system prototype.</h1>
-            <Link className="usa-button" to="/budget-lines/create">
-                Create Budget Line
-            </Link>
         </App>
     );
 };
