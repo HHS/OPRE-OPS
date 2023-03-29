@@ -9,7 +9,6 @@ export const ProjectSelect = () => {
         if (projectId === 0) {
             return;
         }
-
         dispatch(
             setSelectedProject({
                 id: researchProjects[projectId - 1].id,
