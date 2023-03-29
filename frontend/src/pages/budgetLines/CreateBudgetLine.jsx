@@ -220,16 +220,19 @@ const StepTwo = ({ goBack, goToNext }) => {
                         <td>Draft</td>
                     </tr>
                     {budgetLinesAdded.map((bl) => {
+                        // Format the date like this 9/30/2023 || MM/DD/YYYY
                         let date_needed = new Date(bl.date_needed);
                         const formatted_date_needed = `${
                             date_needed.getMonth() + 1
                         }/${date_needed.getDate()}/${date_needed.getFullYear()}`;
                         let month = date_needed.getMonth();
                         let year = date_needed.getFullYear();
+                        // FY will automate based on the Need by Date. Anything after September 30th rolls over into the next FY.
                         let fiscalYear = month > 8 ? year + 1 : year;
                         let feeTotal = bl.amount * (bl.psc_fee_amount / 10);
                         let total = bl.amount + feeTotal;
                         let status = bl.status.charAt(0).toUpperCase() + bl.status.slice(1).toLowerCase();
+                        // Format the amounts like this $500,000.00 || $1,000,000.00 to allow for commas
                         let formattedAmount = `$${bl.amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
                         let formattedFeeTotal = `$${feeTotal.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
                         let formattedTotal = `$${total.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
