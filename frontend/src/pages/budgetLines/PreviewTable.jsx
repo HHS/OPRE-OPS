@@ -3,10 +3,12 @@ import { useDispatch, useSelector } from "react-redux";
 import Tag from "../../components/UI/Tag/Tag";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import { faClock } from "@fortawesome/free-regular-svg-icons";
 
 export const PreviewTable = ({ budgetLines }) => {
     const dispatch = useDispatch();
     const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
+    const loggedInUser = useSelector((state) => state.auth.activeUser.full_name);
     const [isExpanded, setIsExpanded] = useState(false);
     const [isRowActive, setIsRowActive] = useState(false);
 
@@ -73,24 +75,39 @@ export const PreviewTable = ({ budgetLines }) => {
                                 <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
                                     <FontAwesomeIcon
                                         icon={isExpanded ? faChevronDown : faChevronUp}
-                                        className={`height-2 width-2 padding-right-1 vertical-align-bottom hover: cursor-pointer`}
+                                        className="height-2 width-2 padding-right-1 hover: cursor-pointer"
                                         onClick={() => handleExpandRow(bl)}
                                     />
                                 </td>
                             </tr>
 
                             {isExpanded && (
-                                <tr
-                                    className="border-top-0"
-                                    onMouseEnter={() => setIsRowActive(true)}
-                                    // onMouseLeave={() => setIsRowActive(false)}
-                                >
+                                <tr className="border-top-0">
                                     <td colSpan="9" style={{ backgroundColor: "#F0F0F0" }}>
-                                        <dl className="font-12px">
-                                            <dt className="margin-0 text-base-dark">Created By:</dt>
-                                            {/* TODO: Get logged in user */}
-                                            <dd className="margin-0">Shiela Celentano</dd>
-                                        </dl>
+                                        <div className="display-flex">
+                                            <dl className="font-12px">
+                                                <dt className="margin-0 text-base-dark">Created By</dt>
+                                                {/* TODO: Get logged in user's full name */}
+                                                <dd className="margin-0">
+                                                    {loggedInUser === "(no name) (no name)"
+                                                        ? "Shiela Celentano"
+                                                        : loggedInUser}
+                                                </dd>
+                                                <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
+                                                    <FontAwesomeIcon
+                                                        icon={faClock}
+                                                        className="height-2 width-2 margin-right-1"
+                                                    />
+                                                    {formatted_date_needed}
+                                                </dt>
+                                            </dl>
+                                            <dl className="font-12px" style={{ marginLeft: "7.9375rem" }}>
+                                                <dt className="margin-0 text-base-dark">Notes</dt>
+                                                <dd className="margin-0" style={{ maxWidth: "400px" }}>
+                                                    {bl.comments}
+                                                </dd>
+                                            </dl>
+                                        </div>
                                     </td>
                                 </tr>
                             )}
