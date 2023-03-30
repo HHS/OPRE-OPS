@@ -53,7 +53,6 @@ class ResearchProject(BaseModel):
     origination_date = Column(Date)
     methodologies = Column(pg.ARRAY(sa.Enum(MethodologyType)), server_default="{}")
     populations = Column(pg.ARRAY(sa.Enum(PopulationType)), server_default="{}")
-    cans = relationship("CAN", back_populates="managing_research_project")
     agreements = relationship("Agreement", back_populates="research_project")
     team_leaders = relationship(
         "User",
@@ -69,7 +68,6 @@ class ResearchProject(BaseModel):
             origination_date=self.origination_date.isoformat()
             if self.origination_date
             else None,
-            cans=[can.to_dict() for can in self.cans],
             methodologies=[methodologies.name for methodologies in self.methodologies],
             populations=[populations.name for populations in self.populations],
             team_leaders=[tl.to_dict() for tl in self.team_leaders],

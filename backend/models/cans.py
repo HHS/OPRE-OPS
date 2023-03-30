@@ -196,9 +196,6 @@ class CAN(BaseModel):
     shared_portfolios = relationship(
         Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans"
     )
-    managing_research_project_id = Column(Integer, ForeignKey("research_project.id"))
-    managing_research_project = relationship(ResearchProject, back_populates="cans")
-
     budget_line_items = relationship("BudgetLineItem", back_populates="can")
 
     @override

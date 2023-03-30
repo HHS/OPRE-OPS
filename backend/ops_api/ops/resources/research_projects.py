@@ -1,5 +1,6 @@
 from flask import Response, current_app, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
+from models import CAN, Agreement, BudgetLineItem
 from models.base import BaseModel
 from models.cans import CANFiscalYear
 from models.research_projects import ResearchProject
@@ -37,7 +38,9 @@ class ResearchProjectListAPI(BaseListAPI):
         stmt = (
             select(ResearchProject)
             .distinct(ResearchProject.id)
-            .join(ResearchProject.cans, isouter=True)
+            .join(Agreement, isouter=True)
+            .join(BudgetLineItem, isouter=True)
+            .join(CAN, isouter=True)
             .join(CANFiscalYear, isouter=True)
         )
 
