@@ -1,6 +1,8 @@
 import App from "../../App";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import { StepIndicatorOne } from "../../components/UI/StepIndicator/StepIndicatorOne";
 import { StepIndicatorTwo } from "../../components/UI/StepIndicator/StepIndicatorTwo";
 import { StepIndicatorThree } from "../../components/UI/StepIndicator/StepIndicatorThree";
@@ -22,6 +24,8 @@ import {
     setEnteredComments,
 } from "./createBudgetLineSlice";
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
+import Tag from "../../components/UI/Tag/Tag";
+import { PreviewTable } from "./PreviewTable";
 
 const StepOne = ({ goToNext }) => (
     <>
@@ -66,6 +70,8 @@ const StepTwo = ({ goBack, goToNext }) => {
     const selectedProcurementShop = useSelector((state) => state.createBudgetLine.selected_procurement_shop);
     const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
     const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [isRowActive, setIsRowActive] = useState(false);
 
     const handleSubmitForm = (e) => {
         e.preventDefault();
@@ -95,6 +101,9 @@ const StepTwo = ({ goBack, goToNext }) => {
         dispatch(setEnteredYear(""));
         dispatch(setEnteredComments(""));
         alert("Budget Line Added");
+    };
+    const handleExpandRow = (budgetLine) => {
+        setIsExpanded(!isExpanded);
     };
     return (
         <>
@@ -195,62 +204,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                     <dd className="text-semibold margin-0">{selectedAgreement?.name}</dd>
                 </dl>
             </div>
-            <table className="usa-table usa-table--borderless">
-                <thead>
-                    <tr>
-                        <th scope="col">Description</th>
-                        <th scope="col">Need By</th>
-                        <th scope="col">FY</th>
-                        <th scope="col">CAN</th>
-                        <th scope="col">Amount</th>
-                        <th scope="col">Fee</th>
-                        <th scope="col">Total</th>
-                        <th scope="col">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <th scope="row">SC1</th>
-                        <td>9/30/2021</td>
-                        <td>2023</td>
-                        <td>G99CC23</td>
-                        <td>$500,000.00</td>
-                        <td>$10,000.00</td>
-                        <td>$510,000.00</td>
-                        <td>Draft</td>
-                    </tr>
-                    {budgetLinesAdded.map((bl) => {
-                        // Format the date like this 9/30/2023 || MM/DD/YYYY
-                        let date_needed = new Date(bl.date_needed);
-                        const formatted_date_needed = `${
-                            date_needed.getMonth() + 1
-                        }/${date_needed.getDate()}/${date_needed.getFullYear()}`;
-                        let month = date_needed.getMonth();
-                        let year = date_needed.getFullYear();
-                        // FY will automate based on the Need by Date. Anything after September 30th rolls over into the next FY.
-                        let fiscalYear = month > 8 ? year + 1 : year;
-                        let feeTotal = bl.amount * (bl.psc_fee_amount / 10);
-                        let total = bl.amount + feeTotal;
-                        let status = bl.status.charAt(0).toUpperCase() + bl.status.slice(1).toLowerCase();
-                        // Format the amounts like this $500,000.00 || $1,000,000.00 to allow for commas
-                        let formattedAmount = `$${bl.amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
-                        let formattedFeeTotal = `$${feeTotal.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
-                        let formattedTotal = `$${total.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
-                        return (
-                            <tr key={bl.id}>
-                                <th scope="row">{bl.line_description}</th>
-                                <td>{formatted_date_needed}</td>
-                                <td>{fiscalYear}</td>
-                                <td>{bl.can_number}</td>
-                                <td>{formattedAmount}</td>
-                                <td>{feeTotal === 0 ? 0 : formattedFeeTotal}</td>
-                                <td>{total === 0 ? 0 : formattedTotal}</td>
-                                <td>{status}</td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
+            <PreviewTable />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button className="usa-button usa-button--outline" onClick={() => goBack()}>
                     Back

@@ -1,0 +1,103 @@
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import Tag from "../../components/UI/Tag/Tag";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+
+export const PreviewTable = ({ budgetLines }) => {
+    const dispatch = useDispatch();
+    const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [isRowActive, setIsRowActive] = useState(false);
+
+    const handleExpandRow = (budgetLine) => {
+        setIsExpanded(!isExpanded);
+        setIsRowActive(true);
+    };
+
+    return (
+        <table className="usa-table usa-table--borderless">
+            <thead>
+                <tr>
+                    <th scope="col">Description</th>
+                    <th scope="col">Need By</th>
+                    <th scope="col">FY</th>
+                    <th scope="col">CAN</th>
+                    <th scope="col">Amount</th>
+                    <th scope="col">Fee</th>
+                    <th scope="col">Total</th>
+                    <th scope="col">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {budgetLinesAdded.map((bl) => {
+                    // Format the date like this 9/30/2023 || MM/DD/YYYY
+                    let date_needed = new Date(bl.date_needed);
+                    const formatted_date_needed = `${
+                        date_needed.getMonth() + 1
+                    }/${date_needed.getDate()}/${date_needed.getFullYear()}`;
+                    let month = date_needed.getMonth();
+                    let year = date_needed.getFullYear();
+                    // FY will automate based on the Need by Date. Anything after September 30th rolls over into the next FY.
+                    let fiscalYear = month > 8 ? year + 1 : year;
+                    let feeTotal = bl.amount * (bl.psc_fee_amount / 10);
+                    let total = bl.amount + feeTotal;
+                    let status = bl.status.charAt(0).toUpperCase() + bl.status.slice(1).toLowerCase();
+                    // Format the amounts like this $500,000.00 || $1,000,000.00 to allow for commas
+                    let formattedAmount = `$${bl.amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
+                    let formattedFeeTotal = `$${feeTotal.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
+                    let formattedTotal = `$${total.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
+                    return (
+                        <>
+                            <tr
+                                key={bl.id}
+                                onMouseEnter={() => setIsRowActive(true)}
+                                onMouseLeave={() => !isExpanded && setIsRowActive(false)}
+                            >
+                                <th scope="row" style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
+                                    {bl.line_description}
+                                </th>
+                                <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{formatted_date_needed}</td>
+                                <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{fiscalYear}</td>
+                                <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{bl.can_number}</td>
+                                <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{formattedAmount}</td>
+                                <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
+                                    {feeTotal === 0 ? 0 : formattedFeeTotal}
+                                </td>
+                                <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
+                                    {total === 0 ? 0 : formattedTotal}
+                                </td>
+                                <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
+                                    <Tag text={status} className="bg-brand-neutral-lighter padding-x-105 padding-y-1" />
+                                </td>
+                                <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
+                                    <FontAwesomeIcon
+                                        icon={isExpanded ? faChevronDown : faChevronUp}
+                                        className={`height-2 width-2 padding-right-1 vertical-align-bottom hover: cursor-pointer`}
+                                        onClick={() => handleExpandRow(bl)}
+                                    />
+                                </td>
+                            </tr>
+
+                            {isExpanded && (
+                                <tr
+                                    className="border-top-0"
+                                    onMouseEnter={() => setIsRowActive(true)}
+                                    // onMouseLeave={() => setIsRowActive(false)}
+                                >
+                                    <td colSpan="9" style={{ backgroundColor: "#F0F0F0" }}>
+                                        <dl className="font-12px">
+                                            <dt className="margin-0 text-base-dark">Created By:</dt>
+                                            {/* TODO: Get logged in user */}
+                                            <dd className="margin-0">Shiela Celentano</dd>
+                                        </dl>
+                                    </td>
+                                </tr>
+                            )}
+                        </>
+                    );
+                })}
+            </tbody>
+        </table>
+    );
+};
