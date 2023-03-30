@@ -5,10 +5,11 @@ Identify an alternate storage site that is sufficiently separated from the prima
 
 ## OPS Implementation
 
-TODO:
+TODO: cloud.gov says hybrid but what knobs can we turn on their s3 to control this, if any?
 
 ### Control Origination
 
-Inherit from cloud.gov
+Hybrid with cloud.gov?
+
 
 ### Related Content
