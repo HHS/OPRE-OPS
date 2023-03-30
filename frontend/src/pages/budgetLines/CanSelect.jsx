@@ -25,14 +25,13 @@ export const CanSelect = () => {
 
     return (
         <>
-            <label className="usa-label" htmlFor="can">
+            <label className="usa-label" htmlFor="can-select" id="can-select-label">
                 CAN
             </label>
             <div className="usa-combo-box" data-enhanced="true">
                 <select
                     className="usa-select usa-sr-only usa-combo-box__select"
-                    name="can"
-                    id="can"
+                    name="can-select"
                     aria-hidden="true"
                     tabIndex="-1"
                     defaultValue={selectedCan?.number}
@@ -46,7 +45,7 @@ export const CanSelect = () => {
                     ))}
                 </select>
                 <input
-                    id="can"
+                    id="can-select"
                     aria-owns="can--list"
                     aria-controls="can--list"
                     aria-autocomplete="list"
@@ -86,7 +85,7 @@ export const CanSelect = () => {
                     id="can--list"
                     className="usa-combo-box__list"
                     role="listbox"
-                    aria-labelledby="agreement-label"
+                    aria-labelledby="can-select-label"
                     hidden
                 >
                     {canList?.map((can, index) => {
