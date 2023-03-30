@@ -121,7 +121,7 @@ export const AgreementSelect = () => {
                             return (
                                 <li
                                     key={agreement?.id}
-                                    aria-setsize={agreement?.length}
+                                    aria-setsize={agreements?.length}
                                     aria-posinset={index + 1}
                                     aria-selected="false"
                                     id={`dynamic-select--list--option-${index}`}

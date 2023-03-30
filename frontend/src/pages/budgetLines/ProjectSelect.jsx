@@ -112,7 +112,7 @@ export const ProjectSelect = () => {
                             return (
                                 <li
                                     key={project?.id}
-                                    aria-setsize={project?.length}
+                                    aria-setsize={researchProjects?.length}
                                     aria-posinset={index + 1}
                                     aria-selected="false"
                                     id={`dynamic-select--list--option-${index}`}

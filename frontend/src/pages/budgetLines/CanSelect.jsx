@@ -93,7 +93,7 @@ export const CanSelect = () => {
                         return (
                             <li
                                 key={can?.id}
-                                aria-setsize={can?.length}
+                                aria-setsize={canList?.length}
                                 aria-posinset={index + 1}
                                 aria-selected="false"
                                 id={`dynamic-select--list--option-${index}`}
