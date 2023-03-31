@@ -1,0 +1,20 @@
+# Incident Response
+## IR-4 - Incident Handling
+
+a. Implement an incident handling capability for incidents that is consistent with the incident response plan and includes preparation, detection and analysis, containment, eradication, and recovery;
+
+b. Coordinate incident handling activities with contingency planning activities;
+
+c. Incorporate lessons learned from ongoing incident handling activities into incident response procedures, training, and testing, and implement the resulting changes accordingly; and
+
+d. Ensure the rigor, intensity, scope, and results of incident handling activities are comparable and predictable across the organization.
+
+## OPS Implementation
+
+TODO: Work with ACF OCIO on language
+
+### Control Origination
+
+Hybrid with ACF OCIO?
+
+### Related Content

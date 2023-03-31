@@ -9,7 +9,7 @@ TODO: cloud.gov says hybrid but what knobs can we turn on their s3 to control th
 
 ### Control Origination
 
-Hybrid with cloud.gov?
+Hybrid with cloud.gov
 
 
 ### Related Content

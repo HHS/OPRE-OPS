@@ -1,13 +1,15 @@
 # Contingency Plan
-## CP-7-1 - Alternate Processing Site | Separation from Primary Site
+## CP-7-2 - Alternate Processing Site | Accessibility
 
 Identify potential accessibility problems to alternate processing sites in the event of an area-wide disruption or disaster and outlines explicit mitigation actions.
 
 ## OPS Implementation
 
+TODO:
+
 ### Control Origination
 
-Hybrid with cloud.gov
+OPS
 
 ### Related Content
 
