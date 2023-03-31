@@ -53,7 +53,7 @@ export const ProjectSelect = () => {
                         aria-hidden="true"
                         tabIndex="-1"
                         defaultValue={selectedResearchProject?.title}
-                        onChange={(e) => onChangeResearchProjectSelection(e.target.value || 0)}
+                        onChange={(e) => onChangeResearchProjectSelection(Number(e.target.value) || 0)}
                     >
                         {researchProjects.map((project) => {
                             return (

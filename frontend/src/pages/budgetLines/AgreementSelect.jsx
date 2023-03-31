@@ -62,7 +62,7 @@ export const AgreementSelect = () => {
                         aria-hidden="true"
                         tabIndex="-1"
                         defaultValue={selectedAgreement?.name}
-                        onChange={(e) => onChangeAgreementSelection(e.target.value || 0)}
+                        onChange={(e) => onChangeAgreementSelection(Number(e.target.value) || 0)}
                     >
                         {agreements.map((agreement) => {
                             return (
