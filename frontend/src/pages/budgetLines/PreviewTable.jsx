@@ -1,12 +1,11 @@
-import { useEffect, useState, Fragment } from "react";
+import { useState, Fragment } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Tag from "../../components/UI/Tag/Tag";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
-import { faClock } from "@fortawesome/free-regular-svg-icons";
+import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 
 export const PreviewTable = ({ budgetLines }) => {
-    const dispatch = useDispatch();
     const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
     const loggedInUser = useSelector((state) => state.auth.activeUser.full_name);
 
@@ -52,13 +51,30 @@ export const PreviewTable = ({ budgetLines }) => {
                     </td>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{total === 0 ? 0 : formattedTotal}</td>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
-                        <Tag text={status} className="bg-brand-neutral-lighter padding-x-105 padding-y-1" />
+                        {isRowActive && !isExpanded ? (
+                            <div>
+                                <FontAwesomeIcon
+                                    icon={faPen}
+                                    className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer"
+                                />
+                                <FontAwesomeIcon
+                                    icon={faTrash}
+                                    className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer"
+                                />
+                                <FontAwesomeIcon
+                                    icon={faClone}
+                                    className="text-primary height-2 width-2 hover: cursor-pointer"
+                                />
+                            </div>
+                        ) : (
+                            <Tag text={status} className="bg-brand-neutral-lighter padding-x-105 padding-y-1" />
+                        )}
                     </td>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
                         <FontAwesomeIcon
                             icon={isExpanded ? faChevronDown : faChevronUp}
                             className="height-2 width-2 padding-right-1 hover: cursor-pointer"
-                            onClick={() => handleExpandRow(bl)}
+                            onClick={() => handleExpandRow()}
                         />
                     </td>
                 </tr>
@@ -66,7 +82,7 @@ export const PreviewTable = ({ budgetLines }) => {
                 {isExpanded && (
                     <tr className="border-top-0">
                         <td colSpan="9" style={{ backgroundColor: "#F0F0F0" }}>
-                            <div className="display-flex">
+                            <div className="display-flex padding-right-9">
                                 <dl className="font-12px">
                                     <dt className="margin-0 text-base-dark">Created By</dt>
                                     {/* TODO: Get logged in user's full name */}
@@ -84,6 +100,20 @@ export const PreviewTable = ({ budgetLines }) => {
                                         {bl.comments}
                                     </dd>
                                 </dl>
+                                <div className="flex-align-self-end margin-left-auto margin-bottom-1">
+                                    <FontAwesomeIcon
+                                        icon={faPen}
+                                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer"
+                                    />
+                                    <FontAwesomeIcon
+                                        icon={faTrash}
+                                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer"
+                                    />
+                                    <FontAwesomeIcon
+                                        icon={faClone}
+                                        className="text-primary height-2 width-2 hover: cursor-pointer"
+                                    />
+                                </div>
                             </div>
                         </td>
                     </tr>
