@@ -1,8 +1,6 @@
 import App from "../../App";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import { StepIndicatorOne } from "../../components/UI/StepIndicator/StepIndicatorOne";
 import { StepIndicatorTwo } from "../../components/UI/StepIndicator/StepIndicatorTwo";
 import { StepIndicatorThree } from "../../components/UI/StepIndicator/StepIndicatorThree";
@@ -24,7 +22,6 @@ import {
     setEnteredComments,
 } from "./createBudgetLineSlice";
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
-import Tag from "../../components/UI/Tag/Tag";
 import { PreviewTable } from "./PreviewTable";
 
 const StepOne = ({ goToNext }) => (
@@ -70,8 +67,7 @@ const StepTwo = ({ goBack, goToNext }) => {
     const selectedProcurementShop = useSelector((state) => state.createBudgetLine.selected_procurement_shop);
     const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
     const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
-    const [isExpanded, setIsExpanded] = useState(false);
-    const [isRowActive, setIsRowActive] = useState(false);
+    const [isBLICreated, setIsBLICreated] = useState(false);
 
     const handleSubmitForm = (e) => {
         e.preventDefault();
@@ -92,6 +88,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                 },
             ])
         );
+        setIsBLICreated(true);
         //reset form
         dispatch(setEnteredDescription(""));
         dispatch(setEnteredAmount(null));
@@ -102,9 +99,7 @@ const StepTwo = ({ goBack, goToNext }) => {
         dispatch(setEnteredComments(""));
         alert("Budget Line Added");
     };
-    const handleExpandRow = (budgetLine) => {
-        setIsExpanded(!isExpanded);
-    };
+
     return (
         <>
             <h2 className="font-sans-lg">Create New Budget Line</h2>
@@ -115,7 +110,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                 Select the Procurement Shop, and the fee rates will be populated in the table below. If this is an
                 active agreement, it will default to the procurement shop currently being used.
             </p>
-            <ProcurementShopSelect />
+            <ProcurementShopSelect isBLICreated={isBLICreated} />
             <h2 className="font-sans-lg margin-top-3">Budget Line Details</h2>
             <p>
                 Complete the information below to create new budget lines. Select Add Budget Line to create multiple
@@ -190,7 +185,6 @@ const StepTwo = ({ goBack, goToNext }) => {
                     </button>
                 </div>
             </form>
-            {/* NOTE: BLI Preview Table */}
             <h2 className="font-sans-lg">Budget Lines</h2>
             <p>
                 This is a list of all budget lines for the selected project and agreement. The budget lines you add will
