@@ -27,6 +27,7 @@ pytest-mock = "==3.10.0"
 ipython = "==8.10.0"
 pytest-docker = {extras = ["docker-compose-v2"], version = "*"}
 black = {extras = ["d"], version = "==23.1.0"}
+types-all = "*"
 
 [requires]
 python_version = "3.10"

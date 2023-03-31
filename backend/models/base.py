@@ -1,4 +1,6 @@
 """Base model and other useful tools for project models."""
+from contextlib import suppress
+from dataclasses import dataclass
 from typing import Annotated, Final, TypeAlias, TypedDict, TypeVar, cast
 
 from desert import schema
@@ -6,7 +8,7 @@ from marshmallow import Schema as MMSchema
 from models.mixins.repr import ReprMixin
 from models.mixins.serialize import SerializeMixin
 from sqlalchemy import Column, DateTime, ForeignKey, func
-from sqlalchemy.orm import declarative_base, declared_attr, mapped_column, registry
+from sqlalchemy.orm import Mapped, declarative_base, declared_attr, mapped_column, registry
 from typing_extensions import Any, override
 
 Base = declarative_base()
@@ -40,7 +42,30 @@ class _SchemaVar:
         try:
             return _schema_registry[name]
         except KeyError:
-            _schema_registry[name] = schema(objtype)
+            # Note: There is an existing issue with SQLAlchemy & desert which prevents
+            # desert from understanding the SQLAlchemy Mapped[] types, and SQLAlchemy
+            # does not allow for passing in metadata parameters to mapped_column()
+            # fields to be able to let desert know explicitly what data type to use.
+            # As such, this is a process to use the dunder attributes from the SQLAlchemy
+            # dataclass models to then reconstruct a dataclass that mirrors what is needed
+            # with the correct types in it, so then desert can actually know what to do.
+            new_objtype = type(objtype.__name__, objtype.__bases__, objtype.__dataclass_fields__)
+            for name, data in objtype.__annotations__.items():
+                item_type = data
+                with suppress(AttributeError):
+                    if data.__origin__ is Mapped:
+                        item_type = data.__args__[0]
+                new_objtype.__annotations__[name] = item_type
+            new_dataclass = dataclass(
+                new_objtype,
+                init=objtype.__dataclass_params__.init,
+                repr=objtype.__dataclass_params__.repr,
+                eq=objtype.__dataclass_params__.eq,
+                order=objtype.__dataclass_params__.order,
+                unsafe_hash=objtype.__dataclass_params__.unsafe_hash,
+                frozen=objtype.__dataclass_params__.frozen,
+            )
+            _schema_registry[name] = schema(new_dataclass)
             return _schema_registry[name]
 
 
