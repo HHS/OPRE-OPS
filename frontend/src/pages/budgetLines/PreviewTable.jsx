@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, Fragment } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Tag from "../../components/UI/Tag/Tag";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -50,9 +50,8 @@ export const PreviewTable = ({ budgetLines }) => {
                     let formattedFeeTotal = `$${feeTotal.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
                     let formattedTotal = `$${total.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
                     return (
-                        <>
+                        <Fragment key={bl.id}>
                             <tr
-                                key={bl.id}
                                 onMouseEnter={() => setIsRowActive(true)}
                                 onMouseLeave={() => !isExpanded && setIsRowActive(false)}
                             >
@@ -111,7 +110,7 @@ export const PreviewTable = ({ budgetLines }) => {
                                     </td>
                                 </tr>
                             )}
-                        </>
+                        </Fragment>
                     );
                 })}
             </tbody>
