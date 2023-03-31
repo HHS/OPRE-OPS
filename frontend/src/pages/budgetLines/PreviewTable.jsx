@@ -4,8 +4,10 @@ import Tag from "../../components/UI/Tag/Tag";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
+import { deleteBudgetLineAdded } from "./createBudgetLineSlice";
 
 export const PreviewTable = ({ budgetLines }) => {
+    const dispatch = useDispatch();
     const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
     const loggedInUser = useSelector((state) => state.auth.activeUser.full_name);
 
@@ -36,6 +38,26 @@ export const PreviewTable = ({ budgetLines }) => {
             setIsExpanded(!isExpanded);
             setIsRowActive(true);
         };
+
+        const ChangeIcons = ({ budgetLine }) => {
+            const handleDeleteBudgetLine = (budgetLineId) => {
+                dispatch(deleteBudgetLineAdded(budgetLineId));
+            };
+            return (
+                <>
+                    <FontAwesomeIcon
+                        icon={faPen}
+                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer"
+                    />
+                    <FontAwesomeIcon
+                        icon={faTrash}
+                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer"
+                        onClick={() => handleDeleteBudgetLine(budgetLine.id)}
+                    />
+                    <FontAwesomeIcon icon={faClone} className="text-primary height-2 width-2 hover: cursor-pointer" />
+                </>
+            );
+        };
         return (
             <Fragment key={bl.id}>
                 <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
@@ -53,18 +75,7 @@ export const PreviewTable = ({ budgetLines }) => {
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
                         {isRowActive && !isExpanded ? (
                             <div>
-                                <FontAwesomeIcon
-                                    icon={faPen}
-                                    className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer"
-                                />
-                                <FontAwesomeIcon
-                                    icon={faTrash}
-                                    className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer"
-                                />
-                                <FontAwesomeIcon
-                                    icon={faClone}
-                                    className="text-primary height-2 width-2 hover: cursor-pointer"
-                                />
+                                <ChangeIcons budgetLine={bl} />
                             </div>
                         ) : (
                             <Tag text={status} className="bg-brand-neutral-lighter padding-x-105 padding-y-1" />
@@ -101,18 +112,7 @@ export const PreviewTable = ({ budgetLines }) => {
                                     </dd>
                                 </dl>
                                 <div className="flex-align-self-end margin-left-auto margin-bottom-1">
-                                    <FontAwesomeIcon
-                                        icon={faPen}
-                                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer"
-                                    />
-                                    <FontAwesomeIcon
-                                        icon={faTrash}
-                                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer"
-                                    />
-                                    <FontAwesomeIcon
-                                        icon={faClone}
-                                        className="text-primary height-2 width-2 hover: cursor-pointer"
-                                    />
+                                    <ChangeIcons budgetLine={bl} />
                                 </div>
                             </div>
                         </td>

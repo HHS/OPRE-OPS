@@ -1,5 +1,5 @@
 import App from "../../App";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { StepIndicatorOne } from "../../components/UI/StepIndicator/StepIndicatorOne";
 import { StepIndicatorTwo } from "../../components/UI/StepIndicator/StepIndicatorTwo";
@@ -67,7 +67,6 @@ const StepTwo = ({ goBack, goToNext }) => {
     const selectedProcurementShop = useSelector((state) => state.createBudgetLine.selected_procurement_shop);
     const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
     const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
-    const [isBLICreated, setIsBLICreated] = useState(false);
 
     const handleSubmitForm = (e) => {
         e.preventDefault();
@@ -88,7 +87,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                 },
             ])
         );
-        setIsBLICreated(true);
+
         //reset form
         dispatch(setEnteredDescription(""));
         dispatch(setEnteredAmount(null));
@@ -110,7 +109,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                 Select the Procurement Shop, and the fee rates will be populated in the table below. If this is an
                 active agreement, it will default to the procurement shop currently being used.
             </p>
-            <ProcurementShopSelect isBLICreated={isBLICreated} />
+            <ProcurementShopSelect budgetLinesLength={budgetLinesAdded.length} />
             <h2 className="font-sans-lg margin-top-3">Budget Line Details</h2>
             <p>
                 Complete the information below to create new budget lines. Select Add Budget Line to create multiple

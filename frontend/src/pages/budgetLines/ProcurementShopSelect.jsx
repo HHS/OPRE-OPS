@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setSelectedProcurementShop } from "./createBudgetLineSlice";
 import { PROCUREMENT_SHOPS } from "./data";
 
-export const ProcurementShopSelect = ({ isBLICreated = false }) => {
+export const ProcurementShopSelect = ({ budgetLinesLength = 0 }) => {
     const dispatch = useDispatch();
     const procurementShops = useSelector(() => PROCUREMENT_SHOPS);
     const selectedProcurementShop = useSelector((state) => state.createBudgetLine.selected_procurement_shop);
@@ -22,7 +22,7 @@ export const ProcurementShopSelect = ({ isBLICreated = false }) => {
         );
     };
     return (
-        <fieldset className="usa-fieldset" disabled={isBLICreated}>
+        <fieldset className="usa-fieldset" disabled={budgetLinesLength !== 0}>
             <label className="usa-label" htmlFor="options">
                 Procurement Shop
             </label>

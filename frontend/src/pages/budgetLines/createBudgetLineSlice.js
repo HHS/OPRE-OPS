@@ -45,6 +45,11 @@ const createBudgetLineSlice = createSlice({
         setBudgetLineAdded: (state, action) => {
             state.budget_lines_added = action.payload;
         },
+        deleteBudgetLineAdded: (state, action) => {
+            state.budget_lines_added = state.budget_lines_added.filter(
+                (budget_line) => budget_line.id !== action.payload
+            );
+        },
         setSelectedProject: (state, action) => {
             state.selected_project = action.payload;
         },
@@ -86,6 +91,7 @@ export const {
     setProcurementShop,
     setCan,
     setBudgetLineAdded,
+    deleteBudgetLineAdded,
     setSelectedProject,
     setSelectedAgreement,
     setSelectedCan,
