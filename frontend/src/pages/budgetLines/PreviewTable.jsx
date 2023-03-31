@@ -13,14 +13,17 @@ export const PreviewTable = ({ budgetLines }) => {
     const TableRow = ({ bl }) => {
         const [isExpanded, setIsExpanded] = useState(false);
         const [isRowActive, setIsRowActive] = useState(false);
-        // Format the date like this 9/30/2023 || MM/DD/YYYY
+        // create function to format date like this 9/30/2023 || MM/DD/YYYY
+        const formatDate = (date) => {
+            return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+        };
+        let today = new Date();
+        const formatted_today = formatDate(today);
         let date_needed = new Date(bl.date_needed);
-        const formatted_date_needed = `${
-            date_needed.getMonth() + 1
-        }/${date_needed.getDate()}/${date_needed.getFullYear()}`;
+        const formatted_date_needed = formatDate(date_needed);
+        // FY will automate based on the Need by Date. Anything after September 30th rolls over into the next FY.
         let month = date_needed.getMonth();
         let year = date_needed.getFullYear();
-        // FY will automate based on the Need by Date. Anything after September 30th rolls over into the next FY.
         let fiscalYear = month > 8 ? year + 1 : year;
         let feeTotal = bl.amount * (bl.psc_fee_amount / 10);
         let total = bl.amount + feeTotal;
@@ -68,14 +71,14 @@ export const PreviewTable = ({ budgetLines }) => {
                                     <dt className="margin-0 text-base-dark">Created By</dt>
                                     {/* TODO: Get logged in user's full name */}
                                     <dd className="margin-0">
-                                        {loggedInUser === "(no name) (no name)" ? "Shiela Celentano" : loggedInUser}
+                                        {loggedInUser === "(no name) (no name)" ? "Sheila Celentano" : loggedInUser}
                                     </dd>
                                     <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                                         <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />
-                                        {formatted_date_needed}
+                                        {formatted_today}
                                     </dt>
                                 </dl>
-                                <dl className="font-12px" style={{ marginLeft: "7.9375rem" }}>
+                                <dl className="font-12px" style={{ marginLeft: "9.0625rem" }}>
                                     <dt className="margin-0 text-base-dark">Notes</dt>
                                     <dd className="margin-0" style={{ maxWidth: "400px" }}>
                                         {bl.comments}
