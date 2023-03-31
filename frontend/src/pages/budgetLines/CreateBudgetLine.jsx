@@ -24,36 +24,47 @@ import {
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
 import { PreviewTable } from "./PreviewTable";
 
-const StepOne = ({ goToNext }) => (
-    <>
-        <h2 className="font-sans-lg">Create New Budget Line</h2>
-        <p>Step One: Text explaining this page</p>
-        <StepIndicatorOne />
-        <h2 className="font-sans-lg">Select a Project</h2>
-        <p>
-            Select the project this budget line should be associated with. If you need to create a new project, click
-            Add New Project.
-        </p>
-        <ProjectSelect />
-        <h2 className="font-sans-lg">Select an Agreement</h2>
-        <p>Select the project and agreement this budget line should be associated with.</p>
-        <AgreementSelect />
-        <div className="grid-row flex-justify-end margin-top-8">
-            <button className="usa-button" onClick={() => goToNext({ project: "Red X 2.0" })}>
-                Continue
-            </button>
-        </div>
-        <div className="display-flex flex-align-center margin-top-6">
-            <div className="border-bottom-1px border-base-light width-full" />
-            <span className="text-base-light margin-left-2 margin-right-2">or</span>
-            <div className="border-bottom-1px border-base-light width-full" />
-        </div>
-        <div className="grid-row flex-justify-center">
-            <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">Add New Project</button>
-            <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">Add New Agreement</button>
-        </div>
-    </>
-);
+const StepOne = ({ goToNext }) => {
+    const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
+    const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
+    return (
+        <>
+            <h2 className="font-sans-lg">Create New Budget Line</h2>
+            <p>Step One: Text explaining this page</p>
+            <StepIndicatorOne />
+            <h2 className="font-sans-lg">Select a Project</h2>
+            <p>
+                Select the project this budget line should be associated with. If you need to create a new project,
+                click Add New Project.
+            </p>
+            <ProjectSelect />
+            <h2 className="font-sans-lg">Select an Agreement</h2>
+            <p>Select the project and agreement this budget line should be associated with.</p>
+            <AgreementSelect />
+            <div className="grid-row flex-justify-end margin-top-8">
+                <button
+                    className="usa-button"
+                    onClick={() => goToNext({ project: "Red X 2.0" })}
+                    // disable if no project or agreement is selected
+                    disabled={!(selectedResearchProject?.id && selectedAgreement?.id)}
+                >
+                    Continue
+                </button>
+            </div>
+            <div className="display-flex flex-align-center margin-top-6">
+                <div className="border-bottom-1px border-base-light width-full" />
+                <span className="text-base-light margin-left-2 margin-right-2">or</span>
+                <div className="border-bottom-1px border-base-light width-full" />
+            </div>
+            <div className="grid-row flex-justify-center">
+                <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">Add New Project</button>
+                <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">
+                    Add New Agreement
+                </button>
+            </div>
+        </>
+    );
+};
 const StepTwo = ({ goBack, goToNext }) => {
     const dispatch = useDispatch();
     const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
