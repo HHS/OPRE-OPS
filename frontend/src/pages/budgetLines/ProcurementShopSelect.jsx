@@ -33,6 +33,7 @@ export const ProcurementShopSelect = ({ budgetLinesLength = 0 }) => {
                     id="options"
                     onChange={(e) => onChangeProcurementShopSelection(Number(e.target.value) || 0)}
                     value={selectedProcurementShop?.id}
+                    required
                 >
                     <option value={0}>- Select -</option>
                     {procurementShops.map((shop) => (

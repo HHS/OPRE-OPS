@@ -8,6 +8,7 @@ const initialState = {
     procurement_shops: [],
     cans: [],
     budget_lines_added: [],
+    is_editing_budget_line: false,
     selected_project: -1,
     selected_agreement: -1,
     selected_can: -1,
@@ -50,6 +51,62 @@ const createBudgetLineSlice = createSlice({
                 (budget_line) => budget_line.id !== action.payload
             );
         },
+        editBudgetLineAdded: (state, action) => {
+            const index = state.budget_lines_added.findIndex((budget_line) => budget_line.id === action.payload.id);
+            console.log(`index is ${index}`);
+            state.is_editing_budget_line = true;
+            if (index !== -1) {
+                state.entered_description = state.budget_lines_added[index].line_description;
+                state.entered_comments = state.budget_lines_added[index].comments;
+                state.selected_can = state.budget_lines_added[index].can_id;
+                state.selected_agreement = state.budget_lines_added[index].agreement_id;
+                state.entered_amount = state.budget_lines_added[index].amount;
+                state.entered_month = state.budget_lines_added[index].date_needed.split("-")[1];
+                state.entered_day = state.budget_lines_added[index].date_needed.split("-")[2];
+                state.entered_year = state.budget_lines_added[index].date_needed.split("-")[0];
+            }
+        },
+        setIsEditingBudgetLine: (state, action) => {
+            state.is_editing_budget_line = action.payload;
+        },
+        setEditBudgetLineAdded: (state, action) => {
+            const index = state.budget_lines_added.findIndex((budget_line) => budget_line.id === action.payload.id);
+            // payload is the budget line that is being edited
+            //     id: budgetLinesAdded[0].id,
+            //     line_description: enteredDescription,
+            //     comments: enteredComments,
+            //     can_id: selectedCan?.id,
+            //     can_number: selectedCan?.number,
+            //     agreement_id: selectedAgreement?.id,
+            //     amount: enteredAmount,
+            //     date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}`,
+            //     psc_fee_amount: selectedProcurementShop?.fee,
+
+            if (index !== -1) {
+                state.budget_lines_added[index].line_description = state.entered_description;
+                state.budget_lines_added[index].comments = state.entered_comments;
+                state.budget_lines_added[index].can_id = state.selected_can;
+                state.budget_lines_added[index].agreement_id = state.selected_agreement;
+                state.budget_lines_added[index].amount = state.entered_amount;
+                state.budget_lines_added[
+                    index
+                ].date_needed = `${state.entered_year}-${state.entered_month}-${state.entered_day}`;
+                state.budget_lines_added[index].psc_fee_amount = action.payload.psc_fee_amount;
+                state.budget_lines_added[index].status = "DRAFT";
+
+                alert("edited can");
+                // reset all the fields
+                state.is_editing_budget_line = false;
+                state.entered_description = "";
+                state.entered_comments = "";
+                state.selected_can = -1;
+                state.entered_amount = null;
+                state.entered_month = "";
+                state.entered_day = "";
+                state.entered_year = "";
+            }
+        },
+
         setSelectedProject: (state, action) => {
             state.selected_project = action.payload;
         },
@@ -92,6 +149,7 @@ export const {
     setCan,
     setBudgetLineAdded,
     deleteBudgetLineAdded,
+    editBudgetLineAdded,
     setSelectedProject,
     setSelectedAgreement,
     setSelectedCan,
@@ -102,6 +160,8 @@ export const {
     setEnteredDay,
     setEnteredYear,
     setEnteredComments,
+    setIsEditingBudgetLine,
+    setEditBudgetLineAdded,
 } = createBudgetLineSlice.actions;
 
 export default createBudgetLineSlice.reducer;

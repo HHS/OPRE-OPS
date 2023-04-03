@@ -13,6 +13,7 @@ import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
 import {
     setAgreements,
     setBudgetLineAdded,
+    setEditBudgetLineAdded,
     setEnteredDescription,
     setEnteredAmount,
     setSelectedCan,
@@ -78,6 +79,24 @@ const StepTwo = ({ goBack, goToNext }) => {
     const selectedProcurementShop = useSelector((state) => state.createBudgetLine.selected_procurement_shop);
     const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
     const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
+    const isEditing = useSelector((state) => state.createBudgetLine.is_editing_budget_line);
+
+    const handleEditForm = (e) => {
+        e.preventDefault();
+        dispatch(
+            setEditBudgetLineAdded({
+                id: budgetLinesAdded[0].id,
+                line_description: enteredDescription,
+                comments: enteredComments,
+                can_id: selectedCan?.id,
+                can_number: selectedCan?.number,
+                agreement_id: selectedAgreement?.id,
+                amount: enteredAmount,
+                date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}`,
+                psc_fee_amount: selectedProcurementShop?.fee,
+            })
+        );
+    };
 
     const handleSubmitForm = (e) => {
         e.preventDefault();
@@ -139,6 +158,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                             type="text"
                             value={enteredDescription || ""}
                             onChange={(e) => dispatch(setEnteredDescription(e.target.value))}
+                            required
                         />
                     </div>
                     <div className="usa-form-group">
@@ -189,12 +209,21 @@ const StepTwo = ({ goBack, goToNext }) => {
                             You can enter up to 150 characters
                         </span>
                     </div>
-                    <button
-                        className="usa-button usa-button--outline margin-top-2 float-right margin-right-0"
-                        onClick={handleSubmitForm}
-                    >
-                        Add Budget Line
-                    </button>
+                    {isEditing ? (
+                        <button
+                            className="usa-button usa-button--outline margin-top-2 float-right margin-right-0"
+                            onClick={handleEditForm}
+                        >
+                            Edit Budget Line
+                        </button>
+                    ) : (
+                        <button
+                            className="usa-button usa-button--outline margin-top-2 float-right margin-right-0"
+                            onClick={handleSubmitForm}
+                        >
+                            Add Budget Line
+                        </button>
+                    )}
                 </div>
             </form>
             <h2 className="font-sans-lg">Budget Lines</h2>

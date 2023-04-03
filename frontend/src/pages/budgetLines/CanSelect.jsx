@@ -36,6 +36,7 @@ export const CanSelect = () => {
                     tabIndex="-1"
                     defaultValue={selectedCan?.number}
                     onChange={(e) => onChangeCanSelection(Number(e.target.value) || 0)}
+                    required
                 >
                     <option value="">Select a CAN</option>
                     {canList.map((can) => (

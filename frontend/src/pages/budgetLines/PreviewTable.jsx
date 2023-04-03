@@ -4,7 +4,7 @@ import Tag from "../../components/UI/Tag/Tag";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
-import { deleteBudgetLineAdded } from "./createBudgetLineSlice";
+import { deleteBudgetLineAdded, editBudgetLineAdded } from "./createBudgetLineSlice";
 
 export const PreviewTable = ({ budgetLines }) => {
     const dispatch = useDispatch();
@@ -20,17 +20,17 @@ export const PreviewTable = ({ budgetLines }) => {
         };
         let today = new Date();
         const formatted_today = formatDate(today);
-        let date_needed = new Date(bl.date_needed);
+        let date_needed = new Date(bl?.date_needed);
         const formatted_date_needed = formatDate(date_needed);
         // FY will automate based on the Need by Date. Anything after September 30th rolls over into the next FY.
         let month = date_needed.getMonth();
         let year = date_needed.getFullYear();
         let fiscalYear = month > 8 ? year + 1 : year;
-        let feeTotal = bl.amount * (bl.psc_fee_amount / 10);
-        let total = bl.amount + feeTotal;
-        let status = bl.status.charAt(0).toUpperCase() + bl.status.slice(1).toLowerCase();
+        let feeTotal = bl?.amount * (bl?.psc_fee_amount / 10);
+        let total = bl?.amount + feeTotal;
+        let status = bl?.status.charAt(0).toUpperCase() + bl?.status.slice(1).toLowerCase();
         // Format the amounts like this $500,000.00 || $1,000,000.00 to allow for commas
-        let formattedAmount = `$${bl.amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
+        let formattedAmount = `$${bl?.amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
         let formattedFeeTotal = `$${feeTotal.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
         let formattedTotal = `$${total.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
 
@@ -48,6 +48,7 @@ export const PreviewTable = ({ budgetLines }) => {
                     <FontAwesomeIcon
                         icon={faPen}
                         className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer"
+                        onClick={() => dispatch(editBudgetLineAdded(budgetLine))}
                     />
                     <FontAwesomeIcon
                         icon={faTrash}
@@ -59,14 +60,14 @@ export const PreviewTable = ({ budgetLines }) => {
             );
         };
         return (
-            <Fragment key={bl.id}>
+            <Fragment key={bl?.id}>
                 <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
                     <th scope="row" style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
-                        {bl.line_description}
+                        {bl?.line_description}
                     </th>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{formatted_date_needed}</td>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{fiscalYear}</td>
-                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{bl.can_number}</td>
+                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{bl?.can_number}</td>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{formattedAmount}</td>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
                         {feeTotal === 0 ? 0 : formattedFeeTotal}
@@ -83,7 +84,7 @@ export const PreviewTable = ({ budgetLines }) => {
                     </td>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
                         <FontAwesomeIcon
-                            icon={isExpanded ? faChevronDown : faChevronUp}
+                            icon={isExpanded ? faChevronUp : faChevronDown}
                             className="height-2 width-2 padding-right-1 hover: cursor-pointer"
                             onClick={() => handleExpandRow()}
                         />
@@ -108,7 +109,7 @@ export const PreviewTable = ({ budgetLines }) => {
                                 <dl className="font-12px" style={{ marginLeft: "9.0625rem" }}>
                                     <dt className="margin-0 text-base-dark">Notes</dt>
                                     <dd className="margin-0" style={{ maxWidth: "400px" }}>
-                                        {bl.comments}
+                                        {bl?.comments ? bl?.comments : "No notes added."}
                                     </dd>
                                 </dl>
                                 <div className="flex-align-self-end margin-left-auto margin-bottom-1">
@@ -138,7 +139,7 @@ export const PreviewTable = ({ budgetLines }) => {
             </thead>
             <tbody>
                 {budgetLinesAdded.map((bl) => (
-                    <TableRow key={bl.id} bl={bl} />
+                    <TableRow key={bl?.id} bl={bl} />
                 ))}
             </tbody>
         </table>
