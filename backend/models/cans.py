@@ -209,7 +209,9 @@ class CAN(BaseModel):
             expiration_date=self.expiration_date.strftime("%d/%m/%Y")
             if self.expiration_date
             else None,
-            arrangement_type=self.arrangement_type.name,
+            arrangement_type=self.arrangement_type.name
+            if self.arrangement_type
+            else None,
         )
 
         return d

@@ -68,8 +68,12 @@ class ResearchProject(BaseModel):
             origination_date=self.origination_date.isoformat()
             if self.origination_date
             else None,
-            methodologies=[methodologies.name for methodologies in self.methodologies],
-            populations=[populations.name for populations in self.populations],
+            methodologies=[methodologies.name for methodologies in self.methodologies]
+            if self.methodologies
+            else [],
+            populations=[populations.name for populations in self.populations]
+            if self.populations
+            else [],
             team_leaders=[tl.to_dict() for tl in self.team_leaders],
         )
 
