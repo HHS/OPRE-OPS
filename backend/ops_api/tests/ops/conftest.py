@@ -7,9 +7,10 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from flask import Flask
 from flask.testing import FlaskClient
+from models import OpsDBHistory, OpsEvent
 from ops_api.ops import create_app
 from pytest_docker.plugin import Services
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, delete, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
 from tests.ops.auth_client import AuthClient
@@ -107,6 +108,14 @@ def docker_compose_command() -> str:
 def loaded_db(app: Flask, app_ctx: None):
     """Get SQLAlchemy Session."""
     yield app.db_session
+    # cleanup
+    app.db_session.rollback()
+    stmt = delete(OpsDBHistory)
+    app.db_session.execute(stmt)
+    stmt = delete(OpsEvent)
+    app.db_session.execute(stmt)
+    app.db_session.commit()
+    app.db_session.close()
 
 
 @pytest.fixture()
