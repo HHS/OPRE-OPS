@@ -118,6 +118,28 @@ class CANFiscalYear(BaseModel):
     notes = Column(String, default="")
     total_funding = column_property(received_funding + expected_funding)
 
+    @override
+    def to_dict(self):
+        d = super().to_dict()
+
+        d.update(
+            total_fiscal_year_funding=float(self.total_fiscal_year_funding)
+            if self.total_fiscal_year_funding
+            else None,
+            received_funding=float(self.received_funding)
+            if self.received_funding
+            else None,
+            expected_funding=float(self.expected_funding)
+            if self.expected_funding
+            else None,
+            potential_additional_funding=float(self.potential_additional_funding)
+            if self.potential_additional_funding
+            else None,
+            total_funding=float(self.total_funding) if self.total_funding else None,
+        )
+
+        return d
+
 
 class CANFiscalYearCarryForward(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN carried over from a previous fiscal year."""
@@ -132,6 +154,22 @@ class CANFiscalYearCarryForward(BaseModel):
     expected_amount = Column(Numeric(12, 2), default=0, nullable=False)
     notes = Column(String, default="")
     total_amount = column_property(received_amount + expected_amount)
+
+    @override
+    def to_dict(self):
+        d = super().to_dict()
+
+        d.update(
+            received_amount=float(self.received_amount)
+            if self.received_amount
+            else None,
+            expected_amount=float(self.expected_amount)
+            if self.expected_amount
+            else None,
+            total_amount=float(self.total_amount) if self.total_amount else None,
+        )
+
+        return d
 
 
 class BudgetLineItem(BaseModel):
@@ -160,7 +198,11 @@ class BudgetLineItem(BaseModel):
     def to_dict(self):
         d = super().to_dict()
 
-        d.update(status=self.status.name if self.status else None)
+        d.update(
+            status=self.status.name if self.status else None,
+            amount=float(self.amount) if self.amount else None,
+            psc_fee_amount=float(self.psc_fee_amount) if self.psc_fee_amount else None,
+        )
 
         return d
 
