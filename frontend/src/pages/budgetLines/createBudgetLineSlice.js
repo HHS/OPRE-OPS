@@ -104,7 +104,6 @@ const createBudgetLineSlice = createSlice({
                 newBudgetLineItem.can_id = state.selected_can;
                 newBudgetLineItem.amount = state.entered_amount;
                 newBudgetLineItem.date_needed = `${state.entered_year}-${state.entered_month}-${state.entered_day}`;
-                newBudgetLineItem.status = "DRAFT";
                 state.budget_lines_added[index] = newBudgetLineItem;
 
                 alert("edited can");
@@ -175,6 +174,7 @@ export const {
     setEnteredComments,
     setIsEditingBudgetLine,
     setEditBudgetLineAdded,
+    updateBudgetLineAtIndex,
 } = createBudgetLineSlice.actions;
 
 export default createBudgetLineSlice.reducer;
