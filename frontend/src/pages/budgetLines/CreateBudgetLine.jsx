@@ -155,10 +155,12 @@ const StepTwo = ({ goBack, goToNext }) => {
                             className="usa-input"
                             id="bl-amount"
                             name="bl-amount"
-                            type="number"
-                            value={enteredAmount || ""}
+                            type="text"
+                            // format number with commas
+                            value={enteredAmount ? enteredAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ""}
                             placeholder="$"
-                            onChange={(e) => dispatch(setEnteredAmount(Number(e.target.value)))}
+                            // remove commas before setting value
+                            onChange={(e) => dispatch(setEnteredAmount(Number(e.target.value.replace(/,/g, ""))))}
                         />
                     </div>
                 </div>
