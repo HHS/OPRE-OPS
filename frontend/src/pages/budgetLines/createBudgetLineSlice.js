@@ -56,14 +56,28 @@ const createBudgetLineSlice = createSlice({
             console.log(`index is ${index}`);
             state.is_editing_budget_line = true;
             if (index !== -1) {
-                state.entered_description = state.budget_lines_added[index].line_description;
-                state.entered_comments = state.budget_lines_added[index].comments;
-                state.selected_can = state.budget_lines_added[index].can_id;
-                state.selected_agreement = state.budget_lines_added[index].agreement_id;
-                state.entered_amount = state.budget_lines_added[index].amount;
-                state.entered_month = state.budget_lines_added[index].date_needed.split("-")[1];
-                state.entered_day = state.budget_lines_added[index].date_needed.split("-")[2];
-                state.entered_year = state.budget_lines_added[index].date_needed.split("-")[0];
+                // state.entered_description = state.budget_lines_added[index].line_description;
+                // state.entered_comments = state.budget_lines_added[index].comments;
+                // state.selected_can = state.budget_lines_added[index].can_id;
+                // state.selected_agreement = state.budget_lines_added[index].agreement_id;
+                // state.entered_amount = state.budget_lines_added[index].amount;
+                // state.entered_month = state.budget_lines_added[index].date_needed.split("-")[1];
+                // state.entered_day = state.budget_lines_added[index].date_needed.split("-")[2];
+                // state.entered_year = state.budget_lines_added[index].date_needed.split("-")[0];
+                const { line_description, comments, can_id, agreement_id, amount, date_needed } =
+                    state.budget_lines_added[index];
+                const [entered_year, entered_month, entered_day] = date_needed.split("-");
+
+                Object.assign(state, {
+                    entered_description: line_description,
+                    entered_comments: comments,
+                    selected_can: can_id,
+                    selected_agreement: agreement_id,
+                    entered_amount: amount,
+                    entered_month,
+                    entered_day,
+                    entered_year,
+                });
             }
         },
         setIsEditingBudgetLine: (state, action) => {
@@ -71,6 +85,7 @@ const createBudgetLineSlice = createSlice({
         },
         setEditBudgetLineAdded: (state, action) => {
             const index = state.budget_lines_added.findIndex((budget_line) => budget_line.id === action.payload.id);
+            console.log(`editing index is ${index}`);
             // payload is the budget line that is being edited
             //     id: budgetLinesAdded[0].id,
             //     line_description: enteredDescription,
@@ -83,16 +98,14 @@ const createBudgetLineSlice = createSlice({
             //     psc_fee_amount: selectedProcurementShop?.fee,
 
             if (index !== -1) {
-                state.budget_lines_added[index].line_description = state.entered_description;
-                state.budget_lines_added[index].comments = state.entered_comments;
-                state.budget_lines_added[index].can_id = state.selected_can;
-                state.budget_lines_added[index].agreement_id = state.selected_agreement;
-                state.budget_lines_added[index].amount = state.entered_amount;
-                state.budget_lines_added[
-                    index
-                ].date_needed = `${state.entered_year}-${state.entered_month}-${state.entered_day}`;
-                state.budget_lines_added[index].psc_fee_amount = action.payload.psc_fee_amount;
-                state.budget_lines_added[index].status = "DRAFT";
+                const newBudgetLineItem = { ...state.budget_lines_added[index] };
+                newBudgetLineItem.line_description = state.entered_description;
+                newBudgetLineItem.comments = state.entered_comments;
+                newBudgetLineItem.can_id = state.selected_can;
+                newBudgetLineItem.amount = state.entered_amount;
+                newBudgetLineItem.date_needed = `${state.entered_year}-${state.entered_month}-${state.entered_day}`;
+                newBudgetLineItem.status = "DRAFT";
+                state.budget_lines_added[index] = newBudgetLineItem;
 
                 alert("edited can");
                 // reset all the fields
