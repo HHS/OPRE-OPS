@@ -74,6 +74,12 @@ jobs:
           REACT_APP_BACKEND_DOMAIN=https://${{steps.deploy-backend.outputs.BACKEND_DOMAIN}} yarn build
           cp ./Staticfile ./build/
 
+      - name: Build & Publish ops-frontend
+        uses: ./.github/workflows/build_reusable.yml
+        with:
+          image-name: ops-frontend
+          docker-file: Dockerfile.cg-frontend
+          docker-context: "frontend"
       - name: Deploy frontend
         uses: ./.github/actions/deploy-frontend
         with:

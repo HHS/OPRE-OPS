@@ -1,13 +1,33 @@
-FROM node:18-slim
+# Stage 1: Build the app for development
+FROM node:18-slim as development
 
-RUN useradd -ms /bin/bash app
-USER app
+# RUN useradd -ms /bin/bash app
+# USER app
 WORKDIR /home/app
 
 COPY ./package.json ./yarn.lock /home/app/
-RUN yarn install --production --network-timeout 100000 && yarn cache clean
+RUN yarn install --frozen-lockfile --production --network-timeout 100000 && yarn cache clean
 
 COPY ./ /home/app/
 
-ENV OPS_CONFIG=environment/local/container.py
 ENTRYPOINT ["yarn", "start"]
+
+# Stage 2: Build the app for production
+FROM development as production
+
+WORKDIR /home/app
+
+ENV NODE_ENV=production
+ENV REACT_APP_BACKEND_DOMAIN=$BACKEND_DOMAIN
+
+COPY ./Staticfile ./build/
+COPY ./public/ /home/app/public/
+RUN yarn build
+
+# Stage 3: Create the final image, only hosting the static files (SPA).
+FROM nginxinc/nginx-unprivileged:stable-alpine as static
+
+COPY --from=production /home/app/build /usr/share/nginx/html
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
