@@ -25,7 +25,8 @@ COPY ./public/ /home/app/public/
 RUN yarn build
 
 # Stage 3: Create the final image, only hosting the static files (SPA).
-FROM nginxinc/nginx-unprivileged:stable-alpine as static
+#FROM nginxinc/nginx-unprivileged:stable-alpine as static
+FROM nginx:alpine as static
 
 COPY --from=production /home/app/build /usr/share/nginx/html
 
