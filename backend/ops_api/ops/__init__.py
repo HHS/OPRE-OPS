@@ -5,9 +5,12 @@ from typing import Any, Optional
 from flask import Blueprint, Flask
 from flask_cors import CORS
 from ops_api.ops.db import init_db
+from ops_api.ops.history import track_db_history_before, track_db_history_catch_errors
 from ops_api.ops.home_page.views import home
 from ops_api.ops.urls import register_api
 from ops_api.ops.utils.auth import jwtMgr, oauth
+from sqlalchemy import event
+from sqlalchemy.orm import Session
 
 
 def configure_logging(log_level: str = "INFO") -> None:
@@ -65,10 +68,20 @@ def create_app(config_overrides: Optional[dict[str, Any]] = {}) -> Flask:
     jwtMgr.init_app(app)
     oauth.init_app(app)
 
-    app.db_session = init_db(app.config.get("SQLALCHEMY_DATABASE_URI"), is_unit_test)
+    db_session, engine = init_db(app.config.get("SQLALCHEMY_DATABASE_URI"), is_unit_test)
+    app.db_session = db_session
+    app.engine = engine
 
     @app.teardown_appcontext
     def shutdown_session(exception=None):
         app.db_session.remove()
+
+    @event.listens_for(db_session, "before_commit")
+    def receive_before_commit(session: Session):
+        track_db_history_before(session)
+
+    @event.listens_for(engine, "handle_error")
+    def receive_error(exception_context):
+        track_db_history_catch_errors(exception_context)
 
     return app
