@@ -1,4 +1,4 @@
-from flask import Response, current_app, jsonify
+from flask import Response, current_app, jsonify, make_response
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from models.base import BaseModel
@@ -51,34 +51,40 @@ class OPSMethodView(MethodView):
         response.headers.add("Access-Control-Allow-Origin", "*")
         return response
 
-    def _get_item_with_try(self, id: int):
+    def _get_item_with_try(self, id: int) -> Response:
         try:
             item = self._get_item(id)
 
             if item:
-                response = jsonify(item.to_dict()), 200
+                # response = jsonify(item.to_dict()), 200
+                response = make_response(item.to_dict(), 200)
             else:
-                response = jsonify({}), 404
+                # response = jsonify({}), 404
+                response = make_response({}, 404)
         except SQLAlchemyError as se:
             current_app.logger.error(se)
-            response = jsonify({}), 500
+            response = make_response({}, 500)
+            # response = jsonify({}), 500
 
-        response[0].headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Origin", "*")
         return response
 
-    def _get_all_items_with_try(self):
+    def _get_all_items_with_try(self) -> Response:
         try:
             item_list = self._get_all_items()
 
             if item_list:
-                response = jsonify([item.to_dict() for item in item_list]), 200
+                response = make_response([item.to_dict() for item in item_list], 200)
+                # response = jsonify([item.to_dict() for item in item_list]), 200
             else:
-                response = jsonify({}), 404
+                response = make_response({}, 404)
+                # response = jsonify({}), 404
         except SQLAlchemyError as se:
             current_app.logger.error(se)
-            response = jsonify({}), 500
+            # response = jsonify({}), 500
+            response = make_response({}, 500)
 
-        response[0].headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Origin", "*")
         return response
 
 
@@ -98,3 +104,7 @@ class BaseListAPI(OPSMethodView):
     @jwt_required()
     def get(self) -> Response:
         return self._get_all_items_with_try()
+
+    @jwt_required()
+    def post(self) -> Response:
+        ...

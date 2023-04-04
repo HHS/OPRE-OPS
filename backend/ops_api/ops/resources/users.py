@@ -1,4 +1,4 @@
-from flask import Response, jsonify, request
+from flask import Response, jsonify, make_response, request
 from flask_jwt_extended import jwt_required, verify_jwt_in_request
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -25,10 +25,10 @@ class UsersItemAPI(BaseItemAPI):
         # Users can only see their own user details
         # Update this authZ checks once we determine additional
         # roles that can view other users details.
-        if sub == str(response[0].json["oidc_id"]):
+        if sub == str(response.json["oidc_id"]):
             return response
         else:
-            response = jsonify({}), 401
+            response = make_response({}, 401)
             return response
 
 

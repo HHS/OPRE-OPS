@@ -1,4 +1,4 @@
-from flask import Response, current_app, jsonify, request
+from flask import Response, current_app, jsonify, make_response, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from models.base import BaseModel
 from models.cans import Agreement
@@ -21,9 +21,9 @@ class AgreementItemAPI(BaseItemAPI):
         if is_authorized:
             response = self._get_item_with_try(id)
         else:
-            response = jsonify({}), 401
+            response = make_response({}, 401)
 
-        response[0].headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Origin", "*")
         return response
 
 
