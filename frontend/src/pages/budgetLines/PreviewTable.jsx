@@ -51,17 +51,23 @@ export const PreviewTable = ({ budgetLines }) => {
                 <>
                     <FontAwesomeIcon
                         icon={faPen}
-                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer"
+                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                        title="Edit budget line"
+                        data-position="top"
                         onClick={() => dispatch(editBudgetLineAdded(budgetLine))}
                     />
                     <FontAwesomeIcon
                         icon={faTrash}
-                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer"
+                        title="Delete budget line"
+                        data-position="top"
+                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
                         onClick={() => handleDeleteBudgetLine(budgetLine.id)}
                     />
                     <FontAwesomeIcon
                         icon={faClone}
-                        className="text-primary height-2 width-2 hover: cursor-pointer"
+                        title="Duplicate budget line"
+                        data-position="top"
+                        className="text-primary height-2 width-2 hover: cursor-pointer usa-tooltip"
                         onClick={() => handleDuplicateBudgetLine(budgetLine)}
                     />
                 </>
