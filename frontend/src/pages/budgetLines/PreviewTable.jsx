@@ -4,7 +4,7 @@ import Tag from "../../components/UI/Tag/Tag";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
-import { deleteBudgetLineAdded, editBudgetLineAdded } from "./createBudgetLineSlice";
+import { deleteBudgetLineAdded, editBudgetLineAdded, duplicateBudgetLineAdded } from "./createBudgetLineSlice";
 import "./PreviewTable.scss";
 
 export const PreviewTable = ({ budgetLines }) => {
@@ -44,6 +44,9 @@ export const PreviewTable = ({ budgetLines }) => {
             const handleDeleteBudgetLine = (budgetLineId) => {
                 dispatch(deleteBudgetLineAdded(budgetLineId));
             };
+            const handleDuplicateBudgetLine = (budgetLine) => {
+                dispatch(duplicateBudgetLineAdded(budgetLine));
+            };
             return (
                 <>
                     <FontAwesomeIcon
@@ -56,7 +59,11 @@ export const PreviewTable = ({ budgetLines }) => {
                         className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer"
                         onClick={() => handleDeleteBudgetLine(budgetLine.id)}
                     />
-                    <FontAwesomeIcon icon={faClone} className="text-primary height-2 width-2 hover: cursor-pointer" />
+                    <FontAwesomeIcon
+                        icon={faClone}
+                        className="text-primary height-2 width-2 hover: cursor-pointer"
+                        onClick={() => handleDuplicateBudgetLine(budgetLine)}
+                    />
                 </>
             );
         };
