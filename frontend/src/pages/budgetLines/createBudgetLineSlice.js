@@ -19,6 +19,7 @@ const initialState = {
     entered_day: "",
     entered_year: "",
     entered_comments: "",
+    budget_line_being_edited: -1,
 };
 
 const createBudgetLineSlice = createSlice({
@@ -47,28 +48,33 @@ const createBudgetLineSlice = createSlice({
             state.budget_lines_added = action.payload;
         },
         deleteBudgetLineAdded: (state, action) => {
-            state.budget_lines_added = state.budget_lines_added.filter(
-                (budget_line) => budget_line.id !== action.payload
-            );
+            if (window.confirm("Are you sure you want to delete this budget line?")) {
+                state.budget_lines_added = state.budget_lines_added.filter(
+                    (budget_line) => budget_line.id !== action.payload
+                );
+                // reset the form
+                state.entered_description = "";
+                state.entered_comments = "";
+                state.selected_can = -1;
+                state.entered_amount = null;
+                state.entered_month = "";
+                state.entered_day = "";
+                state.entered_year = "";
+                state.budget_line_being_edited = -1;
+                state.is_editing_budget_line = false;
+            }
         },
         editBudgetLineAdded: (state, action) => {
             const index = state.budget_lines_added.findIndex((budget_line) => budget_line.id === action.payload.id);
-            console.log(`index is ${index}`);
-            state.is_editing_budget_line = true;
+
             if (index !== -1) {
-                // state.entered_description = state.budget_lines_added[index].line_description;
-                // state.entered_comments = state.budget_lines_added[index].comments;
-                // state.selected_can = state.budget_lines_added[index].can_id;
-                // state.selected_agreement = state.budget_lines_added[index].agreement_id;
-                // state.entered_amount = state.budget_lines_added[index].amount;
-                // state.entered_month = state.budget_lines_added[index].date_needed.split("-")[1];
-                // state.entered_day = state.budget_lines_added[index].date_needed.split("-")[2];
-                // state.entered_year = state.budget_lines_added[index].date_needed.split("-")[0];
                 const { line_description, comments, can_id, agreement_id, amount, date_needed } =
                     state.budget_lines_added[index];
                 const [entered_year, entered_month, entered_day] = date_needed.split("-");
 
-                Object.assign(state, {
+                return {
+                    ...state,
+                    is_editing_budget_line: true,
                     entered_description: line_description,
                     entered_comments: comments,
                     selected_can: can_id,
@@ -77,46 +83,40 @@ const createBudgetLineSlice = createSlice({
                     entered_month,
                     entered_day,
                     entered_year,
-                });
+                    budget_line_being_edited: index,
+                };
             }
         },
-        setIsEditingBudgetLine: (state, action) => {
-            state.is_editing_budget_line = action.payload;
-        },
+
         setEditBudgetLineAdded: (state, action) => {
-            const index = state.budget_lines_added.findIndex((budget_line) => budget_line.id === action.payload.id);
-            console.log(`editing index is ${index}`);
-            // payload is the budget line that is being edited
-            //     id: budgetLinesAdded[0].id,
-            //     line_description: enteredDescription,
-            //     comments: enteredComments,
-            //     can_id: selectedCan?.id,
-            //     can_number: selectedCan?.number,
-            //     agreement_id: selectedAgreement?.id,
-            //     amount: enteredAmount,
-            //     date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}`,
-            //     psc_fee_amount: selectedProcurementShop?.fee,
+            const updatedBudgetLines = state.budget_lines_added.map((budgetLine, index) => {
+                if (budgetLine.id === action.payload.id) {
+                    alert("Budget Line Updated");
+                    return {
+                        ...budgetLine,
+                        line_description: action.payload.line_description,
+                        comments: action.payload.comments,
+                        can_id: action.payload.can_id,
+                        amount: action.payload.amount,
+                        date_needed: action.payload.date_needed,
+                    };
+                }
+                return budgetLine;
+            });
 
-            if (index !== -1) {
-                const newBudgetLineItem = { ...state.budget_lines_added[index] };
-                newBudgetLineItem.line_description = state.entered_description;
-                newBudgetLineItem.comments = state.entered_comments;
-                newBudgetLineItem.can_id = state.selected_can;
-                newBudgetLineItem.amount = state.entered_amount;
-                newBudgetLineItem.date_needed = `${state.entered_year}-${state.entered_month}-${state.entered_day}`;
-                state.budget_lines_added[index] = newBudgetLineItem;
-
-                alert("edited can");
-                // reset all the fields
-                state.is_editing_budget_line = false;
-                state.entered_description = "";
-                state.entered_comments = "";
-                state.selected_can = -1;
-                state.entered_amount = null;
-                state.entered_month = "";
-                state.entered_day = "";
-                state.entered_year = "";
-            }
+            return {
+                ...state,
+                budget_lines_added: updatedBudgetLines,
+                is_editing_budget_line: false,
+                entered_description: "",
+                entered_comments: "",
+                selected_can: -1,
+                entered_amount: null,
+                entered_month: "",
+                entered_day: "",
+                entered_year: "",
+                budget_line_being_edited: -1,
+            };
         },
 
         setSelectedProject: (state, action) => {
@@ -172,7 +172,6 @@ export const {
     setEnteredDay,
     setEnteredYear,
     setEnteredComments,
-    setIsEditingBudgetLine,
     setEditBudgetLineAdded,
     updateBudgetLineAtIndex,
 } = createBudgetLineSlice.actions;

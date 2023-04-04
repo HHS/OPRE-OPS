@@ -80,12 +80,13 @@ const StepTwo = ({ goBack, goToNext }) => {
     const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
     const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
     const isEditing = useSelector((state) => state.createBudgetLine.is_editing_budget_line);
+    const budgetLineBeingEdited = useSelector((state) => state.createBudgetLine.budget_line_being_edited);
 
     const handleEditForm = (e) => {
         e.preventDefault();
         dispatch(
             setEditBudgetLineAdded({
-                id: budgetLinesAdded[0].id,
+                id: budgetLinesAdded[budgetLineBeingEdited].id,
                 line_description: enteredDescription,
                 comments: enteredComments,
                 can_id: selectedCan?.id,
