@@ -21,6 +21,7 @@ import {
     setEnteredYear,
     setEnteredDay,
     setEnteredComments,
+    setSelectedProcurementShop,
 } from "./createBudgetLineSlice";
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
 import { PreviewTable } from "./PreviewTable";
@@ -254,7 +255,30 @@ const StepTwo = ({ goBack, goToNext }) => {
             </div>
             <PreviewTable />
             <div className="grid-row flex-justify-end margin-top-1">
-                <button className="usa-button usa-button--outline" onClick={() => goBack()}>
+                <button
+                    className="usa-button usa-button--unstyled margin-right-2"
+                    onClick={() => {
+                        // if no budget lines have been added, go back
+                        if (budgetLinesAdded.length === 0) {
+                            goBack();
+                            return;
+                        }
+
+                        const confirm = window.confirm("Are you sure you want to go back? All changes will be lost.");
+                        if (confirm) {
+                            // clear all budget line data and state
+                            dispatch(setBudgetLineAdded([]));
+                            dispatch(setEnteredAmount(null));
+                            dispatch(setEnteredComments(""));
+                            dispatch(setEnteredDescription(""));
+                            dispatch(setSelectedProcurementShop({}));
+                            dispatch(setEnteredDay(""));
+                            dispatch(setEnteredMonth(""));
+                            dispatch(setEnteredYear(""));
+                            goBack();
+                        }
+                    }}
+                >
                     Back
                 </button>
                 <button className="usa-button" onClick={() => goToNext({ name: "John Doe" })}>
@@ -272,7 +296,7 @@ const StepThree = ({ goBack, goToNext }) => (
         <StepIndicatorThree />
 
         <div className="grid-row flex-justify-end">
-            <button className="usa-button usa-button--outline" onClick={() => goBack()}>
+            <button className="usa-button usa-button--unstyled" onClick={() => goBack()}>
                 Back
             </button>
             <button className="usa-button" onClick={() => goToNext({ name: "John Doe" })}>

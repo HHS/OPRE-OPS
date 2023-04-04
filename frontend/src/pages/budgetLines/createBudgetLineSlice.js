@@ -46,6 +46,7 @@ const createBudgetLineSlice = createSlice({
         },
         setBudgetLineAdded: (state, action) => {
             state.budget_lines_added = action.payload;
+            state.is_editing_budget_line = false;
         },
         deleteBudgetLineAdded: (state, action) => {
             if (window.confirm("Are you sure you want to delete this budget line?")) {
