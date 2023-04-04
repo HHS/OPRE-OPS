@@ -82,6 +82,10 @@ const StepTwo = ({ goBack, goToNext }) => {
     const isEditing = useSelector((state) => state.createBudgetLine.is_editing_budget_line);
     const budgetLineBeingEdited = useSelector((state) => state.createBudgetLine.budget_line_being_edited);
 
+    const handleCancelEdit = () => {
+        dispatch(setEditBudgetLineAdded({}));
+    };
+
     const handleEditForm = (e) => {
         e.preventDefault();
         dispatch(
@@ -211,12 +215,20 @@ const StepTwo = ({ goBack, goToNext }) => {
                         </span>
                     </div>
                     {isEditing ? (
-                        <button
-                            className="usa-button usa-button--outline margin-top-2 float-right margin-right-0"
-                            onClick={handleEditForm}
-                        >
-                            Edit Budget Line
-                        </button>
+                        <div className="display-flex flex-justify-end">
+                            <button
+                                className="usa-button usa-button--unstyled margin-top-2 margin-right-2"
+                                onClick={() => handleCancelEdit()}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="usa-button usa-button--outline margin-top-2  margin-right-0"
+                                onClick={handleEditForm}
+                            >
+                                Edit Budget Line
+                            </button>
+                        </div>
                     ) : (
                         <button
                             className="usa-button usa-button--outline margin-top-2 float-right margin-right-0"

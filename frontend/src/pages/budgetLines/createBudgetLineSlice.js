@@ -99,11 +99,9 @@ const createBudgetLineSlice = createSlice({
                     budget_lines_added: [...state.budget_lines_added, duplicatedLine],
                 };
             }
-            alert("copying budget line");
         },
-
         setEditBudgetLineAdded: (state, action) => {
-            const updatedBudgetLines = state.budget_lines_added.map((budgetLine, index) => {
+            const updatedBudgetLines = state.budget_lines_added.map((budgetLine) => {
                 if (budgetLine.id === action.payload.id) {
                     alert("Budget Line Updated");
                     return {
@@ -132,7 +130,6 @@ const createBudgetLineSlice = createSlice({
                 budget_line_being_edited: -1,
             };
         },
-
         setSelectedProject: (state, action) => {
             state.selected_project = action.payload;
         },
