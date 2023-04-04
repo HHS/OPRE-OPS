@@ -1,6 +1,7 @@
 import App from "../../App";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import CurrencyFormat from "react-currency-format";
 import { StepIndicatorOne } from "../../components/UI/StepIndicator/StepIndicatorOne";
 import { StepIndicatorTwo } from "../../components/UI/StepIndicator/StepIndicatorTwo";
 import { StepIndicatorThree } from "../../components/UI/StepIndicator/StepIndicatorThree";
@@ -177,16 +178,19 @@ const StepTwo = ({ goBack, goToNext }) => {
                         <label className="usa-label" htmlFor="bl-amount">
                             Amount
                         </label>
-                        <input
-                            className="usa-input"
+                        <CurrencyFormat
                             id="bl-amount"
+                            value={enteredAmount || 0}
+                            className="usa-input"
                             name="bl-amount"
-                            type="text"
-                            // format number with commas
-                            value={enteredAmount ? enteredAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ""}
+                            thousandSeparator={true}
+                            decimalScale={2}
+                            renderText={(value) => value}
                             placeholder="$"
-                            // remove commas before setting value
-                            onChange={(e) => dispatch(setEnteredAmount(Number(e.target.value.replace(/,/g, ""))))}
+                            onValueChange={(values) => {
+                                const { floatValue } = values;
+                                dispatch(setEnteredAmount(floatValue));
+                            }}
                         />
                     </div>
                 </div>

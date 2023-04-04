@@ -1,9 +1,10 @@
 import { useState, Fragment } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import Tag from "../../components/UI/Tag/Tag";
+import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
+import Tag from "../../components/UI/Tag/Tag";
 import { deleteBudgetLineAdded, editBudgetLineAdded, duplicateBudgetLineAdded } from "./createBudgetLineSlice";
 import "./PreviewTable.scss";
 
@@ -15,7 +16,7 @@ export const PreviewTable = ({ budgetLines }) => {
     const TableRow = ({ bl }) => {
         const [isExpanded, setIsExpanded] = useState(false);
         const [isRowActive, setIsRowActive] = useState(false);
-        // create function to format date like this 9/30/2023 || MM/DD/YYYY
+        // function to format date like this 9/30/2023 || MM/DD/YYYY
         const formatDate = (date) => {
             return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
         };
@@ -30,10 +31,6 @@ export const PreviewTable = ({ budgetLines }) => {
         let feeTotal = bl?.amount * (bl?.psc_fee_amount / 10);
         let total = bl?.amount + feeTotal;
         let status = bl?.status.charAt(0).toUpperCase() + bl?.status.slice(1).toLowerCase();
-        // Format the amounts like this $500,000.00 || $1,000,000.00 to allow for commas
-        let formattedAmount = `$${bl?.amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
-        let formattedFeeTotal = `$${feeTotal.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
-        let formattedTotal = `$${total.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
 
         const handleExpandRow = () => {
             setIsExpanded(!isExpanded);
@@ -82,11 +79,45 @@ export const PreviewTable = ({ budgetLines }) => {
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{formatted_date_needed}</td>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{fiscalYear}</td>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{bl?.can_number}</td>
-                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{formattedAmount}</td>
+
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
-                        {feeTotal === 0 ? 0 : formattedFeeTotal}
+                        <CurrencyFormat
+                            value={bl?.amount}
+                            displayType={"text"}
+                            thousandSeparator={true}
+                            prefix={"$"}
+                            decimalScale={2}
+                            renderText={(value) => value}
+                        />
                     </td>
-                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{total === 0 ? 0 : formattedTotal}</td>
+                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
+                        {feeTotal === 0 ? (
+                            0
+                        ) : (
+                            <CurrencyFormat
+                                value={feeTotal}
+                                displayType={"text"}
+                                thousandSeparator={true}
+                                prefix={"$"}
+                                decimalScale={2}
+                                renderText={(value) => value}
+                            />
+                        )}
+                    </td>
+                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
+                        {total === 0 ? (
+                            0
+                        ) : (
+                            <CurrencyFormat
+                                value={total}
+                                displayType={"text"}
+                                thousandSeparator={true}
+                                prefix={"$"}
+                                decimalScale={2}
+                                renderText={(value) => value}
+                            />
+                        )}
+                    </td>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
                         {isRowActive && !isExpanded ? (
                             <div>
