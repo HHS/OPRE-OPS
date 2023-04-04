@@ -89,20 +89,14 @@ const createBudgetLineSlice = createSlice({
             const index = state.budget_lines_added.findIndex((budget_line) => budget_line.id === action.payload.id);
 
             if (index !== -1) {
-                const { line_description, comments, can_id, amount, date_needed } = state.budget_lines_added[index];
-                const [entered_year, entered_month, entered_day] = date_needed.split("-");
+                const duplicatedLine = {
+                    ...action.payload,
+                    id: crypto.getRandomValues(new Uint32Array(1))[0],
+                };
 
                 return {
                     ...state,
-                    is_editing_budget_line: false,
-                    entered_description: line_description,
-                    entered_comments: comments,
-                    selected_can: can_id,
-                    entered_amount: amount,
-                    entered_month,
-                    entered_day,
-                    entered_year,
-                    budget_line_being_edited: index,
+                    budget_lines_added: [...state.budget_lines_added, duplicatedLine],
                 };
             }
             alert("copying budget line");
