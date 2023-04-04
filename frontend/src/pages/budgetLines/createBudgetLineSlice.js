@@ -68,8 +68,7 @@ const createBudgetLineSlice = createSlice({
             const index = state.budget_lines_added.findIndex((budget_line) => budget_line.id === action.payload.id);
 
             if (index !== -1) {
-                const { line_description, comments, can_id, agreement_id, amount, date_needed } =
-                    state.budget_lines_added[index];
+                const { line_description, comments, can_id, amount, date_needed } = state.budget_lines_added[index];
                 const [entered_year, entered_month, entered_day] = date_needed.split("-");
 
                 return {
@@ -78,7 +77,6 @@ const createBudgetLineSlice = createSlice({
                     entered_description: line_description,
                     entered_comments: comments,
                     selected_can: can_id,
-                    selected_agreement: agreement_id,
                     entered_amount: amount,
                     entered_month,
                     entered_day,
