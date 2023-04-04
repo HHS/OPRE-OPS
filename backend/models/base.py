@@ -1,9 +1,9 @@
 """Base model and other useful tools for project models."""
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Annotated, Final, TypeAlias, TypedDict, TypeVar, cast
+from typing import Annotated, ClassVar, Final, TypeAlias, TypedDict, TypeVar, cast
 
-from desert import schema
+# from desert import schema
 from marshmallow import Schema as MMSchema
 from models.mixins.repr import ReprMixin
 from models.mixins.serialize import SerializeMixin
@@ -14,59 +14,64 @@ from typing_extensions import Any, override
 Base = declarative_base()
 reg = registry(metadata=Base.metadata)
 
-intpk = Annotated[int, mapped_column(init=False, primary_key=True)]
+intpk = Annotated[int, mapped_column(init=False, repr=True, primary_key=True)]
 # This is a simple type to make a standard int-base primary key field.
 
 _T = TypeVar("_T")
-_schema_registry: dict[str, MMSchema] = {}
+# _schema_registry: dict[str, MMSchema] = {}
 _dict_registry: dict[str, TypeAlias] = {}
 
 
-class _SchemaVar:
-    """Dynamically create a marshmallow Schema for the object.
-
-    This is implemented as a descriptor so that all the fields can be
-    defined for the class before the Schema is created.
-    """
-
-    def __get__(self, obj: _T, objtype: type[_T] | None = None) -> MMSchema:
-        """Get or create the schema for this object type.
-
-        Note:
-            This expects to be used at the class-level, rather than
-            instance-level, so it expects that objtype will not be None.
-        """
-        if objtype is None:
-            raise ValueError("Must be set at class-level.")
-        name = objtype.__qualname__  # type: ignore [union-attr]
-        try:
-            return _schema_registry[name]
-        except KeyError:
-            # Note: There is an existing issue with SQLAlchemy & desert which prevents
-            # desert from understanding the SQLAlchemy Mapped[] types, and SQLAlchemy
-            # does not allow for passing in metadata parameters to mapped_column()
-            # fields to be able to let desert know explicitly what data type to use.
-            # As such, this is a process to use the dunder attributes from the SQLAlchemy
-            # dataclass models to then reconstruct a dataclass that mirrors what is needed
-            # with the correct types in it, so then desert can actually know what to do.
-            new_objtype = type(objtype.__name__, objtype.__bases__, objtype.__dataclass_fields__)
-            for name, data in objtype.__annotations__.items():
-                item_type = data
-                with suppress(AttributeError):
-                    if data.__origin__ is Mapped:
-                        item_type = data.__args__[0]
-                new_objtype.__annotations__[name] = item_type
-            new_dataclass = dataclass(
-                new_objtype,
-                init=objtype.__dataclass_params__.init,
-                repr=objtype.__dataclass_params__.repr,
-                eq=objtype.__dataclass_params__.eq,
-                order=objtype.__dataclass_params__.order,
-                unsafe_hash=objtype.__dataclass_params__.unsafe_hash,
-                frozen=objtype.__dataclass_params__.frozen,
-            )
-            _schema_registry[name] = schema(new_dataclass)
-            return _schema_registry[name]
+# Note: This is currently disabled. Desert is not working correctly with ID fields, and
+# as such it is not making the id field be in the created marshmallow Schema. For the
+# time being, the Schema must be manually created and then added to the "Schema" class
+# variable for the dataclass, as is shown for procurement shops.  - Cliff
+#
+# class _SchemaVar:
+#     """Dynamically create a marshmallow Schema for the object.
+#
+#     This is implemented as a descriptor so that all the fields can be
+#     defined for the class before the Schema is created.
+#     """
+#
+#     def __get__(self, obj: _T, objtype: type[_T] | None = None) -> MMSchema:
+#         """Get or create the schema for this object type.
+#
+#         Note:
+#             This expects to be used at the class-level, rather than
+#             instance-level, so it expects that objtype will not be None.
+#         """
+#         if objtype is None:
+#             raise ValueError("Must be set at class-level.")
+#         name = objtype.__qualname__  # type: ignore [union-attr]
+#         try:
+#             return _schema_registry[name]
+#         except KeyError:
+#             # Note: There is an existing issue with SQLAlchemy & desert which prevents
+#             # desert from understanding the SQLAlchemy Mapped[] types, and SQLAlchemy
+#             # does not allow for passing in metadata parameters to mapped_column()
+#             # fields to be able to let desert know explicitly what data type to use.
+#             # As such, this is a process to use the dunder attributes from the SQLAlchemy
+#             # dataclass models to then reconstruct a dataclass that mirrors what is needed
+#             # with the correct types in it, so then desert can actually know what to do.
+#             new_objtype = type(objtype.__name__, objtype.__bases__, objtype.__dataclass_fields__)
+#             for name, data in objtype.__annotations__.items():
+#                 item_type = data
+#                 with suppress(AttributeError):
+#                     if data.__origin__ is Mapped:
+#                         item_type = data.__args__[0]
+#                 new_objtype.__annotations__[name] = item_type
+#             new_dataclass = dataclass(
+#                 new_objtype,
+#                 init=objtype.__dataclass_params__.init,
+#                 repr=objtype.__dataclass_params__.repr,
+#                 eq=objtype.__dataclass_params__.eq,
+#                 order=objtype.__dataclass_params__.order,
+#                 unsafe_hash=objtype.__dataclass_params__.unsafe_hash,
+#                 frozen=objtype.__dataclass_params__.frozen,
+#             )
+#             _schema_registry[name] = schema(new_dataclass)
+#             return _schema_registry[name]
 
 
 class _DictVar:
@@ -110,7 +115,8 @@ class BaseData:
         attributes.
     """
 
-    Schema: Final[MMSchema] = _SchemaVar()
+    # Schema: Final[MMSchema] - _SchemaVar()
+    Schema: ClassVar[MMSchema]
     Dict: Final[TypeAlias] = _DictVar()  # type: ignore [valid-type]
 
     @classmethod

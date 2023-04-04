@@ -36,5 +36,4 @@ def test_get_procurement_shops_list(auth_client):
 def test_get_procurement_shops_list_by_id(auth_client):
     response = auth_client.get("/api/v1/procurement-shops/1")
     assert response.status_code == 200
-    print(response.data)
     assert response.json["id"] == 1

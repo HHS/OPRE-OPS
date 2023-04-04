@@ -31,6 +31,11 @@ class OPSMethodView(MethodView):
         stmt = select(self.model).where(self.model.id == id).order_by(self.model.id)
         return current_app.db_session.scalar(stmt)
 
+    def _get_all_items(self) -> list[BaseModel]:
+        stmt = select(self.model).order_by(self.model.id)
+        # row objects containing 1 model instance each, need to unpack.
+        return [row[0] for row in current_app.db_session.execute(stmt).all()]
+
     def _get_item_by_oidc_with_try(self, oidc: str):
         try:
             item = self._get_item_by_oidc(oidc)
@@ -61,6 +66,21 @@ class OPSMethodView(MethodView):
         response[0].headers.add("Access-Control-Allow-Origin", "*")
         return response
 
+    def _get_all_items_with_try(self):
+        try:
+            item_list = self._get_all_items()
+
+            if item_list:
+                response = jsonify([item.to_dict() for item in item_list]), 200
+            else:
+                response = jsonify({}), 404
+        except SQLAlchemyError as se:
+            current_app.logger.error(se)
+            response = jsonify({}), 500
+
+        response[0].headers.add("Access-Control-Allow-Origin", "*")
+        return response
+
 
 class BaseItemAPI(OPSMethodView):
     def __init__(self, model: BaseModel):
@@ -77,5 +97,4 @@ class BaseListAPI(OPSMethodView):
 
     @jwt_required()
     def get(self) -> Response:
-        items = self.model.query.all()
-        return jsonify([item.to_dict() for item in items])
+        return self._get_all_items_with_try()
