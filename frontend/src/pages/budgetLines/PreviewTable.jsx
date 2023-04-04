@@ -134,7 +134,7 @@ export const PreviewTable = ({ budgetLines }) => {
                     <th scope="col">Amount</th>
                     <th scope="col">Fee</th>
                     <th scope="col">Total</th>
-                    <th scope="col" style={{ width: "100px" }}>
+                    <th scope="col" style={{ width: "6.25rem" }}>
                         Status
                     </th>
                 </tr>
