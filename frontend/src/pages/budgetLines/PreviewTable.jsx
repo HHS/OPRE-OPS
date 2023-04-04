@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import { deleteBudgetLineAdded, editBudgetLineAdded } from "./createBudgetLineSlice";
+import "./PreviewTable.scss";
 
 export const PreviewTable = ({ budgetLines }) => {
     const dispatch = useDispatch();
@@ -134,7 +135,7 @@ export const PreviewTable = ({ budgetLines }) => {
                     <th scope="col">Amount</th>
                     <th scope="col">Fee</th>
                     <th scope="col">Total</th>
-                    <th scope="col" style={{ width: "6.25rem" }}>
+                    <th scope="col" className="padding-0" style={{ width: "6.25rem" }}>
                         Status
                     </th>
                 </tr>
