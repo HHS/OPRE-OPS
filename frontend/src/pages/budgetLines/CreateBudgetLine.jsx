@@ -27,7 +27,7 @@ import {
 } from "./createBudgetLineSlice";
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
 import { PreviewTable } from "./PreviewTable";
-import { getProcurementShopList } from "./getProcurementShopList";
+import { getProcurementShopList } from "../../api/getProcurementShopList";
 
 const StepOne = ({ goToNext }) => {
     const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
