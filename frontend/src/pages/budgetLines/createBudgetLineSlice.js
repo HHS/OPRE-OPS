@@ -39,8 +39,6 @@ const createBudgetLineSlice = createSlice({
             state.agreements = action.payload;
         },
         setProcurementShop: (state, action) => {
-            console.log(action.payload);
-            console.log("#############################################");
             state.procurement_shops = action.payload;
         },
         setCan: (state, action) => {
