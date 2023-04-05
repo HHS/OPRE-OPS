@@ -11,7 +11,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 6,
-      managing_research_project_id: null,
     },
     {
       id: 2,
@@ -24,7 +23,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 1,
-      managing_research_project_id: null,
     },
     {
       id: 3,
@@ -37,7 +35,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 8,
-      managing_research_project_id: null,
     },
     {
       id: 4,
@@ -50,7 +47,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 1,
-      managing_research_project_id: 1,
     },
     {
       id: 5,
@@ -63,7 +59,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 2,
-      managing_research_project_id: null,
     },
     {
       id: 6,
@@ -76,7 +71,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 1,
       managing_portfolio_id: 6,
-      managing_research_project_id: null,
     },
     {
       id: 7,
@@ -89,7 +83,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
-      managing_research_project_id: null,
     },
     {
       id: 8,
@@ -102,7 +95,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
-      managing_research_project_id: null,
     },
     {
       id: 9,
@@ -115,7 +107,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
-      managing_research_project_id: null,
     },
     {
       id: 10,
@@ -128,7 +119,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
-      managing_research_project_id: null,
     },
     {
       id: 11,
@@ -141,7 +131,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
-      managing_research_project_id: null,
     },
     {
       id: 12,
@@ -155,7 +144,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
-      managing_research_project_id: null,
     },
     {
       id: 13,
@@ -168,7 +156,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 3,
-      managing_research_project_id: 1,
     },
   ],
   can_funding_sources: [
