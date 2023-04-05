@@ -176,7 +176,7 @@ class BudgetLineItem(BaseModel):
     __tablename__ = "budget_line_item"
 
     id = Column(Integer, Identity(), primary_key=True)
-    line_description = Column(String)
+    line_description = Column(String, nullable=False)
     comments = Column(Text)
 
     agreement_id = Column(Integer, ForeignKey("agreement.id"))
