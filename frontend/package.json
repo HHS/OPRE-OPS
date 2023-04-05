@@ -4,9 +4,9 @@
   "license": "CC0-1.0",
   "private": true,
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "6.3.0",
-    "@fortawesome/free-regular-svg-icons": "6.3.0",
-    "@fortawesome/free-solid-svg-icons": "6.3.0",
+    "@fortawesome/fontawesome-svg-core": "6.4.0",
+    "@fortawesome/free-regular-svg-icons": "6.4.0",
+    "@fortawesome/free-solid-svg-icons": "6.4.0",
     "@fortawesome/react-fontawesome": "0.2.0",
     "@nivo/core": "^0.80.0",
     "@nivo/pie": "^0.80.0",
@@ -22,11 +22,11 @@
     "react-dom": "18.2.0",
     "react-markdown": "^8.0.5",
     "react-redux": "8.0.5",
-    "react-router-dom": "6.9.0",
+    "react-router-dom": "6.10.0",
     "react-scripts": "5.0.1",
     "react-select": "5.7.2",
     "sass": "1.57.1",
-    "sass-loader": "13.2.1"
+    "sass-loader": "13.2.2"
   },
   "devDependencies": {
     "@testing-library/react": "^14.0.0",
@@ -35,7 +35,7 @@
     "axe-core": "4.6.3",
     "cypress": "12.7.0",
     "cypress-axe": "1.2.0",
-    "cypress-localstorage-commands": "2.2.2",
+    "cypress-localstorage-commands": "2.2.3",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-cypress": "2.12.1",
     "eslint-plugin-import": "2.26.0",

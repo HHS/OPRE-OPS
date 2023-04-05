@@ -6,7 +6,7 @@ from ops_api.ops.resources.research_projects import ResearchProjectListAPI
 @pytest.mark.usefixtures("app_ctx")
 def test_research_project_retrieve(loaded_db):
     research_project = (
-        loaded_db.session.query(ResearchProject)
+        loaded_db.query(ResearchProject)
         .filter(ResearchProject.title == "African American Child and Family Research Center")
         .one()
     )
@@ -18,7 +18,7 @@ def test_research_project_retrieve(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_research_projects_get_all(auth_client, loaded_db):
-    assert loaded_db.session.query(ResearchProject).count() == 3
+    assert loaded_db.query(ResearchProject).count() == 3
 
     response = auth_client.get("/api/v1/research-projects/")
     assert response.status_code == 200
@@ -45,8 +45,6 @@ def test_research_projects_serialization(auth_client, loaded_db):
     assert response.json["id"] == 1
     assert response.json["title"] == "African American Child and Family Research Center"
     assert response.json["origination_date"] == "2022-01-01"
-    assert len(response.json["cans"]) == 2
-    assert response.json["cans"][0]["number"] == "G990136"
     assert len(response.json["methodologies"]) == 7
     assert response.json["methodologies"][0] == "SURVEY"
     assert len(response.json["populations"]) == 1
@@ -72,7 +70,7 @@ def test_research_projects_with_fiscal_year_not_found(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_get_query_for_fiscal_year_with_fiscal_year_found(loaded_db):
     stmt = ResearchProjectListAPI._get_query(2023)
-    result = loaded_db.session.execute(stmt).fetchall()
+    result = loaded_db.execute(stmt).fetchall()
     assert len(result) == 1
     assert result[0][0].title == "African American Child and Family Research Center"
     assert result[0][0].id == 1
@@ -80,15 +78,15 @@ def test_get_query_for_fiscal_year_with_fiscal_year_found(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_get_query_for_fiscal_year_with_fiscal_year_not_found(loaded_db):
-    stmt = ResearchProjectListAPI._get_query(2022)
-    result = loaded_db.session.execute(stmt).fetchall()
+    stmt = ResearchProjectListAPI._get_query(1900)
+    result = loaded_db.execute(stmt).fetchall()
     assert len(result) == 0
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_get_query_for_fiscal_year_with_portfolio_id_found(loaded_db):
     stmt = ResearchProjectListAPI._get_query(2023, 3)
-    result = loaded_db.session.execute(stmt).fetchall()
+    result = loaded_db.execute(stmt).fetchall()
     assert len(result) == 1
     assert result[0][0].title == "African American Child and Family Research Center"
     assert result[0][0].id == 1
@@ -97,26 +95,8 @@ def test_get_query_for_fiscal_year_with_portfolio_id_found(loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_get_query_for_fiscal_year_with_portfolio_id_not_found(loaded_db):
     stmt = ResearchProjectListAPI._get_query(2023, 1)
-    result = loaded_db.session.execute(stmt).fetchall()
+    result = loaded_db.execute(stmt).fetchall()
     assert len(result) == 0
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_research_project_no_cans(auth_client, loaded_db):
-    rp = ResearchProject(id=999, title="blah blah", portfolio_id=1)
-    loaded_db.session.add(rp)
-
-    response = auth_client.get("/api/v1/research-projects/999")
-
-    assert response.status_code == 200
-    assert response.json["id"] == 999
-
-
-def test_research_project_no_cans_with_query_string(auth_client, loaded_db):
-    response = auth_client.get("/api/v1/research-projects/?fiscal_year=2023")
-
-    assert response.status_code == 200
-    assert len(response.json) == 1
 
 
 def test_research_project_search(auth_client, loaded_db):

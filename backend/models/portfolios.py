@@ -88,7 +88,7 @@ class Portfolio(BaseModel):
                 "urls": [url.to_dict() for url in self.urls],
                 "division": self.division.to_dict() if self.division else None,
                 "cans": [can.to_dict() for can in self.cans],
-                "status": self.status.name,
+                "status": self.status.name if self.status else None,
                 "team_leaders": [
                     team_lead.to_dict() for team_lead in self.team_leaders
                 ],

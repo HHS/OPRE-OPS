@@ -1,8 +1,9 @@
-from typing import Any, Optional, TypedDict, cast
+from decimal import Decimal
+from typing import Any, Optional, TypedDict
 
+from flask import current_app
 from models.cans import CAN, BudgetLineItem, BudgetLineItemStatus, CANFiscalYear, CANFiscalYearCarryForward
 from models.portfolios import Portfolio
-from ops_api.ops import db
 from sqlalchemy import Select, select, sql
 from sqlalchemy.sql.functions import coalesce
 
@@ -25,7 +26,7 @@ class TotalFunding(TypedDict):
     available_funding: FundingLineItem
 
 
-def _get_total_fiscal_year_funding(portfolio_id: int, fiscal_year: int) -> float:
+def _get_total_fiscal_year_funding(portfolio_id: int, fiscal_year: int) -> Decimal:
     stmt = (
         select(coalesce(sql.functions.sum(CANFiscalYear.total_fiscal_year_funding), 0))
         .join(CAN)
@@ -33,10 +34,10 @@ def _get_total_fiscal_year_funding(portfolio_id: int, fiscal_year: int) -> float
         .where(CANFiscalYear.fiscal_year == fiscal_year)
     )
 
-    return cast(float, db.session.execute(stmt).scalar())
+    return current_app.db_session.scalar(stmt)
 
 
-def _get_carry_forward_total(portfolio_id: int, fiscal_year: int) -> float:
+def _get_carry_forward_total(portfolio_id: int, fiscal_year: int) -> Decimal:
     stmt = (
         select(coalesce(sql.functions.sum(CANFiscalYearCarryForward.total_amount), 0))
         .join(CAN)
@@ -44,17 +45,14 @@ def _get_carry_forward_total(portfolio_id: int, fiscal_year: int) -> float:
         .where(CANFiscalYearCarryForward.to_fiscal_year == fiscal_year)
     )
 
-    return cast(float, db.session.execute(stmt).scalar())
+    return current_app.db_session.scalar(stmt)
 
 
-def _get_budget_line_item_total_by_status(
-    portfolio_id: int,
-    status: BudgetLineItemStatus,
-) -> float:
+def _get_budget_line_item_total_by_status(portfolio_id: int, status: BudgetLineItemStatus) -> Decimal:
     stmt = _get_budget_line_item_total(portfolio_id)
     stmt = stmt.where(BudgetLineItem.status == status)
 
-    return cast(float, db.session.execute(stmt).scalar())
+    return current_app.db_session.scalar(stmt)
 
 
 def _get_budget_line_item_total(portfolio_id: int) -> Select[Any]:

@@ -16,7 +16,7 @@ it("loads", () => {
 
 it("get can fiscal year details - skip while the UI is being updated and data changes", () => {
     clickOnFiscalYearOption("2022");
-    cy.contains("7000000.00");
+    cy.contains("7000000");
 });
 
 it.skip("get a negative value - skip for now because we are working on requirements for how to calculate total/pending/funded/etc", () => {

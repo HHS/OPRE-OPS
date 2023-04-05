@@ -1,14 +1,13 @@
 """FY carry forward tests."""
 import pytest
-from flask_sqlalchemy import SQLAlchemy
 from models.cans import CANFiscalYearCarryForward
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_can_fiscal_year_carry_forward_lookup(loaded_db: SQLAlchemy) -> None:
+def test_can_fiscal_year_carry_forward_lookup(loaded_db) -> None:
     """Test that FY carry forward lookups work."""
     cfyco = (
-        loaded_db.session.query(CANFiscalYearCarryForward)
+        loaded_db.query(CANFiscalYearCarryForward)
         .filter(
             CANFiscalYearCarryForward.can_id == 11,
             CANFiscalYearCarryForward.from_fiscal_year == 2022,
