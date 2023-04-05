@@ -1,10 +1,9 @@
 import { useDispatch, useSelector } from "react-redux";
 import { setSelectedProcurementShop } from "./createBudgetLineSlice";
-import { PROCUREMENT_SHOPS } from "./data";
 
 export const ProcurementShopSelect = ({ budgetLinesLength = 0 }) => {
     const dispatch = useDispatch();
-    const procurementShops = useSelector(() => PROCUREMENT_SHOPS);
+    const procurementShops = useSelector((state) => state.createBudgetLine.procurement_shops);
     const selectedProcurementShop = useSelector((state) => state.createBudgetLine.selected_procurement_shop);
 
     const onChangeProcurementShopSelection = (procurementShopId = 0) => {

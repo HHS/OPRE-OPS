@@ -22,10 +22,12 @@ import {
     setEnteredYear,
     setEnteredDay,
     setEnteredComments,
+    setProcurementShop,
     setSelectedProcurementShop,
 } from "./createBudgetLineSlice";
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
 import { PreviewTable } from "./PreviewTable";
+import { getProcurementShopList } from "../../api/getProcurementShopList";
 
 const StepOne = ({ goToNext }) => {
     const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
@@ -329,6 +331,14 @@ export const CreateBudgetLine = () => {
             dispatch(setAgreements([]));
         };
     }, [dispatch, selectedProject]);
+
+    useEffect(() => {
+        const getProcurementShopsAndSetState = async () => {
+            const results = await getProcurementShopList();
+            dispatch(setProcurementShop(results));
+        };
+        getProcurementShopsAndSetState().catch(console.error);
+    }, [dispatch]);
 
     return (
         <App>
