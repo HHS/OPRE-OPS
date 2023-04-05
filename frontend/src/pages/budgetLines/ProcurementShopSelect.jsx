@@ -2,13 +2,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { setSelectedProcurementShop } from "./createBudgetLineSlice";
 import { PROCUREMENT_SHOPS } from "./data";
 
-export const ProcurementShopSelect = () => {
+export const ProcurementShopSelect = ({ budgetLinesLength = 0 }) => {
     const dispatch = useDispatch();
     const procurementShops = useSelector(() => PROCUREMENT_SHOPS);
     const selectedProcurementShop = useSelector((state) => state.createBudgetLine.selected_procurement_shop);
 
-    const onChangeProcurementShopSelection = (procurementShopId = "0") => {
-        if (procurementShopId === "0") {
+    const onChangeProcurementShopSelection = (procurementShopId = 0) => {
+        if (procurementShopId === 0) {
             dispatch(setSelectedProcurementShop({}));
             return;
         }
@@ -22,7 +22,7 @@ export const ProcurementShopSelect = () => {
         );
     };
     return (
-        <>
+        <fieldset className="usa-fieldset" disabled={budgetLinesLength !== 0}>
             <label className="usa-label" htmlFor="options">
                 Procurement Shop
             </label>
@@ -31,10 +31,11 @@ export const ProcurementShopSelect = () => {
                     className="usa-select margin-top-0 width-card-lg"
                     name="options"
                     id="options"
-                    onChange={(e) => onChangeProcurementShopSelection(e.target.value || "0")}
+                    onChange={(e) => onChangeProcurementShopSelection(Number(e.target.value) || 0)}
                     value={selectedProcurementShop?.id}
+                    required
                 >
-                    <option value="0">- Select -</option>
+                    <option value={0}>- Select -</option>
                     {procurementShops.map((shop) => (
                         <option key={shop?.id} value={shop?.id}>
                             {shop?.name}
@@ -47,6 +48,6 @@ export const ProcurementShopSelect = () => {
                     </span>
                 )}
             </div>
-        </>
+        </fieldset>
     );
 };

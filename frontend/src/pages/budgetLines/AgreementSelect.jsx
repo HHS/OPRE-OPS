@@ -52,18 +52,17 @@ export const AgreementSelect = () => {
         <div className="display-flex flex-justify padding-top-105">
             <div className="left-half width-full">
                 {/* NOTE: Left side */}
-                <label className="usa-label" htmlFor="agreement">
+                <label className="usa-label" htmlFor="agreement" id="agreement-label">
                     Agreements
                 </label>
                 <div className="usa-combo-box" data-enhanced="true">
                     <select
                         className="usa-select usa-sr-only usa-combo-box__select"
                         name="agreement"
-                        id=""
                         aria-hidden="true"
                         tabIndex="-1"
                         defaultValue={selectedAgreement?.name}
-                        onChange={(e) => onChangeAgreementSelection(e.target.value || 0)}
+                        onChange={(e) => onChangeAgreementSelection(Number(e.target.value) || 0)}
                     >
                         {agreements.map((agreement) => {
                             return (
@@ -121,7 +120,7 @@ export const AgreementSelect = () => {
                             return (
                                 <li
                                     key={agreement?.id}
-                                    aria-setsize={agreement?.length}
+                                    aria-setsize={agreements?.length}
                                     aria-posinset={index + 1}
                                     aria-selected="false"
                                     id={`dynamic-select--list--option-${index}`}

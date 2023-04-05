@@ -43,18 +43,17 @@ export const ProjectSelect = () => {
         <div className="display-flex flex-justify padding-top-105">
             {/* NOTE: Left side */}
             <div className="left-half width-full">
-                <label className="usa-label margin-top-0" htmlFor="project">
+                <label className="usa-label margin-top-0" htmlFor="project" id="project-label">
                     Project
                 </label>
                 <div className="usa-combo-box" data-enhanced="true">
                     <select
                         className="usa-select usa-sr-only usa-combo-box__select"
                         name="project"
-                        id=""
                         aria-hidden="true"
                         tabIndex="-1"
                         defaultValue={selectedResearchProject?.title}
-                        onChange={(e) => onChangeResearchProjectSelection(e.target.value || 0)}
+                        onChange={(e) => onChangeResearchProjectSelection(Number(e.target.value) || 0)}
                     >
                         {researchProjects.map((project) => {
                             return (
@@ -112,7 +111,7 @@ export const ProjectSelect = () => {
                             return (
                                 <li
                                     key={project?.id}
-                                    aria-setsize={project?.length}
+                                    aria-setsize={researchProjects?.length}
                                     aria-posinset={index + 1}
                                     aria-selected="false"
                                     id={`dynamic-select--list--option-${index}`}

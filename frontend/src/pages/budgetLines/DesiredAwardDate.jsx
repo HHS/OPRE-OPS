@@ -9,7 +9,7 @@ export const DesiredAwardDate = () => {
 
     return (
         <div className="usa-form-group">
-            <fieldset className="usa-fieldset">
+            <fieldset className="usa-fieldset" required>
                 <legend className="usa-legend">Need By Date</legend>
                 <div className="display-flex">
                     <div className="usa-form-group usa-form-group--month margin-top-0">

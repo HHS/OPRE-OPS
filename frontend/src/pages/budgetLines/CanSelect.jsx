@@ -25,18 +25,18 @@ export const CanSelect = () => {
 
     return (
         <>
-            <label className="usa-label" htmlFor="can">
+            <label className="usa-label" htmlFor="can-select" id="can-select-label">
                 CAN
             </label>
             <div className="usa-combo-box" data-enhanced="true">
                 <select
                     className="usa-select usa-sr-only usa-combo-box__select"
-                    name="can"
-                    id="can"
+                    name="can-select"
                     aria-hidden="true"
                     tabIndex="-1"
                     defaultValue={selectedCan?.number}
                     onChange={(e) => onChangeCanSelection(Number(e.target.value) || 0)}
+                    required
                 >
                     <option value="">Select a CAN</option>
                     {canList.map((can) => (
@@ -46,7 +46,7 @@ export const CanSelect = () => {
                     ))}
                 </select>
                 <input
-                    id="can"
+                    id="can-select"
                     aria-owns="can--list"
                     aria-controls="can--list"
                     aria-autocomplete="list"
@@ -58,7 +58,7 @@ export const CanSelect = () => {
                     type="text"
                     role="combobox"
                     aria-activedescendant=""
-                    value={selectedCan?.number || ""}
+                    defaultValue={selectedCan?.number || ""}
                 />
                 <span className="usa-combo-box__clear-input__wrapper" tabIndex="-1">
                     <button
@@ -86,14 +86,14 @@ export const CanSelect = () => {
                     id="can--list"
                     className="usa-combo-box__list"
                     role="listbox"
-                    aria-labelledby="agreement-label"
+                    aria-labelledby="can-select-label"
                     hidden
                 >
                     {canList?.map((can, index) => {
                         return (
                             <li
                                 key={can?.id}
-                                aria-setsize={can?.length}
+                                aria-setsize={canList?.length}
                                 aria-posinset={index + 1}
                                 aria-selected="false"
                                 id={`dynamic-select--list--option-${index}`}
