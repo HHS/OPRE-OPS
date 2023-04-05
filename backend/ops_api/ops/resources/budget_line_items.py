@@ -66,28 +66,30 @@ class BudgetLineItemsListAPI(BaseListAPI):
         errors = self._post_input_schema.validate(request.json)
 
         if errors:
+            current_app.logger.error(f"POST to /budget-line-items: Params failed validation: {errors}")
             response = make_response(errors, 400)
             response.headers.add("Access-Control-Allow-Origin", "*")
             return response
 
-        data: PostBudgetLineItemRequest = self._post_input_schema.load(request.json)
-
         try:
+            data = self._post_input_schema.load(request.json)
             data.status = BudgetLineItemStatus[data.status]  # convert str param to enum
             new_bli = BudgetLineItem(**data.__dict__)
             current_app.db_session.add(new_bli)
             current_app.db_session.commit()
 
-            response = jsonify(new_bli.to_dict())
+            new_bli_dict = new_bli.to_dict()
+            current_app.logger.info(f"POST to /budget-line-items: New BLI created: {new_bli_dict}")
+            response = jsonify(new_bli_dict)
             response.headers.add("Access-Control-Allow-Origin", "*")
             return response
         except KeyError as ve:
-            current_app.logger.error(ve)
+            current_app.logger.error(f"POST to /budget-line-items: {ve}")
             response = make_response({}, 400)
             response.headers.add("Access-Control-Allow-Origin", "*")
             return response
         except SQLAlchemyError as se:
-            current_app.logger.error(se)
+            current_app.logger.error(f"POST to /budget-line-items: {se}")
             response = make_response({}, 500)
             response.headers.add("Access-Control-Allow-Origin", "*")
             return response
