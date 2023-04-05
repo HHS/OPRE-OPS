@@ -333,7 +333,11 @@ export const CreateBudgetLine = () => {
     }, [dispatch, selectedProject]);
 
     useEffect(() => {
-        dispatch(getProcurementShopList());
+        const getProcurementShopsAndSetState = async () => {
+            const results = await getProcurementShopList();
+            dispatch(setProcurementShop(results));
+        };
+        getProcurementShopsAndSetState().catch(console.error);
     }, [dispatch]);
 
     return (
