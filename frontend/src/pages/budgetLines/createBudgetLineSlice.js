@@ -69,7 +69,8 @@ const createBudgetLineSlice = createSlice({
             const index = state.budget_lines_added.findIndex((budget_line) => budget_line.id === action.payload.id);
 
             if (index !== -1) {
-                const { line_description, comments, can_id, amount, date_needed } = state.budget_lines_added[index];
+                const { line_description, comments, can_id, can_number, amount, date_needed } =
+                    state.budget_lines_added[index];
                 const [entered_year, entered_month, entered_day] = date_needed.split("-");
 
                 return {
@@ -77,7 +78,10 @@ const createBudgetLineSlice = createSlice({
                     is_editing_budget_line: true,
                     entered_description: line_description,
                     entered_comments: comments,
-                    selected_can: can_id,
+                    selected_can: {
+                        id: can_id,
+                        number: can_number,
+                    },
                     entered_amount: amount,
                     entered_month,
                     entered_day,
@@ -107,11 +111,7 @@ const createBudgetLineSlice = createSlice({
                     alert("Budget Line Updated");
                     return {
                         ...budgetLine,
-                        line_description: action.payload.line_description,
-                        comments: action.payload.comments,
-                        can_id: action.payload.can_id,
-                        amount: action.payload.amount,
-                        date_needed: action.payload.date_needed,
+                        ...action.payload,
                     };
                 }
                 return budgetLine;
