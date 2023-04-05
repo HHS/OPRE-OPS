@@ -1,20 +1,40 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
 from typing import Optional, cast
 
-from flask import Response, jsonify, request
+import desert
+from flask import Response, current_app, jsonify, make_response, request
+from flask_jwt_extended import jwt_required
+from models import BudgetLineItemStatus
 from models.base import BaseModel
 from models.cans import BudgetLineItem
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import override
 
 
-class BudgetLineItemsItemAPI(BaseItemAPI):  # type: ignore [misc]
+@dataclass
+class PostBudgetLineItemRequest:
+    line_description: str
+    agreement_id: int
+    can_id: int
+    amount: float
+    status: str
+    date_needed: str
+    comments: Optional[str] = None
+    psc_fee_amount: Optional[float] = None
+
+
+class BudgetLineItemsItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
 
-class BudgetLineItemsListAPI(BaseListAPI):  # type: ignore [misc]
+class BudgetLineItemsListAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
+        self._post_input_schema = desert.schema(PostBudgetLineItemRequest)
 
     def _get_items(
         self,
@@ -32,9 +52,42 @@ class BudgetLineItemsListAPI(BaseListAPI):  # type: ignore [misc]
         return cast(list[BudgetLineItem], budget_line_items_query.all())
 
     @override
+    @jwt_required()
     def get(self) -> Response:
         can_id = request.args.get("can_id")
         budget_line_items = self._get_items(can_id)
         response = jsonify([bli.to_dict() for bli in budget_line_items])
         response.headers.add("Access-Control-Allow-Origin", "*")
         return cast(Response, response)
+
+    @override
+    @jwt_required()
+    def post(self) -> Response:
+        errors = self._post_input_schema.validate(request.json)
+
+        if errors:
+            response = make_response(errors, 400)
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        data: PostBudgetLineItemRequest = self._post_input_schema.load(request.json)
+
+        try:
+            data.status = BudgetLineItemStatus[data.status]  # convert str param to enum
+            new_bli = BudgetLineItem(**data.__dict__)
+            current_app.db_session.add(new_bli)
+            current_app.db_session.commit()
+
+            response = jsonify(new_bli.to_dict())
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+        except KeyError as ve:
+            current_app.logger.error(ve)
+            response = make_response({}, 400)
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+        except SQLAlchemyError as se:
+            current_app.logger.error(se)
+            response = make_response({}, 500)
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
