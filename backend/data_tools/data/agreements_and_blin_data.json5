@@ -1,40 +1,149 @@
 {
+  "product_service_code": [
+    {
+      id: 1,
+      name: "Service-Code-1",
+      description: ""
+    },
+    {
+      id: 2,
+      name: "Service-Code-2",
+      description: ""
+    },
+    {
+      id: 3,
+      name: "Service-Code-3",
+      description: ""
+    },
+  ],
   "agreement": [
     {
       id: 1,
       name: "Contract #1: African American Child and Family Research Center",
+      description: "",
+      product_service_code: 1,
+      agreement_reason: "NEW_REQ",
+      incumbent: "",
+      project_officer: 1,
+      team_members: [],
+      type: "contract",
       agreement_type:  "CONTRACT",
       research_project_id: 1
     },
     {
       id: 2,
       name: "Contract #2: African American Child and Family Research Center",
+      description: "",
+      product_service_code: 1,
+      agreement_reason: "NEW_REQ",
+      incumbent: "",
+      project_officer: 1,
+      team_members: [],
+      type: "contract",
       agreement_type: "CONTRACT",
       research_project_id: 1
     },
     {
       id: 3,
       name: "Grant #1: Early Care and Education Leadership Study (ExCELS)",
+      description: "",
+      product_service_code: 1,
+      agreement_reason: "NEW_REQ",
+      incumbent: "",
+      project_officer: 1,
+      team_members: [],
+      type: "contract",
       agreement_type: "GRANT",
       research_project_id: 2
     },
     {
       id: 4,
       name: "Grant #2: Early Care and Education Leadership Study (ExCELS)",
+      description: "",
+      product_service_code: 1,
+      agreement_reason: "NEW_REQ",
+      incumbent: "",
+      project_officer: 1,
+      team_members: [],
+      type: "contract",
       agreement_type: "GRANT",
       research_project_id: 2
     },
     {
       id: 5,
       name: "DIRECT_ALLOCATION #1: Fathers and Continuous Learning (FCL)",
+      description: "",
+      product_service_code: 1,
+      agreement_reason: "NEW_REQ",
+      incumbent: "",
+      project_officer: 1,
+      team_members: [],
+      type: "contract",
       agreement_type: "DIRECT_ALLOCATION",
       research_project_id: 3
     },
     {
       id: 6,
       name: "DIRECT_ALLOCATION #2: Fathers and Continuous Learning (FCL)",
+      description: "",
+      product_service_code: 1,
+      agreement_reason: "NEW_REQ",
+      incumbent: "",
+      project_officer: 1,
+      team_members: [],
+      type: "contract",
       agreement_type: "DIRECT_ALLOCATION",
       research_project_id: 3
+    }
+  ],
+  "contract": [
+    {
+      id: 1,
+      contract_number: "CT00XX1",
+      vendor: "Vendor 1",
+      delivered_status: false,
+      contract_type: "RESEARCH",
+      support_contacts: []
+    },
+    {
+      id: 2,
+      contract_number: "CT00XX2",
+      vendor: "Vendor 1",
+      delivered_status: false,
+      contract_type: "RESEARCH",
+      support_contacts: []
+    },
+    {
+      id: 3,
+      contract_number: "CT00XX3",
+      vendor: "Vendor 1",
+      delivered_status: false,
+      contract_type: "RESEARCH",
+      support_contacts: []
+    },
+    {
+      id: 4,
+      contract_number: "CT00XX4",
+      vendor: "Vendor 1",
+      delivered_status: false,
+      contract_type: "RESEARCH",
+      support_contacts: []
+    },
+    {
+      id: 5,
+      contract_number: "CT00XX5",
+      vendor: "Vendor 1",
+      delivered_status: false,
+      contract_type: "RESEARCH",
+      support_contacts: []
+    },
+    {
+      id: 6,
+      contract_number: "CT00XX6",
+      vendor: "Vendor 1",
+      delivered_status: false,
+      contract_type: "RESEARCH",
+      support_contacts: []
     }
   ],
   "budget_line_item": [
