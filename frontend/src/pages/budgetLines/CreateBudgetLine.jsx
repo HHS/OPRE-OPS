@@ -270,7 +270,9 @@ const StepTwo = ({ goBack, goToNext }) => {
                             return;
                         }
 
-                        const confirm = window.confirm("Are you sure you want to go back? All changes will be lost.");
+                        const confirm = window.confirm(
+                            "Are you sure you want to go back? Your budget lines will not be saved."
+                        );
                         if (confirm) {
                             // clear all budget line data and state
                             dispatch(setBudgetLineAdded([]));
