@@ -3,11 +3,12 @@ from enum import Enum
 from typing import Any
 
 import sqlalchemy as sa
-from models.base import BaseModel
+from models.base import BaseData, BaseModel, currency, intpk, optional_str, reg, required_str
 from models.portfolios import Portfolio, shared_portfolio_cans
 from models.research_projects import ResearchProject
+from models.users import User
 from sqlalchemy import Column, Date, DateTime, ForeignKey, Identity, Integer, Numeric, String, Table, Text
-from sqlalchemy.orm import column_property, relationship
+from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 from typing_extensions import override
 
 
@@ -78,29 +79,90 @@ class AgreementType(Enum):
     MISCELLANEOUS = 5
 
 
-class Agreement(BaseModel):
+# class Agreement(BaseModel):
+#     __tablename__ = "agreement"
+
+#     id = Column(Integer, primary_key=True)
+#     name = Column(String, nullable=False)
+#     agreement_type = Column(sa.Enum(AgreementType))
+#     research_project_id = Column(Integer, ForeignKey("research_project.id"))
+#     research_project = relationship(ResearchProject, back_populates="agreements")
+#     budget_line_items = relationship("BudgetLineItem", back_populates="agreement")
+
+#     @override
+#     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
+#         d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
+
+#         d.update(
+#             {
+#                 "agreement_type": self.agreement_type.name
+#                 if self.agreement_type
+#                 else None
+#             }
+#         )
+
+#         return d
+
+class AgreementReason(Enum):
+    NEW_REQ = 1
+    RECOMPETE = 2  ## recompete is brand new contract related to same work
+    LOGICAL_FOLLOW_ON = 3  ## Logical Follow On is more work added/extension of the original
+
+
+@reg.mapped_as_dataclass
+class ProductServiceCode(BaseData):
+    """Product Service Code"""
+    __tablename__ = "product_service_code"
+
+    id: Mapped[intpk]
+    name: Mapped[required_str]
+    description: Mapped[str]
+
+
+@reg.mapped_as_dataclass
+class Agreement(BaseData):
+    """Generic Agreement Model"""
     __tablename__ = "agreement"
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
-    agreement_type = Column(sa.Enum(AgreementType))
-    research_project_id = Column(Integer, ForeignKey("research_project.id"))
-    research_project = relationship(ResearchProject, back_populates="agreements")
-    budget_line_items = relationship("BudgetLineItem", back_populates="agreement")
+    id: Mapped[intpk]
+    name: Mapped[optional_str]
+    description: Mapped[optional_str]
+    product_service_code: Mapped[ProductServiceCode] = relationship("ProductServiceCode", back_populates="agreement")
+    agreement_reason: Mapped[AgreementReason]
+    incumbent: Mapped[optional_str]
+    project_officer: Mapped[User] = relationship("User", back_populates="agreement")
+    team_members: Mapped[list[User]] = relationship("User", back_populates="agreement")
+    agreement_type: Mapped[AgreementType]
+    research_project: Mapped[ResearchProject] = relationship("ResearchProject", back_populates="agreement")
+    budget_line_items: Mapped[list["BudgetLineItem"]] = relationship("BudgetLineItem", back_populates="agreement")
+    type: Mapped[str]
 
-    @override
-    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
-        d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
+    __mapper_args__ = {
+        "polymorphic_identity": "agreement",
+        "polymorphic_on": "type",
+    }
 
-        d.update(
-            {
-                "agreement_type": self.agreement_type.name
-                if self.agreement_type
-                else None
-            }
-        )
 
-        return d
+class ContractType(Enum):
+    RESEARCH = 0
+    SERVICE = 1
+
+
+@reg.mapped_as_dataclass
+class ContractAgreement(Agreement):
+    """Contract Agreement Model"""
+    __tablename__ = "contract"
+
+    id: Mapped[intpk] = mapped_column(ForeignKey("agreement.id"))
+    contract_number: Mapped[str]
+    vendor: Mapped[str]
+    delivered_status: Mapped[bool]
+    contract_type: Mapped[ContractType]
+    support_contacts: Mapped[list[User]] = relationship("User", back_populates="contract")
+
+    __mapper_args__ = {
+        "polymorphic_identity": "contract",
+    }
 
 
 class CANFiscalYear(BaseModel):
