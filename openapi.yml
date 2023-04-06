@@ -733,6 +733,7 @@ components:
         agreement_type:
           type: string
         cans: { }
+        budget_lines: {}
 
     CAN:
       description: Common Accounting Number (CAN) Object
@@ -927,31 +928,36 @@ components:
           'id': 1,
           'name': 'Agreement One',
           agreement_type: 'CONTRACT',
-          cans: []
+          cans: [],
+          budget_lines: []
         },
         {
           'id': 2,
           'name': 'Agreement Two',
           agreement_type: 'GRANT',
-          cans: []
+          cans: [],
+          budget_lines: []
         },
         {
           'id': 3,
           'name': 'Agreement Three',
           agreement_type: 'DIRECT_ALLOCATION',
-          cans: []
+          cans: [],
+          budget_lines: []
         },
         {
           'id': 4,
           'name': 'Agreement Four',
           agreement_type: 'IAA',
-          cans: []
+          cans: [],
+          budget_lines: []
         },
         {
           'id': 5,
           'name': 'Agreement Five',
           agreement_type: 'MISCELLANEOUS',
-          cans: []
+          cans: [],
+          budget_lines: []
         }
 
         ]
@@ -1163,7 +1169,40 @@ components:
           "id": 2,
           "name": "Contract #2: African American Child and Family Research Center",
           "research_project_id": 1,
-          "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT"
+          "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+           cans: [],
+           budget_lines: [
+            {
+                line_description: "LI 1",
+                comments: "",
+                can_id: 5,
+                agreement_id: 1,
+                amount: 1000000.0,
+                status: "EXECUTING",
+                date_needed: "2111-1-11",
+                psc_fee_amount: 0.5,
+            },
+            {
+                line_description: "LI 2",
+                comments: "",
+                can_id: 5,
+                agreement_id: 1,
+                amount: 1000000.0,
+                status: "OBLIGATED",
+                date_needed: "2222-2-22",
+                psc_fee_amount: 0.5,
+            },
+            {
+                line_description: "LI 3",
+                comments: "",
+                can_id: 5,
+                agreement_id: 1,
+                amount: 1000000.0,
+                status: "PLANNED",
+                date_needed: "2333-3-13",
+                psc_fee_amount: 0.5,
+            },
+        ],
         }]
 
     Agreement:
@@ -1175,7 +1214,40 @@ components:
           "id": 2,
           "name": "Contract #2: African American Child and Family Research Center",
           "research_project_id": 1,
-          "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT"
+          "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+          cans: [],
+          budget_lines: [
+            {
+                line_description: "LI 1",
+                comments: "",
+                can_id: 5,
+                agreement_id: 2,
+                amount: 1000000.0,
+                status: "EXECUTING",
+                date_needed: "2111-1-11",
+                psc_fee_amount: 0.5,
+            },
+            {
+                line_description: "LI 2",
+                comments: "",
+                can_id: 5,
+                agreement_id: 2,
+                amount: 1000000.0,
+                status: "OBLIGATED",
+                date_needed: "2222-2-22",
+                psc_fee_amount: 0.5,
+            },
+            {
+                line_description: "LI 3",
+                comments: "",
+                can_id: 5,
+                agreement_id: 2,
+                amount: 1000000.0,
+                status: "PLANNED",
+                date_needed: "2333-3-13",
+                psc_fee_amount: 0.5,
+            },
+        ],
         }
 
 
