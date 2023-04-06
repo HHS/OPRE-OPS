@@ -78,7 +78,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
                 data = self._post_input_schema.load(request.json)
                 data.status = BudgetLineItemStatus[data.status]  # convert str param to enum
                 # convert str param to date
-                data.date_needed = datetime.strptime(data.date_needed, "%m-%d-%Y").date()
+                data.date_needed = datetime.fromisoformat(data.date_needed)
                 new_bli = BudgetLineItem(**data.__dict__)
                 current_app.db_session.add(new_bli)
                 current_app.db_session.commit()
@@ -86,7 +86,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
                 new_bli_dict = new_bli.to_dict()
                 meta.metadata.update({"new_bli": new_bli_dict})
                 current_app.logger.info(f"POST to /budget-line-items: New BLI created: {new_bli_dict}")
-                response = jsonify(new_bli_dict)
+                response = make_response(new_bli_dict, 201)
                 response.headers.add("Access-Control-Allow-Origin", "*")
                 return response
         except KeyError as ve:

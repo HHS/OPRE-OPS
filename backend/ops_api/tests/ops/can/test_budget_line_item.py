@@ -71,11 +71,11 @@ def test_post_budget_line_items(auth_client):
         can_id=1,
         amount=100.12,
         status="DRAFT",
-        date_needed="01-01-2023",
+        date_needed="2023-01-01",
         psc_fee_amount=1.23,
     )
     response = auth_client.post("/api/v1/budget-line-items/", json=data.__dict__)
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.json["line_description"] == "LI 1"
     assert response.json["amount"] == 100.12
     assert response.json["status"] == "DRAFT"
@@ -91,7 +91,7 @@ def test_post_budget_line_items_bad_status(auth_client):
         can_id=1,
         amount=100.12,
         status="blah blah",
-        date_needed="01-01-2023",
+        date_needed="2023-01-01",
         psc_fee_amount=1.23,
     )
     response = auth_client.post("/api/v1/budget-line-items/", json=data.__dict__)
@@ -108,7 +108,7 @@ def test_post_budget_line_items_missing_agreement(auth_client):
         "can_id": 1,
         "amount": 100.12,
         "status": "DRAFT",
-        "date_needed": "01-01-2023",
+        "date_needed": "2023-01-01",
         "psc_fee_amount": 1.23,
     }
     response = auth_client.post("/api/v1/budget-line-items/", json=data)
@@ -124,11 +124,11 @@ def test_post_budget_line_items_missing_optional_comments(auth_client):
         can_id=1,
         amount=100.12,
         status="DRAFT",
-        date_needed="01-01-2023",
+        date_needed="2023-01-01",
         psc_fee_amount=1.23,
     )
     response = auth_client.post("/api/v1/budget-line-items/", json=data.__dict__)
-    assert response.status_code == 200
+    assert response.status_code == 201
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -141,7 +141,7 @@ def test_post_budget_line_items_invalid_can(auth_client):
         can_id=10000000,
         amount=100.12,
         status="DRAFT",
-        date_needed="01-01-2023",
+        date_needed="2023-01-01",
         psc_fee_amount=1.23,
     )
     response = auth_client.post("/api/v1/budget-line-items/", json=data.__dict__)
@@ -158,7 +158,7 @@ def test_post_budget_line_items_auth_required(client):
         can_id=1,
         amount=100.12,
         status="DRAFT",
-        date_needed="01-01-2023",
+        date_needed="2023-01-01",
         psc_fee_amount=1.23,
     )
     response = client.post("/api/v1/budget-line-items/", json=data.__dict__)
