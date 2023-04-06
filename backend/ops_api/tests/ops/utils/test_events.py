@@ -23,11 +23,14 @@ def test_ops_event_handler_enter(mocker):
 @pytest.mark.usefixtures("app_ctx")
 def test_ops_event_handler_exit_fail(loaded_db, mocker):
     mocker.patch("ops_api.ops.utils.events.request")
-    m1 = mocker.patch("ops_api.ops.utils.events.current_app")
+    mock_cm = mocker.patch("ops_api.ops.utils.events.Session")
+    mock_session = mocker.MagicMock()
+    mock_cm.return_value.__enter__.return_value = mock_session
+
     oeh = OpsEventHandler(OpsEventType.LOGIN_ATTEMPT)
     oeh.__exit__(Exception, Exception("blah blah"), traceback)
 
-    event = m1.db_session.add.call_args[0][0]
+    event = mock_session.add.call_args[0][0]
     assert event.event_status == OpsEventStatus.FAILED
     assert event.event_details["error_message"] == "blah blah"
     assert event.event_details["error_type"] == "<class 'Exception'>"
@@ -35,10 +38,14 @@ def test_ops_event_handler_exit_fail(loaded_db, mocker):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_ops_event_handler_exit_success(loaded_db, mocker):
+    # setup mocks
     mocker.patch("ops_api.ops.utils.events.request")
-    m1 = mocker.patch("ops_api.ops.utils.events.current_app")
+    mock_cm = mocker.patch("ops_api.ops.utils.events.Session")
+    mock_session = mocker.MagicMock()
+    mock_cm.return_value.__enter__.return_value = mock_session
+
     oeh = OpsEventHandler(OpsEventType.LOGIN_ATTEMPT)
     oeh.__exit__(None, None, None)
 
-    event = m1.db_session.add.call_args[0][0]
+    event = mock_session.add.call_args[0][0]
     assert event.event_status == OpsEventStatus.SUCCESS

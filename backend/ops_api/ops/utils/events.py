@@ -3,6 +3,7 @@ from typing import Optional, Type
 
 from flask import current_app, request
 from models.events import OpsEvent, OpsEventStatus, OpsEventType
+from sqlalchemy.orm import Session
 
 
 class OpsEventHandler:
@@ -29,7 +30,7 @@ class OpsEventHandler:
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ) -> None:
-        if exc_val:
+        if exc_val or not current_app.db_session.is_active:
             event_status = OpsEventStatus.FAILED
             self.metadata.update({"error_message": f"{exc_val}", "error_type": f"{exc_type}"})
         else:
@@ -40,9 +41,14 @@ class OpsEventHandler:
             event_status=event_status,
             event_details=self.metadata,
         )
-        current_app.db_session.add(event)
-        current_app.db_session.commit()
-        current_app.logger.info(f"EVENT: {event.to_dict()}")
+
+        with Session(current_app.engine) as session:
+            session.add(event)
+            session.commit()
+            current_app.logger.info(f"EVENT: {event.to_dict()}")
 
         if isinstance(exc_val, Exception):
             current_app.logger.error(f"EVENT ({exc_type}): {exc_val}")
+
+        if not current_app.db_session.is_active:
+            current_app.logger.error("Session is not active. It has likely been rolled back.")
