@@ -40,6 +40,7 @@ ALLOWED_TABLES = [
     "can_fiscal_year",
     "can_funding_sources",
     "agreement",
+    "contract",
     "budget_line_item",
     "budget_line_item_status",
     "can_fiscal_year_carry_forward",
