@@ -202,6 +202,7 @@ class BudgetLineItem(BaseModel):
             status=self.status.name if self.status else None,
             amount=float(self.amount) if self.amount else None,
             psc_fee_amount=float(self.psc_fee_amount) if self.psc_fee_amount else None,
+            date_needed=self.date_needed.isoformat() if self.date_needed else None,
         )
 
         return d
