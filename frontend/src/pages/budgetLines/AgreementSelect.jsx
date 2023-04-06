@@ -7,10 +7,8 @@ export const AgreementSelect = () => {
     const agreements = useSelector(() => AGREEMENTS);
     const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
     const onChangeAgreementSelection = (agreementId = 0) => {
-        // budget lines per agreement selected
         const selectedAgreement = agreements.find((agreement) => agreement.id === agreementId);
-        // console.log("agreement selected is: ", JSON.stringify(selectedAgreement, null, 2));
-        console.log(JSON.stringify(selectedAgreement?.budget_lines, null, 2));
+
         if (agreementId === 0) {
             return;
         }
@@ -21,6 +19,8 @@ export const AgreementSelect = () => {
                 periodOfPerformance: `${selectedAgreement?.period_of_performance_start} - ${selectedAgreement?.period_of_performance_end}`,
             })
         );
+        // TODO: need to set procurement shop,need to add can numbers, need to find why edit bli is not working
+
         dispatch(setBudgetLineAdded(selectedAgreement?.budget_lines));
     };
 
