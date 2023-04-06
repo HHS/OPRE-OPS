@@ -715,6 +715,53 @@ paths:
                       "fee": 4.8
                     }
 
+  /api/v1/budget-line-items/:
+    get:
+      description: Get Budget Line Items
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetLineItems'
+              examples:
+                '0':
+                  $ref: '#/components/examples/BudgetLineItems'
+    post:
+      summary: Create a new Budget Line Item
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetLineItemRequest'
+
+      responses:
+        '201':
+          description: Created
+
+  /api/v1/budget-line-items/{id}:
+    get:
+      description: Get Budget Line Items by id
+      parameters:
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetLineItem'
 components:
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
@@ -906,6 +953,82 @@ components:
         anyOf:
           - $ref: "#/components/schemas/Agreement"
 
+    BudgetLineItems:
+      description: OPS List of Budget Line Items
+      type: array
+      items:
+        anyOf:
+          - $ref: "#/components/schemas/BudgetLineItem"
+
+    BudgetLineItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        agreement_id:
+          type: integer
+          example: 1
+        created_by:
+          type: string
+        created_on:
+          type: string
+          example: '2023-04-06T19:02:38.409254'
+        updated_on:
+          type: string
+          example: '2023-04-06T19:02:38.409254'
+        amount:
+          type: number
+          example: 1000000.0
+        can_id:
+          type: integer
+          example: 1
+        comments:
+          type: string
+        date_needed:
+          type: string
+          example: '2023-05-06'
+        line_description:
+          type: string
+        psc_fee_amount:
+          type: number
+          example: 100.2
+        status:
+          type: string
+          example: 'PLANNED'
+
+    BudgetLineItemRequest:
+      type: object
+      properties:
+        agreement_id:
+          type: integer
+          example: 1
+        amount:
+          type: number
+          example: 1000000.0
+        can_id:
+          type: integer
+          example: 1
+        comments:
+          type: string
+        date_needed:
+          type: string
+          example: '2023-05-06'
+        line_description:
+          type: string
+        psc_fee_amount:
+          type: number
+          example: 100.2
+        status:
+          type: string
+          example: 'PLANNED'
+      required:
+        - line_description
+        - agreement_id
+        - can_id
+        - amount
+        - status
+        - date_needed
 
   examples:
 
@@ -1130,6 +1253,53 @@ components:
           "research_project_id": 1,
           "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT"
         }
+
+    BudgetLineItems:
+      value: |
+        [
+          {
+              "agreement_id": 1,
+              "amount": 1000000.0,
+              "can_id": 5,
+              "comments": "",
+              "created_by": null,
+              "created_on": "2023-04-06T19:02:38.409254",
+              "date_needed": "2023-05-06",
+              "id": 1,
+              "line_description": "LI 1",
+              "psc_fee_amount": null,
+              "status": "PLANNED",
+              "updated_on": "2023-04-06T19:02:38.409254"
+          },
+          {
+              "agreement_id": 1,
+              "amount": 1000000.0,
+              "can_id": 5,
+              "comments": "",
+              "created_by": null,
+              "created_on": "2023-04-06T19:02:38.409254",
+              "date_needed": "2023-05-06",
+              "id": 2,
+              "line_description": "LI 2",
+              "psc_fee_amount": null,
+              "status": "PLANNED",
+              "updated_on": "2023-04-06T19:02:38.409254"
+          },
+          {
+              "agreement_id": 2,
+              "amount": 1000000.0,
+              "can_id": 8,
+              "comments": "",
+              "created_by": null,
+              "created_on": "2023-04-06T19:02:38.409254",
+              "date_needed": "2023-05-06",
+              "id": 3,
+              "line_description": "Line Item 1",
+              "psc_fee_amount": null,
+              "status": "PLANNED",
+              "updated_on": "2023-04-06T19:02:38.409254"
+          }
+        ]
 
 
 
