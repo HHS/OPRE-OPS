@@ -6,12 +6,13 @@ from typing import Optional, cast
 
 import desert
 from flask import Response, current_app, jsonify, make_response, request
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, verify_jwt_in_request
 from models import BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.utils.events import OpsEventHandler
+from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import override
 
@@ -80,6 +81,11 @@ class BudgetLineItemsListAPI(BaseListAPI):
                 # convert str param to date
                 data.date_needed = datetime.fromisoformat(data.date_needed)
                 new_bli = BudgetLineItem(**data.__dict__)
+
+                token = verify_jwt_in_request()
+                user = get_user_from_token(token[1])
+                new_bli.created_by = user.id
+
                 current_app.db_session.add(new_bli)
                 current_app.db_session.commit()
 
