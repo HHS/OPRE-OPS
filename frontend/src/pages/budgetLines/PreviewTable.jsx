@@ -11,7 +11,11 @@ import "./PreviewTable.scss";
 export const PreviewTable = ({ budgetLines }) => {
     const dispatch = useDispatch();
     const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
-    const loggedInUser = useSelector((state) => state.auth.activeUser.full_name);
+    let loggedInUser = useSelector((state) => state.auth.activeUser.full_name);
+    // NOTE: set to logged in user to Sheila if no name is found
+    if (loggedInUser === "(no name) (no name)") {
+        loggedInUser = "Sheila Celentano";
+    }
 
     const TableRow = ({ bl }) => {
         const [isExpanded, setIsExpanded] = useState(false);
@@ -21,7 +25,11 @@ export const PreviewTable = ({ budgetLines }) => {
             return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
         };
         let today = new Date();
-        const formatted_today = formatDate(today);
+        // const formatted_today = formatDate(today);
+        const formatted_today = new Date().toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
+        const bl_created_on = bl?.created_on
+            ? new Date(bl.created_on).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" })
+            : formatted_today;
         let date_needed = new Date(bl?.date_needed);
         const formatted_date_needed = formatDate(date_needed);
         // FY will automate based on the Need by Date. Anything after September 30th rolls over into the next FY.
@@ -142,19 +150,16 @@ export const PreviewTable = ({ budgetLines }) => {
                             <div className="display-flex padding-right-9">
                                 <dl className="font-12px">
                                     <dt className="margin-0 text-base-dark">Created By</dt>
-                                    {/* TODO: Get logged in user's full name */}
-                                    <dd className="margin-0">
-                                        {loggedInUser === "(no name) (no name)" ? "Sheila Celentano" : loggedInUser}
-                                    </dd>
+                                    <dd className="margin-0">{bl?.created_by ? bl.created_by : loggedInUser}</dd>
                                     <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                                         <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />
-                                        {formatted_today}
+                                        {bl_created_on}
                                     </dt>
                                 </dl>
                                 <dl className="font-12px" style={{ marginLeft: "9.0625rem" }}>
                                     <dt className="margin-0 text-base-dark">Notes</dt>
                                     <dd className="margin-0" style={{ maxWidth: "400px" }}>
-                                        {bl?.comments ? bl?.comments : "No notes added."}
+                                        {bl?.comments ? bl.comments : "No notes added."}
                                     </dd>
                                 </dl>
                                 <div className="flex-align-self-end margin-left-auto margin-bottom-1">
