@@ -6,7 +6,6 @@ import { getCanList } from "../cans/list/getCanList";
 export const CanSelect = () => {
     const dispatch = useDispatch();
     const canList = useSelector((state) => state.canList.cans);
-    dispatch(setCans(canList));
 
     const selectedCan = useSelector((state) => state.createBudgetLine.selected_can);
     const onChangeCanSelection = (canId = 0) => {
@@ -24,6 +23,10 @@ export const CanSelect = () => {
     React.useEffect(() => {
         dispatch(getCanList());
     }, [dispatch]);
+
+    React.useEffect(() => {
+        dispatch(setCans(canList));
+    }, [canList, dispatch]);
 
     return (
         <>
