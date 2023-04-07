@@ -416,7 +416,7 @@ paths:
                 '0':
                   value: |
                     {
-                      "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                      "date_joined": "2023-04-06T20:33:38.292475",
                       "division": 3,
                       "email": "tdonaworth+dev@flexion.us",
                       "first_name": "Tim",
@@ -431,7 +431,7 @@ paths:
                   value: |
                     [
                       {
-                        "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                        "date_joined": "2023-04-06T20:33:38.292475",
                         "division": 1,
                         "email": "emily.ball@example.com",
                         "first_name": "Emily",
@@ -443,7 +443,7 @@ paths:
                         "updated": null
                       },
                       {
-                        "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                        "date_joined": "2023-04-06T20:33:38.292475",
                         "division": 4,
                         "email": "Bethanne.Barnes@example.com",
                         "first_name": "Bethanne",
@@ -455,7 +455,7 @@ paths:
                         "updated": null
                       },
                       {
-                        "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                        "date_joined": "2023-04-06T20:33:38.292475",
                         "division": 1,
                         "email": "Meryl.Barofsky@example.com",
                         "first_name": "Meryl",
@@ -467,7 +467,7 @@ paths:
                         "updated": null
                       },
                       {
-                        "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                        "date_joined": "2023-04-06T20:33:38.292475",
                         "division": 3,
                         "email": "Anne.Bergan@example.com",
                         "first_name": "Anne",
@@ -479,7 +479,7 @@ paths:
                         "updated": null
                       },
                       {
-                        "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                        "date_joined": "2023-04-06T20:33:38.292475",
                         "division": 3,
                         "email": "tdonaworth+dev@flexion.us",
                         "first_name": "Tim",
@@ -873,10 +873,10 @@ components:
           type: string
         created_on:
           type: string
-          example: 'Wed, 15 Mar 2023 17:41:52 GMT'
+          example: '2023-04-06T20:33:38.292475'
         updated_on:
           type: string
-          example: 'Wed, 15 Mar 2023 17:41:52 GMT'
+          example: '2023-04-06T20:33:38.292475'
         description:
           type: string
         methodologies:
@@ -895,8 +895,8 @@ components:
           items:
             $ref: "#/components/schemas/TeamLeader"
           example: [ { 'created_by': None,
-                       'created_on': 'Wed, 15 Mar 2023 17:41:53 GMT',
-                       'date_joined': 'Wed, 15 Mar 2023 17:41:53 GMT',
+                       'created_on': '2023-04-06T20:33:38.292475',
+                       'date_joined': '2023-04-06T20:33:38.292475',
                        'division': 1,
                        'email': 'emily.ball@example.com',
                        'first_name': 'Emily',
@@ -906,7 +906,7 @@ components:
                        'oidc_id': '00000000-0000-1111-a111-000000000001',
                        'role': 'COR',
                        'updated': None,
-                       'updated_on': 'Wed, 15 Mar 2023 17:41:53 GMT' } ]
+                       'updated_on': '2023-04-06T20:33:38.292475' } ]
         title:
           type: string
           example: 'African American Child and Family Research Center'
@@ -935,10 +935,10 @@ components:
           example: 1
         created_on:
           type: string
-          example: "Fri, 17 Mar 2023 15:01:09 GMT"
+          example: "2023-04-06T20:33:38.292475"
         updated_on:
           type: string
-          example: "Fri, 17 Mar 2023 15:01:09 GMT"
+          example: "2023-04-06T20:33:38.292475"
         research_project_id:
           type: integer
           example: 1
@@ -1092,7 +1092,7 @@ components:
           "status_id": 1,
           "team_leaders": [
               {
-                  "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                  "date_joined": "2023-04-06T20:33:38.292475",
                   "division": 1,
                   "email": "emily.ball@example.com",
                   "first_name": "Emily",
@@ -1115,7 +1115,7 @@ components:
     User:
       value: |
         {
-          "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+          "date_joined": "2023-04-06T20:33:38.292475",
           "division": 3,
           "email": "user@email.com",
           "first_name": "Jon",
@@ -1137,7 +1137,7 @@ components:
                 "arrangement_type": "OPRE_APPROPRIATION",
                 "authorizer_id": 26,
                 "created_by": None,
-                "created_on": "Wed, 15 Mar 2023 17:41:54 GMT",
+                "created_on": "2023-04-06T20:33:38.292475",
                 "description": "Child Development Research Fellowship Grant Program",
                 "expiration_date": "01/09/2023",
                 "id": 4,
@@ -1146,7 +1146,7 @@ components:
                 "nickname": "ASPE SRCD-IDDA",
                 "number": "G990136",
                 "purpose": "",
-                "updated_on": "Wed, 15 Mar 2023 17:41:54 GMT",
+                "updated_on": "2023-04-06T20:33:38.292475",
               },
               {
                 "appropriation_date": "01/10/2022",
@@ -1154,7 +1154,7 @@ components:
                 "arrangement_type": "OPRE_APPROPRIATION",
                 "authorizer_id": 26,
                 "created_by": None,
-                "created_on": "Wed, 15 Mar 2023 17:41:54 GMT",
+                "created_on": "2023-04-06T20:33:38.292475",
                 "description": "Example CAN",
                 "expiration_date": "01/09/2023",
                 "id": 13,
@@ -1163,11 +1163,11 @@ components:
                 "nickname": "",
                 "number": "G99XXX8",
                 "purpose": "",
-                "updated_on": "Wed, 15 Mar 2023 17:41:54 GMT",
+                "updated_on": "2023-04-06T20:33:38.292475",
               },
             ],
             "created_by": None,
-            "created_on": "Wed, 15 Mar 2023 17:41:52 GMT",
+            "created_on": "2023-04-06T20:33:38.292475",
             "description": "        The National African American Child and Family Research Center, supported by a five-year OPRE        grant (2021 — 2026), will provide national leadership and excellence by investigating the assets, needs,        and experiences of the diverse population of African American families and children served (or potentially        served) by ACF programs, as well as promising approaches to address economic and social inequities and,        ultimately, promote social and economic well-being.  The primary focus of this Center will be on childcare        assistance, TANF, and Head Start and Early Head Start programs and the populations they serve. The work of        the Center will draw on interdisciplinary approaches to accomplish the three goals listed below.        \n\n1. Advance Research        The Center will plan, initiate, and maintain a community-engaged, focused, and high-caliber research program.        The Center’s program of research will build on the existing literature related to African American children        and families and should be directly relevant to the needs and interests of ACF areas of programmatic concern.        \n\n2. Build Research Capacity        The Center will build research capacity and infrastructure to conduct research relevant to ACF program and        policy goals that is culturally rigorous and informed by an understanding of current and historical        circumstances that shape the experiences of African Americans. In addition, the Center will contribute to the        development and expansion of the pool of researchers reflective of the communities being studied by the Center.        \n\n3. Communicate Research        The Center will develop and implement a dissemination strategy that broadly and efficiently communicates        findings from research conducted within and outside of the Center and increases the use of research, data, and        relevant resources for a wide audience including researchers, federal and state policymakers, ACF grantees,        program administrators, and communities participating in the research.        \n\nThe Center is led by the Morehouse School of Medicine.        \n\nThe OPRE point of contact is Megan Reid.        ",
             "id": 1,
             "methodologies": [
@@ -1186,8 +1186,8 @@ components:
             "team_leaders": [
               {
                 "created_by": None,
-                "created_on": "Wed, 15 Mar 2023 17:41:53 GMT",
-                "date_joined": "Wed, 15 Mar 2023 17:41:53 GMT",
+                "created_on": "2023-04-06T20:33:38.292475",
+                "date_joined": "2023-04-06T20:33:38.292475",
                 "division": 1,
                 "email": "emily.ball@example.com",
                 "first_name": "Emily",
@@ -1197,17 +1197,17 @@ components:
                 "oidc_id": "00000000-0000-1111-a111-000000000001",
                 "role": "COR",
                 "updated": None,
-                "updated_on": "Wed, 15 Mar 2023 17:41:53 GMT",
+                "updated_on": "2023-04-06T20:33:38.292475",
               }
             ],
             "title": "African American Child and Family Research Center",
-            "updated_on": "Wed, 15 Mar 2023 17:41:52 GMT",
+            "updated_on": "2023-04-06T20:33:38.292475",
             "url": "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center",
           },
           {
             "cans": [ ],
             "created_by": None,
-            "created_on": "Wed, 15 Mar 2023 17:41:52 GMT",
+            "created_on": "2023-04-06T20:33:38.292475",
             "description": '         Evidence suggests that fathers play an important role in children\'s development and that they can serve as         a key source of emotional and financial support. In many social services, however, fathers are overlooked.         This is the case in the child welfare system, where data from the Child and Family Service Reviews indicate         that fathers and paternal relatives are minimally engaged and may be untapped resources.         \n\nThe purpose of this project is to bridge the gap between what we know about the importance of fathers         and practices in the child welfare system that may contribute to low levels of father and paternal relative         engagement. Partnering with the Office of Family Assistance (which oversees the Healthy Marriage and         Responsible Fatherhood discretionary grant program) and the Children’s Bureau, this project aims to: \n\n* Synthesize what we already know about a) efforts to engage fathers and paternal relatives of children         involved in the child welfare system, and b) Continuous Quality Improvement approaches within the child         welfare system;         \n* Map "touch points" within a child welfare case where fathers and/or paternal relatives could be more          fully engaged;         \n* Identify potential strategies and interventions that could be used at the touch points to increase their         engagement;         \n* Select a collaborative Continuous Quality Improvement approach and use it to work intensively with a few         sites to implement and test these father and paternal relative engagement strategies and interventions;         \n* Conduct a pilot study to examine the feasibility and implementation of the Continuous Quality Improvement         approach and the engagement strategies and interventions; and         \n* Conduct an evaluation of the selected continuous learning methodology and the engagement strategies and         interventions.        ',
             "id": 3,
             "methodologies": [
@@ -1225,7 +1225,7 @@ components:
             "short_title": "",
             "team_leaders": [ ],
             "title": "Fathers and Continuous Learning (FCL)",
-            "updated_on": "Wed, 15 Mar 2023 17:41:52 GMT",
+            "updated_on": "2023-04-06T20:33:38.292475",
             "url": "https://www.acf.hhs.gov/opre/project/fathers-and-continuous-learning",
           },
         ]
@@ -1235,11 +1235,11 @@ components:
         [{
           "agreement_type": "CONTRACT",
           "created_by": null,
-          "created_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+          "created_on": "2023-04-06T20:33:38.292475",
           "id": 2,
           "name": "Contract #2: African American Child and Family Research Center",
           "research_project_id": 1,
-          "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT"
+          "updated_on": "2023-04-06T20:33:38.292475"
         }]
 
     Agreement:
@@ -1247,11 +1247,11 @@ components:
         {
           "agreement_type": "CONTRACT",
           "created_by": null,
-          "created_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+          "created_on": "2023-04-06T20:33:38.292475",
           "id": 2,
           "name": "Contract #2: African American Child and Family Research Center",
           "research_project_id": 1,
-          "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT"
+          "updated_on": "2023-04-06T20:33:38.292475"
         }
 
     BudgetLineItems:
