@@ -97,6 +97,8 @@ const createBudgetLineSlice = createSlice({
                 const duplicatedLine = {
                     ...action.payload,
                     id: crypto.getRandomValues(new Uint32Array(1))[0],
+                    status: "DRAFT",
+                    created_on: new Date().toISOString(),
                 };
 
                 return {

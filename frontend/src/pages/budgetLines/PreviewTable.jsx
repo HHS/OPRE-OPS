@@ -77,20 +77,24 @@ export const PreviewTable = ({ budgetLines }) => {
             };
             return (
                 <>
-                    <FontAwesomeIcon
-                        icon={faPen}
-                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
-                        title="edit"
-                        data-position="top"
-                        onClick={() => dispatch(editBudgetLineAdded(budgetLine))}
-                    />
-                    <FontAwesomeIcon
-                        icon={faTrash}
-                        title="delete"
-                        data-position="top"
-                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
-                        onClick={() => handleDeleteBudgetLine(budgetLine.id)}
-                    />
+                    {budgetLine.status === "DRAFT" && (
+                        <>
+                            <FontAwesomeIcon
+                                icon={faPen}
+                                className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                                title="edit"
+                                data-position="top"
+                                onClick={() => dispatch(editBudgetLineAdded(budgetLine))}
+                            />
+                            <FontAwesomeIcon
+                                icon={faTrash}
+                                title="delete"
+                                data-position="top"
+                                className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                                onClick={() => handleDeleteBudgetLine(budgetLine.id)}
+                            />
+                        </>
+                    )}
                     <FontAwesomeIcon
                         icon={faClone}
                         title="duplicate"
