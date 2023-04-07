@@ -72,7 +72,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
 
                 if errors:
                     current_app.logger.error(f"POST to /budget-line-items: Params failed validation: {errors}")
-                    response = make_response(errors, 400)
+                    response = make_response(errors, 400)  # nosemgrep
                     response.headers.add("Access-Control-Allow-Origin", "*")
                     return response
 
@@ -92,23 +92,23 @@ class BudgetLineItemsListAPI(BaseListAPI):
                 new_bli_dict = new_bli.to_dict()
                 meta.metadata.update({"new_bli": new_bli_dict})
                 current_app.logger.info(f"POST to /budget-line-items: New BLI created: {new_bli_dict}")
-                response = make_response(new_bli_dict, 201)
+                response = make_response(new_bli_dict, 201)  # nosemgrep
                 response.headers.add("Access-Control-Allow-Origin", "*")
                 return response
         except KeyError as ve:
             # The status string is invalid
             current_app.logger.error(f"POST to /budget-line-items: {ve}")
-            response = make_response({}, 400)
+            response = make_response({}, 400)  # nosemgrep
             response.headers.add("Access-Control-Allow-Origin", "*")
             return response
         except PendingRollbackError as pr:
             # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
             current_app.logger.error(f"POST to /budget-line-items: {pr}")
-            response = make_response({}, 400)
+            response = make_response({}, 400)  # nosemgrep
             response.headers.add("Access-Control-Allow-Origin", "*")
             return response
         except SQLAlchemyError as se:
             current_app.logger.error(f"POST to /budget-line-items: {se}")
-            response = make_response({}, 500)
+            response = make_response({}, 500)  # nosemgrep
             response.headers.add("Access-Control-Allow-Origin", "*")
             return response

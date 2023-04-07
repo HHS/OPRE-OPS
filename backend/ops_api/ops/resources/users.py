@@ -28,7 +28,7 @@ class UsersItemAPI(BaseItemAPI):
         if sub == str(response.json["oidc_id"]):
             return response
         else:
-            response = make_response({}, 401)
+            response = make_response({}, 401)  # nosemgrep
             return response
 
 

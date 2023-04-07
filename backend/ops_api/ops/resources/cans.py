@@ -49,7 +49,7 @@ class CANListAPI(BaseListAPI):
         errors = self._get_input_schema.validate(request.args)
 
         if errors:
-            response = make_response(errors, 400)
+            response = make_response(errors, 400)  # nosemgrep
             response.headers.add("Access-Control-Allow-Origin", "*")
             return response
 

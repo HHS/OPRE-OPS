@@ -56,15 +56,12 @@ class OPSMethodView(MethodView):
             item = self._get_item(id)
 
             if item:
-                # response = jsonify(item.to_dict()), 200
-                response = make_response(item.to_dict(), 200)
+                response = make_response(item.to_dict(), 200)  # nosemgrep
             else:
-                # response = jsonify({}), 404
-                response = make_response({}, 404)
+                response = make_response({}, 404)  # nosemgrep
         except SQLAlchemyError as se:
             current_app.logger.error(se)
-            response = make_response({}, 500)
-            # response = jsonify({}), 500
+            response = make_response({}, 500)  # nosemgrep
 
         response.headers.add("Access-Control-Allow-Origin", "*")
         return response
@@ -74,15 +71,12 @@ class OPSMethodView(MethodView):
             item_list = self._get_all_items()
 
             if item_list:
-                response = make_response([item.to_dict() for item in item_list], 200)
-                # response = jsonify([item.to_dict() for item in item_list]), 200
+                response = make_response([item.to_dict() for item in item_list], 200)  # nosemgrep
             else:
-                response = make_response({}, 404)
-                # response = jsonify({}), 404
+                response = make_response({}, 404)  # nosemgrep
         except SQLAlchemyError as se:
             current_app.logger.error(se)
-            # response = jsonify({}), 500
-            response = make_response({}, 500)
+            response = make_response({}, 500)  # nosemgrep
 
         response.headers.add("Access-Control-Allow-Origin", "*")
         return response

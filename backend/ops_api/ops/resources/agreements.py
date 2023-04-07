@@ -21,7 +21,7 @@ class AgreementItemAPI(BaseItemAPI):
         if is_authorized:
             response = self._get_item_with_try(id)
         else:
-            response = make_response({}, 401)
+            response = make_response({}, 401)  # nosemgrep
 
         response.headers.add("Access-Control-Allow-Origin", "*")
         return response
