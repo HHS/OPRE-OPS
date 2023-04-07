@@ -27,7 +27,8 @@ def process_user(userinfo: UserInfoDict) -> User:
 
 
 def get_user_from_token(userinfo: UserInfoDict) -> Optional[User]:
-    stmt = select(User).where(User.oidc_id == userinfo["sub"])
-    users = current_app.db_session.execute(stmt).all()
-    if users and len(users) == 1:
-        return users[0][0]
+    if userinfo:
+        stmt = select(User).where(User.oidc_id == userinfo["sub"])
+        users = current_app.db_session.execute(stmt).all()
+        if users and len(users) == 1:
+            return users[0][0]
