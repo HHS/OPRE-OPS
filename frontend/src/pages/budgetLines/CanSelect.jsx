@@ -1,11 +1,13 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setSelectedCan } from "./createBudgetLineSlice";
+import { setSelectedCan, setCans } from "./createBudgetLineSlice";
 import { getCanList } from "../cans/list/getCanList";
 
 export const CanSelect = () => {
     const dispatch = useDispatch();
     const canList = useSelector((state) => state.canList.cans);
+    dispatch(setCans(canList));
+
     const selectedCan = useSelector((state) => state.createBudgetLine.selected_can);
     const onChangeCanSelection = (canId = 0) => {
         if (canId === 0) {

@@ -41,7 +41,7 @@ const createBudgetLineSlice = createSlice({
         setProcurementShop: (state, action) => {
             state.procurement_shops = action.payload;
         },
-        setCan: (state, action) => {
+        setCans: (state, action) => {
             state.cans = action.payload;
         },
         setBudgetLineAdded: (state, action) => {
@@ -170,7 +170,7 @@ export const {
     setResearchProjectsFilter,
     setAgreements,
     setProcurementShop,
-    setCan,
+    setCans,
     setBudgetLineAdded,
     deleteBudgetLineAdded,
     editBudgetLineAdded,
