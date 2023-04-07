@@ -48,6 +48,26 @@ export const PreviewTable = ({ budgetLines }) => {
             setIsRowActive(true);
         };
 
+        const TableTag = ({ status }) => {
+            let classNames = "padding-x-105 padding-y-1 ";
+            switch (status) {
+                case "Draft":
+                    classNames += "bg-brand-neutral-lighter";
+                    break;
+                case "Executing":
+                    classNames += "bg-brand-data-viz-primary-8";
+                    break;
+                case "Obligated":
+                    classNames += "bg-brand-data-viz-primary-6 text-white";
+                    break;
+                case "Planned":
+                    classNames += "bg-brand-data-viz-primary-11 text-white";
+                    break;
+                default:
+            }
+            return <Tag className={classNames} text={status} />;
+        };
+
         const ChangeIcons = ({ budgetLine }) => {
             const handleDeleteBudgetLine = (budgetLineId) => {
                 dispatch(deleteBudgetLineAdded(budgetLineId));
@@ -135,7 +155,7 @@ export const PreviewTable = ({ budgetLines }) => {
                                 <ChangeIcons budgetLine={bl} />
                             </div>
                         ) : (
-                            <Tag text={status} className="bg-brand-neutral-lighter padding-x-105 padding-y-1" />
+                            <TableTag status={status} />
                         )}
                     </td>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
