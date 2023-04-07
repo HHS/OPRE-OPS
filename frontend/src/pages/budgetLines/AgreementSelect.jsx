@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { setSelectedAgreement, setBudgetLineAdded } from "./createBudgetLineSlice";
+import { setSelectedAgreement, setBudgetLineAdded, setSelectedProcurementShop } from "./createBudgetLineSlice";
 import { AGREEMENTS } from "./data";
 
 export const AgreementSelect = () => {
@@ -19,9 +19,11 @@ export const AgreementSelect = () => {
                 periodOfPerformance: `${selectedAgreement?.period_of_performance_start} - ${selectedAgreement?.period_of_performance_end}`,
             })
         );
-        // TODO: need to set procurement shop,need to add can numbers, need to find why edit bli is not working
-
-        dispatch(setBudgetLineAdded(selectedAgreement?.budget_line_items));
+        // set budget line items and procurement shop
+        if (selectedAgreement?.budget_line_items.length > 0) {
+            dispatch(setBudgetLineAdded(selectedAgreement?.budget_line_items));
+            dispatch(setSelectedProcurementShop(selectedAgreement?.procurement_shop));
+        }
     };
 
     const AgreementSummaryCard = () => {
