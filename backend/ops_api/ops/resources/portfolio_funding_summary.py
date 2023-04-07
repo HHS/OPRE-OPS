@@ -1,8 +1,9 @@
-from flask import Response, jsonify, request
+from flask import Response, request
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseItemAPI
 from ops_api.ops.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.utils.portfolios import get_total_funding
+from ops_api.ops.utils.response import make_response_with_headers
 from typing_extensions import override
 
 
@@ -19,6 +20,4 @@ class PortfolioFundingSummaryItemAPI(BaseItemAPI):
 
         portfolio = self._get_item(id)
         portfolio_funding_summary = get_total_funding(portfolio, fiscal_year)
-        response = jsonify(portfolio_funding_summary)
-        response.headers.add("Access-Control-Allow-Origin", "*")
-        return response
+        return make_response_with_headers(portfolio_funding_summary)
