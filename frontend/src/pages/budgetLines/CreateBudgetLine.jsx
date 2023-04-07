@@ -182,7 +182,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                         </label>
                         <CurrencyFormat
                             id="bl-amount"
-                            value={enteredAmount || 0}
+                            value={enteredAmount || ""}
                             className="usa-input"
                             name="bl-amount"
                             thousandSeparator={true}

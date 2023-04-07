@@ -24,8 +24,6 @@ export const PreviewTable = ({ budgetLines }) => {
         const formatDate = (date) => {
             return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
         };
-        let today = new Date();
-        // const formatted_today = formatDate(today);
         const formatted_today = new Date().toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
         const bl_created_on = bl?.created_on
             ? new Date(bl.created_on).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" })
