@@ -11,15 +11,10 @@ import "./PreviewTable.scss";
 export const PreviewTable = ({ budgetLines }) => {
     const dispatch = useDispatch();
     const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
-    const sortedBudgetLines = [...budgetLinesAdded].sort((a, b) => {
-        if (a.created_by < b.created_by) {
-            return -1;
-        }
-        if (a.created_by > b.created_by) {
-            return 1;
-        }
-        return 0;
-    });
+    const sortedBudgetLines = budgetLinesAdded
+        .slice()
+        .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on))
+        .reverse();
 
     let loggedInUser = useSelector((state) => state.auth.activeUser.full_name);
     // NOTE: set to logged in user to Sheila if no name is found
