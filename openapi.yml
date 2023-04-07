@@ -733,7 +733,7 @@ components:
         agreement_type:
           type: string
         cans: { }
-        budget_lines: {}
+        budget_line_items: {}
 
     CAN:
       description: Common Accounting Number (CAN) Object
@@ -929,35 +929,35 @@ components:
           'name': 'Agreement One',
           agreement_type: 'CONTRACT',
           cans: [],
-          budget_lines: []
+          budget_line_items: []
         },
         {
           'id': 2,
           'name': 'Agreement Two',
           agreement_type: 'GRANT',
           cans: [],
-          budget_lines: []
+          budget_line_items: []
         },
         {
           'id': 3,
           'name': 'Agreement Three',
           agreement_type: 'DIRECT_ALLOCATION',
           cans: [],
-          budget_lines: []
+          budget_line_items: []
         },
         {
           'id': 4,
           'name': 'Agreement Four',
           agreement_type: 'IAA',
           cans: [],
-          budget_lines: []
+          budget_line_items: []
         },
         {
           'id': 5,
           'name': 'Agreement Five',
           agreement_type: 'MISCELLANEOUS',
           cans: [],
-          budget_lines: []
+          budget_line_items: []
         }
 
         ]
@@ -1171,7 +1171,7 @@ components:
           "research_project_id": 1,
           "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
            cans: [],
-           budget_lines: [
+           budget_line_items: [
             {
                 line_description: "LI 1",
                 comments: "",
@@ -1216,7 +1216,7 @@ components:
           "research_project_id": 1,
           "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
           cans: [],
-          budget_lines: [
+          budget_line_items: [
             {
                 line_description: "LI 1",
                 comments: "",

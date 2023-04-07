@@ -8,8 +8,8 @@ export const AGREEMENTS = [
         project_officer: "Ivelisse Martinez-Beck",
         period_of_performance_start: "2021-01-01",
         period_of_performance_end: "2021-12-31",
-        cans: [],
-        budget_lines: [
+        cans: [], // not sure we need this?
+        budget_line_items: [
             {
                 line_description: "LI 1",
                 comments: "",
@@ -51,7 +51,7 @@ export const AGREEMENTS = [
         period_of_performance_start: "2021-01-01",
         period_of_performance_end: "2021-12-31",
         cans: [],
-        budget_lines: [],
+        budget_line_items: [],
     },
     {
         id: 3,
@@ -62,7 +62,7 @@ export const AGREEMENTS = [
         period_of_performance_start: "2021-01-01",
         period_of_performance_end: "2021-12-31",
         cans: [],
-        budget_lines: [],
+        budget_line_items: [],
     },
     {
         id: 4,
@@ -73,7 +73,7 @@ export const AGREEMENTS = [
         period_of_performance_start: "2021-01-01",
         period_of_performance_end: "2021-12-31",
         cans: [],
-        budget_lines: [],
+        budget_line_items: [],
     },
     {
         id: 5,
@@ -84,6 +84,6 @@ export const AGREEMENTS = [
         period_of_performance_start: "2021-01-01",
         period_of_performance_end: "2021-12-31",
         cans: [],
-        budget_lines: [],
+        budget_line_items: [],
     },
 ];

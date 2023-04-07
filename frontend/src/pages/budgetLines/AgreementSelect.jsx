@@ -21,7 +21,7 @@ export const AgreementSelect = () => {
         );
         // TODO: need to set procurement shop,need to add can numbers, need to find why edit bli is not working
 
-        dispatch(setBudgetLineAdded(selectedAgreement?.budget_lines));
+        dispatch(setBudgetLineAdded(selectedAgreement?.budget_line_items));
     };
 
     const AgreementSummaryCard = () => {
