@@ -123,6 +123,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                     status: "DRAFT",
                     date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}`,
                     psc_fee_amount: selectedProcurementShop?.fee,
+                    created_on: new Date().toISOString(),
                 },
             ])
         );

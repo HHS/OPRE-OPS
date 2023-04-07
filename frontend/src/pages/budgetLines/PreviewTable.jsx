@@ -11,6 +11,16 @@ import "./PreviewTable.scss";
 export const PreviewTable = ({ budgetLines }) => {
     const dispatch = useDispatch();
     const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
+    const sortedBudgetLines = [...budgetLinesAdded].sort((a, b) => {
+        if (a.created_by < b.created_by) {
+            return -1;
+        }
+        if (a.created_by > b.created_by) {
+            return 1;
+        }
+        return 0;
+    });
+
     let loggedInUser = useSelector((state) => state.auth.activeUser.full_name);
     // NOTE: set to logged in user to Sheila if no name is found
     if (loggedInUser === "(no name) (no name)") {
@@ -188,7 +198,7 @@ export const PreviewTable = ({ budgetLines }) => {
                 </tr>
             </thead>
             <tbody>
-                {budgetLinesAdded.map((bl) => (
+                {sortedBudgetLines.map((bl) => (
                     <TableRow key={bl?.id} bl={bl} />
                 ))}
             </tbody>
