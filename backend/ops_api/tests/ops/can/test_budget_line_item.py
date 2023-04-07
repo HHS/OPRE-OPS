@@ -145,7 +145,7 @@ def test_post_budget_line_items_invalid_can(auth_client):
         psc_fee_amount=1.23,
     )
     response = auth_client.post("/api/v1/budget-line-items/", json=data.__dict__)
-    assert response.status_code == 500
+    assert response.status_code == 400
 
 
 @pytest.mark.usefixtures("app_ctx")

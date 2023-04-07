@@ -13,7 +13,7 @@ from models.cans import BudgetLineItem
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.user import get_user_from_token
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 from typing_extensions import override
 
 
@@ -96,7 +96,14 @@ class BudgetLineItemsListAPI(BaseListAPI):
                 response.headers.add("Access-Control-Allow-Origin", "*")
                 return response
         except KeyError as ve:
+            # The status string is invalid
             current_app.logger.error(f"POST to /budget-line-items: {ve}")
+            response = make_response({}, 400)
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+        except PendingRollbackError as pr:
+            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
+            current_app.logger.error(f"POST to /budget-line-items: {pr}")
             response = make_response({}, 400)
             response.headers.add("Access-Control-Allow-Origin", "*")
             return response
