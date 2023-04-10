@@ -40,7 +40,11 @@ ALLOWED_TABLES = [
     "can_fiscal_year",
     "can_funding_sources",
     "agreement",
-    "contract",
+    "contract_agreement",
+    "grant_agreement",
+    "iaa_agreement",
+    "iaa_aa_agreement",
+    "direct_agreement",
     "budget_line_item",
     "budget_line_item_status",
     "can_fiscal_year_carry_forward",
@@ -52,6 +56,7 @@ ALLOWED_TABLES = [
     "research_project_methodologies",
     "research_project_populations",
     "procurement_shop",
+
 ]
 
 data = os.getenv("DATA")
