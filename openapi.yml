@@ -722,17 +722,6 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
-    AGREEMENTS:
-      description: All Agreements
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        agreement_type:
-          type: string
-        cans: { }
 
     CAN:
       description: Common Accounting Number (CAN) Object
@@ -886,6 +875,28 @@ components:
         anyOf:
           - $ref: "#/components/schemas/ResearchProject"
 
+    AGREEMENTS:
+      description: All Agreements
+      type: array
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        agreement_type:
+          type: string
+        project_officer:
+          type: string
+        period_of_performance_start:
+          type: string
+        period_of_performance_end:
+        procurement_shop:
+          type: object
+        budget_line_items:
+          type: array
+
     Agreement:
       type: object
       properties:
@@ -918,43 +929,7 @@ components:
         anyOf:
           - $ref: "#/components/schemas/Agreement"
 
-
   examples:
-    AGREEMENTS:
-      value: |
-        [
-        {
-          'id': 1,
-          'name': 'Agreement One',
-          agreement_type: 'CONTRACT',
-          cans: []
-        },
-        {
-          'id': 2,
-          'name': 'Agreement Two',
-          agreement_type: 'GRANT',
-          cans: []
-        },
-        {
-          'id': 3,
-          'name': 'Agreement Three',
-          agreement_type: 'DIRECT_ALLOCATION',
-          cans: []
-        },
-        {
-          'id': 4,
-          'name': 'Agreement Four',
-          agreement_type: 'IAA',
-          cans: []
-        },
-        {
-          'id': 5,
-          'name': 'Agreement Five',
-          agreement_type: 'MISCELLANEOUS',
-          cans: []
-        }
-
-        ]
 
     CAN:
       value:
@@ -1153,7 +1128,77 @@ components:
             "url": "https://www.acf.hhs.gov/opre/project/fathers-and-continuous-learning",
           },
         ]
+    AGREEMENTS:
+      value: |
+       [
+          {
+              "id": 1,
+              "created_by": null,
+              "created_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+              "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+              "name": "Using Innovative Data to Explore Racial and Ethnic Disparities in Human Services",
+              "research_project_id": 1,
+              "description":
+                  "This will be a contract to continue planned analyses to explore racial and ethnic disparities in Human Services.",
+              "agreement_type": "CONTRACT",
+              "project_officer": "Ivelisse Martinez-Beck",
+              "period_of_performance_start": "2021-01-01",
+              "period_of_performance_end": "2021-12-31",
+              procurement_shop: {
+                  id: 2,
+                  name: "Government Contracting Services",
+                  fee: 0,
+              },
+              budget_line_items: [
+                  {
+                      id: 123456,
+                      line_description: "LI 1",
+                      comments: "",
+                      can_id: 5,
+                      can_number: "G994426",
+                      agreement_id: 1,
+                      amount: 1000000.0,
+                      status: "EXECUTING",
+                      date_needed: "2111-1-11",
+                      psc_fee_amount: 0,
+                      created_by: "Carolyn Hsu",
+                      created_on: "2023-4-5",
+                      updated_on: "2023-4-15",
+                  },
+                  {
+                      id: 123457,
+                      line_description: "LI 2",
+                      comments: "",
+                      can_id: 5,
+                      can_number: "G994426",
+                      agreement_id: 1,
+                      amount: 1000000.0,
+                      status: "OBLIGATED",
+                      date_needed: "2222-2-22",
+                      psc_fee_amount: 0,
+                      created_by: "Carolyn Hsu",
+                      created_on: "2023-4-1",
+                      updated_on: "2023-4-15",
+                  },
+                  {
+                      id: 123458,
+                      line_description: "LI 3",
+                      comments: "",
+                      can_id: 5,
+                      can_number: "G994426",
+                      agreement_id: 1,
+                      amount: 1000000.0,
+                      status: "PLANNED",
+                      date_needed: "2333-3-13",
+                      psc_fee_amount: 0,
+                      created_by: "Carolyn Hsu",
+                      created_on: "2023-3-11",
+                      updated_on: "2023-4-15",
+                  },
+                ],
+          },
 
+        ];
     Agreements:
       value: |
         [{
@@ -1163,7 +1208,40 @@ components:
           "id": 2,
           "name": "Contract #2: African American Child and Family Research Center",
           "research_project_id": 1,
-          "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT"
+          "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+           cans: [],
+           budget_line_items: [
+            {
+                line_description: "LI 1",
+                comments: "",
+                can_id: 5,
+                agreement_id: 1,
+                amount: 1000000.0,
+                status: "EXECUTING",
+                date_needed: "2111-1-11",
+                psc_fee_amount: 0.5,
+            },
+            {
+                line_description: "LI 2",
+                comments: "",
+                can_id: 5,
+                agreement_id: 1,
+                amount: 1000000.0,
+                status: "OBLIGATED",
+                date_needed: "2222-2-22",
+                psc_fee_amount: 0.5,
+            },
+            {
+                line_description: "LI 3",
+                comments: "",
+                can_id: 5,
+                agreement_id: 1,
+                amount: 1000000.0,
+                status: "PLANNED",
+                date_needed: "2333-3-13",
+                psc_fee_amount: 0.5,
+            },
+        ],
         }]
 
     Agreement:
@@ -1175,7 +1253,40 @@ components:
           "id": 2,
           "name": "Contract #2: African American Child and Family Research Center",
           "research_project_id": 1,
-          "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT"
+          "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+          cans: [],
+          budget_line_items: [
+            {
+                line_description: "LI 1",
+                comments: "",
+                can_id: 5,
+                agreement_id: 2,
+                amount: 1000000.0,
+                status: "EXECUTING",
+                date_needed: "2111-1-11",
+                psc_fee_amount: 0.5,
+            },
+            {
+                line_description: "LI 2",
+                comments: "",
+                can_id: 5,
+                agreement_id: 2,
+                amount: 1000000.0,
+                status: "OBLIGATED",
+                date_needed: "2222-2-22",
+                psc_fee_amount: 0.5,
+            },
+            {
+                line_description: "LI 3",
+                comments: "",
+                can_id: 5,
+                agreement_id: 2,
+                amount: 1000000.0,
+                status: "PLANNED",
+                date_needed: "2333-3-13",
+                psc_fee_amount: 0.5,
+            },
+        ],
         }
 
 

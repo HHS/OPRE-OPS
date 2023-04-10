@@ -41,7 +41,7 @@ const createBudgetLineSlice = createSlice({
         setProcurementShop: (state, action) => {
             state.procurement_shops = action.payload;
         },
-        setCan: (state, action) => {
+        setCans: (state, action) => {
             state.cans = action.payload;
         },
         setBudgetLineAdded: (state, action) => {
@@ -97,6 +97,8 @@ const createBudgetLineSlice = createSlice({
                 const duplicatedLine = {
                     ...action.payload,
                     id: crypto.getRandomValues(new Uint32Array(1))[0],
+                    status: "DRAFT",
+                    created_on: new Date().toISOString(),
                 };
 
                 return {
@@ -170,7 +172,7 @@ export const {
     setResearchProjectsFilter,
     setAgreements,
     setProcurementShop,
-    setCan,
+    setCans,
     setBudgetLineAdded,
     deleteBudgetLineAdded,
     editBudgetLineAdded,

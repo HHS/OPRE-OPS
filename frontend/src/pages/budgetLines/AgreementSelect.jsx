@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { setSelectedAgreement } from "./createBudgetLineSlice";
+import { setSelectedAgreement, setBudgetLineAdded, setSelectedProcurementShop } from "./createBudgetLineSlice";
 import { AGREEMENTS } from "./data";
 
 export const AgreementSelect = () => {
@@ -7,20 +7,23 @@ export const AgreementSelect = () => {
     const agreements = useSelector(() => AGREEMENTS);
     const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
     const onChangeAgreementSelection = (agreementId = 0) => {
+        const selectedAgreement = agreements.find((agreement) => agreement.id === agreementId);
+
         if (agreementId === 0) {
             return;
         }
         dispatch(
             setSelectedAgreement({
-                id: agreements[agreementId - 1].id,
-                name: agreements[agreementId - 1].name,
-                description: agreements[agreementId - 1].description,
-                projectOfficer: agreements[agreementId - 1].project_officer,
-                periodOfPerformance: `${agreements[agreementId - 1].period_of_performance_start} - ${
-                    agreements[agreementId - 1].period_of_performance_end
-                }`,
+                ...selectedAgreement,
+                projectOfficer: selectedAgreement?.project_officer,
+                periodOfPerformance: `${selectedAgreement?.period_of_performance_start} - ${selectedAgreement?.period_of_performance_end}`,
             })
         );
+        // set budget line items and procurement shop
+        if (selectedAgreement?.budget_line_items.length > 0) {
+            dispatch(setBudgetLineAdded(selectedAgreement?.budget_line_items));
+            dispatch(setSelectedProcurementShop(selectedAgreement?.procurement_shop));
+        }
     };
 
     const AgreementSummaryCard = () => {

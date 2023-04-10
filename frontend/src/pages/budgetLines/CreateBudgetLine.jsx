@@ -123,6 +123,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                     status: "DRAFT",
                     date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}`,
                     psc_fee_amount: selectedProcurementShop?.fee,
+                    created_on: new Date().toISOString(),
                 },
             ])
         );
@@ -182,7 +183,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                         </label>
                         <CurrencyFormat
                             id="bl-amount"
-                            value={enteredAmount || 0}
+                            value={enteredAmount || ""}
                             className="usa-input"
                             name="bl-amount"
                             thousandSeparator={true}

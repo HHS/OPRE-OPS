@@ -11,7 +11,16 @@ import "./PreviewTable.scss";
 export const PreviewTable = ({ budgetLines }) => {
     const dispatch = useDispatch();
     const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
-    const loggedInUser = useSelector((state) => state.auth.activeUser.full_name);
+    const sortedBudgetLines = budgetLinesAdded
+        .slice()
+        .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on))
+        .reverse();
+
+    let loggedInUser = useSelector((state) => state.auth.activeUser.full_name);
+    // NOTE: set to logged in user to Sheila if no name is found
+    if (loggedInUser === "(no name) (no name)") {
+        loggedInUser = "Sheila Celentano";
+    }
 
     const TableRow = ({ bl }) => {
         const [isExpanded, setIsExpanded] = useState(false);
@@ -20,8 +29,10 @@ export const PreviewTable = ({ budgetLines }) => {
         const formatDate = (date) => {
             return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
         };
-        let today = new Date();
-        const formatted_today = formatDate(today);
+        const formatted_today = new Date().toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
+        const bl_created_on = bl?.created_on
+            ? new Date(bl.created_on).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" })
+            : formatted_today;
         let date_needed = new Date(bl?.date_needed);
         const formatted_date_needed = formatDate(date_needed);
         // FY will automate based on the Need by Date. Anything after September 30th rolls over into the next FY.
@@ -37,34 +48,60 @@ export const PreviewTable = ({ budgetLines }) => {
             setIsRowActive(true);
         };
 
+        const TableTag = ({ status }) => {
+            let classNames = "padding-x-105 padding-y-1 ";
+            switch (status) {
+                case "Draft":
+                    classNames += "bg-brand-neutral-lighter";
+                    break;
+                case "Executing":
+                    classNames += "bg-brand-data-viz-primary-8";
+                    break;
+                case "Obligated":
+                    classNames += "bg-brand-data-viz-primary-6 text-white";
+                    break;
+                case "Planned":
+                    classNames += "bg-brand-data-viz-primary-11 text-white";
+                    break;
+                default:
+            }
+            return <Tag className={classNames} text={status} />;
+        };
+
         const ChangeIcons = ({ budgetLine }) => {
             const handleDeleteBudgetLine = (budgetLineId) => {
                 dispatch(deleteBudgetLineAdded(budgetLineId));
             };
             const handleDuplicateBudgetLine = (budgetLine) => {
-                dispatch(duplicateBudgetLineAdded(budgetLine));
+                dispatch(duplicateBudgetLineAdded({ ...budgetLine, created_by: loggedInUser }));
             };
             return (
                 <>
-                    <FontAwesomeIcon
-                        icon={faPen}
-                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
-                        title="edit"
-                        data-position="top"
-                        onClick={() => dispatch(editBudgetLineAdded(budgetLine))}
-                    />
-                    <FontAwesomeIcon
-                        icon={faTrash}
-                        title="delete"
-                        data-position="top"
-                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
-                        onClick={() => handleDeleteBudgetLine(budgetLine.id)}
-                    />
+                    {budgetLine.status === "DRAFT" && (
+                        <>
+                            <FontAwesomeIcon
+                                icon={faPen}
+                                className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                                title="edit"
+                                data-position="top"
+                                onClick={() => dispatch(editBudgetLineAdded(budgetLine))}
+                            />
+                            <FontAwesomeIcon
+                                icon={faTrash}
+                                title="delete"
+                                data-position="top"
+                                className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                                onClick={() => handleDeleteBudgetLine(budgetLine.id)}
+                            />
+                        </>
+                    )}
                     <FontAwesomeIcon
                         icon={faClone}
                         title="duplicate"
                         data-position="top"
-                        className="text-primary height-2 width-2 hover: cursor-pointer usa-tooltip"
+                        className={`text-primary height-2 width-2 hover: cursor-pointer usa-tooltip ${
+                            budgetLine.status !== "DRAFT" ? "margin-left-6" : ""
+                        }`}
                         onClick={() => handleDuplicateBudgetLine(budgetLine)}
                     />
                 </>
@@ -124,7 +161,7 @@ export const PreviewTable = ({ budgetLines }) => {
                                 <ChangeIcons budgetLine={bl} />
                             </div>
                         ) : (
-                            <Tag text={status} className="bg-brand-neutral-lighter padding-x-105 padding-y-1" />
+                            <TableTag status={status} />
                         )}
                     </td>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
@@ -142,19 +179,16 @@ export const PreviewTable = ({ budgetLines }) => {
                             <div className="display-flex padding-right-9">
                                 <dl className="font-12px">
                                     <dt className="margin-0 text-base-dark">Created By</dt>
-                                    {/* TODO: Get logged in user's full name */}
-                                    <dd className="margin-0">
-                                        {loggedInUser === "(no name) (no name)" ? "Sheila Celentano" : loggedInUser}
-                                    </dd>
+                                    <dd className="margin-0">{bl?.created_by ? bl.created_by : loggedInUser}</dd>
                                     <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                                         <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />
-                                        {formatted_today}
+                                        {bl_created_on}
                                     </dt>
                                 </dl>
                                 <dl className="font-12px" style={{ marginLeft: "9.0625rem" }}>
                                     <dt className="margin-0 text-base-dark">Notes</dt>
                                     <dd className="margin-0" style={{ maxWidth: "400px" }}>
-                                        {bl?.comments ? bl?.comments : "No notes added."}
+                                        {bl?.comments ? bl.comments : "No notes added."}
                                     </dd>
                                 </dl>
                                 <div className="flex-align-self-end margin-left-auto margin-bottom-1">
@@ -185,7 +219,7 @@ export const PreviewTable = ({ budgetLines }) => {
                 </tr>
             </thead>
             <tbody>
-                {budgetLinesAdded.map((bl) => (
+                {sortedBudgetLines.map((bl) => (
                     <TableRow key={bl?.id} bl={bl} />
                 ))}
             </tbody>

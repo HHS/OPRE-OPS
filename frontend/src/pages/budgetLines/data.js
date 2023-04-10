@@ -8,7 +8,58 @@ export const AGREEMENTS = [
         project_officer: "Ivelisse Martinez-Beck",
         period_of_performance_start: "2021-01-01",
         period_of_performance_end: "2021-12-31",
-        cans: [],
+        procurement_shop: {
+            id: 2,
+            name: "Government Contracting Services",
+            fee: 0,
+        },
+        budget_line_items: [
+            {
+                id: 123456,
+                line_description: "LI 1",
+                comments: "",
+                can_id: 5,
+                can_number: "G994426",
+                agreement_id: 1,
+                amount: 1000000.0,
+                status: "EXECUTING",
+                date_needed: "2111-1-11",
+                psc_fee_amount: 0,
+                created_by: "Carolyn Hsu", // modified number to full name
+                created_on: "2023-4-5",
+                updated_on: "2023-4-15",
+            },
+            {
+                id: 123457,
+                line_description: "LI 2",
+                comments: "",
+                can_id: 5,
+                can_number: "G994426",
+                agreement_id: 1,
+                amount: 1000000.0,
+                status: "OBLIGATED",
+                date_needed: "2222-2-22",
+                psc_fee_amount: 0,
+                created_by: "Carolyn Hsu", // modified number to full name
+                created_on: "2023-4-1",
+                updated_on: "2023-4-15",
+            },
+            {
+                id: 123458,
+                line_description: "LI 3",
+                comments: "",
+                can_id: 5,
+                can_number: "G994426",
+                agreement_id: 1,
+                amount: 1000000.0,
+                status: "PLANNED",
+                date_needed: "2333-3-13",
+                psc_fee_amount: 0,
+                created_by: "Carolyn Hsu", // modified number to full name
+                created_on: "2023-3-11",
+                updated_on: "2023-4-15",
+            },
+        ],
     },
     {
         id: 2,
@@ -19,6 +70,7 @@ export const AGREEMENTS = [
         period_of_performance_start: "2021-01-01",
         period_of_performance_end: "2021-12-31",
         cans: [],
+        budget_line_items: [],
     },
     {
         id: 3,
@@ -29,6 +81,7 @@ export const AGREEMENTS = [
         period_of_performance_start: "2021-01-01",
         period_of_performance_end: "2021-12-31",
         cans: [],
+        budget_line_items: [],
     },
     {
         id: 4,
@@ -39,6 +92,7 @@ export const AGREEMENTS = [
         period_of_performance_start: "2021-01-01",
         period_of_performance_end: "2021-12-31",
         cans: [],
+        budget_line_items: [],
     },
     {
         id: 5,
@@ -49,5 +103,6 @@ export const AGREEMENTS = [
         period_of_performance_start: "2021-01-01",
         period_of_performance_end: "2021-12-31",
         cans: [],
+        budget_line_items: [],
     },
 ];
