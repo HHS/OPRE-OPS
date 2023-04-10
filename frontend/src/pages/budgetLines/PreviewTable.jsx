@@ -73,7 +73,7 @@ export const PreviewTable = ({ budgetLines }) => {
                 dispatch(deleteBudgetLineAdded(budgetLineId));
             };
             const handleDuplicateBudgetLine = (budgetLine) => {
-                dispatch(duplicateBudgetLineAdded(budgetLine));
+                dispatch(duplicateBudgetLineAdded({ ...budgetLine, created_by: loggedInUser }));
             };
             return (
                 <>
@@ -99,7 +99,11 @@ export const PreviewTable = ({ budgetLines }) => {
                         icon={faClone}
                         title="duplicate"
                         data-position="top"
-                        className="text-primary height-2 width-2 hover: cursor-pointer usa-tooltip"
+                        className={
+                            budgetLine.status !== "DRAFT"
+                                ? "text-primary height-2 width-2 hover: cursor-pointer usa-tooltip margin-left-6"
+                                : "text-primary height-2 width-2 hover: cursor-pointer usa-tooltip"
+                        }
                         onClick={() => handleDuplicateBudgetLine(budgetLine)}
                     />
                 </>
