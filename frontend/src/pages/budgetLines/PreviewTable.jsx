@@ -99,11 +99,9 @@ export const PreviewTable = ({ budgetLines }) => {
                         icon={faClone}
                         title="duplicate"
                         data-position="top"
-                        className={
-                            budgetLine.status !== "DRAFT"
-                                ? "text-primary height-2 width-2 hover: cursor-pointer usa-tooltip margin-left-6"
-                                : "text-primary height-2 width-2 hover: cursor-pointer usa-tooltip"
-                        }
+                        className={`text-primary height-2 width-2 hover: cursor-pointer usa-tooltip ${
+                            budgetLine.status !== "DRAFT" ? "margin-left-6" : ""
+                        }`}
                         onClick={() => handleDuplicateBudgetLine(budgetLine)}
                     />
                 </>
