@@ -44,6 +44,18 @@ class User(BaseModel):
         secondary="research_project_team_leaders",
     )
 
+    agreements = relationship(
+        "Agreement",
+        back_populates="team_members",
+        secondary="agreement_team_members",
+    )
+
+    contracts = relationship(
+        "ContractAgreement",
+        back_populates="support_contacts",
+        secondary="contract_support_contacts",
+    )
+
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
         d = super().to_dict()  # type: ignore [no-untyped-call]

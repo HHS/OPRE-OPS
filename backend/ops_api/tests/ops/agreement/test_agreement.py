@@ -9,8 +9,10 @@ def test_agreement_retrieve(loaded_db):
     agreement = loaded_db.scalar(stmt)
 
     assert agreement is not None
+    assert agreement.number == "AGR0001"
     assert agreement.name == "Contract #1: African American Child and Family Research Center"
     assert agreement.id == 1
+    assert agreement.type == "contract"
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -53,6 +55,7 @@ def test_agreements_serialization(auth_client, loaded_db):
         "agreement_type": "CONTRACT",
         "research_project_id": 1,
         "created_by": None,
+        "agreement_reason": "NEW_REQ",
     }
 
 
@@ -107,3 +110,12 @@ def test_agreements_get_by_id_auth(client, loaded_db):
 def test_agreements_auth(client, loaded_db):
     response = client.get("/api/v1/agreements/")
     assert response.status_code == 401
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_as_contract_has_contract_fields(loaded_db):
+    stmt = select(Agreement).where(Agreement.id == 1)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement.type == "contract"
+    assert agreement.contract_number == "CT00XX1"

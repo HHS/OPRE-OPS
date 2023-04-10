@@ -7,7 +7,7 @@ from models.base import BaseData, BaseModel, currency, intpk, optional_str, reg,
 from models.portfolios import Portfolio, shared_portfolio_cans
 from models.research_projects import ResearchProject
 from models.users import User
-from sqlalchemy import Column, Date, DateTime, ForeignKey, Identity, Integer, Numeric, String, Table, Text
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Identity, Integer, Numeric, String, Table, Text
 from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 from typing_extensions import override
 
@@ -103,44 +103,92 @@ class AgreementType(Enum):
 
 #         return d
 
+
 class AgreementReason(Enum):
     NEW_REQ = 1
     RECOMPETE = 2  ## recompete is brand new contract related to same work
-    LOGICAL_FOLLOW_ON = 3  ## Logical Follow On is more work added/extension of the original
+    LOGICAL_FOLLOW_ON = (
+        3  ## Logical Follow On is more work added/extension of the original
+    )
 
 
-@reg.mapped_as_dataclass
-class ProductServiceCode(BaseData):
+agreement_team_members = Table(
+    "agreement_team_members",
+    BaseModel.metadata,
+    Column("agreement_id", ForeignKey("agreement.id"), primary_key=True),
+    Column("users_id", ForeignKey("users.id"), primary_key=True),
+)
+
+
+class ProductServiceCode(BaseModel):
     """Product Service Code"""
+
     __tablename__ = "product_service_code"
 
-    id: Mapped[intpk]
-    name: Mapped[required_str]
-    description: Mapped[str]
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    agreements = relationship("Agreement", back_populates="product_service_code")
 
 
-@reg.mapped_as_dataclass
-class Agreement(BaseData):
+class Agreement(BaseModel):
     """Generic Agreement Model"""
+
     __tablename__ = "agreement"
 
-    id: Mapped[intpk]
-    name: Mapped[optional_str]
-    description: Mapped[optional_str]
-    product_service_code: Mapped[ProductServiceCode] = relationship("ProductServiceCode", back_populates="agreement")
-    agreement_reason: Mapped[AgreementReason]
-    incumbent: Mapped[optional_str]
-    project_officer: Mapped[User] = relationship("User", back_populates="agreement")
-    team_members: Mapped[list[User]] = relationship("User", back_populates="agreement")
-    agreement_type: Mapped[AgreementType]
-    research_project: Mapped[ResearchProject] = relationship("ResearchProject", back_populates="agreement")
-    budget_line_items: Mapped[list["BudgetLineItem"]] = relationship("BudgetLineItem", back_populates="agreement")
-    type: Mapped[str]
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    number = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    product_service_code_id = Column(Integer, ForeignKey("product_service_code.id"))
+    product_service_code = relationship(ProductServiceCode, back_populates="agreements")
+    agreement_reason = Column(sa.Enum(AgreementReason))
+    incumbent = Column(String, nullable=True)
+    # project_officer_id = Column(Integer, ForeignKey("users.id"))
+    # project_officer = relationship("User", back_populates="agreements")
+    project_officer = Column(
+        Integer, ForeignKey("users.id", name="fk_user_project_officer"), nullable=True
+    )
+    team_members = relationship(
+        User,
+        secondary=agreement_team_members,
+        back_populates="agreements",
+    )
+    agreement_type = Column(sa.Enum(AgreementType))
+    research_project_id = Column(Integer, ForeignKey("research_project.id"))
+    research_project = relationship("ResearchProject", back_populates="agreements")
+    budget_line_items = relationship("BudgetLineItem", back_populates="agreement")
+    type = Column(String)
 
     __mapper_args__ = {
         "polymorphic_identity": "agreement",
         "polymorphic_on": "type",
     }
+
+    @override
+    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
+
+        d.update(
+            {
+                "agreement_type": self.agreement_type.name
+                if self.agreement_type
+                else None,
+                "agreement_reason": self.agreement_reason.name
+                if self.agreement_reason
+                else None
+            }
+        )
+
+        return d
+
+
+contract_support_contacts = Table(
+    "contract_support_contacts",
+    BaseModel.metadata,
+    Column("contract_number", ForeignKey("contract.contract_number"), primary_key=True),
+    Column("users_id", ForeignKey("users.id"), primary_key=True),
+)
 
 
 class ContractType(Enum):
@@ -148,21 +196,40 @@ class ContractType(Enum):
     SERVICE = 1
 
 
-@reg.mapped_as_dataclass
+# @reg.mapped_as_dataclass
 class ContractAgreement(Agreement):
     """Contract Agreement Model"""
+
     __tablename__ = "contract"
 
-    id: Mapped[intpk] = mapped_column(ForeignKey("agreement.id"))
-    contract_number: Mapped[str]
-    vendor: Mapped[str]
-    delivered_status: Mapped[bool]
-    contract_type: Mapped[ContractType]
-    support_contacts: Mapped[list[User]] = relationship("User", back_populates="contract")
+    id = Column(Integer, ForeignKey("agreement.id"))
+    contract_number = Column(String, primary_key=True)
+    vendor = Column(String)
+    delivered_status = Column(Boolean, default=False)
+    contract_type = Column(sa.Enum(ContractType))
+    support_contacts = relationship(
+        User,
+        secondary=contract_support_contacts,
+        back_populates="contracts",
+    )
 
     __mapper_args__ = {
         "polymorphic_identity": "contract",
     }
+
+    @override
+    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
+
+        d.update(
+            {
+                "contract_type": self.contract_type.name
+                if self.contract_type
+                else None
+            }
+        )
+
+        return d
 
 
 class CANFiscalYear(BaseModel):

@@ -1,10 +1,11 @@
 from models.base import BaseModel
-from models.cans import CAN, Agreement, BudgetLineItem, CANFiscalYear
+from models.cans import CAN, Agreement, BudgetLineItem, CANFiscalYear, ContractAgreement
 from models.portfolios import Division, Portfolio, PortfolioStatus
 from models.procurement_shops import ProcurementShop
 from models.research_projects import ResearchProject
 from models.users import User
 from ops_api.ops.resources.agreements import AgreementItemAPI, AgreementListAPI
+from ops_api.ops.resources.contract import ContractItemAPI, ContractListAPI
 from ops_api.ops.resources.auth import AuthLoginAPI, AuthRefreshAPI
 from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, BudgetLineItemsListAPI
 from ops_api.ops.resources.can_fiscal_year import CANFiscalYearItemAPI, CANFiscalYearListAPI
@@ -24,6 +25,10 @@ from ops_api.ops.resources.users import UsersItemAPI, UsersListAPI
 # AGREEMENT ENDPOINTS
 AGREEMENT_ITEM_API_VIEW_FUNC = AgreementItemAPI.as_view("agreements-item", Agreement)
 AGREEMENT_LIST_API_VIEW_FUNC = AgreementListAPI.as_view("agreements-group", Agreement)
+
+# CONTRACT ENDPOINTS
+CONTRACT_ITEM_API_VIEW_FUNC = ContractItemAPI.as_view("contract-item", ContractAgreement)
+CONTRACT_LIST_API_VIEW_FUNC = ContractListAPI.as_view("contract-list", ContractListAPI)
 
 # Auth endpoints
 AUTH_LOGIN_API_VIEW_FUNC = AuthLoginAPI.as_view("auth-login", BaseModel)

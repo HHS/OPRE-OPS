@@ -2,6 +2,8 @@ from flask import Blueprint
 from ops_api.ops.views import (
     AGREEMENT_ITEM_API_VIEW_FUNC,
     AGREEMENT_LIST_API_VIEW_FUNC,
+    CONTRACT_ITEM_API_VIEW_FUNC,
+    CONTRACT_LIST_API_VIEW_FUNC,
     AUTH_LOGIN_API_VIEW_FUNC,
     AUTH_REFRESH_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC,
@@ -156,4 +158,12 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/agreements/",
         view_func=AGREEMENT_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/contracts/<int:id>",
+        view_func=CONTRACT_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/contracts/",
+        view_func=CONTRACT_LIST_API_VIEW_FUNC,
     )
