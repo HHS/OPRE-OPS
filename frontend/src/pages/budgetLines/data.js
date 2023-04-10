@@ -8,7 +8,6 @@ export const AGREEMENTS = [
         project_officer: "Ivelisse Martinez-Beck",
         period_of_performance_start: "2021-01-01",
         period_of_performance_end: "2021-12-31",
-        cans: [], // not sure we need this?
         procurement_shop: {
             id: 2,
             name: "Government Contracting Services",
