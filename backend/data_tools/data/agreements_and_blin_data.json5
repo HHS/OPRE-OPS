@@ -1,109 +1,130 @@
 {
-  "product_service_code": [
+  product_service_code: [
     {
       id: 1,
       name: "Service-Code-1",
-      description: ""
+      description: "",
     },
     {
       id: 2,
       name: "Service-Code-2",
-      description: ""
+      description: "",
     },
     {
       id: 3,
       name: "Service-Code-3",
-      description: ""
+      description: "",
+    },
+    {
+      id: 4,
+      name: "Service-Code-4",
+      description: "",
+    },
+    {
+      id: 5,
+      name: "Service-Code-5",
+      description: "",
+    },
+    {
+      id: 6,
+      name: "Service-Code-6",
+      description: "",
     },
   ],
-  "agreement": [
+  agreement: [
     {
       id: 1,
+      number: "AGR0001",
       name: "Contract #1: African American Child and Family Research Center",
       description: "",
       product_service_code: 1,
       agreement_reason: "NEW_REQ",
       incumbent: "",
-      project_officer: 1,
+      project_officer: null,
       team_members: [],
       type: "contract",
-      agreement_type:  "CONTRACT",
-      research_project_id: 1
+      agreement_type: "CONTRACT",
+      research_project_id: 1,
     },
     {
       id: 2,
+      agreement_number: "AGR0002",
       name: "Contract #2: African American Child and Family Research Center",
       description: "",
       product_service_code: 1,
       agreement_reason: "NEW_REQ",
       incumbent: "",
-      project_officer: 1,
+      project_officer: null,
       team_members: [],
       type: "contract",
       agreement_type: "CONTRACT",
-      research_project_id: 1
+      research_project_id: 1,
     },
     {
       id: 3,
+      agreement_number: "AGR0003",
       name: "Grant #1: Early Care and Education Leadership Study (ExCELS)",
       description: "",
       product_service_code: 1,
       agreement_reason: "NEW_REQ",
       incumbent: "",
-      project_officer: 1,
+      project_officer: null,
       team_members: [],
       type: "contract",
       agreement_type: "GRANT",
-      research_project_id: 2
+      research_project_id: 2,
     },
     {
       id: 4,
+      agreement_number: "AGR0004",
       name: "Grant #2: Early Care and Education Leadership Study (ExCELS)",
       description: "",
       product_service_code: 1,
       agreement_reason: "NEW_REQ",
       incumbent: "",
-      project_officer: 1,
+      project_officer: null,
       team_members: [],
       type: "contract",
       agreement_type: "GRANT",
-      research_project_id: 2
+      research_project_id: 2,
     },
     {
       id: 5,
+      agreement_number: "AGR0005",
       name: "DIRECT_ALLOCATION #1: Fathers and Continuous Learning (FCL)",
       description: "",
       product_service_code: 1,
       agreement_reason: "NEW_REQ",
       incumbent: "",
-      project_officer: 1,
+      project_officer: null,
       team_members: [],
       type: "contract",
       agreement_type: "DIRECT_ALLOCATION",
-      research_project_id: 3
+      research_project_id: 3,
     },
     {
       id: 6,
+      agreement_number: "AGR0006",
       name: "DIRECT_ALLOCATION #2: Fathers and Continuous Learning (FCL)",
       description: "",
       product_service_code: 1,
       agreement_reason: "NEW_REQ",
       incumbent: "",
-      project_officer: 1,
+      project_officer: null,
       team_members: [],
       type: "contract",
       agreement_type: "DIRECT_ALLOCATION",
-      research_project_id: 3
-    }
+      research_project_id: 3,
+    },
   ],
-  "contract": [
+  contract: [
     {
       id: 1,
       contract_number: "CT00XX1",
       vendor: "Vendor 1",
       delivered_status: false,
       contract_type: "RESEARCH",
-      support_contacts: []
+      support_contacts: [],
     },
     {
       id: 2,
@@ -111,7 +132,7 @@
       vendor: "Vendor 1",
       delivered_status: false,
       contract_type: "RESEARCH",
-      support_contacts: []
+      support_contacts: [],
     },
     {
       id: 3,
@@ -119,7 +140,7 @@
       vendor: "Vendor 1",
       delivered_status: false,
       contract_type: "RESEARCH",
-      support_contacts: []
+      support_contacts: [],
     },
     {
       id: 4,
@@ -127,7 +148,7 @@
       vendor: "Vendor 1",
       delivered_status: false,
       contract_type: "RESEARCH",
-      support_contacts: []
+      support_contacts: [],
     },
     {
       id: 5,
@@ -135,7 +156,7 @@
       vendor: "Vendor 1",
       delivered_status: false,
       contract_type: "RESEARCH",
-      support_contacts: []
+      support_contacts: [],
     },
     {
       id: 6,
@@ -143,99 +164,99 @@
       vendor: "Vendor 1",
       delivered_status: false,
       contract_type: "RESEARCH",
-      support_contacts: []
-    }
+      support_contacts: [],
+    },
   ],
-  "budget_line_item": [
+  budget_line_item: [
     {
       line_description: "LI 1",
       comments: "",
       can_id: 5,
       agreement_id: 1,
-      amount: 1000000.00,
+      amount: 1000000.0,
       status: "PLANNED",
       date_needed: null,
-      psc_fee_amount: null
+      psc_fee_amount: null,
     },
     {
       line_description: "LI 2",
       comments: "",
       can_id: 5,
       agreement_id: 1,
-      amount: 1000000.00,
+      amount: 1000000.0,
       status: "PLANNED",
       date_needed: null,
-      psc_fee_amount: null
+      psc_fee_amount: null,
     },
     {
       line_description: "Line Item 1",
       comments: "",
       can_id: 8,
       agreement_id: 2,
-      amount: 1000000.00,
+      amount: 1000000.0,
       status: "PLANNED",
       date_needed: null,
-      psc_fee_amount: null
+      psc_fee_amount: null,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 8,
       agreement_id: 2,
-      amount: 1000000.00,
+      amount: 1000000.0,
       status: "PLANNED",
       date_needed: null,
-      psc_fee_amount: null
+      psc_fee_amount: null,
     },
     {
       line_description: "Line Item 1",
       comments: "",
       can_id: 9,
       agreement_id: 2,
-      amount: 1000000.00,
+      amount: 1000000.0,
       status: "PLANNED",
       date_needed: null,
-      psc_fee_amount: null
+      psc_fee_amount: null,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 9,
       agreement_id: 2,
-      amount: 1000000.00,
+      amount: 1000000.0,
       status: "PLANNED",
       date_needed: null,
-      psc_fee_amount: null
+      psc_fee_amount: null,
     },
     {
       line_description: "Line Item 1",
       comments: "",
       can_id: 9,
       agreement_id: 2,
-      amount: 1000000.00,
+      amount: 1000000.0,
       status: "PLANNED",
       date_needed: null,
-      psc_fee_amount: null
+      psc_fee_amount: null,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 9,
       agreement_id: 2,
-      amount: 2000000.00,
+      amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: null,
-      psc_fee_amount: null
+      psc_fee_amount: null,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 1,
       agreement_id: 2,
-      amount: 2000000.00,
+      amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: null,
-      psc_fee_amount: null
+      psc_fee_amount: null,
     },
     {
       line_description: "Line Item 2",
@@ -243,100 +264,100 @@
       can_id: 4,
       agreement_id: 2,
       can_fiscal_year_can_id: 4,
-      amount: 2000000.00,
+      amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: null,
-      psc_fee_amount: null
+      psc_fee_amount: null,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 2,
       agreement_id: 2,
-      amount: 2000000.00,
+      amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: null,
-      psc_fee_amount: null
+      psc_fee_amount: null,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 3,
       agreement_id: 2,
-      amount: 2000000.00,
+      amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: null,
-      psc_fee_amount: null
+      psc_fee_amount: null,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 5,
       agreement_id: 2,
-      amount: 2000000.00,
+      amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: null,
-      psc_fee_amount: null
+      psc_fee_amount: null,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 6,
       agreement_id: 2,
-      amount: 2000000.00,
+      amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: null,
-      psc_fee_amount: null
+      psc_fee_amount: null,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 7,
       agreement_id: 2,
-      amount: 2000000.00,
+      amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: null,
-      psc_fee_amount: null
+      psc_fee_amount: null,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 2,
       agreement_id: 2,
-      amount: 1000000.00,
+      amount: 1000000.0,
       status: "PLANNED",
       date_needed: null,
-      psc_fee_amount: null
+      psc_fee_amount: null,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 2,
       agreement_id: 2,
-      amount: 3000000.00,
+      amount: 3000000.0,
       status: "OBLIGATED",
       date_needed: null,
-      psc_fee_amount: null
+      psc_fee_amount: null,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 3,
       agreement_id: 2,
-      amount: 7000000.00,
+      amount: 7000000.0,
       status: "PLANNED",
       date_needed: null,
-      psc_fee_amount: null
+      psc_fee_amount: null,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 3,
       agreement_id: 2,
-      amount: 500000.00,
+      amount: 500000.0,
       status: "OBLIGATED",
       date_needed: null,
-      psc_fee_amount: null
+      psc_fee_amount: null,
     },
   ],
   procurement_shop: [
@@ -364,5 +385,5 @@
       abbr: "IBC",
       fee: 4.8,
     },
-  ]
+  ],
 }
