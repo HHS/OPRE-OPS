@@ -53,7 +53,6 @@ class ContractListAPI(BaseListAPI):
         is_authorized = self.auth_gateway.is_authorized(identity, ["GET_AGREEMENTS"])
 
         if is_authorized:
-
             search = request.args.get("search")
 
             stmt = self._get_query(search)
