@@ -79,31 +79,6 @@ class AgreementType(Enum):
     MISCELLANEOUS = 5
 
 
-# class Agreement(BaseModel):
-#     __tablename__ = "agreement"
-
-#     id = Column(Integer, primary_key=True)
-#     name = Column(String, nullable=False)
-#     agreement_type = Column(sa.Enum(AgreementType))
-#     research_project_id = Column(Integer, ForeignKey("research_project.id"))
-#     research_project = relationship(ResearchProject, back_populates="agreements")
-#     budget_line_items = relationship("BudgetLineItem", back_populates="agreement")
-
-#     @override
-#     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
-#         d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
-
-#         d.update(
-#             {
-#                 "agreement_type": self.agreement_type.name
-#                 if self.agreement_type
-#                 else None
-#             }
-#         )
-
-#         return d
-
-
 class AgreementReason(Enum):
     NEW_REQ = 1
     RECOMPETE = 2  ## recompete is brand new contract related to same work
@@ -176,7 +151,7 @@ class Agreement(BaseModel):
                 else None,
                 "agreement_reason": self.agreement_reason.name
                 if self.agreement_reason
-                else None
+                else None,
             }
         )
 
@@ -186,7 +161,11 @@ class Agreement(BaseModel):
 contract_support_contacts = Table(
     "contract_support_contacts",
     BaseModel.metadata,
-    Column("contract_number", ForeignKey("contract.contract_number"), primary_key=True),
+    Column(
+        "contract_number",
+        ForeignKey("contract_agreement.contract_number"),
+        primary_key=True,
+    ),
     Column("users_id", ForeignKey("users.id"), primary_key=True),
 )
 
@@ -196,11 +175,10 @@ class ContractType(Enum):
     SERVICE = 1
 
 
-# @reg.mapped_as_dataclass
 class ContractAgreement(Agreement):
     """Contract Agreement Model"""
 
-    __tablename__ = "contract"
+    __tablename__ = "contract_agreement"
 
     id = Column(Integer, ForeignKey("agreement.id"))
     contract_number = Column(String, primary_key=True)
@@ -222,14 +200,65 @@ class ContractAgreement(Agreement):
         d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
 
         d.update(
-            {
-                "contract_type": self.contract_type.name
-                if self.contract_type
-                else None
-            }
+            {"contract_type": self.contract_type.name if self.contract_type else None}
         )
 
         return d
+
+
+# TODO: Skeleton, will need flushed out more when we know what all a Grant is.
+class GrantAgreement(Agreement):
+    """Grant Agreement Model"""
+
+    __tablename__ = "grant_agreement"
+
+    id = Column(Integer, ForeignKey("agreement.id"))
+    foa = Column(String)
+
+    __mapper_args__ = {
+        "polymorphic_identity": "grant",
+    }
+
+
+# TODO: Skeleton, will need flushed out more when we know what all an IAA is.
+class IaaAgreement(Agreement):
+    """IAA Agreement Model"""
+
+    __tablename__ = "iaa_agreement"
+
+    id = Column(Integer, ForeignKey("agreement.id"))
+    iaa = Column(String)
+
+    __mapper_args__ = {
+        "polymorphic_identity": "iaa",
+    }
+
+
+# TODO: Skeleton, will need flushed out more when we know what all an IAA-AA is.
+class IaaAaAgreement(Agreement):
+    """IAA-AA Agreement Model"""
+
+    __tablename__ = "iaa_aa_agreement"
+
+    id = Column(Integer, ForeignKey("agreement.id"))
+    iaa_aa = Column(String)
+
+    __mapper_args__ = {
+        "polymorphic_identity": "iaa-aa",
+    }
+
+
+class DirectAgreement(Agreement):
+    """Direct Obligation Agreement Model"""
+
+    __tablename__ = "direct_agreement"
+
+    id = Column(Integer, ForeignKey("agreement.id"))
+    payee = Column(String, nullable=False)
+
+    __mapper_args__ = {
+        "polymorphic_identity": "direct",
+    }
 
 
 class CANFiscalYear(BaseModel):

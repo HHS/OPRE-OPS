@@ -5,12 +5,12 @@ from models.procurement_shops import ProcurementShop
 from models.research_projects import ResearchProject
 from models.users import User
 from ops_api.ops.resources.agreements import AgreementItemAPI, AgreementListAPI
-from ops_api.ops.resources.contract import ContractItemAPI, ContractListAPI
 from ops_api.ops.resources.auth import AuthLoginAPI, AuthRefreshAPI
 from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, BudgetLineItemsListAPI
 from ops_api.ops.resources.can_fiscal_year import CANFiscalYearItemAPI, CANFiscalYearListAPI
 from ops_api.ops.resources.can_funding_summary import CANFundingSummaryItemAPI
 from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANsByPortfolioAPI
+from ops_api.ops.resources.contract import ContractItemAPI, ContractListAPI
 from ops_api.ops.resources.divisions import DivisionsItemAPI, DivisionsListAPI
 from ops_api.ops.resources.portfolio_calculate_funding import PortfolioCalculateFundingAPI
 from ops_api.ops.resources.portfolio_cans import PortfolioCansAPI
@@ -18,6 +18,7 @@ from ops_api.ops.resources.portfolio_funding_summary import PortfolioFundingSumm
 from ops_api.ops.resources.portfolio_status import PortfolioStatusItemAPI, PortfolioStatusListAPI
 from ops_api.ops.resources.portfolios import PortfolioItemAPI, PortfolioListAPI
 from ops_api.ops.resources.procurement_shops import ProcurementShopsItemAPI, ProcurementShopsListAPI
+from ops_api.ops.resources.product_service_code import ProductServiceCodeItemAPI, ProductServiceCodeListAPI
 from ops_api.ops.resources.research_project_funding_summary import ResearchProjectFundingSummaryListAPI
 from ops_api.ops.resources.research_projects import ResearchProjectItemAPI, ResearchProjectListAPI
 from ops_api.ops.resources.users import UsersItemAPI, UsersListAPI
@@ -54,6 +55,14 @@ CAN_FISCAL_YEAR_LIST_API_VIEW_FUNC = CANFiscalYearListAPI.as_view("can-fiscal-ye
 # BUDGET LINE ITEM ENDPOINTS
 BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC = BudgetLineItemsItemAPI.as_view("budget-line-items-item", BudgetLineItem)
 BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC = BudgetLineItemsListAPI.as_view("budget-line-items-group", BudgetLineItem)
+
+# PRODUCT SERVICE CODES ENDPOINTS
+PRODUCT_SERVICE_CODE_ITEM_API_VIEW_FUNC = ProductServiceCodeItemAPI.as_view(
+    "product-service-code-item", ProductServiceCodeItemAPI
+)
+PRODUCT_SERVICE_CODE_LIST_API_VIEW_FUNC = ProductServiceCodeListAPI.as_view(
+    "product-service-code-group", ProductServiceCodeListAPI
+)
 
 # PROCUREMENT SHOP ENDPOINTS
 PROCUREMENT_SHOPS_ITEM_API_VIEW_FUNC = ProcurementShopsItemAPI.as_view("procurement-shops-item", ProcurementShop)
