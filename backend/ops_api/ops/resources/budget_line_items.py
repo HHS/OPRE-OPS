@@ -27,8 +27,8 @@ class RequestBody:
     agreement_id: int
     can_id: int
     amount: float
-    status: str
     date_needed: str
+    status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus)
     comments: Optional[str] = None
     psc_fee_amount: Optional[float] = None
 
@@ -112,7 +112,6 @@ class BudgetLineItemsListAPI(BaseListAPI):
                     return make_response_with_headers(errors, 400)
 
                 data = self._post_schema.load(request.json)
-                data.status = BudgetLineItemStatus[data.status]  # convert str param to enum
                 # convert str param to date
                 data.date_needed = datetime.fromisoformat(data.date_needed)
                 new_bli = BudgetLineItem(**data.__dict__)
