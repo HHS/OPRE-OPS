@@ -5,7 +5,7 @@ from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from typing_extensions import override
 
 
-class ProductServiceCodeItemAPI(BaseItemAPI):  # type: ignore [misc]
+class ProductServiceCodeItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
@@ -14,7 +14,7 @@ class ProductServiceCodeItemAPI(BaseItemAPI):  # type: ignore [misc]
         return self._get_item_with_try(id)
 
 
-class ProductServiceCodeListAPI(BaseListAPI):  # type: ignore [misc]
+class ProductServiceCodeListAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 

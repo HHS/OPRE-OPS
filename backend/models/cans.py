@@ -102,7 +102,7 @@ class ProductServiceCode(BaseModel):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
-    description = Column(String, nullable=True)
+    description = Column(String)
     agreements = relationship("Agreement", back_populates="product_service_code")
 
 
