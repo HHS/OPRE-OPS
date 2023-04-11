@@ -98,10 +98,10 @@ def db_loaded_with_research_projects(app, loaded_db):
             ]
         )
 
-        blin_1 = BudgetLineItem(id=100, amount=1.0, can_id=100)
-        blin_2 = BudgetLineItem(id=200, amount=2.0, can_id=200)
-        blin_3 = BudgetLineItem(id=300, amount=3.0, can_id=300)
-        blin_4 = BudgetLineItem(id=400, amount=4.0, can_id=400)
+        blin_1 = BudgetLineItem(line_description="#1", id=100, amount=1.0, can_id=100)
+        blin_2 = BudgetLineItem(line_description="#2", id=200, amount=2.0, can_id=200)
+        blin_3 = BudgetLineItem(line_description="#3", id=300, amount=3.0, can_id=300)
+        blin_4 = BudgetLineItem(line_description="#4", id=400, amount=4.0, can_id=400)
 
         instances.extend([blin_1, blin_2, blin_3, blin_4])
 

@@ -30,6 +30,10 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
     result = []
     for obj in objs:
         if not isinstance(obj, OpsEvent) and not isinstance(obj, OpsDBHistory):  # not interested in tracking these
-            ops_db = OpsDBHistory(event_type=event_type, event_details=obj.to_dict())
+            ops_db = OpsDBHistory(
+                event_type=event_type,
+                event_details=obj.to_dict(),
+                created_by=obj.created_by,
+            )
             result.append(ops_db)
     return result

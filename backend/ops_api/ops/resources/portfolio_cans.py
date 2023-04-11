@@ -1,9 +1,10 @@
 from typing import List, Optional
 
-from flask import Response, jsonify, request
+from flask import Response, request
 from models.base import BaseModel
 from models.cans import CAN
 from ops_api.ops.base_views import BaseItemAPI
+from ops_api.ops.utils.response import make_response_with_headers
 
 
 class PortfolioCansAPI(BaseItemAPI):
@@ -21,6 +22,4 @@ class PortfolioCansAPI(BaseItemAPI):
     def get(self, id: int) -> Response:
         year = request.args.get("year")
         cans = self._get_item(id, year)
-        response = jsonify([can.to_dict() for can in cans])
-        response.headers.add("Access-Control-Allow-Origin", "*")
-        return response
+        return make_response_with_headers([can.to_dict() for can in cans])

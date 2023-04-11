@@ -12,12 +12,7 @@ class UserInfoDict(TypedDict):
 
 
 def process_user(userinfo: UserInfoDict) -> User:
-    stmt = select(User).where(User.oidc_id == userinfo["sub"])
-    users = current_app.db_session.execute(stmt).all()
-    if users and len(users) == 1:
-        user = users[0][0]
-    else:
-        user = None
+    user = get_user_from_token(userinfo)
     current_app.logger.debug(f"User Lookup Response: {user}")
     if not user:
         # Create new user
@@ -29,3 +24,11 @@ def process_user(userinfo: UserInfoDict) -> User:
         current_app.db_session.add(user)
         current_app.db_session.commit()
     return user
+
+
+def get_user_from_token(userinfo: UserInfoDict) -> Optional[User]:
+    if userinfo:
+        stmt = select(User).where(User.oidc_id == userinfo["sub"])
+        users = current_app.db_session.execute(stmt).all()
+        if users and len(users) == 1:
+            return users[0][0]
