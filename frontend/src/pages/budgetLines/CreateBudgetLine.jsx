@@ -89,25 +89,26 @@ const StepTwo = ({ goBack, goToNext }) => {
     const budgetLineBeingEdited = useSelector((state) => state.createBudgetLine.budget_line_being_edited);
     const [isAlert, setIsAlert] = useState(false);
     const [alertMsg, setAlertMsg] = useState({});
+
+    const showAlert = async (type, heading, message) => {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        window.scrollTo(0, 0);
+
+        setIsAlert(true);
+        setAlertMsg({ type, heading, message });
+
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        setIsAlert(false);
+        setAlertMsg({});
+    };
+
     const handleCancelEdit = () => {
         dispatch(setEditBudgetLineAdded({}));
     };
 
     const handleDeleteBudgetLine = (budgetLineId) => {
         dispatch(deleteBudgetLineAdded(budgetLineId));
-        setTimeout(() => {
-            window.scrollTo(0, 0);
-            setIsAlert(true);
-            setAlertMsg({
-                heading: "Budget Line Deleted",
-                type: "success",
-                message: "The budget line has been successfully deleted.",
-            });
-            setTimeout(() => {
-                setIsAlert(false);
-                setAlertMsg({});
-            }, 2000);
-        }, 500);
+        showAlert("success", "Budget Line Deleted", "The budget line has been successfully deleted.");
     };
 
     const handleEditForm = (e) => {
@@ -125,19 +126,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                 psc_fee_amount: selectedProcurementShop?.fee,
             })
         );
-        setTimeout(() => {
-            window.scrollTo(0, 0);
-            setIsAlert(true);
-            setAlertMsg({
-                heading: "Budget Line Updated",
-                type: "success",
-                message: "The budget line has been successfully edited.",
-            });
-            setTimeout(() => {
-                setIsAlert(false);
-                setAlertMsg({});
-            }, 2000);
-        }, 500);
+        showAlert("success", "Budget Line Updated", "The budget line has been successfully edited.");
     };
 
     const handleSubmitForm = (e) => {
@@ -160,19 +149,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                 },
             ])
         );
-        setTimeout(() => {
-            window.scrollTo(0, 0);
-            setIsAlert(true);
-            setAlertMsg({
-                heading: "Budget Line Added",
-                type: "success",
-                message: "The budget line has been added successfully added.",
-            });
-            setTimeout(() => {
-                setIsAlert(false);
-                setAlertMsg({});
-            }, 2000);
-        }, 500);
+        showAlert("success", "Budget Line Added", "The budget line has been successfully added.");
 
         //reset form
         dispatch(setEnteredDescription(""));
