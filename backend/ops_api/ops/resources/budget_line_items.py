@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional
 
 import desert
@@ -40,6 +40,22 @@ class QueryParameters:
     status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus, default=None)
 
 
+@dataclass
+class BudgetLineItemResponse:
+    id: int
+    agreement_id: int
+    can_id: int
+    amount: float
+    created_by: int
+    line_description: str
+    status: BudgetLineItemStatus = fields.Enum(BudgetLineItemStatus)
+    comments: Optional[str] = None
+    psc_fee_amount: Optional[float] = None
+    created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%f")
+    updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%f")
+    date_needed: date = fields.Date(format="%Y-%m-%d")
+
+
 class BudgetLineItemsItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
@@ -50,6 +66,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
         super().__init__(model)
         self._post_schema = desert.schema(RequestBody)
         self._get_schema = desert.schema(QueryParameters)
+        self._response_schema = desert.schema(BudgetLineItemResponse)
 
     @staticmethod
     def _get_query(
@@ -123,7 +140,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
                 current_app.db_session.add(new_bli)
                 current_app.db_session.commit()
 
-                new_bli_dict = new_bli.to_dict()
+                new_bli_dict = self._response_schema.dump(new_bli)
                 meta.metadata.update({"new_bli": new_bli_dict})
                 current_app.logger.info(f"POST to /budget-line-items: New BLI created: {new_bli_dict}")
 
