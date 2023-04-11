@@ -1,9 +1,10 @@
 from typing import List
 
-from flask import Response, jsonify, request
+from flask import Response, request
 from models.base import BaseModel
 from models.cans import CANFiscalYear
 from ops_api.ops.base_views import BaseListAPI
+from ops_api.ops.utils.response import make_response_with_headers
 from typing_extensions import override
 
 
@@ -27,9 +28,7 @@ class CANFiscalYearItemAPI(BaseListAPI):
     def get(self, id: int) -> Response:
         year = request.args.get("year")
         can_fiscal_year = self._get_item(id, year)
-        response = jsonify([cfy.to_dict() for cfy in can_fiscal_year])
-        response.headers.add("Access-Control-Allow-Origin", "*")
-        return response
+        return make_response_with_headers([cfy.to_dict() for cfy in can_fiscal_year])
 
 
 class CANFiscalYearListAPI(BaseListAPI):
@@ -52,6 +51,4 @@ class CANFiscalYearListAPI(BaseListAPI):
         can_id = request.args.get("can_id")
         year = request.args.get("year")
         can_fiscal_years = self._get_items(can_id, year)
-        response = jsonify([cfy.to_dict() for cfy in can_fiscal_years])
-        response.headers.add("Access-Control-Allow-Origin", "*")
-        return response
+        return make_response_with_headers([cfy.to_dict() for cfy in can_fiscal_years])

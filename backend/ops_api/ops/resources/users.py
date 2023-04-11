@@ -1,7 +1,8 @@
-from flask import Response, jsonify, make_response, request
+from flask import Response, make_response, request
 from flask_jwt_extended import jwt_required, verify_jwt_in_request
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.utils.response import make_response_with_headers
 from typing_extensions import override
 
 
@@ -45,7 +46,6 @@ class UsersListAPI(BaseListAPI):
             response = self._get_item_by_oidc_with_try(oidc_id)
         else:
             items = self.model.query.all()
-            response = jsonify([item.to_dict() for item in items])
-            response.headers.add("Access-Control-Allow-Origin", "*")
+            response = make_response_with_headers([item.to_dict() for item in items])
 
         return response

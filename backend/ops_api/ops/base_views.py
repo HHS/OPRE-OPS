@@ -1,8 +1,9 @@
-from flask import Response, current_app, jsonify, make_response
+from flask import Response, current_app
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from models.base import BaseModel
 from ops_api.ops.utils.auth import auth_gateway
+from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -41,14 +42,13 @@ class OPSMethodView(MethodView):
             item = self._get_item_by_oidc(oidc)
 
             if item:
-                response = jsonify(item.to_dict())
+                response = make_response_with_headers(item.to_dict())
             else:
-                response = jsonify({}), 404
+                response = make_response_with_headers({}, 404)
         except SQLAlchemyError as se:
             current_app.logger.error(se)
-            response = jsonify({}), 500
+            response = make_response_with_headers({}, 500)
 
-        response.headers.add("Access-Control-Allow-Origin", "*")
         return response
 
     def _get_item_with_try(self, id: int) -> Response:
@@ -56,14 +56,13 @@ class OPSMethodView(MethodView):
             item = self._get_item(id)
 
             if item:
-                response = make_response(item.to_dict(), 200)  # nosemgrep
+                response = make_response_with_headers(item.to_dict())
             else:
-                response = make_response({}, 404)  # nosemgrep
+                response = make_response_with_headers({}, 404)
         except SQLAlchemyError as se:
             current_app.logger.error(se)
-            response = make_response({}, 500)  # nosemgrep
+            response = make_response_with_headers({}, 500)
 
-        response.headers.add("Access-Control-Allow-Origin", "*")
         return response
 
     def _get_all_items_with_try(self) -> Response:
@@ -71,14 +70,13 @@ class OPSMethodView(MethodView):
             item_list = self._get_all_items()
 
             if item_list:
-                response = make_response([item.to_dict() for item in item_list], 200)  # nosemgrep
+                response = make_response_with_headers([item.to_dict() for item in item_list])
             else:
-                response = make_response({}, 404)  # nosemgrep
+                response = make_response_with_headers({}, 404)
         except SQLAlchemyError as se:
             current_app.logger.error(se)
-            response = make_response({}, 500)  # nosemgrep
+            response = make_response_with_headers({}, 500)
 
-        response.headers.add("Access-Control-Allow-Origin", "*")
         return response
 
 
