@@ -21,19 +21,25 @@ def test_get_jwt_not_none(app):
 
 
 def test_auth_post_fails_creates_event(client, loaded_db, mocker):
-    m1 = mocker.patch("ops_api.ops.utils.events.current_app")
+    mock_cm = mocker.patch("ops_api.ops.utils.events.Session")
+    mock_session = mocker.MagicMock()
+    mock_cm.return_value.__enter__.return_value = mock_session
+
     data = {"code": "abc1234"}
 
     res = client.post("/api/v1/auth/login/", json=data)
     assert res.status_code == 400
 
-    event = m1.db_session.add.call_args[0][0]
+    event = mock_session.add.call_args[0][0]
     assert event.event_status == OpsEventStatus.FAILED
 
 
 def test_auth_post_succeeds_creates_event(client, loaded_db, mocker):
     # setup mocks
-    db_mock = mocker.patch("ops_api.ops.utils.events.current_app")
+    mock_cm = mocker.patch("ops_api.ops.utils.events.Session")
+    mock_session = mocker.MagicMock()
+    mock_cm.return_value.__enter__.return_value = mock_session
+
     m1 = mocker.patch("ops_api.ops.utils.auth_views._get_token_and_user_data_from_oauth_provider")
     m1.return_value = ({"access_token": "blah"}, {})
     m2 = mocker.patch("ops_api.ops.utils.auth_views._get_token_and_user_data_from_internal_auth")
@@ -45,7 +51,7 @@ def test_auth_post_succeeds_creates_event(client, loaded_db, mocker):
     res = client.post("/api/v1/auth/login/", json={})
     assert res.status_code == 200
 
-    event = db_mock.db_session.add.call_args[0][0]
+    event = mock_session.add.call_args[0][0]
     assert event.event_type == OpsEventType.LOGIN_ATTEMPT
     assert event.event_status == OpsEventStatus.SUCCESS
     assert event.event_details["access_token"] == "blah"
