@@ -3,8 +3,10 @@ from models.cans import ProductServiceCode
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreement_type_retrieve_all(loaded_db):
-    assert len(ProductServiceCode) == 6
+def test_get_product_service_code_list(auth_client):
+    response = auth_client.get("/api/v1/product-service-codes/")
+    assert response.status_code == 200
+    assert len(response.json) == 6
 
 
 @pytest.mark.usefixtures("app_ctx")

@@ -44,18 +44,33 @@ def test_agreements_serialization(auth_client, loaded_db):
     response = auth_client.get("/api/v1/agreements/1")
     assert response.status_code == 200
 
-    # Remove extra keys that make test flaky
+    # Remove extra keys that make test flaky or noisy
     json_to_compare = response.json  # response.json seems to be immutable
     del json_to_compare["created_on"]
     del json_to_compare["updated_on"]
+    del json_to_compare["budget_line_items"]
+    del json_to_compare["research_project"]
 
     assert json_to_compare == {
-        "id": 1,
-        "name": "Contract #1: African American Child and Family Research Center",
-        "agreement_type": "CONTRACT",
-        "research_project_id": 1,
-        "created_by": None,
         "agreement_reason": "NEW_REQ",
+        "agreement_type": "CONTRACT",
+        "contract_number": "CT00XX1",
+        "contract_type": "RESEARCH",
+        "created_by": None,
+        "delivered_status": False,
+        "description": "",
+        "id": 1,
+        "incumbent": "",
+        "name": "Contract #1: African American Child and Family Research Center",
+        "number": "AGR0001",
+        "procurment_shop": None,
+        "product_service_code": 1,
+        "project_officer": None,
+        "research_project_id": 1,
+        "support_contacts": [],
+        "team_members": [],
+        "type": "contract",
+        "vendor": "Vendor 1",
     }
 
 
