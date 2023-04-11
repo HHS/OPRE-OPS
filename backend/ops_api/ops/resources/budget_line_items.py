@@ -7,6 +7,7 @@ from typing import Optional
 import desert
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
+from marshmallow import fields
 from models import BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
@@ -21,7 +22,7 @@ from typing_extensions import override
 
 
 @dataclass
-class PostBudgetLineItemRequest:
+class RequestBody:
     line_description: str
     agreement_id: int
     can_id: int
@@ -33,9 +34,10 @@ class PostBudgetLineItemRequest:
 
 
 @dataclass
-class GetQueryParameters:
+class QueryParameters:
     can_id: Optional[int] = None
     agreement_id: Optional[int] = None
+    status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus, default=None)
 
 
 class BudgetLineItemsItemAPI(BaseItemAPI):
@@ -46,13 +48,14 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 class BudgetLineItemsListAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
-        self._post_schema = desert.schema(PostBudgetLineItemRequest)
-        self._get_schema = desert.schema(GetQueryParameters)
+        self._post_schema = desert.schema(RequestBody)
+        self._get_schema = desert.schema(QueryParameters)
 
     @staticmethod
     def _get_query(
         can_id: Optional[int] = None,
         agreement_id: Optional[int] = None,
+        status: Optional[str] = None,
     ) -> list[BudgetLineItem]:
         stmt = select(BudgetLineItem).order_by(BudgetLineItem.id)
 
@@ -63,6 +66,9 @@ class BudgetLineItemsListAPI(BaseListAPI):
 
         if agreement_id:
             query_helper.add_column_equals(BudgetLineItem.agreement_id, agreement_id)
+
+        if status:
+            query_helper.add_column_equals(BudgetLineItem.status, status)
 
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")
@@ -84,7 +90,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
 
             data = self._get_schema.load(request.args)
 
-            stmt = self._get_query(data.can_id, data.agreement_id)
+            stmt = self._get_query(data.can_id, data.agreement_id, data.status)
 
             result = current_app.db_session.execute(stmt).all()
 
