@@ -1,5 +1,5 @@
 import App from "../../App";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
 import { StepIndicatorOne } from "../../components/UI/StepIndicator/StepIndicatorOne";
@@ -28,6 +28,7 @@ import {
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
 import { PreviewTable } from "./PreviewTable";
 import { getProcurementShopList } from "../../api/getProcurementShopList";
+import { Alert } from "../../components/UI/Alert/Alert";
 
 const StepOne = ({ goToNext }) => {
     const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
@@ -85,7 +86,8 @@ const StepTwo = ({ goBack, goToNext }) => {
     const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
     const isEditing = useSelector((state) => state.createBudgetLine.is_editing_budget_line);
     const budgetLineBeingEdited = useSelector((state) => state.createBudgetLine.budget_line_being_edited);
-
+    const [isAlert, setIsAlert] = useState(false);
+    const [alertMsg, setAlertMsg] = useState({});
     const handleCancelEdit = () => {
         dispatch(setEditBudgetLineAdded({}));
     };
@@ -127,6 +129,19 @@ const StepTwo = ({ goBack, goToNext }) => {
                 },
             ])
         );
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+            setIsAlert(true);
+            setAlertMsg({
+                heading: "Budget Line Added",
+                type: "success",
+                message: "The budget line has been added successfully added.",
+            });
+            setTimeout(() => {
+                setIsAlert(false);
+                setAlertMsg({});
+            }, 2000);
+        }, 500);
 
         //reset form
         dispatch(setEnteredDescription(""));
@@ -136,13 +151,20 @@ const StepTwo = ({ goBack, goToNext }) => {
         dispatch(setEnteredDay(""));
         dispatch(setEnteredYear(""));
         dispatch(setEnteredComments(""));
-        alert("Budget Line Added");
     };
 
     return (
         <>
-            <h2 className="font-sans-lg">Create New Budget Line</h2>
-            <p>Step Two: Text explaining this page</p>
+            {isAlert ? (
+                <Alert heading={alertMsg.heading} type={alertMsg.type}>
+                    {alertMsg.message}
+                </Alert>
+            ) : (
+                <>
+                    <h2 className="font-sans-lg">Create New Budget Line</h2>
+                    <p>Step Two: Text explaining this page</p>
+                </>
+            )}
             <StepIndicatorTwo />
             <h2 className="font-sans-lg">Procurement Shop</h2>
             <p>
