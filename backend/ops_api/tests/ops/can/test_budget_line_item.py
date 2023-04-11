@@ -56,6 +56,21 @@ def test_get_budget_line_items_list_by_can(auth_client):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
+def test_get_budget_line_items_list_by_agreement(auth_client):
+    response = auth_client.get("/api/v1/budget-line-items/?agreement_id=1")
+    assert response.status_code == 200
+    assert len(response.json) == 2
+    assert response.json[0]["agreement_id"] == 1
+    assert response.json[1]["agreement_id"] == 1
+
+
+def test_get_budget_line_items_auth_required(client):
+    response = client.get("/api/v1/budget-line-items/")
+    assert response.status_code == 401
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
 def test_post_budget_line_items_empty_post(auth_client):
     response = auth_client.post("/api/v1/budget-line-items/", data={})
     assert response.status_code == 400
