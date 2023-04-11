@@ -1,11 +1,12 @@
 from typing import Union
 
 import requests
-from flask import Response, current_app, jsonify, request
+from flask import Response, current_app, request
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
 from models.events import OpsEventType
 from ops_api.ops.utils.auth import create_oauth_jwt, oauth
 from ops_api.ops.utils.events import OpsEventHandler
+from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import process_user
 
 
@@ -27,9 +28,7 @@ def login() -> Union[Response, tuple[str, int]]:
             }
         )
 
-        response = jsonify(access_token=access_token, refresh_token=refresh_token)
-        response.headers.add("Access-Control-Allow-Origin", "*")
-        return response
+        return make_response_with_headers({"access_token": access_token, "refresh_token": refresh_token})
 
 
 def _get_token_and_user_data_from_internal_auth(user_data):
@@ -79,6 +78,4 @@ def _get_token_and_user_data_from_oauth_provider(auth_code: str):
 def refresh() -> Response:
     identity = get_jwt_identity()
     access_token = create_access_token(identity=identity)
-    response = jsonify(access_token=access_token)
-    response.headers.add("Access-Control-Allow-Origin", "*")
-    return response
+    return make_response_with_headers({"access_token": access_token})
