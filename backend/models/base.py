@@ -1,11 +1,12 @@
 """Base model and other useful tools for project models."""
+import decimal
 from typing import Annotated, ClassVar, Final, TypeAlias, TypedDict, TypeVar, cast
 
 # from desert import schema
 from marshmallow import Schema as MMSchema
 from models.mixins.repr import ReprMixin
 from models.mixins.serialize import SerializeMixin
-from sqlalchemy import Column, DateTime, ForeignKey, func
+from sqlalchemy import Column, DateTime, ForeignKey, Numeric, func
 from sqlalchemy.orm import Mapped, declarative_base, declared_attr, mapped_column, registry
 from typing_extensions import Any, override
 
@@ -13,6 +14,9 @@ Base = declarative_base()
 reg = registry(metadata=Base.metadata)
 
 intpk = Annotated[int, mapped_column(init=False, repr=True, primary_key=True)]
+required_str = Annotated[str, mapped_column(nullable=False)]
+optional_str = Annotated[str, mapped_column(nullable=True)]
+currency = Annotated[decimal.Decimal, mapped_column(Numeric(12, 2), default=0.00)]
 # This is a simple type to make a standard int-base primary key field.
 
 _T = TypeVar("_T")
