@@ -24,6 +24,7 @@ import {
     setEnteredComments,
     setProcurementShop,
     setSelectedProcurementShop,
+    deleteBudgetLineAdded,
 } from "./createBudgetLineSlice";
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
 import { PreviewTable } from "./PreviewTable";
@@ -92,6 +93,23 @@ const StepTwo = ({ goBack, goToNext }) => {
         dispatch(setEditBudgetLineAdded({}));
     };
 
+    const handleDeleteBudgetLine = (budgetLineId) => {
+        dispatch(deleteBudgetLineAdded(budgetLineId));
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+            setIsAlert(true);
+            setAlertMsg({
+                heading: "Budget Line Deleted",
+                type: "success",
+                message: "The budget line has been successfully deleted.",
+            });
+            setTimeout(() => {
+                setIsAlert(false);
+                setAlertMsg({});
+            }, 2000);
+        }, 500);
+    };
+
     const handleEditForm = (e) => {
         e.preventDefault();
         dispatch(
@@ -107,6 +125,19 @@ const StepTwo = ({ goBack, goToNext }) => {
                 psc_fee_amount: selectedProcurementShop?.fee,
             })
         );
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+            setIsAlert(true);
+            setAlertMsg({
+                heading: "Budget Line Updated",
+                type: "success",
+                message: "The budget line has been successfully edited.",
+            });
+            setTimeout(() => {
+                setIsAlert(false);
+                setAlertMsg({});
+            }, 2000);
+        }, 500);
     };
 
     const handleSubmitForm = (e) => {
@@ -282,7 +313,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                     <dd className="text-semibold margin-0">{selectedAgreement?.name}</dd>
                 </dl>
             </div>
-            <PreviewTable />
+            <PreviewTable handleDeleteBudgetLine={handleDeleteBudgetLine} />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className="usa-button usa-button--unstyled margin-right-2"

@@ -110,7 +110,6 @@ const createBudgetLineSlice = createSlice({
         setEditBudgetLineAdded: (state, action) => {
             const updatedBudgetLines = state.budget_lines_added.map((budgetLine) => {
                 if (budgetLine.id === action.payload.id) {
-                    alert("Budget Line Updated");
                     return {
                         ...budgetLine,
                         ...action.payload,
