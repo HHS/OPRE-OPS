@@ -59,6 +59,34 @@ class BudgetLineItemResponse:
 class BudgetLineItemsItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
+        self._response_schema = desert.schema(BudgetLineItemResponse)
+
+    def _get_item_with_try(self, id: int) -> Response:
+        try:
+            item = self._get_item(id)
+
+            if item:
+                response = make_response_with_headers(self._response_schema.dump(item))
+            else:
+                response = make_response_with_headers({}, 404)
+        except SQLAlchemyError as se:
+            current_app.logger.error(se)
+            response = make_response_with_headers({}, 500)
+
+        return response
+
+    @override
+    @jwt_required()
+    def get(self, id: int) -> Response:
+        identity = get_jwt_identity()
+        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_BUDGET_LINE_ITEM"])
+
+        if is_authorized:
+            response = self._get_item_with_try(id)
+        else:
+            response = make_response_with_headers({}, 401)
+
+        return response
 
 
 class BudgetLineItemsListAPI(BaseListAPI):
@@ -67,6 +95,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
         self._post_schema = desert.schema(RequestBody)
         self._get_schema = desert.schema(QueryParameters)
         self._response_schema = desert.schema(BudgetLineItemResponse)
+        self._response_schema_collection = desert.schema(BudgetLineItemResponse, many=True)
 
     @staticmethod
     def _get_query(
@@ -111,7 +140,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
 
             result = current_app.db_session.execute(stmt).all()
 
-            response = make_response_with_headers([i.to_dict() for item in result for i in item])
+            response = make_response_with_headers(self._response_schema_collection.dump([bli[0] for bli in result]))
         else:
             response = make_response_with_headers([], 401)
 
