@@ -89,7 +89,7 @@ const StepTwo = ({ goBack, goToNext }) => {
     const isEditing = useSelector((state) => state.createBudgetLine.is_editing_budget_line);
     const budgetLineBeingEdited = useSelector((state) => state.createBudgetLine.budget_line_being_edited);
     const [isAlert, setIsAlert] = useState(false);
-    const [alertMsg, setAlertMsg] = useState({});
+    const [alertProps, setAlertProps] = useState({});
     const [showModal, setShowModal] = useState(false);
     const [modalProps, setModalProps] = useState({});
 
@@ -97,11 +97,11 @@ const StepTwo = ({ goBack, goToNext }) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
         window.scrollTo(0, 0);
         setIsAlert(true);
-        setAlertMsg({ type, heading, message });
+        setAlertProps({ type, heading, message });
 
         await new Promise((resolve) => setTimeout(resolve, 2000));
         setIsAlert(false);
-        setAlertMsg({});
+        setAlertProps({});
     };
 
     const handleCancelEdit = () => {
@@ -183,8 +183,8 @@ const StepTwo = ({ goBack, goToNext }) => {
             )}
 
             {isAlert ? (
-                <Alert heading={alertMsg.heading} type={alertMsg.type}>
-                    {alertMsg.message}
+                <Alert heading={alertProps.heading} type={alertProps.type}>
+                    {alertProps.message}
                 </Alert>
             ) : (
                 <>
