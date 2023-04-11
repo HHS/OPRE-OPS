@@ -1,5 +1,5 @@
 from models.base import BaseModel
-from models.cans import CAN, Agreement, BudgetLineItem, CANFiscalYear, ContractAgreement
+from models.cans import CAN, Agreement, BudgetLineItem, CANFiscalYear, ContractAgreement, ProductServiceCode
 from models.portfolios import Division, Portfolio, PortfolioStatus
 from models.procurement_shops import ProcurementShop
 from models.research_projects import ResearchProject
@@ -58,10 +58,10 @@ BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC = BudgetLineItemsListAPI.as_view("budget-li
 
 # PRODUCT SERVICE CODES ENDPOINTS
 PRODUCT_SERVICE_CODE_ITEM_API_VIEW_FUNC = ProductServiceCodeItemAPI.as_view(
-    "product-service-code-item", ProductServiceCodeItemAPI
+    "product-service-code-item", ProductServiceCode
 )
 PRODUCT_SERVICE_CODE_LIST_API_VIEW_FUNC = ProductServiceCodeListAPI.as_view(
-    "product-service-code-group", ProductServiceCodeListAPI
+    "product-service-code-group", ProductServiceCode
 )
 
 # PROCUREMENT SHOP ENDPOINTS

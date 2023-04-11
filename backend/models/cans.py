@@ -103,11 +103,11 @@ class ProductServiceCode(BaseModel):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     description = Column(String)
-    agreements = relationship("Agreement", back_populates="product_service_code")
+    #agreements = relationship("Agreement", back_populates="product_service_code")
 
 
 class Agreement(BaseModel):
-    """Generic Agreement Model"""
+    """Base Agreement Model"""
 
     __tablename__ = "agreement"
 
@@ -115,8 +115,9 @@ class Agreement(BaseModel):
     name = Column(String, nullable=False)
     number = Column(String, nullable=False)
     description = Column(String, nullable=True)
-    product_service_code_id = Column(Integer, ForeignKey("product_service_code.id"))
-    product_service_code = relationship(ProductServiceCode, back_populates="agreements")
+    # product_service_code_id = Column(Integer, ForeignKey("product_service_code.id"))
+    # product_service_code = relationship(ProductServiceCode, back_populates="agreements")
+    product_service_code = Column(Integer, ForeignKey("product_service_code.id", name="fk_agreement_product_service_code"))
     agreement_reason = Column(sa.Enum(AgreementReason))
     incumbent = Column(String, nullable=True)
     # project_officer_id = Column(Integer, ForeignKey("users.id"))
