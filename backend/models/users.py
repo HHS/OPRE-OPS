@@ -30,7 +30,7 @@ class User(BaseModel):
     updated = Column(DateTime, onupdate=func.now())
 
     division = Column(Integer, ForeignKey("division.id", name="fk_user_division"))
-    roles = relationship("Role", secondary=user_role_table)
+    roles = relationship("Role", secondary=user_role_table, back_populates="users")
 
     portfolios = relationship(
         "Portfolio",
@@ -42,6 +42,18 @@ class User(BaseModel):
         "ResearchProject",
         back_populates="team_leaders",
         secondary="research_project_team_leaders",
+    )
+
+    agreements = relationship(
+        "Agreement",
+        back_populates="team_members",
+        secondary="agreement_team_members",
+    )
+
+    contracts = relationship(
+        "ContractAgreement",
+        back_populates="support_contacts",
+        secondary="contract_support_contacts",
     )
 
     @override
@@ -67,4 +79,4 @@ class Role(BaseModel):
     id = Column(Integer, Identity(always=True, start=1, cycle=True), primary_key=True)
     name = Column(String, index=True, nullable=False)
     permissions = Column(String, nullable=False)
-    users = relationship("User", secondary=user_role_table)
+    users = relationship("User", secondary=user_role_table, back_populates="roles")
