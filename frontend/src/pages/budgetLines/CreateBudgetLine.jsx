@@ -30,6 +30,7 @@ import { ProcurementShopSelect } from "./ProcurementShopSelect";
 import { PreviewTable } from "./PreviewTable";
 import { getProcurementShopList } from "../../api/getProcurementShopList";
 import { Alert } from "../../components/UI/Alert/Alert";
+import { Modal } from "../../components/UI/Modal/Modal";
 
 const StepOne = ({ goToNext }) => {
     const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
@@ -89,11 +90,13 @@ const StepTwo = ({ goBack, goToNext }) => {
     const budgetLineBeingEdited = useSelector((state) => state.createBudgetLine.budget_line_being_edited);
     const [isAlert, setIsAlert] = useState(false);
     const [alertMsg, setAlertMsg] = useState({});
+    const [showModal, setShowModal] = useState(false);
+    const [confirm, setConfirm] = useState(false);
+    const [modalProps, setModalProps] = useState({});
 
     const showAlert = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
         window.scrollTo(0, 0);
-
         setIsAlert(true);
         setAlertMsg({ type, heading, message });
 
@@ -163,6 +166,18 @@ const StepTwo = ({ goBack, goToNext }) => {
 
     return (
         <>
+            <button className="usa-button" onClick={() => setShowModal(true)}>
+                show modal
+            </button>
+            {showModal && (
+                <Modal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+
             {isAlert ? (
                 <Alert heading={alertMsg.heading} type={alertMsg.type}>
                     {alertMsg.message}
@@ -300,27 +315,28 @@ const StepTwo = ({ goBack, goToNext }) => {
                             goBack();
                             return;
                         }
-
-                        const confirm = window.confirm(
-                            "Are you sure you want to go back? Your budget lines will not be saved."
-                        );
-                        if (confirm) {
-                            // clear all budget line data and state
-                            dispatch(setBudgetLineAdded([]));
-                            dispatch(setEnteredAmount(null));
-                            dispatch(setEnteredComments(""));
-                            dispatch(setEnteredDescription(""));
-                            dispatch(setSelectedProcurementShop({}));
-                            dispatch(setEnteredDay(""));
-                            dispatch(setEnteredMonth(""));
-                            dispatch(setEnteredYear(""));
-                            goBack();
-                        }
+                        // if budget lines have been added, show modal
+                        setShowModal(true);
+                        setModalProps({
+                            heading: "Are you sure you want to go back? Your budget lines will not be saved.",
+                            actionButtonText: "Go Back",
+                            handleConfirm: () => {
+                                dispatch(setBudgetLineAdded([]));
+                                dispatch(setEnteredAmount(null));
+                                dispatch(setEnteredComments(""));
+                                dispatch(setEnteredDescription(""));
+                                dispatch(setSelectedProcurementShop({}));
+                                dispatch(setEnteredDay(""));
+                                dispatch(setEnteredMonth(""));
+                                dispatch(setEnteredYear(""));
+                                goBack();
+                            },
+                        });
                     }}
                 >
                     Back
                 </button>
-                <button className="usa-button" onClick={() => goToNext({ name: "John Doe" })}>
+                <button className="usa-button" onClick={() => goToNext()}>
                     Continue
                 </button>
             </div>
