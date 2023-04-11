@@ -91,7 +91,6 @@ const StepTwo = ({ goBack, goToNext }) => {
     const [isAlert, setIsAlert] = useState(false);
     const [alertMsg, setAlertMsg] = useState({});
     const [showModal, setShowModal] = useState(false);
-    const [confirm, setConfirm] = useState(false);
     const [modalProps, setModalProps] = useState({});
 
     const showAlert = async (type, heading, message) => {
@@ -166,9 +165,6 @@ const StepTwo = ({ goBack, goToNext }) => {
 
     return (
         <>
-            <button className="usa-button" onClick={() => setShowModal(true)}>
-                show modal
-            </button>
             {showModal && (
                 <Modal
                     heading={modalProps.heading}
@@ -329,6 +325,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                                 dispatch(setEnteredDay(""));
                                 dispatch(setEnteredMonth(""));
                                 dispatch(setEnteredYear(""));
+                                setModalProps({});
                                 goBack();
                             },
                         });
