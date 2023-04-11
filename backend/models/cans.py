@@ -103,7 +103,6 @@ class ProductServiceCode(BaseModel):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     description = Column(String)
-    #agreements = relationship("Agreement", back_populates="product_service_code")
 
 
 class Agreement(BaseModel):
@@ -115,13 +114,9 @@ class Agreement(BaseModel):
     name = Column(String, nullable=False)
     number = Column(String, nullable=False)
     description = Column(String, nullable=True)
-    # product_service_code_id = Column(Integer, ForeignKey("product_service_code.id"))
-    # product_service_code = relationship(ProductServiceCode, back_populates="agreements")
     product_service_code = Column(Integer, ForeignKey("product_service_code.id", name="fk_agreement_product_service_code"))
     agreement_reason = Column(sa.Enum(AgreementReason))
     incumbent = Column(String, nullable=True)
-    # project_officer_id = Column(Integer, ForeignKey("users.id"))
-    # project_officer = relationship("User", back_populates="agreements")
     project_officer = Column(
         Integer, ForeignKey("users.id", name="fk_user_project_officer"), nullable=True
     )
@@ -133,7 +128,8 @@ class Agreement(BaseModel):
     agreement_type = Column(sa.Enum(AgreementType))
     research_project_id = Column(Integer, ForeignKey("research_project.id"))
     research_project = relationship("ResearchProject", back_populates="agreements")
-    budget_line_items = relationship("BudgetLineItem", back_populates="agreement")
+    budget_line_items = relationship("BudgetLineItem", back_populates="agreement", lazy=True)
+    procurment_shop = Column(Integer, ForeignKey("procurement_shop.id", name="fk_agreement_procurement_shop"), nullable=True)
     type = Column(String)
 
     __mapper_args__ = {
@@ -153,6 +149,9 @@ class Agreement(BaseModel):
                 "agreement_reason": self.agreement_reason.name
                 if self.agreement_reason
                 else None,
+                "budget_line_items": [bli.to_dict() for bli in self.budget_line_items],
+                "team_members": [tm.to_dict() for tm in self.team_members],
+                "research_project": self.research_project.to_dict() if self.research_project else None,
             }
         )
 
@@ -201,7 +200,10 @@ class ContractAgreement(Agreement):
         d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
 
         d.update(
-            {"contract_type": self.contract_type.name if self.contract_type else None}
+            {
+                "contract_type": self.contract_type.name if self.contract_type else None,
+                "support_contacts": [contacts.to_dict() for contacts in self.support_contacts],
+            }
         )
 
         return d
