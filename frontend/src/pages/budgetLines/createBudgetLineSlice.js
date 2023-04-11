@@ -49,21 +49,19 @@ const createBudgetLineSlice = createSlice({
             state.is_editing_budget_line = false;
         },
         deleteBudgetLineAdded: (state, action) => {
-            if (window.confirm("Are you sure you want to delete this budget line?")) {
-                state.budget_lines_added = state.budget_lines_added.filter(
-                    (budget_line) => budget_line.id !== action.payload
-                );
-                // reset the form
-                state.entered_description = "";
-                state.entered_comments = "";
-                state.selected_can = -1;
-                state.entered_amount = null;
-                state.entered_month = "";
-                state.entered_day = "";
-                state.entered_year = "";
-                state.budget_line_being_edited = -1;
-                state.is_editing_budget_line = false;
-            }
+            state.budget_lines_added = state.budget_lines_added.filter(
+                (budget_line) => budget_line.id !== action.payload
+            );
+            // reset the form
+            state.entered_description = "";
+            state.entered_comments = "";
+            state.selected_can = -1;
+            state.entered_amount = null;
+            state.entered_month = "";
+            state.entered_day = "";
+            state.entered_year = "";
+            state.budget_line_being_edited = -1;
+            state.is_editing_budget_line = false;
         },
         editBudgetLineAdded: (state, action) => {
             const index = state.budget_lines_added.findIndex((budget_line) => budget_line.id === action.payload.id);

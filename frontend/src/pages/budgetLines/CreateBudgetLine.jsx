@@ -109,8 +109,16 @@ const StepTwo = ({ goBack, goToNext }) => {
     };
 
     const handleDeleteBudgetLine = (budgetLineId) => {
-        dispatch(deleteBudgetLineAdded(budgetLineId));
-        showAlert("success", "Budget Line Deleted", "The budget line has been successfully deleted.");
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to delete this budget line?",
+            actionButtonText: "Delete",
+            handleConfirm: () => {
+                dispatch(deleteBudgetLineAdded(budgetLineId));
+                showAlert("success", "Budget Line Deleted", "The budget line has been successfully deleted.");
+                setModalProps({});
+            },
+        });
     };
 
     const handleEditForm = (e) => {
