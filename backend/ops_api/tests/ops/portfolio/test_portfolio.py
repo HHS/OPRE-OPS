@@ -99,9 +99,24 @@ def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
 
         can_100_fy_2023 = CANFiscalYear(can=can_100, fiscal_year=2023, total_fiscal_year_funding=2.0)
 
-        blin_1 = BudgetLineItem(amount=1.0, status=BudgetLineItemStatus.PLANNED, can=can_100)
-        blin_2 = BudgetLineItem(amount=2.0, status=BudgetLineItemStatus.IN_EXECUTION, can=can_100)
-        blin_3 = BudgetLineItem(amount=3.0, status=BudgetLineItemStatus.OBLIGATED, can=can_100)
+        blin_1 = BudgetLineItem(
+            line_description="#1",
+            amount=1.0,
+            status=BudgetLineItemStatus.PLANNED,
+            can=can_100,
+        )
+        blin_2 = BudgetLineItem(
+            line_description="#2",
+            amount=2.0,
+            status=BudgetLineItemStatus.IN_EXECUTION,
+            can=can_100,
+        )
+        blin_3 = BudgetLineItem(
+            line_description="#3",
+            amount=3.0,
+            status=BudgetLineItemStatus.OBLIGATED,
+            can=can_100,
+        )
 
         can_100_fy_2022_co = CANFiscalYearCarryForward(
             id=100,

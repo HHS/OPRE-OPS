@@ -1,8 +1,9 @@
-from flask import Response, current_app, jsonify
+from flask import Response, current_app
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from models.base import BaseModel
 from ops_api.ops.utils.auth import auth_gateway
+from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -41,44 +42,41 @@ class OPSMethodView(MethodView):
             item = self._get_item_by_oidc(oidc)
 
             if item:
-                response = jsonify(item.to_dict())
+                response = make_response_with_headers(item.to_dict())
             else:
-                response = jsonify({}), 404
+                response = make_response_with_headers({}, 404)
         except SQLAlchemyError as se:
             current_app.logger.error(se)
-            response = jsonify({}), 500
+            response = make_response_with_headers({}, 500)
 
-        response.headers.add("Access-Control-Allow-Origin", "*")
         return response
 
-    def _get_item_with_try(self, id: int):
+    def _get_item_with_try(self, id: int) -> Response:
         try:
             item = self._get_item(id)
 
             if item:
-                response = jsonify(item.to_dict()), 200
+                response = make_response_with_headers(item.to_dict())
             else:
-                response = jsonify({}), 404
+                response = make_response_with_headers({}, 404)
         except SQLAlchemyError as se:
             current_app.logger.error(se)
-            response = jsonify({}), 500
+            response = make_response_with_headers({}, 500)
 
-        response[0].headers.add("Access-Control-Allow-Origin", "*")
         return response
 
-    def _get_all_items_with_try(self):
+    def _get_all_items_with_try(self) -> Response:
         try:
             item_list = self._get_all_items()
 
             if item_list:
-                response = jsonify([item.to_dict() for item in item_list]), 200
+                response = make_response_with_headers([item.to_dict() for item in item_list])
             else:
-                response = jsonify({}), 404
+                response = make_response_with_headers({}, 404)
         except SQLAlchemyError as se:
             current_app.logger.error(se)
-            response = jsonify({}), 500
+            response = make_response_with_headers({}, 500)
 
-        response[0].headers.add("Access-Control-Allow-Origin", "*")
         return response
 
 
@@ -98,3 +96,7 @@ class BaseListAPI(OPSMethodView):
     @jwt_required()
     def get(self) -> Response:
         return self._get_all_items_with_try()
+
+    @jwt_required()
+    def post(self) -> Response:
+        ...

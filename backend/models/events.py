@@ -10,6 +10,7 @@ from .base import BaseModel
 
 class OpsEventType(Enum):
     LOGIN_ATTEMPT = 1
+    CREATE_NEW_BLI = 2
 
 
 class OpsEventStatus(Enum):
@@ -27,13 +28,13 @@ class OpsEvent(BaseModel):
     event_details = sa.Column(JSONB)
 
     @override
-    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
-        d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = super().to_dict()
 
         d.update(
             {
                 "event_type": self.event_type.name if self.event_type else None,
-                "event_status": self.event_status.name if self.event_status else None
+                "event_status": self.event_status.name if self.event_status else None,
             }
         )
 

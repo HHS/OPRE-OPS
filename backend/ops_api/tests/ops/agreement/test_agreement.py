@@ -9,8 +9,10 @@ def test_agreement_retrieve(loaded_db):
     agreement = loaded_db.scalar(stmt)
 
     assert agreement is not None
+    assert agreement.number == "AGR0001"
     assert agreement.name == "Contract #1: African American Child and Family Research Center"
     assert agreement.id == 1
+    assert agreement.type == "contract"
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -42,17 +44,33 @@ def test_agreements_serialization(auth_client, loaded_db):
     response = auth_client.get("/api/v1/agreements/1")
     assert response.status_code == 200
 
-    # Remove extra keys that make test flaky
+    # Remove extra keys that make test flaky or noisy
     json_to_compare = response.json  # response.json seems to be immutable
     del json_to_compare["created_on"]
     del json_to_compare["updated_on"]
+    del json_to_compare["budget_line_items"]
+    del json_to_compare["research_project"]
 
     assert json_to_compare == {
-        "id": 1,
-        "name": "Contract #1: African American Child and Family Research Center",
+        "agreement_reason": "NEW_REQ",
         "agreement_type": "CONTRACT",
-        "research_project_id": 1,
+        "contract_number": "CT00XX1",
+        "contract_type": "RESEARCH",
         "created_by": None,
+        "delivered_status": False,
+        "description": "",
+        "id": 1,
+        "incumbent": "",
+        "name": "Contract #1: African American Child and Family Research Center",
+        "number": "AGR0001",
+        "procurment_shop": None,
+        "product_service_code": 1,
+        "project_officer": None,
+        "research_project_id": 1,
+        "support_contacts": [],
+        "team_members": [],
+        "type": "contract",
+        "vendor": "Vendor 1",
     }
 
 
@@ -107,3 +125,12 @@ def test_agreements_get_by_id_auth(client, loaded_db):
 def test_agreements_auth(client, loaded_db):
     response = client.get("/api/v1/agreements/")
     assert response.status_code == 401
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_as_contract_has_contract_fields(loaded_db):
+    stmt = select(Agreement).where(Agreement.id == 1)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement.type == "contract"
+    assert agreement.contract_number == "CT00XX1"

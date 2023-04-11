@@ -3,11 +3,12 @@ from enum import Enum
 from typing import Any
 
 import sqlalchemy as sa
-from models.base import BaseModel
+from models.base import BaseData, BaseModel, currency, intpk, optional_str, reg, required_str
 from models.portfolios import Portfolio, shared_portfolio_cans
 from models.research_projects import ResearchProject
-from sqlalchemy import Column, Date, DateTime, ForeignKey, Identity, Integer, Numeric, String, Table, Text
-from sqlalchemy.orm import column_property, relationship
+from models.users import User
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Identity, Integer, Numeric, String, Table, Text
+from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 from typing_extensions import override
 
 
@@ -78,15 +79,63 @@ class AgreementType(Enum):
     MISCELLANEOUS = 5
 
 
+class AgreementReason(Enum):
+    NEW_REQ = 1
+    RECOMPETE = 2  ## recompete is brand new contract related to same work
+    LOGICAL_FOLLOW_ON = (
+        3  ## Logical Follow On is more work added/extension of the original
+    )
+
+
+agreement_team_members = Table(
+    "agreement_team_members",
+    BaseModel.metadata,
+    Column("agreement_id", ForeignKey("agreement.id"), primary_key=True),
+    Column("users_id", ForeignKey("users.id"), primary_key=True),
+)
+
+
+class ProductServiceCode(BaseModel):
+    """Product Service Code"""
+
+    __tablename__ = "product_service_code"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    description = Column(String)
+
+
 class Agreement(BaseModel):
+    """Base Agreement Model"""
+
     __tablename__ = "agreement"
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
+    number = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    product_service_code = Column(Integer, ForeignKey("product_service_code.id", name="fk_agreement_product_service_code"))
+    agreement_reason = Column(sa.Enum(AgreementReason))
+    incumbent = Column(String, nullable=True)
+    project_officer = Column(
+        Integer, ForeignKey("users.id", name="fk_user_project_officer"), nullable=True
+    )
+    team_members = relationship(
+        User,
+        secondary=agreement_team_members,
+        back_populates="agreements",
+    )
     agreement_type = Column(sa.Enum(AgreementType))
     research_project_id = Column(Integer, ForeignKey("research_project.id"))
-    research_project = relationship(ResearchProject, back_populates="agreements")
-    budget_line_items = relationship("BudgetLineItem", back_populates="agreement")
+    research_project = relationship("ResearchProject", back_populates="agreements")
+    budget_line_items = relationship("BudgetLineItem", back_populates="agreement", lazy=True)
+    procurment_shop = Column(Integer, ForeignKey("procurement_shop.id", name="fk_agreement_procurement_shop"), nullable=True)
+    type = Column(String)
+
+    __mapper_args__ = {
+        "polymorphic_identity": "agreement",
+        "polymorphic_on": "type",
+    }
 
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
@@ -96,11 +145,123 @@ class Agreement(BaseModel):
             {
                 "agreement_type": self.agreement_type.name
                 if self.agreement_type
-                else None
+                else None,
+                "agreement_reason": self.agreement_reason.name
+                if self.agreement_reason
+                else None,
+                "budget_line_items": [bli.to_dict() for bli in self.budget_line_items],
+                "team_members": [tm.to_dict() for tm in self.team_members],
+                "research_project": self.research_project.to_dict() if self.research_project else None,
             }
         )
 
         return d
+
+
+contract_support_contacts = Table(
+    "contract_support_contacts",
+    BaseModel.metadata,
+    Column(
+        "contract_number",
+        ForeignKey("contract_agreement.contract_number"),
+        primary_key=True,
+    ),
+    Column("users_id", ForeignKey("users.id"), primary_key=True),
+)
+
+
+class ContractType(Enum):
+    RESEARCH = 0
+    SERVICE = 1
+
+
+class ContractAgreement(Agreement):
+    """Contract Agreement Model"""
+
+    __tablename__ = "contract_agreement"
+
+    id = Column(Integer, ForeignKey("agreement.id"))
+    contract_number = Column(String, primary_key=True)
+    vendor = Column(String)
+    delivered_status = Column(Boolean, default=False)
+    contract_type = Column(sa.Enum(ContractType))
+    support_contacts = relationship(
+        User,
+        secondary=contract_support_contacts,
+        back_populates="contracts",
+    )
+
+    __mapper_args__ = {
+        "polymorphic_identity": "contract",
+    }
+
+    @override
+    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
+
+        d.update(
+            {
+                "contract_type": self.contract_type.name if self.contract_type else None,
+                "support_contacts": [contacts.to_dict() for contacts in self.support_contacts],
+            }
+        )
+
+        return d
+
+
+# TODO: Skeleton, will need flushed out more when we know what all a Grant is.
+class GrantAgreement(Agreement):
+    """Grant Agreement Model"""
+
+    __tablename__ = "grant_agreement"
+
+    id = Column(Integer, ForeignKey("agreement.id"))
+    foa = Column(String)
+
+    __mapper_args__ = {
+        "polymorphic_identity": "grant",
+    }
+
+
+# TODO: Skeleton, will need flushed out more when we know what all an IAA is.
+class IaaAgreement(Agreement):
+    """IAA Agreement Model"""
+
+    __tablename__ = "iaa_agreement"
+
+    id = Column(Integer, ForeignKey("agreement.id"))
+    iaa = Column(String)
+
+    __mapper_args__ = {
+        "polymorphic_identity": "iaa",
+    }
+
+
+# TODO: Skeleton, will need flushed out more when we know what all an IAA-AA is.
+class IaaAaAgreement(Agreement):
+    """IAA-AA Agreement Model"""
+
+    __tablename__ = "iaa_aa_agreement"
+
+    id = Column(Integer, ForeignKey("agreement.id"))
+    iaa_aa = Column(String)
+
+    __mapper_args__ = {
+        "polymorphic_identity": "iaa-aa",
+    }
+
+
+class DirectAgreement(Agreement):
+    """Direct Obligation Agreement Model"""
+
+    __tablename__ = "direct_agreement"
+
+    id = Column(Integer, ForeignKey("agreement.id"))
+    payee = Column(String, nullable=False)
+
+    __mapper_args__ = {
+        "polymorphic_identity": "direct",
+    }
 
 
 class CANFiscalYear(BaseModel):
@@ -176,7 +337,7 @@ class BudgetLineItem(BaseModel):
     __tablename__ = "budget_line_item"
 
     id = Column(Integer, Identity(), primary_key=True)
-    line_description = Column(String)
+    line_description = Column(String, nullable=False)
     comments = Column(Text)
 
     agreement_id = Column(Integer, ForeignKey("agreement.id"))
@@ -202,6 +363,7 @@ class BudgetLineItem(BaseModel):
             status=self.status.name if self.status else None,
             amount=float(self.amount) if self.amount else None,
             psc_fee_amount=float(self.psc_fee_amount) if self.psc_fee_amount else None,
+            date_needed=self.date_needed.isoformat() if self.date_needed else None,
         )
 
         return d

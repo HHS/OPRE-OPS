@@ -77,8 +77,8 @@ def db_loaded_with_research_projects(app, loaded_db):
 
         instances.extend([can_100, can_200, can_300, can_400])
 
-        agreement_1 = Agreement(id=100, name="Agreement 1", research_project_id=100)
-        agreement_2 = Agreement(id=200, name="Agreement 2", research_project_id=200)
+        agreement_1 = Agreement(id=100, name="Agreement 1", number="AGR00X100", research_project_id=100)
+        agreement_2 = Agreement(id=200, name="Agreement 2", number="AGR00X200", research_project_id=200)
 
         instances.extend([agreement_1, agreement_2])
 
@@ -98,10 +98,10 @@ def db_loaded_with_research_projects(app, loaded_db):
             ]
         )
 
-        blin_1 = BudgetLineItem(id=100, amount=1.0, can_id=100)
-        blin_2 = BudgetLineItem(id=200, amount=2.0, can_id=200)
-        blin_3 = BudgetLineItem(id=300, amount=3.0, can_id=300)
-        blin_4 = BudgetLineItem(id=400, amount=4.0, can_id=400)
+        blin_1 = BudgetLineItem(line_description="#1", id=100, amount=1.0, can_id=100)
+        blin_2 = BudgetLineItem(line_description="#2", id=200, amount=2.0, can_id=200)
+        blin_3 = BudgetLineItem(line_description="#3", id=300, amount=3.0, can_id=300)
+        blin_4 = BudgetLineItem(line_description="#4", id=400, amount=4.0, can_id=400)
 
         instances.extend([blin_1, blin_2, blin_3, blin_4])
 
