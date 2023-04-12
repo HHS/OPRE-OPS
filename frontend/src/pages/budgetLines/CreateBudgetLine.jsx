@@ -86,7 +86,7 @@ const StepTwo = ({ goBack, goToNext }) => {
     const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
     const isEditing = useSelector((state) => state.createBudgetLine.is_editing_budget_line);
     const budgetLineBeingEdited = useSelector((state) => state.createBudgetLine.budget_line_being_edited);
-    const [isAlert, setIsAlert] = useState(false);
+    const [isAlertActive, setIsAlertActive] = useState(false);
     const [alertProps, setAlertProps] = useState({});
     const [showModal, setShowModal] = useState(false);
     const [modalProps, setModalProps] = useState({});
@@ -94,11 +94,11 @@ const StepTwo = ({ goBack, goToNext }) => {
     const showAlert = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
         window.scrollTo(0, 0);
-        setIsAlert(true);
+        setIsAlertActive(true);
         setAlertProps({ type, heading, message });
 
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        setIsAlert(false);
+        await new Promise((resolve) => setTimeout(resolve, 6000));
+        setIsAlertActive(false);
         setAlertProps({});
     };
 
@@ -180,8 +180,8 @@ const StepTwo = ({ goBack, goToNext }) => {
                 />
             )}
 
-            {isAlert ? (
-                <Alert heading={alertProps.heading} type={alertProps.type}>
+            {isAlertActive ? (
+                <Alert heading={alertProps.heading} type={alertProps.type} setIsAlertActive={setIsAlertActive}>
                     {alertProps.message}
                 </Alert>
             ) : (
