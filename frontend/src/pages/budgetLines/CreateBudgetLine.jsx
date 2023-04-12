@@ -365,7 +365,7 @@ const StepThree = ({ goBack, goToNext }) => (
 
 export const CreateBudgetLine = () => {
     const dispatch = useDispatch();
-    const selectedProject = useSelector((state) => state.createBudgetLine.selectedProject);
+    const selectedProject = useSelector((state) => state.createBudgetLine.selected_project);
 
     // Get initial list of Agreements (dependent on Research Project Selection)
     useEffect(() => {
@@ -390,6 +390,16 @@ export const CreateBudgetLine = () => {
         };
         getProcurementShopsAndSetState().catch(console.error);
     }, [dispatch]);
+
+    useEffect(() => {
+        const getAgreementsAndSetState = async () => {
+            if (selectedProject?.id > 0) {
+                const results = await getAgreementsByResearchProjectFilter(selectedProject?.id);
+                dispatch(setAgreements(results));
+            }
+        };
+        getAgreementsAndSetState().catch(console.error);
+    }, [dispatch, selectedProject]);
 
     return (
         <App>

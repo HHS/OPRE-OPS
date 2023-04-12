@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { setSelectedProject } from "./createBudgetLineSlice";
+import { setAgreements, setSelectedAgreement, setSelectedProject } from "./createBudgetLineSlice";
 
 export const ProjectSelect = () => {
     const dispatch = useDispatch();
@@ -7,6 +7,7 @@ export const ProjectSelect = () => {
     const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
     const onChangeResearchProjectSelection = (projectId = 0) => {
         if (projectId === 0) {
+            clearAgreementState();
             return;
         }
         dispatch(
@@ -16,6 +17,16 @@ export const ProjectSelect = () => {
                 teamLeaders: researchProjects[projectId - 1].team_leaders,
             })
         );
+    };
+
+    const onInputCloseButtonClick = (event) => {
+        dispatch(setSelectedProject({}));
+        clearAgreementState();
+    };
+
+    const clearAgreementState = () => {
+        dispatch(setAgreements([]));
+        dispatch(setSelectedAgreement(-1));
     };
 
     const areThereTeamLeaders = selectedResearchProject?.teamLeaders?.length > 0;
@@ -83,7 +94,7 @@ export const ProjectSelect = () => {
                             type="button"
                             className="usa-combo-box__clear-input"
                             aria-label="Clear the select contents"
-                            onClick={() => dispatch(setSelectedProject({}))}
+                            onClick={(e) => onInputCloseButtonClick(e)}
                         >
                             &nbsp;
                         </button>
