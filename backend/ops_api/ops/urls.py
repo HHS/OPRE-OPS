@@ -12,6 +12,8 @@ from ops_api.ops.views import (
     CAN_ITEM_API_VIEW_FUNC,
     CAN_LIST_API_VIEW_FUNC,
     CANS_BY_PORTFOLIO_API_VIEW_FUNC,
+    CONTRACT_ITEM_API_VIEW_FUNC,
+    CONTRACT_LIST_API_VIEW_FUNC,
     DIVISIONS_ITEM_API_VIEW_FUNC,
     DIVISIONS_LIST_API_VIEW_FUNC,
     PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC,
@@ -23,6 +25,8 @@ from ops_api.ops.views import (
     PORTFOLIO_STATUS_LIST_API_VIEW_FUNC,
     PROCUREMENT_SHOPS_ITEM_API_VIEW_FUNC,
     PROCUREMENT_SHOPS_LIST_API_VIEW_FUNC,
+    PRODUCT_SERVICE_CODE_ITEM_API_VIEW_FUNC,
+    PRODUCT_SERVICE_CODE_LIST_API_VIEW_FUNC,
     RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
     RESEARCH_PROJECT_ITEM_API_VIEW_FUNC,
     RESEARCH_PROJECT_LIST_API_VIEW_FUNC,
@@ -156,4 +160,21 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/agreements/",
         view_func=AGREEMENT_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/contracts/<int:id>",
+        view_func=CONTRACT_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/contracts/",
+        view_func=CONTRACT_LIST_API_VIEW_FUNC,
+    )
+
+    api_bp.add_url_rule(
+        "/product-service-codes/",
+        view_func=PRODUCT_SERVICE_CODE_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/product-service-codes/<int:id>",
+        view_func=PRODUCT_SERVICE_CODE_ITEM_API_VIEW_FUNC,
     )
