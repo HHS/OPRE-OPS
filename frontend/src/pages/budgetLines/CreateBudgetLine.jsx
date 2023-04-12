@@ -2,9 +2,7 @@ import App from "../../App";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
-import { StepIndicatorOne } from "../../components/UI/StepIndicator/StepIndicatorOne";
-import { StepIndicatorTwo } from "../../components/UI/StepIndicator/StepIndicatorTwo";
-import { StepIndicatorThree } from "../../components/UI/StepIndicator/StepIndicatorThree";
+import { StepIndicator } from "../../components/UI/StepIndicator/StepIndicator";
 import { CreateBudgetLineFlow } from "./CreateBudgetLineFlow";
 import { ProjectSelect } from "./ProjectSelect";
 import { AgreementSelect } from "./AgreementSelect";
@@ -36,7 +34,7 @@ const StepOne = ({ goToNext }) => {
         <>
             <h2 className="font-sans-lg">Create New Budget Line</h2>
             <p>Step One: Text explaining this page</p>
-            <StepIndicatorOne />
+            <StepIndicator steps={["Project & Agreement", "Budget Lines", "Review"]} currentStep={1} />
             <h2 className="font-sans-lg">Select a Project</h2>
             <p>
                 Select the project this budget line should be associated with. If you need to create a new project,
@@ -143,7 +141,7 @@ const StepTwo = ({ goBack, goToNext }) => {
         <>
             <h2 className="font-sans-lg">Create New Budget Line</h2>
             <p>Step Two: Text explaining this page</p>
-            <StepIndicatorTwo />
+            <StepIndicator steps={["Project & Agreement", "Budget Lines", "Review"]} currentStep={2} />
             <h2 className="font-sans-lg">Procurement Shop</h2>
             <p>
                 Select the Procurement Shop, and the fee rates will be populated in the table below. If this is an
@@ -302,8 +300,7 @@ const StepThree = ({ goBack, goToNext }) => (
     <>
         <h2 className="font-sans-lg">Create New Budget Line</h2>
         <p>Step Three: Text explaining this page</p>
-        <StepIndicatorThree />
-
+        <StepIndicator steps={["Project & Agreement", "Budget Lines", "Review"]} currentStep={3} />
         <div className="grid-row flex-justify-end">
             <button className="usa-button usa-button--unstyled" onClick={() => goBack()}>
                 Back
