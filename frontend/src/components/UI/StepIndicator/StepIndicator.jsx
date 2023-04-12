@@ -16,7 +16,11 @@ export const StepIndicator = ({ steps, currentStep }) => {
                     <li
                         key={step}
                         className={`usa-step-indicator__segment ${
-                            index + 1 === currentStep ? "usa-step-indicator__segment--current" : ""
+                            index + 1 === currentStep
+                                ? "usa-step-indicator__segment--current"
+                                : index + 1 < currentStep
+                                ? "usa-step-indicator__segment--complete"
+                                : ""
                         }`}
                     >
                         <span className="usa-step-indicator__segment-label">{step}</span>

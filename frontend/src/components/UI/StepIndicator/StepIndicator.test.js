@@ -35,4 +35,20 @@ describe("StepIndicator", () => {
             expect(element).not.toHaveClass("usa-step-indicator__segment--current");
         });
     });
+
+    test("applies 'usa-step-indicator__segment--complete' class to completed steps", () => {
+        render(<StepIndicator steps={steps} currentStep={2} />);
+        const stepElements = screen.getAllByRole("listitem");
+        const completedStepElements = stepElements.filter((element, index) => index + 1 < 2);
+        completedStepElements.forEach((element) => {
+            expect(element).toHaveClass("usa-step-indicator__segment--complete");
+        });
+    });
+
+    test("does not apply 'usa-step-indicator__segment--complete' class to the current step", () => {
+        render(<StepIndicator steps={steps} currentStep={2} />);
+        const stepElements = screen.getAllByRole("listitem");
+        const currentStepElement = stepElements.find((element, index) => index + 1 === 2);
+        expect(currentStepElement).not.toHaveClass("usa-step-indicator__segment--complete");
+    });
 });
