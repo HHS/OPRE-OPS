@@ -5,10 +5,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import Tag from "../../components/UI/Tag/Tag";
-import { deleteBudgetLineAdded, editBudgetLineAdded, duplicateBudgetLineAdded } from "./createBudgetLineSlice";
+import { editBudgetLineAdded, duplicateBudgetLineAdded } from "./createBudgetLineSlice";
 import "./PreviewTable.scss";
 
-export const PreviewTable = ({ budgetLines }) => {
+export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
     const dispatch = useDispatch();
     const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
     const sortedBudgetLines = budgetLinesAdded
@@ -69,9 +69,6 @@ export const PreviewTable = ({ budgetLines }) => {
         };
 
         const ChangeIcons = ({ budgetLine }) => {
-            const handleDeleteBudgetLine = (budgetLineId) => {
-                dispatch(deleteBudgetLineAdded(budgetLineId));
-            };
             const handleDuplicateBudgetLine = (budgetLine) => {
                 dispatch(duplicateBudgetLineAdded({ ...budgetLine, created_by: loggedInUser }));
             };

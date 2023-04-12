@@ -1,5 +1,5 @@
 import App from "../../App";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
 import { StepIndicatorOne } from "../../components/UI/StepIndicator/StepIndicatorOne";
@@ -24,10 +24,13 @@ import {
     setEnteredComments,
     setProcurementShop,
     setSelectedProcurementShop,
+    deleteBudgetLineAdded,
 } from "./createBudgetLineSlice";
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
 import { PreviewTable } from "./PreviewTable";
 import { getProcurementShopList } from "../../api/getProcurementShopList";
+import { Alert } from "../../components/UI/Alert/Alert";
+import { Modal } from "../../components/UI/Modal/Modal";
 
 const StepOne = ({ goToNext }) => {
     const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
@@ -85,9 +88,37 @@ const StepTwo = ({ goBack, goToNext }) => {
     const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
     const isEditing = useSelector((state) => state.createBudgetLine.is_editing_budget_line);
     const budgetLineBeingEdited = useSelector((state) => state.createBudgetLine.budget_line_being_edited);
+    const [isAlert, setIsAlert] = useState(false);
+    const [alertProps, setAlertProps] = useState({});
+    const [showModal, setShowModal] = useState(false);
+    const [modalProps, setModalProps] = useState({});
+
+    const showAlert = async (type, heading, message) => {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        window.scrollTo(0, 0);
+        setIsAlert(true);
+        setAlertProps({ type, heading, message });
+
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        setIsAlert(false);
+        setAlertProps({});
+    };
 
     const handleCancelEdit = () => {
         dispatch(setEditBudgetLineAdded({}));
+    };
+
+    const handleDeleteBudgetLine = (budgetLineId) => {
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to delete this budget line?",
+            actionButtonText: "Delete",
+            handleConfirm: () => {
+                dispatch(deleteBudgetLineAdded(budgetLineId));
+                showAlert("success", "Budget Line Deleted", "The budget line has been successfully deleted.");
+                setModalProps({});
+            },
+        });
     };
 
     const handleEditForm = (e) => {
@@ -105,6 +136,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                 psc_fee_amount: selectedProcurementShop?.fee,
             })
         );
+        showAlert("success", "Budget Line Updated", "The budget line has been successfully edited.");
     };
 
     const handleSubmitForm = (e) => {
@@ -127,6 +159,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                 },
             ])
         );
+        showAlert("success", "Budget Line Added", "The budget line has been successfully added.");
 
         //reset form
         dispatch(setEnteredDescription(""));
@@ -136,13 +169,29 @@ const StepTwo = ({ goBack, goToNext }) => {
         dispatch(setEnteredDay(""));
         dispatch(setEnteredYear(""));
         dispatch(setEnteredComments(""));
-        alert("Budget Line Added");
     };
 
     return (
         <>
-            <h2 className="font-sans-lg">Create New Budget Line</h2>
-            <p>Step Two: Text explaining this page</p>
+            {showModal && (
+                <Modal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+
+            {isAlert ? (
+                <Alert heading={alertProps.heading} type={alertProps.type}>
+                    {alertProps.message}
+                </Alert>
+            ) : (
+                <>
+                    <h2 className="font-sans-lg">Create New Budget Line</h2>
+                    <p>Step Two: Text explaining this page</p>
+                </>
+            )}
             <StepIndicatorTwo />
             <h2 className="font-sans-lg">Procurement Shop</h2>
             <p>
@@ -260,7 +309,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                     <dd className="text-semibold margin-0">{selectedAgreement?.name}</dd>
                 </dl>
             </div>
-            <PreviewTable />
+            <PreviewTable handleDeleteBudgetLine={handleDeleteBudgetLine} />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className="usa-button usa-button--unstyled margin-right-2"
@@ -270,27 +319,29 @@ const StepTwo = ({ goBack, goToNext }) => {
                             goBack();
                             return;
                         }
-
-                        const confirm = window.confirm(
-                            "Are you sure you want to go back? Your budget lines will not be saved."
-                        );
-                        if (confirm) {
-                            // clear all budget line data and state
-                            dispatch(setBudgetLineAdded([]));
-                            dispatch(setEnteredAmount(null));
-                            dispatch(setEnteredComments(""));
-                            dispatch(setEnteredDescription(""));
-                            dispatch(setSelectedProcurementShop({}));
-                            dispatch(setEnteredDay(""));
-                            dispatch(setEnteredMonth(""));
-                            dispatch(setEnteredYear(""));
-                            goBack();
-                        }
+                        // if budget lines have been added, show modal
+                        setShowModal(true);
+                        setModalProps({
+                            heading: "Are you sure you want to go back? Your budget lines will not be saved.",
+                            actionButtonText: "Go Back",
+                            handleConfirm: () => {
+                                dispatch(setBudgetLineAdded([]));
+                                dispatch(setEnteredAmount(null));
+                                dispatch(setEnteredComments(""));
+                                dispatch(setEnteredDescription(""));
+                                dispatch(setSelectedProcurementShop({}));
+                                dispatch(setEnteredDay(""));
+                                dispatch(setEnteredMonth(""));
+                                dispatch(setEnteredYear(""));
+                                setModalProps({});
+                                goBack();
+                            },
+                        });
                     }}
                 >
                     Back
                 </button>
-                <button className="usa-button" onClick={() => goToNext({ name: "John Doe" })}>
+                <button className="usa-button" onClick={() => goToNext()}>
                     Continue
                 </button>
             </div>
