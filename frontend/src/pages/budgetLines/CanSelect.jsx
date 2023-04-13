@@ -8,17 +8,19 @@ export const CanSelect = () => {
     const canList = useSelector((state) => state.canList.cans);
 
     const selectedCan = useSelector((state) => state.createBudgetLine.selected_can);
+    const [inputValue, setInputValue] = React.useState(selectedCan?.number ?? "");
+
+    React.useEffect(() => {
+        setInputValue(selectedCan?.number ?? "");
+    }, [selectedCan]);
 
     const onChangeCanSelection = (canId = 0) => {
         if (canId === 0) {
             dispatch(setSelectedCan(-1));
             return;
         }
-        dispatch(
-            setSelectedCan({
-                ...canList[canId - 1],
-            })
-        );
+        const selected = canList[canId - 1];
+        dispatch(setSelectedCan({ ...selected }));
     };
 
     React.useEffect(() => {
@@ -64,14 +66,17 @@ export const CanSelect = () => {
                     type="text"
                     role="combobox"
                     aria-activedescendant=""
-                    value={selectedCan?.number ?? ""}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
                 />
                 <span className="usa-combo-box__clear-input__wrapper" tabIndex="-1">
                     <button
                         type="button"
                         className="usa-combo-box__clear-input"
                         aria-label="Clear the select contents"
-                        onClick={() => dispatch(setSelectedCan(-1))}
+                        onClick={() => {
+                            dispatch(setSelectedCan(-1));
+                        }}
                     >
                         &nbsp;
                     </button>
