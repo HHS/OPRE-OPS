@@ -10,6 +10,17 @@ from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy.future import select
 from typing_extensions import override
 
+# @dataclass
+# class RequestBody:
+#     line_description: str
+#     agreement_id: int
+#     can_id: int
+#     amount: float
+#     date_needed: str
+#     status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus)
+#     comments: Optional[str] = None
+#     psc_fee_amount: Optional[float] = None
+
 
 class ResearchProjectItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel = ResearchProject):
@@ -47,7 +58,7 @@ class ResearchProjectListAPI(BaseListAPI):
         query_helper = QueryHelper(stmt)
 
         if portfolio_id:
-            query_helper.add_column_equals(ResearchProject.portfolio_id, portfolio_id)
+            query_helper.add_column_equals(CAN.managing_portfolio_id, portfolio_id)
 
         if fiscal_year:
             query_helper.add_column_equals(CANFiscalYear.fiscal_year, fiscal_year)

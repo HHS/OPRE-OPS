@@ -85,7 +85,7 @@ def test_get_query_for_fiscal_year_with_fiscal_year_not_found(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_get_query_for_fiscal_year_with_portfolio_id_found(loaded_db):
-    stmt = ResearchProjectListAPI._get_query(2023, 3)
+    stmt = ResearchProjectListAPI._get_query(2023, 6)
     result = loaded_db.execute(stmt).fetchall()
     assert len(result) == 1
     assert result[0][0].title == "African American Child and Family Research Center"
@@ -94,7 +94,7 @@ def test_get_query_for_fiscal_year_with_portfolio_id_found(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_get_query_for_fiscal_year_with_portfolio_id_not_found(loaded_db):
-    stmt = ResearchProjectListAPI._get_query(2023, 1)
+    stmt = ResearchProjectListAPI._get_query(2023, 3)
     result = loaded_db.execute(stmt).fetchall()
     assert len(result) == 0
 

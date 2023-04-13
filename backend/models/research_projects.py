@@ -47,8 +47,6 @@ class ResearchProject(BaseModel):
     title = Column(String, nullable=False)
     short_title = Column(String)
     description = Column(Text)
-    portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
-    portfolio = relationship("Portfolio", back_populates="research_project")
     url = Column(String)
     origination_date = Column(Date)
     methodologies = Column(pg.ARRAY(sa.Enum(MethodologyType)), server_default="{}")
