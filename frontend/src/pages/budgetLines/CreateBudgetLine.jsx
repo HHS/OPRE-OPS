@@ -128,7 +128,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                 line_description: enteredDescription,
                 comments: enteredComments,
                 can_id: selectedCan?.id,
-                can_number: selectedCan?.number,
+                can: selectedCan,
                 agreement_id: selectedAgreement?.id,
                 amount: enteredAmount,
                 date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}`,

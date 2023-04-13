@@ -8,14 +8,15 @@ export const CanSelect = () => {
     const canList = useSelector((state) => state.canList.cans);
 
     const selectedCan = useSelector((state) => state.createBudgetLine.selected_can);
+
     const onChangeCanSelection = (canId = 0) => {
         if (canId === 0) {
+            dispatch(setSelectedCan(-1));
             return;
         }
         dispatch(
             setSelectedCan({
-                id: canId,
-                number: canList[canId - 1].number,
+                ...canList[canId - 1],
             })
         );
     };
@@ -39,11 +40,11 @@ export const CanSelect = () => {
                     name="can-select"
                     aria-hidden="true"
                     tabIndex="-1"
-                    defaultValue={selectedCan?.number}
-                    onChange={(e) => onChangeCanSelection(Number(e.target.value) || 0)}
+                    value={selectedCan?.id}
+                    onChange={(e) => onChangeCanSelection(Number(e.target.value))}
                     required
                 >
-                    <option value="">Select a CAN</option>
+                    <option value={0}>Select a CAN</option>
                     {canList.map((can) => (
                         <option key={can.id} value={can.id}>
                             {can.number}
@@ -63,14 +64,14 @@ export const CanSelect = () => {
                     type="text"
                     role="combobox"
                     aria-activedescendant=""
-                    defaultValue={selectedCan?.number || ""}
+                    value={selectedCan?.number ?? ""}
                 />
                 <span className="usa-combo-box__clear-input__wrapper" tabIndex="-1">
                     <button
                         type="button"
                         className="usa-combo-box__clear-input"
                         aria-label="Clear the select contents"
-                        onClick={() => dispatch(setSelectedCan({}))}
+                        onClick={() => dispatch(setSelectedCan(-1))}
                     >
                         &nbsp;
                     </button>
@@ -86,6 +87,7 @@ export const CanSelect = () => {
                         &nbsp;
                     </button>
                 </span>
+
                 <ul
                     tabIndex="-1"
                     id="can--list"
@@ -112,6 +114,7 @@ export const CanSelect = () => {
                         );
                     })}
                 </ul>
+
                 <div className="usa-combo-box__status usa-sr-only" role="status"></div>
                 <span id="can--assistiveHint" className="usa-sr-only">
                     When autocomplete results are available use up and down arrows to review and enter to select. Touch

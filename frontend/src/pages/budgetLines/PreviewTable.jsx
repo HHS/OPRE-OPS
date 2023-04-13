@@ -119,8 +119,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
                     </th>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{formatted_date_needed}</td>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{fiscalYear}</td>
-                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{bl?.can_number}</td>
-
+                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{bl?.can?.number}</td>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
                         <CurrencyFormat
                             value={bl?.amount}
