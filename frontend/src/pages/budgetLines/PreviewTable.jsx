@@ -33,7 +33,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
         const bl_created_on = bl?.created_on
             ? new Date(bl.created_on).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" })
             : formatted_today;
-        let date_needed;
+        let date_needed = null;
         let formatted_date_needed;
         let fiscalYear;
         if (bl?.date_needed) {
@@ -43,8 +43,6 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
             let month = date_needed.getMonth();
             let year = date_needed.getFullYear();
             fiscalYear = month > 8 ? year + 1 : year;
-        } else {
-            date_needed = null;
         }
         let feeTotal = bl?.amount * (bl?.psc_fee_amount / 10);
         let total = bl?.amount + feeTotal;
