@@ -13,8 +13,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
     const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
     const sortedBudgetLines = budgetLinesAdded
         .slice()
-        .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on))
-        .reverse();
+        .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on));
 
     let loggedInUser = useSelector((state) => state.auth.activeUser.full_name);
     // NOTE: set to logged in user to Sheila if no name is found
@@ -33,12 +32,17 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
         const bl_created_on = bl?.created_on
             ? new Date(bl.created_on).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" })
             : formatted_today;
-        let date_needed = new Date(bl?.date_needed);
-        const formatted_date_needed = formatDate(date_needed);
-        // FY will automate based on the Need by Date. Anything after September 30th rolls over into the next FY.
-        let month = date_needed.getMonth();
-        let year = date_needed.getFullYear();
-        let fiscalYear = month > 8 ? year + 1 : year;
+        let date_needed = null;
+        let formatted_date_needed;
+        let fiscalYear;
+        if (bl?.date_needed) {
+            date_needed = new Date(bl?.date_needed);
+            formatted_date_needed = formatDate(date_needed);
+            // FY will automate based on the Need by Date. Anything after September 30th rolls over into the next FY.
+            let month = date_needed.getMonth();
+            let year = date_needed.getFullYear();
+            fiscalYear = month > 8 ? year + 1 : year;
+        }
         let feeTotal = bl?.amount * (bl?.psc_fee_amount / 10);
         let total = bl?.amount + feeTotal;
         let status = bl?.status.charAt(0).toUpperCase() + bl?.status.slice(1).toLowerCase();
@@ -49,6 +53,9 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
         };
 
         const TableTag = ({ status }) => {
+            if (status === "In_execution") {
+                status = "Executing";
+            }
             let classNames = "padding-x-105 padding-y-1 ";
             switch (status) {
                 case "Draft":

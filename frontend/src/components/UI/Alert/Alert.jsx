@@ -1,6 +1,8 @@
 import PropTypes from "prop-types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faClose } from "@fortawesome/free-solid-svg-icons";
 
-export const Alert = ({ type, heading, children }) => {
+export const Alert = ({ type, heading, children, setIsAlertActive }) => {
     let classNames = "usa-alert margin-left-neg-4 margin-right-neg-4";
 
     switch (type) {
@@ -18,9 +20,18 @@ export const Alert = ({ type, heading, children }) => {
 
     return (
         <div className={classNames}>
-            <div className="usa-alert__body">
-                <h4 className="usa-alert__heading">{heading}</h4>
-                <p className="usa-alert__text">{children}</p>
+            <div className="usa-alert__body display-flex flex-justify">
+                <div>
+                    <h4 className="usa-alert__heading">{heading}</h4>
+                    <p className="usa-alert__text">{children}</p>
+                </div>
+                <FontAwesomeIcon
+                    icon={faClose}
+                    className="height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                    title="close"
+                    data-position="top"
+                    onClick={() => setIsAlertActive(false)}
+                />
             </div>
         </div>
     );
@@ -28,6 +39,7 @@ export const Alert = ({ type, heading, children }) => {
 
 Alert.propTypes = {
     type: PropTypes.oneOf(["success", "warning", "error"]),
-    heading: PropTypes.string,
+    heading: PropTypes.string.isRequired,
     children: PropTypes.node,
+    setIsAlertActive: PropTypes.func.isRequired,
 };
