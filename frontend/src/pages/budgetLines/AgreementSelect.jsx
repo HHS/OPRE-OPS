@@ -5,6 +5,7 @@ export const AgreementSelect = () => {
     const dispatch = useDispatch();
     const agreements = useSelector((state) => state.createBudgetLine.agreements);
     const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
+    const selectedProject = useSelector((state) => state.createBudgetLine.selected_project);
 
     const onChangeAgreementSelection = (agreementId = 0) => {
         const selectedAgreement = agreements.find((agreement) => agreement.id === agreementId);
@@ -55,14 +56,14 @@ export const AgreementSelect = () => {
         <div className="display-flex flex-justify padding-top-105">
             <div className="left-half width-full">
                 {/* NOTE: Left side */}
-                <label className="usa-label" htmlFor="agreement" id="agreement-label">
-                    Agreements
-                </label>
-                <div>
+                <fieldset className="usa-fieldset" disabled={!selectedProject?.id}>
+                    <label className="usa-label" htmlFor="agreement">
+                        Agreements
+                    </label>
                     <select
-                        className="usa-select margin-top-0 width-full"
-                        name="options"
-                        id="options"
+                        className="usa-select width-full"
+                        name="agreement"
+                        id="agreement"
                         onChange={(e) => onChangeAgreementSelection(Number(e.target.value))}
                         value={selectedAgreement?.id}
                         required
@@ -74,7 +75,7 @@ export const AgreementSelect = () => {
                             </option>
                         ))}
                     </select>
-                </div>
+                </fieldset>
             </div>
             {/* NOTE: Right side */}
             <div className="right-half">{selectedAgreement?.id && <AgreementSummaryCard />}</div>
