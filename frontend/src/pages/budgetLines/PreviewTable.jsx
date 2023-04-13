@@ -54,6 +54,9 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
         };
 
         const TableTag = ({ status }) => {
+            if (status === "In_execution") {
+                status = "Executing";
+            }
             let classNames = "padding-x-105 padding-y-1 ";
             switch (status) {
                 case "Draft":
