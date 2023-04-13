@@ -23,6 +23,7 @@ import {
     setProcurementShop,
     setSelectedProcurementShop,
     deleteBudgetLineAdded,
+    setSelectedAgreement,
 } from "./createBudgetLineSlice";
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
 import { PreviewTable } from "./PreviewTable";
@@ -331,6 +332,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                                 dispatch(setEnteredDay(""));
                                 dispatch(setEnteredMonth(""));
                                 dispatch(setEnteredYear(""));
+                                dispatch(setSelectedAgreement(-1));
                                 setModalProps({});
                                 goBack();
                             },
