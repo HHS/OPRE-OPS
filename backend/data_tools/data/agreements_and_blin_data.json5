@@ -1,4 +1,30 @@
 {
+  procurement_shop: [
+    {
+      id: 1,
+      name: "Product Service Center",
+      abbr: "PSC",
+      fee: 0,
+    },
+    {
+      id: 2,
+      name: "Government Contracting Services",
+      abbr: "GCS",
+      fee: 0,
+    },
+    {
+      id: 3,
+      name: "National Institute of Health",
+      abbr: "NIH",
+      fee: 0.5,
+    },
+    {
+      id: 4,
+      name: "Interior Business Center",
+      abbr: "IBC",
+      fee: 4.8,
+    },
+  ],
   product_service_code: [
     {
       id: 1,
@@ -45,6 +71,7 @@
       type: "contract",
       agreement_type: "CONTRACT",
       research_project_id: 1,
+      procurement_shop_id: 1,
     },
     {
       id: 2,
@@ -59,6 +86,7 @@
       type: "direct",
       agreement_type: "DIRECT_ALLOCATION",
       research_project_id: 1,
+      procurement_shop_id: 3,
     },
     {
       id: 3,
@@ -73,6 +101,7 @@
       type: "grant",
       agreement_type: "GRANT",
       research_project_id: 2,
+      procurement_shop_id: 3,
     },
     {
       id: 4,
@@ -87,6 +116,7 @@
       type: "iaa",
       agreement_type: "IAA",
       research_project_id: 2,
+      procurement_shop_id: 3,
     },
     {
       id: 5,
@@ -101,6 +131,7 @@
       type: "iaa-aa",
       agreement_type: "MISCELLANEOUS",
       research_project_id: 3,
+      procurement_shop_id: 3,
     },
     {
       id: 6,
@@ -115,6 +146,7 @@
       type: "contract",
       agreement_type: "CONTRACT",
       research_project_id: 3,
+      procurement_shop_id: 4,
     },
   ],
   contract_agreement: [
@@ -350,32 +382,6 @@
       status: "OBLIGATED",
       date_needed: "2023-06-13T14:03:25.765487",
       psc_fee_amount: 0.5,
-    },
-  ],
-  procurement_shop: [
-    {
-      id: 1,
-      name: "Product Service Center",
-      abbr: "PSC",
-      fee: 0,
-    },
-    {
-      id: 2,
-      name: "Government Contracting Services",
-      abbr: "GCS",
-      fee: 0,
-    },
-    {
-      id: 3,
-      name: "National Institute of Health",
-      abbr: "NIH",
-      fee: 0.5,
-    },
-    {
-      id: 4,
-      name: "Interior Business Center",
-      abbr: "IBC",
-      fee: 4.8,
     },
   ],
 }
