@@ -6,6 +6,7 @@ import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-so
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import Tag from "../../components/UI/Tag/Tag";
 import { editBudgetLineAdded, duplicateBudgetLineAdded } from "./createBudgetLineSlice";
+import { TotalSummaryCard } from "./TotalSummaryCard";
 import "./PreviewTable.scss";
 
 export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
@@ -206,26 +207,29 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
     };
 
     return (
-        <table className="usa-table usa-table--borderless width-full">
-            <thead>
-                <tr>
-                    <th scope="col">Description</th>
-                    <th scope="col">Need By</th>
-                    <th scope="col">FY</th>
-                    <th scope="col">CAN</th>
-                    <th scope="col">Amount</th>
-                    <th scope="col">Fee</th>
-                    <th scope="col">Total</th>
-                    <th scope="col" className="padding-0" style={{ width: "6.25rem" }}>
-                        Status
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {sortedBudgetLines.map((bl) => (
-                    <TableRow key={bl?.id} bl={bl} />
-                ))}
-            </tbody>
-        </table>
+        <>
+            <table className="usa-table usa-table--borderless width-full">
+                <thead>
+                    <tr>
+                        <th scope="col">Description</th>
+                        <th scope="col">Need By</th>
+                        <th scope="col">FY</th>
+                        <th scope="col">CAN</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Fee</th>
+                        <th scope="col">Total</th>
+                        <th scope="col" className="padding-0" style={{ width: "6.25rem" }}>
+                            Status
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {sortedBudgetLines.map((bl) => (
+                        <TableRow key={bl?.id} bl={bl} />
+                    ))}
+                </tbody>
+            </table>
+            <TotalSummaryCard budgetLines={budgetLines}></TotalSummaryCard>
+        </>
     );
 };
