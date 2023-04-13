@@ -5,9 +5,11 @@ export const AgreementSelect = () => {
     const dispatch = useDispatch();
     const agreements = useSelector((state) => state.createBudgetLine.agreements);
     const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
+
     const onChangeAgreementSelection = (agreementId = 0) => {
         const selectedAgreement = agreements.find((agreement) => agreement.id === agreementId);
         if (agreementId === 0) {
+            dispatch(setSelectedAgreement(-1));
             return;
         }
         dispatch(
@@ -61,7 +63,7 @@ export const AgreementSelect = () => {
                         className="usa-select margin-top-0 width-full"
                         name="options"
                         id="options"
-                        onChange={(e) => onChangeAgreementSelection(Number(e.target.value) || 0)}
+                        onChange={(e) => onChangeAgreementSelection(Number(e.target.value))}
                         value={selectedAgreement?.id}
                         required
                     >

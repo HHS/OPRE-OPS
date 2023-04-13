@@ -370,7 +370,7 @@ export const CreateBudgetLine = () => {
     // Get initial list of Agreements (dependent on Research Project Selection)
     useEffect(() => {
         const getAgreementsAndSetState = async () => {
-            if (selectedProject) {
+            if (selectedProject?.id > 0) {
                 const agreements = await getAgreementsByResearchProjectFilter(selectedProject?.id);
                 dispatch(setAgreements(agreements));
             }
