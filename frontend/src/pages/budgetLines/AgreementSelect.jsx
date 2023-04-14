@@ -50,9 +50,7 @@ export const AgreementSelect = () => {
                         </div>
                         <div className="display-flex flex-column">
                             <dt className="margin-0 text-base-dark">Period of Performance</dt>
-                            {selectedAgreement.periodOfPerformance === "undefined - undefined" && (
-                                <dd className="text-semibold margin-0">{selectedAgreement.periodOfPerformance}</dd>
-                            )}
+                            <dd className="text-semibold margin-0">{selectedAgreement.periodOfPerformance}</dd>
                         </div>
                     </div>
                 </dl>
