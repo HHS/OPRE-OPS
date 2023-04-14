@@ -1,6 +1,6 @@
 import pytest
 from models.research_projects import ResearchProject
-from ops_api.ops.resources.research_projects import ResearchProjectListAPI
+from ops_api.ops.resources.research_projects import RequestBody, ResearchProjectListAPI
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -136,3 +136,38 @@ def test_research_projects_get_by_id_auth(client, loaded_db):
 def test_research_projects_auth(client, loaded_db):
     response = client.get("/api/v1/research-projects/")
     assert response.status_code == 401
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_post_research_projects(auth_client):
+    data = RequestBody(
+        title="Research Project #1",
+        short_title="RP#1",
+        description="blah blah blah",
+        url="https://example.com",
+        origination_date="2023-01-01",
+        methodologies=["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
+        populations=["POPULATION_1", "POPULATION_2"],
+        team_leaders=[{"id": 1}, {"id": 2}, {"id": 3}],
+    )
+    response = auth_client.post("/api/v1/research-projects/", json=data.__dict__)
+    assert response.status_code == 201
+    assert response.json["title"] == "Research Project #1"
+    assert response.json["team_leaders"] == [
+        {
+            "email": "chris.fortunato@example.com",
+            "full_name": "(no name) (no name)",
+            "id": 1,
+        },
+        {
+            "email": "Amy.Madigan@example.com",
+            "full_name": "(no name) (no name)",
+            "id": 2,
+        },
+        {
+            "email": "Ivelisse.Martinez-Beck@example.com",
+            "full_name": "(no name) (no name)",
+            "id": 3,
+        },
+    ]
