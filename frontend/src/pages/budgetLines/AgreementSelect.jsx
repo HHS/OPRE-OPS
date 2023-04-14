@@ -9,15 +9,20 @@ export const AgreementSelect = () => {
 
     const onChangeAgreementSelection = (agreementId = 0) => {
         const selectedAgreement = agreements.find((agreement) => agreement.id === agreementId);
+        let periodOfPerformance = null;
         if (agreementId === 0) {
             dispatch(setSelectedAgreement(-1));
             return;
         }
+        if (selectedAgreement.period_of_performance_start && selectedAgreement.period_of_performance_end) {
+            periodOfPerformance = `${selectedAgreement.period_of_performance_start} - ${selectedAgreement.period_of_performance_end}`;
+        }
+
         dispatch(
             setSelectedAgreement({
                 ...selectedAgreement,
                 projectOfficer: selectedAgreement?.project_officer,
-                periodOfPerformance: `${selectedAgreement?.period_of_performance_start} - ${selectedAgreement?.period_of_performance_end}`,
+                periodOfPerformance,
             })
         );
         // set budget line items and procurement shop
@@ -45,7 +50,9 @@ export const AgreementSelect = () => {
                         </div>
                         <div className="display-flex flex-column">
                             <dt className="margin-0 text-base-dark">Period of Performance</dt>
-                            <dd className="text-semibold margin-0">{selectedAgreement.periodOfPerformance}</dd>
+                            {selectedAgreement.periodOfPerformance === "undefined - undefined" && (
+                                <dd className="text-semibold margin-0">{selectedAgreement.periodOfPerformance}</dd>
+                            )}
                         </div>
                     </div>
                 </dl>
