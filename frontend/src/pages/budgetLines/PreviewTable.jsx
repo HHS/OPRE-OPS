@@ -13,7 +13,8 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
     const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
     const sortedBudgetLines = budgetLinesAdded
         .slice()
-        .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on));
+        .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on))
+        .reverse();
 
     let loggedInUser = useSelector((state) => state.auth.activeUser.full_name);
     // NOTE: set to logged in user to Sheila if no name is found
