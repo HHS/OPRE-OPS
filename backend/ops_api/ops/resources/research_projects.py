@@ -35,10 +35,22 @@ class RequestBody:
     short_title: Optional[str] = None
     description: Optional[str] = None
     url: Optional[str] = None
-    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d")
-    methodologies: Optional[list[MethodologyType]] = fields.List(fields.Enum(MethodologyType), default=[])
-    populations: Optional[list[PopulationType]] = fields.List(fields.Enum(PopulationType), default=[])
-    team_leaders: Optional[list[TeamLeaders]] = fields.List(fields.Nested(TeamLeaders), default=[])
+    origination_date: Optional[date] = fields.Date(
+        format="%Y-%m-%d",
+        default=None,
+    )
+    methodologies: Optional[list[MethodologyType]] = fields.List(
+        fields.Enum(MethodologyType),
+        default=[],
+    )
+    populations: Optional[list[PopulationType]] = fields.List(
+        fields.Enum(PopulationType),
+        default=[],
+    )
+    team_leaders: Optional[list[TeamLeaders]] = fields.List(
+        fields.Nested(TeamLeaders),
+        default=[],
+    )
 
 
 @dataclass
@@ -144,8 +156,8 @@ class ResearchProjectListAPI(BaseListAPI):
                 data = self._post_schema.load(request.json)
 
                 # save to tmp var as a workaround for the issue of the SQLAlchemy constructor
-                # not taking the list[int] correctly for team_leaders
-                tmp_team_leaders = data.team_leaders
+                # not taking the list[TeamLeaders] correctly for team_leaders
+                tmp_team_leaders = data.team_leaders if data.team_leaders else []
 
                 data.team_leaders = []
                 new_rp = ResearchProject(**data.__dict__)

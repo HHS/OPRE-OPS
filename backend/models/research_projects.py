@@ -49,8 +49,12 @@ class ResearchProject(BaseModel):
     description = Column(Text)
     url = Column(String)
     origination_date = Column(Date)
-    methodologies = Column(pg.ARRAY(sa.Enum(MethodologyType)), server_default="{}")
-    populations = Column(pg.ARRAY(sa.Enum(PopulationType)), server_default="{}")
+    methodologies = Column(
+        pg.ARRAY(sa.Enum(MethodologyType)), server_default="{}", default=[]
+    )
+    populations = Column(
+        pg.ARRAY(sa.Enum(PopulationType)), server_default="{}", default=[]
+    )
     agreements = relationship("Agreement", back_populates="research_project")
     team_leaders = relationship(
         "User",
