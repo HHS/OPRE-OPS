@@ -254,3 +254,36 @@ def test_post_research_projects_bad_team_leaders(auth_client):
     )
     response = auth_client.post("/api/v1/research-projects/", json=data.__dict__)
     assert response.status_code == 400
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_post_research_projects_missing_title(auth_client):
+    data = {
+        "short_title": "RP#1",
+        "description": "blah blah blah",
+        "url": "https://example.com",
+        "origination_date": "2023-01-01",
+        "methodologies": ["FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
+        "populations": ["POPULATION_1", "POPULATION_2"],
+        "team_leaders": [{"id": 100000}, {"id": 2}, {"id": 3}],
+    }
+    response = auth_client.post("/api/v1/research-projects/", json=data)
+    assert response.status_code == 400
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_post_research_projects_auth_required(client):
+    data = RequestBody(
+        title="Research Project #1",
+        short_title="RP#1",
+        description="blah blah blah",
+        url="https://example.com",
+        origination_date="2023-01-01",
+        methodologies=["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
+        populations=["POPULATION_1", "POPULATION_2"],
+        team_leaders=[{"id": 1}, {"id": 2}, {"id": 3}],
+    )
+    response = client.post("/api/v1/research-projects/", json=data.__dict__)
+    assert response.status_code == 401
