@@ -229,7 +229,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
                     ))}
                 </tbody>
             </table>
-            <TotalSummaryCard budgetLines={budgetLines}></TotalSummaryCard>
+            <TotalSummaryCard budgetLines={sortedBudgetLines}></TotalSummaryCard>
         </>
     );
 };

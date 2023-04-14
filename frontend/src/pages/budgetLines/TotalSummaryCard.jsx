@@ -1,3 +1,5 @@
+import CurrencyFormat from "react-currency-format";
+
 export const TotalSummaryCard = ({ budgetLines }) => {
     let currentDate = new Date();
     let month = currentDate.getMonth();
@@ -37,33 +39,56 @@ export const TotalSummaryCard = ({ budgetLines }) => {
         totals["Agreement"]["total"] += total;
     });
 
-    const TotalBlock = (title, data) => {
+    const TotalBlock = ({ title, data }) => {
         if (title === "FY") {
             title = "FY " + currentFiscalYear;
         }
         return (
-            <div className="flex-column flex-4">
-                <div>{title + " Total"}</div>
-                <div className="grid-container">
-                    <div className="grid-row">
-                        <div className="grid-col-2">Subtotal</div>
-                        <div className="grid-col-2">{data.subtotal}</div>
+            <div
+                className="bg-base-lightest font-family-sans font-12px border-1px border-base-light radius-sm margin-left-4 padding-y-2 padding-x-105"
+                style={{ minWidth: "206px" }}
+            >
+                <h3 className="text-base-dark text-normal font-12px">{title + " Total"}</h3>
+                <dl className="margin-0 padding-bottom-105">
+                    <div className="grid-row padding-y-1">
+                        <dt className="margin-0 text-base-dark grid-col-5">Subtotal</dt>
+                        <dd className="text-semibold margin-0 grid-col-5">
+                            <CurrencyFormat
+                                value={data.subtotal}
+                                displayType={"text"}
+                                thousandSeparator={true}
+                                prefix={"$"}
+                            />
+                        </dd>
                     </div>
-                    <div className="grid-row">
-                        <div className="grid-col-2">Fees</div>
-                        <div className="grid-col-2">{data.fees}</div>
+                    <div className="grid-row padding-y-05">
+                        <dt className="margin-0 text-base-dark grid-col-5">Fees</dt>
+                        <dd className="text-semibold margin-0 grid-col-5">
+                            <CurrencyFormat
+                                value={data.fees}
+                                displayType={"text"}
+                                thousandSeparator={true}
+                                prefix={"$"}
+                            />
+                        </dd>
                     </div>
-                </div>
-                <div>{data.total}</div>
+                </dl>
+                <CurrencyFormat
+                    value={data.total}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"$ "}
+                    renderText={(value) => <span className="text-semibold font-sans-lg padding-y-105">{value}</span>}
+                />
             </div>
         );
     };
 
     return (
-        <div className="flex-align-end">
+        <summary className="display-flex flex-justify-end margin-y-4">
             <TotalBlock title="Draft" data={totals["Draft"]}></TotalBlock>
             <TotalBlock title="FY" data={totals["FY"]}></TotalBlock>
             <TotalBlock title="Agreement" data={totals["Agreement"]}></TotalBlock>
-        </div>
+        </summary>
     );
 };
