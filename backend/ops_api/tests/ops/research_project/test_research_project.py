@@ -157,17 +157,13 @@ def test_post_research_projects(auth_client):
     assert response.json["team_leaders"] == [
         {
             "email": "chris.fortunato@example.com",
-            "full_name": "(no name) (no name)",
+            "full_name": "Chris Fortunato",
             "id": 1,
         },
-        {
-            "email": "Amy.Madigan@example.com",
-            "full_name": "(no name) (no name)",
-            "id": 2,
-        },
+        {"email": "Amy.Madigan@example.com", "full_name": "Amy Madigan", "id": 2},
         {
             "email": "Ivelisse.Martinez-Beck@example.com",
-            "full_name": "(no name) (no name)",
+            "full_name": "Ivelisse Martinez-Beck",
             "id": 3,
         },
     ]
