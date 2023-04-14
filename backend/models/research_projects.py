@@ -76,7 +76,9 @@ class ResearchProject(BaseModel):
             populations=[populations.name for populations in self.populations]
             if self.populations
             else [],
-            team_leaders=[tl.to_dict() for tl in self.team_leaders],
+            team_leaders=[tl.to_dict() for tl in self.team_leaders if tl]
+            if self.team_leaders
+            else [],
         )
 
         return d

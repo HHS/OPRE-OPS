@@ -176,10 +176,6 @@ class ResearchProjectListAPI(BaseListAPI):
                 current_app.logger.info(f"POST to {ENDPOINT_STRING}: New ResearchProject created: {new_rp_dict}")
 
                 return make_response_with_headers(new_rp_dict, 201)
-        except KeyError as ve:
-            # The status string is invalid
-            current_app.logger.error(f"POST to {ENDPOINT_STRING}: {ve}")
-            return make_response_with_headers({}, 400)
         except PendingRollbackError as pr:
             # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
             current_app.logger.error(f"POST to {ENDPOINT_STRING}: {pr}")
