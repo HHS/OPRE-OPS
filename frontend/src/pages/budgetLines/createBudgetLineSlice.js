@@ -68,7 +68,7 @@ const createBudgetLineSlice = createSlice({
 
             if (index !== -1) {
                 const { line_description, comments, can, amount, date_needed } = state.budget_lines_added[index];
-                const [entered_year, entered_month, entered_day] = date_needed.split("-");
+                const [entered_year, entered_month, entered_day] = date_needed.split("-").map((d) => parseInt(d, 10));
 
                 return {
                     ...state,
