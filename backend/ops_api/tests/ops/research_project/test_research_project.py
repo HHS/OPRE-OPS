@@ -167,3 +167,39 @@ def test_post_research_projects(auth_client):
             "id": 3,
         },
     ]
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_post_research_projects_minimum(auth_client):
+    data = {
+        "title": "Research Project #1",
+    }
+    response = auth_client.post("/api/v1/research-projects/", json=data)
+    assert response.status_code == 201
+    assert response.json["title"] == "Research Project #1"
+    assert response.json["team_leaders"] == []
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_post_research_projects_empty_post(auth_client):
+    response = auth_client.post("/api/v1/research-projects/", data={})
+    assert response.status_code == 400
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_post_research_projects_bad_origination_date(auth_client):
+    data = RequestBody(
+        title="Research Project #1",
+        short_title="RP#1",
+        description="blah blah blah",
+        url="https://example.com",
+        origination_date="123",
+        methodologies=["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
+        populations=["POPULATION_1", "POPULATION_2"],
+        team_leaders=[{"id": 1}, {"id": 2}, {"id": 3}],
+    )
+    response = auth_client.post("/api/v1/research-projects/", json=data.__dict__)
+    assert response.status_code == 400
