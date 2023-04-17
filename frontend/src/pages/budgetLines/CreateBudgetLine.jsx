@@ -30,6 +30,7 @@ import { PreviewTable } from "./PreviewTable";
 import { getProcurementShopList } from "../../api/getProcurementShopList";
 import { Alert } from "../../components/UI/Alert/Alert";
 import { Modal } from "../../components/UI/Modal/Modal";
+import { ProjectAgreementSummaryCard } from "./ProjectAgreementSummaryCard";
 
 const StepOne = ({ goToNext }) => {
     const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
@@ -192,6 +193,11 @@ const StepTwo = ({ goBack, goToNext }) => {
                 </>
             )}
             <StepIndicator steps={["Project & Agreement", "Budget Lines", "Review"]} currentStep={2} />
+            <ProjectAgreementSummaryCard
+                selectedResearchProject={selectedResearchProject}
+                selectedAgreement={selectedAgreement}
+                selectedProcurementShop={selectedProcurementShop}
+            />
             <h2 className="font-sans-lg">Procurement Shop</h2>
             <p>
                 Select the Procurement Shop, and the fee rates will be populated in the table below. If this is an
