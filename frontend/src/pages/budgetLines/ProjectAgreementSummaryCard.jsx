@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 export const ProjectAgreementSummaryCard = ({
     selectedResearchProject,
     selectedAgreement,
@@ -25,10 +27,23 @@ export const ProjectAgreementSummaryCard = ({
                     </div>
                     <div className="margin-left-5">
                         <dt className="margin-0 text-base-dark">Fee Rate</dt>
-                        <dd className="margin-0 text-bold">{fee}%</dd>
+                        <dd className="margin-0 text-bold">{fee && `${fee}%`}</dd>
                     </div>
                 </div>
             </dl>
         </div>
     );
+};
+
+ProjectAgreementSummaryCard.propTypes = {
+    selectedResearchProject: PropTypes.shape({
+        title: PropTypes.string.isRequired,
+    }),
+    selectedAgreement: PropTypes.shape({
+        name: PropTypes.string.isRequired,
+    }),
+    selectedProcurementShop: PropTypes.shape({
+        name: PropTypes.string.isRequired,
+        fee: PropTypes.number,
+    }),
 };
