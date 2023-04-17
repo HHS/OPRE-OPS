@@ -718,6 +718,22 @@ paths:
   /api/v1/budget-line-items/:
     get:
       description: Get Budget Line Items
+      parameters:
+        - name: can_id
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: agreement_id
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: status
+          in: query
+          schema:
+            type: string
+          example: 'DRAFT'
       responses:
         '200':
           description: OK
