@@ -3,7 +3,7 @@ import { setSelectedProject } from "./createBudgetLineSlice";
 
 export const ProjectSelect = () => {
     const dispatch = useDispatch();
-    const researchProjects = useSelector((state) => state.createBudgetLine.research_projects);
+    const researchProjects = useSelector((state) => state.createBudgetLine.research_projects_list);
     const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
     const onChangeResearchProjectSelection = (projectId = 0) => {
         if (projectId === 0) {

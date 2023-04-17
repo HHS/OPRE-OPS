@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelectedCan, setCans } from "./createBudgetLineSlice";
 import { getCanList } from "../cans/list/getCanList";
@@ -20,11 +20,11 @@ export const CanSelect = () => {
         );
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         dispatch(getCanList());
     }, [dispatch]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         dispatch(setCans(canList));
     }, [canList, dispatch]);
 

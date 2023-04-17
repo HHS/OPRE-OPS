@@ -29,8 +29,9 @@
     "sass-loader": "13.2.2"
   },
   "devDependencies": {
-    "@testing-library/react": "^14.0.0",
-    "@testing-library/react-hooks": "^8.0.1",
+    "@testing-library/jest-dom": "5.16.5",
+    "@testing-library/react": "14.0.0",
+    "@testing-library/react-hooks": "8.0.1",
     "@uswds/compile": "^1.0.0-beta.3",
     "axe-core": "4.6.3",
     "cypress": "12.7.0",
@@ -38,10 +39,10 @@
     "cypress-localstorage-commands": "2.2.3",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-cypress": "2.12.1",
-    "eslint-plugin-import": "2.26.0",
     "eslint-plugin-prettier": "4.2.1",
     "jose": "4.12.2",
-    "prettier": "2.8.7"
+    "prettier": "2.8.7",
+    "react-native": "0.71.6"
   },
   "scripts": {
     "start": "DISABLE_ESLINT_PLUGIN=true react-scripts start",
