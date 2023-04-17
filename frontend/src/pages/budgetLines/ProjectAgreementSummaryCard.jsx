@@ -8,23 +8,24 @@ export const ProjectAgreementSummaryCard = ({
     const { fee, name: procurementShopName } = selectedProcurementShop;
 
     return (
-        <div
-            className="bg-base-lightest font-family-sans border-1px border-base-light radius-sm margin-top-4"
-            // style={{ width: "23.9375rem", minHeight: "11.75rem" }}
-        >
+        <div className="bg-base-lightest font-family-sans border-1px border-base-light radius-sm margin-y-7">
             <dl className="margin-0 padding-y-2 padding-x-3">
-                <dt className="margin-0 text-base-dark">Project</dt>
-                <dd className="text-semibold margin-0 text-bold font-sans-lg">{title}</dd>
-                <dt className="margin-0 text-base-dark">Agreement</dt>
-                <dd className="text-semibold margin-0 text-bold font-sans-lg">{agreementName}</dd>
-                <div className="display-flex">
+                <dt className="margin-0">Project</dt>
+                <dd className="margin-0 text-bold margin-top-1" style={{ fontSize: "1.375rem" }}>
+                    {title}
+                </dd>
+                <dt className="margin-0 margin-top-205">Agreement</dt>
+                <dd className="margin-0 text-bold margin-top-1" style={{ fontSize: "1.375rem" }}>
+                    {agreementName}
+                </dd>
+                <div className="display-flex margin-top-205 font-12px">
                     <div>
                         <dt className="margin-0 text-base-dark">Procurement Shop</dt>
-                        <dd className="text-semibold margin-0 text-bold">{procurementShopName}</dd>
+                        <dd className="margin-0 text-bold">{procurementShopName}</dd>
                     </div>
-                    <div className="margin-left-4">
+                    <div className="margin-left-5">
                         <dt className="margin-0 text-base-dark">Fee Rate</dt>
-                        <dd className="text-semibold margin-0 text-bold">{fee}%</dd>
+                        <dd className="margin-0 text-bold">{fee}%</dd>
                     </div>
                 </div>
             </dl>
