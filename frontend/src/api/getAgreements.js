@@ -13,3 +13,10 @@ export const getAgreementsByResearchProjectFilter = async (id) => {
     const responseData = await ApplicationContext.get().helpers().callBackend(endpoint, "get");
     return responseData;
 };
+
+export const getAgreementTypes = async () => {
+    const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;
+    const endpoint = `/api/${api_version}/agreement-types/`;
+    const responseData = await ApplicationContext.get().helpers().callBackend(endpoint, "get");
+    return responseData;
+};
