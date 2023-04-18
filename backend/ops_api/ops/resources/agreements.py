@@ -72,4 +72,4 @@ class AgreementListAPI(BaseListAPI):
 
 class AgreementTypeListAPI(MethodView):
     def get(self) -> Response:
-        return jsonify(AgreementType.__members__)
+        return jsonify([e.name for e in AgreementType])
