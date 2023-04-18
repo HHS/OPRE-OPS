@@ -115,13 +115,19 @@ const router = createBrowserRouter(
     )
 );
 
-ReactDOM.createRoot(document.getElementById("root")).render(
-    <React.StrictMode>
-        <Provider store={store}>
-            <RouterProvider router={router} />
-        </Provider>
-    </React.StrictMode>
-);
+const rootElement = document.getElementById("root");
+
+if (rootElement) {
+    ReactDOM.createRoot(rootElement).render(
+        <React.StrictMode>
+            <Provider store={store}>
+                <RouterProvider router={router} />
+            </Provider>
+        </React.StrictMode>
+    );
+} else {
+    console.error("No root element found");
+}
 
 // Expose redux store when running in Cypress (e2e)
 if (window.Cypress) {
