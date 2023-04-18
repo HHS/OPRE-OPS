@@ -3,12 +3,11 @@ from enum import Enum
 from typing import Any
 
 import sqlalchemy as sa
-from models.base import BaseData, BaseModel, currency, intpk, optional_str, reg, required_str
+from models.base import BaseModel
 from models.portfolios import Portfolio, shared_portfolio_cans
-from models.research_projects import ResearchProject
 from models.users import User
 from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Identity, Integer, Numeric, String, Table, Text
-from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
+from sqlalchemy.orm import column_property, relationship
 from typing_extensions import override
 
 
@@ -114,7 +113,10 @@ class Agreement(BaseModel):
     name = Column(String, nullable=False)
     number = Column(String, nullable=False)
     description = Column(String, nullable=True)
-    product_service_code = Column(Integer, ForeignKey("product_service_code.id", name="fk_agreement_product_service_code"))
+    product_service_code = Column(
+        Integer,
+        ForeignKey("product_service_code.id", name="fk_agreement_product_service_code"),
+    )
     agreement_reason = Column(sa.Enum(AgreementReason))
     incumbent = Column(String, nullable=True)
     project_officer = Column(
@@ -128,8 +130,14 @@ class Agreement(BaseModel):
     agreement_type = Column(sa.Enum(AgreementType))
     research_project_id = Column(Integer, ForeignKey("research_project.id"))
     research_project = relationship("ResearchProject", back_populates="agreements")
-    budget_line_items = relationship("BudgetLineItem", back_populates="agreement", lazy=True)
-    procurment_shop = Column(Integer, ForeignKey("procurement_shop.id", name="fk_agreement_procurement_shop"), nullable=True)
+    budget_line_items = relationship(
+        "BudgetLineItem", back_populates="agreement", lazy=True
+    )
+    procurment_shop = Column(
+        Integer,
+        ForeignKey("procurement_shop.id", name="fk_agreement_procurement_shop"),
+        nullable=True,
+    )
     type = Column(String)
 
     __mapper_args__ = {
@@ -151,7 +159,9 @@ class Agreement(BaseModel):
                 else None,
                 "budget_line_items": [bli.to_dict() for bli in self.budget_line_items],
                 "team_members": [tm.to_dict() for tm in self.team_members],
-                "research_project": self.research_project.to_dict() if self.research_project else None,
+                "research_project": self.research_project.to_dict()
+                if self.research_project
+                else None,
             }
         )
 
@@ -201,8 +211,12 @@ class ContractAgreement(Agreement):
 
         d.update(
             {
-                "contract_type": self.contract_type.name if self.contract_type else None,
-                "support_contacts": [contacts.to_dict() for contacts in self.support_contacts],
+                "contract_type": self.contract_type.name
+                if self.contract_type
+                else None,
+                "support_contacts": [
+                    contacts.to_dict() for contacts in self.support_contacts
+                ],
             }
         )
 
@@ -337,7 +351,7 @@ class BudgetLineItem(BaseModel):
     __tablename__ = "budget_line_item"
 
     id = Column(Integer, Identity(), primary_key=True)
-    line_description = Column(String, nullable=False)
+    line_description = Column(String)
     comments = Column(Text)
 
     agreement_id = Column(Integer, ForeignKey("agreement.id"))

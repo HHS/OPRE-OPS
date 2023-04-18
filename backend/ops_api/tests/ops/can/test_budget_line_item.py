@@ -194,3 +194,13 @@ def test_post_budget_line_items_auth_required(client):
     )
     response = client.post("/api/v1/budget-line-items/", json=data.__dict__)
     assert response.status_code == 401
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_post_budget_line_items_only_agreement_id_required(auth_client):
+    data = {"agreement_id": 1}
+    response = auth_client.post("/api/v1/budget-line-items/", json=data)
+    assert response.status_code == 201
+    assert response.json["id"] is not None
+    assert response.json["agreement_id"] == 1
