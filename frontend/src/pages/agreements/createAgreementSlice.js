@@ -2,15 +2,16 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     current_step: 1,
+    agreement_reasons_list: [],
     agreement_types_list: [],
     research_projects_list: [],
     research_projects_filter: "",
     agreement: {
         selected_agreement_type: null,
+        selected_agreement_reason: null,
         name: "",
         description: "",
         selected_product_service_code: -1,
-        selected_reason: -1,
         selected_incumbent: -1,
         project_officer: null,
         team_members: [],
@@ -19,7 +20,6 @@ const initialState = {
     procurement_shops_list: [],
     cans: [],
     users: [],
-    agreement_reasons: [],
     product_service_codes_list: [],
     locked_budget_lines: [],
     budget_lines_added: [],
@@ -44,6 +44,9 @@ const createAgreementSlice = createSlice({
         setCurrentStep: (state, action) => {
             state.current_step = action.payload;
         },
+        setAgreementReasonsList: (state, action) => {
+            state.agreement_reasons_list = action.payload;
+        },
         setAgreementTypesList: (state, action) => {
             state.agreement_types_list = action.payload;
         },
@@ -52,6 +55,9 @@ const createAgreementSlice = createSlice({
         },
         setResearchProjectsFilter: (state, action) => {
             state.research_projects_filter = action.payload;
+        },
+        setSelectedAgreementReason: (state, action) => {
+            state.agreement.selected_agreement_reason = action.payload;
         },
         setSelectedAgreementType: (state, action) => {
             state.agreement.selected_agreement_type = action.payload;
@@ -67,9 +73,6 @@ const createAgreementSlice = createSlice({
         },
         setProductServiceCodesList: (state, action) => {
             state.product_service_codes_list = action.payload;
-        },
-        setAgreementReason: (state, action) => {
-            state.agreement.selected_reason = action.payload;
         },
         setAgreementIncumbent: (state, action) => {
             state.agreement.selected_incumbent = action.payload;
@@ -216,12 +219,13 @@ export const {
     setAgreements,
     setProcurementShopsList,
     setCans,
+    setSelectedAgreementReason,
     setSelectedAgreementType,
+    setAgreementReasonsList,
     setAgreementTypesList,
     setAgreementTitle,
     setAgreementDescription,
     setAgreementProductServiceCode,
-    setAgreementReason,
     setAgreementIncumbent,
     setAgreementTeamMembers,
     setBudgetLineAdded,

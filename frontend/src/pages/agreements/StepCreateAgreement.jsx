@@ -1,6 +1,7 @@
 import { useSelector, useDispatch } from "react-redux";
 import { StepIndicator } from "../../components/UI/StepIndicator/StepIndicator";
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
+import { AgreementReasonSelect } from "./AgreementReasonSelect";
 import { AgreementTypeSelect } from "./AgreementTypeSelect";
 import { ProductServiceCodeSelect } from "./ProductServiceCodeSelect";
 import {
@@ -9,7 +10,6 @@ import {
     setAgreementTitle,
     setAgreementDescription,
     setAgreementProductServiceCode,
-    setAgreementReason,
     setAgreementIncumbent,
     setAgreementProjectOfficer,
     setAgreementTeamMembers,
@@ -120,7 +120,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             <ProcurementShopSelect />
 
             <h2 className="font-sans-md">Reason for Agreement</h2>
-            {/* <AgreementReasonSelect /> */}
+            <AgreementReasonSelect />
             {/* <IncumbentSelect /> */}
             <select />
             <select />
