@@ -22,7 +22,7 @@ export const DesiredAwardDate = () => {
                             name="procurement_month"
                             aria-describedby="mdHint"
                             style={{ width: "6.9375rem" }}
-                            value={enteredMonth}
+                            value={enteredMonth || 0}
                             onChange={(e) => dispatch(setEnteredMonth(e.target.value))}
                         >
                             <option value>Month</option>
@@ -53,7 +53,7 @@ export const DesiredAwardDate = () => {
                             pattern="[0-9]*"
                             inputMode="numeric"
                             placeholder="DD"
-                            value={enteredDay}
+                            value={enteredDay || ""}
                             onChange={(e) => dispatch(setEnteredDay(e.target.value))}
                         />
                     </div>
@@ -71,7 +71,7 @@ export const DesiredAwardDate = () => {
                             pattern="[0-9]*"
                             inputMode="numeric"
                             placeholder="YYYY"
-                            value={enteredYear}
+                            value={enteredYear || ""}
                             onChange={(e) => dispatch(setEnteredYear(e.target.value))}
                         />
                     </div>

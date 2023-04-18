@@ -34,11 +34,10 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
         const bl_created_on = bl?.created_on
             ? new Date(bl.created_on).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" })
             : formatted_today;
-        let date_needed = null;
         let formatted_date_needed;
         let fiscalYear;
-        if (bl?.date_needed) {
-            date_needed = new Date(bl?.date_needed);
+        if (bl?.date_needed !== "--") {
+            let date_needed = new Date(bl?.date_needed);
             formatted_date_needed = formatDate(date_needed);
             // FY will automate based on the Need by Date. Anything after September 30th rolls over into the next FY.
             let month = date_needed.getMonth();
@@ -120,7 +119,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
                         {bl?.line_description}
                     </th>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{formatted_date_needed}</td>
-                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{fiscalYear}</td>
+                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{fiscalYear || ""}</td>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{bl?.can?.number}</td>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
                         <CurrencyFormat
