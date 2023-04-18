@@ -1,19 +1,23 @@
 import { calculateRatio } from "./util";
 
 describe("calculateRatio", () => {
-    test("returns 0 when received and expected are not provided", () => {
-        const ratio = calculateRatio({});
-        expect(ratio).toBe(0);
+    it("returns 0 if the data object is malformed", () => {
+        const data = { received: 100 };
+        expect(calculateRatio(data)).toBe(0);
     });
 
-    test("calculates ratio correctly", () => {
-        const ratio1 = calculateRatio({ expected: 101.1, received: 101.1 });
-        expect(ratio1).toBe(1);
+    it("returns 0 if the received amount is 0", () => {
+        const data = { expected: 200, received: 0 };
+        expect(calculateRatio(data)).toBe(0);
+    });
 
-        const ratio2 = calculateRatio({ expected: 0, received: 101.1 });
-        expect(ratio2).toBe(10000);
+    it("returns 10000 if the expected amount is 0", () => {
+        const data = { expected: 0, received: 200 };
+        expect(calculateRatio(data)).toBe(10000);
+    });
 
-        const ratio3 = calculateRatio({ expected: 101.1, received: 0 });
-        expect(ratio3).toBe(0);
+    it("returns the correct ratio", () => {
+        const data = { expected: 200, received: 100 };
+        expect(calculateRatio(data)).toBe(0.5);
     });
 });
