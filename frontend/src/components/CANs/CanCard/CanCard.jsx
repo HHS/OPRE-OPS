@@ -19,8 +19,6 @@ const CanCard = ({ can, fiscalYear }) => {
     const [canFundingData, setCanFundingDataLocal] = useState({});
     const [percent, setPercent] = useState("");
     const [hoverId, setHoverId] = useState("");
-    // generate a random number between 0 and 100
-    const randomCanId = Math.floor(Math.random() * 100);
 
     const data = [
         {
@@ -153,7 +151,7 @@ const CanCard = ({ can, fiscalYear }) => {
                             </div>
 
                             <div
-                                id={`can-graph-${randomCanId}`}
+                                id={`can-graph-${can.id}`}
                                 className="width-card height-card margin-right-2 margin-top-neg-2"
                                 aria-label="This is a Donut Chart that displays the percent by budget line status in the center."
                                 role="img"
@@ -167,7 +165,7 @@ const CanCard = ({ can, fiscalYear }) => {
                                     setPercent={setPercent}
                                     setHoverId={setHoverId}
                                     CustomLayerComponent={CustomLayerComponent(percent)}
-                                    container_id={`can-graph-${randomCanId}`}
+                                    container_id={`can-graph-${can.id}`}
                                 />
                             </div>
                         </div>

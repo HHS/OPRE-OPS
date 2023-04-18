@@ -3,9 +3,8 @@ from dataclasses import dataclass
 import desert
 import marshmallow
 from flask import current_app
-from models import Agreement, BudgetLineItem
+from models import CAN, BudgetLineItem
 from models.cans import CANFiscalYear
-from models.research_projects import ResearchProject
 from sqlalchemy import distinct, select
 from sqlalchemy.sql.functions import coalesce, sum
 
@@ -26,9 +25,8 @@ class ResearchProjectHelper:
     def get_funding_summary(portfolio_id: int, fiscal_year: int) -> ResearchProjectFundingSummary:
         inner_stmt = (
             select(distinct(BudgetLineItem.can_id))
-            .join(Agreement, Agreement.id == BudgetLineItem.agreement_id)
-            .join(ResearchProject, ResearchProject.id == Agreement.research_project_id)
-            .where(ResearchProject.portfolio_id == int(portfolio_id))
+            .join(CAN, CAN.id == BudgetLineItem.can_id)
+            .where(CAN.managing_portfolio_id == int(portfolio_id))
         )
 
         subq = inner_stmt.subquery()

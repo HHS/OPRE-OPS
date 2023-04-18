@@ -10,7 +10,7 @@ def test_get_research_project_funding_summary(auth_client):
     query_string = {"portfolioId": 1, "fiscalYear": 2023}
     response = auth_client.get("/api/v1/research-project-funding-summary/", query_string=query_string)
     assert response.status_code == 200
-    assert response.json["total_funding"] == 20
+    assert response.json["total_funding"] == 20000000
 
 
 @pytest.mark.usefixtures("app_ctx")
