@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from "react-redux";
 import { StepIndicator } from "../../components/UI/StepIndicator/StepIndicator";
-import { ProcurementShopSelect } from "../budgetLines/ProcurementShopSelect";
+import { ProcurementShopSelect } from "./ProcurementShopSelect";
 import { AgreementTypeSelect } from "./AgreementTypeSelect";
 import { ProductServiceCodeSelect } from "./ProductServiceCodeSelect";
 import {
@@ -21,6 +21,10 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const agreementTitle = useSelector((state) => state.createAgreement.agreement.name);
     const agreementDescription = useSelector((state) => state.createAgreement.agreement.description);
     const agreementNotes = useSelector((state) => state.createAgreement.agreement.notes);
+
+    const handleContinue = () => {
+        goToNext();
+    };
 
     // const handleEditForm = (e) => {
     //     e.preventDefault();
@@ -81,13 +85,13 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             <AgreementTypeSelect />
 
             <h2 className="font-sans-md">Agreement Details</h2>
-            <label className="usa-label" htmlFor="bl-description">
+            <label className="usa-label" htmlFor="agreement-title">
                 Agreement Title
             </label>
             <input
                 className="usa-input"
-                id="bl-description"
-                name="bl-description"
+                id="agreement-title"
+                name="agreement-title"
                 type="text"
                 value={agreementTitle || ""}
                 onChange={(e) => dispatch(setAgreementTitle(e.target.value))}
@@ -124,9 +128,16 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             <h2 className="font-sans-md">Points of Contact</h2>
             {/* <ProjectOfficerSelect /> */}
             {/* <TeamMembersSelect /> */}
-            <label>Team Members Added</label>
-            {/* <TeamMembersPreview /> */}
-
+            <select />
+            <select />
+            <div>
+                <label>Team Members Added</label>
+                {/* <TeamMembersPreview /> */}
+                <ul>
+                    <li>Person 1</li>
+                    <li>Person 2</li>
+                </ul>
+            </div>
             <h2 className="font-sans-md">Notes</h2>
             <input
                 className="usa-input"
@@ -136,6 +147,11 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                 value={agreementNotes || ""}
                 onChange={(e) => dispatch(setAgreementNotes(e.target.vaue))}
             />
+            <div className="grid-row flex-justify-end margin-top-8">
+                <button className="usa-button" onClick={handleContinue}>
+                    Continue
+                </button>
+            </div>
         </>
     );
 };

@@ -2,7 +2,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { StepIndicator } from "../../components/UI/StepIndicator/StepIndicator";
 import { CanSelect } from "../budgetLines/CanSelect";
 import { DesiredAwardDate } from "../budgetLines/DesiredAwardDate";
-import { CurrencyFormat } from "react-currency-format";
+import CurrencyFormat from "react-currency-format";
 import { PreviewTable } from "../budgetLines/PreviewTable";
 import {
     setBudgetLineAdded,
@@ -14,8 +14,7 @@ import {
     setEnteredYear,
     setEnteredDay,
     setEnteredComments,
-    setSelectedProcurementShop,
-} from "./createAgreementSlice";
+} from "../budgetLines/createBudgetLineSlice";
 
 export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
@@ -221,7 +220,6 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
                             dispatch(setEnteredAmount(null));
                             dispatch(setEnteredComments(""));
                             dispatch(setEnteredDescription(""));
-                            dispatch(setSelectedProcurementShop({}));
                             dispatch(setEnteredDay(""));
                             dispatch(setEnteredMonth(""));
                             dispatch(setEnteredYear(""));
