@@ -1,14 +1,13 @@
 """CAN models."""
-from enum import Enum
+from enum import Enum, IntEnum
 from typing import Any
 
 import sqlalchemy as sa
-from models.base import BaseData, BaseModel, currency, intpk, optional_str, reg, required_str
+from models.base import BaseModel, currency, intpk, optional_str, reg, required_str
 from models.portfolios import Portfolio, shared_portfolio_cans
-from models.research_projects import ResearchProject
 from models.users import User
 from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Identity, Integer, Numeric, String, Table, Text
-from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
+from sqlalchemy.orm import column_property, relationship
 from typing_extensions import override
 
 
