@@ -7,12 +7,17 @@ export const ProcurementShopSelect = () => {
     const dispatch = useDispatch();
     const procurementShops = useSelector((state) => state.createAgreement.procurement_shops_list);
     const selectedProcurementShop = useSelector((state) => state.createAgreement.selected_procurement_shop);
+    console.log(`Proc_shops: ${procurementShops}`);
 
     useEffect(() => {
         const getProcurementShopsAndSetState = async () => {
             dispatch(setProcurementShopsList(await getProcurementShopList()));
         };
         getProcurementShopsAndSetState().catch(console.error);
+
+        return () => {
+            dispatch(setProcurementShopsList([]));
+        };
     }, [dispatch]);
 
     const onChangeProcurementShopSelection = (procurementShopId = 0) => {
@@ -43,7 +48,7 @@ export const ProcurementShopSelect = () => {
                     value={selectedProcurementShop?.id}
                     required
                 >
-                    <option value={0}>- Select -</option>
+                    <option value={0}>- Select a Procurement Shop -</option>
                     {procurementShops.map((shop) => (
                         <option key={shop?.id} value={shop?.id}>
                             {shop?.name}
