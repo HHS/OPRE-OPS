@@ -376,3 +376,10 @@ def test_put_budget_line_items_bad_can(auth_client, loaded_db):
 def test_put_budget_line_items_auth(client, loaded_db):
     response = client.put("/api/v1/budget-line-items/1000", json={})
     assert response.status_code == 401
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_put_budget_line_items_empty_request(auth_client, loaded_db):
+    response = auth_client.put("/api/v1/budget-line-items/1000", json={})
+    assert response.status_code == 400
