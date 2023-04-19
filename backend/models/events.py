@@ -10,8 +10,9 @@ from .base import BaseModel
 
 class OpsEventType(Enum):
     LOGIN_ATTEMPT = 1
-    CREATE_NEW_BLI = 2
-    CREATE_NEW_RESEARCH_PROJECT = 3
+    CREATE_BLI = 2
+    UPDATE_BLI = 3
+    CREATE_RESEARCH_PROJECT = 4
 
 
 class OpsEventStatus(Enum):
