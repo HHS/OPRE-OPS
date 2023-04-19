@@ -76,11 +76,10 @@ class Portfolio(BaseModel):
         back_populates="portfolios",
         secondary=portfolio_team_leaders,
     )
-    research_project = relationship("ResearchProject", back_populates="portfolio")
 
     @override
-    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
-        d = super().to_dict()  # type: ignore [no-untyped-call]
+    def to_dict(self) -> dict[str, Any]:
+        d = super().to_dict()
 
         d.update(
             {

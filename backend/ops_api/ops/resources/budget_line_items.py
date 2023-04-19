@@ -23,11 +23,14 @@ from typing_extensions import override
 
 @dataclass
 class RequestBody:
-    line_description: str
     agreement_id: int
-    can_id: int
-    amount: float
-    date_needed: str
+    line_description: Optional[str] = None
+    can_id: Optional[int] = None
+    amount: Optional[float] = None
+    date_needed: Optional[date] = fields.Date(
+        format="%Y-%m-%d",
+        default=None,
+    )
     status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus)
     comments: Optional[str] = None
     psc_fee_amount: Optional[float] = None
@@ -159,7 +162,6 @@ class BudgetLineItemsListAPI(BaseListAPI):
 
                 data = self._post_schema.load(request.json)
                 # convert str param to date
-                data.date_needed = datetime.fromisoformat(data.date_needed)
                 new_bli = BudgetLineItem(**data.__dict__)
 
                 token = verify_jwt_in_request()
