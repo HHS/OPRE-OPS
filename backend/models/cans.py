@@ -130,14 +130,13 @@ class Agreement(BaseModel):
     agreement_type = Column(sa.Enum(AgreementType))
     research_project_id = Column(Integer, ForeignKey("research_project.id"))
     research_project = relationship("ResearchProject", back_populates="agreements")
+
     budget_line_items = relationship(
         "BudgetLineItem", back_populates="agreement", lazy=True
     )
-    procurment_shop = Column(
-        Integer,
-        ForeignKey("procurement_shop.id", name="fk_agreement_procurement_shop"),
-        nullable=True,
-    )
+    procurement_shop_id = Column(Integer, ForeignKey("procurement_shop.id"))
+    procurement_shop = relationship("ProcurementShop", back_populates="agreements")
+
     type = Column(String)
 
     __mapper_args__ = {
@@ -150,19 +149,18 @@ class Agreement(BaseModel):
         d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
 
         d.update(
-            {
-                "agreement_type": self.agreement_type.name
+
+                agreement_type=self.agreement_type.name
                 if self.agreement_type
                 else None,
-                "agreement_reason": self.agreement_reason.name
+                agreement_reason=self.agreement_reason.name
                 if self.agreement_reason
                 else None,
-                "budget_line_items": [bli.to_dict() for bli in self.budget_line_items],
-                "team_members": [tm.to_dict() for tm in self.team_members],
-                "research_project": self.research_project.to_dict()
-                if self.research_project
-                else None,
-            }
+                budget_line_items=[bli.to_dict() for bli in self.budget_line_items],
+                team_members=[tm.to_dict() for tm in self.team_members],
+                research_project=self.research_project.to_dict() if self.research_project else None,
+                procurement_shop=self.procurement_shop.to_dict() if self.procurement_shop else None,
+
         )
 
         return d
@@ -336,11 +334,9 @@ class CANFiscalYearCarryForward(BaseModel):
 
         d.update(
             received_amount=float(self.received_amount)
-            if self.received_amount
-            else None,
+            if self.received_amount else None,
             expected_amount=float(self.expected_amount)
-            if self.expected_amount
-            else None,
+            if self.expected_amount else None,
             total_amount=float(self.total_amount) if self.total_amount else None,
         )
 
@@ -378,6 +374,7 @@ class BudgetLineItem(BaseModel):
             amount=float(self.amount) if self.amount else None,
             psc_fee_amount=float(self.psc_fee_amount) if self.psc_fee_amount else None,
             date_needed=self.date_needed.isoformat() if self.date_needed else None,
+            can=self.can.to_dict() if self.can else None,
         )
 
         return d

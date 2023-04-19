@@ -1,6 +1,6 @@
 export const calculateRatio = (data) => {
     if (!("expected" in data) || !("received" in data)) {
-        console.log("data is malformed.");
+        console.error("data is malformed.");
         return 0;
     }
 

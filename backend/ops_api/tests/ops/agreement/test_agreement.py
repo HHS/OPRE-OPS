@@ -50,6 +50,7 @@ def test_agreements_serialization(auth_client, loaded_db):
     del json_to_compare["updated_on"]
     del json_to_compare["budget_line_items"]
     del json_to_compare["research_project"]
+    del json_to_compare["procurement_shop"]
 
     assert json_to_compare == {
         "agreement_reason": "NEW_REQ",
@@ -63,7 +64,7 @@ def test_agreements_serialization(auth_client, loaded_db):
         "incumbent": "",
         "name": "Contract #1: African American Child and Family Research Center",
         "number": "AGR0001",
-        "procurment_shop": None,
+        "procurement_shop_id": 1,
         "product_service_code": 1,
         "project_officer": None,
         "research_project_id": 1,
