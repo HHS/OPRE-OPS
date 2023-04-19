@@ -1,4 +1,5 @@
 import pytest
+from models import ContractAgreement, GrantAgreement
 from models.cans import Agreement
 from sqlalchemy import func, select
 
@@ -12,7 +13,7 @@ def test_agreement_retrieve(loaded_db):
     assert agreement.number == "AGR0001"
     assert agreement.name == "Contract #1: African American Child and Family Research Center"
     assert agreement.id == 1
-    assert agreement.type == "contract"
+    assert agreement.agreement_type == "CONTRACT"
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -63,13 +64,12 @@ def test_agreements_serialization(auth_client, loaded_db):
         "incumbent": "",
         "name": "Contract #1: African American Child and Family Research Center",
         "number": "AGR0001",
-        "procurment_shop": None,
+        "procurement_shop": None,
         "product_service_code": 1,
         "project_officer": None,
         "research_project_id": 1,
         "support_contacts": [],
         "team_members": [],
-        "type": "contract",
         "vendor": "Vendor 1",
     }
 
@@ -132,5 +132,74 @@ def test_agreement_as_contract_has_contract_fields(loaded_db):
     stmt = select(Agreement).where(Agreement.id == 1)
     agreement = loaded_db.scalar(stmt)
 
-    assert agreement.type == "contract"
+    assert agreement.agreement_type == "CONTRACT"
     assert agreement.contract_number == "CT00XX1"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_create_contract_agreement(loaded_db):
+    contract_agreement = ContractAgreement(
+        agreement_id=1,
+        contract_number="CT0002",
+        contract_type="Research",
+        product_service_code=2,
+    )
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
+    stmt = select(Agreement).where(Agreement.id == 1)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement.contract_agreement.contract_number == "CT0002"
+    assert agreement.contract_agreement.contract_type == "Research"
+    assert agreement.contract_agreement.product_service_code == 2
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_create_grant_agreement(loaded_db):
+    grant_agreement = GrantAgreement(
+        agreement_id=2,
+        grant_number="GR0002",
+        funding_source="NIH",
+    )
+    loaded_db.add(grant_agreement)
+    loaded_db.commit()
+
+    stmt = select(Agreement).where(Agreement.id == 2)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement.grant_agreement.grant_number == "GR0002"
+    assert agreement.grant_agreement.funding_source == "NIH"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_patch_by_id(auth_client, loaded_db):
+    response = auth_client.patch(
+        "/api/v1/agreements/1",
+        json={
+            "name": "New Contract Name",
+            "description": "New Contract Description",
+            "support_contacts": [{"name": "Support Name", "email": "support@test.com"}],
+        },
+    )
+    assert response.status_code == 200
+
+    stmt = select(Agreement).where(Agreement.id == 1)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement.name == "New Contract Name"
+    assert agreement.description == "New Contract Description"
+    assert len(agreement.support_contacts) == 1
+    assert agreement.support_contacts[0].name == "Support Name"
+    assert agreement.support_contacts[0].email == "support@test.com"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_delete_by_id(auth_client, loaded_db):
+    response = auth_client.delete("/api/v1/agreements/1")
+    assert response.status_code == 204
+
+    stmt = select(Agreement).where(Agreement.id == 1)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement is None
