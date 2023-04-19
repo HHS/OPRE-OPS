@@ -2,6 +2,7 @@ import { getAllResearchProjects } from "../api/getResearchProjects";
 import { setResearchProjectsList as budgetProjects } from "../pages/budgetLines/createBudgetLineSlice";
 import { setResearchProjectsList as agreementProjects } from "../pages/agreements/createAgreementSlice";
 import { useDispatch, useSelector } from "react-redux";
+import { CheckAuth } from "../components/Auth/auth";
 
 const GetCreateBudgetLineResearchProjectsListAndSetState = async () => {
     const dispatch = useDispatch();
@@ -14,5 +15,7 @@ const GetCreateBudgetLineResearchProjectsListAndSetState = async () => {
 };
 
 export const loadPreFetchedData = () => {
-    GetCreateBudgetLineResearchProjectsListAndSetState();
+    if (CheckAuth()) {
+        GetCreateBudgetLineResearchProjectsListAndSetState();
+    }
 };
