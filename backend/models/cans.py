@@ -409,7 +409,7 @@ class CAN(BaseModel):
     budget_line_items = relationship("BudgetLineItem", back_populates="can")
 
     @override
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
         d: dict[str, Any] = super().to_dict()
 
         d.update(

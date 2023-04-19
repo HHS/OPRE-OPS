@@ -251,6 +251,12 @@ class AgreementListAPI(BaseListAPI):
             raise RuntimeError(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
 
 
+class AgreementReasonListAPI(MethodView):
+    def get(self) -> Response:
+        reasons = [item.name for item in AgreementReason]
+        return jsonify(reasons)
+
+
 class AgreementTypeListAPI(MethodView):
     def get(self) -> Response:
         return jsonify([e.name for e in AgreementType])
