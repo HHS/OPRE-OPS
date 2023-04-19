@@ -37,7 +37,7 @@ const StepOne = ({ goToNext }) => {
     const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
     return (
         <>
-            <h2 className="font-sans-lg">Create New Budget Line</h2>
+            <h1 className="font-sans-lg">Create New Budget Line</h1>
             <p>Step One: Text explaining this page</p>
             <StepIndicator steps={["Project & Agreement", "Budget Lines", "Review"]} currentStep={1} />
             <h2 className="font-sans-lg">Select a Project</h2>
@@ -61,7 +61,7 @@ const StepOne = ({ goToNext }) => {
             </div>
             <div className="display-flex flex-align-center margin-top-6">
                 <div className="border-bottom-1px border-base-light width-full" />
-                <span className="text-base-light margin-left-2 margin-right-2">or</span>
+                <span className="text-base margin-left-2 margin-right-2">or</span>
                 <div className="border-bottom-1px border-base-light width-full" />
             </div>
             <div className="grid-row flex-justify-center">
