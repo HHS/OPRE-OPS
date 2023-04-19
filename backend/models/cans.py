@@ -132,8 +132,9 @@ class Agreement(BaseModel):
     research_project_id = Column(Integer, ForeignKey("research_project.id"))
     research_project = relationship("ResearchProject", back_populates="agreements")
 
-    budget_line_items = relationship("BudgetLineItem", back_populates="agreement", lazy=True)
-
+    budget_line_items = relationship(
+        "BudgetLineItem", back_populates="agreement", lazy=True
+    )
     procurement_shop_id = Column(Integer, ForeignKey("procurement_shop.id"))
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
 

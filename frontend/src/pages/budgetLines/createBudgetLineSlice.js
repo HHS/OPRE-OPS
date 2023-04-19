@@ -94,7 +94,7 @@ const createBudgetLineSlice = createSlice({
                     ...action.payload,
                     id: crypto.getRandomValues(new Uint32Array(1))[0],
                     status: "DRAFT",
-                    created_on: new Date().toISOString(),
+                    created_on: new Date().toISOString().slice(0, -1) + (Date.now() % 1000).toString().padStart(3, "0"),
                 };
 
                 return {
