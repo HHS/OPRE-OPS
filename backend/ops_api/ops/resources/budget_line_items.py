@@ -23,13 +23,8 @@ from typing_extensions import override
 
 @dataclass
 class RequestBody:
-    line_description: str
     agreement_id: int
-    can_id: int
-    amount: float
-    date_needed: str
     status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus)
-    agreement_id: int
     line_description: Optional[str] = None
     can_id: Optional[int] = None
     amount: Optional[float] = None

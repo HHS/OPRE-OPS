@@ -111,6 +111,7 @@ class AgreementItemAPI(BaseItemAPI):
 
         if is_authorized:
             response = self._get_item_with_try(id)
+
         else:
             response = make_response_with_headers({}, 401)
 
@@ -161,6 +162,7 @@ class AgreementListAPI(BaseListAPI):
             stmt = self._get_query(search, research_project_id)
 
             result = current_app.db_session.execute(stmt).all()
+
             response = make_response_with_headers([i.to_dict() for item in result for i in item])
         else:
             response = make_response_with_headers({}, 401)

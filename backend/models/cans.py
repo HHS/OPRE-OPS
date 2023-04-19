@@ -133,7 +133,9 @@ class Agreement(BaseModel):
     research_project = relationship("ResearchProject", back_populates="agreements")
 
     budget_line_items = relationship("BudgetLineItem", back_populates="agreement", lazy=True)
-    procurement_shop = Column(Integer, ForeignKey("procurement_shop.id", name="fk_agreement_procurement_shop"), nullable=True)
+
+    procurement_shop_id = Column(Integer, ForeignKey("procurement_shop.id"))
+    procurement_shop = relationship("ProcurementShop", back_populates="agreements")
 
     __mapper_args__ = {
         "polymorphic_identity": "agreement",
