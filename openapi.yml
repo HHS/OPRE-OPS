@@ -832,6 +832,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BudgetLineItem'
+
+    put:
+      summary: Update a new Budget Line Item
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetLineItemRequest'
+
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
 components:
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
