@@ -77,8 +77,12 @@ def db_loaded_with_research_projects(app, loaded_db):
 
         instances.extend([can_100, can_200, can_300, can_400])
 
-        agreement_1 = Agreement(id=100, name="Agreement 1", number="AGR00X100", research_project_id=100)
-        agreement_2 = Agreement(id=200, name="Agreement 2", number="AGR00X200", research_project_id=200)
+        agreement_1 = Agreement(
+            id=100, name="Agreement 1", number="AGR00X100", agreement_type="CONTRACT", research_project_id=100
+        )
+        agreement_2 = Agreement(
+            id=200, name="Agreement 2", number="AGR00X200", agreement_type="GRANT", research_project_id=200
+        )
 
         instances.extend([agreement_1, agreement_2])
 
