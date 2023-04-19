@@ -1,4 +1,5 @@
 """CAN models."""
+from dataclasses import dataclass
 from enum import Enum, IntEnum
 from typing import Any
 
@@ -109,7 +110,7 @@ class Agreement(BaseModel):
 
     __tablename__ = "agreement"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, Identity(), primary_key=True)
     name = Column(String, nullable=False)
     number = Column(String, nullable=False)
     description = Column(String, nullable=True)
@@ -128,12 +129,11 @@ class Agreement(BaseModel):
     research_project_id = Column(Integer, ForeignKey("research_project.id"))
     research_project = relationship("ResearchProject", back_populates="agreements")
     budget_line_items = relationship("BudgetLineItem", back_populates="agreement", lazy=True)
-    procurment_shop = Column(Integer, ForeignKey("procurement_shop.id", name="fk_agreement_procurement_shop"), nullable=True)
-    type = Column(String)
+    procurement_shop = Column(Integer, ForeignKey("procurement_shop.id", name="fk_agreement_procurement_shop"), nullable=True)
 
     __mapper_args__ = {
         "polymorphic_identity": "agreement",
-        "polymorphic_on": "type",
+        "polymorphic_on": "agreement_type",
     }
 
     @override
@@ -142,10 +142,10 @@ class Agreement(BaseModel):
 
         d.update(
             {
-                "agreement_type": self.agreement_type.name
+                "agreement_type": self.agreement_type
                 if self.agreement_type
                 else None,
-                "agreement_reason": self.agreement_reason.name
+                "agreement_reason": self.agreement_reason
                 if self.agreement_reason
                 else None,
                 "budget_line_items": [bli.to_dict() for bli in self.budget_line_items],
@@ -161,8 +161,8 @@ contract_support_contacts = Table(
     "contract_support_contacts",
     BaseModel.metadata,
     Column(
-        "contract_number",
-        ForeignKey("contract_agreement.contract_number"),
+        "contract_id",
+        ForeignKey("contract_agreement.contract_id"),
         primary_key=True,
     ),
     Column("users_id", ForeignKey("users.id"), primary_key=True),
@@ -180,7 +180,8 @@ class ContractAgreement(Agreement):
     __tablename__ = "contract_agreement"
 
     id = Column(Integer, ForeignKey("agreement.id"))
-    contract_number = Column(String, primary_key=True)
+    contract_id = Column(Integer, Identity(), primary_key=True)
+    contract_number = Column(String)
     vendor = Column(String)
     delivered_status = Column(Boolean, default=False)
     contract_type = Column(sa.Enum(ContractType))
@@ -191,7 +192,7 @@ class ContractAgreement(Agreement):
     )
 
     __mapper_args__ = {
-        "polymorphic_identity": "contract",
+        "polymorphic_identity": AgreementType.CONTRACT,
     }
 
     @override
@@ -215,38 +216,43 @@ class GrantAgreement(Agreement):
     __tablename__ = "grant_agreement"
 
     id = Column(Integer, ForeignKey("agreement.id"))
+    grant_id = Column(Integer, Identity(), primary_key=True)
     foa = Column(String)
 
     __mapper_args__ = {
-        "polymorphic_identity": "grant",
+        "polymorphic_identity": AgreementType.GRANT,
     }
 
 
 # TODO: Skeleton, will need flushed out more when we know what all an IAA is.
+### Inter-Agency-Agreement
 class IaaAgreement(Agreement):
     """IAA Agreement Model"""
 
     __tablename__ = "iaa_agreement"
 
     id = Column(Integer, ForeignKey("agreement.id"))
+    iaa_id = Column(Integer, Identity(), primary_key=True)
     iaa = Column(String)
 
     __mapper_args__ = {
-        "polymorphic_identity": "iaa",
+        "polymorphic_identity": AgreementType.IAA,
     }
 
 
-# TODO: Skeleton, will need flushed out more when we know what all an IAA-AA is.
+# TODO: Skeleton, will need flushed out more when we know what all an IAA-AA is. Inter-Agency-Agreement-Assisted-Aquisition
+### Inter-Agency-Agreement-Assisted-Aquisition
 class IaaAaAgreement(Agreement):
     """IAA-AA Agreement Model"""
 
     __tablename__ = "iaa_aa_agreement"
 
     id = Column(Integer, ForeignKey("agreement.id"))
+    iaa_aa_id = Column(Integer, Identity(), primary_key=True)
     iaa_aa = Column(String)
 
     __mapper_args__ = {
-        "polymorphic_identity": "iaa-aa",
+        "polymorphic_identity": AgreementType.MISCELLANEOUS,
     }
 
 
@@ -256,10 +262,11 @@ class DirectAgreement(Agreement):
     __tablename__ = "direct_agreement"
 
     id = Column(Integer, ForeignKey("agreement.id"))
+    direct_id = Column(Integer, Identity(), primary_key=True)
     payee = Column(String, nullable=False)
 
     __mapper_args__ = {
-        "polymorphic_identity": "direct",
+        "polymorphic_identity": AgreementType.DIRECT_ALLOCATION,
     }
 
 
