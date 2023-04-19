@@ -2,7 +2,7 @@ from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from models.base import BaseModel
-from models.cans import Agreement, AgreementType
+from models.cans import Agreement, AgreementReason, AgreementType
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -68,6 +68,12 @@ class AgreementListAPI(BaseListAPI):
             response = make_response_with_headers({}, 401)
 
         return response
+
+
+class AgreementReasonListAPI(MethodView):
+    def get(self) -> Response:
+        reasons = [item.name for item in AgreementReason]
+        return jsonify(reasons)
 
 
 class AgreementTypeListAPI(MethodView):
