@@ -96,9 +96,10 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
     @override
     @jwt_required()
     def put(self, id: int) -> Response:
+        message_prefix = f"PUT to {ENDPOINT_STRING}"
         try:
             with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
-                self._validate_request(message=f"PUT to {ENDPOINT_STRING}: Params failed validation:")
+                self._validate_request(message=f"{message_prefix}: Params failed validation:")
 
                 data = self._put_schema.load(request.json)
 
@@ -111,15 +112,15 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
                 bli_dict = self._response_schema.dump(budget_line_item)
                 meta.metadata.update({"updated_bli": bli_dict})
-                current_app.logger.info(f"PUT to {ENDPOINT_STRING}: Updated BLI: {bli_dict}")
+                current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
 
                 return make_response_with_headers(bli_dict, 200)
         except (KeyError, RuntimeError, PendingRollbackError) as re:
             # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
-            current_app.logger.error(f"PUT to {ENDPOINT_STRING}: {re}")
+            current_app.logger.error(f"{message_prefix}: {re}")
             return make_response_with_headers({}, 400)
         except SQLAlchemyError as se:
-            current_app.logger.error(f"PUT to {ENDPOINT_STRING}: {se}")
+            current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
 
     def _validate_request(self, message: Optional[str] = ""):
