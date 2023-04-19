@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { StepIndicator } from "./StepIndicator";
+import "@testing-library/jest-dom/extend-expect";
 
 describe("StepIndicator", () => {
     const steps = ["Step 1", "Step 2", "Step 3"];

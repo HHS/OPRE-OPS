@@ -23,19 +23,21 @@ import {
     setProcurementShop,
     setSelectedProcurementShop,
     deleteBudgetLineAdded,
+    setSelectedAgreement,
 } from "./createBudgetLineSlice";
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
 import { PreviewTable } from "./PreviewTable";
 import { getProcurementShopList } from "../../api/getProcurementShopList";
 import { Alert } from "../../components/UI/Alert/Alert";
 import { Modal } from "../../components/UI/Modal/Modal";
+import { ProjectAgreementSummaryCard } from "./ProjectAgreementSummaryCard";
 
 const StepOne = ({ goToNext }) => {
     const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
     const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
     return (
         <>
-            <h2 className="font-sans-lg">Create New Budget Line</h2>
+            <h1 className="font-sans-lg">Create New Budget Line</h1>
             <p>Step One: Text explaining this page</p>
             <StepIndicator steps={["Project & Agreement", "Budget Lines", "Review"]} currentStep={1} />
             <h2 className="font-sans-lg">Select a Project</h2>
@@ -59,7 +61,7 @@ const StepOne = ({ goToNext }) => {
             </div>
             <div className="display-flex flex-align-center margin-top-6">
                 <div className="border-bottom-1px border-base-light width-full" />
-                <span className="text-base-light margin-left-2 margin-right-2">or</span>
+                <span className="text-base margin-left-2 margin-right-2">or</span>
                 <div className="border-bottom-1px border-base-light width-full" />
             </div>
             <div className="grid-row flex-justify-center">
@@ -86,7 +88,7 @@ const StepTwo = ({ goBack, goToNext }) => {
     const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
     const isEditing = useSelector((state) => state.createBudgetLine.is_editing_budget_line);
     const budgetLineBeingEdited = useSelector((state) => state.createBudgetLine.budget_line_being_edited);
-    const [isAlert, setIsAlert] = useState(false);
+    const [isAlertActive, setIsAlertActive] = useState(false);
     const [alertProps, setAlertProps] = useState({});
     const [showModal, setShowModal] = useState(false);
     const [modalProps, setModalProps] = useState({});
@@ -94,11 +96,11 @@ const StepTwo = ({ goBack, goToNext }) => {
     const showAlert = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
         window.scrollTo(0, 0);
-        setIsAlert(true);
+        setIsAlertActive(true);
         setAlertProps({ type, heading, message });
 
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        setIsAlert(false);
+        await new Promise((resolve) => setTimeout(resolve, 6000));
+        setIsAlertActive(false);
         setAlertProps({});
     };
 
@@ -127,7 +129,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                 line_description: enteredDescription,
                 comments: enteredComments,
                 can_id: selectedCan?.id,
-                can_number: selectedCan?.number,
+                can: selectedCan,
                 agreement_id: selectedAgreement?.id,
                 amount: enteredAmount,
                 date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}`,
@@ -144,16 +146,16 @@ const StepTwo = ({ goBack, goToNext }) => {
                 ...budgetLinesAdded,
                 {
                     id: crypto.getRandomValues(new Uint32Array(1))[0],
-                    line_description: enteredDescription,
-                    comments: enteredComments,
-                    can_id: selectedCan?.id,
-                    can_number: selectedCan?.number,
-                    agreement_id: selectedAgreement?.id,
-                    amount: enteredAmount,
+                    line_description: enteredDescription || "",
+                    comments: enteredComments || "No comments",
+                    can_id: selectedCan?.id || null,
+                    can: selectedCan || null,
+                    agreement_id: selectedAgreement?.id || null,
+                    amount: enteredAmount || 0,
                     status: "DRAFT",
-                    date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}`,
-                    psc_fee_amount: selectedProcurementShop?.fee,
-                    created_on: new Date().toISOString(),
+                    date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}` || null,
+                    psc_fee_amount: selectedProcurementShop?.fee || null,
+                    created_on: new Date().toISOString().slice(0, -1) + (Date.now() % 1000).toString().padStart(3, "0"),
                 },
             ])
         );
@@ -180,8 +182,8 @@ const StepTwo = ({ goBack, goToNext }) => {
                 />
             )}
 
-            {isAlert ? (
-                <Alert heading={alertProps.heading} type={alertProps.type}>
+            {isAlertActive ? (
+                <Alert heading={alertProps.heading} type={alertProps.type} setIsAlertActive={setIsAlertActive}>
                     {alertProps.message}
                 </Alert>
             ) : (
@@ -191,6 +193,11 @@ const StepTwo = ({ goBack, goToNext }) => {
                 </>
             )}
             <StepIndicator steps={["Project & Agreement", "Budget Lines", "Review"]} currentStep={2} />
+            <ProjectAgreementSummaryCard
+                selectedResearchProject={selectedResearchProject}
+                selectedAgreement={selectedAgreement}
+                selectedProcurementShop={selectedProcurementShop}
+            />
             <h2 className="font-sans-lg">Procurement Shop</h2>
             <p>
                 Select the Procurement Shop, and the fee rates will be populated in the table below. If this is an
@@ -331,6 +338,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                                 dispatch(setEnteredDay(""));
                                 dispatch(setEnteredMonth(""));
                                 dispatch(setEnteredYear(""));
+                                dispatch(setSelectedAgreement(-1));
                                 setModalProps({});
                                 goBack();
                             },
@@ -365,12 +373,12 @@ const StepThree = ({ goBack, goToNext }) => (
 
 export const CreateBudgetLine = () => {
     const dispatch = useDispatch();
-    const selectedProject = useSelector((state) => state.createBudgetLine.selectedProject);
+    const selectedProject = useSelector((state) => state.createBudgetLine.selected_project);
 
     // Get initial list of Agreements (dependent on Research Project Selection)
     useEffect(() => {
         const getAgreementsAndSetState = async () => {
-            if (selectedProject) {
+            if (selectedProject?.id > 0) {
                 const agreements = await getAgreementsByResearchProjectFilter(selectedProject?.id);
                 dispatch(setAgreements(agreements));
             }
@@ -390,6 +398,16 @@ export const CreateBudgetLine = () => {
         };
         getProcurementShopsAndSetState().catch(console.error);
     }, [dispatch]);
+
+    useEffect(() => {
+        const getAgreementsAndSetState = async () => {
+            if (selectedProject?.id > 0) {
+                const results = await getAgreementsByResearchProjectFilter(selectedProject?.id);
+                dispatch(setAgreements(results));
+            }
+        };
+        getAgreementsAndSetState().catch(console.error);
+    }, [dispatch, selectedProject]);
 
     return (
         <App>

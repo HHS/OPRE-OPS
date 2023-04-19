@@ -11,7 +11,7 @@ afterEach(() => {
 });
 
 it("loads", () => {
-    cy.get("h1").should("contain", "African American Child and Family Research Center");
+    cy.get("h1").should("contain", "Human Services Interoperability Support");
     cy.get("h2").should("contain", "Division");
     cy.get("span").should("contain", "Chris Fortunato");
     cy.get("div").should("contain", "SURVEY");

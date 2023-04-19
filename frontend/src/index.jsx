@@ -111,19 +111,28 @@ const router = createBrowserRouter(
             </Route>
             <Route path="/cans" element={<CanList />} />
             <Route path="/login" handle={{}} />
-            <Route path="/budget-lines/create" element={<CreateBudgetLine />} />
-            <Route path="/agreements/create" element={<CreateAgreement />} />
+
+            <Route element={<ProtectedRoute redirectPath="/" />}>
+                <Route path="/budget-lines/create" element={<CreateBudgetLine />} />
+                <Route path="/agreements/create" element={<CreateAgreement />} />
+            </Route>
         </>
     )
 );
 
-ReactDOM.createRoot(document.getElementById("root")).render(
-    <React.StrictMode>
-        <Provider store={store}>
-            <RouterProvider router={router} />
-        </Provider>
-    </React.StrictMode>
-);
+const rootElement = document.getElementById("root");
+
+if (rootElement) {
+    ReactDOM.createRoot(rootElement).render(
+        <React.StrictMode>
+            <Provider store={store}>
+                <RouterProvider router={router} />
+            </Provider>
+        </React.StrictMode>
+    );
+} else {
+    console.error("No root element found");
+}
 
 // Expose redux store when running in Cypress (e2e)
 if (window.Cypress) {

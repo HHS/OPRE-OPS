@@ -15,6 +15,7 @@ class OpsEventType(Enum):
     CREATE_NEW_AGREEMENT = 4
 
 
+
 class OpsEventStatus(Enum):
     SUCCESS = 1
     FAILED = 2

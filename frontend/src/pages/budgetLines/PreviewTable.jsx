@@ -6,6 +6,7 @@ import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-so
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import Tag from "../../components/UI/Tag/Tag";
 import { editBudgetLineAdded, duplicateBudgetLineAdded } from "./createBudgetLineSlice";
+import { TotalSummaryCard } from "./TotalSummaryCard";
 import "./PreviewTable.scss";
 
 export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
@@ -33,12 +34,16 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
         const bl_created_on = bl?.created_on
             ? new Date(bl.created_on).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" })
             : formatted_today;
-        let date_needed = new Date(bl?.date_needed);
-        const formatted_date_needed = formatDate(date_needed);
-        // FY will automate based on the Need by Date. Anything after September 30th rolls over into the next FY.
-        let month = date_needed.getMonth();
-        let year = date_needed.getFullYear();
-        let fiscalYear = month > 8 ? year + 1 : year;
+        let formatted_date_needed;
+        let fiscalYear;
+        if (bl?.date_needed !== "--") {
+            let date_needed = new Date(bl?.date_needed);
+            formatted_date_needed = formatDate(date_needed);
+            // FY will automate based on the Need by Date. Anything after September 30th rolls over into the next FY.
+            let month = date_needed.getMonth();
+            let year = date_needed.getFullYear();
+            fiscalYear = month > 8 ? year + 1 : year;
+        }
         let feeTotal = bl?.amount * (bl?.psc_fee_amount / 10);
         let total = bl?.amount + feeTotal;
         let status = bl?.status.charAt(0).toUpperCase() + bl?.status.slice(1).toLowerCase();
@@ -49,6 +54,9 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
         };
 
         const TableTag = ({ status }) => {
+            if (status === "In_execution") {
+                status = "Executing";
+            }
             let classNames = "padding-x-105 padding-y-1 ";
             switch (status) {
                 case "Draft":
@@ -111,9 +119,8 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
                         {bl?.line_description}
                     </th>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{formatted_date_needed}</td>
-                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{fiscalYear}</td>
-                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{bl?.can_number}</td>
-
+                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{fiscalYear || ""}</td>
+                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{bl?.can?.number}</td>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
                         <CurrencyFormat
                             value={bl?.amount}
@@ -200,26 +207,29 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
     };
 
     return (
-        <table className="usa-table usa-table--borderless width-full">
-            <thead>
-                <tr>
-                    <th scope="col">Description</th>
-                    <th scope="col">Need By</th>
-                    <th scope="col">FY</th>
-                    <th scope="col">CAN</th>
-                    <th scope="col">Amount</th>
-                    <th scope="col">Fee</th>
-                    <th scope="col">Total</th>
-                    <th scope="col" className="padding-0" style={{ width: "6.25rem" }}>
-                        Status
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {sortedBudgetLines.map((bl) => (
-                    <TableRow key={bl?.id} bl={bl} />
-                ))}
-            </tbody>
-        </table>
+        <>
+            <table className="usa-table usa-table--borderless width-full">
+                <thead>
+                    <tr>
+                        <th scope="col">Description</th>
+                        <th scope="col">Need By</th>
+                        <th scope="col">FY</th>
+                        <th scope="col">CAN</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Fee</th>
+                        <th scope="col">Total</th>
+                        <th scope="col" className="padding-0" style={{ width: "6.25rem" }}>
+                            Status
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {sortedBudgetLines.map((bl) => (
+                        <TableRow key={bl?.id} bl={bl} />
+                    ))}
+                </tbody>
+            </table>
+            <TotalSummaryCard budgetLines={sortedBudgetLines}></TotalSummaryCard>
+        </>
     );
 };

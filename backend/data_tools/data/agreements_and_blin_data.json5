@@ -1,4 +1,30 @@
 {
+  procurement_shop: [
+    {
+      id: 1,
+      name: "Product Service Center",
+      abbr: "PSC",
+      fee: 0,
+    },
+    {
+      id: 2,
+      name: "Government Contracting Services",
+      abbr: "GCS",
+      fee: 0,
+    },
+    {
+      id: 3,
+      name: "National Institute of Health",
+      abbr: "NIH",
+      fee: 0.5,
+    },
+    {
+      id: 4,
+      name: "Interior Business Center",
+      abbr: "IBC",
+      fee: 4.8,
+    },
+  ],
   product_service_code: [
     {
       id: 1,
@@ -43,6 +69,7 @@
       team_members: [],
       agreement_type: "CONTRACT",
       research_project_id: 1,
+      procurement_shop_id: 1,
     },
     {
       number: "AGR0002",
@@ -55,6 +82,7 @@
       team_members: [],
       agreement_type: "DIRECT_ALLOCATION",
       research_project_id: 1,
+      procurement_shop_id: 3,
     },
     {
       number: "AGR0003",
@@ -67,6 +95,7 @@
       team_members: [],
       agreement_type: "GRANT",
       research_project_id: 2,
+      procurement_shop_id: 3,
     },
     {
       number: "AGR0004",
@@ -79,6 +108,7 @@
       team_members: [],
       agreement_type: "IAA",
       research_project_id: 2,
+      procurement_shop_id: 3,
     },
     {
       number: "AGR0005",
@@ -91,6 +121,7 @@
       team_members: [],
       agreement_type: "MISCELLANEOUS",
       research_project_id: 3,
+      procurement_shop_id: 3,
     },
     {
       number: "AGR0006",
@@ -103,6 +134,7 @@
       team_members: [],
       agreement_type: "CONTRACT",
       research_project_id: 3,
+      procurement_shop_id: 4,
     },
   ],
   contract_agreement: [
@@ -155,8 +187,8 @@
       agreement_id: 1,
       amount: 1000000.0,
       status: "PLANNED",
-      date_needed: null,
-      psc_fee_amount: null,
+      date_needed: "2023-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
     },
     {
       line_description: "LI 2",
@@ -165,8 +197,8 @@
       agreement_id: 1,
       amount: 1000000.0,
       status: "PLANNED",
-      date_needed: null,
-      psc_fee_amount: null,
+      date_needed: "2023-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
     },
     {
       line_description: "Line Item 1",
@@ -175,8 +207,8 @@
       agreement_id: 2,
       amount: 1000000.0,
       status: "PLANNED",
-      date_needed: null,
-      psc_fee_amount: null,
+      date_needed: "2023-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
     },
     {
       line_description: "Line Item 2",
@@ -185,8 +217,8 @@
       agreement_id: 2,
       amount: 1000000.0,
       status: "PLANNED",
-      date_needed: null,
-      psc_fee_amount: null,
+      date_needed: "2023-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
     },
     {
       line_description: "Line Item 1",
@@ -195,8 +227,8 @@
       agreement_id: 2,
       amount: 1000000.0,
       status: "PLANNED",
-      date_needed: null,
-      psc_fee_amount: null,
+      date_needed: "2023-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
     },
     {
       line_description: "Line Item 2",
@@ -205,8 +237,8 @@
       agreement_id: 2,
       amount: 1000000.0,
       status: "PLANNED",
-      date_needed: null,
-      psc_fee_amount: null,
+      date_needed: "2023-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
     },
     {
       line_description: "Line Item 1",
@@ -215,8 +247,8 @@
       agreement_id: 2,
       amount: 1000000.0,
       status: "PLANNED",
-      date_needed: null,
-      psc_fee_amount: null,
+      date_needed: "2023-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
     },
     {
       line_description: "Line Item 2",
@@ -225,8 +257,8 @@
       agreement_id: 2,
       amount: 2000000.0,
       status: "IN_EXECUTION",
-      date_needed: null,
-      psc_fee_amount: null,
+      date_needed: "2023-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
     },
     {
       line_description: "Line Item 2",
@@ -235,8 +267,8 @@
       agreement_id: 2,
       amount: 2000000.0,
       status: "IN_EXECUTION",
-      date_needed: null,
-      psc_fee_amount: null,
+      date_needed: "2023-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
     },
     {
       line_description: "Line Item 2",
@@ -246,8 +278,8 @@
       can_fiscal_year_can_id: 4,
       amount: 2000000.0,
       status: "IN_EXECUTION",
-      date_needed: null,
-      psc_fee_amount: null,
+      date_needed: "2023-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
     },
     {
       line_description: "Line Item 2",
@@ -256,8 +288,8 @@
       agreement_id: 2,
       amount: 2000000.0,
       status: "IN_EXECUTION",
-      date_needed: null,
-      psc_fee_amount: null,
+      date_needed: "2023-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
     },
     {
       line_description: "Line Item 2",
@@ -266,8 +298,8 @@
       agreement_id: 2,
       amount: 2000000.0,
       status: "IN_EXECUTION",
-      date_needed: null,
-      psc_fee_amount: null,
+      date_needed: "2023-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
     },
     {
       line_description: "Line Item 2",
@@ -276,8 +308,8 @@
       agreement_id: 2,
       amount: 2000000.0,
       status: "IN_EXECUTION",
-      date_needed: null,
-      psc_fee_amount: null,
+      date_needed: "2023-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
     },
     {
       line_description: "Line Item 2",
@@ -286,8 +318,8 @@
       agreement_id: 2,
       amount: 2000000.0,
       status: "IN_EXECUTION",
-      date_needed: null,
-      psc_fee_amount: null,
+      date_needed: "2023-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
     },
     {
       line_description: "Line Item 2",
@@ -296,8 +328,8 @@
       agreement_id: 2,
       amount: 2000000.0,
       status: "IN_EXECUTION",
-      date_needed: null,
-      psc_fee_amount: null,
+      date_needed: "2023-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
     },
     {
       line_description: "Line Item 2",
@@ -306,8 +338,8 @@
       agreement_id: 2,
       amount: 1000000.0,
       status: "PLANNED",
-      date_needed: null,
-      psc_fee_amount: null,
+      date_needed: "2023-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
     },
     {
       line_description: "Line Item 2",
@@ -316,8 +348,8 @@
       agreement_id: 2,
       amount: 3000000.0,
       status: "OBLIGATED",
-      date_needed: null,
-      psc_fee_amount: null,
+      date_needed: "2023-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
     },
     {
       line_description: "Line Item 2",
@@ -326,8 +358,8 @@
       agreement_id: 2,
       amount: 7000000.0,
       status: "PLANNED",
-      date_needed: null,
-      psc_fee_amount: null,
+      date_needed: "2023-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
     },
     {
       line_description: "Line Item 2",
@@ -336,34 +368,8 @@
       agreement_id: 2,
       amount: 500000.0,
       status: "OBLIGATED",
-      date_needed: null,
-      psc_fee_amount: null,
-    },
-  ],
-  procurement_shop: [
-    {
-      id: 1,
-      name: "Product Service Center",
-      abbr: "PSC",
-      fee: 0,
-    },
-    {
-      id: 2,
-      name: "Government Contracting Services",
-      abbr: "GCS",
-      fee: 0,
-    },
-    {
-      id: 3,
-      name: "National Institute of Health",
-      abbr: "NIH",
-      fee: 0.5,
-    },
-    {
-      id: 4,
-      name: "Interior Business Center",
-      abbr: "IBC",
-      fee: 4.8,
+      date_needed: "2023-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
     },
   ],
 }
