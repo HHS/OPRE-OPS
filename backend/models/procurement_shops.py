@@ -14,3 +14,4 @@ class ProcurementShop(BaseModel):
     name = Column(String, nullable=False)
     abbr = Column(String, nullable=False)
     fee = Column(Float, default=0.0)
+    agreements = relationship("Agreement", back_populates="procurement_shop")
