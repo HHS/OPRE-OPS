@@ -108,6 +108,9 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
                 budget_line_item = current_app.db_session.get(BudgetLineItem, id)
 
+                if not budget_line_item:
+                    raise RuntimeError("Invalid BLI id.")
+
                 update_data(budget_line_item, data)
 
                 current_app.db_session.add(budget_line_item)

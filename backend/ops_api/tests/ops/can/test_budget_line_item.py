@@ -383,3 +383,20 @@ def test_put_budget_line_items_auth(client, loaded_db):
 def test_put_budget_line_items_empty_request(auth_client, loaded_db):
     response = auth_client.put("/api/v1/budget-line-items/1000", json={})
     assert response.status_code == 400
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_put_budget_line_items_non_existent_bli(auth_client, loaded_db):
+    data = RequestBody(
+        line_description="Updated LI 1",
+        comments="hah hah",
+        agreement_id=2,
+        can_id=2,
+        amount=200.24,
+        status="PLANNED",
+        date_needed="2024-01-01",
+        psc_fee_amount=2.34,
+    )
+    response = auth_client.put("/api/v1/budget-line-items/1000", json=data.__dict__)
+    assert response.status_code == 400
