@@ -11,7 +11,7 @@ from marshmallow import fields
 from models import BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -99,7 +99,10 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         message_prefix = f"PUT to {ENDPOINT_STRING}"
         try:
             with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
-                self._validate_request(message=f"{message_prefix}: Params failed validation:")
+                OPSMethodView._validate_request(
+                    schema=self._put_schema,
+                    message=f"{message_prefix}: Params failed validation:",
+                )
 
                 data = self._put_schema.load(request.json)
 
@@ -122,12 +125,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
-
-    def _validate_request(self, message: Optional[str] = ""):
-        errors = self._put_schema.validate(request.json)
-        if errors:
-            current_app.logger.error(f"{message}: {errors}")
-            raise RuntimeError(f"{message}: {errors}")
 
 
 class BudgetLineItemsListAPI(BaseListAPI):

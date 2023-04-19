@@ -1,6 +1,9 @@
-from flask import Response, current_app
+from typing import Optional
+
+from flask import Response, current_app, request
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
+from marshmallow import Schema
 from models.base import BaseModel
 from ops_api.ops.utils.auth import auth_gateway
 from ops_api.ops.utils.response import make_response_with_headers
@@ -78,6 +81,13 @@ class OPSMethodView(MethodView):
             response = make_response_with_headers({}, 500)
 
         return response
+
+    @staticmethod
+    def _validate_request(schema: Schema, message: Optional[str] = ""):
+        errors = schema.validate(request.json)
+        if errors:
+            current_app.logger.error(f"{message}: {errors}")
+            raise RuntimeError(f"{message}: {errors}")
 
 
 class BaseItemAPI(OPSMethodView):
