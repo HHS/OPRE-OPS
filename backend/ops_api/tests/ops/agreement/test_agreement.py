@@ -63,7 +63,7 @@ def test_agreements_serialization(auth_client, loaded_db):
         "incumbent": "",
         "name": "Contract #1: African American Child and Family Research Center",
         "number": "AGR0001",
-        "procurment_shop": None,
+        "procurement_shop": None,
         "product_service_code": 1,
         "project_officer": None,
         "research_project_id": 1,

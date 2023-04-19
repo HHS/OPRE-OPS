@@ -35,10 +35,10 @@ services:
       DATA=./data_tools/data/funding_partner_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/funding_source_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/research_project_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-      DATA=./data_tools/data/user_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-      DATA=./data_tools/data/team_leader_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/can_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-      DATA=./data_tools/data/agreements_and_blin_data.json5 python ./data_tools/src/import_static_data/import_data.py
+      DATA=./data_tools/data/user_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
+      DATA=./data_tools/data/agreements_and_blin_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
+      DATA=./data_tools/data/team_leader_data.json5 python ./data_tools/src/import_static_data/import_data.py
       "
 
     volumes:

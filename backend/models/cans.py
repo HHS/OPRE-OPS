@@ -134,7 +134,7 @@ class Agreement(BaseModel):
     budget_line_items = relationship(
         "BudgetLineItem", back_populates="agreement", lazy=True
     )
-    procurment_shop = Column(
+    procurement_shop = Column(
         Integer,
         ForeignKey("procurement_shop.id", name="fk_agreement_procurement_shop"),
         nullable=True,
