@@ -110,7 +110,9 @@ const router = createBrowserRouter(
             </Route>
             <Route path="/cans" element={<CanList />} />
             <Route path="/login" handle={{}} />
-            <Route path="/budget-lines/create" element={<CreateBudgetLine />} />
+            <Route element={<ProtectedRoute redirectPath="/" />}>
+                <Route path="/budget-lines/create" element={<CreateBudgetLine />} />
+            </Route>
         </>
     )
 );

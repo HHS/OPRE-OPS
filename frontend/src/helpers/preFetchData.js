@@ -1,6 +1,7 @@
 import { getAllResearchProjects } from "../api/getResearchProjects";
 import { setResearchProjects } from "../pages/budgetLines/createBudgetLineSlice";
 import { useDispatch, useSelector } from "react-redux";
+import { CheckAuth } from "../components/Auth/auth";
 
 const GetCreateBudgetLineResearchProjectsAndSetState = async () => {
     const dispatch = useDispatch();
@@ -12,5 +13,7 @@ const GetCreateBudgetLineResearchProjectsAndSetState = async () => {
 };
 
 export const loadPreFetchedData = () => {
-    GetCreateBudgetLineResearchProjectsAndSetState();
+    if (CheckAuth()) {
+        GetCreateBudgetLineResearchProjectsAndSetState();
+    }
 };
