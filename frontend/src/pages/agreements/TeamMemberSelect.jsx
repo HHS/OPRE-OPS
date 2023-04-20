@@ -5,20 +5,27 @@ import { setAgreementTeamMembers } from "./createAgreementSlice";
 export const TeamMemberSelect = ({ className }) => {
     const dispatch = useDispatch();
     const usersList = useSelector((state) => state.createAgreement.users);
-
+    const selectedProjectOfficer = useSelector((state) => state.createAgreement.agreement?.project_officer);
     const selectedTeamMembers = useSelector((state) => state.createAgreement.agreement?.team_members);
-    const [inputValue, setInputValue] = useState(selectedTeamMembers?.full_name ?? "");
+    const remainingUsers = usersList.filter(
+        (user) =>
+            user.id !== selectedProjectOfficer?.id && // Check if the user is not a selected project officer
+            !selectedTeamMembers.some((teamMember) => teamMember.id === user.id) // Check if the user is not already a team member
+    );
 
-    useEffect(() => {
-        setInputValue(selectedTeamMembers?.full_name ?? "");
-    }, [selectedTeamMembers]);
+    const [inputValue, setInputValue] = useState("");
+
+    // useEffect(() => {
+    //     setInputValue(usersList?.full_name ?? "");
+    // }, [usersList]);
 
     const onChangeSelect = (userId = 0) => {
         if (userId === 0) {
             return;
         }
-        const selected = usersList[userId - 1];
-        dispatch(setAgreementTeamMembers([...selectedTeamMembers, { ...selected }]));
+        const selected = usersList.find((user) => user.id === userId);
+        dispatch(setAgreementTeamMembers([...selectedTeamMembers, selected]));
+        setInputValue("");
     };
 
     return (
@@ -26,17 +33,18 @@ export const TeamMemberSelect = ({ className }) => {
             <label className="usa-label" htmlFor="project-officer-select" id="project-officer-select-label">
                 Team Members
             </label>
+            {/* <pre>{JSON.stringify(remainingUsers, null, 2)}</pre> */}
             <div className="usa-combo-box width-card-lg" data-enhanced="true">
                 <select
                     className="usa-select usa-sr-only usa-combo-box__select "
                     name="project-officer-select"
                     aria-hidden="true"
                     tabIndex="-1"
-                    value={selectedTeamMembers?.id}
+                    value={remainingUsers?.id}
                     onChange={(e) => onChangeSelect(Number(e.target.value))}
                     required
                 >
-                    {usersList.map((user) => (
+                    {remainingUsers?.map((user) => (
                         <option key={user?.id} value={user?.id}>
                             {user?.full_name || user?.email}
                         </option>
@@ -92,7 +100,7 @@ export const TeamMemberSelect = ({ className }) => {
                         return (
                             <li
                                 key={user?.id}
-                                aria-setsize={usersList?.length}
+                                aria-setsize={remainingUsers?.length}
                                 aria-posinset={index + 1}
                                 aria-selected="false"
                                 id={`dynamic-select--list--option-${index}`}
