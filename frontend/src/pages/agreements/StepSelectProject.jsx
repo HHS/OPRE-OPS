@@ -13,7 +13,7 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
 
     return (
         <>
-            <h2 className="font-sans-lg">Create New Budget Line</h2>
+            <h1 className="font-sans-lg">Create New Budget Line</h1>
             <p>Step One: Text explaining this page</p>
             <StepIndicator steps={wizardSteps} currentStep={1} />
             <h2 className="font-sans-lg">Select a Project</h2>

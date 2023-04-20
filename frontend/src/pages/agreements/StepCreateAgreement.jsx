@@ -26,58 +26,9 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         goToNext();
     };
 
-    // const handleEditForm = (e) => {
-    //     e.preventDefault();
-    //     dispatch(
-    //         setEditBudgetLineAdded({
-    //             id: budgetLinesAdded[budgetLineBeingEdited].id,
-    //             line_description: enteredDescription,
-    //             comments: enteredComments,
-    //             can_id: selectedCan?.id,
-    //             can_number: selectedCan?.number,
-    //             agreement_id: selectedAgreement?.id,
-    //             amount: enteredAmount,
-    //             date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}`,
-    //             psc_fee_amount: selectedProcurementShop?.fee,
-    //         })
-    //     );
-    // };
-
-    // const handleSubmitForm = (e) => {
-    //     e.preventDefault();
-    //     dispatch(
-    //         setBudgetLineAdded([
-    //             ...budgetLinesAdded,
-    //             {
-    //                 id: crypto.getRandomValues(new Uint32Array(1))[0],
-    //                 line_description: enteredDescription,
-    //                 comments: enteredComments,
-    //                 can_id: selectedCan?.id,
-    //                 can_number: selectedCan?.number,
-    //                 agreement_id: selectedAgreement?.id,
-    //                 amount: enteredAmount,
-    //                 status: "DRAFT",
-    //                 date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}`,
-    //                 psc_fee_amount: selectedProcurementShop?.fee,
-    //                 created_on: new Date().toISOString(),
-    //             },
-    //         ])
-    //     );
-
-    //     //reset form
-    //     dispatch(setEnteredDescription(""));
-    //     dispatch(setEnteredAmount(null));
-    //     dispatch(setSelectedCan({}));
-    //     dispatch(setEnteredMonth(""));
-    //     dispatch(setEnteredDay(""));
-    //     dispatch(setEnteredYear(""));
-    //     dispatch(setEnteredComments(""));
-    //     alert("Budget Line Added");
-    // };
-
     return (
         <>
-            <h2 className="font-sans-lg">Create New Budget Line</h2>
+            <h1 className="font-sans-lg">Create New Budget Line</h1>
             <p>Step Two: Creating a new Agreement</p>
             <StepIndicator steps={wizardSteps} currentStep={2} />
             <h2 className="font-sans-md">Select the Agreement Type</h2>
