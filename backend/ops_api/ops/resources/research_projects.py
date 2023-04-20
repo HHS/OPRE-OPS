@@ -146,7 +146,7 @@ class ResearchProjectListAPI(BaseListAPI):
     @jwt_required()
     def post(self) -> Response:
         try:
-            with OpsEventHandler(OpsEventType.CREATE_NEW_RESEARCH_PROJECT) as meta:
+            with OpsEventHandler(OpsEventType.CREATE_RESEARCH_PROJECT) as meta:
                 errors = self._post_schema.validate(request.json)
 
                 if errors:
@@ -176,13 +176,9 @@ class ResearchProjectListAPI(BaseListAPI):
                 current_app.logger.info(f"POST to {ENDPOINT_STRING}: New ResearchProject created: {new_rp_dict}")
 
                 return make_response_with_headers(new_rp_dict, 201)
-        except RuntimeError as re:
+        except (RuntimeError, PendingRollbackError) as re:
             # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
             current_app.logger.error(f"POST to {ENDPOINT_STRING}: {re}")
-            return make_response_with_headers({}, 400)
-        except PendingRollbackError as pr:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
-            current_app.logger.error(f"POST to {ENDPOINT_STRING}: {pr}")
             return make_response_with_headers({}, 400)
         except SQLAlchemyError as se:
             current_app.logger.error(f"POST to {ENDPOINT_STRING}: {se}")
