@@ -208,6 +208,9 @@ const createAgreementSlice = createSlice({
         setEnteredComments: (state, action) => {
             state.entered_comments = action.payload;
         },
+        setUsers: (state, action) => {
+            state.users = action.payload;
+        },
     },
 });
 
@@ -246,6 +249,7 @@ export const {
     setEditBudgetLineAdded,
     updateBudgetLineAtIndex,
     duplicateBudgetLineAdded,
+    setUsers,
 } = createAgreementSlice.actions;
 
 export default createAgreementSlice.reducer;
