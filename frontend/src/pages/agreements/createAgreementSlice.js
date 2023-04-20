@@ -2,11 +2,26 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     current_step: 1,
+    agreement_reasons_list: [],
+    agreement_types_list: [],
     research_projects_list: [],
     research_projects_filter: "",
-    agreements: [],
-    procurement_shops: [],
+    agreement: {
+        selected_agreement_type: null,
+        selected_agreement_reason: null,
+        name: "",
+        description: "",
+        selected_product_service_code: -1,
+        selected_incumbent: -1,
+        project_officer: null,
+        team_members: [],
+        notes: "",
+    },
+    procurement_shops_list: [],
     cans: [],
+    users: [],
+    product_service_codes_list: [],
+    locked_budget_lines: [],
     budget_lines_added: [],
     is_editing_budget_line: false,
     selected_project: -1,
@@ -22,12 +37,18 @@ const initialState = {
     budget_line_being_edited: -1,
 };
 
-const createBudgetLineSlice = createSlice({
-    name: "createBudgetLine",
+const createAgreementSlice = createSlice({
+    name: "createAgreement",
     initialState,
     reducers: {
         setCurrentStep: (state, action) => {
             state.current_step = action.payload;
+        },
+        setAgreementReasonsList: (state, action) => {
+            state.agreement_reasons_list = action.payload;
+        },
+        setAgreementTypesList: (state, action) => {
+            state.agreement_types_list = action.payload;
         },
         setResearchProjectsList: (state, action) => {
             state.research_projects_list = action.payload;
@@ -35,11 +56,38 @@ const createBudgetLineSlice = createSlice({
         setResearchProjectsFilter: (state, action) => {
             state.research_projects_filter = action.payload;
         },
-        setAgreements: (state, action) => {
-            state.agreements = action.payload;
+        setSelectedAgreementReason: (state, action) => {
+            state.agreement.selected_agreement_reason = action.payload;
         },
-        setProcurementShop: (state, action) => {
-            state.procurement_shops = action.payload;
+        setSelectedAgreementType: (state, action) => {
+            state.agreement.selected_agreement_type = action.payload;
+        },
+        setAgreementTitle: (state, action) => {
+            state.agreement.name = action.payload;
+        },
+        setAgreementDescription: (state, action) => {
+            state.agreement.description = action.payload;
+        },
+        setAgreementProductServiceCode: (state, action) => {
+            state.agreement.selected_product_service_code = action.payload;
+        },
+        setProductServiceCodesList: (state, action) => {
+            state.product_service_codes_list = action.payload;
+        },
+        setAgreementIncumbent: (state, action) => {
+            state.agreement.selected_incumbent = action.payload;
+        },
+        setAgreementProjectOfficer: (state, action) => {
+            state.agreement.project_officer = action.payload;
+        },
+        setAgreementTeamMembers: (state, action) => {
+            state.agreement.team_members = action.payload;
+        },
+        setAgreementNotes: (state, action) => {
+            state.agreement.selected_agreement_type = action.payload;
+        },
+        setProcurementShopsList: (state, action) => {
+            state.procurement_shops_list = action.payload;
         },
         setCans: (state, action) => {
             state.cans = action.payload;
@@ -49,26 +97,29 @@ const createBudgetLineSlice = createSlice({
             state.is_editing_budget_line = false;
         },
         deleteBudgetLineAdded: (state, action) => {
-            state.budget_lines_added = state.budget_lines_added.filter(
-                (budget_line) => budget_line.id !== action.payload
-            );
-            // reset the form
-            state.entered_description = "";
-            state.entered_comments = "";
-            state.selected_can = -1;
-            state.entered_amount = null;
-            state.entered_month = "";
-            state.entered_day = "";
-            state.entered_year = "";
-            state.budget_line_being_edited = -1;
-            state.is_editing_budget_line = false;
+            if (window.confirm("Are you sure you want to delete this budget line?")) {
+                state.budget_lines_added = state.budget_lines_added.filter(
+                    (budget_line) => budget_line.id !== action.payload
+                );
+                // reset the form
+                state.entered_description = "";
+                state.entered_comments = "";
+                state.selected_can = -1;
+                state.entered_amount = null;
+                state.entered_month = "";
+                state.entered_day = "";
+                state.entered_year = "";
+                state.budget_line_being_edited = -1;
+                state.is_editing_budget_line = false;
+            }
         },
         editBudgetLineAdded: (state, action) => {
             const index = state.budget_lines_added.findIndex((budget_line) => budget_line.id === action.payload.id);
 
             if (index !== -1) {
-                const { line_description, comments, can, amount, date_needed } = state.budget_lines_added[index];
-                const [entered_year, entered_month, entered_day] = date_needed.split("-").map((d) => parseInt(d, 10));
+                const { line_description, comments, can_id, can_number, amount, date_needed } =
+                    state.budget_lines_added[index];
+                const [entered_year, entered_month, entered_day] = date_needed.split("-");
 
                 return {
                     ...state,
@@ -76,7 +127,8 @@ const createBudgetLineSlice = createSlice({
                     entered_description: line_description,
                     entered_comments: comments,
                     selected_can: {
-                        ...can,
+                        id: can_id,
+                        number: can_number,
                     },
                     entered_amount: amount,
                     entered_month,
@@ -94,7 +146,7 @@ const createBudgetLineSlice = createSlice({
                     ...action.payload,
                     id: crypto.getRandomValues(new Uint32Array(1))[0],
                     status: "DRAFT",
-                    created_on: new Date().toISOString().slice(0, -1) + (Date.now() % 1000).toString().padStart(3, "0"),
+                    created_on: new Date().toISOString(),
                 };
 
                 return {
@@ -106,6 +158,7 @@ const createBudgetLineSlice = createSlice({
         setEditBudgetLineAdded: (state, action) => {
             const updatedBudgetLines = state.budget_lines_added.map((budgetLine) => {
                 if (budgetLine.id === action.payload.id) {
+                    alert("Budget Line Updated");
                     return {
                         ...budgetLine,
                         ...action.payload,
@@ -130,9 +183,6 @@ const createBudgetLineSlice = createSlice({
         },
         setSelectedProject: (state, action) => {
             state.selected_project = action.payload;
-        },
-        setSelectedAgreement: (state, action) => {
-            state.selected_agreement = action.payload;
         },
         setSelectedCan: (state, action) => {
             state.selected_can = action.payload;
@@ -164,12 +214,24 @@ const createBudgetLineSlice = createSlice({
 export const {
     setCurrentStep,
     setResearchProjectsList,
+    setProductServiceCodesList,
     setResearchProjectsFilter,
     setAgreements,
-    setProcurementShop,
+    setProcurementShopsList,
     setCans,
+    setSelectedAgreementReason,
+    setSelectedAgreementType,
+    setAgreementReasonsList,
+    setAgreementTypesList,
+    setAgreementTitle,
+    setAgreementDescription,
+    setAgreementProductServiceCode,
+    setAgreementIncumbent,
+    setAgreementTeamMembers,
     setBudgetLineAdded,
+    setAgreementProjectOfficer,
     deleteBudgetLineAdded,
+    setAgreementNotes,
     editBudgetLineAdded,
     setSelectedProject,
     setSelectedAgreement,
@@ -184,6 +246,6 @@ export const {
     setEditBudgetLineAdded,
     updateBudgetLineAtIndex,
     duplicateBudgetLineAdded,
-} = createBudgetLineSlice.actions;
+} = createAgreementSlice.actions;
 
-export default createBudgetLineSlice.reducer;
+export default createAgreementSlice.reducer;

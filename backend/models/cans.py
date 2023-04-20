@@ -1,9 +1,10 @@
 """CAN models."""
-from enum import Enum
+from dataclasses import dataclass
+from enum import Enum, IntEnum
 from typing import Any
 
 import sqlalchemy as sa
-from models.base import BaseModel
+from models.base import BaseModel, currency, intpk, optional_str, reg, required_str
 from models.portfolios import Portfolio, shared_portfolio_cans
 from models.users import User
 from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Identity, Integer, Numeric, String, Table, Text
@@ -109,7 +110,7 @@ class Agreement(BaseModel):
 
     __tablename__ = "agreement"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, Identity(), primary_key=True)
     name = Column(String, nullable=False)
     number = Column(String, nullable=False)
     description = Column(String, nullable=True)
@@ -137,11 +138,9 @@ class Agreement(BaseModel):
     procurement_shop_id = Column(Integer, ForeignKey("procurement_shop.id"))
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
 
-    type = Column(String)
-
     __mapper_args__ = {
         "polymorphic_identity": "agreement",
-        "polymorphic_on": "type",
+        "polymorphic_on": "agreement_type",
     }
 
     @override
@@ -160,7 +159,6 @@ class Agreement(BaseModel):
                 team_members=[tm.to_dict() for tm in self.team_members],
                 research_project=self.research_project.to_dict() if self.research_project else None,
                 procurement_shop=self.procurement_shop.to_dict() if self.procurement_shop else None,
-
         )
 
         return d
@@ -170,8 +168,8 @@ contract_support_contacts = Table(
     "contract_support_contacts",
     BaseModel.metadata,
     Column(
-        "contract_number",
-        ForeignKey("contract_agreement.contract_number"),
+        "contract_id",
+        ForeignKey("contract_agreement.contract_id"),
         primary_key=True,
     ),
     Column("users_id", ForeignKey("users.id"), primary_key=True),
@@ -189,7 +187,8 @@ class ContractAgreement(Agreement):
     __tablename__ = "contract_agreement"
 
     id = Column(Integer, ForeignKey("agreement.id"))
-    contract_number = Column(String, primary_key=True)
+    contract_id = Column(Integer, Identity(), primary_key=True)
+    contract_number = Column(String)
     vendor = Column(String)
     delivered_status = Column(Boolean, default=False)
     contract_type = Column(sa.Enum(ContractType))
@@ -200,7 +199,7 @@ class ContractAgreement(Agreement):
     )
 
     __mapper_args__ = {
-        "polymorphic_identity": "contract",
+        "polymorphic_identity": AgreementType.CONTRACT,
     }
 
     @override
@@ -228,38 +227,43 @@ class GrantAgreement(Agreement):
     __tablename__ = "grant_agreement"
 
     id = Column(Integer, ForeignKey("agreement.id"))
+    grant_id = Column(Integer, Identity(), primary_key=True)
     foa = Column(String)
 
     __mapper_args__ = {
-        "polymorphic_identity": "grant",
+        "polymorphic_identity": AgreementType.GRANT,
     }
 
 
 # TODO: Skeleton, will need flushed out more when we know what all an IAA is.
+### Inter-Agency-Agreement
 class IaaAgreement(Agreement):
     """IAA Agreement Model"""
 
     __tablename__ = "iaa_agreement"
 
     id = Column(Integer, ForeignKey("agreement.id"))
+    iaa_id = Column(Integer, Identity(), primary_key=True)
     iaa = Column(String)
 
     __mapper_args__ = {
-        "polymorphic_identity": "iaa",
+        "polymorphic_identity": AgreementType.IAA,
     }
 
 
-# TODO: Skeleton, will need flushed out more when we know what all an IAA-AA is.
+# TODO: Skeleton, will need flushed out more when we know what all an IAA-AA is. Inter-Agency-Agreement-Assisted-Aquisition
+### Inter-Agency-Agreement-Assisted-Aquisition
 class IaaAaAgreement(Agreement):
     """IAA-AA Agreement Model"""
 
     __tablename__ = "iaa_aa_agreement"
 
     id = Column(Integer, ForeignKey("agreement.id"))
+    iaa_aa_id = Column(Integer, Identity(), primary_key=True)
     iaa_aa = Column(String)
 
     __mapper_args__ = {
-        "polymorphic_identity": "iaa-aa",
+        "polymorphic_identity": AgreementType.MISCELLANEOUS,
     }
 
 
@@ -269,10 +273,11 @@ class DirectAgreement(Agreement):
     __tablename__ = "direct_agreement"
 
     id = Column(Integer, ForeignKey("agreement.id"))
+    direct_id = Column(Integer, Identity(), primary_key=True)
     payee = Column(String, nullable=False)
 
     __mapper_args__ = {
-        "polymorphic_identity": "direct",
+        "polymorphic_identity": AgreementType.DIRECT_ALLOCATION,
     }
 
 
@@ -414,7 +419,7 @@ class CAN(BaseModel):
     budget_line_items = relationship("BudgetLineItem", back_populates="can")
 
     @override
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
         d: dict[str, Any] = super().to_dict()
 
         d.update(

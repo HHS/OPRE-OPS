@@ -24,6 +24,7 @@ from typing_extensions import override
 @dataclass
 class RequestBody:
     agreement_id: int
+    status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus)
     line_description: Optional[str] = None
     can_id: Optional[int] = None
     amount: Optional[float] = None

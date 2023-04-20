@@ -1,4 +1,6 @@
-from flask import Response, current_app
+from enum import Enum
+
+from flask import Response, current_app, jsonify
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from models.base import BaseModel
@@ -79,6 +81,10 @@ class OPSMethodView(MethodView):
 
         return response
 
+    def _get_enum_items(self) -> Response:
+        enum_items = [e.name for e in self]
+        return jsonify(enum_items)
+
 
 class BaseItemAPI(OPSMethodView):
     def __init__(self, model: BaseModel):
@@ -100,3 +106,8 @@ class BaseListAPI(OPSMethodView):
     @jwt_required()
     def post(self) -> Response:
         ...
+
+
+class EnumListAPI(MethodView):
+    def __init__(self, enum: Enum):
+        super().__init__(enum)
