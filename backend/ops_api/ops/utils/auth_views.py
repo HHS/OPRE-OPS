@@ -17,7 +17,7 @@ def login() -> Union[Response, tuple[str, int]]:
     with OpsEventHandler(OpsEventType.LOGIN_ATTEMPT) as la:
         token, user_data = _get_token_and_user_data_from_oauth_provider(auth_code)
 
-        current_app.logger.debug(f"token={token};user_data={user_data}")
+        current_app.logger.debug(f" token={token};user_data={user_data}")
 
         access_token, refresh_token, user = _get_token_and_user_data_from_internal_auth(user_data)
 
