@@ -15,6 +15,7 @@ import {
     setAgreementTeamMembers,
     setAgreementNotes,
 } from "./createAgreementSlice";
+import { ProjectOfficerSelect } from "./ProjectOfficerSelect";
 
 export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
@@ -77,10 +78,9 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             <select />
 
             <h2 className="font-sans-md">Points of Contact</h2>
-            {/* <ProjectOfficerSelect /> */}
+            <ProjectOfficerSelect />
             {/* <TeamMembersSelect /> */}
-            <select />
-            <select />
+
             <div>
                 <label>Team Members Added</label>
                 {/* <TeamMembersPreview /> */}
