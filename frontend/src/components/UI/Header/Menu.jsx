@@ -23,6 +23,9 @@ export const Menu = () => {
                 <li className="usa-nav__primary-item">
                     <Link to="/budget-lines/create">Create Budget Line</Link>
                 </li>
+                <li className="usa-nav__primary-item">
+                    <Link to="/agreements/create">Create Agreement</Link>
+                </li>
             </ul>
         </div>
     );
