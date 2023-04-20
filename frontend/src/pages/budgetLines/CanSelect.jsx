@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelectedCan, setCans } from "./createBudgetLineSlice";
 import { getCanList } from "../cans/list/getCanList";
@@ -8,9 +8,9 @@ export const CanSelect = () => {
     const canList = useSelector((state) => state.canList.cans);
 
     const selectedCan = useSelector((state) => state.createBudgetLine.selected_can);
-    const [inputValue, setInputValue] = React.useState(selectedCan?.number ?? "");
+    const [inputValue, setInputValue] = useState(selectedCan?.number ?? "");
 
-    React.useEffect(() => {
+    useEffect(() => {
         setInputValue(selectedCan?.number ?? "");
     }, [selectedCan]);
 
@@ -23,11 +23,11 @@ export const CanSelect = () => {
         dispatch(setSelectedCan({ ...selected }));
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         dispatch(getCanList());
     }, [dispatch]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         dispatch(setCans(canList));
     }, [canList, dispatch]);
 

@@ -13,6 +13,7 @@ class OpsEventType(Enum):
     CREATE_BLI = 2
     UPDATE_BLI = 3
     CREATE_RESEARCH_PROJECT = 4
+    CREATE_NEW_AGREEMENT = 5
 
 
 class OpsEventStatus(Enum):

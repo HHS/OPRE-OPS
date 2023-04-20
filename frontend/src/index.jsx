@@ -20,6 +20,7 @@ import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAnd
 import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProjectDetail";
 import { CreateBudgetLine } from "./pages/budgetLines/CreateBudgetLine";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
+import { CreateAgreement } from "./pages/agreements/CreateAgreement";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -110,8 +111,10 @@ const router = createBrowserRouter(
             </Route>
             <Route path="/cans" element={<CanList />} />
             <Route path="/login" handle={{}} />
+
             <Route element={<ProtectedRoute redirectPath="/" />}>
                 <Route path="/budget-lines/create" element={<CreateBudgetLine />} />
+                <Route path="/agreements/create" element={<CreateAgreement />} />
             </Route>
         </>
     )

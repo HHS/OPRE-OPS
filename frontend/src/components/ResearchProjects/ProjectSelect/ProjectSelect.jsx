@@ -1,32 +1,23 @@
 import { useDispatch, useSelector } from "react-redux";
-import { setAgreements, setSelectedAgreement, setSelectedProject } from "./createBudgetLineSlice";
 
-export const ProjectSelect = () => {
+export const ProjectSelect = ({ researchProjectsState, selectedProjectState, setSelectedProjectFunction }) => {
     const dispatch = useDispatch();
-    const researchProjects = useSelector((state) => state.createBudgetLine.research_projects_list);
-    const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
+    const researchProjects = useSelector((state) => state[researchProjectsState]);
+    const selectedResearchProject = useSelector((state) => state[selectedProjectState]);
+
+    console.log(`Project-List: ${researchProjects}`);
+    console.log(`selectedProject: ${selectedResearchProject}`);
     const onChangeResearchProjectSelection = (projectId = 0) => {
         if (projectId === 0) {
-            clearAgreementState();
             return;
         }
         dispatch(
-            setSelectedProject({
+            setSelectedProjectFunction({
                 id: researchProjects[projectId - 1].id,
                 title: researchProjects[projectId - 1].title,
                 teamLeaders: researchProjects[projectId - 1].team_leaders,
             })
         );
-    };
-
-    const onInputCloseButtonClick = (event) => {
-        dispatch(setSelectedProject({}));
-        clearAgreementState();
-    };
-
-    const clearAgreementState = () => {
-        dispatch(setAgreements([]));
-        dispatch(setSelectedAgreement(-1));
     };
 
     const areThereTeamLeaders = selectedResearchProject?.teamLeaders?.length > 0;
@@ -94,7 +85,7 @@ export const ProjectSelect = () => {
                             type="button"
                             className="usa-combo-box__clear-input"
                             aria-label="Clear the select contents"
-                            onClick={(e) => onInputCloseButtonClick(e)}
+                            onClick={() => dispatch(setSelectedProjectFunction({}))}
                         >
                             &nbsp;
                         </button>

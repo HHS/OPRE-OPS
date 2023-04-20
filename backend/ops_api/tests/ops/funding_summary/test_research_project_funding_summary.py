@@ -1,6 +1,6 @@
 import pytest
 from models import Agreement
-from models.cans import CAN, BudgetLineItem, CANFiscalYear
+from models.cans import CAN, AgreementType, BudgetLineItem, CANFiscalYear
 from models.research_projects import ResearchProject
 
 
@@ -10,7 +10,7 @@ def test_get_research_project_funding_summary(auth_client):
     query_string = {"portfolioId": 1, "fiscalYear": 2023}
     response = auth_client.get("/api/v1/research-project-funding-summary/", query_string=query_string)
     assert response.status_code == 200
-    assert response.json["total_funding"] == 20000000
+    assert response.json["total_funding"] == 20000000.0
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -77,8 +77,16 @@ def db_loaded_with_research_projects(app, loaded_db):
 
         instances.extend([can_100, can_200, can_300, can_400])
 
-        agreement_1 = Agreement(id=100, name="Agreement 1", number="AGR00X100", research_project_id=100)
-        agreement_2 = Agreement(id=200, name="Agreement 2", number="AGR00X200", research_project_id=200)
+        agreement_1 = Agreement(
+            id=100,
+            name="Agreement 1",
+            number="AGR00X100",
+            agreement_type=AgreementType.CONTRACT,
+            research_project_id=100,
+        )
+        agreement_2 = Agreement(
+            id=200, name="Agreement 2", number="AGR00X200", agreement_type=AgreementType.GRANT, research_project_id=200
+        )
 
         instances.extend([agreement_1, agreement_2])
 
