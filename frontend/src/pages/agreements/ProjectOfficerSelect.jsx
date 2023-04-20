@@ -23,7 +23,7 @@ export const ProjectOfficerSelect = () => {
     };
 
     return (
-        <>
+        <fieldset className="usa-fieldset">
             <label className="usa-label" htmlFor="project-officer-select" id="project-officer-select-label">
                 Project Officer
             </label>
@@ -116,7 +116,7 @@ export const ProjectOfficerSelect = () => {
                     device users, explore by touch or with swipe gestures.
                 </span>
             </div>
-        </>
+        </fieldset>
     );
 };
 

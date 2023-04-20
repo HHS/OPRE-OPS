@@ -17,6 +17,7 @@ import {
 } from "./createAgreementSlice";
 import ProjectOfficerSelect from "./ProjectOfficerSelect";
 import TeamMemberSelect from "./TeamMemberSelect";
+import TeamMemberList from "./TeamMemberList";
 
 export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
@@ -75,21 +76,16 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             <h2 className="font-sans-md">Reason for Agreement</h2>
             <AgreementReasonSelect />
             {/* <IncumbentSelect /> */}
-            <select />
-            <select />
 
             <h2 className="font-sans-md">Points of Contact</h2>
-            <ProjectOfficerSelect />
-            <TeamMemberSelect />
-
-            <div>
-                <label>Team Members Added</label>
-                {/* <TeamMembersPreview /> */}
-                <ul>
-                    <li>Person 1</li>
-                    <li>Person 2</li>
-                </ul>
+            <div className="display-flex">
+                <ProjectOfficerSelect />
+                <TeamMemberSelect className="margin-left-4" />
             </div>
+
+            <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
+            <TeamMemberList />
+
             <h2 className="font-sans-md">Notes</h2>
             <input
                 className="usa-input"
