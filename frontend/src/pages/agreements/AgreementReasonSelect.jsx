@@ -55,3 +55,5 @@ export const AgreementReasonSelect = () => {
         </>
     );
 };
+
+export default AgreementReasonSelect;

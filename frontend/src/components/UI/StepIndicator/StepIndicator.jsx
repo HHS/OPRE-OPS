@@ -37,3 +37,5 @@ StepIndicator.propTypes = {
     /** Indicates the active (highlighted) step */
     currentStep: PropTypes.number.isRequired,
 };
+
+export default StepIndicator;

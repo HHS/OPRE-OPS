@@ -64,3 +64,5 @@ export const ProcurementShopSelect = () => {
         </fieldset>
     );
 };
+
+export default ProcurementShopSelect;

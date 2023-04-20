@@ -55,3 +55,5 @@ export const AgreementTypeSelect = () => {
         </>
     );
 };
+
+export default AgreementTypeSelect;

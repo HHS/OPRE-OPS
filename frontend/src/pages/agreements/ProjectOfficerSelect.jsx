@@ -119,3 +119,5 @@ export const ProjectOfficerSelect = () => {
         </>
     );
 };
+
+export default ProjectOfficerSelect;

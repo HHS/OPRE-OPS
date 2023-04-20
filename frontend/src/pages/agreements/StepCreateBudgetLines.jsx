@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import { StepIndicator } from "../../components/UI/StepIndicator/StepIndicator";
+import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import { CanSelect } from "../budgetLines/CanSelect";
 import { DesiredAwardDate } from "../budgetLines/DesiredAwardDate";
 import CurrencyFormat from "react-currency-format";

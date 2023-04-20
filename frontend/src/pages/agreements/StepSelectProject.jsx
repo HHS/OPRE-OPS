@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 import { ProjectSelect } from "./ProjectSelect";
-import { StepIndicator } from "../../components/UI/StepIndicator/StepIndicator";
+import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 
 export const StepSelectProject = ({ goToNext, wizardSteps }) => {
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);

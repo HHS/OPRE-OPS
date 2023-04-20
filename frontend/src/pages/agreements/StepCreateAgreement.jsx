@@ -1,9 +1,9 @@
 import { useSelector, useDispatch } from "react-redux";
-import { StepIndicator } from "../../components/UI/StepIndicator/StepIndicator";
-import { ProcurementShopSelect } from "./ProcurementShopSelect";
-import { AgreementReasonSelect } from "./AgreementReasonSelect";
-import { AgreementTypeSelect } from "./AgreementTypeSelect";
-import { ProductServiceCodeSelect } from "./ProductServiceCodeSelect";
+import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
+import ProcurementShopSelect from "./ProcurementShopSelect";
+import AgreementReasonSelect from "./AgreementReasonSelect";
+import AgreementTypeSelect from "./AgreementTypeSelect";
+import ProductServiceCodeSelect from "./ProductServiceCodeSelect";
 import {
     setProcurementShopsList,
     setSelectedProcurementShop,
@@ -15,7 +15,8 @@ import {
     setAgreementTeamMembers,
     setAgreementNotes,
 } from "./createAgreementSlice";
-import { ProjectOfficerSelect } from "./ProjectOfficerSelect";
+import ProjectOfficerSelect from "./ProjectOfficerSelect";
+import TeamMemberSelect from "./TeamMemberSelect";
 
 export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
@@ -79,7 +80,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
 
             <h2 className="font-sans-md">Points of Contact</h2>
             <ProjectOfficerSelect />
-            {/* <TeamMembersSelect /> */}
+            <TeamMemberSelect />
 
             <div>
                 <label>Team Members Added</label>
