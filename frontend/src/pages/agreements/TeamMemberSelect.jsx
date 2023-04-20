@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setAgreementTeamMembers } from "./createAgreementSlice";
 
@@ -15,10 +15,6 @@ export const TeamMemberSelect = ({ className }) => {
 
     const [inputValue, setInputValue] = useState("");
 
-    // useEffect(() => {
-    //     setInputValue(usersList?.full_name ?? "");
-    // }, [usersList]);
-
     const onChangeSelect = (userId = 0) => {
         if (userId === 0) {
             return;
@@ -30,14 +26,14 @@ export const TeamMemberSelect = ({ className }) => {
 
     return (
         <div className={`usa-fieldset ${className}`}>
-            <label className="usa-label" htmlFor="project-officer-select" id="project-officer-select-label">
+            <label className="usa-label" htmlFor="team-member-select" id="team-member-select-label">
                 Team Members
             </label>
             {/* <pre>{JSON.stringify(remainingUsers, null, 2)}</pre> */}
             <div className="usa-combo-box width-card-lg" data-enhanced="true">
                 <select
                     className="usa-select usa-sr-only usa-combo-box__select "
-                    name="project-officer-select"
+                    name="team-member-select"
                     aria-hidden="true"
                     tabIndex="-1"
                     value={remainingUsers?.id}
@@ -51,11 +47,11 @@ export const TeamMemberSelect = ({ className }) => {
                     ))}
                 </select>
                 <input
-                    id="project-officer-select"
-                    aria-owns="users--list"
-                    aria-controls="users--list"
+                    id="team-member-select"
+                    aria-owns="team-members--list"
+                    aria-controls="team-members--list"
                     aria-autocomplete="list"
-                    aria-describedby="users--assistiveHint"
+                    aria-describedby="team-members--assistiveHint"
                     aria-expanded="false"
                     autoCapitalize="off"
                     autoComplete="off"
@@ -90,10 +86,10 @@ export const TeamMemberSelect = ({ className }) => {
 
                 <ul
                     tabIndex="-1"
-                    id="users--list"
+                    id="team-members--list"
                     className="usa-combo-box__list"
                     role="listbox"
-                    aria-labelledby="project-officer-select-label"
+                    aria-labelledby="team-member-select-label"
                     hidden
                 >
                     {usersList?.map((user, index) => {
@@ -116,7 +112,7 @@ export const TeamMemberSelect = ({ className }) => {
                 </ul>
 
                 <div className="usa-combo-box__status usa-sr-only" role="status"></div>
-                <span id="users--assistiveHint" className="usa-sr-only">
+                <span id="team-members--assistiveHint" className="usa-sr-only">
                     When autocomplete results are available use up and down arrows to review and enter to select. Touch
                     device users, explore by touch or with swipe gestures.
                 </span>
