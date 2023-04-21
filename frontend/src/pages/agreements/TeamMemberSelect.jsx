@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setAgreementTeamMembers } from "./createAgreementSlice";
+import PropTypes from "prop-types";
 
 export const TeamMemberSelect = ({ className }) => {
     const dispatch = useDispatch();
@@ -29,7 +30,6 @@ export const TeamMemberSelect = ({ className }) => {
             <label className="usa-label" htmlFor="team-member-select" id="team-member-select-label">
                 Team Members
             </label>
-            {/* <pre>{JSON.stringify(remainingUsers, null, 2)}</pre> */}
             <div className="usa-combo-box width-card-lg" data-enhanced="true">
                 <select
                     className="usa-select usa-sr-only usa-combo-box__select "
@@ -122,3 +122,7 @@ export const TeamMemberSelect = ({ className }) => {
 };
 
 export default TeamMemberSelect;
+
+TeamMemberSelect.propTypes = {
+    className: PropTypes.string,
+};
