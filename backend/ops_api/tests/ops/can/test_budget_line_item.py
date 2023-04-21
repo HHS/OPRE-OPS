@@ -2,7 +2,7 @@ import datetime
 
 import pytest
 from models.cans import BudgetLineItem, BudgetLineItemStatus
-from ops_api.ops.resources.budget_line_items import PATCHRequestBody, RequestBody
+from ops_api.ops.resources.budget_line_items import PATCHRequestBody, POSTRequestBody
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -96,7 +96,7 @@ def test_post_budget_line_items_empty_post(auth_client):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_post_budget_line_items(auth_client):
-    data = RequestBody(
+    data = POSTRequestBody(
         line_description="LI 1",
         comments="blah blah",
         agreement_id=1,
@@ -116,7 +116,7 @@ def test_post_budget_line_items(auth_client):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_post_budget_line_items_bad_status(auth_client):
-    data = RequestBody(
+    data = POSTRequestBody(
         line_description="LI 1",
         comments="blah blah",
         agreement_id=1,
@@ -150,7 +150,7 @@ def test_post_budget_line_items_missing_agreement(auth_client):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_post_budget_line_items_missing_optional_comments(auth_client):
-    data = RequestBody(
+    data = POSTRequestBody(
         line_description="LI 1",
         agreement_id=1,
         can_id=1,
@@ -166,7 +166,7 @@ def test_post_budget_line_items_missing_optional_comments(auth_client):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_post_budget_line_items_invalid_can(auth_client):
-    data = RequestBody(
+    data = POSTRequestBody(
         line_description="LI 1",
         comments="blah blah",
         agreement_id=1,
@@ -183,7 +183,7 @@ def test_post_budget_line_items_invalid_can(auth_client):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_post_budget_line_items_auth_required(client):
-    data = RequestBody(
+    data = POSTRequestBody(
         line_description="LI 1",
         comments="blah blah",
         agreement_id=1,
@@ -225,7 +225,7 @@ def test_put_budget_line_items(auth_client, loaded_db):
     loaded_db.add(bli)
     loaded_db.commit()
 
-    data = RequestBody(
+    data = POSTRequestBody(
         line_description="Updated LI 1",
         comments="hah hah",
         agreement_id=2,
@@ -388,7 +388,7 @@ def test_put_budget_line_items_empty_request(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_put_budget_line_items_non_existent_bli(auth_client, loaded_db):
-    data = RequestBody(
+    data = POSTRequestBody(
         line_description="Updated LI 1",
         comments="hah hah",
         agreement_id=2,

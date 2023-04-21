@@ -24,7 +24,7 @@ ENDPOINT_STRING = "/budget-line-items"
 
 
 @dataclass
-class RequestBody:
+class POSTRequestBody:
     agreement_id: int
     status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus)
     line_description: Optional[str] = None
@@ -80,7 +80,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
         self._response_schema = desert.schema(BudgetLineItemResponse)
-        self._put_schema = desert.schema(RequestBody)
+        self._put_schema = desert.schema(POSTRequestBody)
         self._patch_schema = desert.schema(PATCHRequestBody)
 
     def _get_item_with_try(self, id: int) -> Response:
@@ -177,7 +177,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 class BudgetLineItemsListAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
-        self._post_schema = desert.schema(RequestBody)
+        self._post_schema = desert.schema(POSTRequestBody)
         self._get_schema = desert.schema(QueryParameters)
         self._response_schema = desert.schema(BudgetLineItemResponse)
         self._response_schema_collection = desert.schema(BudgetLineItemResponse, many=True)
