@@ -242,6 +242,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                             name="bl-amount"
                             thousandSeparator={true}
                             decimalScale={2}
+                            fixedDecimalScale={true}
                             renderText={(value) => value}
                             placeholder="$"
                             onValueChange={(values) => {
