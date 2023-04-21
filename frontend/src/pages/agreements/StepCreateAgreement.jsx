@@ -1,20 +1,10 @@
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { StepIndicator } from "../../components/UI/StepIndicator/StepIndicator";
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
 import { AgreementReasonSelect } from "./AgreementReasonSelect";
 import { AgreementTypeSelect } from "./AgreementTypeSelect";
 import { ProductServiceCodeSelect } from "./ProductServiceCodeSelect";
-import {
-    setProcurementShopsList,
-    setSelectedProcurementShop,
-    setAgreementTitle,
-    setAgreementDescription,
-    setAgreementProductServiceCode,
-    setAgreementIncumbent,
-    setAgreementProjectOfficer,
-    setAgreementTeamMembers,
-    setAgreementNotes,
-} from "./createAgreementSlice";
+import { setAgreementDescription, setAgreementNotes, setAgreementTitle } from "./createAgreementSlice";
 
 export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
@@ -25,55 +15,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const handleContinue = () => {
         goToNext();
     };
-
-    // const handleEditForm = (e) => {
-    //     e.preventDefault();
-    //     dispatch(
-    //         setEditBudgetLineAdded({
-    //             id: budgetLinesAdded[budgetLineBeingEdited].id,
-    //             line_description: enteredDescription,
-    //             comments: enteredComments,
-    //             can_id: selectedCan?.id,
-    //             can_number: selectedCan?.number,
-    //             agreement_id: selectedAgreement?.id,
-    //             amount: enteredAmount,
-    //             date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}`,
-    //             psc_fee_amount: selectedProcurementShop?.fee,
-    //         })
-    //     );
-    // };
-
-    // const handleSubmitForm = (e) => {
-    //     e.preventDefault();
-    //     dispatch(
-    //         setBudgetLineAdded([
-    //             ...budgetLinesAdded,
-    //             {
-    //                 id: crypto.getRandomValues(new Uint32Array(1))[0],
-    //                 line_description: enteredDescription,
-    //                 comments: enteredComments,
-    //                 can_id: selectedCan?.id,
-    //                 can_number: selectedCan?.number,
-    //                 agreement_id: selectedAgreement?.id,
-    //                 amount: enteredAmount,
-    //                 status: "DRAFT",
-    //                 date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}`,
-    //                 psc_fee_amount: selectedProcurementShop?.fee,
-    //                 created_on: new Date().toISOString(),
-    //             },
-    //         ])
-    //     );
-
-    //     //reset form
-    //     dispatch(setEnteredDescription(""));
-    //     dispatch(setEnteredAmount(null));
-    //     dispatch(setSelectedCan({}));
-    //     dispatch(setEnteredMonth(""));
-    //     dispatch(setEnteredDay(""));
-    //     dispatch(setEnteredYear(""));
-    //     dispatch(setEnteredComments(""));
-    //     alert("Budget Line Added");
-    // };
 
     return (
         <>
