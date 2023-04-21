@@ -23,9 +23,8 @@ from typing_extensions import Any, override
 ENDPOINT_STRING = "/budget-line-items"
 
 
-@dataclass
-class POSTRequestBody:
-    agreement_id: int
+@dataclass(kw_only=True)
+class RequestBody:
     status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus)
     line_description: Optional[str] = None
     can_id: Optional[int] = None
@@ -38,19 +37,14 @@ class POSTRequestBody:
     psc_fee_amount: Optional[float] = None
 
 
-@dataclass
-class PATCHRequestBody:
-    agreement_id: Optional[int] = None
-    status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus)
-    line_description: Optional[str] = None
-    can_id: Optional[int] = None
-    amount: Optional[float] = None
-    date_needed: Optional[date] = fields.Date(
-        format="%Y-%m-%d",
-    )
-    status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus)
-    comments: Optional[str] = None
-    psc_fee_amount: Optional[float] = None
+@dataclass(kw_only=True)
+class POSTRequestBody(RequestBody):
+    agreement_id: int  # agreement_id is required for POST
+
+
+@dataclass(kw_only=True)
+class PATCHRequestBody(RequestBody):
+    agreement_id: Optional[int] = None  # agreement_id (and all params) are optional for PATCH
 
 
 @dataclass
