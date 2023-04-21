@@ -24,7 +24,11 @@ export const ProjectOfficerSelect = () => {
 
     return (
         <fieldset className="usa-fieldset">
-            <label className="usa-label" htmlFor="project-officer-select" id="project-officer-select-label">
+            <label
+                className="usa-label margin-top-0"
+                htmlFor="project-officer-select"
+                id="project-officer-select-label"
+            >
                 Project Officer
             </label>
             <div className="usa-combo-box width-card-lg" data-enhanced="true">

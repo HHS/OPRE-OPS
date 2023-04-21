@@ -27,7 +27,7 @@ export const TeamMemberSelect = ({ className }) => {
 
     return (
         <div className={`usa-fieldset ${className}`}>
-            <label className="usa-label" htmlFor="team-member-select" id="team-member-select-label">
+            <label className="usa-label margin-top-0" htmlFor="team-member-select" id="team-member-select-label">
                 Team Members
             </label>
             <div className="usa-combo-box width-card-lg" data-enhanced="true">

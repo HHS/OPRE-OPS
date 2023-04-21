@@ -34,11 +34,11 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             <h1 className="font-sans-lg">Create New Budget Line</h1>
             <p>Step Two: Creating a new Agreement</p>
             <StepIndicator steps={wizardSteps} currentStep={2} />
-            <h2 className="font-sans-md">Select the Agreement Type</h2>
+            <h2 className="font-sans-lg">Select the Agreement Type</h2>
             <p>Select the type of agreement you would like to create.</p>
             <AgreementTypeSelect />
 
-            <h2 className="font-sans-md">Agreement Details</h2>
+            <h2 className="font-sans-lg">Agreement Details</h2>
             <label className="usa-label" htmlFor="agreement-title">
                 Agreement Title
             </label>
@@ -66,18 +66,18 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
 
             <ProductServiceCodeSelect />
 
-            <h2 className="font-sans-md">Procurement Shop</h2>
+            <h2 className="font-sans-lg">Procurement Shop</h2>
             <p>
                 Select the Procurement Shop, and the fee rates will be populated in the table below. If this is an
                 active agreement, it will default to the procurement shop currently being used.
             </p>
             <ProcurementShopSelect />
 
-            <h2 className="font-sans-md">Reason for Agreement</h2>
+            <h2 className="font-sans-lg">Reason for Agreement</h2>
             <AgreementReasonSelect />
             {/* <IncumbentSelect /> */}
 
-            <h2 className="font-sans-md">Points of Contact</h2>
+            <h2 className="font-sans-lg">Points of Contact</h2>
             <div className="display-flex">
                 <ProjectOfficerSelect />
                 <TeamMemberSelect className="margin-left-4" />
@@ -86,16 +86,19 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
             <TeamMemberList />
 
-            <h2 className="font-sans-md">Notes</h2>
+            <h2 className="font-sans-lg">Notes</h2>
             <input
                 className="usa-input"
                 id="agreement-notes"
                 name="agreement-notes"
                 type="text"
                 value={agreementNotes || ""}
-                onChange={(e) => dispatch(setAgreementNotes(e.target.vaue))}
+                onChange={(e) => dispatch(setAgreementNotes(e.target.value))}
             />
             <div className="grid-row flex-justify-end margin-top-8">
+                <button className="usa-button usa-button--unstyled margin-right-2" onClick={() => goBack()}>
+                    Back
+                </button>
                 <button className="usa-button" onClick={handleContinue}>
                     Continue
                 </button>
