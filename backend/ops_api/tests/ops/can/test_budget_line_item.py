@@ -2,7 +2,7 @@ import datetime
 
 import pytest
 from models.cans import BudgetLineItem, BudgetLineItemStatus
-from ops_api.ops.resources.budget_line_items import PatchRequestBody, RequestBody
+from ops_api.ops.resources.budget_line_items import PATCHRequestBody, RequestBody
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -420,7 +420,7 @@ def test_patch_budget_line_items(auth_client, loaded_db):
     loaded_db.add(bli)
     loaded_db.commit()
 
-    data = PatchRequestBody(
+    data = PATCHRequestBody(
         line_description="Updated LI 1",
         comments="hah hah",
         agreement_id=2,
@@ -497,7 +497,7 @@ def test_patch_budget_line_items_auth_required(client):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_patch_budget_line_items_bad_status(auth_client, loaded_db):
-    data = PatchRequestBody(
+    data = PATCHRequestBody(
         line_description="LI 1",
         comments="blah blah",
         agreement_id=1,
@@ -521,7 +521,7 @@ def test_patch_budget_line_items_empty_data(auth_client):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_budget_line_items_invalid_can(auth_client):
-    data = PatchRequestBody(
+    data = PATCHRequestBody(
         line_description="LI 1",
         comments="blah blah",
         agreement_id=1,

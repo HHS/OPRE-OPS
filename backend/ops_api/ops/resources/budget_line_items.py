@@ -39,7 +39,7 @@ class RequestBody:
 
 
 @dataclass
-class PatchRequestBody:
+class PATCHRequestBody:
     agreement_id: Optional[int] = None
     status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus)
     line_description: Optional[str] = None
@@ -81,7 +81,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         super().__init__(model)
         self._response_schema = desert.schema(BudgetLineItemResponse)
         self._put_schema = desert.schema(RequestBody)
-        self._patch_schema = desert.schema(PatchRequestBody)
+        self._patch_schema = desert.schema(PATCHRequestBody)
 
     def _get_item_with_try(self, id: int) -> Response:
         try:
