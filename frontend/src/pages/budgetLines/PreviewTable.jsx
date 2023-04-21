@@ -44,7 +44,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
             let year = date_needed.getFullYear();
             fiscalYear = month > 8 ? year + 1 : year;
         }
-        let feeTotal = bl?.amount * (bl?.psc_fee_amount / 10);
+        let feeTotal = bl?.amount * (bl?.psc_fee_amount / 100);
         let total = bl?.amount + feeTotal;
         let status = bl?.status.charAt(0).toUpperCase() + bl?.status.slice(1).toLowerCase();
 
@@ -141,6 +141,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
                                 thousandSeparator={true}
                                 prefix={"$"}
                                 decimalScale={2}
+                                fixedDecimalScale={true}
                                 renderText={(value) => value}
                             />
                         )}
@@ -155,6 +156,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
                                 thousandSeparator={true}
                                 prefix={"$"}
                                 decimalScale={2}
+                                fixedDecimalScale={true}
                                 renderText={(value) => value}
                             />
                         )}
