@@ -128,6 +128,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
                             thousandSeparator={true}
                             prefix={"$"}
                             decimalScale={2}
+                            fixedDecimalScale={true}
                             renderText={(value) => value}
                         />
                     </td>
