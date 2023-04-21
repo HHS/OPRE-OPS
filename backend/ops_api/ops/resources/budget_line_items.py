@@ -18,7 +18,7 @@ from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy import select
 from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
-from typing_extensions import override
+from typing_extensions import Any, override
 
 ENDPOINT_STRING = "/budget-line-items"
 
@@ -26,6 +26,21 @@ ENDPOINT_STRING = "/budget-line-items"
 @dataclass
 class RequestBody:
     agreement_id: int
+    status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus)
+    line_description: Optional[str] = None
+    can_id: Optional[int] = None
+    amount: Optional[float] = None
+    date_needed: Optional[date] = fields.Date(
+        format="%Y-%m-%d",
+    )
+    status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus)
+    comments: Optional[str] = None
+    psc_fee_amount: Optional[float] = None
+
+
+@dataclass
+class PatchRequestBody:
+    agreement_id: Optional[int] = None
     status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus)
     line_description: Optional[str] = None
     can_id: Optional[int] = None
@@ -66,6 +81,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         super().__init__(model)
         self._response_schema = desert.schema(BudgetLineItemResponse)
         self._put_schema = desert.schema(RequestBody)
+        self._patch_schema = desert.schema(PatchRequestBody)
 
     def _get_item_with_try(self, id: int) -> Response:
         try:
@@ -107,12 +123,39 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
                 data = self._put_schema.load(request.json)
 
-                budget_line_item = current_app.db_session.get(BudgetLineItem, id)
+                budget_line_item = update_budget_line_item(data.__dict__, id)
 
-                if not budget_line_item:
-                    raise RuntimeError("Invalid BLI id.")
+                bli_dict = self._response_schema.dump(budget_line_item)
+                meta.metadata.update({"updated_bli": bli_dict})
+                current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
 
-                update_data(budget_line_item, data)
+                return make_response_with_headers(bli_dict, 200)
+        except (KeyError, RuntimeError, PendingRollbackError) as re:
+            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
+            current_app.logger.error(f"{message_prefix}: {re}")
+            return make_response_with_headers({}, 400)
+        except SQLAlchemyError as se:
+            current_app.logger.error(f"{message_prefix}: {se}")
+            return make_response_with_headers({}, 500)
+
+    @override
+    @jwt_required()
+    def patch(self, id: int) -> Response:
+        message_prefix = f"PATCH to {ENDPOINT_STRING}"
+        try:
+            with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
+                OPSMethodView._validate_request(
+                    schema=self._patch_schema,
+                    message=f"{message_prefix}: Params failed validation:",
+                )
+
+                data = self._patch_schema.load(request.json)
+                data = data.__dict__
+                data = {
+                    k: v for (k, v) in data.items() if k in request.json
+                }  # only keep the attributes from the request body
+
+                budget_line_item = update_budget_line_item(data, id)
 
                 current_app.db_session.add(budget_line_item)
                 current_app.db_session.commit()
@@ -223,6 +266,16 @@ class BudgetLineItemsListAPI(BaseListAPI):
             return make_response_with_headers({}, 500)
 
 
-def update_data(budget_line_item: BudgetLineItem, data: RequestBody) -> None:
-    for item in data.__dict__:
-        setattr(budget_line_item, item, getattr(data, item))
+def update_data(budget_line_item: BudgetLineItem, data: dict[str, Any]) -> None:
+    for item in data:
+        setattr(budget_line_item, item, data[item])
+
+
+def update_budget_line_item(data: dict[str, Any], id: int):
+    budget_line_item = current_app.db_session.get(BudgetLineItem, id)
+    if not budget_line_item:
+        raise RuntimeError("Invalid BLI id.")
+    update_data(budget_line_item, data)
+    current_app.db_session.add(budget_line_item)
+    current_app.db_session.commit()
+    return budget_line_item
