@@ -1,4 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
+import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmarkCircle } from "@fortawesome/free-solid-svg-icons";
 import { removeAgreementTeamMember } from "./createAgreementSlice";
@@ -23,6 +24,11 @@ const TeamMemberList = () => {
             />
         </span>
     );
+
+    TeamTag.propTypes = {
+        teamMemberName: PropTypes.string.isRequired,
+        teamMemberId: PropTypes.number.isRequired,
+    };
 
     return teamMembers.length > 0 ? (
         <ul className="add-list-reset">
