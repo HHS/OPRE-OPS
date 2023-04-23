@@ -40,7 +40,7 @@
         "eslint-plugin-import": "2.27.5",
         "eslint-plugin-prettier": "4.2.1",
         "jose": "4.14.1",
-        "prettier": "2.8.7"
+        "prettier": "2.8.8"
     },
     "scripts": {
         "start": "DISABLE_ESLINT_PLUGIN=true react-scripts start",
