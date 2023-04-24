@@ -36,7 +36,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
             : formatted_today;
         let formatted_date_needed;
         let fiscalYear;
-        if (bl?.date_needed !== "--") {
+        if (bl?.date_needed !== "--" && bl?.date_needed !== null) {
             let date_needed = new Date(bl?.date_needed);
             formatted_date_needed = formatDate(date_needed);
             // FY will automate based on the Need by Date. Anything after September 30th rolls over into the next FY.
@@ -123,7 +123,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{bl?.can?.number}</td>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
                         <CurrencyFormat
-                            value={bl?.amount}
+                            value={bl?.amount || 0}
                             displayType={"text"}
                             thousandSeparator={true}
                             prefix={"$"}
