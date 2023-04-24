@@ -89,7 +89,7 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
         <>
             <h1 className="font-sans-lg">Create New Budget Line</h1>
             <p>Step Two: Text explaining this page</p>
-            <StepIndicator steps={wizardSteps} currentStep={2} />
+            <StepIndicator steps={wizardSteps} currentStep={3} />
             <h2 className="font-sans-lg margin-top-3">Budget Line Details</h2>
             <p>
                 Complete the information below to create new budget lines. Select Add Budget Line to create multiple

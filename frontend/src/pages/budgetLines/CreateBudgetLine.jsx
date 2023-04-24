@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import { CreateBudgetLineFlow } from "./CreateBudgetLineFlow";
-import { ProjectSelect } from "./ProjectSelect";
+import ProjectSelect from "./ProjectSelect";
 import { AgreementSelect } from "./AgreementSelect";
 import { CanSelect } from "./CanSelect";
 import { DesiredAwardDate } from "./DesiredAwardDate";

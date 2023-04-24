@@ -21,8 +21,8 @@ export const AgreementReasonSelect = () => {
         };
     }, [dispatch]);
 
-    const onChangeAgreementReasonSelection = (agreementReason = null) => {
-        if (agreementReason === null) {
+    const onChangeAgreementReasonSelection = (agreementReason) => {
+        if (agreementReason === "0") {
             dispatch(setSelectedAgreementReason(null));
             return;
         }
@@ -31,17 +31,17 @@ export const AgreementReasonSelect = () => {
     };
 
     return (
-        <>
-            <label className="usa-label" htmlFor="options">
-                Agreement Reason
+        <fieldset className="usa-fieldset">
+            <label className="usa-label" htmlFor="agreement-select">
+                Reason for Agreement
             </label>
             <div className="display-flex flex-align-center margin-top-1">
                 <select
                     className="usa-select margin-top-0 width-card-lg"
-                    name="options"
-                    id="options"
-                    onChange={(e) => onChangeAgreementReasonSelection(e.target.value || null)}
-                    value={selectedAgreementReason?.value}
+                    name="agreement-select"
+                    id="agreement-select"
+                    onChange={(e) => onChangeAgreementReasonSelection(e.target.value || 0)}
+                    value={selectedAgreementReason}
                     required
                 >
                     <option value={0}>- Select Agreement Reason -</option>
@@ -52,7 +52,7 @@ export const AgreementReasonSelect = () => {
                     ))}
                 </select>
             </div>
-        </>
+        </fieldset>
     );
 };
 

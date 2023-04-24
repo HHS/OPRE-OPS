@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useDispatch, useSelector } from "react-redux";
 import { setAgreements, setSelectedAgreement, setSelectedProject } from "./createBudgetLineSlice";
 
@@ -5,6 +6,7 @@ export const ProjectSelect = () => {
     const dispatch = useDispatch();
     const researchProjects = useSelector((state) => state.createBudgetLine.research_projects_list);
     const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
+
     const onChangeResearchProjectSelection = (projectId = 0) => {
         if (projectId === 0) {
             clearAgreementState();
@@ -12,14 +14,12 @@ export const ProjectSelect = () => {
         }
         dispatch(
             setSelectedProject({
-                id: researchProjects[projectId - 1].id,
-                title: researchProjects[projectId - 1].title,
-                teamLeaders: researchProjects[projectId - 1].team_leaders,
+                ...researchProjects[projectId - 1],
             })
         );
     };
 
-    const onInputCloseButtonClick = (event) => {
+    const onInputCloseButtonClick = () => {
         dispatch(setSelectedProject({}));
         clearAgreementState();
     };
@@ -29,9 +29,8 @@ export const ProjectSelect = () => {
         dispatch(setSelectedAgreement(-1));
     };
 
-    const areThereTeamLeaders = selectedResearchProject?.teamLeaders?.length > 0;
-
-    const ProjectSummaryCard = () => {
+    const ProjectSummaryCard = ({ selectedResearchProject }) => {
+        const { title, description } = selectedResearchProject;
         return (
             <div
                 className="bg-base-lightest font-family-sans font-12px border-1px border-base-light radius-sm margin-top-4"
@@ -39,16 +38,20 @@ export const ProjectSelect = () => {
             >
                 <dl className="margin-0 padding-y-2 padding-x-105">
                     <dt className="margin-0 text-base-dark">Project</dt>
-                    <dd className="text-semibold margin-0">{selectedResearchProject.title}</dd>
-                    {areThereTeamLeaders && <dt className="margin-0 text-base-dark margin-top-205">Project Officer</dt>}
-                    {selectedResearchProject?.teamLeaders?.map((leader) => (
-                        <dd key={leader?.id} className="text-semibold margin-0">
-                            {leader?.first_name} {leader?.last_name}
-                        </dd>
-                    ))}
+                    <dd className="text-semibold margin-0">{title}</dd>
+                    {description && <dt className="margin-0 text-base-dark margin-top-205">Project Description</dt>}
+                    <dd className="text-semibold margin-0" style={{ maxWidth: "15.625rem" }}>
+                        {description}
+                    </dd>
                 </dl>
             </div>
         );
+    };
+    ProjectSummaryCard.propTypes = {
+        selectedResearchProject: PropTypes.shape({
+            title: PropTypes.string.isRequired,
+            description: PropTypes.string,
+        }).isRequired,
     };
     return (
         <div className="display-flex flex-justify padding-top-105">
@@ -144,7 +147,9 @@ export const ProjectSelect = () => {
                 </div>
             </div>
             {/* NOTE: Right side */}
-            <div className="right-half">{selectedResearchProject?.id && <ProjectSummaryCard />}</div>
+            {selectedResearchProject?.id && <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />}
         </div>
     );
 };
+
+export default ProjectSelect;
