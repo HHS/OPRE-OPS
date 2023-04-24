@@ -21,8 +21,8 @@ export const AgreementReasonSelect = () => {
         };
     }, [dispatch]);
 
-    const onChangeAgreementReasonSelection = (agreementReason = null) => {
-        if (agreementReason === null) {
+    const onChangeAgreementReasonSelection = (agreementReason) => {
+        if (agreementReason === "0") {
             dispatch(setSelectedAgreementReason(null));
             return;
         }
@@ -40,7 +40,7 @@ export const AgreementReasonSelect = () => {
                     className="usa-select margin-top-0 width-card-lg"
                     name="agreement-select"
                     id="agreement-select"
-                    onChange={(e) => onChangeAgreementReasonSelection(e.target.value || null)}
+                    onChange={(e) => onChangeAgreementReasonSelection(e.target.value || 0)}
                     value={selectedAgreementReason}
                     required
                 >
