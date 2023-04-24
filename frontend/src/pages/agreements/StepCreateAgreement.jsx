@@ -55,14 +55,15 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             <label className="usa-label" htmlFor="agreement-description">
                 Description
             </label>
-            <input
-                className="usa-input"
+            <textarea
+                className="usa-textarea"
                 id="agreement-description"
                 name="agreement-description"
-                type="text"
+                rows="5"
+                style={{ height: "7rem" }}
                 value={agreementDescription || ""}
-                onChange={(e) => dispatch(setAgreementDescription(e.target.vaue))}
-            />
+                onChange={(e) => dispatch(setAgreementDescription(e.target.value))}
+            ></textarea>
 
             <ProductServiceCodeSelect />
 
