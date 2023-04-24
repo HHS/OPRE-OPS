@@ -21,8 +21,8 @@ export const AgreementTypeSelect = () => {
         };
     }, [dispatch]);
 
-    const onChangeAgreementTypeSelection = (agreementType = null) => {
-        if (agreementType === null) {
+    const onChangeAgreementTypeSelection = (agreementType) => {
+        if (agreementType === "0") {
             dispatch(setSelectedAgreementType(null));
             return;
         }
@@ -40,8 +40,8 @@ export const AgreementTypeSelect = () => {
                     className="usa-select margin-top-0 width-card-lg"
                     name="options"
                     id="options"
-                    onChange={(e) => onChangeAgreementTypeSelection(e.target.value || null)}
-                    value={selectedAgreementType?.value}
+                    onChange={(e) => onChangeAgreementTypeSelection(e.target.value || 0)}
+                    value={selectedAgreementType}
                     required
                 >
                     <option value={0}>- Select Agreement Type -</option>

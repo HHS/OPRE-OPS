@@ -24,9 +24,44 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const agreementTitle = useSelector((state) => state.createAgreement.agreement.name);
     const agreementDescription = useSelector((state) => state.createAgreement.agreement.description);
     const agreementNotes = useSelector((state) => state.createAgreement.agreement.notes);
+    const selectedProductServiceCode = useSelector(
+        (state) => state.createAgreement.agreement.selected_product_service_code
+    );
+    const agreementIncumbent = useSelector((state) => state.createAgreement.agreement.incumbent_entered);
 
     const handleContinue = () => {
         goToNext();
+    };
+    const handleDraft = () => {
+        // TODO: Save Agreement as Draft
+        alert("Draft Agreement saved");
+    };
+    const handleCancel = () => {
+        // TODO: Add cancel stuff
+        goBack();
+    };
+
+    const ProductServiceCodeSummaryBox = () => {
+        // TODO: Replace with actual NAICS Code and Program Support Code from Selected Product Service Code
+        const NAICSCode = "541690";
+        const programSupportCode = "R410 - Research";
+        return (
+            <div
+                className="bg-base-lightest font-family-sans font-12px border-1px border-base-light radius-sm margin-top-4"
+                style={{ width: "19.5625rem", minHeight: "4.375rem" }}
+            >
+                <dl className="margin-0 padding-y-2 padding-x-105 display-flex flex-justify">
+                    <div>
+                        <dt className="margin-0 text-base-dark">NAICS Code</dt>
+                        <dd className="text-semibold margin-0">{NAICSCode}</dd>
+                    </div>
+                    <div>
+                        <dt className="margin-0 text-base-dark">Program Support Code</dt>
+                        <dd className="text-semibold margin-0">{programSupportCode}</dd>
+                    </div>
+                </dl>
+            </div>
+        );
     };
 
     return (
@@ -55,17 +90,18 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             <label className="usa-label" htmlFor="agreement-description">
                 Description
             </label>
-            <input
-                className="usa-input"
+            <textarea
+                className="usa-textarea"
                 id="agreement-description"
                 name="agreement-description"
-                type="text"
+                rows="5"
+                style={{ height: "7rem" }}
                 value={agreementDescription || ""}
-                onChange={(e) => dispatch(setAgreementDescription(e.target.vaue))}
-            />
+                onChange={(e) => dispatch(setAgreementDescription(e.target.value))}
+            ></textarea>
 
             <ProductServiceCodeSelect />
-
+            {selectedProductServiceCode && <ProductServiceCodeSummaryBox />}
             <h2 className="font-sans-lg">Procurement Shop</h2>
             <p>
                 Select the Procurement Shop, and the fee rates will be populated in the table below. If this is an
@@ -74,8 +110,23 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             <ProcurementShopSelect />
 
             <h2 className="font-sans-lg">Reason for Agreement</h2>
-            <AgreementReasonSelect />
-            {/* <IncumbentSelect /> */}
+            <div className="display-flex">
+                <AgreementReasonSelect />
+                <fieldset className="usa-fieldset margin-left-4">
+                    <label className="usa-label" htmlFor="agreement-incumbent">
+                        Incumbent
+                    </label>
+                    <input
+                        className="usa-input width-card-lg"
+                        id="agreement-incumbent"
+                        name="agreement-incumbent"
+                        type="text"
+                        value={agreementIncumbent || ""}
+                        onChange={(e) => dispatch(setAgreementIncumbent(e.target.value))}
+                        required
+                    />
+                </fieldset>
+            </div>
 
             <h2 className="font-sans-lg">Points of Contact</h2>
             <div className="display-flex">
@@ -85,23 +136,45 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
 
             <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
             <TeamMemberList />
-
-            <h2 className="font-sans-lg">Notes</h2>
-            <input
-                className="usa-input"
-                id="agreement-notes"
-                name="agreement-notes"
-                type="text"
-                value={agreementNotes || ""}
-                onChange={(e) => dispatch(setAgreementNotes(e.target.value))}
-            />
-            <div className="grid-row flex-justify-end margin-top-8">
+            <div className="usa-character-count">
+                <div className="usa-form-group">
+                    <label className="usa-label font-sans-lg text-bold" htmlFor="with-hint-textarea">
+                        Notes (optional)
+                    </label>
+                    <span id="with-hint-textarea-hint" className="usa-hint">
+                        Maximum 150 characters
+                    </span>
+                    <textarea
+                        className="usa-textarea usa-character-count__field"
+                        id="with-hint-textarea"
+                        maxLength="150"
+                        name="with-hint-textarea"
+                        rows="5"
+                        aria-describedby="with-hint-textarea-info with-hint-textarea-hint"
+                        style={{ height: "7rem" }}
+                        value={agreementNotes || ""}
+                        onChange={(e) => dispatch(setAgreementNotes(e.target.value))}
+                    ></textarea>
+                </div>
+                <span id="with-hint-textarea-info" className="usa-character-count__message sr-only">
+                    You can enter up to 150 characters
+                </span>
+            </div>
+            <div className="grid-row flex-justify margin-top-8">
                 <button className="usa-button usa-button--unstyled margin-right-2" onClick={() => goBack()}>
-                    Back
+                    Go Back
                 </button>
-                <button className="usa-button" onClick={handleContinue}>
-                    Continue
-                </button>
+                <div>
+                    <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
+                        Cancel
+                    </button>
+                    <button className="usa-button usa-button--outline" onClick={handleDraft}>
+                        Save Draft
+                    </button>
+                    <button className="usa-button" onClick={handleContinue}>
+                        Continue
+                    </button>
+                </div>
             </div>
         </>
     );
