@@ -90,7 +90,7 @@ const createAgreementSlice = createSlice({
         },
 
         setAgreementNotes: (state, action) => {
-            state.agreement.selected_agreement_type = action.payload;
+            state.agreement.notes = action.payload;
         },
         setProcurementShopsList: (state, action) => {
             state.procurement_shops_list = action.payload;

@@ -86,16 +86,30 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
 
             <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
             <TeamMemberList />
-
-            <h2 className="font-sans-lg">Notes</h2>
-            <input
-                className="usa-input"
-                id="agreement-notes"
-                name="agreement-notes"
-                type="text"
-                value={agreementNotes || ""}
-                onChange={(e) => dispatch(setAgreementNotes(e.target.value))}
-            />
+            <div className="usa-character-count">
+                <div className="usa-form-group">
+                    <label className="usa-label font-sans-lg text-bold" htmlFor="with-hint-textarea">
+                        Notes (optional)
+                    </label>
+                    <span id="with-hint-textarea-hint" className="usa-hint">
+                        Maximum 150 characters
+                    </span>
+                    <textarea
+                        className="usa-textarea usa-character-count__field"
+                        id="with-hint-textarea"
+                        maxLength="150"
+                        name="with-hint-textarea"
+                        rows="5"
+                        aria-describedby="with-hint-textarea-info with-hint-textarea-hint"
+                        style={{ height: "7rem" }}
+                        value={agreementNotes || ""}
+                        onChange={(e) => dispatch(setAgreementNotes(e.target.value))}
+                    ></textarea>
+                </div>
+                <span id="with-hint-textarea-info" className="usa-character-count__message sr-only">
+                    You can enter up to 150 characters
+                </span>
+            </div>
             <div className="grid-row flex-justify-end margin-top-8">
                 <button className="usa-button usa-button--unstyled margin-right-2" onClick={() => goBack()}>
                     Back
