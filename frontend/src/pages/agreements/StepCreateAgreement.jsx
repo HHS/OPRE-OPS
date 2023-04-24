@@ -4,28 +4,37 @@ import ProcurementShopSelect from "./ProcurementShopSelect";
 import AgreementReasonSelect from "./AgreementReasonSelect";
 import AgreementTypeSelect from "./AgreementTypeSelect";
 import ProductServiceCodeSelect from "./ProductServiceCodeSelect";
-import {
-    setProcurementShopsList,
-    setSelectedProcurementShop,
-    setAgreementTitle,
-    setAgreementDescription,
-    setAgreementProductServiceCode,
-    setAgreementIncumbent,
-    setAgreementProjectOfficer,
-    setAgreementTeamMembers,
-    setAgreementNotes,
-} from "./createAgreementSlice";
+import { setAgreementTitle, setAgreementDescription, setAgreementNotes } from "./createAgreementSlice";
 import ProjectOfficerSelect from "./ProjectOfficerSelect";
 import TeamMemberSelect from "./TeamMemberSelect";
 import TeamMemberList from "./TeamMemberList";
+import { postAgreement } from "../../api/postAgreements";
 
 export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
     const agreementTitle = useSelector((state) => state.createAgreement.agreement.name);
     const agreementDescription = useSelector((state) => state.createAgreement.agreement.description);
     const agreementNotes = useSelector((state) => state.createAgreement.agreement.notes);
+    const agreement = useSelector((state) => state.createAgreement.agreement);
 
     const handleContinue = () => {
+        // Save Agreement to DB
+        const {
+            selected_agreement_type,
+            selected_agreement_reason,
+            selected_product_service_code,
+            selected_incumbent,
+            ...otherProperties
+        } = agreement;
+        const newAgreement = {
+            ...otherProperties,
+            agreement_type: selected_agreement_type,
+            agreement_reason: selected_agreement_reason,
+            product_service_code: selected_product_service_code,
+            incumbent: selected_incumbent,
+        };
+        const response = postAgreement(newAgreement);
+        console.log(response);
         goToNext();
     };
 

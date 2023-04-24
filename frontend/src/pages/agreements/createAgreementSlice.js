@@ -88,7 +88,6 @@ const createAgreementSlice = createSlice({
                 (team_member) => team_member.id !== action.payload
             );
         },
-
         setAgreementNotes: (state, action) => {
             state.agreement.selected_agreement_type = action.payload;
         },

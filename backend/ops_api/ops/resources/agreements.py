@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from datetime import datetime
 from typing import Optional
 
 import desert
@@ -172,10 +171,11 @@ class AgreementListAPI(BaseListAPI):
     @override
     @jwt_required()
     def post(self) -> Response:
+        message_prefix = f"POST to {ENDPOINT_STRING}"
         try:
             with OpsEventHandler(OpsEventType.CREATE_NEW_AGREEMENT) as meta:
                 if "agreement_type" not in request.json:
-                    raise RuntimeError(f"POST to {ENDPOINT_STRING}: Params failed validation")
+                    raise RuntimeError(f"{message_prefix}: Params failed validation")
 
                 agreement_type = request.json["agreement_type"]
                 match agreement_type:
@@ -203,16 +203,10 @@ class AgreementListAPI(BaseListAPI):
                 new_agreement.created_by = user.id
 
                 current_app.db_session.add(new_agreement)
-                current_app.db_session.flush()
-
-                meta.event_data["agreement_id"] = new_agreement.id
-                meta.event_data["created_by"] = user.id
-                meta.event_data["created_at"] = datetime.utcnow()
-
                 current_app.db_session.commit()
 
                 new_agreement_dict = new_agreement.to_dict()
-                # meta.metadata.update({"New Agreement": new_agreement_dict})
+                meta.metadata.update({"New Agreement": new_agreement_dict})
                 current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Agreement created: {new_agreement_dict}")
 
                 return make_response_with_headers({"message": "Agreement created", "id": new_agreement.id}, 201)
