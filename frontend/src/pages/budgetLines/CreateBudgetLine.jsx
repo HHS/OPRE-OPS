@@ -31,6 +31,7 @@ import { getProcurementShopList } from "../../api/getProcurementShopList";
 import { Alert } from "../../components/UI/Alert/Alert";
 import { Modal } from "../../components/UI/Modal/Modal";
 import { ProjectAgreementSummaryCard } from "./ProjectAgreementSummaryCard";
+import { postBudgetLineItems } from "../../api/postBudgetLineItems";
 
 const StepOne = ({ goToNext }) => {
     const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
@@ -155,7 +156,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                     status: "DRAFT",
                     date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}` || null,
                     psc_fee_amount: selectedProcurementShop?.fee || null,
-                    created_on: new Date().toISOString().slice(0, -1) + (Date.now() % 1000).toString().padStart(3, "0"),
+                    // created_on: new Date().toISOString().slice(0, -1) + (Date.now() % 1000).toString().padStart(3, "0"),
                 },
             ])
         );
@@ -169,6 +170,15 @@ const StepTwo = ({ goBack, goToNext }) => {
         dispatch(setEnteredDay(""));
         dispatch(setEnteredYear(""));
         dispatch(setEnteredComments(""));
+    };
+
+    const saveBudgetLineItems = (event) => {
+        event.preventDefault();
+        const newBudgetLineItems = budgetLinesAdded.filter(
+            // eslint-disable-next-line no-prototype-builtins
+            (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on")
+        );
+        postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
     };
 
     return (
@@ -348,7 +358,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                 >
                     Back
                 </button>
-                <button className="usa-button" onClick={() => goToNext()}>
+                <button className="usa-button" onClick={saveBudgetLineItems}>
                     Continue
                 </button>
             </div>
