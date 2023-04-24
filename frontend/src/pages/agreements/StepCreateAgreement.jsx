@@ -32,6 +32,14 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const handleContinue = () => {
         goToNext();
     };
+    const handleDraft = () => {
+        // TODO: Save Agreement as Draft
+        alert("Draft Agreement saved");
+    };
+    const handleCancel = () => {
+        // TODO: Add cancel stuff
+        goBack();
+    };
 
     const ProductServiceCodeSummaryBox = () => {
         // TODO: Replace with actual NAICS Code and Program Support Code from Selected Product Service Code
@@ -152,13 +160,21 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                     You can enter up to 150 characters
                 </span>
             </div>
-            <div className="grid-row flex-justify-end margin-top-8">
+            <div className="grid-row flex-justify margin-top-8">
                 <button className="usa-button usa-button--unstyled margin-right-2" onClick={() => goBack()}>
-                    Back
+                    Go Back
                 </button>
-                <button className="usa-button" onClick={handleContinue}>
-                    Continue
-                </button>
+                <div>
+                    <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
+                        Cancel
+                    </button>
+                    <button className="usa-button usa-button--outline" onClick={handleDraft}>
+                        Save Draft
+                    </button>
+                    <button className="usa-button" onClick={handleContinue}>
+                        Continue
+                    </button>
+                </div>
             </div>
         </>
     );
