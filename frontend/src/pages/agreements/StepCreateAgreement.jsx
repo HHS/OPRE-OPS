@@ -24,9 +24,37 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const agreementTitle = useSelector((state) => state.createAgreement.agreement.name);
     const agreementDescription = useSelector((state) => state.createAgreement.agreement.description);
     const agreementNotes = useSelector((state) => state.createAgreement.agreement.notes);
+    const selectedProductServiceCode = useSelector(
+        (state) => state.createAgreement.agreement.selected_product_service_code
+    );
 
     const handleContinue = () => {
         goToNext();
+    };
+
+    const ProductServiceCodeSummaryBox = () => {
+        // TODO: Replace with actual NAICS Code and Program Support Code from Selected Product Service Code
+        const NAICSCode = "541690";
+        const programSupportCode = "R410 - Research";
+        return (
+            <div
+                className="bg-base-lightest font-family-sans font-12px border-1px border-base-light radius-sm margin-top-4"
+                style={{ width: "313px", minHeight: "70px" }}
+            >
+                <dl className="margin-0 padding-y-2 padding-x-105 display-flex flex-justify">
+                    <div>
+                        <dt className="margin-0 text-base-dark">NAICS Code</dt>
+                        <dd className="text-semibold margin-0">{NAICSCode}</dd>
+                    </div>
+                    <div>
+                        <dt className="margin-0 text-base-dark">Program Support Code</dt>
+                        <dd className="text-semibold margin-0" style={{ maxWidth: "15.625rem" }}>
+                            {programSupportCode}
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+        );
     };
 
     return (
@@ -66,7 +94,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             ></textarea>
 
             <ProductServiceCodeSelect />
-
+            {selectedProductServiceCode && <ProductServiceCodeSummaryBox />}
             <h2 className="font-sans-lg">Procurement Shop</h2>
             <p>
                 Select the Procurement Shop, and the fee rates will be populated in the table below. If this is an

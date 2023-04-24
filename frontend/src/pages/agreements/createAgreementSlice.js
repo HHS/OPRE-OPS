@@ -11,7 +11,7 @@ const initialState = {
         selected_agreement_reason: null,
         name: "",
         description: "",
-        selected_product_service_code: -1,
+        selected_product_service_code: null,
         selected_incumbent: -1,
         project_officer: null,
         team_members: [],

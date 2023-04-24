@@ -24,7 +24,7 @@ export const ProductServiceCodeSelect = () => {
     }, [dispatch]);
 
     const onChangeAgreementTypeSelection = (agreementType = null) => {
-        if (agreementType === null) {
+        if (agreementType === null || agreementType === "0") {
             dispatch(setAgreementProductServiceCode(null));
             return;
         }
