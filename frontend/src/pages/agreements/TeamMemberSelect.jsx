@@ -1,63 +1,57 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setSelectedCan, setCans } from "./createBudgetLineSlice";
-import { getCanList } from "../cans/list/getCanList";
+import { setAgreementTeamMembers } from "./createAgreementSlice";
+import PropTypes from "prop-types";
 
-export const CanSelect = () => {
+export const TeamMemberSelect = ({ className }) => {
     const dispatch = useDispatch();
-    const canList = useSelector((state) => state.canList.cans);
+    const usersList = useSelector((state) => state.createAgreement.users);
+    const selectedProjectOfficer = useSelector((state) => state.createAgreement.agreement?.project_officer);
+    const selectedTeamMembers = useSelector((state) => state.createAgreement.agreement?.team_members);
+    const remainingUsers = usersList.filter(
+        (user) =>
+            user.id !== selectedProjectOfficer?.id && // Check if the user is not a selected project officer
+            !selectedTeamMembers.some((teamMember) => teamMember.id === user.id) // Check if the user is not already a team member
+    );
 
-    const selectedCan = useSelector((state) => state.createBudgetLine.selected_can);
-    const [inputValue, setInputValue] = useState(selectedCan?.number ?? "");
+    const [inputValue, setInputValue] = useState("");
 
-    useEffect(() => {
-        setInputValue(selectedCan?.number ?? "");
-    }, [selectedCan]);
-
-    const onChangeCanSelection = (canId = 0) => {
-        if (canId === 0) {
-            dispatch(setSelectedCan(-1));
+    const onChangeSelect = (userId = 0) => {
+        if (userId === 0) {
             return;
         }
-        const selected = canList[canId - 1];
-        dispatch(setSelectedCan({ ...selected }));
+        const selected = usersList.find((user) => user.id === userId);
+        dispatch(setAgreementTeamMembers([...selectedTeamMembers, selected]));
+        setInputValue("");
     };
 
-    useEffect(() => {
-        dispatch(getCanList());
-    }, [dispatch]);
-
-    useEffect(() => {
-        dispatch(setCans(canList));
-    }, [canList, dispatch]);
-
     return (
-        <>
-            <label className="usa-label" htmlFor="can-select" id="can-select-label">
-                CAN
+        <div className={`usa-fieldset ${className}`}>
+            <label className="usa-label margin-top-0" htmlFor="team-member-select" id="team-member-select-label">
+                Team Members
             </label>
-            <div className="usa-combo-box" data-enhanced="true">
+            <div className="usa-combo-box width-card-lg" data-enhanced="true">
                 <select
-                    className="usa-select usa-sr-only usa-combo-box__select"
-                    name="can-select"
+                    className="usa-select usa-sr-only usa-combo-box__select "
+                    name="team-member-select"
                     aria-hidden="true"
                     tabIndex="-1"
-                    value={selectedCan?.id}
-                    onChange={(e) => onChangeCanSelection(Number(e.target.value))}
+                    value={remainingUsers?.id}
+                    onChange={(e) => onChangeSelect(Number(e.target.value))}
                     required
                 >
-                    {canList.map((can) => (
-                        <option key={can.id} value={can.id}>
-                            {can.number}
+                    {remainingUsers?.map((user) => (
+                        <option key={user?.id} value={user?.id}>
+                            {user?.full_name || user?.email}
                         </option>
                     ))}
                 </select>
                 <input
-                    id="can-select"
-                    aria-owns="can--list"
-                    aria-controls="can--list"
+                    id="team-member-select"
+                    aria-owns="team-members--list"
+                    aria-controls="team-members--list"
                     aria-autocomplete="list"
-                    aria-describedby="can--assistiveHint"
+                    aria-describedby="team-members--assistiveHint"
                     aria-expanded="false"
                     autoCapitalize="off"
                     autoComplete="off"
@@ -73,9 +67,7 @@ export const CanSelect = () => {
                         type="button"
                         className="usa-combo-box__clear-input"
                         aria-label="Clear the select contents"
-                        onClick={() => {
-                            dispatch(setSelectedCan(-1));
-                        }}
+                        onClick={() => onChangeSelect(0)}
                     >
                         &nbsp;
                     </button>
@@ -94,37 +86,43 @@ export const CanSelect = () => {
 
                 <ul
                     tabIndex="-1"
-                    id="can--list"
+                    id="team-members--list"
                     className="usa-combo-box__list"
                     role="listbox"
-                    aria-labelledby="can-select-label"
+                    aria-labelledby="team-member-select-label"
                     hidden
                 >
-                    {canList?.map((can, index) => {
+                    {usersList?.map((user, index) => {
                         return (
                             <li
-                                key={can?.id}
-                                aria-setsize={canList?.length}
+                                key={user?.id}
+                                aria-setsize={remainingUsers?.length}
                                 aria-posinset={index + 1}
                                 aria-selected="false"
                                 id={`dynamic-select--list--option-${index}`}
                                 className="usa-combo-box__list-option"
                                 tabIndex={index === 0 ? "0" : "-1"}
                                 role="option"
-                                data-value={can?.number}
+                                data-value={user?.full_name || user?.email}
                             >
-                                {can?.number}
+                                {user?.full_name || user?.email}
                             </li>
                         );
                     })}
                 </ul>
 
                 <div className="usa-combo-box__status usa-sr-only" role="status"></div>
-                <span id="can--assistiveHint" className="usa-sr-only">
+                <span id="team-members--assistiveHint" className="usa-sr-only">
                     When autocomplete results are available use up and down arrows to review and enter to select. Touch
                     device users, explore by touch or with swipe gestures.
                 </span>
             </div>
-        </>
+        </div>
     );
+};
+
+export default TeamMemberSelect;
+
+TeamMemberSelect.propTypes = {
+    className: PropTypes.string,
 };

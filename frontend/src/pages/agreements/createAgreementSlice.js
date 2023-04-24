@@ -83,6 +83,12 @@ const createAgreementSlice = createSlice({
         setAgreementTeamMembers: (state, action) => {
             state.agreement.team_members = action.payload;
         },
+        removeAgreementTeamMember: (state, action) => {
+            state.agreement.team_members = state.agreement.team_members.filter(
+                (team_member) => team_member.id !== action.payload
+            );
+        },
+
         setAgreementNotes: (state, action) => {
             state.agreement.selected_agreement_type = action.payload;
         },
@@ -208,6 +214,9 @@ const createAgreementSlice = createSlice({
         setEnteredComments: (state, action) => {
             state.entered_comments = action.payload;
         },
+        setUsers: (state, action) => {
+            state.users = action.payload;
+        },
     },
 });
 
@@ -246,6 +255,8 @@ export const {
     setEditBudgetLineAdded,
     updateBudgetLineAtIndex,
     duplicateBudgetLineAdded,
+    setUsers,
+    removeAgreementTeamMember,
 } = createAgreementSlice.actions;
 
 export default createAgreementSlice.reducer;

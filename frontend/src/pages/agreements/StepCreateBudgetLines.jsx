@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import { StepIndicator } from "../../components/UI/StepIndicator/StepIndicator";
+import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import { CanSelect } from "../budgetLines/CanSelect";
 import { DesiredAwardDate } from "../budgetLines/DesiredAwardDate";
 import CurrencyFormat from "react-currency-format";
@@ -87,7 +87,7 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
 
     return (
         <>
-            <h2 className="font-sans-lg">Create New Budget Line</h2>
+            <h1 className="font-sans-lg">Create New Budget Line</h1>
             <p>Step Two: Text explaining this page</p>
             <StepIndicator steps={wizardSteps} currentStep={2} />
             <h2 className="font-sans-lg margin-top-3">Budget Line Details</h2>

@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { StepIndicator } from "./StepIndicator";
+import StepIndicator from "./StepIndicator";
 import "@testing-library/jest-dom/extend-expect";
 
 describe("StepIndicator", () => {

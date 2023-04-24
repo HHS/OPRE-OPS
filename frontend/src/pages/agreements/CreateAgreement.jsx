@@ -2,11 +2,12 @@ import App from "../../App";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { CreateAgreementFlow } from "./CreateAgreementFlow";
-import { setProcurementShopsList } from "./createAgreementSlice";
+import { setProcurementShopsList, setUsers } from "./createAgreementSlice";
 import { getProcurementShopList } from "../../api/getProcurementShopList";
 import { StepSelectProject } from "./StepSelectProject";
 import { StepCreateAgreement } from "./StepCreateAgreement";
 import { StepCreateBudgetLines } from "./StepCreateBudgetLines";
+import { getUsers } from "../../api/getUser";
 
 const wizardSteps = ["Project", "Agreement", "Budget Lines"];
 
@@ -20,6 +21,14 @@ export const CreateAgreement = () => {
             dispatch(setProcurementShopsList(results));
         };
         getProcurementShopsAndSetState().catch(console.error);
+    }, [dispatch]);
+
+    useEffect(() => {
+        const getUsersAndSetState = async () => {
+            const results = await getUsers();
+            dispatch(setUsers(results));
+        };
+        getUsersAndSetState().catch(console.error);
     }, [dispatch]);
 
     return (

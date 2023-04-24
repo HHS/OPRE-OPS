@@ -72,3 +72,5 @@ export const ProductServiceCodeSelect = () => {
         </>
     );
 };
+
+export default ProductServiceCodeSelect;
