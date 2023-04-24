@@ -12,7 +12,7 @@ const initialState = {
         name: "",
         description: "",
         selected_product_service_code: null,
-        selected_incumbent: -1,
+        incumbent_entered: null,
         project_officer: null,
         team_members: [],
         notes: "",
@@ -75,7 +75,7 @@ const createAgreementSlice = createSlice({
             state.product_service_codes_list = action.payload;
         },
         setAgreementIncumbent: (state, action) => {
-            state.agreement.selected_incumbent = action.payload;
+            state.agreement.incumbent_entered = action.payload;
         },
         setAgreementProjectOfficer: (state, action) => {
             state.agreement.project_officer = action.payload;

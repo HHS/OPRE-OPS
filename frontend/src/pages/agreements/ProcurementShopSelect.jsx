@@ -36,14 +36,14 @@ export const ProcurementShopSelect = () => {
     };
     return (
         <fieldset className="usa-fieldset">
-            <label className="usa-label" htmlFor="options">
+            <label className="usa-label" htmlFor="procurement-shop-select">
                 Procurement Shop
             </label>
             <div className="display-flex flex-align-center margin-top-1">
                 <select
                     className="usa-select margin-top-0 width-card-lg"
-                    name="options"
-                    id="options"
+                    name="procurement-shop-select"
+                    id="procurement-shop-select"
                     onChange={(e) => onChangeProcurementShopSelection(Number(e.target.value) || 0)}
                     value={selectedProcurementShop?.id}
                     required

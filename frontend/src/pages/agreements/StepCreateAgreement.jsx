@@ -27,6 +27,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const selectedProductServiceCode = useSelector(
         (state) => state.createAgreement.agreement.selected_product_service_code
     );
+    const agreementIncumbent = useSelector((state) => state.createAgreement.agreement.incumbent_entered);
 
     const handleContinue = () => {
         goToNext();
@@ -101,8 +102,23 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             <ProcurementShopSelect />
 
             <h2 className="font-sans-lg">Reason for Agreement</h2>
-            <AgreementReasonSelect />
-            {/* <IncumbentSelect /> */}
+            <div className="display-flex">
+                <AgreementReasonSelect />
+                <fieldset className="usa-fieldset margin-left-4">
+                    <label className="usa-label" htmlFor="agreement-incumbent">
+                        Incumbent
+                    </label>
+                    <input
+                        className="usa-input width-card-lg"
+                        id="agreement-incumbent"
+                        name="agreement-incumbent"
+                        type="text"
+                        value={agreementIncumbent || ""}
+                        onChange={(e) => dispatch(setAgreementIncumbent(e.target.value))}
+                        required
+                    />
+                </fieldset>
+            </div>
 
             <h2 className="font-sans-lg">Points of Contact</h2>
             <div className="display-flex">
