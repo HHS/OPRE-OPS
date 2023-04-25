@@ -14,5 +14,5 @@ def test_product_service_code_lookup(loaded_db):
     psc = loaded_db.query(ProductServiceCode).filter(ProductServiceCode.id == 2).one()
     assert psc is not None
     assert psc.id == 2
-    assert psc.name == "Service-Code-1"
+    assert psc.name == "Convention and Trade Shows"
     assert psc.naics == 561920
