@@ -62,6 +62,9 @@ const createAgreementSlice = createSlice({
         setSelectedAgreementType: (state, action) => {
             state.agreement.selected_agreement_type = action.payload;
         },
+        setSelectedAgreement: (state, action) => {
+            state.agreement.selected_agreement = action.payload;
+        },
         setAgreementTitle: (state, action) => {
             state.agreement.name = action.payload;
         },
