@@ -63,6 +63,18 @@ describe("postAgreement function", () => {
         notes: "New Agreement for purpose X",
     };
 
+    const emptyMockAgreement = {
+        selected_agreement_type: null,
+        selected_agreement_reason: null,
+        name: "",
+        description: "",
+        selected_product_service_code: null,
+        incumbent_entered: null,
+        project_officer: null,
+        team_members: [],
+        notes: "",
+    };
+
     const mockApiResponse = { id: 1, message: "Agreement created" };
 
     afterEach(() => {
@@ -75,6 +87,15 @@ describe("postAgreement function", () => {
         });
 
         const response = await postAgreement(mockAgreement);
+        expect(response).toStrictEqual(mockApiResponse);
+    });
+
+    test("successfully takes an empty agreement object", async () => {
+        TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+            return mockApiResponse;
+        });
+
+        const response = await postAgreement(emptyMockAgreement);
         expect(response).toStrictEqual(mockApiResponse);
     });
 });
