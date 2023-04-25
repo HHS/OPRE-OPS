@@ -30,6 +30,8 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const handleContinue = () => {
         // Save Agreement to DB
         const response = postAgreement(agreement);
+        // TODO: Need to determine which "state" we're using going
+        // into Step 3 for creating Budget Lines
         dispatch(setSelectedAgreement(response.id));
         goToNext();
     };
@@ -37,9 +39,12 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         // TODO: Save Agreement as Draft
         const response = postAgreement(agreement);
         alert(`Draft Agreement: ${response.id} saved`);
+        // TODO: Redirect to /agreements when available.
     };
     const handleCancel = () => {
         // TODO: Add cancel stuff
+        // TODO: Clear createAgreement State
+        // TODO: Navigate to /agreements when available.
         goBack();
     };
 
