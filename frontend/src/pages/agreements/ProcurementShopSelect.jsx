@@ -7,7 +7,6 @@ export const ProcurementShopSelect = () => {
     const dispatch = useDispatch();
     const procurementShops = useSelector((state) => state.createAgreement.procurement_shops_list);
     const selectedProcurementShop = useSelector((state) => state.createAgreement.selected_procurement_shop);
-    console.log(`Proc_shops: ${procurementShops}`);
 
     useEffect(() => {
         const getProcurementShopsAndSetState = async () => {
