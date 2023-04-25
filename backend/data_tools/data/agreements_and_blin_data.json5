@@ -28,32 +28,16 @@
   product_service_code: [
     {
       id: 1,
-      name: "Service-Code-1",
+      name: "Other Scientific and Technical Consulting Services",
+      naics: 541690,
+      support_code: "R410 - Research",
       description: "",
     },
     {
       id: 2,
-      name: "Service-Code-2",
-      description: "",
-    },
-    {
-      id: 3,
-      name: "Service-Code-3",
-      description: "",
-    },
-    {
-      id: 4,
-      name: "Service-Code-4",
-      description: "",
-    },
-    {
-      id: 5,
-      name: "Service-Code-5",
-      description: "",
-    },
-    {
-      id: 6,
-      name: "Service-Code-6",
+      name: "Convention and Trade Shows",
+      naics: 561920,
+      support_code: "R706 - Support",
       description: "",
     },
   ],
