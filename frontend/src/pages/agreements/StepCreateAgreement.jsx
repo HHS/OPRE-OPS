@@ -5,14 +5,9 @@ import AgreementReasonSelect from "./AgreementReasonSelect";
 import AgreementTypeSelect from "./AgreementTypeSelect";
 import ProductServiceCodeSelect from "./ProductServiceCodeSelect";
 import {
-    setProcurementShopsList,
-    setSelectedProcurementShop,
     setAgreementTitle,
     setAgreementDescription,
-    setAgreementProductServiceCode,
     setAgreementIncumbent,
-    setAgreementProjectOfficer,
-    setAgreementTeamMembers,
     setAgreementNotes,
 } from "./createAgreementSlice";
 import ProjectOfficerSelect from "./ProjectOfficerSelect";
@@ -28,7 +23,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         (state) => state.createAgreement.agreement.selected_product_service_code
     );
     const agreementIncumbent = useSelector((state) => state.createAgreement.agreement.incumbent_entered);
-
+    const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
     const handleContinue = () => {
         goToNext();
     };
@@ -64,11 +59,26 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         );
     };
 
+    const ProjectSummaryCard = ({ selectedResearchProject }) => {
+        const { title } = selectedResearchProject;
+        return (
+            <div className="bg-base-lightest font-family-sans border-1px border-base-light radius-sm margin-y-7">
+                <dl className="margin-0 padding-y-2 padding-x-3">
+                    <dt className="margin-0">Project</dt>
+                    <dd className="margin-0 text-bold margin-top-1" style={{ fontSize: "1.375rem" }}>
+                        {title}
+                    </dd>
+                </dl>
+            </div>
+        );
+    };
+
     return (
         <>
             <h1 className="font-sans-lg">Create New Budget Line</h1>
             <p>Step Two: Creating a new Agreement</p>
             <StepIndicator steps={wizardSteps} currentStep={2} />
+            <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg">Select the Agreement Type</h2>
             <p>Select the type of agreement you would like to create.</p>
             <AgreementTypeSelect />
