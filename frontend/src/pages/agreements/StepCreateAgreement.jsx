@@ -32,16 +32,22 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             selected_agreement_type,
             selected_agreement_reason,
             selected_product_service_code,
-            selected_incumbent,
+            incumbent_entered,
+            project_officer,
+            team_members,
             ...otherProperties
         } = agreement;
         const newAgreement = {
             ...otherProperties,
             agreement_type: selected_agreement_type,
             agreement_reason: selected_agreement_reason,
-            product_service_code: selected_product_service_code,
-            incumbent: selected_incumbent,
+            product_service_code: selected_product_service_code.id,
+            incumbent: incumbent_entered,
+            project_officer: project_officer.id,
         };
+
+        const team_members_list = [];
+
         const response = postAgreement(newAgreement);
         console.log(response);
         goToNext();
