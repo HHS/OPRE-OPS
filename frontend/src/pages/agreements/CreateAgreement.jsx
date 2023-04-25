@@ -7,6 +7,7 @@ import { getProcurementShopList } from "../../api/getProcurementShopList";
 import { StepSelectProject } from "./StepSelectProject";
 import { StepCreateAgreement } from "./StepCreateAgreement";
 import { StepCreateBudgetLines } from "./StepCreateBudgetLines";
+import StepReviewAgreement from "./StepReviewAgreement";
 import { getUsers } from "../../api/getUser";
 
 const wizardSteps = ["Project", "Agreement", "Budget Lines"];
@@ -42,6 +43,7 @@ export const CreateAgreement = () => {
                 <StepSelectProject wizardSteps={wizardSteps} />
                 <StepCreateAgreement wizardSteps={wizardSteps} />
                 <StepCreateBudgetLines wizardSteps={wizardSteps} />
+                <StepReviewAgreement />
             </CreateAgreementFlow>
         </App>
     );
