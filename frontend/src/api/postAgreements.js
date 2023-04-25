@@ -3,8 +3,6 @@ import ApplicationContext from "../applicationContext/ApplicationContext";
 export const postAgreement = async (item) => {
     const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;
 
-    console.log("item", item);
-
     const data = { ...item };
     const newAgreement = {
         ...data,
@@ -24,13 +22,14 @@ export const postAgreement = async (item) => {
     delete newAgreement.selected_product_service_code;
     delete newAgreement.incumbent_entered;
 
-    console.log("newAgreement: ", newAgreement);
-
     const responseData = ApplicationContext.get()
         .helpers()
         .callBackend(`/api/${api_version}/agreements/`, "POST", newAgreement)
         .then(function (response) {
-            console.log(response);
+            if (process.env.NODE_ENV !== "production") {
+                console.log(response);
+            }
+            return response;
         })
         .catch(function (error) {
             if (error.response) {
@@ -52,13 +51,6 @@ export const postAgreement = async (item) => {
         });
 
     return responseData;
-};
-
-export const postBudgetLineItems = async (items) => {
-    console.log("items", items);
-    return Promise.all((item) => {
-        postAgreement(item);
-    });
 };
 
 export const formatTeamMember = (team_member) => {
