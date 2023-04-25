@@ -162,14 +162,6 @@ const StepTwo = ({ goBack, goToNext }) => {
                 This is a list of all budget lines for the selected project and agreement. The budget lines you add will
                 display in draft status. The Fiscal Year (FY) will populate based on the election date you provide.
             </p>
-            <div className="font-family-sans font-12px">
-                <dl className="margin-0 padding-y-2 padding-x-105">
-                    <dt className="margin-0 text-base-dark">Project</dt>
-                    <dd className="text-semibold margin-0">{selectedResearchProject?.title}</dd>
-                    <dt className="margin-0 text-base-dark margin-top-2">Agreement</dt>
-                    <dd className="text-semibold margin-0">{selectedAgreement?.name}</dd>
-                </dl>
-            </div>
             <PreviewTable handleDeleteBudgetLine={handleDeleteBudgetLine} />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
