@@ -102,6 +102,8 @@ class ProductServiceCode(BaseModel):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
+    naics = Column(Integer, nullable=True)
+    support_code = Column(String, nullable=True)
     description = Column(String)
 
 
