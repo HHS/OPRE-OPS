@@ -1,8 +1,10 @@
+import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import { CanSelect } from "../budgetLines/CanSelect";
 import { DesiredAwardDate } from "../budgetLines/DesiredAwardDate";
 import CurrencyFormat from "react-currency-format";
+import { ProjectAgreementSummaryCard } from "../budgetLines/ProjectAgreementSummaryCard";
 import { PreviewTable } from "../budgetLines/PreviewTable";
 import {
     setBudgetLineAdded,
@@ -26,11 +28,15 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
     const enteredDay = useSelector((state) => state.createBudgetLine.entered_day);
     const enteredYear = useSelector((state) => state.createBudgetLine.entered_year);
     const enteredComments = useSelector((state) => state.createBudgetLine.entered_comments);
-    const selectedProcurementShop = useSelector((state) => state.createBudgetLine.selected_procurement_shop);
-    const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
-    const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
+    const selectedProcurementShop = useSelector((state) => state.createAgreement.selected_procurement_shop);
+    const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
+    const selectedAgreement = useSelector((state) => state.createAgreement.agreement);
     const isEditing = useSelector((state) => state.createBudgetLine.is_editing_budget_line);
     const budgetLineBeingEdited = useSelector((state) => state.createBudgetLine.budget_line_being_edited);
+    const [isAlertActive, setIsAlertActive] = React.useState(false);
+    const [alertProps, setAlertProps] = React.useState({});
+    const [showModal, setShowModal] = React.useState(false);
+    const [modalProps, setModalProps] = React.useState({});
 
     const handleCancelEdit = () => {
         dispatch(setEditBudgetLineAdded({}));
@@ -90,6 +96,11 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
             <h1 className="font-sans-lg">Create New Budget Line</h1>
             <p>Step Two: Text explaining this page</p>
             <StepIndicator steps={wizardSteps} currentStep={3} />
+            <ProjectAgreementSummaryCard
+                selectedResearchProject={selectedResearchProject}
+                selectedAgreement={selectedAgreement}
+                selectedProcurementShop={selectedProcurementShop}
+            />
             <h2 className="font-sans-lg margin-top-3">Budget Line Details</h2>
             <p>
                 Complete the information below to create new budget lines. Select Add Budget Line to create multiple
