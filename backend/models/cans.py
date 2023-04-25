@@ -137,6 +137,7 @@ class Agreement(BaseModel):
     )
     procurement_shop_id = Column(Integer, ForeignKey("procurement_shop.id"))
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
+    notes = Column(Text, nullable=True)
 
     __mapper_args__ = {
         "polymorphic_identity": "agreement",
