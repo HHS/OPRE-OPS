@@ -8,9 +8,12 @@ export const postAgreement = async (item) => {
         ...data,
         agreement_type: data.selected_agreement_type,
         agreement_reason: data.selected_agreement_reason,
-        product_service_code: data.selected_product_service_code.id,
+        product_service_code:
+            data.selected_product_service_code && data.selected_product_service_code.id > 0
+                ? data.selected_product_service_code.id
+                : null,
         incumbent: data.incumbent_entered,
-        project_officer: data.project_officer.id,
+        project_officer: data.project_officer && data.project_officer.id > 0 ? data.project_officer.id : null,
         team_members: data.team_members.map((team_member) => {
             return formatTeamMember(team_member);
         }),
