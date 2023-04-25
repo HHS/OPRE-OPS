@@ -128,3 +128,5 @@ export const CanSelect = () => {
         </>
     );
 };
+
+export default CanSelect;
