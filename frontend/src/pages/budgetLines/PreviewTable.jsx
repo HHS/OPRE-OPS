@@ -1,3 +1,4 @@
+import { func } from "prop-types";
 import { useState, Fragment } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
@@ -235,4 +236,10 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
             <TotalSummaryCard budgetLines={sortedBudgetLines}></TotalSummaryCard>
         </>
     );
+};
+
+export default PreviewTable;
+
+PreviewTable.propTypes = {
+    handleDeleteBudgetLine: func.isRequired,
 };
