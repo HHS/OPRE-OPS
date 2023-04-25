@@ -1,4 +1,5 @@
 import { useSelector } from "react-redux";
+import PreviewTable from "../budgetLines/PreviewTable";
 
 export const StepReviewAgreement = () => {
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
@@ -70,6 +71,7 @@ export const StepReviewAgreement = () => {
                 Budget Lines
             </h2>
             <p>This is a list of all budget lines within this agreement.</p>
+            <PreviewTable readOnly={true} />
         </>
     );
 };
