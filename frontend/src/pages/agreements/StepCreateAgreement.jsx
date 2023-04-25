@@ -5,14 +5,9 @@ import AgreementReasonSelect from "./AgreementReasonSelect";
 import AgreementTypeSelect from "./AgreementTypeSelect";
 import ProductServiceCodeSelect from "./ProductServiceCodeSelect";
 import {
-    setProcurementShopsList,
-    setSelectedProcurementShop,
     setAgreementTitle,
     setAgreementDescription,
-    setAgreementProductServiceCode,
     setAgreementIncumbent,
-    setAgreementProjectOfficer,
-    setAgreementTeamMembers,
     setAgreementNotes,
 } from "./createAgreementSlice";
 import ProjectOfficerSelect from "./ProjectOfficerSelect";
