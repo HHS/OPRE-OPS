@@ -11,9 +11,11 @@ import researchProjectSlice from "./pages/researchProjects/detail/researchProjec
 import ResearchProjectFundingSlice from "./components/Portfolios/ResearchProjects/ResearchProjectFundingSlice";
 import createBudgetLineSlice from "./pages/budgetLines/createBudgetLineSlice";
 import createAgreementSlice from "./pages/agreements/createAgreementSlice";
+import { agreementApi } from "./api/agreementSlice";
 
 export default configureStore({
     reducer: {
+        [agreementApi.reducerPath]: agreementApi.reducer,
         canList: canListSlice,
         canDetail: canDetailSlice,
         portfolioList: portfolioListSlice,
@@ -26,4 +28,5 @@ export default configureStore({
         createBudgetLine: createBudgetLineSlice,
         createAgreement: createAgreementSlice,
     },
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(agreementApi.middleware),
 });
