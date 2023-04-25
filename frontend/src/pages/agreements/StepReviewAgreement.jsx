@@ -25,37 +25,39 @@ export const StepReviewAgreement = () => {
     const programSupportCode = "R410 - Research";
     return (
         <>
-            <h1>Review and Send Agreement to Approval</h1>
+            <h1 className="text-bold" style={{ fontSize: "1.375rem" }}>
+                Review and Send Agreement to Approval
+            </h1>
             <p>
                 Please review the agreement below or edit any information if necessary. Send to Approval will send the
                 agreement to your Division Director to review for Planned Status.
             </p>
-            <dl className="margin-0 padding-y-2 padding-x-105 font-12px">
-                <dt className="margin-0 text-base-dark">Project</dt>
+            <dl className="margin-0 font-12px">
+                <dt className="margin-0 text-base-dark margin-top-1">Project</dt>
                 <dd className="text-semibold margin-0">{title}</dd>
-                <dt className="margin-0 text-base-dark">Agreement Type</dt>
+                <dt className="margin-0 text-base-dark margin-top-1">Agreement Type</dt>
                 <dd className="text-semibold margin-0">{agreementType}</dd>
-                <dt className="margin-0 text-base-dark">Agreement Name</dt>
+                <dt className="margin-0 text-base-dark margin-top-1">Agreement Name</dt>
                 <dd className="text-semibold margin-0">{agreementName}</dd>
-                <dt className="margin-0 text-base-dark">Description</dt>
+                <dt className="margin-0 text-base-dark margin-top-1">Description</dt>
                 <dd className="text-semibold margin-0">{agreementDescription}</dd>
-                <dt className="margin-0 text-base-dark">Product Service Code</dt>
+                <dt className="margin-0 text-base-dark margin-top-1">Product Service Code</dt>
                 <dd className="text-semibold margin-0">{productServiceCode}</dd>
-                <dt className="margin-0 text-base-dark">NAICS Code</dt>
+                <dt className="margin-0 text-base-dark margin-top-1">NAICS Code</dt>
                 <dd className="text-semibold margin-0">{NAICS_Code}</dd>
-                <dt className="margin-0 text-base-dark">Program Support Code</dt>
+                <dt className="margin-0 text-base-dark margin-top-1">Program Support Code</dt>
                 <dd className="text-semibold margin-0">{programSupportCode}</dd>
-                <dt className="margin-0 text-base-dark">Procurement Shop</dt>
+                <dt className="margin-0 text-base-dark margin-top-1">Procurement Shop</dt>
                 <dd className="text-semibold margin-0">{`${procurementShopName}-Fee Rate: ${fee}%`}</dd>
-                <dt className="margin-0 text-base-dark">Reason for creating the agreement</dt>
+                <dt className="margin-0 text-base-dark margin-top-1">Reason for creating the agreement</dt>
                 <dd className="text-semibold margin-0">{agreementReason}</dd>
-                <dt className="margin-0 text-base-dark">Incumbent</dt>
+                <dt className="margin-0 text-base-dark margin-top-1">Incumbent</dt>
                 <dd className="text-semibold margin-0">{agreementIncumbent}</dd>
-                <dt className="margin-0 text-base-dark">Project Officer</dt>
+                <dt className="margin-0 text-base-dark margin-top-1">Project Officer</dt>
                 <dd className="text-semibold margin-0">{projectOfficer}</dd>
                 {teamMembersFullNamesAndId.length > 0 && (
                     <>
-                        <dt className="margin-0 text-base-dark">Team Members</dt>
+                        <dt className="margin-0 text-base-dark margin-top-1">Team Members</dt>
                         {teamMembersFullNamesAndId.map((member) => (
                             <dd key={member.id} className="text-semibold margin-0">
                                 {member.name}
@@ -64,6 +66,10 @@ export const StepReviewAgreement = () => {
                     </>
                 )}
             </dl>
+            <h2 className="text-bold" style={{ fontSize: "1.375rem" }}>
+                Budget Lines
+            </h2>
+            <p>This is a list of all budget lines within this agreement.</p>
         </>
     );
 };
