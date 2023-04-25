@@ -48,10 +48,13 @@ class ContractAgreementRequestBody:
     vendor: Optional[str] = None
     delivered_status: Optional[bool] = fields.Boolean(default=False)
     contract_type: Optional[ContractType] = fields.Enum(ContractType)
-    support_contacts: Optional[list[TeamMembers]] = fields.List(
-        fields.Nested(TeamMembers),
-        default=[],
+    support_contacts: Optional[list[TeamMembers]] = (
+        fields.List(
+            fields.Nested(TeamMembers),
+            default=[],
+        ),
     )
+    notes: Optional[str] = None
 
 
 @dataclass
@@ -71,6 +74,7 @@ class GrantAgreementRequestBody:
     research_project: Optional[int] = None
     procurement_shop: Optional[int] = None
     foa: Optional[str] = None
+    notes: Optional[str] = None
 
 
 @dataclass
@@ -90,6 +94,7 @@ class AgreementResponse:
     team_members: Optional[list[TeamMembers]] = None
     budget_line_items: Optional[list[int]] = None
     procurement_shop: Optional[int] = None
+    notes: Optional[str] = None
 
 
 @dataclass
