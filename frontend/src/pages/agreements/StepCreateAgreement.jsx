@@ -9,6 +9,7 @@ import {
     setAgreementDescription,
     setAgreementNotes,
     setAgreementIncumbent,
+    setSelectedAgreement,
 } from "./createAgreementSlice";
 import ProjectOfficerSelect from "./ProjectOfficerSelect";
 import TeamMemberSelect from "./TeamMemberSelect";
@@ -28,33 +29,14 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
 
     const handleContinue = () => {
         // Save Agreement to DB
-        const {
-            selected_agreement_type,
-            selected_agreement_reason,
-            selected_product_service_code,
-            incumbent_entered,
-            project_officer,
-            team_members,
-            ...otherProperties
-        } = agreement;
-        const newAgreement = {
-            ...otherProperties,
-            agreement_type: selected_agreement_type,
-            agreement_reason: selected_agreement_reason,
-            product_service_code: selected_product_service_code.id,
-            incumbent: incumbent_entered,
-            project_officer: project_officer.id,
-        };
-
-        const team_members_list = [];
-
-        const response = postAgreement(newAgreement);
-        console.log(response);
+        const response = postAgreement(agreement);
+        dispatch(setSelectedAgreement(response.id));
         goToNext();
     };
     const handleDraft = () => {
         // TODO: Save Agreement as Draft
-        alert("Draft Agreement saved");
+        const response = postAgreement(agreement);
+        alert(`Draft Agreement: ${response.id} saved`);
     };
     const handleCancel = () => {
         // TODO: Add cancel stuff
