@@ -6,6 +6,8 @@ import { DesiredAwardDate } from "../budgetLines/DesiredAwardDate";
 import CurrencyFormat from "react-currency-format";
 import { ProjectAgreementSummaryCard } from "../budgetLines/ProjectAgreementSummaryCard";
 import { PreviewTable } from "../budgetLines/PreviewTable";
+import { Alert } from "../../components/UI/Alert/Alert";
+import { Modal } from "../../components/UI/Modal/Modal";
 import {
     setBudgetLineAdded,
     setEditBudgetLineAdded,
@@ -16,7 +18,9 @@ import {
     setEnteredYear,
     setEnteredDay,
     setEnteredComments,
+    deleteBudgetLineAdded,
 } from "../budgetLines/createBudgetLineSlice";
+import { setSelectedProcurementShop } from "../agreements/createAgreementSlice";
 
 export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
@@ -38,8 +42,32 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
 
+    const showAlert = async (type, heading, message) => {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        window.scrollTo(0, 0);
+        setIsAlertActive(true);
+        setAlertProps({ type, heading, message });
+
+        await new Promise((resolve) => setTimeout(resolve, 6000));
+        setIsAlertActive(false);
+        setAlertProps({});
+    };
+
     const handleCancelEdit = () => {
         dispatch(setEditBudgetLineAdded({}));
+    };
+
+    const handleDeleteBudgetLine = (budgetLineId) => {
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to delete this budget line?",
+            actionButtonText: "Delete",
+            handleConfirm: () => {
+                dispatch(deleteBudgetLineAdded(budgetLineId));
+                showAlert("success", "Budget Line Deleted", "The budget line has been successfully deleted.");
+                setModalProps({});
+            },
+        });
     };
 
     const handleEditForm = (e) => {
@@ -50,13 +78,14 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
                 line_description: enteredDescription,
                 comments: enteredComments,
                 can_id: selectedCan?.id,
-                can_number: selectedCan?.number,
+                can: selectedCan,
                 agreement_id: selectedAgreement?.id,
                 amount: enteredAmount,
                 date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}`,
                 psc_fee_amount: selectedProcurementShop?.fee,
             })
         );
+        showAlert("success", "Budget Line Updated", "The budget line has been successfully edited.");
     };
 
     const handleSubmitForm = (e) => {
@@ -66,19 +95,19 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
                 ...budgetLinesAdded,
                 {
                     id: crypto.getRandomValues(new Uint32Array(1))[0],
-                    line_description: enteredDescription,
-                    comments: enteredComments,
-                    can_id: selectedCan?.id,
-                    can_number: selectedCan?.number,
-                    agreement_id: selectedAgreement?.id,
-                    amount: enteredAmount,
+                    line_description: enteredDescription || "",
+                    comments: enteredComments || "No comments",
+                    can_id: selectedCan?.id || null,
+                    can: selectedCan || null,
+                    agreement_id: selectedAgreement?.id || null,
+                    amount: enteredAmount || 0,
                     status: "DRAFT",
-                    date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}`,
-                    psc_fee_amount: selectedProcurementShop?.fee,
-                    created_on: new Date().toISOString(),
+                    date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}` || null,
+                    psc_fee_amount: selectedProcurementShop?.fee || null,
                 },
             ])
         );
+        showAlert("success", "Budget Line Added", "The budget line has been successfully added.");
 
         //reset form
         dispatch(setEnteredDescription(""));
@@ -88,13 +117,29 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
         dispatch(setEnteredDay(""));
         dispatch(setEnteredYear(""));
         dispatch(setEnteredComments(""));
-        alert("Budget Line Added");
     };
 
     return (
         <>
-            <h1 className="font-sans-lg">Create New Budget Line</h1>
-            <p>Step Two: Text explaining this page</p>
+            {showModal && (
+                <Modal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+
+            {isAlertActive ? (
+                <Alert heading={alertProps.heading} type={alertProps.type} setIsAlertActive={setIsAlertActive}>
+                    {alertProps.message}
+                </Alert>
+            ) : (
+                <>
+                    <h1 className="font-sans-lg">Create New Budget Line</h1>
+                    <p>Step Two: Text explaining this page</p>
+                </>
+            )}
             <StepIndicator steps={wizardSteps} currentStep={3} />
             <ProjectAgreementSummaryCard
                 selectedResearchProject={selectedResearchProject}
@@ -139,6 +184,7 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
                             name="bl-amount"
                             thousandSeparator={true}
                             decimalScale={2}
+                            fixedDecimalScale={true}
                             renderText={(value) => value}
                             placeholder="$"
                             onValueChange={(values) => {
@@ -182,7 +228,7 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
                                 Cancel
                             </button>
                             <button
-                                className="usa-button usa-button--outline margin-top-2  margin-right-0"
+                                className="usa-button usa-button--outline margin-top-2 margin-right-0"
                                 onClick={handleEditForm}
                             >
                                 Update Budget Line
@@ -211,7 +257,7 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
                     <dd className="text-semibold margin-0">{selectedAgreement?.name}</dd>
                 </dl>
             </div>
-            <PreviewTable />
+            <PreviewTable handleDeleteBudgetLine={handleDeleteBudgetLine} />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className="usa-button usa-button--unstyled margin-right-2"
@@ -221,21 +267,24 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
                             goBack();
                             return;
                         }
-
-                        const confirm = window.confirm(
-                            "Are you sure you want to go back? Your budget lines will not be saved."
-                        );
-                        if (confirm) {
-                            // clear all budget line data and state
-                            dispatch(setBudgetLineAdded([]));
-                            dispatch(setEnteredAmount(null));
-                            dispatch(setEnteredComments(""));
-                            dispatch(setEnteredDescription(""));
-                            dispatch(setEnteredDay(""));
-                            dispatch(setEnteredMonth(""));
-                            dispatch(setEnteredYear(""));
-                            goBack();
-                        }
+                        // if budget lines have been added, show modal
+                        setShowModal(true);
+                        setModalProps({
+                            heading: "Are you sure you want to go back? Your budget lines will not be saved.",
+                            actionButtonText: "Go Back",
+                            handleConfirm: () => {
+                                dispatch(setBudgetLineAdded([]));
+                                dispatch(setEnteredAmount(null));
+                                dispatch(setEnteredComments(""));
+                                dispatch(setEnteredDescription(""));
+                                dispatch(setSelectedProcurementShop(-1));
+                                dispatch(setEnteredDay(""));
+                                dispatch(setEnteredMonth(""));
+                                dispatch(setEnteredYear(""));
+                                setModalProps({});
+                                goBack();
+                            },
+                        });
                     }}
                 >
                     Back
