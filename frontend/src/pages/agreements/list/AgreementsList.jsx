@@ -13,7 +13,6 @@ export const AgreementsList = () => {
     const dispatch = useDispatch();
     // const agreements = useSelector((state) => state.globalState.agreements);
     const { data: agreements, error: errorAgreement, isLoading: isLoadingAgreement } = useGetAgreementsQuery();
-    const researchProjects = useSelector((state) => state.globalState.researchProjects);
     // const agreements = agreementsIsLoading ? null : agreementsData;
     // const sortedAgreements = agreements
     //     .slice()
