@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 import PreviewTable from "../budgetLines/PreviewTable";
 
-export const StepReviewAgreement = () => {
+export const StepReviewAgreement = ({ goBack, goToNext }) => {
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
     const selectedAgreement = useSelector((state) => state.createAgreement.agreement);
     const { title } = selectedResearchProject;
@@ -20,8 +20,7 @@ export const StepReviewAgreement = () => {
     const teamMembersFullNamesAndId = teamMembers.map((member) => {
         return { name: member.full_name, id: member.member_id };
     });
-
-    // TODO: Replace with actual NAICS Code from Selected Product Service Code
+    // TODO: Replace with actual NAICS Code and Support Code from Selected Product Service Code
     const NAICS_Code = "541690";
     const programSupportCode = "R410 - Research";
     return (
@@ -71,7 +70,20 @@ export const StepReviewAgreement = () => {
                 Budget Lines
             </h2>
             <p>This is a list of all budget lines within this agreement.</p>
-            <PreviewTable readOnly={true} />
+            <PreviewTable readOnly={true} handleDeleteBudgetLine={() => {}} />
+            <div className="grid-row flex-justify-end margin-top-1">
+                <button
+                    className="usa-button usa-button--outline margin-right-2"
+                    onClick={() => {
+                        goBack();
+                    }}
+                >
+                    Edit
+                </button>
+                <button className="usa-button" onClick={() => goToNext()}>
+                    Send to Approval
+                </button>
+            </div>
         </>
     );
 };
