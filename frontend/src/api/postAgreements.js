@@ -6,12 +6,29 @@ export const postAgreement = async (item) => {
     console.log("item", item);
 
     const data = { ...item };
+    const newAgreement = {
+        ...data,
+        agreement_type: data.selected_agreement_type,
+        agreement_reason: data.selected_agreement_reason,
+        product_service_code: data.selected_product_service_code.id,
+        incumbent: data.incumbent_entered,
+        project_officer: data.project_officer.id,
+        team_members: data.team_members.map((team_member) => {
+            return formatTeamMember(team_member);
+        }),
+        number: "",
+    };
 
-    console.log("item", data);
+    delete newAgreement.selected_agreement_reason;
+    delete newAgreement.selected_agreement_type;
+    delete newAgreement.selected_product_service_code;
+    delete newAgreement.incumbent_entered;
+
+    console.log("newAgreement: ", newAgreement);
 
     const responseData = ApplicationContext.get()
         .helpers()
-        .callBackend(`/api/${api_version}/agreements/`, "POST", data)
+        .callBackend(`/api/${api_version}/agreements/`, "POST", newAgreement)
         .then(function (response) {
             console.log(response);
         })
@@ -19,7 +36,7 @@ export const postAgreement = async (item) => {
             if (error.response) {
                 // The request was made and the server responded with a status code
                 // that falls out of the range of 2xx
-                console.log(error.response.data);
+                console.log(error.response.newAgreement);
                 console.log(error.response.status);
                 console.log(error.response.headers);
             } else if (error.request) {
@@ -42,4 +59,12 @@ export const postBudgetLineItems = async (items) => {
     return Promise.all((item) => {
         postAgreement(item);
     });
+};
+
+export const formatTeamMember = (team_member) => {
+    return {
+        id: team_member.id,
+        full_name: team_member.full_name,
+        email: team_member.email,
+    };
 };
