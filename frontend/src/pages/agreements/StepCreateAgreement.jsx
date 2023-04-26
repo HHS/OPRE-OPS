@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useSelector, useDispatch } from "react-redux";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import ProcurementShopSelect from "./ProcurementShopSelect";
@@ -68,6 +69,12 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                 </dl>
             </div>
         );
+    };
+    ProductServiceCodeSummaryBox.propTypes = {
+        selectedProductServiceCode: PropTypes.shape({
+            naics: PropTypes.string.isRequired,
+            support_code: PropTypes.string.isRequired,
+        }).isRequired,
     };
 
     const ProjectSummaryCard = ({ selectedResearchProject }) => {
