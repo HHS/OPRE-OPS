@@ -20,18 +20,17 @@ export const postAgreement = async (item) => {
         number: "",
     };
 
+    delete newAgreement.id;
     delete newAgreement.selected_agreement_reason;
     delete newAgreement.selected_agreement_type;
     delete newAgreement.selected_product_service_code;
     delete newAgreement.incumbent_entered;
 
-    const responseData = ApplicationContext.get()
+    const responseData = await ApplicationContext.get()
         .helpers()
         .callBackend(`/api/${api_version}/agreements/`, "POST", newAgreement)
         .then(function (response) {
-            if (process.env.NODE_ENV !== "production") {
-                console.log(response);
-            }
+            console.log(response);
             return response;
         })
         .catch(function (error) {
