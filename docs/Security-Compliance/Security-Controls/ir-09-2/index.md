@@ -5,7 +5,7 @@ Provide information spillage response training [Assignment: organization-defined
 
 ## OPS Implementation
 
-TODO: Acquire text from ACF OCIO
+TODO: Acquire text from ACF OCIO [Not selected by ACF OCIO]
 
 ### Control Origination
 
