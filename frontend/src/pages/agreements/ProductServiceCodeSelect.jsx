@@ -10,7 +10,7 @@ export const ProductServiceCodeSelect = () => {
         (state) => state.createAgreement.agreement.selected_product_service_code
     );
 
-    // On component load, get AgreementTypes from API, and set returned list in State
+    // On component load, get ProductServiceCodes from API, and set returned list in State
     useEffect(() => {
         const getProductServiceCodesAndSetState = async () => {
             dispatch(setProductServiceCodesList(await getAllProductServiceCodes()));
@@ -23,13 +23,13 @@ export const ProductServiceCodeSelect = () => {
         };
     }, [dispatch]);
 
-    const onChangeAgreementTypeSelection = (agreementType = null) => {
-        if (agreementType === null || agreementType === "0") {
+    const onChangeProductServiceCodeSelection = (productServiceCode = null) => {
+        if (productServiceCode === null || productServiceCode === "0") {
             dispatch(setAgreementProductServiceCode(null));
             return;
         }
 
-        dispatch(setAgreementProductServiceCode(agreementType));
+        dispatch(setAgreementProductServiceCode(productServiceCode));
     };
 
     return (
@@ -42,7 +42,11 @@ export const ProductServiceCodeSelect = () => {
                     className="usa-select margin-top-0 width-card-lg"
                     name="options"
                     id="options"
-                    onChange={(e) => onChangeAgreementTypeSelection(e.target.value || null)}
+                    onChange={(e) => {
+                        const selectedOptionIndex = e.target.selectedIndex;
+                        const selectedProductServiceCode = productServiceCodes[selectedOptionIndex - 1];
+                        onChangeProductServiceCodeSelection(selectedProductServiceCode);
+                    }}
                     value={selectedProductServiceCode}
                     required
                 >

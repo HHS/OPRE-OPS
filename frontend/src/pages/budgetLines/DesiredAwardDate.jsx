@@ -80,3 +80,5 @@ export const DesiredAwardDate = () => {
         </div>
     );
 };
+
+export default DesiredAwardDate;

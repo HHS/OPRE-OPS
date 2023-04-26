@@ -5,39 +5,46 @@ import AgreementReasonSelect from "./AgreementReasonSelect";
 import AgreementTypeSelect from "./AgreementTypeSelect";
 import ProductServiceCodeSelect from "./ProductServiceCodeSelect";
 import {
-    setProcurementShopsList,
-    setSelectedProcurementShop,
     setAgreementTitle,
     setAgreementDescription,
-    setAgreementProductServiceCode,
     setAgreementIncumbent,
-    setAgreementProjectOfficer,
-    setAgreementTeamMembers,
     setAgreementNotes,
+    setSelectedAgreement,
 } from "./createAgreementSlice";
 import ProjectOfficerSelect from "./ProjectOfficerSelect";
 import TeamMemberSelect from "./TeamMemberSelect";
 import TeamMemberList from "./TeamMemberList";
+import { postAgreement } from "../../api/postAgreements";
 
 export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
     const agreementTitle = useSelector((state) => state.createAgreement.agreement.name);
     const agreementDescription = useSelector((state) => state.createAgreement.agreement.description);
     const agreementNotes = useSelector((state) => state.createAgreement.agreement.notes);
+    const agreement = useSelector((state) => state.createAgreement.agreement);
     const selectedProductServiceCode = useSelector(
         (state) => state.createAgreement.agreement.selected_product_service_code
     );
     const agreementIncumbent = useSelector((state) => state.createAgreement.agreement.incumbent_entered);
-
+    const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
     const handleContinue = () => {
+        // Save Agreement to DB
+        const response = postAgreement(agreement);
+        // TODO: Need to determine which "state" we're using going
+        // into Step 3 for creating Budget Lines
+        dispatch(setSelectedAgreement(response.id));
         goToNext();
     };
     const handleDraft = () => {
         // TODO: Save Agreement as Draft
-        alert("Draft Agreement saved");
+        const response = postAgreement(agreement);
+        alert(`Draft Agreement: ${response.id} saved`);
+        // TODO: Redirect to /agreements when available.
     };
     const handleCancel = () => {
         // TODO: Add cancel stuff
+        // TODO: Clear createAgreement State
+        // TODO: Navigate to /agreements when available.
         goBack();
     };
 
@@ -64,11 +71,26 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         );
     };
 
+    const ProjectSummaryCard = ({ selectedResearchProject }) => {
+        const { title } = selectedResearchProject;
+        return (
+            <div className="bg-base-lightest font-family-sans border-1px border-base-light radius-sm margin-y-7">
+                <dl className="margin-0 padding-y-2 padding-x-3">
+                    <dt className="margin-0">Project</dt>
+                    <dd className="margin-0 text-bold margin-top-1" style={{ fontSize: "1.375rem" }}>
+                        {title}
+                    </dd>
+                </dl>
+            </div>
+        );
+    };
+
     return (
         <>
             <h1 className="font-sans-lg">Create New Budget Line</h1>
             <p>Step Two: Creating a new Agreement</p>
             <StepIndicator steps={wizardSteps} currentStep={2} />
+            <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg">Select the Agreement Type</h2>
             <p>Select the type of agreement you would like to create.</p>
             <AgreementTypeSelect />

@@ -102,6 +102,8 @@ class ProductServiceCode(BaseModel):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
+    naics = Column(Integer, nullable=True)
+    support_code = Column(String, nullable=True)
     description = Column(String)
 
 
@@ -137,6 +139,7 @@ class Agreement(BaseModel):
     )
     procurement_shop_id = Column(Integer, ForeignKey("procurement_shop.id"))
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
+    notes = Column(Text, nullable=True)
 
     __mapper_args__ = {
         "polymorphic_identity": "agreement",
