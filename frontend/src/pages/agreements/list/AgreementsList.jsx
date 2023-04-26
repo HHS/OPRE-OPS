@@ -1,5 +1,5 @@
 import "./AgreementsList.scss";
-import { useGetAgreementsQuery } from "../../../api/agreementSlice";
+import { useGetAgreementsQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import { AgreementTableRow } from "./AgreementTableRow";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";

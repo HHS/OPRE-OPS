@@ -2,8 +2,8 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
 
-export const agreementApi = createApi({
-    reducerPath: "agreementApi",
+export const opsApi = createApi({
+    reducerPath: "opsApi",
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
         prepareHeaders: (headers, { getState }) => {
@@ -23,4 +23,4 @@ export const agreementApi = createApi({
     }),
 });
 
-export const { useGetAgreementsQuery } = agreementApi;
+export const { useGetAgreementsQuery } = opsApi;
