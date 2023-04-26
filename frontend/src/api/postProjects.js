@@ -5,6 +5,8 @@ export const postProject = async (item) => {
 
     const newProject = { ...item };
 
+    // TODO: Something something project type.
+
     delete newProject.id;
     delete newProject.selected_project_type;
 
