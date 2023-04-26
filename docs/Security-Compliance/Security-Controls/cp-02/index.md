@@ -8,17 +8,17 @@ a. Develop a contingency plan for the system that:<br />
 4. Addresses maintaining essential mission and business functions despite a system disruption, compromise, or failure; <br />
 5. Addresses eventual, full system restoration without deterioration of the controls originally planned and implemented;<br />
 6. Addresses the sharing of contingency information; and<br />
-7. Is reviewed and approved by [Assignment: organization-defined personnel or roles];
+7. Is reviewed and approved by [[at a minimum, the System Owner (SO), Information System Security Officer (ISSO), and Contingency Plan Coordinator (CPC)];
 
-b. Distribute copies of the contingency plan to [Assignment: organization-defined key contingency personnel (identified by name and/or by role) and organizational elements];
+b. Distribute copies of the contingency plan to [at a minimum, the System Owner, system/network administrators, database administrators, Contingency Plan Coordinators, and other personnel with contingency plan responsibilities [(as designated by the SO) and organizations with support functions in the plan];
 
 c. Coordinate contingency planning activities with incident handling activities;
 
-d. Review the contingency plan for the system [Assignment: organization-defined frequency];
+d. Review the contingency plan for the system [at least every 365 days or when a major change has occurred to the information system];
 
 e. Update the contingency plan to address changes to the organization, system, or environment of operation and problems encountered during contingency plan implementation, execution, or testing;
 
-f. Communicate contingency plan changes to [Assignment: organization-defined key contingency personnel (identified by name and/or by role) and organizational elements];
+f. Communicate contingency plan changes to [at a minimum, the System Owner, system/network administrators, database administrators, Contingency Plan Coordinators, and other personnel with contingency plan responsibilities (as designated by the SO) and organizations with support functions in the plan];
 
 g. Incorporate lessons learned from contingency plan testing, training, or actual contingency activities into contingency testing and training; and
 
@@ -26,12 +26,12 @@ h. Protect the contingency plan from unauthorized disclosure and modification.
 
 ## OPS Implementation
 
-Hybrid with cloud.gov
+Hybrid with cloud.gov,ACF OCIO
 
 TODO: Determine what we'd need to do when cloud.gov will have an event and document in a plan.  BIA as well. Acquire some templates
 
 ### Control Origination
-
-
+Cloud.gov, ACF OCIO and OPRE OPS
 
 ### Related Content
+Note: The ITCP includes procedures for activation of the plan; recovery of the system (to the original or alternative location if needed); reconstitution of the system; and test procedures to ensure that the system is fully functional and accessible once it has been restored.
