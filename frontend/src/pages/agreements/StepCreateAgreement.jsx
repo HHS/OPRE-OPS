@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import ProcurementShopSelect from "./ProcurementShopSelect";
@@ -28,6 +29,7 @@ import { postAgreement } from "../../api/postAgreements";
 
 export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const agreementTitle = useSelector((state) => state.createAgreement.agreement.name);
     const agreementDescription = useSelector((state) => state.createAgreement.agreement.description);
     const agreementNotes = useSelector((state) => state.createAgreement.agreement.notes);
@@ -73,7 +75,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                 dispatch(setAgreementProjectOfficer(null));
                 dispatch(setAgreementTeamMembers([]));
                 setModalProps({});
-                goBack();
+                navigate("/");
             },
         });
     };

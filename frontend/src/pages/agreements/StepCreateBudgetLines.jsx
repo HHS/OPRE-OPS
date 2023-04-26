@@ -1,5 +1,6 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import { ProjectAgreementSummaryCard } from "../budgetLines/ProjectAgreementSummaryCard";
 import PreviewTable from "../budgetLines/PreviewTable";
@@ -16,11 +17,24 @@ import {
     setEnteredComments,
     deleteBudgetLineAdded,
 } from "../budgetLines/createBudgetLineSlice";
-import { setSelectedProcurementShop } from "../agreements/createAgreementSlice";
+import {
+    setAgreementTitle,
+    setAgreementDescription,
+    setAgreementIncumbent,
+    setAgreementNotes,
+    setSelectedProject,
+    setSelectedAgreementType,
+    setAgreementProductServiceCode,
+    setSelectedProcurementShop,
+    setSelectedAgreementReason,
+    setAgreementProjectOfficer,
+    setAgreementTeamMembers,
+} from "./createAgreementSlice";
 import { postBudgetLineItems } from "../../api/postBudgetLineItems";
 
 export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
     const selectedProcurementShop = useSelector((state) => state.createAgreement.selected_procurement_shop);
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
@@ -63,6 +77,38 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
         postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
         // TODO: Route to Agreements List page, showing Agreement Review for now
         goToNext();
+    };
+
+    const handleCancel = () => {
+        // TODO: Navigate to /agreements when available.
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel? Your agreement will not be saved.",
+            actionButtonText: "Continue",
+            handleConfirm: () => {
+                dispatch(setAgreementTitle(""));
+                dispatch(setAgreementDescription(""));
+                dispatch(setAgreementIncumbent(null));
+                dispatch(setAgreementNotes(""));
+                dispatch(setSelectedProject({}));
+                dispatch(setSelectedAgreementType(null));
+                dispatch(setAgreementProductServiceCode(null));
+                dispatch(setSelectedAgreementReason(null));
+                dispatch(setSelectedProcurementShop({}));
+                dispatch(setAgreementProjectOfficer(null));
+                dispatch(setAgreementTeamMembers([]));
+                dispatch(setBudgetLineAdded([]));
+                dispatch(setEnteredAmount(null));
+                dispatch(setEnteredComments(""));
+                dispatch(setEnteredDescription(""));
+                dispatch(setSelectedProcurementShop(-1));
+                dispatch(setEnteredDay(""));
+                dispatch(setEnteredMonth(""));
+                dispatch(setEnteredYear(""));
+                setModalProps({});
+                navigate("/");
+            },
+        });
     };
 
     return (
@@ -109,7 +155,7 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
             </p>
 
             <PreviewTable handleDeleteBudgetLine={handleDeleteBudgetLine} />
-            <div className="grid-row flex-justify-end margin-top-1">
+            <div className="grid-row flex-justify margin-top-1">
                 <button
                     className="usa-button usa-button--unstyled margin-right-2"
                     onClick={() => {
@@ -140,9 +186,14 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
                 >
                     Back
                 </button>
-                <button className="usa-button" onClick={saveBudgetLineItems}>
-                    Continue
-                </button>
+                <div>
+                    <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
+                        Cancel
+                    </button>
+                    <button className="usa-button" onClick={saveBudgetLineItems}>
+                        Continue
+                    </button>
+                </div>
             </div>
         </>
     );

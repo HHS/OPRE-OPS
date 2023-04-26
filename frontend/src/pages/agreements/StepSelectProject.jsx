@@ -1,5 +1,6 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import ProjectSelect from "../../components/UI/Form/ProjectSelect";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import { setSelectedProject } from "./createAgreementSlice";
@@ -7,6 +8,7 @@ import Modal from "../../components/UI/Modal/Modal";
 
 export const StepSelectProject = ({ goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const researchProjects = useSelector((state) => state.createAgreement.research_projects_list);
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
     const [showModal, setShowModal] = React.useState(false);
@@ -25,6 +27,7 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
             handleConfirm: () => {
                 dispatch(setSelectedProject({}));
                 setModalProps({});
+                navigate("/");
             },
         });
     };
