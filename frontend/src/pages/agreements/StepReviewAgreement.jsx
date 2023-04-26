@@ -9,7 +9,7 @@ export const StepReviewAgreement = ({ goBack, goToNext }) => {
         selected_agreement_type: agreementType,
         name: agreementName,
         description: agreementDescription,
-        selected_product_service_code: productServiceCode,
+        selected_product_service_code: selectedProductServiceCode,
         selected_agreement_reason: agreementReason,
         incumbent_entered: agreementIncumbent,
     } = selectedAgreement;
@@ -20,9 +20,8 @@ export const StepReviewAgreement = ({ goBack, goToNext }) => {
     const teamMembersFullNamesAndId = teamMembers.map((member) => {
         return { name: member.full_name, id: member.member_id };
     });
-    // TODO: Replace with actual NAICS Code and Support Code from Selected Product Service Code
-    const NAICS_Code = "541690";
-    const programSupportCode = "R410 - Research";
+    const { name: pscName, naics, support_code: supportCode } = selectedProductServiceCode;
+
     return (
         <>
             <h1 className="text-bold" style={{ fontSize: "1.375rem" }}>
@@ -42,11 +41,11 @@ export const StepReviewAgreement = ({ goBack, goToNext }) => {
                 <dt className="margin-0 text-base-dark margin-top-1">Description</dt>
                 <dd className="text-semibold margin-0">{agreementDescription}</dd>
                 <dt className="margin-0 text-base-dark margin-top-1">Product Service Code</dt>
-                <dd className="text-semibold margin-0">{productServiceCode}</dd>
+                <dd className="text-semibold margin-0">{pscName}</dd>
                 <dt className="margin-0 text-base-dark margin-top-1">NAICS Code</dt>
-                <dd className="text-semibold margin-0">{NAICS_Code}</dd>
+                <dd className="text-semibold margin-0">{naics}</dd>
                 <dt className="margin-0 text-base-dark margin-top-1">Program Support Code</dt>
-                <dd className="text-semibold margin-0">{programSupportCode}</dd>
+                <dd className="text-semibold margin-0">{supportCode}</dd>
                 <dt className="margin-0 text-base-dark margin-top-1">Procurement Shop</dt>
                 <dd className="text-semibold margin-0">{`${procurementShopName}-Fee Rate: ${fee}%`}</dd>
                 <dt className="margin-0 text-base-dark margin-top-1">Reason for creating the agreement</dt>
