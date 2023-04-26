@@ -1,7 +1,7 @@
 import App from "../../App";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 
-export const CreateBudgetLine = () => {
+export const CreateProject = () => {
     return (
         <App>
             <h1 className="font-sans-lg">Create New Project</h1>
