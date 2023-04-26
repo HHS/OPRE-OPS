@@ -4,7 +4,7 @@ import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import { ProjectAgreementSummaryCard } from "../budgetLines/ProjectAgreementSummaryCard";
 import PreviewTable from "../budgetLines/PreviewTable";
 import { Alert } from "../../components/UI/Alert/Alert";
-import { Modal } from "../../components/UI/Modal/Modal";
+import Modal from "../../components/UI/Modal/Modal";
 import CreateBudgetLinesForm from "../../components/UI/Form/CreateBudgetLinesForm";
 import {
     setBudgetLineAdded,

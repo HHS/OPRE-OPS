@@ -26,7 +26,7 @@ import PreviewTable from "./PreviewTable";
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
 import { getProcurementShopList } from "../../api/getProcurementShopList";
 import { Alert } from "../../components/UI/Alert/Alert";
-import { Modal } from "../../components/UI/Modal/Modal";
+import Modal from "../../components/UI/Modal/Modal";
 import { ProjectAgreementSummaryCard } from "./ProjectAgreementSummaryCard";
 import { postBudgetLineItems } from "../../api/postBudgetLineItems";
 
