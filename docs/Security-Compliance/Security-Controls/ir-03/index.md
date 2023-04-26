@@ -6,7 +6,7 @@ Test the effectiveness of the incident response capability for the system [At le
 
 ## OPS Implementation
 
-TODO: Work with ACF OCIO on language
+TODO: Updated with ACF OCIO language
 
 ### Control Origination
 
