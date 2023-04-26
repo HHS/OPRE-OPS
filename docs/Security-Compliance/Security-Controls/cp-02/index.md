@@ -28,7 +28,7 @@ h. Protect the contingency plan from unauthorized disclosure and modification.
 
 Hybrid with cloud.gov,ACF OCIO
 
-TODO: Determine what we'd need to do when cloud.gov will have an event and document in a plan.  BIA as well. Acquire some templates
+TODO: Determine what we'd need to do when cloud.gov will have an event and document in a plan. Conducta BIA,OPS CP and document as well using ACF OCIO provided templates. 
 
 ### Control Origination
 Cloud.gov, ACF OCIO and OPRE OPS
