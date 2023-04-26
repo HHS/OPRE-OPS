@@ -9,7 +9,7 @@ import {
     setAgreementDescription,
     setAgreementIncumbent,
     setAgreementNotes,
-    setSelectedAgreement,
+    setAgreementId,
 } from "./createAgreementSlice";
 import ProjectOfficerSelect from "./ProjectOfficerSelect";
 import TeamMemberSelect from "./TeamMemberSelect";
@@ -27,18 +27,19 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     );
     const agreementIncumbent = useSelector((state) => state.createAgreement.agreement.incumbent_entered);
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
-    const handleContinue = () => {
+
+    const handleContinue = async () => {
         // Save Agreement to DB
-        const response = postAgreement(agreement);
-        // TODO: Need to determine which "state" we're using going
-        // into Step 3 for creating Budget Lines
-        dispatch(setSelectedAgreement(response.id));
+        const response = await postAgreement(agreement);
+        const newAgreementId = response.id;
+        console.log(`New Agreement Created: ${newAgreementId}`);
+        dispatch(setAgreementId(newAgreementId));
         goToNext();
     };
     const handleDraft = () => {
         // TODO: Save Agreement as Draft
         const response = postAgreement(agreement);
-        alert(`Draft Agreement: ${response.id} saved`);
+        alert(`Draft Agreement: ${response} saved`);
         // TODO: Redirect to /agreements when available.
     };
     const handleCancel = () => {
