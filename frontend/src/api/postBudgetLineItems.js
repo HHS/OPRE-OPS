@@ -22,6 +22,7 @@ export const postBudgetLineItem = async (item) => {
         .callBackend(`/api/${api_version}/budget-line-items/`, "POST", data)
         .then(function (response) {
             console.log(response);
+            return response;
         })
         .catch(function (error) {
             if (error.response) {
@@ -47,9 +48,5 @@ export const postBudgetLineItem = async (item) => {
 
 export const postBudgetLineItems = async (items) => {
     console.log("items", items);
-    return Promise.all(
-        items.map((item) => {
-            postBudgetLineItem(item);
-        })
-    );
+    return Promise.all(items.map((item) => postBudgetLineItem(item)));
 };

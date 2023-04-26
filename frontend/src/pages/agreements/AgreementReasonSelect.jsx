@@ -41,7 +41,7 @@ export const AgreementReasonSelect = () => {
                     name="agreement-select"
                     id="agreement-select"
                     onChange={(e) => onChangeAgreementReasonSelection(e.target.value || 0)}
-                    value={selectedAgreementReason}
+                    value={selectedAgreementReason || ""}
                     required
                 >
                     <option value={0}>- Select Agreement Reason -</option>

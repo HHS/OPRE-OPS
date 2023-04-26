@@ -7,6 +7,7 @@ const initialState = {
     research_projects_list: [],
     research_projects_filter: "",
     agreement: {
+        id: null,
         selected_agreement_type: null,
         selected_agreement_reason: null,
         name: "",
@@ -44,6 +45,9 @@ const createAgreementSlice = createSlice({
         setCurrentStep: (state, action) => {
             state.current_step = action.payload;
         },
+        setAgreementId: (state, action) => {
+            state.agreement.id = action.payload;
+        },
         setAgreementReasonsList: (state, action) => {
             state.agreement_reasons_list = action.payload;
         },
@@ -63,7 +67,7 @@ const createAgreementSlice = createSlice({
             state.agreement.selected_agreement_type = action.payload;
         },
         setSelectedAgreement: (state, action) => {
-            state.agreement.selected_agreement = action.payload;
+            state.selected_agreement = action.payload;
         },
         setAgreementTitle: (state, action) => {
             state.agreement.name = action.payload;
@@ -230,6 +234,7 @@ export const {
     setAgreements,
     setProcurementShopsList,
     setCans,
+    setAgreementId,
     setSelectedAgreementReason,
     setSelectedAgreementType,
     setAgreementReasonsList,
