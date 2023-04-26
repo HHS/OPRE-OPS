@@ -5,7 +5,7 @@ Coordinate contingency plan development with organizational elements responsible
 
 ## OPS Implementation
 
-OPS coordinates with ACF OCIO on the development of its CP.
+OPS will coordinate the CP development with ACF OCIO and Cloud.gov.
 
 ### Control Origination
 
