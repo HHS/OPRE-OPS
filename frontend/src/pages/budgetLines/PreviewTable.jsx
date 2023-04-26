@@ -1,4 +1,4 @@
-import { func } from "prop-types";
+import { func, bool } from "prop-types";
 import { useState, Fragment } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
@@ -10,7 +10,7 @@ import { editBudgetLineAdded, duplicateBudgetLineAdded } from "./createBudgetLin
 import { TotalSummaryCard } from "./TotalSummaryCard";
 import "./PreviewTable.scss";
 
-export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
+export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = false }) => {
     const dispatch = useDispatch();
     const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
     const sortedBudgetLines = budgetLinesAdded
@@ -20,7 +20,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
 
     let loggedInUser = useSelector((state) => state.auth.activeUser.full_name);
     // NOTE: set to logged in user to Sheila if no name is found
-    if (loggedInUser === "(no name) (no name)") {
+    if (!loggedInUser) {
         loggedInUser = "Sheila Celentano";
     }
 
@@ -164,7 +164,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
                         )}
                     </td>
                     <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
-                        {isRowActive && !isExpanded ? (
+                        {isRowActive && !isExpanded && !readOnly ? (
                             <div>
                                 <ChangeIcons budgetLine={bl} />
                             </div>
@@ -200,7 +200,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {} }) => {
                                     </dd>
                                 </dl>
                                 <div className="flex-align-self-end margin-left-auto margin-bottom-1">
-                                    <ChangeIcons budgetLine={bl} />
+                                    {!readOnly && <ChangeIcons budgetLine={bl} />}
                                 </div>
                             </div>
                         </td>
@@ -242,4 +242,5 @@ export default PreviewTable;
 
 PreviewTable.propTypes = {
     handleDeleteBudgetLine: func.isRequired,
+    readOnly: bool,
 };
