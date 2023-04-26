@@ -9,8 +9,7 @@ TODO:
 
 ### Control Origination
 
-OPS
+ACF OCIO and OPS
 
 ### Related Content
-
-[ra-3](../ra-03/index.md)
+Area-wide disruptions refer to those types of disruptions that are broad in geographic scope with such determinations made by organizations based on organizational assessments of risk.
