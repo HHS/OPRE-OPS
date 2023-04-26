@@ -20,4 +20,4 @@ Hybrid with ACF OCIO
 
 ### Related Content
 
-The application owner is responsible for providing contingency training to application personnel.
+The application/system owner is responsible for the follow up and coordinate to ensure the assingned  personnel for the role are provided with the appropariate levele of contingency training.
