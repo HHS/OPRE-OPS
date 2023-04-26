@@ -5,7 +5,7 @@ Implement the following procedures to ensure that organizational personnel impac
 
 ## OPS Implementation
 
-TODO: Acquire any text from ACF OCIO or draft our own
+TODO: Acquire any text from ACF OCIO or draft our own [Not selected by ACF OCIO]
 
 ### Control Origination
 
