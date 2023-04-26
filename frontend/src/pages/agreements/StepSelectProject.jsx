@@ -1,13 +1,16 @@
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ProjectSelect from "../../components/UI/Form/ProjectSelect";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import { setSelectedProject } from "./createAgreementSlice";
+import Modal from "../../components/UI/Modal/Modal";
 
 export const StepSelectProject = ({ goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
-
     const researchProjects = useSelector((state) => state.createAgreement.research_projects_list);
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
+    const [showModal, setShowModal] = React.useState(false);
+    const [modalProps, setModalProps] = React.useState({});
 
     const handleContinue = () => {
         if (selectedResearchProject?.id) {
@@ -15,11 +18,27 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
         }
     };
     const handleCancel = () => {
-        dispatch(setSelectedProject({}));
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel? Your agreement will not be saved.",
+            actionButtonText: "Continue",
+            handleConfirm: () => {
+                dispatch(setSelectedProject({}));
+                setModalProps({});
+            },
+        });
     };
 
     return (
         <>
+            {showModal && (
+                <Modal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
             <h1 className="font-sans-lg">Create New Budget Line</h1>
             <p>Step One: Text explaining this page</p>
             <StepIndicator steps={wizardSteps} currentStep={1} />
