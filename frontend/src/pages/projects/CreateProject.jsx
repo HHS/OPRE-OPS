@@ -1,32 +1,87 @@
-import App from "../../App";
-import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
+import { useSelector, useDispatch } from "react-redux";
+import ProjectTypeSelect from "./ProjectTypeSelect";
+import { setProjectId, setProjectShortTitle, setProjectTitle, setProjectDescription } from "./createProjectSlice";
+import { postProject } from "../../api/postProjects";
 
-export const CreateProject = () => {
+export const CreateProject = ({ goBack, goToNext }) => {
+    const dispatch = useDispatch();
+    const projectShortTitle = useSelector((state) => state.createProject.project.short_title);
+    const projectTitle = useSelector((state) => state.createProject.project.title);
+    const projectDescription = useSelector((state) => state.createProject.project.description);
+    const project = useSelector((state) => state.createProject.project);
+    const handleContinue = async () => {
+        // Save Project to DB
+        const response = await postProject(project);
+        const newProjectId = response.id;
+        console.log(`New Project Created: ${newProjectId}`);
+        dispatch(setProjectId(newProjectId));
+        goToNext();
+    };
+    const handleCancel = () => {
+        // TODO: Add cancel stuff
+        // TODO: Clear createProject State
+        goBack();
+    };
     return (
-        <App>
+        <>
             <h1 className="font-sans-lg">Create New Project</h1>
-            <p>Step One: Text explaining this page</p>
-            <StepIndicator steps={["Project & Agreement", "Budget Lines", "Review"]} currentStep={1} />
+
             <h2 className="font-sans-lg">Select the Project Type</h2>
             <p>Select the type of project you are creating.</p>
-            <div className="usa-combo-box" data-enhanced="true">
-                <select
-                    className="usa-select usa-sr-only usa-combo-box__select"
-                    name="projectType"
-                    aria-hidden="true"
-                    tabIndex="-1"
-                    defaultValue="Research"
-                >
-                    <option id="Research" value="Research">
-                        Research
-                    </option>
-                </select>
-            </div>
+            <ProjectTypeSelect />
+
             <h2 className="font-sans-lg">Project Details</h2>
-            <p>Project Nickname or Acronym</p>
-            <p>Project Title</p>
-            <p>Description</p>
-            <p>Brief Description for internal purposes, not for the OPRE website.</p>
-        </App>
+
+            <label className="usa-label" htmlFor="project-abbr">
+                Project Nickname or Acronym
+            </label>
+            <input
+                className="usa-input"
+                id="project-abbr"
+                name="project-abbr"
+                type="text"
+                value={projectShortTitle || ""}
+                onChange={(e) => dispatch(setProjectShortTitle(e.target.value))}
+                required
+            />
+
+            <label className="usa-label" htmlFor="project-name">
+                Project Title
+            </label>
+            <input
+                className="usa-input"
+                id="project-name"
+                name="project-name"
+                type="text"
+                value={projectTitle || ""}
+                onChange={(e) => dispatch(setProjectTitle(e.target.value))}
+                required
+            />
+
+            <label className="usa-label" htmlFor="project-description">
+                Description
+            </label>
+            <span id="with-hint-textarea-hint" className="usa-hint">
+                Brief Description for internal purposes, not for the OPRE website.
+            </span>
+            <textarea
+                className="usa-textarea"
+                id="project-description"
+                name="project-description"
+                rows="5"
+                style={{ height: "7rem" }}
+                value={projectDescription || ""}
+                onChange={(e) => dispatch(setProjectDescription(e.target.value))}
+            ></textarea>
+
+            <div>
+                <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
+                    Cancel
+                </button>
+                <button className="usa-button" onClick={handleContinue}>
+                    Continue
+                </button>
+            </div>
+        </>
     );
 };
