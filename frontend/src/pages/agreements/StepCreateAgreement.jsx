@@ -48,10 +48,9 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         goBack();
     };
 
-    const ProductServiceCodeSummaryBox = () => {
-        // TODO: Replace with actual NAICS Code and Program Support Code from Selected Product Service Code
-        const NAICSCode = "541690";
-        const programSupportCode = "R410 - Research";
+    const ProductServiceCodeSummaryBox = ({ selectedProductServiceCode }) => {
+        const { naics, support_code } = selectedProductServiceCode;
+
         return (
             <div
                 className="bg-base-lightest font-family-sans font-12px border-1px border-base-light radius-sm margin-top-4"
@@ -60,11 +59,11 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                 <dl className="margin-0 padding-y-2 padding-x-105 display-flex flex-justify">
                     <div>
                         <dt className="margin-0 text-base-dark">NAICS Code</dt>
-                        <dd className="text-semibold margin-0">{NAICSCode}</dd>
+                        <dd className="text-semibold margin-0">{naics}</dd>
                     </div>
                     <div>
                         <dt className="margin-0 text-base-dark">Program Support Code</dt>
-                        <dd className="text-semibold margin-0">{programSupportCode}</dd>
+                        <dd className="text-semibold margin-0">{support_code}</dd>
                     </div>
                 </dl>
             </div>
@@ -123,7 +122,9 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             ></textarea>
 
             <ProductServiceCodeSelect />
-            {selectedProductServiceCode && <ProductServiceCodeSummaryBox />}
+            {selectedProductServiceCode && (
+                <ProductServiceCodeSummaryBox selectedProductServiceCode={selectedProductServiceCode} />
+            )}
             <h2 className="font-sans-lg">Procurement Shop</h2>
             <p>
                 Select the Procurement Shop, and the fee rates will be populated in the table below. If this is an
