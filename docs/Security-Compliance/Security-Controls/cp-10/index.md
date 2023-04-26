@@ -1,7 +1,7 @@
 # Contingency Plan
 ## CP-10 - System Recovery and Reconstitution
 
-Provide for the recovery and reconstitution of the system to a known state within [Assignment: organization-defined time period consistent with recovery time and recovery point objectives] after a disruption, compromise, or failure.
+Provide for the recovery and reconstitution of the system to a known state within [ACF-defined time period consistent with recovery time and recovery point objectives] after a disruption, compromise, or failure.
 
 ## OPS Implementation
 
