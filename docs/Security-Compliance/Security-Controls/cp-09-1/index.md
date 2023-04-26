@@ -1,11 +1,11 @@
 # Contingency Plan
 ## CP-9-1 - System Backup | Testing for Reliability and Integrity
 
-Test backup information [Assignment: organization-defined frequency] to verify media reliability and information integrity.
+Test backup information [at least semi-annually for Moderate systems] to verify media reliability and information integrity.
 
 ## OPS Implementation
 
-cloud.gov maintains storage backups for 14 days to facilitate disaster recovery.
+cloud.gov maintains storage backups for 14 days to facilitate disaster recovery.???
 
 TODO: Address any app/customer-level restoral testing we will execute
 
