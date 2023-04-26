@@ -47,7 +47,7 @@ export const ProductServiceCodeSelect = () => {
                         const selectedProductServiceCode = productServiceCodes[selectedOptionIndex - 1];
                         onChangeProductServiceCodeSelection(selectedProductServiceCode);
                     }}
-                    value={selectedProductServiceCode}
+                    value={selectedProductServiceCode || ""}
                     required
                 >
                     <option value={0}>- Select a Product Service Code -</option>
