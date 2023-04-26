@@ -1,7 +1,7 @@
 # Incident Response
 ## IR-4-1 - Incident Handling | Automated Incident Handling Processes
 
-Support the incident handling process using [Assignment: organization-defined automated mechanisms].
+Support the incident handling process using [ACF-defined automated mechanisms].
 
 ## OPS Implementation
 
@@ -9,6 +9,7 @@ TODO: Work with ACF OCIO on language
 
 ### Control Origination
 
-Hybrid with ACF OCIO?
+Hybrid with ACF OCIO,cloud.gov?
 
 ### Related Content
+Automated mechanisms that support incident handling processes include online incident management systems and tools that support the collection of live response data, full network packet capture, and forensic analysis.
