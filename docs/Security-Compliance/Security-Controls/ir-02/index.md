@@ -7,6 +7,7 @@ a. Provide incident response training to system users consistent with assigned r
 3. [At least every 365 days] thereafter; and
 b. Review and update incident response training content [ACF-defined frequency] and following [ACF-defined events]
 
+
 ## OPS Implementation
 
 TODO: Include ACF OCIO language
