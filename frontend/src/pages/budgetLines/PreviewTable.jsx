@@ -20,7 +20,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
 
     let loggedInUser = useSelector((state) => state.auth.activeUser.full_name);
     // NOTE: set to logged in user to Sheila if no name is found
-    if (loggedInUser === "(no name) (no name)") {
+    if (!loggedInUser) {
         loggedInUser = "Sheila Celentano";
     }
 
