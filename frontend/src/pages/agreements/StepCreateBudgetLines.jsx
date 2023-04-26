@@ -61,6 +61,8 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
             (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on")
         );
         postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
+        // TODO: Route to Agreements List page, showing Agreement Review for now
+        goToNext();
     };
 
     return (
