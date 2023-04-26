@@ -1,11 +1,11 @@
 # Contingency Plan
-## CP-9-3 - System Backup | Separate Storage for Critical Information
+## CP-9(8) - System Backup | Cryptographic Protection
 
-Store backup copies of [Assignment: organization-defined critical system software and other security-related information] in a separate facility or in a fire rated container that is not collocated with the operational system.
+Implement cryptographic mechanisms to prevent unauthorized disclosure and modification of [ACF-defined backup information].
 
 ## OPS Implementation
 
-OPS application code and compliance documentation are stored within GitHub and their infrastrucure.
+OPS application code and compliance documentation are stored within GitHub and their infrastrucure.???
 
 ### Control Origination
 
