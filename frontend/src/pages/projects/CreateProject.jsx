@@ -1,9 +1,12 @@
+import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import ProjectTypeSelect from "./ProjectTypeSelect";
 import { setProjectId, setProjectShortTitle, setProjectTitle, setProjectDescription } from "./createProjectSlice";
 import { postProject } from "../../api/postProjects";
 
-export const CreateProject = ({ goBack, goToNext }) => {
+export const CreateProject = () => {
+    const [formData, setFormData] = React.useState({});
+    const [currentIndex, setCurrentIndex] = React.useState(0);
     const dispatch = useDispatch();
     const projectShortTitle = useSelector((state) => state.createProject.project.short_title);
     const projectTitle = useSelector((state) => state.createProject.project.title);
@@ -21,6 +24,22 @@ export const CreateProject = ({ goBack, goToNext }) => {
         // TODO: Add cancel stuff
         // TODO: Clear createProject State
         goBack();
+    };
+    const goBack = () => {
+        const previousIndex = currentIndex - 1;
+        if (previousIndex >= 0) {
+            setCurrentIndex(previousIndex);
+        }
+    };
+
+    const goToNext = () => {
+        const nextIndex = currentIndex + 1;
+        const updatedData = {
+            ...formData,
+        };
+        console.log(updatedData);
+
+        setFormData(updatedData);
     };
     return (
         <>

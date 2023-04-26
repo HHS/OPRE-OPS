@@ -7,7 +7,7 @@ const PROJECT_TYPES = ["Research"];
 export const ProjectTypeSelect = () => {
     const dispatch = useDispatch();
     const projectTypes = useSelector((state) => state.createProject.project_types_list);
-    const selectedProjectType = useSelector((state) => state.createProject.agreement.selected_project_type);
+    const selectedProjectType = useSelector((state) => state.createProject.project.selected_project_type);
 
     // On component load, get ProjectTypes from API, and set returned list in State
     // Currently set to a default of a single hard-coded value.
