@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
-const Tag = ({ tagStyle = "", text = "", active = false, label = "", className = "" }) => {
+const Tag = ({ tagStyle = "", text = "", active = false, label = "", className = "", children }) => {
     let tagClasses = "font-12px padding-05 height-205 radius-md",
-        activeClass = "fake-bold";
+        activeClass = "";
     // OVERRIDES FOR DEFAULT CLASSES
     if (tagStyle === "darkTextLightBackground") {
         tagClasses += " bg-brand-neutral-lightest text-brand-neutral-dark";
@@ -14,7 +14,7 @@ const Tag = ({ tagStyle = "", text = "", active = false, label = "", className =
     }
     // ACTIVE CLASSES FOR GRAPH LEGEND
     if (active && label === "Available") {
-        activeClass += " bg-brand-data-viz-primary-5 text-white";
+        activeClass += " bg-brand-data-viz-primary-5 text-white fake-bold";
     } else if (active && label === "Planned") {
         activeClass += " bg-brand-data-viz-primary-11 text-white fake-bold";
     } else if (active && label === "Executing") {
@@ -35,7 +35,7 @@ const Tag = ({ tagStyle = "", text = "", active = false, label = "", className =
 
     return (
         <span className={`${tagClasses} ${activeClass} ${className}`} style={{ width: "fit-content" }}>
-            {text}
+            {text} {children}
         </span>
     );
 };

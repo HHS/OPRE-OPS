@@ -25,7 +25,7 @@ class User(BaseModel):
     email = Column(String, index=True, nullable=False)
     first_name = Column(String)
     last_name = Column(String)
-    full_name = column_property(f"{first_name} {last_name}")
+    full_name = column_property(first_name + " " + last_name)
     date_joined = Column(DateTime, server_default=func.now())
     updated = Column(DateTime, onupdate=func.now())
 

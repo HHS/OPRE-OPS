@@ -1,6 +1,10 @@
-from flask import Response, current_app
+from enum import Enum
+from typing import Optional
+
+from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
+from marshmallow import Schema
 from models.base import BaseModel
 from ops_api.ops.utils.auth import auth_gateway
 from ops_api.ops.utils.response import make_response_with_headers
@@ -79,6 +83,17 @@ class OPSMethodView(MethodView):
 
         return response
 
+    @staticmethod
+    def _validate_request(schema: Schema, message: Optional[str] = ""):
+        errors = schema.validate(request.json)
+        if errors:
+            current_app.logger.error(f"{message}: {errors}")
+            raise RuntimeError(f"{message}: {errors}")
+
+    def _get_enum_items(self) -> Response:
+        enum_items = [e.name for e in self]
+        return jsonify(enum_items)
+
 
 class BaseItemAPI(OPSMethodView):
     def __init__(self, model: BaseModel):
@@ -100,3 +115,8 @@ class BaseListAPI(OPSMethodView):
     @jwt_required()
     def post(self) -> Response:
         ...
+
+
+class EnumListAPI(MethodView):
+    def __init__(self, enum: Enum):
+        super().__init__(enum)

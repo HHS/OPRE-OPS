@@ -18,7 +18,9 @@ import ResearchProjects from "./components/Portfolios/ResearchProjects/ResearchP
 import PeopleAndTeams from "./components/Portfolios/PeopleAndTeams/PeopleAndTeams";
 import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAndFunding";
 import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProjectDetail";
+import { CreateBudgetLine } from "./pages/budgetLines/CreateBudgetLine";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
+import { CreateAgreement } from "./pages/agreements/CreateAgreement";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -109,17 +111,28 @@ const router = createBrowserRouter(
             </Route>
             <Route path="/cans" element={<CanList />} />
             <Route path="/login" handle={{}} />
+
+            <Route element={<ProtectedRoute redirectPath="/" />}>
+                <Route path="/budget-lines/create" element={<CreateBudgetLine />} />
+                <Route path="/agreements/create" element={<CreateAgreement />} />
+            </Route>
         </>
     )
 );
 
-ReactDOM.createRoot(document.getElementById("root")).render(
-    <React.StrictMode>
-        <Provider store={store}>
-            <RouterProvider router={router} />
-        </Provider>
-    </React.StrictMode>
-);
+const rootElement = document.getElementById("root");
+
+if (rootElement) {
+    ReactDOM.createRoot(rootElement).render(
+        <React.StrictMode>
+            <Provider store={store}>
+                <RouterProvider router={router} />
+            </Provider>
+        </React.StrictMode>
+    );
+} else {
+    console.error("No root element found");
+}
 
 // Expose redux store when running in Cypress (e2e)
 if (window.Cypress) {

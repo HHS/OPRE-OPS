@@ -565,6 +565,56 @@ paths:
               examples:
                 '0':
                   $ref: '#/components/examples/ResearchProjects'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+
+    post:
+      summary: Create a new Research Project
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResearchProjectRequest'
+
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+  /api/v1/research-projects/{id}:
+    get:
+      description: Get Research Projects by id
+      parameters:
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResearchProject'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+
   /api/v1/research-project-funding-summary/:
     get:
       description: ''
@@ -718,6 +768,22 @@ paths:
   /api/v1/budget-line-items/:
     get:
       description: Get Budget Line Items
+      parameters:
+        - name: can_id
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: agreement_id
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: status
+          in: query
+          schema:
+            type: string
+          example: 'DRAFT'
       responses:
         '200':
           description: OK
@@ -766,6 +832,47 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BudgetLineItem'
+
+    put:
+      summary: Update a new Budget Line Item (Over-write)
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetLineItemRequest'
+
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+    patch:
+      summary: Update a new Budget Line Item (Merge)
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetLineItemRequest'
+
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
 components:
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
@@ -773,6 +880,7 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+
     CAN:
       description: Common Accounting Number (CAN) Object
       type: object
@@ -869,12 +977,10 @@ components:
       properties:
         id:
           type: integer
-        cans:
-          type: array
-          items:
-            $ref: "#/components/schemas/CAN"
+          example: 1
         created_by:
-          type: string
+          type: integer
+          example: 10
         created_on:
           type: string
           example: '2023-04-06T20:33:38.292475'
@@ -884,33 +990,38 @@ components:
         description:
           type: string
         methodologies:
-          type: object
-          example: [ "METHOD1" ]
+          type: array
+          items:
+            type: string
+            example: [ 'SURVEY', 'FIELD_RESEARCH', 'PARTICIPANT_OBSERVATION' ]
         populations:
-          type: object
-          example: [ "POP1" ]
+          type: array
+          items:
+            type: string
+            example: [ 'POPULATION_1', 'POPULATION_2' ]
+        team_leaders:
+          type: array
+          items:
+            type: array
+            example: [ {
+              "created_by": null,
+              "created_on": "2023-04-17T14:43:15.216759",
+              "date_joined": "2023-04-17T14:43:15.216759",
+              "division": 1,
+              "email": "chris.fortunato@example.com",
+              "first_name": "Chris",
+              "full_name": "Chris Fortunato",
+              "id": 1,
+              "last_name": "Fortunato",
+              "oidc_id": "00000000-0000-1111-a111-000000000001",
+              "updated": null,
+              "updated_on": "2023-04-17T14:43:15.216759"
+            } ]
         origination_date:
           type: string
           example: '2022-01-01'
         short_title:
           type: string
-        team_leaders:
-          type: array
-          items:
-            $ref: "#/components/schemas/TeamLeader"
-          example: [ { 'created_by': None,
-                       'created_on': '2023-04-06T20:33:38.292475',
-                       'date_joined': '2023-04-06T20:33:38.292475',
-                       'division': 1,
-                       'email': 'emily.ball@example.com',
-                       'first_name': 'Emily',
-                       'full_name': '(no name) (no name)',
-                       'id': 1,
-                       'last_name': 'Ball',
-                       'oidc_id': '00000000-0000-1111-a111-000000000001',
-                       'role': 'COR',
-                       'updated': None,
-                       'updated_on': '2023-04-06T20:33:38.292475' } ]
         title:
           type: string
           example: 'African American Child and Family Research Center'
@@ -924,6 +1035,28 @@ components:
       items:
         anyOf:
           - $ref: "#/components/schemas/ResearchProject"
+
+    AGREEMENTS:
+      description: All Agreements
+      type: array
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        agreement_type:
+          type: string
+        project_officer:
+          type: string
+        period_of_performance_start:
+          type: string
+        period_of_performance_end:
+        procurement_shop:
+          type: object
+        budget_line_items:
+          type: array
 
     Agreement:
       type: object
@@ -1034,6 +1167,44 @@ components:
         - status
         - date_needed
 
+    ResearchProjectRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          example: 'Research Project #1'
+        short_title:
+          type: string
+          example: 'RP#1'
+        description:
+          type: string
+          example: 'Description #1'
+        url:
+          type: string
+          example: 'https://example.com'
+        origination_date:
+          type: string
+          example: '2023-05-06'
+        methodologies:
+          type: array
+          items:
+            type: string
+            example: [ 'SURVEY', 'FIELD_RESEARCH', 'PARTICIPANT_OBSERVATION' ]
+        populations:
+          type: array
+          items:
+            type: string
+            example: [ 'POPULATION_1', 'POPULATION_2' ]
+        team_leaders:
+          type: array
+          items:
+            type: array
+            example: [ { 'id': 1 }, { 'id': 2 }, { 'id': 3 } ]
+
+      required:
+        - title
+
+
   examples:
 
     CAN:
@@ -1134,106 +1305,116 @@ components:
       value: |
         [
           {
-            "cans": [
-              {
-                "appropriation_date": "01/10/2022",
-                "appropriation_term": 1,
-                "arrangement_type": "OPRE_APPROPRIATION",
-                "authorizer_id": 26,
-                "created_by": None,
-                "created_on": "2023-04-06T20:33:38.292475",
-                "description": "Child Development Research Fellowship Grant Program",
-                "expiration_date": "01/09/2023",
-                "id": 4,
-                "managing_portfolio_id": 1,
-                "managing_research_project_id": 1,
-                "nickname": "ASPE SRCD-IDDA",
-                "number": "G990136",
-                "purpose": "",
-                "updated_on": "2023-04-06T20:33:38.292475",
-              },
-              {
-                "appropriation_date": "01/10/2022",
-                "appropriation_term": 1,
-                "arrangement_type": "OPRE_APPROPRIATION",
-                "authorizer_id": 26,
-                "created_by": None,
-                "created_on": "2023-04-06T20:33:38.292475",
-                "description": "Example CAN",
-                "expiration_date": "01/09/2023",
-                "id": 13,
-                "managing_portfolio_id": 3,
-                "managing_research_project_id": 1,
-                "nickname": "",
-                "number": "G99XXX8",
-                "purpose": "",
-                "updated_on": "2023-04-06T20:33:38.292475",
-              },
-            ],
-            "created_by": None,
-            "created_on": "2023-04-06T20:33:38.292475",
+            "created_by": null,
+            "created_on": "2023-04-17T14:43:13.928419",
             "description": "        The National African American Child and Family Research Center, supported by a five-year OPRE        grant (2021 — 2026), will provide national leadership and excellence by investigating the assets, needs,        and experiences of the diverse population of African American families and children served (or potentially        served) by ACF programs, as well as promising approaches to address economic and social inequities and,        ultimately, promote social and economic well-being.  The primary focus of this Center will be on childcare        assistance, TANF, and Head Start and Early Head Start programs and the populations they serve. The work of        the Center will draw on interdisciplinary approaches to accomplish the three goals listed below.        \n\n1. Advance Research        The Center will plan, initiate, and maintain a community-engaged, focused, and high-caliber research program.        The Center’s program of research will build on the existing literature related to African American children        and families and should be directly relevant to the needs and interests of ACF areas of programmatic concern.        \n\n2. Build Research Capacity        The Center will build research capacity and infrastructure to conduct research relevant to ACF program and        policy goals that is culturally rigorous and informed by an understanding of current and historical        circumstances that shape the experiences of African Americans. In addition, the Center will contribute to the        development and expansion of the pool of researchers reflective of the communities being studied by the Center.        \n\n3. Communicate Research        The Center will develop and implement a dissemination strategy that broadly and efficiently communicates        findings from research conducted within and outside of the Center and increases the use of research, data, and        relevant resources for a wide audience including researchers, federal and state policymakers, ACF grantees,        program administrators, and communities participating in the research.        \n\nThe Center is led by the Morehouse School of Medicine.        \n\nThe OPRE point of contact is Megan Reid.        ",
             "id": 1,
             "methodologies": [
-              "SURVEY",
-              "FIELD_RESEARCH",
-              "PARTICIPANT_OBSERVATION",
-              "ETHNOGRAPHY",
-              "EXPERIMENT",
-              "SECONDARY_DATA_ANALYSIS",
-              "CASE_STUDY",
+                "SURVEY",
+                "FIELD_RESEARCH",
+                "PARTICIPANT_OBSERVATION",
+                "ETHNOGRAPHY",
+                "EXPERIMENT",
+                "SECONDARY_DATA_ANALYSIS",
+                "CASE_STUDY"
             ],
             "origination_date": "2022-01-01",
-            "populations": [ "POPULATION_1" ],
-            "portfolio_id": 3,
+            "populations": [
+                "POPULATION_1"
+            ],
             "short_title": "",
             "team_leaders": [
-              {
-                "created_by": None,
-                "created_on": "2023-04-06T20:33:38.292475",
-                "date_joined": "2023-04-06T20:33:38.292475",
-                "division": 1,
-                "email": "emily.ball@example.com",
-                "first_name": "Emily",
-                "full_name": "(no name) (no name)",
-                "id": 1,
-                "last_name": "Ball",
-                "oidc_id": "00000000-0000-1111-a111-000000000001",
-                "role": "COR",
-                "updated": None,
-                "updated_on": "2023-04-06T20:33:38.292475",
-              }
+                {
+                    "created_by": null,
+                    "created_on": "2023-04-17T14:43:15.216759",
+                    "date_joined": "2023-04-17T14:43:15.216759",
+                    "division": 1,
+                    "email": "chris.fortunato@example.com",
+                    "first_name": "Chris",
+                    "full_name": "Chris Fortunato",
+                    "id": 1,
+                    "last_name": "Fortunato",
+                    "oidc_id": "00000000-0000-1111-a111-000000000001",
+                    "updated": null,
+                    "updated_on": "2023-04-17T14:43:15.216759"
+                }
             ],
             "title": "African American Child and Family Research Center",
-            "updated_on": "2023-04-06T20:33:38.292475",
-            "url": "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center",
-          },
-          {
-            "cans": [ ],
-            "created_by": None,
-            "created_on": "2023-04-06T20:33:38.292475",
-            "description": '         Evidence suggests that fathers play an important role in children\'s development and that they can serve as         a key source of emotional and financial support. In many social services, however, fathers are overlooked.         This is the case in the child welfare system, where data from the Child and Family Service Reviews indicate         that fathers and paternal relatives are minimally engaged and may be untapped resources.         \n\nThe purpose of this project is to bridge the gap between what we know about the importance of fathers         and practices in the child welfare system that may contribute to low levels of father and paternal relative         engagement. Partnering with the Office of Family Assistance (which oversees the Healthy Marriage and         Responsible Fatherhood discretionary grant program) and the Children’s Bureau, this project aims to: \n\n* Synthesize what we already know about a) efforts to engage fathers and paternal relatives of children         involved in the child welfare system, and b) Continuous Quality Improvement approaches within the child         welfare system;         \n* Map "touch points" within a child welfare case where fathers and/or paternal relatives could be more          fully engaged;         \n* Identify potential strategies and interventions that could be used at the touch points to increase their         engagement;         \n* Select a collaborative Continuous Quality Improvement approach and use it to work intensively with a few         sites to implement and test these father and paternal relative engagement strategies and interventions;         \n* Conduct a pilot study to examine the feasibility and implementation of the Continuous Quality Improvement         approach and the engagement strategies and interventions; and         \n* Conduct an evaluation of the selected continuous learning methodology and the engagement strategies and         interventions.        ',
-            "id": 3,
-            "methodologies": [
-              "SURVEY",
-              "FIELD_RESEARCH",
-              "PARTICIPANT_OBSERVATION",
-              "ETHNOGRAPHY",
-              "EXPERIMENT",
-              "SECONDARY_DATA_ANALYSIS",
-              "CASE_STUDY",
-            ],
-            "origination_date": "2017-01-01",
-            "populations": [ "POPULATION_1" ],
-            "portfolio_id": 6,
-            "short_title": "",
-            "team_leaders": [ ],
-            "title": "Fathers and Continuous Learning (FCL)",
-            "updated_on": "2023-04-06T20:33:38.292475",
-            "url": "https://www.acf.hhs.gov/opre/project/fathers-and-continuous-learning",
-          },
+            "updated_on": "2023-04-17T14:43:13.928419",
+            "url": "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center"
+          }
         ]
+    AGREEMENTS:
+      value: |
+       [
+          {
+              "id": 1,
+              "created_by": null,
+              "created_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+              "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+              "name": "Using Innovative Data to Explore Racial and Ethnic Disparities in Human Services",
+              "research_project_id": 1,
+              "description":
+                  "This will be a contract to continue planned analyses to explore racial and ethnic disparities in Human Services.",
+              "agreement_type": "CONTRACT",
+              "project_officer": "Ivelisse Martinez-Beck",
+              "period_of_performance_start": "2021-01-01",
+              "period_of_performance_end": "2021-12-31",
+              procurement_shop: {
+                  id: 2,
+                  name: "Government Contracting Services",
+                  fee: 0,
+              },
+              budget_line_items: [
+                  {
+                      id: 123456,
+                      line_description: "LI 1",
+                      comments: "",
+                      can_id: 5,
+                      can_number: "G994426",
+                      agreement_id: 1,
+                      amount: 1000000.0,
+                      status: "EXECUTING",
+                      date_needed: "2111-1-11",
+                      psc_fee_amount: 0,
+                      created_by: "Carolyn Hsu",
+                      created_on: "2023-4-5",
+                      updated_on: "2023-4-15",
+                  },
+                  {
+                      id: 123457,
+                      line_description: "LI 2",
+                      comments: "",
+                      can_id: 5,
+                      can_number: "G994426",
+                      agreement_id: 1,
+                      amount: 1000000.0,
+                      status: "OBLIGATED",
+                      date_needed: "2222-2-22",
+                      psc_fee_amount: 0,
+                      created_by: "Carolyn Hsu",
+                      created_on: "2023-4-1",
+                      updated_on: "2023-4-15",
+                  },
+                  {
+                      id: 123458,
+                      line_description: "LI 3",
+                      comments: "",
+                      can_id: 5,
+                      can_number: "G994426",
+                      agreement_id: 1,
+                      amount: 1000000.0,
+                      status: "PLANNED",
+                      date_needed: "2333-3-13",
+                      psc_fee_amount: 0,
+                      created_by: "Carolyn Hsu",
+                      created_on: "2023-3-11",
+                      updated_on: "2023-4-15",
+                  },
+                ],
+          },
 
+        ];
     Agreements:
       value: |
         [{
@@ -1243,7 +1424,40 @@ components:
           "id": 2,
           "name": "Contract #2: African American Child and Family Research Center",
           "research_project_id": 1,
-          "updated_on": "2023-04-06T20:33:38.292475"
+          "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+           cans: [],
+           budget_line_items: [
+            {
+                line_description: "LI 1",
+                comments: "",
+                can_id: 5,
+                agreement_id: 1,
+                amount: 1000000.0,
+                status: "EXECUTING",
+                date_needed: "2111-1-11",
+                psc_fee_amount: 0.5,
+            },
+            {
+                line_description: "LI 2",
+                comments: "",
+                can_id: 5,
+                agreement_id: 1,
+                amount: 1000000.0,
+                status: "OBLIGATED",
+                date_needed: "2222-2-22",
+                psc_fee_amount: 0.5,
+            },
+            {
+                line_description: "LI 3",
+                comments: "",
+                can_id: 5,
+                agreement_id: 1,
+                amount: 1000000.0,
+                status: "PLANNED",
+                date_needed: "2333-3-13",
+                psc_fee_amount: 0.5,
+            },
+        ],
         }]
 
     Agreement:
@@ -1255,7 +1469,40 @@ components:
           "id": 2,
           "name": "Contract #2: African American Child and Family Research Center",
           "research_project_id": 1,
-          "updated_on": "2023-04-06T20:33:38.292475"
+          "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+          cans: [],
+          budget_line_items: [
+            {
+                line_description: "LI 1",
+                comments: "",
+                can_id: 5,
+                agreement_id: 2,
+                amount: 1000000.0,
+                status: "EXECUTING",
+                date_needed: "2111-1-11",
+                psc_fee_amount: 0.5,
+            },
+            {
+                line_description: "LI 2",
+                comments: "",
+                can_id: 5,
+                agreement_id: 2,
+                amount: 1000000.0,
+                status: "OBLIGATED",
+                date_needed: "2222-2-22",
+                psc_fee_amount: 0.5,
+            },
+            {
+                line_description: "LI 3",
+                comments: "",
+                can_id: 5,
+                agreement_id: 2,
+                amount: 1000000.0,
+                status: "PLANNED",
+                date_needed: "2333-3-13",
+                psc_fee_amount: 0.5,
+            },
+        ],
         }
 
     BudgetLineItems:
