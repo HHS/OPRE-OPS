@@ -5,7 +5,7 @@ Employ the following controls for personnel exposed to information not within as
 
 ## OPS Implementation
 
-TODO: Acquire text from ACF OCIO
+TODO: Acquire text from ACF OCIO [Not selected by ACF OCIO]
 
 ### Control Origination
 
