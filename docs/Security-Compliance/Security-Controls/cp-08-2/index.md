@@ -1,5 +1,5 @@
 # Contingency Plan
-## CP-8-2 - Telecommunications Services | Single Points of Failure
+## CP-8 (2) - Telecommunications Services | Single Points of Failure
 
 Obtain alternate telecommunications services to reduce the likelihood of sharing a single point of failure with primary telecommunications services.
 

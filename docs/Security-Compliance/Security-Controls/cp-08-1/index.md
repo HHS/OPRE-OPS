@@ -1,5 +1,5 @@
 # Contingency Plan
-## CP-8-1 - Telecommunications Services | Priority of Service Provisions
+## CP-8 (1) - Telecommunications Services | Priority of Service Provisions
 
 (a) Develop primary and alternate telecommunications service agreements that contain priority-of-service provisions in accordance with availability requirements (including recovery time objectives); and
 
@@ -9,8 +9,10 @@
 
 cloud.gov leverages redundant telecommunications services from AWS GovCloud.
 
+TODO: Once BIA and continuity plan is established, revisit this
+
 ### Control Origination
 
-Inherit from cloud.gov
+Hybrid with cloud.gov
 
 ### Related Content

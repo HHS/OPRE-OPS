@@ -1,5 +1,5 @@
 # Contingency Plan
-## CP-6-3 - Alternate Storage Site | Accessibility
+## CP-6 (3) - Alternate Storage Site | Accessibility
 
 Identify potential accessibility problems to the alternate storage site in the event of an area-wide disruption or disaster and outline explicit mitigation actions.
 

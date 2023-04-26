@@ -6,10 +6,10 @@ Test the effectiveness of the incident response capability for the system [At le
 
 ## OPS Implementation
 
-TODO: Updated with ACF OCIO language
+OPS coordinates with cloud.gov, ACF/OCIO, and OPRE Administration to conduct requisite IR testing.
 
 ### Control Origination
 
-Hybrid with ACF OCIO?
+Hybrid with ACF OCIO and cloud.gov
 
 ### Related Content

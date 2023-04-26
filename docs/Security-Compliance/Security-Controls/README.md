@@ -135,7 +135,7 @@
 17. [cp-8-2](cp-08-2/index.md)
 18. [cp-9](cp-09/index.md)
 19. [cp-9-1](cp-09-1/index.md)
-20. [cp-9-3](cp-09-3/index.md)
+20. [cp-9-8](cp-09-8/index.md)
 21. [cp-10](cp-10/index.md)
 22. [cp-10-2](cp-10-2/index.md)
 

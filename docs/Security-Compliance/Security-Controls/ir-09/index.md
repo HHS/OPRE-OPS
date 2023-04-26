@@ -13,7 +13,7 @@ g. Performing the following additional actions: [Assignment: organization-define
 
 ## OPS Implementation
 
-TODO: Work with ACF OCIO on some specifics and draft language [Not selected by ACF OCIO]
+TODO: ??  Work with ACF/OCIO on some specifics and draft language [Not selected by ACF OCIO]
 
 ### Control Origination
 

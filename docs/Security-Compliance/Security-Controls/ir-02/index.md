@@ -2,6 +2,7 @@
 ## IR-2 - Incident Response Training
 
 a. Provide incident response training to system users consistent with assigned roles and responsibilities:
+
 1. Within [one (1) month] of assuming an incident response role or responsibility or acquiring system access;
 2. When required by system changes; and
 3. [At least every 365 days] thereafter; and
@@ -11,7 +12,7 @@ b. Review and update incident response training content [ACF-defined frequency] 
 
 ## OPS Implementation
 
-TODO: ACF OCIO language included
+OPS coordinates with ACF/OCIO and OPRE Administration to conduct requisite training.
 
 ### Control Origination
 

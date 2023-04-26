@@ -1,11 +1,11 @@
 # Contingency Plan
-## CP-9(8) - System Backup | Cryptographic Protection
+## CP-9 (8) - System Backup | Cryptographic Protection
 
 Implement cryptographic mechanisms to prevent unauthorized disclosure and modification of [ACF-defined backup information].
 
 ## OPS Implementation
 
-OPS application code and compliance documentation are stored within GitHub and their infrastrucure.???
+OPS application code and compliance documentation are stored within GitHub and their infrastrucure. OPS implements ACF/OCIO encryption policies.
 
 ### Control Origination
 
