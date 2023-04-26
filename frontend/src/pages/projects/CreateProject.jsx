@@ -1,4 +1,5 @@
 import React from "react";
+import App from "../../App";
 import { useSelector, useDispatch } from "react-redux";
 import ProjectTypeSelect from "./ProjectTypeSelect";
 import { setProjectId, setProjectShortTitle, setProjectTitle, setProjectDescription } from "./createProjectSlice";
@@ -42,7 +43,7 @@ export const CreateProject = () => {
         setFormData(updatedData);
     };
     return (
-        <>
+        <App>
             <h1 className="font-sans-lg">Create New Project</h1>
 
             <h2 className="font-sans-lg">Select the Project Type</h2>
@@ -101,6 +102,6 @@ export const CreateProject = () => {
                     Continue
                 </button>
             </div>
-        </>
+        </App>
     );
 };
