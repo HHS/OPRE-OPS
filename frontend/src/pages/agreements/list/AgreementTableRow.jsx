@@ -6,8 +6,7 @@ import { faClock } from "@fortawesome/free-regular-svg-icons";
 import Tag from "../../../components/UI/Tag/Tag";
 import "./AgreementsList.scss";
 import ApplicationContext from "../../../applicationContext/ApplicationContext";
-import { setCanFiscalYear, setPendingFunds } from "../../cans/detail/canDetailSlice";
-import constants from "../../../constants";
+import icons from "../../../uswds/img/sprite.svg";
 
 // function to format date like this 9/30/2023 || MM/DD/YYYY
 const formatDate = (date) => {
@@ -98,6 +97,7 @@ export const AgreementTableRow = ({ agreement }) => {
 
     const handleEditAgreement = (event) => {};
     const handleDeleteAgreement = (event) => {};
+    const handleSubmitAgreementForApproval = (event) => {};
 
     const TableTag = ({ status }) => {
         let classNames = "padding-x-105 padding-y-1 ";
@@ -132,17 +132,16 @@ export const AgreementTableRow = ({ agreement }) => {
                             className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
                             onClick={() => handleDeleteAgreement(agreement.id)}
                         />
+                        <svg
+                            className="usa-icon text-primary height-2 width-2 hover: cursor-pointer usa-tooltip"
+                            title="submit for approval"
+                            data-position="top"
+                            onClick={() => handleSubmitAgreementForApproval(agreement.id)}
+                        >
+                            <use xlinkHref={`${icons}#send`}></use>
+                        </svg>
                     </>
                 )}
-                {/*<FontAwesomeIcon*/}
-                {/*    icon={faClone}*/}
-                {/*    title="duplicate"*/}
-                {/*    data-position="top"*/}
-                {/*    className={`text-primary height-2 width-2 hover: cursor-pointer usa-tooltip ${*/}
-                {/*        budgetLine.status !== "DRAFT" ? "margin-left-6" : ""*/}
-                {/*    }`}*/}
-                {/*    onClick={() => handleDuplicateBudgetLine(budgetLine)}*/}
-                {/*/>*/}
             </>
         );
     };
