@@ -11,7 +11,7 @@ b. Review and update incident response training content [ACF-defined frequency] 
 
 ## OPS Implementation
 
-TODO: Include ACF OCIO language
+TODO: ACF OCIO language included
 
 ### Control Origination
 
