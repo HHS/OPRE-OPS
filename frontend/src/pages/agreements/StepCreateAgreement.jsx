@@ -9,7 +9,6 @@ import {
     setAgreementDescription,
     setAgreementIncumbent,
     setAgreementNotes,
-    setSelectedAgreement,
     setAgreementId,
 } from "./createAgreementSlice";
 import ProjectOfficerSelect from "./ProjectOfficerSelect";
