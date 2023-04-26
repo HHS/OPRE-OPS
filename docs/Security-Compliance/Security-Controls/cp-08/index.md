@@ -1,7 +1,7 @@
 # Contingency Plan
 ## CP-8 - Telecommunications Services
 
-Establish alternate telecommunications services, including necessary agreements to permit the resumption of [Assignment: organization-defined system operations] for essential mission and business functions within [Assignment: organization-defined time period] when the primary telecommunications capabilities are unavailable at either the primary or alternate processing or storage sites.
+Establish alternate telecommunications services, including necessary agreements to permit the resumption of [information system operations] for essential mission and business functions within [an allowable outage time as specified by the system ITCP or COOP for the business function supported by the system] when the primary telecommunications capabilities are unavailable at either the primary or alternate processing or storage sites.
 
 ## OPS Implementation
 
