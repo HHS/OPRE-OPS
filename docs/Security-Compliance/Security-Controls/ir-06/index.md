@@ -6,7 +6,7 @@ b. Report incident information to [ACF_IRT@acf.hhs.gov]."
 
 ## OPS Implementation
 
-TODO: Work with ACF OCIO on language
+TODO: Updated with ACF OCIO language.
 
 ### Control Origination
 
