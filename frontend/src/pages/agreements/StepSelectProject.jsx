@@ -1,14 +1,21 @@
-import { useSelector } from "react-redux";
-import ProjectSelect from "./ProjectSelect";
+import { useDispatch, useSelector } from "react-redux";
+import ProjectSelect from "../../components/UI/Form/ProjectSelect";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
+import { setSelectedProject } from "./createAgreementSlice";
 
 export const StepSelectProject = ({ goToNext, wizardSteps }) => {
+    const dispatch = useDispatch();
+
+    const researchProjects = useSelector((state) => state.createAgreement.research_projects_list);
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
 
     const handleContinue = () => {
         if (selectedResearchProject?.id) {
             goToNext({ project: selectedResearchProject.id });
         }
+    };
+    const handleCancel = () => {
+        dispatch(setSelectedProject({}));
     };
 
     return (
@@ -21,8 +28,15 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
                 Select the project this budget line should be associated with. If you need to create a new project,
                 click Add New Project.
             </p>
-            <ProjectSelect />
+            <ProjectSelect
+                researchProjects={researchProjects}
+                selectedResearchProject={selectedResearchProject}
+                setSelectedProject={setSelectedProject}
+            />
             <div className="grid-row flex-justify-end margin-top-8">
+                <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
+                    Cancel
+                </button>
                 <button className="usa-button" onClick={handleContinue} disabled={!selectedResearchProject?.id}>
                     Continue
                 </button>

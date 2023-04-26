@@ -1,14 +1,23 @@
+import React from "react";
 import PropTypes from "prop-types";
-import { useDispatch, useSelector } from "react-redux";
-import { setSelectedProject } from "./createAgreementSlice";
+import { useDispatch } from "react-redux";
 
-export const ProjectSelect = () => {
+export const ProjectSelect = ({
+    researchProjects,
+    selectedResearchProject,
+    setSelectedProject,
+    clearFunction = () => {},
+}) => {
     const dispatch = useDispatch();
-    const researchProjects = useSelector((state) => state.createAgreement.research_projects_list);
-    const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
+    const [inputValue, setInputValue] = React.useState(selectedResearchProject?.title ?? "");
+
+    React.useEffect(() => {
+        setInputValue(selectedResearchProject?.title ?? "");
+    }, [selectedResearchProject]);
 
     const onChangeResearchProjectSelection = (projectId = 0) => {
         if (projectId === 0) {
+            clearFunction();
             return;
         }
         dispatch(
@@ -16,6 +25,10 @@ export const ProjectSelect = () => {
                 ...researchProjects[projectId - 1],
             })
         );
+    };
+    const onInputCloseButtonClick = () => {
+        dispatch(setSelectedProject({}));
+        clearFunction();
     };
 
     const ProjectSummaryCard = ({ selectedResearchProject }) => {
@@ -79,14 +92,15 @@ export const ProjectSelect = () => {
                         type="text"
                         role="combobox"
                         aria-activedescendant=""
-                        defaultValue={selectedResearchProject?.title}
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
                     />
                     <span className="usa-combo-box__clear-input__wrapper" tabIndex="-1">
                         <button
                             type="button"
                             className="usa-combo-box__clear-input"
                             aria-label="Clear the select contents"
-                            onClick={() => dispatch(setSelectedProject({}))}
+                            onClick={() => onInputCloseButtonClick()}
                         >
                             &nbsp;
                         </button>
@@ -146,3 +160,10 @@ export const ProjectSelect = () => {
 };
 
 export default ProjectSelect;
+
+ProjectSelect.propTypes = {
+    researchProjects: PropTypes.array.isRequired,
+    selectedResearchProject: PropTypes.object.isRequired,
+    setSelectedProject: PropTypes.func.isRequired,
+    clearFunction: PropTypes.func,
+};

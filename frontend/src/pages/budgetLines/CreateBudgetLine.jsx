@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import { CreateBudgetLineFlow } from "./CreateBudgetLineFlow";
-import ProjectSelect from "./ProjectSelect";
+import ProjectSelect from "../../components/UI/Form/ProjectSelect";
 import { AgreementSelect } from "./AgreementSelect";
 import CreateBudgetLinesForm from "../../components/UI/Form/CreateBudgetLinesForm";
 import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
@@ -20,6 +20,7 @@ import {
     setSelectedProcurementShop,
     deleteBudgetLineAdded,
     setSelectedAgreement,
+    setSelectedProject,
 } from "./createBudgetLineSlice";
 import PreviewTable from "./PreviewTable";
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
@@ -30,8 +31,16 @@ import { ProjectAgreementSummaryCard } from "./ProjectAgreementSummaryCard";
 import { postBudgetLineItems } from "../../api/postBudgetLineItems";
 
 const StepOne = ({ goToNext }) => {
+    const dispatch = useDispatch();
     const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
     const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
+    const researchProjects = useSelector((state) => state.createBudgetLine.research_projects_list);
+
+    const clearAgreementState = () => {
+        dispatch(setAgreements([]));
+        dispatch(setSelectedAgreement(-1));
+    };
+
     return (
         <>
             <h1 className="font-sans-lg">Create New Budget Line</h1>
@@ -42,7 +51,12 @@ const StepOne = ({ goToNext }) => {
                 Select the project this budget line should be associated with. If you need to create a new project,
                 click Add New Project.
             </p>
-            <ProjectSelect />
+            <ProjectSelect
+                researchProjects={researchProjects}
+                selectedResearchProject={selectedResearchProject}
+                setSelectedProject={setSelectedProject}
+                clearFunction={clearAgreementState}
+            />
             <h2 className="font-sans-lg">Select an Agreement</h2>
             <p>Select the project and agreement this budget line should be associated with.</p>
             <AgreementSelect />
