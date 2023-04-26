@@ -119,7 +119,6 @@ export const CreateBudgetLinesForm = ({
                         name="bl-amount"
                         thousandSeparator={true}
                         decimalScale={2}
-                        fixedDecimalScale={true}
                         renderText={(value) => value}
                         placeholder="$"
                         onValueChange={(values) => {
