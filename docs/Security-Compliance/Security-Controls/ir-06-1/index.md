@@ -1,13 +1,13 @@
 # Incident Response
 ## IR-6-1 - Incident Reporting | Automated Reporting
 
-Report incidents using [Assignment: organization-defined automated mechanisms].
+Report incidents using [ACF-defined automated mechanisms].
 
 ## OPS Implementation
 
 cloud.gov trouble/incident tickets can provide awareness and reporting at that layer.
 
-TODO: Work with ACF OCIO on language
+TODO: updated with ACF OCIO Language.
 
 ### Control Origination
 
