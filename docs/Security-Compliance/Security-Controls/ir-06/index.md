@@ -1,9 +1,8 @@
 # Incident Response
 ## IR-6 - Incident Reporting
 
-a. Require personnel to report suspected incidents to the organizational incident response capability within [Assignment: organization-defined time period]; and
-
-b. Report incident information to [Assignment: organization-defined authorities].
+a. Require personnel to report suspected incidents to the [ACF Incident Response Team]; and notifying the Cloud.gov team for any breach within 24 hours of the breach (cloud-gov-support@gsa.gov).
+b. Report incident information to [ACF_IRT@acf.hhs.gov]."
 
 ## OPS Implementation
 
@@ -11,14 +10,7 @@ TODO: Work with ACF OCIO on language
 
 ### Control Origination
 
-Inherit from ACF OCIO
+Inherit from ACF OCIO and cloud.gov
 
 ### Related Content
 
-* [cm-6](../cm-06/index.md)
-* [cp-2](../cp-02/index.md)
-* [ir-4](../ir-04/index.md)
-* [ir-5](../ir-05/index.md)
-* [ir-8](../ir-08/index.md)
-* [ir-9](../ir-09/index.md)
-*
