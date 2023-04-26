@@ -1,48 +1,89 @@
-import { useState, Fragment } from "react";
+import { Fragment, useEffect, useState } from "react";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
+import { faClock } from "@fortawesome/free-regular-svg-icons";
 import Tag from "../../../components/UI/Tag/Tag";
 import "./AgreementsList.scss";
+import ApplicationContext from "../../../applicationContext/ApplicationContext";
+
+// function to format date like this 9/30/2023 || MM/DD/YYYY
+const formatDate = (date) => {
+    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+};
+
+export const getUser = async (id) => {
+    const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;
+    const responseData = await ApplicationContext.get().helpers().callBackend(`/api/${api_version}/users/${id}`, "GET");
+    return responseData;
+};
 
 export const AgreementTableRow = ({ agreement }) => {
+    const [user, setUser] = useState({});
+
     const [isExpanded, setIsExpanded] = useState(false);
     const [isRowActive, setIsRowActive] = useState(false);
 
     const agreementName = agreement.name;
-    const researchProjectName = "";
-    const agreementType = agreement?.agreement_type;
-    // const agreementTotal = agreement?.budget_line_items?.reduce((n, { amount }) => n + amount, 0);
-    const agreementTotal = 0;
-    const nextNeedBy = "09/30/23";
-    const agreementStatus = "DRAFT";
-    const agreementCreatedBy = "Sheila Celentano";
-    const agreementCreatedOn = "May 9, 2022";
-    const agreementDescription = agreement?.description;
+    const researchProjectName = agreement.research_project.title;
 
-    // function to format date like this 9/30/2023 || MM/DD/YYYY
-    // const formatDate = (date) => {
-    //     return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
-    // };
+    let agreementType;
+    switch (agreement.agreement_type) {
+        case "CONTRACT":
+            agreementType = "Contract";
+            break;
+        case "GRANT":
+            agreementType = "Grant";
+            break;
+        case "DIRECT_ALLOCATION":
+            agreementType = "Direct Allocation";
+            break;
+        case "IAA":
+            agreementType = "IAA";
+            break;
+        case "MISCELLANEOUS":
+            agreementType = "Misc";
+            break;
+        default:
+            agreementType = "Unknown Type";
+    }
 
-    // const formatted_today = new Date().toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
-    // const bl_created_on = bl?.created_on
-    //     ? new Date(bl.created_on).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" })
-    //     : formatted_today;
-    // let formatted_date_needed;
-    // let fiscalYear;
-    // if (bl?.date_needed !== "--") {
-    //     let date_needed = new Date(bl?.date_needed);
-    //     formatted_date_needed = formatDate(date_needed);
-    //     // FY will automate based on the Need by Date. Anything after September 30th rolls over into the next FY.
-    //     let month = date_needed.getMonth();
-    //     let year = date_needed.getFullYear();
-    //     fiscalYear = month > 8 ? year + 1 : year;
-    // }
-    // let feeTotal = bl?.amount * (bl?.psc_fee_amount / 100);
-    // let total = bl?.amount + feeTotal;
-    // let status = bl?.status.charAt(0).toUpperCase() + bl?.status.slice(1).toLowerCase();
+    const agreementTotal = agreement?.budget_line_items?.reduce((n, { amount }) => n + amount, 0);
+
+    // find the min(date_needed) of the BLIs
+    let nextNeedBy = agreement?.budget_line_items?.reduce(
+        (n, { date_needed }) => (n < date_needed ? n : date_needed),
+        0
+    );
+    nextNeedBy = nextNeedBy ? formatDate(new Date(nextNeedBy)) : "";
+
+    // if there is 1 BLI with status === "UNDER_REVIEW" then agreement status is "UNDER_REVIEW"
+    // else it is "DRAFT"
+    const agreementStatus = agreement?.budget_line_items?.find((bli) => bli.status === "UNDER_REVIEW")
+        ? "Under Review"
+        : "Draft";
+
+    useEffect(() => {
+        const getUserAndSetState = async (id) => {
+            const results = await getUser(id);
+            setUser(results);
+        };
+
+        if (agreement.created_by) {
+            getUserAndSetState().catch(console.error);
+        } else {
+            setUser({ full_name: "Sheila Celentano" });
+        }
+    }, [agreement]);
+
+    const agreementCreatedBy = user.full_name;
+
+    const agreementDescription = agreement.notes;
+
+    const formatted_today = new Date().toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    const agreementCreatedOn = agreement.created_on
+        ? new Date(agreement.created_on).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" })
+        : formatted_today;
 
     const handleExpandRow = () => {
         setIsExpanded(!isExpanded);
@@ -53,22 +94,13 @@ export const AgreementTableRow = ({ agreement }) => {
     const handleDeleteAgreement = (event) => {};
 
     const TableTag = ({ status }) => {
-        if (status === "In_execution") {
-            status = "Executing";
-        }
         let classNames = "padding-x-105 padding-y-1 ";
         switch (status) {
             case "Draft":
                 classNames += "bg-brand-neutral-lighter";
                 break;
-            case "Executing":
-                classNames += "bg-brand-data-viz-primary-8";
-                break;
-            case "Obligated":
-                classNames += "bg-brand-data-viz-primary-6 text-white";
-                break;
-            case "Planned":
-                classNames += "bg-brand-data-viz-primary-11 text-white";
+            case "Under Review":
+                classNames += "underReview";
                 break;
             default:
         }
@@ -76,9 +108,6 @@ export const AgreementTableRow = ({ agreement }) => {
     };
 
     const ChangeIcons = ({ agreement }) => {
-        // const handleDuplicateBudgetLine = (budgetLine) => {
-        //     dispatch(duplicateBudgetLineAdded({ ...budgetLine, created_by: loggedInUser }));
-        // };
         return (
             <>
                 {agreement.status === "DRAFT" && (
