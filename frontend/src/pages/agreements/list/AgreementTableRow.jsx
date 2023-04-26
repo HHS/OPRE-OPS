@@ -6,6 +6,8 @@ import { faClock } from "@fortawesome/free-regular-svg-icons";
 import Tag from "../../../components/UI/Tag/Tag";
 import "./AgreementsList.scss";
 import ApplicationContext from "../../../applicationContext/ApplicationContext";
+import { setCanFiscalYear, setPendingFunds } from "../../cans/detail/canDetailSlice";
+import constants from "../../../constants";
 
 // function to format date like this 9/30/2023 || MM/DD/YYYY
 const formatDate = (date) => {
@@ -74,6 +76,10 @@ export const AgreementTableRow = ({ agreement }) => {
         } else {
             setUser({ full_name: "Sheila Celentano" });
         }
+
+        return () => {
+            setUser({});
+        };
     }, [agreement]);
 
     const agreementCreatedBy = user.full_name;
@@ -107,10 +113,10 @@ export const AgreementTableRow = ({ agreement }) => {
         return <Tag className={classNames} text={status} />;
     };
 
-    const ChangeIcons = ({ agreement }) => {
+    const ChangeIcons = ({ agreement, status }) => {
         return (
             <>
-                {agreement.status === "DRAFT" && (
+                {(status === "Draft" || status === "Under Review") && (
                     <>
                         <FontAwesomeIcon
                             icon={faPen}
@@ -163,7 +169,7 @@ export const AgreementTableRow = ({ agreement }) => {
                 <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
                     {isRowActive && !isExpanded ? (
                         <div>
-                            <ChangeIcons agreement={agreement} />
+                            <ChangeIcons agreement={agreement} status={agreementStatus} />
                         </div>
                     ) : (
                         <TableTag status={agreementStatus} />
@@ -197,7 +203,7 @@ export const AgreementTableRow = ({ agreement }) => {
                                 </dd>
                             </dl>
                             <div className="flex-align-self-end margin-left-auto margin-bottom-1">
-                                <ChangeIcons agreement={agreement} />
+                                <ChangeIcons agreement={agreement} status={agreementStatus} />
                             </div>
                         </div>
                     </td>

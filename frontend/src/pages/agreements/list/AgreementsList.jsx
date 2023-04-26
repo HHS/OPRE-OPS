@@ -1,14 +1,9 @@
-import { useState, Fragment } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import CurrencyFormat from "react-currency-format";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
-import Tag from "../../../components/UI/Tag/Tag";
+import { useDispatch } from "react-redux";
 import "./AgreementsList.scss";
 import { useGetAgreementsQuery } from "../../../api/agreementSlice";
 import App from "../../../App";
 import { AgreementTableRow } from "./AgreementTableRow";
+import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 
 export const AgreementsList = () => {
     const dispatch = useDispatch();
@@ -29,10 +24,11 @@ export const AgreementsList = () => {
 
     return (
         <App>
-            <h1 className="font-sans-lg">Agreements</h1>
-            <h2 className="font-sans-md">Test explaining this page.</h2>
+            <Breadcrumb currentName={"Agreements"} />
 
-            <table className="usa-table usa-table--borderless width-full">
+            <h1 className="font-sans-lg">Agreements</h1>
+
+            <table className="usa-table usa-table--borderless width-full ">
                 <thead>
                     <tr>
                         <th scope="col">Agreement</th>
