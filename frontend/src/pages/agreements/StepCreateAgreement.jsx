@@ -72,7 +72,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     };
     ProductServiceCodeSummaryBox.propTypes = {
         selectedProductServiceCode: PropTypes.shape({
-            naics: PropTypes.string.isRequired,
+            naics: PropTypes.number.isRequired,
             support_code: PropTypes.string.isRequired,
         }).isRequired,
     };
