@@ -1,3 +1,4 @@
+import React from "react";
 import PropTypes from "prop-types";
 import { useSelector, useDispatch } from "react-redux";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
@@ -11,10 +12,18 @@ import {
     setAgreementIncumbent,
     setAgreementNotes,
     setAgreementId,
+    setSelectedProject,
+    setSelectedAgreementType,
+    setAgreementProductServiceCode,
+    setSelectedProcurementShop,
+    setSelectedAgreementReason,
+    setAgreementProjectOfficer,
+    setAgreementTeamMembers,
 } from "./createAgreementSlice";
 import ProjectOfficerSelect from "./ProjectOfficerSelect";
 import TeamMemberSelect from "./TeamMemberSelect";
 import TeamMemberList from "./TeamMemberList";
+import Modal from "../../components/UI/Modal/Modal";
 import { postAgreement } from "../../api/postAgreements";
 
 export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
@@ -28,6 +37,8 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     );
     const agreementIncumbent = useSelector((state) => state.createAgreement.agreement.incumbent_entered);
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
+    const [showModal, setShowModal] = React.useState(false);
+    const [modalProps, setModalProps] = React.useState({});
 
     const handleContinue = async () => {
         // Save Agreement to DB
@@ -44,10 +55,27 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         // TODO: Redirect to /agreements when available.
     };
     const handleCancel = () => {
-        // TODO: Add cancel stuff
-        // TODO: Clear createAgreement State
         // TODO: Navigate to /agreements when available.
-        goBack();
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel? Your agreement will not be saved.",
+            actionButtonText: "Continue",
+            handleConfirm: () => {
+                dispatch(setAgreementTitle(""));
+                dispatch(setAgreementDescription(""));
+                dispatch(setAgreementIncumbent(null));
+                dispatch(setAgreementNotes(""));
+                dispatch(setSelectedProject({}));
+                dispatch(setSelectedAgreementType(null));
+                dispatch(setAgreementProductServiceCode(null));
+                dispatch(setSelectedAgreementReason(null));
+                dispatch(setSelectedProcurementShop({}));
+                dispatch(setAgreementProjectOfficer(null));
+                dispatch(setAgreementTeamMembers([]));
+                setModalProps({});
+                goBack();
+            },
+        });
     };
 
     const ProductServiceCodeSummaryBox = ({ selectedProductServiceCode }) => {
@@ -94,6 +122,14 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
 
     return (
         <>
+            {showModal && (
+                <Modal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
             <h1 className="font-sans-lg">Create New Budget Line</h1>
             <p>Step Two: Creating a new Agreement</p>
             <StepIndicator steps={wizardSteps} currentStep={2} />
