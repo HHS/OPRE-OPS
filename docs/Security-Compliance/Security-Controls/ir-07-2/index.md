@@ -5,7 +5,7 @@
 (b) Identify organizational incident response team members to the external providers.
 
 ## OPS Implementation
-
+This control is not ACF OCIO requirement. 
 TODO: Work with ACF OCIO
 
 ### Control Origination
