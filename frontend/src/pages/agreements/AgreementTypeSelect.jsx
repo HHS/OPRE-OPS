@@ -41,7 +41,7 @@ export const AgreementTypeSelect = () => {
                     name="options"
                     id="options"
                     onChange={(e) => onChangeAgreementTypeSelection(e.target.value || 0)}
-                    value={selectedAgreementType}
+                    value={selectedAgreementType || ""}
                     required
                 >
                     <option value={0}>- Select Agreement Type -</option>

@@ -17,6 +17,7 @@ import {
     deleteBudgetLineAdded,
 } from "../budgetLines/createBudgetLineSlice";
 import { setSelectedProcurementShop } from "../agreements/createAgreementSlice";
+import { postBudgetLineItems } from "../../api/postBudgetLineItems";
 
 export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
@@ -51,6 +52,15 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
                 setModalProps({});
             },
         });
+    };
+
+    const saveBudgetLineItems = (event) => {
+        event.preventDefault();
+        const newBudgetLineItems = budgetLinesAdded.filter(
+            // eslint-disable-next-line no-prototype-builtins
+            (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on")
+        );
+        postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
     };
 
     return (
@@ -128,7 +138,7 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
                 >
                     Back
                 </button>
-                <button className="usa-button" onClick={() => goToNext({ name: "John Doe" })}>
+                <button className="usa-button" onClick={saveBudgetLineItems}>
                     Continue
                 </button>
             </div>
