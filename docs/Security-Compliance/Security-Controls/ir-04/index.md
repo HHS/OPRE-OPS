@@ -11,10 +11,10 @@ d. Ensure the rigor, intensity, scope, and results of incident handling activiti
 
 ## OPS Implementation
 
-TODO: Work with ACF OCIO on language
+TODO: ACF OCIO language is same as what is written.
 
 ### Control Origination
 
-Hybrid with ACF OCIO?
+Hybrid with ACF OCIO, cloud.gov?
 
 ### Related Content
