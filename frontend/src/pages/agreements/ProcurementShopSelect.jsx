@@ -1,6 +1,10 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setSelectedProcurementShop, setProcurementShopsList } from "./createAgreementSlice";
+import {
+    setSelectedProcurementShop,
+    setProcurementShopsList,
+    setAgreementProcurementShop,
+} from "./createAgreementSlice";
 import { getProcurementShopList } from "../../api/getProcurementShopList";
 
 export const ProcurementShopSelect = () => {
@@ -32,6 +36,7 @@ export const ProcurementShopSelect = () => {
                 fee: procurementShops[procurementShopId - 1].fee,
             })
         );
+        dispatch(setAgreementProcurementShop(procurementShopId));
     };
     return (
         <fieldset className="usa-fieldset">
