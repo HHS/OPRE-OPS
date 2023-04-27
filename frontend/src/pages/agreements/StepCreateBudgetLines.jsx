@@ -1,5 +1,6 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { redirect } from "react-router-dom";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import { ProjectAgreementSummaryCard } from "../budgetLines/ProjectAgreementSummaryCard";
 import PreviewTable from "../budgetLines/PreviewTable";
@@ -62,7 +63,8 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
         );
         postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
         // TODO: Route to Agreements List page, showing Agreement Review for now
-        goToNext();
+        redirect("/agreements/");
+        // goToNext();
     };
 
     return (
