@@ -21,6 +21,7 @@ import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProje
 import { CreateBudgetLine } from "./pages/budgetLines/CreateBudgetLine";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
 import { CreateAgreement } from "./pages/agreements/CreateAgreement";
+import { AgreementsList } from "./pages/agreements/list/AgreementsList";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -115,6 +116,7 @@ const router = createBrowserRouter(
             <Route element={<ProtectedRoute redirectPath="/" />}>
                 <Route path="/budget-lines/create" element={<CreateBudgetLine />} />
                 <Route path="/agreements/create" element={<CreateAgreement />} />
+                <Route path="/agreements/" element={<AgreementsList />} />
             </Route>
         </>
     )
