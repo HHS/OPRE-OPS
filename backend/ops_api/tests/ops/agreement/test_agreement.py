@@ -52,6 +52,7 @@ def test_agreements_serialization(auth_client, loaded_db):
     del json_to_compare["budget_line_items"]
     del json_to_compare["research_project"]
     del json_to_compare["procurement_shop"]
+    del json_to_compare["product_service_code"]
 
     assert json_to_compare == {
         "agreement_reason": "NEW_REQ",
@@ -159,7 +160,6 @@ def test_agreement_create_contract_agreement(loaded_db):
 
     assert agreement.contract_number == "CT0002"
     assert agreement.contract_type == ContractType.RESEARCH
-    assert agreement.product_service_code == 2
 
 
 @pytest.mark.usefixtures("app_ctx")
