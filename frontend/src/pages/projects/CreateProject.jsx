@@ -19,7 +19,7 @@ export const CreateProject = () => {
         const newProjectId = response.id;
         console.log(`New Project Created: ${newProjectId}`);
         dispatch(setProjectId(newProjectId));
-        goToNext();
+        alert("New Project Created!");
     };
     const handleCancel = () => {
         // TODO: Add cancel stuff
