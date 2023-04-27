@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { CheckAuth } from "../../Auth/auth";
+
 export const Menu = () => {
     const isAuthorized = CheckAuth();
     return (
@@ -25,6 +26,9 @@ export const Menu = () => {
                 </li>
                 <li className="usa-nav__primary-item">
                     <Link to="/agreements/create">Create Agreement</Link>
+                </li>
+                <li className="usa-nav__primary-item">
+                    <Link to="/agreements/">Agreement List</Link>
                 </li>
             </ul>
         </div>
