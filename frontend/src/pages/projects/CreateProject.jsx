@@ -6,7 +6,6 @@ import { setProjectId, setProjectShortTitle, setProjectTitle, setProjectDescript
 import { postProject } from "../../api/postProjects";
 
 export const CreateProject = () => {
-    const [formData, setFormData] = React.useState({});
     const [currentIndex, setCurrentIndex] = React.useState(0);
     const dispatch = useDispatch();
     const projectShortTitle = useSelector((state) => state.createProject.project.short_title);
