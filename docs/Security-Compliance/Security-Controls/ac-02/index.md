@@ -45,7 +45,7 @@ c. Members posessing the roles of System Admin and OPS Admin are based on their 
 
 d. The roles in the OPS system follow the principles of least privilege and separation of duties as described in [AC-05](../ac-5/index.md) and [AC-06](../ac-6/index.md).  Users within each role inherit the responsibilities, duties, and permissions of that role.  Outside of the OPS system, groups/roles/access for Developers are enforced through the access management features of GitHub and Cloud.gov
 
-e. All users who require access to the OPS application must create a Login.gov account.  In order to be able to submit/view reports within the OPS application, users must submit a request.  The System Admin reviews and approves the request.  Once the request is approved, the user will be able to perform their assigned duties.  Additionally, the System Admin approves requests for accounts to GitHub and Cloud.gov as well.
+e. All users who require access to the OPS application must create a Login.gov account.  In order to be able to submit/view reports within the OPS application, users must submit a request.  The System Admin reviews and approves the request.  Once the request is approved, the user will be able to perform their assigned duties.  Additionally, the System Admin approves requests for accounts to GitHub and Cloud.gov as well.[For test]
 
 f. The System Admin is the only role that has the ability to approve new users, update profile information, inactivate and reactivate users.
 
