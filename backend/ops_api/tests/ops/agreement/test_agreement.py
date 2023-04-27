@@ -165,7 +165,11 @@ def test_agreement_create_contract_agreement(loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_agreement_create_grant_agreement(loaded_db):
     grant_agreement = GrantAgreement(
-        name="GNTXX12399", number="AGRXX003459217-A", grant_id=99, foa="NIH", agreement_type=AgreementType.GRANT
+        name="GNTXX12399",
+        number="AGRXX003459217-A",
+        grant_id=99,
+        foa="NIH",
+        agreement_type=AgreementType.GRANT,
     )
     loaded_db.add(grant_agreement)
     loaded_db.commit()
