@@ -69,8 +69,8 @@ def test_agreements_serialization(auth_client, loaded_db):
         "notes": None,
         "number": "AGR0001",
         "procurement_shop_id": 1,
-        "product_service_code": 1,
-        "project_officer": None,
+        "product_service_code_id": None,
+        "project_officer": 1,
         "research_project_id": 1,
         "support_contacts": [],
         "team_members": [],
@@ -149,7 +149,7 @@ def test_agreement_create_contract_agreement(loaded_db):
         contract_id=99,
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
-        product_service_code=2,
+        product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
     )
     loaded_db.add(contract_agreement)

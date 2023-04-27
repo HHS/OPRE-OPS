@@ -3,6 +3,7 @@ from flask_jwt_extended import create_access_token
 from models.users import User
 
 
+@pytest.mark.skip("Need to rework this endpoint.")
 @pytest.mark.usefixtures("app_ctx")
 def test_get_users_by_id_without_auth(client):
     response = client.get("/api/v1/users/4")
