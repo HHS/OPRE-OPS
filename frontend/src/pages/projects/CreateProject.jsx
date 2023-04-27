@@ -33,15 +33,6 @@ export const CreateProject = () => {
         }
     };
 
-    const goToNext = () => {
-        const nextIndex = currentIndex + 1;
-        const updatedData = {
-            ...formData,
-        };
-        console.log(updatedData);
-
-        setFormData(updatedData);
-    };
     return (
         <App>
             <h1 className="font-sans-lg">Create New Project</h1>
