@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { redirect } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import { ProjectAgreementSummaryCard } from "../budgetLines/ProjectAgreementSummaryCard";
 import PreviewTable from "../budgetLines/PreviewTable";
@@ -22,6 +22,7 @@ import { postBudgetLineItems } from "../../api/postBudgetLineItems";
 
 export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
     const selectedProcurementShop = useSelector((state) => state.createAgreement.selected_procurement_shop);
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
@@ -63,7 +64,7 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
         );
         postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
         // TODO: Route to Agreements List page, showing Agreement Review for now
-        redirect("/agreements/");
+        navigate("/agreements/");
         // goToNext();
     };
 

@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -15,7 +16,7 @@ const formatDate = (date) => {
 
 export const AgreementTableRow = ({ agreement }) => {
     const [user, setUser] = useState({});
-
+    const navigate = useNavigate();
     const [isExpanded, setIsExpanded] = useState(false);
     const [isRowActive, setIsRowActive] = useState(false);
 
@@ -91,7 +92,10 @@ export const AgreementTableRow = ({ agreement }) => {
 
     const handleEditAgreement = (event) => {};
     const handleDeleteAgreement = (event) => {};
-    const handleSubmitAgreementForApproval = (event) => {};
+    const handleSubmitAgreementForApproval = (event) => {
+        console.log(`CLICK APPROVE: ${event}`);
+        navigate(`/agreements/approve/${event}`);
+    };
 
     const TableTag = ({ status }) => {
         let classNames = "padding-x-105 padding-y-1 ";
