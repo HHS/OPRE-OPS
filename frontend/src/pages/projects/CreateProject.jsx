@@ -94,7 +94,7 @@ export const CreateProject = () => {
                 onChange={(e) => dispatch(setProjectDescription(e.target.value))}
             ></textarea>
 
-            <div>
+            <div className="grid-row flex-justify-end margin-top-8">
                 <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
                     Cancel
                 </button>
