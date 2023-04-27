@@ -287,5 +287,23 @@
       ],
       populations: ["POPULATION_1"],
     },
+    {
+      title: "Mother and Infant Home Visiting Program Evaluation",
+      short_title: "MIHOPE",
+      description: "MIHOPE is a longitudinal study of the effects of Maternal, Infant, and Early Childhood Home Visiting (MIECHV)-funded home visiting on child and family outcomes. The overarching goal of MIHOPE is to learn whether families and children benefit from MIECHV-funded early childhood home visiting programs, and if so, how.",
+      portfolio_id: 3,
+      url: "https://www.acf.hhs.gov/opre/project/mother-and-infant-home-visiting-program-evaluation-mihope-2011-2021",
+      origination_date: "10-01-2011",
+      methodologies: [
+        "SURVEY",
+        "FIELD_RESEARCH",
+        "PARTICIPANT_OBSERVATION",
+        "ETHNOGRAPHY",
+        "EXPERIMENT",
+        "SECONDARY_DATA_ANALYSIS",
+        "CASE_STUDY",
+      ],
+      populations: ["POPULATION_1"],
+    },
   ],
 }
