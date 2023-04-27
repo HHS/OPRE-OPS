@@ -14,9 +14,10 @@ from typing_extensions import override
 
 class BudgetLineItemStatus(Enum):
     DRAFT = 1
-    PLANNED = 2
-    IN_EXECUTION = 3
-    OBLIGATED = 4
+    UNDER_REVIEW = 2
+    PLANNED = 3
+    IN_EXECUTION = 4
+    OBLIGATED = 5
 
 
 class CANArrangementType(Enum):
@@ -151,17 +152,18 @@ class Agreement(BaseModel):
         d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
 
         d.update(
-
-                agreement_type=self.agreement_type.name
-                if self.agreement_type
-                else None,
-                agreement_reason=self.agreement_reason.name
-                if self.agreement_reason
-                else None,
-                budget_line_items=[bli.to_dict() for bli in self.budget_line_items],
-                team_members=[tm.to_dict() for tm in self.team_members],
-                research_project=self.research_project.to_dict() if self.research_project else None,
-                procurement_shop=self.procurement_shop.to_dict() if self.procurement_shop else None,
+            agreement_type=self.agreement_type.name if self.agreement_type else None,
+            agreement_reason=self.agreement_reason.name
+            if self.agreement_reason
+            else None,
+            budget_line_items=[bli.to_dict() for bli in self.budget_line_items],
+            team_members=[tm.to_dict() for tm in self.team_members],
+            research_project=self.research_project.to_dict()
+            if self.research_project
+            else None,
+            procurement_shop=self.procurement_shop.to_dict()
+            if self.procurement_shop
+            else None,
         )
 
         return d
@@ -342,9 +344,11 @@ class CANFiscalYearCarryForward(BaseModel):
 
         d.update(
             received_amount=float(self.received_amount)
-            if self.received_amount else None,
+            if self.received_amount
+            else None,
             expected_amount=float(self.expected_amount)
-            if self.expected_amount else None,
+            if self.expected_amount
+            else None,
             total_amount=float(self.total_amount) if self.total_amount else None,
         )
 
