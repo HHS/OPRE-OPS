@@ -55,7 +55,7 @@ export const AgreementTableRow = ({ agreement }) => {
     // if there is 1 BLI with status === "UNDER_REVIEW" then agreement status is "UNDER_REVIEW"
     // else it is "DRAFT"
     const agreementStatus = agreement?.budget_line_items?.find((bli) => bli.status === "UNDER_REVIEW")
-        ? "Under Review"
+        ? "In Review"
         : "Draft";
 
     useEffect(() => {
@@ -99,7 +99,7 @@ export const AgreementTableRow = ({ agreement }) => {
             case "Draft":
                 classNames += "bg-brand-neutral-lighter";
                 break;
-            case "Under Review":
+            case "In Review":
                 classNames += "underReview";
                 break;
             default:
@@ -110,7 +110,7 @@ export const AgreementTableRow = ({ agreement }) => {
     const ChangeIcons = ({ agreement, status }) => {
         return (
             <>
-                {(status === "Draft" || status === "Under Review") && (
+                {(status === "Draft" || status === "In Review") && (
                     <>
                         <FontAwesomeIcon
                             icon={faPen}
