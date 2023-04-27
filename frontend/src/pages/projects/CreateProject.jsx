@@ -99,7 +99,7 @@ export const CreateProject = () => {
                     Cancel
                 </button>
                 <button className="usa-button" onClick={handleContinue}>
-                    Continue
+                    Create Project
                 </button>
             </div>
         </App>
