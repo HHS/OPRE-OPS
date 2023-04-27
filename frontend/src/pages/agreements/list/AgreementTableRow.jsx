@@ -25,11 +25,11 @@ export const AgreementTableRow = ({ agreement }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isRowActive, setIsRowActive] = useState(false);
 
-    const agreementName = agreement.name;
-    const researchProjectName = agreement.research_project.title;
+    const agreementName = agreement?.name;
+    const researchProjectName = agreement?.research_project?.title;
 
     let agreementType;
-    switch (agreement.agreement_type) {
+    switch (agreement?.agreement_type) {
         case "CONTRACT":
             agreementType = "Contract";
             break;
@@ -70,7 +70,7 @@ export const AgreementTableRow = ({ agreement }) => {
             setUser(results);
         };
 
-        if (agreement.created_by) {
+        if (agreement?.created_by) {
             getUserAndSetState().catch(console.error);
         } else {
             setUser({ full_name: "Sheila Celentano" });
@@ -83,10 +83,10 @@ export const AgreementTableRow = ({ agreement }) => {
 
     const agreementCreatedBy = user.full_name;
 
-    const agreementDescription = agreement.notes;
+    const agreementNotes = agreement?.notes;
 
     const formatted_today = new Date().toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
-    const agreementCreatedOn = agreement.created_on
+    const agreementCreatedOn = agreement?.created_on
         ? new Date(agreement.created_on).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" })
         : formatted_today;
 
@@ -198,7 +198,7 @@ export const AgreementTableRow = ({ agreement }) => {
                             <dl className="font-12px" style={{ marginLeft: "9.0625rem" }}>
                                 <dt className="margin-0 text-base-dark">Notes</dt>
                                 <dd className="margin-0" style={{ maxWidth: "400px" }}>
-                                    {agreementDescription ? agreementDescription : "No notes added."}
+                                    {agreementNotes ? agreementNotes : "No notes added."}
                                 </dd>
                             </dl>
                             <div className="flex-align-self-end margin-left-auto margin-bottom-1">
