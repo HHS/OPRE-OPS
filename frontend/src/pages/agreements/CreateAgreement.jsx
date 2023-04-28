@@ -6,7 +6,6 @@ import { getProcurementShopList } from "../../api/getProcurementShopList";
 import { StepSelectProject } from "./StepSelectProject";
 import { StepCreateAgreement } from "./StepCreateAgreement";
 import { StepCreateBudgetLines } from "./StepCreateBudgetLines";
-import ReviewAgreement from "./ReviewAgreement";
 import { getUsers } from "../../api/getUser";
 
 const wizardSteps = ["Project", "Agreement", "Budget Lines"];
