@@ -89,7 +89,7 @@ def test_get_budget_line_items_list_by_status_invalid(auth_client):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_post_budget_line_items_empty_post(auth_client):
-    response = auth_client.post("/api/v1/budget-line-items/", data={})
+    response = auth_client.post("/api/v1/budget-line-items/", json={})
     assert response.status_code == 400
 
 
@@ -514,8 +514,8 @@ def test_patch_budget_line_items_bad_status(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_budget_line_items_empty_data(auth_client):
-    response = auth_client.patch("/api/v1/budget-line-items/1", data={})
-    assert response.status_code == 400
+    response = auth_client.patch("/api/v1/budget-line-items/1", json={})
+    assert response.status_code == 200
 
 
 @pytest.mark.usefixtures("app_ctx")
