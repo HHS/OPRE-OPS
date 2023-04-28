@@ -32,6 +32,10 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
         });
     };
 
+    const handleAddProject = () => {
+        navigate("/projects/create");
+    };
+
     return (
         <>
             {showModal && (
@@ -69,7 +73,12 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
                 <div className="border-bottom-1px border-base-light width-full" />
             </div>
             <div className="grid-row flex-justify-center">
-                <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">Add New Project</button>
+                <button
+                    className="usa-button usa-button--outline margin-top-6 margin-bottom-6"
+                    onClick={handleAddProject}
+                >
+                    Add New Project
+                </button>
             </div>
         </>
     );
