@@ -1,4 +1,3 @@
-import App from "../../App";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { CreateAgreementFlow } from "./CreateAgreementFlow";
@@ -33,7 +32,7 @@ export const CreateAgreement = () => {
     }, [dispatch]);
 
     return (
-        <App>
+        <>
             <CreateAgreementFlow
                 onFinish={(data) => {
                     console.log("budget line has: " + JSON.stringify(data, null, 2));
@@ -44,6 +43,6 @@ export const CreateAgreement = () => {
                 <StepCreateAgreement wizardSteps={wizardSteps} />
                 <StepCreateBudgetLines wizardSteps={wizardSteps} />
             </CreateAgreementFlow>
-        </App>
+        </>
     );
 };
