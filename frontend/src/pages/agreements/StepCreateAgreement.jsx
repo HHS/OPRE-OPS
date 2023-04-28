@@ -144,7 +144,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             <div className="display-flex">
                 <AgreementReasonSelect />
                 <fieldset className="usa-fieldset margin-left-4">
-                    <label className="usa-label" htmlFor="agreement-incumbent">
+                    <label className="usa-label margin-top-0" htmlFor="agreement-incumbent">
                         Incumbent
                     </label>
                     <input
