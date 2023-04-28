@@ -23,7 +23,24 @@ export const opsApi = createApi({
         getAgreementById: builder.query({
             query: (id) => `/agreements/${id}`,
         }),
+        getResearchProjects: builder.query({
+            query: () => `/research-projects/`,
+            providesTags: ["ResearchProjects"],
+        }),
+        addResearchProjects: builder.mutation({
+            query: (body) => ({
+                url: `/research-projects/`,
+                method: "POST",
+                body,
+            }),
+            invalidatesTags: ["ResearchProjects"],
+        }),
     }),
 });
 
-export const { useGetAgreementsQuery, useGetAgreementByIdQuery } = opsApi;
+export const {
+    useGetAgreementsQuery,
+    useGetAgreementByIdQuery,
+    useGetResearchProjectsQuery,
+    useAddResearchProjectsMutation,
+} = opsApi;
