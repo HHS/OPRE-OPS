@@ -33,7 +33,7 @@ def test_budget_line_item_creation():
 def test_get_budget_line_items_list(auth_client):
     response = auth_client.get("/api/v1/budget-line-items/")
     assert response.status_code == 200
-    assert len(response.json) == 19
+    assert len(response.json) == 20
     assert response.json[0]["id"] == 1
     assert response.json[1]["id"] == 2
 

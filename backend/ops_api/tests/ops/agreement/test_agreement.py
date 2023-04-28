@@ -20,7 +20,7 @@ def test_agreement_retrieve(loaded_db):
 def test_agreements_get_all(auth_client, loaded_db):
     stmt = select(func.count()).select_from(Agreement)
     count = loaded_db.scalar(stmt)
-    assert count == 6
+    assert count == 8
 
     response = auth_client.get("/api/v1/agreements/")
     assert response.status_code == 200

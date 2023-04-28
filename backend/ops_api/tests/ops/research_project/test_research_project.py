@@ -18,11 +18,11 @@ def test_research_project_retrieve(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_research_projects_get_all(auth_client, loaded_db):
-    assert loaded_db.query(ResearchProject).count() == 12
+    assert loaded_db.query(ResearchProject).count() == 13
 
     response = auth_client.get("/api/v1/research-projects/")
     assert response.status_code == 200
-    assert len(response.json) == 12
+    assert len(response.json) == 13
 
 
 @pytest.mark.usefixtures("app_ctx")
