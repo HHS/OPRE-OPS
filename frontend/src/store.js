@@ -11,6 +11,7 @@ import researchProjectSlice from "./pages/researchProjects/detail/researchProjec
 import ResearchProjectFundingSlice from "./components/Portfolios/ResearchProjects/ResearchProjectFundingSlice";
 import createBudgetLineSlice from "./pages/budgetLines/createBudgetLineSlice";
 import createAgreementSlice from "./pages/agreements/createAgreementSlice";
+import createProjectSlice from "./pages/projects/createProjectSlice";
 import { opsApi } from "./api/opsAPI";
 
 export default configureStore({
@@ -27,6 +28,7 @@ export default configureStore({
         researchProjectFunding: ResearchProjectFundingSlice,
         createBudgetLine: createBudgetLineSlice,
         createAgreement: createAgreementSlice,
+        createProject: createProjectSlice,
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(opsApi.middleware),
 });

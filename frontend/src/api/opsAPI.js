@@ -20,7 +20,10 @@ export const opsApi = createApi({
         getAgreements: builder.query({
             query: () => `/agreements/`,
         }),
+        getAgreementById: builder.query({
+            query: (id) => `/agreements/${id}`,
+        }),
     }),
 });
 
-export const { useGetAgreementsQuery } = opsApi;
+export const { useGetAgreementsQuery, useGetAgreementByIdQuery } = opsApi;

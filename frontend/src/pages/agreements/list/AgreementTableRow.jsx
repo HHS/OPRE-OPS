@@ -1,11 +1,12 @@
 import { Fragment, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import Tag from "../../../components/UI/Tag/Tag";
 import "./AgreementsList.scss";
-import ApplicationContext from "../../../applicationContext/ApplicationContext";
+import { getUser } from "../../../api/getUser";
 import icons from "../../../uswds/img/sprite.svg";
 
 // function to format date like this 9/30/2023 || MM/DD/YYYY
@@ -13,15 +14,9 @@ const formatDate = (date) => {
     return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
 };
 
-export const getUser = async (id) => {
-    const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;
-    const responseData = await ApplicationContext.get().helpers().callBackend(`/api/${api_version}/users/${id}`, "GET");
-    return responseData;
-};
-
 export const AgreementTableRow = ({ agreement }) => {
     const [user, setUser] = useState({});
-
+    const navigate = useNavigate();
     const [isExpanded, setIsExpanded] = useState(false);
     const [isRowActive, setIsRowActive] = useState(false);
 
@@ -76,7 +71,7 @@ export const AgreementTableRow = ({ agreement }) => {
         };
 
         if (agreement?.created_by) {
-            getUserAndSetState().catch(console.error);
+            getUserAndSetState(agreement?.created_by).catch(console.error);
         } else {
             setUser({ full_name: "Sheila Celentano" });
         }
@@ -102,7 +97,10 @@ export const AgreementTableRow = ({ agreement }) => {
 
     const handleEditAgreement = (event) => {};
     const handleDeleteAgreement = (event) => {};
-    const handleSubmitAgreementForApproval = (event) => {};
+    const handleSubmitAgreementForApproval = (event) => {
+        console.log(`CLICK APPROVE: ${event}`);
+        navigate(`/agreements/approve/${event}`);
+    };
 
     const TableTag = ({ status }) => {
         let classNames = "padding-x-105 padding-y-1 ";

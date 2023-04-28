@@ -24,7 +24,7 @@
         "react-router-dom": "6.10.0",
         "react-scripts": "5.0.1",
         "react-select": "5.7.2",
-        "sass": "1.62.0",
+        "sass": "1.62.1",
         "sass-loader": "13.2.2"
     },
     "devDependencies": {
@@ -39,7 +39,7 @@
         "eslint-plugin-cypress": "2.13.2",
         "eslint-plugin-import": "2.27.5",
         "eslint-plugin-prettier": "4.2.1",
-        "jose": "4.14.1",
+        "jose": "4.14.3",
         "prettier": "2.8.8"
     },
     "scripts": {
