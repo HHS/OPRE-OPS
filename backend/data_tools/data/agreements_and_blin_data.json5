@@ -390,7 +390,7 @@
     {
       line_description: "Yet Another Line Item",
       comments: "",
-      can_id: 16,
+      can_id: 13,
       agreement_id: 7,
       amount: 500.0,
       status: "OBLIGATED",
@@ -400,7 +400,7 @@
     {
       line_description: "Yet Another Line Item",
       comments: "",
-      can_id: 18,
+      can_id: 15,
       agreement_id: 8,
       amount: 500.0,
       status: "OBLIGATED",
