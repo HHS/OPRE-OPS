@@ -1,4 +1,3 @@
-import App from "../../App";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { CreateAgreementFlow } from "./CreateAgreementFlow";
@@ -7,8 +6,8 @@ import { getProcurementShopList } from "../../api/getProcurementShopList";
 import { StepSelectProject } from "./StepSelectProject";
 import { StepCreateAgreement } from "./StepCreateAgreement";
 import { StepCreateBudgetLines } from "./StepCreateBudgetLines";
-import ReviewAgreement from "./ReviewAgreement";
 import { getUsers } from "../../api/getUser";
+import App from "../../App";
 
 const wizardSteps = ["Project", "Agreement", "Budget Lines"];
 
