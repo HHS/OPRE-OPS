@@ -32,7 +32,7 @@ export const AgreementReasonSelect = () => {
 
     return (
         <fieldset className="usa-fieldset">
-            <label className="usa-label" htmlFor="agreement-select">
+            <label className="usa-label margin-top-0" htmlFor="agreement-select">
                 Reason for Agreement
             </label>
             <div className="display-flex flex-align-center margin-top-1">

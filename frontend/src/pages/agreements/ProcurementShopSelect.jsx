@@ -40,7 +40,7 @@ export const ProcurementShopSelect = () => {
     };
     return (
         <fieldset className="usa-fieldset">
-            <label className="usa-label" htmlFor="procurement-shop-select">
+            <label className="usa-label margin-top-0" htmlFor="procurement-shop-select">
                 Procurement Shop
             </label>
             <div className="display-flex flex-align-center margin-top-1">

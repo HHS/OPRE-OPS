@@ -1,4 +1,3 @@
-import App from "../../App";
 import { useSelector } from "react-redux";
 import ProjectSelect from "./ProjectSelect";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
@@ -13,7 +12,7 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
     };
 
     return (
-        <App>
+        <>
             <h1 className="font-sans-lg">Create New Budget Line</h1>
             <p>Step One: Text explaining this page</p>
             <StepIndicator steps={wizardSteps} currentStep={1} />
@@ -36,6 +35,6 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
             <div className="grid-row flex-justify-center">
                 <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">Add New Project</button>
             </div>
-        </App>
+        </>
     );
 };

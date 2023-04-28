@@ -11,7 +11,7 @@ export const AgreementsList = () => {
         return <div>Loading...</div>;
     }
     if (errorAgreement) {
-        return <div>Oops, an error occured</div>;
+        return <div>Oops, an error occurred</div>;
     }
 
     const sortedAgreements = agreements
@@ -34,8 +34,8 @@ export const AgreementsList = () => {
                         <th scope="col">Agreement</th>
                         <th scope="col">Project</th>
                         <th scope="col">Type</th>
-                        <th scope="col">Agreement Total</th>
-                        <th scope="col">Next Need By</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Need By</th>
                         <th scope="col" className="padding-0" style={{ width: "6.25rem" }}>
                             Status
                         </th>

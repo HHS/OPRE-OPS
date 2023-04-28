@@ -32,7 +32,7 @@ export const AgreementTypeSelect = () => {
 
     return (
         <>
-            <label className="usa-label" htmlFor="options">
+            <label className="usa-label margin-top-205" htmlFor="options">
                 Agreement Type
             </label>
             <div className="display-flex flex-align-center margin-top-1">
