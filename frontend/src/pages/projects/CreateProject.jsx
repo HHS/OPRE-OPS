@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import ProjectTypeSelect from "./ProjectTypeSelect";
 import { setProjectId, setProjectShortTitle, setProjectTitle, setProjectDescription } from "./createProjectSlice";
 import { postProject } from "../../api/postProjects";
+import { useAddResearchProjectsMutation } from "../../api/opsAPI";
 
 export const CreateProject = () => {
     const [currentIndex, setCurrentIndex] = React.useState(0);
@@ -12,10 +13,22 @@ export const CreateProject = () => {
     const projectTitle = useSelector((state) => state.createProject.project.title);
     const projectDescription = useSelector((state) => state.createProject.project.description);
     const project = useSelector((state) => state.createProject.project);
-    const handleContinue = async () => {
+
+    const [addResearchProject, results] = useAddResearchProjectsMutation();
+
+    // if (errorAgreement) {
+    //     return <div>Oops, an error occurred</div>;
+    // }
+
+    const handleCreateProject = async () => {
         // Save Project to DB
-        const response = await postProject(project);
-        const newProjectId = response.id;
+        const newProject = { ...project };
+        delete newProject.id;
+        delete newProject.selected_project_type;
+
+        if (project) addResearchProject(newProject);
+        // const response = await postProject(project);
+        const newProjectId = results.id;
         console.log(`New Project Created: ${newProjectId}`);
         dispatch(setProjectId(newProjectId));
         alert("New Project Created!");
@@ -88,7 +101,7 @@ export const CreateProject = () => {
                 <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
                     Cancel
                 </button>
-                <button className="usa-button" onClick={handleContinue}>
+                <button className="usa-button" onClick={handleCreateProject}>
                     Create Project
                 </button>
             </div>
