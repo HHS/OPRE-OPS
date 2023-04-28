@@ -8,7 +8,7 @@ export const postAgreement = async (item) => {
         ...data,
         agreement_type: data.selected_agreement_type,
         agreement_reason: data.selected_agreement_reason,
-        product_service_code:
+        product_service_code_id:
             data.selected_product_service_code && data.selected_product_service_code.id > 0
                 ? data.selected_product_service_code.id
                 : null,
