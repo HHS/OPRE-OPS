@@ -81,6 +81,22 @@
       oidc_id: "00000000-0000-1111-a111-000000000010",
     },
     {
+      first_name: "Laura",
+      last_name: "Nerenberg",
+      division: 4,
+      email: "Laura.Nerenberg@example.com",
+      role: "COR",
+      oidc_id: "00000000-0000-1111-a111-000000000011",
+    },
+    {
+      first_name: "Niki",
+      last_name: "Denmark",
+      division: 4,
+      email: "Niki.Denmark@example.com",
+      role: "Non-COR/Contractor",
+      oidc_id: "00000000-0000-1111-a111-000000000012",
+    },
+    {
       first_name: "Tim",
       last_name: "Donaworth",
       division: 3,
