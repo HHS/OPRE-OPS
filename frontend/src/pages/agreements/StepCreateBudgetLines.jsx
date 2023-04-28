@@ -1,5 +1,5 @@
 import React from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import { ProjectAgreementSummaryCard } from "../budgetLines/ProjectAgreementSummaryCard";
@@ -8,28 +8,31 @@ import { Alert } from "../../components/UI/Alert/Alert";
 import Modal from "../../components/UI/Modal/Modal";
 import CreateBudgetLinesForm from "../../components/UI/Form/CreateBudgetLinesForm";
 import {
+    deleteBudgetLineAdded,
     setBudgetLineAdded,
-    setEnteredDescription,
     setEnteredAmount,
+    setEnteredComments,
+    setEnteredDay,
+    setEnteredDescription,
     setEnteredMonth,
     setEnteredYear,
-    setEnteredDay,
-    setEnteredComments,
-    deleteBudgetLineAdded,
 } from "../budgetLines/createBudgetLineSlice";
 import {
-    setAgreementTitle,
     setAgreementDescription,
+    setAgreementId,
     setAgreementIncumbent,
     setAgreementNotes,
-    setSelectedProject,
-    setSelectedAgreementType,
+    setAgreementProcurementShop,
     setAgreementProductServiceCode,
-    setSelectedProcurementShop,
-    setSelectedAgreementReason,
+    setAgreementProject,
     setAgreementProjectOfficer,
     setAgreementTeamMembers,
-} from "./createAgreementSlice";
+    setAgreementTitle,
+    setSelectedAgreementReason,
+    setSelectedAgreementType,
+    setSelectedProcurementShop,
+    setSelectedProject,
+} from "../agreements/createAgreementSlice";
 import { postBudgetLineItems } from "../../api/postBudgetLineItems";
 
 export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
@@ -68,6 +71,33 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
         });
     };
 
+    const resetBLIState = () => {
+        dispatch(setBudgetLineAdded([]));
+        dispatch(setEnteredAmount(null));
+        dispatch(setEnteredComments(""));
+        dispatch(setEnteredDescription(""));
+        dispatch(setSelectedProcurementShop(-1));
+        dispatch(setEnteredDay(""));
+        dispatch(setEnteredMonth(""));
+        dispatch(setEnteredYear(""));
+    };
+
+    const resetAgreementState = () => {
+        dispatch(setSelectedAgreementType(null));
+        dispatch(setAgreementTitle(""));
+        dispatch(setAgreementDescription(""));
+        dispatch(setAgreementProductServiceCode(null));
+        dispatch(setAgreementProcurementShop(null));
+        dispatch(setSelectedAgreementReason(null));
+        dispatch(setAgreementIncumbent(null));
+        dispatch(setAgreementProjectOfficer(null));
+        dispatch(setAgreementTeamMembers([]));
+        dispatch(setAgreementNotes(""));
+        dispatch(setAgreementId(null));
+        dispatch(setAgreementProject(null));
+        dispatch(setSelectedProject(-1));
+    };
+
     const saveBudgetLineItems = (event) => {
         event.preventDefault();
         const newBudgetLineItems = budgetLinesAdded.filter(
@@ -75,6 +105,10 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
             (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on")
         );
         postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
+
+        resetBLIState();
+        resetAgreementState();
+
         // TODO: Route to Agreements List page, showing Agreement Review for now
         navigate("/agreements/");
         // goToNext();
@@ -87,25 +121,8 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
             heading: "Are you sure you want to cancel? Your agreement will not be saved.",
             actionButtonText: "Continue",
             handleConfirm: () => {
-                dispatch(setAgreementTitle(""));
-                dispatch(setAgreementDescription(""));
-                dispatch(setAgreementIncumbent(null));
-                dispatch(setAgreementNotes(""));
-                dispatch(setSelectedProject({}));
-                dispatch(setSelectedAgreementType(null));
-                dispatch(setAgreementProductServiceCode(null));
-                dispatch(setSelectedAgreementReason(null));
-                dispatch(setSelectedProcurementShop({}));
-                dispatch(setAgreementProjectOfficer(null));
-                dispatch(setAgreementTeamMembers([]));
-                dispatch(setBudgetLineAdded([]));
-                dispatch(setEnteredAmount(null));
-                dispatch(setEnteredComments(""));
-                dispatch(setEnteredDescription(""));
-                dispatch(setSelectedProcurementShop(-1));
-                dispatch(setEnteredDay(""));
-                dispatch(setEnteredMonth(""));
-                dispatch(setEnteredYear(""));
+                resetBLIState();
+                resetAgreementState();
                 setModalProps({});
                 navigate("/");
             },
@@ -171,14 +188,7 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
                             heading: "Are you sure you want to go back? Your budget lines will not be saved.",
                             actionButtonText: "Go Back",
                             handleConfirm: () => {
-                                dispatch(setBudgetLineAdded([]));
-                                dispatch(setEnteredAmount(null));
-                                dispatch(setEnteredComments(""));
-                                dispatch(setEnteredDescription(""));
-                                dispatch(setSelectedProcurementShop(-1));
-                                dispatch(setEnteredDay(""));
-                                dispatch(setEnteredMonth(""));
-                                dispatch(setEnteredYear(""));
+                                resetBLIState();
                                 setModalProps({});
                                 goBack();
                             },
