@@ -2,10 +2,19 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ProjectSelect from "./ProjectSelect";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
+import { useGetResearchProjectsQuery } from "../../api/opsAPI";
 
 export const StepSelectProject = ({ goToNext, wizardSteps }) => {
     const navigate = useNavigate();
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
+    const { data: projects, error: errorAgreement, isLoading: isLoadingAgreement } = useGetResearchProjectsQuery();
+
+    if (isLoadingAgreement) {
+        return <div>Loading...</div>;
+    }
+    if (errorAgreement) {
+        return <div>Oops, an error occurred</div>;
+    }
 
     const handleContinue = () => {
         if (selectedResearchProject?.id) {
@@ -27,7 +36,7 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
                 Select the project this budget line should be associated with. If you need to create a new project,
                 click Add New Project.
             </p>
-            <ProjectSelect />
+            <ProjectSelect projectsList={projects} />
             <div className="grid-row flex-justify-end margin-top-8">
                 <button className="usa-button" onClick={handleContinue} disabled={!selectedResearchProject?.id}>
                     Continue
