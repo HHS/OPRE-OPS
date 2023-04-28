@@ -10,9 +10,10 @@ import { editBudgetLineAdded, duplicateBudgetLineAdded } from "./createBudgetLin
 import { TotalSummaryCard } from "./TotalSummaryCard";
 import "./PreviewTable.scss";
 
-export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = false }) => {
+export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = false, budgetLines = null }) => {
     const dispatch = useDispatch();
-    const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
+    const stateBudgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
+    const budgetLinesAdded = budgetLines ? budgetLines : stateBudgetLinesAdded;
     const sortedBudgetLines = budgetLinesAdded
         .slice()
         .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on))

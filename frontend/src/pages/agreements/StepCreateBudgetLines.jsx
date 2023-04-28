@@ -76,7 +76,8 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
         );
         postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
         // TODO: Route to Agreements List page, showing Agreement Review for now
-        goToNext();
+        navigate("/agreements/");
+        // goToNext();
     };
 
     const handleCancel = () => {
