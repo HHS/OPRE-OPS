@@ -2,15 +2,19 @@ import PropTypes from "prop-types";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelectedProject, setAgreementProject } from "./createAgreementSlice";
 
-export const ProjectSelect = () => {
+export const ProjectSelect = ({ projects } = null) => {
     const dispatch = useDispatch();
-    const researchProjects = useSelector((state) => state.createAgreement.research_projects_list);
+    const researchProjectStateList = useSelector((state) => state.createAgreement.research_projects_list);
+    const researchProjects = projects ? projects.projectsList : researchProjectStateList;
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
 
     const onChangeResearchProjectSelection = (projectId = 0) => {
+        console.log(`selected id: ${projectId}`);
         if (projectId === 0) {
             return;
         }
+
+        console.dir(researchProjects[projectId - 1]);
         dispatch(
             setSelectedProject({
                 ...researchProjects[projectId - 1],
