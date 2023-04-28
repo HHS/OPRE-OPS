@@ -101,8 +101,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             <h2 className="font-sans-lg">Select the Agreement Type</h2>
             <p>Select the type of agreement you would like to create.</p>
             <AgreementTypeSelect />
-
-            <h2 className="font-sans-lg">Agreement Details</h2>
+            <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
             <label className="usa-label" htmlFor="agreement-title">
                 Agreement Title
             </label>
@@ -133,10 +132,10 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             {selectedProductServiceCode && (
                 <ProductServiceCodeSummaryBox selectedProductServiceCode={selectedProductServiceCode} />
             )}
-            <h2 className="font-sans-lg">Procurement Shop</h2>
+            <h2 className="font-sans-lg margin-top-3">Procurement Shop</h2>
             <ProcurementShopSelect />
 
-            <h2 className="font-sans-lg">Reason for Agreement</h2>
+            <h2 className="font-sans-lg margin-top-3">Reason for Agreement</h2>
             <div className="display-flex">
                 <AgreementReasonSelect />
                 <fieldset className="usa-fieldset margin-left-4">
@@ -155,7 +154,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                 </fieldset>
             </div>
 
-            <h2 className="font-sans-lg">Points of Contact</h2>
+            <h2 className="font-sans-lg margin-top-3">Points of Contact</h2>
             <div className="display-flex">
                 <ProjectOfficerSelect />
                 <TeamMemberSelect className="margin-left-4" />
@@ -163,7 +162,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
 
             <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
             <TeamMemberList />
-            <div className="usa-character-count">
+            <div className="usa-character-count margin-top-3">
                 <div className="usa-form-group">
                     <label className="usa-label font-sans-lg text-bold" htmlFor="with-hint-textarea">
                         Notes (optional)
