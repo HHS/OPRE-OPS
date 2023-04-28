@@ -3,7 +3,6 @@ import App from "../../App";
 import { useSelector, useDispatch } from "react-redux";
 import ProjectTypeSelect from "./ProjectTypeSelect";
 import { setProjectId, setProjectShortTitle, setProjectTitle, setProjectDescription } from "./createProjectSlice";
-import { postProject } from "../../api/postProjects";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
 
 export const CreateProject = () => {
