@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { useDispatch } from "react-redux";
+import { setAgreementProject } from "./createAgreementSlice";
 
 export const ProjectSelect = ({
     researchProjects,
@@ -25,6 +26,7 @@ export const ProjectSelect = ({
                 ...researchProjects[projectId - 1],
             })
         );
+        dispatch(setAgreementProject(projectId));
     };
     const onInputCloseButtonClick = () => {
         dispatch(setSelectedProject({}));
