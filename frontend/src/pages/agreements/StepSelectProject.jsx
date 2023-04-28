@@ -1,15 +1,21 @@
 import App from "../../App";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import ProjectSelect from "./ProjectSelect";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 
 export const StepSelectProject = ({ goToNext, wizardSteps }) => {
+    const navigate = useNavigate();
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
 
     const handleContinue = () => {
         if (selectedResearchProject?.id) {
             goToNext({ project: selectedResearchProject.id });
         }
+    };
+
+    const handleAddProject = () => {
+        navigate("/projects/create");
     };
 
     return (
@@ -34,7 +40,12 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
                 <div className="border-bottom-1px border-base-light width-full" />
             </div>
             <div className="grid-row flex-justify-center">
-                <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">Add New Project</button>
+                <button
+                    className="usa-button usa-button--outline margin-top-6 margin-bottom-6"
+                    onClick={handleAddProject}
+                >
+                    Add New Project
+                </button>
             </div>
         </App>
     );
