@@ -7,6 +7,7 @@ import { StepSelectProject } from "./StepSelectProject";
 import { StepCreateAgreement } from "./StepCreateAgreement";
 import { StepCreateBudgetLines } from "./StepCreateBudgetLines";
 import { getUsers } from "../../api/getUser";
+import App from "../../App";
 
 const wizardSteps = ["Project", "Agreement", "Budget Lines"];
 
@@ -31,7 +32,7 @@ export const CreateAgreement = () => {
     }, [dispatch]);
 
     return (
-        <>
+        <App>
             <CreateAgreementFlow
                 onFinish={(data) => {
                     console.log("budget line has: " + JSON.stringify(data, null, 2));
@@ -42,6 +43,6 @@ export const CreateAgreement = () => {
                 <StepCreateAgreement wizardSteps={wizardSteps} />
                 <StepCreateBudgetLines wizardSteps={wizardSteps} />
             </CreateAgreementFlow>
-        </>
+        </App>
     );
 };
