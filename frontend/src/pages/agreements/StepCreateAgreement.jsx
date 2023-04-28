@@ -134,10 +134,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                 <ProductServiceCodeSummaryBox selectedProductServiceCode={selectedProductServiceCode} />
             )}
             <h2 className="font-sans-lg">Procurement Shop</h2>
-            <p>
-                Select the Procurement Shop, and the fee rates will be populated in the table below. If this is an
-                active agreement, it will default to the procurement shop currently being used.
-            </p>
             <ProcurementShopSelect />
 
             <h2 className="font-sans-lg">Reason for Agreement</h2>
