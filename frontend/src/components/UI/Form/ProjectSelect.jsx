@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { useDispatch } from "react-redux";
-import { setAgreementProject } from "./createAgreementSlice";
+import { setAgreementProject } from "../../../pages/agreements/createAgreementSlice";
 
 export const ProjectSelect = ({
     researchProjects,
