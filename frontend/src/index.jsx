@@ -23,6 +23,7 @@ import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute"
 import { CreateAgreement } from "./pages/agreements/CreateAgreement";
 import { CreateProject } from "./pages/projects/CreateProject";
 import { AgreementsList } from "./pages/agreements/list/AgreementsList";
+import { ApproveAgreement } from "./pages/agreements/approve/ApproveAgreement";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -119,6 +120,7 @@ const router = createBrowserRouter(
                 <Route path="/agreements/create" element={<CreateAgreement />} />
                 <Route path="/projects/create" element={<CreateProject />} />
                 <Route path="/agreements/" element={<AgreementsList />} />
+                <Route path="/agreements/approve/:id" element={<ApproveAgreement />} />
             </Route>
         </>
     )

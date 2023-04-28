@@ -106,6 +106,7 @@ class ProductServiceCode(BaseModel):
     naics = Column(Integer, nullable=True)
     support_code = Column(String, nullable=True)
     description = Column(String)
+    agreement = relationship("Agreement")
 
 
 class Agreement(BaseModel):
@@ -117,10 +118,12 @@ class Agreement(BaseModel):
     name = Column(String, nullable=False)
     number = Column(String, nullable=False)
     description = Column(String, nullable=True)
-    product_service_code = Column(
-        Integer,
-        ForeignKey("product_service_code.id", name="fk_agreement_product_service_code"),
+
+    product_service_code_id = Column(Integer, ForeignKey("product_service_code.id"))
+    product_service_code = relationship(
+        "ProductServiceCode", back_populates="agreement"
     )
+
     agreement_reason = Column(sa.Enum(AgreementReason))
     incumbent = Column(String, nullable=True)
     project_officer = Column(
@@ -132,6 +135,7 @@ class Agreement(BaseModel):
         back_populates="agreements",
     )
     agreement_type = Column(sa.Enum(AgreementType))
+
     research_project_id = Column(Integer, ForeignKey("research_project.id"))
     research_project = relationship("ResearchProject", back_populates="agreements")
 
@@ -140,6 +144,7 @@ class Agreement(BaseModel):
     )
     procurement_shop_id = Column(Integer, ForeignKey("procurement_shop.id"))
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
+
     notes = Column(Text, nullable=True)
 
     __mapper_args__ = {
@@ -163,6 +168,9 @@ class Agreement(BaseModel):
             else None,
             procurement_shop=self.procurement_shop.to_dict()
             if self.procurement_shop
+            else None,
+            product_service_code=self.product_service_code.to_dict()
+            if self.product_service_code
             else None,
         )
 

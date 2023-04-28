@@ -1,5 +1,5 @@
-from flask import Response, make_response, request
-from flask_jwt_extended import jwt_required, verify_jwt_in_request
+from flask import Response, request
+from flask_jwt_extended import jwt_required
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.utils.response import make_response_with_headers
@@ -12,9 +12,9 @@ class UsersItemAPI(BaseItemAPI):
 
     @override
     def get(self, id: int) -> Response:
-        token = verify_jwt_in_request()
+        # token = verify_jwt_in_request()
         # Get the user from the token to see who's making the request
-        sub = str(token[1]["sub"])
+        # sub = str(token[1]["sub"])
         oidc_id = request.args.get("oidc_id", type=str)
 
         # Grab the user, based on which ID is being queried (id or oidc_id)
@@ -26,11 +26,12 @@ class UsersItemAPI(BaseItemAPI):
         # Users can only see their own user details
         # Update this authZ checks once we determine additional
         # roles that can view other users details.
-        if sub == str(response.json["oidc_id"]):
-            return response
-        else:
-            response = make_response({}, 401)  # nosemgrep
-            return response
+        # TODO: Need to be able to do user lookup without OIDC
+        # if sub == str(response.json["oidc_id"]):
+        return response
+        # else:
+        #    response = make_response({}, 401)  # nosemgrep
+        #    return response
 
 
 class UsersListAPI(BaseListAPI):
