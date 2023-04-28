@@ -17,6 +17,8 @@ const initialState = {
         project_officer: null,
         team_members: [],
         notes: "",
+        research_project_id: null,
+        procurement_shop_id: null,
     },
     procurement_shops_list: [],
     cans: [],
@@ -77,6 +79,12 @@ const createAgreementSlice = createSlice({
         },
         setAgreementProductServiceCode: (state, action) => {
             state.agreement.selected_product_service_code = action.payload;
+        },
+        setAgreementProject: (state, action) => {
+            state.agreement.research_project_id = action.payload;
+        },
+        setAgreementProcurementShop: (state, action) => {
+            state.agreement.procurement_shop_id = action.payload;
         },
         setProductServiceCodesList: (state, action) => {
             state.product_service_codes_list = action.payload;
@@ -246,8 +254,10 @@ export const {
     setAgreementTeamMembers,
     setBudgetLineAdded,
     setAgreementProjectOfficer,
+    setAgreementProcurementShop,
     deleteBudgetLineAdded,
     setAgreementNotes,
+    setAgreementProject,
     editBudgetLineAdded,
     setSelectedProject,
     setSelectedAgreement,

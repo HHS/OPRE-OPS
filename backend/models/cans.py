@@ -14,9 +14,10 @@ from typing_extensions import override
 
 class BudgetLineItemStatus(Enum):
     DRAFT = 1
-    PLANNED = 2
-    IN_EXECUTION = 3
-    OBLIGATED = 4
+    UNDER_REVIEW = 2
+    PLANNED = 3
+    IN_EXECUTION = 4
+    OBLIGATED = 5
 
 
 class CANArrangementType(Enum):
@@ -105,6 +106,7 @@ class ProductServiceCode(BaseModel):
     naics = Column(Integer, nullable=True)
     support_code = Column(String, nullable=True)
     description = Column(String)
+    agreement = relationship("Agreement")
 
 
 class Agreement(BaseModel):
@@ -116,10 +118,12 @@ class Agreement(BaseModel):
     name = Column(String, nullable=False)
     number = Column(String, nullable=False)
     description = Column(String, nullable=True)
-    product_service_code = Column(
-        Integer,
-        ForeignKey("product_service_code.id", name="fk_agreement_product_service_code"),
+
+    product_service_code_id = Column(Integer, ForeignKey("product_service_code.id"))
+    product_service_code = relationship(
+        "ProductServiceCode", back_populates="agreement"
     )
+
     agreement_reason = Column(sa.Enum(AgreementReason))
     incumbent = Column(String, nullable=True)
     project_officer = Column(
@@ -131,6 +135,7 @@ class Agreement(BaseModel):
         back_populates="agreements",
     )
     agreement_type = Column(sa.Enum(AgreementType))
+
     research_project_id = Column(Integer, ForeignKey("research_project.id"))
     research_project = relationship("ResearchProject", back_populates="agreements")
 
@@ -139,6 +144,7 @@ class Agreement(BaseModel):
     )
     procurement_shop_id = Column(Integer, ForeignKey("procurement_shop.id"))
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
+
     notes = Column(Text, nullable=True)
 
     __mapper_args__ = {
@@ -151,17 +157,21 @@ class Agreement(BaseModel):
         d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
 
         d.update(
-
-                agreement_type=self.agreement_type.name
-                if self.agreement_type
-                else None,
-                agreement_reason=self.agreement_reason.name
-                if self.agreement_reason
-                else None,
-                budget_line_items=[bli.to_dict() for bli in self.budget_line_items],
-                team_members=[tm.to_dict() for tm in self.team_members],
-                research_project=self.research_project.to_dict() if self.research_project else None,
-                procurement_shop=self.procurement_shop.to_dict() if self.procurement_shop else None,
+            agreement_type=self.agreement_type.name if self.agreement_type else None,
+            agreement_reason=self.agreement_reason.name
+            if self.agreement_reason
+            else None,
+            budget_line_items=[bli.to_dict() for bli in self.budget_line_items],
+            team_members=[tm.to_dict() for tm in self.team_members],
+            research_project=self.research_project.to_dict()
+            if self.research_project
+            else None,
+            procurement_shop=self.procurement_shop.to_dict()
+            if self.procurement_shop
+            else None,
+            product_service_code=self.product_service_code.to_dict()
+            if self.product_service_code
+            else None,
         )
 
         return d
@@ -342,9 +352,11 @@ class CANFiscalYearCarryForward(BaseModel):
 
         d.update(
             received_amount=float(self.received_amount)
-            if self.received_amount else None,
+            if self.received_amount
+            else None,
             expected_amount=float(self.expected_amount)
-            if self.expected_amount else None,
+            if self.expected_amount
+            else None,
             total_amount=float(self.total_amount) if self.total_amount else None,
         )
 

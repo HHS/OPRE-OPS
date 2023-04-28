@@ -184,7 +184,7 @@ def test_post_research_projects_minimum(auth_client):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_post_research_projects_empty_post(auth_client):
-    response = auth_client.post("/api/v1/research-projects/", data={})
+    response = auth_client.post("/api/v1/research-projects/", json={})
     assert response.status_code == 400
 
 

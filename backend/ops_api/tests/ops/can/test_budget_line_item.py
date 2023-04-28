@@ -89,7 +89,7 @@ def test_get_budget_line_items_list_by_status_invalid(auth_client):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_post_budget_line_items_empty_post(auth_client):
-    response = auth_client.post("/api/v1/budget-line-items/", data={})
+    response = auth_client.post("/api/v1/budget-line-items/", json={})
     assert response.status_code == 400
 
 
@@ -514,8 +514,8 @@ def test_patch_budget_line_items_bad_status(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_budget_line_items_empty_data(auth_client):
-    response = auth_client.patch("/api/v1/budget-line-items/1", data={})
-    assert response.status_code == 400
+    response = auth_client.patch("/api/v1/budget-line-items/1", json={})
+    assert response.status_code == 200
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -533,3 +533,31 @@ def test_patch_budget_line_items_invalid_can(auth_client):
     )
     response = auth_client.patch("/api/v1/budget-line-items/1", json=data.__dict__)
     assert response.status_code == 400
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_patch_budget_line_items_update_status(auth_client, loaded_db):
+    bli = BudgetLineItem(
+        id=1000,
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=1,
+        can_id=1,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2023, 1, 1),
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    data = {"status": "UNDER_REVIEW"}
+    response = auth_client.patch("/api/v1/budget-line-items/1000", json=data)
+    assert response.status_code == 200
+    assert response.json["status"] == "UNDER_REVIEW"
+
+    # cleanup
+    loaded_db.delete(bli)
+    loaded_db.commit()

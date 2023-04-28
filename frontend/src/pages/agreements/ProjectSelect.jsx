@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { useDispatch, useSelector } from "react-redux";
-import { setSelectedProject } from "./createAgreementSlice";
+import { setSelectedProject, setAgreementProject } from "./createAgreementSlice";
 
 export const ProjectSelect = () => {
     const dispatch = useDispatch();
@@ -16,6 +16,7 @@ export const ProjectSelect = () => {
                 ...researchProjects[projectId - 1],
             })
         );
+        dispatch(setAgreementProject(projectId));
     };
 
     const ProjectSummaryCard = ({ selectedResearchProject }) => {

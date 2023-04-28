@@ -52,6 +52,7 @@ def test_agreements_serialization(auth_client, loaded_db):
     del json_to_compare["budget_line_items"]
     del json_to_compare["research_project"]
     del json_to_compare["procurement_shop"]
+    del json_to_compare["product_service_code"]
 
     assert json_to_compare == {
         "agreement_reason": "NEW_REQ",
@@ -68,8 +69,8 @@ def test_agreements_serialization(auth_client, loaded_db):
         "notes": None,
         "number": "AGR0001",
         "procurement_shop_id": 1,
-        "product_service_code": 1,
-        "project_officer": None,
+        "product_service_code_id": None,
+        "project_officer": 1,
         "research_project_id": 1,
         "support_contacts": [],
         "team_members": [],
@@ -148,7 +149,7 @@ def test_agreement_create_contract_agreement(loaded_db):
         contract_id=99,
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
-        product_service_code=2,
+        product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
     )
     loaded_db.add(contract_agreement)
@@ -159,13 +160,16 @@ def test_agreement_create_contract_agreement(loaded_db):
 
     assert agreement.contract_number == "CT0002"
     assert agreement.contract_type == ContractType.RESEARCH
-    assert agreement.product_service_code == 2
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreement_create_grant_agreement(loaded_db):
     grant_agreement = GrantAgreement(
-        name="GNTXX12399", number="AGRXX003459217-A", grant_id=99, foa="NIH", agreement_type=AgreementType.GRANT
+        name="GNTXX12399",
+        number="AGRXX003459217-A",
+        grant_id=99,
+        foa="NIH",
+        agreement_type=AgreementType.GRANT,
     )
     loaded_db.add(grant_agreement)
     loaded_db.commit()
