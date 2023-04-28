@@ -44,7 +44,12 @@ export const AgreementTableRow = ({ agreement }) => {
             agreementType = "Unknown Type";
     }
 
-    const agreementTotal = agreement?.budget_line_items?.reduce((n, { amount }) => n + amount, 0);
+    const agreementSubTotal = agreement?.budget_line_items?.reduce((n, { amount }) => n + amount, 0);
+    const procurementShopSubTotal = agreement?.budget_line_items?.reduce(
+        (n, { amount }) => n + amount * (agreement.procurement_shop ? agreement.procurement_shop.fee : 0),
+        0
+    );
+    const agreementTotal = agreementSubTotal + procurementShopSubTotal;
 
     // find the min(date_needed) of the BLIs
     let nextNeedBy = agreement?.budget_line_items?.reduce(
