@@ -7,7 +7,6 @@ export const ProjectSelect = ({ projects } = null) => {
     const researchProjectStateList = useSelector((state) => state.createAgreement.research_projects_list);
     const researchProjects = projects ? projects.projectsList : researchProjectStateList;
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
-    console.log(`Inital Load of projects: ${JSON.stringify(researchProjects)}`);
 
     const onChangeResearchProjectSelection = (projectId = 0) => {
         console.log(`selected id: ${projectId}`);

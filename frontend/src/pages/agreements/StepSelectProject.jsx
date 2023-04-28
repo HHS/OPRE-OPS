@@ -7,12 +7,12 @@ import { useGetResearchProjectsQuery } from "../../api/opsAPI";
 export const StepSelectProject = ({ goToNext, wizardSteps }) => {
     const navigate = useNavigate();
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
-    const { data: projects, error: errorAgreement, isLoading: isLoadingAgreement } = useGetResearchProjectsQuery();
+    const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
 
-    if (isLoadingAgreement) {
+    if (isLoadingProjects) {
         return <div>Loading...</div>;
     }
-    if (errorAgreement) {
+    if (errorProjects) {
         return <div>Oops, an error occurred</div>;
     }
 
