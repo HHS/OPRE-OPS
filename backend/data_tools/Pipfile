@@ -14,7 +14,7 @@ typing-extensions = "==4.5.0"
 desert = "2022.9.22"
 
 [dev-packages]
-nox = "==2022.11.21"
+nox = "==2023.4.22"
 flake8 = "==6.0.0"
 flake8-black = "==0.3.6"
 flake8-import-order = "==0.18.2"
