@@ -30,7 +30,7 @@ pytest-flask = "==1.2.0"
 black = {extras = ["d"], version = "==23.3.0"}
 flake8-black = "==0.3.6"
 pytest-cov = "==4.0.0"
-pytest-docker = {extras = ["docker-compose-v2"], version = "==0.13.0"}
+pytest-docker = {extras = ["docker-compose-v2"], version = "==1.0.1"}
 pytest-mock = "==3.10.0"
 
 [requires]
