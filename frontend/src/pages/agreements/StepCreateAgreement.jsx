@@ -94,8 +94,8 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
 
     return (
         <>
-            <h1 className="font-sans-lg">Create New Budget Line</h1>
-            <p>Step Two: Creating a new Agreement</p>
+            <h1 className="font-sans-lg">Create New Agreement</h1>
+            <p>Follow the steps to create an Agreement</p>
             <StepIndicator steps={wizardSteps} currentStep={2} />
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg">Select the Agreement Type</h2>
