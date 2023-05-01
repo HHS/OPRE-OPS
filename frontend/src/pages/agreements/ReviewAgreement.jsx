@@ -46,7 +46,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
             </p>
             <dl className="margin-0 font-12px">
                 <dt className="margin-0 text-base-dark margin-top-1">Project</dt>
-                <dd className="text-semibold margin-0">{agreement?.title}</dd>
+                <dd className="text-semibold margin-0">{agreement?.name}</dd>
                 <dt className="margin-0 text-base-dark margin-top-1">Agreement Type</dt>
                 <dd className="text-semibold margin-0">{agreement?.agreement_type}</dd>
                 <dt className="margin-0 text-base-dark margin-top-1">Agreement Name</dt>
