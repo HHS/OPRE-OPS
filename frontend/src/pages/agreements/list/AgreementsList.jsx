@@ -41,7 +41,6 @@ export const AgreementsList = () => {
                         </th>
                     </tr>
                 </thead>
-                {console.log("agreements", agreements)}
                 <tbody>
                     {sortedAgreements?.map((agreement) => (
                         <AgreementTableRow key={agreement?.id} agreement={agreement} />
