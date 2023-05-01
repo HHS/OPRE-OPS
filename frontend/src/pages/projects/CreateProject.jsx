@@ -2,7 +2,13 @@ import React from "react";
 import App from "../../App";
 import { useSelector, useDispatch } from "react-redux";
 import ProjectTypeSelect from "./ProjectTypeSelect";
-import { setProjectId, setProjectShortTitle, setProjectTitle, setProjectDescription } from "./createProjectSlice";
+import {
+    setProjectId,
+    setProjectShortTitle,
+    setProjectTitle,
+    setProjectDescription,
+    setSelectedProjectType,
+} from "./createProjectSlice";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
 
 export const CreateProject = () => {
@@ -13,11 +19,14 @@ export const CreateProject = () => {
     const projectDescription = useSelector((state) => state.createProject.project.description);
     const project = useSelector((state) => state.createProject.project);
 
-    const [addResearchProject, results] = useAddResearchProjectsMutation();
+    const [addResearchProject] = useAddResearchProjectsMutation();
 
-    // if (errorAgreement) {
-    //     return <div>Oops, an error occurred</div>;
-    // }
+    const handleClearingForm = () => {
+        dispatch(setSelectedProjectType(null));
+        dispatch(setProjectShortTitle(""));
+        dispatch(setProjectTitle(""));
+        dispatch(setProjectDescription(""));
+    };
 
     const handleCreateProject = async () => {
         // Save Project to DB
@@ -25,13 +34,25 @@ export const CreateProject = () => {
         delete newProject.id;
         delete newProject.selected_project_type;
 
-        if (project) addResearchProject(newProject);
-        // const response = await postProject(project);
-        const newProjectId = results.id;
-        console.log(`New Project Created: ${newProjectId}`);
-        dispatch(setProjectId(newProjectId));
-        alert("New Project Created!");
+        if (project) {
+            try {
+                const results = await addResearchProject(newProject).unwrap();
+                //const response = await postProject(project);
+                const newProjectId = results.id;
+                console.log(`New Project Created: ${newProjectId}`);
+                dispatch(setProjectId(newProjectId));
+
+                alert("New Project Created!");
+
+                // Clear Form
+                handleClearingForm();
+            } catch (error) {
+                console.log("Error Submitting Project");
+                console.dir(error);
+            }
+        }
     };
+
     const handleCancel = () => {
         // TODO: Add cancel stuff
         // TODO: Clear createProject State
