@@ -28,14 +28,11 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
 
     return (
         <>
-            <h1 className="font-sans-lg">Create New Budget Line</h1>
-            <p>Step One: Text explaining this page</p>
+            <h1 className="font-sans-lg">Create New Agreement</h1>
+            <p>Follow the steps to create an Agreement</p>
             <StepIndicator steps={wizardSteps} currentStep={1} />
             <h2 className="font-sans-lg">Select a Project</h2>
-            <p>
-                Select the project this budget line should be associated with. If you need to create a new project,
-                click Add New Project.
-            </p>
+            <p>Select the project the Agreement should be associated with.</p>
             <ProjectSelect projectsList={projects} />
             <div className="grid-row flex-justify-end margin-top-8">
                 <button className="usa-button" onClick={handleContinue} disabled={!selectedResearchProject?.id}>
