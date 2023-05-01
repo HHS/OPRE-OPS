@@ -3,6 +3,7 @@ import { useGetAgreementsQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import { AgreementTableRow } from "./AgreementTableRow";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
+import sortAgreements from "./utils";
 
 export const AgreementsList = () => {
     const { data: agreements, error: errorAgreement, isLoading: isLoadingAgreement } = useGetAgreementsQuery();
@@ -14,13 +15,8 @@ export const AgreementsList = () => {
         return <div>Oops, an error occurred</div>;
     }
 
-    const sortedAgreements = agreements
-        .slice()
-        .sort(
-            (a, b) =>
-                a.budget_line_items.reduce((n, { date_needed }) => (n < date_needed ? n : date_needed), 0) -
-                b.budget_line_items.reduce((n, { date_needed }) => (n < date_needed ? n : date_needed), 0)
-        );
+    const sortedAgreements = sortAgreements(agreements);
+    console.log("sortedAgreements", sortedAgreements);
 
     return (
         <App>
