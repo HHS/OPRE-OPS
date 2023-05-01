@@ -3,7 +3,13 @@ import App from "../../App";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ProjectTypeSelect from "./ProjectTypeSelect";
-import { setProjectId, setProjectShortTitle, setProjectTitle, setProjectDescription } from "./createProjectSlice";
+import {
+    setProjectId,
+    setProjectShortTitle,
+    setProjectTitle,
+    setProjectDescription,
+    setSelectedProjectType,
+} from "./createProjectSlice";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
 import Alert from "../../components/UI/Alert/Alert";
 
@@ -43,6 +49,7 @@ export const CreateProject = () => {
         console.log(`New Project Created: ${newProjectId}`);
         dispatch(setProjectId(newProjectId));
         // Clear createProject State
+        dispatch(setSelectedProjectType(null));
         dispatch(setProjectShortTitle(""));
         dispatch(setProjectTitle(""));
         dispatch(setProjectDescription(""));
