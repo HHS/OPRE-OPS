@@ -20,7 +20,16 @@ export const CreateProject = () => {
     const projectTitle = useSelector((state) => state.createProject.project.title);
     const projectDescription = useSelector((state) => state.createProject.project.description);
     const project = useSelector((state) => state.createProject.project);
-    const [addResearchProject, results] = useAddResearchProjectsMutation();
+
+    const [addResearchProject] = useAddResearchProjectsMutation();
+
+    const handleClearingForm = () => {
+        dispatch(setSelectedProjectType(null));
+        dispatch(setProjectShortTitle(""));
+        dispatch(setProjectTitle(""));
+        dispatch(setProjectDescription(""));
+    };
+
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
     const navigate = useNavigate();
@@ -43,21 +52,24 @@ export const CreateProject = () => {
         delete newProject.id;
         delete newProject.selected_project_type;
 
-        if (project) addResearchProject(newProject);
-        // const response = await postProject(project);
-        const newProjectId = results.id;
-        console.log(`New Project Created: ${newProjectId}`);
-        dispatch(setProjectId(newProjectId));
-        // Clear createProject State
-        dispatch(setSelectedProjectType(null));
-        dispatch(setProjectShortTitle(""));
-        dispatch(setProjectTitle(""));
-        dispatch(setProjectDescription(""));
-        showAlert("success", "New Project Created!", "The project has been successfully created.");
+        if (project) {
+            try {
+                const results = await addResearchProject(newProject).unwrap();
+                const newProjectId = results.id;
+                console.log(`New Project Created: ${newProjectId}`);
+                dispatch(setProjectId(newProjectId));
+                handleClearingForm();
+                showAlert("success", "New Project Created!", "The project has been successfully created.");
+            } catch (error) {
+                console.log("Error Submitting Project");
+                console.dir(error);
+            }
+        }
     };
+
     const handleCancel = () => {
         // TODO: Add cancel stuff
-        // TODO: Clear createProject State
+        handleClearingForm();
         goBack();
     };
     const goBack = () => {
