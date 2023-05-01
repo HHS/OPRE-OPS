@@ -1,9 +1,17 @@
 import React from "react";
 import App from "../../App";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import ProjectTypeSelect from "./ProjectTypeSelect";
-import { setProjectId, setProjectShortTitle, setProjectTitle, setProjectDescription } from "./createProjectSlice";
+import {
+    setProjectId,
+    setProjectShortTitle,
+    setProjectTitle,
+    setProjectDescription,
+    setSelectedProjectType,
+} from "./createProjectSlice";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
+import Alert from "../../components/UI/Alert/Alert";
 
 export const CreateProject = () => {
     const [currentIndex, setCurrentIndex] = React.useState(0);
@@ -12,12 +20,22 @@ export const CreateProject = () => {
     const projectTitle = useSelector((state) => state.createProject.project.title);
     const projectDescription = useSelector((state) => state.createProject.project.description);
     const project = useSelector((state) => state.createProject.project);
-
     const [addResearchProject, results] = useAddResearchProjectsMutation();
+    const [isAlertActive, setIsAlertActive] = React.useState(false);
+    const [alertProps, setAlertProps] = React.useState({});
+    const navigate = useNavigate();
 
-    // if (errorAgreement) {
-    //     return <div>Oops, an error occurred</div>;
-    // }
+    const showAlert = async (type, heading, message) => {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        window.scrollTo(0, 0);
+        setIsAlertActive(true);
+        setAlertProps({ type, heading, message });
+
+        await new Promise((resolve) => setTimeout(resolve, 6000));
+        setIsAlertActive(false);
+        setAlertProps({});
+        navigate("/");
+    };
 
     const handleCreateProject = async () => {
         // Save Project to DB
@@ -30,7 +48,12 @@ export const CreateProject = () => {
         const newProjectId = results.id;
         console.log(`New Project Created: ${newProjectId}`);
         dispatch(setProjectId(newProjectId));
-        alert("New Project Created!");
+        // Clear createProject State
+        dispatch(setSelectedProjectType(null));
+        dispatch(setProjectShortTitle(""));
+        dispatch(setProjectTitle(""));
+        dispatch(setProjectDescription(""));
+        showAlert("success", "New Project Created!", "The project has been successfully created.");
     };
     const handleCancel = () => {
         // TODO: Add cancel stuff
@@ -46,10 +69,18 @@ export const CreateProject = () => {
 
     return (
         <App>
-            <h1 className="font-sans-lg">Create New Project</h1>
+            {isAlertActive ? (
+                <Alert heading={alertProps.heading} type={alertProps.type} setIsAlertActive={setIsAlertActive}>
+                    {alertProps.message}
+                </Alert>
+            ) : (
+                <>
+                    <h1 className="font-sans-lg">Create New Project</h1>
 
-            <h2 className="font-sans-lg">Select the Project Type</h2>
-            <p>Select the type of project you are creating.</p>
+                    <h2 className="font-sans-lg">Select the Project Type</h2>
+                    <p>Select the type of project you are creating.</p>
+                </>
+            )}
             <ProjectTypeSelect />
 
             <h2 className="font-sans-lg">Project Details</h2>
