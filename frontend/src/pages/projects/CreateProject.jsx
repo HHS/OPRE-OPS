@@ -1,6 +1,7 @@
 import React from "react";
 import App from "../../App";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import ProjectTypeSelect from "./ProjectTypeSelect";
 import {
     setProjectId,
@@ -10,6 +11,7 @@ import {
     setSelectedProjectType,
 } from "./createProjectSlice";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
+import Alert from "../../components/UI/Alert/Alert";
 
 export const CreateProject = () => {
     const [currentIndex, setCurrentIndex] = React.useState(0);
@@ -28,6 +30,22 @@ export const CreateProject = () => {
         dispatch(setProjectDescription(""));
     };
 
+    const [isAlertActive, setIsAlertActive] = React.useState(false);
+    const [alertProps, setAlertProps] = React.useState({});
+    const navigate = useNavigate();
+
+    const showAlert = async (type, heading, message) => {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        window.scrollTo(0, 0);
+        setIsAlertActive(true);
+        setAlertProps({ type, heading, message });
+
+        await new Promise((resolve) => setTimeout(resolve, 6000));
+        setIsAlertActive(false);
+        setAlertProps({});
+        navigate("/");
+    };
+
     const handleCreateProject = async () => {
         // Save Project to DB
         const newProject = { ...project };
@@ -37,15 +55,11 @@ export const CreateProject = () => {
         if (project) {
             try {
                 const results = await addResearchProject(newProject).unwrap();
-                //const response = await postProject(project);
                 const newProjectId = results.id;
                 console.log(`New Project Created: ${newProjectId}`);
                 dispatch(setProjectId(newProjectId));
-
-                alert("New Project Created!");
-
-                // Clear Form
                 handleClearingForm();
+                showAlert("success", "New Project Created!", "The project has been successfully created.");
             } catch (error) {
                 console.log("Error Submitting Project");
                 console.dir(error);
@@ -55,7 +69,7 @@ export const CreateProject = () => {
 
     const handleCancel = () => {
         // TODO: Add cancel stuff
-        // TODO: Clear createProject State
+        handleClearingForm();
         goBack();
     };
     const goBack = () => {
@@ -67,10 +81,18 @@ export const CreateProject = () => {
 
     return (
         <App>
-            <h1 className="font-sans-lg">Create New Project</h1>
+            {isAlertActive ? (
+                <Alert heading={alertProps.heading} type={alertProps.type} setIsAlertActive={setIsAlertActive}>
+                    {alertProps.message}
+                </Alert>
+            ) : (
+                <>
+                    <h1 className="font-sans-lg">Create New Project</h1>
 
-            <h2 className="font-sans-lg">Select the Project Type</h2>
-            <p>Select the type of project you are creating.</p>
+                    <h2 className="font-sans-lg">Select the Project Type</h2>
+                    <p>Select the type of project you are creating.</p>
+                </>
+            )}
             <ProjectTypeSelect />
 
             <h2 className="font-sans-lg">Project Details</h2>
