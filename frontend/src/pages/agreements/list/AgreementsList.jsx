@@ -6,7 +6,11 @@ import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import sortAgreements from "./utils";
 
 export const AgreementsList = () => {
-    const { data: agreements, error: errorAgreement, isLoading: isLoadingAgreement } = useGetAgreementsQuery();
+    const {
+        data: agreements,
+        error: errorAgreement,
+        isLoading: isLoadingAgreement,
+    } = useGetAgreementsQuery({ refetchOnMountOrArgChange: true });
 
     if (isLoadingAgreement) {
         return <div>Loading...</div>;
@@ -16,7 +20,6 @@ export const AgreementsList = () => {
     }
 
     const sortedAgreements = sortAgreements(agreements);
-    console.log("sortedAgreements", sortedAgreements);
 
     return (
         <App>
@@ -37,7 +40,6 @@ export const AgreementsList = () => {
                         </th>
                     </tr>
                 </thead>
-                {console.log("agreements", agreements)}
                 <tbody>
                     {sortedAgreements?.map((agreement) => (
                         <AgreementTableRow key={agreement?.id} agreement={agreement} />
