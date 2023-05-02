@@ -4,13 +4,19 @@ import App from "../../../App";
 import { AgreementTableRow } from "./AgreementTableRow";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import sortAgreements from "./utils";
+import { useEffect } from "react";
 
 export const AgreementsList = () => {
     const {
         data: agreements,
         error: errorAgreement,
         isLoading: isLoadingAgreement,
+        refetch,
     } = useGetAgreementsQuery({ refetchOnMountOrArgChange: true });
+
+    useEffect(() => {
+        refetch();
+    });
 
     if (isLoadingAgreement) {
         return <div>Loading...</div>;
