@@ -33,7 +33,7 @@ export const ProcurementShopSelect = () => {
             setSelectedProcurementShop({
                 id: procurementShops[procurementShopId - 1].id,
                 name: procurementShops[procurementShopId - 1].name,
-                fee: procurementShops[procurementShopId - 1].fee,
+                fee: procurementShops[procurementShopId - 1].fee * 100,
             })
         );
         dispatch(setAgreementProcurementShop(procurementShopId));
