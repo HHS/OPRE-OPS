@@ -27,7 +27,7 @@ export const ProjectAgreementSummaryCard = ({
                     </div>
                     <div className="margin-left-5">
                         <dt className="margin-0 text-base-dark">Fee Rate</dt>
-                        <dd className="margin-0 text-semibold">{fee && `${fee}%`}</dd>
+                        <dd className="margin-0 text-semibold">{fee && `${fee * 100}%`}</dd>
                     </div>
                 </div>
             </dl>

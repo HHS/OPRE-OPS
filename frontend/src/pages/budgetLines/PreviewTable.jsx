@@ -46,7 +46,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
             let year = date_needed.getFullYear();
             fiscalYear = month > 8 ? year + 1 : year;
         }
-        let feeTotal = bl?.amount * (bl?.psc_fee_amount / 100);
+        let feeTotal = bl?.amount * bl?.psc_fee_amount;
         let total = bl?.amount + feeTotal;
         let status = bl?.status.charAt(0).toUpperCase() + bl?.status.slice(1).toLowerCase();
 

@@ -33,7 +33,7 @@ export const ProcurementShopSelect = () => {
             setSelectedProcurementShop({
                 id: procurementShops[procurementShopId - 1].id,
                 name: procurementShops[procurementShopId - 1].name,
-                fee: procurementShops[procurementShopId - 1].fee * 100,
+                fee: procurementShops[procurementShopId - 1].fee,
             })
         );
         dispatch(setAgreementProcurementShop(procurementShopId));
@@ -61,7 +61,7 @@ export const ProcurementShopSelect = () => {
                 </select>
                 {selectedProcurementShop?.id && (
                     <span className="margin-left-1 text-base-dark font-12px">
-                        Fee Rate: {selectedProcurementShop?.fee}%
+                        Fee Rate: {selectedProcurementShop?.fee * 100}%
                     </span>
                 )}
             </div>

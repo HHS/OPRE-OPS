@@ -6,7 +6,7 @@ describe("ProjectAgreementSummaryCard", () => {
     const defaultProps = {
         selectedResearchProject: { title: "Test Project" },
         selectedAgreement: { name: "Test Agreement" },
-        selectedProcurementShop: { name: "Test Shop", fee: 2 },
+        selectedProcurementShop: { name: "Test Shop", fee: 0.02 },
     };
 
     it("renders without crashing", () => {
@@ -28,7 +28,7 @@ describe("ProjectAgreementSummaryCard", () => {
     it("displays the selected procurement shop name and fee rate", () => {
         render(<ProjectAgreementSummaryCard {...defaultProps} />);
         const shopName = screen.getByText(defaultProps.selectedProcurementShop.name);
-        const feeRate = screen.getByText(`${defaultProps.selectedProcurementShop.fee}%`);
+        const feeRate = screen.getByText(`${defaultProps.selectedProcurementShop.fee * 100}%`);
         expect(shopName).toBeInTheDocument();
         expect(feeRate).toBeInTheDocument();
     });

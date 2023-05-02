@@ -60,7 +60,9 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 <dt className="margin-0 text-base-dark margin-top-1">Program Support Code</dt>
                 <dd className="text-semibold margin-0">{agreement?.product_service_code?.support_code}</dd>
                 <dt className="margin-0 text-base-dark margin-top-1">Procurement Shop</dt>
-                <dd className="text-semibold margin-0">{`${agreement?.procurement_shop?.name}-Fee Rate: ${agreement?.procurement_shop?.fee}%`}</dd>
+                <dd className="text-semibold margin-0">{`${agreement?.procurement_shop?.name}-Fee Rate: ${
+                    agreement?.procurement_shop?.fee * 100
+                }%`}</dd>
                 <dt className="margin-0 text-base-dark margin-top-1">Reason for creating the agreement</dt>
                 <dd className="text-semibold margin-0">{agreement?.agreement_reason}</dd>
                 <dt className="margin-0 text-base-dark margin-top-1">Incumbent</dt>
