@@ -14,3 +14,9 @@ export const calculatePercent = (numerator, denominator) => {
 
     return Math.round((numerator / denominator) * 100);
 };
+
+export const formatDate = (date) => {
+    const options = { timeZone: "UTC" };
+
+    return date.toLocaleDateString("en-US", options);
+};

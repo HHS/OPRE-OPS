@@ -8,11 +8,7 @@ import Tag from "../../../components/UI/Tag/Tag";
 import "./AgreementsList.scss";
 import { getUser } from "../../../api/getUser";
 import icons from "../../../uswds/img/sprite.svg";
-
-// function to format date like this 9/30/2023 || MM/DD/YYYY
-const formatDate = (date) => {
-    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
-};
+import { formatDate } from "../../../helpers/utils";
 
 export const AgreementTableRow = ({ agreement }) => {
     const [user, setUser] = useState({});
@@ -56,6 +52,7 @@ export const AgreementTableRow = ({ agreement }) => {
         (n, { date_needed }) => (n < date_needed ? n : date_needed),
         0
     );
+    console.log(`next needs by: ${nextNeedBy}`);
     nextNeedBy = nextNeedBy ? formatDate(new Date(nextNeedBy)) : "";
 
     // if there is 1 BLI with status === "UNDER_REVIEW" then agreement status is "UNDER_REVIEW"
@@ -98,7 +95,6 @@ export const AgreementTableRow = ({ agreement }) => {
     const handleEditAgreement = (event) => {};
     const handleDeleteAgreement = (event) => {};
     const handleSubmitAgreementForApproval = (event) => {
-        console.log(`CLICK APPROVE: ${event}`);
         navigate(`/agreements/approve/${event}`);
     };
 
