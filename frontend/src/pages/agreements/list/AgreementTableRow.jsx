@@ -46,7 +46,7 @@ export const AgreementTableRow = ({ agreement }) => {
 
     const agreementSubTotal = agreement?.budget_line_items?.reduce((n, { amount }) => n + amount, 0);
     const procurementShopSubTotal = agreement?.budget_line_items?.reduce(
-        (n, { amount }) => n + amount * (agreement.procurement_shop ? agreement.procurement_shop.fee : 0),
+        (n, { amount }) => n + amount * (agreement.procurement_shop ? agreement.procurement_shop.fee / 100 : 0),
         0
     );
     const agreementTotal = agreementSubTotal + procurementShopSubTotal;
