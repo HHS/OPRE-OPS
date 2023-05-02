@@ -95,7 +95,6 @@ export const AgreementTableRow = ({ agreement }) => {
     const handleEditAgreement = (event) => {};
     const handleDeleteAgreement = (event) => {};
     const handleSubmitAgreementForApproval = (event) => {
-        console.log(`CLICK APPROVE: ${event}`);
         navigate(`/agreements/approve/${event}`);
     };
 

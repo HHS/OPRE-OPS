@@ -1,5 +1,4 @@
 import sortAgreements from "./utils";
-import constants from "../../../constants";
 
 describe("test sort agreements", () => {
     it("sorts correctly", () => {
