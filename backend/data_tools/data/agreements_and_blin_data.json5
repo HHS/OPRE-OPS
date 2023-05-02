@@ -16,13 +16,13 @@
       id: 3,
       name: "National Institute of Health",
       abbr: "NIH",
-      fee: 0.5,
+      fee: 0.005,
     },
     {
       id: 4,
       name: "Interior Business Center",
       abbr: "IBC",
-      fee: 4.8,
+      fee: 0.048,
     },
   ],
   product_service_code: [

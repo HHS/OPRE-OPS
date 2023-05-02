@@ -81,7 +81,7 @@ export const AgreementTableRow = ({ agreement }) => {
         };
     }, [agreement]);
 
-    const agreementCreatedBy = user.full_name;
+    const agreementCreatedBy = user?.full_name;
 
     const agreementNotes = agreement?.notes;
 

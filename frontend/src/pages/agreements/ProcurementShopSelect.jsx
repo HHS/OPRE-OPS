@@ -61,7 +61,7 @@ export const ProcurementShopSelect = () => {
                 </select>
                 {selectedProcurementShop?.id && (
                     <span className="margin-left-1 text-base-dark font-12px">
-                        Fee Rate: {selectedProcurementShop?.fee}%
+                        Fee Rate: {selectedProcurementShop?.fee * 100}%
                     </span>
                 )}
             </div>
