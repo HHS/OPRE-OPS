@@ -29,12 +29,20 @@ import { Alert } from "../../components/UI/Alert/Alert";
 import Modal from "../../components/UI/Modal/Modal";
 import { ProjectAgreementSummaryCard } from "./ProjectAgreementSummaryCard";
 import { postBudgetLineItems } from "../../api/postBudgetLineItems";
+import { useGetResearchProjectsQuery } from "../../api/opsAPI";
 
 const StepOne = ({ goToNext }) => {
     const dispatch = useDispatch();
     const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
     const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
-    const researchProjects = useSelector((state) => state.createBudgetLine.research_projects_list);
+    const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
+
+    if (isLoadingProjects) {
+        return <div>Loading...</div>;
+    }
+    if (errorProjects) {
+        return <div>Oops, an error occurred</div>;
+    }
 
     const clearAgreementState = () => {
         dispatch(setAgreements([]));
@@ -52,7 +60,7 @@ const StepOne = ({ goToNext }) => {
                 click Add New Project.
             </p>
             <ProjectSelect
-                researchProjects={researchProjects}
+                researchProjects={projects}
                 selectedResearchProject={selectedResearchProject}
                 setSelectedProject={setSelectedProject}
                 clearFunction={clearAgreementState}
