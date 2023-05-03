@@ -27,3 +27,12 @@ it("can create a project", () => {
     cy.get("#submit").click();
     cy.get(".usa-alert__body").should("contain", "The project has been successfully created.");
 });
+
+it("can cancel a project", () => {
+    cy.get("#project-type-select-options").select("Research");
+    cy.get("#project-abbr").type("Test Project Abbreviation");
+    cy.get("#project-name").type("Test Project Name");
+    cy.get("#project-description").type("Test Project Description");
+    cy.get("#cancel").click();
+    cy.get(".usa-modal").should("contain", "Are you sure you want to cancel?");
+});
