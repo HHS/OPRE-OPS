@@ -169,7 +169,7 @@ export const CreateProject = () => {
             ></textarea>
 
             <div className="grid-row flex-justify-end margin-top-8">
-                <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
+                <button id="cancel" className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
                     Cancel
                 </button>
                 <button id="submit" className="usa-button" onClick={handleCreateProject}>
