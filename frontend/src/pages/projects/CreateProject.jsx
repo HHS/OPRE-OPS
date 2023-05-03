@@ -12,6 +12,7 @@ import {
 } from "./createProjectSlice";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
 import Alert from "../../components/UI/Alert/Alert";
+import { Modal } from "../../components/UI/Modal/Modal";
 
 export const CreateProject = () => {
     const [currentIndex, setCurrentIndex] = React.useState(0);
@@ -20,6 +21,8 @@ export const CreateProject = () => {
     const projectTitle = useSelector((state) => state.createProject.project.title);
     const projectDescription = useSelector((state) => state.createProject.project.description);
     const project = useSelector((state) => state.createProject.project);
+    const [showModal, setShowModal] = React.useState(false);
+    const [modalProps, setModalProps] = React.useState({});
 
     const [addResearchProject] = useAddResearchProjectsMutation();
 
@@ -69,9 +72,17 @@ export const CreateProject = () => {
 
     const handleCancel = () => {
         // TODO: Add cancel stuff
-        handleClearingForm();
-        goBack();
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel? Your project will not be saved.",
+            actionButtonText: "Cancel",
+            handleConfirm: () => {
+                handleClearingForm();
+                navigate("/");
+            },
+        });
     };
+
     const goBack = () => {
         const previousIndex = currentIndex - 1;
         if (previousIndex >= 0) {
@@ -93,6 +104,16 @@ export const CreateProject = () => {
                     <p>Select the type of project you are creating.</p>
                 </>
             )}
+
+            {showModal && (
+                <Modal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+
             <ProjectTypeSelect />
 
             <h2 className="font-sans-lg">Project Details</h2>
