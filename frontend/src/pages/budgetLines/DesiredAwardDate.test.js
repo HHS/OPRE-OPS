@@ -17,7 +17,7 @@ const renderWithRedux = (
     };
 };
 
-describe("ProjectSelect component", () => {
+describe("Desired Award Date component", () => {
     it("renders without crashing", () => {
         renderWithRedux(<DesiredAwardDate />);
     });
