@@ -105,6 +105,8 @@ export const Modal = ({
     );
 };
 
+export default Modal;
+
 Modal.propTypes = {
     heading: PropTypes.string.isRequired,
     description: PropTypes.string,

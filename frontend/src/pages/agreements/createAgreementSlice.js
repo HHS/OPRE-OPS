@@ -27,7 +27,7 @@ const initialState = {
     locked_budget_lines: [],
     budget_lines_added: [],
     is_editing_budget_line: false,
-    selected_project: -1,
+    selected_project: {},
     selected_agreement: -1,
     selected_can: -1,
     selected_procurement_shop: -1,

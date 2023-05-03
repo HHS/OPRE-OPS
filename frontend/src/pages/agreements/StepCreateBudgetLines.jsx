@@ -5,7 +5,7 @@ import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import { ProjectAgreementSummaryCard } from "../budgetLines/ProjectAgreementSummaryCard";
 import PreviewTable from "../budgetLines/PreviewTable";
 import { Alert } from "../../components/UI/Alert/Alert";
-import { Modal } from "../../components/UI/Modal/Modal";
+import Modal from "../../components/UI/Modal/Modal";
 import CreateBudgetLinesForm from "../../components/UI/Form/CreateBudgetLinesForm";
 import {
     deleteBudgetLineAdded,
@@ -71,22 +71,6 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
         });
     };
 
-    const saveBudgetLineItems = (event) => {
-        event.preventDefault();
-        const newBudgetLineItems = budgetLinesAdded.filter(
-            // eslint-disable-next-line no-prototype-builtins
-            (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on")
-        );
-        postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
-
-        resetBLIState();
-        resetAgreementState();
-
-        // TODO: Route to Agreements List page, showing Agreement Review for now
-        navigate("/agreements/");
-        // goToNext();
-    };
-
     const resetBLIState = () => {
         dispatch(setBudgetLineAdded([]));
         dispatch(setEnteredAmount(null));
@@ -112,6 +96,34 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
         dispatch(setAgreementId(null));
         dispatch(setAgreementProject(null));
         dispatch(setSelectedProject(-1));
+    };
+
+    const saveBudgetLineItems = (event) => {
+        event.preventDefault();
+        const newBudgetLineItems = budgetLinesAdded.filter(
+            // eslint-disable-next-line no-prototype-builtins
+            (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on")
+        );
+        postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
+
+        resetBLIState();
+        resetAgreementState();
+
+        navigate("/agreements/");
+    };
+
+    const handleCancel = () => {
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel? Your agreement will not be saved.",
+            actionButtonText: "Continue",
+            handleConfirm: () => {
+                resetBLIState();
+                resetAgreementState();
+                setModalProps({});
+                navigate("/agreements/");
+            },
+        });
     };
 
     return (
@@ -158,7 +170,7 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
             </p>
 
             <PreviewTable handleDeleteBudgetLine={handleDeleteBudgetLine} />
-            <div className="grid-row flex-justify-end margin-top-1">
+            <div className="grid-row flex-justify margin-top-1">
                 <button
                     className="usa-button usa-button--unstyled margin-right-2"
                     onClick={() => {
@@ -182,9 +194,14 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
                 >
                     Back
                 </button>
-                <button className="usa-button" onClick={saveBudgetLineItems}>
-                    Continue
-                </button>
+                <div>
+                    <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
+                        Cancel
+                    </button>
+                    <button className="usa-button" onClick={saveBudgetLineItems}>
+                        Continue
+                    </button>
+                </div>
             </div>
         </>
     );

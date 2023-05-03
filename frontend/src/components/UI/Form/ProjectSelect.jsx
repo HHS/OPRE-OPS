@@ -1,28 +1,37 @@
-import { useDispatch, useSelector } from "react-redux";
+import React from "react";
+import PropTypes from "prop-types";
+import { useDispatch } from "react-redux";
+import { setAgreementProject } from "../../../pages/agreements/createAgreementSlice";
 
-export const ProjectSelect = ({ researchProjectsState, selectedProjectState, setSelectedProjectFunction }) => {
+export const ProjectSelect = ({
+    researchProjects,
+    selectedResearchProject,
+    setSelectedProject = () => {},
+    clearFunction = () => {},
+}) => {
     const dispatch = useDispatch();
-    const researchProjects = useSelector((state) => state[researchProjectsState]);
-    const selectedResearchProject = useSelector((state) => state[selectedProjectState]);
+    const [inputValue, setInputValue] = React.useState(selectedResearchProject?.title ?? "");
 
-    console.log(`Project-List: ${researchProjects}`);
-    console.log(`selectedProject: ${selectedResearchProject}`);
+    React.useEffect(() => {
+        setInputValue(selectedResearchProject?.title ?? "");
+    }, [selectedResearchProject]);
+
     const onChangeResearchProjectSelection = (projectId = 0) => {
         if (projectId === 0) {
+            clearFunction();
             return;
         }
-        dispatch(
-            setSelectedProjectFunction({
-                id: researchProjects[projectId - 1].id,
-                title: researchProjects[projectId - 1].title,
-                teamLeaders: researchProjects[projectId - 1].team_leaders,
-            })
-        );
+
+        dispatch(setSelectedProject(researchProjects[projectId - 1]));
+        dispatch(setAgreementProject(projectId));
+    };
+    const onInputCloseButtonClick = () => {
+        dispatch(setSelectedProject({}));
+        clearFunction();
     };
 
-    const areThereTeamLeaders = selectedResearchProject?.teamLeaders?.length > 0;
-
-    const ProjectSummaryCard = () => {
+    const ProjectSummaryCard = ({ selectedResearchProject }) => {
+        const { title, description } = selectedResearchProject;
         return (
             <div
                 className="bg-base-lightest font-family-sans font-12px border-1px border-base-light radius-sm margin-top-4"
@@ -30,16 +39,20 @@ export const ProjectSelect = ({ researchProjectsState, selectedProjectState, set
             >
                 <dl className="margin-0 padding-y-2 padding-x-105">
                     <dt className="margin-0 text-base-dark">Project</dt>
-                    <dd className="text-semibold margin-0">{selectedResearchProject.title}</dd>
-                    {areThereTeamLeaders && <dt className="margin-0 text-base-dark margin-top-205">Project Officer</dt>}
-                    {selectedResearchProject?.teamLeaders?.map((leader) => (
-                        <dd key={leader?.id} className="text-semibold margin-0">
-                            {leader?.first_name} {leader?.last_name}
-                        </dd>
-                    ))}
+                    <dd className="text-semibold margin-0">{title}</dd>
+                    {description && <dt className="margin-0 text-base-dark margin-top-205">Project Description</dt>}
+                    <dd className="text-semibold margin-0" style={{ maxWidth: "15.625rem" }}>
+                        {description}
+                    </dd>
                 </dl>
             </div>
         );
+    };
+    ProjectSummaryCard.propTypes = {
+        selectedResearchProject: PropTypes.shape({
+            title: PropTypes.string.isRequired,
+            description: PropTypes.string,
+        }).isRequired,
     };
     return (
         <div className="display-flex flex-justify padding-top-105">
@@ -78,14 +91,15 @@ export const ProjectSelect = ({ researchProjectsState, selectedProjectState, set
                         type="text"
                         role="combobox"
                         aria-activedescendant=""
-                        defaultValue={selectedResearchProject?.title}
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
                     />
                     <span className="usa-combo-box__clear-input__wrapper" tabIndex="-1">
                         <button
                             type="button"
                             className="usa-combo-box__clear-input"
                             aria-label="Clear the select contents"
-                            onClick={() => dispatch(setSelectedProjectFunction({}))}
+                            onClick={() => onInputCloseButtonClick()}
                         >
                             &nbsp;
                         </button>
@@ -135,7 +149,20 @@ export const ProjectSelect = ({ researchProjectsState, selectedProjectState, set
                 </div>
             </div>
             {/* NOTE: Right side */}
-            <div className="right-half">{selectedResearchProject?.id && <ProjectSummaryCard />}</div>
+            <div className="right-half">
+                {selectedResearchProject?.id && (
+                    <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
+                )}
+            </div>
         </div>
     );
+};
+
+export default ProjectSelect;
+
+ProjectSelect.propTypes = {
+    researchProjects: PropTypes.array.isRequired,
+    selectedResearchProject: PropTypes.object.isRequired,
+    setSelectedProject: PropTypes.func.isRequired,
+    clearFunction: PropTypes.func,
 };

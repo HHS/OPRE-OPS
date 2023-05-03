@@ -1,12 +1,18 @@
-import { useSelector } from "react-redux";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import ProjectSelect from "./ProjectSelect";
+import ProjectSelect from "../../components/UI/Form/ProjectSelect";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
+import { setSelectedProject } from "./createAgreementSlice";
+import Modal from "../../components/UI/Modal/Modal";
 import { useGetResearchProjectsQuery } from "../../api/opsAPI";
 
 export const StepSelectProject = ({ goToNext, wizardSteps }) => {
+    const dispatch = useDispatch();
     const navigate = useNavigate();
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
+    const [showModal, setShowModal] = React.useState(false);
+    const [modalProps, setModalProps] = React.useState({});
     const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
 
     if (isLoadingProjects) {
@@ -21,6 +27,18 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
             goToNext({ project: selectedResearchProject.id });
         }
     };
+    const handleCancel = () => {
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel? Your agreement will not be saved.",
+            actionButtonText: "Continue",
+            handleConfirm: () => {
+                dispatch(setSelectedProject({}));
+                setModalProps({});
+                navigate("/");
+            },
+        });
+    };
 
     const handleAddProject = () => {
         navigate("/projects/create");
@@ -28,13 +46,31 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
 
     return (
         <>
-            <h1 className="font-sans-lg">Create New Agreement</h1>
-            <p>Follow the steps to create an Agreement</p>
+            {showModal && (
+                <Modal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+            <h1 className="font-sans-lg">Create New Budget Line</h1>
+            <p>Step One: Text explaining this page</p>
             <StepIndicator steps={wizardSteps} currentStep={1} />
             <h2 className="font-sans-lg">Select a Project</h2>
-            <p>Select the project the Agreement should be associated with.</p>
-            <ProjectSelect projectsList={projects} />
+            <p>
+                Select the project this budget line should be associated with. If you need to create a new project,
+                click Add New Project.
+            </p>
+            <ProjectSelect
+                researchProjects={projects}
+                selectedResearchProject={selectedResearchProject}
+                setSelectedProject={setSelectedProject}
+            />
             <div className="grid-row flex-justify-end margin-top-8">
+                <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
+                    Cancel
+                </button>
                 <button className="usa-button" onClick={handleContinue} disabled={!selectedResearchProject?.id}>
                     Continue
                 </button>

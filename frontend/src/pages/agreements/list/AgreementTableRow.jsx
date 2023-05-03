@@ -52,7 +52,7 @@ export const AgreementTableRow = ({ agreement }) => {
         (n, { date_needed }) => (n < date_needed ? n : date_needed),
         0
     );
-    console.log(`next needs by: ${nextNeedBy}`);
+
     nextNeedBy = nextNeedBy ? formatDate(new Date(nextNeedBy)) : "";
 
     // if there is 1 BLI with status === "UNDER_REVIEW" then agreement status is "UNDER_REVIEW"
