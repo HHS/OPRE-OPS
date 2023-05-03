@@ -172,7 +172,7 @@ export const CreateProject = () => {
                 <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
                     Cancel
                 </button>
-                <button className="usa-button" onClick={handleCreateProject}>
+                <button id="submit" className="usa-button" onClick={handleCreateProject}>
                     Create Project
                 </button>
             </div>
