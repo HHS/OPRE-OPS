@@ -9,7 +9,6 @@ import Alert from "../../components/UI/Alert/Alert";
 import { Modal } from "../../components/UI/Modal/Modal";
 
 export const CreateProject = () => {
-    const [currentIndex, setCurrentIndex] = React.useState(0);
     const dispatch = useDispatch();
     const projectShortTitle = useSelector((state) => state.createProject.project.short_title);
     const projectTitle = useSelector((state) => state.createProject.project.title);
