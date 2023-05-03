@@ -17,18 +17,12 @@ export const ProjectSelect = ({
     }, [selectedResearchProject]);
 
     const onChangeResearchProjectSelection = (projectId = 0) => {
-        console.log(`selected id: ${projectId}`);
         if (projectId === 0) {
             clearFunction();
             return;
         }
 
-        console.dir(researchProjects[projectId - 1]);
-        dispatch(
-            setSelectedProject({
-                ...researchProjects[projectId - 1],
-            })
-        );
+        dispatch(setSelectedProject(researchProjects[projectId - 1]));
         dispatch(setAgreementProject(projectId));
     };
     const onInputCloseButtonClick = () => {
