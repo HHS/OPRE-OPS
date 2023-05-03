@@ -5,14 +5,22 @@ import ProjectSelect from "../../components/UI/Form/ProjectSelect";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import { setSelectedProject } from "./createAgreementSlice";
 import Modal from "../../components/UI/Modal/Modal";
+import { useGetResearchProjectsQuery } from "../../api/opsAPI";
 
 export const StepSelectProject = ({ goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const researchProjects = useSelector((state) => state.createAgreement.research_projects_list);
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
+
+    if (isLoadingProjects) {
+        return <div>Loading...</div>;
+    }
+    if (errorProjects) {
+        return <div>Oops, an error occurred</div>;
+    }
 
     const handleContinue = () => {
         if (selectedResearchProject?.id) {
@@ -55,7 +63,7 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
                 click Add New Project.
             </p>
             <ProjectSelect
-                researchProjects={researchProjects}
+                researchProjects={projects}
                 selectedResearchProject={selectedResearchProject}
                 setSelectedProject={setSelectedProject}
             />

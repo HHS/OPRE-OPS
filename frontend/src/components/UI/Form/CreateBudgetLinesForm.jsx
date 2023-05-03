@@ -47,7 +47,8 @@ export const CreateBudgetLinesForm = ({
                 can: selectedCan,
                 agreement_id: selectedAgreement?.id,
                 amount: enteredAmount,
-                date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}`,
+                date_needed:
+                    enteredYear && enteredMonth && enteredDay ? `${enteredYear}-${enteredMonth}-${enteredDay}` : null,
                 psc_fee_amount: selectedProcurementShop?.fee,
             })
         );

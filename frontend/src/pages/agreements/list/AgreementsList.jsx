@@ -3,9 +3,21 @@ import { useGetAgreementsQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import { AgreementTableRow } from "./AgreementTableRow";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
+import sortAgreements from "./utils";
+import { useEffect } from "react";
 
 export const AgreementsList = () => {
-    const { data: agreements, error: errorAgreement, isLoading: isLoadingAgreement } = useGetAgreementsQuery();
+    const {
+        data: agreements,
+        error: errorAgreement,
+        isLoading: isLoadingAgreement,
+        refetch,
+    } = useGetAgreementsQuery({ refetchOnMountOrArgChange: true });
+
+    useEffect(() => {
+        refetch();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     if (isLoadingAgreement) {
         return <div>Loading...</div>;
@@ -14,13 +26,7 @@ export const AgreementsList = () => {
         return <div>Oops, an error occurred</div>;
     }
 
-    const sortedAgreements = agreements
-        .slice()
-        .sort(
-            (a, b) =>
-                a.budget_line_items.reduce((n, { date_needed }) => (n < date_needed ? n : date_needed), 0) -
-                b.budget_line_items.reduce((n, { date_needed }) => (n < date_needed ? n : date_needed), 0)
-        );
+    const sortedAgreements = sortAgreements(agreements);
 
     return (
         <App>
@@ -41,7 +47,6 @@ export const AgreementsList = () => {
                         </th>
                     </tr>
                 </thead>
-                {console.log("agreements", agreements)}
                 <tbody>
                     {sortedAgreements?.map((agreement) => (
                         <AgreementTableRow key={agreement?.id} agreement={agreement} />

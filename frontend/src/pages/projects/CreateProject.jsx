@@ -1,9 +1,17 @@
 import React from "react";
 import App from "../../App";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import ProjectTypeSelect from "./ProjectTypeSelect";
-import { setProjectId, setProjectShortTitle, setProjectTitle, setProjectDescription } from "./createProjectSlice";
-import { postProject } from "../../api/postProjects";
+import {
+    setProjectId,
+    setProjectShortTitle,
+    setProjectTitle,
+    setProjectDescription,
+    setSelectedProjectType,
+} from "./createProjectSlice";
+import { useAddResearchProjectsMutation } from "../../api/opsAPI";
+import Alert from "../../components/UI/Alert/Alert";
 
 export const CreateProject = () => {
     const [currentIndex, setCurrentIndex] = React.useState(0);
@@ -12,17 +20,56 @@ export const CreateProject = () => {
     const projectTitle = useSelector((state) => state.createProject.project.title);
     const projectDescription = useSelector((state) => state.createProject.project.description);
     const project = useSelector((state) => state.createProject.project);
-    const handleContinue = async () => {
-        // Save Project to DB
-        const response = await postProject(project);
-        const newProjectId = response.id;
-        console.log(`New Project Created: ${newProjectId}`);
-        dispatch(setProjectId(newProjectId));
-        alert("New Project Created!");
+
+    const [addResearchProject] = useAddResearchProjectsMutation();
+
+    const handleClearingForm = () => {
+        dispatch(setSelectedProjectType(null));
+        dispatch(setProjectShortTitle(""));
+        dispatch(setProjectTitle(""));
+        dispatch(setProjectDescription(""));
     };
+
+    const [isAlertActive, setIsAlertActive] = React.useState(false);
+    const [alertProps, setAlertProps] = React.useState({});
+    const navigate = useNavigate();
+
+    const showAlert = async (type, heading, message) => {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        window.scrollTo(0, 0);
+        setIsAlertActive(true);
+        setAlertProps({ type, heading, message });
+
+        await new Promise((resolve) => setTimeout(resolve, 6000));
+        setIsAlertActive(false);
+        setAlertProps({});
+        navigate("/");
+    };
+
+    const handleCreateProject = async () => {
+        // Save Project to DB
+        const newProject = { ...project };
+        delete newProject.id;
+        delete newProject.selected_project_type;
+
+        if (project) {
+            try {
+                const results = await addResearchProject(newProject).unwrap();
+                const newProjectId = results.id;
+                console.log(`New Project Created: ${newProjectId}`);
+                dispatch(setProjectId(newProjectId));
+                handleClearingForm();
+                showAlert("success", "New Project Created!", "The project has been successfully created.");
+            } catch (error) {
+                console.log("Error Submitting Project");
+                console.dir(error);
+            }
+        }
+    };
+
     const handleCancel = () => {
         // TODO: Add cancel stuff
-        // TODO: Clear createProject State
+        handleClearingForm();
         goBack();
     };
     const goBack = () => {
@@ -34,10 +81,18 @@ export const CreateProject = () => {
 
     return (
         <App>
-            <h1 className="font-sans-lg">Create New Project</h1>
+            {isAlertActive ? (
+                <Alert heading={alertProps.heading} type={alertProps.type} setIsAlertActive={setIsAlertActive}>
+                    {alertProps.message}
+                </Alert>
+            ) : (
+                <>
+                    <h1 className="font-sans-lg">Create New Project</h1>
 
-            <h2 className="font-sans-lg">Select the Project Type</h2>
-            <p>Select the type of project you are creating.</p>
+                    <h2 className="font-sans-lg">Select the Project Type</h2>
+                    <p>Select the type of project you are creating.</p>
+                </>
+            )}
             <ProjectTypeSelect />
 
             <h2 className="font-sans-lg">Project Details</h2>
@@ -88,7 +143,7 @@ export const CreateProject = () => {
                 <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
                     Cancel
                 </button>
-                <button className="usa-button" onClick={handleContinue}>
+                <button className="usa-button" onClick={handleCreateProject}>
                     Create Project
                 </button>
             </div>

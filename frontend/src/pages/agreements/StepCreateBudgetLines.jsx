@@ -146,8 +146,8 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
                 </Alert>
             ) : (
                 <>
-                    <h1 className="font-sans-lg">Create New Budget Line</h1>
-                    <p>Step Two: Text explaining this page</p>
+                    <h1 className="font-sans-lg">Create New Agreement</h1>
+                    <p>Follow the steps to create an Agreement</p>
                 </>
             )}
             <StepIndicator steps={wizardSteps} currentStep={3} />

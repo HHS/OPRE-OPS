@@ -1,3 +1,4 @@
+import React from "react";
 import { func, bool } from "prop-types";
 import { useState, Fragment } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,6 +9,8 @@ import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import Tag from "../../components/UI/Tag/Tag";
 import { editBudgetLineAdded, duplicateBudgetLineAdded } from "./createBudgetLineSlice";
 import { TotalSummaryCard } from "./TotalSummaryCard";
+import { formatDate } from "../../helpers/utils";
+import { getUser } from "../../api/getUser";
 import "./PreviewTable.scss";
 
 export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = false, budgetLines = null }) => {
@@ -27,11 +30,26 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
 
     const TableRow = ({ bl }) => {
         const [isExpanded, setIsExpanded] = useState(false);
+        const [user, setUser] = useState({});
+
+        React.useEffect(() => {
+            const getUserAndSetState = async (id) => {
+                const results = await getUser(id);
+                setUser(results);
+            };
+
+            if (bl?.created_by) {
+                getUserAndSetState(bl?.created_by).catch(console.error);
+            } else {
+                setUser({ full_name: "Sheila Celentano" });
+            }
+
+            return () => {
+                setUser({});
+            };
+        }, [bl]);
         const [isRowActive, setIsRowActive] = useState(false);
-        // function to format date like this 9/30/2023 || MM/DD/YYYY
-        const formatDate = (date) => {
-            return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
-        };
+
         const formatted_today = new Date().toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
         const bl_created_on = bl?.created_on
             ? new Date(bl.created_on).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" })
@@ -46,7 +64,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
             let year = date_needed.getFullYear();
             fiscalYear = month > 8 ? year + 1 : year;
         }
-        let feeTotal = bl?.amount * (bl?.psc_fee_amount / 100);
+        let feeTotal = bl?.amount * bl?.psc_fee_amount;
         let total = bl?.amount + feeTotal;
         let status = bl?.status.charAt(0).toUpperCase() + bl?.status.slice(1).toLowerCase();
 
@@ -188,7 +206,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                             <div className="display-flex padding-right-9">
                                 <dl className="font-12px">
                                     <dt className="margin-0 text-base-dark">Created By</dt>
-                                    <dd className="margin-0">{bl?.created_by ? bl.created_by : loggedInUser}</dd>
+                                    <dd className="margin-0">{bl?.created_by ? user.full_name : loggedInUser}</dd>
                                     <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                                         <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />
                                         {bl_created_on}

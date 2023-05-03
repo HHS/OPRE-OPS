@@ -18,7 +18,7 @@ export const TotalSummaryCard = ({ budgetLines }) => {
         let year = date_needed.getFullYear();
         let fiscalYear = month > 8 ? year + 1 : year;
         let amount = bl?.amount;
-        let fee = amount * (bl?.psc_fee_amount / 100);
+        let fee = amount * bl?.psc_fee_amount;
         let total = amount + fee;
         let status = bl?.status.charAt(0).toUpperCase() + bl?.status.slice(1).toLowerCase();
 
