@@ -88,13 +88,6 @@ export const CreateProject = () => {
         });
     };
 
-    const goBack = () => {
-        const previousIndex = currentIndex - 1;
-        if (previousIndex >= 0) {
-            setCurrentIndex(previousIndex);
-        }
-    };
-
     return (
         <App>
             {isAlertActive ? (
