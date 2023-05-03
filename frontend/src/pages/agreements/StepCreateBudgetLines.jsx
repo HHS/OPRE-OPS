@@ -109,13 +109,10 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
         resetBLIState();
         resetAgreementState();
 
-        // TODO: Route to Agreements List page, showing Agreement Review for now
         navigate("/agreements/");
-        // goToNext();
     };
 
     const handleCancel = () => {
-        // TODO: Navigate to /agreements when available.
         setShowModal(true);
         setModalProps({
             heading: "Are you sure you want to cancel? Your agreement will not be saved.",
@@ -124,7 +121,7 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
                 resetBLIState();
                 resetAgreementState();
                 setModalProps({});
-                navigate("/");
+                navigate("/agreements/");
             },
         });
     };
