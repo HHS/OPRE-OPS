@@ -1,21 +1,6 @@
-import { useDispatch, useSelector } from "react-redux";
-import { setSelectedProjectType } from "./createProjectSlice";
-
 const PROJECT_TYPES = ["Research"];
 
-export const ProjectTypeSelect = () => {
-    const dispatch = useDispatch();
-    const selectedProjectType = useSelector((state) => state.createProject.project.selected_project_type);
-
-    const onChangeProjectTypeSelection = (projectType) => {
-        if (projectType === "0") {
-            dispatch(setSelectedProjectType(null));
-            return;
-        }
-
-        dispatch(setSelectedProjectType(projectType));
-    };
-
+export const ProjectTypeSelect = ({ selectedProjectType, onChangeProjectTypeSelection }) => {
     return (
         <>
             <label className="usa-label" htmlFor="project-type-select-options">
@@ -24,7 +9,7 @@ export const ProjectTypeSelect = () => {
             <div className="display-flex flex-align-center margin-top-1">
                 <select
                     className="usa-select margin-top-0 width-card-lg"
-                    name="projectTypeSelectOptions"
+                    name="project-type-select-options"
                     id="project-type-select-options"
                     onChange={(e) => onChangeProjectTypeSelection(e.target.value || 0)}
                     value={selectedProjectType || ""}

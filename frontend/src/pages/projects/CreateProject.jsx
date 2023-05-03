@@ -3,13 +3,7 @@ import App from "../../App";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ProjectTypeSelect from "./ProjectTypeSelect";
-import {
-    setProjectId,
-    setProjectShortTitle,
-    setProjectTitle,
-    setProjectDescription,
-    setSelectedProjectType,
-} from "./createProjectSlice";
+import { setProjectId, setProjectShortTitle, setProjectTitle, setProjectDescription } from "./createProjectSlice";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
 import Alert from "../../components/UI/Alert/Alert";
 import { Modal } from "../../components/UI/Modal/Modal";
@@ -24,10 +18,21 @@ export const CreateProject = () => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
 
+    const [selectedProjectType, setSelectedProjectType] = React.useState("");
+
     const [addResearchProject] = useAddResearchProjectsMutation();
 
+    const onChangeProjectTypeSelection = (projectType) => {
+        if (projectType === "0") {
+            setSelectedProjectType(null);
+            return;
+        }
+
+        setSelectedProjectType(projectType);
+    };
+
     const handleClearingForm = () => {
-        dispatch(setSelectedProjectType(null));
+        setSelectedProjectType("");
         dispatch(setProjectShortTitle(""));
         dispatch(setProjectTitle(""));
         dispatch(setProjectDescription(""));
@@ -114,7 +119,10 @@ export const CreateProject = () => {
                 />
             )}
 
-            <ProjectTypeSelect />
+            <ProjectTypeSelect
+                selectedProjectType={selectedProjectType}
+                onChangeProjectTypeSelection={onChangeProjectTypeSelection}
+            />
 
             <h2 className="font-sans-lg">Project Details</h2>
 
