@@ -92,8 +92,14 @@ export const AgreementTableRow = ({ agreement }) => {
         setIsRowActive(true);
     };
 
-    const handleEditAgreement = (event) => {};
-    const handleDeleteAgreement = (event) => {};
+    const handleEditAgreement = (event) => {
+        // TODO: implement edit agreement
+        alert("not implemented yet");
+    };
+    const handleDeleteAgreement = (event) => {
+        // TODO: implement delete agreement
+        alert("not implemented yet");
+    };
     const handleSubmitAgreementForApproval = (event) => {
         navigate(`/agreements/approve/${event}`);
     };
