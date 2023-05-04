@@ -20,11 +20,23 @@ it("project type select has the correct options", () => {
 });
 
 it("can create a project", () => {
+    cy.intercept("POST", "**/research-projects").as("postProject");
+
     cy.get("#project-type-select-options").select("Research");
     cy.get("#project-abbr").type("Test Project Abbreviation");
     cy.get("#project-name").type("Test Project Name");
     cy.get("#project-description").type("Test Project Description");
     cy.get("#submit").click();
+
+    cy.wait("@postProject")
+        .then((interception) => {
+            const { statusCode, body } = interception.response;
+            expect(statusCode).to.equal(201);
+            expect(body.title).to.equal("Test Project Name");
+            expect(body.short_title).to.equal("Test Project Abbreviation");
+            expect(body.description).to.equal("Test Project Description");
+        })
+        .then(cy.log);
     cy.get(".usa-alert__body").should("contain", "The project has been successfully created.");
 });
 
