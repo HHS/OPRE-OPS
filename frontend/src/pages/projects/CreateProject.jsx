@@ -1,4 +1,4 @@
-import React from "react";
+import { useState } from "react";
 import App from "../../App";
 import { useNavigate } from "react-router-dom";
 import ProjectTypeSelect from "./ProjectTypeSelect";
@@ -7,15 +7,18 @@ import Alert from "../../components/UI/Alert/Alert";
 import { Modal } from "../../components/UI/Modal/Modal";
 
 export const CreateProject = () => {
-    // const project = useSelector((state) => state.createProject.project);
-    const [showModal, setShowModal] = React.useState(false);
-    const [modalProps, setModalProps] = React.useState({});
+    const [showModal, setShowModal] = useState(false);
+    const [modalProps, setModalProps] = useState({});
 
-    const [selectedProjectType, setSelectedProjectType] = React.useState("");
-    const [projectShortTitle, setProjectShortTitle] = React.useState("");
-    const [projectTitle, setProjectTitle] = React.useState("");
-    const [projectDescription, setProjectDescription] = React.useState("");
-    const [project, setProject] = React.useState({});
+    const [selectedProjectType, setSelectedProjectType] = useState("");
+    const [projectShortTitle, setProjectShortTitle] = useState("");
+    const [projectTitle, setProjectTitle] = useState("");
+    const [projectDescription, setProjectDescription] = useState("");
+    const [project, setProject] = useState({});
+    const [isAlertActive, setIsAlertActive] = useState(false);
+    const [alertProps, setAlertProps] = useState({});
+
+    const navigate = useNavigate();
 
     const [addResearchProject] = useAddResearchProjectsMutation();
 
@@ -34,10 +37,6 @@ export const CreateProject = () => {
         setProjectTitle("");
         setProjectDescription("");
     };
-
-    const [isAlertActive, setIsAlertActive] = React.useState(false);
-    const [alertProps, setAlertProps] = React.useState({});
-    const navigate = useNavigate();
 
     const showAlert = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
