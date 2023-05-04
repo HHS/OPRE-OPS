@@ -1,7 +1,7 @@
 import { useState } from "react";
 import App from "../../App";
 import { useNavigate } from "react-router-dom";
-import ProjectTypeSelect from "./ProjectTypeSelect";
+import ProjectTypeSelect from "../../components/ResearchProjects/ProjectTypeSelect/ProjectTypeSelect";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
 import Alert from "../../components/UI/Alert/Alert";
 import { Modal } from "../../components/UI/Modal/Modal";
