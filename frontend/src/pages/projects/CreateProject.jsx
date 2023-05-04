@@ -1,16 +1,13 @@
 import React from "react";
 import App from "../../App";
-import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ProjectTypeSelect from "./ProjectTypeSelect";
-import { setProjectId } from "./createProjectSlice";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
 import Alert from "../../components/UI/Alert/Alert";
 import { Modal } from "../../components/UI/Modal/Modal";
 
 export const CreateProject = () => {
-    const dispatch = useDispatch();
-    const project = useSelector((state) => state.createProject.project);
+    // const project = useSelector((state) => state.createProject.project);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
 
@@ -18,6 +15,7 @@ export const CreateProject = () => {
     const [projectShortTitle, setProjectShortTitle] = React.useState("");
     const [projectTitle, setProjectTitle] = React.useState("");
     const [projectDescription, setProjectDescription] = React.useState("");
+    const [project, setProject] = React.useState({});
 
     const [addResearchProject] = useAddResearchProjectsMutation();
 
@@ -54,23 +52,25 @@ export const CreateProject = () => {
     };
 
     const handleCreateProject = async () => {
-        // Save Project to DB
-        const newProject = { ...project };
-        delete newProject.id;
-        delete newProject.selected_project_type;
+        if (projectShortTitle) {
+            setProject({ ...project, short_title: projectShortTitle });
+        }
+        if (projectTitle) {
+            setProject({ ...project, title: projectTitle });
+        }
+        if (projectDescription) {
+            setProject({ ...project, description: projectDescription });
+        }
 
-        if (project) {
-            try {
-                const results = await addResearchProject(newProject).unwrap();
-                const newProjectId = results.id;
-                console.log(`New Project Created: ${newProjectId}`);
-                dispatch(setProjectId(newProjectId));
-                handleClearingForm();
-                showAlert("success", "New Project Created!", "The project has been successfully created.");
-            } catch (error) {
-                console.log("Error Submitting Project");
-                console.dir(error);
-            }
+        try {
+            const results = await addResearchProject(project);
+            const newProjectId = results.id;
+            console.log(`New Project Created: ${newProjectId}`);
+            handleClearingForm();
+            showAlert("success", "New Project Created!", "The project has been successfully created.");
+        } catch (error) {
+            console.log("Error Submitting Project");
+            console.dir(error);
         }
     };
 
