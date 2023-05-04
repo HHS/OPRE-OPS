@@ -35,7 +35,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const agreementNotes = useSelector((state) => state.createAgreement.agreement.notes);
     const agreement = useSelector((state) => state.createAgreement.agreement);
     const agreementReason = agreement.selected_agreement_reason;
-    const incumbentDisabled = agreementReason === "NEW_REQ";
+    const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null;
     const selectedProductServiceCode = useSelector(
         (state) => state.createAgreement.agreement.selected_product_service_code
     );
