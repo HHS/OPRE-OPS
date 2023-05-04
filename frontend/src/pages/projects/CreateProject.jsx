@@ -19,15 +19,6 @@ export const CreateProject = () => {
 
     const [addResearchProject, { isSuccess, isError, error, reset, data: rpData }] = useAddResearchProjectsMutation();
 
-    const onChangeProjectTypeSelection = (projectType) => {
-        if (projectType === "0") {
-            setSelectedProjectType(null);
-            return;
-        }
-
-        setSelectedProjectType(projectType);
-    };
-
     const handleClearingForm = () => {
         setSelectedProjectType("");
         setProject({});
@@ -105,7 +96,7 @@ export const CreateProject = () => {
 
             <ProjectTypeSelect
                 selectedProjectType={selectedProjectType}
-                onChangeProjectTypeSelection={onChangeProjectTypeSelection}
+                onChangeProjectTypeSelection={setSelectedProjectType}
             />
 
             <h2 className="font-sans-lg">Project Details</h2>
@@ -156,7 +147,7 @@ export const CreateProject = () => {
                 <button id="cancel" className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
                     Cancel
                 </button>
-                <button id="submit" className="usa-button" onClick={(e) => addResearchProject(project)}>
+                <button id="submit" className="usa-button" onClick={() => addResearchProject(project)}>
                     Create Project
                 </button>
             </div>
