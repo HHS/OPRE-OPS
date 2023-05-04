@@ -122,7 +122,7 @@ export const AgreementTableRow = ({ agreement }) => {
         return (
             <>
                 {(status === "Draft" || status === "In Review") && (
-                    <>
+                    <div className="display-flex flex-align-center">
                         <FontAwesomeIcon
                             icon={faPen}
                             className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
@@ -137,15 +137,14 @@ export const AgreementTableRow = ({ agreement }) => {
                             className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
                             onClick={() => handleDeleteAgreement(agreement.id)}
                         />
+
                         <svg
-                            className="usa-icon text-primary height-2 width-2 hover: cursor-pointer usa-tooltip"
-                            title="submit for approval"
-                            data-position="top"
+                            className="usa-icon text-primary height-205 width-205 hover: cursor-pointer usa-tooltip"
                             onClick={() => handleSubmitAgreementForApproval(agreement.id)}
                         >
                             <use xlinkHref={`${icons}#send`}></use>
                         </svg>
-                    </>
+                    </div>
                 )}
             </>
         );
