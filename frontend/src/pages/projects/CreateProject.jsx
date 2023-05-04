@@ -11,9 +11,6 @@ export const CreateProject = () => {
     const [modalProps, setModalProps] = useState({});
 
     const [selectedProjectType, setSelectedProjectType] = useState("");
-    const [projectShortTitle, setProjectShortTitle] = useState("");
-    const [projectTitle, setProjectTitle] = useState("");
-    const [projectDescription, setProjectDescription] = useState("");
     const [project, setProject] = useState({});
     const [isAlertActive, setIsAlertActive] = useState(false);
     const [alertProps, setAlertProps] = useState({});
@@ -33,9 +30,15 @@ export const CreateProject = () => {
 
     const handleClearingForm = () => {
         setSelectedProjectType("");
-        setProjectShortTitle("");
-        setProjectTitle("");
-        setProjectDescription("");
+        setProject({});
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setProject((prevState) => ({
+            ...prevState,
+            [name]: value,
+        }));
     };
 
     const showAlert = async (type, heading, message) => {
@@ -51,28 +54,23 @@ export const CreateProject = () => {
     };
 
     const handleCreateProject = async () => {
-        if (projectShortTitle) {
-            setProject({ ...project, short_title: projectShortTitle });
-        }
-        if (projectTitle) {
-            setProject({ ...project, title: projectTitle });
-        }
-        if (projectDescription) {
-            setProject({ ...project, description: projectDescription });
-        }
-
-        try {
-            const results = await addResearchProject(project);
-            const newProjectId = results.id;
-            console.log(`New Project Created: ${newProjectId}`);
-            handleClearingForm();
-            showAlert("success", "New Project Created!", "The project has been successfully created.");
-        } catch (error) {
-            console.log("Error Submitting Project");
-            console.dir(error);
-        }
+        addResearchProject(project)
+            .then((res, err) => {
+                if (err) {
+                    // TODO: Add error handling
+                    console.log("Error Submitting Project");
+                    console.dir(err);
+                } else {
+                    console.log(`New Project Created: ${res.data.id}`);
+                    handleClearingForm();
+                    showAlert("success", "New Project Created!", "The project has been successfully created.");
+                }
+            })
+            .catch((err) => {
+                console.log("Error Submitting Project");
+                console.dir(err);
+            });
     };
-
     const handleCancel = () => {
         // TODO: Add cancel stuff
         setShowModal(true);
@@ -123,10 +121,10 @@ export const CreateProject = () => {
             <input
                 className="usa-input"
                 id="project-abbr"
-                name="project-abbr"
+                name="short_title"
                 type="text"
-                value={projectShortTitle || ""}
-                onChange={(e) => setProjectShortTitle(e.target.value)}
+                value={project.short_title || ""}
+                onChange={handleChange}
                 required
             />
 
@@ -136,10 +134,10 @@ export const CreateProject = () => {
             <input
                 className="usa-input"
                 id="project-name"
-                name="project-name"
+                name="title"
                 type="text"
-                value={projectTitle || ""}
-                onChange={(e) => setProjectTitle(e.target.value)}
+                value={project.title || ""}
+                onChange={handleChange}
                 required
             />
 
@@ -152,11 +150,11 @@ export const CreateProject = () => {
             <textarea
                 className="usa-textarea"
                 id="project-description"
-                name="project-description"
+                name="description"
                 rows="5"
                 style={{ height: "7rem" }}
-                value={projectDescription || ""}
-                onChange={(e) => setProjectDescription(e.target.value)}
+                value={project.description || ""}
+                onChange={handleChange}
             ></textarea>
 
             <div className="grid-row flex-justify-end margin-top-8">
