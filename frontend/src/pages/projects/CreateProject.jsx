@@ -3,14 +3,13 @@ import App from "../../App";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ProjectTypeSelect from "./ProjectTypeSelect";
-import { setProjectId, setProjectDescription } from "./createProjectSlice";
+import { setProjectId } from "./createProjectSlice";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
 import Alert from "../../components/UI/Alert/Alert";
 import { Modal } from "../../components/UI/Modal/Modal";
 
 export const CreateProject = () => {
     const dispatch = useDispatch();
-    const projectDescription = useSelector((state) => state.createProject.project.description);
     const project = useSelector((state) => state.createProject.project);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -18,6 +17,7 @@ export const CreateProject = () => {
     const [selectedProjectType, setSelectedProjectType] = React.useState("");
     const [projectShortTitle, setProjectShortTitle] = React.useState("");
     const [projectTitle, setProjectTitle] = React.useState("");
+    const [projectDescription, setProjectDescription] = React.useState("");
 
     const [addResearchProject] = useAddResearchProjectsMutation();
 
@@ -34,7 +34,7 @@ export const CreateProject = () => {
         setSelectedProjectType("");
         setProjectShortTitle("");
         setProjectTitle("");
-        dispatch(setProjectDescription(""));
+        setProjectDescription("");
     };
 
     const [isAlertActive, setIsAlertActive] = React.useState(false);
@@ -157,7 +157,7 @@ export const CreateProject = () => {
                 rows="5"
                 style={{ height: "7rem" }}
                 value={projectDescription || ""}
-                onChange={(e) => dispatch(setProjectDescription(e.target.value))}
+                onChange={(e) => setProjectDescription(e.target.value)}
             ></textarea>
 
             <div className="grid-row flex-justify-end margin-top-8">
