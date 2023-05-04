@@ -3,28 +3,35 @@ import App from "../../App";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ProjectTypeSelect from "./ProjectTypeSelect";
-import {
-    setProjectId,
-    setProjectShortTitle,
-    setProjectTitle,
-    setProjectDescription,
-    setSelectedProjectType,
-} from "./createProjectSlice";
+import { setProjectId, setProjectShortTitle, setProjectTitle, setProjectDescription } from "./createProjectSlice";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
 import Alert from "../../components/UI/Alert/Alert";
+import { Modal } from "../../components/UI/Modal/Modal";
 
 export const CreateProject = () => {
-    const [currentIndex, setCurrentIndex] = React.useState(0);
     const dispatch = useDispatch();
     const projectShortTitle = useSelector((state) => state.createProject.project.short_title);
     const projectTitle = useSelector((state) => state.createProject.project.title);
     const projectDescription = useSelector((state) => state.createProject.project.description);
     const project = useSelector((state) => state.createProject.project);
+    const [showModal, setShowModal] = React.useState(false);
+    const [modalProps, setModalProps] = React.useState({});
+
+    const [selectedProjectType, setSelectedProjectType] = React.useState("");
 
     const [addResearchProject] = useAddResearchProjectsMutation();
 
+    const onChangeProjectTypeSelection = (projectType) => {
+        if (projectType === "0") {
+            setSelectedProjectType(null);
+            return;
+        }
+
+        setSelectedProjectType(projectType);
+    };
+
     const handleClearingForm = () => {
-        dispatch(setSelectedProjectType(null));
+        setSelectedProjectType("");
         dispatch(setProjectShortTitle(""));
         dispatch(setProjectTitle(""));
         dispatch(setProjectDescription(""));
@@ -69,14 +76,15 @@ export const CreateProject = () => {
 
     const handleCancel = () => {
         // TODO: Add cancel stuff
-        handleClearingForm();
-        goBack();
-    };
-    const goBack = () => {
-        const previousIndex = currentIndex - 1;
-        if (previousIndex >= 0) {
-            setCurrentIndex(previousIndex);
-        }
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel? Your project will not be saved.",
+            actionButtonText: "Cancel",
+            handleConfirm: () => {
+                handleClearingForm();
+                navigate("/");
+            },
+        });
     };
 
     return (
@@ -93,7 +101,20 @@ export const CreateProject = () => {
                     <p>Select the type of project you are creating.</p>
                 </>
             )}
-            <ProjectTypeSelect />
+
+            {showModal && (
+                <Modal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+
+            <ProjectTypeSelect
+                selectedProjectType={selectedProjectType}
+                onChangeProjectTypeSelection={onChangeProjectTypeSelection}
+            />
 
             <h2 className="font-sans-lg">Project Details</h2>
 
@@ -140,10 +161,10 @@ export const CreateProject = () => {
             ></textarea>
 
             <div className="grid-row flex-justify-end margin-top-8">
-                <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
+                <button id="cancel" className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
                     Cancel
                 </button>
-                <button className="usa-button" onClick={handleCreateProject}>
+                <button id="submit" className="usa-button" onClick={handleCreateProject}>
                     Create Project
                 </button>
             </div>
