@@ -17,7 +17,7 @@ export const CreateProject = () => {
 
     const navigate = useNavigate();
 
-    const [addResearchProject] = useAddResearchProjectsMutation();
+    const [addResearchProject, { isSuccess, isError, error, reset, data: rpData }] = useAddResearchProjectsMutation();
 
     const onChangeProjectTypeSelection = (projectType) => {
         if (projectType === "0") {
@@ -53,24 +53,19 @@ export const CreateProject = () => {
         navigate("/");
     };
 
-    const handleCreateProject = async () => {
-        addResearchProject(project)
-            .then((res, err) => {
-                if (err) {
-                    // TODO: Add error handling
-                    console.log("Error Submitting Project");
-                    console.dir(err);
-                } else {
-                    console.log(`New Project Created: ${res.data.id}`);
-                    handleClearingForm();
-                    showAlert("success", "New Project Created!", "The project has been successfully created.");
-                }
-            })
-            .catch((err) => {
-                console.log("Error Submitting Project");
-                console.dir(err);
-            });
-    };
+    if (isError) {
+        // TODO: Add error handling
+        console.log("Error Submitting Project");
+        console.dir(error);
+    }
+
+    if (isSuccess) {
+        console.log(`New Project Created: ${rpData.id}`);
+        handleClearingForm();
+        reset();
+        showAlert("success", "New Project Created!", "The project has been successfully created.");
+    }
+
     const handleCancel = () => {
         // TODO: Add cancel stuff
         setShowModal(true);
@@ -161,7 +156,7 @@ export const CreateProject = () => {
                 <button id="cancel" className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
                     Cancel
                 </button>
-                <button id="submit" className="usa-button" onClick={handleCreateProject}>
+                <button id="submit" className="usa-button" onClick={(e) => addResearchProject(project)}>
                     Create Project
                 </button>
             </div>
