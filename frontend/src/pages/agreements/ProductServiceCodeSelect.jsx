@@ -39,7 +39,7 @@ export const ProductServiceCodeSelect = () => {
             </label>
             <div className="display-flex flex-align-center margin-top-1">
                 <select
-                    className="usa-select margin-top-0 width-full"
+                    className="usa-select margin-top-0 width-fit-content"
                     name="options"
                     id="options"
                     onChange={(e) => {

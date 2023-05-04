@@ -45,7 +45,7 @@ export const ProcurementShopSelect = () => {
             </label>
             <div className="display-flex flex-align-center margin-top-1">
                 <select
-                    className="usa-select margin-top-0 width-card-lg"
+                    className="usa-select margin-top-0 width-fit-content"
                     name="procurement-shop-select"
                     id="procurement-shop-select"
                     onChange={(e) => onChangeProcurementShopSelection(Number(e.target.value) || 0)}
@@ -55,7 +55,7 @@ export const ProcurementShopSelect = () => {
                     <option value={0}>- Select a Procurement Shop -</option>
                     {procurementShops.map((shop) => (
                         <option key={shop?.id} value={shop?.id}>
-                            {shop?.name}
+                            {shop?.name} ({shop?.abbr})
                         </option>
                     ))}
                 </select>
