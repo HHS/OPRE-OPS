@@ -33,7 +33,7 @@ export const AgreementsList = () => {
             <Breadcrumb currentName={"Agreements"} />
 
             <h1 className="font-sans-lg">Agreements</h1>
-
+            <p>This is a list of the agreements you are listed as a Team Member on.</p>
             <table className="usa-table usa-table--borderless width-full ">
                 <thead>
                     <tr>
