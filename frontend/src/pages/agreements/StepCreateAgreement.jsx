@@ -34,6 +34,8 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const agreementDescription = useSelector((state) => state.createAgreement.agreement.description);
     const agreementNotes = useSelector((state) => state.createAgreement.agreement.notes);
     const agreement = useSelector((state) => state.createAgreement.agreement);
+    const agreementReason = agreement.selected_agreement_reason;
+    const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null;
     const selectedProductServiceCode = useSelector(
         (state) => state.createAgreement.agreement.selected_product_service_code
     );
@@ -42,40 +44,43 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
 
-    const handleContinue = async () => {
-        // Save Agreement to DB
+    const saveAgreement = async () => {
         const response = await postAgreement(agreement);
         const newAgreementId = response.id;
         console.log(`New Agreement Created: ${newAgreementId}`);
         dispatch(setAgreementId(newAgreementId));
+    };
+    const clearAgreement = () => {
+        dispatch(setAgreementTitle(""));
+        dispatch(setAgreementDescription(""));
+        dispatch(setAgreementIncumbent(null));
+        dispatch(setAgreementNotes(""));
+        dispatch(setSelectedProject({}));
+        dispatch(setSelectedAgreementType(null));
+        dispatch(setAgreementProductServiceCode(null));
+        dispatch(setSelectedAgreementReason(null));
+        dispatch(setSelectedProcurementShop({}));
+        dispatch(setAgreementProjectOfficer(null));
+        dispatch(setAgreementTeamMembers([]));
+        setModalProps({});
+    };
+    const handleContinue = async () => {
+        saveAgreement();
         goToNext();
     };
-    const handleDraft = () => {
-        // TODO: Save Agreement as Draft
-        const response = postAgreement(agreement);
-        alert(`Draft Agreement: ${response} saved`);
-        // TODO: Redirect to /agreements when available.
+    const handleDraft = async () => {
+        saveAgreement();
+        clearAgreement();
+        navigate("/agreements/");
     };
     const handleCancel = () => {
-        // TODO: Navigate to /agreements when available.
         setShowModal(true);
         setModalProps({
             heading: "Are you sure you want to cancel? Your agreement will not be saved.",
             actionButtonText: "Continue",
             handleConfirm: () => {
-                dispatch(setAgreementTitle(""));
-                dispatch(setAgreementDescription(""));
-                dispatch(setAgreementIncumbent(null));
-                dispatch(setAgreementNotes(""));
-                dispatch(setSelectedProject({}));
-                dispatch(setSelectedAgreementType(null));
-                dispatch(setAgreementProductServiceCode(null));
-                dispatch(setSelectedAgreementReason(null));
-                dispatch(setSelectedProcurementShop({}));
-                dispatch(setAgreementProjectOfficer(null));
-                dispatch(setAgreementTeamMembers([]));
-                setModalProps({});
-                navigate("/");
+                clearAgreement();
+                navigate("/agreements/");
             },
         });
     };
@@ -176,7 +181,10 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             <h2 className="font-sans-lg margin-top-3">Reason for Agreement</h2>
             <div className="display-flex">
                 <AgreementReasonSelect />
-                <fieldset className="usa-fieldset margin-left-4">
+                <fieldset
+                    className={`usa-fieldset margin-left-4 ${incumbentDisabled && "text-disabled"}`}
+                    disabled={incumbentDisabled}
+                >
                     <label className="usa-label margin-top-0" htmlFor="agreement-incumbent">
                         Incumbent
                     </label>

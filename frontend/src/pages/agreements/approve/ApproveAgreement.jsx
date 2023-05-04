@@ -10,9 +10,6 @@ export const ApproveAgreement = () => {
     return (
         <App>
             <Breadcrumb currentName={"Agreements"} />
-
-            <h1 className="font-sans-lg">Agreements</h1>
-
             <ReviewAgreement agreement_id={agreementId} />
         </App>
     );

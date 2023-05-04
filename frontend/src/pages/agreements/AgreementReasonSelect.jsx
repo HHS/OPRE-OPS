@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setAgreementReasonsList, setSelectedAgreementReason } from "./createAgreementSlice";
+import { setAgreementReasonsList, setSelectedAgreementReason, setAgreementIncumbent } from "./createAgreementSlice";
 import { getAgreementReasons } from "../../api/getAgreements";
 
 export const AgreementReasonSelect = () => {
@@ -24,7 +24,11 @@ export const AgreementReasonSelect = () => {
     const onChangeAgreementReasonSelection = (agreementReason) => {
         if (agreementReason === "0") {
             dispatch(setSelectedAgreementReason(null));
+            dispatch(setAgreementIncumbent(null));
             return;
+        }
+        if (agreementReason === "NEW_REQ") {
+            dispatch(setAgreementIncumbent(null));
         }
 
         dispatch(setSelectedAgreementReason(agreementReason));

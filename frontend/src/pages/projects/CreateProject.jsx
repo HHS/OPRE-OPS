@@ -9,7 +9,6 @@ import { Modal } from "../../components/UI/Modal/Modal";
 export const CreateProject = () => {
     const [showModal, setShowModal] = useState(false);
     const [modalProps, setModalProps] = useState({});
-
     const [selectedProjectType, setSelectedProjectType] = useState("");
     const [project, setProject] = useState({});
     const [isAlertActive, setIsAlertActive] = useState(false);
@@ -79,9 +78,7 @@ export const CreateProject = () => {
             ) : (
                 <>
                     <h1 className="font-sans-lg">Create New Project</h1>
-
-                    <h2 className="font-sans-lg">Select the Project Type</h2>
-                    <p>Select the type of project you are creating.</p>
+                    <p>Fill out this form to create a new project.</p>
                 </>
             )}
 
@@ -93,7 +90,8 @@ export const CreateProject = () => {
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-
+            <h2 className="font-sans-lg margin-top-7">Select the Project Type</h2>
+            <p>Select the type of project you are creating.</p>
             <ProjectTypeSelect
                 selectedProjectType={selectedProjectType}
                 onChangeProjectTypeSelection={setSelectedProjectType}
