@@ -3,14 +3,13 @@ import App from "../../App";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ProjectTypeSelect from "./ProjectTypeSelect";
-import { setProjectId, setProjectTitle, setProjectDescription } from "./createProjectSlice";
+import { setProjectId, setProjectDescription } from "./createProjectSlice";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
 import Alert from "../../components/UI/Alert/Alert";
 import { Modal } from "../../components/UI/Modal/Modal";
 
 export const CreateProject = () => {
     const dispatch = useDispatch();
-    const projectTitle = useSelector((state) => state.createProject.project.title);
     const projectDescription = useSelector((state) => state.createProject.project.description);
     const project = useSelector((state) => state.createProject.project);
     const [showModal, setShowModal] = React.useState(false);
@@ -18,6 +17,7 @@ export const CreateProject = () => {
 
     const [selectedProjectType, setSelectedProjectType] = React.useState("");
     const [projectShortTitle, setProjectShortTitle] = React.useState("");
+    const [projectTitle, setProjectTitle] = React.useState("");
 
     const [addResearchProject] = useAddResearchProjectsMutation();
 
@@ -33,7 +33,7 @@ export const CreateProject = () => {
     const handleClearingForm = () => {
         setSelectedProjectType("");
         setProjectShortTitle("");
-        dispatch(setProjectTitle(""));
+        setProjectTitle("");
         dispatch(setProjectDescription(""));
     };
 
@@ -140,7 +140,7 @@ export const CreateProject = () => {
                 name="project-name"
                 type="text"
                 value={projectTitle || ""}
-                onChange={(e) => dispatch(setProjectTitle(e.target.value))}
+                onChange={(e) => setProjectTitle(e.target.value)}
                 required
             />
 
