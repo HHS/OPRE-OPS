@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "074997b3d252c1b7641a2bcc1288dcb3659a081a0887eb0780ae429732f36b54"
+            "sha256": "98a8c60b46f8281191ee9f050f266b2e250a8659e68450d27b6c2147fde93304"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -1290,11 +1290,11 @@
         },
         "ipython": {
             "hashes": [
-                "sha256:1c80d08f04144a1994cda25569eab07fbdc4989bd8d8793e3a4ff643065ccb51",
-                "sha256:9c8487ac18f330c8a683fc50ab6d7bc0fcf9ef1d7a9f6ce7926938261067b81f"
+                "sha256:7dff3fad32b97f6488e02f87b970f309d082f758d7b7fc252e3b19ee0e432dbb",
+                "sha256:ffca270240fbd21b06b2974e14a86494d6d29290184e788275f55e0b55914926"
             ],
             "index": "pypi",
-            "version": "==8.13.1"
+            "version": "==8.13.2"
         },
         "isort": {
             "hashes": [
@@ -1890,10 +1890,10 @@
         },
         "types-docutils": {
             "hashes": [
-                "sha256:008094d649bb728ff3736ff69b09cf62c04d651c577109ea4ae0f381621a7509",
-                "sha256:975f8a78a2f422d8c6e776a09988e25565f54f7971a9384bbe8b004a1e3b0f90"
+                "sha256:1d029567e67c52992fd42aa968778bc10a5e445c8450fc751d672d6f50330a4a",
+                "sha256:556fb7ee19248aa482caa142a830c940b776b0f8c7577a98abe0977574546a1d"
             ],
-            "version": "==0.19.1.8"
+            "version": "==0.19.1.9"
         },
         "types-emoji": {
             "hashes": [
@@ -2002,10 +2002,10 @@
         },
         "types-markdown": {
             "hashes": [
-                "sha256:7fd3ecb487f1d41c043fa24c00258ab7e1fe37585ee6ad016a1a3c03bca34f73",
-                "sha256:ecea668b1e5aaa8fb4f7067622af3c3341cb9145baa4d939b7c75d3e1eb26f7f"
+                "sha256:737594dc97dd38da72a2f90f5591c36a17003c913dd629a15145f3b221daf95d",
+                "sha256:f4114d44ebd660edfa5e68366971ff32c44c90dce584158faa1abe6bf8075bd8"
             ],
-            "version": "==3.4.2.7"
+            "version": "==3.4.2.8"
         },
         "types-markupsafe": {
             "hashes": [
@@ -2057,10 +2057,10 @@
         },
         "types-paramiko": {
             "hashes": [
-                "sha256:5827d71fb1962f27af90def565283cc900270055be4f9a00c62b3e9fea16430a",
-                "sha256:6f9b0a38d13ec31a7748f8e0070f8a767479abcf8def246545c391680531d4f0"
+                "sha256:2d4ccf7e9929ccae9d4aea5b503e99347975de05c27d79785b2df4ae3e2dc21e",
+                "sha256:c96791305cc4404ef250d5a0413535cdee1cef5ad0e327218b042b0b371810a6"
             ],
-            "version": "==3.0.0.8"
+            "version": "==3.0.0.9"
         },
         "types-pathlib2": {
             "hashes": [
