@@ -75,6 +75,7 @@ export const TeamMemberSelect = ({ className }) => {
                 <span className="usa-combo-box__input-button-separator">&nbsp;</span>
                 <span className="usa-combo-box__toggle-list__wrapper" tabIndex="-1">
                     <button
+                        id="team-member-select-toggle-list"
                         type="button"
                         tabIndex="-1"
                         className="usa-combo-box__toggle-list"

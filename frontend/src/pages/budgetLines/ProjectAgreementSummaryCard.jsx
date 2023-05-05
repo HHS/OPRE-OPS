@@ -20,15 +20,15 @@ export const ProjectAgreementSummaryCard = ({
                 <dd className="margin-0 text-bold margin-top-1" style={{ fontSize: "1.375rem" }}>
                     {agreementName}
                 </dd>
-                <div className="display-flex margin-top-205 font-12px">
-                    <div>
-                        <dt className="margin-0 text-base-dark">Procurement Shop</dt>
-                        <dd className="margin-0 text-semibold">{procurementShopName}</dd>
-                    </div>
-                    <div className="margin-left-5">
-                        <dt className="margin-0 text-base-dark">Fee Rate</dt>
-                        <dd className="margin-0 text-semibold">{fee && `${fee * 100}%`}</dd>
-                    </div>
+            </dl>
+            <dl className="display-flex margin-top-205 font-12px padding-x-3">
+                <div>
+                    <dt className="margin-0 text-base-dark">Procurement Shop</dt>
+                    <dd className="margin-0 text-semibold">{procurementShopName}</dd>
+                </div>
+                <div className="margin-left-5">
+                    <dt className="margin-0 text-base-dark">Fee Rate</dt>
+                    <dd className="margin-0 text-semibold">{fee && `${fee * 100}%`}</dd>
                 </div>
             </dl>
         </div>

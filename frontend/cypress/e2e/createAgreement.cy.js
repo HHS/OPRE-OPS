@@ -23,35 +23,36 @@ it("project type select has some projects", () => {
 it("can create an agreement", () => {
     cy.intercept("POST", "**/agreements").as("postAgreement");
 
-    // select item in combobox
-    // cy.get("#project--list").select("Human Services Interoperability Support");
+    // Step One - Select a Project
     cy.get("#project--list--toggle").click();
+    cy.get("#project--list").invoke("show");
     cy.get("li").contains("Human Services Interoperability Support").click();
-    // get li containing text "Human Services Interoperability Support" and click it
-
-    // cy.get("#project-type-select-options").select("Research");
-    // cy.get("#project-abbr").type("Test Project Abbreviation");
-    // cy.get("#project-name").type("Test Project Name");
-    // cy.get("#project-description").type("Test Project Description");
     cy.get("#continue").click();
 
-    // cy.wait("@postProject")
-    //     .then((interception) => {
-    //         const { statusCode, body } = interception.response;
-    //         expect(statusCode).to.equal(201);
-    //         expect(body.title).to.equal("Test Project Name");
-    //         expect(body.short_title).to.equal("Test Project Abbreviation");
-    //         expect(body.description).to.equal("Test Project Description");
-    //     })
-    //     .then(cy.log);
-    // cy.get(".usa-alert__body").should("contain", "The project has been successfully created.");
+    // Step Two - Create an Agreement
+    cy.get("#agreement-type-options").select("CONTRACT");
+    cy.get("#agreement-title").type("Test Agreement Title");
+    cy.get("#agreement-description").type("Test Agreement Description");
+    cy.get("#product-service-code-options").select("Other Scientific and Technical Consulting Services");
+    cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
+    cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
+    cy.get("#reason-for-agreement-select").select("NEW_REQ");
+
+    // Select Project Officer
+    cy.get("#project-officer-select-toggle-list").click();
+    cy.get("#project-officer-select").invoke("show");
+    cy.get("#users--list").invoke("show");
+    cy.get("li").contains("Chris Fortunato").click();
+
+    // Skip Select Team Members for now - something is wrong with the select
+    cy.get("#with-hint-textarea").type("This is a note.");
+    cy.get("#continue").click();
+
+    cy.wait("@postAgreement")
+        .then((interception) => {
+            const { statusCode, body } = interception.response;
+            expect(statusCode).to.equal(201);
+            expect(body.message).to.equal("Agreement created");
+        })
+        .then(cy.log);
 });
-//
-// it("can cancel a project", () => {
-//     cy.get("#project-type-select-options").select("Research");
-//     cy.get("#project-abbr").type("Test Project Abbreviation");
-//     cy.get("#project-name").type("Test Project Name");
-//     cy.get("#project-description").type("Test Project Description");
-//     cy.get("#cancel").click();
-//     cy.get(".usa-modal").should("contain", "Are you sure you want to cancel?");
-// });

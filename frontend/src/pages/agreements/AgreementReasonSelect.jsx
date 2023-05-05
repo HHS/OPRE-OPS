@@ -36,14 +36,14 @@ export const AgreementReasonSelect = () => {
 
     return (
         <fieldset className="usa-fieldset">
-            <label className="usa-label margin-top-0" htmlFor="agreement-select">
+            <label className="usa-label margin-top-0" htmlFor="reason-for-agreement-select">
                 Reason for Agreement
             </label>
             <div className="display-flex flex-align-center margin-top-1">
                 <select
                     className="usa-select margin-top-0 width-card-lg"
-                    name="agreement-select"
-                    id="agreement-select"
+                    name="reason-for-agreement-select"
+                    id="reason-for-agreement-select"
                     onChange={(e) => onChangeAgreementReasonSelection(e.target.value || 0)}
                     value={selectedAgreementReason || ""}
                     required
