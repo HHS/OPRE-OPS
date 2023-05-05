@@ -32,14 +32,14 @@ export const AgreementTypeSelect = () => {
 
     return (
         <>
-            <label className="usa-label margin-top-205" htmlFor="options">
+            <label className="usa-label margin-top-205" htmlFor="agreement-type-options">
                 Agreement Type
             </label>
             <div className="display-flex flex-align-center margin-top-1">
                 <select
                     className="usa-select margin-top-0 width-card-lg"
-                    name="options"
-                    id="options"
+                    name="agreement-type-options"
+                    id="agreement-type-options"
                     onChange={(e) => onChangeAgreementTypeSelection(e.target.value || 0)}
                     value={selectedAgreementType || ""}
                     required

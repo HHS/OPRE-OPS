@@ -102,7 +102,7 @@ export const ProjectOfficerSelect = () => {
                                 aria-setsize={usersList?.length}
                                 aria-posinset={index + 1}
                                 aria-selected="false"
-                                id={`dynamic-select--list--option-${index}`}
+                                id={`project-officer-dynamic-select--list--option-${index}`}
                                 className="usa-combo-box__list-option"
                                 tabIndex={index === 0 ? "0" : "-1"}
                                 role="option"
