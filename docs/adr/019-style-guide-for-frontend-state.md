@@ -6,7 +6,7 @@ Tentative
 
 There are variety of technologies available for managing state in a React application.  The most common are:
 * [Redux](https://redux.js.org/)
-* [React Toolkit RTK Query](https://redux-toolkit.js.org/rtk-query/overview)
+* [Redux Toolkit RTK Query](https://redux-toolkit.js.org/rtk-query/overview)
 * [React useState hook](https://react.dev/reference/react/useState)
 * [React props](https://reactjs.org/docs/components-and-props.html)
 
