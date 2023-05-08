@@ -22,7 +22,7 @@ export const Alert = ({ type, heading, children, setIsAlertActive }) => {
         <div className={classNames}>
             <div className="usa-alert__body display-flex flex-justify">
                 <div>
-                    <h4 className="usa-alert__heading">{heading}</h4>
+                    <h1 className="usa-alert__heading">{heading}</h1>
                     <p className="usa-alert__text">{children}</p>
                 </div>
                 <FontAwesomeIcon

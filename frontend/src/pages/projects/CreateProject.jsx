@@ -1,38 +1,35 @@
-import React from "react";
+import { useState } from "react";
 import App from "../../App";
-import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import ProjectTypeSelect from "./ProjectTypeSelect";
-import {
-    setProjectId,
-    setProjectShortTitle,
-    setProjectTitle,
-    setProjectDescription,
-    setSelectedProjectType,
-} from "./createProjectSlice";
+import ProjectTypeSelect from "../../components/ResearchProjects/ProjectTypeSelect/ProjectTypeSelect";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
 import Alert from "../../components/UI/Alert/Alert";
+import { Modal } from "../../components/UI/Modal/Modal";
 
 export const CreateProject = () => {
-    const [currentIndex, setCurrentIndex] = React.useState(0);
-    const dispatch = useDispatch();
-    const projectShortTitle = useSelector((state) => state.createProject.project.short_title);
-    const projectTitle = useSelector((state) => state.createProject.project.title);
-    const projectDescription = useSelector((state) => state.createProject.project.description);
-    const project = useSelector((state) => state.createProject.project);
+    const [showModal, setShowModal] = useState(false);
+    const [modalProps, setModalProps] = useState({});
+    const [selectedProjectType, setSelectedProjectType] = useState("");
+    const [project, setProject] = useState({});
+    const [isAlertActive, setIsAlertActive] = useState(false);
+    const [alertProps, setAlertProps] = useState({});
 
-    const [addResearchProject] = useAddResearchProjectsMutation();
+    const navigate = useNavigate();
+
+    const [addResearchProject, { isSuccess, isError, error, reset, data: rpData }] = useAddResearchProjectsMutation();
 
     const handleClearingForm = () => {
-        dispatch(setSelectedProjectType(null));
-        dispatch(setProjectShortTitle(""));
-        dispatch(setProjectTitle(""));
-        dispatch(setProjectDescription(""));
+        setSelectedProjectType("");
+        setProject({});
     };
 
-    const [isAlertActive, setIsAlertActive] = React.useState(false);
-    const [alertProps, setAlertProps] = React.useState({});
-    const navigate = useNavigate();
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setProject((prevState) => ({
+            ...prevState,
+            [name]: value,
+        }));
+    };
 
     const showAlert = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -46,37 +43,30 @@ export const CreateProject = () => {
         navigate("/");
     };
 
-    const handleCreateProject = async () => {
-        // Save Project to DB
-        const newProject = { ...project };
-        delete newProject.id;
-        delete newProject.selected_project_type;
+    if (isError) {
+        // TODO: Add error handling
+        console.log("Error Submitting Project");
+        console.dir(error);
+    }
 
-        if (project) {
-            try {
-                const results = await addResearchProject(newProject).unwrap();
-                const newProjectId = results.id;
-                console.log(`New Project Created: ${newProjectId}`);
-                dispatch(setProjectId(newProjectId));
-                handleClearingForm();
-                showAlert("success", "New Project Created!", "The project has been successfully created.");
-            } catch (error) {
-                console.log("Error Submitting Project");
-                console.dir(error);
-            }
-        }
-    };
+    if (isSuccess) {
+        console.log(`New Project Created: ${rpData.id}`);
+        handleClearingForm();
+        reset();
+        showAlert("success", "New Project Created!", "The project has been successfully created.");
+    }
 
     const handleCancel = () => {
         // TODO: Add cancel stuff
-        handleClearingForm();
-        goBack();
-    };
-    const goBack = () => {
-        const previousIndex = currentIndex - 1;
-        if (previousIndex >= 0) {
-            setCurrentIndex(previousIndex);
-        }
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel? Your project will not be saved.",
+            actionButtonText: "Cancel",
+            handleConfirm: () => {
+                handleClearingForm();
+                navigate("/");
+            },
+        });
     };
 
     return (
@@ -88,12 +78,24 @@ export const CreateProject = () => {
             ) : (
                 <>
                     <h1 className="font-sans-lg">Create New Project</h1>
-
-                    <h2 className="font-sans-lg">Select the Project Type</h2>
-                    <p>Select the type of project you are creating.</p>
+                    <p>Fill out this form to create a new project.</p>
                 </>
             )}
-            <ProjectTypeSelect />
+
+            {showModal && (
+                <Modal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+            <h2 className="font-sans-lg margin-top-7">Select the Project Type</h2>
+            <p>Select the type of project you are creating.</p>
+            <ProjectTypeSelect
+                selectedProjectType={selectedProjectType}
+                onChangeProjectTypeSelection={setSelectedProjectType}
+            />
 
             <h2 className="font-sans-lg">Project Details</h2>
 
@@ -103,10 +105,10 @@ export const CreateProject = () => {
             <input
                 className="usa-input"
                 id="project-abbr"
-                name="project-abbr"
+                name="short_title"
                 type="text"
-                value={projectShortTitle || ""}
-                onChange={(e) => dispatch(setProjectShortTitle(e.target.value))}
+                value={project.short_title || ""}
+                onChange={handleChange}
                 required
             />
 
@@ -116,10 +118,10 @@ export const CreateProject = () => {
             <input
                 className="usa-input"
                 id="project-name"
-                name="project-name"
+                name="title"
                 type="text"
-                value={projectTitle || ""}
-                onChange={(e) => dispatch(setProjectTitle(e.target.value))}
+                value={project.title || ""}
+                onChange={handleChange}
                 required
             />
 
@@ -132,18 +134,18 @@ export const CreateProject = () => {
             <textarea
                 className="usa-textarea"
                 id="project-description"
-                name="project-description"
+                name="description"
                 rows="5"
                 style={{ height: "7rem" }}
-                value={projectDescription || ""}
-                onChange={(e) => dispatch(setProjectDescription(e.target.value))}
+                value={project.description || ""}
+                onChange={handleChange}
             ></textarea>
 
             <div className="grid-row flex-justify-end margin-top-8">
-                <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
+                <button id="cancel" className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
                     Cancel
                 </button>
-                <button className="usa-button" onClick={handleCreateProject}>
+                <button id="submit" className="usa-button" onClick={() => addResearchProject(project)}>
                     Create Project
                 </button>
             </div>

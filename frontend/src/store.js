@@ -9,9 +9,9 @@ import userSlice from "./pages/users/detail/userSlice";
 import portfolioSlice from "./pages/portfolios/detail/portfolioSlice";
 import researchProjectSlice from "./pages/researchProjects/detail/researchProjectSlice";
 import ResearchProjectFundingSlice from "./components/Portfolios/ResearchProjects/ResearchProjectFundingSlice";
+import createProjectSlice from "./pages/researchProjects/createProjectSlice";
 import createBudgetLineSlice from "./pages/budgetLines/createBudgetLineSlice";
 import createAgreementSlice from "./pages/agreements/createAgreementSlice";
-import createProjectSlice from "./pages/projects/createProjectSlice";
 import { opsApi } from "./api/opsAPI";
 
 const rootReducer = combineReducers({

@@ -112,6 +112,14 @@
       role: "Software Engineer",
       oidc_id: "838861c4-8bee-427d-8b49-0892875483ba",
     },
+    {
+      first_name: "Frank",
+      last_name: "Pigeon",
+      division: 3,
+      email: "fpigeon@flexion.us",
+      role: "Software Engineer",
+      oidc_id: "3e4c46ae-0ff9-4dd7-8671-b9801460a052",
+    },
   ],
   roles: [
     {

@@ -37,7 +37,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
 
     return (
         <>
-            <h1 className="text-bold" style={{ fontSize: "1.375rem" }}>
+            <h1 className="text-bold margin-top-0" style={{ fontSize: "1.375rem" }}>
                 Review and Send Agreement to Approval
             </h1>
             <p>

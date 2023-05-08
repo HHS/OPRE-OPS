@@ -1,4 +1,6 @@
+import React from "react";
 import PropTypes from "prop-types";
+import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import ProcurementShopSelect from "./ProcurementShopSelect";
@@ -11,43 +13,76 @@ import {
     setAgreementIncumbent,
     setAgreementNotes,
     setAgreementId,
+    setSelectedProject,
+    setSelectedAgreementType,
+    setAgreementProductServiceCode,
+    setSelectedProcurementShop,
+    setSelectedAgreementReason,
+    setAgreementProjectOfficer,
+    setAgreementTeamMembers,
 } from "./createAgreementSlice";
 import ProjectOfficerSelect from "./ProjectOfficerSelect";
 import TeamMemberSelect from "./TeamMemberSelect";
 import TeamMemberList from "./TeamMemberList";
+import Modal from "../../components/UI/Modal/Modal";
 import { postAgreement } from "../../api/postAgreements";
 
 export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const agreementTitle = useSelector((state) => state.createAgreement.agreement.name);
     const agreementDescription = useSelector((state) => state.createAgreement.agreement.description);
     const agreementNotes = useSelector((state) => state.createAgreement.agreement.notes);
     const agreement = useSelector((state) => state.createAgreement.agreement);
+    const agreementReason = agreement.selected_agreement_reason;
+    const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null;
     const selectedProductServiceCode = useSelector(
         (state) => state.createAgreement.agreement.selected_product_service_code
     );
     const agreementIncumbent = useSelector((state) => state.createAgreement.agreement.incumbent_entered);
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
+    const [showModal, setShowModal] = React.useState(false);
+    const [modalProps, setModalProps] = React.useState({});
 
-    const handleContinue = async () => {
-        // Save Agreement to DB
+    const saveAgreement = async () => {
         const response = await postAgreement(agreement);
         const newAgreementId = response.id;
         console.log(`New Agreement Created: ${newAgreementId}`);
         dispatch(setAgreementId(newAgreementId));
+    };
+    const clearAgreement = () => {
+        dispatch(setAgreementTitle(""));
+        dispatch(setAgreementDescription(""));
+        dispatch(setAgreementIncumbent(null));
+        dispatch(setAgreementNotes(""));
+        dispatch(setSelectedProject({}));
+        dispatch(setSelectedAgreementType(null));
+        dispatch(setAgreementProductServiceCode(null));
+        dispatch(setSelectedAgreementReason(null));
+        dispatch(setSelectedProcurementShop({}));
+        dispatch(setAgreementProjectOfficer(null));
+        dispatch(setAgreementTeamMembers([]));
+        setModalProps({});
+    };
+    const handleContinue = async () => {
+        saveAgreement();
         goToNext();
     };
-    const handleDraft = () => {
-        // TODO: Save Agreement as Draft
-        const response = postAgreement(agreement);
-        alert(`Draft Agreement: ${response} saved`);
-        // TODO: Redirect to /agreements when available.
+    const handleDraft = async () => {
+        saveAgreement();
+        clearAgreement();
+        navigate("/agreements/");
     };
     const handleCancel = () => {
-        // TODO: Add cancel stuff
-        // TODO: Clear createAgreement State
-        // TODO: Navigate to /agreements when available.
-        goBack();
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel? Your agreement will not be saved.",
+            actionButtonText: "Continue",
+            handleConfirm: () => {
+                clearAgreement();
+                navigate("/agreements/");
+            },
+        });
     };
 
     const ProductServiceCodeSummaryBox = ({ selectedProductServiceCode }) => {
@@ -94,8 +129,16 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
 
     return (
         <>
-            <h1 className="font-sans-lg">Create New Agreement</h1>
-            <p>Follow the steps to create an Agreement</p>
+            {showModal && (
+                <Modal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+            <h1 className="font-sans-lg">Create New Budget Line</h1>
+            <p>Step Two: Creating a new Agreement</p>
             <StepIndicator steps={wizardSteps} currentStep={2} />
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg">Select the Agreement Type</h2>
@@ -138,7 +181,10 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             <h2 className="font-sans-lg margin-top-3">Reason for Agreement</h2>
             <div className="display-flex">
                 <AgreementReasonSelect />
-                <fieldset className="usa-fieldset margin-left-4">
+                <fieldset
+                    className={`usa-fieldset margin-left-4 ${incumbentDisabled && "text-disabled"}`}
+                    disabled={incumbentDisabled}
+                >
                     <label className="usa-label margin-top-0" htmlFor="agreement-incumbent">
                         Incumbent
                     </label>

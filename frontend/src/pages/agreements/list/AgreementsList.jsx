@@ -16,7 +16,8 @@ export const AgreementsList = () => {
 
     useEffect(() => {
         refetch();
-    });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     if (isLoadingAgreement) {
         return <div>Loading...</div>;
@@ -32,7 +33,7 @@ export const AgreementsList = () => {
             <Breadcrumb currentName={"Agreements"} />
 
             <h1 className="font-sans-lg">Agreements</h1>
-
+            <p>This is a list of the agreements you are listed as a Team Member on.</p>
             <table className="usa-table usa-table--borderless width-full ">
                 <thead>
                     <tr>
