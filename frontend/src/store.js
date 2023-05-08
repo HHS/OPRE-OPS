@@ -1,4 +1,4 @@
-import { combineReducers, configureStore, getDefaultMiddleware } from "@reduxjs/toolkit";
+import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import canListSlice from "./pages/cans/list/canListSlice";
 import canDetailSlice from "./pages/cans/detail/canDetailSlice";
 import portfolioListSlice from "./pages/portfolios/list/portfolioListSlice";
@@ -9,7 +9,6 @@ import userSlice from "./pages/users/detail/userSlice";
 import portfolioSlice from "./pages/portfolios/detail/portfolioSlice";
 import researchProjectSlice from "./pages/researchProjects/detail/researchProjectSlice";
 import ResearchProjectFundingSlice from "./components/Portfolios/ResearchProjects/ResearchProjectFundingSlice";
-import createProjectSlice from "./pages/researchProjects/createProjectSlice";
 import createBudgetLineSlice from "./pages/budgetLines/createBudgetLineSlice";
 import createAgreementSlice from "./pages/agreements/createAgreementSlice";
 import { opsApi } from "./api/opsAPI";
@@ -27,7 +26,6 @@ const rootReducer = combineReducers({
     researchProjectFunding: ResearchProjectFundingSlice,
     createBudgetLine: createBudgetLineSlice,
     createAgreement: createAgreementSlice,
-    createProject: createProjectSlice,
 });
 
 export const setupStore = (preloadedState = {}) => {
