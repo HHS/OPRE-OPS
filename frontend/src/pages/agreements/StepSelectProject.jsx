@@ -71,13 +71,18 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
                 <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
                     Cancel
                 </button>
-                <button className="usa-button" onClick={handleContinue} disabled={!selectedResearchProject?.id}>
+                <button
+                    id={"continue"}
+                    className="usa-button"
+                    onClick={handleContinue}
+                    disabled={!selectedResearchProject?.id}
+                >
                     Continue
                 </button>
             </div>
             <div className="display-flex flex-align-center margin-top-6">
                 <div className="border-bottom-1px border-base-light width-full" />
-                <span className="text-base-light margin-left-2 margin-right-2">or</span>
+                <span className="text-primary margin-left-2 margin-right-2">or</span>
                 <div className="border-bottom-1px border-base-light width-full" />
             </div>
             <div className="grid-row flex-justify-center">

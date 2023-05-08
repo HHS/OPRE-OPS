@@ -75,6 +75,7 @@ export const TeamMemberSelect = ({ className }) => {
                 <span className="usa-combo-box__input-button-separator">&nbsp;</span>
                 <span className="usa-combo-box__toggle-list__wrapper" tabIndex="-1">
                     <button
+                        id="team-member-select-toggle-list"
                         type="button"
                         tabIndex="-1"
                         className="usa-combo-box__toggle-list"
@@ -99,7 +100,7 @@ export const TeamMemberSelect = ({ className }) => {
                                 aria-setsize={remainingUsers?.length}
                                 aria-posinset={index + 1}
                                 aria-selected="false"
-                                id={`dynamic-select--list--option-${index}`}
+                                id={`team-member-dynamic-select--list--option-${index}`}
                                 className="usa-combo-box__list-option"
                                 tabIndex={index === 0 ? "0" : "-1"}
                                 role="option"

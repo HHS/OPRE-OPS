@@ -107,6 +107,7 @@ export const ProjectSelect = ({
                     <span className="usa-combo-box__input-button-separator">&nbsp;</span>
                     <span className="usa-combo-box__toggle-list__wrapper" tabIndex="-1">
                         <button
+                            id={`project--list--toggle`}
                             type="button"
                             tabIndex="-1"
                             className="usa-combo-box__toggle-list"
