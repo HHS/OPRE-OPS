@@ -243,7 +243,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                     <button className="usa-button usa-button--outline" onClick={handleDraft}>
                         Save Draft
                     </button>
-                    <button className="usa-button" onClick={handleContinue}>
+                    <button id="continue" className="usa-button" onClick={handleContinue}>
                         Continue
                     </button>
                 </div>

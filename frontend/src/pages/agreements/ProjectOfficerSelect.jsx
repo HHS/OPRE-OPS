@@ -34,6 +34,7 @@ export const ProjectOfficerSelect = () => {
             <div className="usa-combo-box width-card-lg" data-enhanced="true">
                 <select
                     className="usa-select usa-sr-only usa-combo-box__select "
+                    id="project-officer-select"
                     name="project-officer-select"
                     aria-hidden="true"
                     tabIndex="-1"
@@ -48,7 +49,8 @@ export const ProjectOfficerSelect = () => {
                     ))}
                 </select>
                 <input
-                    id="project-officer-select"
+                    id="project-officer-select-input"
+                    aria-label="project-officer-select-input"
                     aria-owns="users--list"
                     aria-controls="users--list"
                     aria-autocomplete="list"
@@ -78,6 +80,7 @@ export const ProjectOfficerSelect = () => {
                 <span className="usa-combo-box__input-button-separator">&nbsp;</span>
                 <span className="usa-combo-box__toggle-list__wrapper" tabIndex="-1">
                     <button
+                        id="project-officer-select-toggle-list"
                         type="button"
                         tabIndex="-1"
                         className="usa-combo-box__toggle-list"
@@ -102,7 +105,7 @@ export const ProjectOfficerSelect = () => {
                                 aria-setsize={usersList?.length}
                                 aria-posinset={index + 1}
                                 aria-selected="false"
-                                id={`dynamic-select--list--option-${index}`}
+                                id={`project-officer-dynamic-select--list--option-${index}`}
                                 className="usa-combo-box__list-option"
                                 tabIndex={index === 0 ? "0" : "-1"}
                                 role="option"

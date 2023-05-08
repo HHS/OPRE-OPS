@@ -34,14 +34,14 @@ export const ProductServiceCodeSelect = () => {
 
     return (
         <>
-            <label className="usa-label" htmlFor="options">
+            <label className="usa-label" htmlFor="product-service-code-options">
                 Product Service Code
             </label>
             <div className="display-flex flex-align-center margin-top-1">
                 <select
                     className="usa-select margin-top-0 width-fit-content"
-                    name="options"
-                    id="options"
+                    name="product-service-code-options"
+                    id="product-service-code-options"
                     onChange={(e) => {
                         const selectedOptionIndex = e.target.selectedIndex;
                         const selectedProductServiceCode = productServiceCodes[selectedOptionIndex - 1];
