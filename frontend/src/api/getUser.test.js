@@ -13,8 +13,8 @@ test("successfully gets a User from the backend by user_id", async () => {
         return [mockBackendResponse];
     });
 
-    const actualGetCfy = await getUser(userId);
-    expect(actualGetCfy).toStrictEqual([mockBackendResponse]);
+    const actualGetUser = await getUser(userId);
+    expect(actualGetUser).toStrictEqual([mockBackendResponse]);
 });
 
 test("successfully gets a User from the backend by user_oidc_id", async () => {
@@ -29,6 +29,6 @@ test("successfully gets a User from the backend by user_oidc_id", async () => {
         return [mockBackendResponse];
     });
 
-    const actualGetCfy = await getUserByOidc(oidcId);
-    expect(actualGetCfy).toStrictEqual([mockBackendResponse]);
+    const actualGetUser = await getUserByOidc(oidcId);
+    expect(actualGetUser).toStrictEqual([mockBackendResponse]);
 });

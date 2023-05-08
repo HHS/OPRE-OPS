@@ -34,7 +34,13 @@ describe("AgreementTableRow", () => {
     };
 
     test("renders correctly", () => {
-        render(<AgreementTableRow agreement={agreement} />);
+        render(
+            <table>
+                <tbody>
+                    <AgreementTableRow agreement={agreement} />
+                </tbody>
+            </table>
+        );
 
         expect(screen.getByText("Test Agreement")).toBeInTheDocument();
         expect(screen.getByText("Test Project")).toBeInTheDocument();
