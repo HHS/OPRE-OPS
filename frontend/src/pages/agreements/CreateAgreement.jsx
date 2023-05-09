@@ -43,7 +43,7 @@ export const CreateAgreement = () => {
                 <StepSelectProject wizardSteps={wizardSteps} />
                 <StepCreateAgreement wizardSteps={wizardSteps} />
                 <StepCreateBudgetLines wizardSteps={wizardSteps} />
-                <StepAgreementSuccess wizardSteps={wizardSteps} />
+                <StepAgreementSuccess />
             </CreateAgreementFlow>
         </App>
     );

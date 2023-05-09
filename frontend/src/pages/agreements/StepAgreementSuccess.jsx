@@ -1,14 +1,15 @@
 import React from "react";
-import Alert from "../../components/UI/Alert/Alert";
 import { useNavigate } from "react-router-dom";
+import PropTypes from "prop-types";
+import Alert from "../../components/UI/Alert/Alert";
 
-export const StepAgreementSuccess = () => {
+export const StepAgreementSuccess = ({ delay = 6000 }) => {
     const navigate = useNavigate();
 
     React.useEffect(() => {
         const timer = setTimeout(() => {
             navigate("/agreements/");
-        }, 6000);
+        }, delay);
         return () => clearTimeout(timer);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -18,6 +19,10 @@ export const StepAgreementSuccess = () => {
             The agreement has been successfully created. You will be redirected to the Agreements list page.
         </Alert>
     );
+};
+
+StepAgreementSuccess.propTypes = {
+    delay: PropTypes.number,
 };
 
 export default StepAgreementSuccess;
