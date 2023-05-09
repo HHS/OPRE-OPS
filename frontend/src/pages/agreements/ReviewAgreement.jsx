@@ -45,35 +45,45 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 agreement to your Division Director to review for Planned Status.
             </p>
             <dl className="margin-0 font-12px">
-                <dt className="margin-0 text-base-dark margin-top-1">Project</dt>
-                <dd className="text-semibold margin-0">{agreement?.name}</dd>
-                <dt className="margin-0 text-base-dark margin-top-1">Agreement Type</dt>
-                <dd className="text-semibold margin-0">{agreement?.agreement_type}</dd>
-                <dt className="margin-0 text-base-dark margin-top-1">Agreement Name</dt>
-                <dd className="text-semibold margin-0">{agreement?.name}</dd>
-                <dt className="margin-0 text-base-dark margin-top-1">Description</dt>
-                <dd className="text-semibold margin-0">{agreement?.description}</dd>
-                <dt className="margin-0 text-base-dark margin-top-1">Product Service Code</dt>
-                <dd className="text-semibold margin-0">{agreement?.product_service_code?.name}</dd>
-                <dt className="margin-0 text-base-dark margin-top-1">NAICS Code</dt>
-                <dd className="text-semibold margin-0">{agreement?.product_service_code?.naics}</dd>
-                <dt className="margin-0 text-base-dark margin-top-1">Program Support Code</dt>
-                <dd className="text-semibold margin-0">{agreement?.product_service_code?.support_code}</dd>
-                <dt className="margin-0 text-base-dark margin-top-1">Procurement Shop</dt>
-                <dd className="text-semibold margin-0">{`${agreement?.procurement_shop?.name}-Fee Rate: ${
+                <dt className="margin-0 text-base-dark margin-top-3">Project</dt>
+                <dd className="text-semibold margin-0 margin-top-05">{agreement?.name}</dd>
+                <dt className="margin-0 text-base-dark margin-top-3">Agreement Type</dt>
+                <dd className="text-semibold margin-0 margin-top-05">{agreement?.agreement_type}</dd>
+                <dt className="margin-0 text-base-dark margin-top-3">Agreement</dt>
+                <dd className="text-semibold margin-0 margin-top-05">{agreement?.name}</dd>
+                <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
+                <dd className="text-semibold margin-0 margin-top-05">{agreement?.description}</dd>
+                <dt className="margin-0 text-base-dark margin-top-3">Product Service Code</dt>
+                <dd className="text-semibold margin-0 margin-top-05">{agreement?.product_service_code?.name}</dd>
+                <div className="display-flex">
+                    <div>
+                        <dt className="margin-0 text-base-dark margin-top-3">NAICS Code</dt>
+                        <dd className="text-semibold margin-0 margin-top-05">
+                            {agreement?.product_service_code?.naics}
+                        </dd>
+                    </div>
+                    <div className="margin-left-7">
+                        <dt className="margin-0 text-base-dark margin-top-3">Program Support Code</dt>
+                        <dd className="text-semibold margin-0 margin-top-05">
+                            {agreement?.product_service_code?.support_code}
+                        </dd>
+                    </div>
+                </div>
+                <dt className="margin-0 text-base-dark margin-top-3">Procurement Shop</dt>
+                <dd className="text-semibold margin-0 margin-top-05">{`${agreement?.procurement_shop?.name}-Fee Rate: ${
                     agreement?.procurement_shop?.fee * 100
                 }%`}</dd>
-                <dt className="margin-0 text-base-dark margin-top-1">Reason for creating the agreement</dt>
-                <dd className="text-semibold margin-0">{agreement?.agreement_reason}</dd>
-                <dt className="margin-0 text-base-dark margin-top-1">Incumbent</dt>
-                <dd className="text-semibold margin-0">{agreement?.incumbent}</dd>
-                <dt className="margin-0 text-base-dark margin-top-1">Project Officer</dt>
-                <dd className="text-semibold margin-0">{user?.full_name}</dd>
+                <dt className="margin-0 text-base-dark margin-top-3">Reason for creating the agreement</dt>
+                <dd className="text-semibold margin-0 margin-top-05">{agreement?.agreement_reason}</dd>
+                <dt className="margin-0 text-base-dark margin-top-3">Incumbent</dt>
+                <dd className="text-semibold margin-0 margin-top-05">{agreement?.incumbent}</dd>
+                <dt className="margin-0 text-base-dark margin-top-3">Project Officer</dt>
+                <dd className="text-semibold margin-0 margin-top-05">{user?.full_name}</dd>
                 {agreement?.team_members.length > 0 && (
                     <>
-                        <dt className="margin-0 text-base-dark margin-top-1">Team Members</dt>
+                        <dt className="margin-0 text-base-dark margin-top-3">Team Members</dt>
                         {agreement?.team_members.map((member) => (
-                            <dd key={member.id} className="text-semibold margin-0">
+                            <dd key={member.id} className="text-semibold margin-0 margin-top-05">
                                 {member.full_name}
                             </dd>
                         ))}
