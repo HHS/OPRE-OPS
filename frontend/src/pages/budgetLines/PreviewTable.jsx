@@ -30,7 +30,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
 
     const TableRow = ({ bl }) => {
         const [isExpanded, setIsExpanded] = useState(false);
-        const [user, setUser] = useState({});
+        const setUser = useState({});
 
         React.useEffect(() => {
             const getUserAndSetState = async (id) => {
