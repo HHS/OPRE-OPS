@@ -30,7 +30,6 @@ export const postAgreement = async (item) => {
         .helpers()
         .callBackend(`/api/${api_version}/agreements/`, "POST", newAgreement)
         .then(function (response) {
-            console.log(response);
             return response;
         })
         .catch(function (error) {
