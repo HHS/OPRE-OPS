@@ -137,12 +137,12 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            <h1 className="font-sans-lg">Create New Budget Line</h1>
-            <p>Step Two: Creating a new Agreement</p>
+            <h1 className="font-sans-lg">Create New Agreement</h1>
+            <p>Follow the steps to create an agreement</p>
             <StepIndicator steps={wizardSteps} currentStep={2} />
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg">Select the Agreement Type</h2>
-            <p>Select the type of agreement you would like to create.</p>
+            <p>Select the type of agreement you&#39;d like to create.</p>
             <AgreementTypeSelect />
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
             <label className="usa-label" htmlFor="agreement-title">
