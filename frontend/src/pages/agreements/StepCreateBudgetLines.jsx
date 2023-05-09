@@ -108,8 +108,7 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
 
         resetBLIState();
         resetAgreementState();
-
-        navigate("/agreements/");
+        goToNext();
     };
 
     const handleCancel = () => {
