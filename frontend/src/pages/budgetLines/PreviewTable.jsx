@@ -1,4 +1,3 @@
-import React from "react";
 import { func, bool } from "prop-types";
 import { useState, Fragment } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,7 +9,6 @@ import Tag from "../../components/UI/Tag/Tag";
 import { editBudgetLineAdded, duplicateBudgetLineAdded } from "./createBudgetLineSlice";
 import { TotalSummaryCard } from "./TotalSummaryCard";
 import { formatDate } from "../../helpers/utils";
-import { getUser } from "../../api/getUser";
 import "./PreviewTable.scss";
 
 export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = false, budgetLines = null }) => {
