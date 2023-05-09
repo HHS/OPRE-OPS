@@ -15,7 +15,7 @@ export const StepAgreementSuccess = ({ delay = 6000 }) => {
     }, []);
 
     return (
-        <Alert heading="Agreement Created" type="success">
+        <Alert heading="Agreement Created" type="success" setIsAlertActive={() => {}}>
             The agreement has been successfully created. You will be redirected to the Agreements list page.
         </Alert>
     );
