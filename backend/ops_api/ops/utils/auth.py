@@ -49,8 +49,8 @@ def create_oauth_jwt(
 
     # client_id = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"]["client_id"]
     _payload = payload or {
-        "iss": current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"]["client_id"],
-        "sub": current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"]["client_id"],
+        "iss": current_app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["client_id"],
+        "sub": current_app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["client_id"],
         "aud": "https://idp.int.identitysandbox.gov/api/openid_connect/token",
         "jti": str(uuid.uuid4()),
         "exp": int(time.time()) + expire.seconds,

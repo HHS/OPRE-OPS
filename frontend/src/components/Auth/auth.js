@@ -4,7 +4,7 @@ import cryptoRandomString from "crypto-random-string";
 const authConfig = ApplicationContext.get().helpers().authConfig;
 
 export const getAuthorizationCode = (stateToken) => {
-    const providerUrl = new URL(authConfig.loginGovAuthorizationEndpoint);
+    const providerUrl = new URL(authConfig.hhsAmsAuthorizationEndpoint);
     providerUrl.searchParams.set("acr_values", authConfig.acr_values);
     providerUrl.searchParams.set("client_id", authConfig.client_id);
     providerUrl.searchParams.set("response_type", authConfig.response_type);
