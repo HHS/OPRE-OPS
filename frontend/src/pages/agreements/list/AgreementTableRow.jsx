@@ -141,6 +141,7 @@ export const AgreementTableRow = ({ agreement }) => {
                         <svg
                             className="usa-icon text-primary height-205 width-205 hover: cursor-pointer usa-tooltip"
                             onClick={() => handleSubmitAgreementForApproval(agreement.id)}
+                            id={`submit-for-approval-${agreement.id}`}
                         >
                             <use xlinkHref={`${icons}#send`}></use>
                         </svg>
