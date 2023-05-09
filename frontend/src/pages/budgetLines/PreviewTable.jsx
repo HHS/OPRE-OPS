@@ -30,24 +30,6 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
 
     const TableRow = ({ bl }) => {
         const [isExpanded, setIsExpanded] = useState(false);
-        const setUser = useState({});
-
-        React.useEffect(() => {
-            const getUserAndSetState = async (id) => {
-                const results = await getUser(id);
-                setUser(results);
-            };
-
-            if (bl?.created_by) {
-                getUserAndSetState(bl?.created_by).catch(console.error);
-            } else {
-                setUser({ full_name: "Sheila Celentano" });
-            }
-
-            return () => {
-                setUser({});
-            };
-        }, [bl]);
         const [isRowActive, setIsRowActive] = useState(false);
 
         const formatted_today = new Date().toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
