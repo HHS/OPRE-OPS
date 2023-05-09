@@ -199,7 +199,7 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
                         Cancel
                     </button>
                     <button className="usa-button" onClick={saveBudgetLineItems}>
-                        Continue
+                        Create Agreement
                     </button>
                 </div>
             </div>
