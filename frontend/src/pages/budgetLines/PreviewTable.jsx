@@ -206,7 +206,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                             <div className="display-flex padding-right-9">
                                 <dl className="font-12px">
                                     <dt className="margin-0 text-base-dark">Created By</dt>
-                                    <dd className="margin-0">{bl?.created_by ? user.full_name : loggedInUser}</dd>
+                                    <dd className="margin-0">{bl?.created_by ? bl.created_by : loggedInUser}</dd>
                                     <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                                         <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />
                                         {bl_created_on}
