@@ -55,20 +55,12 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 <dd className="text-semibold margin-0 margin-top-05">{agreement?.description}</dd>
                 <dt className="margin-0 text-base-dark margin-top-3">Product Service Code</dt>
                 <dd className="text-semibold margin-0 margin-top-05">{agreement?.product_service_code?.name}</dd>
-                <div className="display-flex">
-                    <div>
-                        <dt className="margin-0 text-base-dark margin-top-3">NAICS Code</dt>
-                        <dd className="text-semibold margin-0 margin-top-05">
-                            {agreement?.product_service_code?.naics}
-                        </dd>
-                    </div>
-                    <div className="margin-left-7">
-                        <dt className="margin-0 text-base-dark margin-top-3">Program Support Code</dt>
-                        <dd className="text-semibold margin-0 margin-top-05">
-                            {agreement?.product_service_code?.support_code}
-                        </dd>
-                    </div>
-                </div>
+                <dt className="margin-0 text-base-dark margin-top-3">NAICS Code</dt>
+                <dd className="text-semibold margin-0 margin-top-05">{agreement?.product_service_code?.naics}</dd>
+                <dt className="margin-0 text-base-dark margin-top-3">Program Support Code</dt>
+                <dd className="text-semibold margin-0 margin-top-05">
+                    {agreement?.product_service_code?.support_code}
+                </dd>
                 <dt className="margin-0 text-base-dark margin-top-3">Procurement Shop</dt>
                 <dd className="text-semibold margin-0 margin-top-05">{`${agreement?.procurement_shop?.name}-Fee Rate: ${
                     agreement?.procurement_shop?.fee * 100
