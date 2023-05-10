@@ -54,13 +54,13 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            <h1 className="font-sans-lg">Create New Budget Line</h1>
-            <p>Step One: Text explaining this page</p>
+            <h1 className="font-sans-lg">Create New Agreement</h1>
+            <p>Follow the steps to create an agreement</p>
             <StepIndicator steps={wizardSteps} currentStep={1} />
             <h2 className="font-sans-lg">Select a Project</h2>
             <p>
-                Select the project this budget line should be associated with. If you need to create a new project,
-                click Add New Project.
+                Select a project the agreement should be associated with. If you need to create a new project, click Add
+                New Project.
             </p>
             <ProjectSelect
                 researchProjects={projects}

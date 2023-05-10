@@ -1,4 +1,3 @@
-import React from "react";
 import { func, bool } from "prop-types";
 import { useState, Fragment } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,7 +9,6 @@ import Tag from "../../components/UI/Tag/Tag";
 import { editBudgetLineAdded, duplicateBudgetLineAdded } from "./createBudgetLineSlice";
 import { TotalSummaryCard } from "./TotalSummaryCard";
 import { formatDate } from "../../helpers/utils";
-import { getUser } from "../../api/getUser";
 import "./PreviewTable.scss";
 
 export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = false, budgetLines = null }) => {
@@ -30,24 +28,6 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
 
     const TableRow = ({ bl }) => {
         const [isExpanded, setIsExpanded] = useState(false);
-        const [user, setUser] = useState({});
-
-        React.useEffect(() => {
-            const getUserAndSetState = async (id) => {
-                const results = await getUser(id);
-                setUser(results);
-            };
-
-            if (bl?.created_by) {
-                getUserAndSetState(bl?.created_by).catch(console.error);
-            } else {
-                setUser({ full_name: "Sheila Celentano" });
-            }
-
-            return () => {
-                setUser({});
-            };
-        }, [bl]);
         const [isRowActive, setIsRowActive] = useState(false);
 
         const formatted_today = new Date().toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
@@ -206,7 +186,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                             <div className="display-flex padding-right-9">
                                 <dl className="font-12px">
                                     <dt className="margin-0 text-base-dark">Created By</dt>
-                                    <dd className="margin-0">{bl?.created_by ? user.full_name : loggedInUser}</dd>
+                                    <dd className="margin-0">{bl?.created_by ? bl.created_by : loggedInUser}</dd>
                                     <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                                         <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />
                                         {bl_created_on}

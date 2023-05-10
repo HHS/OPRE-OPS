@@ -11,13 +11,13 @@ const TeamMemberList = () => {
 
     const TeamTag = ({ teamMemberName, teamMemberId }) => (
         <span
-            className="font-12px padding-05 height-205 radius-md bg-brand-primary-light"
+            className="font-12px padding-05 height-205 radius-md bg-brand-primary-light display-flex flex-align-center"
             style={{ width: "fit-content" }}
         >
             {teamMemberName}
             <FontAwesomeIcon
                 icon={faXmarkCircle}
-                className="text-primary-dark margin-left-1 hover: cursor-pointer usa-tooltip"
+                className="height-2 width-2 text-primary-dark margin-left-1 hover: cursor-pointer usa-tooltip"
                 title="delete"
                 data-position="top"
                 onClick={() => dispatch(removeAgreementTeamMember(teamMemberId))}

@@ -7,6 +7,7 @@ import ProcurementShopSelect from "./ProcurementShopSelect";
 import AgreementReasonSelect from "./AgreementReasonSelect";
 import AgreementTypeSelect from "./AgreementTypeSelect";
 import ProductServiceCodeSelect from "./ProductServiceCodeSelect";
+import Alert from "../../components/UI/Alert/Alert";
 import {
     setAgreementTitle,
     setAgreementDescription,
@@ -43,6 +44,24 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const [isAlertActive, setIsAlertActive] = React.useState(false);
+    const [alertProps, setAlertProps] = React.useState({});
+
+    const showAlertAndNavigate = async (type, heading, message) => {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        window.scrollTo(0, 0);
+        setIsAlertActive(true);
+        setAlertProps({ type, heading, message });
+
+        await new Promise((resolve) =>
+            setTimeout(() => {
+                setIsAlertActive(false);
+                setAlertProps({});
+                navigate("/agreements/");
+                resolve();
+            }, 5000)
+        );
+    };
 
     const saveAgreement = async () => {
         const response = await postAgreement(agreement);
@@ -66,12 +85,12 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     };
     const handleContinue = async () => {
         saveAgreement();
-        goToNext();
+        await goToNext();
     };
     const handleDraft = async () => {
         saveAgreement();
         clearAgreement();
-        navigate("/agreements/");
+        await showAlertAndNavigate("success", "Agreement Draft Saved", "The agreement has been successfully saved.");
     };
     const handleCancel = () => {
         setShowModal(true);
@@ -137,12 +156,20 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            <h1 className="font-sans-lg">Create New Budget Line</h1>
-            <p>Step Two: Creating a new Agreement</p>
+            {isAlertActive ? (
+                <Alert heading={alertProps.heading} type={alertProps.type} setIsAlertActive={setIsAlertActive}>
+                    {alertProps.message}
+                </Alert>
+            ) : (
+                <>
+                    <h1 className="font-sans-lg">Create New Agreement</h1>
+                    <p>Follow the steps to create an agreement</p>
+                </>
+            )}
             <StepIndicator steps={wizardSteps} currentStep={2} />
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg">Select the Agreement Type</h2>
-            <p>Select the type of agreement you would like to create.</p>
+            <p>Select the type of agreement you&#39;d like to create.</p>
             <AgreementTypeSelect />
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
             <label className="usa-label" htmlFor="agreement-title">

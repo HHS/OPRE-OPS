@@ -8,6 +8,7 @@ import { StepCreateAgreement } from "./StepCreateAgreement";
 import { StepCreateBudgetLines } from "./StepCreateBudgetLines";
 import { getUsers } from "../../api/getUser";
 import App from "../../App";
+import StepAgreementSuccess from "./StepAgreementSuccess";
 
 const wizardSteps = ["Project", "Agreement", "Budget Lines"];
 
@@ -42,6 +43,7 @@ export const CreateAgreement = () => {
                 <StepSelectProject wizardSteps={wizardSteps} />
                 <StepCreateAgreement wizardSteps={wizardSteps} />
                 <StepCreateBudgetLines wizardSteps={wizardSteps} />
+                <StepAgreementSuccess />
             </CreateAgreementFlow>
         </App>
     );
