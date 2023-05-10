@@ -1,7 +1,7 @@
-import App from "../../App";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { CreateBudgetLineFlow } from "./CreateBudgetLineFlow";
+import App from "../../App";
+import CreateBudgetLineFlow from "./CreateBudgetLineFlow";
 import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
 import { setAgreements, setProcurementShop } from "./createBudgetLineSlice";
 import { getProcurementShopList } from "../../api/getProcurementShopList";
@@ -50,12 +50,7 @@ export const CreateBudgetLine = () => {
 
     return (
         <App>
-            <CreateBudgetLineFlow
-            // onFinish={(data) => {
-            //     console.log("budget line has: " + JSON.stringify(data, null, 2));
-            //     alert("Budget Line Created!");
-            // }}
-            >
+            <CreateBudgetLineFlow>
                 <StepSelectProjectAndAgreement wizardSteps={wizardSteps} />
                 <StepCreateBudgetLines wizardSteps={wizardSteps} />
                 <StepSuccess />
