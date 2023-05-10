@@ -1,13 +1,18 @@
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useGetResearchProjectsQuery } from "../../api/opsAPI";
-import { setAgreements, setSelectedAgreement, setSelectedProject } from "./createBudgetLineSlice";
+import { setAgreements } from "./createBudgetLineSlice";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import ProjectSelect from "../../components/UI/Form/ProjectSelect";
 import AgreementSelect from "./AgreementSelect";
-export const StepSelectProjectAndAgreement = ({ goToNext, wizardSteps }) => {
+export const StepSelectProjectAndAgreement = ({
+    goToNext,
+    wizardSteps,
+    selectedProject: selectedResearchProject,
+    selectedAgreement,
+    setSelectedAgreement = () => {},
+    setSelectedProject = () => {},
+}) => {
     const dispatch = useDispatch();
-    const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
-    const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
     const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
 
     if (isLoadingProjects) {
@@ -19,7 +24,7 @@ export const StepSelectProjectAndAgreement = ({ goToNext, wizardSteps }) => {
 
     const clearAgreementState = () => {
         dispatch(setAgreements([]));
-        dispatch(setSelectedAgreement(-1));
+        setSelectedAgreement({});
     };
 
     return (
@@ -40,7 +45,11 @@ export const StepSelectProjectAndAgreement = ({ goToNext, wizardSteps }) => {
             />
             <h2 className="font-sans-lg">Select an Agreement</h2>
             <p>Select the project and agreement this budget line should be associated with.</p>
-            <AgreementSelect />
+            <AgreementSelect
+                selectedProject={selectedResearchProject}
+                selectedAgreement={selectedAgreement}
+                setSelectedAgreement={setSelectedAgreement}
+            />
             <div className="grid-row flex-justify-end margin-top-8">
                 <button
                     className="usa-button"

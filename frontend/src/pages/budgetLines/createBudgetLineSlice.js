@@ -9,8 +9,8 @@ const initialState = {
     cans: [],
     budget_lines_added: [],
     is_editing_budget_line: false,
-    selected_project: {},
-    selected_agreement: -1,
+    // selected_project: {},
+    // selected_agreement: -1,
     selected_can: -1,
     selected_procurement_shop: -1,
     entered_description: "",
@@ -127,12 +127,12 @@ const createBudgetLineSlice = createSlice({
                 budget_line_being_edited: -1,
             };
         },
-        setSelectedProject: (state, action) => {
-            state.selected_project = action.payload;
-        },
-        setSelectedAgreement: (state, action) => {
-            state.selected_agreement = action.payload;
-        },
+        // setSelectedProject: (state, action) => {
+        //     state.selected_project = action.payload;
+        // },
+        // setSelectedAgreement: (state, action) => {
+        //     state.selected_agreement = action.payload;
+        // },
         setSelectedCan: (state, action) => {
             state.selected_can = action.payload;
         },

@@ -22,11 +22,11 @@ export const ProjectSelect = ({
             return;
         }
 
-        dispatch(setSelectedProject(researchProjects[projectId - 1]));
+        setSelectedProject(researchProjects[projectId - 1]);
         dispatch(setAgreementProject(projectId));
     };
     const onInputCloseButtonClick = () => {
-        dispatch(setSelectedProject({}));
+        setSelectedProject({});
         clearFunction();
     };
 

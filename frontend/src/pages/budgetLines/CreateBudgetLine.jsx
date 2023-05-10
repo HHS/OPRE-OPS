@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import App from "../../App";
 import CreateBudgetLineFlow from "./CreateBudgetLineFlow";
 import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
@@ -11,9 +11,10 @@ import StepSuccess from "./StepSuccess";
 
 export const CreateBudgetLine = () => {
     const dispatch = useDispatch();
-    const selectedProject = useSelector((state) => state.createBudgetLine.selected_project);
+    // const selectedProject = useSelector((state) => state.createBudgetLine.selected_project);
     const wizardSteps = ["Project & Agreement", "Budget Lines", "Review"];
-
+    const [selectedProject, setSelectedProject] = useState({});
+    const [selectedAgreement, setSelectedAgreement] = useState({});
     // Get initial list of Agreements (dependent on Research Project Selection)
     useEffect(() => {
         const getAgreementsAndSetState = async () => {
@@ -51,7 +52,13 @@ export const CreateBudgetLine = () => {
     return (
         <App>
             <CreateBudgetLineFlow>
-                <StepSelectProjectAndAgreement wizardSteps={wizardSteps} />
+                <StepSelectProjectAndAgreement
+                    wizardSteps={wizardSteps}
+                    selectedProject={selectedProject}
+                    setSelectedProject={setSelectedProject}
+                    selectedAgreement={selectedAgreement}
+                    setSelectedAgreement={setSelectedAgreement}
+                />
                 <StepCreateBudgetLines wizardSteps={wizardSteps} />
                 <StepSuccess />
             </CreateBudgetLineFlow>

@@ -1,30 +1,28 @@
 import { useDispatch, useSelector } from "react-redux";
-import { setSelectedAgreement, setBudgetLineAdded, setSelectedProcurementShop } from "./createBudgetLineSlice";
+import { setBudgetLineAdded, setSelectedProcurementShop } from "./createBudgetLineSlice";
 
-export const AgreementSelect = () => {
+export const AgreementSelect = ({ selectedProject, selectedAgreement, setSelectedAgreement }) => {
     const dispatch = useDispatch();
     const agreements = useSelector((state) => state.createBudgetLine.agreements);
-    const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
-    const selectedProject = useSelector((state) => state.createBudgetLine.selected_project);
+    // const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
+    // const selectedProject = useSelector((state) => state.createBudgetLine.selected_project);
 
     const onChangeAgreementSelection = (agreementId = 0) => {
         const selectedAgreement = agreements.find((agreement) => agreement.id === agreementId);
         let periodOfPerformance = null;
         if (agreementId === 0) {
-            dispatch(setSelectedAgreement(-1));
+            setSelectedAgreement({});
             return;
         }
         if (selectedAgreement.period_of_performance_start && selectedAgreement.period_of_performance_end) {
             periodOfPerformance = `${selectedAgreement.period_of_performance_start} - ${selectedAgreement.period_of_performance_end}`;
         }
+        setSelectedAgreement({
+            ...selectedAgreement,
+            projectOfficer: selectedAgreement?.project_officer,
+            periodOfPerformance,
+        });
 
-        dispatch(
-            setSelectedAgreement({
-                ...selectedAgreement,
-                projectOfficer: selectedAgreement?.project_officer,
-                periodOfPerformance,
-            })
-        );
         // set budget line items and procurement shop
         if (selectedAgreement?.budget_line_items.length > 0) {
             dispatch(setBudgetLineAdded(selectedAgreement?.budget_line_items));
