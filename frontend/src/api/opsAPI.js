@@ -37,6 +37,10 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["ResearchProjects"],
         }),
+        getAgreementTypes: builder.query({
+            query: () => `/agreement-types/`,
+            providesTags: ["AgreementTypes"],
+        }),
     }),
 });
 
@@ -45,4 +49,5 @@ export const {
     useGetAgreementByIdQuery,
     useGetResearchProjectsQuery,
     useAddResearchProjectsMutation,
+    useGetAgreementTypesQuery,
 } = opsApi;
