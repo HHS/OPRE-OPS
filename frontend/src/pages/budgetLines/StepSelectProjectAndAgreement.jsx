@@ -12,6 +12,7 @@ export const StepSelectProjectAndAgreement = ({
     selectedAgreement,
     setSelectedAgreement = () => {},
     setSelectedProject = () => {},
+    setSelectedProcurementShop = () => {},
 }) => {
     const dispatch = useDispatch();
     const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
@@ -50,6 +51,7 @@ export const StepSelectProjectAndAgreement = ({
                 selectedProject={selectedResearchProject}
                 selectedAgreement={selectedAgreement}
                 setSelectedAgreement={setSelectedAgreement}
+                setSelectedProcurementShop={setSelectedProcurementShop}
             />
             <div className="grid-row flex-justify-end margin-top-8">
                 <button

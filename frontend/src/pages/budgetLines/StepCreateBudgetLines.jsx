@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import { ProjectAgreementSummaryCard } from "../budgetLines/ProjectAgreementSummaryCard";
 import PreviewTable from "../budgetLines/PreviewTable";
-import { Alert } from "../../components/UI/Alert/Alert";
+import Alert from "../../components/UI/Alert/Alert";
 import Modal from "../../components/UI/Modal/Modal";
 import CreateBudgetLinesForm from "../../components/UI/Form/CreateBudgetLinesForm";
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
@@ -21,12 +21,16 @@ import {
 } from "../budgetLines/createBudgetLineSlice";
 import { postBudgetLineItems } from "../../api/postBudgetLineItems";
 
-export const StepCreateBudgetLines = ({ goToNext, goBack, wizardSteps }) => {
+export const StepCreateBudgetLines = ({
+    goToNext,
+    goBack,
+    wizardSteps,
+    selectedProject: selectedResearchProject,
+    selectedAgreement,
+    selectedProcurementShop,
+}) => {
     const dispatch = useDispatch();
     const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
-    const selectedProcurementShop = useSelector((state) => state.createBudgetLine.selected_procurement_shop);
-    const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
-    const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
     const [showModal, setShowModal] = React.useState(false);
@@ -87,7 +91,7 @@ export const StepCreateBudgetLines = ({ goToNext, goBack, wizardSteps }) => {
                     <p>Step Two: Text explaining this page</p>
                 </>
             )}
-            <StepIndicator steps={["Project & Agreement", "Budget Lines", "Review"]} currentStep={2} />
+            <StepIndicator steps={wizardSteps} currentStep={2} />
             <ProjectAgreementSummaryCard
                 selectedResearchProject={selectedResearchProject}
                 selectedAgreement={selectedAgreement}

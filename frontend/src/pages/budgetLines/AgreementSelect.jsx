@@ -1,7 +1,12 @@
 import { useDispatch, useSelector } from "react-redux";
-import { setBudgetLineAdded, setSelectedProcurementShop } from "./createBudgetLineSlice";
+import { setBudgetLineAdded } from "./createBudgetLineSlice";
 
-export const AgreementSelect = ({ selectedProject, selectedAgreement, setSelectedAgreement }) => {
+export const AgreementSelect = ({
+    selectedProject,
+    selectedAgreement,
+    setSelectedAgreement,
+    setSelectedProcurementShop,
+}) => {
     const dispatch = useDispatch();
     const agreements = useSelector((state) => state.createBudgetLine.agreements);
     // const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
@@ -26,7 +31,7 @@ export const AgreementSelect = ({ selectedProject, selectedAgreement, setSelecte
         // set budget line items and procurement shop
         if (selectedAgreement?.budget_line_items.length > 0) {
             dispatch(setBudgetLineAdded(selectedAgreement?.budget_line_items));
-            dispatch(setSelectedProcurementShop(selectedAgreement?.procurement_shop));
+            setSelectedProcurementShop(selectedAgreement?.procurement_shop);
         }
     };
 
