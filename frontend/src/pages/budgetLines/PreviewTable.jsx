@@ -115,13 +115,35 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
         return (
             <Fragment key={bl?.id}>
                 <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
-                    <th scope="row" style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
+                    <th
+                        scope="row"
+                        className={isExpanded && "border-bottom-none"}
+                        style={{ backgroundColor: isRowActive && "#F0F0F0" }}
+                    >
                         {bl?.line_description}
                     </th>
-                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{formatted_date_needed}</td>
-                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{fiscalYear || ""}</td>
-                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{bl?.can?.number}</td>
-                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
+                    <td
+                        className={isExpanded && "border-bottom-none"}
+                        style={{ backgroundColor: isRowActive && "#F0F0F0" }}
+                    >
+                        {formatted_date_needed}
+                    </td>
+                    <td
+                        className={isExpanded && "border-bottom-none"}
+                        style={{ backgroundColor: isRowActive && "#F0F0F0" }}
+                    >
+                        {fiscalYear || ""}
+                    </td>
+                    <td
+                        className={isExpanded && "border-bottom-none"}
+                        style={{ backgroundColor: isRowActive && "#F0F0F0" }}
+                    >
+                        {bl?.can?.number}
+                    </td>
+                    <td
+                        className={isExpanded && "border-bottom-none"}
+                        style={{ backgroundColor: isRowActive && "#F0F0F0" }}
+                    >
                         <CurrencyFormat
                             value={bl?.amount || 0}
                             displayType={"text"}
@@ -132,7 +154,10 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                             renderText={(value) => value}
                         />
                     </td>
-                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
+                    <td
+                        className={isExpanded && "border-bottom-none"}
+                        style={{ backgroundColor: isRowActive && "#F0F0F0" }}
+                    >
                         {feeTotal === 0 ? (
                             0
                         ) : (
@@ -147,7 +172,10 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                             />
                         )}
                     </td>
-                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
+                    <td
+                        className={isExpanded && "border-bottom-none"}
+                        style={{ backgroundColor: isRowActive && "#F0F0F0" }}
+                    >
                         {total === 0 ? (
                             0
                         ) : (
@@ -162,7 +190,10 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                             />
                         )}
                     </td>
-                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
+                    <td
+                        className={isExpanded && "border-bottom-none"}
+                        style={{ backgroundColor: isRowActive && "#F0F0F0" }}
+                    >
                         {isRowActive && !isExpanded && !readOnly ? (
                             <div>
                                 <ChangeIcons budgetLine={bl} />
@@ -171,7 +202,10 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                             <TableTag status={status} />
                         )}
                     </td>
-                    <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
+                    <td
+                        className={isExpanded && "border-bottom-none"}
+                        style={{ backgroundColor: isRowActive && "#F0F0F0" }}
+                    >
                         <FontAwesomeIcon
                             icon={isExpanded ? faChevronUp : faChevronDown}
                             className="height-2 width-2 padding-right-1 hover: cursor-pointer"
@@ -181,8 +215,8 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                 </tr>
 
                 {isExpanded && (
-                    <tr className="border-top-0">
-                        <td colSpan="9" style={{ backgroundColor: "#F0F0F0" }}>
+                    <tr>
+                        <td colSpan="9" className="border-top-none" style={{ backgroundColor: "#F0F0F0" }}>
                             <div className="display-flex padding-right-9">
                                 <dl className="font-12px">
                                     <dt className="margin-0 text-base-dark">Created By</dt>
