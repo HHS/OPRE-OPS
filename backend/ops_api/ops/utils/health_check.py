@@ -34,7 +34,6 @@ async def check_db_conn() -> dict:
     """
     resp = {"db_conn_is_ok": True, "alarm_level": 0}
     try:
-        sess = current_app.db_session
         current_app.db_session.execute(
             text("SELECT 'OK';"),
             execution_options={"timeout": 5},  # just pool wait timeout ?
