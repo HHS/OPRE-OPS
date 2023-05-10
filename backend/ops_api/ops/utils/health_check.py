@@ -7,7 +7,8 @@ from sqlalchemy import text
 
 
 async def check_auth_services() -> dict:
-    """check the health of the OAuth server with a GET of the server_metadata_url
+    """check the health of the OAuth server with a GET of the
+    OAuth server_metadata_url
     Returns:
         dict: with alarm_level>0 if there is a problem
     """
