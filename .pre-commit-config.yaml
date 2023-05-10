@@ -2,8 +2,6 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
-      - id: detect-aws-credentials
-      - id: detect-private-key
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-json
@@ -19,13 +17,13 @@ repos:
   #         args: ['--baseline', '.secrets.baseline']
   #         exclude: Pipfile.lock
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.16.1
+    rev: v8.16.3
     hooks:
       - id: gitleaks
-        args: ["--verbose", "--redact", "--pretty", "--baseline-path gitleaks-baseline.json", "--report-path gitleaks-report.json"]
+        args: ["--redact", "-b gitleaks-baseline.json", "-r gitleaks-report.json"]
         exclude: Pipfile.lock
   - repo: https://github.com/hadolint/hadolint
-    rev: v2.10.0
+    rev: v2.12.1-beta
     hooks:
       - id: hadolint
   # We're running black, but doing it via nox session instead - see below

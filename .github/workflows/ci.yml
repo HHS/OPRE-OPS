@@ -37,11 +37,6 @@ jobs:
       - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3
       - uses: ./.github/actions/setup-python
 
-      # Not needed here, as this is run in our ^^ setup-python
-      # - name: Install backend dependencies
-      #   working-directory: ./backend/ops_api
-      #   run: pipenv install --dev
-
       - name: Lint backend
         working-directory: ./backend/ops_api
         run: pipenv run nox -s lint
