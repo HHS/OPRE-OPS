@@ -13,7 +13,6 @@ import {
     setAgreementId,
     setAgreementIncumbent,
     setAgreementNotes,
-    setAgreementProductServiceCode,
     setAgreementProjectOfficer,
     setAgreementTeamMembers,
     setAgreementTitle,
@@ -37,9 +36,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const agreement = useSelector((state) => state.createAgreement.agreement);
     const agreementReason = agreement.selected_agreement_reason;
     const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null;
-    const selectedProductServiceCode = useSelector(
-        (state) => state.createAgreement.agreement.selected_product_service_code
-    );
     const agreementIncumbent = useSelector((state) => state.createAgreement.agreement.incumbent_entered);
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
     const [showModal, setShowModal] = React.useState(false);
@@ -48,6 +44,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const [alertProps, setAlertProps] = React.useState({});
 
     const [selectedAgreementType, setSelectedAgreementType] = React.useState("");
+    const [selectedProductServiceCode, setSelectedProductServiceCode] = React.useState({});
 
     const showAlertAndNavigate = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -66,7 +63,11 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     };
 
     const saveAgreement = async () => {
-        const data = { ...agreement, selected_agreement_type: selectedAgreementType };
+        const data = {
+            ...agreement,
+            selected_agreement_type: selectedAgreementType,
+            product_service_code_id: selectedProductServiceCode ? selectedProductServiceCode.id : null,
+        };
         const response = await postAgreement(data);
         const newAgreementId = response.id;
         console.log(`New Agreement Created: ${newAgreementId}`);
@@ -79,7 +80,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         dispatch(setAgreementNotes(""));
         dispatch(setSelectedProject({}));
         setSelectedAgreementType("");
-        dispatch(setAgreementProductServiceCode(null));
+        setSelectedProductServiceCode({});
         dispatch(setSelectedAgreementReason(null));
         dispatch(setSelectedProcurementShop({}));
         dispatch(setAgreementProjectOfficer(null));
@@ -190,10 +191,15 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                 onChange={(e) => dispatch(setAgreementDescription(e.target.value))}
             ></textarea>
 
-            <ProductServiceCodeSelect />
-            {selectedProductServiceCode && (
-                <ProductServiceCodeSummaryBox selectedProductServiceCode={selectedProductServiceCode} />
-            )}
+            <ProductServiceCodeSelect
+                selectedProductServiceCode={selectedProductServiceCode}
+                setSelectedProductServiceCode={setSelectedProductServiceCode}
+            />
+            {selectedProductServiceCode &&
+                selectedProductServiceCode.naics &&
+                selectedProductServiceCode.support_code && (
+                    <ProductServiceCodeSummaryBox selectedProductServiceCode={selectedProductServiceCode} />
+                )}
             <h2 className="font-sans-lg margin-top-3">Procurement Shop</h2>
             <ProcurementShopSelect />
 
