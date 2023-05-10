@@ -17,10 +17,8 @@ async def check_auth_services() -> dict:
     try:
         authlib_client_config = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"]
         server_metadata_url = authlib_client_config["server_metadata_url"]
-        print(server_metadata_url)
         r = requests.get(server_metadata_url, timeout=10)
         resp["status_code"] = r.status_code
-        print(f"{r.status_code=}, {type(r.status_code)=}")
         if r.status_code != 200:
             resp["alarm_level"] = 1
     except Exception as e:
@@ -37,7 +35,6 @@ async def check_db_conn() -> dict:
     resp = {"db_conn_is_ok": True, "alarm_level": 0}
     try:
         sess = current_app.db_session
-        print(type(sess))
         current_app.db_session.execute(
             text("SELECT 'OK';"),
             execution_options={"timeout": 5},  # just pool wait timeout ?
