@@ -19,7 +19,7 @@ jobs:
         uses: DariuszPorowski/github-action-gitleaks@ce25b145d126cb21226e9069022dd69c1a235bd9 # tag: v2.0.7
         with:
           report_format: sarif
-          baseline_path: gitleaks-baseline.json
+          baseline_path: ./gitleaks-baseline.json
 
       # (optional) It's just to see outputs from the Action
       - name: Get the output from the gitleaks step
