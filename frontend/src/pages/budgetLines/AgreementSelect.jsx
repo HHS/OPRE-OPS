@@ -87,3 +87,5 @@ export const AgreementSelect = () => {
         </div>
     );
 };
+
+export default AgreementSelect;
