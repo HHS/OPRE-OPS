@@ -21,6 +21,7 @@ jobs:
           config: ./gitleaks/config.toml
           report_format: sarif
           baseline_path: ./gitleaks-baseline.json
+          verbose: false
 
       # (optional) It's just to see outputs from the Action
       - name: Get the output from the gitleaks step
