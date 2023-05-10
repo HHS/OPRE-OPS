@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import ProcurementShopSelect from "./ProcurementShopSelect";
 import AgreementReasonSelect from "./AgreementReasonSelect";
@@ -9,18 +9,17 @@ import AgreementTypeSelect from "./AgreementTypeSelect";
 import ProductServiceCodeSelect from "./ProductServiceCodeSelect";
 import Alert from "../../components/UI/Alert/Alert";
 import {
-    setAgreementTitle,
     setAgreementDescription,
+    setAgreementId,
     setAgreementIncumbent,
     setAgreementNotes,
-    setAgreementId,
-    setSelectedProject,
-    setSelectedAgreementType,
     setAgreementProductServiceCode,
-    setSelectedProcurementShop,
-    setSelectedAgreementReason,
     setAgreementProjectOfficer,
     setAgreementTeamMembers,
+    setAgreementTitle,
+    setSelectedAgreementReason,
+    setSelectedProcurementShop,
+    setSelectedProject,
 } from "./createAgreementSlice";
 import ProjectOfficerSelect from "./ProjectOfficerSelect";
 import TeamMemberSelect from "./TeamMemberSelect";
@@ -47,6 +46,8 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
 
+    const [selectedAgreementType, setSelectedAgreementType] = React.useState("");
+
     const showAlertAndNavigate = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
         window.scrollTo(0, 0);
@@ -64,7 +65,8 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     };
 
     const saveAgreement = async () => {
-        const response = await postAgreement(agreement);
+        const data = { ...agreement, selected_agreement_type: selectedAgreementType };
+        const response = await postAgreement(data);
         const newAgreementId = response.id;
         console.log(`New Agreement Created: ${newAgreementId}`);
         dispatch(setAgreementId(newAgreementId));
@@ -75,7 +77,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         dispatch(setAgreementIncumbent(null));
         dispatch(setAgreementNotes(""));
         dispatch(setSelectedProject({}));
-        dispatch(setSelectedAgreementType(null));
+        setSelectedAgreementType("");
         dispatch(setAgreementProductServiceCode(null));
         dispatch(setSelectedAgreementReason(null));
         dispatch(setSelectedProcurementShop({}));
@@ -170,7 +172,10 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg">Select the Agreement Type</h2>
             <p>Select the type of agreement you&#39;d like to create.</p>
-            <AgreementTypeSelect />
+            <AgreementTypeSelect
+                selectedAgreementType={selectedAgreementType}
+                setSelectedAgreementType={setSelectedAgreementType}
+            />
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
             <label className="usa-label" htmlFor="agreement-title">
                 Agreement Title
