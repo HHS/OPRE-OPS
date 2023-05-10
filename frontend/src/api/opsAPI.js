@@ -41,6 +41,10 @@ export const opsApi = createApi({
             query: () => `/agreement-types/`,
             providesTags: ["AgreementTypes"],
         }),
+        getProductServiceCodes: builder.query({
+            query: () => `/product-service-codes/`,
+            providesTags: ["ProductServiceCodes"],
+        }),
     }),
 });
 
@@ -50,4 +54,5 @@ export const {
     useGetResearchProjectsQuery,
     useAddResearchProjectsMutation,
     useGetAgreementTypesQuery,
+    useGetProductServiceCodesQuery,
 } = opsApi;
