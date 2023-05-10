@@ -26,6 +26,7 @@ import TeamMemberSelect from "./TeamMemberSelect";
 import TeamMemberList from "./TeamMemberList";
 import Modal from "../../components/UI/Modal/Modal";
 import { postAgreement } from "../../api/postAgreements";
+import ProjectSummaryCard from "../../components/ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";
 
 export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
@@ -132,20 +133,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             naics: PropTypes.number.isRequired,
             support_code: PropTypes.string.isRequired,
         }).isRequired,
-    };
-
-    const ProjectSummaryCard = ({ selectedResearchProject }) => {
-        const { title } = selectedResearchProject;
-        return (
-            <div className="bg-base-lightest font-family-sans border-1px border-base-light radius-sm margin-y-7">
-                <dl className="margin-0 padding-y-2 padding-x-3">
-                    <dt className="margin-0">Project</dt>
-                    <dd className="margin-0 text-bold margin-top-1" style={{ fontSize: "1.375rem" }}>
-                        {title}
-                    </dd>
-                </dl>
-            </div>
-        );
     };
 
     return (
