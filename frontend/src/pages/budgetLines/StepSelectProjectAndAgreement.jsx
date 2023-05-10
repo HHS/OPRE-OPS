@@ -1,6 +1,7 @@
 import { useDispatch } from "react-redux";
 import { useGetResearchProjectsQuery } from "../../api/opsAPI";
 import { setAgreements } from "./createBudgetLineSlice";
+import { Link } from "react-router-dom";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import ProjectSelect from "../../components/UI/Form/ProjectSelect";
 import AgreementSelect from "./AgreementSelect";
@@ -66,10 +67,12 @@ export const StepSelectProjectAndAgreement = ({
                 <div className="border-bottom-1px border-base-light width-full" />
             </div>
             <div className="grid-row flex-justify-center">
-                <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">Add New Project</button>
-                <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">
+                <Link to="/projects/create" className="usa-button usa-button--outline margin-top-6 margin-bottom-6">
+                    Add New Project
+                </Link>
+                <Link to="/agreements/create" className="usa-button usa-button--outline margin-top-6 margin-bottom-6">
                     Add New Agreement
-                </button>
+                </Link>
             </div>
         </>
     );
