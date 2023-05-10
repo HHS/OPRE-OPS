@@ -20,7 +20,7 @@ jobs:
         with:
           config: ./gitleaks/config.toml
           report_format: sarif
-          baseline_path: ./gitleaks-baseline.json
+          baseline_path: gitleaks-baseline.json
           verbose: false
 
       # (optional) It's just to see outputs from the Action
