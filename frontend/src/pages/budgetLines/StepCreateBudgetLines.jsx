@@ -149,7 +149,7 @@ export const StepCreateBudgetLines = ({ goToNext, goBack, wizardSteps }) => {
                     Back
                 </button>
                 <button className="usa-button" onClick={saveBudgetLineItems}>
-                    Continue
+                    Create Budget Lines
                 </button>
             </div>
         </>
