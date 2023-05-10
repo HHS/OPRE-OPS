@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    current_step: 1,
+    // current_step: 1,
     research_projects_list: [],
     research_projects_filter: "",
     agreements: [],
@@ -12,7 +12,7 @@ const initialState = {
     // selected_project: {},
     // selected_agreement: -1,
     selected_can: -1,
-    selected_procurement_shop: -1,
+    // selected_procurement_shop: -1,
     entered_description: "",
     entered_amount: null,
     entered_month: "",
@@ -26,9 +26,9 @@ const createBudgetLineSlice = createSlice({
     name: "createBudgetLine",
     initialState,
     reducers: {
-        setCurrentStep: (state, action) => {
-            state.current_step = action.payload;
-        },
+        // setCurrentStep: (state, action) => {
+        //     state.current_step = action.payload;
+        // },
         setResearchProjectsList: (state, action) => {
             state.research_projects_list = action.payload;
         },
@@ -136,9 +136,9 @@ const createBudgetLineSlice = createSlice({
         setSelectedCan: (state, action) => {
             state.selected_can = action.payload;
         },
-        setSelectedProcurementShop: (state, action) => {
-            state.selected_procurement_shop = action.payload;
-        },
+        // setSelectedProcurementShop: (state, action) => {
+        //     state.selected_procurement_shop = action.payload;
+        // },
         setEnteredDescription: (state, action) => {
             state.entered_description = action.payload;
         },
