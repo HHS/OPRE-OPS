@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import { CreateBudgetLineFlow } from "./CreateBudgetLineFlow";
-import ProjectSelect from "../../components/UI/Form/ProjectSelect";
-import { AgreementSelect } from "./AgreementSelect";
 import CreateBudgetLinesForm from "../../components/UI/Form/CreateBudgetLinesForm";
 import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
 import {
@@ -20,7 +18,6 @@ import {
     setSelectedProcurementShop,
     deleteBudgetLineAdded,
     setSelectedAgreement,
-    setSelectedProject,
 } from "./createBudgetLineSlice";
 import PreviewTable from "./PreviewTable";
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
@@ -29,69 +26,9 @@ import { Alert } from "../../components/UI/Alert/Alert";
 import Modal from "../../components/UI/Modal/Modal";
 import { ProjectAgreementSummaryCard } from "./ProjectAgreementSummaryCard";
 import { postBudgetLineItems } from "../../api/postBudgetLineItems";
-import { useGetResearchProjectsQuery } from "../../api/opsAPI";
+import StepSelectProjectAndAgreement from "./StepSelectProjectAndAgreement";
+const wizardSteps = ["Project", "Agreement", "Budget Lines"];
 
-const StepOne = ({ goToNext }) => {
-    const dispatch = useDispatch();
-    const selectedResearchProject = useSelector((state) => state.createBudgetLine.selected_project);
-    const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
-    const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
-
-    if (isLoadingProjects) {
-        return <div>Loading...</div>;
-    }
-    if (errorProjects) {
-        return <div>Oops, an error occurred</div>;
-    }
-
-    const clearAgreementState = () => {
-        dispatch(setAgreements([]));
-        dispatch(setSelectedAgreement(-1));
-    };
-
-    return (
-        <>
-            <h1 className="font-sans-lg">Create New Budget Line</h1>
-            <p>Step One: Text explaining this page</p>
-            <StepIndicator steps={["Project & Agreement", "Budget Lines", "Review"]} currentStep={1} />
-            <h2 className="font-sans-lg">Select a Project</h2>
-            <p>
-                Select the project this budget line should be associated with. If you need to create a new project,
-                click Add New Project.
-            </p>
-            <ProjectSelect
-                researchProjects={projects}
-                selectedResearchProject={selectedResearchProject}
-                setSelectedProject={setSelectedProject}
-                clearFunction={clearAgreementState}
-            />
-            <h2 className="font-sans-lg">Select an Agreement</h2>
-            <p>Select the project and agreement this budget line should be associated with.</p>
-            <AgreementSelect />
-            <div className="grid-row flex-justify-end margin-top-8">
-                <button
-                    className="usa-button"
-                    onClick={() => goToNext({ project: "Red X 2.0" })}
-                    // disable if no project or agreement is selected
-                    disabled={!(selectedResearchProject?.id && selectedAgreement?.id)}
-                >
-                    Continue
-                </button>
-            </div>
-            <div className="display-flex flex-align-center margin-top-6">
-                <div className="border-bottom-1px border-base-light width-full" />
-                <span className="text-base margin-left-2 margin-right-2">or</span>
-                <div className="border-bottom-1px border-base-light width-full" />
-            </div>
-            <div className="grid-row flex-justify-center">
-                <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">Add New Project</button>
-                <button className="usa-button usa-button--outline margin-top-6 margin-bottom-6">
-                    Add New Agreement
-                </button>
-            </div>
-        </>
-    );
-};
 const StepTwo = ({ goBack, goToNext }) => {
     const dispatch = useDispatch();
     const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
@@ -282,12 +219,12 @@ export const CreateBudgetLine = () => {
     return (
         <App>
             <CreateBudgetLineFlow
-                onFinish={(data) => {
-                    console.log("budget line has: " + JSON.stringify(data, null, 2));
-                    alert("Budget Line Created!");
-                }}
+            // onFinish={(data) => {
+            //     console.log("budget line has: " + JSON.stringify(data, null, 2));
+            //     alert("Budget Line Created!");
+            // }}
             >
-                <StepOne />
+                <StepSelectProjectAndAgreement wizardSteps={wizardSteps} />
                 <StepTwo />
                 <StepThree />
             </CreateBudgetLineFlow>
