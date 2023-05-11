@@ -11,7 +11,6 @@ import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
 
 export const StepSelectProjectAndAgreement = ({ goToNext }) => {
     const dispatch = useDispatch();
-    const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
     const {
         wizardSteps,
         setSelectedAgreement,
@@ -22,19 +21,6 @@ export const StepSelectProjectAndAgreement = ({ goToNext }) => {
         setBudgetLinesAdded,
     } = useBudgetLines();
 
-    if (isLoadingProjects) {
-        return <div>Loading...</div>;
-    }
-    if (errorProjects) {
-        return <div>Oops, an error occurred</div>;
-    }
-
-    const clearAgreementState = () => {
-        dispatch(setAgreements([]));
-        setSelectedAgreement({});
-    };
-
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     React.useEffect(() => {
         const getAgreementsAndSetState = async () => {
             if (selectedProject?.id > 0) {
@@ -49,6 +35,20 @@ export const StepSelectProjectAndAgreement = ({ goToNext }) => {
             dispatch(setAgreements([]));
         };
     }, [dispatch, selectedProject]);
+
+    const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
+
+    if (isLoadingProjects) {
+        return <div>Loading...</div>;
+    }
+    if (errorProjects) {
+        return <div>Oops, an error occurred</div>;
+    }
+
+    const clearAgreementState = () => {
+        dispatch(setAgreements([]));
+        setSelectedAgreement({});
+    };
 
     return (
         <>

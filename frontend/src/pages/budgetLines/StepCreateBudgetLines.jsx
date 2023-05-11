@@ -9,47 +9,39 @@ import CreateBudgetLinesForm from "../../components/UI/Form/CreateBudgetLinesFor
 import ProcurementShopSelect from "./ProcurementShopSelect";
 import { setBudgetLineAdded, setSelectedAgreement } from "../budgetLines/createBudgetLineSlice";
 import { postBudgetLineItems } from "../../api/postBudgetLineItems";
+import { useBudgetLines } from "./budgetLineContext";
 
-export const StepCreateBudgetLines = ({
-    goToNext,
-    goBack,
-    wizardSteps,
-    selectedProject: selectedResearchProject,
-    selectedAgreement,
-    selectedProcurementShop,
-    setSelectedProcurementShop = () => {},
-    budgetLinesAdded,
-    setBudgetLinesAdded = () => {},
-    deleteBudgetLineAdded = () => {},
-}) => {
+export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
     const dispatch = useDispatch();
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
-    const [selectedCan, setSelectedCan] = React.useState({});
-    const [enteredDescription, setEnteredDescription] = React.useState("");
-    const [enteredAmount, setEnteredAmount] = React.useState(null);
-    const [enteredMonth, setEnteredMonth] = React.useState("");
-    const [enteredDay, setEnteredDay] = React.useState("");
-    const [enteredYear, setEnteredYear] = React.useState("");
-    const [enteredComments, setEnteredComments] = React.useState("");
-    const [isEditing, setIsEditing] = React.useState(false);
-    const [budgetLineBeingEdited, setBudgetLineBeingEdited] = React.useState(null);
 
-    const handleCancelEdit = () => {
-        setBudgetLinesAdded({});
-    };
+    const {
+        wizardSteps,
+        selectedAgreement,
+        setSelectedAgreement,
+        selectedProject: selectedResearchProject,
+        selectedProcurementShop,
+        setSelectedProcurementShop,
+        budgetLinesAdded,
+        setBudgetLinesAdded,
+    } = useBudgetLines();
 
-    const resetFormState = () => {
-        setEnteredDescription("");
-        setEnteredAmount(null);
-        setSelectedCan({});
-        setEnteredMonth("");
-        setEnteredDay("");
-        setEnteredYear("");
-        setEnteredComments("");
-    };
+    // const handleCancelEdit = () => {
+    //     setBudgetLinesAdded({});
+    // };
+
+    // const resetFormState = () => {
+    //     setEnteredDescription("");
+    //     setEnteredAmount(null);
+    //     setSelectedCan({});
+    //     setEnteredMonth("");
+    //     setEnteredDay("");
+    //     setEnteredYear("");
+    //     setEnteredComments("");
+    // };
 
     const showAlert = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -62,29 +54,30 @@ export const StepCreateBudgetLines = ({
         setAlertProps({});
     };
 
-    const handleDeleteBudgetLine = (budgetLineId) => {
-        setShowModal(true);
-        setModalProps({
-            heading: "Are you sure you want to delete this budget line?",
-            actionButtonText: "Delete",
-            handleConfirm: () => {
-                deleteBudgetLineAdded(budgetLineId);
-                resetFormState();
-                showAlert("success", "Budget Line Deleted", "The budget line has been successfully deleted.");
-                setModalProps({});
-            },
-        });
-    };
+    // const handleDeleteBudgetLine = (budgetLineId) => {
+    //     setShowModal(true);
+    //     setModalProps({
+    //         heading: "Are you sure you want to delete this budget line?",
+    //         actionButtonText: "Delete",
+    //         handleConfirm: () => {
+    //             // TODO: replace with action
+    //             // deleteBudgetLineAdded(budgetLineId);
+    //             resetFormState();
+    //             showAlert("success", "Budget Line Deleted", "The budget line has been successfully deleted.");
+    //             setModalProps({});
+    //         },
+    //     });
+    // };
 
-    const saveBudgetLineItems = (event) => {
-        event.preventDefault();
-        const newBudgetLineItems = budgetLinesAdded.filter(
-            // eslint-disable-next-line no-prototype-builtins
-            (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on")
-        );
-        postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
-        goToNext();
-    };
+    // const saveBudgetLineItems = (event) => {
+    //     event.preventDefault();
+    //     const newBudgetLineItems = budgetLinesAdded.filter(
+    //         // eslint-disable-next-line no-prototype-builtins
+    //         (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on")
+    //     );
+    //     postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
+    //     goToNext();
+    // };
 
     return (
         <>
@@ -128,7 +121,7 @@ export const StepCreateBudgetLines = ({
                 Complete the information below to create new budget lines. Select Add Budget Line to create multiple
                 budget lines.
             </p>
-            <CreateBudgetLinesForm
+            {/* <CreateBudgetLinesForm
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}
                 showAlert={showAlert}
@@ -154,17 +147,17 @@ export const StepCreateBudgetLines = ({
                 setBudgetLineBeingEdited={setBudgetLineBeingEdited}
                 handleCancelEdit={handleCancelEdit}
                 resetFormState={resetFormState}
-            />
+            /> */}
             <h2 className="font-sans-lg">Budget Lines</h2>
             <p>
                 This is a list of all budget lines for the selected project and agreement. The budget lines you add will
                 display in draft status. The Fiscal Year (FY) will populate based on the election date you provide.
             </p>
-            <PreviewTable
+            {/* <PreviewTable
                 handleDeleteBudgetLine={handleDeleteBudgetLine}
                 budgetLinesAdded={budgetLinesAdded}
                 setBudgetLinesAdded={setBudgetLinesAdded}
-            />
+            /> */}
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className="usa-button usa-button--unstyled margin-right-2"
@@ -180,15 +173,15 @@ export const StepCreateBudgetLines = ({
                             heading: "Are you sure you want to go back? Your budget lines will not be saved.",
                             actionButtonText: "Go Back",
                             handleConfirm: () => {
-                                dispatch(setBudgetLineAdded([]));
-                                dispatch(setEnteredAmount(null));
-                                dispatch(setEnteredComments(""));
-                                dispatch(setEnteredDescription(""));
-                                dispatch(setSelectedProcurementShop({}));
-                                dispatch(setEnteredDay(""));
-                                dispatch(setEnteredMonth(""));
-                                dispatch(setEnteredYear(""));
-                                dispatch(setSelectedAgreement(-1));
+                                // dispatch(setBudgetLineAdded([]));
+                                // dispatch(setEnteredAmount(null));
+                                // dispatch(setEnteredComments(""));
+                                // dispatch(setEnteredDescription(""));
+                                // dispatch(setSelectedProcurementShop({}));
+                                // dispatch(setEnteredDay(""));
+                                // dispatch(setEnteredMonth(""));
+                                // dispatch(setEnteredYear(""));
+                                // dispatch(setSelectedAgreement(-1));
                                 setModalProps({});
                                 goBack();
                             },
@@ -197,9 +190,9 @@ export const StepCreateBudgetLines = ({
                 >
                     Back
                 </button>
-                <button className="usa-button" onClick={saveBudgetLineItems}>
+                {/* <button className="usa-button" onClick={saveBudgetLineItems}>
                     Create Budget Lines
-                </button>
+                </button> */}
             </div>
         </>
     );

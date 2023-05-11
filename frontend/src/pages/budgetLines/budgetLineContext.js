@@ -11,6 +11,15 @@ export function BudgetLinesProvider({ children }) {
     const [selectedAgreement, setSelectedAgreement] = useState({});
     const [selectedProcurementShop, setSelectedProcurementShop] = useState({});
     const [budgetLinesAdded, setBudgetLinesAdded] = useState([{}]);
+    const [selectedCan, setSelectedCan] = useState({});
+    const [enteredDescription, setEnteredDescription] = useState("");
+    const [enteredAmount, setEnteredAmount] = useState(null);
+    const [enteredMonth, setEnteredMonth] = useState("");
+    const [enteredDay, setEnteredDay] = useState("");
+    const [enteredYear, setEnteredYear] = useState("");
+    const [enteredComments, setEnteredComments] = useState("");
+    const [isEditing, setIsEditing] = useState(false);
+    const [budgetLineBeingEdited, setBudgetLineBeingEdited] = useState(null);
 
     return (
         <BudgetLinesContext.Provider
@@ -24,6 +33,24 @@ export function BudgetLinesProvider({ children }) {
                 setSelectedProcurementShop,
                 budgetLinesAdded,
                 setBudgetLinesAdded,
+                selectedCan,
+                setSelectedCan,
+                enteredDescription,
+                setEnteredDescription,
+                enteredAmount,
+                setEnteredAmount,
+                enteredMonth,
+                setEnteredMonth,
+                enteredDay,
+                setEnteredDay,
+                enteredYear,
+                setEnteredYear,
+                enteredComments,
+                setEnteredComments,
+                isEditing,
+                setIsEditing,
+                budgetLineBeingEdited,
+                setBudgetLineBeingEdited,
             }}
         >
             <BudgetLinesDispatchContext.Provider value={dispatch}>{children}</BudgetLinesDispatchContext.Provider>
