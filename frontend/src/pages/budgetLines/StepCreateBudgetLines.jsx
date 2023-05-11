@@ -6,7 +6,7 @@ import PreviewTable from "../budgetLines/PreviewTable";
 import Alert from "../../components/UI/Alert/Alert";
 import Modal from "../../components/UI/Modal/Modal";
 import CreateBudgetLinesForm from "../../components/UI/Form/CreateBudgetLinesForm";
-import { ProcurementShopSelect } from "./ProcurementShopSelect";
+import ProcurementShopSelect from "./ProcurementShopSelect";
 import {
     deleteBudgetLineAdded,
     setBudgetLineAdded,

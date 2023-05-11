@@ -50,3 +50,5 @@ export const ProcurementShopSelect = ({ budgetLinesLength = 0 }) => {
         </fieldset>
     );
 };
+
+export default ProcurementShopSelect;
