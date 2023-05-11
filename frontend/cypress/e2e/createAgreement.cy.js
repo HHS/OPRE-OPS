@@ -30,6 +30,10 @@ it("can create an agreement", () => {
     cy.get("#continue").click();
 
     // Step Two - Create an Agreement
+    // test for rendered ProjectSummaryCard
+    cy.get("dt").should("contain", "Project");
+    cy.get("dd").should("contain", "Human Services Interoperability Support");
+
     cy.get("#agreement-type-options").select("CONTRACT");
     cy.get("#agreement-title").type("Test Agreement Title");
     cy.get("#agreement-description").type("Test Agreement Description");
