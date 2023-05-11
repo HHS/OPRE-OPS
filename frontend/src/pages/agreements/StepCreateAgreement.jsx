@@ -12,13 +12,15 @@ import {
     setAgreementId,
     setAgreementIncumbent,
     setAgreementNotes,
+    setAgreementProcurementShop,
     setAgreementProjectOfficer,
     setAgreementTeamMembers,
     setAgreementTitle,
     setSelectedAgreementReason,
-    setSelectedProcurementShop,
+    setSelectedProcurementShop as setSelectedProcurementShopInAgreement,
     setSelectedProject,
 } from "./createAgreementSlice";
+import { setSelectedProcurementShop as setSelectedProcurementShopInBudgetLine } from "../budgetLines/createBudgetLineSlice";
 import ProjectOfficerSelect from "./ProjectOfficerSelect";
 import TeamMemberSelect from "./TeamMemberSelect";
 import TeamMemberList from "./TeamMemberList";
@@ -45,6 +47,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
 
     const [selectedAgreementType, setSelectedAgreementType] = React.useState("");
     const [selectedProductServiceCode, setSelectedProductServiceCode] = React.useState({});
+    const [selectedProcurementShop, setSelectedProcurementShop] = React.useState({});
 
     const showAlertAndNavigate = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -106,6 +109,14 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                 navigate("/agreements/");
             },
         });
+    };
+
+    const handleOnChangeSelectedProcurementShop = (procurementShop) => {
+        // TODO:Remove dup state, i.e. use the local state and not in Redux
+        setSelectedProcurementShop(procurementShop);
+        dispatch(setAgreementProcurementShop(procurementShop.id));
+        dispatch(setSelectedProcurementShopInAgreement(procurementShop));
+        dispatch(setSelectedProcurementShopInBudgetLine(procurementShop));
     };
 
     return (
@@ -173,7 +184,10 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                     <ProductServiceCodeSummaryBox selectedProductServiceCode={selectedProductServiceCode} />
                 )}
             <h2 className="font-sans-lg margin-top-3">Procurement Shop</h2>
-            <ProcurementShopSelect />
+            <ProcurementShopSelect
+                selectedProcurementShop={selectedProcurementShop}
+                onChangeSelectedProcurementShop={handleOnChangeSelectedProcurementShop}
+            />
 
             <h2 className="font-sans-lg margin-top-3">Reason for Agreement</h2>
             <div className="display-flex">
