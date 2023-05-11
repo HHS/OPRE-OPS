@@ -1,35 +1,23 @@
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { setProductServiceCodesList, setAgreementProductServiceCode } from "./createAgreementSlice";
-import { getAllProductServiceCodes } from "../../api/getProductServiceCodes";
+import { useGetProductServiceCodesQuery } from "../../api/opsAPI";
 
-export const ProductServiceCodeSelect = () => {
-    const dispatch = useDispatch();
-    const productServiceCodes = useSelector((state) => state.createAgreement.product_service_codes_list);
-    const selectedProductServiceCode = useSelector(
-        (state) => state.createAgreement.agreement.selected_product_service_code
-    );
+export const ProductServiceCodeSelect = ({ selectedProductServiceCode, setSelectedProductServiceCode }) => {
+    const {
+        data: productServiceCodes,
+        error: errorProductServiceCodes,
+        isLoading: isLoadingProductServiceCodes,
+    } = useGetProductServiceCodesQuery();
 
-    // On component load, get ProductServiceCodes from API, and set returned list in State
-    useEffect(() => {
-        const getProductServiceCodesAndSetState = async () => {
-            dispatch(setProductServiceCodesList(await getAllProductServiceCodes()));
-        };
+    if (isLoadingProductServiceCodes) {
+        return <div>Loading...</div>;
+    }
+    if (errorProductServiceCodes) {
+        return <div>Oops, an error occurred</div>;
+    }
 
-        getProductServiceCodesAndSetState().catch(console.error);
-
-        return () => {
-            dispatch(setProductServiceCodesList([]));
-        };
-    }, [dispatch]);
-
-    const onChangeProductServiceCodeSelection = (productServiceCode = null) => {
-        if (productServiceCode === null || productServiceCode === "0") {
-            dispatch(setAgreementProductServiceCode(null));
-            return;
-        }
-
-        dispatch(setAgreementProductServiceCode(productServiceCode));
+    const handleChange = (e) => {
+        const selectedOptionIndex = e.target.selectedIndex;
+        const selectedProductServiceCode = productServiceCodes[selectedOptionIndex - 1];
+        setSelectedProductServiceCode(selectedProductServiceCode);
     };
 
     return (
@@ -42,11 +30,7 @@ export const ProductServiceCodeSelect = () => {
                     className="usa-select margin-top-0 width-fit-content"
                     name="product-service-code-options"
                     id="product-service-code-options"
-                    onChange={(e) => {
-                        const selectedOptionIndex = e.target.selectedIndex;
-                        const selectedProductServiceCode = productServiceCodes[selectedOptionIndex - 1];
-                        onChangeProductServiceCodeSelection(selectedProductServiceCode);
-                    }}
+                    onChange={handleChange}
                     value={selectedProductServiceCode?.name}
                     required
                 >
