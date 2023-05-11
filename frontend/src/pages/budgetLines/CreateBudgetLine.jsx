@@ -8,6 +8,7 @@ import { getProcurementShopList } from "../../api/getProcurementShopList";
 import StepSelectProjectAndAgreement from "./StepSelectProjectAndAgreement";
 import StepCreateBudgetLines from "./StepCreateBudgetLines";
 import StepSuccess from "./StepSuccess";
+import { BudgetLinesProvider } from "./budgetLineContext";
 
 export const CreateBudgetLine = () => {
     const dispatch = useDispatch();
@@ -56,29 +57,31 @@ export const CreateBudgetLine = () => {
     };
 
     return (
-        <App>
-            <CreateBudgetLineFlow>
-                <StepSelectProjectAndAgreement
-                    wizardSteps={wizardSteps}
-                    selectedProject={selectedProject}
-                    setSelectedProject={setSelectedProject}
-                    selectedAgreement={selectedAgreement}
-                    setSelectedAgreement={setSelectedAgreement}
-                    setSelectedProcurementShop={setSelectedProcurementShop}
-                    setBudgetLinesAdded={setBudgetLinesAdded}
-                />
-                <StepCreateBudgetLines
-                    wizardSteps={wizardSteps}
-                    selectedProject={selectedProject}
-                    selectedAgreement={selectedAgreement}
-                    selectedProcurementShop={selectedProcurementShop}
-                    setSelectedProcurementShop={setSelectedProcurementShop}
-                    budgetLinesAdded={budgetLinesAdded}
-                    setBudgetLinesAdded={setBudgetLinesAdded}
-                    deleteBudgetLineAdded={deleteBudgetLineAdded}
-                />
-                <StepSuccess />
-            </CreateBudgetLineFlow>
-        </App>
+        <BudgetLinesProvider>
+            <App>
+                <CreateBudgetLineFlow>
+                    <StepSelectProjectAndAgreement
+                        wizardSteps={wizardSteps}
+                        selectedProject={selectedProject}
+                        setSelectedProject={setSelectedProject}
+                        selectedAgreement={selectedAgreement}
+                        setSelectedAgreement={setSelectedAgreement}
+                        setSelectedProcurementShop={setSelectedProcurementShop}
+                        setBudgetLinesAdded={setBudgetLinesAdded}
+                    />
+                    <StepCreateBudgetLines
+                        wizardSteps={wizardSteps}
+                        selectedProject={selectedProject}
+                        selectedAgreement={selectedAgreement}
+                        selectedProcurementShop={selectedProcurementShop}
+                        setSelectedProcurementShop={setSelectedProcurementShop}
+                        budgetLinesAdded={budgetLinesAdded}
+                        setBudgetLinesAdded={setBudgetLinesAdded}
+                        deleteBudgetLineAdded={deleteBudgetLineAdded}
+                    />
+                    <StepSuccess />
+                </CreateBudgetLineFlow>
+            </App>
+        </BudgetLinesProvider>
     );
 };
