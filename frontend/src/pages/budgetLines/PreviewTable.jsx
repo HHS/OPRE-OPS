@@ -11,9 +11,14 @@ import { TotalSummaryCard } from "./TotalSummaryCard";
 import { formatDate } from "../../helpers/utils";
 import "./PreviewTable.scss";
 
-export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = false, budgetLines = null }) => {
+export const PreviewTable = ({
+    handleDeleteBudgetLine = () => {},
+    readOnly = false,
+    budgetLines = null,
+    budgetLinesAdded: stateBudgetLinesAdded = [{}],
+}) => {
     const dispatch = useDispatch();
-    const stateBudgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
+    // const stateBudgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
     const budgetLinesAdded = budgetLines ? budgetLines : stateBudgetLinesAdded;
     const sortedBudgetLines = budgetLinesAdded
         .slice()

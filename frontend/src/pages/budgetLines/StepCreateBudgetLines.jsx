@@ -1,5 +1,5 @@
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import { ProjectAgreementSummaryCard } from "../budgetLines/ProjectAgreementSummaryCard";
 import PreviewTable from "../budgetLines/PreviewTable";
@@ -28,9 +28,11 @@ export const StepCreateBudgetLines = ({
     selectedAgreement,
     selectedProcurementShop,
     setSelectedProcurementShop = () => {},
+    budgetLinesAdded,
+    setBudgetLinesAdded,
 }) => {
     const dispatch = useDispatch();
-    const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
+    // const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
     const [showModal, setShowModal] = React.useState(false);
@@ -116,13 +118,19 @@ export const StepCreateBudgetLines = ({
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}
                 showAlert={showAlert}
+                budgetLinesAdded={budgetLinesAdded}
+                setBudgetLinesAdded={setBudgetLinesAdded}
             />
             <h2 className="font-sans-lg">Budget Lines</h2>
             <p>
                 This is a list of all budget lines for the selected project and agreement. The budget lines you add will
                 display in draft status. The Fiscal Year (FY) will populate based on the election date you provide.
             </p>
-            <PreviewTable handleDeleteBudgetLine={handleDeleteBudgetLine} />
+            <PreviewTable
+                handleDeleteBudgetLine={handleDeleteBudgetLine}
+                budgetLinesAdded={budgetLinesAdded}
+                setBudgetLinesAdded={setBudgetLinesAdded}
+            />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className="usa-button usa-button--unstyled margin-right-2"

@@ -20,6 +20,8 @@ export const CreateBudgetLinesForm = ({
     selectedAgreement = {},
     selectedProcurementShop = {},
     showAlert = () => {},
+    budgetLinesAdded,
+    setBudgetLinesAdded,
 }) => {
     const dispatch = useDispatch();
     // const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
@@ -33,7 +35,6 @@ export const CreateBudgetLinesForm = ({
     // const isEditing = useSelector((state) => state.createBudgetLine.is_editing_budget_line);
     // const budgetLineBeingEdited = useSelector((state) => state.createBudgetLine.budget_line_being_edited);
 
-    const [budgetLinesAdded, setBudgetLinesAdded] = React.useState([]);
     const [selectedCan, setSelectedCan] = React.useState({});
     const [enteredDescription, setEnteredDescription] = React.useState("");
     const [enteredAmount, setEnteredAmount] = React.useState(null);

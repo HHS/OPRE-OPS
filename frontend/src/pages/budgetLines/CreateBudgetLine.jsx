@@ -16,6 +16,7 @@ export const CreateBudgetLine = () => {
     const [selectedProject, setSelectedProject] = useState({});
     const [selectedAgreement, setSelectedAgreement] = useState({});
     const [selectedProcurementShop, setSelectedProcurementShop] = useState({});
+    const [budgetLinesAdded, setBudgetLinesAdded] = useState([{}]);
     // Get initial list of Agreements (dependent on Research Project Selection)
     useEffect(() => {
         const getAgreementsAndSetState = async () => {
@@ -60,6 +61,7 @@ export const CreateBudgetLine = () => {
                     selectedAgreement={selectedAgreement}
                     setSelectedAgreement={setSelectedAgreement}
                     setSelectedProcurementShop={setSelectedProcurementShop}
+                    setBudgetLinesAdded={setBudgetLinesAdded}
                 />
                 <StepCreateBudgetLines
                     wizardSteps={wizardSteps}
@@ -67,6 +69,8 @@ export const CreateBudgetLine = () => {
                     selectedAgreement={selectedAgreement}
                     selectedProcurementShop={selectedProcurementShop}
                     setSelectedProcurementShop={setSelectedProcurementShop}
+                    budgetLinesAdded={budgetLinesAdded}
+                    setBudgetLinesAdded={setBudgetLinesAdded}
                 />
                 <StepSuccess />
             </CreateBudgetLineFlow>

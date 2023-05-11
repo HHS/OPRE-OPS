@@ -5,14 +5,16 @@ import { Link } from "react-router-dom";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import ProjectSelect from "../../components/UI/Form/ProjectSelect";
 import AgreementSelect from "./AgreementSelect";
+
 export const StepSelectProjectAndAgreement = ({
     goToNext,
     wizardSteps,
-    selectedProject: selectedResearchProject,
     selectedAgreement,
     setSelectedAgreement = () => {},
+    selectedProject: selectedResearchProject,
     setSelectedProject = () => {},
     setSelectedProcurementShop = () => {},
+    setBudgetLinesAdded = () => {},
 }) => {
     const dispatch = useDispatch();
     const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
@@ -52,6 +54,7 @@ export const StepSelectProjectAndAgreement = ({
                 selectedAgreement={selectedAgreement}
                 setSelectedAgreement={setSelectedAgreement}
                 setSelectedProcurementShop={setSelectedProcurementShop}
+                setBudgetLinesAdded={setBudgetLinesAdded}
             />
             <div className="grid-row flex-justify-end margin-top-8">
                 <button
