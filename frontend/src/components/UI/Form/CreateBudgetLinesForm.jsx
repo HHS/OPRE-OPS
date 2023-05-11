@@ -1,4 +1,3 @@
-import React from "react";
 import { shape, func } from "prop-types";
 import { useDispatch } from "react-redux";
 import CurrencyFormat from "react-currency-format";
