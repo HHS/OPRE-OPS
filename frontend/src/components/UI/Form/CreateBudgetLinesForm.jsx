@@ -4,60 +4,36 @@ import { useDispatch } from "react-redux";
 import CurrencyFormat from "react-currency-format";
 import CanSelect from "../../../pages/budgetLines/CanSelect";
 import DesiredAwardDate from "../../../pages/budgetLines/DesiredAwardDate";
-import {
-    // setBudgetLineAdded,
-    setEditBudgetLineAdded,
-    // setEnteredDescription,
-    // setEnteredAmount,
-    // setSelectedCan,
-    // setEnteredMonth,
-    // setEnteredYear,
-    // setEnteredDay,
-    // setEnteredComments,
-} from "../../../pages/budgetLines/createBudgetLineSlice";
+import { setEditBudgetLineAdded } from "../../../pages/budgetLines/createBudgetLineSlice";
 
 export const CreateBudgetLinesForm = ({
     selectedAgreement = {},
     selectedProcurementShop = {},
     showAlert = () => {},
     budgetLinesAdded,
-    setBudgetLinesAdded,
+    setBudgetLinesAdded = () => {},
+    selectedCan,
+    setSelectedCan = () => {},
+    enteredDescription,
+    setEnteredDescription = () => {},
+    enteredAmount,
+    setEnteredAmount = () => {},
+    enteredMonth,
+    setEnteredMonth = () => {},
+    enteredDay,
+    setEnteredDay = () => {},
+    enteredYear,
+    setEnteredYear = () => {},
+    enteredComments,
+    setEnteredComments = () => {},
+    isEditing,
+    setIsEditing = () => {},
+    budgetLineBeingEdited,
+    setBudgetLineBeingEdited = () => {},
+    handleCancelEdit = () => {},
+    resetFormState = () => {},
 }) => {
     const dispatch = useDispatch();
-    // const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
-    // const selectedCan = useSelector((state) => state.createBudgetLine.selected_can);
-    // const enteredDescription = useSelector((state) => state.createBudgetLine.entered_description);
-    // const enteredAmount = useSelector((state) => state.createBudgetLine.entered_amount);
-    // const enteredMonth = useSelector((state) => state.createBudgetLine.entered_month);
-    // const enteredDay = useSelector((state) => state.createBudgetLine.entered_day);
-    // const enteredYear = useSelector((state) => state.createBudgetLine.entered_year);
-    // const enteredComments = useSelector((state) => state.createBudgetLine.entered_comments);
-    // const isEditing = useSelector((state) => state.createBudgetLine.is_editing_budget_line);
-    // const budgetLineBeingEdited = useSelector((state) => state.createBudgetLine.budget_line_being_edited);
-
-    const [selectedCan, setSelectedCan] = React.useState({});
-    const [enteredDescription, setEnteredDescription] = React.useState("");
-    const [enteredAmount, setEnteredAmount] = React.useState(null);
-    const [enteredMonth, setEnteredMonth] = React.useState("");
-    const [enteredDay, setEnteredDay] = React.useState("");
-    const [enteredYear, setEnteredYear] = React.useState("");
-    const [enteredComments, setEnteredComments] = React.useState("");
-    const [isEditing, setIsEditing] = React.useState(false);
-    const [budgetLineBeingEdited, setBudgetLineBeingEdited] = React.useState(null);
-
-    const handleCancelEdit = () => {
-        setBudgetLinesAdded({});
-    };
-
-    const resetFormState = () => {
-        setEnteredDescription("");
-        setEnteredAmount(null);
-        setSelectedCan({});
-        setEnteredMonth("");
-        setEnteredDay("");
-        setEnteredYear("");
-        setEnteredComments("");
-    };
 
     const handleEditForm = (e) => {
         e.preventDefault();

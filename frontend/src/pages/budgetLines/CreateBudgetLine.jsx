@@ -51,6 +51,10 @@ export const CreateBudgetLine = () => {
         getAgreementsAndSetState().catch(console.error);
     }, [dispatch, selectedProject]);
 
+    const deleteBudgetLineAdded = (budgetLineId) => {
+        setBudgetLinesAdded(budgetLinesAdded.filter((budgetLine) => budgetLine.id !== budgetLineId));
+    };
+
     return (
         <App>
             <CreateBudgetLineFlow>
@@ -71,6 +75,7 @@ export const CreateBudgetLine = () => {
                     setSelectedProcurementShop={setSelectedProcurementShop}
                     budgetLinesAdded={budgetLinesAdded}
                     setBudgetLinesAdded={setBudgetLinesAdded}
+                    deleteBudgetLineAdded={deleteBudgetLineAdded}
                 />
                 <StepSuccess />
             </CreateBudgetLineFlow>

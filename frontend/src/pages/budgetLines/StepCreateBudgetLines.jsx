@@ -7,17 +7,7 @@ import Alert from "../../components/UI/Alert/Alert";
 import Modal from "../../components/UI/Modal/Modal";
 import CreateBudgetLinesForm from "../../components/UI/Form/CreateBudgetLinesForm";
 import ProcurementShopSelect from "./ProcurementShopSelect";
-import {
-    deleteBudgetLineAdded,
-    setBudgetLineAdded,
-    setEnteredAmount,
-    setEnteredComments,
-    setEnteredDay,
-    setEnteredDescription,
-    setEnteredMonth,
-    setEnteredYear,
-    setSelectedAgreement,
-} from "../budgetLines/createBudgetLineSlice";
+import { setBudgetLineAdded, setSelectedAgreement } from "../budgetLines/createBudgetLineSlice";
 import { postBudgetLineItems } from "../../api/postBudgetLineItems";
 
 export const StepCreateBudgetLines = ({
@@ -29,14 +19,37 @@ export const StepCreateBudgetLines = ({
     selectedProcurementShop,
     setSelectedProcurementShop = () => {},
     budgetLinesAdded,
-    setBudgetLinesAdded,
+    setBudgetLinesAdded = () => {},
+    deleteBudgetLineAdded = () => {},
 }) => {
     const dispatch = useDispatch();
-    // const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const [selectedCan, setSelectedCan] = React.useState({});
+    const [enteredDescription, setEnteredDescription] = React.useState("");
+    const [enteredAmount, setEnteredAmount] = React.useState(null);
+    const [enteredMonth, setEnteredMonth] = React.useState("");
+    const [enteredDay, setEnteredDay] = React.useState("");
+    const [enteredYear, setEnteredYear] = React.useState("");
+    const [enteredComments, setEnteredComments] = React.useState("");
+    const [isEditing, setIsEditing] = React.useState(false);
+    const [budgetLineBeingEdited, setBudgetLineBeingEdited] = React.useState(null);
+
+    const handleCancelEdit = () => {
+        setBudgetLinesAdded({});
+    };
+
+    const resetFormState = () => {
+        setEnteredDescription("");
+        setEnteredAmount(null);
+        setSelectedCan({});
+        setEnteredMonth("");
+        setEnteredDay("");
+        setEnteredYear("");
+        setEnteredComments("");
+    };
 
     const showAlert = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -55,7 +68,8 @@ export const StepCreateBudgetLines = ({
             heading: "Are you sure you want to delete this budget line?",
             actionButtonText: "Delete",
             handleConfirm: () => {
-                dispatch(deleteBudgetLineAdded(budgetLineId));
+                deleteBudgetLineAdded(budgetLineId);
+                resetFormState();
                 showAlert("success", "Budget Line Deleted", "The budget line has been successfully deleted.");
                 setModalProps({});
             },
@@ -120,6 +134,26 @@ export const StepCreateBudgetLines = ({
                 showAlert={showAlert}
                 budgetLinesAdded={budgetLinesAdded}
                 setBudgetLinesAdded={setBudgetLinesAdded}
+                selectedCan={selectedCan}
+                setSelectedCan={setSelectedCan}
+                enteredDescription={enteredDescription}
+                setEnteredDescription={setEnteredDescription}
+                enteredAmount={enteredAmount}
+                setEnteredAmount={setEnteredAmount}
+                enteredMonth={enteredMonth}
+                setEnteredMonth={setEnteredMonth}
+                enteredDay={enteredDay}
+                setEnteredDay={setEnteredDay}
+                enteredYear={enteredYear}
+                setEnteredYear={setEnteredYear}
+                enteredComments={enteredComments}
+                setEnteredComments={setEnteredComments}
+                isEditing={isEditing}
+                setIsEditing={setIsEditing}
+                budgetLineBeingEdited={budgetLineBeingEdited}
+                setBudgetLineBeingEdited={setBudgetLineBeingEdited}
+                handleCancelEdit={handleCancelEdit}
+                resetFormState={resetFormState}
             />
             <h2 className="font-sans-lg">Budget Lines</h2>
             <p>
