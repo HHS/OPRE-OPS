@@ -1,9 +1,9 @@
 import PropTypes from "prop-types";
 
 export const ProjectAgreementSummaryCard = ({
-    selectedResearchProject,
-    selectedAgreement,
-    selectedProcurementShop,
+    selectedResearchProject = {},
+    selectedAgreement = {},
+    selectedProcurementShop = {},
 }) => {
     const { title } = selectedResearchProject;
     const { name: agreementName } = selectedAgreement;
@@ -37,13 +37,13 @@ export const ProjectAgreementSummaryCard = ({
 
 ProjectAgreementSummaryCard.propTypes = {
     selectedResearchProject: PropTypes.shape({
-        title: PropTypes.string.isRequired,
+        title: PropTypes.string,
     }),
     selectedAgreement: PropTypes.shape({
-        name: PropTypes.string.isRequired,
+        name: PropTypes.string,
     }),
     selectedProcurementShop: PropTypes.shape({
-        name: PropTypes.string.isRequired,
+        name: PropTypes.string,
         fee: PropTypes.number,
     }),
 };

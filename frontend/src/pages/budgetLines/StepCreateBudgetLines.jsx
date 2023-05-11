@@ -16,7 +16,6 @@ import {
     setEnteredDescription,
     setEnteredMonth,
     setEnteredYear,
-    setSelectedProcurementShop,
     setSelectedAgreement,
 } from "../budgetLines/createBudgetLineSlice";
 import { postBudgetLineItems } from "../../api/postBudgetLineItems";
@@ -28,6 +27,7 @@ export const StepCreateBudgetLines = ({
     selectedProject: selectedResearchProject,
     selectedAgreement,
     selectedProcurementShop,
+    setSelectedProcurementShop = () => {},
 }) => {
     const dispatch = useDispatch();
     const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
@@ -102,7 +102,11 @@ export const StepCreateBudgetLines = ({
                 Select the Procurement Shop, and the fee rates will be populated in the table below. If this is an
                 active agreement, it will default to the procurement shop currently being used.
             </p>
-            <ProcurementShopSelect budgetLinesLength={budgetLinesAdded.length} />
+            <ProcurementShopSelect
+                budgetLinesLength={budgetLinesAdded.length}
+                selectedProcurementShop={selectedProcurementShop}
+                setSelectedProcurementShop={setSelectedProcurementShop}
+            />
             <h2 className="font-sans-lg margin-top-3">Budget Line Details</h2>
             <p>
                 Complete the information below to create new budget lines. Select Add Budget Line to create multiple

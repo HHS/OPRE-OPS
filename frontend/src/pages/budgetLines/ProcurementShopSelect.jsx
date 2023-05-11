@@ -1,24 +1,23 @@
-import { useDispatch, useSelector } from "react-redux";
-import { setSelectedProcurementShop } from "./createBudgetLineSlice";
+import { useSelector } from "react-redux";
 
-export const ProcurementShopSelect = ({ budgetLinesLength = 0 }) => {
-    const dispatch = useDispatch();
+export const ProcurementShopSelect = ({
+    budgetLinesLength = 0,
+    selectedProcurementShop,
+    setSelectedProcurementShop,
+}) => {
     const procurementShops = useSelector((state) => state.createBudgetLine.procurement_shops);
-    const selectedProcurementShop = useSelector((state) => state.createBudgetLine.selected_procurement_shop);
 
     const onChangeProcurementShopSelection = (procurementShopId = 0) => {
         if (procurementShopId === 0) {
-            dispatch(setSelectedProcurementShop({}));
+            setSelectedProcurementShop({});
             return;
         }
 
-        dispatch(
-            setSelectedProcurementShop({
-                id: procurementShops[procurementShopId - 1].id,
-                name: procurementShops[procurementShopId - 1].name,
-                fee: procurementShops[procurementShopId - 1].fee,
-            })
-        );
+        setSelectedProcurementShop({
+            id: procurementShops[procurementShopId - 1].id,
+            name: procurementShops[procurementShopId - 1].name,
+            fee: procurementShops[procurementShopId - 1].fee,
+        });
     };
     return (
         <fieldset className="usa-fieldset" disabled={budgetLinesLength !== 0}>

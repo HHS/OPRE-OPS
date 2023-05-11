@@ -66,6 +66,7 @@ export const CreateBudgetLine = () => {
                     selectedProject={selectedProject}
                     selectedAgreement={selectedAgreement}
                     selectedProcurementShop={selectedProcurementShop}
+                    setSelectedProcurementShop={setSelectedProcurementShop}
                 />
                 <StepSuccess />
             </CreateBudgetLineFlow>

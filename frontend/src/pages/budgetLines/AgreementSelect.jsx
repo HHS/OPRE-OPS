@@ -48,6 +48,7 @@ export const AgreementSelect = ({
                     <dd className="text-semibold margin-0">{selectedAgreement.description}</dd>
                     <div className="display-flex flex-justify margin-top-205">
                         <div className="display-flex flex-column">
+                            {/* TODO: add project officer name */}
                             <dt className="margin-0 text-base-dark">Project Officer</dt>
                             <dd className="text-semibold margin-0">{selectedAgreement.projectOfficer}</dd>
                         </div>
