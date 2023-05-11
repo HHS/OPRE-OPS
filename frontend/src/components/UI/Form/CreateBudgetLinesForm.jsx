@@ -1,18 +1,19 @@
+import React from "react";
 import { shape, func } from "prop-types";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import CurrencyFormat from "react-currency-format";
 import CanSelect from "../../../pages/budgetLines/CanSelect";
 import DesiredAwardDate from "../../../pages/budgetLines/DesiredAwardDate";
 import {
-    setBudgetLineAdded,
+    // setBudgetLineAdded,
     setEditBudgetLineAdded,
-    setEnteredDescription,
-    setEnteredAmount,
-    setSelectedCan,
-    setEnteredMonth,
-    setEnteredYear,
-    setEnteredDay,
-    setEnteredComments,
+    // setEnteredDescription,
+    // setEnteredAmount,
+    // setSelectedCan,
+    // setEnteredMonth,
+    // setEnteredYear,
+    // setEnteredDay,
+    // setEnteredComments,
 } from "../../../pages/budgetLines/createBudgetLineSlice";
 
 export const CreateBudgetLinesForm = ({
@@ -21,19 +22,40 @@ export const CreateBudgetLinesForm = ({
     showAlert = () => {},
 }) => {
     const dispatch = useDispatch();
-    const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
-    const selectedCan = useSelector((state) => state.createBudgetLine.selected_can);
-    const enteredDescription = useSelector((state) => state.createBudgetLine.entered_description);
-    const enteredAmount = useSelector((state) => state.createBudgetLine.entered_amount);
-    const enteredMonth = useSelector((state) => state.createBudgetLine.entered_month);
-    const enteredDay = useSelector((state) => state.createBudgetLine.entered_day);
-    const enteredYear = useSelector((state) => state.createBudgetLine.entered_year);
-    const enteredComments = useSelector((state) => state.createBudgetLine.entered_comments);
-    const isEditing = useSelector((state) => state.createBudgetLine.is_editing_budget_line);
-    const budgetLineBeingEdited = useSelector((state) => state.createBudgetLine.budget_line_being_edited);
+    // const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
+    // const selectedCan = useSelector((state) => state.createBudgetLine.selected_can);
+    // const enteredDescription = useSelector((state) => state.createBudgetLine.entered_description);
+    // const enteredAmount = useSelector((state) => state.createBudgetLine.entered_amount);
+    // const enteredMonth = useSelector((state) => state.createBudgetLine.entered_month);
+    // const enteredDay = useSelector((state) => state.createBudgetLine.entered_day);
+    // const enteredYear = useSelector((state) => state.createBudgetLine.entered_year);
+    // const enteredComments = useSelector((state) => state.createBudgetLine.entered_comments);
+    // const isEditing = useSelector((state) => state.createBudgetLine.is_editing_budget_line);
+    // const budgetLineBeingEdited = useSelector((state) => state.createBudgetLine.budget_line_being_edited);
+
+    const [budgetLinesAdded, setBudgetLinesAdded] = React.useState([]);
+    const [selectedCan, setSelectedCan] = React.useState({});
+    const [enteredDescription, setEnteredDescription] = React.useState("");
+    const [enteredAmount, setEnteredAmount] = React.useState(null);
+    const [enteredMonth, setEnteredMonth] = React.useState("");
+    const [enteredDay, setEnteredDay] = React.useState("");
+    const [enteredYear, setEnteredYear] = React.useState("");
+    const [enteredComments, setEnteredComments] = React.useState("");
+    const [isEditing, setIsEditing] = React.useState(false);
+    const [budgetLineBeingEdited, setBudgetLineBeingEdited] = React.useState(null);
 
     const handleCancelEdit = () => {
-        dispatch(setEditBudgetLineAdded({}));
+        setBudgetLinesAdded({});
+    };
+
+    const resetFormState = () => {
+        setEnteredDescription("");
+        setEnteredAmount(null);
+        setSelectedCan({});
+        setEnteredMonth("");
+        setEnteredDay("");
+        setEnteredYear("");
+        setEnteredComments("");
     };
 
     const handleEditForm = (e) => {
@@ -57,33 +79,25 @@ export const CreateBudgetLinesForm = ({
 
     const handleSubmitForm = (e) => {
         e.preventDefault();
-        dispatch(
-            setBudgetLineAdded([
-                ...budgetLinesAdded,
-                {
-                    id: crypto.getRandomValues(new Uint32Array(1))[0],
-                    line_description: enteredDescription || "",
-                    comments: enteredComments || "No comments",
-                    can_id: selectedCan?.id || null,
-                    can: selectedCan || null,
-                    agreement_id: selectedAgreement?.id || null,
-                    amount: enteredAmount || 0,
-                    status: "DRAFT",
-                    date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}` || null,
-                    psc_fee_amount: selectedProcurementShop?.fee || null,
-                },
-            ])
-        );
-        showAlert("success", "Budget Line Added", "The budget line has been successfully added.");
 
-        //reset form
-        dispatch(setEnteredDescription(""));
-        dispatch(setEnteredAmount(null));
-        dispatch(setSelectedCan({}));
-        dispatch(setEnteredMonth(""));
-        dispatch(setEnteredDay(""));
-        dispatch(setEnteredYear(""));
-        dispatch(setEnteredComments(""));
+        setBudgetLinesAdded([
+            ...budgetLinesAdded,
+            {
+                id: crypto.getRandomValues(new Uint32Array(1))[0],
+                line_description: enteredDescription || "",
+                comments: enteredComments || "No comments",
+                can_id: selectedCan?.id || null,
+                can: selectedCan || null,
+                agreement_id: selectedAgreement?.id || null,
+                amount: enteredAmount || 0,
+                status: "DRAFT",
+                date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}` || null,
+                psc_fee_amount: selectedProcurementShop?.fee || null,
+            },
+        ]);
+
+        showAlert("success", "Budget Line Added", "The budget line has been successfully added.");
+        resetFormState();
     };
 
     return (
@@ -99,16 +113,23 @@ export const CreateBudgetLinesForm = ({
                         name="bl-description"
                         type="text"
                         value={enteredDescription || ""}
-                        onChange={(e) => dispatch(setEnteredDescription(e.target.value))}
+                        onChange={(e) => setEnteredDescription(e.target.value)}
                         required
                     />
                 </div>
                 <div className="usa-form-group">
-                    <CanSelect />
+                    <CanSelect selectedCan={selectedCan} setSelectedCan={setSelectedCan} />
                 </div>
             </div>
             <div className="grid-col-4">
-                <DesiredAwardDate />
+                <DesiredAwardDate
+                    enteredMonth={enteredMonth}
+                    setEnteredMonth={setEnteredMonth}
+                    enteredDay={enteredDay}
+                    setEnteredDay={setEnteredDay}
+                    enteredYear={enteredYear}
+                    setEnteredYear={setEnteredYear}
+                />
                 <div className="usa-form-group">
                     <label className="usa-label" htmlFor="bl-amount">
                         Amount
@@ -124,7 +145,7 @@ export const CreateBudgetLinesForm = ({
                         placeholder="$"
                         onValueChange={(values) => {
                             const { floatValue } = values;
-                            dispatch(setEnteredAmount(floatValue));
+                            setEnteredAmount(floatValue);
                         }}
                     />
                 </div>
@@ -147,7 +168,7 @@ export const CreateBudgetLinesForm = ({
                             aria-describedby="with-hint-textarea-info with-hint-textarea-hint"
                             style={{ height: "7rem" }}
                             value={enteredComments || ""}
-                            onChange={(e) => dispatch(setEnteredComments(e.target.value))}
+                            onChange={(e) => setEnteredComments(e.target.value)}
                         ></textarea>
                     </div>
                     <span id="with-hint-textarea-info" className="usa-character-count__message sr-only">
