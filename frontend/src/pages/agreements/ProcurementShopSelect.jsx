@@ -1,43 +1,29 @@
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import {
-    setSelectedProcurementShop,
-    setProcurementShopsList,
-    setAgreementProcurementShop,
-} from "./createAgreementSlice";
-import { getProcurementShopList } from "../../api/getProcurementShopList";
+import { useGetProcurementShopsQuery } from "../../api/opsAPI";
 
-export const ProcurementShopSelect = () => {
-    const dispatch = useDispatch();
-    const procurementShops = useSelector((state) => state.createAgreement.procurement_shops_list);
-    const selectedProcurementShop = useSelector((state) => state.createAgreement.selected_procurement_shop);
+export const ProcurementShopSelect = ({ selectedProcurementShop, onChangeSelectedProcurementShop }) => {
+    const {
+        data: procurementShops,
+        error: errorProcurementShops,
+        isLoading: isLoadingProcurementShops,
+    } = useGetProcurementShopsQuery();
 
-    useEffect(() => {
-        const getProcurementShopsAndSetState = async () => {
-            dispatch(setProcurementShopsList(await getProcurementShopList()));
+    if (isLoadingProcurementShops) {
+        return <div>Loading...</div>;
+    }
+    if (errorProcurementShops) {
+        return <div>Oops, an error occurred</div>;
+    }
+
+    const handleChange = (e) => {
+        const procurementShopId = e.target.value;
+        const procurementShop = {
+            id: procurementShops[procurementShopId - 1].id,
+            name: procurementShops[procurementShopId - 1].name,
+            fee: procurementShops[procurementShopId - 1].fee,
         };
-        getProcurementShopsAndSetState().catch(console.error);
-
-        return () => {
-            dispatch(setProcurementShopsList([]));
-        };
-    }, [dispatch]);
-
-    const onChangeProcurementShopSelection = (procurementShopId = 0) => {
-        if (procurementShopId === 0) {
-            dispatch(setSelectedProcurementShop({}));
-            return;
-        }
-
-        dispatch(
-            setSelectedProcurementShop({
-                id: procurementShops[procurementShopId - 1].id,
-                name: procurementShops[procurementShopId - 1].name,
-                fee: procurementShops[procurementShopId - 1].fee,
-            })
-        );
-        dispatch(setAgreementProcurementShop(procurementShopId));
+        onChangeSelectedProcurementShop(procurementShop);
     };
+
     return (
         <fieldset className="usa-fieldset">
             <label className="usa-label margin-top-0" htmlFor="procurement-shop-select">
@@ -48,7 +34,7 @@ export const ProcurementShopSelect = () => {
                     className="usa-select margin-top-0 width-fit-content"
                     name="procurement-shop-select"
                     id="procurement-shop-select"
-                    onChange={(e) => onChangeProcurementShopSelection(Number(e.target.value) || 0)}
+                    onChange={handleChange}
                     value={selectedProcurementShop?.id}
                     required
                 >
