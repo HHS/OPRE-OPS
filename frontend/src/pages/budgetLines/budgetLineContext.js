@@ -74,16 +74,16 @@ function budgetLinesReducer(budgetLinesAdded, action) {
             return [...budgetLinesAdded, ...action.payload];
         }
         case "changed": {
-            return budgetLinesAdded.map((t) => {
-                if (t.id === action.task.id) {
+            return budgetLinesAdded.map((bl) => {
+                if (bl.id === action.task.id) {
                     return action.task;
                 } else {
-                    return t;
+                    return bl;
                 }
             });
         }
         case "deleted": {
-            return budgetLinesAdded.filter((t) => t.id !== action.id);
+            return budgetLinesAdded.filter((bl) => bl.id !== action.id);
         }
         default: {
             throw Error("Unknown action: " + action.type);

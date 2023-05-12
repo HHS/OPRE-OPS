@@ -72,7 +72,6 @@ export const CreateBudgetLinesForm = ({
 
     const handleSubmitForm = (e) => {
         e.preventDefault();
-
         dispatch({
             type: "added",
             payload: [
@@ -90,10 +89,8 @@ export const CreateBudgetLinesForm = ({
                 },
             ],
         });
-
         resetForm();
         showAlert("success", "Budget Line Added", "The budget line has been successfully added.");
-        // resetFormState();
     };
 
     return (
