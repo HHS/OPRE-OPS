@@ -13,8 +13,6 @@ import {
     setAgreementIncumbent,
     setAgreementNotes,
     setAgreementProcurementShop,
-    setAgreementProjectOfficer,
-    setAgreementTeamMembers,
     setAgreementTitle,
     setSelectedProcurementShop as setSelectedProcurementShopInAgreement,
     setSelectedProject,
@@ -24,7 +22,7 @@ import ProjectOfficerSelect from "./ProjectOfficerSelect";
 import TeamMemberSelect from "./TeamMemberSelect";
 import TeamMemberList from "./TeamMemberList";
 import Modal from "../../components/UI/Modal/Modal";
-import { postAgreement } from "../../api/postAgreements";
+import { formatTeamMember, postAgreement } from "../../api/postAgreements";
 import ProjectSummaryCard from "../../components/ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";
 import ProductServiceCodeSummaryBox from "../../components/Agreements/ProductServiceCodeSummaryBox/ProductServiceCodeSummaryBox";
 
@@ -46,6 +44,8 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const [selectedProductServiceCode, setSelectedProductServiceCode] = React.useState({});
     const [selectedProcurementShop, setSelectedProcurementShop] = React.useState({});
     const [selectedAgreementReason, setSelectedAgreementReason] = React.useState({});
+    const [selectedProjectOfficer, setSelectedProjectOfficer] = React.useState({});
+    const [selectedTeamMembers, setSelectedTeamMembers] = React.useState([]);
 
     const incumbentDisabled = selectedAgreementReason === "NEW_REQ" || selectedAgreementReason === null;
 
@@ -71,6 +71,10 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             selected_agreement_type: selectedAgreementType,
             product_service_code_id: selectedProductServiceCode ? selectedProductServiceCode.id : null,
             agreement_reason: selectedAgreementReason,
+            project_officer: selectedProjectOfficer && selectedProjectOfficer.id > 0 ? selectedProjectOfficer.id : null,
+            team_members: selectedTeamMembers.map((team_member) => {
+                return formatTeamMember(team_member);
+            }),
         };
         const response = await postAgreement(data);
         const newAgreementId = response.id;
@@ -87,8 +91,8 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         setSelectedProductServiceCode({});
         setSelectedAgreementReason(null);
         dispatch(setSelectedProcurementShop({}));
-        dispatch(setAgreementProjectOfficer(null));
-        dispatch(setAgreementTeamMembers([]));
+        setSelectedProjectOfficer(null);
+        setSelectedTeamMembers([]);
         setModalProps({});
     };
     const handleContinue = async () => {
@@ -218,12 +222,20 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
 
             <h2 className="font-sans-lg margin-top-3">Points of Contact</h2>
             <div className="display-flex">
-                <ProjectOfficerSelect />
-                <TeamMemberSelect className="margin-left-4" />
+                <ProjectOfficerSelect
+                    selectedProjectOfficer={selectedProjectOfficer}
+                    setSelectedProjectOfficer={setSelectedProjectOfficer}
+                />
+                <TeamMemberSelect
+                    className="margin-left-4"
+                    selectedTeamMembers={selectedTeamMembers}
+                    selectedProjectOfficer={selectedProjectOfficer}
+                    setSelectedTeamMembers={setSelectedTeamMembers}
+                />
             </div>
 
             <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
-            <TeamMemberList />
+            <TeamMemberList selectedTeamMembers={selectedTeamMembers} setSelectedTeamMembers={setSelectedTeamMembers} />
             <div className="usa-character-count margin-top-3">
                 <div className="usa-form-group">
                     <label className="usa-label font-sans-lg text-bold" htmlFor="with-hint-textarea">
