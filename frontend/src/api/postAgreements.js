@@ -7,7 +7,6 @@ export const postAgreement = async (item) => {
     const newAgreement = {
         ...data,
         agreement_type: data.selected_agreement_type,
-        agreement_reason: data.selected_agreement_reason,
         incumbent: data.incumbent_entered,
         project_officer: data.project_officer && data.project_officer.id > 0 ? data.project_officer.id : null,
         team_members: data.team_members.map((team_member) => {
