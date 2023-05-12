@@ -5,6 +5,7 @@ import CanSelect from "../../../pages/budgetLines/CanSelect";
 import DesiredAwardDate from "../../../pages/budgetLines/DesiredAwardDate";
 import { setEditBudgetLineAdded } from "../../../pages/budgetLines/createBudgetLineSlice";
 import { useBudgetLines, useBudgetLinesDispatch } from "../../../pages/budgetLines/budgetLineContext";
+import { resetBudgetLinesForm } from "../../../helpers/utils";
 
 export const CreateBudgetLinesForm = ({
     showAlert = () => {},
@@ -40,16 +41,6 @@ export const CreateBudgetLinesForm = ({
         setBudgetLineBeingEdited = () => {},
     } = useBudgetLines();
     const dispatch = useBudgetLinesDispatch();
-
-    const resetForm = () => {
-        setEnteredDescription("");
-        setSelectedCan({});
-        setEnteredAmount(null);
-        setEnteredMonth("");
-        setEnteredDay("");
-        setEnteredYear("");
-        setEnteredComments("");
-    };
 
     const handleEditForm = (e) => {
         e.preventDefault();
@@ -89,7 +80,15 @@ export const CreateBudgetLinesForm = ({
                 },
             ],
         });
-        resetForm();
+        resetBudgetLinesForm(
+            setEnteredDescription,
+            setSelectedCan,
+            setEnteredAmount,
+            setEnteredMonth,
+            setEnteredDay,
+            setEnteredYear,
+            setEnteredComments
+        );
         showAlert("success", "Budget Line Added", "The budget line has been successfully added.");
     };
 

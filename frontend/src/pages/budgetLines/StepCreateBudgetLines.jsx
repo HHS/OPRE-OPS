@@ -1,5 +1,4 @@
 import React from "react";
-import { useDispatch } from "react-redux";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import { ProjectAgreementSummaryCard } from "../budgetLines/ProjectAgreementSummaryCard";
 import PreviewTable from "../budgetLines/PreviewTable";
@@ -9,15 +8,14 @@ import CreateBudgetLinesForm from "../../components/UI/Form/CreateBudgetLinesFor
 import ProcurementShopSelect from "./ProcurementShopSelect";
 // import { setBudgetLineAdded, setSelectedAgreement } from "../budgetLines/createBudgetLineSlice";
 import { postBudgetLineItems } from "../../api/postBudgetLineItems";
-import { useBudgetLines } from "./budgetLineContext";
+import { useBudgetLines, useBudgetLinesDispatch } from "./budgetLineContext";
+import { resetBudgetLinesForm } from "../../helpers/utils";
 
 export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
-    const dispatch = useDispatch();
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
-
     const {
         wizardSteps,
         selectedAgreement,
@@ -27,20 +25,17 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
         setSelectedProcurementShop,
         budgetLinesAdded,
         setBudgetLinesAdded,
+        setEnteredDescription,
+        setSelectedCan,
+        setEnteredAmount,
+        setEnteredMonth,
+        setEnteredDay,
+        setEnteredYear,
+        setEnteredComments,
     } = useBudgetLines();
-
+    const dispatch = useBudgetLinesDispatch();
     // const handleCancelEdit = () => {
     //     setBudgetLinesAdded({});
-    // };
-
-    // const resetFormState = () => {
-    //     setEnteredDescription("");
-    //     setEnteredAmount(null);
-    //     setSelectedCan({});
-    //     setEnteredMonth("");
-    //     setEnteredDay("");
-    //     setEnteredYear("");
-    //     setEnteredComments("");
     // };
 
     const showAlert = async (type, heading, message) => {
@@ -54,20 +49,30 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
         setAlertProps({});
     };
 
-    // const handleDeleteBudgetLine = (budgetLineId) => {
-    //     setShowModal(true);
-    //     setModalProps({
-    //         heading: "Are you sure you want to delete this budget line?",
-    //         actionButtonText: "Delete",
-    //         handleConfirm: () => {
-    //             // TODO: replace with action
-    //             // deleteBudgetLineAdded(budgetLineId);
-    //             resetFormState();
-    //             showAlert("success", "Budget Line Deleted", "The budget line has been successfully deleted.");
-    //             setModalProps({});
-    //         },
-    //     });
-    // };
+    const handleDeleteBudgetLine = (budgetLineId) => {
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to delete this budget line?",
+            actionButtonText: "Delete",
+            handleConfirm: () => {
+                dispatch({
+                    type: "deleted",
+                    id: budgetLineId,
+                });
+                resetBudgetLinesForm(
+                    setEnteredDescription,
+                    setSelectedCan,
+                    setEnteredAmount,
+                    setEnteredMonth,
+                    setEnteredDay,
+                    setEnteredYear,
+                    setEnteredComments
+                );
+                showAlert("success", "Budget Line Deleted", "The budget line has been successfully deleted.");
+                setModalProps({});
+            },
+        });
+    };
 
     // const saveBudgetLineItems = (event) => {
     //     event.preventDefault();
@@ -154,8 +159,7 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
                 display in draft status. The Fiscal Year (FY) will populate based on the election date you provide.
             </p>
             <PreviewTable
-                // TODO: replace with action
-                handleDeleteBudgetLine={() => {}}
+                handleDeleteBudgetLine={handleDeleteBudgetLine}
                 budgetLinesAdded={budgetLinesAdded}
                 setBudgetLinesAdded={setBudgetLinesAdded}
             />
@@ -183,6 +187,15 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
                                 // dispatch(setEnteredMonth(""));
                                 // dispatch(setEnteredYear(""));
                                 // dispatch(setSelectedAgreement(-1));
+                                resetBudgetLinesForm(
+                                    setEnteredDescription,
+                                    setSelectedCan,
+                                    setEnteredAmount,
+                                    setEnteredMonth,
+                                    setEnteredDay,
+                                    setEnteredYear,
+                                    setEnteredComments
+                                );
                                 setModalProps({});
                                 goBack();
                             },

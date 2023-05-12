@@ -7,6 +7,7 @@ import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-so
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import Tag from "../../components/UI/Tag/Tag";
 import { editBudgetLineAdded, duplicateBudgetLineAdded } from "./createBudgetLineSlice";
+import { useBudgetLines, useBudgetLinesDispatch } from "./budgetLineContext";
 import { TotalSummaryCard } from "./TotalSummaryCard";
 import { formatDate } from "../../helpers/utils";
 import "./PreviewTable.scss";
@@ -17,8 +18,9 @@ export const PreviewTable = ({
     budgetLines = null,
     budgetLinesAdded: stateBudgetLinesAdded = [{}],
 }) => {
-    const dispatch = useDispatch();
+    // const dispatch = useDispatch();
     // const stateBudgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
+    const dispatch = useBudgetLinesDispatch();
     const budgetLinesAdded = budgetLines ? budgetLines : stateBudgetLinesAdded;
     const sortedBudgetLines = budgetLinesAdded
         .slice()
@@ -30,6 +32,13 @@ export const PreviewTable = ({
     if (!loggedInUser) {
         loggedInUser = "Sheila Celentano";
     }
+
+    // const handleDeleteBudgetLine = (budgetLineId) => {
+    //     dispatch({
+    //         type: "deleted",
+    //         id: budgetLineId,
+    //     });
+    // };
 
     const TableRow = ({ bl }) => {
         const [isExpanded, setIsExpanded] = useState(false);
