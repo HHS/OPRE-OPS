@@ -1,37 +1,34 @@
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { setAgreementReasonsList, setSelectedAgreementReason, setAgreementIncumbent } from "./createAgreementSlice";
-import { getAgreementReasons } from "../../api/getAgreements";
+import { useGetAgreementReasonsQuery } from "../../api/opsAPI";
+import { useDispatch } from "react-redux";
 
-export const AgreementReasonSelect = () => {
+export const AgreementReasonSelect = ({
+    selectedAgreementReason,
+    setSelectedAgreementReason,
+    setAgreementIncumbent,
+}) => {
     const dispatch = useDispatch();
-    const agreementReasons = useSelector((state) => state.createAgreement.agreement_reasons_list);
-    const selectedAgreementReason = useSelector((state) => state.createAgreement.agreement.selected_agreement_reason);
 
-    // On component load, get AgreementReasons from API, and set returned list in State
-    useEffect(() => {
-        const getAgreementReasonsAndSetState = async () => {
-            dispatch(setAgreementReasonsList(await getAgreementReasons()));
-        };
+    const {
+        data: agreementReasons,
+        error: errorAgreementReasons,
+        isLoading: isLoadingAgreementReasons,
+    } = useGetAgreementReasonsQuery();
 
-        getAgreementReasonsAndSetState().catch(console.error);
+    if (isLoadingAgreementReasons) {
+        return <div>Loading...</div>;
+    }
+    if (errorAgreementReasons) {
+        return <div>Oops, an error occurred</div>;
+    }
 
-        return () => {
-            dispatch(setAgreementReasonsList([]));
-        };
-    }, [dispatch]);
+    const handleChange = (e) => {
+        const { value } = e.target;
 
-    const onChangeAgreementReasonSelection = (agreementReason) => {
-        if (agreementReason === "0") {
-            dispatch(setSelectedAgreementReason(null));
-            dispatch(setAgreementIncumbent(null));
-            return;
-        }
-        if (agreementReason === "NEW_REQ") {
+        if (value === "NEW_REQ") {
             dispatch(setAgreementIncumbent(null));
         }
 
-        dispatch(setSelectedAgreementReason(agreementReason));
+        setSelectedAgreementReason(value);
     };
 
     return (
@@ -44,7 +41,7 @@ export const AgreementReasonSelect = () => {
                     className="usa-select margin-top-0 width-card-lg"
                     name="reason-for-agreement-select"
                     id="reason-for-agreement-select"
-                    onChange={(e) => onChangeAgreementReasonSelection(e.target.value || 0)}
+                    onChange={handleChange}
                     value={selectedAgreementReason || ""}
                     required
                 >

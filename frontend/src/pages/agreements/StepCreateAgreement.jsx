@@ -16,7 +16,6 @@ import {
     setAgreementProjectOfficer,
     setAgreementTeamMembers,
     setAgreementTitle,
-    setSelectedAgreementReason,
     setSelectedProcurementShop as setSelectedProcurementShopInAgreement,
     setSelectedProject,
 } from "./createAgreementSlice";
@@ -36,8 +35,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const agreementDescription = useSelector((state) => state.createAgreement.agreement.description);
     const agreementNotes = useSelector((state) => state.createAgreement.agreement.notes);
     const agreement = useSelector((state) => state.createAgreement.agreement);
-    const agreementReason = agreement.selected_agreement_reason;
-    const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null;
     const agreementIncumbent = useSelector((state) => state.createAgreement.agreement.incumbent_entered);
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
     const [showModal, setShowModal] = React.useState(false);
@@ -48,6 +45,9 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const [selectedAgreementType, setSelectedAgreementType] = React.useState("");
     const [selectedProductServiceCode, setSelectedProductServiceCode] = React.useState({});
     const [selectedProcurementShop, setSelectedProcurementShop] = React.useState({});
+    const [selectedAgreementReason, setSelectedAgreementReason] = React.useState({});
+
+    const incumbentDisabled = selectedAgreementReason === "NEW_REQ" || selectedAgreementReason === null;
 
     const showAlertAndNavigate = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -70,6 +70,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             ...agreement,
             selected_agreement_type: selectedAgreementType,
             product_service_code_id: selectedProductServiceCode ? selectedProductServiceCode.id : null,
+            agreement_reason: selectedAgreementReason,
         };
         const response = await postAgreement(data);
         const newAgreementId = response.id;
@@ -84,7 +85,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         dispatch(setSelectedProject({}));
         setSelectedAgreementType("");
         setSelectedProductServiceCode({});
-        dispatch(setSelectedAgreementReason(null));
+        setSelectedAgreementReason(null);
         dispatch(setSelectedProcurementShop({}));
         dispatch(setAgreementProjectOfficer(null));
         dispatch(setAgreementTeamMembers([]));
@@ -191,7 +192,11 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
 
             <h2 className="font-sans-lg margin-top-3">Reason for Agreement</h2>
             <div className="display-flex">
-                <AgreementReasonSelect />
+                <AgreementReasonSelect
+                    selectedAgreementReason={selectedAgreementReason}
+                    setSelectedAgreementReason={setSelectedAgreementReason}
+                    setAgreementIncumbent={setAgreementIncumbent}
+                />
                 <fieldset
                     className={`usa-fieldset margin-left-4 ${incumbentDisabled && "text-disabled"}`}
                     disabled={incumbentDisabled}
