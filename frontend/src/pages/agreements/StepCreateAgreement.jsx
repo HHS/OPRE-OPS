@@ -18,9 +18,9 @@ import {
     setSelectedProject,
 } from "./createAgreementSlice";
 import { setSelectedProcurementShop as setSelectedProcurementShopInBudgetLine } from "../budgetLines/createBudgetLineSlice";
-import ProjectOfficerSelect from "./ProjectOfficerSelect";
-import TeamMemberSelect from "./TeamMemberSelect";
-import TeamMemberList from "./TeamMemberList";
+import ProjectOfficerSelect from "../../components/Agreements/ProjectOfficerSelect/ProjectOfficerSelect";
+import TeamMemberSelect from "../../components/Agreements/TeamMemberSelect/TeamMemberSelect";
+import TeamMemberList from "../../components/Agreements/TeamMemberList/TeamMemberList";
 import Modal from "../../components/UI/Modal/Modal";
 import { formatTeamMember, postAgreement } from "../../api/postAgreements";
 import ProjectSummaryCard from "../../components/ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";

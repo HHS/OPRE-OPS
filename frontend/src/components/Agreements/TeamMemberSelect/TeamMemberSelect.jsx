@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
-import { useGetUsersQuery } from "../../api/opsAPI";
+import { useState } from "react";
+import PropTypes from "prop-types";
+import { useGetUsersQuery } from "../../../api/opsAPI";
 
-export const ProjectOfficerSelect = ({ selectedProjectOfficer, setSelectedProjectOfficer }) => {
+export const TeamMemberSelect = ({
+    className,
+    selectedProjectOfficer,
+    selectedTeamMembers,
+    setSelectedTeamMembers,
+}) => {
     const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery();
-    const [inputValue, setInputValue] = useState(selectedProjectOfficer?.full_name ?? "");
-
-    useEffect(() => {
-        setInputValue(selectedProjectOfficer?.full_name ?? "");
-    }, [selectedProjectOfficer]);
+    const [inputValue, setInputValue] = useState("");
 
     if (isLoadingUsers) {
         return <div>Loading...</div>;
@@ -16,48 +18,50 @@ export const ProjectOfficerSelect = ({ selectedProjectOfficer, setSelectedProjec
         return <div>Oops, an error occurred</div>;
     }
 
+    const remainingUsers = users.filter(
+        (user) =>
+            user.id !== selectedProjectOfficer?.id && // Check if the user is not a selected project officer
+            !selectedTeamMembers.some((teamMember) => teamMember.id === user.id) // Check if the user is not already a team member
+    );
+
     const onChangeSelect = (userId = 0) => {
         if (userId === 0) {
-            setSelectedProjectOfficer(null);
             return;
         }
-        const selected = users[userId - 1];
-        setSelectedProjectOfficer({ ...selected });
+        const selected = users.find((user) => user.id === userId);
+        setSelectedTeamMembers((prevState) => {
+            return [...prevState, selected];
+        });
+        setInputValue("");
     };
 
     return (
-        <fieldset className="usa-fieldset">
-            <label
-                className="usa-label margin-top-0"
-                htmlFor="project-officer-select"
-                id="project-officer-select-label"
-            >
-                Project Officer
+        <div className={`usa-fieldset ${className}`}>
+            <label className="usa-label margin-top-0" htmlFor="team-member-select" id="team-member-select-label">
+                Team Members
             </label>
             <div className="usa-combo-box width-card-lg" data-enhanced="true">
                 <select
                     className="usa-select usa-sr-only usa-combo-box__select "
-                    id="project-officer-select"
-                    name="project-officer-select"
+                    name="team-member-select"
                     aria-hidden="true"
                     tabIndex="-1"
-                    value={selectedProjectOfficer?.id}
+                    value={remainingUsers?.id}
                     onChange={(e) => onChangeSelect(Number(e.target.value))}
                     required
                 >
-                    {users.map((user) => (
+                    {remainingUsers?.map((user) => (
                         <option key={user?.id} value={user?.id}>
                             {user?.full_name || user?.email}
                         </option>
                     ))}
                 </select>
                 <input
-                    id="project-officer-select-input"
-                    aria-label="project-officer-select-input"
-                    aria-owns="users--list"
-                    aria-controls="users--list"
+                    id="team-member-select"
+                    aria-owns="team-members--list"
+                    aria-controls="team-members--list"
                     aria-autocomplete="list"
-                    aria-describedby="users--assistiveHint"
+                    aria-describedby="team-members--assistiveHint"
                     aria-expanded="false"
                     autoCapitalize="off"
                     autoComplete="off"
@@ -73,9 +77,7 @@ export const ProjectOfficerSelect = ({ selectedProjectOfficer, setSelectedProjec
                         type="button"
                         className="usa-combo-box__clear-input"
                         aria-label="Clear the select contents"
-                        onClick={() => {
-                            setSelectedProjectOfficer(null);
-                        }}
+                        onClick={() => onChangeSelect(0)}
                     >
                         &nbsp;
                     </button>
@@ -83,7 +85,7 @@ export const ProjectOfficerSelect = ({ selectedProjectOfficer, setSelectedProjec
                 <span className="usa-combo-box__input-button-separator">&nbsp;</span>
                 <span className="usa-combo-box__toggle-list__wrapper" tabIndex="-1">
                     <button
-                        id="project-officer-select-toggle-list"
+                        id="team-member-select-toggle-list"
                         type="button"
                         tabIndex="-1"
                         className="usa-combo-box__toggle-list"
@@ -95,20 +97,20 @@ export const ProjectOfficerSelect = ({ selectedProjectOfficer, setSelectedProjec
 
                 <ul
                     tabIndex="-1"
-                    id="users--list"
+                    id="team-members--list"
                     className="usa-combo-box__list"
                     role="listbox"
-                    aria-labelledby="project-officer-select-label"
+                    aria-labelledby="team-member-select-label"
                     hidden
                 >
                     {users?.map((user, index) => {
                         return (
                             <li
                                 key={user?.id}
-                                aria-setsize={users?.length}
+                                aria-setsize={remainingUsers?.length}
                                 aria-posinset={index + 1}
                                 aria-selected="false"
-                                id={`project-officer-dynamic-select--list--option-${index}`}
+                                id={`team-member-dynamic-select--list--option-${index}`}
                                 className="usa-combo-box__list-option"
                                 tabIndex={index === 0 ? "0" : "-1"}
                                 role="option"
@@ -121,13 +123,17 @@ export const ProjectOfficerSelect = ({ selectedProjectOfficer, setSelectedProjec
                 </ul>
 
                 <div className="usa-combo-box__status usa-sr-only" role="status"></div>
-                <span id="users--assistiveHint" className="usa-sr-only">
+                <span id="team-members--assistiveHint" className="usa-sr-only">
                     When autocomplete results are available use up and down arrows to review and enter to select. Touch
                     device users, explore by touch or with swipe gestures.
                 </span>
             </div>
-        </fieldset>
+        </div>
     );
 };
 
-export default ProjectOfficerSelect;
+export default TeamMemberSelect;
+
+TeamMemberSelect.propTypes = {
+    className: PropTypes.string,
+};
