@@ -1,3 +1,4 @@
+import React from "react";
 import { useDispatch } from "react-redux";
 import { useGetResearchProjectsQuery } from "../../api/opsAPI";
 import { setAgreements } from "./createBudgetLineSlice";
@@ -5,18 +6,36 @@ import { Link } from "react-router-dom";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import ProjectSelect from "../../components/UI/Form/ProjectSelect";
 import AgreementSelect from "./AgreementSelect";
+import { useBudgetLines } from "./budgetLineContext";
+import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
 
-export const StepSelectProjectAndAgreement = ({
-    goToNext,
-    wizardSteps,
-    selectedAgreement,
-    setSelectedAgreement = () => {},
-    selectedProject: selectedResearchProject,
-    setSelectedProject = () => {},
-    setSelectedProcurementShop = () => {},
-    setBudgetLinesAdded = () => {},
-}) => {
+export const StepSelectProjectAndAgreement = ({ goToNext }) => {
     const dispatch = useDispatch();
+    const {
+        wizardSteps,
+        setSelectedAgreement,
+        selectedProject,
+        setSelectedProject,
+        selectedAgreement,
+        setSelectedProcurementShop,
+        setBudgetLinesAdded,
+    } = useBudgetLines();
+
+    React.useEffect(() => {
+        const getAgreementsAndSetState = async () => {
+            if (selectedProject?.id > 0) {
+                const agreements = await getAgreementsByResearchProjectFilter(selectedProject?.id);
+                dispatch(setAgreements(agreements));
+            }
+        };
+
+        getAgreementsAndSetState().catch(console.error);
+
+        return () => {
+            dispatch(setAgreements([]));
+        };
+    }, [dispatch, selectedProject]);
+
     const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
 
     if (isLoadingProjects) {
@@ -43,14 +62,14 @@ export const StepSelectProjectAndAgreement = ({
             </p>
             <ProjectSelect
                 researchProjects={projects}
-                selectedResearchProject={selectedResearchProject}
+                selectedResearchProject={selectedProject}
                 setSelectedProject={setSelectedProject}
                 clearFunction={clearAgreementState}
             />
             <h2 className="font-sans-lg">Select an Agreement</h2>
             <p>Select the project and agreement this budget line should be associated with.</p>
             <AgreementSelect
-                selectedProject={selectedResearchProject}
+                selectedProject={selectedProject}
                 selectedAgreement={selectedAgreement}
                 setSelectedAgreement={setSelectedAgreement}
                 setSelectedProcurementShop={setSelectedProcurementShop}
@@ -61,7 +80,7 @@ export const StepSelectProjectAndAgreement = ({
                     className="usa-button"
                     onClick={() => goToNext()}
                     // disable if no project or agreement is selected
-                    disabled={!(selectedResearchProject?.id && selectedAgreement?.id)}
+                    disabled={!(selectedProject?.id && selectedAgreement?.id)}
                 >
                     Continue
                 </button>

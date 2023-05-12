@@ -1,84 +1,82 @@
-import { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+// import { useEffect, useState } from "react";
+// import { useDispatch } from "react-redux";
 import App from "../../App";
 import CreateBudgetLineFlow from "./CreateBudgetLineFlow";
-import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
-import { setAgreements, setProcurementShop } from "./createBudgetLineSlice";
-import { getProcurementShopList } from "../../api/getProcurementShopList";
+// import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
+// import { setAgreements, setProcurementShop } from "./createBudgetLineSlice";
+// import { getProcurementShopList } from "../../api/getProcurementShopList";
 import StepSelectProjectAndAgreement from "./StepSelectProjectAndAgreement";
 import StepCreateBudgetLines from "./StepCreateBudgetLines";
 import StepSuccess from "./StepSuccess";
+import { BudgetLinesProvider } from "./budgetLineContext";
 
 export const CreateBudgetLine = () => {
-    const dispatch = useDispatch();
-    // const selectedProject = useSelector((state) => state.createBudgetLine.selected_project);
-    const wizardSteps = ["Project & Agreement", "Budget Lines", "Review"];
-    const [selectedProject, setSelectedProject] = useState({});
-    const [selectedAgreement, setSelectedAgreement] = useState({});
-    const [selectedProcurementShop, setSelectedProcurementShop] = useState({});
-    const [budgetLinesAdded, setBudgetLinesAdded] = useState([{}]);
+    // const dispatch = useDispatch();
+
     // Get initial list of Agreements (dependent on Research Project Selection)
-    useEffect(() => {
-        const getAgreementsAndSetState = async () => {
-            if (selectedProject?.id > 0) {
-                const agreements = await getAgreementsByResearchProjectFilter(selectedProject?.id);
-                dispatch(setAgreements(agreements));
-            }
-        };
+    // useEffect(() => {
+    //     const getAgreementsAndSetState = async () => {
+    //         if (selectedProject?.id > 0) {
+    //             const agreements = await getAgreementsByResearchProjectFilter(selectedProject?.id);
+    //             dispatch(setAgreements(agreements));
+    //         }
+    //     };
 
-        getAgreementsAndSetState().catch(console.error);
+    //     getAgreementsAndSetState().catch(console.error);
 
-        return () => {
-            dispatch(setAgreements([]));
-        };
-    }, [dispatch, selectedProject]);
+    //     return () => {
+    //         dispatch(setAgreements([]));
+    //     };
+    // }, [dispatch, selectedProject]);
 
-    useEffect(() => {
-        const getProcurementShopsAndSetState = async () => {
-            const results = await getProcurementShopList();
-            dispatch(setProcurementShop(results));
-        };
-        getProcurementShopsAndSetState().catch(console.error);
-    }, [dispatch]);
+    // useEffect(() => {
+    //     const getProcurementShopsAndSetState = async () => {
+    //         const results = await getProcurementShopList();
+    //         dispatch(setProcurementShop(results));
+    //     };
+    //     getProcurementShopsAndSetState().catch(console.error);
+    // }, [dispatch]);
 
-    useEffect(() => {
-        const getAgreementsAndSetState = async () => {
-            if (selectedProject?.id > 0) {
-                const results = await getAgreementsByResearchProjectFilter(selectedProject?.id);
-                dispatch(setAgreements(results));
-            }
-        };
-        getAgreementsAndSetState().catch(console.error);
-    }, [dispatch, selectedProject]);
+    // useEffect(() => {
+    //     const getAgreementsAndSetState = async () => {
+    //         if (selectedProject?.id > 0) {
+    //             const results = await getAgreementsByResearchProjectFilter(selectedProject?.id);
+    //             dispatch(setAgreements(results));
+    //         }
+    //     };
+    //     getAgreementsAndSetState().catch(console.error);
+    // }, [dispatch, selectedProject]);
 
-    const deleteBudgetLineAdded = (budgetLineId) => {
-        setBudgetLinesAdded(budgetLinesAdded.filter((budgetLine) => budgetLine.id !== budgetLineId));
-    };
+    // const deleteBudgetLineAdded = (budgetLineId) => {
+    //     setBudgetLinesAdded(budgetLinesAdded.filter((budgetLine) => budgetLine.id !== budgetLineId));
+    // };
 
     return (
         <App>
-            <CreateBudgetLineFlow>
-                <StepSelectProjectAndAgreement
-                    wizardSteps={wizardSteps}
-                    selectedProject={selectedProject}
-                    setSelectedProject={setSelectedProject}
-                    selectedAgreement={selectedAgreement}
-                    setSelectedAgreement={setSelectedAgreement}
-                    setSelectedProcurementShop={setSelectedProcurementShop}
-                    setBudgetLinesAdded={setBudgetLinesAdded}
-                />
-                <StepCreateBudgetLines
-                    wizardSteps={wizardSteps}
-                    selectedProject={selectedProject}
-                    selectedAgreement={selectedAgreement}
-                    selectedProcurementShop={selectedProcurementShop}
-                    setSelectedProcurementShop={setSelectedProcurementShop}
-                    budgetLinesAdded={budgetLinesAdded}
-                    setBudgetLinesAdded={setBudgetLinesAdded}
-                    deleteBudgetLineAdded={deleteBudgetLineAdded}
-                />
-                <StepSuccess />
-            </CreateBudgetLineFlow>
+            <BudgetLinesProvider>
+                <CreateBudgetLineFlow>
+                    <StepSelectProjectAndAgreement
+                    // wizardSteps={wizardSteps}
+                    // selectedProject={selectedProject}
+                    // setSelectedProject={setSelectedProject}
+                    // selectedAgreement={selectedAgreement}
+                    // setSelectedAgreement={setSelectedAgreement}
+                    // setSelectedProcurementShop={setSelectedProcurementShop}
+                    // setBudgetLinesAdded={setBudgetLinesAdded}
+                    />
+                    <StepCreateBudgetLines
+                    // wizardSteps={wizardSteps}
+                    // selectedProject={selectedProject}
+                    // selectedAgreement={selectedAgreement}
+                    // selectedProcurementShop={selectedProcurementShop}
+                    // setSelectedProcurementShop={setSelectedProcurementShop}
+                    // budgetLinesAdded={budgetLinesAdded}
+                    // setBudgetLinesAdded={setBudgetLinesAdded}
+                    // deleteBudgetLineAdded={deleteBudgetLineAdded}
+                    />
+                    <StepSuccess />
+                </CreateBudgetLineFlow>
+            </BudgetLinesProvider>
         </App>
     );
 };
