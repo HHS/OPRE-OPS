@@ -1,4 +1,5 @@
 import { useSelector } from "react-redux";
+import { useBudgetLinesDispatch } from "./budgetLineContext";
 
 export const AgreementSelect = ({
     selectedProject,
@@ -8,6 +9,7 @@ export const AgreementSelect = ({
     setBudgetLinesAdded,
 }) => {
     const agreements = useSelector((state) => state.createBudgetLine.agreements);
+    const dispatch = useBudgetLinesDispatch();
     // const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
     // const selectedProject = useSelector((state) => state.createBudgetLine.selected_project);
 
@@ -29,7 +31,11 @@ export const AgreementSelect = ({
 
         // set budget line items and procurement shop
         if (selectedAgreement?.budget_line_items.length > 0) {
-            setBudgetLinesAdded(selectedAgreement?.budget_line_items);
+            // setBudgetLinesAdded(selectedAgreement?.budget_line_items);
+            dispatch({
+                type: "added",
+                payload: selectedAgreement?.budget_line_items,
+            });
             setSelectedProcurementShop(selectedAgreement?.procurement_shop);
         }
     };

@@ -5,6 +5,7 @@ export const ProcurementShopSelect = ({
     selectedProcurementShop,
     setSelectedProcurementShop,
 }) => {
+    // TODO: Replace with RTK query
     const procurementShops = useSelector((state) => state.createBudgetLine.procurement_shops);
 
     const onChangeProcurementShopSelection = (procurementShopId = 0) => {
@@ -30,6 +31,7 @@ export const ProcurementShopSelect = ({
                     name="options"
                     id="options"
                     onChange={(e) => onChangeProcurementShopSelection(Number(e.target.value) || 0)}
+                    // TODO: Figure out why state is not updating
                     value={selectedProcurementShop?.id}
                     required
                 >

@@ -3,14 +3,15 @@ import { createContext, useContext, useReducer, useState } from "react";
 
 export const BudgetLinesContext = createContext(null);
 export const BudgetLinesDispatchContext = createContext(null);
+const initialBudgetLines = [];
 
 export function BudgetLinesProvider({ children }) {
-    const [dispatch] = useReducer(budgetLinesReducer);
+    const [budgetLinesAdded, dispatch] = useReducer(budgetLinesReducer, initialBudgetLines);
     const wizardSteps = ["Project & Agreement", "Budget Lines", "Review"];
     const [selectedProject, setSelectedProject] = useState({});
     const [selectedAgreement, setSelectedAgreement] = useState({});
     const [selectedProcurementShop, setSelectedProcurementShop] = useState({});
-    const [budgetLinesAdded, setBudgetLinesAdded] = useState([{}]);
+    // const [budgetLinesAdded, setBudgetLinesAdded] = useState([{}]);
     const [selectedCan, setSelectedCan] = useState({});
     const [enteredDescription, setEnteredDescription] = useState("");
     const [enteredAmount, setEnteredAmount] = useState(null);
@@ -32,7 +33,7 @@ export function BudgetLinesProvider({ children }) {
                 selectedProcurementShop,
                 setSelectedProcurementShop,
                 budgetLinesAdded,
-                setBudgetLinesAdded,
+                // setBudgetLinesAdded,
                 selectedCan,
                 setSelectedCan,
                 enteredDescription,
@@ -66,20 +67,14 @@ export function useBudgetLinesDispatch() {
     return useContext(BudgetLinesDispatchContext);
 }
 
-function budgetLinesReducer(budgetLines, action) {
+function budgetLinesReducer(budgetLinesAdded, action) {
     switch (action.type) {
         case "added": {
-            return [
-                ...budgetLines,
-                {
-                    id: action.id,
-                    text: action.text,
-                    done: false,
-                },
-            ];
+            console.dir(`payload is ${JSON.stringify(action.payload, null, 2)}`);
+            return [...budgetLinesAdded, ...action.payload];
         }
         case "changed": {
-            return budgetLines.map((t) => {
+            return budgetLinesAdded.map((t) => {
                 if (t.id === action.task.id) {
                     return action.task;
                 } else {
@@ -88,7 +83,7 @@ function budgetLinesReducer(budgetLines, action) {
             });
         }
         case "deleted": {
-            return budgetLines.filter((t) => t.id !== action.id);
+            return budgetLinesAdded.filter((t) => t.id !== action.id);
         }
         default: {
             throw Error("Unknown action: " + action.type);

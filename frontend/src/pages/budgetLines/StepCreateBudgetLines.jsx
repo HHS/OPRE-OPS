@@ -7,7 +7,7 @@ import Alert from "../../components/UI/Alert/Alert";
 import Modal from "../../components/UI/Modal/Modal";
 import CreateBudgetLinesForm from "../../components/UI/Form/CreateBudgetLinesForm";
 import ProcurementShopSelect from "./ProcurementShopSelect";
-import { setBudgetLineAdded, setSelectedAgreement } from "../budgetLines/createBudgetLineSlice";
+// import { setBudgetLineAdded, setSelectedAgreement } from "../budgetLines/createBudgetLineSlice";
 import { postBudgetLineItems } from "../../api/postBudgetLineItems";
 import { useBudgetLines } from "./budgetLineContext";
 
@@ -121,43 +121,44 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
                 Complete the information below to create new budget lines. Select Add Budget Line to create multiple
                 budget lines.
             </p>
-            {/* <CreateBudgetLinesForm
-                selectedAgreement={selectedAgreement}
-                selectedProcurementShop={selectedProcurementShop}
+            <CreateBudgetLinesForm
+                // selectedAgreement={selectedAgreement}
+                // selectedProcurementShop={selectedProcurementShop}
                 showAlert={showAlert}
-                budgetLinesAdded={budgetLinesAdded}
-                setBudgetLinesAdded={setBudgetLinesAdded}
-                selectedCan={selectedCan}
-                setSelectedCan={setSelectedCan}
-                enteredDescription={enteredDescription}
-                setEnteredDescription={setEnteredDescription}
-                enteredAmount={enteredAmount}
-                setEnteredAmount={setEnteredAmount}
-                enteredMonth={enteredMonth}
-                setEnteredMonth={setEnteredMonth}
-                enteredDay={enteredDay}
-                setEnteredDay={setEnteredDay}
-                enteredYear={enteredYear}
-                setEnteredYear={setEnteredYear}
-                enteredComments={enteredComments}
-                setEnteredComments={setEnteredComments}
-                isEditing={isEditing}
-                setIsEditing={setIsEditing}
-                budgetLineBeingEdited={budgetLineBeingEdited}
-                setBudgetLineBeingEdited={setBudgetLineBeingEdited}
-                handleCancelEdit={handleCancelEdit}
-                resetFormState={resetFormState}
-            /> */}
+                // budgetLinesAdded={budgetLinesAdded}
+                // setBudgetLinesAdded={setBudgetLinesAdded}
+                // selectedCan={selectedCan}
+                // setSelectedCan={setSelectedCan}
+                // enteredDescription={enteredDescription}
+                // setEnteredDescription={setEnteredDescription}
+                // enteredAmount={enteredAmount}
+                // setEnteredAmount={setEnteredAmount}
+                // enteredMonth={enteredMonth}
+                // setEnteredMonth={setEnteredMonth}
+                // enteredDay={enteredDay}
+                // setEnteredDay={setEnteredDay}
+                // enteredYear={enteredYear}
+                // setEnteredYear={setEnteredYear}
+                // enteredComments={enteredComments}
+                // setEnteredComments={setEnteredComments}
+                // isEditing={isEditing}
+                // setIsEditing={setIsEditing}
+                // budgetLineBeingEdited={budgetLineBeingEdited}
+                // setBudgetLineBeingEdited={setBudgetLineBeingEdited}
+                // handleCancelEdit={handleCancelEdit}
+                // resetFormState={resetFormState}
+            />
             <h2 className="font-sans-lg">Budget Lines</h2>
             <p>
                 This is a list of all budget lines for the selected project and agreement. The budget lines you add will
                 display in draft status. The Fiscal Year (FY) will populate based on the election date you provide.
             </p>
-            {/* <PreviewTable
-                handleDeleteBudgetLine={handleDeleteBudgetLine}
+            <PreviewTable
+                // TODO: replace with action
+                handleDeleteBudgetLine={() => {}}
                 budgetLinesAdded={budgetLinesAdded}
                 setBudgetLinesAdded={setBudgetLinesAdded}
-            /> */}
+            />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className="usa-button usa-button--unstyled margin-right-2"

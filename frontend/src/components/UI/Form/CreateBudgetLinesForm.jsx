@@ -4,73 +4,96 @@ import CurrencyFormat from "react-currency-format";
 import CanSelect from "../../../pages/budgetLines/CanSelect";
 import DesiredAwardDate from "../../../pages/budgetLines/DesiredAwardDate";
 import { setEditBudgetLineAdded } from "../../../pages/budgetLines/createBudgetLineSlice";
+import { useBudgetLines, useBudgetLinesDispatch } from "../../../pages/budgetLines/budgetLineContext";
 
 export const CreateBudgetLinesForm = ({
-    selectedAgreement = {},
-    selectedProcurementShop = {},
     showAlert = () => {},
-    budgetLinesAdded,
-    setBudgetLinesAdded = () => {},
-    selectedCan,
-    setSelectedCan = () => {},
-    enteredDescription,
-    setEnteredDescription = () => {},
-    enteredAmount,
-    setEnteredAmount = () => {},
-    enteredMonth,
-    setEnteredMonth = () => {},
-    enteredDay,
-    setEnteredDay = () => {},
-    enteredYear,
-    setEnteredYear = () => {},
-    enteredComments,
-    setEnteredComments = () => {},
-    isEditing,
-    setIsEditing = () => {},
-    budgetLineBeingEdited,
-    setBudgetLineBeingEdited = () => {},
+    // todo: add these reducers to the context
     handleCancelEdit = () => {},
     resetFormState = () => {},
 }) => {
-    const dispatch = useDispatch();
+    // const dispatch = useDispatch();
+    const {
+        selectedAgreement,
+        selectedProcurementShop,
+        budgetLinesAdded,
+        setBudgetLinesAdded = () => {},
+        selectedCan,
+        setSelectedCan = () => {},
+        enteredDescription,
+        setEnteredDescription = () => {},
+        enteredAmount,
+        setEnteredAmount = () => {},
+        enteredMonth,
+        setEnteredMonth = () => {},
+        enteredDay,
+        setEnteredDay = () => {},
+        enteredYear,
+        setEnteredYear = () => {},
+        enteredComments,
+        setEnteredComments = () => {},
+        isEditing,
+        setIsEditing = () => {},
+        budgetLineBeingEdited,
+        setBudgetLineBeingEdited = () => {},
+    } = useBudgetLines();
+    const dispatch = useBudgetLinesDispatch();
 
     const handleEditForm = (e) => {
         e.preventDefault();
-        dispatch(
-            setEditBudgetLineAdded({
-                id: budgetLinesAdded[budgetLineBeingEdited].id,
-                line_description: enteredDescription,
-                comments: enteredComments,
-                can_id: selectedCan?.id,
-                can: selectedCan,
-                agreement_id: selectedAgreement?.id,
-                amount: enteredAmount,
-                date_needed:
-                    enteredYear && enteredMonth && enteredDay ? `${enteredYear}-${enteredMonth}-${enteredDay}` : null,
-                psc_fee_amount: selectedProcurementShop?.fee,
-            })
-        );
+        // dispatch(
+        //     setEditBudgetLineAdded({
+        //         id: budgetLinesAdded[budgetLineBeingEdited].id,
+        //         line_description: enteredDescription,
+        //         comments: enteredComments,
+        //         can_id: selectedCan?.id,
+        //         can: selectedCan,
+        //         agreement_id: selectedAgreement?.id,
+        //         amount: enteredAmount,
+        //         date_needed:
+        //             enteredYear && enteredMonth && enteredDay ? `${enteredYear}-${enteredMonth}-${enteredDay}` : null,
+        //         psc_fee_amount: selectedProcurementShop?.fee,
+        //     })
+        // );
         showAlert("success", "Budget Line Updated", "The budget line has been successfully edited.");
     };
 
     const handleSubmitForm = (e) => {
         e.preventDefault();
 
-        setBudgetLinesAdded([
-            ...budgetLinesAdded,
-            {
-                id: crypto.getRandomValues(new Uint32Array(1))[0],
-                line_description: enteredDescription || "",
-                comments: enteredComments || "No comments",
-                can_id: selectedCan?.id || null,
-                can: selectedCan || null,
-                agreement_id: selectedAgreement?.id || null,
-                amount: enteredAmount || 0,
-                status: "DRAFT",
-                date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}` || null,
-                psc_fee_amount: selectedProcurementShop?.fee || null,
-            },
-        ]);
+        // setBudgetLinesAdded([
+        //     ...budgetLinesAdded,
+        //     {
+        //         id: crypto.getRandomValues(new Uint32Array(1))[0],
+        //         line_description: enteredDescription || "",
+        //         comments: enteredComments || "No comments",
+        //         can_id: selectedCan?.id || null,
+        //         can: selectedCan || null,
+        //         agreement_id: selectedAgreement?.id || null,
+        //         amount: enteredAmount || 0,
+        //         status: "DRAFT",
+        //         date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}` || null,
+        //         psc_fee_amount: selectedProcurementShop?.fee || null,
+        //     },
+        // ]);
+
+        dispatch({
+            type: "added",
+            payload: [
+                {
+                    id: crypto.getRandomValues(new Uint32Array(1))[0],
+                    line_description: enteredDescription || "",
+                    comments: enteredComments || "No comments",
+                    can_id: selectedCan?.id || null,
+                    can: selectedCan || null,
+                    agreement_id: selectedAgreement?.id || null,
+                    amount: enteredAmount || 0,
+                    status: "DRAFT",
+                    date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}` || null,
+                    psc_fee_amount: selectedProcurementShop?.fee || null,
+                },
+            ],
+        });
 
         showAlert("success", "Budget Line Added", "The budget line has been successfully added.");
         resetFormState();
@@ -180,8 +203,8 @@ export const CreateBudgetLinesForm = ({
 };
 
 CreateBudgetLinesForm.propTypes = {
-    selectedAgreement: shape({}).isRequired,
-    selectedProcurementShop: shape({}).isRequired,
+    // selectedAgreement: shape({}).isRequired,
+    // selectedProcurementShop: shape({}).isRequired,
     showAlert: func.isRequired,
 };
 
