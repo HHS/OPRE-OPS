@@ -8,10 +8,6 @@ export const postAgreement = async (item) => {
         ...data,
         agreement_type: data.selected_agreement_type,
         incumbent: data.incumbent_entered,
-        project_officer: data.project_officer && data.project_officer.id > 0 ? data.project_officer.id : null,
-        team_members: data.team_members.map((team_member) => {
-            return formatTeamMember(team_member);
-        }),
         number: "",
     };
 
