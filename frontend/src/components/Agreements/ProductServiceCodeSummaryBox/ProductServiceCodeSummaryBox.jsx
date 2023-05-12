@@ -1,8 +1,6 @@
 import PropTypes from "prop-types";
 
-const ProductServiceCodeSummaryBox = ({ selectedProductServiceCode }) => {
-    const { naics, support_code } = selectedProductServiceCode;
-
+const ProductServiceCodeSummaryBox = ({ selectedProductServiceCode: { naics, support_code } }) => {
     return (
         <div
             className="bg-base-lightest font-family-sans font-12px border-1px border-base-light radius-sm margin-top-4"
