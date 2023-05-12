@@ -49,6 +49,10 @@ export const opsApi = createApi({
             query: () => `/procurement-shops/`,
             providesTags: ["ProcurementShops"],
         }),
+        getAgreementReasons: builder.query({
+            query: () => `/agreement-reasons/`,
+            providesTags: ["AgreementReasons"],
+        }),
     }),
 });
 
@@ -60,4 +64,5 @@ export const {
     useGetAgreementTypesQuery,
     useGetProductServiceCodesQuery,
     useGetProcurementShopsQuery,
+    useGetAgreementReasonsQuery,
 } = opsApi;
