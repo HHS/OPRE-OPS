@@ -2,10 +2,10 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-import ProcurementShopSelect from "./ProcurementShopSelect";
+import ProcurementShopSelect from "../../components/Agreements/ProcurementShopSelect/ProcurementShopSelect";
 import AgreementReasonSelect from "./AgreementReasonSelect";
-import AgreementTypeSelect from "./AgreementTypeSelect";
-import ProductServiceCodeSelect from "./ProductServiceCodeSelect";
+import AgreementTypeSelect from "../../components/Agreements/AgreementTypeSelect/AgreementTypeSelect";
+import ProductServiceCodeSelect from "../../components/Agreements/ProductServiceCodeSelect/ProductServiceCodeSelect";
 import Alert from "../../components/UI/Alert/Alert";
 import {
     setAgreementDescription,

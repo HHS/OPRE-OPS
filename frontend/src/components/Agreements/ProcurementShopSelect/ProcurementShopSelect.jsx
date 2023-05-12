@@ -1,4 +1,4 @@
-import { useGetProcurementShopsQuery } from "../../api/opsAPI";
+import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
 
 export const ProcurementShopSelect = ({ selectedProcurementShop, onChangeSelectedProcurementShop }) => {
     const {

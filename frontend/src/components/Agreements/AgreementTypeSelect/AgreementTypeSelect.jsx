@@ -1,4 +1,4 @@
-import { useGetAgreementTypesQuery } from "../../api/opsAPI";
+import { useGetAgreementTypesQuery } from "../../../api/opsAPI";
 
 export const AgreementTypeSelect = ({ selectedAgreementType, setSelectedAgreementType }) => {
     const {
