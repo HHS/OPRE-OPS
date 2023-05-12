@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import ProcurementShopSelect from "../../components/Agreements/ProcurementShopSelect/ProcurementShopSelect";
-import AgreementReasonSelect from "./AgreementReasonSelect";
+import AgreementReasonSelect from "../../components/Agreements/AgreementReasonSelect/AgreementReasonSelect";
 import AgreementTypeSelect from "../../components/Agreements/AgreementTypeSelect/AgreementTypeSelect";
 import ProductServiceCodeSelect from "../../components/Agreements/ProductServiceCodeSelect/ProductServiceCodeSelect";
 import Alert from "../../components/UI/Alert/Alert";

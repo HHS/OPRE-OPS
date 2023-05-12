@@ -1,4 +1,4 @@
-import { useGetAgreementReasonsQuery } from "../../api/opsAPI";
+import { useGetAgreementReasonsQuery } from "../../../api/opsAPI";
 import { useDispatch } from "react-redux";
 
 export const AgreementReasonSelect = ({
