@@ -112,7 +112,7 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
                 active agreement, it will default to the procurement shop currently being used.
             </p>
             <ProcurementShopSelect
-                budgetLinesLength={budgetLinesAdded.length}
+                budgetLinesLength={budgetLinesAdded?.length}
                 selectedProcurementShop={selectedProcurementShop}
                 setSelectedProcurementShop={setSelectedProcurementShop}
             />
@@ -164,7 +164,7 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
                     className="usa-button usa-button--unstyled margin-right-2"
                     onClick={() => {
                         // if no budget lines have been added, go back
-                        if (budgetLinesAdded.length === 0) {
+                        if (budgetLinesAdded?.length === 0) {
                             goBack();
                             return;
                         }

@@ -1,5 +1,5 @@
 import { shape, func } from "prop-types";
-import { useDispatch } from "react-redux";
+// import { useDispatch } from "react-redux";
 import CurrencyFormat from "react-currency-format";
 import CanSelect from "../../../pages/budgetLines/CanSelect";
 import DesiredAwardDate from "../../../pages/budgetLines/DesiredAwardDate";
@@ -10,34 +10,46 @@ export const CreateBudgetLinesForm = ({
     showAlert = () => {},
     // todo: add these reducers to the context
     handleCancelEdit = () => {},
-    resetFormState = () => {},
 }) => {
     // const dispatch = useDispatch();
     const {
         selectedAgreement,
+        setSelectedAgreement,
         selectedProcurementShop,
+        setSelectedProcurementShop,
+        setSelectedProject,
         budgetLinesAdded,
         setBudgetLinesAdded = () => {},
         selectedCan,
-        setSelectedCan = () => {},
+        setSelectedCan,
         enteredDescription,
-        setEnteredDescription = () => {},
+        setEnteredDescription,
         enteredAmount,
-        setEnteredAmount = () => {},
+        setEnteredAmount,
         enteredMonth,
-        setEnteredMonth = () => {},
+        setEnteredMonth,
         enteredDay,
-        setEnteredDay = () => {},
+        setEnteredDay,
         enteredYear,
-        setEnteredYear = () => {},
+        setEnteredYear,
         enteredComments,
-        setEnteredComments = () => {},
+        setEnteredComments,
         isEditing,
         setIsEditing = () => {},
         budgetLineBeingEdited,
         setBudgetLineBeingEdited = () => {},
     } = useBudgetLines();
     const dispatch = useBudgetLinesDispatch();
+
+    const resetForm = () => {
+        setEnteredDescription("");
+        setSelectedCan({});
+        setEnteredAmount(null);
+        setEnteredMonth("");
+        setEnteredDay("");
+        setEnteredYear("");
+        setEnteredComments("");
+    };
 
     const handleEditForm = (e) => {
         e.preventDefault();
@@ -61,22 +73,6 @@ export const CreateBudgetLinesForm = ({
     const handleSubmitForm = (e) => {
         e.preventDefault();
 
-        // setBudgetLinesAdded([
-        //     ...budgetLinesAdded,
-        //     {
-        //         id: crypto.getRandomValues(new Uint32Array(1))[0],
-        //         line_description: enteredDescription || "",
-        //         comments: enteredComments || "No comments",
-        //         can_id: selectedCan?.id || null,
-        //         can: selectedCan || null,
-        //         agreement_id: selectedAgreement?.id || null,
-        //         amount: enteredAmount || 0,
-        //         status: "DRAFT",
-        //         date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}` || null,
-        //         psc_fee_amount: selectedProcurementShop?.fee || null,
-        //     },
-        // ]);
-
         dispatch({
             type: "added",
             payload: [
@@ -95,8 +91,9 @@ export const CreateBudgetLinesForm = ({
             ],
         });
 
+        resetForm();
         showAlert("success", "Budget Line Added", "The budget line has been successfully added.");
-        resetFormState();
+        // resetFormState();
     };
 
     return (
