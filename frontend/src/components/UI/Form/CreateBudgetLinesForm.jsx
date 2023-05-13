@@ -4,7 +4,7 @@ import CurrencyFormat from "react-currency-format";
 import CanSelect from "../../../pages/budgetLines/CanSelect";
 import DesiredAwardDate from "../../../pages/budgetLines/DesiredAwardDate";
 import { setEditBudgetLineAdded } from "../../../pages/budgetLines/createBudgetLineSlice";
-import { useBudgetLines, useBudgetLinesDispatch } from "../../../pages/budgetLines/budgetLineContext";
+import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "../../../pages/budgetLines/budgetLineContext";
 import { resetBudgetLinesForm } from "../../../helpers/utils";
 
 export const CreateBudgetLinesForm = ({
@@ -15,32 +15,35 @@ export const CreateBudgetLinesForm = ({
     // const dispatch = useDispatch();
     const {
         selectedAgreement,
-        setSelectedAgreement,
         selectedProcurementShop,
-        setSelectedProcurementShop,
-        setSelectedProject,
-        budgetLinesAdded,
-        setBudgetLinesAdded = () => {},
-        selectedCan,
-        setSelectedCan,
-        enteredDescription,
-        setEnteredDescription,
-        enteredAmount,
-        setEnteredAmount,
-        enteredMonth,
-        setEnteredMonth,
-        enteredDay,
-        setEnteredDay,
-        enteredYear,
-        setEnteredYear,
-        enteredComments,
-        setEnteredComments,
-        isEditing,
+        // setSelectedProject,
+        budget_lines_added: budgetLinesAdded,
+        selected_can: selectedCan,
+        entered_description: enteredDescription,
+        entered_amount: enteredAmount,
+        entered_month: enteredMonth,
+        entered_day: enteredDay,
+        entered_year: enteredYear,
+        entered_comments: enteredComments,
+        is_editing: isEditing,
         setIsEditing = () => {},
         budgetLineBeingEdited,
         setBudgetLineBeingEdited = () => {},
     } = useBudgetLines();
+
     const dispatch = useBudgetLinesDispatch();
+    // setters
+    const setSelectedProject = useSetState("selected_project");
+    const setSelectedAgreement = useSetState("selected_agreement");
+    const setSelectedProcurementShop = useSetState("selected_procurement_shop");
+    const setBudgetLinesAdded = useSetState("budget_lines_added");
+    const setEnteredDescription = useSetState("entered_description");
+    const setSelectedCan = useSetState("selected_can");
+    const setEnteredAmount = useSetState("entered_amount");
+    const setEnteredMonth = useSetState("entered_month");
+    const setEnteredDay = useSetState("entered_day");
+    const setEnteredYear = useSetState("entered_year");
+    const setEnteredComments = useSetState("entered_comments");
 
     const handleEditForm = (e) => {
         e.preventDefault();
@@ -64,21 +67,19 @@ export const CreateBudgetLinesForm = ({
     const handleSubmitForm = (e) => {
         e.preventDefault();
         dispatch({
-            type: "added",
-            payload: [
-                {
-                    id: crypto.getRandomValues(new Uint32Array(1))[0],
-                    line_description: enteredDescription || "",
-                    comments: enteredComments || "No comments",
-                    can_id: selectedCan?.id || null,
-                    can: selectedCan || null,
-                    agreement_id: selectedAgreement?.id || null,
-                    amount: enteredAmount || 0,
-                    status: "DRAFT",
-                    date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}` || null,
-                    psc_fee_amount: selectedProcurementShop?.fee || null,
-                },
-            ],
+            type: "ADD_BUDGET_LINE",
+            payload: {
+                id: crypto.getRandomValues(new Uint32Array(1))[0],
+                line_description: enteredDescription || "",
+                comments: enteredComments || "No comments",
+                can_id: selectedCan?.id || null,
+                can: selectedCan || null,
+                agreement_id: selectedAgreement?.id || null,
+                amount: enteredAmount || 0,
+                status: "DRAFT",
+                date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}` || null,
+                psc_fee_amount: selectedProcurementShop?.fee || null,
+            },
         });
         resetBudgetLinesForm(
             setEnteredDescription,

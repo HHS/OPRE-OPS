@@ -6,20 +6,17 @@ import { Link } from "react-router-dom";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import ProjectSelect from "../../components/UI/Form/ProjectSelect";
 import AgreementSelect from "./AgreementSelect";
-import { useBudgetLines } from "./budgetLineContext";
+import { useBudgetLines, useSetState } from "./budgetLineContext";
 import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
 
 export const StepSelectProjectAndAgreement = ({ goToNext }) => {
     const dispatch = useDispatch();
-    const {
-        wizardSteps,
-        setSelectedAgreement,
-        selectedProject,
-        setSelectedProject,
-        selectedAgreement,
-        setSelectedProcurementShop,
-        setBudgetLinesAdded,
-    } = useBudgetLines();
+    const { wizardSteps, selected_project: selectedProject, selected_agreement: selectedAgreement } = useBudgetLines();
+    // setters
+    const setSelectedProject = useSetState("selected_project");
+    const setSelectedAgreement = useSetState("selected_agreement");
+    const setSelectedProcurementShop = useSetState("selected_procurement_shop");
+    const setBudgetLinesAdded = useSetState("budget_lines_added");
 
     React.useEffect(() => {
         const getAgreementsAndSetState = async () => {

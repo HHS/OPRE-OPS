@@ -8,7 +8,7 @@ import CreateBudgetLinesForm from "../../components/UI/Form/CreateBudgetLinesFor
 import ProcurementShopSelect from "./ProcurementShopSelect";
 // import { setBudgetLineAdded, setSelectedAgreement } from "../budgetLines/createBudgetLineSlice";
 import { postBudgetLineItems } from "../../api/postBudgetLineItems";
-import { useBudgetLines, useBudgetLinesDispatch } from "./budgetLineContext";
+import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./budgetLineContext";
 import { resetBudgetLinesForm } from "../../helpers/utils";
 
 export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
@@ -18,22 +18,24 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
     const [modalProps, setModalProps] = React.useState({});
     const {
         wizardSteps,
-        selectedAgreement,
-        setSelectedAgreement,
-        selectedProject: selectedResearchProject,
-        selectedProcurementShop,
-        setSelectedProcurementShop,
-        budgetLinesAdded,
-        setBudgetLinesAdded,
-        setEnteredDescription,
-        setSelectedCan,
-        setEnteredAmount,
-        setEnteredMonth,
-        setEnteredDay,
-        setEnteredYear,
-        setEnteredComments,
+        selected_project: selectedResearchProject,
+        selected_agreement: selectedAgreement,
+        selected_procurement_shop: selectedProcurementShop,
+        budget_lines_added: budgetLinesAdded,
     } = useBudgetLines();
     const dispatch = useBudgetLinesDispatch();
+    // setters
+    const setSelectedAgreement = useSetState("selected_agreement");
+    const setSelectedProcurementShop = useSetState("selected_procurement_shop");
+    const setBudgetLinesAdded = useSetState("budget_lines_added");
+    const setEnteredDescription = useSetState("entered_description");
+    const setSelectedCan = useSetState("selected_can");
+    const setEnteredAmount = useSetState("entered_amount");
+    const setEnteredMonth = useSetState("entered_month");
+    const setEnteredDay = useSetState("entered_day");
+    const setEnteredYear = useSetState("entered_year");
+    const setEnteredComments = useSetState("entered_comments");
+
     // const handleCancelEdit = () => {
     //     setBudgetLinesAdded({});
     // };
