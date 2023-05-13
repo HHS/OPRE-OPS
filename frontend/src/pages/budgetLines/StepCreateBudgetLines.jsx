@@ -58,7 +58,7 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
             actionButtonText: "Delete",
             handleConfirm: () => {
                 dispatch({
-                    type: "deleted",
+                    type: "DELETE_BUDGET_LINE",
                     id: budgetLineId,
                 });
                 resetBudgetLinesForm(
