@@ -9,7 +9,6 @@ import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "../../../pa
 export const CreateBudgetLinesForm = ({
     showAlert = () => {},
     // TODO: add these reducers to the context
-    handleCancelEdit = () => {},
 }) => {
     // const dispatch = useDispatch();
     const {
@@ -167,7 +166,7 @@ export const CreateBudgetLinesForm = ({
                     <div className="display-flex flex-justify-end">
                         <button
                             className="usa-button usa-button--unstyled margin-top-2 margin-right-2"
-                            onClick={() => handleCancelEdit()}
+                            onClick={() => dispatch({ type: "RESET_FORM" })}
                         >
                             Cancel
                         </button>

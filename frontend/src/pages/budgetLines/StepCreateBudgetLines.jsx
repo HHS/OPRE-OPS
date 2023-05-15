@@ -35,10 +35,6 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
     const setEnteredYear = useSetState("entered_year");
     const setEnteredComments = useSetState("entered_comments");
 
-    // const handleCancelEdit = () => {
-    //     setBudgetLinesAdded({});
-    // };
-
     const showAlert = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
         window.scrollTo(0, 0);
@@ -143,7 +139,6 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
                 // setIsEditing={setIsEditing}
                 // budgetLineBeingEdited={budgetLineBeingEdited}
                 // setBudgetLineBeingEdited={setBudgetLineBeingEdited}
-                // handleCancelEdit={handleCancelEdit}
                 // resetFormState={resetFormState}
             />
             <h2 className="font-sans-lg">Budget Lines</h2>
@@ -171,15 +166,6 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
                             heading: "Are you sure you want to go back? Your budget lines will not be saved.",
                             actionButtonText: "Go Back",
                             handleConfirm: () => {
-                                // dispatch(setBudgetLineAdded([]));
-                                // dispatch(setEnteredAmount(null));
-                                // dispatch(setEnteredComments(""));
-                                // dispatch(setEnteredDescription(""));
-                                // dispatch(setEnteredDay(""));
-                                // dispatch(setEnteredMonth(""));
-                                // dispatch(setEnteredYear(""));
-                                // dispatch(setSelectedAgreement(-1));
-                                // dispatch(setSelectedProcurementShop({}));
                                 dispatch({ type: "RESET_FORM_AND_BUDGET_LINES" });
                                 setModalProps({});
                                 goBack();
