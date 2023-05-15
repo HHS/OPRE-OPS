@@ -9,7 +9,6 @@ import ProcurementShopSelect from "./ProcurementShopSelect";
 // import { setBudgetLineAdded, setSelectedAgreement } from "../budgetLines/createBudgetLineSlice";
 import { postBudgetLineItems } from "../../api/postBudgetLineItems";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./budgetLineContext";
-import { resetBudgetLinesForm } from "../../helpers/utils";
 
 export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
     const [isAlertActive, setIsAlertActive] = React.useState(false);
@@ -61,15 +60,7 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
                     type: "DELETE_BUDGET_LINE",
                     id: budgetLineId,
                 });
-                resetBudgetLinesForm(
-                    setEnteredDescription,
-                    setSelectedCan,
-                    setEnteredAmount,
-                    setEnteredMonth,
-                    setEnteredDay,
-                    setEnteredYear,
-                    setEnteredComments
-                );
+                dispatch({ type: "RESET_FORM" });
                 showAlert("success", "Budget Line Deleted", "The budget line has been successfully deleted.");
                 setModalProps({});
             },
@@ -184,20 +175,12 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
                                 // dispatch(setEnteredAmount(null));
                                 // dispatch(setEnteredComments(""));
                                 // dispatch(setEnteredDescription(""));
-                                // dispatch(setSelectedProcurementShop({}));
                                 // dispatch(setEnteredDay(""));
                                 // dispatch(setEnteredMonth(""));
                                 // dispatch(setEnteredYear(""));
                                 // dispatch(setSelectedAgreement(-1));
-                                resetBudgetLinesForm(
-                                    setEnteredDescription,
-                                    setSelectedCan,
-                                    setEnteredAmount,
-                                    setEnteredMonth,
-                                    setEnteredDay,
-                                    setEnteredYear,
-                                    setEnteredComments
-                                );
+                                // dispatch(setSelectedProcurementShop({}));
+                                dispatch({ type: "RESET_FORM_AND_BUDGET_LINES" });
                                 setModalProps({});
                                 goBack();
                             },

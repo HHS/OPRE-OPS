@@ -73,6 +73,61 @@ function budgetLinesReducer(state, action) {
                 budget_lines_added: state.budget_lines_added.filter((bl) => bl.id !== action.id),
             };
         }
+        case "SET_BUDGET_LINE_FOR_EDITING": {
+            const index = state.budget_lines_added.findIndex((budget_line) => budget_line.id === action.payload.id);
+
+            if (index !== -1) {
+                const { line_description, comments, can, amount, date_needed } = state.budget_lines_added[index];
+                const [entered_year, entered_month, entered_day] = date_needed.split("-").map((d) => parseInt(d, 10));
+
+                return {
+                    ...state,
+                    is_editing_budget_line: true,
+                    entered_description: line_description,
+                    entered_comments: comments,
+                    selected_can: {
+                        ...can,
+                    },
+                    entered_amount: amount,
+                    entered_month,
+                    entered_day,
+                    entered_year,
+                    budget_line_being_edited: index,
+                };
+            }
+            return state;
+        }
+        case "RESET_FORM": {
+            return {
+                ...state,
+                entered_description: "",
+                entered_comments: "",
+                selected_can: -1,
+                entered_amount: null,
+                entered_month: "",
+                entered_day: "",
+                entered_year: "",
+                budget_line_being_edited: -1,
+                is_editing_budget_line: false,
+            };
+        }
+        case "RESET_FORM_AND_BUDGET_LINES": {
+            return {
+                ...state,
+                entered_description: "",
+                entered_comments: "",
+                selected_can: -1,
+                entered_amount: null,
+                entered_month: "",
+                entered_day: "",
+                entered_year: "",
+                budget_line_being_edited: -1,
+                is_editing_budget_line: false,
+                budget_lines_added: [],
+                selected_agreement: {},
+                selected_procurement_shop: {},
+            };
+        }
         default: {
             throw Error("Unknown action: " + action.type);
         }

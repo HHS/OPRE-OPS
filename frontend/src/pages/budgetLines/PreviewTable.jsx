@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import Tag from "../../components/UI/Tag/Tag";
-import { editBudgetLineAdded, duplicateBudgetLineAdded } from "./createBudgetLineSlice";
+import { duplicateBudgetLineAdded } from "./createBudgetLineSlice";
 import { useBudgetLines, useBudgetLinesDispatch } from "./budgetLineContext";
 import { TotalSummaryCard } from "./TotalSummaryCard";
 import { formatDate } from "../../helpers/utils";
@@ -32,13 +32,6 @@ export const PreviewTable = ({
     if (!loggedInUser) {
         loggedInUser = "Sheila Celentano";
     }
-
-    // const handleDeleteBudgetLine = (budgetLineId) => {
-    //     dispatch({
-    //         type: "deleted",
-    //         id: budgetLineId,
-    //     });
-    // };
 
     const TableRow = ({ bl }) => {
         const [isExpanded, setIsExpanded] = useState(false);
@@ -103,7 +96,7 @@ export const PreviewTable = ({
                                 className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
                                 title="edit"
                                 data-position="top"
-                                onClick={() => dispatch(editBudgetLineAdded(budgetLine))}
+                                onClick={() => dispatch({ type: "SET_BUDGET_LINE_FOR_EDITING", payload: budgetLine })}
                             />
                             <FontAwesomeIcon
                                 icon={faTrash}

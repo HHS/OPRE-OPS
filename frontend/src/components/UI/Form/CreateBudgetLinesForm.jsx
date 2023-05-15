@@ -9,13 +9,13 @@ import { resetBudgetLinesForm } from "../../../helpers/utils";
 
 export const CreateBudgetLinesForm = ({
     showAlert = () => {},
-    // todo: add these reducers to the context
+    // TODO: add these reducers to the context
     handleCancelEdit = () => {},
 }) => {
     // const dispatch = useDispatch();
     const {
-        selectedAgreement,
-        selectedProcurementShop,
+        selected_agreement: selectedAgreement,
+        selected_procurement_shop: selectedProcurementShop,
         // setSelectedProject,
         budget_lines_added: budgetLinesAdded,
         selected_can: selectedCan,
@@ -25,9 +25,9 @@ export const CreateBudgetLinesForm = ({
         entered_day: enteredDay,
         entered_year: enteredYear,
         entered_comments: enteredComments,
-        is_editing: isEditing,
+        is_editing_budget_line: isEditing,
         setIsEditing = () => {},
-        budgetLineBeingEdited,
+        budget_line_being_edited: budgetLineBeingEdited,
         setBudgetLineBeingEdited = () => {},
     } = useBudgetLines();
 
@@ -44,23 +44,27 @@ export const CreateBudgetLinesForm = ({
     const setEnteredDay = useSetState("entered_day");
     const setEnteredYear = useSetState("entered_year");
     const setEnteredComments = useSetState("entered_comments");
+    const setIsEditingBudgetLine = useSetState("is_editing_budget_line");
 
     const handleEditForm = (e) => {
         e.preventDefault();
-        // dispatch(
-        //     setEditBudgetLineAdded({
-        //         id: budgetLinesAdded[budgetLineBeingEdited].id,
-        //         line_description: enteredDescription,
-        //         comments: enteredComments,
-        //         can_id: selectedCan?.id,
-        //         can: selectedCan,
-        //         agreement_id: selectedAgreement?.id,
-        //         amount: enteredAmount,
-        //         date_needed:
-        //             enteredYear && enteredMonth && enteredDay ? `${enteredYear}-${enteredMonth}-${enteredDay}` : null,
-        //         psc_fee_amount: selectedProcurementShop?.fee,
-        //     })
-        // );
+        dispatch({
+            type: "EDIT_BUDGET_LINE",
+            payload: {
+                id: budgetLinesAdded[budgetLineBeingEdited].id,
+                line_description: enteredDescription,
+                comments: enteredComments,
+                can_id: selectedCan?.id,
+                can: selectedCan,
+                agreement_id: selectedAgreement?.id,
+                amount: enteredAmount,
+                date_needed:
+                    enteredYear && enteredMonth && enteredDay ? `${enteredYear}-${enteredMonth}-${enteredDay}` : null,
+                psc_fee_amount: selectedProcurementShop?.fee,
+            },
+        });
+
+        dispatch({ type: "RESET_FORM" });
         showAlert("success", "Budget Line Updated", "The budget line has been successfully edited.");
     };
 
@@ -81,15 +85,7 @@ export const CreateBudgetLinesForm = ({
                 psc_fee_amount: selectedProcurementShop?.fee || null,
             },
         });
-        resetBudgetLinesForm(
-            setEnteredDescription,
-            setSelectedCan,
-            setEnteredAmount,
-            setEnteredMonth,
-            setEnteredDay,
-            setEnteredYear,
-            setEnteredComments
-        );
+        dispatch({ type: "RESET_FORM" });
         showAlert("success", "Budget Line Added", "The budget line has been successfully added.");
     };
 

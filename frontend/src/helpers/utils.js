@@ -20,21 +20,3 @@ export const formatDate = (date) => {
 
     return date.toLocaleDateString("en-US", options);
 };
-
-export const resetBudgetLinesForm = (
-    setEnteredDescription,
-    setSelectedCan,
-    setEnteredAmount,
-    setEnteredMonth,
-    setEnteredDay,
-    setEnteredYear,
-    setEnteredComments
-) => {
-    setEnteredDescription("");
-    setSelectedCan({});
-    setEnteredAmount(null);
-    setEnteredMonth("");
-    setEnteredDay("");
-    setEnteredYear("");
-    setEnteredComments("");
-};

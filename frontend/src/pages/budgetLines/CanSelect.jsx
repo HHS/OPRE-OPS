@@ -21,6 +21,7 @@ export const CanSelect = ({ selectedCan, setSelectedCan }) => {
         setSelectedCan({ ...selected });
     };
 
+    // TODO replace with RTK Query
     useEffect(() => {
         dispatch(getCanList());
     }, [dispatch]);
