@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 SQLAlchemy = "==2.0.13"
 pandas = "==1.5.3"
-json5 = "==0.9.11"
+json5 = "==0.9.14"
 psycopg2-binary = "==2.9.6"
 cfenv = "==0.5.3"
 sqlalchemy-mixins = "==1.5.3"
