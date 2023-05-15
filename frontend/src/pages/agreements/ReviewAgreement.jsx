@@ -39,7 +39,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
         return <div>Oops, an error occured</div>;
     }
 
-    const isAnyBudgetLineItemDraft = agreement.budget_line_items.some((item) => item.status === "draft");
+    const isAnyBudgetLineItemDraft = agreement.budget_line_items.some((item) => item.status === "DRAFT");
 
     const handleSendToApproval = () => {
         if (isAnyBudgetLineItemDraft) {
