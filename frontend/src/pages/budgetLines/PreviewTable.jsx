@@ -1,4 +1,4 @@
-import { func, bool } from "prop-types";
+import { func, bool, arrayOf, shape, string, number } from "prop-types";
 import { useState, Fragment } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
@@ -18,8 +18,6 @@ export const PreviewTable = ({
     budgetLines = null,
     budgetLinesAdded: stateBudgetLinesAdded = [{}],
 }) => {
-    // const dispatch = useDispatch();
-    // const stateBudgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
     const dispatch = useBudgetLinesDispatch();
     const budgetLinesAdded = budgetLines ? budgetLines : stateBudgetLinesAdded;
     const sortedBudgetLines = budgetLinesAdded
@@ -286,4 +284,25 @@ export default PreviewTable;
 PreviewTable.propTypes = {
     handleDeleteBudgetLine: func.isRequired,
     readOnly: bool,
+    budgetLines: arrayOf(
+        shape({
+            id: number.isRequired,
+            line_description: string.isRequired,
+            created_on: string.isRequired,
+            date_needed: string.isRequired,
+            can: shape({
+                number: string.isRequired,
+            }).isRequired,
+            amount: number.isRequired,
+            psc_fee_amount: number.isRequired,
+            status: string.isRequired,
+            created_by: string.isRequired,
+            comments: string.isRequired,
+        })
+    ),
+    budgetLinesAdded: arrayOf(
+        shape({
+            id: number.isRequired,
+        })
+    ),
 };
