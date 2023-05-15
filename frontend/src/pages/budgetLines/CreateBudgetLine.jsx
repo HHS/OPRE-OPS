@@ -47,33 +47,12 @@ export const CreateBudgetLine = () => {
     //     getAgreementsAndSetState().catch(console.error);
     // }, [dispatch, selectedProject]);
 
-    // const deleteBudgetLineAdded = (budgetLineId) => {
-    //     setBudgetLinesAdded(budgetLinesAdded.filter((budgetLine) => budgetLine.id !== budgetLineId));
-    // };
-
     return (
         <App>
             <BudgetLinesProvider>
                 <CreateBudgetLineFlow>
-                    <StepSelectProjectAndAgreement
-                    // wizardSteps={wizardSteps}
-                    // selectedProject={selectedProject}
-                    // setSelectedProject={setSelectedProject}
-                    // selectedAgreement={selectedAgreement}
-                    // setSelectedAgreement={setSelectedAgreement}
-                    // setSelectedProcurementShop={setSelectedProcurementShop}
-                    // setBudgetLinesAdded={setBudgetLinesAdded}
-                    />
-                    <StepCreateBudgetLines
-                    // wizardSteps={wizardSteps}
-                    // selectedProject={selectedProject}
-                    // selectedAgreement={selectedAgreement}
-                    // selectedProcurementShop={selectedProcurementShop}
-                    // setSelectedProcurementShop={setSelectedProcurementShop}
-                    // budgetLinesAdded={budgetLinesAdded}
-                    // setBudgetLinesAdded={setBudgetLinesAdded}
-                    // deleteBudgetLineAdded={deleteBudgetLineAdded}
-                    />
+                    <StepSelectProjectAndAgreement />
+                    <StepCreateBudgetLines />
                     <StepSuccess />
                 </CreateBudgetLineFlow>
             </BudgetLinesProvider>

@@ -18,6 +18,7 @@ export const StepSelectProjectAndAgreement = ({ goToNext }) => {
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setBudgetLinesAdded = useSetState("budget_lines_added");
 
+    // TODO: replace with RTK Query if possible
     React.useEffect(() => {
         const getAgreementsAndSetState = async () => {
             if (selectedProject?.id > 0) {
