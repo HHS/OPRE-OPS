@@ -98,3 +98,5 @@ export const TotalSummaryCard = ({ budgetLines }) => {
         </summary>
     );
 };
+
+export default TotalSummaryCard;
