@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "f1e1a243a5c8cb14eec5d2425a3e7fddf9971330d4e96089bb57bf59ac31baf4"
+            "sha256": "0a185138d841f98c7ba5319336ae08a705352892be749599444d198a553839b4"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -115,11 +115,11 @@
         },
         "json5": {
             "hashes": [
-                "sha256:1aa54b80b5e507dfe31d12b7743a642e2ffa6f70bf73b8e3d7d1d5fba83d99bd",
-                "sha256:4f1e196acc55b83985a51318489f345963c7ba84aa37607e49073066c562e99b"
+                "sha256:740c7f1b9e584a468dbb2939d8d458db3427f2c93ae2139d05f47e453eae964f",
+                "sha256:9ed66c3a6ca3510a976a9ef9b8c0787de24802724ab1860bc0153c7fdd589b02"
             ],
             "index": "pypi",
-            "version": "==0.9.11"
+            "version": "==0.9.14"
         },
         "marshmallow": {
             "hashes": [
@@ -877,11 +877,11 @@
         },
         "flake8-bugbear": {
             "hashes": [
-                "sha256:8a218d13abd6904800970381057ce8e72cde8eea743240c4ef3ede4dd0bc9cfb",
-                "sha256:ea565bdb87b96b56dc499edd6cc3ba7f695373d902a5f56c989b74fad7c7719d"
+                "sha256:631fa927fbc799e8ca636b849dd7dfc304812287137b6ecb3277821f028bee40",
+                "sha256:695c84a5d7da54eb35d79a7354dbaf3aaba80de32250608868aa1c85534b2a86"
             ],
             "index": "pypi",
-            "version": "==23.3.23"
+            "version": "==23.5.9"
         },
         "flake8-import-order": {
             "hashes": [
@@ -1230,11 +1230,11 @@
         },
         "platformdirs": {
             "hashes": [
-                "sha256:47692bc24c1958e8b0f13dd727307cff1db103fca36399f457da8e05f222fdc4",
-                "sha256:7954a68d0ba23558d753f73437c55f89027cf8f5108c19844d4b82e5af396335"
+                "sha256:412dae91f52a6f84830f39a8078cecd0e866cb72294a5c66808e74d5e88d251f",
+                "sha256:e2378146f1964972c03c085bb5662ae80b2b8c06226c54b2ff4aa9483e8a13a5"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==3.5.0"
+            "version": "==3.5.1"
         },
         "pluggy": {
             "hashes": [
@@ -1933,10 +1933,10 @@
         },
         "types-redis": {
             "hashes": [
-                "sha256:0193d0522cccd6d46e9e17b811c30fc407e1800e0381da0e95f5c9239bdca58b",
-                "sha256:569b9795618c95d5f8fad2156dceb622614162761b4382892b99c519c378f776"
+                "sha256:2fe82f374d9dddf007deaf23d81fddcfd9523d9522bf11523c5c43bc5b27099e",
+                "sha256:bf8692252038dbe03b007ca4fde87d3ae8e10610854a6858e3bf5d01721a7c4b"
             ],
-            "version": "==4.5.5.1"
+            "version": "==4.5.5.2"
         },
         "types-requests": {
             "hashes": [
