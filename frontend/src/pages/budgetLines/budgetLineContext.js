@@ -158,6 +158,9 @@ function budgetLinesReducer(state, action) {
                 selected_procurement_shop: {},
             };
         }
+        case "RESET_TO_INITIAL_STATE": {
+            return initialState;
+        }
         default: {
             throw Error("Unknown action: " + action.type);
         }

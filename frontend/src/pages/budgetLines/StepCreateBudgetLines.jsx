@@ -6,7 +6,6 @@ import Alert from "../../components/UI/Alert/Alert";
 import Modal from "../../components/UI/Modal/Modal";
 import CreateBudgetLinesForm from "../../components/UI/Form/CreateBudgetLinesForm";
 import ProcurementShopSelect from "./ProcurementShopSelect";
-// import { setBudgetLineAdded, setSelectedAgreement } from "../budgetLines/createBudgetLineSlice";
 import { postBudgetLineItems } from "../../api/postBudgetLineItems";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./budgetLineContext";
 
@@ -24,16 +23,8 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
     } = useBudgetLines();
     const dispatch = useBudgetLinesDispatch();
     // setters
-    const setSelectedAgreement = useSetState("selected_agreement");
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setBudgetLinesAdded = useSetState("budget_lines_added");
-    const setEnteredDescription = useSetState("entered_description");
-    const setSelectedCan = useSetState("selected_can");
-    const setEnteredAmount = useSetState("entered_amount");
-    const setEnteredMonth = useSetState("entered_month");
-    const setEnteredDay = useSetState("entered_day");
-    const setEnteredYear = useSetState("entered_year");
-    const setEnteredComments = useSetState("entered_comments");
 
     const showAlert = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -63,15 +54,16 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
         });
     };
 
-    // const saveBudgetLineItems = (event) => {
-    //     event.preventDefault();
-    //     const newBudgetLineItems = budgetLinesAdded.filter(
-    //         // eslint-disable-next-line no-prototype-builtins
-    //         (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on")
-    //     );
-    //     postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
-    //     goToNext();
-    // };
+    const saveBudgetLineItems = (event) => {
+        event.preventDefault();
+        const newBudgetLineItems = budgetLinesAdded.filter(
+            // eslint-disable-next-line no-prototype-builtins
+            (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on")
+        );
+        postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
+        dispatch({ type: "RESET_FORM_AND_BUDGET_LINES" });
+        goToNext();
+    };
 
     return (
         <>
@@ -115,32 +107,7 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
                 Complete the information below to create new budget lines. Select Add Budget Line to create multiple
                 budget lines.
             </p>
-            <CreateBudgetLinesForm
-                // selectedAgreement={selectedAgreement}
-                // selectedProcurementShop={selectedProcurementShop}
-                showAlert={showAlert}
-                // budgetLinesAdded={budgetLinesAdded}
-                // setBudgetLinesAdded={setBudgetLinesAdded}
-                // selectedCan={selectedCan}
-                // setSelectedCan={setSelectedCan}
-                // enteredDescription={enteredDescription}
-                // setEnteredDescription={setEnteredDescription}
-                // enteredAmount={enteredAmount}
-                // setEnteredAmount={setEnteredAmount}
-                // enteredMonth={enteredMonth}
-                // setEnteredMonth={setEnteredMonth}
-                // enteredDay={enteredDay}
-                // setEnteredDay={setEnteredDay}
-                // enteredYear={enteredYear}
-                // setEnteredYear={setEnteredYear}
-                // enteredComments={enteredComments}
-                // setEnteredComments={setEnteredComments}
-                // isEditing={isEditing}
-                // setIsEditing={setIsEditing}
-                // budgetLineBeingEdited={budgetLineBeingEdited}
-                // setBudgetLineBeingEdited={setBudgetLineBeingEdited}
-                // resetFormState={resetFormState}
-            />
+            <CreateBudgetLinesForm showAlert={showAlert} />
             <h2 className="font-sans-lg">Budget Lines</h2>
             <p>
                 This is a list of all budget lines for the selected project and agreement. The budget lines you add will
@@ -175,9 +142,9 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
                 >
                     Back
                 </button>
-                {/* <button className="usa-button" onClick={saveBudgetLineItems}>
+                <button className="usa-button" onClick={saveBudgetLineItems}>
                     Create Budget Lines
-                </button> */}
+                </button>
             </div>
         </>
     );
