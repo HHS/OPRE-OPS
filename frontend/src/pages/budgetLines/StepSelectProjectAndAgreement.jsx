@@ -61,7 +61,7 @@ export const StepSelectProjectAndAgreement = ({ goToNext }) => {
             <ProjectSelect
                 researchProjects={projects}
                 selectedResearchProject={selectedProject}
-                setSelectedProject={setSelectedProject}
+                propsSelectedProject={setSelectedProject}
                 clearFunction={clearAgreementState}
             />
             <h2 className="font-sans-lg">Select an Agreement</h2>

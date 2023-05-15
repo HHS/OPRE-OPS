@@ -2,7 +2,6 @@ import React from "react";
 import { useDispatch } from "react-redux";
 import App from "../../App";
 import CreateBudgetLineFlow from "./CreateBudgetLineFlow";
-// import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
 import { setProcurementShop } from "./createBudgetLineSlice";
 import { getProcurementShopList } from "../../api/getProcurementShopList";
 import StepSelectProjectAndAgreement from "./StepSelectProjectAndAgreement";

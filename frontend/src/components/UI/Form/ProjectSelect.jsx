@@ -1,12 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { useDispatch } from "react-redux";
-import { setAgreementProject } from "../../../pages/agreements/createAgreementSlice";
+import { setAgreementProject, setSelectedProject } from "../../../pages/agreements/createAgreementSlice";
 
 export const ProjectSelect = ({
     researchProjects,
     selectedResearchProject,
-    setSelectedProject = () => {},
+    propsSelectedProject,
     clearFunction = () => {},
 }) => {
     const dispatch = useDispatch();
@@ -17,16 +17,26 @@ export const ProjectSelect = ({
     }, [selectedResearchProject]);
 
     const onChangeResearchProjectSelection = (projectId = 0) => {
+        console.log(`projectId: ${projectId}`);
         if (projectId === 0) {
             clearFunction();
             return;
         }
+        // NOTE: if props SelectedProject is passed in, use that, otherwise use dispatch from Agreements slice
+        if (propsSelectedProject) {
+            propsSelectedProject(researchProjects[projectId - 1]);
+        } else {
+            dispatch(setSelectedProject(researchProjects[projectId - 1]));
+        }
 
-        setSelectedProject(researchProjects[projectId - 1]);
         dispatch(setAgreementProject(projectId));
     };
     const onInputCloseButtonClick = () => {
-        setSelectedProject({});
+        if (propsSelectedProject) {
+            propsSelectedProject({});
+        } else {
+            dispatch(setSelectedProject({}));
+        }
         clearFunction();
     };
 
@@ -164,6 +174,6 @@ export default ProjectSelect;
 ProjectSelect.propTypes = {
     researchProjects: PropTypes.array.isRequired,
     selectedResearchProject: PropTypes.object.isRequired,
-    setSelectedProject: PropTypes.func.isRequired,
+    setSelectedProject: PropTypes.func,
     clearFunction: PropTypes.func,
 };
