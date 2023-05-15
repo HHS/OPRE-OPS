@@ -31,7 +31,6 @@ export const ProcurementShopSelect = ({
                     name="options"
                     id="options"
                     onChange={(e) => onChangeProcurementShopSelection(Number(e.target.value) || 0)}
-                    // TODO: Figure out why state is not updating
                     value={selectedProcurementShop?.id}
                     required
                 >

@@ -1,4 +1,3 @@
-// inspired by https://codesandbox.io/s/ww49ef?file=/TasksContext.js
 import { createContext, useContext, useReducer } from "react";
 
 export const BudgetLinesContext = createContext(null);
