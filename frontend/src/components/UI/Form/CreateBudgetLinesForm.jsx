@@ -1,20 +1,13 @@
-import { shape, func } from "prop-types";
-// import { useDispatch } from "react-redux";
+import { func } from "prop-types";
 import CurrencyFormat from "react-currency-format";
 import CanSelect from "../../../pages/budgetLines/CanSelect";
 import DesiredAwardDate from "../../../pages/budgetLines/DesiredAwardDate";
-import { setEditBudgetLineAdded } from "../../../pages/budgetLines/createBudgetLineSlice";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "../../../pages/budgetLines/budgetLineContext";
 
-export const CreateBudgetLinesForm = ({
-    showAlert = () => {},
-    // TODO: add these reducers to the context
-}) => {
-    // const dispatch = useDispatch();
+export const CreateBudgetLinesForm = ({ showAlert = () => {} }) => {
     const {
         selected_agreement: selectedAgreement,
         selected_procurement_shop: selectedProcurementShop,
-        // setSelectedProject,
         budget_lines_added: budgetLinesAdded,
         selected_can: selectedCan,
         entered_description: enteredDescription,
@@ -24,17 +17,11 @@ export const CreateBudgetLinesForm = ({
         entered_year: enteredYear,
         entered_comments: enteredComments,
         is_editing_budget_line: isEditing,
-        setIsEditing = () => {},
         budget_line_being_edited: budgetLineBeingEdited,
-        setBudgetLineBeingEdited = () => {},
     } = useBudgetLines();
 
     const dispatch = useBudgetLinesDispatch();
     // setters
-    const setSelectedProject = useSetState("selected_project");
-    const setSelectedAgreement = useSetState("selected_agreement");
-    const setSelectedProcurementShop = useSetState("selected_procurement_shop");
-    const setBudgetLinesAdded = useSetState("budget_lines_added");
     const setEnteredDescription = useSetState("entered_description");
     const setSelectedCan = useSetState("selected_can");
     const setEnteredAmount = useSetState("entered_amount");
@@ -42,7 +29,6 @@ export const CreateBudgetLinesForm = ({
     const setEnteredDay = useSetState("entered_day");
     const setEnteredYear = useSetState("entered_year");
     const setEnteredComments = useSetState("entered_comments");
-    const setIsEditingBudgetLine = useSetState("is_editing_budget_line");
 
     const handleEditForm = (e) => {
         e.preventDefault();
@@ -191,8 +177,6 @@ export const CreateBudgetLinesForm = ({
 };
 
 CreateBudgetLinesForm.propTypes = {
-    // selectedAgreement: shape({}).isRequired,
-    // selectedProcurementShop: shape({}).isRequired,
     showAlert: func.isRequired,
 };
 

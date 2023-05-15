@@ -56,11 +56,9 @@ export function useSetState(key) {
 function budgetLinesReducer(state, action) {
     switch (action.type) {
         case "SET_STATE": {
-            // console.dir(`payload is ${JSON.stringify(action, null, 2)}`);
             return { ...state, [action.key]: action.value };
         }
         case "ADD_BUDGET_LINE": {
-            // console.dir(`payload is ${JSON.stringify(action, null, 2)}`);
             return {
                 ...state,
                 budget_lines_added: [...state.budget_lines_added, action.payload],
@@ -93,6 +91,38 @@ function budgetLinesReducer(state, action) {
                     entered_day,
                     entered_year,
                     budget_line_being_edited: index,
+                };
+            }
+            return state;
+        }
+        case "EDIT_BUDGET_LINE": {
+            const updatedBudgetLines = state.budget_lines_added.map((budgetLine) => {
+                if (budgetLine.id === action.payload.id) {
+                    return {
+                        ...budgetLine,
+                        ...action.payload,
+                    };
+                }
+                return budgetLine;
+            });
+            return {
+                ...state,
+                budget_lines_added: updatedBudgetLines,
+            };
+        }
+        case "DUPLICATE_BUDGET_LINE": {
+            const index = state.budget_lines_added.findIndex((budget_line) => budget_line.id === action.payload.id);
+
+            if (index !== -1) {
+                const duplicatedLine = {
+                    ...action.payload,
+                    id: crypto.getRandomValues(new Uint32Array(1))[0],
+                    status: "DRAFT",
+                };
+
+                return {
+                    ...state,
+                    budget_lines_added: [...state.budget_lines_added, duplicatedLine],
                 };
             }
             return state;

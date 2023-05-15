@@ -85,7 +85,10 @@ export const PreviewTable = ({
 
         const ChangeIcons = ({ budgetLine }) => {
             const handleDuplicateBudgetLine = (budgetLine) => {
-                dispatch(duplicateBudgetLineAdded({ ...budgetLine, created_by: loggedInUser }));
+                dispatch({
+                    type: "DUPLICATE_BUDGET_LINE",
+                    payload: { ...budgetLine, created_by: loggedInUser },
+                });
             };
             return (
                 <>
