@@ -9,6 +9,5 @@ export const User = () => {
     const userId = decodedJwt["sub"];
     const { data: user } = useGetUserByIdQuery(userId);
     const isAuthorized = CheckAuth() && user;
-    console.log(user);
     return <span>{isAuthorized ? <Link to={`/users/${user?.id}`}>{user?.email}</Link> : <span></span>}</span>;
 };

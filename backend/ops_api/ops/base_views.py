@@ -45,12 +45,6 @@ class OPSMethodView(MethodView):
         try:
             item = self._get_item_by_oidc(oidc)
 
-            from pprint import pprint
-
-            print("*" * 80)
-            pprint(item.to_dict())
-            print("*" * 80)
-
             if item:
                 response = make_response_with_headers(item.to_dict())
             else:
