@@ -66,7 +66,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                     classNames += "bg-brand-neutral-lighter";
                     break;
                 case "In Review":
-                    classNames += "underReview bg-brand-data-viz-secondary-23";
+                    classNames += "bg-brand-data-viz-secondary-23 text-white";
                     break;
                 case "Executing":
                     classNames += "bg-brand-data-viz-primary-8";
