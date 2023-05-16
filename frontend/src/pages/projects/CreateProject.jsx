@@ -92,7 +92,7 @@ export const CreateProject = () => {
                 />
             )}
             <h2 className="font-sans-lg margin-top-7">Select the Project Type</h2>
-            <p>Select the type of project you are creating.</p>
+            <p>Select the type of project you’d like to create.</p>
             <ProjectTypeSelect
                 selectedProjectType={selectedProjectType}
                 onChangeProjectTypeSelection={setSelectedProjectType}
