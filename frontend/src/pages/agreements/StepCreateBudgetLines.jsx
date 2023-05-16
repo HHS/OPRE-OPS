@@ -33,6 +33,8 @@ import {
     setEditBudgetLineAdded,
     setBudgetLineAdded,
     deleteBudgetLineAdded,
+    duplicateBudgetLineAdded,
+    editBudgetLineAdded,
 } from "../agreements/createAgreementSlice";
 import { postBudgetLineItems } from "../../api/postBudgetLineItems";
 
@@ -196,14 +198,11 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
     };
 
     const handleSetBudgetLineForEditing = (budgetLine) => {
-        dispatch({ type: "SET_BUDGET_LINE_FOR_EDITING", payload: budgetLine });
+        dispatch(editBudgetLineAdded(budgetLine));
     };
 
     const handleDuplicateBudgetLine = (budgetLine) => {
-        dispatch({
-            type: "DUPLICATE_BUDGET_LINE",
-            payload: { ...budgetLine, created_by: loggedInUser },
-        });
+        dispatch(duplicateBudgetLineAdded({ ...budgetLine, created_by: loggedInUser }));
     };
     return (
         <>
@@ -265,12 +264,11 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
             </p>
 
             <PreviewTable
-                handleDeleteBudgetLine={handleDeleteBudgetLine}
+                loggedInUser={loggedInUser}
                 budgetLinesAdded={budgetLinesAdded}
                 handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
+                handleDeleteBudgetLine={handleDeleteBudgetLine}
                 handleDuplicateBudgetLine={handleDuplicateBudgetLine}
-                loggedInUser={loggedInUser}
-                // setBudgetLinesAdded={setBudgetLinesAdded}
             />
             <div className="grid-row flex-justify margin-top-1">
                 <button

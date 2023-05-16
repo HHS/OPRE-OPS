@@ -29,7 +29,7 @@ const initialState = {
     is_editing_budget_line: false,
     selected_project: {},
     selected_agreement: -1,
-    selected_can: -1,
+    selected_can: {},
     selected_procurement_shop: -1,
     entered_description: "",
     entered_amount: null,
@@ -117,29 +117,26 @@ const createAgreementSlice = createSlice({
             state.is_editing_budget_line = false;
         },
         deleteBudgetLineAdded: (state, action) => {
-            if (window.confirm("Are you sure you want to delete this budget line?")) {
-                state.budget_lines_added = state.budget_lines_added.filter(
-                    (budget_line) => budget_line.id !== action.payload
-                );
-                // reset the form
-                state.entered_description = "";
-                state.entered_comments = "";
-                state.selected_can = -1;
-                state.entered_amount = null;
-                state.entered_month = "";
-                state.entered_day = "";
-                state.entered_year = "";
-                state.budget_line_being_edited = -1;
-                state.is_editing_budget_line = false;
-            }
+            state.budget_lines_added = state.budget_lines_added.filter(
+                (budget_line) => budget_line.id !== action.payload
+            );
+            // reset the form
+            state.entered_description = "";
+            state.entered_comments = "";
+            state.selected_can = {};
+            state.entered_amount = null;
+            state.entered_month = "";
+            state.entered_day = "";
+            state.entered_year = "";
+            state.budget_line_being_edited = -1;
+            state.is_editing_budget_line = false;
         },
         editBudgetLineAdded: (state, action) => {
             const index = state.budget_lines_added.findIndex((budget_line) => budget_line.id === action.payload.id);
 
             if (index !== -1) {
-                const { line_description, comments, can_id, can_number, amount, date_needed } =
-                    state.budget_lines_added[index];
-                const [entered_year, entered_month, entered_day] = date_needed.split("-");
+                const { line_description, comments, can, amount, date_needed } = state.budget_lines_added[index];
+                const [entered_year, entered_month, entered_day] = date_needed.split("-").map((d) => parseInt(d, 10));
 
                 return {
                     ...state,
@@ -147,8 +144,7 @@ const createAgreementSlice = createSlice({
                     entered_description: line_description,
                     entered_comments: comments,
                     selected_can: {
-                        id: can_id,
-                        number: can_number,
+                        ...can,
                     },
                     entered_amount: amount,
                     entered_month,
@@ -178,7 +174,6 @@ const createAgreementSlice = createSlice({
         setEditBudgetLineAdded: (state, action) => {
             const updatedBudgetLines = state.budget_lines_added.map((budgetLine) => {
                 if (budgetLine.id === action.payload.id) {
-                    alert("Budget Line Updated");
                     return {
                         ...budgetLine,
                         ...action.payload,
@@ -193,7 +188,7 @@ const createAgreementSlice = createSlice({
                 is_editing_budget_line: false,
                 entered_description: "",
                 entered_comments: "",
-                selected_can: -1,
+                selected_can: {},
                 entered_amount: null,
                 entered_month: "",
                 entered_day: "",

@@ -14,7 +14,7 @@ export const CanSelect = ({ selectedCan, setSelectedCan }) => {
 
     const onChangeCanSelection = (canId = 0) => {
         if (canId === 0) {
-            setSelectedCan(-1);
+            setSelectedCan({});
             return;
         }
         const selected = canList[canId - 1];
@@ -73,7 +73,7 @@ export const CanSelect = ({ selectedCan, setSelectedCan }) => {
                         className="usa-combo-box__clear-input"
                         aria-label="Clear the select contents"
                         onClick={() => {
-                            setSelectedCan(-1);
+                            setSelectedCan({});
                         }}
                     >
                         &nbsp;
