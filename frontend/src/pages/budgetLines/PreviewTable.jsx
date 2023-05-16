@@ -20,7 +20,9 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
         .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on))
         .reverse();
 
-    let loggedInUser = useSelector((state) => state.auth.activeUser.full_name);
+    let loggedInUser = useSelector((state) =>
+        state.auth?.activeUser ? state.auth.activeUser.full_name : "Not logged in"
+    );
     // NOTE: set to logged in user to Sheila if no name is found
     if (!loggedInUser) {
         loggedInUser = "Sheila Celentano";
