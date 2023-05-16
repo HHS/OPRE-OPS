@@ -52,10 +52,15 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
     const enteredComments = useSelector((state) => state.createAgreement.entered_comments);
     const isEditing = useSelector((state) => state.createAgreement.is_editing_budget_line);
     const budgetLineBeingEdited = useSelector((state) => state.createAgreement.budget_line_being_edited);
+    let loggedInUser = useSelector((state) => state.auth.activeUser.full_name);
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    // NOTE: set to logged in user to Sheila if no name is found
+    if (!loggedInUser) {
+        loggedInUser = "Sheila Celentano";
+    }
 
     const showAlert = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -67,7 +72,7 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
         setIsAlertActive(false);
         setAlertProps({});
     };
-
+    // FORM METHODS
     const handleDeleteBudgetLine = (budgetLineId) => {
         setShowModal(true);
         setModalProps({
@@ -190,6 +195,16 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
         });
     };
 
+    const handleSetBudgetLineForEditing = (budgetLine) => {
+        dispatch({ type: "SET_BUDGET_LINE_FOR_EDITING", payload: budgetLine });
+    };
+
+    const handleDuplicateBudgetLine = (budgetLine) => {
+        dispatch({
+            type: "DUPLICATE_BUDGET_LINE",
+            payload: { ...budgetLine, created_by: loggedInUser },
+        });
+    };
     return (
         <>
             {showModal && (
@@ -252,6 +267,9 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
             <PreviewTable
                 handleDeleteBudgetLine={handleDeleteBudgetLine}
                 budgetLinesAdded={budgetLinesAdded}
+                handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
+                handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                loggedInUser={loggedInUser}
                 // setBudgetLinesAdded={setBudgetLinesAdded}
             />
             <div className="grid-row flex-justify margin-top-1">

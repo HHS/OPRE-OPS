@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import { ProjectAgreementSummaryCard } from "../budgetLines/ProjectAgreementSummaryCard";
 import PreviewTable from "../budgetLines/PreviewTable";
@@ -34,7 +35,6 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
     const dispatch = useBudgetLinesDispatch();
     // setters
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
-    const setBudgetLinesAdded = useSetState("budget_lines_added");
     const setEnteredDescription = useSetState("entered_description");
     const setSelectedCan = useSetState("selected_can");
     const setEnteredAmount = useSetState("entered_amount");
@@ -42,6 +42,12 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
     const setEnteredDay = useSetState("entered_day");
     const setEnteredYear = useSetState("entered_year");
     const setEnteredComments = useSetState("entered_comments");
+    let loggedInUser = useSelector((state) => state.auth.activeUser.full_name);
+
+    // NOTE: set to logged in user to Sheila if no name is found
+    if (!loggedInUser) {
+        loggedInUser = "Sheila Celentano";
+    }
 
     const showAlert = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -127,6 +133,17 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
 
     const handleResetForm = () => dispatch({ type: "RESET_FORM" });
 
+    const handleSetBudgetLineForEditing = (budgetLine) => {
+        dispatch({ type: "SET_BUDGET_LINE_FOR_EDITING", payload: budgetLine });
+    };
+
+    const handleDuplicateBudgetLine = (budgetLine) => {
+        dispatch({
+            type: "DUPLICATE_BUDGET_LINE",
+            payload: { ...budgetLine, created_by: loggedInUser },
+        });
+    };
+
     return (
         <>
             {showModal && (
@@ -195,9 +212,11 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
                 display in draft status. The Fiscal Year (FY) will populate based on the election date you provide.
             </p>
             <PreviewTable
-                handleDeleteBudgetLine={handleDeleteBudgetLine}
+                loggedInUser={loggedInUser}
                 budgetLinesAdded={budgetLinesAdded}
-                setBudgetLinesAdded={setBudgetLinesAdded}
+                handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
+                handleDeleteBudgetLine={handleDeleteBudgetLine}
+                handleDuplicateBudgetLine={handleDuplicateBudgetLine}
             />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button

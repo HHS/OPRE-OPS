@@ -127,12 +127,12 @@ export const CreateBudgetLinesForm = ({
 };
 
 CreateBudgetLinesForm.propTypes = {
-    selectedCan: PropTypes.string,
+    selectedCan: PropTypes.object,
     enteredDescription: PropTypes.string,
     enteredAmount: PropTypes.number,
-    enteredMonth: PropTypes.string,
-    enteredDay: PropTypes.string,
-    enteredYear: PropTypes.string,
+    enteredMonth: PropTypes.string || PropTypes.number,
+    enteredDay: PropTypes.string || PropTypes.number,
+    enteredYear: PropTypes.string || PropTypes.number,
     enteredComments: PropTypes.string,
     isEditing: PropTypes.bool,
     setEnteredDescription: PropTypes.func.isRequired,

@@ -1,34 +1,26 @@
 import { func, bool, arrayOf, shape, string, number } from "prop-types";
 import { useState, Fragment } from "react";
-import { useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import Tag from "../../components/UI/Tag/Tag";
-import { useBudgetLinesDispatch } from "./budgetLineContext";
 import TotalSummaryCard from "./TotalSummaryCard";
 import { formatDate } from "../../helpers/utils";
 import "./PreviewTable.scss";
 
 export const PreviewTable = ({
+    loggedInUser = "Sheila Celentano",
+    budgetLinesAdded = [],
+    handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
+    handleDuplicateBudgetLine = () => {},
     readOnly = false,
-    budgetLines = null,
-    budgetLinesAdded: stateBudgetLinesAdded = [{}],
 }) => {
-    const dispatch = useBudgetLinesDispatch();
-    const budgetLinesAdded = budgetLines ? budgetLines : stateBudgetLinesAdded;
     const sortedBudgetLines = budgetLinesAdded
         .slice()
         .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on))
         .reverse();
-
-    let loggedInUser = useSelector((state) => state.auth.activeUser.full_name);
-    // NOTE: set to logged in user to Sheila if no name is found
-    if (!loggedInUser) {
-        loggedInUser = "Sheila Celentano";
-    }
 
     const TableRow = ({ bl }) => {
         const [isExpanded, setIsExpanded] = useState(false);
@@ -87,12 +79,6 @@ export const PreviewTable = ({
         };
 
         const ChangeIcons = ({ budgetLine }) => {
-            const handleDuplicateBudgetLine = (budgetLine) => {
-                dispatch({
-                    type: "DUPLICATE_BUDGET_LINE",
-                    payload: { ...budgetLine, created_by: loggedInUser },
-                });
-            };
             return (
                 <>
                     {budgetLine.status === "DRAFT" && (
@@ -102,7 +88,7 @@ export const PreviewTable = ({
                                 className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
                                 title="edit"
                                 data-position="top"
-                                onClick={() => dispatch({ type: "SET_BUDGET_LINE_FOR_EDITING", payload: budgetLine })}
+                                onClick={() => handleSetBudgetLineForEditing(budgetLine)}
                             />
                             <FontAwesomeIcon
                                 icon={faTrash}
