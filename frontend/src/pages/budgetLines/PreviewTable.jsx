@@ -66,7 +66,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                     classNames += "bg-brand-neutral-lighter";
                     break;
                 case "In Review":
-                    classNames += "underReview";
+                    classNames += "underReview bg-brand-data-viz-secondary-23";
                     break;
                 case "Executing":
                     classNames += "bg-brand-data-viz-primary-8";
@@ -213,6 +213,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                         style={{ backgroundColor: isRowActive ? "#F0F0F0" : undefined }}
                     >
                         <FontAwesomeIcon
+                            id={`expand-${bl?.id}`}
                             icon={isExpanded ? faChevronUp : faChevronDown}
                             className="height-2 width-2 padding-right-1 hover: cursor-pointer"
                             onClick={() => handleExpandRow()}
