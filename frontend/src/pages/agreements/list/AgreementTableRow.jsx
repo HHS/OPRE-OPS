@@ -153,12 +153,29 @@ export const AgreementTableRow = ({ agreement }) => {
     return (
         <Fragment key={agreement?.id}>
             <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
-                <th scope="row" style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
+                <th
+                    scope="row"
+                    className={isExpanded ? "border-bottom-none" : undefined}
+                    style={{ backgroundColor: isRowActive && "#F0F0F0" }}
+                >
                     {agreementName}
                 </th>
-                <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{researchProjectName}</td>
-                <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{agreementType || ""}</td>
-                <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
+                <td
+                    className={isExpanded ? "border-bottom-none" : undefined}
+                    style={{ backgroundColor: isRowActive && "#F0F0F0" }}
+                >
+                    {researchProjectName}
+                </td>
+                <td
+                    className={isExpanded ? "border-bottom-none" : undefined}
+                    style={{ backgroundColor: isRowActive && "#F0F0F0" }}
+                >
+                    {agreementType || ""}
+                </td>
+                <td
+                    className={isExpanded ? "border-bottom-none" : undefined}
+                    style={{ backgroundColor: isRowActive && "#F0F0F0" }}
+                >
                     <CurrencyFormat
                         value={agreementTotal}
                         displayType={"text"}
@@ -169,8 +186,16 @@ export const AgreementTableRow = ({ agreement }) => {
                         renderText={(value) => value}
                     />
                 </td>
-                <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>{nextNeedBy}</td>
-                <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
+                <td
+                    className={isExpanded ? "border-bottom-none" : undefined}
+                    style={{ backgroundColor: isRowActive && "#F0F0F0" }}
+                >
+                    {nextNeedBy}
+                </td>
+                <td
+                    className={isExpanded ? "border-bottom-none" : undefined}
+                    style={{ backgroundColor: isRowActive && "#F0F0F0" }}
+                >
                     {isRowActive && !isExpanded ? (
                         <div>
                             <ChangeIcons agreement={agreement} status={agreementStatus} />
@@ -179,7 +204,10 @@ export const AgreementTableRow = ({ agreement }) => {
                         <TableTag status={agreementStatus} />
                     )}
                 </td>
-                <td style={{ backgroundColor: isRowActive && "#F0F0F0" }}>
+                <td
+                    className={isExpanded ? "border-bottom-none" : undefined}
+                    style={{ backgroundColor: isRowActive && "#F0F0F0" }}
+                >
                     <FontAwesomeIcon
                         icon={isExpanded ? faChevronUp : faChevronDown}
                         className="height-2 width-2 padding-right-1 hover: cursor-pointer"
@@ -189,8 +217,8 @@ export const AgreementTableRow = ({ agreement }) => {
             </tr>
 
             {isExpanded && (
-                <tr className="border-top-0">
-                    <td colSpan="9" style={{ backgroundColor: "#F0F0F0" }}>
+                <tr>
+                    <td colSpan="9" className="border-top-none" style={{ backgroundColor: "#F0F0F0" }}>
                         <div className="display-flex padding-right-9">
                             <dl className="font-12px">
                                 <dt className="margin-0 text-base-dark">Created By</dt>
