@@ -8,7 +8,7 @@ import Tag from "../../../components/UI/Tag/Tag";
 import "./AgreementsList.scss";
 import { getUser } from "../../../api/getUser";
 import icons from "../../../uswds/img/sprite.svg";
-import { formatDate } from "../../../helpers/utils";
+import { convertCodeForDisplay, formatDate } from "../../../helpers/utils";
 
 export const AgreementTableRow = ({ agreement }) => {
     const [user, setUser] = useState({});
@@ -20,25 +20,7 @@ export const AgreementTableRow = ({ agreement }) => {
     const researchProjectName = agreement?.research_project?.title;
 
     let agreementType;
-    switch (agreement?.agreement_type) {
-        case "CONTRACT":
-            agreementType = "Contract";
-            break;
-        case "GRANT":
-            agreementType = "Grant";
-            break;
-        case "DIRECT_ALLOCATION":
-            agreementType = "Direct Allocation";
-            break;
-        case "IAA":
-            agreementType = "IAA";
-            break;
-        case "MISCELLANEOUS":
-            agreementType = "Misc";
-            break;
-        default:
-            agreementType = "Unknown Type";
-    }
+    agreementType = convertCodeForDisplay("AgreementType", agreement?.agreement_type);
 
     const agreementSubTotal = agreement?.budget_line_items?.reduce((n, { amount }) => n + amount, 0);
     const procurementShopSubTotal = agreement?.budget_line_items?.reduce(
