@@ -57,11 +57,11 @@ export const CreateProject = () => {
     }
 
     const handleCancel = () => {
-        // TODO: Add cancel stuff
         setShowModal(true);
         setModalProps({
             heading: "Are you sure you want to cancel? Your project will not be saved.",
             actionButtonText: "Cancel",
+            secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
                 handleClearingForm();
                 navigate("/");
@@ -88,6 +88,7 @@ export const CreateProject = () => {
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
                     handleConfirm={modalProps.handleConfirm}
+                    secondaryButtonText={modalProps.secondaryButtonText}
                 />
             )}
             <h2 className="font-sans-lg margin-top-7">Select the Project Type</h2>

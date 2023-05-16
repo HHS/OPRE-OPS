@@ -2,10 +2,11 @@ import { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 
 export const Modal = ({
-    heading = "",
+    heading,
     description = "",
     setShowModal = () => {},
     actionButtonText,
+    secondaryButtonText = "Cancel",
     handleConfirm = () => {},
 }) => {
     const modalRef = useRef(null);
@@ -44,7 +45,6 @@ export const Modal = ({
         currentModalRef.addEventListener("keydown", handleKeydown);
 
         // clean up the event listener when the component unmounts
-
         return () => {
             currentModalRef.removeEventListener("keydown", handleKeydown);
         };
@@ -91,7 +91,7 @@ export const Modal = ({
                                                 className="usa-button usa-button--unstyled padding-105 text-center"
                                                 onClick={() => setShowModal(false)}
                                             >
-                                                Cancel
+                                                {secondaryButtonText}
                                             </button>
                                         </li>
                                     </ul>
@@ -112,5 +112,6 @@ Modal.propTypes = {
     description: PropTypes.string,
     setShowModal: PropTypes.func.isRequired,
     actionButtonText: PropTypes.string.isRequired,
+    secondaryButtonText: PropTypes.string,
     handleConfirm: PropTypes.func.isRequired,
 };
