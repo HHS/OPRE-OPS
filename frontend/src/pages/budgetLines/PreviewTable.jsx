@@ -288,7 +288,7 @@ PreviewTable.propTypes = {
             amount: number.isRequired,
             psc_fee_amount: number.isRequired,
             status: string.isRequired,
-            created_by: string.isRequired,
+            created_by: string,
             comments: string.isRequired,
         })
     ),
