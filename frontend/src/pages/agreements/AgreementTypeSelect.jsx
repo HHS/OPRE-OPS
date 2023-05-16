@@ -37,7 +37,7 @@ export const AgreementTypeSelect = ({ selectedAgreementType, setSelectedAgreemen
                     <option value={0}>- Select Agreement Type -</option>
                     {agreementTypes.map((type, index) => (
                         <option key={index + 1} value={type}>
-                            {convertCodeForDisplay('AgreementType', type)}
+                            {convertCodeForDisplay("AgreementType", type)}
                         </option>
                     ))}
                 </select>

@@ -8,7 +8,7 @@ import Tag from "../../../components/UI/Tag/Tag";
 import "./AgreementsList.scss";
 import { getUser } from "../../../api/getUser";
 import icons from "../../../uswds/img/sprite.svg";
-import {convertCodeForDisplay, formatDate} from "../../../helpers/utils";
+import { convertCodeForDisplay, formatDate } from "../../../helpers/utils";
 
 export const AgreementTableRow = ({ agreement }) => {
     const [user, setUser] = useState({});
@@ -20,7 +20,7 @@ export const AgreementTableRow = ({ agreement }) => {
     const researchProjectName = agreement?.research_project?.title;
 
     let agreementType;
-    agreementType = convertCodeForDisplay("AgreementType", agreement?.agreement_type)
+    agreementType = convertCodeForDisplay("AgreementType", agreement?.agreement_type);
 
     const agreementSubTotal = agreement?.budget_line_items?.reduce((n, { amount }) => n + amount, 0);
     const procurementShopSubTotal = agreement?.budget_line_items?.reduce(

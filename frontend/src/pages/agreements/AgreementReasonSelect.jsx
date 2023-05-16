@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setAgreementReasonsList, setSelectedAgreementReason, setAgreementIncumbent } from "./createAgreementSlice";
 import { getAgreementReasons } from "../../api/getAgreements";
-import {convertCodeForDisplay} from "../../helpers/utils";
+import { convertCodeForDisplay } from "../../helpers/utils";
 
 export const AgreementReasonSelect = () => {
     const dispatch = useDispatch();
@@ -52,7 +52,7 @@ export const AgreementReasonSelect = () => {
                     <option value={0}>- Select Agreement Reason -</option>
                     {agreementReasons.map((reason, index) => (
                         <option key={index + 1} value={reason}>
-                            {convertCodeForDisplay('AgreementReason', reason)}
+                            {convertCodeForDisplay("AgreementReason", reason)}
                         </option>
                     ))}
                 </select>
