@@ -100,7 +100,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         setShowModal(true);
         setModalProps({
             heading: "Are you sure you want to cancel? Your agreement will not be saved.",
-            actionButtonText: "Continue",
+            actionButtonText: "Cancel",
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
                 clearAgreement();
