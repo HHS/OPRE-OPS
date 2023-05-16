@@ -9,6 +9,7 @@ repos:
       - id: check-added-large-files
       - id: check-merge-conflict
 
+
   # ## Used to find secrets throughout the repository.
   # -   repo: https://github.com/ibm/detect-secrets
   #     rev: 0.13.1+ibm.54.dss # https://github.com/Yelp/detect-secrets/releases
@@ -22,6 +23,7 @@ repos:
       - id: gitleaks
         args: ["-b gitleaks-baseline.json", "-r gitleaks-report.json"]
         exclude: Pipfile.lock
+
   - repo: https://github.com/hadolint/hadolint
     rev: v2.12.1-beta
     hooks:
@@ -43,7 +45,7 @@ repos:
         entry: bash -c 'cd ./backend/ops_api && pipenv run nox -s lint'
         language: system
         types:
-         - python
+          - python
         pass_filenames: false
       - id: eslint
         name: eslint

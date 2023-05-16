@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import ProcurementShopSelect from "./ProcurementShopSelect";
 import AgreementReasonSelect from "./AgreementReasonSelect";
@@ -9,24 +9,23 @@ import AgreementTypeSelect from "./AgreementTypeSelect";
 import ProductServiceCodeSelect from "./ProductServiceCodeSelect";
 import Alert from "../../components/UI/Alert/Alert";
 import {
-    setAgreementTitle,
     setAgreementDescription,
+    setAgreementId,
     setAgreementIncumbent,
     setAgreementNotes,
-    setAgreementId,
-    setSelectedProject,
-    setSelectedAgreementType,
-    setAgreementProductServiceCode,
-    setSelectedProcurementShop,
-    setSelectedAgreementReason,
     setAgreementProjectOfficer,
     setAgreementTeamMembers,
+    setAgreementTitle,
+    setSelectedAgreementReason,
+    setSelectedProcurementShop,
+    setSelectedProject,
 } from "./createAgreementSlice";
 import ProjectOfficerSelect from "./ProjectOfficerSelect";
 import TeamMemberSelect from "./TeamMemberSelect";
 import TeamMemberList from "./TeamMemberList";
 import Modal from "../../components/UI/Modal/Modal";
 import { postAgreement } from "../../api/postAgreements";
+import ProjectSummaryCard from "../../components/ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";
 
 export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
@@ -37,15 +36,15 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const agreement = useSelector((state) => state.createAgreement.agreement);
     const agreementReason = agreement.selected_agreement_reason;
     const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null;
-    const selectedProductServiceCode = useSelector(
-        (state) => state.createAgreement.agreement.selected_product_service_code
-    );
     const agreementIncumbent = useSelector((state) => state.createAgreement.agreement.incumbent_entered);
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
+
+    const [selectedAgreementType, setSelectedAgreementType] = React.useState("");
+    const [selectedProductServiceCode, setSelectedProductServiceCode] = React.useState({});
 
     const showAlertAndNavigate = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -64,7 +63,12 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     };
 
     const saveAgreement = async () => {
-        const response = await postAgreement(agreement);
+        const data = {
+            ...agreement,
+            selected_agreement_type: selectedAgreementType,
+            product_service_code_id: selectedProductServiceCode ? selectedProductServiceCode.id : null,
+        };
+        const response = await postAgreement(data);
         const newAgreementId = response.id;
         console.log(`New Agreement Created: ${newAgreementId}`);
         dispatch(setAgreementId(newAgreementId));
@@ -75,8 +79,8 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         dispatch(setAgreementIncumbent(null));
         dispatch(setAgreementNotes(""));
         dispatch(setSelectedProject({}));
-        dispatch(setSelectedAgreementType(null));
-        dispatch(setAgreementProductServiceCode(null));
+        setSelectedAgreementType("");
+        setSelectedProductServiceCode({});
         dispatch(setSelectedAgreementReason(null));
         dispatch(setSelectedProcurementShop({}));
         dispatch(setAgreementProjectOfficer(null));
@@ -97,6 +101,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         setModalProps({
             heading: "Are you sure you want to cancel? Your agreement will not be saved.",
             actionButtonText: "Continue",
+            secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
                 clearAgreement();
                 navigate("/agreements/");
@@ -132,20 +137,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         }).isRequired,
     };
 
-    const ProjectSummaryCard = ({ selectedResearchProject }) => {
-        const { title } = selectedResearchProject;
-        return (
-            <div className="bg-base-lightest font-family-sans border-1px border-base-light radius-sm margin-y-7">
-                <dl className="margin-0 padding-y-2 padding-x-3">
-                    <dt className="margin-0">Project</dt>
-                    <dd className="margin-0 text-bold margin-top-1" style={{ fontSize: "1.375rem" }}>
-                        {title}
-                    </dd>
-                </dl>
-            </div>
-        );
-    };
-
     return (
         <>
             {showModal && (
@@ -153,6 +144,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                     heading={modalProps.heading}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
@@ -170,7 +162,10 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg">Select the Agreement Type</h2>
             <p>Select the type of agreement you&#39;d like to create.</p>
-            <AgreementTypeSelect />
+            <AgreementTypeSelect
+                selectedAgreementType={selectedAgreementType}
+                setSelectedAgreementType={setSelectedAgreementType}
+            />
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
             <label className="usa-label" htmlFor="agreement-title">
                 Agreement Title
@@ -198,10 +193,15 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                 onChange={(e) => dispatch(setAgreementDescription(e.target.value))}
             ></textarea>
 
-            <ProductServiceCodeSelect />
-            {selectedProductServiceCode && (
-                <ProductServiceCodeSummaryBox selectedProductServiceCode={selectedProductServiceCode} />
-            )}
+            <ProductServiceCodeSelect
+                selectedProductServiceCode={selectedProductServiceCode}
+                setSelectedProductServiceCode={setSelectedProductServiceCode}
+            />
+            {selectedProductServiceCode &&
+                selectedProductServiceCode.naics &&
+                selectedProductServiceCode.support_code && (
+                    <ProductServiceCodeSummaryBox selectedProductServiceCode={selectedProductServiceCode} />
+                )}
             <h2 className="font-sans-lg margin-top-3">Procurement Shop</h2>
             <ProcurementShopSelect />
 

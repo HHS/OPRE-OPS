@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import PreviewTable from "../budgetLines/PreviewTable";
-import { useGetAgreementByIdQuery } from "../../api/opsAPI";
+import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../api/opsAPI";
 import { getUser } from "../../api/getUser";
 
 export const ReviewAgreement = ({ agreement_id }) => {
+    const navigate = useNavigate();
     const {
         data: agreement,
         error: errorAgreement,
         isLoading: isLoadingAgreement,
     } = useGetAgreementByIdQuery(agreement_id);
+
+    const [updateBudgetLineItemStatus] = useUpdateBudgetLineItemStatusMutation();
 
     const [user, setUser] = useState({});
     useEffect(() => {
@@ -34,6 +38,27 @@ export const ReviewAgreement = ({ agreement_id }) => {
     if (errorAgreement) {
         return <div>Oops, an error occured</div>;
     }
+
+    const isAnyBudgetLineItemDraft = agreement.budget_line_items.some((item) => item.status === "DRAFT");
+
+    const handleSendToApproval = () => {
+        if (isAnyBudgetLineItemDraft) {
+            agreement?.budget_line_items.forEach((bli) => {
+                if (bli.status === "DRAFT") {
+                    console.log(bli.id);
+                    try {
+                        updateBudgetLineItemStatus({ id: bli.id, status: "UNDER_REVIEW" }).unwrap();
+                        console.log("BLI Status Updated");
+                    } catch (error) {
+                        console.log("Error Updating Budget Line Status");
+                        console.dir(error);
+                    }
+                }
+            });
+        }
+
+        navigate("/agreements");
+    };
 
     return (
         <>
@@ -95,7 +120,13 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 <button className="usa-button usa-button--outline margin-right-2" onClick={() => {}}>
                     Edit
                 </button>
-                <button className="usa-button" onClick={() => {}}>
+                <button
+                    className="usa-button"
+                    onClick={(event) => {
+                        handleSendToApproval(event);
+                    }}
+                    disabled={!isAnyBudgetLineItemDraft}
+                >
                     Send to Approval
                 </button>
             </div>

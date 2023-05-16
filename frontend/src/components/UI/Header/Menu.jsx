@@ -21,14 +21,31 @@ export const Menu = () => {
                 <li className="usa-nav__primary-item">
                     <Link to="/cans/">CANs</Link>
                 </li>
-                <li className="usa-nav__primary-item">
+                {/* <li className="usa-nav__primary-item">
                     <Link to="/projects/create">Create Project</Link>
                 </li>
                 <li className="usa-nav__primary-item">
                     <Link to="/agreements/create">Create Agreement</Link>
-                </li>
+                </li> */}
                 <li className="usa-nav__primary-item">
-                    <Link to="/agreements/">Agreement List</Link>
+                    <Link to="/agreements/">Agreements</Link>
+                </li>
+                <li className="usa-nav__primary-item margin-left-auto">
+                    <button
+                        type="button"
+                        className="usa-accordion__button usa-nav__link"
+                        aria-expanded={false}
+                        aria-controls="basic-mega-nav-section-two"
+                    >
+                        <span>Create</span>
+                    </button>
+                    <ul id="basic-mega-nav-section-two" className="usa-nav__submenu" hidden>
+                        <li className="usa-nav__submenu-item">
+                            <Link to="/projects/create">Project</Link>
+                            <Link to="/agreements/create">Agreement</Link>
+                            <Link to="/budget-lines/create">Budget Lines</Link>
+                        </li>
+                    </ul>
                 </li>
             </ul>
         </div>
