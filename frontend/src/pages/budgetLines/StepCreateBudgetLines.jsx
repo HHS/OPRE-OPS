@@ -20,11 +20,28 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
         selected_agreement: selectedAgreement,
         selected_procurement_shop: selectedProcurementShop,
         budget_lines_added: budgetLinesAdded,
+        selected_can: selectedCan,
+        entered_description: enteredDescription,
+        entered_amount: enteredAmount,
+        entered_month: enteredMonth,
+        entered_day: enteredDay,
+        entered_year: enteredYear,
+        entered_comments: enteredComments,
+        is_editing_budget_line: isEditing,
+        budget_line_being_edited: budgetLineBeingEdited,
     } = useBudgetLines();
+
     const dispatch = useBudgetLinesDispatch();
     // setters
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setBudgetLinesAdded = useSetState("budget_lines_added");
+    const setEnteredDescription = useSetState("entered_description");
+    const setSelectedCan = useSetState("selected_can");
+    const setEnteredAmount = useSetState("entered_amount");
+    const setEnteredMonth = useSetState("entered_month");
+    const setEnteredDay = useSetState("entered_day");
+    const setEnteredYear = useSetState("entered_year");
+    const setEnteredComments = useSetState("entered_comments");
 
     const showAlert = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -35,6 +52,49 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
         await new Promise((resolve) => setTimeout(resolve, 6000));
         setIsAlertActive(false);
         setAlertProps({});
+    };
+
+    const handleSubmitForm = (e) => {
+        e.preventDefault();
+        dispatch({
+            type: "ADD_BUDGET_LINE",
+            payload: {
+                id: crypto.getRandomValues(new Uint32Array(1))[0],
+                line_description: enteredDescription || "",
+                comments: enteredComments || "No comments",
+                can_id: selectedCan?.id || null,
+                can: selectedCan || null,
+                agreement_id: selectedAgreement?.id || null,
+                amount: enteredAmount || 0,
+                status: "DRAFT",
+                date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}` || null,
+                psc_fee_amount: selectedProcurementShop?.fee || null,
+            },
+        });
+        dispatch({ type: "RESET_FORM" });
+        showAlert("success", "Budget Line Added", "The budget line has been successfully added.");
+    };
+
+    const handleEditForm = (e) => {
+        e.preventDefault();
+        dispatch({
+            type: "EDIT_BUDGET_LINE",
+            payload: {
+                id: budgetLinesAdded[budgetLineBeingEdited].id,
+                line_description: enteredDescription,
+                comments: enteredComments,
+                can_id: selectedCan?.id,
+                can: selectedCan,
+                agreement_id: selectedAgreement?.id,
+                amount: enteredAmount,
+                date_needed:
+                    enteredYear && enteredMonth && enteredDay ? `${enteredYear}-${enteredMonth}-${enteredDay}` : null,
+                psc_fee_amount: selectedProcurementShop?.fee,
+            },
+        });
+
+        dispatch({ type: "RESET_FORM" });
+        showAlert("success", "Budget Line Updated", "The budget line has been successfully edited.");
     };
 
     const handleDeleteBudgetLine = (budgetLineId) => {
@@ -64,6 +124,8 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
         dispatch({ type: "RESET_FORM_AND_BUDGET_LINES" });
         goToNext();
     };
+
+    const handleResetForm = () => dispatch({ type: "RESET_FORM" });
 
     return (
         <>
@@ -107,7 +169,26 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
                 Complete the information below to create new budget lines. Select Add Budget Line to create multiple
                 budget lines.
             </p>
-            <CreateBudgetLinesForm showAlert={showAlert} />
+            <CreateBudgetLinesForm
+                selectedCan={selectedCan}
+                enteredDescription={enteredDescription}
+                enteredAmount={enteredAmount}
+                enteredMonth={enteredMonth}
+                enteredDay={enteredDay}
+                enteredYear={enteredYear}
+                enteredComments={enteredComments}
+                isEditing={isEditing}
+                setEnteredDescription={setEnteredDescription}
+                setSelectedCan={setSelectedCan}
+                setEnteredAmount={setEnteredAmount}
+                setEnteredMonth={setEnteredMonth}
+                setEnteredDay={setEnteredDay}
+                setEnteredYear={setEnteredYear}
+                setEnteredComments={setEnteredComments}
+                handleEditForm={handleEditForm}
+                handleResetForm={handleResetForm}
+                handleSubmitForm={handleSubmitForm}
+            />
             <h2 className="font-sans-lg">Budget Lines</h2>
             <p>
                 This is a list of all budget lines for the selected project and agreement. The budget lines you add will

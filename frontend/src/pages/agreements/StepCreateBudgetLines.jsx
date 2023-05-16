@@ -7,17 +7,14 @@ import PreviewTable from "../budgetLines/PreviewTable";
 import { Alert } from "../../components/UI/Alert/Alert";
 import Modal from "../../components/UI/Modal/Modal";
 import CreateBudgetLinesForm from "../../components/UI/Form/CreateBudgetLinesForm";
+// TODO: replace with context and reducer pattern
 import {
-    deleteBudgetLineAdded,
-    setBudgetLineAdded,
     setEnteredAmount,
     setEnteredComments,
     setEnteredDay,
     setEnteredDescription,
     setEnteredMonth,
     setEnteredYear,
-} from "../budgetLines/createBudgetLineSlice";
-import {
     setAgreementDescription,
     setAgreementId,
     setAgreementIncumbent,
@@ -32,16 +29,29 @@ import {
     setSelectedAgreementType,
     setSelectedProcurementShop,
     setSelectedProject,
+    setSelectedCan,
+    setEditBudgetLineAdded,
+    setBudgetLineAdded,
+    deleteBudgetLineAdded,
 } from "../agreements/createAgreementSlice";
 import { postBudgetLineItems } from "../../api/postBudgetLineItems";
 
 export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
+    const budgetLinesAdded = useSelector((state) => state.createAgreement.budget_lines_added);
     const selectedProcurementShop = useSelector((state) => state.createAgreement.selected_procurement_shop);
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
     const selectedAgreement = useSelector((state) => state.createAgreement.agreement);
+    const selectedCan = useSelector((state) => state.createAgreement.selected_can);
+    const enteredDescription = useSelector((state) => state.createAgreement.entered_description);
+    const enteredAmount = useSelector((state) => state.createAgreement.entered_amount);
+    const enteredMonth = useSelector((state) => state.createAgreement.entered_month);
+    const enteredDay = useSelector((state) => state.createAgreement.entered_day);
+    const enteredYear = useSelector((state) => state.createAgreement.entered_year);
+    const enteredComments = useSelector((state) => state.createAgreement.entered_comments);
+    const isEditing = useSelector((state) => state.createAgreement.is_editing_budget_line);
+    const budgetLineBeingEdited = useSelector((state) => state.createAgreement.budget_line_being_edited);
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
     const [showModal, setShowModal] = React.useState(false);
@@ -96,6 +106,60 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
         dispatch(setAgreementId(null));
         dispatch(setAgreementProject(null));
         dispatch(setSelectedProject(-1));
+    };
+
+    const handleCancelEdit = () => {
+        dispatch(setEditBudgetLineAdded({}));
+    };
+
+    const handleEditForm = (e) => {
+        e.preventDefault();
+        dispatch(
+            setEditBudgetLineAdded({
+                id: budgetLinesAdded[budgetLineBeingEdited].id,
+                line_description: enteredDescription,
+                comments: enteredComments,
+                can_id: selectedCan?.id,
+                can: selectedCan,
+                agreement_id: selectedAgreement?.id,
+                amount: enteredAmount,
+                date_needed:
+                    enteredYear && enteredMonth && enteredDay ? `${enteredYear}-${enteredMonth}-${enteredDay}` : null,
+                psc_fee_amount: selectedProcurementShop?.fee,
+            })
+        );
+        showAlert("success", "Budget Line Updated", "The budget line has been successfully edited.");
+    };
+
+    const handleSubmitForm = (e) => {
+        e.preventDefault();
+        dispatch(
+            setBudgetLineAdded([
+                ...budgetLinesAdded,
+                {
+                    id: crypto.getRandomValues(new Uint32Array(1))[0],
+                    line_description: enteredDescription || "",
+                    comments: enteredComments || "No comments",
+                    can_id: selectedCan?.id || null,
+                    can: selectedCan || null,
+                    agreement_id: selectedAgreement?.id || null,
+                    amount: enteredAmount || 0,
+                    status: "DRAFT",
+                    date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}` || null,
+                    psc_fee_amount: selectedProcurementShop?.fee || null,
+                },
+            ])
+        );
+        showAlert("success", "Budget Line Added", "The budget line has been successfully added.");
+
+        //reset form
+        dispatch(setEnteredDescription(""));
+        dispatch(setEnteredAmount(null));
+        dispatch(setSelectedCan({}));
+        dispatch(setEnteredMonth(""));
+        dispatch(setEnteredDay(""));
+        dispatch(setEnteredYear(""));
+        dispatch(setEnteredComments(""));
     };
 
     const saveBudgetLineItems = (event) => {
@@ -160,9 +224,24 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
                 budget lines.
             </p>
             <CreateBudgetLinesForm
-                selectedAgreement={selectedAgreement}
-                selectedProcurementShop={selectedProcurementShop}
-                showAlert={showAlert}
+                selectedCan={selectedCan}
+                enteredDescription={enteredDescription}
+                enteredAmount={enteredAmount}
+                enteredMonth={enteredMonth}
+                enteredDay={enteredDay}
+                enteredYear={enteredYear}
+                enteredComments={enteredComments}
+                isEditing={isEditing}
+                setEnteredDescription={(value) => dispatch(setEnteredDescription(value))}
+                setSelectedCan={(value) => dispatch(setSelectedCan(value))}
+                setEnteredAmount={(value) => dispatch(setEnteredAmount(value))}
+                setEnteredMonth={(value) => dispatch(setEnteredMonth(value))}
+                setEnteredDay={(value) => dispatch(setEnteredDay(value))}
+                setEnteredYear={(value) => dispatch(setEnteredYear(value))}
+                setEnteredComments={(value) => dispatch(setEnteredComments(value))}
+                handleEditForm={handleEditForm}
+                handleResetForm={handleCancelEdit}
+                handleSubmitForm={handleSubmitForm}
             />
             <h2 className="font-sans-lg">Budget Lines</h2>
             <p>
@@ -170,7 +249,11 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
                 display in draft status. The Fiscal Year (FY) will populate based on the election date you provide.
             </p>
 
-            <PreviewTable handleDeleteBudgetLine={handleDeleteBudgetLine} />
+            <PreviewTable
+                handleDeleteBudgetLine={handleDeleteBudgetLine}
+                budgetLinesAdded={budgetLinesAdded}
+                // setBudgetLinesAdded={setBudgetLinesAdded}
+            />
             <div className="grid-row flex-justify margin-top-1">
                 <button
                     className="usa-button usa-button--unstyled margin-right-2"
