@@ -1,4 +1,5 @@
 import { useGetAgreementTypesQuery } from "../../api/opsAPI";
+import { convertCodeForDisplay } from "../../helpers/utils";
 
 export const AgreementTypeSelect = ({ selectedAgreementType, setSelectedAgreementType }) => {
     const {
@@ -36,7 +37,7 @@ export const AgreementTypeSelect = ({ selectedAgreementType, setSelectedAgreemen
                     <option value={0}>- Select Agreement Type -</option>
                     {agreementTypes.map((type, index) => (
                         <option key={index + 1} value={type}>
-                            {type}
+                            {convertCodeForDisplay('AgreementType', type)}
                         </option>
                     ))}
                 </select>
