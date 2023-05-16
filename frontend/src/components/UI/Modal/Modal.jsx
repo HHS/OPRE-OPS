@@ -54,21 +54,21 @@ export const Modal = ({
             <div
                 className="usa-modal-wrapper is-visible"
                 role="dialog"
-                id="example-modal-1"
-                aria-labelledby="modal-1-heading"
-                aria-describedby="modal-1-description"
+                id="ops-modal"
+                aria-labelledby="ops-modal-heading"
+                aria-describedby="ops-modal-description"
                 onClick={() => setShowModal(false)}
             >
-                <div className="usa-modal-overlay" aria-controls="example-modal-1">
+                <div className="usa-modal-overlay" aria-controls="ops-modal">
                     <div className="usa-modal" tabIndex="-1" onClick={(e) => e.stopPropagation()} ref={modalRef}>
                         <div className="usa-modal__content">
                             <div className="usa-modal__main">
-                                <h2 className="usa-modal__heading" id="modal-1-heading">
+                                <h2 className="usa-modal__heading font-family-sans" id="ops-modal-heading">
                                     {heading}
                                 </h2>
                                 {description && (
                                     <div className="usa-prose">
-                                        <p id="modal-1-description">{description}</p>
+                                        <p id="ops-modal-description">{description}</p>
                                     </div>
                                 )}
                                 <div className="usa-modal__footer">
