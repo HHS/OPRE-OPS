@@ -57,10 +57,16 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
             if (status === "In_execution") {
                 status = "Executing";
             }
+            if (status === "Under_review") {
+                status = "In Review";
+            }
             let classNames = "padding-x-105 padding-y-1 ";
             switch (status) {
                 case "Draft":
                     classNames += "bg-brand-neutral-lighter";
+                    break;
+                case "In Review":
+                    classNames += "underReview";
                     break;
                 case "Executing":
                     classNames += "bg-brand-data-viz-primary-8";
