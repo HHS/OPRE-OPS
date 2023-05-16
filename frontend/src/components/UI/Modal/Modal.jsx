@@ -63,7 +63,11 @@ export const Modal = ({
                     <div className="usa-modal" tabIndex="-1" onClick={(e) => e.stopPropagation()} ref={modalRef}>
                         <div className="usa-modal__content">
                             <div className="usa-modal__main">
-                                <h2 className="usa-modal__heading font-family-sans" id="ops-modal-heading">
+                                <h2
+                                    className="usa-modal__heading font-family-sans"
+                                    id="ops-modal-heading"
+                                    style={{ fontSize: "1.2188rem" }}
+                                >
                                     {heading}
                                 </h2>
                                 {description && (
