@@ -34,12 +34,12 @@ export const Menu = () => {
                     <button
                         type="button"
                         className="usa-accordion__button usa-nav__link"
-                        aria-expanded="false"
+                        aria-expanded={false}
                         aria-controls="basic-mega-nav-section-two"
                     >
                         <span>Create</span>
                     </button>
-                    <ul id="basic-mega-nav-section-two" className="usa-nav__submenu">
+                    <ul id="basic-mega-nav-section-two" className="usa-nav__submenu" hidden>
                         <li className="usa-nav__submenu-item">
                             <Link to="/projects/create">Project</Link>
                             <Link to="/agreements/create">Agreement</Link>
