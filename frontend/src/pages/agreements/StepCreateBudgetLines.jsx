@@ -54,14 +54,14 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
     const enteredComments = useSelector((state) => state.createAgreement.entered_comments);
     const isEditing = useSelector((state) => state.createAgreement.is_editing_budget_line);
     const budgetLineBeingEdited = useSelector((state) => state.createAgreement.budget_line_being_edited);
-    let loggedInUser = useSelector((state) => state.auth.activeUser.full_name);
+    let loggedInUserName = useSelector((state) => state.auth.activeUser.full_name);
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     // NOTE: set to logged in user to Sheila if no name is found
-    if (!loggedInUser) {
-        loggedInUser = "Sheila Celentano";
+    if (!loggedInUserName) {
+        loggedInUserName = "Sheila Celentano";
     }
 
     const showAlert = async (type, heading, message) => {
@@ -202,7 +202,7 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
     };
 
     const handleDuplicateBudgetLine = (budgetLine) => {
-        dispatch(duplicateBudgetLineAdded({ ...budgetLine, created_by: loggedInUser }));
+        dispatch(duplicateBudgetLineAdded({ ...budgetLine, created_by: loggedInUserName }));
     };
     return (
         <>
@@ -264,7 +264,7 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
             </p>
 
             <PreviewTable
-                loggedInUser={loggedInUser}
+                loggedInUserName={loggedInUserName}
                 budgetLinesAdded={budgetLinesAdded}
                 handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                 handleDeleteBudgetLine={handleDeleteBudgetLine}

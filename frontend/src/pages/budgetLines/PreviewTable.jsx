@@ -10,7 +10,7 @@ import { formatDate } from "../../helpers/utils";
 import "./PreviewTable.scss";
 
 export const PreviewTable = ({
-    loggedInUser = "Sheila Celentano",
+    loggedInUserName = "Sheila Celentano",
     budgetLinesAdded = [],
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
@@ -220,7 +220,7 @@ export const PreviewTable = ({
                             <div className="display-flex padding-right-9">
                                 <dl className="font-12px">
                                     <dt className="margin-0 text-base-dark">Created By</dt>
-                                    <dd className="margin-0">{bl?.created_by ? bl.created_by : loggedInUser}</dd>
+                                    <dd className="margin-0">{bl?.created_by ? bl.created_by : loggedInUserName}</dd>
                                     <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                                         <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />
                                         {bl_created_on}

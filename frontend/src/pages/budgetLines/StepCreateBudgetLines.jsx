@@ -42,11 +42,11 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
     const setEnteredDay = useSetState("entered_day");
     const setEnteredYear = useSetState("entered_year");
     const setEnteredComments = useSetState("entered_comments");
-    let loggedInUser = useSelector((state) => state.auth.activeUser.full_name);
+    let loggedInUserFullName = useSelector((state) => state.auth.activeUser.full_name);
 
     // NOTE: set to logged in user to Sheila if no name is found
-    if (!loggedInUser) {
-        loggedInUser = "Sheila Celentano";
+    if (!loggedInUserFullName) {
+        loggedInUserFullName = "Sheila Celentano";
     }
 
     const showAlert = async (type, heading, message) => {
@@ -140,7 +140,7 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
     const handleDuplicateBudgetLine = (budgetLine) => {
         dispatch({
             type: "DUPLICATE_BUDGET_LINE",
-            payload: { ...budgetLine, created_by: loggedInUser },
+            payload: { ...budgetLine, created_by: loggedInUserFullName },
         });
     };
 
@@ -212,7 +212,7 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
                 display in draft status. The Fiscal Year (FY) will populate based on the election date you provide.
             </p>
             <PreviewTable
-                loggedInUser={loggedInUser}
+                loggedInUserName={loggedInUserFullName}
                 budgetLinesAdded={budgetLinesAdded}
                 handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                 handleDeleteBudgetLine={handleDeleteBudgetLine}
