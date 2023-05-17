@@ -93,6 +93,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                     {budgetLine.status === "DRAFT" && (
                         <>
                             <FontAwesomeIcon
+                                id={`edit-${bl?.id}`}
                                 icon={faPen}
                                 className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
                                 title="edit"
@@ -100,6 +101,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                                 onClick={() => dispatch(editBudgetLineAdded(budgetLine))}
                             />
                             <FontAwesomeIcon
+                                id={`delete-${bl?.id}`}
                                 icon={faTrash}
                                 title="delete"
                                 data-position="top"
@@ -109,6 +111,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                         </>
                     )}
                     <FontAwesomeIcon
+                        id={`duplicate-${bl?.id}`}
                         icon={faClone}
                         title="duplicate"
                         data-position="top"
@@ -229,7 +232,9 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                             <div className="display-flex padding-right-9">
                                 <dl className="font-12px">
                                     <dt className="margin-0 text-base-dark">Created By</dt>
-                                    <dd className="margin-0">{bl?.created_by ? bl.created_by : loggedInUser}</dd>
+                                    <dd id={`created-by-name-${bl?.id}`} className="margin-0">
+                                        {bl?.created_by ? bl.created_by : loggedInUser}
+                                    </dd>
                                     <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                                         <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />
                                         {bl_created_on}

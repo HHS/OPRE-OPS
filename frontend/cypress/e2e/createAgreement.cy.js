@@ -1,3 +1,4 @@
+import { curryGetDefaultMiddleware } from "@reduxjs/toolkit/dist/getDefaultMiddleware";
 import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
@@ -51,6 +52,27 @@ it("can create an agreement", () => {
     // Skip Select Team Members for now - something is wrong with the select
     cy.get("#with-hint-textarea").type("This is a note.");
     cy.get("#continue").click();
+
+    // Add a new budget line item
+    cy.get("#bl-description").type("Test BLI Description");
+    cy.get("#procurement_month").select("01 - Jan");
+    cy.get("#procurement_day").type("1");
+    cy.get("#procurement_year").type("2024");
+    cy.get("#can--list").select("G99MVT3");
+    cy.get("#bl-amount").type("1000000");
+    cy.get("#with-hint-textarea").type("Something something note something.");
+    cy.get("#add-budget-line").click();
+
+    // Duplicate budget line item
+    cy.get("[id^=expand-]").click();
+    cy.get("[id^=duplicate-]").click();
+
+    // Check that the "created by" name is not empty.
+    cy.get("[id^=created-by-name-]", { timeout: 15000 })
+        .invoke("text")
+        .then((text) => {
+            expect(text.length).to.be.at.least(1);
+        });
 
     cy.wait("@postAgreement")
         .then((interception) => {
