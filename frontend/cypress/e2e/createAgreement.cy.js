@@ -1,4 +1,3 @@
-import { curryGetDefaultMiddleware } from "@reduxjs/toolkit/dist/getDefaultMiddleware";
 import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
