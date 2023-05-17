@@ -35,6 +35,8 @@ export const ProjectAgreementSummaryCard = ({
     );
 };
 
+export default ProjectAgreementSummaryCard;
+
 ProjectAgreementSummaryCard.propTypes = {
     selectedResearchProject: PropTypes.shape({
         title: PropTypes.string,

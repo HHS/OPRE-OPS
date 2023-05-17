@@ -2,11 +2,11 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-import { ProjectAgreementSummaryCard } from "../budgetLines/ProjectAgreementSummaryCard";
-import PreviewTable from "../budgetLines/PreviewTable";
+import { ProjectAgreementSummaryCard } from "../../components/UI/Form/ProjectAgreementSummaryCard/ProjectAgreementSummaryCard";
+import PreviewTable from "../../components/UI/PreviewTable/PreviewTable";
 import { Alert } from "../../components/UI/Alert/Alert";
 import Modal from "../../components/UI/Modal/Modal";
-import CreateBudgetLinesForm from "../../components/UI/Form/CreateBudgetLinesForm";
+import CreateBudgetLinesForm from "../../components/UI/Form/CreateBudgetLinesForm/CreateBudgetLinesForm";
 // TODO: replace with context and reducer pattern
 import {
     setEnteredAmount,

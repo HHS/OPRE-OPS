@@ -5,7 +5,7 @@ import { setAgreements } from "./createBudgetLineSlice";
 import { Link } from "react-router-dom";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import ProjectSelect from "../../components/UI/Form/ProjectSelect";
-import AgreementSelect from "./AgreementSelect";
+import AgreementSelect from "../../components/UI/Form/AgreementSelect/AgreementSelect";
 import { useBudgetLines, useSetState } from "./budgetLineContext";
 import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
 

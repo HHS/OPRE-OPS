@@ -1,12 +1,12 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-import { ProjectAgreementSummaryCard } from "../budgetLines/ProjectAgreementSummaryCard";
-import PreviewTable from "../budgetLines/PreviewTable";
+import { ProjectAgreementSummaryCard } from "../../components/UI/Form/ProjectAgreementSummaryCard/ProjectAgreementSummaryCard";
+import PreviewTable from "../../components/UI/PreviewTable";
 import Alert from "../../components/UI/Alert/Alert";
 import Modal from "../../components/UI/Modal/Modal";
-import CreateBudgetLinesForm from "../../components/UI/Form/CreateBudgetLinesForm";
-import ProcurementShopSelect from "./ProcurementShopSelect";
+import CreateBudgetLinesForm from "../../components/UI/Form/CreateBudgetLinesForm/CreateBudgetLinesForm";
+import ProcurementShopSelect from "../../components/UI/Form/ProcurementShopSelect/ProcurementShopSelect";
 import { postBudgetLineItems } from "../../api/postBudgetLineItems";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./budgetLineContext";
 
