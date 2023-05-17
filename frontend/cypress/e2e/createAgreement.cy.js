@@ -57,7 +57,7 @@ it("can create an agreement", () => {
     cy.get("#procurement_month").select("01 - Jan");
     cy.get("#procurement_day").type("1");
     cy.get("#procurement_year").type("2024");
-    cy.get("#can--list").select("G99MVT3");
+    cy.get("#can-select").type("G99MVT3");
     cy.get("#bl-amount").type("1000000");
     cy.get("#with-hint-textarea").type("Something something note something.");
     cy.get("#add-budget-line").click();
