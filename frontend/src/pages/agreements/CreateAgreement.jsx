@@ -1,11 +1,11 @@
 import { useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { CreateAgreementFlow } from "./CreateAgreementFlow";
 import { setProcurementShopsList, setUsers } from "./createAgreementSlice";
 import { getProcurementShopList } from "../../api/getProcurementShopList";
 import { StepSelectProject } from "./StepSelectProject";
 import { StepCreateAgreement } from "./StepCreateAgreement";
-import { StepCreateBudgetLines } from "./StepCreateBudgetLines";
+import StepCreateBudgetLines from "../../components/UI/WizardSteps/StepCreateBudgetLines/StepCreateBudgetLines";
 import { getUsers } from "../../api/getUser";
 import App from "../../App";
 import StepAgreementSuccess from "./StepAgreementSuccess";
@@ -14,7 +14,10 @@ const wizardSteps = ["Project", "Agreement", "Budget Lines"];
 
 export const CreateAgreement = () => {
     const dispatch = useDispatch();
-    //const selectedProject = useSelector((state) => state.createBudgetLine.selectedProject);
+    const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
+    const selectedAgreement = useSelector((state) => state.createAgreement.selected_agreement);
+    const selectedProcurementShop = useSelector((state) => state.createAgreement.selected_procurement_shop);
+    const budgetLinesAdded = useSelector((state) => state.createAgreement.budget_lines_added);
 
     useEffect(() => {
         const getProcurementShopsAndSetState = async () => {
@@ -37,7 +40,13 @@ export const CreateAgreement = () => {
             <CreateAgreementFlow>
                 <StepSelectProject wizardSteps={wizardSteps} />
                 <StepCreateAgreement wizardSteps={wizardSteps} />
-                <StepCreateBudgetLines wizardSteps={wizardSteps} />
+                <StepCreateBudgetLines
+                    wizardSteps={wizardSteps}
+                    selectedResearchProject={selectedResearchProject}
+                    selectedAgreement={selectedAgreement}
+                    selectedProcurementShop={selectedProcurementShop}
+                    budgetLinesAdded={budgetLinesAdded}
+                />
                 <StepAgreementSuccess />
             </CreateAgreementFlow>
         </App>

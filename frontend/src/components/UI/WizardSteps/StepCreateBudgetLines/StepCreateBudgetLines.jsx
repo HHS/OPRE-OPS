@@ -14,10 +14,10 @@ export const StepCreateBudgetLines = ({
     goToNext,
     goBack,
     wizardSteps,
-    selectedResearchProject,
-    selectedAgreement,
-    selectedProcurementShop,
-    budgetLinesAdded,
+    selectedResearchProject = {},
+    selectedAgreement = {},
+    selectedProcurementShop = {},
+    budgetLinesAdded = [],
 }) => {
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
@@ -33,8 +33,17 @@ export const StepCreateBudgetLines = ({
         entered_comments: enteredComments,
         is_editing_budget_line: isEditing,
         budget_line_being_edited: budgetLineBeingEdited,
-    } = useBudgetLines();
-
+    } = useBudgetLines() || {
+        selected_can: null,
+        entered_description: null,
+        entered_amount: null,
+        entered_month: null,
+        entered_day: null,
+        entered_year: null,
+        entered_comments: null,
+        is_editing_budget_line: null,
+        budget_line_being_edited: null,
+    };
     const dispatch = useBudgetLinesDispatch();
     // setters
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
