@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
-import CanSelect from "../CanSelect/CanSelect";
-import DesiredAwardDate from "../DesiredAwardDate/DesiredAwardDate";
+import CanSelect from "../CanSelect";
+import DesiredAwardDate from "../DesiredAwardDate";
 
 export const CreateBudgetLinesForm = ({
     selectedCan,
