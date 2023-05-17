@@ -1,7 +1,7 @@
 import { createContext, useContext, useReducer } from "react";
 
-export const BudgetLinesContext = createContext(null);
-export const BudgetLinesDispatchContext = createContext(null);
+export const CreateBudgetLinesContext = createContext(null);
+export const CreateBudgetLinesDispatchContext = createContext(null);
 
 const initialState = {
     research_projects_list: [],
@@ -9,41 +9,43 @@ const initialState = {
     agreements: [],
     procurement_shops: [],
     cans: [],
-    budget_lines_added: [],
+    // budget_lines_added: [],
     is_editing_budget_line: false,
-    selected_project: {},
-    selected_agreement: {},
+    // selected_project: {},
+    // selected_agreement: {},
     selected_can: {},
-    selected_procurement_shop: {},
-    // entered_description: "",
-    // entered_amount: null,
-    // entered_month: "",
-    // entered_day: "",
-    // entered_year: "",
-    // entered_comments: "",
-    // budget_line_being_edited: -1,
-    wizardSteps: ["Project & Agreement", "Budget Lines", "Review"],
+    // selected_procurement_shop: {},
+    entered_description: "",
+    entered_amount: null,
+    entered_month: "",
+    entered_day: "",
+    entered_year: "",
+    entered_comments: "",
+    budget_line_being_edited: -1,
+    // wizardSteps: ["Project & Agreement", "Budget Lines", "Review"],
 };
 
-export function BudgetLinesProvider({ children }) {
+export function CreateBudgetLinesProvider({ children }) {
     const [state, dispatch] = useReducer(budgetLinesReducer, initialState);
 
     return (
-        <BudgetLinesContext.Provider value={state}>
-            <BudgetLinesDispatchContext.Provider value={dispatch}>{children}</BudgetLinesDispatchContext.Provider>
-        </BudgetLinesContext.Provider>
+        <CreateBudgetLinesContext.Provider value={state}>
+            <CreateBudgetLinesDispatchContext.Provider value={dispatch}>
+                {children}
+            </CreateBudgetLinesDispatchContext.Provider>
+        </CreateBudgetLinesContext.Provider>
     );
 }
 
 export function useBudgetLines() {
-    return useContext(BudgetLinesContext);
+    return useContext(CreateBudgetLinesContext);
 }
 
 export function useBudgetLinesDispatch() {
-    return useContext(BudgetLinesDispatchContext);
+    return useContext(CreateBudgetLinesDispatchContext);
 }
 export function useSetState(key) {
-    const dispatch = useContext(BudgetLinesDispatchContext);
+    const dispatch = useContext(CreateBudgetLinesDispatchContext);
 
     const setValue = (value) => {
         dispatch({ type: "SET_STATE", key, value });

@@ -1,26 +1,29 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-import ProjectAgreementSummaryCard from "../../components/UI/Form/ProjectAgreementSummaryCard";
-import PreviewTable from "../../components/UI/PreviewTable";
-import Alert from "../../components/UI/Alert/Alert";
-import Modal from "../../components/UI/Modal/Modal";
-import CreateBudgetLinesForm from "../../components/UI/Form/CreateBudgetLinesForm";
-import ProcurementShopSelect from "../../components/UI/Form/ProcurementShopSelect";
-import { postBudgetLineItems } from "../../api/postBudgetLineItems";
-import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./budgetLineContext";
+import StepIndicator from "../../StepIndicator/StepIndicator";
+import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
+import PreviewTable from "../../PreviewTable";
+import Alert from "../../Alert/Alert";
+import Modal from "../../Modal/Modal";
+import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
+import ProcurementShopSelect from "../../Form/ProcurementShopSelect";
+import { postBudgetLineItems } from "../../../../api/postBudgetLineItems";
+import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
 
-export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
+export const StepCreateBudgetLines = ({
+    goToNext,
+    goBack,
+    wizardSteps,
+    selectedResearchProject,
+    selectedAgreement,
+    selectedProcurementShop,
+    budgetLinesAdded,
+}) => {
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const {
-        wizardSteps,
-        selected_project: selectedResearchProject,
-        selected_agreement: selectedAgreement,
-        selected_procurement_shop: selectedProcurementShop,
-        budget_lines_added: budgetLinesAdded,
         selected_can: selectedCan,
         entered_description: enteredDescription,
         entered_amount: enteredAmount,

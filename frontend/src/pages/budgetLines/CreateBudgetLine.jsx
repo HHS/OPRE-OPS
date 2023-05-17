@@ -1,16 +1,22 @@
 import React from "react";
 import { useDispatch } from "react-redux";
-import App from "../../App";
 import CreateBudgetLineFlow from "./CreateBudgetLineFlow";
 import { setProcurementShop } from "./createBudgetLineSlice";
 import { getProcurementShopList } from "../../api/getProcurementShopList";
 import StepSelectProjectAndAgreement from "./StepSelectProjectAndAgreement";
-import StepCreateBudgetLines from "./StepCreateBudgetLines";
+import StepCreateBudgetLines from "../../components/UI/WizardSteps/StepCreateBudgetLines";
 import StepSuccess from "./StepSuccess";
-import { BudgetLinesProvider } from "./budgetLineContext";
+import { useBudgetLines } from "./budgetLineContext";
 
 export const CreateBudgetLine = () => {
     const dispatch = useDispatch();
+    const {
+        wizardSteps,
+        selected_project: selectedProject,
+        selected_agreement: selectedAgreement,
+        selected_procurement_shop: selectedProcurementShop,
+        budget_lines_added: budgetLinesAdded,
+    } = useBudgetLines();
 
     // Get initial list of Agreements (dependent on Research Project Selection)
     // useEffect(() => {
@@ -47,14 +53,18 @@ export const CreateBudgetLine = () => {
     // }, [dispatch, selectedProject]);
 
     return (
-        <App>
-            <BudgetLinesProvider>
-                <CreateBudgetLineFlow>
-                    <StepSelectProjectAndAgreement />
-                    <StepCreateBudgetLines />
-                    <StepSuccess />
-                </CreateBudgetLineFlow>
-            </BudgetLinesProvider>
-        </App>
+        <CreateBudgetLineFlow>
+            <StepSelectProjectAndAgreement />
+            <StepCreateBudgetLines
+                wizardSteps={wizardSteps}
+                selectedResearchProject={selectedProject}
+                selectedAgreement={selectedAgreement}
+                selectedProcurementShop={selectedProcurementShop}
+                budgetLinesAdded={budgetLinesAdded}
+            />
+            <StepSuccess />
+        </CreateBudgetLineFlow>
     );
 };
+
+export default CreateBudgetLine;
