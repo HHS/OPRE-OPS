@@ -146,7 +146,7 @@ export const StepCreateBudgetLines = ({ goBack, goToNext, wizardSteps }) => {
                 {
                     id: crypto.getRandomValues(new Uint32Array(1))[0],
                     line_description: enteredDescription || "",
-                    comments: enteredComments || "No comments",
+                    comments: enteredComments || "",
                     can_id: selectedCan?.id || null,
                     can: selectedCan || null,
                     agreement_id: selectedAgreement?.id || null,
