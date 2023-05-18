@@ -5,6 +5,7 @@ const CreateBudgetLines = ({
     goToNext,
     goBack,
     wizardSteps,
+    currentStep,
     selectedResearchProject,
     selectedAgreement,
     selectedProcurementShop,
@@ -16,6 +17,7 @@ const CreateBudgetLines = ({
                 goToNext={goToNext}
                 goBack={goBack}
                 wizardSteps={wizardSteps}
+                currentStep={currentStep}
                 selectedResearchProject={selectedResearchProject}
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}

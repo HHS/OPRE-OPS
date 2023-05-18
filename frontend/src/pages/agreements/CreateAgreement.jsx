@@ -42,6 +42,7 @@ export const CreateAgreement = () => {
                 <StepCreateAgreement wizardSteps={wizardSteps} />
                 <StepCreateBudgetLines
                     wizardSteps={wizardSteps}
+                    currentStep={3}
                     selectedResearchProject={selectedResearchProject}
                     selectedAgreement={selectedAgreement}
                     selectedProcurementShop={selectedProcurementShop}

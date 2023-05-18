@@ -14,6 +14,7 @@ export const StepCreateBudgetLines = ({
     goToNext,
     goBack,
     wizardSteps,
+    currentStep,
     selectedResearchProject = {},
     selectedAgreement = {},
     selectedProcurementShop = {},
@@ -44,6 +45,7 @@ export const StepCreateBudgetLines = ({
         entered_comments: null,
         is_editing_budget_line: null,
         budget_line_being_edited: null,
+        new_budget_lines: [],
     };
     const dispatch = useBudgetLinesDispatch();
     // setters
@@ -181,7 +183,7 @@ export const StepCreateBudgetLines = ({
                     <p>Step Two: Text explaining this page</p>
                 </>
             )}
-            <StepIndicator steps={wizardSteps} currentStep={2} />
+            <StepIndicator steps={wizardSteps} currentStep={currentStep} />
             <ProjectAgreementSummaryCard
                 selectedResearchProject={selectedResearchProject}
                 selectedAgreement={selectedAgreement}
