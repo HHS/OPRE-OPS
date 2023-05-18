@@ -1,3 +1,5 @@
+/// <reference types="Cypress"/>
+
 import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
@@ -66,12 +68,21 @@ it("can create an agreement", () => {
     cy.get("[id^=expand-]").click();
     cy.get("[id^=duplicate-]").click();
 
-    // Check that the "created by" name is not empty.
-    cy.get("[id^=created-by-name-]", { timeout: 15000 })
-        .invoke("text")
-        .then((text) => {
-            expect(text.length).to.be.at.least(1);
-        });
+    // expand budget line and check that the "created by" name is not empty.
+    cy.get("[id^=expand-]").each((_, element) => {
+        const item = Cypress.$(element);
+        const id = item.attr("id");
+        if (id !== undefined) {
+            const index = id.split("-")[1];
+            item.click();
+
+            cy.get(`#created-by-name-${index}`, { timeout: 15000 })
+                .invoke("text")
+                .then((text) => {
+                    expect(text.length).to.be.at.least(1);
+                });
+        }
+    });
 
     cy.wait("@postAgreement")
         .then((interception) => {
