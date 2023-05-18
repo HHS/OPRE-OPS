@@ -2,8 +2,10 @@ import StepCreateBudgetLines from "./StepCreateBudgetLines";
 import { CreateBudgetLinesProvider } from "./context";
 
 const CreateBudgetLines = ({
+    goToNext,
+    goBack,
     wizardSteps,
-    selectedProject,
+    selectedResearchProject,
     selectedAgreement,
     selectedProcurementShop,
     budgetLinesAdded,
@@ -11,8 +13,10 @@ const CreateBudgetLines = ({
     return (
         <CreateBudgetLinesProvider>
             <StepCreateBudgetLines
+                goToNext={goToNext}
+                goBack={goBack}
                 wizardSteps={wizardSteps}
-                selectedResearchProject={selectedProject}
+                selectedResearchProject={selectedResearchProject}
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}
                 budgetLinesAdded={budgetLinesAdded}
