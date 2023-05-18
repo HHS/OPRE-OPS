@@ -17,7 +17,7 @@ export const StepCreateBudgetLines = ({
     selectedResearchProject = {},
     selectedAgreement = {},
     selectedProcurementShop = {},
-    budgetLinesAdded = [],
+    budgetLinesAdded: existingBudgetLines = [],
 }) => {
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
@@ -33,6 +33,7 @@ export const StepCreateBudgetLines = ({
         entered_comments: enteredComments,
         is_editing_budget_line: isEditing,
         budget_line_being_edited: budgetLineBeingEdited,
+        new_budget_lines: newBudgetLines,
     } = useBudgetLines() || {
         selected_can: null,
         entered_description: null,
@@ -60,6 +61,9 @@ export const StepCreateBudgetLines = ({
     if (!loggedInUserFullName) {
         loggedInUserFullName = "Sheila Celentano";
     }
+
+    // combine arrays of new budget lines and budget lines added
+    const allBudgetLines = [...existingBudgetLines, ...newBudgetLines];
 
     const showAlert = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -98,7 +102,7 @@ export const StepCreateBudgetLines = ({
         dispatch({
             type: "EDIT_BUDGET_LINE",
             payload: {
-                id: budgetLinesAdded[budgetLineBeingEdited].id,
+                id: allBudgetLines[budgetLineBeingEdited].id,
                 line_description: enteredDescription,
                 comments: enteredComments,
                 can_id: selectedCan?.id,
@@ -134,7 +138,7 @@ export const StepCreateBudgetLines = ({
 
     const saveBudgetLineItems = (event) => {
         event.preventDefault();
-        const newBudgetLineItems = budgetLinesAdded.filter(
+        const newBudgetLineItems = allBudgetLines.filter(
             // eslint-disable-next-line no-prototype-builtins
             (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on")
         );
@@ -189,7 +193,7 @@ export const StepCreateBudgetLines = ({
                 active agreement, it will default to the procurement shop currently being used.
             </p>
             <ProcurementShopSelect
-                budgetLinesLength={budgetLinesAdded?.length}
+                budgetLinesLength={allBudgetLines?.length}
                 selectedProcurementShop={selectedProcurementShop}
                 setSelectedProcurementShop={setSelectedProcurementShop}
             />
@@ -225,7 +229,7 @@ export const StepCreateBudgetLines = ({
             </p>
             <PreviewTable
                 loggedInUserName={loggedInUserFullName}
-                budgetLinesAdded={budgetLinesAdded}
+                budgetLinesAdded={allBudgetLines}
                 handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                 handleDeleteBudgetLine={handleDeleteBudgetLine}
                 handleDuplicateBudgetLine={handleDuplicateBudgetLine}
@@ -235,7 +239,7 @@ export const StepCreateBudgetLines = ({
                     className="usa-button usa-button--unstyled margin-right-2"
                     onClick={() => {
                         // if no budget lines have been added, go back
-                        if (budgetLinesAdded?.length === 0) {
+                        if (allBudgetLines?.length === 0) {
                             goBack();
                             return;
                         }
