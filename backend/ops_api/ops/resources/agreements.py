@@ -88,14 +88,27 @@ class GrantAgreementPatchBody(GrantAgreementRequestBody):
     number: Optional[str] = None
 
 
-def pick_patch_schema_class(agreement_type: AgreementType):
-    if isinstance(agreement_type, str):
-        agreement_type = AgreementType[agreement_type]
-    if agreement_type == AgreementType.CONTRACT:
-        return ContractAgreementPatchBody
-    if agreement_type == AgreementType.GRANT:
-        return GrantAgreementPatchBody
-    raise ValueError("Invalid agreement_type", agreement_type, type(agreement_type))
+REQUEST_SCHEMAS = {
+    AgreementType.CONTRACT: {
+        "PUT": ContractAgreementRequestBody,
+        "PATCH": ContractAgreementPatchBody
+    },
+    AgreementType.GRANT: {
+        "PUT": GrantAgreementRequestBody,
+        "PATCH": GrantAgreementPatchBody
+    }
+}
+
+
+def pick_patch_schema_class(agreement_type: AgreementType, method: str):
+    type_methods = REQUEST_SCHEMAS.get(agreement_type)
+    if not type_methods:
+        raise ValueError(f"Invalid agreement_type ({agreement_type})")
+    schema = type_methods.get(method, None)
+    if not schema:
+        raise ValueError(f"Invalid agreement_type for method={method}")
+    return schema
+
 
 
 @dataclass
@@ -144,6 +157,58 @@ class AgreementItemAPI(BaseItemAPI):
 
     @override
     @jwt_required()
+    def put(self, id: int) -> Response:
+        message_prefix = f"PUT to {ENDPOINT_STRING}"
+        print(f"{message_prefix=}")
+
+        identity = get_jwt_identity()
+        is_authorized = self.auth_gateway.is_authorized(identity, ["PUT_AGREEMENT"])
+        if not is_authorized:
+            return make_response_with_headers({}, 401)
+
+        try:
+            with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
+                old_agreement: Agreement = self._get_item(id)
+                if not old_agreement:
+                    raise RuntimeError("Invalid Agreement id.")
+                # reject change of agreement_type
+                if "agreement_type" in request.json:
+                    req_type = request.json["agreement_type"]
+                    if req_type != old_agreement.agreement_type.name:
+                        print(f"{req_type=}, {old_agreement.agreement_type=}")
+                        raise ValueError("Invalid agreement_type, agreement_type must not change")
+                agreement_cls = pick_patch_schema_class(old_agreement.agreement_type, "PUT")
+                schema = desert.schema(agreement_cls)
+
+                OPSMethodView._validate_request(
+                    schema=schema,
+                    message=f"{message_prefix}: Params failed validation:",
+                )
+
+                data = schema.load(request.json)
+                data = data.__dict__
+                print(f"Agreement Data: {data}")
+                print(f"Agreement Id: {id}")
+                agreement = update_agreement(data, old_agreement)
+
+                current_app.db_session.add(agreement)
+                current_app.db_session.commit()
+
+                agreement_dict = agreement.to_dict()
+                meta.metadata.update({"updated_agreement": agreement_dict})
+                current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
+
+                return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
+        except (KeyError, RuntimeError, PendingRollbackError) as re:
+            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
+            current_app.logger.error(f"{message_prefix}: {re}")
+            return make_response_with_headers({}, 400)
+        except SQLAlchemyError as se:
+            current_app.logger.error(f"{message_prefix}: {se}")
+            return make_response_with_headers({}, 500)
+
+    @override
+    @jwt_required()
     def patch(self, id: int) -> Response:
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
 
@@ -160,12 +225,10 @@ class AgreementItemAPI(BaseItemAPI):
                 # reject change of agreement_type
                 if "agreement_type" in request.json:
                     req_type = request.json["agreement_type"]
-                    if req_type != old_agreement.agreement_type:
+                    if req_type != old_agreement.agreement_type.name:
+                        print(f"{req_type=}, {old_agreement.agreement_type=}")
                         raise ValueError("Invalid agreement_type, agreement_type must not change")
-                agreement_type = (
-                    request.json["agreement_type"] if "agreement_type" in request.json else old_agreement.agreement_type
-                )
-                agreement_cls = pick_patch_schema_class(agreement_type)
+                agreement_cls = pick_patch_schema_class(old_agreement.agreement_type, "PATCH")
                 schema = desert.schema(agreement_cls)
 
                 OPSMethodView._validate_request(
@@ -346,15 +409,23 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
 
         if item == "team_members":
             tmp_team_members = data[item]
-            agreement.team_members = [current_app.db_session.get(User, tm_id.id) for tm_id in tmp_team_members]
+            if tmp_team_members:
+                agreement.team_members = [current_app.db_session.get(User, tm_id.id) for tm_id in tmp_team_members]
+            else:
+                agreement.team_members = []
+
         elif item == "support_contacts":
             tmp_support_contacts = data[item]
-            agreement.support_contacts = [current_app.db_session.get(User, tm_id.id) for tm_id in tmp_support_contacts]
+            if tmp_team_members:
+                agreement.support_contacts = [current_app.db_session.get(User, tm_id.id) for tm_id in tmp_support_contacts]
+            else:
+                agreement.support_contacts = []
         else:
             setattr(agreement, item, data[item])
 
 
 def update_agreement(data: dict[str, Any], agreement: Agreement):
+    print(f"{data=}, {agreement=}")
     update_data(agreement, data)
     current_app.db_session.add(agreement)
     current_app.db_session.commit()
