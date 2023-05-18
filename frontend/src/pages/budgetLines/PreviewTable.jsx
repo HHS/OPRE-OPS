@@ -11,6 +11,14 @@ import { TotalSummaryCard } from "./TotalSummaryCard";
 import { formatDate } from "../../helpers/utils";
 import "./PreviewTable.scss";
 
+export const loggedInName = (activeUser) => {
+    let loggedInUser = "Unknown User";
+    if (activeUser) {
+        loggedInUser = activeUser.full_name ? activeUser.full_name : activeUser.email;
+    }
+    return loggedInUser;
+};
+
 export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = false, budgetLines = null }) => {
     const dispatch = useDispatch();
     const stateBudgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
@@ -20,13 +28,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
         .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on))
         .reverse();
 
-    let loggedInUser = useSelector((state) =>
-        state.auth?.activeUser ? state.auth.activeUser.full_name : "Not logged in"
-    );
-    // NOTE: set to logged in user to Sheila if no name is found
-    if (!loggedInUser) {
-        loggedInUser = "Sheila Celentano";
-    }
+    let loggedInUser = useSelector((state) => loggedInName(state.auth?.activeUser));
 
     const TableRow = ({ bl }) => {
         const [isExpanded, setIsExpanded] = useState(false);
