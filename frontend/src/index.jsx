@@ -18,7 +18,7 @@ import ResearchProjects from "./components/Portfolios/ResearchProjects/ResearchP
 import PeopleAndTeams from "./components/Portfolios/PeopleAndTeams/PeopleAndTeams";
 import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAndFunding";
 import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProjectDetail";
-import { CreateBudgetLine } from "./pages/budgetLines/CreateBudgetLine";
+import CreateBudgetLine from "./pages/budgetLines";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
 import { CreateAgreement } from "./pages/agreements/CreateAgreement";
 import { CreateProject } from "./pages/projects/CreateProject";

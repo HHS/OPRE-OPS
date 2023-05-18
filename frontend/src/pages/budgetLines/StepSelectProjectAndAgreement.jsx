@@ -3,9 +3,9 @@ import { useDispatch } from "react-redux";
 import { useGetResearchProjectsQuery } from "../../api/opsAPI";
 import { setAgreements } from "./createBudgetLineSlice";
 import { Link } from "react-router-dom";
-import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
+import StepIndicator from "../../components/UI/StepIndicator";
 import ProjectSelect from "../../components/UI/Form/ProjectSelect";
-import AgreementSelect from "./AgreementSelect";
+import AgreementSelect from "../../components/UI/Form/AgreementSelect";
 import { useBudgetLines, useSetState } from "./budgetLineContext";
 import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
 

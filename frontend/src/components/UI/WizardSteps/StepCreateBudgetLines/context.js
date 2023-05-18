@@ -1,7 +1,7 @@
 import { createContext, useContext, useReducer } from "react";
 
-export const BudgetLinesContext = createContext(null);
-export const BudgetLinesDispatchContext = createContext(null);
+export const CreateBudgetLinesContext = createContext(null);
+export const CreateBudgetLinesDispatchContext = createContext(null);
 
 const initialState = {
     research_projects_list: [],
@@ -9,41 +9,39 @@ const initialState = {
     agreements: [],
     procurement_shops: [],
     cans: [],
-    budget_lines_added: [],
+    new_budget_lines: [],
     is_editing_budget_line: false,
-    selected_project: {},
-    selected_agreement: {},
     selected_can: {},
-    selected_procurement_shop: {},
-    // entered_description: "",
-    // entered_amount: null,
-    // entered_month: "",
-    // entered_day: "",
-    // entered_year: "",
-    // entered_comments: "",
-    // budget_line_being_edited: -1,
-    wizardSteps: ["Project & Agreement", "Budget Lines", "Review"],
+    entered_description: "",
+    entered_amount: null,
+    entered_month: "",
+    entered_day: "",
+    entered_year: "",
+    entered_comments: "",
+    budget_line_being_edited: -1,
 };
 
-export function BudgetLinesProvider({ children }) {
+export function CreateBudgetLinesProvider({ children }) {
     const [state, dispatch] = useReducer(budgetLinesReducer, initialState);
 
     return (
-        <BudgetLinesContext.Provider value={state}>
-            <BudgetLinesDispatchContext.Provider value={dispatch}>{children}</BudgetLinesDispatchContext.Provider>
-        </BudgetLinesContext.Provider>
+        <CreateBudgetLinesContext.Provider value={state}>
+            <CreateBudgetLinesDispatchContext.Provider value={dispatch}>
+                {children}
+            </CreateBudgetLinesDispatchContext.Provider>
+        </CreateBudgetLinesContext.Provider>
     );
 }
 
 export function useBudgetLines() {
-    return useContext(BudgetLinesContext);
+    return useContext(CreateBudgetLinesContext);
 }
 
 export function useBudgetLinesDispatch() {
-    return useContext(BudgetLinesDispatchContext);
+    return useContext(CreateBudgetLinesDispatchContext);
 }
 export function useSetState(key) {
-    const dispatch = useContext(BudgetLinesDispatchContext);
+    const dispatch = useContext(CreateBudgetLinesDispatchContext);
 
     const setValue = (value) => {
         dispatch({ type: "SET_STATE", key, value });
@@ -60,21 +58,21 @@ function budgetLinesReducer(state, action) {
         case "ADD_BUDGET_LINE": {
             return {
                 ...state,
-                budget_lines_added: [...state.budget_lines_added, action.payload],
+                new_budget_lines: [...state.new_budget_lines, action.payload],
                 is_editing_budget_line: false,
             };
         }
         case "DELETE_BUDGET_LINE": {
             return {
                 ...state,
-                budget_lines_added: state.budget_lines_added.filter((bl) => bl.id !== action.id),
+                new_budget_lines: state.new_budget_lines.filter((bl) => bl.id !== action.id),
             };
         }
         case "SET_BUDGET_LINE_FOR_EDITING": {
-            const index = state.budget_lines_added.findIndex((budget_line) => budget_line.id === action.payload.id);
+            const index = state.new_budget_lines.findIndex((budget_line) => budget_line.id === action.payload.id);
 
             if (index !== -1) {
-                const { line_description, comments, can, amount, date_needed } = state.budget_lines_added[index];
+                const { line_description, comments, can, amount, date_needed } = state.new_budget_lines[index];
                 const [entered_year, entered_month, entered_day] = date_needed.split("-").map((d) => parseInt(d, 10));
 
                 return {
@@ -95,7 +93,7 @@ function budgetLinesReducer(state, action) {
             return state;
         }
         case "EDIT_BUDGET_LINE": {
-            const updatedBudgetLines = state.budget_lines_added.map((budgetLine) => {
+            const updatedBudgetLines = state.new_budget_lines.map((budgetLine) => {
                 if (budgetLine.id === action.payload.id) {
                     return {
                         ...budgetLine,
@@ -106,11 +104,11 @@ function budgetLinesReducer(state, action) {
             });
             return {
                 ...state,
-                budget_lines_added: updatedBudgetLines,
+                new_budget_lines: updatedBudgetLines,
             };
         }
         case "DUPLICATE_BUDGET_LINE": {
-            const index = state.budget_lines_added.findIndex((budget_line) => budget_line.id === action.payload.id);
+            const index = state.new_budget_lines.findIndex((budget_line) => budget_line.id === action.payload.id);
 
             if (index !== -1) {
                 const duplicatedLine = {
@@ -121,7 +119,7 @@ function budgetLinesReducer(state, action) {
 
                 return {
                     ...state,
-                    budget_lines_added: [...state.budget_lines_added, duplicatedLine],
+                    new_budget_lines: [...state.new_budget_lines, duplicatedLine],
                 };
             }
             return state;
@@ -152,7 +150,7 @@ function budgetLinesReducer(state, action) {
                 entered_year: "",
                 budget_line_being_edited: -1,
                 is_editing_budget_line: false,
-                budget_lines_added: [],
+                new_budget_lines: [],
                 selected_agreement: {},
                 selected_procurement_shop: {},
             };

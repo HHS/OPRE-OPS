@@ -4,9 +4,9 @@ import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
-import Tag from "../../components/UI/Tag/Tag";
+import Tag from "../Tag/Tag";
 import TotalSummaryCard from "./TotalSummaryCard";
-import { formatDate } from "../../helpers/utils";
+import { formatDate } from "../../../helpers/utils";
 import "./PreviewTable.scss";
 
 export const PreviewTable = ({

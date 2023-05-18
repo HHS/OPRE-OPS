@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import PreviewTable from "../budgetLines/PreviewTable";
+import PreviewTable from "../../components/UI/PreviewTable";
 import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../api/opsAPI";
 import { getUser } from "../../api/getUser";
 

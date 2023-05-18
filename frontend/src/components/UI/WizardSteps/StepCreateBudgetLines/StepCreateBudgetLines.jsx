@@ -1,26 +1,30 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-import { ProjectAgreementSummaryCard } from "../budgetLines/ProjectAgreementSummaryCard";
-import PreviewTable from "../budgetLines/PreviewTable";
-import Alert from "../../components/UI/Alert/Alert";
-import Modal from "../../components/UI/Modal/Modal";
-import CreateBudgetLinesForm from "../../components/UI/Form/CreateBudgetLinesForm";
-import ProcurementShopSelect from "./ProcurementShopSelect";
-import { postBudgetLineItems } from "../../api/postBudgetLineItems";
-import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./budgetLineContext";
+import StepIndicator from "../../StepIndicator/StepIndicator";
+import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
+import PreviewTable from "../../PreviewTable";
+import Alert from "../../Alert/Alert";
+import Modal from "../../Modal/Modal";
+import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
+import ProcurementShopSelect from "../../Form/ProcurementShopSelect";
+import { postBudgetLineItems } from "../../../../api/postBudgetLineItems";
+import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
 
-export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
+export const StepCreateBudgetLines = ({
+    goToNext,
+    goBack,
+    wizardSteps,
+    currentStep,
+    selectedResearchProject = {},
+    selectedAgreement = {},
+    selectedProcurementShop = {},
+    budgetLinesAdded: existingBudgetLines = [],
+}) => {
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const {
-        wizardSteps,
-        selected_project: selectedResearchProject,
-        selected_agreement: selectedAgreement,
-        selected_procurement_shop: selectedProcurementShop,
-        budget_lines_added: budgetLinesAdded,
         selected_can: selectedCan,
         entered_description: enteredDescription,
         entered_amount: enteredAmount,
@@ -30,8 +34,19 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
         entered_comments: enteredComments,
         is_editing_budget_line: isEditing,
         budget_line_being_edited: budgetLineBeingEdited,
-    } = useBudgetLines();
-
+        new_budget_lines: newBudgetLines,
+    } = useBudgetLines() || {
+        selected_can: null,
+        entered_description: null,
+        entered_amount: null,
+        entered_month: null,
+        entered_day: null,
+        entered_year: null,
+        entered_comments: null,
+        is_editing_budget_line: null,
+        budget_line_being_edited: null,
+        new_budget_lines: [],
+    };
     const dispatch = useBudgetLinesDispatch();
     // setters
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
@@ -48,6 +63,9 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
     if (!loggedInUserFullName) {
         loggedInUserFullName = "Sheila Celentano";
     }
+
+    // combine arrays of new budget lines and budget lines added
+    const allBudgetLines = [...existingBudgetLines, ...newBudgetLines];
 
     const showAlert = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -86,7 +104,7 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
         dispatch({
             type: "EDIT_BUDGET_LINE",
             payload: {
-                id: budgetLinesAdded[budgetLineBeingEdited].id,
+                id: allBudgetLines[budgetLineBeingEdited].id,
                 line_description: enteredDescription,
                 comments: enteredComments,
                 can_id: selectedCan?.id,
@@ -122,7 +140,7 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
 
     const saveBudgetLineItems = (event) => {
         event.preventDefault();
-        const newBudgetLineItems = budgetLinesAdded.filter(
+        const newBudgetLineItems = allBudgetLines.filter(
             // eslint-disable-next-line no-prototype-builtins
             (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on")
         );
@@ -165,7 +183,7 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
                     <p>Step Two: Text explaining this page</p>
                 </>
             )}
-            <StepIndicator steps={wizardSteps} currentStep={2} />
+            <StepIndicator steps={wizardSteps} currentStep={currentStep} />
             <ProjectAgreementSummaryCard
                 selectedResearchProject={selectedResearchProject}
                 selectedAgreement={selectedAgreement}
@@ -177,7 +195,7 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
                 active agreement, it will default to the procurement shop currently being used.
             </p>
             <ProcurementShopSelect
-                budgetLinesLength={budgetLinesAdded?.length}
+                budgetLinesLength={allBudgetLines?.length}
                 selectedProcurementShop={selectedProcurementShop}
                 setSelectedProcurementShop={setSelectedProcurementShop}
             />
@@ -213,7 +231,7 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
             </p>
             <PreviewTable
                 loggedInUserName={loggedInUserFullName}
-                budgetLinesAdded={budgetLinesAdded}
+                budgetLinesAdded={allBudgetLines}
                 handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                 handleDeleteBudgetLine={handleDeleteBudgetLine}
                 handleDuplicateBudgetLine={handleDuplicateBudgetLine}
@@ -223,7 +241,7 @@ export const StepCreateBudgetLines = ({ goToNext, goBack }) => {
                     className="usa-button usa-button--unstyled margin-right-2"
                     onClick={() => {
                         // if no budget lines have been added, go back
-                        if (budgetLinesAdded?.length === 0) {
+                        if (allBudgetLines?.length === 0) {
                             goBack();
                             return;
                         }
