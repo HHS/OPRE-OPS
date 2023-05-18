@@ -1,3 +1,4 @@
+/// <reference types="Cypress"/>
 import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
