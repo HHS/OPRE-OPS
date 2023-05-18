@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import App from "../../App";
 import { CreateAgreementFlow } from "./CreateAgreementFlow";
 import { setProcurementShopsList, setUsers } from "./createAgreementSlice";
 import { getProcurementShopList } from "../../api/getProcurementShopList";
 import { StepSelectProject } from "./StepSelectProject";
 import { StepCreateAgreement } from "./StepCreateAgreement";
-import StepCreateBudgetLines from "../../components/UI/WizardSteps/StepCreateBudgetLines/StepCreateBudgetLines";
+import StepCreateBudgetLines from "../../components/UI/WizardSteps/StepCreateBudgetLines";
 import { getUsers } from "../../api/getUser";
-import App from "../../App";
 import StepAgreementSuccess from "./StepAgreementSuccess";
 
 const wizardSteps = ["Project", "Agreement", "Budget Lines"];
