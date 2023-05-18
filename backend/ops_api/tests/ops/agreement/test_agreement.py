@@ -181,7 +181,6 @@ def test_agreement_create_grant_agreement(loaded_db):
     assert agreement.foa == "NIH"
 
 
-@pytest.mark.skip("Not yet implemented")
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_patch_by_id(auth_client, loaded_db):
     response = auth_client.patch(
@@ -189,7 +188,8 @@ def test_agreements_patch_by_id(auth_client, loaded_db):
         json={
             "name": "New Contract Name",
             "description": "New Contract Description",
-            "support_contacts": [{"name": "Support Name", "email": "support@test.com"}],
+            "team_members": [{"id": 1}],
+            "support_contacts": [{"id": 2}, {"id": 3}],
         },
     )
     assert response.status_code == 200
@@ -199,9 +199,10 @@ def test_agreements_patch_by_id(auth_client, loaded_db):
 
     assert agreement.name == "New Contract Name"
     assert agreement.description == "New Contract Description"
-    assert len(agreement.support_contacts) == 1
-    assert agreement.support_contacts[0].name == "Support Name"
-    assert agreement.support_contacts[0].email == "support@test.com"
+    assert len(agreement.team_members) == 1
+    assert agreement.team_members[0].id == 1
+    assert len(agreement.support_contacts) == 2
+    assert agreement.support_contacts[0].id == 2
 
 
 @pytest.mark.skip("Not yet implemented")
