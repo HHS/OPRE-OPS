@@ -8,7 +8,7 @@ import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import Tag from "../../components/UI/Tag/Tag";
 import { editBudgetLineAdded, duplicateBudgetLineAdded } from "./createBudgetLineSlice";
 import { TotalSummaryCard } from "./TotalSummaryCard";
-import { formatDate } from "../../helpers/utils";
+import { formatDate, loggedInName } from "../../helpers/utils";
 import "./PreviewTable.scss";
 
 export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = false, budgetLines = null }) => {
@@ -20,11 +20,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
         .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on))
         .reverse();
 
-    let loggedInUser = useSelector((state) => state.auth.activeUser.full_name);
-    // NOTE: set to logged in user to Sheila if no name is found
-    if (!loggedInUser) {
-        loggedInUser = "Sheila Celentano";
-    }
+    let loggedInUser = useSelector((state) => loggedInName(state.auth?.activeUser));
 
     const TableRow = ({ bl }) => {
         const [isExpanded, setIsExpanded] = useState(false);
@@ -91,6 +87,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                     {budgetLine.status === "DRAFT" && (
                         <>
                             <FontAwesomeIcon
+                                id={`edit-${bl?.id}`}
                                 icon={faPen}
                                 className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
                                 title="edit"
@@ -98,6 +95,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                                 onClick={() => dispatch(editBudgetLineAdded(budgetLine))}
                             />
                             <FontAwesomeIcon
+                                id={`delete-${bl?.id}`}
                                 icon={faTrash}
                                 title="delete"
                                 data-position="top"
@@ -107,6 +105,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                         </>
                     )}
                     <FontAwesomeIcon
+                        id={`duplicate-${bl?.id}`}
                         icon={faClone}
                         title="duplicate"
                         data-position="top"
@@ -227,7 +226,9 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                             <div className="display-flex padding-right-9">
                                 <dl className="font-12px">
                                     <dt className="margin-0 text-base-dark">Created By</dt>
-                                    <dd className="margin-0">{bl?.created_by ? bl.created_by : loggedInUser}</dd>
+                                    <dd id={`created-by-name-${bl?.id}`} className="margin-0">
+                                        {bl?.created_by ? bl.created_by : loggedInUser}
+                                    </dd>
                                     <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                                         <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />
                                         {bl_created_on}
