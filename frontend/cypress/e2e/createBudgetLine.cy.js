@@ -30,6 +30,15 @@ const blData = [
         amount: "222222",
         note: "note two",
     },
+    {
+        descr: "SC3",
+        can: "G99HRF2",
+        month: "09 - Sep",
+        day: "23",
+        year: "2023",
+        amount: "333333",
+        note: "note three",
+    },
 ];
 
 const completeStepOne = () => {
@@ -83,7 +92,28 @@ describe("create budget lines workflow", () => {
     it("should complete the workflow", () => {
         completeStepOne();
         completeStepTwo();
+        cy.get("tbody").children().as("table-rows").should("have.length", 2);
         createBudgetLine(blData[0]);
         cy.get("@tsc").should("contain", "Draft Total").and("contain", "$ 111,111.00");
+        cy.get("@table-rows").should("have.length", 3);
+        createBudgetLine(blData[1]);
+        cy.get("@tsc").should("contain", "Draft Total").and("contain", "$ 333,333.00");
+        cy.get("@table-rows").should("have.length", 4);
+        // duplicate the first row
+        cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
+        cy.get("[data-cy='duplicate-row']").click();
+        cy.get("@table-rows").should("have.length", 5);
+        // edit the first row
+        cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
+        cy.get("[data-cy='edit-row']").click();
+        cy.get("#bl-description").clear().type(blData[2].descr);
+        cy.get("#bl-amount").clear().type(blData[2].amount);
+        cy.get("#with-hint-textarea").clear().type(blData[2].note);
+        cy.get("[data-cy='update-budget-line']").click();
+        cy.get("@table-rows").eq(0).should("contain", blData[2].descr);
+        cy.get("@tsc").should("contain", "Draft Total").and("contain", "$ 666,666.00");
+        // delete the second row
+        cy.get("@table-rows").eq(1).find("[data-cy='expand-row']").click();
+        cy.get("[data-cy='delete-row']").click();
     });
 });

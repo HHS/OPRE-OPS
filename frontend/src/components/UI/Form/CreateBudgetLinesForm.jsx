@@ -164,6 +164,7 @@ export const CreateBudgetLinesForm = ({
                         </button>
                         <button
                             className="usa-button usa-button--outline margin-top-2 margin-right-0"
+                            data-cy="update-budget-line"
                             onClick={handleEditForm}
                         >
                             Update Budget Line
