@@ -6,10 +6,10 @@ before(() => {
     cy.visit("/budget-lines/create");
 });
 
-// afterEach(() => {
-//     cy.injectAxe();
-//     cy.checkA11y(null, null, terminalLog);
-// });
+afterEach(() => {
+    cy.injectAxe();
+    cy.checkA11y(null, null, terminalLog);
+});
 
 const blData = [
     {
@@ -72,9 +72,46 @@ const completeStepTwo = () => {
         .and("contain", "Contract #1: African American Child and Family Research Center")
         .and("contain", "Product Service Center")
         .and("contain", "0");
-    // cy.get('[data-cy="total-summary-card-total"]').should("contain", "$0.00");
     cy.get('[data-cy="total-summary-cards"]').as("tsc").should("exist");
     cy.get("@tsc").should("contain", "Draft Total").and("contain", "$0.00");
+};
+
+const completeCreateBudgetLines = () => {
+    cy.get("tbody").children().as("table-rows").should("have.length", 2);
+    createBudgetLine(blData[0]);
+    cy.get("@tsc").should("contain", "Draft Total").and("contain", "$ 111,111.00");
+    cy.get("@table-rows").should("have.length", 3);
+    createBudgetLine(blData[1]);
+    cy.get("@tsc").should("contain", "Draft Total").and("contain", "$ 333,333.00");
+    cy.get("@table-rows").should("have.length", 4);
+    // duplicate the first row
+    cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
+    cy.get("[data-cy='duplicate-row']").click();
+    cy.get("@table-rows").should("have.length", 5);
+    // edit the first row
+    cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
+    cy.get("[data-cy='edit-row']").click();
+    cy.get("#bl-description").clear().type(blData[2].descr);
+    cy.get("#bl-amount").clear().type(blData[2].amount);
+    cy.get("#with-hint-textarea").clear().type(blData[2].note);
+    cy.get("[data-cy='update-budget-line']").click();
+    cy.get("@table-rows").eq(0).should("contain", blData[2].descr);
+    cy.get("@tsc").should("contain", "Draft Total").and("contain", "$ 666,666.00");
+    // delete the second row
+    cy.get("@table-rows").eq(1).find("[data-cy='expand-row']").click();
+    cy.get("[data-cy='delete-row']").click();
+    cy.get("[data-cy='confirm-action']").click(); // modal confirm
+    cy.get("@table-rows").should("have.length", 4);
+    cy.get("@tsc").should("contain", "Draft Total").and("contain", "$ 444,444.00");
+    //post the budget lines
+    cy.get("[data-cy='step-two-continue']").click();
+    cy.wait("@postBudgetLines")
+        .then((interception) => {
+            const { statusCode, body } = interception.response;
+            expect(statusCode).to.equal(201);
+            // expect(body.message).to.contain("Budget Line Created");
+        })
+        .then(cy.log);
 };
 
 const createBudgetLine = (bl) => {
@@ -90,30 +127,9 @@ const createBudgetLine = (bl) => {
 
 describe("create budget lines workflow", () => {
     it("should complete the workflow", () => {
+        cy.intercept("POST", "**/budget-line-items").as("postBudgetLines");
         completeStepOne();
         completeStepTwo();
-        cy.get("tbody").children().as("table-rows").should("have.length", 2);
-        createBudgetLine(blData[0]);
-        cy.get("@tsc").should("contain", "Draft Total").and("contain", "$ 111,111.00");
-        cy.get("@table-rows").should("have.length", 3);
-        createBudgetLine(blData[1]);
-        cy.get("@tsc").should("contain", "Draft Total").and("contain", "$ 333,333.00");
-        cy.get("@table-rows").should("have.length", 4);
-        // duplicate the first row
-        cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
-        cy.get("[data-cy='duplicate-row']").click();
-        cy.get("@table-rows").should("have.length", 5);
-        // edit the first row
-        cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
-        cy.get("[data-cy='edit-row']").click();
-        cy.get("#bl-description").clear().type(blData[2].descr);
-        cy.get("#bl-amount").clear().type(blData[2].amount);
-        cy.get("#with-hint-textarea").clear().type(blData[2].note);
-        cy.get("[data-cy='update-budget-line']").click();
-        cy.get("@table-rows").eq(0).should("contain", blData[2].descr);
-        cy.get("@tsc").should("contain", "Draft Total").and("contain", "$ 666,666.00");
-        // delete the second row
-        cy.get("@table-rows").eq(1).find("[data-cy='expand-row']").click();
-        cy.get("[data-cy='delete-row']").click();
+        completeCreateBudgetLines();
     });
 });

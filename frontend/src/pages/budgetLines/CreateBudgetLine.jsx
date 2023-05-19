@@ -218,7 +218,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                 >
                     Back
                 </button>
-                <button className="usa-button" onClick={saveBudgetLineItems}>
+                <button className="usa-button" data-cy="step-two-continue" onClick={saveBudgetLineItems}>
                     Continue
                 </button>
             </div>
