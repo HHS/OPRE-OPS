@@ -8,16 +8,8 @@ import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import Tag from "../../components/UI/Tag/Tag";
 import { editBudgetLineAdded, duplicateBudgetLineAdded } from "./createBudgetLineSlice";
 import { TotalSummaryCard } from "./TotalSummaryCard";
-import { formatDate } from "../../helpers/utils";
+import { formatDate, loggedInName } from "../../helpers/utils";
 import "./PreviewTable.scss";
-
-export const loggedInName = (activeUser) => {
-    let loggedInUser = "Unknown User";
-    if (activeUser) {
-        loggedInUser = activeUser.full_name ? activeUser.full_name : activeUser.email;
-    }
-    return loggedInUser;
-};
 
 export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = false, budgetLines = null }) => {
     const dispatch = useDispatch();
