@@ -1,3 +1,5 @@
+/// <reference types="Cypress"/>
+
 import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
@@ -51,6 +53,36 @@ it("can create an agreement", () => {
     // Skip Select Team Members for now - something is wrong with the select
     cy.get("#with-hint-textarea").type("This is a note.");
     cy.get("#continue").click();
+
+    // Add a new budget line item
+    cy.get("#bl-description").type("Test BLI Description");
+    cy.get("#procurement_month").select("01 - Jan");
+    cy.get("#procurement_day").type("1");
+    cy.get("#procurement_year").type("2024");
+    cy.get("#can-select").type("G99MVT3");
+    cy.get("#bl-amount").type("1000000");
+    cy.get("#with-hint-textarea").type("Something something note something.");
+    cy.get("#add-budget-line").click();
+
+    // Duplicate budget line item
+    cy.get("[id^=expand-]").click();
+    cy.get("[id^=duplicate-]").click();
+
+    // expand budget line and check that the "created by" name is not empty.
+    cy.get("[id^=expand-]").each((_, element) => {
+        const item = Cypress.$(element);
+        const id = item.attr("id");
+        if (id !== undefined) {
+            const index = id.split("-")[1];
+            item.click();
+
+            cy.get(`#created-by-name-${index}`, { timeout: 15000 })
+                .invoke("text")
+                .then((text) => {
+                    expect(text.length).to.be.at.least(1);
+                });
+        }
+    });
 
     cy.wait("@postAgreement")
         .then((interception) => {
