@@ -44,3 +44,11 @@ export const convertCodeForDisplay = (list_name, code) => {
     }
     return code;
 };
+
+export const loggedInName = (activeUser) => {
+    let loggedInUser = "Unknown User";
+    if (activeUser) {
+        loggedInUser = activeUser.full_name ? activeUser.full_name : activeUser.email;
+    }
+    return loggedInUser;
+};
