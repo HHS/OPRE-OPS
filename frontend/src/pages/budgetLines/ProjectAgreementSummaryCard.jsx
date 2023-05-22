@@ -31,7 +31,7 @@ export const ProjectAgreementSummaryCard = ({
                 </div>
                 <div className="margin-left-5">
                     <dt className="margin-0 text-base-dark">Fee Rate</dt>
-                    <dd className="margin-0 text-semibold">{fee && `${fee * 100}%`}</dd>
+                    <dd className="margin-0 text-semibold">{fee && `${fee * 100}`}%</dd>
                 </div>
             </dl>
         </div>
@@ -50,3 +50,5 @@ ProjectAgreementSummaryCard.propTypes = {
         fee: PropTypes.number,
     }),
 };
+
+export default ProjectAgreementSummaryCard;
