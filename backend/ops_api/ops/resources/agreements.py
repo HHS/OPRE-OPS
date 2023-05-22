@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Type
 
 import desert
 from flask import Response, current_app, jsonify, request
@@ -100,7 +100,9 @@ REQUEST_SCHEMAS = {
 }
 
 
-def pick_schema_class(agreement_type: AgreementType, method: str):
+def pick_schema_class(agreement_type: AgreementType, method: str) -> Type[
+        ContractAgreementRequestBody | ContractAgreementPatchBody |
+        GrantAgreementRequestBody | GrantAgreementPatchBody]:
     type_methods = REQUEST_SCHEMAS.get(agreement_type)
     if not type_methods:
         raise ValueError(f"Invalid agreement_type ({agreement_type})")
@@ -173,9 +175,7 @@ class AgreementItemAPI(BaseItemAPI):
                 # for PUT, it must exist in request
                 req_type = request.json.get("agreement_type", None)
                 if req_type != old_agreement.agreement_type.name:
-                    msg = "Invalid agreement_type, agreement_type must not change"
-                    current_app.logger.error(f"{message_prefix}: {msg}")
-                    return make_response_with_headers({"message": msg}, 400)
+                    raise RuntimeError("Invalid agreement_type, agreement_type must not change")
                 agreement_cls = pick_schema_class(old_agreement.agreement_type, "PUT")
                 schema = desert.schema(agreement_cls)
 
@@ -187,10 +187,6 @@ class AgreementItemAPI(BaseItemAPI):
                 data = schema.load(request.json)
                 data = data.__dict__
                 agreement = update_agreement(data, old_agreement)
-
-                current_app.db_session.add(agreement)
-                current_app.db_session.commit()
-
                 agreement_dict = agreement.to_dict()
                 meta.metadata.update({"updated_agreement": agreement_dict})
                 current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
@@ -223,9 +219,7 @@ class AgreementItemAPI(BaseItemAPI):
                 if "agreement_type" in request.json:
                     req_type = request.json["agreement_type"]
                     if req_type != old_agreement.agreement_type.name:
-                        msg = "Invalid agreement_type, agreement_type must not change"
-                        current_app.logger.error(f"{message_prefix}: {msg}")
-                        return make_response_with_headers({"message": msg}, 400)
+                        raise RuntimeError("Invalid agreement_type, agreement_type must not change")
                 agreement_cls = pick_schema_class(old_agreement.agreement_type, "PATCH")
                 schema = desert.schema(agreement_cls)
 
@@ -240,10 +234,6 @@ class AgreementItemAPI(BaseItemAPI):
                     k: v for (k, v) in data.items() if k in request.json
                 }  # only keep the attributes from the request body
                 agreement = update_agreement(data, old_agreement)
-
-                current_app.db_session.add(agreement)
-                current_app.db_session.commit()
-
                 agreement_dict = agreement.to_dict()
                 meta.metadata.update({"updated_agreement": agreement_dict})
                 current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
