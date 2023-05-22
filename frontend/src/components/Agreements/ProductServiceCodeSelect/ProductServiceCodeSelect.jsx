@@ -1,4 +1,4 @@
-import { useGetProductServiceCodesQuery } from "../../api/opsAPI";
+import { useGetProductServiceCodesQuery } from "../../../api/opsAPI";
 
 export const ProductServiceCodeSelect = ({ selectedProductServiceCode, setSelectedProductServiceCode }) => {
     const {

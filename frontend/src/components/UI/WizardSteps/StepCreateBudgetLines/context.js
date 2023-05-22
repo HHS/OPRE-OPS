@@ -102,6 +102,7 @@ function budgetLinesReducer(state, action) {
                 }
                 return budgetLine;
             });
+
             return {
                 ...state,
                 new_budget_lines: updatedBudgetLines,

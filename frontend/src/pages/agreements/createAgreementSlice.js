@@ -20,7 +20,6 @@ const initialState = {
         research_project_id: null,
         procurement_shop_id: null,
     },
-    procurement_shops_list: [],
     cans: [],
     users: [],
     product_service_codes_list: [],
@@ -105,9 +104,6 @@ const createAgreementSlice = createSlice({
         },
         setAgreementNotes: (state, action) => {
             state.agreement.notes = action.payload;
-        },
-        setProcurementShopsList: (state, action) => {
-            state.procurement_shops_list = action.payload;
         },
         setCans: (state, action) => {
             state.cans = action.payload;
@@ -235,7 +231,6 @@ export const {
     setProductServiceCodesList,
     setResearchProjectsFilter,
     setAgreements,
-    setProcurementShopsList,
     setCans,
     setAgreementId,
     setSelectedAgreementReason,

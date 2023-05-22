@@ -1,31 +1,29 @@
 import React from "react";
-import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-import ProcurementShopSelect from "./ProcurementShopSelect";
-import AgreementReasonSelect from "./AgreementReasonSelect";
-import AgreementTypeSelect from "./AgreementTypeSelect";
-import ProductServiceCodeSelect from "./ProductServiceCodeSelect";
+import ProcurementShopSelect from "../../components/Agreements/ProcurementShopSelect/ProcurementShopSelect";
+import AgreementReasonSelect from "../../components/Agreements/AgreementReasonSelect/AgreementReasonSelect";
+import AgreementTypeSelect from "../../components/Agreements/AgreementTypeSelect/AgreementTypeSelect";
+import ProductServiceCodeSelect from "../../components/Agreements/ProductServiceCodeSelect/ProductServiceCodeSelect";
 import Alert from "../../components/UI/Alert/Alert";
 import {
     setAgreementDescription,
     setAgreementId,
     setAgreementIncumbent,
     setAgreementNotes,
-    setAgreementProjectOfficer,
-    setAgreementTeamMembers,
+    setAgreementProcurementShop,
     setAgreementTitle,
-    setSelectedAgreementReason,
-    setSelectedProcurementShop,
+    setSelectedProcurementShop as setSelectedProcurementShopInBudgetLine,
     setSelectedProject,
 } from "./createAgreementSlice";
-import ProjectOfficerSelect from "./ProjectOfficerSelect";
-import TeamMemberSelect from "./TeamMemberSelect";
-import TeamMemberList from "./TeamMemberList";
+import ProjectOfficerSelect from "../../components/Agreements/ProjectOfficerSelect/ProjectOfficerSelect";
+import TeamMemberSelect from "../../components/Agreements/TeamMemberSelect/TeamMemberSelect";
+import TeamMemberList from "../../components/Agreements/TeamMemberList/TeamMemberList";
 import Modal from "../../components/UI/Modal/Modal";
-import { postAgreement } from "../../api/postAgreements";
+import { formatTeamMember, postAgreement } from "../../api/postAgreements";
 import ProjectSummaryCard from "../../components/ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";
+import ProductServiceCodeSummaryBox from "../../components/Agreements/ProductServiceCodeSummaryBox/ProductServiceCodeSummaryBox";
 
 export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
@@ -34,8 +32,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const agreementDescription = useSelector((state) => state.createAgreement.agreement.description);
     const agreementNotes = useSelector((state) => state.createAgreement.agreement.notes);
     const agreement = useSelector((state) => state.createAgreement.agreement);
-    const agreementReason = agreement.selected_agreement_reason;
-    const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null;
     const agreementIncumbent = useSelector((state) => state.createAgreement.agreement.incumbent_entered);
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
     const [showModal, setShowModal] = React.useState(false);
@@ -45,6 +41,12 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
 
     const [selectedAgreementType, setSelectedAgreementType] = React.useState("");
     const [selectedProductServiceCode, setSelectedProductServiceCode] = React.useState({});
+    const [selectedProcurementShop, setSelectedProcurementShop] = React.useState({});
+    const [selectedAgreementReason, setSelectedAgreementReason] = React.useState({});
+    const [selectedProjectOfficer, setSelectedProjectOfficer] = React.useState({});
+    const [selectedTeamMembers, setSelectedTeamMembers] = React.useState([]);
+
+    const incumbentDisabled = selectedAgreementReason === "NEW_REQ" || selectedAgreementReason === null;
 
     const showAlertAndNavigate = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -67,6 +69,11 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             ...agreement,
             selected_agreement_type: selectedAgreementType,
             product_service_code_id: selectedProductServiceCode ? selectedProductServiceCode.id : null,
+            agreement_reason: selectedAgreementReason,
+            project_officer: selectedProjectOfficer && selectedProjectOfficer.id > 0 ? selectedProjectOfficer.id : null,
+            team_members: selectedTeamMembers.map((team_member) => {
+                return formatTeamMember(team_member);
+            }),
         };
         const response = await postAgreement(data);
         const newAgreementId = response.id;
@@ -81,10 +88,10 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         dispatch(setSelectedProject({}));
         setSelectedAgreementType("");
         setSelectedProductServiceCode({});
-        dispatch(setSelectedAgreementReason(null));
+        setSelectedAgreementReason(null);
         dispatch(setSelectedProcurementShop({}));
-        dispatch(setAgreementProjectOfficer(null));
-        dispatch(setAgreementTeamMembers([]));
+        setSelectedProjectOfficer(null);
+        setSelectedTeamMembers([]);
         setModalProps({});
     };
     const handleContinue = async () => {
@@ -109,32 +116,11 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         });
     };
 
-    const ProductServiceCodeSummaryBox = ({ selectedProductServiceCode }) => {
-        const { naics, support_code } = selectedProductServiceCode;
-
-        return (
-            <div
-                className="bg-base-lightest font-family-sans font-12px border-1px border-base-light radius-sm margin-top-4"
-                style={{ width: "19.5625rem", minHeight: "4.375rem" }}
-            >
-                <dl className="margin-0 padding-y-2 padding-x-105 display-flex flex-justify">
-                    <div>
-                        <dt className="margin-0 text-base-dark">NAICS Code</dt>
-                        <dd className="text-semibold margin-0">{naics}</dd>
-                    </div>
-                    <div>
-                        <dt className="margin-0 text-base-dark">Program Support Code</dt>
-                        <dd className="text-semibold margin-0">{support_code}</dd>
-                    </div>
-                </dl>
-            </div>
-        );
-    };
-    ProductServiceCodeSummaryBox.propTypes = {
-        selectedProductServiceCode: PropTypes.shape({
-            naics: PropTypes.number.isRequired,
-            support_code: PropTypes.string.isRequired,
-        }).isRequired,
+    const handleOnChangeSelectedProcurementShop = (procurementShop) => {
+        // TODO:Remove dup state, i.e. use the local state and not in Redux
+        setSelectedProcurementShop(procurementShop);
+        dispatch(setAgreementProcurementShop(procurementShop.id));
+        dispatch(setSelectedProcurementShopInBudgetLine(procurementShop));
     };
 
     return (
@@ -203,11 +189,18 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                     <ProductServiceCodeSummaryBox selectedProductServiceCode={selectedProductServiceCode} />
                 )}
             <h2 className="font-sans-lg margin-top-3">Procurement Shop</h2>
-            <ProcurementShopSelect />
+            <ProcurementShopSelect
+                selectedProcurementShop={selectedProcurementShop}
+                onChangeSelectedProcurementShop={handleOnChangeSelectedProcurementShop}
+            />
 
             <h2 className="font-sans-lg margin-top-3">Reason for Agreement</h2>
             <div className="display-flex">
-                <AgreementReasonSelect />
+                <AgreementReasonSelect
+                    selectedAgreementReason={selectedAgreementReason}
+                    setSelectedAgreementReason={setSelectedAgreementReason}
+                    setAgreementIncumbent={setAgreementIncumbent}
+                />
                 <fieldset
                     className={`usa-fieldset margin-left-4 ${incumbentDisabled && "text-disabled"}`}
                     disabled={incumbentDisabled}
@@ -229,12 +222,20 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
 
             <h2 className="font-sans-lg margin-top-3">Points of Contact</h2>
             <div className="display-flex">
-                <ProjectOfficerSelect />
-                <TeamMemberSelect className="margin-left-4" />
+                <ProjectOfficerSelect
+                    selectedProjectOfficer={selectedProjectOfficer}
+                    setSelectedProjectOfficer={setSelectedProjectOfficer}
+                />
+                <TeamMemberSelect
+                    className="margin-left-4"
+                    selectedTeamMembers={selectedTeamMembers}
+                    selectedProjectOfficer={selectedProjectOfficer}
+                    setSelectedTeamMembers={setSelectedTeamMembers}
+                />
             </div>
 
             <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
-            <TeamMemberList />
+            <TeamMemberList selectedTeamMembers={selectedTeamMembers} setSelectedTeamMembers={setSelectedTeamMembers} />
             <div className="usa-character-count margin-top-3">
                 <div className="usa-form-group">
                     <label className="usa-label font-sans-lg text-bold" htmlFor="with-hint-textarea">

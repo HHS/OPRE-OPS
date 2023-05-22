@@ -6,11 +6,12 @@ import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-so
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import Tag from "../Tag/Tag";
 import TotalSummaryCard from "./TotalSummaryCard";
-import { formatDate } from "../../../helpers/utils";
+// import { editBudgetLineAdded, duplicateBudgetLineAdded } from "./createBudgetLineSlice";
+import { useSelector } from "react-redux";
+import { formatDate, loggedInName } from "../../../helpers/utils";
 import "./PreviewTable.scss";
 
 export const PreviewTable = ({
-    loggedInUserName = "Sheila Celentano",
     budgetLinesAdded = [],
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
@@ -21,6 +22,8 @@ export const PreviewTable = ({
         .slice()
         .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on))
         .reverse();
+
+    let loggedInUser = useSelector((state) => loggedInName(state.auth?.activeUser));
 
     const TableRow = ({ bl }) => {
         const [isExpanded, setIsExpanded] = useState(false);
@@ -84,6 +87,8 @@ export const PreviewTable = ({
                     {budgetLine.status === "DRAFT" && (
                         <>
                             <FontAwesomeIcon
+                                id={`edit-${bl?.id}`}
+                                data-cy="edit-row"
                                 icon={faPen}
                                 className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
                                 title="edit"
@@ -91,6 +96,8 @@ export const PreviewTable = ({
                                 onClick={() => handleSetBudgetLineForEditing(budgetLine)}
                             />
                             <FontAwesomeIcon
+                                id={`delete-${bl?.id}`}
+                                data-cy="delete-row"
                                 icon={faTrash}
                                 title="delete"
                                 data-position="top"
@@ -100,6 +107,8 @@ export const PreviewTable = ({
                         </>
                     )}
                     <FontAwesomeIcon
+                        id={`duplicate-${bl?.id}`}
+                        data-cy="duplicate-row"
                         icon={faClone}
                         title="duplicate"
                         data-position="top"
@@ -207,6 +216,7 @@ export const PreviewTable = ({
                     >
                         <FontAwesomeIcon
                             id={`expand-${bl?.id}`}
+                            data-cy="expand-row"
                             icon={isExpanded ? faChevronUp : faChevronDown}
                             className="height-2 width-2 padding-right-1 hover: cursor-pointer"
                             onClick={() => handleExpandRow()}
@@ -220,7 +230,9 @@ export const PreviewTable = ({
                             <div className="display-flex padding-right-9">
                                 <dl className="font-12px">
                                     <dt className="margin-0 text-base-dark">Created By</dt>
-                                    <dd className="margin-0">{bl?.created_by ? bl.created_by : loggedInUserName}</dd>
+                                    <dd id={`created-by-name-${bl?.id}`} className="margin-0">
+                                        {bl?.created_by ? bl.created_by : loggedInUser}
+                                    </dd>
                                     <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                                         <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />
                                         {bl_created_on}

@@ -101,10 +101,12 @@ export const StepCreateBudgetLines = ({
 
     const handleEditForm = (e) => {
         e.preventDefault();
+        console.log("budget line being edited: ", budgetLineBeingEdited);
+        console.log("which is this one: ", allBudgetLines[budgetLineBeingEdited]);
         dispatch({
             type: "EDIT_BUDGET_LINE",
             payload: {
-                id: allBudgetLines[budgetLineBeingEdited].id,
+                id: newBudgetLines[budgetLineBeingEdited].id,
                 line_description: enteredDescription,
                 comments: enteredComments,
                 can_id: selectedCan?.id,
