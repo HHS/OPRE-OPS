@@ -100,7 +100,7 @@ REQUEST_SCHEMAS = {
 }
 
 
-def pick_patch_schema_class(agreement_type: AgreementType, method: str):
+def pick_schema_class(agreement_type: AgreementType, method: str):
     type_methods = REQUEST_SCHEMAS.get(agreement_type)
     if not type_methods:
         raise ValueError(f"Invalid agreement_type ({agreement_type})")
@@ -108,7 +108,6 @@ def pick_patch_schema_class(agreement_type: AgreementType, method: str):
     if not schema:
         raise ValueError(f"Invalid agreement_type for method={method}")
     return schema
-
 
 
 @dataclass
@@ -159,7 +158,6 @@ class AgreementItemAPI(BaseItemAPI):
     @jwt_required()
     def put(self, id: int) -> Response:
         message_prefix = f"PUT to {ENDPOINT_STRING}"
-        print(f"{message_prefix=}")
 
         identity = get_jwt_identity()
         is_authorized = self.auth_gateway.is_authorized(identity, ["PUT_AGREEMENT"])
@@ -172,12 +170,13 @@ class AgreementItemAPI(BaseItemAPI):
                 if not old_agreement:
                     raise RuntimeError("Invalid Agreement id.")
                 # reject change of agreement_type
-                if "agreement_type" in request.json:
-                    req_type = request.json["agreement_type"]
-                    if req_type != old_agreement.agreement_type.name:
-                        print(f"{req_type=}, {old_agreement.agreement_type=}")
-                        raise ValueError("Invalid agreement_type, agreement_type must not change")
-                agreement_cls = pick_patch_schema_class(old_agreement.agreement_type, "PUT")
+                # for PUT, it must exist in request
+                req_type = request.json.get("agreement_type", None)
+                if req_type != old_agreement.agreement_type.name:
+                    msg = "Invalid agreement_type, agreement_type must not change"
+                    current_app.logger.error(f"{message_prefix}: {msg}")
+                    return make_response_with_headers({"message": msg}, 400)
+                agreement_cls = pick_schema_class(old_agreement.agreement_type, "PUT")
                 schema = desert.schema(agreement_cls)
 
                 OPSMethodView._validate_request(
@@ -187,8 +186,6 @@ class AgreementItemAPI(BaseItemAPI):
 
                 data = schema.load(request.json)
                 data = data.__dict__
-                print(f"Agreement Data: {data}")
-                print(f"Agreement Id: {id}")
                 agreement = update_agreement(data, old_agreement)
 
                 current_app.db_session.add(agreement)
@@ -226,9 +223,10 @@ class AgreementItemAPI(BaseItemAPI):
                 if "agreement_type" in request.json:
                     req_type = request.json["agreement_type"]
                     if req_type != old_agreement.agreement_type.name:
-                        print(f"{req_type=}, {old_agreement.agreement_type=}")
-                        raise ValueError("Invalid agreement_type, agreement_type must not change")
-                agreement_cls = pick_patch_schema_class(old_agreement.agreement_type, "PATCH")
+                        msg = "Invalid agreement_type, agreement_type must not change"
+                        current_app.logger.error(f"{message_prefix}: {msg}")
+                        return make_response_with_headers({"message": msg}, 400)
+                agreement_cls = pick_schema_class(old_agreement.agreement_type, "PATCH")
                 schema = desert.schema(agreement_cls)
 
                 OPSMethodView._validate_request(
@@ -241,8 +239,6 @@ class AgreementItemAPI(BaseItemAPI):
                 data = {
                     k: v for (k, v) in data.items() if k in request.json
                 }  # only keep the attributes from the request body
-                print(f"Agreement Data: {data}")
-                print(f"Agreement Id: {id}")
                 agreement = update_agreement(data, old_agreement)
 
                 current_app.db_session.add(agreement)
@@ -405,27 +401,27 @@ class AgreementTypeListAPI(MethodView):
 
 def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
     for item in data:
-        print(f"update_data: {item=}, {data[item]}")
+        if item not in ["team_members", "support_contacts"]:
+            setattr(agreement, item, data[item])
 
-        if item == "team_members":
-            tmp_team_members = data[item]
+        elif item == "team_members":
+            tmp_team_members = data[item] if data[item] else []
+            agreement.team_members = []
             if tmp_team_members:
-                agreement.team_members = [current_app.db_session.get(User, tm_id.id) for tm_id in tmp_team_members]
-            else:
-                agreement.team_members = []
+                agreement.team_members.extend(
+                    [current_app.db_session.get(User, tm_id.id) for tm_id in tmp_team_members]
+                )
 
         elif item == "support_contacts":
-            tmp_support_contacts = data[item]
-            if tmp_team_members:
-                agreement.support_contacts = [current_app.db_session.get(User, tm_id.id) for tm_id in tmp_support_contacts]
-            else:
-                agreement.support_contacts = []
-        else:
-            setattr(agreement, item, data[item])
+            tmp_support_contacts = data[item] if data[item] else []
+            agreement.support_contacts = []
+            if tmp_support_contacts:
+                agreement.support_contacts.extend(
+                    [current_app.db_session.get(User, tm_id.id) for tm_id in tmp_support_contacts]
+                )
 
 
 def update_agreement(data: dict[str, Any], agreement: Agreement):
-    print(f"{data=}, {agreement=}")
     update_data(agreement, data)
     current_app.db_session.add(agreement)
     current_app.db_session.commit()

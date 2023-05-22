@@ -183,13 +183,29 @@ def test_agreement_create_grant_agreement(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_patch_by_id(auth_client, loaded_db):
+    # 400: invalid type change
     response = auth_client.patch(
         "/api/v1/agreements/1",
         json={
-            "name": "New Contract Name",
-            "description": "New Contract Description",
+            "agreement_type": "GRANT",
+            "name": "Updated Grant Name",
+            "description": "Updated Grant Description",
+            "number": "AGR0001",
+        },
+    )
+    assert response.status_code == 400
+
+    # CONTRACT
+    response = auth_client.patch(
+        "/api/v1/agreements/1",
+        json={
+            "agreement_type": "CONTRACT",
+            "name": "Updated Grant Name",
+            "description": "Updated Grant Description",
+            "number": "AGR0001",
             "team_members": [{"id": 1}],
             "support_contacts": [{"id": 2}, {"id": 3}],
+            "notes": "Test Note"
         },
     )
     assert response.status_code == 200
@@ -197,12 +213,124 @@ def test_agreements_patch_by_id(auth_client, loaded_db):
     stmt = select(Agreement).where(Agreement.id == 1)
     agreement = loaded_db.scalar(stmt)
 
-    assert agreement.name == "New Contract Name"
-    assert agreement.description == "New Contract Description"
-    assert len(agreement.team_members) == 1
-    assert agreement.team_members[0].id == 1
-    assert len(agreement.support_contacts) == 2
-    assert agreement.support_contacts[0].id == 2
+    assert agreement.name == "Updated Grant Name"
+    assert agreement.description == "Updated Grant Description"
+    assert agreement.notes == "Test Note"
+    assert [m.id for m in agreement.team_members] == [1]
+    assert [m.id for m in agreement.support_contacts] == [2, 3]
+
+    # CONTRACT - setting fields to null/empty
+    response = auth_client.patch(
+        "/api/v1/agreements/1",
+        json={
+            "agreement_type": "CONTRACT",
+            "name": "Updated Grant Name",
+            "description": "Updated Grant Description",
+            "number": "AGR0001",
+            "team_members": None,
+            "support_contacts": [],
+            "notes": None
+        },
+    )
+    assert response.status_code == 200
+
+    stmt = select(Agreement).where(Agreement.id == 1)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement.name == "Updated Grant Name"
+    assert agreement.description == "Updated Grant Description"
+    assert agreement.notes is None
+    assert agreement.team_members == []
+    assert agreement.support_contacts == []
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_put_by_id(auth_client, loaded_db):
+    # 400: missing required agreement_type
+    response = auth_client.put(
+        "/api/v1/agreements/1",
+        json={
+            "name": "Updated Grant Name",
+            "description": "Updated Grant Description",
+            "number": "AGR0001",
+        },
+    )
+    print(f"{response.status_code=}")
+    assert response.status_code == 400
+
+    # 400: missing other required fields
+    response = auth_client.put(
+        "/api/v1/agreements/1",
+        json={
+            "agreement_type": "CONTRACT",
+        },
+    )
+    assert response.status_code == 400
+
+    # CONTRACT
+    response = auth_client.put(
+        "/api/v1/agreements/1",
+        json={
+            "agreement_type": "CONTRACT",
+            "name": "Updated Grant Name",
+            "description": "Updated Grant Description",
+            "number": "AGR0001",
+            "team_members": [{"id": 1}],
+            "support_contacts": [{"id": 2}, {"id": 3}],
+            "notes": "Test Note"
+        },
+    )
+    assert response.status_code == 200
+
+    stmt = select(Agreement).where(Agreement.id == 1)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement.name == "Updated Grant Name"
+    assert agreement.description == "Updated Grant Description"
+    assert agreement.notes == "Test Note"
+    assert [m.id for m in agreement.team_members] == [1]
+    assert [m.id for m in agreement.support_contacts] == [2, 3]
+
+    # CONTRACT - verify null/missing fields are removed (for PUT)
+    response = auth_client.put(
+        "/api/v1/agreements/1",
+        json={
+            "agreement_type": "CONTRACT",
+            "name": "Updated Grant Name",
+            "description": "Updated Grant Description",
+            "number": "AGR0001",
+        },
+    )
+    assert response.status_code == 200
+
+    stmt = select(Agreement).where(Agreement.id == 1)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement.name == "Updated Grant Name"
+    assert agreement.description == "Updated Grant Description"
+    assert agreement.notes is None
+    assert agreement.team_members == []
+    assert agreement.support_contacts == []
+
+    # GRANT
+    response = auth_client.put(
+        "/api/v1/agreements/3",
+        json={
+            "agreement_type": "GRANT",
+            "name": "Updated Grant Name",
+            "description": "Updated Grant Description",
+            "number": "AGR0003",
+            "team_members": [{"id": 1}, {"id": 2}, {"id": 3}],
+        },
+    )
+    assert response.status_code == 200
+
+    stmt = select(Agreement).where(Agreement.id == 3)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement.name == "Updated Grant Name"
+    assert agreement.description == "Updated Grant Description"
+    assert [m.id for m in agreement.team_members] == [1, 2, 3]
 
 
 @pytest.mark.skip("Not yet implemented")
