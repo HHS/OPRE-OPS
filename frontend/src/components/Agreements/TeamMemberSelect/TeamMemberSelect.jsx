@@ -1,27 +1,37 @@
 import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { setAgreementTeamMembers } from "./createAgreementSlice";
 import PropTypes from "prop-types";
+import { useGetUsersQuery } from "../../../api/opsAPI";
 
-export const TeamMemberSelect = ({ className }) => {
-    const dispatch = useDispatch();
-    const usersList = useSelector((state) => state.createAgreement.users);
-    const selectedProjectOfficer = useSelector((state) => state.createAgreement.agreement?.project_officer);
-    const selectedTeamMembers = useSelector((state) => state.createAgreement.agreement?.team_members);
-    const remainingUsers = usersList.filter(
+export const TeamMemberSelect = ({
+    className,
+    selectedProjectOfficer,
+    selectedTeamMembers,
+    setSelectedTeamMembers,
+}) => {
+    const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery();
+    const [inputValue, setInputValue] = useState("");
+
+    if (isLoadingUsers) {
+        return <div>Loading...</div>;
+    }
+    if (errorUsers) {
+        return <div>Oops, an error occurred</div>;
+    }
+
+    const remainingUsers = users.filter(
         (user) =>
             user.id !== selectedProjectOfficer?.id && // Check if the user is not a selected project officer
             !selectedTeamMembers.some((teamMember) => teamMember.id === user.id) // Check if the user is not already a team member
     );
 
-    const [inputValue, setInputValue] = useState("");
-
     const onChangeSelect = (userId = 0) => {
         if (userId === 0) {
             return;
         }
-        const selected = usersList.find((user) => user.id === userId);
-        dispatch(setAgreementTeamMembers([...selectedTeamMembers, selected]));
+        const selected = users.find((user) => user.id === userId);
+        setSelectedTeamMembers((prevState) => {
+            return [...prevState, selected];
+        });
         setInputValue("");
     };
 
@@ -93,7 +103,7 @@ export const TeamMemberSelect = ({ className }) => {
                     aria-labelledby="team-member-select-label"
                     hidden
                 >
-                    {usersList?.map((user, index) => {
+                    {users?.map((user, index) => {
                         return (
                             <li
                                 key={user?.id}

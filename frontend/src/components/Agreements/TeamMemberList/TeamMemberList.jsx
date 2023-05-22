@@ -1,13 +1,13 @@
-import { useDispatch, useSelector } from "react-redux";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmarkCircle } from "@fortawesome/free-solid-svg-icons";
-import { removeAgreementTeamMember } from "./createAgreementSlice";
 
-const TeamMemberList = () => {
-    const dispatch = useDispatch();
-    const agreement = useSelector((state) => state.createAgreement.agreement);
-    const teamMembers = agreement?.team_members || [];
+const TeamMemberList = ({ selectedTeamMembers, setSelectedTeamMembers }) => {
+    const handleChange = (teamMemberId) => {
+        setSelectedTeamMembers((prevState) => {
+            return prevState.filter((teamMember) => teamMember.id !== teamMemberId);
+        });
+    };
 
     const TeamTag = ({ teamMemberName, teamMemberId }) => (
         <span
@@ -20,7 +20,7 @@ const TeamMemberList = () => {
                 className="height-2 width-2 text-primary-dark margin-left-1 hover: cursor-pointer usa-tooltip"
                 title="delete"
                 data-position="top"
-                onClick={() => dispatch(removeAgreementTeamMember(teamMemberId))}
+                onClick={() => handleChange(teamMemberId)}
             />
         </span>
     );
@@ -30,9 +30,9 @@ const TeamMemberList = () => {
         teamMemberId: PropTypes.number.isRequired,
     };
 
-    return teamMembers.length > 0 ? (
+    return selectedTeamMembers.length > 0 ? (
         <ul className="add-list-reset">
-            {teamMembers.map((teamMember) => (
+            {selectedTeamMembers.map((teamMember) => (
                 <li key={teamMember.id} className="margin-top-105">
                     <TeamTag teamMemberId={teamMember.id} teamMemberName={teamMember.full_name} />
                 </li>

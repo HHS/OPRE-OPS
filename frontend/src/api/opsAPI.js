@@ -58,6 +58,18 @@ export const opsApi = createApi({
             query: () => `/product-service-codes/`,
             providesTags: ["ProductServiceCodes"],
         }),
+        getProcurementShops: builder.query({
+            query: () => `/procurement-shops/`,
+            providesTags: ["ProcurementShops"],
+        }),
+        getAgreementReasons: builder.query({
+            query: () => `/agreement-reasons/`,
+            providesTags: ["AgreementReasons"],
+        }),
+        getUsers: builder.query({
+            query: () => `/users/`,
+            providesTags: ["Users"],
+        }),
     }),
 });
 
@@ -70,4 +82,7 @@ export const {
     useUpdateBudgetLineItemStatusMutation,
     useGetAgreementTypesQuery,
     useGetProductServiceCodesQuery,
+    useGetProcurementShopsQuery,
+    useGetAgreementReasonsQuery,
+    useGetUsersQuery,
 } = opsApi;
