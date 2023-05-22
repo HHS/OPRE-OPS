@@ -10,7 +10,10 @@ export const ProjectAgreementSummaryCard = ({
     const { fee, name: procurementShopName } = selectedProcurementShop;
 
     return (
-        <div className="bg-base-lightest font-family-sans border-1px border-base-light radius-sm margin-y-7">
+        <div
+            className="bg-base-lightest font-family-sans border-1px border-base-light radius-sm margin-y-7"
+            data-cy="project-agreement-summary-box"
+        >
             <dl className="margin-0 padding-y-2 padding-x-3">
                 <dt className="margin-0">Project</dt>
                 <dd className="margin-0 text-bold margin-top-1" style={{ fontSize: "1.375rem" }}>
@@ -28,7 +31,7 @@ export const ProjectAgreementSummaryCard = ({
                 </div>
                 <div className="margin-left-5">
                     <dt className="margin-0 text-base-dark">Fee Rate</dt>
-                    <dd className="margin-0 text-semibold">{fee && `${fee * 100}%`}</dd>
+                    <dd className="margin-0 text-semibold">{fee && `${fee * 100}`}%</dd>
                 </div>
             </dl>
         </div>
@@ -47,3 +50,5 @@ ProjectAgreementSummaryCard.propTypes = {
         fee: PropTypes.number,
     }),
 };
+
+export default ProjectAgreementSummaryCard;

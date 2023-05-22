@@ -1,25 +1,28 @@
 import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { setAgreementProjectOfficer } from "./createAgreementSlice";
+import { useGetUsersQuery } from "../../../api/opsAPI";
 
-export const ProjectOfficerSelect = () => {
-    const dispatch = useDispatch();
-    const usersList = useSelector((state) => state.createAgreement.users);
-
-    const selectedProjectOfficer = useSelector((state) => state.createAgreement.agreement?.project_officer);
+export const ProjectOfficerSelect = ({ selectedProjectOfficer, setSelectedProjectOfficer }) => {
+    const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery();
     const [inputValue, setInputValue] = useState(selectedProjectOfficer?.full_name ?? "");
 
     useEffect(() => {
         setInputValue(selectedProjectOfficer?.full_name ?? "");
     }, [selectedProjectOfficer]);
 
+    if (isLoadingUsers) {
+        return <div>Loading...</div>;
+    }
+    if (errorUsers) {
+        return <div>Oops, an error occurred</div>;
+    }
+
     const onChangeSelect = (userId = 0) => {
         if (userId === 0) {
-            dispatch(setAgreementProjectOfficer(null));
+            setSelectedProjectOfficer(null);
             return;
         }
-        const selected = usersList[userId - 1];
-        dispatch(setAgreementProjectOfficer({ ...selected }));
+        const selected = users[userId - 1];
+        setSelectedProjectOfficer({ ...selected });
     };
 
     return (
@@ -42,7 +45,7 @@ export const ProjectOfficerSelect = () => {
                     onChange={(e) => onChangeSelect(Number(e.target.value))}
                     required
                 >
-                    {usersList.map((user) => (
+                    {users.map((user) => (
                         <option key={user?.id} value={user?.id}>
                             {user?.full_name || user?.email}
                         </option>
@@ -71,7 +74,7 @@ export const ProjectOfficerSelect = () => {
                         className="usa-combo-box__clear-input"
                         aria-label="Clear the select contents"
                         onClick={() => {
-                            dispatch(setAgreementProjectOfficer(null));
+                            setSelectedProjectOfficer(null);
                         }}
                     >
                         &nbsp;
@@ -98,11 +101,11 @@ export const ProjectOfficerSelect = () => {
                     aria-labelledby="project-officer-select-label"
                     hidden
                 >
-                    {usersList?.map((user, index) => {
+                    {users?.map((user, index) => {
                         return (
                             <li
                                 key={user?.id}
-                                aria-setsize={usersList?.length}
+                                aria-setsize={users?.length}
                                 aria-posinset={index + 1}
                                 aria-selected="false"
                                 id={`project-officer-dynamic-select--list--option-${index}`}

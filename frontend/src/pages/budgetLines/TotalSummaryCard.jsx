@@ -47,6 +47,7 @@ export const TotalSummaryCard = ({ budgetLines }) => {
             <div
                 className="bg-base-lightest font-family-sans font-12px border-1px border-base-light radius-sm margin-left-4 padding-y-2 padding-x-105"
                 style={{ minWidth: "206px" }}
+                data-cy="total-summary-cards"
             >
                 <h3 className="text-base-dark text-normal font-12px">{title + " Total"}</h3>
                 <dl className="margin-0 padding-bottom-105">
