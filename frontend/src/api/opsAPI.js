@@ -25,6 +25,10 @@ export const opsApi = createApi({
         getAgreementById: builder.query({
             query: (id) => `/agreements/${id}`,
         }),
+        getUserById: builder.query({
+            query: (id) => `/users/?oidc_id=${id}`,
+            providesTags: ["Users"],
+        }),
         getResearchProjects: builder.query({
             query: () => `/research-projects/`,
             providesTags: ["ResearchProjects"],
@@ -36,6 +40,15 @@ export const opsApi = createApi({
                 body,
             }),
             invalidatesTags: ["ResearchProjects"],
+        }),
+        updateBudgetLineItemStatus: builder.mutation({
+            query: ({ id, status }) => ({
+                url: `/budget-line-items/${id}`,
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: { status },
+            }),
+            invalidatesTags: ["Agreements", "BudgetLineItems"],
         }),
         getAgreementTypes: builder.query({
             query: () => `/agreement-types/`,
@@ -63,8 +76,10 @@ export const opsApi = createApi({
 export const {
     useGetAgreementsQuery,
     useGetAgreementByIdQuery,
+    useGetUserByIdQuery,
     useGetResearchProjectsQuery,
     useAddResearchProjectsMutation,
+    useUpdateBudgetLineItemStatusMutation,
     useGetAgreementTypesQuery,
     useGetProductServiceCodesQuery,
     useGetProcurementShopsQuery,

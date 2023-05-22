@@ -32,7 +32,6 @@ class RequestBody:
     date_needed: Optional[date] = fields.Date(
         format="%Y-%m-%d",
     )
-    status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus)
     comments: Optional[str] = None
     psc_fee_amount: Optional[float] = None
 
@@ -148,7 +147,8 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 data = {
                     k: v for (k, v) in data.items() if k in request.json
                 }  # only keep the attributes from the request body
-
+                print(f"BLI Data: {data}")
+                print(f"BLI Id: {id}")
                 budget_line_item = update_budget_line_item(data, id)
 
                 current_app.db_session.add(budget_line_item)
