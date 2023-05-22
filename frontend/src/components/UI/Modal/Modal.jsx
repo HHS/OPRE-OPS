@@ -81,6 +81,7 @@ export const Modal = ({
                                             <button
                                                 type="button"
                                                 className="usa-button"
+                                                data-cy="confirm-action"
                                                 onClick={() => {
                                                     setShowModal(false);
                                                     handleConfirm();

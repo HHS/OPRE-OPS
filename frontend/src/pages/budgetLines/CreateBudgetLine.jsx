@@ -71,6 +71,7 @@ const StepOne = ({ goToNext }) => {
             <div className="grid-row flex-justify-end margin-top-8">
                 <button
                     className="usa-button"
+                    data-cy="continue-button-step-one"
                     onClick={() => goToNext({ project: "Red X 2.0" })}
                     // disable if no project or agreement is selected
                     disabled={!(selectedResearchProject?.id && selectedAgreement?.id)}
@@ -217,7 +218,7 @@ const StepTwo = ({ goBack, goToNext }) => {
                 >
                     Back
                 </button>
-                <button className="usa-button" onClick={saveBudgetLineItems}>
+                <button className="usa-button" data-cy="step-two-continue" onClick={saveBudgetLineItems}>
                     Continue
                 </button>
             </div>

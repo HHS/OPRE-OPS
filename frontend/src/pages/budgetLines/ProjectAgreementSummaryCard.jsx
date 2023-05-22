@@ -10,7 +10,10 @@ export const ProjectAgreementSummaryCard = ({
     const { fee, name: procurementShopName } = selectedProcurementShop;
 
     return (
-        <div className="bg-base-lightest font-family-sans border-1px border-base-light radius-sm margin-y-7">
+        <div
+            className="bg-base-lightest font-family-sans border-1px border-base-light radius-sm margin-y-7"
+            data-cy="project-agreement-summary-box"
+        >
             <dl className="margin-0 padding-y-2 padding-x-3">
                 <dt className="margin-0">Project</dt>
                 <dd className="margin-0 text-bold margin-top-1" style={{ fontSize: "1.375rem" }}>
