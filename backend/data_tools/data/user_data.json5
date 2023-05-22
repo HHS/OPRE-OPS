@@ -128,6 +128,14 @@
       role: "Software Engineer",
       oidc_id: "c8102694-a707-418d-9698-1d33db337b86",
     },
+    {
+      first_name: "Steve",
+      last_name: "Tekell",
+      division: 3,
+      email: "stekell+sandbox@flexion.us",
+      role: "Software Engineer",
+      oidc_id: "7716138a-dec6-4976-9f31-e30fade3254d",
+    }
   ],
   roles: [
     {
