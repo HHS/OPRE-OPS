@@ -37,6 +37,7 @@ export const AgreementSelect = () => {
             <div
                 className="bg-base-lightest font-family-sans font-12px border-1px border-base-light radius-sm margin-top-4"
                 style={{ width: "23.9375rem", minHeight: "11.75rem" }}
+                data-cy="agreement-summary-card"
             >
                 <dl className="margin-0 padding-y-2 padding-x-105">
                     <dt className="margin-0 text-base-dark">Agreement</dt>
