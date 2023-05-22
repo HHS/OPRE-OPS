@@ -88,6 +88,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                         <>
                             <FontAwesomeIcon
                                 id={`edit-${bl?.id}`}
+                                data-cy="edit-row"
                                 icon={faPen}
                                 className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
                                 title="edit"
@@ -96,6 +97,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                             />
                             <FontAwesomeIcon
                                 id={`delete-${bl?.id}`}
+                                data-cy="delete-row"
                                 icon={faTrash}
                                 title="delete"
                                 data-position="top"
@@ -106,6 +108,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                     )}
                     <FontAwesomeIcon
                         id={`duplicate-${bl?.id}`}
+                        data-cy="duplicate-row"
                         icon={faClone}
                         title="duplicate"
                         data-position="top"
@@ -213,6 +216,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                     >
                         <FontAwesomeIcon
                             id={`expand-${bl?.id}`}
+                            data-cy="expand-row"
                             icon={isExpanded ? faChevronUp : faChevronDown}
                             className="height-2 width-2 padding-right-1 hover: cursor-pointer"
                             onClick={() => handleExpandRow()}
