@@ -4,6 +4,8 @@ import { setResearchProjectsList as agreementProjects } from "../pages/agreement
 import { useDispatch, useSelector } from "react-redux";
 import { CheckAuth } from "../components/Auth/auth";
 
+// TODO: Replace with RTK Query?
+
 const GetCreateBudgetLineResearchProjectsListAndSetState = async () => {
     const dispatch = useDispatch();
     const researchProjects = useSelector((state) => state.createBudgetLine.research_projects_list);

@@ -70,6 +70,10 @@ export const opsApi = createApi({
             query: () => `/users/`,
             providesTags: ["Users"],
         }),
+        getCans: builder.query({
+            query: () => `/cans/`,
+            providesTags: ["Cans"],
+        }),
     }),
 });
 
@@ -85,4 +89,5 @@ export const {
     useGetProcurementShopsQuery,
     useGetAgreementReasonsQuery,
     useGetUsersQuery,
+    useGetCansQuery,
 } = opsApi;
