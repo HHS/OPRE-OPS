@@ -17,7 +17,6 @@ import {
     setSelectedProcurementShop as setSelectedProcurementShopInBudgetLine,
     setSelectedProject,
 } from "./createAgreementSlice";
-import { setSelectedProcurementShop as setSelectedProcurementShopInBudgetLine } from "../budgetLines/createBudgetLineSlice";
 import ProjectOfficerSelect from "../../components/UI/Form/ProjectOfficerSelect";
 import TeamMemberSelect from "../../components/UI/Form/TeamMemberSelect";
 import TeamMemberList from "../../components/UI/Form/TeamMemberList";
