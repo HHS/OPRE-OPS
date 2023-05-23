@@ -76,6 +76,7 @@ export const StepSelectProjectAndAgreement = ({ goToNext }) => {
             <div className="grid-row flex-justify-end margin-top-8">
                 <button
                     className="usa-button"
+                    data-cy="continue-button-step-one"
                     onClick={() => goToNext()}
                     // disable if no project or agreement is selected
                     disabled={!(selectedProject?.id && selectedAgreement?.id)}
