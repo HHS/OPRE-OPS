@@ -1,2 +1,1 @@
-import PreviewTable from "./PreviewTable";
-export default PreviewTable;
+export { default } from "./PreviewTable";

@@ -1,2 +1,1 @@
-import AgreementSelect from "./AgreementSelect";
-export default AgreementSelect;
+export { default } from "./AgreementSelect";

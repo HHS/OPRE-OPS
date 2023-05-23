@@ -1,2 +1,1 @@
-import StepIndicator from "./StepIndicator";
-export default StepIndicator;
+export { default } from "./StepIndicator";

@@ -1,2 +1,1 @@
-import ProjectAgreementSummaryCard from "./ProjectAgreementSummaryCard";
-export default ProjectAgreementSummaryCard;
+export { default } from "./ProjectAgreementSummaryCard";

@@ -1,2 +1,1 @@
-import CreateBudgetLinesForm from "./CreateBudgetLinesForm";
-export default CreateBudgetLinesForm;
+export { default } from "./CreateBudgetLinesForm";

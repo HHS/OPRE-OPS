@@ -1,2 +1,1 @@
-import ProjectSelect from "./ProjectSelect";
-export default ProjectSelect;
+export { default } from "./ProjectSelect";

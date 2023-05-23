@@ -1,2 +1,1 @@
-import CanSelect from "./CanSelect";
-export default CanSelect;
+export { default } from "./CanSelect";

@@ -1,2 +1,1 @@
-import DesiredAwardDate from "./DesiredAwardDate";
-export default DesiredAwardDate;
+export { default } from "./DesiredAwardDate";

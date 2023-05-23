@@ -1,2 +1,1 @@
-import ProcurementShopSelect from "./ProcurementShopSelect";
-export default ProcurementShopSelect;
+export { default } from "./ProcurementShopSelect";
