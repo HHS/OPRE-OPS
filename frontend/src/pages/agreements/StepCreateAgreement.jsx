@@ -14,13 +14,13 @@ import {
     setAgreementNotes,
     setAgreementProcurementShop,
     setAgreementTitle,
-    setSelectedProcurementShop as setSelectedProcurementShopInAgreement,
+    setSelectedProcurementShop as setSelectedProcurementShopInBudgetLine,
     setSelectedProject,
 } from "./createAgreementSlice";
-import { setSelectedProcurementShop as setSelectedProcurementShopInBudgetLine } from "../budgetLines/createBudgetLineSlice";
 import ProjectOfficerSelect from "../../components/UI/Form/ProjectOfficerSelect";
 import TeamMemberSelect from "../../components/UI/Form/TeamMemberSelect";
 import TeamMemberList from "../../components/UI/Form/TeamMemberList";
+
 import Modal from "../../components/UI/Modal/Modal";
 import { formatTeamMember, postAgreement } from "../../api/postAgreements";
 import ProjectSummaryCard from "../../components/ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";
@@ -121,7 +121,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         // TODO:Remove dup state, i.e. use the local state and not in Redux
         setSelectedProcurementShop(procurementShop);
         dispatch(setAgreementProcurementShop(procurementShop.id));
-        dispatch(setSelectedProcurementShopInAgreement(procurementShop));
         dispatch(setSelectedProcurementShopInBudgetLine(procurementShop));
     };
 

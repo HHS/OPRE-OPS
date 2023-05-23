@@ -1,8 +1,8 @@
 import { render } from "@testing-library/react";
-import { DesiredAwardDate } from "./DesiredAwardDate";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
-import createBudgetLineSlice from "./createBudgetLineSlice";
+import createBudgetLineSlice from "../../../../pages/budgetLines/createBudgetLineSlice";
+import { AgreementSelect } from "./AgreementSelect";
 
 const renderWithRedux = (
     component,
@@ -17,8 +17,10 @@ const renderWithRedux = (
     };
 };
 
-describe("Desired Award Date component", () => {
+describe("AgreementSelect", () => {
     it("renders without crashing", () => {
-        renderWithRedux(<DesiredAwardDate />);
+        renderWithRedux(<AgreementSelect />);
     });
+
+    // Add more tests as needed
 });

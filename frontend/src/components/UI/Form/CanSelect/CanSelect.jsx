@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setSelectedCan, setCans } from "./createBudgetLineSlice";
-import { getCanList } from "../cans/list/getCanList";
+import { setCans } from "../../../../pages/budgetLines/createBudgetLineSlice";
+import { getCanList } from "../../../../pages/cans/list/getCanList";
 
-export const CanSelect = () => {
+export const CanSelect = ({ selectedCan, setSelectedCan }) => {
     const dispatch = useDispatch();
     const canList = useSelector((state) => state.canList.cans);
-
-    const selectedCan = useSelector((state) => state.createBudgetLine.selected_can);
     const [inputValue, setInputValue] = useState(selectedCan?.number ?? "");
 
     useEffect(() => {
@@ -16,13 +14,14 @@ export const CanSelect = () => {
 
     const onChangeCanSelection = (canId = 0) => {
         if (canId === 0) {
-            dispatch(setSelectedCan(-1));
+            setSelectedCan({});
             return;
         }
         const selected = canList[canId - 1];
-        dispatch(setSelectedCan({ ...selected }));
+        setSelectedCan({ ...selected });
     };
 
+    // TODO replace with RTK Query
     useEffect(() => {
         dispatch(getCanList());
     }, [dispatch]);
@@ -74,7 +73,7 @@ export const CanSelect = () => {
                         className="usa-combo-box__clear-input"
                         aria-label="Clear the select contents"
                         onClick={() => {
-                            dispatch(setSelectedCan(-1));
+                            setSelectedCan({});
                         }}
                     >
                         &nbsp;

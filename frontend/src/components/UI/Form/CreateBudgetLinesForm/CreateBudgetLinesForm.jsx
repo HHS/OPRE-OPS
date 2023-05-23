@@ -1,91 +1,28 @@
-import { shape, func } from "prop-types";
-import { useSelector, useDispatch } from "react-redux";
+import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
-import CanSelect from "../../../pages/budgetLines/CanSelect";
-import DesiredAwardDate from "../../../pages/budgetLines/DesiredAwardDate";
-import {
-    setBudgetLineAdded,
-    setEditBudgetLineAdded,
-    setEnteredDescription,
-    setEnteredAmount,
-    setSelectedCan,
-    setEnteredMonth,
-    setEnteredYear,
-    setEnteredDay,
-    setEnteredComments,
-} from "../../../pages/budgetLines/createBudgetLineSlice";
+import CanSelect from "../CanSelect";
+import DesiredAwardDate from "../DesiredAwardDate";
 
 export const CreateBudgetLinesForm = ({
-    selectedAgreement = {},
-    selectedProcurementShop = {},
-    showAlert = () => {},
+    selectedCan,
+    enteredDescription,
+    enteredAmount,
+    enteredMonth,
+    enteredDay,
+    enteredYear,
+    enteredComments,
+    isEditing,
+    setEnteredDescription,
+    setSelectedCan,
+    setEnteredAmount,
+    setEnteredMonth,
+    setEnteredDay,
+    setEnteredYear,
+    setEnteredComments,
+    handleEditForm = () => {},
+    handleSubmitForm = () => {},
+    handleResetForm = () => {},
 }) => {
-    const dispatch = useDispatch();
-    const budgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
-    const selectedCan = useSelector((state) => state.createBudgetLine.selected_can);
-    const enteredDescription = useSelector((state) => state.createBudgetLine.entered_description);
-    const enteredAmount = useSelector((state) => state.createBudgetLine.entered_amount);
-    const enteredMonth = useSelector((state) => state.createBudgetLine.entered_month);
-    const enteredDay = useSelector((state) => state.createBudgetLine.entered_day);
-    const enteredYear = useSelector((state) => state.createBudgetLine.entered_year);
-    const enteredComments = useSelector((state) => state.createBudgetLine.entered_comments);
-    const isEditing = useSelector((state) => state.createBudgetLine.is_editing_budget_line);
-    const budgetLineBeingEdited = useSelector((state) => state.createBudgetLine.budget_line_being_edited);
-
-    const handleCancelEdit = () => {
-        dispatch(setEditBudgetLineAdded({}));
-    };
-
-    const handleEditForm = (e) => {
-        e.preventDefault();
-        dispatch(
-            setEditBudgetLineAdded({
-                id: budgetLinesAdded[budgetLineBeingEdited].id,
-                line_description: enteredDescription,
-                comments: enteredComments,
-                can_id: selectedCan?.id,
-                can: selectedCan,
-                agreement_id: selectedAgreement?.id,
-                amount: enteredAmount,
-                date_needed:
-                    enteredYear && enteredMonth && enteredDay ? `${enteredYear}-${enteredMonth}-${enteredDay}` : null,
-                psc_fee_amount: selectedProcurementShop?.fee,
-            })
-        );
-        showAlert("success", "Budget Line Updated", "The budget line has been successfully edited.");
-    };
-
-    const handleSubmitForm = (e) => {
-        e.preventDefault();
-        dispatch(
-            setBudgetLineAdded([
-                ...budgetLinesAdded,
-                {
-                    id: crypto.getRandomValues(new Uint32Array(1))[0],
-                    line_description: enteredDescription || "",
-                    comments: enteredComments || "No comments",
-                    can_id: selectedCan?.id || null,
-                    can: selectedCan || null,
-                    agreement_id: selectedAgreement?.id || null,
-                    amount: enteredAmount || 0,
-                    status: "DRAFT",
-                    date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}` || null,
-                    psc_fee_amount: selectedProcurementShop?.fee || null,
-                },
-            ])
-        );
-        showAlert("success", "Budget Line Added", "The budget line has been successfully added.");
-
-        //reset form
-        dispatch(setEnteredDescription(""));
-        dispatch(setEnteredAmount(null));
-        dispatch(setSelectedCan({}));
-        dispatch(setEnteredMonth(""));
-        dispatch(setEnteredDay(""));
-        dispatch(setEnteredYear(""));
-        dispatch(setEnteredComments(""));
-    };
-
     return (
         <form className="grid-row grid-gap">
             <div className="grid-col-4">
@@ -99,16 +36,23 @@ export const CreateBudgetLinesForm = ({
                         name="bl-description"
                         type="text"
                         value={enteredDescription || ""}
-                        onChange={(e) => dispatch(setEnteredDescription(e.target.value))}
+                        onChange={(e) => setEnteredDescription(e.target.value)}
                         required
                     />
                 </div>
                 <div className="usa-form-group">
-                    <CanSelect />
+                    <CanSelect selectedCan={selectedCan} setSelectedCan={setSelectedCan} />
                 </div>
             </div>
             <div className="grid-col-4">
-                <DesiredAwardDate />
+                <DesiredAwardDate
+                    enteredMonth={enteredMonth}
+                    setEnteredMonth={setEnteredMonth}
+                    enteredDay={enteredDay}
+                    setEnteredDay={setEnteredDay}
+                    enteredYear={enteredYear}
+                    setEnteredYear={setEnteredYear}
+                />
                 <div className="usa-form-group">
                     <label className="usa-label" htmlFor="bl-amount">
                         Amount
@@ -124,7 +68,7 @@ export const CreateBudgetLinesForm = ({
                         placeholder="$"
                         onValueChange={(values) => {
                             const { floatValue } = values;
-                            dispatch(setEnteredAmount(floatValue));
+                            setEnteredAmount(floatValue);
                         }}
                     />
                 </div>
@@ -147,7 +91,7 @@ export const CreateBudgetLinesForm = ({
                             aria-describedby="with-hint-textarea-info with-hint-textarea-hint"
                             style={{ height: "7rem" }}
                             value={enteredComments || ""}
-                            onChange={(e) => dispatch(setEnteredComments(e.target.value))}
+                            onChange={(e) => setEnteredComments(e.target.value)}
                         ></textarea>
                     </div>
                     <span id="with-hint-textarea-info" className="usa-character-count__message sr-only">
@@ -158,7 +102,7 @@ export const CreateBudgetLinesForm = ({
                     <div className="display-flex flex-justify-end">
                         <button
                             className="usa-button usa-button--unstyled margin-top-2 margin-right-2"
-                            onClick={() => handleCancelEdit()}
+                            onClick={handleResetForm}
                         >
                             Cancel
                         </button>
@@ -185,9 +129,24 @@ export const CreateBudgetLinesForm = ({
 };
 
 CreateBudgetLinesForm.propTypes = {
-    selectedAgreement: shape({}).isRequired,
-    selectedProcurementShop: shape({}).isRequired,
-    showAlert: func.isRequired,
+    selectedCan: PropTypes.object,
+    enteredDescription: PropTypes.string,
+    enteredAmount: PropTypes.number,
+    enteredMonth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    enteredDay: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    enteredYear: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    enteredComments: PropTypes.string,
+    isEditing: PropTypes.bool,
+    setEnteredDescription: PropTypes.func.isRequired,
+    setSelectedCan: PropTypes.func.isRequired,
+    setEnteredAmount: PropTypes.func.isRequired,
+    setEnteredMonth: PropTypes.func.isRequired,
+    setEnteredDay: PropTypes.func.isRequired,
+    setEnteredYear: PropTypes.func.isRequired,
+    setEnteredComments: PropTypes.func.isRequired,
+    handleEditForm: PropTypes.func.isRequired,
+    handleSubmitForm: PropTypes.func.isRequired,
+    handleResetForm: PropTypes.func.isRequired,
 };
 
 export default CreateBudgetLinesForm;

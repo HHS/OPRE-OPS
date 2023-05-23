@@ -1,34 +1,35 @@
-import { useDispatch, useSelector } from "react-redux";
-import { setSelectedAgreement, setBudgetLineAdded, setSelectedProcurementShop } from "./createBudgetLineSlice";
+import { useSelector } from "react-redux";
 
-export const AgreementSelect = () => {
-    const dispatch = useDispatch();
+export const AgreementSelect = ({
+    selectedProject,
+    selectedAgreement,
+    setSelectedAgreement,
+    setSelectedProcurementShop,
+    setBudgetLinesAdded,
+}) => {
     const agreements = useSelector((state) => state.createBudgetLine.agreements);
-    const selectedAgreement = useSelector((state) => state.createBudgetLine.selected_agreement);
-    const selectedProject = useSelector((state) => state.createBudgetLine.selected_project);
 
     const onChangeAgreementSelection = (agreementId = 0) => {
+        setBudgetLinesAdded([]); // reset budget lines
         const selectedAgreement = agreements.find((agreement) => agreement.id === agreementId);
         let periodOfPerformance = null;
         if (agreementId === 0) {
-            dispatch(setSelectedAgreement(-1));
+            setSelectedAgreement({});
             return;
         }
         if (selectedAgreement.period_of_performance_start && selectedAgreement.period_of_performance_end) {
             periodOfPerformance = `${selectedAgreement.period_of_performance_start} - ${selectedAgreement.period_of_performance_end}`;
         }
+        setSelectedAgreement({
+            ...selectedAgreement,
+            projectOfficer: selectedAgreement?.project_officer,
+            periodOfPerformance,
+        });
 
-        dispatch(
-            setSelectedAgreement({
-                ...selectedAgreement,
-                projectOfficer: selectedAgreement?.project_officer,
-                periodOfPerformance,
-            })
-        );
         // set budget line items and procurement shop
         if (selectedAgreement?.budget_line_items.length > 0) {
-            dispatch(setBudgetLineAdded(selectedAgreement?.budget_line_items));
-            dispatch(setSelectedProcurementShop(selectedAgreement?.procurement_shop));
+            setBudgetLinesAdded(selectedAgreement?.budget_line_items);
+            setSelectedProcurementShop(selectedAgreement?.procurement_shop);
         }
     };
 
@@ -46,6 +47,7 @@ export const AgreementSelect = () => {
                     <dd className="text-semibold margin-0">{selectedAgreement.description}</dd>
                     <div className="display-flex flex-justify margin-top-205">
                         <div className="display-flex flex-column">
+                            {/* TODO: add project officer name */}
                             <dt className="margin-0 text-base-dark">Project Officer</dt>
                             <dd className="text-semibold margin-0">{selectedAgreement.projectOfficer}</dd>
                         </div>
@@ -88,3 +90,5 @@ export const AgreementSelect = () => {
         </div>
     );
 };
+
+export default AgreementSelect;

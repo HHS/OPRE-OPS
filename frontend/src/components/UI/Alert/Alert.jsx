@@ -37,11 +37,11 @@ export const Alert = ({ type, heading, children, setIsAlertActive }) => {
     );
 };
 
-export default Alert;
-
 Alert.propTypes = {
     type: PropTypes.oneOf(["success", "warning", "error"]),
     heading: PropTypes.string.isRequired,
     children: PropTypes.node,
     setIsAlertActive: PropTypes.func.isRequired,
 };
+
+export default Alert;

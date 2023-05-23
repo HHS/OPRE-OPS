@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
-import createBudgetLineSlice from "../../../pages/budgetLines/createBudgetLineSlice";
+import createBudgetLineSlice from "../../../../pages/budgetLines/createBudgetLineSlice";
 import ProjectSelect from "./ProjectSelect";
 
 const renderWithRedux = (

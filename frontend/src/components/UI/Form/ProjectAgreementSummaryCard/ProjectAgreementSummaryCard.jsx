@@ -1,9 +1,9 @@
 import PropTypes from "prop-types";
 
 export const ProjectAgreementSummaryCard = ({
-    selectedResearchProject,
-    selectedAgreement,
-    selectedProcurementShop,
+    selectedResearchProject = {},
+    selectedAgreement = {},
+    selectedProcurementShop = {},
 }) => {
     const { title } = selectedResearchProject;
     const { name: agreementName } = selectedAgreement;
@@ -19,10 +19,14 @@ export const ProjectAgreementSummaryCard = ({
                 <dd className="margin-0 text-bold margin-top-1" style={{ fontSize: "1.375rem" }}>
                     {title}
                 </dd>
-                <dt className="margin-0 margin-top-205">Agreement</dt>
-                <dd className="margin-0 text-bold margin-top-1" style={{ fontSize: "1.375rem" }}>
-                    {agreementName}
-                </dd>
+                {selectedAgreement?.name && (
+                    <>
+                        <dt className="margin-0 margin-top-205">Agreement</dt>
+                        <dd className="margin-0 text-bold margin-top-1" style={{ fontSize: "1.375rem" }}>
+                            {agreementName}
+                        </dd>
+                    </>
+                )}
             </dl>
             <dl className="display-flex margin-top-205 font-12px padding-x-3">
                 <div>
@@ -40,13 +44,17 @@ export const ProjectAgreementSummaryCard = ({
 
 ProjectAgreementSummaryCard.propTypes = {
     selectedResearchProject: PropTypes.shape({
-        title: PropTypes.string.isRequired,
+        title: PropTypes.string,
     }),
-    selectedAgreement: PropTypes.shape({
-        name: PropTypes.string.isRequired,
-    }),
+    selectedAgreement: PropTypes.oneOfType([
+        PropTypes.shape({
+            name: PropTypes.string,
+        }),
+        PropTypes.number,
+    ]),
+
     selectedProcurementShop: PropTypes.shape({
-        name: PropTypes.string.isRequired,
+        name: PropTypes.string,
         fee: PropTypes.number,
     }),
 };

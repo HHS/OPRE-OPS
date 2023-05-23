@@ -1,8 +1,8 @@
 import { render } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
-import createBudgetLineSlice from "./createBudgetLineSlice";
-import { TotalSummaryCard } from "./TotalSummaryCard";
+import TotalSummaryCard from "./TotalSummaryCard";
+import createBudgetLineSlice from "../../../pages/budgetLines/createBudgetLineSlice";
 
 const renderWithRedux = (
     component,

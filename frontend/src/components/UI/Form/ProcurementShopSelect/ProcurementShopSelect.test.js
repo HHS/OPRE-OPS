@@ -1,8 +1,8 @@
 import { render } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
-import createBudgetLineSlice from "./createBudgetLineSlice";
-import { AgreementSelect } from "./AgreementSelect";
+import createBudgetLineSlice from "../../../../pages/budgetLines/createBudgetLineSlice";
+import { ProcurementShopSelect } from "./ProcurementShopSelect";
 
 const renderWithRedux = (
     component,
@@ -17,10 +17,8 @@ const renderWithRedux = (
     };
 };
 
-describe("AgreementSelect", () => {
+describe("ProcureShopSelect component", () => {
     it("renders without crashing", () => {
-        renderWithRedux(<AgreementSelect />);
+        renderWithRedux(<ProcurementShopSelect />);
     });
-
-    // Add more tests as needed
 });

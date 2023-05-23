@@ -1,20 +1,22 @@
-import { func, bool } from "prop-types";
+import { func, bool, arrayOf, shape, string, number } from "prop-types";
 import { useState, Fragment } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
-import Tag from "../../components/UI/Tag/Tag";
-import { editBudgetLineAdded, duplicateBudgetLineAdded } from "./createBudgetLineSlice";
-import { TotalSummaryCard } from "./TotalSummaryCard";
-import { formatDate, loggedInName } from "../../helpers/utils";
+import Tag from "../Tag/Tag";
+import TotalSummaryCard from "./TotalSummaryCard";
+import { useSelector } from "react-redux";
+import { formatDate, loggedInName } from "../../../helpers/utils";
 import "./PreviewTable.scss";
 
-export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = false, budgetLines = null }) => {
-    const dispatch = useDispatch();
-    const stateBudgetLinesAdded = useSelector((state) => state.createBudgetLine.budget_lines_added);
-    const budgetLinesAdded = budgetLines ? budgetLines : stateBudgetLinesAdded;
+export const PreviewTable = ({
+    budgetLinesAdded = [],
+    handleSetBudgetLineForEditing = () => {},
+    handleDeleteBudgetLine = () => {},
+    handleDuplicateBudgetLine = () => {},
+    readOnly = false,
+}) => {
     const sortedBudgetLines = budgetLinesAdded
         .slice()
         .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on))
@@ -79,9 +81,6 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
         };
 
         const ChangeIcons = ({ budgetLine }) => {
-            const handleDuplicateBudgetLine = (budgetLine) => {
-                dispatch(duplicateBudgetLineAdded({ ...budgetLine, created_by: loggedInUser }));
-            };
             return (
                 <>
                     {budgetLine.status === "DRAFT" && (
@@ -93,7 +92,7 @@ export const PreviewTable = ({ handleDeleteBudgetLine = () => {}, readOnly = fal
                                 className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
                                 title="edit"
                                 data-position="top"
-                                onClick={() => dispatch(editBudgetLineAdded(budgetLine))}
+                                onClick={() => handleSetBudgetLineForEditing(budgetLine)}
                             />
                             <FontAwesomeIcon
                                 id={`delete-${bl?.id}`}
@@ -288,4 +287,25 @@ export default PreviewTable;
 PreviewTable.propTypes = {
     handleDeleteBudgetLine: func.isRequired,
     readOnly: bool,
+    budgetLines: arrayOf(
+        shape({
+            id: number.isRequired,
+            line_description: string.isRequired,
+            created_on: string.isRequired,
+            date_needed: string.isRequired,
+            can: shape({
+                number: string.isRequired,
+            }).isRequired,
+            amount: number.isRequired,
+            psc_fee_amount: number.isRequired,
+            status: string.isRequired,
+            created_by: string,
+            comments: string.isRequired,
+        })
+    ),
+    budgetLinesAdded: arrayOf(
+        shape({
+            id: number.isRequired,
+        })
+    ),
 };
