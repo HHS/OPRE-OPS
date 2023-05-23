@@ -15,7 +15,7 @@ export const CreateBudgetLine = () => {
         selected_project: selectedProject,
         selected_agreement: selectedAgreement,
         selected_procurement_shop: selectedProcurementShop,
-        budget_lines_added: budgetLinesAdded,
+        existing_budget_lines: existingBudgetLines,
     } = useBudgetLines();
 
     // Get initial list of Agreements (dependent on Research Project Selection)
@@ -61,7 +61,7 @@ export const CreateBudgetLine = () => {
                 selectedResearchProject={selectedProject}
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}
-                budgetLinesAdded={budgetLinesAdded}
+                existingBudgetLines={existingBudgetLines}
             />
             <StepSuccess />
         </CreateBudgetLineFlow>

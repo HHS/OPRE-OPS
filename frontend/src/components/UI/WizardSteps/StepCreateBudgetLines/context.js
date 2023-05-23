@@ -4,11 +4,6 @@ export const CreateBudgetLinesContext = createContext(null);
 export const CreateBudgetLinesDispatchContext = createContext(null);
 
 const initialState = {
-    research_projects_list: [],
-    research_projects_filter: "",
-    agreements: [],
-    procurement_shops: [],
-    cans: [],
     new_budget_lines: [],
     is_editing_budget_line: false,
     selected_can: {},

@@ -16,7 +16,7 @@ export const StepSelectProjectAndAgreement = ({ goToNext }) => {
     const setSelectedProject = useSetState("selected_project");
     const setSelectedAgreement = useSetState("selected_agreement");
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
-    const setBudgetLinesAdded = useSetState("budget_lines_added");
+    const setBudgetLinesAdded = useSetState("existing_budget_lines");
 
     // TODO: replace with RTK Query if possible
     React.useEffect(() => {
