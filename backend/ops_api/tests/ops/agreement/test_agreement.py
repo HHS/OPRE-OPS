@@ -199,7 +199,7 @@ def test_agreements_put_by_id_400_for_type_change(auth_client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_put_by_id_400_for_missing_required(auth_client, loaded_db):
-    """ 400 is returned required fields are missing"""
+    """400 is returned required fields are missing"""
     response = auth_client.put(
         "/api/v1/agreements/1",
         json={
@@ -221,7 +221,7 @@ def test_agreements_put_by_id_contract(auth_client, loaded_db):
             "number": "AGR0001",
             "team_members": [{"id": 1}],
             "support_contacts": [{"id": 2}, {"id": 3}],
-            "notes": "Test Note"
+            "notes": "Test Note",
         },
     )
     assert response.status_code == 200
@@ -310,7 +310,7 @@ def test_agreements_patch_by_id_contract(auth_client, loaded_db):
             "number": "AGR0001",
             "team_members": [{"id": 1}],
             "support_contacts": [{"id": 2}, {"id": 3}],
-            "notes": "Test Note"
+            "notes": "Test Note",
         },
     )
     assert response.status_code == 200
@@ -337,7 +337,7 @@ def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db):
             "number": "AGR0001",
             "team_members": None,
             "support_contacts": [],
-            "notes": None
+            "notes": None,
         },
     )
     assert response.status_code == 200
@@ -363,7 +363,7 @@ def test_agreements_patch_by_id_grant(auth_client, loaded_db):
             "description": "Updated Grant Description",
             "number": "AGR0001",
             "team_members": [{"id": 1}],
-            "notes": "Test Note"
+            "notes": "Test Note",
         },
     )
     assert response.status_code == 200

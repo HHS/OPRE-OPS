@@ -89,20 +89,16 @@ class GrantAgreementPatchBody(GrantAgreementRequestBody):
 
 
 REQUEST_SCHEMAS = {
-    AgreementType.CONTRACT: {
-        "PUT": ContractAgreementRequestBody,
-        "PATCH": ContractAgreementPatchBody
-    },
-    AgreementType.GRANT: {
-        "PUT": GrantAgreementRequestBody,
-        "PATCH": GrantAgreementPatchBody
-    }
+    AgreementType.CONTRACT: {"PUT": ContractAgreementRequestBody, "PATCH": ContractAgreementPatchBody},
+    AgreementType.GRANT: {"PUT": GrantAgreementRequestBody, "PATCH": GrantAgreementPatchBody},
 }
 
 
-def pick_schema_class(agreement_type: AgreementType, method: str) -> Type[
-        ContractAgreementRequestBody | ContractAgreementPatchBody |
-        GrantAgreementRequestBody | GrantAgreementPatchBody]:
+def pick_schema_class(
+    agreement_type: AgreementType, method: str
+) -> Type[
+    ContractAgreementRequestBody | ContractAgreementPatchBody | GrantAgreementRequestBody | GrantAgreementPatchBody
+]:
     type_methods = REQUEST_SCHEMAS.get(agreement_type)
     if not type_methods:
         raise ValueError(f"Invalid agreement_type ({agreement_type})")
