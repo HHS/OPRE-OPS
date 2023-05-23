@@ -250,7 +250,7 @@ class AgreementListAPI(BaseListAPI):
         self._get_schema = desert.schema(QueryParameters)
 
     @staticmethod
-    def _get_query(search=None, research_project_id=None, **args):
+    def _get_query(**args):
         stmt = select(Agreement).order_by(Agreement.id)
         query_helper = QueryHelper(stmt)
 
@@ -273,7 +273,7 @@ class AgreementListAPI(BaseListAPI):
                 arg_dataclass = QueryParameters
 
         filter_keys = set(filter_args.keys())
-        expected_keys = {field.name for field in dc_fields(arg_dataclass)}
+        expected_keys = {field.name for field in dc_fields(arg_dataclass)} | {"research_project_id"}
         bad_keys = filter_keys - expected_keys
         if bad_keys:
             current_app.logger.error(f"GET /agreements: Incorrect filter Query Params: {bad_keys}")
@@ -301,15 +301,6 @@ class AgreementListAPI(BaseListAPI):
         is_authorized = self.auth_gateway.is_authorized(identity, ["GET_AGREEMENTS"])
 
         if is_authorized:
-            #errors = self._get_schema.validate(request.args)
-
-            #if errors:
-            #    current_app.logger.error(f"GET /agreements: Query Params failed validation: {errors}")
-            #    return make_response_with_headers(errors, 400)
-
-            #search = request.args.get("search")
-            #research_project_id = request.args.get("research_project_id")
-
             stmt = self._get_query(**request.args)
 
             result = current_app.db_session.execute(stmt).all()
