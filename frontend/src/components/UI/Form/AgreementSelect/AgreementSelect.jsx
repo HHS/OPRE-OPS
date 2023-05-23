@@ -10,6 +10,7 @@ export const AgreementSelect = ({
     const agreements = useSelector((state) => state.createBudgetLine.agreements);
 
     const onChangeAgreementSelection = (agreementId = 0) => {
+        setBudgetLinesAdded([]); // reset budget lines
         const selectedAgreement = agreements.find((agreement) => agreement.id === agreementId);
         let periodOfPerformance = null;
         if (agreementId === 0) {
