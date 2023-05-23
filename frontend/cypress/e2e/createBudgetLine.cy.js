@@ -107,9 +107,8 @@ const completeCreateBudgetLines = () => {
     cy.get("[data-cy='step-two-continue']").click();
     cy.wait("@postBudgetLines")
         .then((interception) => {
-            const { statusCode, body } = interception.response;
+            const { statusCode } = interception.response;
             expect(statusCode).to.equal(201);
-            // expect(body.message).to.contain("Budget Line Created");
         })
         .then(cy.log);
 };
@@ -132,4 +131,5 @@ describe("create budget lines workflow", () => {
         completeStepTwo();
         completeCreateBudgetLines();
     });
+    // TODO: test duplicate existing budget line
 });
