@@ -2,10 +2,10 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-import ProcurementShopSelect from "../../components/Agreements/ProcurementShopSelect/ProcurementShopSelect";
-import AgreementReasonSelect from "../../components/Agreements/AgreementReasonSelect/AgreementReasonSelect";
-import AgreementTypeSelect from "../../components/Agreements/AgreementTypeSelect/AgreementTypeSelect";
-import ProductServiceCodeSelect from "../../components/Agreements/ProductServiceCodeSelect/ProductServiceCodeSelect";
+import ProcurementShopSelect from "../../components/UI/Form/ProcurementShopSelect";
+import AgreementReasonSelect from "../../components/UI/Form/AgreementReasonSelect";
+import AgreementTypeSelect from "../../components/UI/Form/AgreementTypeSelect";
+import ProductServiceCodeSelect from "../../components/UI/Form/ProductServiceCodeSelect";
 import Alert from "../../components/UI/Alert/Alert";
 import {
     setAgreementDescription,
@@ -17,13 +17,15 @@ import {
     setSelectedProcurementShop as setSelectedProcurementShopInBudgetLine,
     setSelectedProject,
 } from "./createAgreementSlice";
-import ProjectOfficerSelect from "../../components/Agreements/ProjectOfficerSelect/ProjectOfficerSelect";
-import TeamMemberSelect from "../../components/Agreements/TeamMemberSelect/TeamMemberSelect";
-import TeamMemberList from "../../components/Agreements/TeamMemberList/TeamMemberList";
+import { setSelectedProcurementShop as setSelectedProcurementShopInBudgetLine } from "../budgetLines/createBudgetLineSlice";
+import ProjectOfficerSelect from "../../components/UI/Form/ProjectOfficerSelect";
+import TeamMemberSelect from "../../components/UI/Form/TeamMemberSelect";
+import TeamMemberList from "../../components/UI/Form/TeamMemberList";
+
 import Modal from "../../components/UI/Modal/Modal";
 import { formatTeamMember, postAgreement } from "../../api/postAgreements";
 import ProjectSummaryCard from "../../components/ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";
-import ProductServiceCodeSummaryBox from "../../components/Agreements/ProductServiceCodeSummaryBox/ProductServiceCodeSummaryBox";
+import ProductServiceCodeSummaryBox from "../../components/UI/Form/ProductServiceCodeSummaryBox";
 
 export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
     const dispatch = useDispatch();
