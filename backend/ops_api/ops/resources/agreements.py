@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, fields as dc_fields
 from typing import Optional, Type
 
 import desert
@@ -48,11 +48,9 @@ class ContractAgreementRequestBody:
     vendor: Optional[str] = None
     delivered_status: Optional[bool] = fields.Boolean(default=False)
     contract_type: Optional[ContractType] = fields.Enum(ContractType)
-    support_contacts: Optional[list[TeamMembers]] = (
-        fields.List(
-            fields.Nested(TeamMembers),
-            default=[],
-        ),
+    support_contacts: Optional[list[TeamMembers]] = fields.List(
+        fields.Nested(TeamMembers),
+        default=[],
     )
     notes: Optional[str] = None
 
@@ -252,17 +250,44 @@ class AgreementListAPI(BaseListAPI):
         self._get_schema = desert.schema(QueryParameters)
 
     @staticmethod
-    def _get_query(search=None, research_project_id=None):
+    def _get_query(search=None, research_project_id=None, **args):
         stmt = select(Agreement).order_by(Agreement.id)
         query_helper = QueryHelper(stmt)
 
-        if search is not None and len(search) == 0:
-            query_helper.return_none()
-        elif search:
-            query_helper.add_search(Agreement.name, search)
+        match args:
+            case {"search": search, **filter_args} if not search:
+                query_helper.return_none()
+            case {"search": search, **filter_args}:
+                query_helper.add_search(Agreement.name, search)
+            case {**filter_args}:
+                pass
 
-        if research_project_id:
-            query_helper.add_column_equals(Agreement.research_project_id, research_project_id)
+        match filter_args["agreement_type"]:
+            case "CONTRACT":
+                arg_dataclass = ContractAgreementRequestBody
+
+            case "GRANT":
+                arg_dataclass = GrantAgreementRequestBody
+
+            case _:
+                arg_dataclass = QueryParameters
+
+        filter_keys = set(filter_args.keys())
+        expected_keys = {field.name for field in dc_fields(arg_dataclass)}
+        bad_keys = filter_keys - expected_keys
+        if bad_keys:
+            current_app.logger.error(f"GET /agreements: Incorrect filter Query Params: {bad_keys}")
+            return make_response_with_headers([f"Invalid Key: {key}" for key in bad_keys], 400)
+
+        schema = desert.schema(arg_dataclass)
+        errors = schema.validate(request.args, partial=True)
+        if errors:
+            current_app.logger.error(f"GET /agreements: Query Params failed validation: {errors}")
+            return make_response_with_headers(errors, 400)
+
+
+        for key, value in filter_args.items():
+            query_helper.add_column_equals(getattr(Agreement, key), value)
 
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")
@@ -276,16 +301,16 @@ class AgreementListAPI(BaseListAPI):
         is_authorized = self.auth_gateway.is_authorized(identity, ["GET_AGREEMENTS"])
 
         if is_authorized:
-            errors = self._get_schema.validate(request.args)
+            #errors = self._get_schema.validate(request.args)
 
-            if errors:
-                current_app.logger.error(f"GET /agreements: Query Params failed validation: {errors}")
-                return make_response_with_headers(errors, 400)
+            #if errors:
+            #    current_app.logger.error(f"GET /agreements: Query Params failed validation: {errors}")
+            #    return make_response_with_headers(errors, 400)
 
-            search = request.args.get("search")
-            research_project_id = request.args.get("research_project_id")
+            #search = request.args.get("search")
+            #research_project_id = request.args.get("research_project_id")
 
-            stmt = self._get_query(search, research_project_id)
+            stmt = self._get_query(**request.args)
 
             result = current_app.db_session.execute(stmt).all()
 
