@@ -69,6 +69,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 Please review the agreement below or edit any information if necessary. Send to Approval will send the
                 agreement to your Division Director to review for Planned Status.
             </p>
+
             <dl className="margin-0 font-12px">
                 <dt className="margin-0 text-base-dark margin-top-3">Project</dt>
                 <dd className="text-semibold margin-0 margin-top-05">{agreement?.name}</dd>
@@ -114,7 +115,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
             <PreviewTable
                 readOnly={true}
                 handleDeleteBudgetLine={() => {}}
-                budgetLines={agreement?.budget_line_items}
+                budgetLinesAdded={agreement?.budget_line_items}
             />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button className="usa-button usa-button--outline margin-right-2" onClick={() => {}}>
