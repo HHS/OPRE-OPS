@@ -147,7 +147,7 @@ class Agreement(BaseModel):
 
     notes = Column(Text, nullable=True)
 
-    __mapper_args__ = {
+    __mapper_args__: dict[str, str | AgreementType] = {
         "polymorphic_identity": "agreement",
         "polymorphic_on": "agreement_type",
     }
