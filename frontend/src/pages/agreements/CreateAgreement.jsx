@@ -10,7 +10,7 @@ const wizardSteps = ["Project", "Agreement", "Budget Lines"];
 
 export const CreateAgreement = () => {
     const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
-    const selectedAgreement = useSelector((state) => state.createAgreement.selected_agreement);
+    const selectedAgreement = useSelector((state) => state.createAgreement.agreement);
     const selectedProcurementShop = useSelector((state) => state.createAgreement.selected_procurement_shop);
     const existingBudgetLines = useSelector((state) => state.createAgreement.budget_lines_added);
     return (
