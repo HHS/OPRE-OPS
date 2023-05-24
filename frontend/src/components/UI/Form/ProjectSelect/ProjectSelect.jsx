@@ -6,7 +6,7 @@ import { setAgreementProject, setSelectedProject } from "../../../../pages/agree
 export const ProjectSelect = ({
     researchProjects,
     selectedResearchProject,
-    propsSelectedProject,
+    propsSetSelectedProject,
     clearFunction = () => {},
 }) => {
     const dispatch = useDispatch();
@@ -17,14 +17,10 @@ export const ProjectSelect = ({
     }, [selectedResearchProject]);
 
     const onChangeResearchProjectSelection = (projectId = 0) => {
-        console.log(`projectId: ${projectId}`);
-        if (projectId === 0) {
-            clearFunction();
-            return;
-        }
+        clearFunction();
         // NOTE: if props SelectedProject is passed in, use that, otherwise use dispatch from Agreements slice
-        if (propsSelectedProject) {
-            propsSelectedProject(researchProjects[projectId - 1]);
+        if (propsSetSelectedProject) {
+            propsSetSelectedProject(researchProjects[projectId - 1]);
         } else {
             dispatch(setSelectedProject(researchProjects[projectId - 1]));
         }
@@ -32,12 +28,12 @@ export const ProjectSelect = ({
         dispatch(setAgreementProject(projectId));
     };
     const onInputCloseButtonClick = () => {
-        if (propsSelectedProject) {
-            propsSelectedProject({});
+        clearFunction();
+        if (propsSetSelectedProject) {
+            propsSetSelectedProject({});
         } else {
             dispatch(setSelectedProject({}));
         }
-        clearFunction();
     };
 
     const ProjectSummaryCard = ({ selectedResearchProject }) => {
@@ -175,7 +171,7 @@ export default ProjectSelect;
 
 ProjectSelect.propTypes = {
     researchProjects: PropTypes.array.isRequired,
-    selectedResearchProject: PropTypes.object.isRequired,
+    selectedResearchProject: PropTypes.object,
     setSelectedProject: PropTypes.func,
     clearFunction: PropTypes.func,
 };
