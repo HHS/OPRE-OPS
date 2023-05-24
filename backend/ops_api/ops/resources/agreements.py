@@ -29,10 +29,9 @@ class TeamMembers:
 
 
 @dataclass
-class ContractAgreementRequestBody:
+class AgreementData:
     name: str
     number: str
-    contract_number: Optional[str] = None
     agreement_type: AgreementType = fields.Enum(AgreementType)
     description: Optional[str] = None
     product_service_code_id: Optional[int] = None
@@ -45,6 +44,12 @@ class ContractAgreementRequestBody:
     )
     research_project_id: Optional[int] = None
     procurement_shop_id: Optional[int] = None
+    notes: Optional[str] = None
+
+
+@dataclass
+class ContractAgreementData(AgreementData):
+    contract_number: Optional[str] = None
     vendor: Optional[str] = None
     delivered_status: Optional[bool] = fields.Boolean(default=False)
     contract_type: Optional[ContractType] = fields.Enum(ContractType)
@@ -52,7 +57,6 @@ class ContractAgreementRequestBody:
         fields.Nested(TeamMembers),
         default=[],
     )
-    notes: Optional[str] = None
 
 
 @dataclass(kw_only=True)
@@ -62,22 +66,8 @@ class ContractAgreementPatchBody(ContractAgreementRequestBody):
 
 
 @dataclass
-class GrantAgreementRequestBody:
-    name: str
-    number: str
-    agreement_type: AgreementType = fields.Enum(AgreementType)
-    description: Optional[str] = None
-    product_service_code_id: Optional[int] = None
-    agreement_reason: Optional[AgreementReason] = None
-    incumbent: Optional[str] = None
-    team_members: Optional[list[TeamMembers]] = fields.List(
-        fields.Nested(TeamMembers),
-        default=[],
-    )
-    research_project_id: Optional[int] = None
-    procurement_shop_id: Optional[int] = None
+class GrantAgreementData(AgreementData):
     foa: Optional[str] = None
-    notes: Optional[str] = None
 
 
 @dataclass
@@ -245,9 +235,8 @@ class AgreementItemAPI(BaseItemAPI):
 class AgreementListAPI(BaseListAPI):
     def __init__(self, model: BaseModel = Agreement):
         super().__init__(model)
-        self._post_schema_contract = desert.schema(ContractAgreementRequestBody)
-        self._post_schema_grant = desert.schema(GrantAgreementRequestBody)
-        self._get_schema = desert.schema(QueryParameters)
+        self._schema_contract = desert.schema(ContractAgreementData)
+        self._schema_grant = desert.schema(GrantAgreementData)
 
     @staticmethod
     def _get_query(**args):
@@ -257,20 +246,25 @@ class AgreementListAPI(BaseListAPI):
         match args:
             case {"search": search, **filter_args} if not search:
                 query_helper.return_none()
+
             case {"search": search, **filter_args}:
                 query_helper.add_search(Agreement.name, search)
+
             case {**filter_args}:
                 pass
 
-        match filter_args["agreement_type"]:
-            case "CONTRACT":
-                arg_dataclass = ContractAgreementRequestBody
+        match filter_args:
+            case {"agreement_type": "CONTRACT"}:
+                arg_dataclass = ContractAgreementData
+                agreement_class = ContractAgreement
 
-            case "GRANT":
-                arg_dataclass = GrantAgreementRequestBody
+            case {"agreement_type": "GRANT"}:
+                arg_dataclass = GrantAgreementData
+                agreement_class = GrantAgreement
 
             case _:
-                arg_dataclass = QueryParameters
+                arg_dataclass = AgreementData
+                agreement_class = Agreement
 
         filter_keys = set(filter_args.keys())
         expected_keys = {field.name for field in dc_fields(arg_dataclass)} | {"research_project_id"}
@@ -285,9 +279,8 @@ class AgreementListAPI(BaseListAPI):
             current_app.logger.error(f"GET /agreements: Query Params failed validation: {errors}")
             return make_response_with_headers(errors, 400)
 
-
         for key, value in filter_args.items():
-            query_helper.add_column_equals(getattr(Agreement, key), value)
+            query_helper.add_column_equals(getattr(agreement_class, key), value)
 
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")
@@ -324,18 +317,18 @@ class AgreementListAPI(BaseListAPI):
                 match agreement_type:
                     case "CONTRACT":
                         print("contract")
-                        errors = self._post_schema_contract.validate(request.json)
+                        errors = self._schema_contract.validate(request.json)
                         self.check_errors(errors)
 
-                        data = self._post_schema_contract.load(request.json)
+                        data = self._schema_contract.load(request.json)
                         new_agreement = self._create_agreement(data, ContractAgreement)
 
                     case "GRANT":
                         print("grant")
-                        errors = self._post_schema_grant.validate(request.json)
+                        errors = self._schema_grant.validate(request.json)
                         self.check_errors(errors)
 
-                        data = self._post_schema_grant.load(request.json)
+                        data = self._schema_grant.load(request.json)
                         new_agreement = self._create_agreement(data, GrantAgreement)
 
                     case _:
