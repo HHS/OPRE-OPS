@@ -1,5 +1,4 @@
 from dataclasses import dataclass, fields as dc_fields
-import logging
 from typing import Optional, Type
 
 import desert
@@ -19,8 +18,6 @@ from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 from sqlalchemy.future import select
 from sqlalchemy.orm import with_polymorphic
 from typing_extensions import Any, override
-
-logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 ENDPOINT_STRING = "/agreements"
 
@@ -258,16 +255,19 @@ class AgreementListAPI(BaseListAPI):
             case {**filter_args}:
                 pass
 
-        contract_keys = {field.name for field in dc_fields(ContractAgreementData)}
-        grant_keys = {field.name for field in dc_fields(GrantAgreementData)}
-        for key, value in filter_args.items():
-            if key in contract_keys:
-                agreement_model = ContractAgreement
-            elif key in grant_keys:
-                agreement_model = GrantAgreement
-            else:
-                agreement_model = Agreement
-            query_helper.add_column_equals(getattr(agreement_model, key), value)
+        if(filter_args):
+            # This part is necessary because otherwise the system gets confused. Need to
+            # know what table to use to look up parameters from for filtering.
+            contract_keys = {field.name for field in dc_fields(ContractAgreementData)}
+            grant_keys = {field.name for field in dc_fields(GrantAgreementData)}
+            for key, value in filter_args.items():
+                if key in contract_keys:
+                    agreement_model = ContractAgreement
+                elif key in grant_keys:
+                    agreement_model = GrantAgreement
+                else:
+                    agreement_model = Agreement
+                query_helper.add_column_equals(getattr(agreement_model, key), value)
 
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")

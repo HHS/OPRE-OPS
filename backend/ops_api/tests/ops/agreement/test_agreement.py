@@ -130,8 +130,7 @@ def test_agreement_search(auth_client, loaded_db):
     assert response.status_code == 200
     assert len(response.json) == 0
 
-    response = auth_client.get("/api/v1/agreements/?search=contract")
-
+    response = auth_client.get("/api/v1/agreements/?search=Contract")
     assert response.status_code == 200
     assert len(response.json) == 2
 
@@ -187,7 +186,6 @@ def test_agreement_create_grant_agreement(loaded_db):
     grant_agreement = GrantAgreement(
         name="GNTXX12399",
         number="AGRXX003459217-A",
-        grant_id=99,
         foa="NIH",
         agreement_type=AgreementType.GRANT,
     )
