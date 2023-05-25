@@ -64,11 +64,7 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
                 Select a project the agreement should be associated with. If you need to create a new project, click Add
                 New Project.
             </p>
-            <ProjectSelect
-                researchProjects={projects}
-                selectedResearchProject={selectedResearchProject}
-                setSelectedProject={setSelectedProject}
-            />
+            <ProjectSelect researchProjects={projects} selectedResearchProject={selectedResearchProject} />
             <div className="grid-row flex-justify-end margin-top-8">
                 <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
                     Cancel

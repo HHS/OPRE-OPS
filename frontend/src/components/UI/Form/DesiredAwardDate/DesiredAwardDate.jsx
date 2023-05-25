@@ -1,12 +1,11 @@
-import { useDispatch, useSelector } from "react-redux";
-import { setEnteredMonth, setEnteredDay, setEnteredYear } from "./createBudgetLineSlice";
-
-export const DesiredAwardDate = () => {
-    const dispatch = useDispatch();
-    const enteredMonth = useSelector((state) => state.createBudgetLine.entered_month);
-    const enteredDay = useSelector((state) => state.createBudgetLine.entered_day);
-    const enteredYear = useSelector((state) => state.createBudgetLine.entered_year);
-
+export const DesiredAwardDate = ({
+    enteredMonth,
+    setEnteredMonth,
+    enteredDay,
+    setEnteredDay,
+    enteredYear,
+    setEnteredYear,
+}) => {
     return (
         <div className="usa-form-group">
             <fieldset className="usa-fieldset" required>
@@ -23,7 +22,7 @@ export const DesiredAwardDate = () => {
                             aria-describedby="mdHint"
                             style={{ width: "6.9375rem" }}
                             value={enteredMonth || 0}
-                            onChange={(e) => dispatch(setEnteredMonth(e.target.value))}
+                            onChange={(e) => setEnteredMonth(e.target.value)}
                         >
                             <option value>Month</option>
                             <option value="1">01 - Jan</option>
@@ -54,7 +53,7 @@ export const DesiredAwardDate = () => {
                             inputMode="numeric"
                             placeholder="DD"
                             value={enteredDay || ""}
-                            onChange={(e) => dispatch(setEnteredDay(e.target.value))}
+                            onChange={(e) => setEnteredDay(e.target.value)}
                         />
                     </div>
                     <div className="usa-form-group usa-form-group--year margin-top-0">
@@ -72,7 +71,7 @@ export const DesiredAwardDate = () => {
                             inputMode="numeric"
                             placeholder="YYYY"
                             value={enteredYear || ""}
-                            onChange={(e) => dispatch(setEnteredYear(e.target.value))}
+                            onChange={(e) => setEnteredYear(e.target.value)}
                         />
                     </div>
                 </div>

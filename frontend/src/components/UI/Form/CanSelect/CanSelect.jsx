@@ -1,13 +1,7 @@
 import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { setSelectedCan, setCans } from "./createBudgetLineSlice";
-import { getCanList } from "../cans/list/getCanList";
+import { useGetCansQuery } from "../../../../api/opsAPI";
 
-export const CanSelect = () => {
-    const dispatch = useDispatch();
-    const canList = useSelector((state) => state.canList.cans);
-
-    const selectedCan = useSelector((state) => state.createBudgetLine.selected_can);
+export const CanSelect = ({ selectedCan, setSelectedCan }) => {
     const [inputValue, setInputValue] = useState(selectedCan?.number ?? "");
 
     useEffect(() => {
@@ -16,20 +10,21 @@ export const CanSelect = () => {
 
     const onChangeCanSelection = (canId = 0) => {
         if (canId === 0) {
-            dispatch(setSelectedCan(-1));
+            setSelectedCan({});
             return;
         }
         const selected = canList[canId - 1];
-        dispatch(setSelectedCan({ ...selected }));
+        setSelectedCan({ ...selected });
     };
 
-    useEffect(() => {
-        dispatch(getCanList());
-    }, [dispatch]);
+    const { data: canList, error: errorCanList, isLoading: isLoadingCanList } = useGetCansQuery();
 
-    useEffect(() => {
-        dispatch(setCans(canList));
-    }, [canList, dispatch]);
+    if (isLoadingCanList) {
+        return <div>Loading...</div>;
+    }
+    if (errorCanList) {
+        return <div>Oops, an error occurred</div>;
+    }
 
     return (
         <>
@@ -74,7 +69,7 @@ export const CanSelect = () => {
                         className="usa-combo-box__clear-input"
                         aria-label="Clear the select contents"
                         onClick={() => {
-                            dispatch(setSelectedCan(-1));
+                            setSelectedCan({});
                         }}
                     >
                         &nbsp;
