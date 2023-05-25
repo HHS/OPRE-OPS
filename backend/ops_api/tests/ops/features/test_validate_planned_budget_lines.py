@@ -11,74 +11,51 @@ def context():
     return {}
 
 
-@scenario("validate_planned_budget_lines.feature", "Valid Project")
-def test_valid_project(loaded_db, context):
+def cleanup(loaded_db, context):
     # cleanup any existing data
     agreement = loaded_db.get(ContractAgreement, context["agreement"].id)
     bli = loaded_db.get(BudgetLineItem, context["bli"].id)
     loaded_db.delete(bli)
     loaded_db.delete(agreement)
     loaded_db.commit()
+
+
+@scenario("validate_planned_budget_lines.feature", "Valid Project")
+def test_valid_project(loaded_db, context):
+    cleanup(loaded_db, context)
 
 
 @scenario("validate_planned_budget_lines.feature", "Valid Agreement Type")
 def test_valid_agreement_type(loaded_db, context):
-    # cleanup any existing data
-    agreement = loaded_db.get(ContractAgreement, context["agreement"].id)
-    bli = loaded_db.get(BudgetLineItem, context["bli"].id)
-    loaded_db.delete(bli)
-    loaded_db.delete(agreement)
-    loaded_db.commit()
+    cleanup(loaded_db, context)
 
 
 @scenario("validate_planned_budget_lines.feature", "Valid Description")
 def test_valid_agreement_description(loaded_db, context):
-    # cleanup any existing data
-    agreement = loaded_db.get(ContractAgreement, context["agreement"].id)
-    bli = loaded_db.get(BudgetLineItem, context["bli"].id)
-    loaded_db.delete(bli)
-    loaded_db.delete(agreement)
-    loaded_db.commit()
+    cleanup(loaded_db, context)
 
 
 @scenario("validate_planned_budget_lines.feature", "Valid Product Service Code")
 def test_valid_product_service_code(loaded_db, context):
-    # cleanup any existing data
-    agreement = loaded_db.get(ContractAgreement, context["agreement"].id)
-    bli = loaded_db.get(BudgetLineItem, context["bli"].id)
-    loaded_db.delete(bli)
-    loaded_db.delete(agreement)
-    loaded_db.commit()
+    cleanup(loaded_db, context)
 
 
 @scenario("validate_planned_budget_lines.feature", "Valid Procurement Shop")
 def test_valid_procurement_shop(loaded_db, context):
-    # cleanup any existing data
-    agreement = loaded_db.get(ContractAgreement, context["agreement"].id)
-    bli = loaded_db.get(BudgetLineItem, context["bli"].id)
-    loaded_db.delete(bli)
-    loaded_db.delete(agreement)
-    loaded_db.commit()
+    cleanup(loaded_db, context)
 
 
 @scenario("validate_planned_budget_lines.feature", "Valid Agreement Reason")
 def test_valid_agreement_reason(loaded_db, context):
-    # cleanup any existing data
-    agreement = loaded_db.get(ContractAgreement, context["agreement"].id)
-    bli = loaded_db.get(BudgetLineItem, context["bli"].id)
-    loaded_db.delete(bli)
-    loaded_db.delete(agreement)
-    loaded_db.commit()
+    cleanup(loaded_db, context)
 
 
-@scenario("validate_planned_budget_lines.feature", "Valid Agreement Reason - NEW_REQ does not have an Incumbent")
+@scenario(
+    "validate_planned_budget_lines.feature",
+    "Valid Agreement Reason - NEW_REQ does not have an Incumbent",
+)
 def test_valid_agreement_reason_no_incumbent(loaded_db, context):
-    # cleanup any existing data
-    agreement = loaded_db.get(ContractAgreement, context["agreement"].id)
-    bli = loaded_db.get(BudgetLineItem, context["bli"].id)
-    loaded_db.delete(bli)
-    loaded_db.delete(agreement)
-    loaded_db.commit()
+    cleanup(loaded_db, context)
 
 
 @given("I am logged in as an OPS user")
