@@ -21,18 +21,23 @@ def test_valid_project(loaded_db, context):
     loaded_db.commit()
 
 
-@given("I am an logged in as an OPS user")
+@scenario("validate_planned_budget_lines.feature", "Valid Agreement Type")
+def test_valid_agreement_type(loaded_db, context):
+    # cleanup any existing data
+    agreement = loaded_db.get(ContractAgreement, context["agreement"].id)
+    bli = loaded_db.get(BudgetLineItem, context["bli"].id)
+    loaded_db.delete(bli)
+    loaded_db.delete(agreement)
+    loaded_db.commit()
+
+
+@given("I am logged in as an OPS user")
 def client(auth_client):
     return auth_client
 
 
 @given("I have an Agreement with a NULL Project")
-def agreement(loaded_db, context):
-    ...
-
-
-@given("I have a BLI in DRAFT status")
-def bli(loaded_db, context):
+def agreement_null_project(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         number="AGRXX003459217-B",
@@ -44,11 +49,32 @@ def bli(loaded_db, context):
     loaded_db.add(contract_agreement)
     loaded_db.commit()
 
+    context["agreement"] = contract_agreement
+
+
+@given("I have an Agreement with a NULL Agreement Type")
+def agreement_null_agreement_type(loaded_db, context):
+    contract_agreement = ContractAgreement(
+        name="CTXX12399",
+        number="AGRXX003459217-B",
+        contract_number="CT0002",
+        contract_type=ContractType.RESEARCH,
+        product_service_code_id=2,
+        research_project_id=1,
+    )
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
+    context["agreement"] = contract_agreement
+
+
+@when("I have a BLI in DRAFT status")
+def bli(loaded_db, context):
     bli = BudgetLineItem(
         id=1000,
         line_description="LI 1",
         comments="blah blah",
-        agreement_id=contract_agreement.id,
+        agreement_id=context["agreement"].id,
         can_id=1,
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
@@ -60,7 +86,6 @@ def bli(loaded_db, context):
     loaded_db.commit()
 
     context["bli"] = bli
-    context["agreement"] = contract_agreement
 
 
 @when("I submit a BLI to move to IN_REVIEW status")
@@ -80,6 +105,12 @@ def response(client, context):
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Project")
-def error_message(context):
+def error_message_valid_project(context):
     # Need to implement this to throw an error message and return 400
-    assert context["response"].status_code == 200
+    ...
+
+
+@then("I should get an error message that the BLI's Agreement must have a valid Agreement Type")
+def error_message_valid_agreement_type(context):
+    # Need to implement this to throw an error message and return 400
+    ...
