@@ -30,14 +30,13 @@ Feature: Validate "Planned" Budget Lines
     Then I should get an error message that the BLI's Agreement must have a valid Description
 
   Scenario: Valid Product Service Code
-    Given: I am an logged in as an OPS user
-    And: I have a BLI in DRAFT status
+    Given I am logged in as an OPS user
+    And I have an Agreement with a NULL Product Service Code
 
-    When: I submit a BLI to move to IN_REVIEW status
-    And: The BLI's Agreement has a NULL Product Service Code
+    When I have a BLI in DRAFT status
+    And I submit a BLI to move to IN_REVIEW status
 
-    Then: I should get an error message that the BLI's Agreement must have
-      a valid Product Service Code
+    Then I should get an error message that the BLI's Agreement must have a valid Product Service Code
 
   Scenario: Valid Procurement Shop
     Given: I am an logged in as an OPS user

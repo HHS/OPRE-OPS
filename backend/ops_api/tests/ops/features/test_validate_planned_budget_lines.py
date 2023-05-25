@@ -87,7 +87,24 @@ def agreement_empty_description(loaded_db, context):
         contract_type=ContractType.RESEARCH,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
+        research_project_id=1,
         description="",
+    )
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
+    context["agreement"] = contract_agreement
+
+
+@given("I have an Agreement with a NULL Product Service Code")
+def agreement_null_product_service_code(loaded_db, context):
+    contract_agreement = ContractAgreement(
+        name="CTXX12399",
+        number="AGRXX003459217-B",
+        contract_number="CT0002",
+        contract_type=ContractType.RESEARCH,
+        agreement_type=AgreementType.CONTRACT,
+        research_project_id=1,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -145,5 +162,11 @@ def error_message_valid_agreement_type(context):
 
 @then("I should get an error message that the BLI's Agreement must have a valid Description")
 def error_message_valid_agreement_description(context):
+    # Need to implement this to throw an error message and return 400
+    ...
+
+
+@then("I should get an error message that the BLI's Agreement must have a valid Product Service Code")
+def error_message_valid_product_service_code(context):
     # Need to implement this to throw an error message and return 400
     ...
