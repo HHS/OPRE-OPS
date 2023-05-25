@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "license": "CC0-1.0",
     "private": true,
+
     "dependencies": {
         "@fortawesome/fontawesome-svg-core": "6.4.0",
         "@fortawesome/free-regular-svg-icons": "6.4.0",
@@ -46,6 +47,7 @@
     },
     "scripts": {
         "start": "DISABLE_ESLINT_PLUGIN=true react-scripts start",
+        "start:debug": "DISABLE_ESLINT_PLUGIN=true react-scripts --inspect=0.0.0.0:9229 start",
         "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
         "test": "react-scripts test",
         "test:coverage": "react-scripts test --coverage",
