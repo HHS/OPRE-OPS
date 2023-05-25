@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { setCans } from "../../../../pages/budgetLines/createBudgetLineSlice";
-import { getCanList } from "../../../../pages/cans/list/getCanList";
+import { useGetCansQuery } from "../../../../api/opsAPI";
 
 export const CanSelect = ({ selectedCan, setSelectedCan }) => {
-    const dispatch = useDispatch();
-    const canList = useSelector((state) => state.canList.cans);
     const [inputValue, setInputValue] = useState(selectedCan?.number ?? "");
 
     useEffect(() => {
@@ -21,14 +17,14 @@ export const CanSelect = ({ selectedCan, setSelectedCan }) => {
         setSelectedCan({ ...selected });
     };
 
-    // TODO replace with RTK Query
-    useEffect(() => {
-        dispatch(getCanList());
-    }, [dispatch]);
+    const { data: canList, error: errorCanList, isLoading: isLoadingCanList } = useGetCansQuery();
 
-    useEffect(() => {
-        dispatch(setCans(canList));
-    }, [canList, dispatch]);
+    if (isLoadingCanList) {
+        return <div>Loading...</div>;
+    }
+    if (errorCanList) {
+        return <div>Oops, an error occurred</div>;
+    }
 
     return (
         <>

@@ -97,6 +97,7 @@ export const PreviewTable = ({
                             <FontAwesomeIcon
                                 id={`delete-${bl?.id}`}
                                 data-cy="delete-row"
+                                data-testid="delete-row"
                                 icon={faTrash}
                                 title="delete"
                                 data-position="top"

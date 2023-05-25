@@ -1,14 +1,11 @@
-import { useSelector } from "react-redux";
-
 export const AgreementSelect = ({
     selectedProject,
     selectedAgreement,
     setSelectedAgreement,
     setSelectedProcurementShop,
     setBudgetLinesAdded,
+    agreements = {},
 }) => {
-    const agreements = useSelector((state) => state.createBudgetLine.agreements);
-
     const onChangeAgreementSelection = (agreementId = 0) => {
         setBudgetLinesAdded([]); // reset budget lines
         const selectedAgreement = agreements.find((agreement) => agreement.id === agreementId);
@@ -39,6 +36,7 @@ export const AgreementSelect = ({
                 className="bg-base-lightest font-family-sans font-12px border-1px border-base-light radius-sm margin-top-4"
                 style={{ width: "23.9375rem", minHeight: "11.75rem" }}
                 data-cy="agreement-summary-card"
+                data-testid="agreement-summary-card"
             >
                 <dl className="margin-0 padding-y-2 padding-x-105">
                     <dt className="margin-0 text-base-dark">Agreement</dt>
@@ -64,7 +62,7 @@ export const AgreementSelect = ({
         <div className="display-flex flex-justify padding-top-105">
             <div className="left-half width-full">
                 {/* NOTE: Left side */}
-                <fieldset className="usa-fieldset" disabled={!selectedProject?.id}>
+                <fieldset className="usa-fieldset" disabled={!selectedProject?.id && !setSelectedAgreement?.id > 0}>
                     <label className="usa-label" htmlFor="agreement">
                         Agreements
                     </label>
@@ -72,16 +70,18 @@ export const AgreementSelect = ({
                         className="usa-select width-full"
                         name="agreement"
                         id="agreement"
+                        data-testid="agreement-select"
                         onChange={(e) => onChangeAgreementSelection(Number(e.target.value))}
-                        value={selectedAgreement?.id}
+                        value={selectedAgreement?.id || ""}
                         required
                     >
                         <option value={0}>- Select -</option>
-                        {agreements.map((shop) => (
-                            <option key={shop?.id} value={shop?.id}>
-                                {shop?.name}
-                            </option>
-                        ))}
+                        {agreements.length > 0 &&
+                            agreements.map((agreement) => (
+                                <option key={agreement?.id} value={agreement?.id}>
+                                    {agreement?.name}
+                                </option>
+                            ))}
                     </select>
                 </fieldset>
             </div>

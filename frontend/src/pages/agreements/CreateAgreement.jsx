@@ -25,14 +25,14 @@ export const CreateAgreement = () => {
         <CreateAgreementFlow>
             <StepSelectProject />
             {/* <StepCreateAgreement />
-            <StepCreateBudgetLines
-                wizardSteps={wizardSteps}
-                currentStep={3}
-                selectedResearchProject={selectedResearchProject}
-                selectedAgreement={selectedAgreement}
-                selectedProcurementShop={selectedProcurementShop}
-                existingBudgetLines={existingBudgetLines}
-            />
+           <StepCreateBudgetLines
+                    wizardSteps={wizardSteps}
+                    currentStep={3}
+                    selectedResearchProject={selectedResearchProject}
+                    selectedAgreement={selectedAgreement}
+                    selectedProcurementShop={selectedProcurementShop}
+                    existingBudgetLines={existingBudgetLines}
+                />
             <StepAgreementSuccess /> */}
         </CreateAgreementFlow>
     );
