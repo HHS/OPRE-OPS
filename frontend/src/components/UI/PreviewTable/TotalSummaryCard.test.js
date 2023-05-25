@@ -1,23 +1,7 @@
 import { render } from "@testing-library/react";
-import { Provider } from "react-redux";
-import { configureStore } from "@reduxjs/toolkit";
-import TotalSummaryCard from "./TotalSummaryCard";
-import createBudgetLineSlice from "../../../pages/budgetLines/createBudgetLineSlice";
+import { TotalSummaryCard } from "./TotalSummaryCard";
 
-const renderWithRedux = (
-    component,
-    {
-        initialState = { createBudgetLine: { budgetLines: [] } },
-        store = configureStore({ reducer: { createBudgetLine: createBudgetLineSlice }, preloadedState: initialState }),
-    } = {}
-) => {
-    return {
-        ...render(<Provider store={store}>{component}</Provider>),
-        store,
-    };
-};
-
-describe("TotalSelect component", () => {
+describe("<TotalSummaryCard />", () => {
     const budgetLines = [
         {
             id: "1",
@@ -38,7 +22,8 @@ describe("TotalSelect component", () => {
             status: "DRAFT",
         },
     ];
+
     it("renders without crashing", () => {
-        renderWithRedux(<TotalSummaryCard budgetLines={budgetLines} />);
+        render(<TotalSummaryCard budgetLines={budgetLines} />);
     });
 });

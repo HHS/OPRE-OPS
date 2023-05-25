@@ -1,40 +1,25 @@
-import React from "react";
-import { useDispatch } from "react-redux";
-import { useGetResearchProjectsQuery } from "../../api/opsAPI";
-import { setAgreements } from "./createBudgetLineSlice";
+import { useGetResearchProjectsQuery, useGetAgreementsByResearchProjectFilterQuery } from "../../api/opsAPI";
 import { Link } from "react-router-dom";
 import StepIndicator from "../../components/UI/StepIndicator";
 import ProjectSelect from "../../components/UI/Form/ProjectSelect";
 import AgreementSelect from "../../components/UI/Form/AgreementSelect";
 import { useBudgetLines, useSetState } from "./budgetLineContext";
-import { getAgreementsByResearchProjectFilter } from "../../api/getAgreements";
 
 export const StepSelectProjectAndAgreement = ({ goToNext }) => {
-    const dispatch = useDispatch();
     const { wizardSteps, selected_project: selectedProject, selected_agreement: selectedAgreement } = useBudgetLines();
     // setters
     const setSelectedProject = useSetState("selected_project");
     const setSelectedAgreement = useSetState("selected_agreement");
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setBudgetLinesAdded = useSetState("existing_budget_lines");
-
-    // TODO: replace with RTK Query if possible
-    React.useEffect(() => {
-        const getAgreementsAndSetState = async () => {
-            if (selectedProject?.id > 0) {
-                const agreements = await getAgreementsByResearchProjectFilter(selectedProject?.id);
-                dispatch(setAgreements(agreements));
-            }
-        };
-
-        getAgreementsAndSetState().catch(console.error);
-
-        return () => {
-            dispatch(setAgreements([]));
-        };
-    }, [dispatch, selectedProject]);
+    const setAgreements = useSetState("agreements");
 
     const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
+    const {
+        data: agreements,
+        error: errorAgreements,
+        isLoading: isLoadingAgreements,
+    } = useGetAgreementsByResearchProjectFilterQuery(selectedProject?.id, { skip: !selectedProject?.id });
 
     if (isLoadingProjects) {
         return <div>Loading...</div>;
@@ -42,10 +27,18 @@ export const StepSelectProjectAndAgreement = ({ goToNext }) => {
     if (errorProjects) {
         return <div>Oops, an error occurred</div>;
     }
+    // get agreements by selected project
+
+    if (isLoadingAgreements) {
+        return <div>Loading...</div>;
+    }
+    if (errorAgreements) {
+        return <div>Oops, an error occurred</div>;
+    }
 
     const clearAgreementState = () => {
-        dispatch(setAgreements([]));
-        setSelectedAgreement({});
+        setSelectedAgreement(0);
+        setAgreements([]);
     };
 
     return (
@@ -61,7 +54,7 @@ export const StepSelectProjectAndAgreement = ({ goToNext }) => {
             <ProjectSelect
                 researchProjects={projects}
                 selectedResearchProject={selectedProject}
-                propsSelectedProject={setSelectedProject}
+                propsSetSelectedProject={setSelectedProject}
                 clearFunction={clearAgreementState}
             />
             <h2 className="font-sans-lg">Select an Agreement</h2>
@@ -72,6 +65,7 @@ export const StepSelectProjectAndAgreement = ({ goToNext }) => {
                 setSelectedAgreement={setSelectedAgreement}
                 setSelectedProcurementShop={setSelectedProcurementShop}
                 setBudgetLinesAdded={setBudgetLinesAdded}
+                agreements={agreements}
             />
             <div className="grid-row flex-justify-end margin-top-8">
                 <button

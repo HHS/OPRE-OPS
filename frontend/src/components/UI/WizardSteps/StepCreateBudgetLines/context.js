@@ -121,7 +121,6 @@ function budgetLinesReducer(state, action) {
             return state;
         }
         case "ADD_EXISTING_BUDGET_LINES": {
-            console.log("ADD_EXISTING_BUDGET_LINES", action.payload);
             return {
                 ...state,
                 new_budget_lines: [...action.payload],

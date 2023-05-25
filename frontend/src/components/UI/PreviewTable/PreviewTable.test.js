@@ -1,54 +1,70 @@
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import { createStore } from "redux";
 import { Provider } from "react-redux";
-import { configureStore } from "@reduxjs/toolkit";
-import createBudgetLineSlice from "../../../pages/budgetLines/createBudgetLineSlice";
-import PreviewTable from "./PreviewTable";
+import { PreviewTable } from "./PreviewTable";
 
-const renderWithRedux = (
-    component,
+const dummyBudgetLines = [
     {
-        initialState = { createBudgetLine: { budgetLines: [] } },
-        store = configureStore({ reducer: { createBudgetLine: createBudgetLineSlice }, preloadedState: initialState }),
-    } = {}
-) => {
-    return {
-        ...render(<Provider store={store}>{component}</Provider>),
-        store,
-    };
-};
+        id: 1,
+        line_description: "Description 1",
+        created_on: "2021-08-20",
+        date_needed: "2021-09-15",
+        can: { number: "001" },
+        amount: 1200,
+        psc_fee_amount: 0.05,
+        status: "DRAFT",
+        created_by: "John",
+        comments: "Note 1",
+    },
+    {
+        id: 2,
+        line_description: "Description 2",
+        created_on: "2021-09-01",
+        date_needed: "2021-10-30",
+        can: { number: "002" },
+        amount: 2000,
+        psc_fee_amount: 0.07,
+        status: "OBLIGATED",
+        created_by: "Jane",
+        comments: "Note 2",
+    },
+];
 
-describe("PreviewTable component", () => {
-    const budgetLines = [
-        {
-            id: 1,
-            line_description: "Budget Line 1 Description",
-            amount: 100,
-            date_needed: "2021-01-01",
-            psc_fee_amount: 0,
-            amt: 100,
-            status: "DRAFT",
-            created_on: "2021-01-01",
-            can: {
-                number: "123456",
-            },
-            comments: "This is a comment",
-        },
-        {
-            id: 2,
-            line_description: "Budget Line 1 Description",
-            amount: 200,
-            date_needed: "2021-01-01",
-            psc_fee_amount: 0,
-            amt: 200,
-            status: "DRAFT",
-            created_on: "2021-01-01",
-            can: {
-                number: "1234567",
-            },
-            comments: "This is a comment",
-        },
-    ];
-    it("renders without crashing", () => {
-        renderWithRedux(<PreviewTable budgetLines={budgetLines} handleDeleteBudgetLine={() => {}} />);
+function customRender(ui, store) {
+    return render(<Provider store={store}>{ui}</Provider>);
+}
+
+const store = createStore(() => ({
+    auth: { activeUser: { full_name: "Active User" } },
+}));
+
+describe("PreviewTable", () => {
+    test("renders rows for budget lines", () => {
+        customRender(
+            <PreviewTable
+                budgetLinesAdded={dummyBudgetLines}
+                handleSetBudgetLineForEditing={() => {}}
+                handleDeleteBudgetLine={() => {}}
+                handleDuplicateBudgetLine={() => {}}
+            />,
+            store
+        );
+        dummyBudgetLines.forEach((bl) => {
+            expect(screen.getByText(bl.line_description)).toBeInTheDocument();
+        });
+    });
+
+    test("status changes based on input", () => {
+        customRender(
+            <PreviewTable
+                budgetLinesAdded={dummyBudgetLines}
+                handleSetBudgetLineForEditing={() => {}}
+                handleDeleteBudgetLine={() => {}}
+                handleDuplicateBudgetLine={() => {}}
+            />,
+            store
+        );
+        expect(screen.getByText("Draft")).toBeInTheDocument();
+        expect(screen.getByText("Obligated")).toBeInTheDocument();
     });
 });

@@ -6,7 +6,6 @@ import PreviewTable from "../../PreviewTable";
 import Alert from "../../Alert/Alert";
 import Modal from "../../Modal/Modal";
 import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
-import ProcurementShopSelect from "../../Form/ProcurementShopSelect";
 import { postBudgetLineItems } from "../../../../api/postBudgetLineItems";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
 
@@ -49,7 +48,6 @@ export const StepCreateBudgetLines = ({
     };
     const dispatch = useBudgetLinesDispatch();
     // setters
-    const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setEnteredDescription = useSetState("entered_description");
     const setSelectedCan = useSetState("selected_can");
     const setEnteredAmount = useSetState("entered_amount");
@@ -194,16 +192,6 @@ export const StepCreateBudgetLines = ({
                 selectedResearchProject={selectedResearchProject}
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}
-            />
-            <h2 className="font-sans-lg">Procurement Shop</h2>
-            <p>
-                Select the Procurement Shop, and the fee rates will be populated in the table below. If this is an
-                active agreement, it will default to the procurement shop currently being used.
-            </p>
-            <ProcurementShopSelect
-                budgetLinesLength={newBudgetLines?.length}
-                selectedProcurementShop={selectedProcurementShop}
-                setSelectedProcurementShop={setSelectedProcurementShop}
             />
             <h2 className="font-sans-lg margin-top-3">Budget Line Details</h2>
             <p>

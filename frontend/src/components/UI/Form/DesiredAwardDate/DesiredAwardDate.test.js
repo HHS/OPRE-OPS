@@ -1,24 +1,62 @@
-import { render } from "@testing-library/react";
-import { DesiredAwardDate } from "./DesiredAwardDate";
-import { Provider } from "react-redux";
-import { configureStore } from "@reduxjs/toolkit";
-import createBudgetLineSlice from "../../../../pages/budgetLines/createBudgetLineSlice";
+import { render, fireEvent, screen } from "@testing-library/react";
+import DesiredAwardDate from "./DesiredAwardDate";
 
-const renderWithRedux = (
-    component,
-    {
-        initialState,
-        store = configureStore({ reducer: { createBudgetLine: createBudgetLineSlice }, preloadedState: initialState }),
-    } = {}
-) => {
-    return {
-        ...render(<Provider store={store}>{component}</Provider>),
-        store,
+describe("DesiredAwardDate", () => {
+    const setup = () => {
+        const enteredMonth = "";
+        const setEnteredMonth = jest.fn();
+        const enteredDay = "";
+        const setEnteredDay = jest.fn();
+        const enteredYear = "";
+        const setEnteredYear = jest.fn();
+
+        render(
+            <DesiredAwardDate
+                enteredMonth={enteredMonth}
+                setEnteredMonth={setEnteredMonth}
+                enteredDay={enteredDay}
+                setEnteredDay={setEnteredDay}
+                enteredYear={enteredYear}
+                setEnteredYear={setEnteredYear}
+            />
+        );
+
+        const monthInput = screen.getByLabelText(/Month/i);
+        const dayInput = screen.getByPlaceholderText(/DD/i);
+        const yearInput = screen.getByPlaceholderText(/YYYY/i);
+
+        return {
+            monthInput,
+            dayInput,
+            yearInput,
+            setEnteredMonth,
+            setEnteredDay,
+            setEnteredYear,
+        };
     };
-};
 
-describe("Desired Award Date component", () => {
-    it("renders without crashing", () => {
-        renderWithRedux(<DesiredAwardDate />);
+    test("renders DesiredAwardDate component", () => {
+        setup();
+        expect(screen.getByLabelText(/Month/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/DD/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/YYYY/i)).toBeInTheDocument();
+    });
+
+    test("handles user input for month, day and year", () => {
+        const { monthInput, dayInput, yearInput, setEnteredMonth, setEnteredDay, setEnteredYear } = setup();
+
+        fireEvent.change(monthInput, { target: { value: "1" } });
+        fireEvent.change(dayInput, { target: { value: "02" } });
+        fireEvent.change(yearInput, { target: { value: "2023" } });
+
+        expect(setEnteredMonth).toHaveBeenCalledWith("1");
+        expect(setEnteredDay).toHaveBeenCalledWith("02");
+        expect(setEnteredYear).toHaveBeenCalledWith("2023");
+    });
+
+    test("displays the correct month option values", () => {
+        setup();
+        expect(screen.getByText(/01 - Jan/i)).toBeInTheDocument();
+        expect(screen.getByText(/12 - Dec/i)).toBeInTheDocument();
     });
 });

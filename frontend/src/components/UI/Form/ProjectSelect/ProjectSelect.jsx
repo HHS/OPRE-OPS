@@ -6,7 +6,7 @@ import { setAgreementProject, setSelectedProject } from "../../../../pages/agree
 export const ProjectSelect = ({
     researchProjects,
     selectedResearchProject,
-    propsSelectedProject,
+    propsSetSelectedProject,
     clearFunction = () => {},
 }) => {
     const dispatch = useDispatch();
@@ -17,14 +17,10 @@ export const ProjectSelect = ({
     }, [selectedResearchProject]);
 
     const onChangeResearchProjectSelection = (projectId = 0) => {
-        console.log(`projectId: ${projectId}`);
-        if (projectId === 0) {
-            clearFunction();
-            return;
-        }
+        clearFunction();
         // NOTE: if props SelectedProject is passed in, use that, otherwise use dispatch from Agreements slice
-        if (propsSelectedProject) {
-            propsSelectedProject(researchProjects[projectId - 1]);
+        if (propsSetSelectedProject) {
+            propsSetSelectedProject(researchProjects[projectId - 1]);
         } else {
             dispatch(setSelectedProject(researchProjects[projectId - 1]));
         }
@@ -32,12 +28,12 @@ export const ProjectSelect = ({
         dispatch(setAgreementProject(projectId));
     };
     const onInputCloseButtonClick = () => {
-        if (propsSelectedProject) {
-            propsSelectedProject({});
+        clearFunction();
+        if (propsSetSelectedProject) {
+            propsSetSelectedProject({});
         } else {
             dispatch(setSelectedProject({}));
         }
-        clearFunction();
     };
 
     const ProjectSummaryCard = ({ selectedResearchProject }) => {
@@ -76,6 +72,7 @@ export const ProjectSelect = ({
                     <select
                         className="usa-select usa-sr-only usa-combo-box__select"
                         data-cy="project-select"
+                        data-testid="project-select"
                         name="project"
                         aria-hidden="true"
                         tabIndex="-1"
@@ -109,6 +106,7 @@ export const ProjectSelect = ({
                     <span className="usa-combo-box__clear-input__wrapper" tabIndex="-1">
                         <button
                             type="button"
+                            data-testid="clear-input-button"
                             className="usa-combo-box__clear-input"
                             aria-label="Clear the select contents"
                             onClick={() => onInputCloseButtonClick()}
@@ -175,7 +173,7 @@ export default ProjectSelect;
 
 ProjectSelect.propTypes = {
     researchProjects: PropTypes.array.isRequired,
-    selectedResearchProject: PropTypes.object.isRequired,
+    selectedResearchProject: PropTypes.object,
     setSelectedProject: PropTypes.func,
     clearFunction: PropTypes.func,
 };
