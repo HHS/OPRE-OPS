@@ -71,6 +71,16 @@ def test_valid_agreement_reason(loaded_db, context):
     loaded_db.commit()
 
 
+@scenario("validate_planned_budget_lines.feature", "Valid Agreement Reason - NEW_REQ does not have an Incumbent")
+def test_valid_agreement_reason_no_incumbent(loaded_db, context):
+    # cleanup any existing data
+    agreement = loaded_db.get(ContractAgreement, context["agreement"].id)
+    bli = loaded_db.get(BudgetLineItem, context["bli"].id)
+    loaded_db.delete(bli)
+    loaded_db.delete(agreement)
+    loaded_db.commit()
+
+
 @given("I am logged in as an OPS user")
 def client(auth_client):
     return auth_client
@@ -191,6 +201,26 @@ def agreement_null_agreement_reason(loaded_db, context):
     context["agreement"] = contract_agreement
 
 
+@given("I have an Agreement with an AgreementReason = NEW_REQ and an Incumbent")
+def agreement_reason_with_incumbent(loaded_db, context):
+    contract_agreement = ContractAgreement(
+        name="CTXX12399",
+        number="AGRXX003459217-B",
+        contract_number="CT0002",
+        contract_type=ContractType.RESEARCH,
+        agreement_type=AgreementType.CONTRACT,
+        research_project_id=1,
+        product_service_code_id=2,
+        description="Using Innovative Data...",
+        agreement_reason=AgreementReason.NEW_REQ,
+        incumbent="CURRENT VENDOR",
+    )
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
+    context["agreement"] = contract_agreement
+
+
 @when("I have a BLI in DRAFT status")
 def bli(loaded_db, context):
     bli = BudgetLineItem(
@@ -259,5 +289,13 @@ def error_message_valid_procurement_shop(context):
 
 @then("I should get an error message that the BLI's Agreement must have a valid Agreement Reason")
 def error_message_valid_agreement_reason(context):
+    # Need to implement this to throw an error message and return 400
+    ...
+
+
+@then(
+    "I should get an error message that the BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ"
+)
+def error_message_valid_agreement_reason_with_incumbent(context):
     # Need to implement this to throw an error message and return 400
     ...

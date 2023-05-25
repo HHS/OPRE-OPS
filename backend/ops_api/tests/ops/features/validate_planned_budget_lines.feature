@@ -55,3 +55,12 @@ Feature: Validate "Planned" Budget Lines
     And I submit a BLI to move to IN_REVIEW status
 
     Then I should get an error message that the BLI's Agreement must have a valid Agreement Reason
+
+  Scenario: Valid Agreement Reason - NEW_REQ does not have an Incumbent
+    Given I am logged in as an OPS user
+    And I have an Agreement with an AgreementReason = NEW_REQ and an Incumbent
+
+    When I have a BLI in DRAFT status
+    And I submit a BLI to move to IN_REVIEW status
+
+    Then I should get an error message that the BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ
