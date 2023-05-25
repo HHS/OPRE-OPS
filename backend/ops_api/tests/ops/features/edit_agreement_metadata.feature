@@ -6,6 +6,13 @@ Feature: Edit Agreement Metadata
   Scenario: Required Fields
     Given I am a logged in as an OPS user
     And I have a Contract Agreement
-    When I submit a Contract Agreement that is missing required fields
+    And I edit the agreement to remove a required field
+    When I submit the agreement
     Then I should get an error message that it's invalid
 
+  Scenario: Successful Edit
+    Given I am a logged in as an OPS user
+    And I have a Contract Agreement
+    And I edit the agreement to change a value
+    When I submit the agreement
+    Then I should get an message that it was successful
