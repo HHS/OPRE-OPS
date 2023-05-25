@@ -57,7 +57,6 @@ def test_agreements_serialization(auth_client, loaded_db):
     assert json_to_compare == {
         "agreement_reason": "NEW_REQ",
         "agreement_type": "CONTRACT",
-        "contract_id": 1,
         "contract_number": "CT00XX1",
         "contract_type": "RESEARCH",
         "created_by": None,
@@ -168,7 +167,6 @@ def test_agreement_create_contract_agreement(loaded_db):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         number="AGRXX003459217-B",
-        contract_id=99,
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         product_service_code_id=2,

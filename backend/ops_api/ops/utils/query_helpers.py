@@ -7,7 +7,7 @@ from sqlalchemy.orm import InstrumentedAttribute
 class QueryHelper:
     def __init__(self, stmt: Select[Any]):
         self.stmt = stmt
-        self.where_clauses = []
+        self.where_clauses: list[Any] = []
 
     def add_search(self, column: InstrumentedAttribute, search_term: str):
         self.where_clauses.append(column.ilike(f"%{search_term}%"))

@@ -182,7 +182,7 @@ contract_support_contacts = Table(
     BaseModel.metadata,
     Column(
         "contract_id",
-        ForeignKey("contract_agreement.contract_id"),
+        ForeignKey("contract_agreement.id"),
         primary_key=True,
     ),
     Column("users_id", ForeignKey("users.id"), primary_key=True),
@@ -199,8 +199,7 @@ class ContractAgreement(Agreement):
 
     __tablename__ = "contract_agreement"
 
-    id = Column(Integer, ForeignKey("agreement.id"))
-    contract_id = Column(Integer, Identity(), primary_key=True)
+    id = Column(Integer, ForeignKey("agreement.id"), primary_key=True)
     contract_number = Column(String)
     vendor = Column(String)
     delivered_status = Column(Boolean, default=False)
@@ -239,8 +238,7 @@ class GrantAgreement(Agreement):
 
     __tablename__ = "grant_agreement"
 
-    id = Column(Integer, ForeignKey("agreement.id"))
-    grant_id = Column(Integer, Identity(), primary_key=True)
+    id = Column(Integer, ForeignKey("agreement.id"), primary_key=True)
     foa = Column(String)
 
     __mapper_args__ = {
@@ -255,8 +253,7 @@ class IaaAgreement(Agreement):
 
     __tablename__ = "iaa_agreement"
 
-    id = Column(Integer, ForeignKey("agreement.id"))
-    iaa_id = Column(Integer, Identity(), primary_key=True)
+    id = Column(Integer, ForeignKey("agreement.id"), primary_key=True)
     iaa = Column(String)
 
     __mapper_args__ = {
@@ -271,8 +268,7 @@ class IaaAaAgreement(Agreement):
 
     __tablename__ = "iaa_aa_agreement"
 
-    id = Column(Integer, ForeignKey("agreement.id"))
-    iaa_aa_id = Column(Integer, Identity(), primary_key=True)
+    id = Column(Integer, ForeignKey("agreement.id"), primary_key=True)
     iaa_aa = Column(String)
 
     __mapper_args__ = {
@@ -285,8 +281,7 @@ class DirectAgreement(Agreement):
 
     __tablename__ = "direct_agreement"
 
-    id = Column(Integer, ForeignKey("agreement.id"))
-    direct_id = Column(Integer, Identity(), primary_key=True)
+    id = Column(Integer, ForeignKey("agreement.id"), primary_key=True)
     payee = Column(String, nullable=False)
 
     __mapper_args__ = {

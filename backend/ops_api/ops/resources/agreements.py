@@ -1,4 +1,5 @@
 from dataclasses import dataclass, fields as dc_fields
+import logging
 from typing import Optional, Type
 
 import desert
@@ -16,7 +17,10 @@ from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 from sqlalchemy.future import select
+from sqlalchemy.orm import with_polymorphic
 from typing_extensions import Any, override
+
+logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 ENDPOINT_STRING = "/agreements"
 
@@ -240,7 +244,8 @@ class AgreementListAPI(BaseListAPI):
 
     @staticmethod
     def _get_query(args):
-        stmt = select(Agreement).order_by(Agreement.id)
+        polymorphic_agreement = with_polymorphic(Agreement, [ContractAgreement, GrantAgreement])
+        stmt = select(polymorphic_agreement).order_by(Agreement.id)
         query_helper = QueryHelper(stmt)
 
         match args:
@@ -248,42 +253,24 @@ class AgreementListAPI(BaseListAPI):
                 query_helper.return_none()
 
             case {"search": search, **filter_args}:
-                query_helper.add_search(Agreement.name, search)
+                query_helper.add_column_equals(polymorphic_agreement.name, search)
 
             case {**filter_args}:
                 pass
 
-        match filter_args:
-            case {"agreement_type": "CONTRACT"}:
-                arg_dataclass = ContractAgreementData
-                agreement_class = ContractAgreement
-
-            case {"agreement_type": "GRANT"}:
-                arg_dataclass = GrantAgreementData
-                agreement_class = GrantAgreement
-
-            case _:
-                arg_dataclass = AgreementData
-                agreement_class = Agreement
-
-        filter_keys = set(filter_args.keys())
-        expected_keys = {field.name for field in dc_fields(arg_dataclass)} | {"research_project_id"}
-        bad_keys = filter_keys - expected_keys
-        if bad_keys:
-            current_app.logger.error(f"GET /agreements: Incorrect filter Query Params: {bad_keys}")
-            return make_response_with_headers([f"Invalid Key: {key}" for key in bad_keys], 400)
-
-        schema = desert.schema(arg_dataclass)
-        errors = schema.validate(filter_args, partial=True)
-        if errors:
-            current_app.logger.error(f"GET /agreements: Query Params failed validation: {errors}")
-            return make_response_with_headers(errors, 400)
-
+        contract_keys = {field.name for field in dc_fields(ContractAgreementData)}
+        grant_keys = {field.name for field in dc_fields(GrantAgreementData)}
         for key, value in filter_args.items():
-            query_helper.add_column_equals(getattr(agreement_class, key), value)
+            if key in contract_keys:
+                agreement_model = ContractAgreement
+            elif key in grant_keys:
+                agreement_model = GrantAgreement
+            else:
+                agreement_model = Agreement
+            query_helper.add_column_equals(getattr(agreement_model, key), value)
 
         stmt = query_helper.get_stmt()
-        current_app.logger.info(f"SQL: {stmt}")
+        current_app.logger.debug(f"SQL: {stmt}")
 
         return stmt
 
