@@ -31,6 +31,16 @@ def test_valid_agreement_type(loaded_db, context):
     loaded_db.commit()
 
 
+@scenario("validate_planned_budget_lines.feature", "Valid Description")
+def test_valid_agreement_description(loaded_db, context):
+    # cleanup any existing data
+    agreement = loaded_db.get(ContractAgreement, context["agreement"].id)
+    bli = loaded_db.get(BudgetLineItem, context["bli"].id)
+    loaded_db.delete(bli)
+    loaded_db.delete(agreement)
+    loaded_db.commit()
+
+
 @given("I am logged in as an OPS user")
 def client(auth_client):
     return auth_client
@@ -61,6 +71,23 @@ def agreement_null_agreement_type(loaded_db, context):
         contract_type=ContractType.RESEARCH,
         product_service_code_id=2,
         research_project_id=1,
+    )
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
+    context["agreement"] = contract_agreement
+
+
+@given("I have an Agreement with an empty string Description")
+def agreement_empty_description(loaded_db, context):
+    contract_agreement = ContractAgreement(
+        name="CTXX12399",
+        number="AGRXX003459217-B",
+        contract_number="CT0002",
+        contract_type=ContractType.RESEARCH,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        description="",
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -112,5 +139,11 @@ def error_message_valid_project(context):
 
 @then("I should get an error message that the BLI's Agreement must have a valid Agreement Type")
 def error_message_valid_agreement_type(context):
+    # Need to implement this to throw an error message and return 400
+    ...
+
+
+@then("I should get an error message that the BLI's Agreement must have a valid Description")
+def error_message_valid_agreement_description(context):
     # Need to implement this to throw an error message and return 400
     ...
