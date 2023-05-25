@@ -1,15 +1,13 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { useDispatch } from "react-redux";
-import { setAgreementProject, setSelectedProject } from "../../../../pages/agreements/createAgreementSlice";
 
 export const ProjectSelect = ({
     researchProjects,
     selectedResearchProject,
-    propsSetSelectedProject,
+    setSelectedProject,
+    setAgreementProjectId = () => {},
     clearFunction = () => {},
 }) => {
-    const dispatch = useDispatch();
     const [inputValue, setInputValue] = React.useState(selectedResearchProject?.title ?? "");
 
     React.useEffect(() => {
@@ -18,22 +16,14 @@ export const ProjectSelect = ({
 
     const onChangeResearchProjectSelection = (projectId = 0) => {
         clearFunction();
-        // NOTE: if props SelectedProject is passed in, use that, otherwise use dispatch from Agreements slice
-        if (propsSetSelectedProject) {
-            propsSetSelectedProject(researchProjects[projectId - 1]);
-        } else {
-            dispatch(setSelectedProject(researchProjects[projectId - 1]));
+        setSelectedProject(researchProjects[projectId - 1]);
+        if (setAgreementProjectId) {
+            setAgreementProjectId(projectId);
         }
-
-        dispatch(setAgreementProject(projectId));
     };
     const onInputCloseButtonClick = () => {
         clearFunction();
-        if (propsSetSelectedProject) {
-            propsSetSelectedProject({});
-        } else {
-            dispatch(setSelectedProject({}));
-        }
+        setSelectedProject({});
     };
 
     const ProjectSummaryCard = ({ selectedResearchProject }) => {

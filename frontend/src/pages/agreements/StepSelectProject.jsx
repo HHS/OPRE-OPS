@@ -3,10 +3,9 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ProjectSelect from "../../components/UI/Form/ProjectSelect";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-// import { setSelectedProject } from "./createAgreementSlice";
 import Modal from "../../components/UI/Modal/Modal";
 import { useGetResearchProjectsQuery } from "../../api/opsAPI";
-import { useCreateAgreement, useSetState } from "./CreateAgreementContext";
+import { useCreateAgreement, useSetState, useUpdateAgreement } from "./CreateAgreementContext";
 
 export const StepSelectProject = ({ goToNext }) => {
     const dispatch = useDispatch();
@@ -14,6 +13,7 @@ export const StepSelectProject = ({ goToNext }) => {
     const { wizardSteps, selected_project: selectedResearchProject } = useCreateAgreement();
     // setters
     const setSelectedProject = useSetState("selected_project");
+    const setAgreementProjectId = useUpdateAgreement("research_project_id");
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -68,7 +68,12 @@ export const StepSelectProject = ({ goToNext }) => {
                 Select a project the agreement should be associated with. If you need to create a new project, click Add
                 New Project.
             </p>
-            <ProjectSelect researchProjects={projects} selectedResearchProject={selectedResearchProject} />
+            <ProjectSelect
+                researchProjects={projects}
+                selectedResearchProject={selectedResearchProject}
+                setSelectedProject={setSelectedProject}
+                setAgreementProjectId={setAgreementProjectId}
+            />
             <div className="grid-row flex-justify-end margin-top-8">
                 <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
                     Cancel

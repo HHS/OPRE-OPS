@@ -12,7 +12,7 @@ const initialState = {
         id: null,
         selected_agreement_type: null,
         selected_agreement_reason: null,
-        name: "",
+        title: "",
         description: "",
         selected_product_service_code: null,
         incumbent_entered: null,
@@ -29,6 +29,7 @@ const initialState = {
     budget_lines_added: [],
     selected_project: {},
     selected_agreement: {},
+    selected_procurement_shop: -1,
     wizardSteps: ["Project", "Agreement", "Budget Lines"],
 };
 
@@ -60,11 +61,26 @@ export function useSetState(key) {
 
     return setValue;
 }
+export function useUpdateAgreement(key) {
+    const dispatch = useContext(CreateAgreementDispatchContext);
+
+    const setValue = (value) => {
+        dispatch({ type: "UPDATE_AGREEMENT", key, value });
+    };
+
+    return setValue;
+}
 
 function createAgreementReducer(state, action) {
     switch (action.type) {
         case "SET_STATE": {
             return { ...state, [action.key]: action.value };
+        }
+        case "UPDATE_AGREEMENT": {
+            return {
+                ...state,
+                agreement: { ...state.agreement, [action.key]: action.value },
+            };
         }
         case "RESET_TO_INITIAL_STATE": {
             return initialState;

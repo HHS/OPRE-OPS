@@ -8,11 +8,6 @@ import { useCreateAgreement } from "./CreateAgreementContext";
 export const CreateAgreement = () => {
     const createAgreementContext = useCreateAgreement();
 
-    if (!createAgreementContext) {
-        // You can handle the null case here, for example, by showing an error message or loading state
-        return <div>Loading...</div>;
-    }
-
     const {
         wizardSteps,
         selected_project: selectedResearchProject,
@@ -24,16 +19,16 @@ export const CreateAgreement = () => {
     return (
         <CreateAgreementFlow>
             <StepSelectProject />
-            {/* <StepCreateAgreement />
-           <StepCreateBudgetLines
-                    wizardSteps={wizardSteps}
-                    currentStep={3}
-                    selectedResearchProject={selectedResearchProject}
-                    selectedAgreement={selectedAgreement}
-                    selectedProcurementShop={selectedProcurementShop}
-                    existingBudgetLines={existingBudgetLines}
-                />
-            <StepAgreementSuccess /> */}
+            <StepCreateAgreement />
+            <StepCreateBudgetLines
+                wizardSteps={wizardSteps}
+                currentStep={3}
+                selectedResearchProject={selectedResearchProject}
+                selectedAgreement={selectedAgreement}
+                selectedProcurementShop={selectedProcurementShop}
+                existingBudgetLines={existingBudgetLines}
+            />
+            <StepAgreementSuccess />
         </CreateAgreementFlow>
     );
 };

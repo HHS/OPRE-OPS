@@ -32,7 +32,7 @@ const TeamMemberList = ({ selectedTeamMembers, setSelectedTeamMembers }) => {
 
     return selectedTeamMembers.length > 0 ? (
         <ul className="add-list-reset">
-            {selectedTeamMembers.map((teamMember) => (
+            {selectedTeamMembers?.map((teamMember) => (
                 <li key={teamMember.id} className="margin-top-105">
                     <TeamTag teamMemberId={teamMember.id} teamMemberName={teamMember.full_name} />
                 </li>
@@ -41,6 +41,15 @@ const TeamMemberList = ({ selectedTeamMembers, setSelectedTeamMembers }) => {
     ) : (
         <p>No team members</p>
     );
+};
+
+TeamMemberList.propTypes = {
+    selectedTeamMembers: PropTypes.arrayOf(PropTypes.object),
+    setSelectedTeamMembers: PropTypes.func.isRequired,
+};
+
+TeamMemberList.defaultProps = {
+    selectedTeamMembers: [],
 };
 
 export default TeamMemberList;
