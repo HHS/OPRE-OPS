@@ -1,16 +1,20 @@
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ProjectSelect from "../../components/UI/Form/ProjectSelect";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-import { setSelectedProject } from "./createAgreementSlice";
+// import { setSelectedProject } from "./createAgreementSlice";
 import Modal from "../../components/UI/Modal/Modal";
 import { useGetResearchProjectsQuery } from "../../api/opsAPI";
+import { useCreateAgreement, useSetState } from "./CreateAgreementContext";
 
-export const StepSelectProject = ({ goToNext, wizardSteps }) => {
+export const StepSelectProject = ({ goToNext }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
+    const { wizardSteps, selected_project: selectedResearchProject } = useCreateAgreement();
+    // setters
+    const setSelectedProject = useSetState("selected_project");
+
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
@@ -94,3 +98,5 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
         </>
     );
 };
+
+export default StepSelectProject;

@@ -38,3 +38,5 @@ export const CreateAgreementFlow = ({ children, onFinish }) => {
 
     return currentChild;
 };
+
+export default CreateAgreementFlow;

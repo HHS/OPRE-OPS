@@ -280,3 +280,5 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         </>
     );
 };
+
+export default StepCreateAgreement;
