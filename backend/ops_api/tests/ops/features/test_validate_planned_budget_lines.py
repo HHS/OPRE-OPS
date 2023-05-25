@@ -41,6 +41,26 @@ def test_valid_agreement_description(loaded_db, context):
     loaded_db.commit()
 
 
+@scenario("validate_planned_budget_lines.feature", "Valid Product Service Code")
+def test_valid_product_service_code(loaded_db, context):
+    # cleanup any existing data
+    agreement = loaded_db.get(ContractAgreement, context["agreement"].id)
+    bli = loaded_db.get(BudgetLineItem, context["bli"].id)
+    loaded_db.delete(bli)
+    loaded_db.delete(agreement)
+    loaded_db.commit()
+
+
+@scenario("validate_planned_budget_lines.feature", "Valid Procurement Shop")
+def test_valid_procurement_shop(loaded_db, context):
+    # cleanup any existing data
+    agreement = loaded_db.get(ContractAgreement, context["agreement"].id)
+    bli = loaded_db.get(BudgetLineItem, context["bli"].id)
+    loaded_db.delete(bli)
+    loaded_db.delete(agreement)
+    loaded_db.commit()
+
+
 @given("I am logged in as an OPS user")
 def client(auth_client):
     return auth_client
@@ -55,6 +75,8 @@ def agreement_null_project(loaded_db, context):
         contract_type=ContractType.RESEARCH,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
+        procurement_shop_id=1,
+        description="Using Innovative Data...",
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -71,6 +93,8 @@ def agreement_null_agreement_type(loaded_db, context):
         contract_type=ContractType.RESEARCH,
         product_service_code_id=2,
         research_project_id=1,
+        procurement_shop_id=1,
+        description="Using Innovative Data...",
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -89,6 +113,7 @@ def agreement_empty_description(loaded_db, context):
         agreement_type=AgreementType.CONTRACT,
         research_project_id=1,
         description="",
+        procurement_shop_id=1,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -105,6 +130,27 @@ def agreement_null_product_service_code(loaded_db, context):
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
         research_project_id=1,
+        product_service_code_id=2,
+        procurement_shop_id=1,
+        description="Using Innovative Data...",
+    )
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
+    context["agreement"] = contract_agreement
+
+
+@given("I have an Agreement with a NULL Procurement Shop")
+def agreement_null_procurement_shop(loaded_db, context):
+    contract_agreement = ContractAgreement(
+        name="CTXX12399",
+        number="AGRXX003459217-B",
+        contract_number="CT0002",
+        contract_type=ContractType.RESEARCH,
+        agreement_type=AgreementType.CONTRACT,
+        research_project_id=1,
+        product_service_code_id=2,
+        description="Using Innovative Data...",
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -168,5 +214,11 @@ def error_message_valid_agreement_description(context):
 
 @then("I should get an error message that the BLI's Agreement must have a valid Product Service Code")
 def error_message_valid_product_service_code(context):
+    # Need to implement this to throw an error message and return 400
+    ...
+
+
+@then("I should get an error message that the BLI's Agreement must have a valid Procurement Shop")
+def error_message_valid_procurement_shop(context):
     # Need to implement this to throw an error message and return 400
     ...
