@@ -48,11 +48,10 @@ Feature: Validate "Planned" Budget Lines
     Then I should get an error message that the BLI's Agreement must have a valid Procurement Shop
 
   Scenario: Valid Agreement Reason
-    Given: I am an logged in as an OPS user
-    And: I have a BLI in DRAFT status
+    Given I am logged in as an OPS user
+    And I have an Agreement with a NULL Agreement Reason
 
-    When: I submit a BLI to move to IN_REVIEW status
-    And: The BLI's Agreement has a NULL Agreement Reason
+    When I have a BLI in DRAFT status
+    And I submit a BLI to move to IN_REVIEW status
 
-    Then: I should get an error message that the BLI's Agreement must have
-      a valid Agreement Reason
+    Then I should get an error message that the BLI's Agreement must have a valid Agreement Reason
