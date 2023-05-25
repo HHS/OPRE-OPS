@@ -96,6 +96,28 @@ def test_agreements_with_research_project_found(auth_client, loaded_db):
     assert response.json[1]["id"] == 2
 
 
+@pytest.mark.parametrize("key,value",(
+    ("agreement_reason", "NEW_REQ"),
+    ("contract_number", "CT00XX1"),
+    ("contract_type", "RESEARCH"),
+    ("delivered_status", False),
+    ("number", "AGR0001"),
+    ("procurement_shop_id", 1),
+    ("project_officer", 1),
+    ("research_project_id", 1),
+))
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_with_filter(auth_client, key, value, loaded_db):
+    response = auth_client.get(f"/api/v1/agreements/?agreement_type=CONTRACT&{key}={value}")
+    assert response.status_code == 200
+    from pprint import pprint
+    success = all(item[key] == value for item in response.json)
+    if not success:
+        pprint([item[key] for item in response.json])
+        pprint(value)
+    assert success
+
+
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_with_research_project_not_found(auth_client, loaded_db):
     response = auth_client.get("/api/v1/agreements/?research_project_id=1000")

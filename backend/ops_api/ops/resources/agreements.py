@@ -239,7 +239,7 @@ class AgreementListAPI(BaseListAPI):
         self._schema_grant = desert.schema(GrantAgreementData)
 
     @staticmethod
-    def _get_query(**args):
+    def _get_query(args):
         stmt = select(Agreement).order_by(Agreement.id)
         query_helper = QueryHelper(stmt)
 
@@ -274,7 +274,7 @@ class AgreementListAPI(BaseListAPI):
             return make_response_with_headers([f"Invalid Key: {key}" for key in bad_keys], 400)
 
         schema = desert.schema(arg_dataclass)
-        errors = schema.validate(request.args, partial=True)
+        errors = schema.validate(filter_args, partial=True)
         if errors:
             current_app.logger.error(f"GET /agreements: Query Params failed validation: {errors}")
             return make_response_with_headers(errors, 400)
@@ -283,7 +283,7 @@ class AgreementListAPI(BaseListAPI):
             query_helper.add_column_equals(getattr(agreement_class, key), value)
 
         stmt = query_helper.get_stmt()
-        current_app.logger.debug(f"SQL: {stmt}")
+        current_app.logger.info(f"SQL: {stmt}")
 
         return stmt
 
@@ -294,7 +294,7 @@ class AgreementListAPI(BaseListAPI):
         is_authorized = self.auth_gateway.is_authorized(identity, ["GET_AGREEMENTS"])
 
         if is_authorized:
-            stmt = self._get_query(**request.args)
+            stmt = self._get_query(request.args)
 
             result = current_app.db_session.execute(stmt).all()
 
