@@ -130,7 +130,7 @@ def test_agreement_search(auth_client, loaded_db):
     assert response.status_code == 200
     assert len(response.json) == 0
 
-    response = auth_client.get("/api/v1/agreements/?search=Contract")
+    response = auth_client.get("/api/v1/agreements/?search=contract")
     assert response.status_code == 200
     assert len(response.json) == 2
 

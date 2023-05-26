@@ -250,7 +250,7 @@ class AgreementListAPI(BaseListAPI):
                 query_helper.return_none()
 
             case {"search": search, **filter_args}:
-                query_helper.add_column_equals(polymorphic_agreement.name, search)
+                query_helper.add_search(polymorphic_agreement.name, search)
 
             case {**filter_args}:
                 pass
