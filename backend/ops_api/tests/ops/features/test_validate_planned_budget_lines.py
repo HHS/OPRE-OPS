@@ -106,6 +106,14 @@ def test_valid_need_by_date(loaded_db, context):
     cleanup(loaded_db, context)
 
 
+@scenario(
+    "validate_planned_budget_lines.feature",
+    "Valid CAN",
+)
+def test_valid_can(loaded_db, context):
+    cleanup(loaded_db, context)
+
+
 @given("I am logged in as an OPS user")
 def client(auth_client):
     return auth_client
@@ -400,6 +408,25 @@ def bli_without_need_by_date(loaded_db, context):
     context["bli"] = bli
 
 
+@when("I have a BLI in DRAFT status without a CAN")
+def bli_without_can(loaded_db, context):
+    bli = BudgetLineItem(
+        id=1000,
+        comments="blah blah",
+        line_description="LI 1",
+        agreement_id=context["agreement"].id,
+        amount=100.12,
+        date_needed=datetime.date(2023, 1, 1),
+        status=BudgetLineItemStatus.DRAFT,
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    context["bli"] = bli
+
+
 @when("I submit a BLI to move to IN_REVIEW status")
 def response(client, context):
     data = POSTRequestBody(
@@ -488,5 +515,11 @@ def error_message_valid_description(context):
 
 @then("I should get an error message that the BLI must have a Need By Date")
 def error_message_need_by_date(context):
+    # Need to implement this to throw an error message and return 400
+    ...
+
+
+@then("I should get an error message that the BLI must have a CAN")
+def error_message_can(context):
     # Need to implement this to throw an error message and return 400
     ...
