@@ -73,3 +73,12 @@ Feature: Validate "Planned" Budget Lines
     And I submit a BLI to move to IN_REVIEW status
 
     Then I should get an error message that the BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON
+
+  Scenario: Valid Project Officer
+    Given I am logged in as an OPS user
+    And I have an Agreement without a Project Officer
+
+    When I have a BLI in DRAFT status
+    And I submit a BLI to move to IN_REVIEW status
+
+    Then I should get an error message that the BLI's Agreement must have a Project Officer

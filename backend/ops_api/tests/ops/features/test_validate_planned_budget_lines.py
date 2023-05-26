@@ -66,6 +66,14 @@ def test_valid_agreement_reason_incumbent_required(loaded_db, context):
     cleanup(loaded_db, context)
 
 
+@scenario(
+    "validate_planned_budget_lines.feature",
+    "Valid Project Officer",
+)
+def test_valid_project_officer(loaded_db, context):
+    cleanup(loaded_db, context)
+
+
 @given("I am logged in as an OPS user")
 def client(auth_client):
     return auth_client
@@ -83,6 +91,7 @@ def agreement_null_project(loaded_db, context):
         procurement_shop_id=1,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
+        project_officer=1,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -102,6 +111,7 @@ def agreement_null_agreement_type(loaded_db, context):
         procurement_shop_id=1,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
+        project_officer=1,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -122,6 +132,7 @@ def agreement_empty_description(loaded_db, context):
         description="",
         procurement_shop_id=1,
         agreement_reason=AgreementReason.NEW_REQ,
+        project_officer=1,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -142,6 +153,7 @@ def agreement_null_product_service_code(loaded_db, context):
         procurement_shop_id=1,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
+        project_officer=1,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -161,6 +173,7 @@ def agreement_null_procurement_shop(loaded_db, context):
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
+        project_officer=1,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -179,6 +192,7 @@ def agreement_null_agreement_reason(loaded_db, context):
         research_project_id=1,
         product_service_code_id=2,
         description="Using Innovative Data...",
+        project_officer=1,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -199,6 +213,7 @@ def agreement_reason_with_incumbent(loaded_db, context):
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
         incumbent="CURRENT VENDOR",
+        project_officer=1,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -220,6 +235,26 @@ def agreement_reason_with_incumbent_required(loaded_db, context):
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.RECOMPETE,
+        project_officer=1,
+    )
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
+    context["agreement"] = contract_agreement
+
+
+@given("I have an Agreement without a Project Officer")
+def agreement_null_project_officer(loaded_db, context):
+    contract_agreement = ContractAgreement(
+        name="CTXX12399",
+        number="AGRXX003459217-B",
+        contract_number="CT0002",
+        contract_type=ContractType.RESEARCH,
+        agreement_type=AgreementType.CONTRACT,
+        research_project_id=1,
+        product_service_code_id=2,
+        description="Using Innovative Data...",
+        agreement_reason=AgreementReason.NEW_REQ,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -311,5 +346,11 @@ def error_message_valid_agreement_reason_with_incumbent(context):
     "I should get an error message that the BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
 )
 def error_message_valid_agreement_reason_with_incumbent_required(context):
+    # Need to implement this to throw an error message and return 400
+    ...
+
+
+@then("I should get an error message that the BLI's Agreement must have a Project Officer")
+def error_message_valid_project_officer(context):
     # Need to implement this to throw an error message and return 400
     ...
