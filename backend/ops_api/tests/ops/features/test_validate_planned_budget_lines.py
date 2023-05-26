@@ -90,6 +90,14 @@ def test_valid_team_members(loaded_db, context):
     cleanup(loaded_db, context)
 
 
+@scenario(
+    "validate_planned_budget_lines.feature",
+    "Valid Description",
+)
+def test_valid_description(loaded_db, context):
+    cleanup(loaded_db, context)
+
+
 @given("I am logged in as an OPS user")
 def client(auth_client):
     return auth_client
@@ -306,11 +314,50 @@ def agreement_null_team_members(loaded_db, context):
     context["agreement"] = contract_agreement
 
 
+@given("I have a valid Agreement")
+def valid_agreement(loaded_db, context):
+    contract_agreement = ContractAgreement(
+        name="CTXX12399",
+        number="AGRXX003459217-B",
+        contract_number="CT0002",
+        contract_type=ContractType.RESEARCH,
+        agreement_type=AgreementType.CONTRACT,
+        research_project_id=1,
+        product_service_code_id=2,
+        description="Using Innovative Data...",
+        agreement_reason=AgreementReason.NEW_REQ,
+    )
+    contract_agreement.team_members.append(loaded_db.get(User, 1))
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
+    context["agreement"] = contract_agreement
+
+
 @when("I have a BLI in DRAFT status")
 def bli(loaded_db, context):
     bli = BudgetLineItem(
         id=1000,
         line_description="LI 1",
+        comments="blah blah",
+        agreement_id=context["agreement"].id,
+        can_id=1,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2023, 1, 1),
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    context["bli"] = bli
+
+
+@when("I have a BLI in DRAFT status without a Description")
+def bli_without_description(loaded_db, context):
+    bli = BudgetLineItem(
+        id=1000,
         comments="blah blah",
         agreement_id=context["agreement"].id,
         can_id=1,
@@ -402,5 +449,11 @@ def error_message_valid_project_officer(context):
 
 @then("I should get an error message that the BLI's Agreement must have at least one Team Member")
 def error_message_valid_team_members(context):
+    # Need to implement this to throw an error message and return 400
+    ...
+
+
+@then("I should get an error message that the BLI must have a Description")
+def error_message_valid_description(context):
     # Need to implement this to throw an error message and return 400
     ...
