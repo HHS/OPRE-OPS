@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Python: Remote Attach (Docker Compose)",
+      "name": "Python: Attach OPS API",
       "type": "python",
       "request": "attach",
       "connect": { "host": "localhost", "port": 5678 },
@@ -12,25 +12,8 @@
           "remoteRoot": "/home/app"
         }
       ],
-      "justMyCode": true
-    },
-    {
-      "name": "Javascript: Remote Attach (Docker Compose)",
-      "type": "node",
-      "request": "attach",
-      "restart": true,
-      "remoteRoot": "/home/app",
-      "localRoot": "${workspaceFolder}/frontend",
-      "port": 9229,
-      "address": "localhost",
-      "sourceMaps": true
-    },
-    {
-      "name": "Launch Chrome against localhost",
-      "type": "chrome",
-      "request": "launch",
-      "url": "http://localhost:3000",
-      "webRoot": "${workspaceFolder}/frontend"
+      "justMyCode": true,
+      "preLaunchTask": "Check and Start Docker Container"
     }
   ]
 }

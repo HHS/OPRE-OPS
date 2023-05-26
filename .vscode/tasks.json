@@ -46,6 +46,24 @@
         "dockerfile": "${workspaceFolder}/backend/Dockerfile.debug",
         "tag": "ops-api:debug-latest"
       }
+    },
+    {
+      "label": "Check and Start Docker Container",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "if [[ $(docker inspect --format='{{.State.Status}}' ops-backend) != 'running' ]]; then docker-compose -f ${workspaceFolder}/docker-compose.debug.yml up --build -d; fi"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     }
   ]
 }

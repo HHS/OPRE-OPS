@@ -11,9 +11,7 @@ RUN pipenv install --dev --system --deploy && chown -R app:app .
 
 # Now copy the rest of the app files, again to better support caching
 # of prior steps.
-# For debugging, we're using a volume mount, so we don't need to copy
-# See .vscode/tasks.json
-# COPY . /home/app
+COPY . /home/app
 
 # RUN chown -R app:app .
 USER app
