@@ -57,7 +57,8 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
     const [alertProps, setAlertProps] = React.useState({});
     const [selectedTeamMembers, setSelectedTeamMembers] = React.useState([]);
 
-    const incumbentDisabled = selectedAgreementReason === "NEW_REQ" || selectedAgreementReason === "0";
+    const incumbentDisabled =
+        selectedAgreementReason === "NEW_REQ" || selectedAgreementReason === null || selectedAgreementReason === "0";
 
     const showAlertAndNavigate = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
