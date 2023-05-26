@@ -128,3 +128,11 @@ Feature: Validate "Planned" Budget Lines
     And I submit a BLI to move to IN_REVIEW status
 
     Then I should get an error message that the BLI must have an Amount
+
+  Scenario: Valid Agreement
+    Given I am logged in as an OPS user
+
+    When I have a BLI in DRAFT status without an Agreement
+    And I submit a BLI to move to IN_REVIEW status
+
+    Then I should get an error message that the BLI must have an Agreement

@@ -454,6 +454,25 @@ def bli_without_amount(loaded_db, context):
     context["bli"] = bli
 
 
+@when("I have a BLI in DRAFT status without an Agreement")
+def bli_without_agreement(loaded_db, context):
+    bli = BudgetLineItem(
+        id=1000,
+        comments="blah blah",
+        line_description="LI 1",
+        amount=100.12,
+        can_id=1,
+        date_needed=datetime.date(2023, 1, 1),
+        status=BudgetLineItemStatus.DRAFT,
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    context["bli"] = bli
+
+
 @when("I submit a BLI to move to IN_REVIEW status")
 def response(client, context):
     data = POSTRequestBody(
@@ -554,5 +573,11 @@ def error_message_can(context):
 
 @then("I should get an error message that the BLI must have an Amount")
 def error_message_amount(context):
+    # Need to implement this to throw an error message and return 400
+    ...
+
+
+@then("I should get an error message that the BLI must have an Agreement")
+def error_message_agreement(context):
     # Need to implement this to throw an error message and return 400
     ...
