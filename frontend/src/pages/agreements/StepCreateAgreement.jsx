@@ -13,10 +13,16 @@ import Modal from "../../components/UI/Modal/Modal";
 import { formatTeamMember, postAgreement } from "../../api/postAgreements";
 import ProjectSummaryCard from "../../components/ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";
 import ProductServiceCodeSummaryBox from "../../components/UI/Form/ProductServiceCodeSummaryBox";
-import { useCreateAgreement, useSetState, useUpdateAgreement } from "./CreateAgreementContext";
+import {
+    useCreateAgreement,
+    useSetState,
+    useUpdateAgreement,
+    useCreateAgreementDispatch,
+} from "./CreateAgreementContext";
 
 export const StepCreateAgreement = ({ goBack, goToNext }) => {
     const navigate = useNavigate();
+    const dispatch = useCreateAgreementDispatch();
     const {
         wizardSteps,
         selected_project: selectedResearchProject,
@@ -32,7 +38,7 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
         selected_product_service_code: selectedProductServiceCode,
         selected_agreement_reason: selectedAgreementReason,
         project_officer: selectedProjectOfficer,
-        // team_members: selectedTeamMembers,
+        team_members: selectedTeamMembers,
     } = agreement;
     // setters
     const setSelectedProject = useSetState("selected_project");
@@ -48,17 +54,29 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
     const setSelectedAgreementReason = useUpdateAgreement("selected_agreement_reason");
     const setSelectedProjectOfficer = useUpdateAgreement("project_officer");
     const setAgreementIncumbent = useUpdateAgreement("incumbent_entered");
-    // const setSelectedTeamMembers = useUpdateAgreement("team_members");
     const setAgreementNotes = useUpdateAgreement("notes");
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
-    const [selectedTeamMembers, setSelectedTeamMembers] = React.useState([]);
 
     const incumbentDisabled =
         selectedAgreementReason === "NEW_REQ" || selectedAgreementReason === null || selectedAgreementReason === "0";
+
+    const setSelectedTeamMembers = (teamMember) => {
+        dispatch({
+            type: "ADD_TEAM_MEMBER",
+            payload: teamMember,
+        });
+    };
+
+    const removeTeamMember = (teamMember) => {
+        dispatch({
+            type: "REMOVE_TEAM_MEMBER",
+            payload: teamMember,
+        });
+    };
 
     const showAlertAndNavigate = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -93,18 +111,19 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
         setAgreementId(newAgreementId);
     };
     const clearAgreement = () => {
-        setAgreementTitle("");
-        setAgreementDescription("");
-        setAgreementIncumbent(null);
-        setAgreementNotes("");
-        setSelectedProject({});
-        setSelectedAgreementType("");
-        setSelectedProductServiceCode({});
-        setSelectedAgreementReason(null);
-        setSelectedProcurementShop({});
-        setSelectedProjectOfficer(null);
-        setSelectedTeamMembers([]);
-        setModalProps({});
+        // TODO: Clear in context
+        // setAgreementTitle("");
+        // setAgreementDescription("");
+        // setAgreementIncumbent(null);
+        // setAgreementNotes("");
+        // setSelectedProject({});
+        // setSelectedAgreementType("");
+        // setSelectedProductServiceCode({});
+        // setSelectedAgreementReason(null);
+        // setSelectedProcurementShop({});
+        // setSelectedProjectOfficer(null);
+        // setSelectedTeamMembers([]);
+        // setModalProps({});
     };
     const handleContinue = async () => {
         saveAgreement();
@@ -245,7 +264,7 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
             </div>
 
             <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
-            <TeamMemberList selectedTeamMembers={selectedTeamMembers} setSelectedTeamMembers={setSelectedTeamMembers} />
+            <TeamMemberList selectedTeamMembers={selectedTeamMembers} removeTeamMember={removeTeamMember} />
             <div className="usa-character-count margin-top-3">
                 <div className="usa-form-group">
                     <label className="usa-label font-sans-lg text-bold" htmlFor="with-hint-textarea">

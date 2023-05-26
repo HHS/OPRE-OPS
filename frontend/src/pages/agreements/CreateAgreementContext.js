@@ -82,6 +82,24 @@ function createAgreementReducer(state, action) {
                 agreement: { ...state.agreement, [action.key]: action.value },
             };
         }
+        case "ADD_TEAM_MEMBER": {
+            return {
+                ...state,
+                agreement: {
+                    ...state.agreement,
+                    team_members: [...state.agreement.team_members, action.payload],
+                },
+            };
+        }
+        case "REMOVE_TEAM_MEMBER": {
+            return {
+                ...state,
+                agreement: {
+                    ...state.agreement,
+                    team_members: state.agreement.team_members.filter((member) => member.id !== action.payload.id),
+                },
+            };
+        }
         case "RESET_TO_INITIAL_STATE": {
             return initialState;
         }
