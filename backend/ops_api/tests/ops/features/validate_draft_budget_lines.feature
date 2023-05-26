@@ -1,6 +1,6 @@
-Feature: Validate "Planned" Budget Lines
+Feature: Validate "Draft" Budget Lines
   As an OPRE staff member, I want to insure that budget lines have valid input before moving to
-  "Planned" status so that agreements have only correct data as they proceed through their lifecycle.
+  "In Review" status so that agreements have only correct data as they proceed through their lifecycle.
 
   Scenario: Valid Project
     Given I am logged in as an OPS user

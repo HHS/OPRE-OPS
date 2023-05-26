@@ -28,38 +28,38 @@ def cleanup(loaded_db, context):
     loaded_db.commit()
 
 
-@scenario("validate_planned_budget_lines.feature", "Valid Project")
+@scenario("validate_draft_budget_lines.feature", "Valid Project")
 def test_valid_project(loaded_db, context):
     cleanup(loaded_db, context)
 
 
-@scenario("validate_planned_budget_lines.feature", "Valid Agreement Type")
+@scenario("validate_draft_budget_lines.feature", "Valid Agreement Type")
 def test_valid_agreement_type(loaded_db, context):
     cleanup(loaded_db, context)
 
 
-@scenario("validate_planned_budget_lines.feature", "Valid Description")
+@scenario("validate_draft_budget_lines.feature", "Valid Description")
 def test_valid_agreement_description(loaded_db, context):
     cleanup(loaded_db, context)
 
 
-@scenario("validate_planned_budget_lines.feature", "Valid Product Service Code")
+@scenario("validate_draft_budget_lines.feature", "Valid Product Service Code")
 def test_valid_product_service_code(loaded_db, context):
     cleanup(loaded_db, context)
 
 
-@scenario("validate_planned_budget_lines.feature", "Valid Procurement Shop")
+@scenario("validate_draft_budget_lines.feature", "Valid Procurement Shop")
 def test_valid_procurement_shop(loaded_db, context):
     cleanup(loaded_db, context)
 
 
-@scenario("validate_planned_budget_lines.feature", "Valid Agreement Reason")
+@scenario("validate_draft_budget_lines.feature", "Valid Agreement Reason")
 def test_valid_agreement_reason(loaded_db, context):
     cleanup(loaded_db, context)
 
 
 @scenario(
-    "validate_planned_budget_lines.feature",
+    "validate_draft_budget_lines.feature",
     "Valid Agreement Reason - NEW_REQ does not have an Incumbent",
 )
 def test_valid_agreement_reason_no_incumbent(loaded_db, context):
@@ -67,7 +67,7 @@ def test_valid_agreement_reason_no_incumbent(loaded_db, context):
 
 
 @scenario(
-    "validate_planned_budget_lines.feature",
+    "validate_draft_budget_lines.feature",
     "Valid Agreement Reason - RECOMPETE and LOGICAL_FOLLOW_ON requires an Incumbent",
 )
 def test_valid_agreement_reason_incumbent_required(loaded_db, context):
@@ -75,7 +75,7 @@ def test_valid_agreement_reason_incumbent_required(loaded_db, context):
 
 
 @scenario(
-    "validate_planned_budget_lines.feature",
+    "validate_draft_budget_lines.feature",
     "Valid Project Officer",
 )
 def test_valid_project_officer(loaded_db, context):
@@ -83,7 +83,7 @@ def test_valid_project_officer(loaded_db, context):
 
 
 @scenario(
-    "validate_planned_budget_lines.feature",
+    "validate_draft_budget_lines.feature",
     "Valid Team Members",
 )
 def test_valid_team_members(loaded_db, context):
@@ -91,7 +91,7 @@ def test_valid_team_members(loaded_db, context):
 
 
 @scenario(
-    "validate_planned_budget_lines.feature",
+    "validate_draft_budget_lines.feature",
     "Valid Description",
 )
 def test_valid_description(loaded_db, context):
@@ -99,7 +99,7 @@ def test_valid_description(loaded_db, context):
 
 
 @scenario(
-    "validate_planned_budget_lines.feature",
+    "validate_draft_budget_lines.feature",
     "Valid Need By Date",
 )
 def test_valid_need_by_date(loaded_db, context):
@@ -107,7 +107,7 @@ def test_valid_need_by_date(loaded_db, context):
 
 
 @scenario(
-    "validate_planned_budget_lines.feature",
+    "validate_draft_budget_lines.feature",
     "Valid CAN",
 )
 def test_valid_can(loaded_db, context):
@@ -115,7 +115,7 @@ def test_valid_can(loaded_db, context):
 
 
 @scenario(
-    "validate_planned_budget_lines.feature",
+    "validate_draft_budget_lines.feature",
     "Valid Amount",
 )
 def test_valid_amount(loaded_db, context):
