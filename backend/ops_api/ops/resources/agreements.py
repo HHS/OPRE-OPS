@@ -61,7 +61,7 @@ class ContractAgreementData(AgreementData):
 
 
 @dataclass(kw_only=True)
-class ContractAgreementPatchBody(ContractAgreementRequestBody):
+class ContractAgreementPatchBody(ContractAgreementData):
     name: Optional[str] = None
     number: Optional[str] = None
 
@@ -72,21 +72,21 @@ class GrantAgreementData(AgreementData):
 
 
 @dataclass
-class GrantAgreementPatchBody(GrantAgreementRequestBody):
+class GrantAgreementPatchBody(GrantAgreementData):
     name: Optional[str] = None
     number: Optional[str] = None
 
 
 REQUEST_SCHEMAS = {
-    AgreementType.CONTRACT: {"PUT": ContractAgreementRequestBody, "PATCH": ContractAgreementPatchBody},
-    AgreementType.GRANT: {"PUT": GrantAgreementRequestBody, "PATCH": GrantAgreementPatchBody},
+    AgreementType.CONTRACT: {"PUT": ContractAgreementData, "PATCH": ContractAgreementPatchBody},
+    AgreementType.GRANT: {"PUT": GrantAgreementData, "PATCH": GrantAgreementPatchBody},
 }
 
 
 def pick_schema_class(
     agreement_type: AgreementType, method: str
 ) -> Type[
-    ContractAgreementRequestBody | ContractAgreementPatchBody | GrantAgreementRequestBody | GrantAgreementPatchBody
+    ContractAgreementData | ContractAgreementPatchBody | GrantAgreementData | GrantAgreementPatchBody
 ]:
     type_methods = REQUEST_SCHEMAS.get(agreement_type)
     if not type_methods:
