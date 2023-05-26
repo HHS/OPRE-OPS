@@ -22,7 +22,7 @@ class QueryHelper:
         if not self.where_clauses:
             ret_stmt = self.stmt
         elif len(self.where_clauses) == 1:
-            ret_stmt =  self.stmt.where(*self.where_clauses)
+            ret_stmt = self.stmt.where(*self.where_clauses)
         else:
             ret_stmt = self.stmt.where(and_(*self.where_clauses))
 

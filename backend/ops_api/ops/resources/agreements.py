@@ -85,9 +85,7 @@ REQUEST_SCHEMAS = {
 
 def pick_schema_class(
     agreement_type: AgreementType, method: str
-) -> Type[
-    ContractAgreementData | ContractAgreementPatchBody | GrantAgreementData | GrantAgreementPatchBody
-]:
+) -> Type[ContractAgreementData | ContractAgreementPatchBody | GrantAgreementData | GrantAgreementPatchBody]:
     type_methods = REQUEST_SCHEMAS.get(agreement_type)
     if not type_methods:
         raise ValueError(f"Invalid agreement_type ({agreement_type})")
@@ -255,7 +253,7 @@ class AgreementListAPI(BaseListAPI):
             case {**filter_args}:
                 pass
 
-        if(filter_args):
+        if filter_args:
             # This part is necessary because otherwise the system gets confused. Need to
             # know what table to use to look up parameters from for filtering.
             contract_keys = {field.name for field in dc_fields(ContractAgreementData)}
