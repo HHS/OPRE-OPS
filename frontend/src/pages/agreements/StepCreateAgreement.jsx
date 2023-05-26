@@ -41,7 +41,6 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
         team_members: selectedTeamMembers,
     } = agreement;
     // setters
-    const setSelectedProject = useSetState("selected_project");
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
 
     // AGREEMENT SETTERS
