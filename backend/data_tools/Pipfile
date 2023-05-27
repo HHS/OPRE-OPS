@@ -10,7 +10,7 @@ json5 = "==0.9.14"
 psycopg2-binary = "==2.9.6"
 cfenv = "==0.5.3"
 sqlalchemy-mixins = "==1.5.3"
-typing-extensions = "==4.5.0"
+typing-extensions = "==4.6.1"
 desert = "2022.9.22"
 
 [dev-packages]
