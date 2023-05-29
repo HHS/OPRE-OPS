@@ -7,7 +7,7 @@ name = "pypi"
 sqlalchemy = "==2.0.15"
 flask = "==2.3.2"
 mypy = "==0.991"
-flask-jwt-extended = {extras = ["asymmetric_crypto"], version = "==4.4.4"}
+flask-jwt-extended = {extras = ["asymmetric_crypto"], version = "==4.5.2"}
 authlib = "==1.2.0"
 requests = "==2.31.0"
 markupsafe = "==2.1.2"
