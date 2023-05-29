@@ -1,4 +1,4 @@
-name: Deployment
+name: Deployment STAGING
 
 on:
   push:
