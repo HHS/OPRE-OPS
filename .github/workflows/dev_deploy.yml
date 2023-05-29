@@ -1,9 +1,13 @@
 name: Deployment
 
 on:
+  workflow_run:
+    workflows: ["Continuous Integration"]
+    types:
+      - completed
+    branches: [main, TechDebt-dev_deploy_main_push] # extra branch for testing only during dev.
   push:
-    branches:
-      - development
+    branches: [development]
 
 jobs:
 
