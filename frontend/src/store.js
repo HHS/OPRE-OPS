@@ -8,7 +8,6 @@ import userSlice from "./pages/users/detail/userSlice";
 import portfolioSlice from "./pages/portfolios/detail/portfolioSlice";
 import researchProjectSlice from "./pages/researchProjects/detail/researchProjectSlice";
 import ResearchProjectFundingSlice from "./components/Portfolios/ResearchProjects/ResearchProjectFundingSlice";
-import createAgreementSlice from "./pages/agreements/createAgreementSlice";
 import { opsApi } from "./api/opsAPI";
 
 const rootReducer = combineReducers({
@@ -22,7 +21,6 @@ const rootReducer = combineReducers({
     userDetail: userSlice,
     researchProject: researchProjectSlice,
     researchProjectFunding: ResearchProjectFundingSlice,
-    createAgreement: createAgreementSlice,
 });
 
 export const setupStore = (preloadedState = {}) => {
