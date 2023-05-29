@@ -92,3 +92,36 @@ it("can create an agreement", () => {
         })
         .then(cy.log);
 });
+
+it("should handle cancelling out of workflow on step 1", () => {
+    cy.get("#project--list--toggle").click();
+    cy.get("#project--list").invoke("show");
+    cy.get("li").contains("Human Services Interoperability Support").click();
+    // cancel out of workflow
+    cy.get('[data-cy="cancel-button"]').click();
+    cy.get('[data-cy="confirm-action"]').click();
+    // check that we are back on the home page
+    cy.url().should("eq", Cypress.config().baseUrl + "/");
+});
+
+it("should handle cancelling out of workflow on step 2", () => {
+    // Step One - Select a Project
+    cy.get("#project--list--toggle").click();
+    cy.get("#project--list").invoke("show");
+    cy.get("li").contains("Human Services Interoperability Support").click();
+    cy.get("#continue").click();
+    // Step Two - Create an Agreement
+    cy.get("dt").should("contain", "Project");
+    cy.get("dd").should("contain", "Human Services Interoperability Support");
+    cy.get("#agreement-type-options").select("CONTRACT");
+    cy.get("#agreement-title").type("Test Agreement Title");
+    cy.get("#agreement-description").type("Test Agreement Description");
+    cy.get("#product-service-code-options").select("Other Scientific and Technical Consulting Services");
+    cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
+    cy.get("#reason-for-agreement-select").select("NEW_REQ");
+    // cancel out of workflow
+    cy.get('[data-cy="cancel-button"]').click();
+    cy.get('[data-cy="confirm-action"]').click();
+    // check that we are back on the agreements page
+    cy.url().should("eq", Cypress.config().baseUrl + "/agreements/");
+});

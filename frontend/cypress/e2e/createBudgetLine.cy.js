@@ -124,11 +124,20 @@ const createBudgetLine = (bl) => {
 };
 
 describe("create budget lines workflow", () => {
+    it("should handle cancelling out of workflow", () => {
+        completeStepOne();
+        completeStepTwo();
+        cy.get("[data-cy='back-button']").click();
+        cy.get('[data-cy="confirm-action"]').click();
+        // check that we are back on the create budget lines page
+        cy.get(".usa-step-indicator__segment--current").should("contain", "Project & Agreement");
+    });
     it("should complete the workflow", () => {
         cy.intercept("POST", "**/budget-line-items").as("postBudgetLines");
         completeStepOne();
         completeStepTwo();
         completeCreateBudgetLines();
     });
+
     // TODO: test duplicate existing budget line
 });

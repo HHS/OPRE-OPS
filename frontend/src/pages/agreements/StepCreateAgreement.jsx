@@ -40,7 +40,7 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
         project_officer: selectedProjectOfficer,
         team_members: selectedTeamMembers,
     } = agreement;
-    // setters
+    // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
 
     // AGREEMENT SETTERS
@@ -109,30 +109,16 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
         console.log(`New Agreement Created: ${newAgreementId}`);
         setAgreementId(newAgreementId);
     };
-    const clearAgreement = () => {
-        // TODO: Clear in context
-        // setAgreementTitle("");
-        // setAgreementDescription("");
-        // setAgreementIncumbent(null);
-        // setAgreementNotes("");
-        // setSelectedProject({});
-        // setSelectedAgreementType("");
-        // setSelectedProductServiceCode({});
-        // setSelectedAgreementReason(null);
-        // setSelectedProcurementShop({});
-        // setSelectedProjectOfficer(null);
-        // setSelectedTeamMembers([]);
-        // setModalProps({});
-    };
+
     const handleContinue = async () => {
         saveAgreement();
         await goToNext();
     };
     const handleDraft = async () => {
         saveAgreement();
-        clearAgreement();
         await showAlertAndNavigate("success", "Agreement Draft Saved", "The agreement has been successfully saved.");
     };
+
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
@@ -140,7 +126,6 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
             actionButtonText: "Cancel",
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                clearAgreement();
                 navigate("/agreements/");
             },
         });
@@ -293,7 +278,11 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
                     Go Back
                 </button>
                 <div>
-                    <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
+                    <button
+                        className="usa-button usa-button--unstyled margin-right-2"
+                        data-cy="cancel-button"
+                        onClick={handleCancel}
+                    >
                         Cancel
                     </button>
                     <button className="usa-button usa-button--outline" onClick={handleDraft}>

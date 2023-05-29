@@ -1,5 +1,4 @@
 import React from "react";
-import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ProjectSelect from "../../components/UI/Form/ProjectSelect";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
@@ -8,7 +7,6 @@ import { useGetResearchProjectsQuery } from "../../api/opsAPI";
 import { useCreateAgreement, useSetState, useUpdateAgreement } from "./CreateAgreementContext";
 
 export const StepSelectProject = ({ goToNext }) => {
-    const dispatch = useDispatch();
     const navigate = useNavigate();
     const { wizardSteps, selected_project: selectedResearchProject } = useCreateAgreement();
     // setters
@@ -38,7 +36,6 @@ export const StepSelectProject = ({ goToNext }) => {
             actionButtonText: "Cancel",
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                dispatch(setSelectedProject({}));
                 setModalProps({});
                 navigate("/");
             },
@@ -75,7 +72,11 @@ export const StepSelectProject = ({ goToNext }) => {
                 setAgreementProjectId={setAgreementProjectId}
             />
             <div className="grid-row flex-justify-end margin-top-8">
-                <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
+                <button
+                    className="usa-button usa-button--unstyled margin-right-2"
+                    data-cy="cancel-button"
+                    onClick={handleCancel}
+                >
                     Cancel
                 </button>
                 <button

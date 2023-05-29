@@ -153,8 +153,6 @@ function budgetLinesReducer(state, action) {
                 budget_line_being_edited: -1,
                 is_editing_budget_line: false,
                 new_budget_lines: [],
-                selected_agreement: {},
-                selected_procurement_shop: {},
             };
         }
         case "RESET_TO_INITIAL_STATE": {
