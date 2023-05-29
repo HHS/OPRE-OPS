@@ -11,9 +11,8 @@ export const CreateAgreement = () => {
     const {
         wizardSteps,
         selected_project: selectedResearchProject,
-        selected_agreement: selectedAgreement,
+        agreement: selectedAgreement,
         selected_procurement_shop: selectedProcurementShop,
-        existing_budget_lines: existingBudgetLines,
     } = createAgreementContext;
 
     return (
@@ -26,7 +25,6 @@ export const CreateAgreement = () => {
                 selectedResearchProject={selectedResearchProject}
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}
-                existingBudgetLines={existingBudgetLines}
             />
             <StepAgreementSuccess />
         </CreateAgreementFlow>
