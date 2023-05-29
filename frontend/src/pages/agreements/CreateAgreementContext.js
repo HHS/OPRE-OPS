@@ -4,10 +4,6 @@ export const CreateAgreementContext = createContext(null);
 export const CreateAgreementDispatchContext = createContext(null);
 
 const initialState = {
-    agreement_reasons_list: [],
-    agreement_types_list: [],
-    research_projects_list: [],
-    research_projects_filter: "",
     agreement: {
         id: null,
         selected_agreement_type: null,
@@ -22,14 +18,8 @@ const initialState = {
         research_project_id: null,
         procurement_shop_id: null,
     },
-    cans: [],
-    users: [],
-    product_service_codes_list: [],
-    locked_budget_lines: [],
-    budget_lines_added: [],
     selected_project: {},
-    selected_agreement: {},
-    selected_procurement_shop: -1,
+    selected_procurement_shop: {},
     wizardSteps: ["Project", "Agreement", "Budget Lines"],
 };
 
