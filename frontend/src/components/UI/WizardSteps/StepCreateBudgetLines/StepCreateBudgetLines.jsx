@@ -17,7 +17,7 @@ export const StepCreateBudgetLines = ({
     selectedResearchProject = {},
     selectedAgreement = {},
     selectedProcurementShop = {},
-    existingBudgetLines,
+    existingBudgetLines = [],
 }) => {
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
