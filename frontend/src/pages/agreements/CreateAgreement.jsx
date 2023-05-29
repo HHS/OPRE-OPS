@@ -1,8 +1,8 @@
 import CreateAgreementFlow from "./CreateAgreementFlow";
 import StepSelectProject from "./StepSelectProject";
 import StepCreateAgreement from "./StepCreateAgreement";
-import { StepCreateBudgetLines } from "./StepCreateBudgetLines";
-import StepAgreementSuccess from "../../components/UI/WizardSteps/StepCreateBudgetLines";
+import StepCreateBudgetLines from "../../components/UI/WizardSteps/StepCreateBudgetLines";
+import StepAgreementSuccess from "./StepAgreementSuccess";
 import { useCreateAgreement } from "./CreateAgreementContext";
 
 export const CreateAgreement = () => {
