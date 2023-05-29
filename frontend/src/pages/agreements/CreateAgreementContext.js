@@ -8,7 +8,7 @@ const initialState = {
         id: null,
         selected_agreement_type: null,
         selected_agreement_reason: null,
-        title: "",
+        name: "",
         description: "",
         selected_product_service_code: null,
         incumbent_entered: null,

@@ -33,7 +33,7 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
         notes: agreementNotes,
         incumbent_entered: agreementIncumbent,
         selected_agreement_type: selectedAgreementType,
-        title: agreementTitle,
+        name: agreementTitle,
         description: agreementDescription,
         selected_product_service_code: selectedProductServiceCode,
         selected_agreement_reason: selectedAgreementReason,
@@ -45,7 +45,7 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
 
     // AGREEMENT SETTERS
     const setSelectedAgreementType = useUpdateAgreement("selected_agreement_type");
-    const setAgreementTitle = useUpdateAgreement("title");
+    const setAgreementTitle = useUpdateAgreement("name");
     const setAgreementDescription = useUpdateAgreement("description");
     const setAgreementProcurementShopId = useUpdateAgreement("procurement_shop_id");
     const setAgreementId = useUpdateAgreement("id");
