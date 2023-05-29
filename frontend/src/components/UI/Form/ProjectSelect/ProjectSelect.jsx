@@ -89,6 +89,7 @@ export const ProjectSelect = ({
                         className="usa-combo-box__input"
                         type="text"
                         role="combobox"
+                        data-testid="project-input"
                         aria-activedescendant=""
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
