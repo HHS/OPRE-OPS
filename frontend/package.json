@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "license": "CC0-1.0",
     "private": true,
+
     "dependencies": {
         "@fortawesome/fontawesome-svg-core": "6.4.0",
         "@fortawesome/free-regular-svg-icons": "6.4.0",
@@ -32,8 +33,8 @@
         "@testing-library/jest-dom": "5.16.5",
         "@testing-library/react": "14.0.0",
         "@uswds/compile": "1.0.0",
-        "axe-core": "4.7.1",
-        "cypress": "12.12.0",
+        "axe-core": "4.7.2",
+        "cypress": "12.13.0",
         "cypress-axe": "1.4.0",
         "cypress-localstorage-commands": "2.2.3",
         "eslint-config-prettier": "8.8.0",
@@ -46,6 +47,7 @@
     },
     "scripts": {
         "start": "DISABLE_ESLINT_PLUGIN=true react-scripts start",
+        "start:debug": "DISABLE_ESLINT_PLUGIN=true react-scripts --inspect=0.0.0.0:9229 start",
         "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
         "test": "react-scripts test",
         "test:coverage": "react-scripts test --coverage",
