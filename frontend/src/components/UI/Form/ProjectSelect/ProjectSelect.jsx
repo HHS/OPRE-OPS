@@ -164,7 +164,8 @@ export default ProjectSelect;
 
 ProjectSelect.propTypes = {
     researchProjects: PropTypes.array.isRequired,
-    selectedResearchProject: PropTypes.object,
-    setSelectedProject: PropTypes.func,
+    selectedResearchProject: PropTypes.object.isRequired,
+    setSelectedProject: PropTypes.func.isRequired,
+    setAgreementProjectId: PropTypes.func,
     clearFunction: PropTypes.func,
 };
