@@ -42,7 +42,6 @@ const blData = [
 ];
 
 const completeStepOne = () => {
-    // cy.visit("/budget-lines/create");
     // step one should say "Project & Agreement"
     cy.get(".usa-step-indicator__segment--current").should("contain", "Project & Agreement");
     // summary cards should not exist
