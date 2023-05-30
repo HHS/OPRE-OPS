@@ -600,7 +600,7 @@
                 "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926",
                 "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
             "version": "==1.16.0"
         },
         "sqlalchemy": {
@@ -1695,7 +1695,7 @@
                 "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926",
                 "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
             "version": "==1.16.0"
         },
         "stack-data": {
@@ -2199,10 +2199,10 @@
         },
         "types-pyvmomi": {
             "hashes": [
-                "sha256:aeb611c645e7c6976048629bf07fb16d512144038e7b45e1dc0064095f9b6a40",
-                "sha256:b218de536be9401d08bd818f663f5e7a0b8c181b6de8da8c12d523524b9e6083"
+                "sha256:408caa11a7956ff8c415b4a5b60761709706d5fe78fc0dd125bb46428a861348",
+                "sha256:ba416264e93ae53084b8402e2eb2fb8677adc98cd1a23cf31f21eab683044442"
             ],
-            "version": "==8.0.0.4"
+            "version": "==8.0.0.5"
         },
         "types-pyyaml": {
             "hashes": [
