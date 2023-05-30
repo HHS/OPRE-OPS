@@ -57,7 +57,6 @@ def test_agreements_serialization(auth_client, loaded_db):
     assert json_to_compare == {
         "agreement_reason": "NEW_REQ",
         "agreement_type": "CONTRACT",
-        "contract_id": 1,
         "contract_number": "CT00XX1",
         "contract_type": "RESEARCH",
         "created_by": None,
@@ -96,6 +95,35 @@ def test_agreements_with_research_project_found(auth_client, loaded_db):
     assert response.json[1]["id"] == 2
 
 
+@pytest.mark.parametrize(
+    "key,value",
+    (
+        ("agreement_reason", "NEW_REQ"),
+        ("contract_number", "CT00XX1"),
+        ("contract_type", "RESEARCH"),
+        ("agreement_type", "CONTRACT"),
+        ("delivered_status", False),
+        ("number", "AGR0001"),
+        ("procurement_shop_id", 1),
+        ("project_officer", 1),
+        ("research_project_id", 1),
+        ("foa", "This is an FOA value"),
+        ("name", "Contract #1: African American Child and Family Research Center"),
+    ),
+)
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_with_filter(auth_client, key, value, loaded_db):
+    response = auth_client.get(f"/api/v1/agreements/?{key}={value}")
+    assert response.status_code == 200
+    from pprint import pprint
+
+    success = all(item[key] == value for item in response.json)
+    if not success:
+        pprint([item[key] for item in response.json])
+        pprint(value)
+    assert success
+
+
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_with_research_project_not_found(auth_client, loaded_db):
     response = auth_client.get("/api/v1/agreements/?research_project_id=1000")
@@ -110,7 +138,6 @@ def test_agreement_search(auth_client, loaded_db):
     assert len(response.json) == 0
 
     response = auth_client.get("/api/v1/agreements/?search=contract")
-
     assert response.status_code == 200
     assert len(response.json) == 2
 
@@ -146,7 +173,6 @@ def test_agreement_create_contract_agreement(loaded_db):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         number="AGRXX003459217-B",
-        contract_id=99,
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         product_service_code_id=2,
@@ -167,7 +193,6 @@ def test_agreement_create_grant_agreement(loaded_db):
     grant_agreement = GrantAgreement(
         name="GNTXX12399",
         number="AGRXX003459217-A",
-        grant_id=99,
         foa="NIH",
         agreement_type=AgreementType.GRANT,
     )
