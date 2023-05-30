@@ -2,6 +2,14 @@ Feature: Validate "Draft" Budget Lines
   As an OPRE staff member, I want to insure that budget lines have valid input before moving to
   "In Review" status so that agreements have only correct data as they proceed through their lifecycle.
 
+ Scenario: Valid Agreement
+    Given I am logged in as an OPS user
+
+    When I have a BLI in DRAFT status without an Agreement
+    And I submit a BLI to move to IN_REVIEW status
+
+    Then I should get an error message that the BLI must have an Agreement
+
   Scenario: Valid Project
     Given I am logged in as an OPS user
     And I have an Agreement with a NULL Project
@@ -128,11 +136,3 @@ Feature: Validate "Draft" Budget Lines
     And I submit a BLI to move to IN_REVIEW status
 
     Then I should get an error message that the BLI must have an Amount
-
-  Scenario: Valid Agreement
-    Given I am logged in as an OPS user
-
-    When I have a BLI in DRAFT status without an Agreement
-    And I submit a BLI to move to IN_REVIEW status
-
-    Then I should get an error message that the BLI must have an Agreement
