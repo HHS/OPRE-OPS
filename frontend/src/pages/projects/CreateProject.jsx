@@ -160,14 +160,14 @@ export const CreateProject = () => {
                 onChange={handleChange}
                 required
             /> */}
-            {/* <Input
+            <Input
                 id="project-name"
                 name="title"
                 label="Project Title"
                 onChange={handleChange}
                 messages={res.getErrors("title")}
                 className={cn("title")}
-            /> */}
+            />
 
             <label className="usa-label" htmlFor="project-description">
                 Description
@@ -181,7 +181,6 @@ export const CreateProject = () => {
                 name="description"
                 rows="5"
                 style={{ height: "7rem" }}
-                // value={project.description || null}
                 onChange={(e) => handleChange("description", e.target.value)}
             ></textarea>
 
