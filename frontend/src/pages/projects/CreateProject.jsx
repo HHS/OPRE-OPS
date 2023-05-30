@@ -1,13 +1,14 @@
 import { useState } from "react";
 import App from "../../App";
 import { useNavigate } from "react-router-dom";
+import classnames from "vest/classnames";
 import ProjectTypeSelect from "../../components/ResearchProjects/ProjectTypeSelect/ProjectTypeSelect";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
 import Alert from "../../components/UI/Alert/Alert";
 import { Modal } from "../../components/UI/Modal/Modal";
-import Input from "../../components/UI/Form/Input/Input";
+import Input from "../../components/UI/Form/Input";
+import TextArea from "../../components/UI/Form/TextArea";
 import suite from "./suite";
-import classnames from "vest/classnames";
 
 export const CreateProject = () => {
     const [showModal, setShowModal] = useState(false);
@@ -29,24 +30,11 @@ export const CreateProject = () => {
         setProject({});
     };
 
-    // const handleChange = (e) => {
-    //     const { name, value } = e.target;
-    //     setProject((prevState) => ({
-    //         ...prevState,
-    //         [name]: value,
-    //     }));
-    // };
-
     const handleChange = (currentField, value) => {
         const nextState = { ...project, [currentField]: value };
         setProject(nextState);
         suite(nextState, currentField);
     };
-
-    // const handleChange = (currentField, value) => {
-    //     const nextState = { ...formstate, [currentField]: value };
-    //     setFormstate(nextState);
-    // };
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -123,45 +111,15 @@ export const CreateProject = () => {
 
             <h2 className="font-sans-lg">Project Details</h2>
 
-            {/* <input
-                className="usa-input"
-                name="short_title"
-                type="text"
-                value={project.short_title || ""}
-                onChange={handleChange}
-                required
-            /> */}
             <Input
-                id="project-abbr"
                 name="nickname"
                 label="Project Nickname or Acronym"
                 onChange={handleChange}
                 messages={res.getErrors("nickname")}
                 className={cn("nickname")}
             />
-            {/* <Input
-                id="project-abbr"
-                name="nickname"
-                onChange={handleChange}
-                label="Project Nickname or Acronym"
-                // value={project.nickname || null}
-                className={cn("nickname")}
-                messages={res.getErrors("nickname")}
-            /> */}
 
-            {/* <label className="usa-label" htmlFor="project-name">
-                Project Title
-            </label>
-            <input
-                className="usa-input"
-                name="title"
-                type="text"
-                value={project.title || ""}
-                onChange={handleChange}
-                required
-            /> */}
             <Input
-                id="project-name"
                 name="title"
                 label="Project Title"
                 onChange={handleChange}
@@ -169,20 +127,14 @@ export const CreateProject = () => {
                 className={cn("title")}
             />
 
-            <label className="usa-label" htmlFor="project-description">
-                Description
-            </label>
-            <span id="with-hint-textarea-hint" className="usa-hint">
-                Brief Description for internal purposes, not for the OPRE website.
-            </span>
-            <textarea
-                className="usa-textarea"
-                id="project-description"
+            <TextArea
                 name="description"
-                rows="5"
-                style={{ height: "7rem" }}
-                onChange={(e) => handleChange("description", e.target.value)}
-            ></textarea>
+                label="Description"
+                onChange={handleChange}
+                hintMsg="Brief Description for internal purposes, not for the OPRE website."
+                messages={res.getErrors("description")}
+                className={cn("description")}
+            />
 
             <div className="grid-row flex-justify-end margin-top-8">
                 <button id="cancel" className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
