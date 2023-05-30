@@ -124,7 +124,7 @@ def test_valid_can(loaded_db, context):
 
 @scenario(
     "validate_draft_budget_lines.feature",
-    "Valid Amount",
+    "Valid Amount: Exists",
 )
 def test_valid_amount(loaded_db, context):
     cleanup(loaded_db, context)
@@ -482,6 +482,26 @@ def bli_without_amount(loaded_db, context):
     context["bli"] = bli
 
 
+@when("I have a BLI in DRAFT status with an Amount less than or equal to 0")
+def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context):
+    bli = BudgetLineItem(
+        id=1000,
+        comments="blah blah",
+        line_description="LI 1",
+        agreement_id=context["agreement"].id,
+        can_id=1,
+        date_needed=datetime.date(2023, 1, 1),
+        status=BudgetLineItemStatus.DRAFT,
+        psc_fee_amount=1.23,
+        created_by=1,
+        amount=0,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    context["bli"] = bli
+
+
 @when("I have a BLI in DRAFT status without an Agreement")
 def bli_without_agreement(loaded_db, context):
     bli = BudgetLineItem(
@@ -613,5 +633,11 @@ def error_message_agreement(context):
 
 @then("I should get an error message that the BLI must have a Need By Date in the future")
 def error_message_future_need_by_date(context):
+    # Need to implement this to throw an error message and return 400
+    ...
+
+
+@then("I should get an error message that the BLI must have an Amount greater than 0")
+def error_message_amount_less_than_or_equal_to_zero(context):
     # Need to implement this to throw an error message and return 400
     ...

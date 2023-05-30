@@ -137,7 +137,7 @@ Feature: Validate "Draft" Budget Lines
 
     Then I should get an error message that the BLI must have a CAN
 
-  Scenario: Valid Amount
+  Scenario: Valid Amount: Exists
     Given I am logged in as an OPS user
     And I have a valid Agreement
 
@@ -145,3 +145,12 @@ Feature: Validate "Draft" Budget Lines
     And I submit a BLI to move to IN_REVIEW status
 
     Then I should get an error message that the BLI must have an Amount
+
+  Scenario: Valid Amount: Greater than 0
+    Given I am logged in as an OPS user
+    And I have a valid Agreement
+
+    When I have a BLI in DRAFT status with an Amount less than or equal to 0
+    And I submit a BLI to move to IN_REVIEW status
+
+    Then I should get an error message that the BLI must have an Amount greater than 0
