@@ -1,53 +1,81 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import ProcurementShopSelect from "../../components/UI/Form/ProcurementShopSelect";
 import AgreementReasonSelect from "../../components/UI/Form/AgreementReasonSelect";
 import AgreementTypeSelect from "../../components/UI/Form/AgreementTypeSelect";
 import ProductServiceCodeSelect from "../../components/UI/Form/ProductServiceCodeSelect";
 import Alert from "../../components/UI/Alert/Alert";
-import {
-    setAgreementDescription,
-    setAgreementId,
-    setAgreementIncumbent,
-    setAgreementNotes,
-    setAgreementProcurementShop,
-    setAgreementTitle,
-    setSelectedProcurementShop as setSelectedProcurementShopInBudgetLine,
-    setSelectedProject,
-} from "./createAgreementSlice";
 import ProjectOfficerSelect from "../../components/UI/Form/ProjectOfficerSelect";
 import TeamMemberSelect from "../../components/UI/Form/TeamMemberSelect";
 import TeamMemberList from "../../components/UI/Form/TeamMemberList";
-
 import Modal from "../../components/UI/Modal/Modal";
 import { formatTeamMember, postAgreement } from "../../api/postAgreements";
 import ProjectSummaryCard from "../../components/ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";
 import ProductServiceCodeSummaryBox from "../../components/UI/Form/ProductServiceCodeSummaryBox";
+import {
+    useCreateAgreement,
+    useSetState,
+    useUpdateAgreement,
+    useCreateAgreementDispatch,
+} from "./CreateAgreementContext";
 
-export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
-    const dispatch = useDispatch();
+export const StepCreateAgreement = ({ goBack, goToNext }) => {
     const navigate = useNavigate();
-    const agreementTitle = useSelector((state) => state.createAgreement.agreement.name);
-    const agreementDescription = useSelector((state) => state.createAgreement.agreement.description);
-    const agreementNotes = useSelector((state) => state.createAgreement.agreement.notes);
-    const agreement = useSelector((state) => state.createAgreement.agreement);
-    const agreementIncumbent = useSelector((state) => state.createAgreement.agreement.incumbent_entered);
-    const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
+    const dispatch = useCreateAgreementDispatch();
+    const {
+        wizardSteps,
+        selected_project: selectedResearchProject,
+        agreement,
+        selected_procurement_shop: selectedProcurementShop,
+    } = useCreateAgreement();
+    const {
+        notes: agreementNotes,
+        incumbent_entered: agreementIncumbent,
+        selected_agreement_type: selectedAgreementType,
+        name: agreementTitle,
+        description: agreementDescription,
+        selected_product_service_code: selectedProductServiceCode,
+        selected_agreement_reason: selectedAgreementReason,
+        project_officer: selectedProjectOfficer,
+        team_members: selectedTeamMembers,
+    } = agreement;
+    // SETTERS
+    const setSelectedProcurementShop = useSetState("selected_procurement_shop");
+
+    // AGREEMENT SETTERS
+    const setSelectedAgreementType = useUpdateAgreement("selected_agreement_type");
+    const setAgreementTitle = useUpdateAgreement("name");
+    const setAgreementDescription = useUpdateAgreement("description");
+    const setAgreementProcurementShopId = useUpdateAgreement("procurement_shop_id");
+    const setAgreementId = useUpdateAgreement("id");
+    const setSelectedProductServiceCode = useUpdateAgreement("selected_product_service_code");
+    const setSelectedAgreementReason = useUpdateAgreement("selected_agreement_reason");
+    const setSelectedProjectOfficer = useUpdateAgreement("project_officer");
+    const setAgreementIncumbent = useUpdateAgreement("incumbent_entered");
+    const setAgreementNotes = useUpdateAgreement("notes");
+
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
 
-    const [selectedAgreementType, setSelectedAgreementType] = React.useState("");
-    const [selectedProductServiceCode, setSelectedProductServiceCode] = React.useState({});
-    const [selectedProcurementShop, setSelectedProcurementShop] = React.useState({});
-    const [selectedAgreementReason, setSelectedAgreementReason] = React.useState({});
-    const [selectedProjectOfficer, setSelectedProjectOfficer] = React.useState({});
-    const [selectedTeamMembers, setSelectedTeamMembers] = React.useState([]);
+    const incumbentDisabled =
+        selectedAgreementReason === "NEW_REQ" || selectedAgreementReason === null || selectedAgreementReason === "0";
 
-    const incumbentDisabled = selectedAgreementReason === "NEW_REQ" || selectedAgreementReason === null;
+    const setSelectedTeamMembers = (teamMember) => {
+        dispatch({
+            type: "ADD_TEAM_MEMBER",
+            payload: teamMember,
+        });
+    };
+
+    const removeTeamMember = (teamMember) => {
+        dispatch({
+            type: "REMOVE_TEAM_MEMBER",
+            payload: teamMember,
+        });
+    };
 
     const showAlertAndNavigate = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -79,31 +107,18 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         const response = await postAgreement(data);
         const newAgreementId = response.id;
         console.log(`New Agreement Created: ${newAgreementId}`);
-        dispatch(setAgreementId(newAgreementId));
+        setAgreementId(newAgreementId);
     };
-    const clearAgreement = () => {
-        dispatch(setAgreementTitle(""));
-        dispatch(setAgreementDescription(""));
-        dispatch(setAgreementIncumbent(null));
-        dispatch(setAgreementNotes(""));
-        dispatch(setSelectedProject({}));
-        setSelectedAgreementType("");
-        setSelectedProductServiceCode({});
-        setSelectedAgreementReason(null);
-        dispatch(setSelectedProcurementShop({}));
-        setSelectedProjectOfficer(null);
-        setSelectedTeamMembers([]);
-        setModalProps({});
-    };
+
     const handleContinue = async () => {
         saveAgreement();
         await goToNext();
     };
     const handleDraft = async () => {
         saveAgreement();
-        clearAgreement();
         await showAlertAndNavigate("success", "Agreement Draft Saved", "The agreement has been successfully saved.");
     };
+
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
@@ -111,17 +126,14 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             actionButtonText: "Cancel",
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                clearAgreement();
                 navigate("/agreements/");
             },
         });
     };
 
     const handleOnChangeSelectedProcurementShop = (procurementShop) => {
-        // TODO:Remove dup state, i.e. use the local state and not in Redux
         setSelectedProcurementShop(procurementShop);
-        dispatch(setAgreementProcurementShop(procurementShop.id));
-        dispatch(setSelectedProcurementShopInBudgetLine(procurementShop));
+        setAgreementProcurementShopId(procurementShop.id);
     };
 
     return (
@@ -163,7 +175,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                 name="agreement-title"
                 type="text"
                 value={agreementTitle || ""}
-                onChange={(e) => dispatch(setAgreementTitle(e.target.value))}
+                onChange={(e) => setAgreementTitle(e.target.value)}
                 required
             />
 
@@ -177,7 +189,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                 rows="5"
                 style={{ height: "7rem" }}
                 value={agreementDescription || ""}
-                onChange={(e) => dispatch(setAgreementDescription(e.target.value))}
+                onChange={(e) => setAgreementDescription(e.target.value)}
             ></textarea>
 
             <ProductServiceCodeSelect
@@ -215,7 +227,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                         name="agreement-incumbent"
                         type="text"
                         value={agreementIncumbent || ""}
-                        onChange={(e) => dispatch(setAgreementIncumbent(e.target.value))}
+                        onChange={(e) => setAgreementIncumbent(e.target.value)}
                         required
                     />
                 </fieldset>
@@ -236,7 +248,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
             </div>
 
             <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
-            <TeamMemberList selectedTeamMembers={selectedTeamMembers} setSelectedTeamMembers={setSelectedTeamMembers} />
+            <TeamMemberList selectedTeamMembers={selectedTeamMembers} removeTeamMember={removeTeamMember} />
             <div className="usa-character-count margin-top-3">
                 <div className="usa-form-group">
                     <label className="usa-label font-sans-lg text-bold" htmlFor="with-hint-textarea">
@@ -254,7 +266,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                         aria-describedby="with-hint-textarea-info with-hint-textarea-hint"
                         style={{ height: "7rem" }}
                         value={agreementNotes || ""}
-                        onChange={(e) => dispatch(setAgreementNotes(e.target.value))}
+                        onChange={(e) => setAgreementNotes(e.target.value)}
                     ></textarea>
                 </div>
                 <span id="with-hint-textarea-info" className="usa-character-count__message sr-only">
@@ -266,7 +278,11 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
                     Go Back
                 </button>
                 <div>
-                    <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
+                    <button
+                        className="usa-button usa-button--unstyled margin-right-2"
+                        data-cy="cancel-button"
+                        onClick={handleCancel}
+                    >
                         Cancel
                     </button>
                     <button className="usa-button usa-button--outline" onClick={handleDraft}>
@@ -280,3 +296,5 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         </>
     );
 };
+
+export default StepCreateAgreement;

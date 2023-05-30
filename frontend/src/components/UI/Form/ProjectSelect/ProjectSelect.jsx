@@ -1,15 +1,13 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { useDispatch } from "react-redux";
-import { setAgreementProject, setSelectedProject } from "../../../../pages/agreements/createAgreementSlice";
 
 export const ProjectSelect = ({
     researchProjects,
     selectedResearchProject,
-    propsSetSelectedProject,
+    setSelectedProject,
+    setAgreementProjectId = () => {},
     clearFunction = () => {},
 }) => {
-    const dispatch = useDispatch();
     const [inputValue, setInputValue] = React.useState(selectedResearchProject?.title ?? "");
 
     React.useEffect(() => {
@@ -18,22 +16,14 @@ export const ProjectSelect = ({
 
     const onChangeResearchProjectSelection = (projectId = 0) => {
         clearFunction();
-        // NOTE: if props SelectedProject is passed in, use that, otherwise use dispatch from Agreements slice
-        if (propsSetSelectedProject) {
-            propsSetSelectedProject(researchProjects[projectId - 1]);
-        } else {
-            dispatch(setSelectedProject(researchProjects[projectId - 1]));
+        setSelectedProject(researchProjects[projectId - 1]);
+        if (setAgreementProjectId) {
+            setAgreementProjectId(projectId);
         }
-
-        dispatch(setAgreementProject(projectId));
     };
     const onInputCloseButtonClick = () => {
         clearFunction();
-        if (propsSetSelectedProject) {
-            propsSetSelectedProject({});
-        } else {
-            dispatch(setSelectedProject({}));
-        }
+        setSelectedProject({});
     };
 
     const ProjectSummaryCard = ({ selectedResearchProject }) => {
@@ -99,6 +89,7 @@ export const ProjectSelect = ({
                         className="usa-combo-box__input"
                         type="text"
                         role="combobox"
+                        data-testid="project-input"
                         aria-activedescendant=""
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
@@ -173,7 +164,8 @@ export default ProjectSelect;
 
 ProjectSelect.propTypes = {
     researchProjects: PropTypes.array.isRequired,
-    selectedResearchProject: PropTypes.object,
-    setSelectedProject: PropTypes.func,
+    selectedResearchProject: PropTypes.object.isRequired,
+    setSelectedProject: PropTypes.func.isRequired,
+    setAgreementProjectId: PropTypes.func,
     clearFunction: PropTypes.func,
 };

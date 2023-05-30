@@ -17,7 +17,7 @@ export const StepCreateBudgetLines = ({
     selectedResearchProject = {},
     selectedAgreement = {},
     selectedProcurementShop = {},
-    existingBudgetLines,
+    existingBudgetLines = [],
 }) => {
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
@@ -233,6 +233,7 @@ export const StepCreateBudgetLines = ({
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className="usa-button usa-button--unstyled margin-right-2"
+                    data-cy="back-button"
                     onClick={() => {
                         // if no budget lines have been added, go back
                         if (newBudgetLines?.length === 0) {
