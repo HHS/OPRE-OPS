@@ -1,11 +1,12 @@
-from dataclasses import dataclass, fields as dc_fields
+from dataclasses import dataclass
+from dataclasses import fields as dc_fields
 from typing import Optional, Type
 
 import desert
 from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
-from marshmallow import fields
+from marshmallow import ValidationError, fields
 from models import ContractType, OpsEventType, User
 from models.base import BaseModel
 from models.cans import Agreement, AgreementReason, AgreementType, ContractAgreement, GrantAgreement, ProductServiceCode
@@ -78,7 +79,10 @@ class GrantAgreementPatchBody(GrantAgreementData):
 
 
 REQUEST_SCHEMAS = {
-    AgreementType.CONTRACT: {"PUT": ContractAgreementData, "PATCH": ContractAgreementPatchBody},
+    AgreementType.CONTRACT: {
+        "PUT": ContractAgreementData,
+        "PATCH": ContractAgreementPatchBody,
+    },
     AgreementType.GRANT: {"PUT": GrantAgreementData, "PATCH": GrantAgreementPatchBody},
 }
 
@@ -176,9 +180,12 @@ class AgreementItemAPI(BaseItemAPI):
 
                 return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
         except (KeyError, RuntimeError, PendingRollbackError) as re:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
             current_app.logger.error(f"{message_prefix}: {re}")
             return make_response_with_headers({}, 400)
+        except ValidationError as ve:
+            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
+            current_app.logger.error(f"{message_prefix}: {ve}")
+            return make_response_with_headers(ve.normalized_messages(), 400)
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
@@ -223,9 +230,12 @@ class AgreementItemAPI(BaseItemAPI):
 
                 return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
         except (KeyError, RuntimeError, PendingRollbackError) as re:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
             current_app.logger.error(f"{message_prefix}: {re}")
             return make_response_with_headers({}, 400)
+        except ValidationError as ve:
+            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
+            current_app.logger.error(f"{message_prefix}: {ve}")
+            return make_response_with_headers(ve.normalized_messages(), 400)
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
@@ -331,14 +341,13 @@ class AgreementListAPI(BaseListAPI):
                 current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Agreement created: {new_agreement_dict}")
 
                 return make_response_with_headers({"message": "Agreement created", "id": new_agreement.id}, 201)
-        except RuntimeError as re:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
-            current_app.logger.error(f"POST to {ENDPOINT_STRING}: {re}")
+        except (KeyError, RuntimeError, PendingRollbackError) as re:
+            current_app.logger.error(f"{message_prefix}: {re}")
             return make_response_with_headers({}, 400)
-        except PendingRollbackError as pr:
+        except ValidationError as ve:
             # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
-            current_app.logger.error(f"POST to {ENDPOINT_STRING}: {pr}")
-            return make_response_with_headers({}, 400)
+            current_app.logger.error(f"{message_prefix}: {ve}")
+            return make_response_with_headers(ve.normalized_messages(), 400)
         except SQLAlchemyError as se:
             current_app.logger.error(f"POST to {ENDPOINT_STRING}: {se}")
             return make_response_with_headers({}, 500)

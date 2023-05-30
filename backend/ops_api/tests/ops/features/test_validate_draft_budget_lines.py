@@ -21,15 +21,22 @@ def context():
 
 def cleanup(loaded_db, context):
     # cleanup any existing data
-    agreement = loaded_db.get(ContractAgreement, context["agreement"].id)
+    if "agreement" in context:
+        agreement = loaded_db.get(ContractAgreement, context["agreement"].id)
+        loaded_db.delete(agreement)
+
     bli = loaded_db.get(BudgetLineItem, context["bli"].id)
     loaded_db.delete(bli)
-    loaded_db.delete(agreement)
     loaded_db.commit()
 
 
 @scenario("validate_draft_budget_lines.feature", "Valid Project")
 def test_valid_project(loaded_db, context):
+    cleanup(loaded_db, context)
+
+
+@scenario("validate_draft_budget_lines.feature", "Valid Agreement")
+def test_valid_agreement(loaded_db, context):
     cleanup(loaded_db, context)
 
 
@@ -522,7 +529,7 @@ def bli_without_agreement(loaded_db, context):
 
 
 @when("I submit a BLI to move to IN_REVIEW status")
-def response(client, context):
+def submit(client, context):
     data = POSTRequestBody(
         line_description="Updated LI 1",
         comments="hah hah",
@@ -535,6 +542,21 @@ def response(client, context):
     )
 
     context["response"] = client.put("/api/v1/budget-line-items/1000", json=data.__dict__)
+
+
+@when("I submit (PUT) a BLI to move to IN_REVIEW status (without an Agreement)")
+def put_bli_without_agreement(client, context):
+    data = {
+        "line_description": "Updated LI 1",
+        "comments": "hah hah",
+        "can_id": 2,
+        "amount": 200.24,
+        "status": "UNDER_REVIEW",
+        "date_needed": "2024-01-01",
+        "psc_fee_amount": 2.34,
+    }
+
+    context["response"] = client.put("/api/v1/budget-line-items/1000", json=data)
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Project")
@@ -627,8 +649,8 @@ def error_message_amount(context):
 
 @then("I should get an error message that the BLI must have an Agreement")
 def error_message_agreement(context):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response"].status_code == 400
+    assert context["response"].json == {"agreement_id": ["Missing data for required field."]}
 
 
 @then("I should get an error message that the BLI must have a Need By Date in the future")

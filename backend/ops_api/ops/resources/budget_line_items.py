@@ -7,7 +7,7 @@ from typing import Optional
 import desert
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
-from marshmallow import fields
+from marshmallow import ValidationError, fields
 from models import BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
@@ -124,9 +124,12 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
                 return make_response_with_headers(bli_dict, 200)
         except (KeyError, RuntimeError, PendingRollbackError) as re:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
             current_app.logger.error(f"{message_prefix}: {re}")
             return make_response_with_headers({}, 400)
+        except ValidationError as ve:
+            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
+            current_app.logger.error(f"{message_prefix}: {ve}")
+            return make_response_with_headers(ve.normalized_messages(), 400)
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
@@ -160,9 +163,12 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
                 return make_response_with_headers(bli_dict, 200)
         except (KeyError, RuntimeError, PendingRollbackError) as re:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
             current_app.logger.error(f"{message_prefix}: {re}")
             return make_response_with_headers({}, 400)
+        except ValidationError as ve:
+            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
+            current_app.logger.error(f"{message_prefix}: {ve}")
+            return make_response_with_headers(ve.normalized_messages(), 400)
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
@@ -251,10 +257,13 @@ class BudgetLineItemsListAPI(BaseListAPI):
                 current_app.logger.info(f"{message_prefix}: New BLI created: {new_bli_dict}")
 
                 return make_response_with_headers(new_bli_dict, 201)
-        except (KeyError, PendingRollbackError, RuntimeError) as ve:
+        except (KeyError, RuntimeError, PendingRollbackError) as re:
+            current_app.logger.error(f"{message_prefix}: {re}")
+            return make_response_with_headers({}, 400)
+        except ValidationError as ve:
             # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
             current_app.logger.error(f"{message_prefix}: {ve}")
-            return make_response_with_headers({}, 400)
+            return make_response_with_headers(ve.normalized_messages(), 400)
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
