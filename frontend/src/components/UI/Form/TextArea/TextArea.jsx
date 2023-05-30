@@ -33,7 +33,7 @@ export const TextArea = ({
                 style={{ height: "7rem" }}
                 onChange={handleChange}
                 value={value}
-            ></textarea>
+            />
         </div>
     );
     function handleChange(e) {
