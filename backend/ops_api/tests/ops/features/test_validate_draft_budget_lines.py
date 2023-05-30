@@ -42,37 +42,37 @@ def cleanup(loaded_db, context):
 
 @scenario("validate_draft_budget_lines.feature", "Valid Project")
 def test_valid_project(loaded_db, context):
-    cleanup(loaded_db, context)
+    ...
 
 
 @scenario("validate_draft_budget_lines.feature", "Valid Agreement")
 def test_valid_agreement(loaded_db, context):
-    cleanup(loaded_db, context)
+    ...
 
 
 @scenario("validate_draft_budget_lines.feature", "Valid Agreement Type")
 def test_valid_agreement_type(loaded_db, context):
-    cleanup(loaded_db, context)
+    ...
 
 
 @scenario("validate_draft_budget_lines.feature", "Valid Description")
 def test_valid_agreement_description(loaded_db, context):
-    cleanup(loaded_db, context)
+    ...
 
 
 @scenario("validate_draft_budget_lines.feature", "Valid Product Service Code")
 def test_valid_product_service_code(loaded_db, context):
-    cleanup(loaded_db, context)
+    ...
 
 
 @scenario("validate_draft_budget_lines.feature", "Valid Procurement Shop")
 def test_valid_procurement_shop(loaded_db, context):
-    cleanup(loaded_db, context)
+    ...
 
 
 @scenario("validate_draft_budget_lines.feature", "Valid Agreement Reason")
 def test_valid_agreement_reason(loaded_db, context):
-    cleanup(loaded_db, context)
+    ...
 
 
 @scenario(
@@ -80,7 +80,7 @@ def test_valid_agreement_reason(loaded_db, context):
     "Valid Agreement Reason - NEW_REQ does not have an Incumbent",
 )
 def test_valid_agreement_reason_no_incumbent(loaded_db, context):
-    cleanup(loaded_db, context)
+    ...
 
 
 @scenario(
@@ -88,7 +88,7 @@ def test_valid_agreement_reason_no_incumbent(loaded_db, context):
     "Valid Agreement Reason - RECOMPETE and LOGICAL_FOLLOW_ON requires an Incumbent",
 )
 def test_valid_agreement_reason_incumbent_required(loaded_db, context):
-    cleanup(loaded_db, context)
+    ...
 
 
 @scenario(
@@ -96,7 +96,7 @@ def test_valid_agreement_reason_incumbent_required(loaded_db, context):
     "Valid Project Officer",
 )
 def test_valid_project_officer(loaded_db, context):
-    cleanup(loaded_db, context)
+    ...
 
 
 @scenario(
@@ -104,7 +104,7 @@ def test_valid_project_officer(loaded_db, context):
     "Valid Team Members",
 )
 def test_valid_team_members(loaded_db, context):
-    cleanup(loaded_db, context)
+    ...
 
 
 @scenario(
@@ -112,7 +112,7 @@ def test_valid_team_members(loaded_db, context):
     "Valid Description",
 )
 def test_valid_description(loaded_db, context):
-    cleanup(loaded_db, context)
+    ...
 
 
 @scenario(
@@ -120,7 +120,7 @@ def test_valid_description(loaded_db, context):
     "Valid Need By Date: Exists",
 )
 def test_valid_need_by_date_exists(loaded_db, context):
-    cleanup(loaded_db, context)
+    ...
 
 
 @scenario(
@@ -128,7 +128,7 @@ def test_valid_need_by_date_exists(loaded_db, context):
     "Valid Need By Date: Future Date",
 )
 def test_valid_need_by_date_exists_future_date(loaded_db, context):
-    cleanup(loaded_db, context)
+    ...
 
 
 @scenario(
@@ -136,7 +136,7 @@ def test_valid_need_by_date_exists_future_date(loaded_db, context):
     "Valid CAN",
 )
 def test_valid_can(loaded_db, context):
-    cleanup(loaded_db, context)
+    ...
 
 
 @scenario(
@@ -144,7 +144,7 @@ def test_valid_can(loaded_db, context):
     "Valid Amount: Exists",
 )
 def test_valid_amount(loaded_db, context):
-    cleanup(loaded_db, context)
+    ...
 
 
 @pytest.fixture()
@@ -597,37 +597,37 @@ def submit_without_agreement(client, context):
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Project")
-def error_message_valid_project(context):
+def error_message_valid_project(context, setup_and_teardown):
     # Need to implement this to throw an error message and return 400
     ...
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Agreement Type")
-def error_message_valid_agreement_type(context):
+def error_message_valid_agreement_type(context, setup_and_teardown):
     # Need to implement this to throw an error message and return 400
     ...
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Description")
-def error_message_valid_agreement_description(context):
+def error_message_valid_agreement_description(context, setup_and_teardown):
     # Need to implement this to throw an error message and return 400
     ...
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Product Service Code")
-def error_message_valid_product_service_code(context):
+def error_message_valid_product_service_code(context, setup_and_teardown):
     # Need to implement this to throw an error message and return 400
     ...
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Procurement Shop")
-def error_message_valid_procurement_shop(context):
+def error_message_valid_procurement_shop(context, setup_and_teardown):
     # Need to implement this to throw an error message and return 400
     ...
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Agreement Reason")
-def error_message_valid_agreement_reason(context):
+def error_message_valid_agreement_reason(context, setup_and_teardown):
     # Need to implement this to throw an error message and return 400
     ...
 
@@ -635,7 +635,7 @@ def error_message_valid_agreement_reason(context):
 @then(
     "I should get an error message that the BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ"
 )
-def error_message_valid_agreement_reason_with_incumbent(context):
+def error_message_valid_agreement_reason_with_incumbent(context, setup_and_teardown):
     # Need to implement this to throw an error message and return 400
     ...
 
@@ -643,43 +643,43 @@ def error_message_valid_agreement_reason_with_incumbent(context):
 @then(
     "I should get an error message that the BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
 )
-def error_message_valid_agreement_reason_with_incumbent_required(context):
+def error_message_valid_agreement_reason_with_incumbent_required(context, setup_and_teardown):
     # Need to implement this to throw an error message and return 400
     ...
 
 
 @then("I should get an error message that the BLI's Agreement must have a Project Officer")
-def error_message_valid_project_officer(context):
+def error_message_valid_project_officer(context, setup_and_teardown):
     # Need to implement this to throw an error message and return 400
     ...
 
 
 @then("I should get an error message that the BLI's Agreement must have at least one Team Member")
-def error_message_valid_team_members(context):
+def error_message_valid_team_members(context, setup_and_teardown):
     # Need to implement this to throw an error message and return 400
     ...
 
 
 @then("I should get an error message that the BLI must have a Description")
-def error_message_valid_description(context):
+def error_message_valid_description(context, setup_and_teardown):
     # Need to implement this to throw an error message and return 400
     ...
 
 
 @then("I should get an error message that the BLI must have a Need By Date")
-def error_message_need_by_date(context):
+def error_message_need_by_date(context, setup_and_teardown):
     # Need to implement this to throw an error message and return 400
     ...
 
 
 @then("I should get an error message that the BLI must have a CAN")
-def error_message_can(context):
+def error_message_can(context, setup_and_teardown):
     # Need to implement this to throw an error message and return 400
     ...
 
 
 @then("I should get an error message that the BLI must have an Amount")
-def error_message_amount(context):
+def error_message_amount(context, setup_and_teardown):
     # Need to implement this to throw an error message and return 400
     ...
 
@@ -695,12 +695,12 @@ def error_message_agreement(context, setup_and_teardown):
 
 
 @then("I should get an error message that the BLI must have a Need By Date in the future")
-def error_message_future_need_by_date(context):
+def error_message_future_need_by_date(context, setup_and_teardown):
     # Need to implement this to throw an error message and return 400
     ...
 
 
 @then("I should get an error message that the BLI must have an Amount greater than 0")
-def error_message_amount_less_than_or_equal_to_zero(context):
+def error_message_amount_less_than_or_equal_to_zero(context, setup_and_teardown):
     # Need to implement this to throw an error message and return 400
     ...
