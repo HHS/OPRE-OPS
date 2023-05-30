@@ -14,10 +14,10 @@
         "@uswds/uswds": "3.4.1",
         "axios": "1.4.0",
         "babel-plugin-macros": "3.1.0",
-        "clsx": "^1.2.1",
+        "clsx": "1.2.1",
         "crypto-random-string": "5.0.0",
         "jwt-decode": "3.1.2",
-        "lodash": "^4.17.21",
+        "lodash": "4.17.21",
         "react": "18.2.0",
         "react-currency-format": "1.1.0",
         "react-dom": "18.2.0",
@@ -28,7 +28,7 @@
         "react-select": "5.7.3",
         "sass": "1.62.1",
         "sass-loader": "13.3.1",
-        "vest": "^4.6.11"
+        "vest": "4.6.11"
     },
     "devDependencies": {
         "@testing-library/jest-dom": "5.16.5",
