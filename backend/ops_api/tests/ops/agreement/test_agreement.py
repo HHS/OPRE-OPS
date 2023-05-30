@@ -101,16 +101,19 @@ def test_agreements_with_research_project_found(auth_client, loaded_db):
         ("agreement_reason", "NEW_REQ"),
         ("contract_number", "CT00XX1"),
         ("contract_type", "RESEARCH"),
+        ("agreement_type", "CONTRACT"),
         ("delivered_status", False),
         ("number", "AGR0001"),
         ("procurement_shop_id", 1),
         ("project_officer", 1),
         ("research_project_id", 1),
+        ("foa", "This is an FOA value"),
+        ("name", "Contract #1: African American Child and Family Research Center"),
     ),
 )
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_with_filter(auth_client, key, value, loaded_db):
-    response = auth_client.get(f"/api/v1/agreements/?agreement_type=CONTRACT&{key}={value}")
+    response = auth_client.get(f"/api/v1/agreements/?{key}={value}")
     assert response.status_code == 200
     from pprint import pprint
 
