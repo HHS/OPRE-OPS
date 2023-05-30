@@ -110,7 +110,7 @@ Feature: Validate "Draft" Budget Lines
     Then I should get an error message that the BLI must have a Description
 
 
-  Scenario: Valid Need By Date
+  Scenario: Valid Need By Date: Exists
     Given I am logged in as an OPS user
     And I have a valid Agreement
 
@@ -118,6 +118,15 @@ Feature: Validate "Draft" Budget Lines
     And I submit a BLI to move to IN_REVIEW status
 
     Then I should get an error message that the BLI must have a Need By Date
+
+  Scenario: Valid Need By Date: Future Date
+    Given I am logged in as an OPS user
+    And I have a valid Agreement
+
+    When I have a BLI in DRAFT status with a Need By Date in the past or today
+    And I submit a BLI to move to IN_REVIEW status
+
+    Then I should get an error message that the BLI must have a Need By Date in the future
 
   Scenario: Valid CAN
     Given I am logged in as an OPS user

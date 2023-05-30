@@ -100,9 +100,17 @@ def test_valid_description(loaded_db, context):
 
 @scenario(
     "validate_draft_budget_lines.feature",
-    "Valid Need By Date",
+    "Valid Need By Date: Exists",
 )
-def test_valid_need_by_date(loaded_db, context):
+def test_valid_need_by_date_exists(loaded_db, context):
+    cleanup(loaded_db, context)
+
+
+@scenario(
+    "validate_draft_budget_lines.feature",
+    "Valid Need By Date: Future Date",
+)
+def test_valid_need_by_date_exists_future_date(loaded_db, context):
     cleanup(loaded_db, context)
 
 
@@ -416,6 +424,26 @@ def bli_without_need_by_date(loaded_db, context):
     context["bli"] = bli
 
 
+@when("I have a BLI in DRAFT status with a Need By Date in the past or today")
+def bli_past_need_by_date(loaded_db, context):
+    bli = BudgetLineItem(
+        id=1000,
+        comments="blah blah",
+        line_description="LI 1",
+        agreement_id=context["agreement"].id,
+        can_id=1,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2022, 1, 1),
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    context["bli"] = bli
+
+
 @when("I have a BLI in DRAFT status without a CAN")
 def bli_without_can(loaded_db, context):
     bli = BudgetLineItem(
@@ -579,5 +607,11 @@ def error_message_amount(context):
 
 @then("I should get an error message that the BLI must have an Agreement")
 def error_message_agreement(context):
+    # Need to implement this to throw an error message and return 400
+    ...
+
+
+@then("I should get an error message that the BLI must have a Need By Date in the future")
+def error_message_future_need_by_date(context):
     # Need to implement this to throw an error message and return 400
     ...
