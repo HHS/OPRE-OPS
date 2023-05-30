@@ -38,23 +38,47 @@ export const AgreementSelect = ({
                 data-cy="agreement-summary-card"
                 data-testid="agreement-summary-card"
             >
-                <dl className="margin-0 padding-y-2 padding-x-105">
-                    <dt className="margin-0 text-base-dark">Agreement</dt>
-                    <dd className="text-semibold margin-0">{selectedAgreement.name}</dd>
-                    <dt className="margin-0 text-base-dark margin-top-205">Description</dt>
-                    <dd className="text-semibold margin-0">{selectedAgreement.description}</dd>
+                <div className="margin-0 padding-y-2 padding-x-105">
+                    <dl>
+                        <dt id="agreement-name" className="margin-0 text-base-dark">
+                            Agreement
+                        </dt>
+                        <dd aria-labelledby="agreement-name" className="text-semibold margin-0">
+                            {selectedAgreement.name}
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt id="agreement-description" className="margin-0 text-base-dark margin-top-205">
+                            Description
+                        </dt>
+                        <dd aria-labelledby="agreement-description" className="text-semibold margin-0">
+                            {selectedAgreement.description}
+                        </dd>
+                    </dl>
                     <div className="display-flex flex-justify margin-top-205">
                         <div className="display-flex flex-column">
-                            {/* TODO: add project officer name */}
-                            <dt className="margin-0 text-base-dark">Project Officer</dt>
-                            <dd className="text-semibold margin-0">{selectedAgreement.projectOfficer}</dd>
+                            <dl>
+                                {/* TODO: add project officer name */}
+                                <dt id="project-officer" className="margin-0 text-base-dark">
+                                    Project Officer
+                                </dt>
+                                <dd aria-labelledby="project-officer" className="text-semibold margin-0">
+                                    {selectedAgreement.projectOfficer}
+                                </dd>
+                            </dl>
                         </div>
                         <div className="display-flex flex-column">
-                            <dt className="margin-0 text-base-dark">Period of Performance</dt>
-                            <dd className="text-semibold margin-0">{selectedAgreement.periodOfPerformance}</dd>
+                            <dl>
+                                <dt id="period-of-performance" className="margin-0 text-base-dark">
+                                    Period of Performance
+                                </dt>
+                                <dd aria-labelledby="period-of-performance" className="text-semibold margin-0">
+                                    {selectedAgreement.periodOfPerformance}
+                                </dd>
+                            </dl>
                         </div>
                     </div>
-                </dl>
+                </div>
             </div>
         );
     };

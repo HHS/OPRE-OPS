@@ -1,13 +1,10 @@
 import { useGetAgreementReasonsQuery } from "../../../api/opsAPI";
-import { useDispatch } from "react-redux";
 
 export const AgreementReasonSelect = ({
     selectedAgreementReason,
     setSelectedAgreementReason,
     setAgreementIncumbent,
 }) => {
-    const dispatch = useDispatch();
-
     const {
         data: agreementReasons,
         error: errorAgreementReasons,
@@ -23,11 +20,7 @@ export const AgreementReasonSelect = ({
 
     const handleChange = (e) => {
         const { value } = e.target;
-
-        if (value === "NEW_REQ") {
-            dispatch(setAgreementIncumbent(null));
-        }
-
+        setAgreementIncumbent(null);
         setSelectedAgreementReason(value);
     };
 
