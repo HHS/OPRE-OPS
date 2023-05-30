@@ -9,7 +9,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_req
 from marshmallow import ValidationError, fields
 from models import ContractType, OpsEventType, User
 from models.base import BaseModel
-from models.cans import Agreement, AgreementReason, AgreementType, ContractAgreement, GrantAgreement, ProductServiceCode
+from models.cans import Agreement, AgreementReason, AgreementType, ContractAgreement, GrantAgreement, DirectAgreement, ProductServiceCode
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
@@ -78,12 +78,24 @@ class GrantAgreementPatchBody(GrantAgreementData):
     number: Optional[str] = None
 
 
+@dataclass
+class DirectAgreementData(AgreementData):
+    pass
+
+
+@dataclass
+class DirectAgreementPatchBody(DirectAgreementData):
+    name: Optional[str] = None
+    number: Optional[str] = None
+
+
 REQUEST_SCHEMAS = {
     AgreementType.CONTRACT: {
         "PUT": ContractAgreementData,
         "PATCH": ContractAgreementPatchBody,
     },
     AgreementType.GRANT: {"PUT": GrantAgreementData, "PATCH": GrantAgreementPatchBody},
+    AgreementType.DIRECT_ALLOCATION: {"PUT": DirectAgreementData, "PATCH": DirectAgreementPatchBody},
 }
 
 
@@ -246,10 +258,11 @@ class AgreementListAPI(BaseListAPI):
         super().__init__(model)
         self._schema_contract = desert.schema(ContractAgreementData)
         self._schema_grant = desert.schema(GrantAgreementData)
+        self._schema_direct = desert.schema(DirectAgreementData)
 
     @staticmethod
     def _get_query(args):
-        polymorphic_agreement = with_polymorphic(Agreement, [ContractAgreement, GrantAgreement])
+        polymorphic_agreement = with_polymorphic(Agreement, [ContractAgreement, GrantAgreement, DirectAgreement])
         stmt = select(polymorphic_agreement).order_by(Agreement.id)
         query_helper = QueryHelper(stmt)
 
@@ -268,11 +281,14 @@ class AgreementListAPI(BaseListAPI):
             # know what table to use to look up parameters from for filtering.
             contract_keys = {field.name for field in dc_fields(ContractAgreementData)}
             grant_keys = {field.name for field in dc_fields(GrantAgreementData)}
+            direct_keys = {field.name for field in dc_fields(DirectAgreementData)}
             for key, value in filter_args.items():
                 if key in contract_keys:
                     agreement_model = ContractAgreement
                 elif key in grant_keys:
                     agreement_model = GrantAgreement
+                elif key in direct_keys:
+                    agreement_model = DirectAgreement
                 else:
                     agreement_model = Agreement
                 query_helper.add_column_equals(getattr(agreement_model, key), value)
@@ -325,6 +341,14 @@ class AgreementListAPI(BaseListAPI):
 
                         data = self._schema_grant.load(request.json)
                         new_agreement = self._create_agreement(data, GrantAgreement)
+
+                    case "DIRECT_ALLOCATION":
+                        print("direct allocation")
+                        errors = self._schema_direct.validate(request.json)
+                        self.check_errors(errors)
+
+                        data = self._schema_direct.load(request.json)
+                        new_agreement = self._create_agreement(data, DirectAgreement)
 
                     case _:
                         raise ValueError("Invalid agreement_type")
