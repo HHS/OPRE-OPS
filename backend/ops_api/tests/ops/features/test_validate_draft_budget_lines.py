@@ -25,8 +25,18 @@ def cleanup(loaded_db, context):
         agreement = loaded_db.get(ContractAgreement, context["agreement"].id)
         loaded_db.delete(agreement)
 
-    bli = loaded_db.get(BudgetLineItem, context["bli"].id)
-    loaded_db.delete(bli)
+    if "initial_bli_for_put" in context:
+        bli = loaded_db.get(BudgetLineItem, context["initial_bli_for_put"].id)
+        loaded_db.delete(bli)
+
+    if "initial_bli_for_patch" in context:
+        bli = loaded_db.get(BudgetLineItem, context["initial_bli_for_patch"].id)
+        loaded_db.delete(bli)
+
+    if "bli" in context:
+        bli = loaded_db.get(BudgetLineItem, context["bli"].id)
+        loaded_db.delete(bli)
+
     loaded_db.commit()
 
 
@@ -134,6 +144,13 @@ def test_valid_can(loaded_db, context):
     "Valid Amount: Exists",
 )
 def test_valid_amount(loaded_db, context):
+    cleanup(loaded_db, context)
+
+
+@pytest.fixture()
+def setup_and_teardown(loaded_db, context):
+    ...
+    yield
     cleanup(loaded_db, context)
 
 
@@ -511,7 +528,7 @@ def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context):
 
 @when("I have a BLI in DRAFT status without an Agreement")
 def bli_without_agreement(loaded_db, context):
-    bli = BudgetLineItem(
+    initial_bli_for_put = BudgetLineItem(
         id=1000,
         comments="blah blah",
         line_description="LI 1",
@@ -522,10 +539,23 @@ def bli_without_agreement(loaded_db, context):
         psc_fee_amount=1.23,
         created_by=1,
     )
-    loaded_db.add(bli)
+    initial_bli_for_patch = BudgetLineItem(
+        id=1001,
+        comments="blah blah",
+        line_description="LI 1",
+        amount=100.12,
+        can_id=1,
+        date_needed=datetime.date(2023, 1, 1),
+        status=BudgetLineItemStatus.DRAFT,
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(initial_bli_for_put)
+    loaded_db.add(initial_bli_for_patch)
     loaded_db.commit()
 
-    context["bli"] = bli
+    context["initial_bli_for_put"] = initial_bli_for_put
+    context["initial_bli_for_patch"] = initial_bli_for_patch
 
 
 @when("I submit a BLI to move to IN_REVIEW status")
@@ -545,7 +575,7 @@ def submit(client, context):
 
 
 @when("I submit (PUT) a BLI to move to IN_REVIEW status (without an Agreement)")
-def put_bli_without_agreement(client, context):
+def submit_without_agreement(client, context):
     data = {
         "line_description": "Updated LI 1",
         "comments": "hah hah",
@@ -556,7 +586,14 @@ def put_bli_without_agreement(client, context):
         "psc_fee_amount": 2.34,
     }
 
-    context["response"] = client.put("/api/v1/budget-line-items/1000", json=data)
+    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+
+    context["response_patch"] = client.patch(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
+        json={
+            "status": "UNDER_REVIEW",
+        },
+    )
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Project")
@@ -648,9 +685,13 @@ def error_message_amount(context):
 
 
 @then("I should get an error message that the BLI must have an Agreement")
-def error_message_agreement(context):
-    assert context["response"].status_code == 400
-    assert context["response"].json == {"agreement_id": ["Missing data for required field."]}
+def error_message_agreement(context, setup_and_teardown):
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {"agreement_id": ["Missing data for required field."]}
+    assert context["response_patch"].status_code == 400
+    # assert context["response_put"].json == {
+    #     "agreement_id": ["Missing data for required field."]
+    # }
 
 
 @then("I should get an error message that the BLI must have a Need By Date in the future")
