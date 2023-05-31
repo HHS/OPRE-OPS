@@ -28,6 +28,7 @@ export const ProjectTypeSelect = ({
                     className={`usa-select margin-top-0 width-card-lg ${messages.length ? "usa-input--error" : null} `}
                     onChange={handleChange}
                     value={value}
+                    data-cy="project-type-select"
                 >
                     <option value={0}>- Select Project Type -</option>
                     {PROJECT_TYPES.map((type, index) => (
