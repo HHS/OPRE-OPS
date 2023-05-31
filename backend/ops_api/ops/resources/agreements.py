@@ -243,9 +243,6 @@ class AgreementItemAPI(BaseItemAPI):
 class AgreementListAPI(BaseListAPI):
     def __init__(self, model: BaseModel = Agreement):
         super().__init__(model)
-        self._schema_contract = desert.schema(ContractAgreementData)
-        self._schema_grant = desert.schema(GrantAgreementData)
-        self._schema_direct = desert.schema(DirectAgreementData)
 
     @staticmethod
     def _get_query(args):
