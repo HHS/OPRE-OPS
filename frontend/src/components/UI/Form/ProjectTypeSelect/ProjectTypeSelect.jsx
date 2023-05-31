@@ -1,9 +1,19 @@
-const PROJECT_TYPES = ["Research"];
+import cx from "clsx";
 
-export const ProjectTypeSelect = ({ name, label = name, onChange, pending = false, messages = [], value }) => {
+export const ProjectTypeSelect = ({
+    name,
+    label = name,
+    onChange,
+    pending = false,
+    messages = [],
+    value,
+    className,
+}) => {
+    const PROJECT_TYPES = ["Research"];
+
     return (
-        <>
-            <label className="usa-label" htmlFor={name}>
+        <div className={cx("usa-form-group", pending && "pending", className)}>
+            <label className={`usa-label ${messages.length ? "usa-label--error" : null} `} htmlFor={name}>
                 {label}
             </label>
             {messages.length ? (
@@ -15,10 +25,9 @@ export const ProjectTypeSelect = ({ name, label = name, onChange, pending = fals
                 <select
                     id={name}
                     name={name}
-                    className="usa-select margin-top-0 width-card-lg"
+                    className={`usa-select margin-top-0 width-card-lg ${messages.length ? "usa-input--error" : null} `}
                     onChange={handleChange}
                     value={value}
-                    required
                 >
                     <option value={0}>- Select Project Type -</option>
                     {PROJECT_TYPES.map((type, index) => (
@@ -28,7 +37,7 @@ export const ProjectTypeSelect = ({ name, label = name, onChange, pending = fals
                     ))}
                 </select>
             </div>
-        </>
+        </div>
     );
 
     function handleChange(e) {

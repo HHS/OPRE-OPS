@@ -111,6 +111,7 @@ export const CreateProject = () => {
                 label="Project Type"
                 onChange={handleChange}
                 messages={res.getErrors("type")}
+                className={cn("type")}
             />
 
             <h2 className="font-sans-lg">Project Details</h2>
