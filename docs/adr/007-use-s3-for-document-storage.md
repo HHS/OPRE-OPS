@@ -32,4 +32,4 @@ Using Amazon S3 will allow us to:
 
 ## Further reading
 
-+ https://aws.amazon.com/s3/
++ [AWS S3](https://aws.amazon.com/s3/)

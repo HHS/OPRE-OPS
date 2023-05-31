@@ -1,8 +1,9 @@
 import pytest
 from models.base import BaseModel
-from ops_api.ops import db
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
+
+from ops_api.ops import db
 
 
 @pytest.mark.skip("Refactor me.")

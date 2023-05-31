@@ -3,6 +3,7 @@ from decimal import Decimal
 import pytest
 from models.cans import CAN, BudgetLineItem, BudgetLineItemStatus, CANFiscalYear, CANFiscalYearCarryForward
 from models.portfolios import Portfolio, PortfolioStatus
+
 from ops_api.ops.utils.portfolios import (
     _get_budget_line_item_total_by_status,
     _get_carry_forward_total,

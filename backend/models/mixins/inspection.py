@@ -29,11 +29,7 @@ class InspectionMixin(Base):
     @classproperty
     def relations(cls):
         """Return a `list` of relationship names or the given model"""
-        return [
-            c.key
-            for c in cls.__mapper__.iterate_properties
-            if isinstance(c, RelationshipProperty)
-        ]
+        return [c.key for c in cls.__mapper__.iterate_properties if isinstance(c, RelationshipProperty)]
 
     @classproperty
     def settable_relations(cls):
@@ -48,9 +44,7 @@ class InspectionMixin(Base):
     @classproperty
     def hybrid_methods_full(cls):
         items = inspect(cls).all_orm_descriptors
-        return {
-            item.func.__name__: item for item in items if type(item) == hybrid_method
-        }
+        return {item.func.__name__: item for item in items if type(item) == hybrid_method}
 
     @classproperty
     def hybrid_methods(cls):

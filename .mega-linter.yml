@@ -1,0 +1,63 @@
+# Configuration file for MegaLinter
+# See all available variables at https://megalinter.io/configuration/ and in linters documentation
+
+APPLY_FIXES: [PYTHON_BLACK, PYTHON_ISORT] # all, none, or list of linter keys
+# ENABLE: # If you use ENABLE variable, all other languages/formats/tooling-formats will be disabled by default
+ENABLE_LINTERS: # If you use ENABLE_LINTERS variable, all other linters will be disabled by default
+  - ACTION_ACTIONLINT
+  - DOCKERFILE_DOCKERFILELINT
+  - GHERKIN_GHERKIN_LINT
+  - JAVASCRIPT_ES
+  - JAVASCRIPT_PRETTIER
+  - JSX_ESLINT
+  - PYTHON_BANDIT
+  - PYTHON_BLACK
+  - PYTHON_FLAKE8
+  - PYTHON_ISORT
+  - JSON_PRETTIER
+  - YAML_PRETTIER
+  - REPOSITORY_SEMGREP
+
+DISABLE:
+  - COPYPASTE # Uncomment to disable checks of excessive copy-pastes
+  - SPELL # Comment to enable checks of spelling mistakes
+SHOW_ELAPSED_TIME: true
+FILEIO_REPORTER: false
+FLAVOR_SUGGESTIONS: false
+# DISABLE_ERRORS: true # Uncomment if you want MegaLinter to detect errors but not block CI to pass
+
+EXCLUDED_DIRECTORIES: [.nox]
+PARALLEL: true
+
+# PYTHON LINTERS CONFIGURATION
+PYTHON_BANDIT_CONFIG_FILE: ./backend/bandit.yml
+PYTHON_BLACK_CONFIG_FILE: ./backend/pyproject.toml
+PYTHON_FLAKE8_CONFIG_FILE: ./backend/.flake8
+PYTHON_ISORT_CONFIG_FILE: ./backend/pyproject.toml
+
+# JAVASCRIPT LINTERS CONFIGURATION
+# pre command to install eslint plugins
+
+# JAVASCRIPT_ES_PRE_COMMANDS:
+#   [
+#     {
+#       "command": "yarn install --dev",
+#       "continue_if_failed": false,
+#       "cwd": "workspace",
+#     },
+#   ]
+
+JSX_ESLINT_RULES_PATH: ./frontend
+JAVASCRIPT_ES_RULES_PATH: ./frontend
+JAVASCRIPT_ES_CONFIG_FILE: ./frontend/.eslintrc.json
+JSX_ESLINT_CONFIG_FILE: ./frontend/.eslintrc.json
+
+JAVASCRIPT_PRETTIER_CONFIG_FILE: ./frontend/.prettierrc.json
+#JSX_ESLINT_FILTER_REGEX_INCLUDE: (frontend/src/.*\.jsx?$)
+#JAVASCRIPT_ES_FILTER_REGEX_INCLUDE: (frontend/src/.*\.js?$)
+
+REPOSITORY_SEMGREP_RULESETS: "p/default"
+REPOSITORY_SEMGREP_ARGUMENTS: --exclude="frontend/src/uswds" --metrics="off"
+
+MARKDOWN_MARKDOWNLINT_CONFIG_FILE: ./markdownlint.yml
+CLEAR_REPORT_FOLDER: true

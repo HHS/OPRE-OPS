@@ -1,10 +1,9 @@
 """CAN models."""
-from dataclasses import dataclass
-from enum import Enum, IntEnum
+from enum import Enum
 from typing import Any
 
 import sqlalchemy as sa
-from models.base import BaseModel, currency, intpk, optional_str, reg, required_str
+from models.base import BaseModel
 from models.portfolios import Portfolio, shared_portfolio_cans
 from models.users import User
 from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Identity, Integer, Numeric, String, Table, Text
@@ -82,10 +81,8 @@ class AgreementType(Enum):
 
 class AgreementReason(Enum):
     NEW_REQ = 1
-    RECOMPETE = 2  ## recompete is brand new contract related to same work
-    LOGICAL_FOLLOW_ON = (
-        3  ## Logical Follow On is more work added/extension of the original
-    )
+    RECOMPETE = 2  # recompete is brand new contract related to same work
+    LOGICAL_FOLLOW_ON = 3  # Logical Follow On is more work added/extension of the original
 
 
 agreement_team_members = Table(
@@ -120,15 +117,11 @@ class Agreement(BaseModel):
     description = Column(String, nullable=True)
 
     product_service_code_id = Column(Integer, ForeignKey("product_service_code.id"))
-    product_service_code = relationship(
-        "ProductServiceCode", back_populates="agreement"
-    )
+    product_service_code = relationship("ProductServiceCode", back_populates="agreement")
 
     agreement_reason = Column(sa.Enum(AgreementReason))
     incumbent = Column(String, nullable=True)
-    project_officer = Column(
-        Integer, ForeignKey("users.id", name="fk_user_project_officer"), nullable=True
-    )
+    project_officer = Column(Integer, ForeignKey("users.id", name="fk_user_project_officer"), nullable=True)
     team_members = relationship(
         User,
         secondary=agreement_team_members,
@@ -139,9 +132,7 @@ class Agreement(BaseModel):
     research_project_id = Column(Integer, ForeignKey("research_project.id"))
     research_project = relationship("ResearchProject", back_populates="agreements")
 
-    budget_line_items = relationship(
-        "BudgetLineItem", back_populates="agreement", lazy=True
-    )
+    budget_line_items = relationship("BudgetLineItem", back_populates="agreement", lazy=True)
     procurement_shop_id = Column(Integer, ForeignKey("procurement_shop.id"))
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
 
@@ -158,20 +149,12 @@ class Agreement(BaseModel):
 
         d.update(
             agreement_type=self.agreement_type.name if self.agreement_type else None,
-            agreement_reason=self.agreement_reason.name
-            if self.agreement_reason
-            else None,
+            agreement_reason=self.agreement_reason.name if self.agreement_reason else None,
             budget_line_items=[bli.to_dict() for bli in self.budget_line_items],
             team_members=[tm.to_dict() for tm in self.team_members],
-            research_project=self.research_project.to_dict()
-            if self.research_project
-            else None,
-            procurement_shop=self.procurement_shop.to_dict()
-            if self.procurement_shop
-            else None,
-            product_service_code=self.product_service_code.to_dict()
-            if self.product_service_code
-            else None,
+            research_project=self.research_project.to_dict() if self.research_project else None,
+            procurement_shop=self.procurement_shop.to_dict() if self.procurement_shop else None,
+            product_service_code=self.product_service_code.to_dict() if self.product_service_code else None,
         )
 
         return d
@@ -221,12 +204,8 @@ class ContractAgreement(Agreement):
 
         d.update(
             {
-                "contract_type": self.contract_type.name
-                if self.contract_type
-                else None,
-                "support_contacts": [
-                    contacts.to_dict() for contacts in self.support_contacts
-                ],
+                "contract_type": self.contract_type.name if self.contract_type else None,
+                "support_contacts": [contacts.to_dict() for contacts in self.support_contacts],
             }
         )
 
@@ -249,7 +228,7 @@ class GrantAgreement(Agreement):
 
 
 # TODO: Skeleton, will need flushed out more when we know what all an IAA is.
-### Inter-Agency-Agreement
+# Inter-Agency-Agreement
 class IaaAgreement(Agreement):
     """IAA Agreement Model"""
 
@@ -314,15 +293,9 @@ class CANFiscalYear(BaseModel):
         d = super().to_dict()
 
         d.update(
-            total_fiscal_year_funding=float(self.total_fiscal_year_funding)
-            if self.total_fiscal_year_funding
-            else None,
-            received_funding=float(self.received_funding)
-            if self.received_funding
-            else None,
-            expected_funding=float(self.expected_funding)
-            if self.expected_funding
-            else None,
+            total_fiscal_year_funding=float(self.total_fiscal_year_funding) if self.total_fiscal_year_funding else None,
+            received_funding=float(self.received_funding) if self.received_funding else None,
+            expected_funding=float(self.expected_funding) if self.expected_funding else None,
             potential_additional_funding=float(self.potential_additional_funding)
             if self.potential_additional_funding
             else None,
@@ -351,12 +324,8 @@ class CANFiscalYearCarryForward(BaseModel):
         d = super().to_dict()
 
         d.update(
-            received_amount=float(self.received_amount)
-            if self.received_amount
-            else None,
-            expected_amount=float(self.expected_amount)
-            if self.expected_amount
-            else None,
+            received_amount=float(self.received_amount) if self.received_amount else None,
+            expected_amount=float(self.expected_amount) if self.expected_amount else None,
             total_amount=float(self.total_amount) if self.total_amount else None,
         )
 
@@ -381,9 +350,7 @@ class BudgetLineItem(BaseModel):
     status = Column(sa.Enum(BudgetLineItemStatus))
 
     date_needed = Column(Date)
-    psc_fee_amount = Column(
-        Numeric(12, 2)
-    )  # may need to be a different object, i.e. flat rate or percentage
+    psc_fee_amount = Column(Numeric(12, 2))  # may need to be a different object, i.e. flat rate or percentage
 
     @override
     def to_dict(self):
@@ -428,9 +395,7 @@ class CAN(BaseModel):
     authorizer = relationship(FundingPartner)
     managing_portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
     managing_portfolio = relationship(Portfolio, back_populates="cans")
-    shared_portfolios = relationship(
-        Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans"
-    )
+    shared_portfolios = relationship(Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans")
     budget_line_items = relationship("BudgetLineItem", back_populates="can")
 
     @override
@@ -438,15 +403,9 @@ class CAN(BaseModel):
         d: dict[str, Any] = super().to_dict()
 
         d.update(
-            appropriation_date=self.appropriation_date.strftime("%d/%m/%Y")
-            if self.appropriation_date
-            else None,
-            expiration_date=self.expiration_date.strftime("%d/%m/%Y")
-            if self.expiration_date
-            else None,
-            arrangement_type=self.arrangement_type.name
-            if self.arrangement_type
-            else None,
+            appropriation_date=self.appropriation_date.strftime("%d/%m/%Y") if self.appropriation_date else None,
+            expiration_date=self.expiration_date.strftime("%d/%m/%Y") if self.expiration_date else None,
+            arrangement_type=self.arrangement_type.name if self.arrangement_type else None,
         )
 
         return d

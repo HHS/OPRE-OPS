@@ -1,5 +1,6 @@
 """Module containing views for Procurement Shops."""
 from models.base import BaseModel
+
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 
 

@@ -15,7 +15,7 @@ We want to record our architectural decisions so that:
 
 ## Decision
 
-We will use Architecture Decision Records, as described by Michael Nygard in this article: http://thinkrelevance.com/blog/2011/11/15/documenting-architecture-decisions and more robustly detailed and demonstrated [here](https://adr.github.io).
+We will use Architecture Decision Records, as described by Michael Nygard in this article: [Documenting Architecture Decisions](http://thinkrelevance.com/blog/2011/11/15/documenting-architecture-decisions) and more robustly detailed and demonstrated [here](https://adr.github.io).
 
 ## Consequences
 

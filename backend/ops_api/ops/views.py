@@ -4,6 +4,7 @@ from models.portfolios import Division, Portfolio, PortfolioStatus
 from models.procurement_shops import ProcurementShop
 from models.research_projects import ResearchProject
 from models.users import User
+
 from ops_api.ops.resources.agreements import (
     AgreementItemAPI,
     AgreementListAPI,

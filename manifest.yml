@@ -25,4 +25,4 @@ applications:
     path: ./frontend/build/
 
 services:
- - ops-db
+  - ops-db

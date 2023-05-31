@@ -1,3 +1,5 @@
+import ast
+
 import pytest
 
 
@@ -10,4 +12,4 @@ def test_sum(text_input, result) -> None:
     :param result: Numeric value of the expected result. Ex: 5
     :return: None
     """
-    assert eval(text_input) == result  # noqa: S101,S307
+    assert ast.literal_eval(text_input) == result  # noqa: S101,S307

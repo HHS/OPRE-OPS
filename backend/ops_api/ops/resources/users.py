@@ -1,9 +1,10 @@
 from flask import Response, request
 from flask_jwt_extended import jwt_required
 from models.base import BaseModel
+from typing_extensions import override
+
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.utils.response import make_response_with_headers
-from typing_extensions import override
 
 
 class UsersItemAPI(BaseItemAPI):

@@ -4,6 +4,7 @@ import requests
 from flask import Response, current_app, request
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
 from models.events import OpsEventType
+
 from ops_api.ops.utils.auth import create_oauth_jwt, oauth
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -72,6 +73,7 @@ def _get_token_and_user_data_from_oauth_provider(auth_code: str):
     user_data = requests.get(
         authlib_client_config["user_info_url"],
         headers=header,
+        timeout=5,
     ).json()
     return token, user_data
 

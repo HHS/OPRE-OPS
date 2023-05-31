@@ -6,10 +6,10 @@ services:
     platform: linux/amd64
     container_name: unit-test-db
     security_opt:
-      - no-new-privileges:true  # Resolve semgrep https://sg.run/0n8q
+      - no-new-privileges:true # Resolve semgrep https://sg.run/0n8q
     environment:
-      - POSTGRES_PASSWORD=local_password  # pragma: allowlist secret
-    read_only: true  # Resolve semgrep https://sg.run/e4JE
+      - POSTGRES_PASSWORD=local_password # pragma: allowlist secret
+    read_only: true # Resolve semgrep https://sg.run/e4JE
     tmpfs: /var/run/postgresql/
     ports:
       - "5432:5432"

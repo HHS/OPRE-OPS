@@ -86,16 +86,16 @@ We require 90% code coverage.
 
 Note: Currently E2E tests require you to have a local stack running for Cypress to connect to.
 This can be achieved by running the `docker-compose.e2e.yml` via `docker compose`
-```
+```shell
 docker compose -f docker-compose.e2e.yml up
 ```
 
 End-to-end (E2E) can be run from the `frontend` via:
-```
+```shell
 yarn test:e2e
 ```
 or Interactively via:
-```
+```shell
 yarn test:e2e:interactive
 ```
 
@@ -163,6 +163,8 @@ This application is deployed to [Cloud.gov](https://cloud.gov) through [Cloud Fo
 though a [manifest.yml](manifest.yml) file.
 
 For now, while we are waiting for full Cloud.gov access, we only have access to a non-production environment.  Eventually, we will have a production environment.
+
+Update: The
 
 ### Development Environment
 

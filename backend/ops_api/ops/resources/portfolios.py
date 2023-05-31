@@ -1,7 +1,8 @@
 from flask import Response
 from models.base import BaseModel
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from typing_extensions import override
+
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 
 
 class PortfolioItemAPI(BaseItemAPI):

@@ -6,7 +6,6 @@ on:
       - staging
 
 jobs:
-
   deployment:
     permissions:
       contents: read

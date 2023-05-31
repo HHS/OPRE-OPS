@@ -10,14 +10,15 @@ from models import CAN, Agreement, BudgetLineItem, MethodologyType, OpsEventType
 from models.base import BaseModel
 from models.cans import CANFiscalYear
 from models.research_projects import ResearchProject
+from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
+from sqlalchemy.future import select
+from typing_extensions import override
+
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
-from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
-from sqlalchemy.future import select
-from typing_extensions import override
 
 ENDPOINT_STRING = "/research-projects"
 

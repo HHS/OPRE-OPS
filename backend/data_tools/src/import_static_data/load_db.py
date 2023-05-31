@@ -7,15 +7,16 @@ import models.procurement_shops
 import models.research_projects
 import models.users
 import sqlalchemy.engine
+from models.base import BaseModel
+from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
+
 from data_tools.environment.cloudgov import CloudGovConfig
 from data_tools.environment.common import DataToolsConfig
 from data_tools.environment.dev import DevConfig
 from data_tools.environment.local import LocalConfig
 from data_tools.environment.pytest import PytestConfig
 from data_tools.environment.test import TestConfig
-from models.base import BaseModel
-from sqlalchemy import create_engine
-from sqlalchemy.engine import Engine
 
 # Adding these print statements to suppress unused import warnings
 print("Loading models for CANs", models.cans)

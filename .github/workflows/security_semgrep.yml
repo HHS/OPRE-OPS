@@ -19,8 +19,8 @@ jobs:
       # uploaded files. Configuration is handled in Settings --> Security --> CodeQL
       - name: Semgrep Scan
         run: |
-          echo "SEMGREP_TO_UPLOAD=semgrep.sarif" >> $GITHUB_ENV
-          semgrep scan --sarif --output=semgrep.sarif --exclude="frontend/src/uswds" --metrics=off
+          echo "SEMGREP_TO_UPLOAD=semgrep.sarif" >> "$GITHUB_ENV"
+          semgrep scan --sarif --output="semgrep.sarif" --exclude="frontend/src/uswds" --metrics="off"
         env:
           SEMGREP_RULES: "p/default"
 

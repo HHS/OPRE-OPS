@@ -3,6 +3,7 @@ from decimal import Decimal
 import pytest
 from flask.testing import FlaskClient
 from models.cans import CAN
+
 from ops_api.ops.utils.cans import get_can_funding_summary
 
 

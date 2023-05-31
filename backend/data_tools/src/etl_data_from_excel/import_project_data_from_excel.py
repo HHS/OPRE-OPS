@@ -2,12 +2,13 @@ import os
 from typing import Tuple
 
 import sqlalchemy.engine
+from sqlalchemy import MetaData, create_engine
+
 from environment.cloudgov import CloudGovConfig
 from environment.common import DataToolsConfig
 from environment.dev import DevConfig
 from environment.local import LocalConfig
 from environment.test import TestConfig
-from sqlalchemy import MetaData, create_engine
 
 
 def init_db(

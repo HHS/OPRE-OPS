@@ -1,66 +1,53 @@
 {
-    "extends": [
-        "config:base",
-        "helpers:pinGitHubActionDigests"
-    ],
-    "dependencyDashboard": false,
-    "labels": [
-        "dependencies"
-    ],
-    "automergeType": "pr",
-    "automergeStrategy": "auto",
-    "major": {
-        "automerge": false
+  "extends": ["config:base", "helpers:pinGitHubActionDigests"],
+  "dependencyDashboard": false,
+  "labels": ["dependencies"],
+  "automergeType": "pr",
+  "automergeStrategy": "auto",
+  "major": {
+    "automerge": false
+  },
+  "minor": {
+    "automerge": true,
+    "groupName": "minor dependencies",
+    "groupSlug": "all-minor",
+    "platformAutomerge": true,
+    "stabilityDays": 3
+  },
+  "patch": {
+    "automerge": true,
+    "groupName": "patch dependencies",
+    "groupSlug": "all-patch",
+    "platformAutomerge": true,
+    "stabilityDays": 0
+  },
+  "digest": {
+    "automerge": true,
+    "groupName": "digest dependencies",
+    "groupSlug": "all-digest",
+    "platformAutomerge": true,
+    "stabilityDays": 0
+  },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": true,
+    "platformAutomerge": true
+  },
+  "packageRules": [
+    {
+      "matchPackageNames": ["python"],
+      "enabled": false
     },
-    "minor": {
-        "automerge": true,
-        "groupName": "minor dependencies",
-        "groupSlug": "all-minor",
-        "platformAutomerge": true,
-        "stabilityDays": 3
+    {
+      "matchPackageNames": ["python"],
+      "enabled": false,
+      "platformAutomerge": true
     },
-    "patch": {
-        "automerge": true,
-        "groupName": "patch dependencies",
-        "groupSlug": "all-patch",
-        "platformAutomerge": true,
-        "stabilityDays": 0
-    },
-    "digest": {
-        "automerge": true,
-        "groupName": "digest dependencies",
-        "groupSlug": "all-digest",
-        "platformAutomerge": true,
-        "stabilityDays": 0
-    },
-
-    "lockFileMaintenance": {
-        "enabled": true,
-        "automerge": true,
-        "platformAutomerge": true
-    },
-    "packageRules": [
-        {
-            "matchPackageNames": ["python"],
-            "enabled": false
-        },
-        {
-            "matchPackageNames": [
-                "python"
-            ],
-            "enabled": false,
-            "platformAutomerge": true
-        },
-        {
-            "matchDepTypes": [
-                "devDependencies",
-                "dev-packages"
-            ],
-            "automerge": true,
-            "platformAutomerge": true
-        }
-    ],
-
-
-    "prBodyTemplate": "{{{header}}}{{{table}}}{{{notes}}}{{{changelogs}}}{{{controls}}}{{{footer}}}"
+    {
+      "matchDepTypes": ["devDependencies", "dev-packages"],
+      "automerge": true,
+      "platformAutomerge": true
+    }
+  ],
+  "prBodyTemplate": "{{{header}}}{{{table}}}{{{notes}}}{{{changelogs}}}{{{controls}}}{{{footer}}}"
 }

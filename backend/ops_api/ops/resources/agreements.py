@@ -9,14 +9,15 @@ from marshmallow import fields
 from models import ContractType, OpsEventType, User
 from models.base import BaseModel
 from models.cans import Agreement, AgreementReason, AgreementType, ContractAgreement, GrantAgreement, ProductServiceCode
+from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
+from sqlalchemy.future import select
+from typing_extensions import Any, override
+
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
-from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
-from sqlalchemy.future import select
-from typing_extensions import Any, override
 
 ENDPOINT_STRING = "/agreements"
 

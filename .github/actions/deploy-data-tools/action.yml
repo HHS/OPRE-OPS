@@ -23,7 +23,7 @@ runs:
       id: deploy-data-tools
       shell: bash
       run: |
-          export PATH=$HOME/bin:$PATH
-          cf auth ${{ inputs.USERNAME }} ${{ inputs.PASSWORD }}
-          cf target -o ${{ inputs.ORG_NAME }} -s ${{ inputs.SPACE_NAME }}
-          cf push ${{ inputs.APP_NAME }} -f manifest.yml -u port -t 180
+        export PATH=$HOME/bin:$PATH
+        cf auth ${{ inputs.USERNAME }} ${{ inputs.PASSWORD }}
+        cf target -o ${{ inputs.ORG_NAME }} -s ${{ inputs.SPACE_NAME }}
+        cf push ${{ inputs.APP_NAME }} -f manifest.yml -u port -t 180

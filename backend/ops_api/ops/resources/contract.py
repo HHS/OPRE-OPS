@@ -2,10 +2,11 @@ from flask import Response, current_app, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from models.base import BaseData
 from models.cans import ContractAgreement
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.utils.query_helpers import QueryHelper
 from sqlalchemy.future import select
 from typing_extensions import override
+
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.utils.query_helpers import QueryHelper
 
 
 class ContractItemAPI(BaseItemAPI):

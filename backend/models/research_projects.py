@@ -49,12 +49,8 @@ class ResearchProject(BaseModel):
     description = Column(Text)
     url = Column(String)
     origination_date = Column(Date)
-    methodologies = Column(
-        pg.ARRAY(sa.Enum(MethodologyType)), server_default="{}", default=[]
-    )
-    populations = Column(
-        pg.ARRAY(sa.Enum(PopulationType)), server_default="{}", default=[]
-    )
+    methodologies = Column(pg.ARRAY(sa.Enum(MethodologyType)), server_default="{}", default=[])
+    populations = Column(pg.ARRAY(sa.Enum(PopulationType)), server_default="{}", default=[])
     agreements = relationship("Agreement", back_populates="research_project")
     team_leaders = relationship(
         "User",
@@ -67,18 +63,10 @@ class ResearchProject(BaseModel):
         d = super().to_dict()
 
         d.update(
-            origination_date=self.origination_date.isoformat()
-            if self.origination_date
-            else None,
-            methodologies=[methodologies.name for methodologies in self.methodologies]
-            if self.methodologies
-            else [],
-            populations=[populations.name for populations in self.populations]
-            if self.populations
-            else [],
-            team_leaders=[tl.to_dict() for tl in self.team_leaders if tl]
-            if self.team_leaders
-            else [],
+            origination_date=self.origination_date.isoformat() if self.origination_date else None,
+            methodologies=[methodologies.name for methodologies in self.methodologies] if self.methodologies else [],
+            populations=[populations.name for populations in self.populations] if self.populations else [],
+            team_leaders=[tl.to_dict() for tl in self.team_leaders if tl] if self.team_leaders else [],
         )
 
         return d

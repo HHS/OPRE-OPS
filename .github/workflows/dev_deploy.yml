@@ -6,7 +6,6 @@ on:
       - development
 
 jobs:
-
   deployment:
     permissions:
       contents: read

@@ -1,5 +1,5 @@
 """Configuration for pytest tests."""
-import subprocess
+import subprocess  # nosec B404
 from collections.abc import Generator
 
 import pytest
@@ -8,11 +8,12 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from flask import Flask
 from flask.testing import FlaskClient
 from models import OpsDBHistory, OpsEvent
-from ops_api.ops import create_app
 from pytest_docker.plugin import Services
 from sqlalchemy import create_engine, delete, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
+
+from ops_api.ops import create_app
 from tests.ops.auth_client import AuthClient
 
 
@@ -59,9 +60,17 @@ def is_loaded(db: Engine) -> bool:
     try:
         if is_responsive(db):
             # This will wait until the data-import is complete
-            result = subprocess.run(
-                'docker ps -f "name=pytest-data-import" -a | grep "Exited (0)"',
-                shell=True,
+            result = subprocess.run(  # nosec B603, B607
+                [
+                    "docker",
+                    "ps",
+                    "-f",
+                    "name=pytest-data-import",
+                    "-a",
+                    "|",
+                    "grep",
+                    "Exited (0)",
+                ],
                 check=True,
             )
             print(f"result: {result}")

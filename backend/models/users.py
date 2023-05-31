@@ -63,9 +63,7 @@ class User(BaseModel):
         d.update(
             {
                 "oidc_id": f"{self.oidc_id}" if self.oidc_id else None,
-                "date_joined": self.date_joined.isoformat()
-                if self.date_joined
-                else None,
+                "date_joined": self.date_joined.isoformat() if self.date_joined else None,
             }
         )
 

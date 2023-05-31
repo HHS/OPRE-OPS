@@ -10,7 +10,7 @@ Accepted
 
 We want to use some form of version control to track our coding work.
 
-We know that HHS operates a GitHub organization: https://github.com/hhs
+We know that HHS operates a GitHub organization: [HHS GitHub](https://github.com/hhs)
 
 We don't yet know if this organization is GitHub Enterprise or not.
 

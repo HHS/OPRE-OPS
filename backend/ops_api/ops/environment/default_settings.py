@@ -13,7 +13,7 @@ JWT_PRIVATE_KEY = os.getenv("JWT_PRIVATE_KEY")
 JWT_PUBLIC_KEY_PATH = "./static/public.pem"
 JWT_ALGORITHM = "RS256"
 JWT_DECODE_ALGORITHMS = "RS256"
-JWT_TOKEN_LOCATION = "headers"  # noqa: S105 "Not a secret"
+JWT_TOKEN_LOCATION = "headers"  # noqa: S105 "Not a secret" # nosec B105
 JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=60)  # FedRAMP AC-12 Control is 15 min
 JWT_REFRESH_TOKEN_EXPIRES = timedelta(hours=12)
 

@@ -1,16 +1,15 @@
 version: "3.8"
 
 services:
-
   db:
     image: "postgres:12"
     platform: linux/amd64
     container_name: ops-db
     security_opt:
-      - no-new-privileges:true  # Resolve semgrep https://sg.run/0n8q
+      - no-new-privileges:true # Resolve semgrep https://sg.run/0n8q
     environment:
       - POSTGRES_PASSWORD=local_password
-    read_only: true  # Resolve semgrep https://sg.run/e4JE
+    read_only: true # Resolve semgrep https://sg.run/e4JE
     tmpfs: /var/run/postgresql/
     ports:
       - "5432:5432"
@@ -58,7 +57,16 @@ services:
     container_name: ops-backend
     ports:
       - "8080:8080"
-    command: ["python", "-m", "flask", "run", "--debug", "--host=0.0.0.0", "--port=8080"]
+    command:
+      [
+        "python",
+        "-m",
+        "flask",
+        "run",
+        "--debug",
+        "--host=0.0.0.0",
+        "--port=8080",
+      ]
     environment:
       - JWT_PRIVATE_KEY
       - JWT_PUBLIC_KEY
@@ -69,7 +77,7 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
       interval: 10s
       timeout: 10s
       retries: 10

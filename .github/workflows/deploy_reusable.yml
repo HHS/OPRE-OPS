@@ -55,7 +55,7 @@ jobs:
           ORG_NAME: ${{ secrets.CF_ORG }}
           SPACE_NAME: ${{ inputs.space }}
           APP_NAME: ops-data-tools
-          CF_TASKNAME: 'Load-Sample-Data'
+          CF_TASKNAME: "Load-Sample-Data"
           CF_COMMAND: "ENV=cloudgov VERBOSE=True ./data_tools/scripts/import_data.sh"
 
       - name: Build frontend
@@ -63,7 +63,6 @@ jobs:
         env:
           NODE_ENV: production
         run: |
-          echo ${{steps.get-backend-uri.outputs.BACKEND_DOMAIN}}
           REACT_APP_BACKEND_DOMAIN=https://${{steps.deploy-backend.outputs.BACKEND_DOMAIN}} yarn build
           cp ./Staticfile ./build/
 

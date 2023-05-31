@@ -4,7 +4,7 @@ on:
   schedule:
     # cron format: 'minute hour dayofmonth month dayofweek'
     # this will run at 8AM UTC every day (3am EST / 4am EDT)
-    - cron: '0 8 * * *'
+    - cron: "0 8 * * *"
 
 jobs:
   dast-scan:
@@ -21,11 +21,11 @@ jobs:
       - name: Run OWASP Zap Scan on live-dev
         uses: zaproxy/action-full-scan@6eade0f93b10fad8cfb4e63b979703a2cbd0cc98 # v0.4.0
         with:
-          docker_name: 'owasp/zap2docker-stable'
-          target: 'https://ops-dev.fr.cloud.gov/'
+          docker_name: "owasp/zap2docker-stable"
+          target: "https://ops-dev.fr.cloud.gov/"
           allow_issue_writing: false
           fail_action: false
-          cmd_options: '-I'
+          cmd_options: "-I"
 
       ## Manually reviewed the action, and validated it performs basic
       ## conversion from zap.json to zap.sarif.

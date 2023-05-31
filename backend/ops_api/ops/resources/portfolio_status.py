@@ -1,8 +1,9 @@
 from flask import Response, jsonify
 from models.base import BaseModel
 from models.portfolios import PortfolioStatus
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from typing_extensions import override
+
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 
 
 class PortfolioStatusItemAPI(BaseItemAPI):

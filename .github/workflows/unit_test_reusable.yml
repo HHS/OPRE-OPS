@@ -2,7 +2,6 @@ on:
   workflow_call:
 
 jobs:
-
   backend-api:
     name: Backend API Unit Tests
     runs-on: ubuntu-latest
@@ -27,7 +26,6 @@ jobs:
       - name: Run backend unit tests
         working-directory: ./backend/data_tools/
         run: pipenv install --dev && pipenv run pytest
-
 
   frontend:
     name: Frontend Unit Tests

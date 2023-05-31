@@ -1,6 +1,8 @@
 import desert
 from flask import Response, request
 from models.base import BaseModel
+from typing_extensions import override
+
 from ops_api.ops.base_views import BaseListAPI
 from ops_api.ops.utils.research_project_helper import (
     GetResearchProjectFundingSummaryQueryParams,
@@ -8,7 +10,6 @@ from ops_api.ops.utils.research_project_helper import (
     ResearchProjectHelper,
 )
 from ops_api.ops.utils.response import make_response_with_headers
-from typing_extensions import override
 
 
 class ResearchProjectFundingSummaryListAPI(BaseListAPI):

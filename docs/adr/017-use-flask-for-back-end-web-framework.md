@@ -18,8 +18,8 @@ Using a web framework, we won't be starting off writing code on a totally blank 
 
 ### Options Considered
 
-* [Django](https://www.djangoproject.com/)
-* [Flask](https://flask.palletsprojects.com/en/2.0.x/)
+- [Django](https://www.djangoproject.com/)
+- [Flask](https://flask.palletsprojects.com/en/2.0.x/)
 
 ### Tradeoffs
 
@@ -27,28 +27,26 @@ After looking at the out-of-the-box features of Django more thoroughly and reali
 
 Key points were:
 
-* **Multiple work-arounds**: The extra pieces of Django would essentially be "dead weight" to the system, not to mention extra complicated by having to build such work-arounds rather than just writing what we need the first time. The Django Admin interface was completely to be bypassed, as an example.
-* **Lightweight Framework**: Flask, being much more lightweight, allows us to pick and choose from the best libraries in the Python stack, while removing the bulk of the Django "dead weight" away, rather than having unused code sitting around in the application.
-* **Security**: The unused Django code would essentially open an avenue for possible security problems in the future with the application. By not having the unused code in our application, it ensures that unused code cannot be used to compromose the system.
+- **Multiple work-arounds**: The extra pieces of Django would essentially be "dead weight" to the system, not to mention extra complicated by having to build such work-arounds rather than just writing what we need the first time. The Django Admin interface was completely to be bypassed, as an example.
+- **Lightweight Framework**: Flask, being much more lightweight, allows us to pick and choose from the best libraries in the Python stack, while removing the bulk of the Django "dead weight" away, rather than having unused code sitting around in the application.
+- **Security**: The unused Django code would essentially open an avenue for possible security problems in the future with the application. By not having the unused code in our application, it ensures that unused code cannot be used to compromose the system.
 
 With Flask, we also are using the SQLAlchemy database abstraction layer, which is a popular framework used by multiple large Python projects. The default server for both Django and Flask are not production-ready, and both would need to have another web server to run, like Gunicorn.
 
 Flask + SQLAlchemy gives more option-enabling flexibility with the application, where Django would require too many work-arounds to be beneficial. As such, we have decided to convert the existing codebase to Flask. We decided it would be best to do it before there is very much code, so the transition would be more painless and smoother.
 
 To address some of the counter-points against Flask in the previous ADR [005-use-django-for-back-end-web-framework](./deprecated/005-use-django-for-back-end-web-framework.md):
-```
-It does not include a database abstraction layer out of the box
-```
+
+> It does not include a database abstraction layer out of the box
+
 The fact that Django does include an ORM out of the box is nice from an initial startup step; but does not offer much from an option-enabling standpoint; where you're now locked into what Django provides. In addition the default `migrations` is cumbersome and error prone in a production environment at times.
 
-```
-requires extensive further configuration to make applications production-ready
-```
+> requires extensive further configuration to make applications production-ready
+
 I feel like this is semi-opinionated, as Django also requires `extensive` configuration to make it production-ready. This is true for most frameworks in fact, and making things production-ready shouldn't rely on defaults, and should be considered carefully and reviewed by the product team prior to deployment.
 
-```
-The default server bundled with Flask is not production-ready
-```
+> The default server bundled with Flask is not production-ready
+
 The same applies with the Django default server. As above, many configuration considerations should be made. And because this is an API only backend, there's no need for the built-in template engine of Django. In either case, `gunicorn` or `uvicorn` were going to be used.
 
 ## Decision
@@ -59,19 +57,19 @@ We will use Flask (with SQLAlchemy) as our Python web framework.
 
 We predict that choosing Flask as our Python web framework for the back end will:
 
-* Better align with the current composition of the engineering team.
-* Allow for the application to be more flexible and not need as much work-arounds to make it fit in a more "batteries-included" framework.
-* Also allow for the team to be able to select the best tools for the job, rather than just end up with everything handed to us:
-  * SQLAlchemy for database abstraction
+- Better align with the current composition of the engineering team.
+- Allow for the application to be more flexible and not need as much work-arounds to make it fit in a more "batteries-included" framework.
+- Also allow for the team to be able to select the best tools for the job, rather than just end up with everything handed to us:
+  - SQLAlchemy for database abstraction
 
 Choosing Flask won't limit our choices when we consider what front-end tech stack to use. We could:
 
-* pick new technologies from the best available in the Python library.
-* Build a simple REST based framework for CRUD operations, which Flask excels at.
-* Be able to use standard templating tools, like Jinja2 to render server-side HTML
-* take a middle route -- for example, by rendering most pages server-side but using React to create specific interactive features
+- pick new technologies from the best available in the Python library.
+- Build a simple REST based framework for CRUD operations, which Flask excels at.
+- Be able to use standard templating tools, like Jinja2 to render server-side HTML
+- take a middle route -- for example, by rendering most pages server-side but using React to create specific interactive features
 
 ## Further reading
 
-+ https://flask.palletsprojects.com/en/2.2.x/
-+ https://www.sqlalchemy.org/
+- https://flask.palletsprojects.com/en/2.2.x/
+- https://www.sqlalchemy.org/

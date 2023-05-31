@@ -8,16 +8,17 @@ import models.procurement_shops
 import models.research_projects
 import models.users
 import sqlalchemy.engine
+from models.base import BaseModel
+from sqlalchemy import create_engine, insert, inspect, text
+from sqlalchemy.engine import Connection, Engine
+from sqlalchemy.schema import MetaData
+
 from data_tools.environment.cloudgov import CloudGovConfig
 from data_tools.environment.common import DataToolsConfig
 from data_tools.environment.dev import DevConfig
 from data_tools.environment.local import LocalConfig
 from data_tools.environment.pytest import PytestConfig
 from data_tools.environment.test import TestConfig
-from models.base import BaseModel
-from sqlalchemy import create_engine, insert, inspect, text
-from sqlalchemy.engine import Connection, Engine
-from sqlalchemy.schema import MetaData
 
 # Adding these print statements to suppress unused import warnings
 print("Loading models for CANs", models.cans)
@@ -56,7 +57,6 @@ ALLOWED_TABLES = [
     "research_project_methodologies",
     "research_project_populations",
     "procurement_shop",
-
 ]
 
 data = os.getenv("DATA")

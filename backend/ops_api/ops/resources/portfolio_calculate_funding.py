@@ -1,8 +1,9 @@
 from flask import Response, jsonify, request
 from models.base import BaseModel
+from typing_extensions import override
+
 from ops_api.ops.base_views import BaseItemAPI
 from ops_api.ops.utils.portfolios import get_total_funding
-from typing_extensions import override
 
 
 class PortfolioCalculateFundingAPI(BaseItemAPI):

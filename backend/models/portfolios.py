@@ -64,9 +64,7 @@ class Portfolio(BaseModel):
         "CAN",
         back_populates="managing_portfolio",
     )
-    shared_cans = relationship(
-        "CAN", back_populates="shared_portfolios", secondary=shared_portfolio_cans
-    )
+    shared_cans = relationship("CAN", back_populates="shared_portfolios", secondary=shared_portfolio_cans)
     division_id = Column(Integer, ForeignKey("division.id"))
     division = relationship("Division", back_populates="portfolio")
     urls = relationship("PortfolioUrl")
@@ -88,9 +86,7 @@ class Portfolio(BaseModel):
                 "division": self.division.to_dict() if self.division else None,
                 "cans": [can.to_dict() for can in self.cans],
                 "status": self.status.name if self.status else None,
-                "team_leaders": [
-                    team_lead.to_dict() for team_lead in self.team_leaders
-                ],
+                "team_leaders": [team_lead.to_dict() for team_lead in self.team_leaders],
             }
         )
 

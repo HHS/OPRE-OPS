@@ -1,4 +1,5 @@
 from flask import Blueprint
+
 from ops_api.ops.views import (
     AGREEMENT_ITEM_API_VIEW_FUNC,
     AGREEMENT_LIST_API_VIEW_FUNC,

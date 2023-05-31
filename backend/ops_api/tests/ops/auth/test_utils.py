@@ -8,6 +8,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from flask import current_app
 from flask_jwt_extended import create_access_token
 from models.users import User
+
 from ops_api.ops.utils.auth import create_oauth_jwt
 from ops_api.ops.utils.authorization import AuthorizationGateway, AuthorizationProvider
 

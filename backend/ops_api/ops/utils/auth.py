@@ -7,8 +7,9 @@ from authlib.jose import jwt as jose_jwt
 from flask import current_app
 from flask_jwt_extended import JWTManager
 from models.users import User
-from ops_api.ops.utils.authorization import AuthorizationGateway, BasicAuthorizationPrivider
 from sqlalchemy import select
+
+from ops_api.ops.utils.authorization import AuthorizationGateway, BasicAuthorizationPrivider
 
 jwtMgr = JWTManager()
 oauth = OAuth()

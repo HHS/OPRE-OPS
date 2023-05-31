@@ -13,7 +13,7 @@ inputs:
   SPACE_NAME:
     description: Cloud.gov Space (environment) Name.
     required: true
-    default: 'dev'
+    default: "dev"
   APP_NAME:
     description: Application name.
     required: true
@@ -24,7 +24,7 @@ inputs:
   CF_TASKNAME:
     description: Name given to the specific task. Can 'grep' this for better log output.
     required: false
-    default: 'github-action-task-001'
+    default: "github-action-task-001"
 runs:
   using: composite
   steps:
@@ -32,7 +32,7 @@ runs:
       id: deploy-data-tools
       shell: bash
       run: |
-          export PATH=$HOME/bin:$PATH
-          cf auth ${{ inputs.USERNAME }} ${{ inputs.PASSWORD }}
-          cf target -o ${{ inputs.ORG_NAME }} -s ${{ inputs.SPACE_NAME }}
-          cf run-task ${{ inputs.APP_NAME }} --command "${{ inputs.CF_COMMAND }}" --name ${{ inputs.CF_TASKNAME }}
+        export PATH=$HOME/bin:$PATH
+        cf auth ${{ inputs.USERNAME }} ${{ inputs.PASSWORD }}
+        cf target -o ${{ inputs.ORG_NAME }} -s ${{ inputs.SPACE_NAME }}
+        cf run-task ${{ inputs.APP_NAME }} --command "${{ inputs.CF_COMMAND }}" --name ${{ inputs.CF_TASKNAME }}

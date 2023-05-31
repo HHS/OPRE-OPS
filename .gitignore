@@ -208,3 +208,6 @@ backend/ops_api/django_config/static
 *.crt
 *.drawio.bkp
 *.db
+
+# Megalinter
+megalinter-reports/

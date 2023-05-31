@@ -6,10 +6,11 @@ from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from marshmallow import Schema
 from models.base import BaseModel
-from ops_api.ops.utils.auth import auth_gateway
-from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
+
+from ops_api.ops.utils.auth import auth_gateway
+from ops_api.ops.utils.response import make_response_with_headers
 
 
 def generate_validator(model: BaseModel) -> BaseModel.Validator:
