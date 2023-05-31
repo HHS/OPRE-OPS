@@ -150,8 +150,10 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 data = {
                     k: v for (k, v) in data.items() if k in request.json
                 }  # only keep the attributes from the request body
-                print(f"BLI Data: {data}")
-                print(f"BLI Id: {id}")
+
+                # TODO: @validates_schema is not working for some reason, so we have to do this outside marshmallow
+                validate_status_change(data, id)
+
                 budget_line_item = update_budget_line_item(data, id)
 
                 current_app.db_session.add(budget_line_item)
@@ -282,3 +284,13 @@ def update_budget_line_item(data: dict[str, Any], id: int):
     current_app.db_session.add(budget_line_item)
     current_app.db_session.commit()
     return budget_line_item
+
+
+def validate_status_change(data, id):
+    validation_error_messages = []
+    if data.get("status") != BudgetLineItemStatus.DRAFT:  # we are changing/promoting the status
+        bli = current_app.db_session.get(BudgetLineItem, id)
+        if not bli.agreement_id:
+            validation_error_messages.append("agreement_id is required on BLI for PATCH when status is not DRAFT")
+    if validation_error_messages:
+        raise ValidationError(validation_error_messages)

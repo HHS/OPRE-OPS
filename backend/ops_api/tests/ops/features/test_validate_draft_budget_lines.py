@@ -574,7 +574,7 @@ def submit(client, context):
     context["response"] = client.put("/api/v1/budget-line-items/1000", json=data.__dict__)
 
 
-@when("I submit (PUT) a BLI to move to IN_REVIEW status (without an Agreement)")
+@when("I submit a BLI to move to IN_REVIEW status (without an Agreement)")
 def submit_without_agreement(client, context):
     data = {
         "line_description": "Updated LI 1",
@@ -689,9 +689,9 @@ def error_message_agreement(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
     assert context["response_put"].json == {"agreement_id": ["Missing data for required field."]}
     assert context["response_patch"].status_code == 400
-    # assert context["response_put"].json == {
-    #     "agreement_id": ["Missing data for required field."]
-    # }
+    assert context["response_patch"].json == {
+        "_schema": ["agreement_id is required on BLI for PATCH when status is not DRAFT"]
+    }
 
 
 @then("I should get an error message that the BLI must have a Need By Date in the future")
