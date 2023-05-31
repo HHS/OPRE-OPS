@@ -1,14 +1,14 @@
 import { useState } from "react";
-import App from "../../App";
 import { useNavigate } from "react-router-dom";
-import classnames from "vest/classnames";
-import ProjectTypeSelect from "../../components/ResearchProjects/ProjectTypeSelect/ProjectTypeSelect";
+import App from "../../App";
+import ProjectTypeSelect from "../../components/UI/Form/ProjectTypeSelect/ProjectTypeSelect";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
 import Alert from "../../components/UI/Alert/Alert";
 import { Modal } from "../../components/UI/Modal/Modal";
 import Input from "../../components/UI/Form/Input";
 import TextArea from "../../components/UI/Form/TextArea";
 import suite from "./suite";
+import classnames from "vest/classnames";
 
 export const CreateProject = () => {
     const [showModal, setShowModal] = useState(false);
