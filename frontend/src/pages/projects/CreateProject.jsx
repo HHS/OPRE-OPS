@@ -38,6 +38,12 @@ export const CreateProject = () => {
         warning: "warning",
     });
 
+    // prepare data for submission by removing the type field
+    const editedProject = {
+        ...project,
+    };
+    delete editedProject.type;
+
     const showAlert = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
         window.scrollTo(0, 0);
@@ -110,11 +116,11 @@ export const CreateProject = () => {
             <h2 className="font-sans-lg">Project Details</h2>
 
             <Input
-                name="nickname"
+                name="short_title"
                 label="Project Nickname or Acronym"
                 onChange={handleChange}
-                messages={res.getErrors("nickname")}
-                className={cn("nickname")}
+                messages={res.getErrors("short_title")}
+                className={cn("short_title")}
             />
 
             <Input
@@ -141,7 +147,7 @@ export const CreateProject = () => {
                 <button
                     id="submit"
                     className="usa-button"
-                    onClick={() => addResearchProject(project)}
+                    onClick={() => addResearchProject(editedProject)}
                     disabled={!res.isValid()}
                 >
                     Create Project
