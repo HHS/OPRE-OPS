@@ -4,10 +4,13 @@ from typing import Any, Optional
 
 from flask import Blueprint, Flask
 from flask_cors import CORS
-from ops_api.ops.db import db
+from ops_api.ops.db import init_db
+from ops_api.ops.history import track_db_history_before, track_db_history_catch_errors
 from ops_api.ops.home_page.views import home
 from ops_api.ops.urls import register_api
 from ops_api.ops.utils.auth import jwtMgr, oauth
+from sqlalchemy import event
+from sqlalchemy.orm import Session
 
 
 def configure_logging(log_level: str = "INFO") -> None:
@@ -31,8 +34,10 @@ def configure_logging(log_level: str = "INFO") -> None:
     )
 
 
-def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
-    configure_logging()  # should be configured before any access to app.logger
+def create_app(config_overrides: Optional[dict[str, Any]] = {}) -> Flask:
+    is_unit_test = config_overrides.get("TESTING") is True
+    log_level = "INFO" if not is_unit_test else "DEBUG"
+    configure_logging(log_level)  # should be configured before any access to app.logger
     app = Flask(__name__)
     CORS(app)
     app.config.from_object("ops_api.ops.environment.default_settings")
@@ -61,13 +66,22 @@ def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
     app.register_blueprint(api_bp)
 
     jwtMgr.init_app(app)
-    db.init_app(app)
     oauth.init_app(app)
 
-    # Add some basic data to test with
-    # TODO change this out for a proper fixture.
-    with app.app_context():
-        db.create_all()
-        db.session.commit()
+    db_session, engine = init_db(app.config.get("SQLALCHEMY_DATABASE_URI"), is_unit_test)
+    app.db_session = db_session
+    app.engine = engine
+
+    @app.teardown_appcontext
+    def shutdown_session(exception=None):
+        app.db_session.remove()
+
+    @event.listens_for(db_session, "before_commit")
+    def receive_before_commit(session: Session):
+        track_db_history_before(session)
+
+    @event.listens_for(engine, "handle_error")
+    def receive_error(exception_context):
+        track_db_history_catch_errors(exception_context)
 
     return app

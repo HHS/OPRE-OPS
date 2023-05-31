@@ -40,6 +40,11 @@ ALLOWED_TABLES = [
     "can_fiscal_year",
     "can_funding_sources",
     "agreement",
+    "contract_agreement",
+    "grant_agreement",
+    "iaa_agreement",
+    "iaa_aa_agreement",
+    "direct_agreement",
     "budget_line_item",
     "budget_line_item_status",
     "can_fiscal_year_carry_forward",
@@ -51,6 +56,7 @@ ALLOWED_TABLES = [
     "research_project_methodologies",
     "research_project_populations",
     "procurement_shop",
+
 ]
 
 data = os.getenv("DATA")
@@ -129,8 +135,6 @@ def import_data(engine: Engine, metadata_obj: MetaData, data: dict[str, Any]) ->
 if __name__ == "__main__":
     script_env = os.getenv("ENV")
     script_config = get_config(script_env)
-
-    print(f"Data-Tools Config: {script_config.db_connection_string}")
 
     db_engine, db_metadata_obj = init_db(script_config)
 

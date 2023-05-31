@@ -12,7 +12,7 @@ from ops_api.ops.utils.portfolios import (
 
 @pytest.mark.usefixtures("app_ctx")
 def test_portfolio_retrieve(loaded_db):
-    portfolio = loaded_db.session.query(Portfolio).filter(Portfolio.name == "Child Care").one()
+    portfolio = loaded_db.query(Portfolio).filter(Portfolio.name == "Child Care").one()
 
     assert portfolio is not None
     assert portfolio.name == "Child Care"
@@ -21,7 +21,7 @@ def test_portfolio_retrieve(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_portfolio_get_all(auth_client, loaded_db):
-    assert loaded_db.session.query(Portfolio).count() == 8
+    assert loaded_db.query(Portfolio).count() == 8
 
     response = auth_client.get("/api/v1/portfolios/")
     assert response.status_code == 200
@@ -99,9 +99,24 @@ def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
 
         can_100_fy_2023 = CANFiscalYear(can=can_100, fiscal_year=2023, total_fiscal_year_funding=2.0)
 
-        blin_1 = BudgetLineItem(amount=1.0, status=BudgetLineItemStatus.PLANNED, can=can_100)
-        blin_2 = BudgetLineItem(amount=2.0, status=BudgetLineItemStatus.IN_EXECUTION, can=can_100)
-        blin_3 = BudgetLineItem(amount=3.0, status=BudgetLineItemStatus.OBLIGATED, can=can_100)
+        blin_1 = BudgetLineItem(
+            line_description="#1",
+            amount=1.0,
+            status=BudgetLineItemStatus.PLANNED,
+            can=can_100,
+        )
+        blin_2 = BudgetLineItem(
+            line_description="#2",
+            amount=2.0,
+            status=BudgetLineItemStatus.IN_EXECUTION,
+            can=can_100,
+        )
+        blin_3 = BudgetLineItem(
+            line_description="#3",
+            amount=3.0,
+            status=BudgetLineItemStatus.OBLIGATED,
+            can=can_100,
+        )
 
         can_100_fy_2022_co = CANFiscalYearCarryForward(
             id=100,
@@ -123,15 +138,15 @@ def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
             ]
         )
 
-        loaded_db.session.add_all(instances)
+        loaded_db.add_all(instances)
 
-        loaded_db.session.commit()
+        loaded_db.commit()
         yield loaded_db
 
         # Cleanup
         for instance in instances:
-            loaded_db.session.delete(instance)
-        loaded_db.session.commit()
+            loaded_db.delete(instance)
+        loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")

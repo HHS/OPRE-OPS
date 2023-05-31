@@ -18,7 +18,12 @@ import ResearchProjects from "./components/Portfolios/ResearchProjects/ResearchP
 import PeopleAndTeams from "./components/Portfolios/PeopleAndTeams/PeopleAndTeams";
 import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAndFunding";
 import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProjectDetail";
+import CreateBudgetLines from "./pages/budgetLines";
+import CreateAgreements from "./pages/agreements";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
+import { CreateProject } from "./pages/projects/CreateProject";
+import { AgreementsList } from "./pages/agreements/list/AgreementsList";
+import { ApproveAgreement } from "./pages/agreements/approve/ApproveAgreement";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -109,17 +114,31 @@ const router = createBrowserRouter(
             </Route>
             <Route path="/cans" element={<CanList />} />
             <Route path="/login" handle={{}} />
+
+            <Route element={<ProtectedRoute redirectPath="/" />}>
+                <Route path="/budget-lines/create" element={<CreateBudgetLines />} />
+                <Route path="/agreements/create" element={<CreateAgreements />} />
+                <Route path="/projects/create" element={<CreateProject />} />
+                <Route path="/agreements/" element={<AgreementsList />} />
+                <Route path="/agreements/approve/:id" element={<ApproveAgreement />} />
+            </Route>
         </>
     )
 );
 
-ReactDOM.createRoot(document.getElementById("root")).render(
-    <React.StrictMode>
-        <Provider store={store}>
-            <RouterProvider router={router} />
-        </Provider>
-    </React.StrictMode>
-);
+const rootElement = document.getElementById("root");
+
+if (rootElement) {
+    ReactDOM.createRoot(rootElement).render(
+        <React.StrictMode>
+            <Provider store={store}>
+                <RouterProvider router={router} />
+            </Provider>
+        </React.StrictMode>
+    );
+} else {
+    console.error("No root element found");
+}
 
 // Expose redux store when running in Cypress (e2e)
 if (window.Cypress) {

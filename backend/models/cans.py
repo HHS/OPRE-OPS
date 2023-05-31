@@ -1,21 +1,23 @@
 """CAN models."""
-from enum import Enum
+from dataclasses import dataclass
+from enum import Enum, IntEnum
 from typing import Any
 
 import sqlalchemy as sa
-from models.base import BaseModel
+from models.base import BaseModel, currency, intpk, optional_str, reg, required_str
 from models.portfolios import Portfolio, shared_portfolio_cans
-from models.research_projects import ResearchProject
-from sqlalchemy import Column, Date, DateTime, ForeignKey, Identity, Integer, Numeric, String, Table, Text
+from models.users import User
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Identity, Integer, Numeric, String, Table, Text
 from sqlalchemy.orm import column_property, relationship
 from typing_extensions import override
 
 
 class BudgetLineItemStatus(Enum):
     DRAFT = 1
-    PLANNED = 2
-    IN_EXECUTION = 3
-    OBLIGATED = 4
+    UNDER_REVIEW = 2
+    PLANNED = 3
+    IN_EXECUTION = 4
+    OBLIGATED = 5
 
 
 class CANArrangementType(Enum):
@@ -78,15 +80,139 @@ class AgreementType(Enum):
     MISCELLANEOUS = 5
 
 
-class Agreement(BaseModel):
-    __tablename__ = "agreement"
+class AgreementReason(Enum):
+    NEW_REQ = 1
+    RECOMPETE = 2  ## recompete is brand new contract related to same work
+    LOGICAL_FOLLOW_ON = (
+        3  ## Logical Follow On is more work added/extension of the original
+    )
+
+
+agreement_team_members = Table(
+    "agreement_team_members",
+    BaseModel.metadata,
+    Column("agreement_id", ForeignKey("agreement.id"), primary_key=True),
+    Column("users_id", ForeignKey("users.id"), primary_key=True),
+)
+
+
+class ProductServiceCode(BaseModel):
+    """Product Service Code"""
+
+    __tablename__ = "product_service_code"
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
+    naics = Column(Integer, nullable=True)
+    support_code = Column(String, nullable=True)
+    description = Column(String)
+    agreement = relationship("Agreement")
+
+
+class Agreement(BaseModel):
+    """Base Agreement Model"""
+
+    __tablename__ = "agreement"
+
+    id = Column(Integer, Identity(), primary_key=True)
+    name = Column(String, nullable=False)
+    number = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+
+    product_service_code_id = Column(Integer, ForeignKey("product_service_code.id"))
+    product_service_code = relationship(
+        "ProductServiceCode", back_populates="agreement"
+    )
+
+    agreement_reason = Column(sa.Enum(AgreementReason))
+    incumbent = Column(String, nullable=True)
+    project_officer = Column(
+        Integer, ForeignKey("users.id", name="fk_user_project_officer"), nullable=True
+    )
+    team_members = relationship(
+        User,
+        secondary=agreement_team_members,
+        back_populates="agreements",
+    )
     agreement_type = Column(sa.Enum(AgreementType))
+
     research_project_id = Column(Integer, ForeignKey("research_project.id"))
-    research_project = relationship(ResearchProject, back_populates="agreements")
-    budget_line_items = relationship("BudgetLineItem", back_populates="agreement")
+    research_project = relationship("ResearchProject", back_populates="agreements")
+
+    budget_line_items = relationship(
+        "BudgetLineItem", back_populates="agreement", lazy=True
+    )
+    procurement_shop_id = Column(Integer, ForeignKey("procurement_shop.id"))
+    procurement_shop = relationship("ProcurementShop", back_populates="agreements")
+
+    notes = Column(Text, nullable=True)
+
+    __mapper_args__: dict[str, str | AgreementType] = {
+        "polymorphic_identity": "agreement",
+        "polymorphic_on": "agreement_type",
+    }
+
+    @override
+    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
+
+        d.update(
+            agreement_type=self.agreement_type.name if self.agreement_type else None,
+            agreement_reason=self.agreement_reason.name
+            if self.agreement_reason
+            else None,
+            budget_line_items=[bli.to_dict() for bli in self.budget_line_items],
+            team_members=[tm.to_dict() for tm in self.team_members],
+            research_project=self.research_project.to_dict()
+            if self.research_project
+            else None,
+            procurement_shop=self.procurement_shop.to_dict()
+            if self.procurement_shop
+            else None,
+            product_service_code=self.product_service_code.to_dict()
+            if self.product_service_code
+            else None,
+        )
+
+        return d
+
+
+contract_support_contacts = Table(
+    "contract_support_contacts",
+    BaseModel.metadata,
+    Column(
+        "contract_id",
+        ForeignKey("contract_agreement.id"),
+        primary_key=True,
+    ),
+    Column("users_id", ForeignKey("users.id"), primary_key=True),
+)
+
+
+class ContractType(Enum):
+    RESEARCH = 0
+    SERVICE = 1
+
+
+class ContractAgreement(Agreement):
+    """Contract Agreement Model"""
+
+    __tablename__ = "contract_agreement"
+
+    id = Column(Integer, ForeignKey("agreement.id"), primary_key=True)
+    contract_number = Column(String)
+    vendor = Column(String)
+    delivered_status = Column(Boolean, default=False)
+    contract_type = Column(sa.Enum(ContractType))
+    support_contacts = relationship(
+        User,
+        secondary=contract_support_contacts,
+        back_populates="contracts",
+    )
+
+    __mapper_args__ = {
+        "polymorphic_identity": AgreementType.CONTRACT,
+    }
 
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
@@ -94,13 +220,73 @@ class Agreement(BaseModel):
 
         d.update(
             {
-                "agreement_type": self.agreement_type.name
-                if self.agreement_type
-                else None
+                "contract_type": self.contract_type.name
+                if self.contract_type
+                else None,
+                "support_contacts": [
+                    contacts.to_dict() for contacts in self.support_contacts
+                ],
             }
         )
 
         return d
+
+
+# TODO: Skeleton, will need flushed out more when we know what all a Grant is.
+class GrantAgreement(Agreement):
+    """Grant Agreement Model"""
+
+    __tablename__ = "grant_agreement"
+
+    id = Column(Integer, ForeignKey("agreement.id"), primary_key=True)
+    foa = Column(String)
+
+    __mapper_args__ = {
+        "polymorphic_identity": AgreementType.GRANT,
+    }
+
+
+# TODO: Skeleton, will need flushed out more when we know what all an IAA is.
+### Inter-Agency-Agreement
+class IaaAgreement(Agreement):
+    """IAA Agreement Model"""
+
+    __tablename__ = "iaa_agreement"
+
+    id = Column(Integer, ForeignKey("agreement.id"), primary_key=True)
+    iaa = Column(String)
+
+    __mapper_args__ = {
+        "polymorphic_identity": AgreementType.IAA,
+    }
+
+
+# TODO: Skeleton, will need flushed out more when we know what all an IAA-AA is. Inter-Agency-Agreement-Assisted-Aquisition
+### Inter-Agency-Agreement-Assisted-Aquisition
+class IaaAaAgreement(Agreement):
+    """IAA-AA Agreement Model"""
+
+    __tablename__ = "iaa_aa_agreement"
+
+    id = Column(Integer, ForeignKey("agreement.id"), primary_key=True)
+    iaa_aa = Column(String)
+
+    __mapper_args__ = {
+        "polymorphic_identity": AgreementType.MISCELLANEOUS,
+    }
+
+
+class DirectAgreement(Agreement):
+    """Direct Obligation Agreement Model"""
+
+    __tablename__ = "direct_agreement"
+
+    id = Column(Integer, ForeignKey("agreement.id"), primary_key=True)
+    payee = Column(String, nullable=False)
+
+    __mapper_args__ = {
+        "polymorphic_identity": AgreementType.DIRECT_ALLOCATION,
+    }
 
 
 class CANFiscalYear(BaseModel):
@@ -118,6 +304,28 @@ class CANFiscalYear(BaseModel):
     notes = Column(String, default="")
     total_funding = column_property(received_funding + expected_funding)
 
+    @override
+    def to_dict(self):
+        d = super().to_dict()
+
+        d.update(
+            total_fiscal_year_funding=float(self.total_fiscal_year_funding)
+            if self.total_fiscal_year_funding
+            else None,
+            received_funding=float(self.received_funding)
+            if self.received_funding
+            else None,
+            expected_funding=float(self.expected_funding)
+            if self.expected_funding
+            else None,
+            potential_additional_funding=float(self.potential_additional_funding)
+            if self.potential_additional_funding
+            else None,
+            total_funding=float(self.total_funding) if self.total_funding else None,
+        )
+
+        return d
+
 
 class CANFiscalYearCarryForward(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN carried over from a previous fiscal year."""
@@ -132,6 +340,22 @@ class CANFiscalYearCarryForward(BaseModel):
     expected_amount = Column(Numeric(12, 2), default=0, nullable=False)
     notes = Column(String, default="")
     total_amount = column_property(received_amount + expected_amount)
+
+    @override
+    def to_dict(self):
+        d = super().to_dict()
+
+        d.update(
+            received_amount=float(self.received_amount)
+            if self.received_amount
+            else None,
+            expected_amount=float(self.expected_amount)
+            if self.expected_amount
+            else None,
+            total_amount=float(self.total_amount) if self.total_amount else None,
+        )
+
+        return d
 
 
 class BudgetLineItem(BaseModel):
@@ -160,7 +384,13 @@ class BudgetLineItem(BaseModel):
     def to_dict(self):
         d = super().to_dict()
 
-        d.update(status=self.status.name if self.status else None)
+        d.update(
+            status=self.status.name if self.status else None,
+            amount=float(self.amount) if self.amount else None,
+            psc_fee_amount=float(self.psc_fee_amount) if self.psc_fee_amount else None,
+            date_needed=self.date_needed.isoformat() if self.date_needed else None,
+            can=self.can.to_dict() if self.can else None,
+        )
 
         return d
 
@@ -196,14 +426,11 @@ class CAN(BaseModel):
     shared_portfolios = relationship(
         Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans"
     )
-    managing_research_project_id = Column(Integer, ForeignKey("research_project.id"))
-    managing_research_project = relationship(ResearchProject, back_populates="cans")
-
     budget_line_items = relationship("BudgetLineItem", back_populates="can")
 
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
-        d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
+        d: dict[str, Any] = super().to_dict()
 
         d.update(
             appropriation_date=self.appropriation_date.strftime("%d/%m/%Y")
@@ -212,7 +439,9 @@ class CAN(BaseModel):
             expiration_date=self.expiration_date.strftime("%d/%m/%Y")
             if self.expiration_date
             else None,
-            arrangement_type=self.arrangement_type.name,
+            arrangement_type=self.arrangement_type.name
+            if self.arrangement_type
+            else None,
         )
 
         return d

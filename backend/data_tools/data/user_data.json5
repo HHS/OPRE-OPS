@@ -81,6 +81,22 @@
       oidc_id: "00000000-0000-1111-a111-000000000010",
     },
     {
+      first_name: "Laura",
+      last_name: "Nerenberg",
+      division: 4,
+      email: "Laura.Nerenberg@example.com",
+      role: "COR",
+      oidc_id: "00000000-0000-1111-a111-000000000011",
+    },
+    {
+      first_name: "Niki",
+      last_name: "Denmark",
+      division: 4,
+      email: "Niki.Denmark@example.com",
+      role: "Non-COR/Contractor",
+      oidc_id: "00000000-0000-1111-a111-000000000012",
+    },
+    {
       first_name: "Tim",
       last_name: "Donaworth",
       division: 3,
@@ -96,6 +112,30 @@
       role: "Software Engineer",
       oidc_id: "838861c4-8bee-427d-8b49-0892875483ba",
     },
+    {
+      first_name: "Frank",
+      last_name: "Pigeon",
+      division: 3,
+      email: "fpigeon@flexion.us",
+      role: "Software Engineer",
+      oidc_id: "3e4c46ae-0ff9-4dd7-8671-b9801460a052",
+    },
+    {
+      first_name: "Cliff",
+      last_name: "Hill",
+      division: 3,
+      email: "chill@flexion.us",
+      role: "Software Engineer",
+      oidc_id: "c8102694-a707-418d-9698-1d33db337b86",
+    },
+    {
+      first_name: "Steve",
+      last_name: "Tekell",
+      division: 3,
+      email: "stekell+sandbox@flexion.us",
+      role: "Software Engineer",
+      oidc_id: "7716138a-dec6-4976-9f31-e30fade3254d",
+    }
   ],
   roles: [
     {

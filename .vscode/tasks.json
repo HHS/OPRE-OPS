@@ -1,0 +1,69 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "docker-run",
+      "label": "docker-run: debug",
+      "dependsOn": ["docker-build"],
+      "dockerRun": {
+        "containerName": "ops-api",
+        "image": "ops-api:debug-latest",
+        "env": {
+          "FLASK_APP": "ops_api.ops",
+          "FLASK_ENV": "development",
+          "FLASK_DEBUG": "true"
+        },
+        "volumes": [
+          {
+            "containerPath": "/home/app",
+            "localPath": "${workspaceFolder}/backend"
+          }
+        ],
+        "ports": [
+          {
+            "containerPort": 8080,
+            "hostPort": 8080
+          }
+        ]
+      },
+      "python": {
+        "args": [
+          "python",
+          "-m",
+          "gunicorn",
+          "-b",
+          ":8080",
+          "ops_api.ops:create_app()"
+        ],
+        "module": "flask"
+      }
+    },
+    {
+      "label": "docker-build",
+      "type": "docker-build",
+      "dockerBuild": {
+        "context": "${workspaceFolder}",
+        "dockerfile": "${workspaceFolder}/backend/Dockerfile.debug",
+        "tag": "ops-api:debug-latest"
+      }
+    },
+    {
+      "label": "Check and Start Docker Container",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "if [[ $(docker inspect --format='{{.State.Status}}' ops-backend) != 'running' ]]; then docker-compose -f ${workspaceFolder}/docker-compose.debug.yml up --build -d; fi"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}

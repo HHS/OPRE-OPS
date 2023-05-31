@@ -47,13 +47,14 @@ class ResearchProject(BaseModel):
     title = Column(String, nullable=False)
     short_title = Column(String)
     description = Column(Text)
-    portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
-    portfolio = relationship("Portfolio", back_populates="research_project")
     url = Column(String)
     origination_date = Column(Date)
-    methodologies = Column(pg.ARRAY(sa.Enum(MethodologyType)), server_default="{}")
-    populations = Column(pg.ARRAY(sa.Enum(PopulationType)), server_default="{}")
-    cans = relationship("CAN", back_populates="managing_research_project")
+    methodologies = Column(
+        pg.ARRAY(sa.Enum(MethodologyType)), server_default="{}", default=[]
+    )
+    populations = Column(
+        pg.ARRAY(sa.Enum(PopulationType)), server_default="{}", default=[]
+    )
     agreements = relationship("Agreement", back_populates="research_project")
     team_leaders = relationship(
         "User",
@@ -69,10 +70,15 @@ class ResearchProject(BaseModel):
             origination_date=self.origination_date.isoformat()
             if self.origination_date
             else None,
-            cans=[can.to_dict() for can in self.cans],
-            methodologies=[methodologies.name for methodologies in self.methodologies],
-            populations=[populations.name for populations in self.populations],
-            team_leaders=[tl.to_dict() for tl in self.team_leaders],
+            methodologies=[methodologies.name for methodologies in self.methodologies]
+            if self.methodologies
+            else [],
+            populations=[populations.name for populations in self.populations]
+            if self.populations
+            else [],
+            team_leaders=[tl.to_dict() for tl in self.team_leaders if tl]
+            if self.team_leaders
+            else [],
         )
 
         return d

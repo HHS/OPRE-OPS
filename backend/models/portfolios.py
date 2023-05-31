@@ -76,11 +76,10 @@ class Portfolio(BaseModel):
         back_populates="portfolios",
         secondary=portfolio_team_leaders,
     )
-    research_project = relationship("ResearchProject", back_populates="portfolio")
 
     @override
-    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
-        d = super().to_dict()  # type: ignore [no-untyped-call]
+    def to_dict(self) -> dict[str, Any]:
+        d = super().to_dict()
 
         d.update(
             {
@@ -88,7 +87,7 @@ class Portfolio(BaseModel):
                 "urls": [url.to_dict() for url in self.urls],
                 "division": self.division.to_dict() if self.division else None,
                 "cans": [can.to_dict() for can in self.cans],
-                "status": self.status.name,
+                "status": self.status.name if self.status else None,
                 "team_leaders": [
                     team_lead.to_dict() for team_lead in self.team_leaders
                 ],

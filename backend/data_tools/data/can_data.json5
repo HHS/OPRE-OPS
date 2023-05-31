@@ -11,7 +11,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 6,
-      managing_research_project_id: null,
     },
     {
       id: 2,
@@ -24,7 +23,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 1,
-      managing_research_project_id: null,
     },
     {
       id: 3,
@@ -37,7 +35,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 8,
-      managing_research_project_id: null,
     },
     {
       id: 4,
@@ -50,7 +47,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 1,
-      managing_research_project_id: 1,
     },
     {
       id: 5,
@@ -63,7 +59,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 2,
-      managing_research_project_id: null,
     },
     {
       id: 6,
@@ -76,7 +71,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 1,
       managing_portfolio_id: 6,
-      managing_research_project_id: null,
     },
     {
       id: 7,
@@ -89,7 +83,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
-      managing_research_project_id: null,
     },
     {
       id: 8,
@@ -102,7 +95,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
-      managing_research_project_id: null,
     },
     {
       id: 9,
@@ -115,7 +107,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
-      managing_research_project_id: null,
     },
     {
       id: 10,
@@ -128,7 +119,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
-      managing_research_project_id: null,
     },
     {
       id: 11,
@@ -141,7 +131,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
-      managing_research_project_id: null,
     },
     {
       id: 12,
@@ -155,7 +144,6 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
-      managing_research_project_id: null,
     },
     {
       id: 13,
@@ -168,7 +156,42 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 3,
-      managing_research_project_id: 1,
+    },
+    {
+      id: 14,
+      number: "G99MV23",
+      description: "MIHOPE Check-in 2023",
+      nickname: "MIHOPE 23",
+      expiration_date: "9/29/2023",
+      appropriation_date: "10/1/2022",
+      appropriation_term: 1,
+      arrangement_type: "OPRE_APPROPRIATION",
+      authorizer_id: 26,
+      managing_portfolio_id: 3,
+    },
+    {
+      id: 15,
+      number: "G99MV24",
+      description: "MIHOPE Check-in 2024",
+      nickname: "MIHOPE 24",
+      expiration_date: "9/29/2024",
+      appropriation_date: "10/1/2023",
+      appropriation_term: 1,
+      arrangement_type: "OPRE_APPROPRIATION",
+      authorizer_id: 26,
+      managing_portfolio_id: 3,
+    },
+    {
+      id: 16,
+      number: "G99MVT3",
+      description: "MOHOPE Long-Term",
+      nickname: "MIHOPE LT",
+      expiration_date: "9/1/2027",
+      appropriation_date: "10/1/2022",
+      appropriation_term: 5,
+      arrangement_type: "OPRE_APPROPRIATION",
+      authorizer_id: 26,
+      managing_portfolio_id: 3,
     },
   ],
   can_funding_sources: [
@@ -227,6 +250,18 @@
     {
       can_id: 13,
       funding_source_id: 26,
+    },
+    {
+      can_id: 14,
+      funding_source_id: 25,
+    },
+    {
+      can_id: 15,
+      funding_source_id: 25,
+    },
+    {
+      can_id: 16,
+      funding_source_id: 25,
     },
   ],
   can_fiscal_year: [
@@ -436,7 +471,69 @@
       expected_funding: 260000.0,
       potential_additional_funding: 1300000.0,
       notes: "",
-    }
+    },
+    {
+      can_id: 14,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 1000000.0,
+      received_funding: 1000000.0,
+      expected_funding: 0.0,
+      potential_additional_funding: 0.0,
+      notes: "",
+    },
+    {
+      can_id: 15,
+      fiscal_year: 2024,
+      total_fiscal_year_funding: 1000000.0,
+      received_funding: 1000000.0,
+      expected_funding: 0.0,
+      potential_additional_funding: 0.0,
+      notes: "",
+    },
+    {
+      can_id: 16,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 1000000.0,
+      received_funding: 1000000.0,
+      expected_funding: 0.0,
+      potential_additional_funding: 0.0,
+      notes: "",
+    },
+    {
+      can_id: 16,
+      fiscal_year: 2024,
+      total_fiscal_year_funding: 1000000.0,
+      received_funding: 0.0,
+      expected_funding: 1000000.0,
+      potential_additional_funding: 0.0,
+      notes: "",
+    },{
+      can_id: 16,
+      fiscal_year: 2025,
+      total_fiscal_year_funding: 1000000.0,
+      received_funding: 0.0,
+      expected_funding: 1000000.0,
+      potential_additional_funding: 0.0,
+      notes: "",
+    },
+    {
+      can_id: 16,
+      fiscal_year: 2026,
+      total_fiscal_year_funding: 500000.0,
+      received_funding: 0.0,
+      expected_funding: 500000.0,
+      potential_additional_funding: 0.0,
+      notes: "",
+    },
+    {
+      can_id: 16,
+      fiscal_year: 2027,
+      total_fiscal_year_funding: 500000.0,
+      received_funding: 0.0,
+      expected_funding: 500000.0,
+      potential_additional_funding: 0.0,
+      notes: "",
+    },
   ],
   shared_portfolio_cans: [
     {
