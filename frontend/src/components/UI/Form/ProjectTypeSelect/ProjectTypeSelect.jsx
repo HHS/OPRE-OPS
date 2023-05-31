@@ -1,15 +1,6 @@
 const PROJECT_TYPES = ["Research"];
 
-export const ProjectTypeSelect = ({
-    name,
-    label = name,
-    onChange,
-    pending = false,
-    messages = [],
-    value,
-    selectedProjectType,
-    onChangeProjectTypeSelection,
-}) => {
+export const ProjectTypeSelect = ({ name, label = name, onChange, pending = false, messages = [], value }) => {
     return (
         <>
             <label className="usa-label" htmlFor={name}>

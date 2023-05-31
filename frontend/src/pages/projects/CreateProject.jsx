@@ -13,20 +13,16 @@ import classnames from "vest/classnames";
 export const CreateProject = () => {
     const [showModal, setShowModal] = useState(false);
     const [modalProps, setModalProps] = useState({});
-    const [selectedProjectType, setSelectedProjectType] = useState("");
     const [project, setProject] = useState({});
     const [isAlertActive, setIsAlertActive] = useState(false);
     const [alertProps, setAlertProps] = useState({});
 
     let res = suite.get();
-    console.log(`res: ${JSON.stringify(res, null, 2)}`);
-
     const navigate = useNavigate();
 
     const [addResearchProject, { isSuccess, isError, error, reset, data: rpData }] = useAddResearchProjectsMutation();
 
     const handleClearingForm = () => {
-        setSelectedProjectType("");
         setProject({});
     };
 
@@ -105,8 +101,10 @@ export const CreateProject = () => {
             <h2 className="font-sans-lg margin-top-7">Select the Project Type</h2>
             <p>Select the type of project you’d like to create.</p>
             <ProjectTypeSelect
-                selectedProjectType={selectedProjectType}
-                onChangeProjectTypeSelection={setSelectedProjectType}
+                name="type"
+                label="Project Type"
+                onChange={handleChange}
+                messages={res.getErrors("type")}
             />
 
             <h2 className="font-sans-lg">Project Details</h2>

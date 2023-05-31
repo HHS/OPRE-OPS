@@ -15,6 +15,9 @@ const suite = create((data = {}, fieldName) => {
     test("description", "This is required information", () => {
         enforce(data.description).isNotBlank();
     });
+    test("type", "This is required information", () => {
+        enforce(data.type).isString().notEquals("0");
+    });
 });
 
 export default suite;
