@@ -231,7 +231,7 @@ export const PreviewTable = ({
                                 <dl className="font-12px">
                                     <dt className="margin-0 text-base-dark">Created By</dt>
                                     <dd id={`created-by-name-${bl?.id}`} className="margin-0">
-                                        {bl?.created_by ? bl.created_by : loggedInUser}
+                                        {loggedInUser}
                                     </dd>
                                     <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                                         <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />
