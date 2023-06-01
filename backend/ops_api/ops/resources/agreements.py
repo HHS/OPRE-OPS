@@ -305,7 +305,7 @@ class AgreementListAPI(BaseListAPI):
                 except KeyError:
                     raise ValueError("Invalid agreement_type")
 
-                current_app.logger.info(AgreementType.name)
+                current_app.logger.info(agreement_type.name)
                 errors = AgreementData.get_schema(agreement_type).validate(request.json)
                 self.check_errors(errors)
 
