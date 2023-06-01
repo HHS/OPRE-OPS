@@ -306,5 +306,7 @@ def validate_status_change(data, bli, validation_error_messages):
             validation_error_messages.append("BLI's Agreement must have a ResearchProject when status is not DRAFT")
         if bli.agreement_id and not bli.agreement.agreement_type:
             validation_error_messages.append("BLI's Agreement must have an AgreementType when status is not DRAFT")
+        if bli.agreement_id and not bli.agreement.description:
+            validation_error_messages.append("BLI's Agreement must have a Description when status is not DRAFT")
 
     return validation_error_messages
