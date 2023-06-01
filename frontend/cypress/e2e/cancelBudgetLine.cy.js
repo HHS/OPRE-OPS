@@ -90,9 +90,12 @@ const completeCreateBudgetLines = () => {
     // edit the first row
     cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
     cy.get("[data-cy='edit-row']").click();
-    cy.get("#bl-description").clear().type(blData[2].descr);
-    cy.get("#bl-amount").clear().type(blData[2].amount);
-    cy.get("#with-hint-textarea").clear().type(blData[2].note);
+    cy.get("#bl-description").clear();
+    cy.get("#bl-description").type(blData[2].descr);
+    cy.get("#bl-amount").clear();
+    cy.get("#bl-amount").type(blData[2].amount);
+    cy.get("#with-hint-textarea").clear();
+    cy.get("#with-hint-textarea").type(blData[2].note);
     cy.get("[data-cy='update-budget-line']").click();
     cy.get("@table-rows").eq(0).should("contain", blData[2].descr);
     cy.get("@tsc").should("contain", "Draft Total").and("contain", "$ 666,666.00");
