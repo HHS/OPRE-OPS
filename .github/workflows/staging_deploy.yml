@@ -10,6 +10,10 @@ on:
   push:
     branches:
       - staging
+    paths-ignore:
+      - '.github/**' # We don't want to trigger a deployment when we update the workflows.
+      - 'docs/**' # We don't want to trigger a deployment when we update the docs.
+      - '*.md'
 
 jobs:
 
