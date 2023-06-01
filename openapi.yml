@@ -1,8 +1,12 @@
-openapi: '3.0.2'
+openapi: "3.0.2"
 info:
   title: OPRE OPS API
   description: OPRE OPS API Specification
-  version: '0.2'
+  version: "0.2"
+  contact:
+    name: OPRE
+    url: https://www.acf.hhs.gov/opre
+    email: opre-ops@flexion.us
 servers:
   - url: https://localhost:8080
     description: Localhost
@@ -11,9 +15,12 @@ servers:
   - url: https://ops-api-staging.app.cloud.gov
     description: Staging Server (Live)
 paths:
-  /api/v1/agreements/:
+  /api/v1/agreements:
     get:
       description: Get Agreements
+      operationId: getAgreements
+      tags:
+        - "Agreements"
       parameters:
         - name: research_project_id
           in: query
@@ -24,17 +31,17 @@ paths:
           in: query
           schema:
             type: string
-          example: 'contract'
+          example: "contract"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Agreements'
+                $ref: "#/components/schemas/Agreements"
               examples:
-                '0':
-                  $ref: '#/components/examples/Agreements'
+                "0":
+                  $ref: "#/components/examples/Agreements"
   /api/v1/agreements/{agreement_id}:
     get:
       description: Get Agreement By Id
@@ -49,15 +56,15 @@ paths:
             minimum: 0
             default: 1
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Agreement'
+                $ref: "#/components/schemas/Agreement"
               examples:
-                '0':
-                  $ref: '#/components/examples/Agreement'
+                "0":
+                  $ref: "#/components/examples/Agreement"
   /api/v1/cans/:
     get:
       description: Get CANs
@@ -85,28 +92,28 @@ paths:
             minimum: 0
             default: 1
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CAN'
+                $ref: "#/components/schemas/CAN"
               examples:
-                '0':
-                  $ref: '#/components/examples/CAN'
+                "0":
+                  $ref: "#/components/examples/CAN"
   /api/v1/portfolios:
     get:
       description: Get Portfolios
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Portfolios"
               examples:
-                '0':
-                  $ref: '#/components/examples/Portfolios'
+                "0":
+                  $ref: "#/components/examples/Portfolios"
   /api/v1/portfolios/{portfolio_id}:
     get:
       description: Get Portfolio by Id
@@ -121,15 +128,15 @@ paths:
             minimum: 0
             default: 1
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Portfolio'
+                $ref: "#/components/schemas/Portfolio"
               examples:
-                '0':
-                  $ref: '#/components/examples/Portfolio'
+                "0":
+                  $ref: "#/components/examples/Portfolio"
   /api/v1/portfolios/{portfolio_id}/calcFunding/:
     get:
       description: Get Total Funding by Id
@@ -147,42 +154,30 @@ paths:
           in: query
           schema:
             type: string
-          example: '2023'
+          example: "2023"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/PlannedFunding"
               examples:
-                '0':
+                "0":
                   value:
                     {
-                      "available_funding": {
-                        "amount": 12000000.0,
-                        "percent": "60.0"
-                      },
-                      "carry_forward_funding": {
-                        "amount": 0.0,
-                        "percent": "Carry Over"
-                      },
-                      "in_execution_funding": {
-                        "amount": 4000000.0,
-                        "percent": "20.0"
-                      },
-                      "obligated_funding": {
-                        "amount": 3000000.0,
-                        "percent": "15.0"
-                      },
-                      "planned_funding": {
-                        "amount": 1000000.0,
-                        "percent": "5.0"
-                      },
-                      "total_funding": {
-                        "amount": 20000000.0,
-                        "percent": "Total"
-                      }
+                      "available_funding":
+                        { "amount": 12000000.0, "percent": "60.0" },
+                      "carry_forward_funding":
+                        { "amount": 0.0, "percent": "Carry Over" },
+                      "in_execution_funding":
+                        { "amount": 4000000.0, "percent": "20.0" },
+                      "obligated_funding":
+                        { "amount": 3000000.0, "percent": "15.0" },
+                      "planned_funding":
+                        { "amount": 1000000.0, "percent": "5.0" },
+                      "total_funding":
+                        { "amount": 20000000.0, "percent": "Total" },
                     }
   /api/v1/portfolios/{portfolio_id}/cans/:
     get:
@@ -192,7 +187,7 @@ paths:
           in: query
           schema:
             type: string
-          example: '2023'
+          example: "2023"
         - in: path
           name: portfolio_id
           description: portfolio Id
@@ -203,17 +198,17 @@ paths:
             minimum: 0
             default: 1
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 type: array
-                properties: { }
+                properties: {}
                 items:
                   type: string
               examples:
-                '0':
+                "0":
                   value:
                     [
                       {
@@ -228,7 +223,7 @@ paths:
                         "managing_research_project_id": null,
                         "nickname": "IAA-Incoming",
                         "number": "G99IA14",
-                        "purpose": ""
+                        "purpose": "",
                       },
                       {
                         "appropriation_date": "01/10/2022",
@@ -242,8 +237,8 @@ paths:
                         "managing_research_project_id": 1,
                         "nickname": "ASPE SRCD-IDDA",
                         "number": "G990136",
-                        "purpose": ""
-                      }
+                        "purpose": "",
+                      },
                     ]
   /api/v1/can-funding-summary/{can_id}:
     get:
@@ -253,7 +248,7 @@ paths:
           in: query
           schema:
             type: string
-          example: '2023'
+          example: "2023"
         - in: path
           name: can_id
           description: CAN Id
@@ -264,7 +259,7 @@ paths:
             minimum: 0
             default: 0
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -319,24 +314,25 @@ paths:
                   expected_funding:
                     type: string
               examples:
-                '0':
+                "0":
                   value:
                     {
                       "available_funding": "8000000.00",
-                      "can": {
-                        "appropriation_date": "01/10/2022",
-                        "appropriation_term": 1,
-                        "arrangement_type_id": 4,
-                        "authorizer_id": 26,
-                        "description": "Child Development Research Fellowship Grant Program",
-                        "expiration_date": "01/09/2023",
-                        "id": 4,
-                        "managing_portfolio_id": 1,
-                        "managing_research_project_id": 1,
-                        "nickname": "ASPE SRCD-IDDA",
-                        "number": "G990136",
-                        "purpose": ""
-                      },
+                      "can":
+                        {
+                          "appropriation_date": "01/10/2022",
+                          "appropriation_term": 1,
+                          "arrangement_type_id": 4,
+                          "authorizer_id": 26,
+                          "description": "Child Development Research Fellowship Grant Program",
+                          "expiration_date": "01/09/2023",
+                          "id": 4,
+                          "managing_portfolio_id": 1,
+                          "managing_research_project_id": 1,
+                          "nickname": "ASPE SRCD-IDDA",
+                          "number": "G990136",
+                          "purpose": "",
+                        },
                       "carry_forward_funding": 0,
                       "carry_forward_label": "Carry-Forward",
                       "received_funding": "6000000.00",
@@ -345,7 +341,7 @@ paths:
                       "in_execution_funding": "2000000.00",
                       "obligated_funding": 0,
                       "planned_funding": 0,
-                      "total_funding": "10000000.00"
+                      "total_funding": "10000000.00",
                     }
   /api/v1/users/:
     get:
@@ -357,14 +353,14 @@ paths:
             type: string
           example: e5711101-bc3e-41e5-a6a2-051874b307ca
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Users"
               examples:
-                '0':
+                "0":
                   value: |
                     {
                       "date_joined": "2023-04-06T20:33:38.292475",
@@ -378,7 +374,7 @@ paths:
                       "role": "Tech Lead",
                       "updated": null
                     }
-                '1':
+                "1":
                   value: |
                     [
                       {
@@ -456,15 +452,15 @@ paths:
             minimum: 0
             default: 0
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: "#/components/schemas/User"
               examples:
-                '0':
-                  $ref: '#/components/examples/User'
+                "0":
+                  $ref: "#/components/examples/User"
   /api/v1/auth/login/:
     post:
       description: API Authentication
@@ -479,13 +475,13 @@ paths:
                 callbackUrl:
                   type: string
             examples:
-              '0':
+              "0":
                 value: >-
                   {"callbackUrl":"http://localhost:3000/?code=fd6a4ef9-686b-4dca-84a9-f2e9c8cb44a7&state=b0c4a75ec9405edc88f13e9de8807d3daa7d2202ed94ca04cb5b77698cdcc782","code":"fd6a4ef9-686b-4dca-84a9-f2e9c8cb44a7"}
       responses:
-        '200':
+        "200":
           description: OK
-        '204':
+        "204":
           description: Created
   /api/v1/research-projects/:
     get:
@@ -495,30 +491,30 @@ paths:
           in: query
           schema:
             type: string
-          example: '2023'
+          example: "2023"
         - name: portfolio_id
           in: query
           schema:
             type: string
-          example: '1'
+          example: "1"
         - name: search
           in: query
           schema:
             type: string
-          example: 'father'
+          example: "father"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResearchProjects'
+                $ref: "#/components/schemas/ResearchProjects"
               examples:
-                '0':
-                  $ref: '#/components/examples/ResearchProjects'
-        '400':
+                "0":
+                  $ref: "#/components/examples/ResearchProjects"
+        "400":
           description: Bad Request
-        '401':
+        "401":
           description: Unauthorized
 
     post:
@@ -529,16 +525,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ResearchProjectRequest'
+              $ref: "#/components/schemas/ResearchProjectRequest"
 
       responses:
-        '201':
+        "201":
           description: Created
-        '400':
+        "400":
           description: Bad Request
-        '401':
+        "401":
           description: Unauthorized
-        '500':
+        "500":
           description: Internal Server Error
 
   /api/v1/research-projects/{id}:
@@ -555,20 +551,20 @@ paths:
             minimum: 1
             default: 1
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResearchProject'
-        '400':
+                $ref: "#/components/schemas/ResearchProject"
+        "400":
           description: Bad Request
-        '401':
+        "401":
           description: Unauthorized
 
   /api/v1/research-project-funding-summary/:
     get:
-      description: ''
+      description: ""
       parameters:
         - name: portfolioId
           in: query
@@ -581,14 +577,14 @@ paths:
             type: integer
           example: 2023
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResearchProjectFundingSummary'
+                $ref: "#/components/schemas/ResearchProjectFundingSummary"
               example: { total_funding: 1000000.01 }
-        '400':
+        "400":
           description: Bad Request
           content:
             application/json:
@@ -599,17 +595,17 @@ paths:
                     type: array
                     items:
                       type: string
-                      example: 'Must be greater than or equal to 1.'
+                      example: "Must be greater than or equal to 1."
                   fiscal_year:
                     type: array
                     items:
                       type: string
-                      example: 'Must be greater than or equal to 1900.'
+                      example: "Must be greater than or equal to 1900."
   /api/v1/procurement-shops/:
     get:
       description: Get all Procurement Shops
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -625,7 +621,7 @@ paths:
                   fee:
                     type: number
               examples:
-                '0':
+                "0":
                   value: |
                     [
                       {
@@ -667,7 +663,7 @@ paths:
             minimum: 0
             default: 0
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -683,7 +679,7 @@ paths:
                   fee:
                     type: number
               examples:
-                '0':
+                "0":
                   value: |
                     {
                       "id": 0,
@@ -691,7 +687,7 @@ paths:
                       "abbr": "PSC",
                       "fee": 0
                     }
-                '1':
+                "1":
                   value: |
                     {
                       "id": 1,
@@ -699,7 +695,7 @@ paths:
                       "abbr": "GCS",
                       "fee": 0
                     }
-                '2':
+                "2":
                   value: |
                     {
                       "id": 2,
@@ -707,7 +703,7 @@ paths:
                       "abbr": "NIH",
                       "fee": 0.5
                     }
-                '3':
+                "3":
                   value: |
                     {
                       "id": 3,
@@ -734,17 +730,17 @@ paths:
           in: query
           schema:
             type: string
-          example: 'DRAFT'
+          example: "DRAFT"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BudgetLineItems'
+                $ref: "#/components/schemas/BudgetLineItems"
               examples:
-                '0':
-                  $ref: '#/components/examples/BudgetLineItems'
+                "0":
+                  $ref: "#/components/examples/BudgetLineItems"
     post:
       summary: Create a new Budget Line Item
 
@@ -753,14 +749,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BudgetLineItemRequest'
+              $ref: "#/components/schemas/BudgetLineItemRequest"
 
       responses:
-        '201':
+        "201":
           description: Created
-        '400':
+        "400":
           description: Bad Request
-        '500':
+        "500":
           description: Internal Server Error
 
   /api/v1/budget-line-items/{id}:
@@ -777,12 +773,12 @@ paths:
             minimum: 1
             default: 1
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BudgetLineItem'
+                $ref: "#/components/schemas/BudgetLineItem"
 
     put:
       summary: Update a new Budget Line Item (Over-write)
@@ -792,16 +788,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BudgetLineItemRequest'
+              $ref: "#/components/schemas/BudgetLineItemRequest"
 
       responses:
-        '200':
+        "200":
           description: OK
-        '400':
+        "400":
           description: Bad Request
-        '401':
+        "401":
           description: Unauthorized
-        '500':
+        "500":
           description: Internal Server Error
 
     patch:
@@ -812,16 +808,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BudgetLineItemRequest'
+              $ref: "#/components/schemas/BudgetLineItemRequest"
 
       responses:
-        '200':
+        "200":
           description: OK
-        '400':
+        "400":
           description: Bad Request
-        '401':
+        "401":
           description: Unauthorized
-        '500':
+        "500":
           description: Internal Server Error
 
 components:
@@ -831,7 +827,6 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
-
     CAN:
       description: Common Accounting Number (CAN) Object
       type: object
@@ -850,14 +845,14 @@ components:
           type: integer
         nickname:
           type: string
-        appropriation_date: { }
+        appropriation_date: {}
         description:
           type: string
         id:
           type: integer
         expiration_date:
           type: string
-        managing_research_project_id: { }
+        managing_research_project_id: {}
     Portfolio:
       description: Portfolio Object
     Portfolios:
@@ -888,7 +883,7 @@ components:
           type: integer
         first_name:
           type: string
-        updated: { }
+        updated: {}
         email:
           type: string
     Users:
@@ -941,51 +936,54 @@ components:
           example: 10
         created_on:
           type: string
-          example: '2023-04-06T20:33:38.292475'
+          example: "2023-04-06T20:33:38.292475"
         updated_on:
           type: string
-          example: '2023-04-06T20:33:38.292475'
+          example: "2023-04-06T20:33:38.292475"
         description:
           type: string
         methodologies:
           type: array
           items:
             type: string
-            example: [ 'SURVEY', 'FIELD_RESEARCH', 'PARTICIPANT_OBSERVATION' ]
+            example: ["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"]
         populations:
           type: array
           items:
             type: string
-            example: [ 'POPULATION_1', 'POPULATION_2' ]
+            example: ["POPULATION_1", "POPULATION_2"]
         team_leaders:
           type: array
           items:
             type: array
-            example: [ {
-              "created_by": null,
-              "created_on": "2023-04-17T14:43:15.216759",
-              "date_joined": "2023-04-17T14:43:15.216759",
-              "division": 1,
-              "email": "chris.fortunato@example.com",
-              "first_name": "Chris",
-              "full_name": "Chris Fortunato",
-              "id": 1,
-              "last_name": "Fortunato",
-              "oidc_id": "00000000-0000-1111-a111-000000000001",
-              "updated": null,
-              "updated_on": "2023-04-17T14:43:15.216759"
-            } ]
+            example:
+              [
+                {
+                  "created_by": null,
+                  "created_on": "2023-04-17T14:43:15.216759",
+                  "date_joined": "2023-04-17T14:43:15.216759",
+                  "division": 1,
+                  "email": "chris.fortunato@example.com",
+                  "first_name": "Chris",
+                  "full_name": "Chris Fortunato",
+                  "id": 1,
+                  "last_name": "Fortunato",
+                  "oidc_id": "00000000-0000-1111-a111-000000000001",
+                  "updated": null,
+                  "updated_on": "2023-04-17T14:43:15.216759",
+                },
+              ]
         origination_date:
           type: string
-          example: '2022-01-01'
+          example: "2022-01-01"
         short_title:
           type: string
         title:
           type: string
-          example: 'African American Child and Family Research Center'
+          example: "African American Child and Family Research Center"
         url:
           type: string
-          example: 'https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center'
+          example: "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center"
     ResearchProjects:
       description: OPS List of Research Projects
       type: array
@@ -1067,10 +1065,10 @@ components:
           type: string
         created_on:
           type: string
-          example: '2023-04-06T19:02:38.409254'
+          example: "2023-04-06T19:02:38.409254"
         updated_on:
           type: string
-          example: '2023-04-06T19:02:38.409254'
+          example: "2023-04-06T19:02:38.409254"
         amount:
           type: number
           example: 1000000.0
@@ -1081,7 +1079,7 @@ components:
           type: string
         date_needed:
           type: string
-          example: '2023-05-06'
+          example: "2023-05-06"
         line_description:
           type: string
         psc_fee_amount:
@@ -1089,7 +1087,7 @@ components:
           example: 100.2
         status:
           type: string
-          example: 'PLANNED'
+          example: "PLANNED"
 
     BudgetLineItemRequest:
       type: object
@@ -1107,7 +1105,7 @@ components:
           type: string
         date_needed:
           type: string
-          example: '2023-05-06'
+          example: "2023-05-06"
         line_description:
           type: string
         psc_fee_amount:
@@ -1115,7 +1113,7 @@ components:
           example: 100.2
         status:
           type: string
-          example: 'PLANNED'
+          example: "PLANNED"
       required:
         - line_description
         - agreement_id
@@ -1129,106 +1127,108 @@ components:
       properties:
         title:
           type: string
-          example: 'Research Project #1'
+          example: "Research Project #1"
         short_title:
           type: string
-          example: 'RP#1'
+          example: "RP#1"
         description:
           type: string
-          example: 'Description #1'
+          example: "Description #1"
         url:
           type: string
-          example: 'https://example.com'
+          example: "https://example.com"
         origination_date:
           type: string
-          example: '2023-05-06'
+          example: "2023-05-06"
         methodologies:
           type: array
           items:
             type: string
-            example: [ 'SURVEY', 'FIELD_RESEARCH', 'PARTICIPANT_OBSERVATION' ]
+            example: ["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"]
         populations:
           type: array
           items:
             type: string
-            example: [ 'POPULATION_1', 'POPULATION_2' ]
+            example: ["POPULATION_1", "POPULATION_2"]
         team_leaders:
           type: array
           items:
             type: array
-            example: [ { 'id': 1 }, { 'id': 2 }, { 'id': 3 } ]
+            example: [{ "id": 1 }, { "id": 2 }, { "id": 3 }]
 
       required:
         - title
 
-
   examples:
-
     CAN:
       value:
         {
-          "cans": [
+          "cans":
+            [
               {
-                  "appropriation_date": "01/10/2023",
-                  "appropriation_term": 1,
-                  "arrangement_type_id": 3,
-                  "authorizer_id": 26,
-                  "description": "Incoming Interagency Agreements",
-                  "expiration_date": "01/09/2024",
-                  "id": 2,
-                  "managing_portfolio_id": 1,
-                  "managing_research_project_id": null,
-                  "nickname": "IAA-Incoming",
-                  "number": "G99IA14",
-                  "purpose": ""
+                "appropriation_date": "01/10/2023",
+                "appropriation_term": 1,
+                "arrangement_type_id": 3,
+                "authorizer_id": 26,
+                "description": "Incoming Interagency Agreements",
+                "expiration_date": "01/09/2024",
+                "id": 2,
+                "managing_portfolio_id": 1,
+                "managing_research_project_id": null,
+                "nickname": "IAA-Incoming",
+                "number": "G99IA14",
+                "purpose": "",
               },
               {
-                  "appropriation_date": "01/10/2022",
-                  "appropriation_term": 1,
-                  "arrangement_type_id": 4,
-                  "authorizer_id": 26,
-                  "description": "Child Development Research Fellowship Grant Program",
-                  "expiration_date": "01/09/2023",
-                  "id": 4,
-                  "managing_portfolio_id": 1,
-                  "managing_research_project_id": 1,
-                  "nickname": "ASPE SRCD-IDDA",
-                  "number": "G990136",
-                  "purpose": ""
-              }
-          ],
+                "appropriation_date": "01/10/2022",
+                "appropriation_term": 1,
+                "arrangement_type_id": 4,
+                "authorizer_id": 26,
+                "description": "Child Development Research Fellowship Grant Program",
+                "expiration_date": "01/09/2023",
+                "id": 4,
+                "managing_portfolio_id": 1,
+                "managing_research_project_id": 1,
+                "nickname": "ASPE SRCD-IDDA",
+                "number": "G990136",
+                "purpose": "",
+              },
+            ],
           "description": "The promotion of childrens safety, ... to the attention of child welfare.",
-          "division": {
+          "division":
+            {
               "abbreviation": "DFCD",
               "id": 1,
-              "name": "Division of Child and Family Development"
-          },
+              "name": "Division of Child and Family Development",
+            },
           "division_id": 1,
           "id": 1,
           "name": "Child Welfare Research",
           "status": "Active",
           "status_id": 1,
-          "team_leaders": [
+          "team_leaders":
+            [
               {
-                  "date_joined": "2023-04-06T20:33:38.292475",
-                  "division": 1,
-                  "email": "emily.ball@example.com",
-                  "first_name": "Emily",
-                  "full_name": "(no name) (no name)",
-                  "id": 1,
-                  "last_name": "Ball",
-                  "oidc_id": "00000000-0000-1111-a111-000000000001",
-                  "role": "COR",
-                  "updated": null
-              }
-          ],
-          "urls": [
+                "date_joined": "2023-04-06T20:33:38.292475",
+                "division": 1,
+                "email": "emily.ball@example.com",
+                "first_name": "Emily",
+                "full_name": "(no name) (no name)",
+                "id": 1,
+                "last_name": "Ball",
+                "oidc_id": "00000000-0000-1111-a111-000000000001",
+                "role": "COR",
+                "updated": null,
+              },
+            ],
+          "urls":
+            [
               {
-                  "id": 1,
-                  "portfolio_id": 1,
-                  "url": "https://www.acf.hhs.gov/opre/topic/overview/abuse-neglect-adoption-foster-care"
-              }
-          ]
+                "id": 1,
+                "portfolio_id": 1,
+                "url": "https://www.acf.hhs.gov/opre/topic/overview/abuse-neglect-adoption-foster-care",
+              },
+            ],
         }
     User:
       value: |
@@ -1289,75 +1289,75 @@ components:
         ]
     AGREEMENTS:
       value: |
-       [
-          {
-              "id": 1,
-              "created_by": null,
-              "created_on": "Fri, 17 Mar 2023 15:01:09 GMT",
-              "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
-              "name": "Using Innovative Data to Explore Racial and Ethnic Disparities in Human Services",
-              "research_project_id": 1,
-              "description":
-                  "This will be a contract to continue planned analyses to explore racial and ethnic disparities in Human Services.",
-              "agreement_type": "CONTRACT",
-              "project_officer": "Ivelisse Martinez-Beck",
-              "period_of_performance_start": "2021-01-01",
-              "period_of_performance_end": "2021-12-31",
-              procurement_shop: {
-                  id: 2,
-                  name: "Government Contracting Services",
-                  fee: 0,
-              },
-              budget_line_items: [
-                  {
-                      id: 123456,
-                      line_description: "LI 1",
-                      comments: "",
-                      can_id: 5,
-                      can_number: "G994426",
-                      agreement_id: 1,
-                      amount: 1000000.0,
-                      status: "EXECUTING",
-                      date_needed: "2111-1-11",
-                      psc_fee_amount: 0,
-                      created_by: "Carolyn Hsu",
-                      created_on: "2023-4-5",
-                      updated_on: "2023-4-15",
-                  },
-                  {
-                      id: 123457,
-                      line_description: "LI 2",
-                      comments: "",
-                      can_id: 5,
-                      can_number: "G994426",
-                      agreement_id: 1,
-                      amount: 1000000.0,
-                      status: "OBLIGATED",
-                      date_needed: "2222-2-22",
-                      psc_fee_amount: 0,
-                      created_by: "Carolyn Hsu",
-                      created_on: "2023-4-1",
-                      updated_on: "2023-4-15",
-                  },
-                  {
-                      id: 123458,
-                      line_description: "LI 3",
-                      comments: "",
-                      can_id: 5,
-                      can_number: "G994426",
-                      agreement_id: 1,
-                      amount: 1000000.0,
-                      status: "PLANNED",
-                      date_needed: "2333-3-13",
-                      psc_fee_amount: 0,
-                      created_by: "Carolyn Hsu",
-                      created_on: "2023-3-11",
-                      updated_on: "2023-4-15",
-                  },
-                ],
-          },
+        [
+           {
+               "id": 1,
+               "created_by": null,
+               "created_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+               "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+               "name": "Using Innovative Data to Explore Racial and Ethnic Disparities in Human Services",
+               "research_project_id": 1,
+               "description":
+                   "This will be a contract to continue planned analyses to explore racial and ethnic disparities in Human Services.",
+               "agreement_type": "CONTRACT",
+               "project_officer": "Ivelisse Martinez-Beck",
+               "period_of_performance_start": "2021-01-01",
+               "period_of_performance_end": "2021-12-31",
+               procurement_shop: {
+                   id: 2,
+                   name: "Government Contracting Services",
+                   fee: 0,
+               },
+               budget_line_items: [
+                   {
+                       id: 123456,
+                       line_description: "LI 1",
+                       comments: "",
+                       can_id: 5,
+                       can_number: "G994426",
+                       agreement_id: 1,
+                       amount: 1000000.0,
+                       status: "EXECUTING",
+                       date_needed: "2111-1-11",
+                       psc_fee_amount: 0,
+                       created_by: "Carolyn Hsu",
+                       created_on: "2023-4-5",
+                       updated_on: "2023-4-15",
+                   },
+                   {
+                       id: 123457,
+                       line_description: "LI 2",
+                       comments: "",
+                       can_id: 5,
+                       can_number: "G994426",
+                       agreement_id: 1,
+                       amount: 1000000.0,
+                       status: "OBLIGATED",
+                       date_needed: "2222-2-22",
+                       psc_fee_amount: 0,
+                       created_by: "Carolyn Hsu",
+                       created_on: "2023-4-1",
+                       updated_on: "2023-4-15",
+                   },
+                   {
+                       id: 123458,
+                       line_description: "LI 3",
+                       comments: "",
+                       can_id: 5,
+                       can_number: "G994426",
+                       agreement_id: 1,
+                       amount: 1000000.0,
+                       status: "PLANNED",
+                       date_needed: "2333-3-13",
+                       psc_fee_amount: 0,
+                       created_by: "Carolyn Hsu",
+                       created_on: "2023-3-11",
+                       updated_on: "2023-4-15",
+                   },
+                 ],
+           },
 
-        ];
+         ];
     Agreements:
       value: |
         [{
@@ -1495,9 +1495,5 @@ components:
           }
         ]
 
-
-
-
-
 security:
-  - bearerAuth: [ ]  # pragma: allowlist secret
+  - bearerAuth: [] # pragma: allowlist secret

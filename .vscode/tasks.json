@@ -64,6 +64,24 @@
         "kind": "build",
         "isDefault": true
       }
-    }
+    },
+    {
+      "group": "test",
+      "label": "Validate ARM template",
+      "type": "shell",
+      "command": "sh < validate-arm.azcli",
+      "options": {
+        "cwd": "${workspaceFolder}/infra/scripts"
+      }
+    },
+    {
+      "group": "build",
+      "label": "Deploy ARM template to DEV",
+      "type": "shell",
+      "command": "sh < deploy-dev.azcli",
+      "options": {
+          "cwd": "${workspaceFolder}/infra/scripts"
+      }
+  }
   ]
 }

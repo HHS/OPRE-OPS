@@ -1,0 +1,22 @@
+{
+  "name": "Azure Quickstart Templates",
+  "image": "mcr.microsoft.com/vscode/devcontainers/base:0-bullseye",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.azurecli",
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "ms-azuretools.vscode-bicep",
+        "ms-vscode.azure-account",
+        "msazurermtools.azurerm-vscode-tools",
+        "bencoleman.armview"
+      ],
+      "settings": {}
+    }
+  },
+  "remoteUser": "vscode",
+  "features": {
+    "azure-cli": "latest",
+    "powershell": "latest"
+  }
+}

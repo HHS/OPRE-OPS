@@ -1,0 +1,2 @@
+# az group create --name opre-api-acr --location eastus
+az deployment group validate --resource-group opre-api-acr --template-file ../azure/azure-resources.json --parameters @../azure/resource-parameters.dev.json
