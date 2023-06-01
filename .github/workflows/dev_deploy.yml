@@ -5,9 +5,13 @@ on:
     workflows: ["Continuous Integration"]
     types:
       - completed
-    branches: [main, TechDebt-dev_deploy_main_push] # extra branch for testing only during dev.
+    branches: [main] # extra branch for testing only during dev.
   push:
     branches: [development]
+    paths-ignore:
+      - '.github/**' # We don't want to trigger a deployment when we update the workflows.
+      - 'docs/**' # We don't want to trigger a deployment when we update the docs.
+      - '*.md'
 
 jobs:
 
