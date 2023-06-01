@@ -1,6 +1,5 @@
-from dataclasses import dataclass
-from dataclasses import fields as dc_fields
-from typing import Optional, ClassVar, TypeVar, Generic
+from dataclasses import dataclass, fields as dc_fields
+from typing import Optional, ClassVar
 
 import desert
 from flask import Response, current_app, jsonify, request
@@ -29,11 +28,10 @@ class TeamMembers:
     full_name: Optional[str] = None
     email: Optional[str] = None
 
-AD = TypeVar("AD", bound="AgreementData")
 
 @dataclass
-class AgreementData(Generic[AD]):
-    _subclasses: ClassVar[dict[Optional[AgreementType], AD]] = {}
+class AgreementData:
+    _subclasses: ClassVar[dict[Optional[AgreementType], type["AgreementData"]]] = {}
     _schemas: ClassVar[dict[Optional[AgreementType], Schema]] = {}
     name: str
     number: str
@@ -64,7 +62,7 @@ class AgreementData(Generic[AD]):
             return cls._schemas[agreement_type]
 
     @classmethod
-    def get_class(cls, agreement_type: Optional[AgreementType] = None) -> AD:
+    def get_class(cls, agreement_type: Optional[AgreementType] = None) -> type["AgreementData"]:
         try:
             return cls._subclasses[agreement_type]
         except KeyError:
@@ -91,6 +89,16 @@ class GrantAgreementData(AgreementData, agreement_type=AgreementType.GRANT):
 
 @dataclass
 class DirectAgreementData(AgreementData, agreement_type=AgreementType.DIRECT_ALLOCATION):
+    pass
+
+
+@dataclass
+class IaaAgreementData(AgreementData, agreement_type=AgreementType.IAA):
+    pass
+
+
+@dataclass
+class IaaAaAgreementData(AgreementData, agreement_type=AgreementType.IAA_AA):
     pass
 
 
@@ -246,7 +254,7 @@ class AgreementListAPI(BaseListAPI):
 
     @staticmethod
     def _get_query(args):
-        polymorphic_agreement = with_polymorphic(Agreement, [ContractAgreement, GrantAgreement, DirectAgreement])
+        polymorphic_agreement = Agreement.get_polymorphic()
         stmt = select(polymorphic_agreement).order_by(Agreement.id)
         query_helper = QueryHelper(stmt)
 
@@ -260,22 +268,8 @@ class AgreementListAPI(BaseListAPI):
             case {**filter_args}:
                 pass
 
-        if filter_args:
-            # This part is necessary because otherwise the system gets confused. Need to
-            # know what table to use to look up parameters from for filtering.
-            contract_keys = {field.name for field in dc_fields(ContractAgreementData)}
-            grant_keys = {field.name for field in dc_fields(GrantAgreementData)}
-            direct_keys = {field.name for field in dc_fields(DirectAgreementData)}
-            for key, value in filter_args.items():
-                if key in contract_keys:
-                    agreement_model = ContractAgreement
-                elif key in grant_keys:
-                    agreement_model = GrantAgreement
-                elif key in direct_keys:
-                    agreement_model = DirectAgreement
-                else:
-                    agreement_model = Agreement
-                query_helper.add_column_equals(getattr(agreement_model, key), value)
+        for key, value in filter_args.items():
+            query_helper.add_column_equals(Agreement.get_class_field(key), value)
 
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")
