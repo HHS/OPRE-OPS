@@ -14,6 +14,7 @@ describe("ProjectSelect", () => {
         render(
             <ProjectSelect
                 researchProjects={researchProjects}
+                selectedResearchProject={researchProjects[0]}
                 setSelectedProject={mockSetSelectedProject}
                 clearFunction={mockClearFunction}
             />
@@ -25,6 +26,7 @@ describe("ProjectSelect", () => {
         render(
             <ProjectSelect
                 researchProjects={researchProjects}
+                selectedResearchProject={researchProjects[0]}
                 setSelectedProject={mockSetSelectedProject}
                 clearFunction={mockClearFunction}
             />
@@ -42,6 +44,7 @@ describe("ProjectSelect", () => {
         render(
             <ProjectSelect
                 researchProjects={researchProjects}
+                selectedResearchProject={researchProjects[0]}
                 setSelectedProject={setSelectedProject}
                 clearFunction={mockClearFunction}
             />
@@ -55,6 +58,7 @@ describe("ProjectSelect", () => {
         render(
             <ProjectSelect
                 researchProjects={researchProjects}
+                selectedResearchProject={researchProjects[0]}
                 setSelectedProject={mockSetSelectedProject}
                 clearFunction={mockClearFunction}
             />
@@ -68,6 +72,7 @@ describe("ProjectSelect", () => {
         render(
             <ProjectSelect
                 researchProjects={researchProjects}
+                selectedResearchProject={researchProjects[0]}
                 setSelectedProject={mockSetSelectedProject}
                 clearFunction={mockClearFunction}
             />
