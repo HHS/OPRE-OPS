@@ -1,4 +1,4 @@
-from dataclasses import dataclass, fields as dc_fields
+from dataclasses import dataclass
 from typing import Optional, ClassVar
 
 import desert
@@ -8,7 +8,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_req
 from marshmallow import ValidationError, fields, Schema
 from models import ContractType, OpsEventType, User
 from models.base import BaseModel
-from models.cans import Agreement, AgreementReason, AgreementType, ContractAgreement, GrantAgreement, DirectAgreement, ProductServiceCode
+from models.cans import Agreement, AgreementReason, AgreementType, ContractAgreement, ProductServiceCode
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
@@ -16,7 +16,6 @@ from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 from sqlalchemy.future import select
-from sqlalchemy.orm import with_polymorphic
 from typing_extensions import Any, override
 
 ENDPOINT_STRING = "/agreements"
@@ -67,7 +66,6 @@ class AgreementData:
             return cls._subclasses[agreement_type]
         except KeyError:
             return AgreementData
-
 
 
 @dataclass
@@ -168,7 +166,7 @@ class AgreementItemAPI(BaseItemAPI):
                     if req_type != old_agreement.agreement_type.name:
                         raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
                 except (KeyError, ValueError) as e:
-                        raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
+                    raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
                 schema = AgreementData.get_schema(old_agreement.agreement_type)
 
                 OPSMethodView._validate_request(
@@ -217,7 +215,7 @@ class AgreementItemAPI(BaseItemAPI):
                     if req_type != old_agreement.agreement_type.name:
                         raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
                 except (KeyError, ValueError) as e:
-                        raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
+                    raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
                 schema = AgreementData.get_schema(old_agreement.agreement_type)
 
                 OPSMethodView._validate_request(
