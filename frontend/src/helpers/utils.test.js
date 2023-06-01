@@ -16,8 +16,8 @@ test("percent is calculated correctly", async () => {
 });
 
 test("codes are converted for display correctly", async () => {
-    expect(convertCodeForDisplay("__foo__", "test_code")).toEqual("test_code");
-    expect(convertCodeForDisplay("AgreementType", "__foo__")).toEqual("__foo__");
-    expect(convertCodeForDisplay("AgreementType", "GRANT")).toEqual("Grant");
-    expect(convertCodeForDisplay("AgreementReason", "NEW_REQ")).toEqual("New Req");
+    expect(() => convertCodeForDisplay("__foo__", "test_code")).toThrowError("Invalid list name");
+    expect(convertCodeForDisplay("agreementType", "__foo__")).toEqual("__foo__");
+    expect(convertCodeForDisplay("agreementType", "GRANT")).toEqual("Grant");
+    expect(convertCodeForDisplay("agreementReason", "NEW_REQ")).toEqual("New Requirement");
 });
