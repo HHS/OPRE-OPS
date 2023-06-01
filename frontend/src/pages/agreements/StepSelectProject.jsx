@@ -1,16 +1,18 @@
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ProjectSelect from "../../components/UI/Form/ProjectSelect";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-import { setSelectedProject } from "./createAgreementSlice";
 import Modal from "../../components/UI/Modal/Modal";
 import { useGetResearchProjectsQuery } from "../../api/opsAPI";
+import { useCreateAgreement, useSetState, useUpdateAgreement } from "./CreateAgreementContext";
 
-export const StepSelectProject = ({ goToNext, wizardSteps }) => {
-    const dispatch = useDispatch();
+export const StepSelectProject = ({ goToNext }) => {
     const navigate = useNavigate();
-    const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
+    const { wizardSteps, selected_project: selectedResearchProject } = useCreateAgreement();
+    // setters
+    const setSelectedProject = useSetState("selected_project");
+    const setAgreementProjectId = useUpdateAgreement("research_project_id");
+
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
@@ -34,7 +36,6 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
             actionButtonText: "Cancel",
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                dispatch(setSelectedProject({}));
                 setModalProps({});
                 navigate("/");
             },
@@ -64,9 +65,18 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
                 Select a project the agreement should be associated with. If you need to create a new project, click Add
                 New Project.
             </p>
-            <ProjectSelect researchProjects={projects} selectedResearchProject={selectedResearchProject} />
+            <ProjectSelect
+                researchProjects={projects}
+                selectedResearchProject={selectedResearchProject}
+                setSelectedProject={setSelectedProject}
+                setAgreementProjectId={setAgreementProjectId}
+            />
             <div className="grid-row flex-justify-end margin-top-8">
-                <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
+                <button
+                    className="usa-button usa-button--unstyled margin-right-2"
+                    data-cy="cancel-button"
+                    onClick={handleCancel}
+                >
                     Cancel
                 </button>
                 <button
@@ -94,3 +104,5 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
         </>
     );
 };
+
+export default StepSelectProject;

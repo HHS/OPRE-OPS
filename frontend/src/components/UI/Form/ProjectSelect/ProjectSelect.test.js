@@ -1,78 +1,81 @@
-import { render as rtlRender, fireEvent, screen, within } from "@testing-library/react";
-import { createStore } from "redux";
-import { Provider } from "react-redux";
+import { render, fireEvent, screen } from "@testing-library/react";
 import ProjectSelect from "./ProjectSelect";
 
-function render(ui, store) {
-    return rtlRender(<Provider store={store}>{ui}</Provider>);
-}
-
-describe("ProjectSelect component", () => {
-    const mockResearchProjects = [
+describe("ProjectSelect", () => {
+    const researchProjects = [
         { id: 1, title: "Project 1", description: "Description 1" },
         { id: 2, title: "Project 2", description: "Description 2" },
+        { id: 3, title: "Project 3", description: "Description 3" },
     ];
-
-    const mockPropsSetSelectedProject = jest.fn();
+    const mockSetSelectedProject = jest.fn();
     const mockClearFunction = jest.fn();
 
-    const store = createStore(() => ({}));
-
-    test("renders ProjectSelect component", () => {
+    it("renders the component with the correct label", () => {
         render(
             <ProjectSelect
-                researchProjects={mockResearchProjects}
-                propsSetSelectedProject={mockPropsSetSelectedProject}
+                researchProjects={researchProjects}
+                setSelectedProject={mockSetSelectedProject}
                 clearFunction={mockClearFunction}
-            />,
-            store
+            />
         );
         expect(screen.getByRole("combobox")).toBeInTheDocument();
     });
 
-    test("renders all project options", () => {
+    it("renders the component with the correct options", () => {
         render(
             <ProjectSelect
-                researchProjects={mockResearchProjects}
-                propsSetSelectedProject={mockPropsSetSelectedProject}
+                researchProjects={researchProjects}
+                setSelectedProject={mockSetSelectedProject}
                 clearFunction={mockClearFunction}
-            />,
-            store
+            />
         );
-        const selectElement = screen.getByTestId("project-select");
-        mockResearchProjects.forEach((project) => {
-            expect(within(selectElement).getByText(project.title)).toBeInTheDocument();
-        });
+        const select = screen.getByTestId("project-select");
+        expect(select).toBeInTheDocument();
+        expect(select).toHaveValue("1");
+        expect(select).toHaveTextContent("Project 1");
+        expect(select).toHaveTextContent("Project 2");
+        expect(select).toHaveTextContent("Project 3");
     });
 
-    test("calls 'propsSetSelectedProject' when a project is selected", () => {
+    it("updates the selected project when an option is selected", () => {
+        const setSelectedProject = jest.fn();
         render(
             <ProjectSelect
-                researchProjects={mockResearchProjects}
-                propsSetSelectedProject={mockPropsSetSelectedProject}
+                researchProjects={researchProjects}
+                setSelectedProject={setSelectedProject}
                 clearFunction={mockClearFunction}
-            />,
-            store
+            />
         );
-        const selectElement = screen.getByTestId("project-select");
-        fireEvent.change(selectElement, { target: { value: "2" } });
-
-        expect(mockPropsSetSelectedProject).toHaveBeenCalledTimes(1);
-        expect(mockPropsSetSelectedProject).toHaveBeenCalledWith(mockResearchProjects[1]);
+        const select = screen.getByTestId("project-select");
+        fireEvent.change(select, { target: { value: "2" } });
+        expect(setSelectedProject).toHaveBeenCalledWith(researchProjects[1]);
     });
 
-    test("calls 'clearFunction' when clear button is clicked", () => {
+    it("updates the input value when the user types in the input field", () => {
         render(
             <ProjectSelect
-                researchProjects={mockResearchProjects}
-                propsSetSelectedProject={mockPropsSetSelectedProject}
+                researchProjects={researchProjects}
+                setSelectedProject={mockSetSelectedProject}
                 clearFunction={mockClearFunction}
-            />,
-            store
+            />
         );
+        const input = screen.getByRole("combobox");
+        fireEvent.change(input, { target: { value: "Project 2" } });
+        expect(input).toHaveValue("Project 2");
+    });
+
+    it("clears the input value when the clear button is clicked", () => {
+        render(
+            <ProjectSelect
+                researchProjects={researchProjects}
+                setSelectedProject={mockSetSelectedProject}
+                clearFunction={mockClearFunction}
+            />
+        );
+        const input = screen.getByTestId("project-input");
         const clearButton = screen.getByTestId("clear-input-button");
+        fireEvent.change(input, { target: { value: "Project 2" } });
         fireEvent.click(clearButton);
-
-        expect(mockClearFunction).toHaveBeenCalledTimes(1);
+        expect(mockClearFunction).toHaveBeenCalled();
     });
 });

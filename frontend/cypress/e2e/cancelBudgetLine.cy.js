@@ -131,5 +131,3 @@ it("should handle cancelling out of workflow", () => {
     // check that we are back on the create budget lines page
     cy.get(".usa-step-indicator__segment--current").should("contain", "Project & Agreement");
 });
-
-// TODO: test duplicate existing budget line

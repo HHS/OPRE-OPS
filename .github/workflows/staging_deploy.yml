@@ -1,6 +1,12 @@
-name: Deployment
+name: Deployment STAGING
 
 on:
+  # Deploy to STAGING nightly, since DEV is updated on each PUSH. This will ensure STAGING remains close to DEV
+  # but doesn't conflict with daily testing.
+  schedule:
+    # cron format: 'minute hour dayofmonth month dayofweek'
+    # this will run at 8AM UTC every day (3am EST / 4am EDT)
+    - cron: '0 8 * * *'
   push:
     branches:
       - staging
