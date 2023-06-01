@@ -302,7 +302,9 @@ def validate_status_change(data, bli, validation_error_messages):
     if data.get("status") != BudgetLineItemStatus.DRAFT:  # we are changing/promoting the status
         if not bli.agreement_id and not data.get("agreement_id"):
             validation_error_messages.append("BLI must have an Agreement when status is not DRAFT")
-        elif not bli.agreement.research_project_id:
+        if bli.agreement_id and not bli.agreement.research_project_id:
             validation_error_messages.append("BLI's Agreement must have a ResearchProject when status is not DRAFT")
+        if bli.agreement_id and not bli.agreement.agreement_type:
+            validation_error_messages.append("BLI's Agreement must have an AgreementType when status is not DRAFT")
 
     return validation_error_messages
