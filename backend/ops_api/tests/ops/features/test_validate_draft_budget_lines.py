@@ -10,7 +10,6 @@ from models import (
     ContractType,
     User,
 )
-from ops_api.ops.resources.budget_line_items import POSTRequestBody
 from pytest_bdd import given, scenario, then, when
 
 
@@ -392,144 +391,8 @@ def valid_agreement(loaded_db, context):
 
 @when("I have a BLI in DRAFT status")
 def bli(loaded_db, context):
-    bli = BudgetLineItem(
-        id=1000,
-        line_description="LI 1",
-        comments="blah blah",
-        agreement_id=context["agreement"].id,
-        can_id=1,
-        amount=100.12,
-        status=BudgetLineItemStatus.DRAFT,
-        date_needed=datetime.date(2023, 1, 1),
-        psc_fee_amount=1.23,
-        created_by=1,
-    )
-    loaded_db.add(bli)
-    loaded_db.commit()
-
-    context["bli"] = bli
-
-
-@when("I have a BLI in DRAFT status without a Description")
-def bli_without_description(loaded_db, context):
-    bli = BudgetLineItem(
-        id=1000,
-        comments="blah blah",
-        agreement_id=context["agreement"].id,
-        can_id=1,
-        amount=100.12,
-        status=BudgetLineItemStatus.DRAFT,
-        date_needed=datetime.date(2023, 1, 1),
-        psc_fee_amount=1.23,
-        created_by=1,
-    )
-    loaded_db.add(bli)
-    loaded_db.commit()
-
-    context["bli"] = bli
-
-
-@when("I have a BLI in DRAFT status without a Need By Date")
-def bli_without_need_by_date(loaded_db, context):
-    bli = BudgetLineItem(
-        id=1000,
-        comments="blah blah",
-        line_description="LI 1",
-        agreement_id=context["agreement"].id,
-        can_id=1,
-        amount=100.12,
-        status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
-        created_by=1,
-    )
-    loaded_db.add(bli)
-    loaded_db.commit()
-
-    context["bli"] = bli
-
-
-@when("I have a BLI in DRAFT status with a Need By Date in the past or today")
-def bli_past_need_by_date(loaded_db, context):
-    bli = BudgetLineItem(
-        id=1000,
-        comments="blah blah",
-        line_description="LI 1",
-        agreement_id=context["agreement"].id,
-        can_id=1,
-        amount=100.12,
-        status=BudgetLineItemStatus.DRAFT,
-        date_needed=datetime.date(2022, 1, 1),
-        psc_fee_amount=1.23,
-        created_by=1,
-    )
-    loaded_db.add(bli)
-    loaded_db.commit()
-
-    context["bli"] = bli
-
-
-@when("I have a BLI in DRAFT status without a CAN")
-def bli_without_can(loaded_db, context):
-    bli = BudgetLineItem(
-        id=1000,
-        comments="blah blah",
-        line_description="LI 1",
-        agreement_id=context["agreement"].id,
-        amount=100.12,
-        date_needed=datetime.date(2023, 1, 1),
-        status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
-        created_by=1,
-    )
-    loaded_db.add(bli)
-    loaded_db.commit()
-
-    context["bli"] = bli
-
-
-@when("I have a BLI in DRAFT status without an Amount")
-def bli_without_amount(loaded_db, context):
-    bli = BudgetLineItem(
-        id=1000,
-        comments="blah blah",
-        line_description="LI 1",
-        agreement_id=context["agreement"].id,
-        can_id=1,
-        date_needed=datetime.date(2023, 1, 1),
-        status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
-        created_by=1,
-    )
-    loaded_db.add(bli)
-    loaded_db.commit()
-
-    context["bli"] = bli
-
-
-@when("I have a BLI in DRAFT status with an Amount less than or equal to 0")
-def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context):
-    bli = BudgetLineItem(
-        id=1000,
-        comments="blah blah",
-        line_description="LI 1",
-        agreement_id=context["agreement"].id,
-        can_id=1,
-        date_needed=datetime.date(2023, 1, 1),
-        status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
-        created_by=1,
-        amount=0,
-    )
-    loaded_db.add(bli)
-    loaded_db.commit()
-
-    context["bli"] = bli
-
-
-@when("I have a BLI in DRAFT status without an Agreement")
-def bli_without_agreement(loaded_db, context):
     initial_bli_for_put = BudgetLineItem(
-        id=1000,
+        agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
         amount=100.12,
@@ -540,7 +403,221 @@ def bli_without_agreement(loaded_db, context):
         created_by=1,
     )
     initial_bli_for_patch = BudgetLineItem(
-        id=1001,
+        agreement_id=context["agreement"].id,
+        comments="blah blah",
+        line_description="LI 1",
+        amount=100.12,
+        can_id=1,
+        date_needed=datetime.date(2023, 1, 1),
+        status=BudgetLineItemStatus.DRAFT,
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(initial_bli_for_put)
+    loaded_db.add(initial_bli_for_patch)
+    loaded_db.commit()
+
+    context["initial_bli_for_put"] = initial_bli_for_put
+    context["initial_bli_for_patch"] = initial_bli_for_patch
+
+
+@when("I have a BLI in DRAFT status without a Description")
+def bli_without_description(loaded_db, context):
+    initial_bli_for_put = BudgetLineItem(
+        agreement_id=context["agreement"].id,
+        comments="blah blah",
+        amount=100.12,
+        can_id=1,
+        date_needed=datetime.date(2023, 1, 1),
+        status=BudgetLineItemStatus.DRAFT,
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    initial_bli_for_patch = BudgetLineItem(
+        agreement_id=context["agreement"].id,
+        comments="blah blah",
+        amount=100.12,
+        can_id=1,
+        date_needed=datetime.date(2023, 1, 1),
+        status=BudgetLineItemStatus.DRAFT,
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(initial_bli_for_put)
+    loaded_db.add(initial_bli_for_patch)
+    loaded_db.commit()
+
+    context["initial_bli_for_put"] = initial_bli_for_put
+    context["initial_bli_for_patch"] = initial_bli_for_patch
+
+
+@when("I have a BLI in DRAFT status without a Need By Date")
+def bli_without_need_by_date(loaded_db, context):
+    initial_bli_for_put = BudgetLineItem(
+        agreement_id=context["agreement"].id,
+        comments="blah blah",
+        line_description="LI 1",
+        amount=100.12,
+        can_id=1,
+        status=BudgetLineItemStatus.DRAFT,
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    initial_bli_for_patch = BudgetLineItem(
+        agreement_id=context["agreement"].id,
+        comments="blah blah",
+        line_description="LI 1",
+        amount=100.12,
+        can_id=1,
+        status=BudgetLineItemStatus.DRAFT,
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(initial_bli_for_put)
+    loaded_db.add(initial_bli_for_patch)
+    loaded_db.commit()
+
+    context["initial_bli_for_put"] = initial_bli_for_put
+    context["initial_bli_for_patch"] = initial_bli_for_patch
+
+
+@when("I have a BLI in DRAFT status with a Need By Date in the past or today")
+def bli_past_need_by_date(loaded_db, context):
+    initial_bli_for_put = BudgetLineItem(
+        agreement_id=context["agreement"].id,
+        comments="blah blah",
+        line_description="LI 1",
+        amount=100.12,
+        can_id=1,
+        date_needed=datetime.date(2022, 1, 1),
+        status=BudgetLineItemStatus.DRAFT,
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    initial_bli_for_patch = BudgetLineItem(
+        agreement_id=context["agreement"].id,
+        comments="blah blah",
+        line_description="LI 1",
+        amount=100.12,
+        can_id=1,
+        date_needed=datetime.date(2022, 1, 1),
+        status=BudgetLineItemStatus.DRAFT,
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(initial_bli_for_put)
+    loaded_db.add(initial_bli_for_patch)
+    loaded_db.commit()
+
+    context["initial_bli_for_put"] = initial_bli_for_put
+    context["initial_bli_for_patch"] = initial_bli_for_patch
+
+
+@when("I have a BLI in DRAFT status without a CAN")
+def bli_without_can(loaded_db, context):
+    initial_bli_for_put = BudgetLineItem(
+        agreement_id=context["agreement"].id,
+        comments="blah blah",
+        line_description="LI 1",
+        amount=100.12,
+        date_needed=datetime.date(2023, 1, 1),
+        status=BudgetLineItemStatus.DRAFT,
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    initial_bli_for_patch = BudgetLineItem(
+        agreement_id=context["agreement"].id,
+        comments="blah blah",
+        line_description="LI 1",
+        amount=100.12,
+        date_needed=datetime.date(2023, 1, 1),
+        status=BudgetLineItemStatus.DRAFT,
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(initial_bli_for_put)
+    loaded_db.add(initial_bli_for_patch)
+    loaded_db.commit()
+
+    context["initial_bli_for_put"] = initial_bli_for_put
+    context["initial_bli_for_patch"] = initial_bli_for_patch
+
+
+@when("I have a BLI in DRAFT status without an Amount")
+def bli_without_amount(loaded_db, context):
+    initial_bli_for_put = BudgetLineItem(
+        agreement_id=context["agreement"].id,
+        comments="blah blah",
+        line_description="LI 1",
+        can_id=1,
+        date_needed=datetime.date(2023, 1, 1),
+        status=BudgetLineItemStatus.DRAFT,
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    initial_bli_for_patch = BudgetLineItem(
+        agreement_id=context["agreement"].id,
+        comments="blah blah",
+        line_description="LI 1",
+        can_id=1,
+        date_needed=datetime.date(2023, 1, 1),
+        status=BudgetLineItemStatus.DRAFT,
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(initial_bli_for_put)
+    loaded_db.add(initial_bli_for_patch)
+    loaded_db.commit()
+
+    context["initial_bli_for_put"] = initial_bli_for_put
+    context["initial_bli_for_patch"] = initial_bli_for_patch
+
+
+@when("I have a BLI in DRAFT status with an Amount less than or equal to 0")
+def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context):
+    initial_bli_for_put = BudgetLineItem(
+        agreement_id=context["agreement"].id,
+        comments="blah blah",
+        line_description="LI 1",
+        amount=0,
+        can_id=1,
+        date_needed=datetime.date(2023, 1, 1),
+        status=BudgetLineItemStatus.DRAFT,
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    initial_bli_for_patch = BudgetLineItem(
+        agreement_id=context["agreement"].id,
+        comments="blah blah",
+        line_description="LI 1",
+        amount=0,
+        can_id=1,
+        date_needed=datetime.date(2023, 1, 1),
+        status=BudgetLineItemStatus.DRAFT,
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(initial_bli_for_put)
+    loaded_db.add(initial_bli_for_patch)
+    loaded_db.commit()
+
+    context["initial_bli_for_put"] = initial_bli_for_put
+    context["initial_bli_for_patch"] = initial_bli_for_patch
+
+
+@when("I have a BLI in DRAFT status without an Agreement")
+def bli_without_agreement(loaded_db, context):
+    initial_bli_for_put = BudgetLineItem(
+        comments="blah blah",
+        line_description="LI 1",
+        amount=100.12,
+        can_id=1,
+        date_needed=datetime.date(2023, 1, 1),
+        status=BudgetLineItemStatus.DRAFT,
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    initial_bli_for_patch = BudgetLineItem(
         comments="blah blah",
         line_description="LI 1",
         amount=100.12,
@@ -560,18 +637,25 @@ def bli_without_agreement(loaded_db, context):
 
 @when("I submit a BLI to move to IN_REVIEW status")
 def submit(client, context):
-    data = POSTRequestBody(
-        line_description="Updated LI 1",
-        comments="hah hah",
-        agreement_id=context["agreement"].id,
-        can_id=2,
-        amount=200.24,
-        status="UNDER_REVIEW",
-        date_needed="2024-01-01",
-        psc_fee_amount=2.34,
-    )
+    data = {
+        "agreement_id": context["agreement"].id,
+        "line_description": "Updated LI 1",
+        "comments": "hah hah",
+        "can_id": 2,
+        "amount": 200.24,
+        "status": "UNDER_REVIEW",
+        "date_needed": "2024-01-01",
+        "psc_fee_amount": 2.34,
+    }
 
-    context["response"] = client.put("/api/v1/budget-line-items/1000", json=data.__dict__)
+    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+
+    context["response_patch"] = client.patch(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
+        json={
+            "status": "UNDER_REVIEW",
+        },
+    )
 
 
 @when("I submit a BLI to move to IN_REVIEW status (without an Agreement)")
@@ -598,8 +682,14 @@ def submit_without_agreement(client, context):
 
 @then("I should get an error message that the BLI's Agreement must have a valid Project")
 def error_message_valid_project(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI's Agreement must have a ResearchProject when status is not " "DRAFT"]
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": ["BLI's Agreement must have a ResearchProject when status is not " "DRAFT"]
+    }
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Agreement Type")
@@ -689,9 +779,7 @@ def error_message_agreement(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
     assert context["response_put"].json == {"agreement_id": ["Missing data for required field."]}
     assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {
-        "_schema": ["agreement_id is required on BLI for PATCH when status is not DRAFT"]
-    }
+    assert context["response_patch"].json == {"_schema": ["BLI must have an Agreement when status is not DRAFT"]}
 
 
 @then("I should get an error message that the BLI must have a Need By Date in the future")

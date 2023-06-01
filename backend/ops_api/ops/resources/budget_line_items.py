@@ -116,6 +116,8 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
                 data = self._put_schema.load(request.json)
 
+                validate(data.__dict__, id)
+
                 budget_line_item = update_budget_line_item(data.__dict__, id)
 
                 bli_dict = self._response_schema.dump(budget_line_item)
@@ -151,8 +153,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                     k: v for (k, v) in data.items() if k in request.json
                 }  # only keep the attributes from the request body
 
-                # TODO: @validates_schema is not working for some reason, so we have to do this outside marshmallow
-                validate_status_change(data, id)
+                validate(data, id)
 
                 budget_line_item = update_budget_line_item(data, id)
 
@@ -286,11 +287,22 @@ def update_budget_line_item(data: dict[str, Any], id: int):
     return budget_line_item
 
 
-def validate_status_change(data, id):
+def validate(data, id):
+    # TODO: @validates_schema is not working for some reason, so we have to do this outside marshmallow
+    bli = current_app.db_session.get(BudgetLineItem, id)
+    if not bli:
+        raise RuntimeError("Invalid BLI id.")
     validation_error_messages = []
-    if data.get("status") != BudgetLineItemStatus.DRAFT:  # we are changing/promoting the status
-        bli = current_app.db_session.get(BudgetLineItem, id)
-        if not bli.agreement_id:
-            validation_error_messages.append("agreement_id is required on BLI for PATCH when status is not DRAFT")
+    validate_status_change(data, bli, validation_error_messages)
     if validation_error_messages:
         raise ValidationError(validation_error_messages)
+
+
+def validate_status_change(data, bli, validation_error_messages):
+    if data.get("status") != BudgetLineItemStatus.DRAFT:  # we are changing/promoting the status
+        if not bli.agreement_id and not data.get("agreement_id"):
+            validation_error_messages.append("BLI must have an Agreement when status is not DRAFT")
+        elif not bli.agreement.research_project_id:
+            validation_error_messages.append("BLI's Agreement must have a ResearchProject when status is not DRAFT")
+
+    return validation_error_messages
