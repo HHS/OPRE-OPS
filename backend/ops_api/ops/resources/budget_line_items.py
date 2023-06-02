@@ -1,13 +1,15 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Optional
 
 import desert
+import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
 from marshmallow import ValidationError, fields
+from marshmallow_enum import EnumField
 from models import BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
@@ -25,13 +27,11 @@ ENDPOINT_STRING = "/budget-line-items"
 
 @dataclass(kw_only=True)
 class RequestBody:
-    status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus)
+    status: Optional[BudgetLineItemStatus] = EnumField(BudgetLineItemStatus)
     line_description: Optional[str] = None
     can_id: Optional[int] = None
     amount: Optional[float] = None
-    date_needed: Optional[date] = fields.Date(
-        format="%Y-%m-%d",
-    )
+    date_needed: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
     comments: Optional[str] = None
     psc_fee_amount: Optional[float] = None
 
@@ -61,20 +61,20 @@ class BudgetLineItemResponse:
     amount: float
     created_by: int
     line_description: str
-    status: BudgetLineItemStatus = fields.Enum(BudgetLineItemStatus)
+    status: BudgetLineItemStatus = EnumField(BudgetLineItemStatus)
     comments: Optional[str] = None
     psc_fee_amount: Optional[float] = None
-    created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%f")
-    updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%f")
-    date_needed: date = fields.Date(format="%Y-%m-%d")
+    created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%f"})
+    updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%f"})
+    date_needed: date = field(default=None, metadata={"format": "%Y-%m-%d"})
 
 
 class BudgetLineItemsItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
-        self._response_schema = desert.schema(BudgetLineItemResponse)
-        self._put_schema = desert.schema(POSTRequestBody)
-        self._patch_schema = desert.schema(PATCHRequestBody)
+        self._response_schema = mmdc.class_schema(BudgetLineItemResponse)()
+        self._put_schema = mmdc.class_schema(POSTRequestBody)()
+        self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
 
     def _get_item_with_try(self, id: int) -> Response:
         try:
@@ -114,11 +114,13 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                     message=f"{message_prefix}: Params failed validation:",
                 )
 
-                data = self._put_schema.load(request.json)
+                data = self._put_schema.dump(self._put_schema.load(request.json))
+                data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
+                data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
 
-                validate(data.__dict__, id)
+                validate(data, id)
 
-                budget_line_item = update_budget_line_item(data.__dict__, id)
+                budget_line_item = update_budget_line_item(data, id)
 
                 bli_dict = self._response_schema.dump(budget_line_item)
                 meta.metadata.update({"updated_bli": bli_dict})
@@ -147,11 +149,14 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                     message=f"{message_prefix}: Params failed validation:",
                 )
 
-                data = self._patch_schema.load(request.json)
-                data = data.__dict__
+                data = self._patch_schema.dump(self._patch_schema.load(request.json))
                 data = {
                     k: v for (k, v) in data.items() if k in request.json
                 }  # only keep the attributes from the request body
+                if "status" in data:
+                    data["status"] = BudgetLineItemStatus[data["status"]]
+                if "date_needed" in data:
+                    data["date_needed"] = date.fromisoformat(data["date_needed"])
 
                 validate(data, id)
 

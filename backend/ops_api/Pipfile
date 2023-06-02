@@ -18,6 +18,7 @@ sqlalchemy-mixins = "==1.5.3"
 flask-marshmallow = "==0.15.0"
 desert = "==2022.9.22"
 marshmallow-enum = "==1.5.1"
+marshmallow-dataclass = "==8.5.14"
 
 [dev-packages]
 flake8 = "==6.0.0"
