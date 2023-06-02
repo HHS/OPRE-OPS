@@ -21,28 +21,57 @@ export const formatDate = (date) => {
     return date.toLocaleDateString("en-US", options);
 };
 
+/**
+ * Object containing display text for various codes.
+ * @typedef {Object} CodesToDisplayText
+ * @property {Object.<string, string>} agreementType - Display text for agreement types.
+ * @property {Object.<string, string>} agreementReason - Display text for agreement reasons.
+ * @property {Object.<string, string>} budgetLineType - Display text for budget line types.
+ */
+
+/**
+ * Object containing display text for various codes.
+ * @type {CodesToDisplayText}
+ */
 const codesToDisplayText = {
-    AgreementType: {
+    agreementType: {
         CONTRACT: "Contract",
         GRANT: "Grant",
         DIRECT_ALLOCATION: "Direct Allocation",
         IAA: "IAA",
         MISCELLANEOUS: "Misc",
     },
-    AgreementReason: {
-        NEW_REQ: "New Req",
+    agreementReason: {
+        NEW_REQ: "New Requirement",
         RECOMPETE: "Recompete",
-        LOGICAL_FOLLOW_ON: "Local Follow On",
+        LOGICAL_FOLLOW_ON: "Logical Follow On",
+    },
+    budgetLineType: {
+        DRAFT: "Draft",
+        UNDER_REVIEW: "In Review",
+        IN_EXECUTION: "Executing",
+        PLANNED: "Planned",
+        OBLIGATED: "Obligated",
     },
 };
 
-export const convertCodeForDisplay = (list_name, code) => {
-    const code_map = codesToDisplayText[list_name];
-    if (code_map) {
-        const display_text = code_map[code];
-        if (display_text) return display_text;
+/**
+ * Converts a code value into a display text value based on a predefined mapping.
+ * @param {("agreementType" | "agreementReason" | "budgetLineType")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
+ * @param {string} code - The code value to convert. This parameter is required.
+ * @returns {string} The display text value for the code, or the original code value if no mapping is found.
+ * @throws {Error} If either the listName or code parameter is not provided.
+ */
+export const convertCodeForDisplay = (listName, code) => {
+    if (!codesToDisplayText[listName]) {
+        throw new Error("Invalid list name");
     }
-    return code;
+
+    // Retrieve the mapping for the list name
+    const codeMap = codesToDisplayText[listName];
+
+    // Return the display text for the code, or the original code value if no mapping is found
+    return codeMap[code] ? codeMap[code] : code;
 };
 
 export const loggedInName = (activeUser) => {

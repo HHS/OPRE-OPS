@@ -1,4 +1,5 @@
 import { useGetAgreementReasonsQuery } from "../../../api/opsAPI";
+import { convertCodeForDisplay } from "../../../helpers/utils";
 
 export const AgreementReasonSelect = ({
     selectedAgreementReason,
@@ -41,7 +42,7 @@ export const AgreementReasonSelect = ({
                     <option value={0}>- Select Agreement Reason -</option>
                     {agreementReasons.map((reason, index) => (
                         <option key={index + 1} value={reason}>
-                            {reason}
+                            {convertCodeForDisplay("agreementReason", reason)}
                         </option>
                     ))}
                 </select>

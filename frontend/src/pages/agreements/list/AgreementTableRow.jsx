@@ -4,11 +4,11 @@ import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
-import Tag from "../../../components/UI/Tag/Tag";
 import "./AgreementsList.scss";
 import { getUser } from "../../../api/getUser";
 import icons from "../../../uswds/img/sprite.svg";
 import { convertCodeForDisplay, formatDate } from "../../../helpers/utils";
+import TableTag from "../../../components/UI/PreviewTable/TableTag";
 
 export const AgreementTableRow = ({ agreement }) => {
     const [user, setUser] = useState({});
@@ -20,7 +20,7 @@ export const AgreementTableRow = ({ agreement }) => {
     const researchProjectName = agreement?.research_project?.title;
 
     let agreementType;
-    agreementType = convertCodeForDisplay("AgreementType", agreement?.agreement_type);
+    agreementType = convertCodeForDisplay("agreementType", agreement?.agreement_type);
 
     const agreementSubTotal = agreement?.budget_line_items?.reduce((n, { amount }) => n + amount, 0);
     const procurementShopSubTotal = agreement?.budget_line_items?.reduce(
@@ -61,9 +61,7 @@ export const AgreementTableRow = ({ agreement }) => {
     }, [agreement]);
 
     const agreementCreatedBy = user?.full_name;
-
     const agreementNotes = agreement?.notes;
-
     const formatted_today = new Date().toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
     const agreementCreatedOn = agreement?.created_on
         ? new Date(agreement.created_on).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" })
@@ -73,6 +71,9 @@ export const AgreementTableRow = ({ agreement }) => {
         setIsExpanded(!isExpanded);
         setIsRowActive(true);
     };
+
+    const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
+    const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
 
     const handleEditAgreement = (event) => {
         // TODO: implement edit agreement
@@ -84,20 +85,6 @@ export const AgreementTableRow = ({ agreement }) => {
     };
     const handleSubmitAgreementForApproval = (event) => {
         navigate(`/agreements/approve/${event}`);
-    };
-
-    const TableTag = ({ status }) => {
-        let classNames = "padding-x-105 padding-y-1 ";
-        switch (status) {
-            case "Draft":
-                classNames += "bg-brand-neutral-lighter";
-                break;
-            case "In Review":
-                classNames += "underReview";
-                break;
-            default:
-        }
-        return <Tag className={classNames} text={status} />;
     };
 
     const ChangeIcons = ({ agreement, status }) => {
@@ -135,29 +122,16 @@ export const AgreementTableRow = ({ agreement }) => {
     return (
         <Fragment key={agreement?.id}>
             <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
-                <th
-                    scope="row"
-                    className={isExpanded ? "border-bottom-none" : undefined}
-                    style={{ backgroundColor: isRowActive && "#F0F0F0" }}
-                >
+                <th scope="row" className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     {agreementName}
                 </th>
-                <td
-                    className={isExpanded ? "border-bottom-none" : undefined}
-                    style={{ backgroundColor: isRowActive && "#F0F0F0" }}
-                >
+                <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     {researchProjectName}
                 </td>
-                <td
-                    className={isExpanded ? "border-bottom-none" : undefined}
-                    style={{ backgroundColor: isRowActive && "#F0F0F0" }}
-                >
+                <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     {agreementType || ""}
                 </td>
-                <td
-                    className={isExpanded ? "border-bottom-none" : undefined}
-                    style={{ backgroundColor: isRowActive && "#F0F0F0" }}
-                >
+                <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     <CurrencyFormat
                         value={agreementTotal}
                         displayType={"text"}
@@ -168,16 +142,10 @@ export const AgreementTableRow = ({ agreement }) => {
                         renderText={(value) => value}
                     />
                 </td>
-                <td
-                    className={isExpanded ? "border-bottom-none" : undefined}
-                    style={{ backgroundColor: isRowActive && "#F0F0F0" }}
-                >
+                <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     {nextNeedBy}
                 </td>
-                <td
-                    className={isExpanded ? "border-bottom-none" : undefined}
-                    style={{ backgroundColor: isRowActive && "#F0F0F0" }}
-                >
+                <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     {isRowActive && !isExpanded ? (
                         <div>
                             <ChangeIcons agreement={agreement} status={agreementStatus} />
@@ -186,10 +154,7 @@ export const AgreementTableRow = ({ agreement }) => {
                         <TableTag status={agreementStatus} />
                     )}
                 </td>
-                <td
-                    className={isExpanded ? "border-bottom-none" : undefined}
-                    style={{ backgroundColor: isRowActive && "#F0F0F0" }}
-                >
+                <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     <FontAwesomeIcon
                         icon={isExpanded ? faChevronUp : faChevronDown}
                         className="height-2 width-2 padding-right-1 hover: cursor-pointer"
@@ -200,7 +165,7 @@ export const AgreementTableRow = ({ agreement }) => {
 
             {isExpanded && (
                 <tr>
-                    <td colSpan="9" className="border-top-none" style={{ backgroundColor: "#F0F0F0" }}>
+                    <td colSpan={9} className="border-top-none" style={{ backgroundColor: "#F0F0F0" }}>
                         <div className="display-flex padding-right-9">
                             <dl className="font-12px">
                                 <dt className="margin-0 text-base-dark">Created By</dt>
