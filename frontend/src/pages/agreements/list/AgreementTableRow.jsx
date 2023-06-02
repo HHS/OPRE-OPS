@@ -9,6 +9,7 @@ import "./AgreementsList.scss";
 import { getUser } from "../../../api/getUser";
 import icons from "../../../uswds/img/sprite.svg";
 import { convertCodeForDisplay, formatDate } from "../../../helpers/utils";
+import TableTag from "../../../components/UI/PreviewTable/TableTag";
 
 export const AgreementTableRow = ({ agreement }) => {
     const [user, setUser] = useState({});
@@ -85,20 +86,6 @@ export const AgreementTableRow = ({ agreement }) => {
     };
     const handleSubmitAgreementForApproval = (event) => {
         navigate(`/agreements/approve/${event}`);
-    };
-
-    const TableTag = ({ status }) => {
-        let classNames = "padding-x-105 padding-y-1 ";
-        switch (status) {
-            case "Draft":
-                classNames += "bg-brand-neutral-lighter";
-                break;
-            case "In Review":
-                classNames += "underReview";
-                break;
-            default:
-        }
-        return <Tag className={classNames} text={status} />;
     };
 
     const ChangeIcons = ({ agreement, status }) => {

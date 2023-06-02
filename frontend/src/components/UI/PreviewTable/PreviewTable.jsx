@@ -4,10 +4,10 @@ import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
-import Tag from "../Tag/Tag";
 import TotalSummaryCard from "./TotalSummaryCard";
 import { useSelector } from "react-redux";
-import { formatDate, loggedInName, convertCodeForDisplay } from "../../../helpers/utils";
+import { formatDate, loggedInName } from "../../../helpers/utils";
+import TableTag from "./TableTag";
 import "./PreviewTable.scss";
 
 export const PreviewTable = ({
@@ -48,31 +48,6 @@ export const PreviewTable = ({
         const handleExpandRow = () => {
             setIsExpanded(!isExpanded);
             setIsRowActive(true);
-        };
-
-        const TableTag = ({ status }) => {
-            const statusText = convertCodeForDisplay("budgetLineType", status);
-
-            let classNames = "padding-x-105 padding-y-1 ";
-            switch (statusText) {
-                case "Draft":
-                    classNames += "bg-brand-neutral-lighter";
-                    break;
-                case "In Review":
-                    classNames += "bg-brand-data-viz-secondary-23 text-white";
-                    break;
-                case "Executing":
-                    classNames += "bg-brand-data-viz-primary-8";
-                    break;
-                case "Obligated":
-                    classNames += "bg-brand-data-viz-primary-6 text-white";
-                    break;
-                case "Planned":
-                    classNames += "bg-brand-data-viz-primary-11 text-white";
-                    break;
-                default:
-            }
-            return <Tag className={classNames} text={statusText} />;
         };
 
         const ChangeIcons = ({ budgetLine }) => {

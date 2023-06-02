@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
-const Tag = ({ tagStyle = "", text = "", active = false, label = "", className = "", children }) => {
+
+const Tag = ({ tagStyle = "", text = "", active = false, label = "", className = "", children = "" }) => {
     let tagClasses = "font-12px padding-05 height-205 radius-md",
         activeClass = "";
     // OVERRIDES FOR DEFAULT CLASSES
@@ -48,4 +49,5 @@ Tag.propTypes = {
     active: PropTypes.bool,
     label: PropTypes.string,
     className: PropTypes.string,
+    children: PropTypes.node,
 };
