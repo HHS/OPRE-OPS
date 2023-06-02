@@ -7,7 +7,7 @@ import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import Tag from "../Tag/Tag";
 import TotalSummaryCard from "./TotalSummaryCard";
 import { useSelector } from "react-redux";
-import { formatDate, loggedInName } from "../../../helpers/utils";
+import { formatDate, loggedInName, convertCodeForDisplay } from "../../../helpers/utils";
 import "./PreviewTable.scss";
 
 export const PreviewTable = ({
@@ -44,7 +44,6 @@ export const PreviewTable = ({
         }
         let feeTotal = bl?.amount * bl?.psc_fee_amount;
         let total = bl?.amount + feeTotal;
-        let status = bl?.status.charAt(0).toUpperCase() + bl?.status.slice(1).toLowerCase();
 
         const handleExpandRow = () => {
             setIsExpanded(!isExpanded);
@@ -52,14 +51,10 @@ export const PreviewTable = ({
         };
 
         const TableTag = ({ status }) => {
-            if (status === "In_execution") {
-                status = "Executing";
-            }
-            if (status === "Under_review") {
-                status = "In Review";
-            }
+            const statusText = convertCodeForDisplay("budgetLineType", status);
+
             let classNames = "padding-x-105 padding-y-1 ";
-            switch (status) {
+            switch (statusText) {
                 case "Draft":
                     classNames += "bg-brand-neutral-lighter";
                     break;
@@ -77,7 +72,7 @@ export const PreviewTable = ({
                     break;
                 default:
             }
-            return <Tag className={classNames} text={status} />;
+            return <Tag className={classNames} text={statusText} />;
         };
 
         const ChangeIcons = ({ budgetLine }) => {
@@ -207,7 +202,7 @@ export const PreviewTable = ({
                                 <ChangeIcons budgetLine={bl} />
                             </div>
                         ) : (
-                            <TableTag status={status} />
+                            <TableTag status={bl.status} />
                         )}
                     </td>
                     <td
