@@ -4,7 +4,6 @@ import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
-import Tag from "../../../components/UI/Tag/Tag";
 import "./AgreementsList.scss";
 import { getUser } from "../../../api/getUser";
 import icons from "../../../uswds/img/sprite.svg";
@@ -166,7 +165,7 @@ export const AgreementTableRow = ({ agreement }) => {
 
             {isExpanded && (
                 <tr>
-                    <td colSpan="9" className="border-top-none" style={{ backgroundColor: "#F0F0F0" }}>
+                    <td colSpan={9} className="border-top-none" style={{ backgroundColor: "#F0F0F0" }}>
                         <div className="display-flex padding-right-9">
                             <dl className="font-12px">
                                 <dt className="margin-0 text-base-dark">Created By</dt>
