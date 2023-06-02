@@ -15,6 +15,7 @@
         "isolatedModules": true,
         "jsx": "react-jsx",
         "moduleResolution": "node",
+        "types": ["jest"],
         "noEmit": true,
         "noFallthroughCasesInSwitch": true,
         "resolveJsonModule": true,

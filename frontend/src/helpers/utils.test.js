@@ -1,3 +1,5 @@
+/// <reference types="jest" />
+
 import { getCurrentFiscalYear, calculatePercent, convertCodeForDisplay } from "./utils";
 
 test("current federal fiscal year is calculated correctly", async () => {
@@ -16,7 +18,7 @@ test("percent is calculated correctly", async () => {
 });
 
 test("codes are converted for display correctly", async () => {
-    expect(() => convertCodeForDisplay("__foo__", "test_code")).toThrowError("Invalid list name");
+    expect(() => convertCodeForDisplay("__foo__", "test_code")).toThrow("Invalid list name");
     expect(convertCodeForDisplay("agreementType", "__foo__")).toEqual("__foo__");
     expect(convertCodeForDisplay("agreementType", "GRANT")).toEqual("Grant");
     expect(convertCodeForDisplay("agreementReason", "NEW_REQ")).toEqual("New Requirement");

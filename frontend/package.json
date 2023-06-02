@@ -34,6 +34,7 @@
         "@testing-library/jest-dom": "5.16.5",
         "@testing-library/react": "14.0.0",
         "@tsconfig/create-react-app": "^1.0.3",
+        "@types/jest": "^29.5.2",
         "@uswds/compile": "1.0.0",
         "axe-core": "4.7.2",
         "cypress": "12.13.0",
