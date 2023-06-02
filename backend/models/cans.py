@@ -176,6 +176,13 @@ class Agreement(BaseModel):
                 raise ValueError(f"Column name does not exist for agreements: {field_name}")
         return getattr(table_class, field_name)
 
+    @classmethod
+    def get_class(cls, agreement_type: Optional[AgreementType] = None) -> type["Agreement"]:
+        try:
+            return cls._subclasses[agreement_type]
+        except KeyError:
+            return Agreement
+
 
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]

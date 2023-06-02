@@ -310,7 +310,7 @@ class AgreementListAPI(BaseListAPI):
                 self.check_errors(errors)
 
                 data = AgreementData.get_schema(agreement_type).load(request.json)
-                new_agreement = self._create_agreement(data, AgreementData.get_class(agreement_type))
+                new_agreement = self._create_agreement(data, Agreement.get_class(agreement_type))
 
                 token = verify_jwt_in_request()
                 user = get_user_from_token(token[1])
