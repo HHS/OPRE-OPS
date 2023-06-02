@@ -207,11 +207,9 @@ def test_post_budget_line_items_only_agreement_id_required(auth_client):
     assert response.json["agreement_id"] == 1
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_put_budget_line_items(auth_client, loaded_db):
+@pytest.fixture()
+def test_bli(loaded_db):
     bli = BudgetLineItem(
-        id=1000,
         line_description="LI 1",
         comments="blah blah",
         agreement_id=1,
@@ -225,6 +223,14 @@ def test_put_budget_line_items(auth_client, loaded_db):
     loaded_db.add(bli)
     loaded_db.commit()
 
+    yield bli
+
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_put_budget_line_items(auth_client, test_bli):
     data = POSTRequestBody(
         line_description="Updated LI 1",
         comments="hah hah",
@@ -235,10 +241,10 @@ def test_put_budget_line_items(auth_client, loaded_db):
         date_needed="2024-01-01",
         psc_fee_amount=2.34,
     )
-    response = auth_client.put("/api/v1/budget-line-items/1000", json=data.__dict__)
+    response = auth_client.put(f"/api/v1/budget-line-items/{test_bli.id}", json=data.__dict__)
     assert response.status_code == 200
     assert response.json["line_description"] == "Updated LI 1"
-    assert response.json["id"] == 1000
+    assert response.json["id"] == test_bli.id
     assert response.json["comments"] == "hah hah"
     assert response.json["agreement_id"] == 2
     assert response.json["can_id"] == 2
@@ -247,10 +253,6 @@ def test_put_budget_line_items(auth_client, loaded_db):
     assert response.json["date_needed"] == "2024-01-01"
     assert response.json["psc_fee_amount"] == 2.34
     assert response.json["created_on"] != response.json["updated_on"]
-
-    # cleanup
-    loaded_db.delete(bli)
-    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
