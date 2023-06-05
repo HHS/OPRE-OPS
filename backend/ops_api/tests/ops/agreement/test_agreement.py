@@ -57,7 +57,6 @@ def test_agreements_serialization(auth_client, loaded_db):
     assert json_to_compare == {
         "agreement_reason": "NEW_REQ",
         "agreement_type": "CONTRACT",
-        "contract_id": 1,
         "contract_number": "CT00XX1",
         "contract_type": "RESEARCH",
         "created_by": None,
@@ -96,6 +95,35 @@ def test_agreements_with_research_project_found(auth_client, loaded_db):
     assert response.json[1]["id"] == 2
 
 
+@pytest.mark.parametrize(
+    "key,value",
+    (
+        ("agreement_reason", "NEW_REQ"),
+        ("contract_number", "CT00XX1"),
+        ("contract_type", "RESEARCH"),
+        ("agreement_type", "CONTRACT"),
+        ("delivered_status", False),
+        ("number", "AGR0001"),
+        ("procurement_shop_id", 1),
+        ("project_officer", 1),
+        ("research_project_id", 1),
+        ("foa", "This is an FOA value"),
+        ("name", "Contract #1: African American Child and Family Research Center"),
+    ),
+)
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_with_filter(auth_client, key, value, loaded_db):
+    response = auth_client.get(f"/api/v1/agreements/?{key}={value}")
+    assert response.status_code == 200
+    from pprint import pprint
+
+    success = all(item[key] == value for item in response.json)
+    if not success:
+        pprint([item[key] for item in response.json])
+        pprint(value)
+    assert success
+
+
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_with_research_project_not_found(auth_client, loaded_db):
     response = auth_client.get("/api/v1/agreements/?research_project_id=1000")
@@ -110,7 +138,6 @@ def test_agreement_search(auth_client, loaded_db):
     assert len(response.json) == 0
 
     response = auth_client.get("/api/v1/agreements/?search=contract")
-
     assert response.status_code == 200
     assert len(response.json) == 2
 
@@ -146,7 +173,6 @@ def test_agreement_create_contract_agreement(loaded_db):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         number="AGRXX003459217-B",
-        contract_id=99,
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         product_service_code_id=2,
@@ -167,7 +193,6 @@ def test_agreement_create_grant_agreement(loaded_db):
     grant_agreement = GrantAgreement(
         name="GNTXX12399",
         number="AGRXX003459217-A",
-        grant_id=99,
         foa="NIH",
         agreement_type=AgreementType.GRANT,
     )
@@ -181,12 +206,32 @@ def test_agreement_create_grant_agreement(loaded_db):
     assert agreement.foa == "NIH"
 
 
+@pytest.fixture()
+def test_contract(loaded_db):
+    contract_agreement = ContractAgreement(
+        name="CTXX12399",
+        number="AGRXX003459217-B",
+        contract_number="CT0002",
+        contract_type=ContractType.RESEARCH,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        research_project_id=1,
+    )
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
+    yield contract_agreement
+
+    loaded_db.delete(contract_agreement)
+    loaded_db.commit()
+
+
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_put_by_id_400_for_type_change(auth_client, loaded_db):
+def test_agreements_put_by_id_400_for_type_change(auth_client, test_contract):
     """400 is returned if the agreement_type is changed"""
 
     response = auth_client.put(
-        "/api/v1/agreements/1",
+        f"/api/v1/agreements/{test_contract.id}",
         json={
             "name": "Updated Contract Name",
             "description": "Updated Contract Description",
@@ -198,10 +243,10 @@ def test_agreements_put_by_id_400_for_type_change(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_put_by_id_400_for_missing_required(auth_client, loaded_db):
+def test_agreements_put_by_id_400_for_missing_required(auth_client, test_contract):
     """400 is returned required fields are missing"""
     response = auth_client.put(
-        "/api/v1/agreements/1",
+        f"/api/v1/agreements/{test_contract.id}",
         json={
             "agreement_type": "CONTRACT",
         },
@@ -210,10 +255,10 @@ def test_agreements_put_by_id_400_for_missing_required(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_put_by_id_contract(auth_client, loaded_db):
+def test_agreements_put_by_id_contract(auth_client, loaded_db, test_contract):
     """PUT CONTRACT Agreement"""
     response = auth_client.put(
-        "/api/v1/agreements/1",
+        f"/api/v1/agreements/{test_contract.id}",
         json={
             "agreement_type": "CONTRACT",
             "name": "Updated Contract Name",
@@ -226,7 +271,7 @@ def test_agreements_put_by_id_contract(auth_client, loaded_db):
     )
     assert response.status_code == 200
 
-    stmt = select(Agreement).where(Agreement.id == 1)
+    stmt = select(Agreement).where(Agreement.id == test_contract.id)
     agreement = loaded_db.scalar(stmt)
 
     assert agreement.name == "Updated Contract Name"
@@ -237,10 +282,10 @@ def test_agreements_put_by_id_contract(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_put_by_id_contract_remove_fields(auth_client, loaded_db):
+def test_agreements_put_by_id_contract_remove_fields(auth_client, loaded_db, test_contract):
     """PUT CONTRACT Agreement and verify missing fields are removed (for PUT)"""
     response = auth_client.put(
-        "/api/v1/agreements/1",
+        f"/api/v1/agreements/{test_contract.id}",
         json={
             "agreement_type": "CONTRACT",
             "name": "Updated Contract Name",
@@ -250,7 +295,7 @@ def test_agreements_put_by_id_contract_remove_fields(auth_client, loaded_db):
     )
     assert response.status_code == 200
 
-    stmt = select(Agreement).where(Agreement.id == 1)
+    stmt = select(Agreement).where(Agreement.id == test_contract.id)
     agreement = loaded_db.scalar(stmt)
 
     assert agreement.name == "Updated Contract Name"
@@ -284,10 +329,10 @@ def test_agreements_put_by_id_grant(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_patch_by_id_400_for_type_change(auth_client, loaded_db):
+def test_agreements_patch_by_id_400_for_type_change(auth_client, loaded_db, test_contract):
     """400 for invalid type change"""
     response = auth_client.patch(
-        "/api/v1/agreements/1",
+        f"/api/v1/agreements/{test_contract.id}",
         json={
             "agreement_type": "GRANT",
             "name": "Updated Contract Name",
@@ -299,10 +344,10 @@ def test_agreements_patch_by_id_400_for_type_change(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_patch_by_id_contract(auth_client, loaded_db):
+def test_agreements_patch_by_id_contract(auth_client, loaded_db, test_contract):
     """PATCH CONTRACT"""
     response = auth_client.patch(
-        "/api/v1/agreements/1",
+        f"/api/v1/agreements/{test_contract.id}",
         json={
             "agreement_type": "CONTRACT",
             "name": "Updated Contract Name",
@@ -315,7 +360,7 @@ def test_agreements_patch_by_id_contract(auth_client, loaded_db):
     )
     assert response.status_code == 200
 
-    stmt = select(Agreement).where(Agreement.id == 1)
+    stmt = select(Agreement).where(Agreement.id == test_contract.id)
     agreement = loaded_db.scalar(stmt)
 
     assert agreement.name == "Updated Contract Name"
@@ -326,10 +371,10 @@ def test_agreements_patch_by_id_contract(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db):
+def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test_contract):
     """Patch CONTRACT with setting fields to null/empty"""
     response = auth_client.patch(
-        "/api/v1/agreements/1",
+        f"/api/v1/agreements/{test_contract.id}",
         json={
             "agreement_type": "CONTRACT",
             "name": "Updated Contract Name",
@@ -342,7 +387,7 @@ def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db):
     )
     assert response.status_code == 200
 
-    stmt = select(Agreement).where(Agreement.id == 1)
+    stmt = select(Agreement).where(Agreement.id == test_contract.id)
     agreement = loaded_db.scalar(stmt)
 
     assert agreement.name == "Updated Contract Name"
@@ -379,11 +424,11 @@ def test_agreements_patch_by_id_grant(auth_client, loaded_db):
 
 @pytest.mark.skip("Not yet implemented")
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_delete_by_id(auth_client, loaded_db):
-    response = auth_client.delete("/api/v1/agreements/1")
+def test_agreements_delete_by_id(auth_client, loaded_db, test_contract):
+    response = auth_client.delete(f"/api/v1/agreements/{test_contract.id}")
     assert response.status_code == 204
 
-    stmt = select(Agreement).where(Agreement.id == 1)
+    stmt = select(Agreement).where(Agreement.id == test_contract.id)
     agreement = loaded_db.scalar(stmt)
 
     assert agreement is None

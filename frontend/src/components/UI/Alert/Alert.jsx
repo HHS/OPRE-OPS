@@ -2,6 +2,16 @@ import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 
+/**
+ * A component that displays an alert.
+ * @param {object} props - The component props.
+ * @param {("success"|"warning"|"error")} props.type - The type of the alert to be styled.
+ * @param {string} props.heading - The heading of the alert.
+ * @param {string} props.children - The message of the alert.
+ * @param {function} props.setIsAlertActive - A function that sets whether the alert is active.
+ * @returns {JSX.Element} The JSX element to render.
+ * @see {@link https://designsystem.digital.gov/components/alerts/}
+ */
 export const Alert = ({ type, heading, children, setIsAlertActive }) => {
     let classNames = "usa-alert margin-left-neg-4 margin-right-neg-4";
 
@@ -37,11 +47,11 @@ export const Alert = ({ type, heading, children, setIsAlertActive }) => {
     );
 };
 
-export default Alert;
-
 Alert.propTypes = {
     type: PropTypes.oneOf(["success", "warning", "error"]),
     heading: PropTypes.string.isRequired,
     children: PropTypes.node,
     setIsAlertActive: PropTypes.func.isRequired,
 };
+
+export default Alert;

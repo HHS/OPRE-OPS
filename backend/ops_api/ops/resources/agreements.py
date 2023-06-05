@@ -1,11 +1,12 @@
 from dataclasses import dataclass
+from dataclasses import fields as dc_fields
 from typing import Optional, Type
 
 import desert
 from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
-from marshmallow import fields
+from marshmallow import ValidationError, fields
 from models import ContractType, OpsEventType, User
 from models.base import BaseModel
 from models.cans import Agreement, AgreementReason, AgreementType, ContractAgreement, GrantAgreement, ProductServiceCode
@@ -16,6 +17,7 @@ from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 from sqlalchemy.future import select
+from sqlalchemy.orm import with_polymorphic
 from typing_extensions import Any, override
 
 ENDPOINT_STRING = "/agreements"
@@ -29,10 +31,9 @@ class TeamMembers:
 
 
 @dataclass
-class ContractAgreementRequestBody:
+class AgreementData:
     name: str
     number: str
-    contract_number: Optional[str] = None
     agreement_type: AgreementType = fields.Enum(AgreementType)
     description: Optional[str] = None
     product_service_code_id: Optional[int] = None
@@ -45,60 +46,50 @@ class ContractAgreementRequestBody:
     )
     research_project_id: Optional[int] = None
     procurement_shop_id: Optional[int] = None
-    vendor: Optional[str] = None
-    delivered_status: Optional[bool] = fields.Boolean(default=False)
-    contract_type: Optional[ContractType] = fields.Enum(ContractType)
-    support_contacts: Optional[list[TeamMembers]] = (
-        fields.List(
-            fields.Nested(TeamMembers),
-            default=[],
-        ),
-    )
     notes: Optional[str] = None
 
 
+@dataclass
+class ContractAgreementData(AgreementData):
+    contract_number: Optional[str] = None
+    vendor: Optional[str] = None
+    delivered_status: Optional[bool] = fields.Boolean(default=False)
+    contract_type: Optional[ContractType] = fields.Enum(ContractType)
+    support_contacts: Optional[list[TeamMembers]] = fields.List(
+        fields.Nested(TeamMembers),
+        default=[],
+    )
+
+
 @dataclass(kw_only=True)
-class ContractAgreementPatchBody(ContractAgreementRequestBody):
+class ContractAgreementPatchBody(ContractAgreementData):
     name: Optional[str] = None
     number: Optional[str] = None
 
 
 @dataclass
-class GrantAgreementRequestBody:
-    name: str
-    number: str
-    agreement_type: AgreementType = fields.Enum(AgreementType)
-    description: Optional[str] = None
-    product_service_code_id: Optional[int] = None
-    agreement_reason: Optional[AgreementReason] = None
-    incumbent: Optional[str] = None
-    team_members: Optional[list[TeamMembers]] = fields.List(
-        fields.Nested(TeamMembers),
-        default=[],
-    )
-    research_project_id: Optional[int] = None
-    procurement_shop_id: Optional[int] = None
+class GrantAgreementData(AgreementData):
     foa: Optional[str] = None
-    notes: Optional[str] = None
 
 
 @dataclass
-class GrantAgreementPatchBody(GrantAgreementRequestBody):
+class GrantAgreementPatchBody(GrantAgreementData):
     name: Optional[str] = None
     number: Optional[str] = None
 
 
 REQUEST_SCHEMAS = {
-    AgreementType.CONTRACT: {"PUT": ContractAgreementRequestBody, "PATCH": ContractAgreementPatchBody},
-    AgreementType.GRANT: {"PUT": GrantAgreementRequestBody, "PATCH": GrantAgreementPatchBody},
+    AgreementType.CONTRACT: {
+        "PUT": ContractAgreementData,
+        "PATCH": ContractAgreementPatchBody,
+    },
+    AgreementType.GRANT: {"PUT": GrantAgreementData, "PATCH": GrantAgreementPatchBody},
 }
 
 
 def pick_schema_class(
     agreement_type: AgreementType, method: str
-) -> Type[
-    ContractAgreementRequestBody | ContractAgreementPatchBody | GrantAgreementRequestBody | GrantAgreementPatchBody
-]:
+) -> Type[ContractAgreementData | ContractAgreementPatchBody | GrantAgreementData | GrantAgreementPatchBody]:
     type_methods = REQUEST_SCHEMAS.get(agreement_type)
     if not type_methods:
         raise ValueError(f"Invalid agreement_type ({agreement_type})")
@@ -189,9 +180,12 @@ class AgreementItemAPI(BaseItemAPI):
 
                 return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
         except (KeyError, RuntimeError, PendingRollbackError) as re:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
             current_app.logger.error(f"{message_prefix}: {re}")
             return make_response_with_headers({}, 400)
+        except ValidationError as ve:
+            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
+            current_app.logger.error(f"{message_prefix}: {ve}")
+            return make_response_with_headers(ve.normalized_messages(), 400)
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
@@ -236,9 +230,12 @@ class AgreementItemAPI(BaseItemAPI):
 
                 return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
         except (KeyError, RuntimeError, PendingRollbackError) as re:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
             current_app.logger.error(f"{message_prefix}: {re}")
             return make_response_with_headers({}, 400)
+        except ValidationError as ve:
+            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
+            current_app.logger.error(f"{message_prefix}: {ve}")
+            return make_response_with_headers(ve.normalized_messages(), 400)
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
@@ -247,22 +244,38 @@ class AgreementItemAPI(BaseItemAPI):
 class AgreementListAPI(BaseListAPI):
     def __init__(self, model: BaseModel = Agreement):
         super().__init__(model)
-        self._post_schema_contract = desert.schema(ContractAgreementRequestBody)
-        self._post_schema_grant = desert.schema(GrantAgreementRequestBody)
-        self._get_schema = desert.schema(QueryParameters)
+        self._schema_contract = desert.schema(ContractAgreementData)
+        self._schema_grant = desert.schema(GrantAgreementData)
 
     @staticmethod
-    def _get_query(search=None, research_project_id=None):
-        stmt = select(Agreement).order_by(Agreement.id)
+    def _get_query(args):
+        polymorphic_agreement = with_polymorphic(Agreement, [ContractAgreement, GrantAgreement])
+        stmt = select(polymorphic_agreement).order_by(Agreement.id)
         query_helper = QueryHelper(stmt)
 
-        if search is not None and len(search) == 0:
-            query_helper.return_none()
-        elif search:
-            query_helper.add_search(Agreement.name, search)
+        match args:
+            case {"search": search, **filter_args} if not search:
+                query_helper.return_none()
 
-        if research_project_id:
-            query_helper.add_column_equals(Agreement.research_project_id, research_project_id)
+            case {"search": search, **filter_args}:
+                query_helper.add_search(polymorphic_agreement.name, search)
+
+            case {**filter_args}:
+                pass
+
+        if filter_args:
+            # This part is necessary because otherwise the system gets confused. Need to
+            # know what table to use to look up parameters from for filtering.
+            contract_keys = {field.name for field in dc_fields(ContractAgreementData)}
+            grant_keys = {field.name for field in dc_fields(GrantAgreementData)}
+            for key, value in filter_args.items():
+                if key in contract_keys:
+                    agreement_model = ContractAgreement
+                elif key in grant_keys:
+                    agreement_model = GrantAgreement
+                else:
+                    agreement_model = Agreement
+                query_helper.add_column_equals(getattr(agreement_model, key), value)
 
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")
@@ -276,16 +289,7 @@ class AgreementListAPI(BaseListAPI):
         is_authorized = self.auth_gateway.is_authorized(identity, ["GET_AGREEMENTS"])
 
         if is_authorized:
-            errors = self._get_schema.validate(request.args)
-
-            if errors:
-                current_app.logger.error(f"GET /agreements: Query Params failed validation: {errors}")
-                return make_response_with_headers(errors, 400)
-
-            search = request.args.get("search")
-            research_project_id = request.args.get("research_project_id")
-
-            stmt = self._get_query(search, research_project_id)
+            stmt = self._get_query(request.args)
 
             result = current_app.db_session.execute(stmt).all()
 
@@ -308,18 +312,18 @@ class AgreementListAPI(BaseListAPI):
                 match agreement_type:
                     case "CONTRACT":
                         print("contract")
-                        errors = self._post_schema_contract.validate(request.json)
+                        errors = self._schema_contract.validate(request.json)
                         self.check_errors(errors)
 
-                        data = self._post_schema_contract.load(request.json)
+                        data = self._schema_contract.load(request.json)
                         new_agreement = self._create_agreement(data, ContractAgreement)
 
                     case "GRANT":
                         print("grant")
-                        errors = self._post_schema_grant.validate(request.json)
+                        errors = self._schema_grant.validate(request.json)
                         self.check_errors(errors)
 
-                        data = self._post_schema_grant.load(request.json)
+                        data = self._schema_grant.load(request.json)
                         new_agreement = self._create_agreement(data, GrantAgreement)
 
                     case _:
@@ -337,14 +341,13 @@ class AgreementListAPI(BaseListAPI):
                 current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Agreement created: {new_agreement_dict}")
 
                 return make_response_with_headers({"message": "Agreement created", "id": new_agreement.id}, 201)
-        except RuntimeError as re:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
-            current_app.logger.error(f"POST to {ENDPOINT_STRING}: {re}")
+        except (KeyError, RuntimeError, PendingRollbackError) as re:
+            current_app.logger.error(f"{message_prefix}: {re}")
             return make_response_with_headers({}, 400)
-        except PendingRollbackError as pr:
+        except ValidationError as ve:
             # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
-            current_app.logger.error(f"POST to {ENDPOINT_STRING}: {pr}")
-            return make_response_with_headers({}, 400)
+            current_app.logger.error(f"{message_prefix}: {ve}")
+            return make_response_with_headers(ve.normalized_messages(), 400)
         except SQLAlchemyError as se:
             current_app.logger.error(f"POST to {ENDPOINT_STRING}: {se}")
             return make_response_with_headers({}, 500)

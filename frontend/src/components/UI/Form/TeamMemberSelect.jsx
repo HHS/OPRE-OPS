@@ -28,10 +28,8 @@ export const TeamMemberSelect = ({
         if (userId === 0) {
             return;
         }
-        const selected = users.find((user) => user.id === userId);
-        setSelectedTeamMembers((prevState) => {
-            return [...prevState, selected];
-        });
+        const selectedUser = users.find((user) => user.id === userId);
+        setSelectedTeamMembers(selectedUser);
         setInputValue("");
     };
 

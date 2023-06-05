@@ -42,7 +42,6 @@ const blData = [
 ];
 
 const completeStepOne = () => {
-    // cy.visit("/budget-lines/create");
     // step one should say "Project & Agreement"
     cy.get(".usa-step-indicator__segment--current").should("contain", "Project & Agreement");
     // summary cards should not exist
@@ -91,9 +90,12 @@ const completeCreateBudgetLines = () => {
     // edit the first row
     cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
     cy.get("[data-cy='edit-row']").click();
-    cy.get("#bl-description").clear().type(blData[2].descr);
-    cy.get("#bl-amount").clear().type(blData[2].amount);
-    cy.get("#with-hint-textarea").clear().type(blData[2].note);
+    cy.get("#bl-description").clear();
+    cy.get("#bl-description").type(blData[2].descr);
+    cy.get("#bl-amount").clear();
+    cy.get("#bl-amount").type(blData[2].amount);
+    cy.get("#with-hint-textarea").clear();
+    cy.get("#with-hint-textarea").type(blData[2].note);
     cy.get("[data-cy='update-budget-line']").click();
     cy.get("@table-rows").eq(0).should("contain", blData[2].descr);
     cy.get("@tsc").should("contain", "Draft Total").and("contain", "$ 666,666.00");
@@ -107,9 +109,8 @@ const completeCreateBudgetLines = () => {
     cy.get("[data-cy='step-two-continue']").click();
     cy.wait("@postBudgetLines")
         .then((interception) => {
-            const { statusCode, body } = interception.response;
+            const { statusCode } = interception.response;
             expect(statusCode).to.equal(201);
-            // expect(body.message).to.contain("Budget Line Created");
         })
         .then(cy.log);
 };
@@ -125,11 +126,13 @@ const createBudgetLine = (bl) => {
     cy.get("#add-budget-line").click();
 };
 
-describe("create budget lines workflow", () => {
-    it("should complete the workflow", () => {
-        cy.intercept("POST", "**/budget-line-items").as("postBudgetLines");
-        completeStepOne();
-        completeStepTwo();
-        completeCreateBudgetLines();
-    });
+it("should handle cancelling out of workflow", () => {
+    completeStepOne();
+    completeStepTwo();
+    cy.get("[data-cy='back-button']").click();
+    cy.get('[data-cy="confirm-action"]').click();
+    // check that we are back on the create budget lines page
+    cy.get(".usa-step-indicator__segment--current").should("contain", "Project & Agreement");
 });
+
+// TODO: test duplicate existing budget line

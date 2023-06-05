@@ -7,7 +7,7 @@ from typing import Optional
 import desert
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
-from marshmallow import fields
+from marshmallow import ValidationError, fields
 from models import BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
@@ -116,6 +116,8 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
                 data = self._put_schema.load(request.json)
 
+                validate(data.__dict__, id)
+
                 budget_line_item = update_budget_line_item(data.__dict__, id)
 
                 bli_dict = self._response_schema.dump(budget_line_item)
@@ -124,9 +126,12 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
                 return make_response_with_headers(bli_dict, 200)
         except (KeyError, RuntimeError, PendingRollbackError) as re:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
             current_app.logger.error(f"{message_prefix}: {re}")
             return make_response_with_headers({}, 400)
+        except ValidationError as ve:
+            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
+            current_app.logger.error(f"{message_prefix}: {ve}")
+            return make_response_with_headers(ve.normalized_messages(), 400)
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
@@ -147,8 +152,9 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 data = {
                     k: v for (k, v) in data.items() if k in request.json
                 }  # only keep the attributes from the request body
-                print(f"BLI Data: {data}")
-                print(f"BLI Id: {id}")
+
+                validate(data, id)
+
                 budget_line_item = update_budget_line_item(data, id)
 
                 current_app.db_session.add(budget_line_item)
@@ -160,9 +166,12 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
                 return make_response_with_headers(bli_dict, 200)
         except (KeyError, RuntimeError, PendingRollbackError) as re:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
             current_app.logger.error(f"{message_prefix}: {re}")
             return make_response_with_headers({}, 400)
+        except ValidationError as ve:
+            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
+            current_app.logger.error(f"{message_prefix}: {ve}")
+            return make_response_with_headers(ve.normalized_messages(), 400)
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
@@ -251,10 +260,13 @@ class BudgetLineItemsListAPI(BaseListAPI):
                 current_app.logger.info(f"{message_prefix}: New BLI created: {new_bli_dict}")
 
                 return make_response_with_headers(new_bli_dict, 201)
-        except (KeyError, PendingRollbackError, RuntimeError) as ve:
+        except (KeyError, RuntimeError, PendingRollbackError) as re:
+            current_app.logger.error(f"{message_prefix}: {re}")
+            return make_response_with_headers({}, 400)
+        except ValidationError as ve:
             # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
             current_app.logger.error(f"{message_prefix}: {ve}")
-            return make_response_with_headers({}, 400)
+            return make_response_with_headers(ve.normalized_messages(), 400)
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
@@ -273,3 +285,24 @@ def update_budget_line_item(data: dict[str, Any], id: int):
     current_app.db_session.add(budget_line_item)
     current_app.db_session.commit()
     return budget_line_item
+
+
+def validate(data, id):
+    # TODO: @validates_schema is not working for some reason, so we have to do this outside marshmallow
+    bli = current_app.db_session.get(BudgetLineItem, id)
+    if not bli:
+        raise RuntimeError("Invalid BLI id.")
+    validation_error_messages = []
+    validate_status_change(data, bli, validation_error_messages)
+    if validation_error_messages:
+        raise ValidationError(validation_error_messages)
+
+
+def validate_status_change(data, bli, validation_error_messages):
+    if data.get("status") != BudgetLineItemStatus.DRAFT:  # we are changing/promoting the status
+        if not bli.agreement_id and not data.get("agreement_id"):
+            validation_error_messages.append("BLI must have an Agreement when status is not DRAFT")
+        elif not bli.agreement.research_project_id:
+            validation_error_messages.append("BLI's Agreement must have a ResearchProject when status is not DRAFT")
+
+    return validation_error_messages

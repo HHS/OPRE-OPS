@@ -16,24 +16,44 @@ it("loads", () => {
 });
 
 it("project type select has the correct options", () => {
-    cy.get("#project-type-select-options").should("contain", "Research");
+    cy.get('[data-cy="project-type-select"]').should("contain", "Research");
 });
 
 it("can create a project", () => {
     cy.intercept("POST", "**/research-projects").as("postProject");
-
-    cy.get("#project-type-select-options").select("Research");
-    cy.get("#project-abbr").type("Test Project Abbreviation");
-    cy.get("#project-name").type("Test Project Name");
-    cy.get("#project-description").type("Test Project Description");
+    // default state
+    cy.get("#submit").should("be.disabled");
+    // select the project type
+    cy.get('[data-cy="project-type-select"]').select("Research");
+    // only allow 3 characters so this should fail
+    cy.get("#short_title").as("nickname").type("Test Project Abbreviation");
+    cy.get("#input-error-message").as("err-msg").should("exist");
+    // clear the input and try again
+    cy.get("@nickname").clear();
+    cy.get("@nickname").type("TPN");
+    cy.get("@err-msg").should("not.exist");
+    // type and then clear to test validation
+    cy.get("#title").type("Test Project Name");
+    cy.get("#title").clear();
+    cy.get("@err-msg").should("exist");
+    // type and then clear to test validation
+    cy.get("#title").type("Test Project Name");
+    // type and then clear to test validation
+    cy.get("#description").type("Test Project Description");
+    cy.get("#description").clear();
+    cy.get("@err-msg").should("exist");
+    // type and then clear to test validation
+    cy.get("#description").type("Test Project Description");
+    // submit the form
+    cy.get("#submit").should("not.be.disabled");
     cy.get("#submit").click();
 
     cy.wait("@postProject")
         .then((interception) => {
             const { statusCode, body } = interception.response;
             expect(statusCode).to.equal(201);
+            expect(body.short_title).to.equal("TPN");
             expect(body.title).to.equal("Test Project Name");
-            expect(body.short_title).to.equal("Test Project Abbreviation");
             expect(body.description).to.equal("Test Project Description");
         })
         .then(cy.log);
@@ -41,10 +61,12 @@ it("can create a project", () => {
 });
 
 it("can cancel a project", () => {
-    cy.get("#project-type-select-options").select("Research");
-    cy.get("#project-abbr").type("Test Project Abbreviation");
-    cy.get("#project-name").type("Test Project Name");
-    cy.get("#project-description").type("Test Project Description");
+    // complete the form
+    cy.get('[data-cy="project-type-select"]').select("Research");
+    cy.get("#short_title").type("TPN");
+    cy.get("#title").type("Test Project Name");
+    cy.get("#description").type("Test Project Description");
+    // cancel the form
     cy.get("#cancel").click();
     cy.get(".usa-modal").should("contain", "Are you sure you want to cancel?");
 });
