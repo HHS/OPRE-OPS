@@ -8,7 +8,7 @@ import desert
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
-from marshmallow import ValidationError, fields
+from marshmallow import ValidationError, validates_schema
 from marshmallow_enum import EnumField
 from models import BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
@@ -35,6 +35,38 @@ class RequestBody:
     comments: Optional[str] = None
     psc_fee_amount: Optional[float] = None
 
+    @validates_schema
+    def validate_agreement_id(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if bli and not bli.agreement_id and not data.get("agreement_id"):
+                raise ValidationError("BLI must have an Agreement when status is not DRAFT")
+
+    @validates_schema
+    def validate_research_project_id(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if bli and bli.agreement_id and not bli.agreement.research_project_id:
+                raise ValidationError("BLI's Agreement must have a ResearchProject when status is not DRAFT")
+
+    @validates_schema
+    def validate_agreement_type(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if bli and bli.agreement_id and not bli.agreement.agreement_type:
+                raise ValidationError("BLI's Agreement must have an AgreementType when status is not DRAFT")
+
+    @validates_schema
+    def validate_agreement_description(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if bli and bli.agreement_id and not bli.agreement.description:
+                raise ValidationError("BLI's Agreement must have a Description when status is not DRAFT")
+
 
 @dataclass(kw_only=True)
 class POSTRequestBody(RequestBody):
@@ -50,7 +82,7 @@ class PATCHRequestBody(RequestBody):
 class QueryParameters:
     can_id: Optional[int] = None
     agreement_id: Optional[int] = None
-    status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus, default=None)
+    status: Optional[BudgetLineItemStatus] = EnumField(BudgetLineItemStatus)
 
 
 @dataclass
@@ -109,6 +141,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         message_prefix = f"PUT to {ENDPOINT_STRING}"
         try:
             with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
+                self._put_schema.context["id"] = id
                 OPSMethodView._validate_request(
                     schema=self._put_schema,
                     message=f"{message_prefix}: Params failed validation:",
@@ -118,7 +151,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
                 data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
 
-                validate(data, id)
+                # validate(data, id)
 
                 budget_line_item = update_budget_line_item(data, id)
 
@@ -144,6 +177,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
         try:
             with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
+                self._patch_schema.context["id"] = id
                 OPSMethodView._validate_request(
                     schema=self._patch_schema,
                     message=f"{message_prefix}: Params failed validation:",
@@ -158,7 +192,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 if "date_needed" in data:
                     data["date_needed"] = date.fromisoformat(data["date_needed"])
 
-                validate(data, id)
+                # validate(data, id)
 
                 budget_line_item = update_budget_line_item(data, id)
 
@@ -292,26 +326,36 @@ def update_budget_line_item(data: dict[str, Any], id: int):
     return budget_line_item
 
 
-def validate(data, id):
-    # TODO: @validates_schema is not working for some reason, so we have to do this outside marshmallow
-    bli = current_app.db_session.get(BudgetLineItem, id)
-    if not bli:
-        raise RuntimeError("Invalid BLI id.")
-    validation_error_messages = []
-    validate_status_change(data, bli, validation_error_messages)
-    if validation_error_messages:
-        raise ValidationError(validation_error_messages)
+# def validate(data, id):
+#     # TODO: @validates_schema is not working for some reason, so we have to do this outside marshmallow
+#     bli = current_app.db_session.get(BudgetLineItem, id)
+#     if not bli:
+#         raise RuntimeError("Invalid BLI id.")
+#     validation_error_messages = []
+#     validate_status_change(data, bli, validation_error_messages)
+#     if validation_error_messages:
+#         raise ValidationError(validation_error_messages)
 
 
-def validate_status_change(data, bli, validation_error_messages):
-    if data.get("status") != BudgetLineItemStatus.DRAFT:  # we are changing/promoting the status
-        if not bli.agreement_id and not data.get("agreement_id"):
-            validation_error_messages.append("BLI must have an Agreement when status is not DRAFT")
-        if bli.agreement_id and not bli.agreement.research_project_id:
-            validation_error_messages.append("BLI's Agreement must have a ResearchProject when status is not DRAFT")
-        if bli.agreement_id and not bli.agreement.agreement_type:
-            validation_error_messages.append("BLI's Agreement must have an AgreementType when status is not DRAFT")
-        if bli.agreement_id and not bli.agreement.description:
-            validation_error_messages.append("BLI's Agreement must have a Description when status is not DRAFT")
-
-    return validation_error_messages
+# def validate_status_change(data, bli, validation_error_messages):
+#     if (
+#         data.get("status") != BudgetLineItemStatus.DRAFT
+#     ):  # we are changing/promoting the status
+#         if not bli.agreement_id and not data.get("agreement_id"):
+#             validation_error_messages.append(
+#                 "BLI must have an Agreement when status is not DRAFT"
+#             )
+#         if bli.agreement_id and not bli.agreement.research_project_id:
+#             validation_error_messages.append(
+#                 "BLI's Agreement must have a ResearchProject when status is not DRAFT"
+#             )
+#         if bli.agreement_id and not bli.agreement.agreement_type:
+#             validation_error_messages.append(
+#                 "BLI's Agreement must have an AgreementType when status is not DRAFT"
+#             )
+#         if bli.agreement_id and not bli.agreement.description:
+#             validation_error_messages.append(
+#                 "BLI's Agreement must have a Description when status is not DRAFT"
+#             )
+#
+#     return validation_error_messages
