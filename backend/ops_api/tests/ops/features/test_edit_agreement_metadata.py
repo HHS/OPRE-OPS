@@ -46,6 +46,7 @@ def contract_agreement(client, app):
 
 @given("I edit the agreement to remove a required field", target_fixture="edited_agreement")
 def remove_required_field(contract_agreement):
+    # TODO: fix validation for PATCH, it accepts {"name": null}
     # contract_agreement["name"] = None
     contract_agreement.pop("name")
     return contract_agreement
