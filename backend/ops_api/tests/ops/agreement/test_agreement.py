@@ -422,6 +422,22 @@ def test_agreements_patch_by_id_grant(auth_client, loaded_db):
     assert [m.id for m in agreement.team_members] == [1]
 
 
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_patch_by_id_just_notes(auth_client, loaded_db):
+    """PATCH with just notes to test out other fields being optional"""
+    response = auth_client.patch(
+        "/api/v1/agreements/1",
+        json={
+            "notes": "Test PATCH",
+        },
+    )
+    assert response.status_code == 200
+
+    stmt = select(Agreement).where(Agreement.id == 1)
+    agreement = loaded_db.scalar(stmt)
+    assert agreement.notes == "Test PATCH"
+
+
 @pytest.mark.skip("Not yet implemented")
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_delete_by_id(auth_client, loaded_db, test_contract):
