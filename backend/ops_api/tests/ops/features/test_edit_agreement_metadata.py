@@ -3,7 +3,8 @@ import json
 import pytest
 from pytest_bdd import given, scenario, then, when
 
-from ops_api.ops.resources.agreements import ContractAgreementRequestBody
+from models import AgreementType
+from ops_api.ops.resources.agreements import AgreementData
 
 AGREEMENT_ID = 1
 
@@ -40,15 +41,15 @@ def contract_agreement(client, app):
     resp = client.get(f"/api/v1/agreements/{AGREEMENT_ID}")
     data = resp.json
     assert data["id"] == AGREEMENT_ID
-    data_to_put = {k: data[k] for k in ContractAgreementRequestBody.__annotations__.keys()}
+    # data_to_put = {k: data[k] for k in ContractAgreementRequestBody.__annotations__.keys()}
+    schema = AgreementData.get_schema(AgreementType.CONTRACT)
+    data_to_put = {k: data[k] for k in schema.fields.keys() if k in data.keys()}
     return data_to_put
 
 
 @given("I edit the agreement to remove a required field", target_fixture="edited_agreement")
 def remove_required_field(contract_agreement):
-    # TODO: fix validation for PATCH, it accepts {"name": null}
-    # contract_agreement["name"] = None
-    contract_agreement.pop("name")
+    contract_agreement["name"] = None
     return contract_agreement
 
 
@@ -60,8 +61,6 @@ def change_value(contract_agreement):
 
 @when("I submit the agreement", target_fixture="submit_response")
 def submit(client, edited_agreement):
-    print(f"{edited_agreement=}")
-    print(f"{json.dumps(edited_agreement, indent=2)}")
     resp = client.put(f"/api/v1/agreements/{AGREEMENT_ID}", json=edited_agreement)
     return resp
 
