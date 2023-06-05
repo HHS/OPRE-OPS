@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "bbad6f7a733cb28bd43eb0b6d452376dd0b693ee5e9b8f1b9ae3e710593b9101"
+            "sha256": "f932f427e47d57433af071a53fec2fbd964e9b55f3a63de15c864bc8610bb9f4"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -600,7 +600,7 @@
                 "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926",
                 "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==1.16.0"
         },
         "sqlalchemy": {
@@ -1299,11 +1299,11 @@
         },
         "ipython": {
             "hashes": [
-                "sha256:7dff3fad32b97f6488e02f87b970f309d082f758d7b7fc252e3b19ee0e432dbb",
-                "sha256:ffca270240fbd21b06b2974e14a86494d6d29290184e788275f55e0b55914926"
+                "sha256:1d197b907b6ba441b692c48cf2a3a2de280dc0ac91a3405b39349a50272ca0a1",
+                "sha256:248aca623f5c99a6635bc3857677b7320b9b8039f99f070ee0d20a5ca5a8e6bf"
             ],
             "index": "pypi",
-            "version": "==8.13.2"
+            "version": "==8.14.0"
         },
         "isort": {
             "hashes": [
@@ -1566,7 +1566,7 @@
                 "sha256:20b43c660e48ed47f433bce5873a2a3d4b9b6a7ba47bd7f7d2a7cec4bec5551f",
                 "sha256:c148e88436bd54dab16484108e882be3367f44952c649c9cd6b82a7370b650cb"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==0.6.0"
         },
         "parso": {
@@ -1725,7 +1725,7 @@
                 "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926",
                 "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==1.16.0"
         },
         "stack-data": {
