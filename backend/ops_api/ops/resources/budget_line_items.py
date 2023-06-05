@@ -142,16 +142,10 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         try:
             with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
                 self._put_schema.context["id"] = id
-                OPSMethodView._validate_request(
-                    schema=self._put_schema,
-                    message=f"{message_prefix}: Params failed validation:",
-                )
 
                 data = self._put_schema.dump(self._put_schema.load(request.json))
                 data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
                 data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
-
-                # validate(data, id)
 
                 budget_line_item = update_budget_line_item(data, id)
 
@@ -178,10 +172,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         try:
             with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
                 self._patch_schema.context["id"] = id
-                OPSMethodView._validate_request(
-                    schema=self._patch_schema,
-                    message=f"{message_prefix}: Params failed validation:",
-                )
 
                 data = self._patch_schema.dump(self._patch_schema.load(request.json))
                 data = {
@@ -191,8 +181,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                     data["status"] = BudgetLineItemStatus[data["status"]]
                 if "date_needed" in data:
                     data["date_needed"] = date.fromisoformat(data["date_needed"])
-
-                # validate(data, id)
 
                 budget_line_item = update_budget_line_item(data, id)
 
@@ -324,38 +312,3 @@ def update_budget_line_item(data: dict[str, Any], id: int):
     current_app.db_session.add(budget_line_item)
     current_app.db_session.commit()
     return budget_line_item
-
-
-# def validate(data, id):
-#     # TODO: @validates_schema is not working for some reason, so we have to do this outside marshmallow
-#     bli = current_app.db_session.get(BudgetLineItem, id)
-#     if not bli:
-#         raise RuntimeError("Invalid BLI id.")
-#     validation_error_messages = []
-#     validate_status_change(data, bli, validation_error_messages)
-#     if validation_error_messages:
-#         raise ValidationError(validation_error_messages)
-
-
-# def validate_status_change(data, bli, validation_error_messages):
-#     if (
-#         data.get("status") != BudgetLineItemStatus.DRAFT
-#     ):  # we are changing/promoting the status
-#         if not bli.agreement_id and not data.get("agreement_id"):
-#             validation_error_messages.append(
-#                 "BLI must have an Agreement when status is not DRAFT"
-#             )
-#         if bli.agreement_id and not bli.agreement.research_project_id:
-#             validation_error_messages.append(
-#                 "BLI's Agreement must have a ResearchProject when status is not DRAFT"
-#             )
-#         if bli.agreement_id and not bli.agreement.agreement_type:
-#             validation_error_messages.append(
-#                 "BLI's Agreement must have an AgreementType when status is not DRAFT"
-#             )
-#         if bli.agreement_id and not bli.agreement.description:
-#             validation_error_messages.append(
-#                 "BLI's Agreement must have a Description when status is not DRAFT"
-#             )
-#
-#     return validation_error_messages
