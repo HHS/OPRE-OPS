@@ -30,6 +30,11 @@ def test_successful_edit(loaded_db):
     pass
 
 
+@scenario("edit_agreement_metadata.feature", "Successful Edit of Just Notes")
+def test_successful_edit_patch_notes(loaded_db):
+    pass
+
+
 @given("I am a logged in as an OPS user", target_fixture="client")
 def client(auth_client):
     print("I am a logged in as an OPS user")
@@ -49,7 +54,8 @@ def contract_agreement(client, app):
 
 @given("I edit the agreement to remove a required field", target_fixture="edited_agreement")
 def remove_required_field(contract_agreement):
-    contract_agreement["name"] = None
+    # contract_agreement["name"] = None
+    contract_agreement.pop("name")
     return contract_agreement
 
 
@@ -61,7 +67,16 @@ def change_value(contract_agreement):
 
 @when("I submit the agreement", target_fixture="submit_response")
 def submit(client, edited_agreement):
+    print(f"{edited_agreement=}")
+    print(f"{json.dumps(edited_agreement, indent=2)}")
     resp = client.put(f"/api/v1/agreements/{AGREEMENT_ID}", json=edited_agreement)
+    return resp
+
+
+@when("I submit a new value for notes", target_fixture="submit_response")
+def submit_patch_notes(client):
+    data = {"notes": "patch notes"}
+    resp = client.patch(f"/api/v1/agreements/{AGREEMENT_ID}", json=data)
     return resp
 
 

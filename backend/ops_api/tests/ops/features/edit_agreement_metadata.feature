@@ -16,3 +16,9 @@ Feature: Edit Agreement Metadata
     And I edit the agreement to change a value
     When I submit the agreement
     Then I should get an message that it was successful
+
+  Scenario: Successful Edit of Just Notes
+    Given I am a logged in as an OPS user
+    And I have a Contract Agreement
+    When I submit a new value for notes
+    Then I should get an message that it was successful
