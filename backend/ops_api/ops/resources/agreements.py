@@ -221,6 +221,7 @@ class AgreementItemAPI(BaseItemAPI):
                 OPSMethodView._validate_request(
                     schema=schema,
                     message=f"{message_prefix}: Params failed validation:",
+                    partial=True,
                 )
 
                 data = schema.load(request.json, partial=True)
