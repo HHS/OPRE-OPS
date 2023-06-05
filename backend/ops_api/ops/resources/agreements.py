@@ -210,12 +210,13 @@ class AgreementItemAPI(BaseItemAPI):
                 if not old_agreement:
                     raise RuntimeError(f"Invalid Agreement id: {id}.")
                 # reject change of agreement_type
-                try:
-                    req_type = request.json["agreement_type"]
-                    if req_type != old_agreement.agreement_type.name:
-                        raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
-                except (KeyError, ValueError) as e:
-                    raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
+                if "agreement_type" in request.json:
+                    try:
+                        req_type = request.json["agreement_type"]
+                        if req_type != old_agreement.agreement_type.name:
+                            raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
+                    except (KeyError, ValueError) as e:
+                        raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
                 schema = AgreementData.get_schema(old_agreement.agreement_type)
 
                 OPSMethodView._validate_request(
