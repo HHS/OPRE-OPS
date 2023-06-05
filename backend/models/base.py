@@ -8,7 +8,7 @@ from marshmallow import Schema as MMSchema
 from models.mixins.repr import ReprMixin
 from models.mixins.serialize import SerializeMixin
 from sqlalchemy import Column, DateTime, ForeignKey, Numeric, func
-from sqlalchemy.orm import Mapped, declarative_base, declared_attr, mapped_column, registry
+from sqlalchemy.orm import declarative_base, declared_attr, mapped_column, registry
 from typing_extensions import Any, override
 
 Base = declarative_base()
