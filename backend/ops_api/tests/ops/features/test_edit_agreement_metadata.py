@@ -3,10 +3,39 @@ import json
 import pytest
 from pytest_bdd import given, scenario, then, when
 
-from models import AgreementType
+from models import AgreementType, ContractAgreement, ContractType
 from ops_api.ops.resources.agreements import AgreementData
 
 AGREEMENT_ID = 1
+
+TEST_CONTRACT_DATA = {
+    "agreement_type": "CONTRACT",
+    "name": "Feature Test Contract",
+    "description": "Contract Description",
+    "number": "BDD0001",
+    "team_members": [{"id": 1}],
+    "support_contacts": [{"id": 2}, {"id": 3}],
+    "notes": "Test Note",
+}
+
+
+@pytest.fixture()
+def test_contract(loaded_db):
+    contract_agreement = ContractAgreement(
+        name="Feature Test Contract",
+        number="BDD0999",
+        contract_number="CT0999",
+        contract_type=ContractType.RESEARCH,
+        agreement_type=AgreementType.CONTRACT,
+        research_project_id=1,
+    )
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
+    yield contract_agreement
+
+    loaded_db.delete(contract_agreement)
+    loaded_db.commit()
 
 
 # without these fixture defs, the test works, but it fails checks by IDE, etc.
@@ -21,17 +50,17 @@ AGREEMENT_ID = 1
 
 
 @scenario("edit_agreement_metadata.feature", "Required Fields")
-def test_required_fields(loaded_db):
+def test_required_fields():
     pass
 
 
 @scenario("edit_agreement_metadata.feature", "Successful Edit")
-def test_successful_edit(loaded_db):
+def test_successful_edit():
     pass
 
 
 @scenario("edit_agreement_metadata.feature", "Successful Edit of Just Notes")
-def test_successful_edit_patch_notes(loaded_db):
+def test_successful_edit_patch_notes():
     pass
 
 
@@ -42,14 +71,11 @@ def client(auth_client):
 
 
 @given("I have a Contract Agreement", target_fixture="contract_agreement")
-def contract_agreement(client, app):
-    resp = client.get(f"/api/v1/agreements/{AGREEMENT_ID}")
-    data = resp.json
-    assert data["id"] == AGREEMENT_ID
-    # data_to_put = {k: data[k] for k in ContractAgreementRequestBody.__annotations__.keys()}
-    schema = AgreementData.get_schema(AgreementType.CONTRACT)
-    data_to_put = {k: data[k] for k in schema.fields.keys() if k in data.keys()}
-    return data_to_put
+def contract_agreement(client, app, test_contract):
+    get_resp = client.get(f"/api/v1/agreements/{test_contract.id}")
+    data = get_resp.json
+    assert data["id"] == test_contract.id
+    return data
 
 
 @given("I edit the agreement to remove a required field", target_fixture="edited_agreement")
@@ -65,11 +91,21 @@ def change_value(contract_agreement):
     return contract_agreement
 
 
+def reduce_for_put(data):
+    """Some fields returned in the GET can't be sent in a PUT|PATCH.
+    So this creates a copy of the data reduced to valid fields for PUT|PATCH"""
+    agreement_type = AgreementType[data["agreement_type"]]
+    schema = AgreementData.get_schema(agreement_type)
+    data_to_put = {k: data[k] for k in schema.fields.keys() if k in data.keys()}
+    return data_to_put
+
+
 @when("I submit the agreement", target_fixture="submit_response")
 def submit(client, edited_agreement):
     print(f"{edited_agreement=}")
     print(f"{json.dumps(edited_agreement, indent=2)}")
-    resp = client.put(f"/api/v1/agreements/{AGREEMENT_ID}", json=edited_agreement)
+    data_to_put = reduce_for_put(edited_agreement)
+    resp = client.put(f"/api/v1/agreements/{edited_agreement['id']}", json=data_to_put)
     return resp
 
 
