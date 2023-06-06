@@ -277,6 +277,7 @@ def agreement_null_agreement_reason(loaded_db, context):
         product_service_code_id=2,
         description="Using Innovative Data...",
         project_officer=1,
+        procurement_shop_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
     loaded_db.add(contract_agreement)
@@ -742,8 +743,14 @@ def error_message_valid_procurement_shop(context, setup_and_teardown):
 
 @then("I should get an error message that the BLI's Agreement must have a valid Agreement Reason")
 def error_message_valid_agreement_reason(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI's Agreement must have an AgreementReason when status is " "not DRAFT"]
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": ["BLI's Agreement must have an AgreementReason when status is " "not DRAFT"]
+    }
 
 
 @then(

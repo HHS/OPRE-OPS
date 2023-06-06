@@ -82,6 +82,14 @@ class RequestBody:
             if bli and bli.agreement_id and not bli.agreement.procurement_shop_id:
                 raise ValidationError("BLI's Agreement must have a ProcurementShop when status is not DRAFT")
 
+    @validates_schema
+    def validate_agreement_reason(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if bli and bli.agreement_id and not bli.agreement.agreement_reason:
+                raise ValidationError("BLI's Agreement must have an AgreementReason when status is not DRAFT")
+
 
 @dataclass(kw_only=True)
 class POSTRequestBody(RequestBody):
