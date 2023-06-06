@@ -730,8 +730,14 @@ def error_message_valid_product_service_code(context, setup_and_teardown):
 
 @then("I should get an error message that the BLI's Agreement must have a valid Procurement Shop")
 def error_message_valid_procurement_shop(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI's Agreement must have a ProcurementShop when status is " "not DRAFT"]
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": ["BLI's Agreement must have a ProcurementShop when status is " "not DRAFT"]
+    }
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Agreement Reason")
