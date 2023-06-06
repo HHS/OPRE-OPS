@@ -84,8 +84,8 @@ class OPSMethodView(MethodView):
         return response
 
     @staticmethod
-    def _validate_request(schema: Schema, message: Optional[str] = ""):
-        errors = schema.validate(request.json)
+    def _validate_request(schema: Schema, message: Optional[str] = "", partial=False):
+        errors = schema.validate(request.json, partial=partial)
         if errors:
             current_app.logger.error(f"{message}: {errors}")
             raise ValidationError(errors)

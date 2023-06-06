@@ -4,10 +4,10 @@ import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
-import Tag from "../Tag/Tag";
 import TotalSummaryCard from "./TotalSummaryCard";
 import { useSelector } from "react-redux";
 import { formatDate, loggedInName } from "../../../helpers/utils";
+import TableTag from "./TableTag";
 import "./PreviewTable.scss";
 
 export const PreviewTable = ({
@@ -44,41 +44,14 @@ export const PreviewTable = ({
         }
         let feeTotal = bl?.amount * bl?.psc_fee_amount;
         let total = bl?.amount + feeTotal;
-        let status = bl?.status.charAt(0).toUpperCase() + bl?.status.slice(1).toLowerCase();
 
         const handleExpandRow = () => {
             setIsExpanded(!isExpanded);
             setIsRowActive(true);
         };
 
-        const TableTag = ({ status }) => {
-            if (status === "In_execution") {
-                status = "Executing";
-            }
-            if (status === "Under_review") {
-                status = "In Review";
-            }
-            let classNames = "padding-x-105 padding-y-1 ";
-            switch (status) {
-                case "Draft":
-                    classNames += "bg-brand-neutral-lighter";
-                    break;
-                case "In Review":
-                    classNames += "bg-brand-data-viz-secondary-23 text-white";
-                    break;
-                case "Executing":
-                    classNames += "bg-brand-data-viz-primary-8";
-                    break;
-                case "Obligated":
-                    classNames += "bg-brand-data-viz-primary-6 text-white";
-                    break;
-                case "Planned":
-                    classNames += "bg-brand-data-viz-primary-11 text-white";
-                    break;
-                default:
-            }
-            return <Tag className={classNames} text={status} />;
-        };
+        const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
+        const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
 
         const ChangeIcons = ({ budgetLine }) => {
             return (
@@ -123,35 +96,19 @@ export const PreviewTable = ({
         return (
             <Fragment key={bl?.id}>
                 <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
-                    <th
-                        scope="row"
-                        className={isExpanded ? "border-bottom-none" : undefined}
-                        style={{ backgroundColor: isRowActive ? "#F0F0F0" : undefined }}
-                    >
+                    <th scope="row" className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                         {bl?.line_description}
                     </th>
-                    <td
-                        className={isExpanded ? "border-bottom-none" : undefined}
-                        style={{ backgroundColor: isRowActive ? "#F0F0F0" : undefined }}
-                    >
+                    <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                         {formatted_date_needed}
                     </td>
-                    <td
-                        className={isExpanded ? "border-bottom-none" : undefined}
-                        style={{ backgroundColor: isRowActive ? "#F0F0F0" : undefined }}
-                    >
+                    <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                         {fiscalYear || ""}
                     </td>
-                    <td
-                        className={isExpanded ? "border-bottom-none" : undefined}
-                        style={{ backgroundColor: isRowActive ? "#F0F0F0" : undefined }}
-                    >
+                    <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                         {bl?.can?.number}
                     </td>
-                    <td
-                        className={isExpanded ? "border-bottom-none" : undefined}
-                        style={{ backgroundColor: isRowActive ? "#F0F0F0" : undefined }}
-                    >
+                    <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                         <CurrencyFormat
                             value={bl?.amount || 0}
                             displayType={"text"}
@@ -162,10 +119,7 @@ export const PreviewTable = ({
                             renderText={(value) => value}
                         />
                     </td>
-                    <td
-                        className={isExpanded ? "border-bottom-none" : undefined}
-                        style={{ backgroundColor: isRowActive ? "#F0F0F0" : undefined }}
-                    >
+                    <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                         {feeTotal === 0 ? (
                             0
                         ) : (
@@ -180,10 +134,7 @@ export const PreviewTable = ({
                             />
                         )}
                     </td>
-                    <td
-                        className={isExpanded ? "border-bottom-none" : undefined}
-                        style={{ backgroundColor: isRowActive ? "#F0F0F0" : undefined }}
-                    >
+                    <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                         {total === 0 ? (
                             0
                         ) : (
@@ -198,22 +149,16 @@ export const PreviewTable = ({
                             />
                         )}
                     </td>
-                    <td
-                        className={isExpanded ? "border-bottom-none" : undefined}
-                        style={{ backgroundColor: isRowActive ? "#F0F0F0" : undefined }}
-                    >
+                    <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                         {isRowActive && !isExpanded && !readOnly ? (
                             <div>
                                 <ChangeIcons budgetLine={bl} />
                             </div>
                         ) : (
-                            <TableTag status={status} />
+                            <TableTag status={bl.status} />
                         )}
                     </td>
-                    <td
-                        className={isExpanded ? "border-bottom-none" : undefined}
-                        style={{ backgroundColor: isRowActive ? "#F0F0F0" : undefined }}
-                    >
+                    <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                         <FontAwesomeIcon
                             id={`expand-${bl?.id}`}
                             data-cy="expand-row"
@@ -226,12 +171,12 @@ export const PreviewTable = ({
 
                 {isExpanded && (
                     <tr>
-                        <td colSpan="9" className="border-top-none" style={{ backgroundColor: "#F0F0F0" }}>
+                        <td colSpan={9} className="border-top-none" style={{ backgroundColor: "#F0F0F0" }}>
                             <div className="display-flex padding-right-9">
                                 <dl className="font-12px">
                                     <dt className="margin-0 text-base-dark">Created By</dt>
                                     <dd id={`created-by-name-${bl?.id}`} className="margin-0">
-                                        {bl?.created_by ? bl.created_by : loggedInUser}
+                                        {loggedInUser}
                                     </dd>
                                     <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                                         <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />

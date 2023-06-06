@@ -10,7 +10,7 @@ json5 = "==0.9.14"
 psycopg2-binary = "==2.9.6"
 cfenv = "==0.5.3"
 sqlalchemy-mixins = "==1.5.3"
-typing-extensions = "==4.6.2"
+typing-extensions = "==4.6.3"
 desert = "2022.9.22"
 
 [dev-packages]
@@ -23,7 +23,7 @@ flake8-bandit = "==4.1.1"
 pytest = "==7.3.1"
 pytest-cov = "==4.1.0"
 pytest-mock = "==3.10.0"
-ipython = "==8.13.2"
+ipython = "==8.14.0"
 pytest-docker = {extras = ["docker-compose-v2"], version = "==1.0.1"}
 black = {extras = ["d"], version = "==23.3.0"}
 types-all = "==1.0.0"
