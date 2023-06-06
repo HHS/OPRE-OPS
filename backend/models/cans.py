@@ -188,6 +188,12 @@ class Agreement(BaseModel):
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
         d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
 
+        if isinstance(self.agreement_type, str):
+            self.agreement_type = AgreementType[self.agreement_type]
+
+        if isinstance(self.agreement_reason, str):
+            self.agreement_reason = AgreementReason[self.agreement_reason]
+
         d.update(
             agreement_type=self.agreement_type.name if self.agreement_type else None,
             agreement_reason=self.agreement_reason.name
@@ -249,6 +255,9 @@ class ContractAgreement(Agreement, agreement_type=AgreementType.CONTRACT):
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
         d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
+
+        if isinstance(self.contract_type, str):
+            self.contract_type = ContractType[self.contract_type]
 
         d.update(
             {
@@ -416,6 +425,9 @@ class BudgetLineItem(BaseModel):
     def to_dict(self):
         d = super().to_dict()
 
+        if isinstance(self.status, str):
+            self.status = BudgetLineItemStatus[self.status]
+
         d.update(
             status=self.status.name if self.status else None,
             amount=float(self.amount) if self.amount else None,
@@ -463,6 +475,9 @@ class CAN(BaseModel):
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
         d: dict[str, Any] = super().to_dict()
+
+        if isinstance(self.arrangement_type, str):
+            self.arrangement_type = CANArrangementType[self.arrangement_type]
 
         d.update(
             appropriation_date=self.appropriation_date.strftime("%d/%m/%Y")
