@@ -38,17 +38,6 @@ def test_contract(loaded_db):
     loaded_db.commit()
 
 
-# without these fixture defs, the test works, but it fails checks by IDE, etc.
-# @pytest.fixture
-# def edited_agreement():
-#     raise NotImplementedError("This should be implemented in a step")
-#
-#
-# @pytest.fixture
-# def submit_response():
-#     raise NotImplementedError("This should be implemented in a step")
-
-
 @scenario("edit_agreement_metadata.feature", "Required Fields")
 def test_required_fields():
     pass
@@ -66,7 +55,6 @@ def test_successful_edit_patch_notes():
 
 @given("I am a logged in as an OPS user", target_fixture="client")
 def client(auth_client):
-    print("I am a logged in as an OPS user")
     return auth_client
 
 
@@ -102,8 +90,6 @@ def reduce_for_put(data):
 
 @when("I submit the agreement", target_fixture="submit_response")
 def submit(client, edited_agreement):
-    print(f"{edited_agreement=}")
-    print(f"{json.dumps(edited_agreement, indent=2)}")
     data_to_put = reduce_for_put(edited_agreement)
     resp = client.put(f"/api/v1/agreements/{edited_agreement['id']}", json=data_to_put)
     return resp
