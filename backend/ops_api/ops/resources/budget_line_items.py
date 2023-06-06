@@ -105,6 +105,24 @@ class RequestBody:
                     "BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ"
                 )
 
+    @validates_schema
+    def validate_agreement_reason_must_have_incumbent(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if (
+                bli
+                and bli.agreement_id
+                and (
+                    bli.agreement.agreement_reason == AgreementReason.RECOMPETE
+                    or bli.agreement.agreement_reason == AgreementReason.LOGICAL_FOLLOW_ON
+                )
+                and not bli.agreement.incumbent
+            ):
+                raise ValidationError(
+                    "BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
+                )
+
 
 @dataclass(kw_only=True)
 class POSTRequestBody(RequestBody):
