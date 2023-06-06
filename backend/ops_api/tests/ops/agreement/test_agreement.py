@@ -1,7 +1,7 @@
 import pytest
 from models import ContractAgreement, GrantAgreement
 from models.cans import Agreement, AgreementType, ContractType
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -425,17 +425,24 @@ def test_agreements_patch_by_id_grant(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_patch_by_id_just_notes(auth_client, loaded_db):
     """PATCH with just notes to test out other fields being optional"""
-    response = auth_client.patch(
-        "/api/v1/agreements/1",
-        json={
-            "notes": "Test PATCH",
-        },
-    )
-    assert response.status_code == 200
-
     stmt = select(Agreement).where(Agreement.id == 1)
     agreement = loaded_db.scalar(stmt)
-    assert agreement.notes == "Test PATCH"
+    old_notes = agreement.notes
+    try:
+        response = auth_client.patch(
+            "/api/v1/agreements/1",
+            json={
+                "notes": "Test PATCH",
+            },
+        )
+        assert response.status_code == 200
+
+        stmt = select(Agreement).where(Agreement.id == 1)
+        agreement = loaded_db.scalar(stmt)
+        assert agreement.notes == "Test PATCH"
+    finally:
+        stmt = update(Agreement).where(Agreement.id == 1).values(notes=old_notes)
+        agreement = loaded_db.execute(stmt)
 
 
 @pytest.mark.skip("Not yet implemented")
