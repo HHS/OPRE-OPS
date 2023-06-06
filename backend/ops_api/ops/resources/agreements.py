@@ -371,24 +371,36 @@ class AgreementTypeListAPI(MethodView):
 
 def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
     for item in data:
-        if item not in ["team_members", "support_contacts"]:
+        if item in {"agreement_type", "agreement_reason"}:
+            pass
+        elif item not in {"team_members", "support_contacts"}:
             setattr(agreement, item, data[item])
 
         elif item == "team_members":
-            tmp_team_members = data[item] if data[item] else []
-            agreement.team_members = []
-            if tmp_team_members:
-                agreement.team_members.extend(
-                    [current_app.db_session.get(User, tm_id.id) for tm_id in tmp_team_members]
-                )
+            tmp_team_member_ids = []
+            if data[item]:
+                for team_member in data[item]:
+                    try:
+                        tmp_team_member_ids.append(team_member.id)
+                    except AttributeError:
+                        tmp_team_member_ids.append(team_member["id"])
+            if tmp_team_member_ids:
+                agreement.team_members = [
+                    current_app.db_session.get(User, tm_id) for tm_id in tmp_team_member_ids
+                ]
 
         elif item == "support_contacts":
-            tmp_support_contacts = data[item] if data[item] else []
-            agreement.support_contacts = []
-            if tmp_support_contacts:
-                agreement.support_contacts.extend(
-                    [current_app.db_session.get(User, tm_id.id) for tm_id in tmp_support_contacts]
-                )
+            tmp_support_contact_ids = []
+            if data[item]:
+                for support_contact in data[item]:
+                    try:
+                        tmp_support_contact_ids.append(support_contact.id)
+                    except AttributeError:
+                        tmp_support_contact_ids.append(support_contact["id"])
+            if tmp_support_contact_ids:
+                agreement.support_contacts = [
+                    current_app.db_session.get(User, tm_id) for tm_id in tmp_support_contact_ids
+                ]
 
 
 def update_agreement(data: dict[str, Any], agreement: Agreement):
