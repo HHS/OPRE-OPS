@@ -9,7 +9,7 @@ from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
 from marshmallow import ValidationError, validates_schema
 from marshmallow_enum import EnumField
-from models import BudgetLineItemStatus, OpsEventType
+from models import AgreementReason, BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -89,6 +89,21 @@ class RequestBody:
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
             if bli and bli.agreement_id and not bli.agreement.agreement_reason:
                 raise ValidationError("BLI's Agreement must have an AgreementReason when status is not DRAFT")
+
+    @validates_schema
+    def validate_agreement_reason_must_not_have_incumbent(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if (
+                bli
+                and bli.agreement_id
+                and bli.agreement.agreement_reason == AgreementReason.NEW_REQ
+                and bli.agreement.incumbent
+            ):
+                raise ValidationError(
+                    "BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ"
+                )
 
 
 @dataclass(kw_only=True)
