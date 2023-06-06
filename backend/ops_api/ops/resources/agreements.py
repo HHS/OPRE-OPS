@@ -369,6 +369,18 @@ class AgreementTypeListAPI(MethodView):
         return jsonify([e.name for e in AgreementType])
 
 
+def _get_user_list(data: Any):
+    tmp_ids = []
+    if data:
+        for item in data:
+            try:
+                tmp_ids.append(item.id)
+            except AttributeError:
+                tmp_ids.append(item["id"])
+    if tmp_ids:
+        return [current_app.db_session.get(User, tm_id) for tm_id in tmp_ids]
+
+
 def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
     for item in data:
         if item in {"agreement_type", "agreement_reason"}:
@@ -377,30 +389,14 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
             setattr(agreement, item, data[item])
 
         elif item == "team_members":
-            tmp_team_member_ids = []
-            if data[item]:
-                for team_member in data[item]:
-                    try:
-                        tmp_team_member_ids.append(team_member.id)
-                    except AttributeError:
-                        tmp_team_member_ids.append(team_member["id"])
-            if tmp_team_member_ids:
-                agreement.team_members = [
-                    current_app.db_session.get(User, tm_id) for tm_id in tmp_team_member_ids
-                ]
+            tmp_team_members = _get_user_list(data[item])
+            if tmp_team_members:
+                agreement.team_members = tmp_team_members
 
         elif item == "support_contacts":
-            tmp_support_contact_ids = []
-            if data[item]:
-                for support_contact in data[item]:
-                    try:
-                        tmp_support_contact_ids.append(support_contact.id)
-                    except AttributeError:
-                        tmp_support_contact_ids.append(support_contact["id"])
-            if tmp_support_contact_ids:
-                agreement.support_contacts = [
-                    current_app.db_session.get(User, tm_id) for tm_id in tmp_support_contact_ids
-                ]
+            tmp_support_contacts = _get_user_list(data[item])
+            if tmp_support_contacts:
+                agreement.support_contacts = tmp_support_contacts
 
 
 def update_agreement(data: dict[str, Any], agreement: Agreement):
