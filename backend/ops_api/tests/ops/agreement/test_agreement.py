@@ -68,7 +68,7 @@ def test_agreements_serialization(auth_client, loaded_db):
         "notes": None,
         "number": "AGR0001",
         "procurement_shop_id": 1,
-        "product_service_code_id": None,
+        "product_service_code_id": 1,
         "project_officer": 1,
         "research_project_id": 1,
         "support_contacts": [],
