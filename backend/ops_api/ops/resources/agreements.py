@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, fields as dc_fields
 from typing import Optional, ClassVar
 
 import desert
@@ -211,7 +211,7 @@ class AgreementItemAPI(BaseItemAPI):
                     raise RuntimeError(f"Invalid Agreement id: {id}.")
                 # reject change of agreement_type
                 try:
-                    req_type = request.json["agreement_type"]
+                    req_type = request.json.get("agreement_type", old_agreement.agreement_type.name)
                     if req_type != old_agreement.agreement_type.name:
                         raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
                 except (KeyError, ValueError) as e:
@@ -224,11 +224,8 @@ class AgreementItemAPI(BaseItemAPI):
                     partial=True,
                 )
 
-                data = schema.load(request.json, partial=True)
-                data = data.__dict__
-                data = {
-                    k: v for (k, v) in data.items() if k in request.json
-                }  # only keep the attributes from the request body
+                agreement_fields = set(f.name for f in dc_fields(AgreementData.get_class(old_agreement.agreement_type)))
+                data = {k: v for k, v in request.json.items() if k in agreement_fields}
                 agreement = update_agreement(data, old_agreement)
                 agreement_dict = agreement.to_dict()
                 meta.metadata.update({"updated_agreement": agreement_dict})
