@@ -366,6 +366,7 @@ def agreement_null_team_members(loaded_db, context):
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
+        project_officer=1,
         procurement_shop_id=1,
     )
     loaded_db.add(contract_agreement)
@@ -804,8 +805,14 @@ def error_message_valid_project_officer(context, setup_and_teardown):
 
 @then("I should get an error message that the BLI's Agreement must have at least one Team Member")
 def error_message_valid_team_members(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI's Agreement must have at least one Team Member when status is not DRAFT"]
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": ["BLI's Agreement must have at least one Team Member when status is not DRAFT"]
+    }
 
 
 @then("I should get an error message that the BLI must have a Description")

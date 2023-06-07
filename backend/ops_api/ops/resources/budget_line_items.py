@@ -131,6 +131,14 @@ class RequestBody:
             if bli and bli.agreement_id and not bli.agreement.project_officer:
                 raise ValidationError("BLI's Agreement must have a ProjectOfficer when status is not DRAFT")
 
+    @validates_schema
+    def validate_team_members(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if bli and bli.agreement_id and not bli.agreement.team_members:
+                raise ValidationError("BLI's Agreement must have at least one Team Member when status is not DRAFT")
+
 
 @dataclass(kw_only=True)
 class POSTRequestBody(RequestBody):
