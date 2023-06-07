@@ -34,6 +34,7 @@ export const authConfig = {
     response_type: "code",
     scope: "openid email",
     redirect_uri: window.location.origin,
+    acr_values: 1,
     logoutEndpoint: "https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/logout",
 };
 

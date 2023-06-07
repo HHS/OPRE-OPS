@@ -4,7 +4,7 @@ import requests
 from flask import Response, current_app, request
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
 from models.events import OpsEventType
-from ops_api.ops.utils.auth import create_oauth_jwt, oauth
+from ops_api.ops.utils.auth import oauth
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import process_user
@@ -13,10 +13,10 @@ from ops_api.ops.utils.user import process_user
 def login() -> Union[Response, tuple[str, int]]:
     auth_code = request.json.get("code")
     current_app.logger.debug(f"Got an OIDC request with the code of {auth_code}")
-
+    current_app.logger.debug("DOES THIS WORK??????")
     with OpsEventHandler(OpsEventType.LOGIN_ATTEMPT) as la:
         token, user_data = _get_token_and_user_data_from_oauth_provider(auth_code)
-
+        current_app.logger.debug(f"token={token};user_data={user_data}")
         current_app.logger.debug(f" token={token};user_data={user_data}")
 
         access_token, refresh_token, user = _get_token_and_user_data_from_internal_auth(user_data)
@@ -32,7 +32,7 @@ def login() -> Union[Response, tuple[str, int]]:
             }
         )
 
-        return make_response_with_headers({"access_token": access_token, "refresh_token": refresh_token})
+    return make_response_with_headers({"access_token": access_token, "refresh_token": refresh_token})
 
 
 def _get_token_and_user_data_from_internal_auth(user_data):
@@ -55,19 +55,23 @@ def _get_token_and_user_data_from_internal_auth(user_data):
 
 def _get_token_and_user_data_from_oauth_provider(auth_code: str):
     authlib_client_config = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]
+    current_app.logger.debug(f"authlib_client_config={authlib_client_config}")
     oauth.register(
         "hhsams",
         client_id=authlib_client_config["client_id"],
         server_metadata_url=authlib_client_config["server_metadata_url"],
         client_kwargs=authlib_client_config["client_kwargs"],
     )
+    client_assertion = b"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ1cm46Z292OmdzYTpvcGVuaWRjb25uZWN0LnByb2ZpbGVzOnNwOnNzbzpoaHNfYWNmOm9wcmVfb3BzIiwic3ViIjoidXJuOmdvdjpnc2E6b3BlbmlkY29ubmVjdC5wcm9maWxlczpzcDpzc286aGhzX2FjZjpvcHJlX29wcyIsImF1ZCI6Imh0dHBzOi8vaWRwLmludC5pZGVudGl0eXNhbmRib3guZ292L2FwaS9vcGVuaWRfY29ubmVjdC90b2tlbiIsImp0aSI6ImNhZDIyNmUyLTBiZWItNGViZi05ZjhhLTMyNzZmNmI5YjRmMSIsImV4cCI6MTY4NjIwNDcwM30.tv-baTpXHIZj_TFMsZe35NSauoZ0K-TJ3rYDE3NXsLj7UTNN3UpGy9EdRre0IEEbr_8SVhNw-hmLHzZo7nfdHKoFfSPYgHRxKnRAO5yn4YUgXjkM6ouwuOBIl3VGJ5RoMdu_x5iKcPyZQlAs9YLNbAimO6tLeT7ogQIajqZ2KDrQt4a1r3ypyM8zpQPmEMA9qJgqUY3IZo0eONSyRJwMfrQDxLmHeNYkq3VXJCZpX3h6J29P4QEXYfOlkMHMUEEeZXWo5b1OOu7E6qpjzyWCbtsR5lLJR-D0NwCq4MFqveDJe2qUk_Enz1k4a0znEzNpAthiWjTFNzurIPLNwGyhKw"
+    current_app.logger.debug(f"client_assertion={client_assertion}")
     token = oauth.hhsams.fetch_access_token(
         "",
-        client_assertion=create_oauth_jwt(),
+        client_assertion=client_assertion,
         client_assertion_type="urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
         grant_type="authorization_code",
         code=auth_code,
     )
+    current_app.logger.debug(f"token={token}")
     header = {"Authorization": f'Bearer {token["access_token"]}'}
     user_data = requests.get(
         authlib_client_config["user_info_url"],

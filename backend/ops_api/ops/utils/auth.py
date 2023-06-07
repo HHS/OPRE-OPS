@@ -41,12 +41,13 @@ def create_oauth_jwt(
     :param payload: OPTIONAL - Contains the JWS payload
     :return: JsonWebSignature
     """
+    current_app.logger.debug("STARTING ----  creat_oauth_jwt")
     jwt_private_key = key or current_app.config.get("JWT_PRIVATE_KEY")
     if not jwt_private_key:
         raise NotImplementedError
 
     expire = current_app.config["JWT_ACCESS_TOKEN_EXPIRES"]
-
+    current_app.logger.debug(f"expire={expire}")
     # client_id = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"]["client_id"]
     _payload = payload or {
         "iss": current_app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["client_id"],
@@ -57,4 +58,5 @@ def create_oauth_jwt(
     }
     _header = header or {"alg": "RS256"}
     jws = jose_jwt.encode(header=_header, payload=_payload, key=jwt_private_key)
+    print(f"jws={jws}")
     return jws
