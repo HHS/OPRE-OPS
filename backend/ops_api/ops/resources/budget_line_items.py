@@ -123,6 +123,14 @@ class RequestBody:
                     "BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
                 )
 
+    @validates_schema
+    def validate_project_officer(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if bli and bli.agreement_id and not bli.agreement.project_officer:
+                raise ValidationError("BLI's Agreement must have a ProjectOfficer when status is not DRAFT")
+
 
 @dataclass(kw_only=True)
 class POSTRequestBody(RequestBody):
