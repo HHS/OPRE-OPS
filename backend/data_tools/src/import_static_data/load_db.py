@@ -7,6 +7,7 @@ import models.procurement_shops
 import models.research_projects
 import models.users
 import sqlalchemy.engine
+from data_tools.environment.azure import AzureConfig
 from data_tools.environment.cloudgov import CloudGovConfig
 from data_tools.environment.common import DataToolsConfig
 from data_tools.environment.dev import DevConfig
@@ -39,7 +40,10 @@ def init_db(
 
 def get_config(environment_name: Optional[str] = None) -> DataToolsConfig:
     config: DataToolsConfig
+    print(f"----------- LOADING CONFIG: {environment_name}")
     match environment_name:
+        case "azure":
+            config = AzureConfig()
         case "cloudgov":
             config = CloudGovConfig()
         case "local":
@@ -61,7 +65,7 @@ def delete_and_create(engine: sqlalchemy.engine.Engine) -> None:
 if __name__ == "__main__":
     script_env = os.getenv("ENV")
     script_config = get_config(script_env)
-    print(script_config.db_connection_string)
+    print(f"--------------- CONNECTION STRING: {script_config.db_connection_string}")
 
     db_engine, db_metadata_obj = init_db(script_config)
 
