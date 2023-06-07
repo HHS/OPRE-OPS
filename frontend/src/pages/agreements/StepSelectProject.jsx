@@ -1,16 +1,18 @@
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ProjectSelect from "../../components/UI/Form/ProjectSelect";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-import { setSelectedProject } from "./createAgreementSlice";
 import Modal from "../../components/UI/Modal/Modal";
 import { useGetResearchProjectsQuery } from "../../api/opsAPI";
+import { useCreateAgreement, useSetState, useUpdateAgreement } from "./CreateAgreementContext";
 
-export const StepSelectProject = ({ goToNext, wizardSteps }) => {
-    const dispatch = useDispatch();
+export const StepSelectProject = ({ goToNext }) => {
     const navigate = useNavigate();
-    const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
+    const { wizardSteps, selected_project: selectedResearchProject } = useCreateAgreement();
+    // setters
+    const setSelectedProject = useSetState("selected_project");
+    const setAgreementProjectId = useUpdateAgreement("research_project_id");
+
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
@@ -31,9 +33,9 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
         setShowModal(true);
         setModalProps({
             heading: "Are you sure you want to cancel? Your agreement will not be saved.",
-            actionButtonText: "Continue",
+            actionButtonText: "Cancel",
+            secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                dispatch(setSelectedProject({}));
                 setModalProps({});
                 navigate("/");
             },
@@ -51,6 +53,7 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
                     heading={modalProps.heading}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
@@ -66,9 +69,14 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
                 researchProjects={projects}
                 selectedResearchProject={selectedResearchProject}
                 setSelectedProject={setSelectedProject}
+                setAgreementProjectId={setAgreementProjectId}
             />
             <div className="grid-row flex-justify-end margin-top-8">
-                <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
+                <button
+                    className="usa-button usa-button--unstyled margin-right-2"
+                    data-cy="cancel-button"
+                    onClick={handleCancel}
+                >
                     Cancel
                 </button>
                 <button
@@ -82,7 +90,7 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
             </div>
             <div className="display-flex flex-align-center margin-top-6">
                 <div className="border-bottom-1px border-base-light width-full" />
-                <span className="text-primary margin-left-2 margin-right-2">or</span>
+                <span className="text-base margin-left-2 margin-right-2">or</span>
                 <div className="border-bottom-1px border-base-light width-full" />
             </div>
             <div className="grid-row flex-justify-center">
@@ -96,3 +104,5 @@ export const StepSelectProject = ({ goToNext, wizardSteps }) => {
         </>
     );
 };
+
+export default StepSelectProject;

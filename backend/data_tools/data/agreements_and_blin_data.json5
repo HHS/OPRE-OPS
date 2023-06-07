@@ -45,7 +45,7 @@
     {
       number: "AGR0001",
       name: "Contract #1: African American Child and Family Research Center",
-      description: "",
+      description: "Test description",
       product_service_code: 1,
       agreement_reason: "NEW_REQ",
       incumbent: "",
@@ -58,7 +58,7 @@
     {
       number: "AGR0002",
       name: "DIRECT ALLOCATION #2: African American Child and Family Research Center",
-      description: "",
+      description: "Test description",
       product_service_code: 1,
       agreement_reason: "NEW_REQ",
       incumbent: "",
@@ -71,7 +71,7 @@
     {
       number: "AGR0003",
       name: "Grant #1: Early Care and Education Leadership Study (ExCELS)",
-      description: "",
+      description: "Test description",
       product_service_code: 1,
       agreement_reason: "NEW_REQ",
       incumbent: "",
@@ -84,7 +84,7 @@
     {
       number: "AGR0004",
       name: "IAA #1: Early Care and Education Leadership Study (ExCELS)",
-      description: "",
+      description: "Test description",
       product_service_code: 1,
       agreement_reason: "NEW_REQ",
       incumbent: "",
@@ -97,7 +97,7 @@
     {
       number: "AGR0005",
       name: "IAA-AA #1: Fathers and Continuous Learning (FCL)",
-      description: "",
+      description: "Test description",
       product_service_code: 1,
       agreement_reason: "NEW_REQ",
       incumbent: "",
@@ -110,7 +110,7 @@
     {
       number: "AGR0006",
       name: "CONTRACT #2: Fathers and Continuous Learning (FCL)",
-      description: "",
+      description: "Test description",
       product_service_code: 1,
       agreement_reason: "NEW_REQ",
       incumbent: "",
@@ -123,7 +123,7 @@
     {
       number: "AGR0007",
       name: "MIHOPE Check-In",
-      description: "",
+      description: "Test description",
       product_service_code: 1,
       agreement_reason: "NEW_REQ",
       incumbent: "",
@@ -136,7 +136,7 @@
     {
       number: "AGR0008",
       name: "MIHOPE Long-Term",
-      description: "",
+      description: "Test description",
       product_service_code: 1,
       agreement_reason: "NEW_REQ",
       incumbent: "",

@@ -1,0 +1,54 @@
+import { useGetAgreementReasonsQuery } from "../../../api/opsAPI";
+import { convertCodeForDisplay } from "../../../helpers/utils";
+
+export const AgreementReasonSelect = ({
+    selectedAgreementReason,
+    setSelectedAgreementReason,
+    setAgreementIncumbent,
+}) => {
+    const {
+        data: agreementReasons,
+        error: errorAgreementReasons,
+        isLoading: isLoadingAgreementReasons,
+    } = useGetAgreementReasonsQuery();
+
+    if (isLoadingAgreementReasons) {
+        return <div>Loading...</div>;
+    }
+    if (errorAgreementReasons) {
+        return <div>Oops, an error occurred</div>;
+    }
+
+    const handleChange = (e) => {
+        const { value } = e.target;
+        setAgreementIncumbent(null);
+        setSelectedAgreementReason(value);
+    };
+
+    return (
+        <fieldset className="usa-fieldset">
+            <label className="usa-label margin-top-0" htmlFor="reason-for-agreement-select">
+                Reason for Agreement
+            </label>
+            <div className="display-flex flex-align-center margin-top-1">
+                <select
+                    className="usa-select margin-top-0 width-card-lg"
+                    name="reason-for-agreement-select"
+                    id="reason-for-agreement-select"
+                    onChange={handleChange}
+                    value={selectedAgreementReason || ""}
+                    required
+                >
+                    <option value={0}>- Select Agreement Reason -</option>
+                    {agreementReasons.map((reason, index) => (
+                        <option key={index + 1} value={reason}>
+                            {convertCodeForDisplay("agreementReason", reason)}
+                        </option>
+                    ))}
+                </select>
+            </div>
+        </fieldset>
+    );
+};
+
+export default AgreementReasonSelect;

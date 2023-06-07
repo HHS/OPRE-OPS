@@ -25,6 +25,14 @@ export const opsApi = createApi({
         getAgreementById: builder.query({
             query: (id) => `/agreements/${id}`,
         }),
+        getAgreementsByResearchProjectFilter: builder.query({
+            query: (id) => `/agreements/?research_project_id=${id}`,
+            providesTags: ["Agreements", "FilterAgreements"],
+        }),
+        getUserById: builder.query({
+            query: (id) => `/users/?oidc_id=${id}`,
+            providesTags: ["Users"],
+        }),
         getResearchProjects: builder.query({
             query: () => `/research-projects/`,
             providesTags: ["ResearchProjects"],
@@ -37,12 +45,54 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["ResearchProjects"],
         }),
+        updateBudgetLineItemStatus: builder.mutation({
+            query: ({ id, status }) => ({
+                url: `/budget-line-items/${id}`,
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: { status },
+            }),
+            invalidatesTags: ["Agreements", "BudgetLineItems"],
+        }),
+        getAgreementTypes: builder.query({
+            query: () => `/agreement-types/`,
+            providesTags: ["AgreementTypes"],
+        }),
+        getProductServiceCodes: builder.query({
+            query: () => `/product-service-codes/`,
+            providesTags: ["ProductServiceCodes"],
+        }),
+        getProcurementShops: builder.query({
+            query: () => `/procurement-shops/`,
+            providesTags: ["ProcurementShops"],
+        }),
+        getAgreementReasons: builder.query({
+            query: () => `/agreement-reasons/`,
+            providesTags: ["AgreementReasons"],
+        }),
+        getUsers: builder.query({
+            query: () => `/users/`,
+            providesTags: ["Users"],
+        }),
+        getCans: builder.query({
+            query: () => `/cans/`,
+            providesTags: ["Cans"],
+        }),
     }),
 });
 
 export const {
     useGetAgreementsQuery,
     useGetAgreementByIdQuery,
+    useGetAgreementsByResearchProjectFilterQuery,
+    useGetUserByIdQuery,
     useGetResearchProjectsQuery,
     useAddResearchProjectsMutation,
+    useUpdateBudgetLineItemStatusMutation,
+    useGetAgreementTypesQuery,
+    useGetProductServiceCodesQuery,
+    useGetProcurementShopsQuery,
+    useGetAgreementReasonsQuery,
+    useGetUsersQuery,
+    useGetCansQuery,
 } = opsApi;

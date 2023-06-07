@@ -2,10 +2,11 @@ import { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 
 export const Modal = ({
-    heading = "",
+    heading,
     description = "",
     setShowModal = () => {},
     actionButtonText,
+    secondaryButtonText = "Cancel",
     handleConfirm = () => {},
 }) => {
     const modalRef = useRef(null);
@@ -44,7 +45,6 @@ export const Modal = ({
         currentModalRef.addEventListener("keydown", handleKeydown);
 
         // clean up the event listener when the component unmounts
-
         return () => {
             currentModalRef.removeEventListener("keydown", handleKeydown);
         };
@@ -54,21 +54,25 @@ export const Modal = ({
             <div
                 className="usa-modal-wrapper is-visible"
                 role="dialog"
-                id="example-modal-1"
-                aria-labelledby="modal-1-heading"
-                aria-describedby="modal-1-description"
+                id="ops-modal"
+                aria-labelledby="ops-modal-heading"
+                aria-describedby="ops-modal-description"
                 onClick={() => setShowModal(false)}
             >
-                <div className="usa-modal-overlay" aria-controls="example-modal-1">
+                <div className="usa-modal-overlay" aria-controls="ops-modal">
                     <div className="usa-modal" tabIndex="-1" onClick={(e) => e.stopPropagation()} ref={modalRef}>
                         <div className="usa-modal__content">
                             <div className="usa-modal__main">
-                                <h2 className="usa-modal__heading" id="modal-1-heading">
+                                <h2
+                                    className="usa-modal__heading font-family-sans"
+                                    id="ops-modal-heading"
+                                    style={{ fontSize: "1.2188rem" }}
+                                >
                                     {heading}
                                 </h2>
                                 {description && (
                                     <div className="usa-prose">
-                                        <p id="modal-1-description">{description}</p>
+                                        <p id="ops-modal-description">{description}</p>
                                     </div>
                                 )}
                                 <div className="usa-modal__footer">
@@ -77,6 +81,7 @@ export const Modal = ({
                                             <button
                                                 type="button"
                                                 className="usa-button"
+                                                data-cy="confirm-action"
                                                 onClick={() => {
                                                     setShowModal(false);
                                                     handleConfirm();
@@ -91,7 +96,7 @@ export const Modal = ({
                                                 className="usa-button usa-button--unstyled padding-105 text-center"
                                                 onClick={() => setShowModal(false)}
                                             >
-                                                Cancel
+                                                {secondaryButtonText}
                                             </button>
                                         </li>
                                     </ul>
@@ -112,5 +117,6 @@ Modal.propTypes = {
     description: PropTypes.string,
     setShowModal: PropTypes.func.isRequired,
     actionButtonText: PropTypes.string.isRequired,
+    secondaryButtonText: PropTypes.string,
     handleConfirm: PropTypes.func.isRequired,
 };

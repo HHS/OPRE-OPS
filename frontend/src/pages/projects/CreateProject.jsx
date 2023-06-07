@@ -1,35 +1,48 @@
 import { useState } from "react";
-import App from "../../App";
 import { useNavigate } from "react-router-dom";
-import ProjectTypeSelect from "../../components/ResearchProjects/ProjectTypeSelect/ProjectTypeSelect";
+import App from "../../App";
+import ProjectTypeSelect from "../../components/UI/Form/ProjectTypeSelect/ProjectTypeSelect";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
 import Alert from "../../components/UI/Alert/Alert";
 import { Modal } from "../../components/UI/Modal/Modal";
+import Input from "../../components/UI/Form/Input";
+import TextArea from "../../components/UI/Form/TextArea";
+import suite from "./suite";
+import classnames from "vest/classnames";
 
 export const CreateProject = () => {
     const [showModal, setShowModal] = useState(false);
     const [modalProps, setModalProps] = useState({});
-    const [selectedProjectType, setSelectedProjectType] = useState("");
     const [project, setProject] = useState({});
     const [isAlertActive, setIsAlertActive] = useState(false);
     const [alertProps, setAlertProps] = useState({});
 
+    let res = suite.get();
     const navigate = useNavigate();
 
     const [addResearchProject, { isSuccess, isError, error, reset, data: rpData }] = useAddResearchProjectsMutation();
 
     const handleClearingForm = () => {
-        setSelectedProjectType("");
         setProject({});
     };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setProject((prevState) => ({
-            ...prevState,
-            [name]: value,
-        }));
+    const handleChange = (currentField, value) => {
+        const nextState = { ...project, [currentField]: value };
+        setProject(nextState);
+        suite(nextState, currentField);
     };
+
+    const cn = classnames(suite.get(), {
+        invalid: "usa-form-group--error",
+        valid: "success",
+        warning: "warning",
+    });
+
+    // prepare data for submission by removing the type field
+    const editedProject = {
+        ...project,
+    };
+    delete editedProject.type;
 
     const showAlert = async (type, heading, message) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -57,11 +70,11 @@ export const CreateProject = () => {
     }
 
     const handleCancel = () => {
-        // TODO: Add cancel stuff
         setShowModal(true);
         setModalProps({
             heading: "Are you sure you want to cancel? Your project will not be saved.",
             actionButtonText: "Cancel",
+            secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
                 handleClearingForm();
                 navigate("/");
@@ -88,64 +101,56 @@ export const CreateProject = () => {
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
                     handleConfirm={modalProps.handleConfirm}
+                    secondaryButtonText={modalProps.secondaryButtonText}
                 />
             )}
             <h2 className="font-sans-lg margin-top-7">Select the Project Type</h2>
-            <p>Select the type of project you are creating.</p>
+            <p>Select the type of project you’d like to create.</p>
             <ProjectTypeSelect
-                selectedProjectType={selectedProjectType}
-                onChangeProjectTypeSelection={setSelectedProjectType}
+                name="type"
+                label="Project Type"
+                onChange={handleChange}
+                messages={res.getErrors("type")}
+                className={cn("type")}
             />
 
             <h2 className="font-sans-lg">Project Details</h2>
 
-            <label className="usa-label" htmlFor="project-abbr">
-                Project Nickname or Acronym
-            </label>
-            <input
-                className="usa-input"
-                id="project-abbr"
+            <Input
                 name="short_title"
-                type="text"
-                value={project.short_title || ""}
+                label="Project Nickname or Acronym"
                 onChange={handleChange}
-                required
+                messages={res.getErrors("short_title")}
+                className={cn("short_title")}
             />
 
-            <label className="usa-label" htmlFor="project-name">
-                Project Title
-            </label>
-            <input
-                className="usa-input"
-                id="project-name"
+            <Input
                 name="title"
-                type="text"
-                value={project.title || ""}
+                label="Project Title"
                 onChange={handleChange}
-                required
+                messages={res.getErrors("title")}
+                className={cn("title")}
             />
 
-            <label className="usa-label" htmlFor="project-description">
-                Description
-            </label>
-            <span id="with-hint-textarea-hint" className="usa-hint">
-                Brief Description for internal purposes, not for the OPRE website.
-            </span>
-            <textarea
-                className="usa-textarea"
-                id="project-description"
+            <TextArea
                 name="description"
-                rows="5"
-                style={{ height: "7rem" }}
-                value={project.description || ""}
+                label="Description"
                 onChange={handleChange}
-            ></textarea>
+                hintMsg="Brief Description for internal purposes, not for the OPRE website."
+                messages={res.getErrors("description")}
+                className={cn("description")}
+            />
 
             <div className="grid-row flex-justify-end margin-top-8">
                 <button id="cancel" className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
                     Cancel
                 </button>
-                <button id="submit" className="usa-button" onClick={() => addResearchProject(project)}>
+                <button
+                    id="submit"
+                    className="usa-button"
+                    onClick={() => addResearchProject(editedProject)}
+                    disabled={!res.isValid()}
+                >
                     Create Project
                 </button>
             </div>
