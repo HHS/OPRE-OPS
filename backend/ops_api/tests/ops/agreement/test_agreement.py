@@ -61,7 +61,7 @@ def test_agreements_serialization(auth_client, loaded_db):
         "contract_type": "RESEARCH",
         "created_by": None,
         "delivered_status": False,
-        "description": "",
+        "description": "Test description",
         "id": 1,
         "incumbent": "",
         "name": "Contract #1: African American Child and Family Research Center",
