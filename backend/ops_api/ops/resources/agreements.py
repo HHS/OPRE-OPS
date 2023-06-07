@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, fields as dc_fields
 from typing import Optional, ClassVar
 
 import desert
@@ -211,7 +211,7 @@ class AgreementItemAPI(BaseItemAPI):
                     raise RuntimeError(f"Invalid Agreement id: {id}.")
                 # reject change of agreement_type
                 try:
-                    req_type = request.json["agreement_type"]
+                    req_type = request.json.get("agreement_type", old_agreement.agreement_type.name)
                     if req_type != old_agreement.agreement_type.name:
                         raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
                 except (KeyError, ValueError) as e:
@@ -224,11 +224,8 @@ class AgreementItemAPI(BaseItemAPI):
                     partial=True,
                 )
 
-                data = schema.load(request.json, partial=True)
-                data = data.__dict__
-                data = {
-                    k: v for (k, v) in data.items() if k in request.json
-                }  # only keep the attributes from the request body
+                agreement_fields = set(f.name for f in dc_fields(AgreementData.get_class(old_agreement.agreement_type)))
+                data = {k: v for k, v in request.json.items() if k in agreement_fields}
                 agreement = update_agreement(data, old_agreement)
                 agreement_dict = agreement.to_dict()
                 meta.metadata.update({"updated_agreement": agreement_dict})
@@ -372,26 +369,34 @@ class AgreementTypeListAPI(MethodView):
         return jsonify([e.name for e in AgreementType])
 
 
+def _get_user_list(data: Any):
+    tmp_ids = []
+    if data:
+        for item in data:
+            try:
+                tmp_ids.append(item.id)
+            except AttributeError:
+                tmp_ids.append(item["id"])
+    if tmp_ids:
+        return [current_app.db_session.get(User, tm_id) for tm_id in tmp_ids]
+
+
 def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
     for item in data:
-        if item not in ["team_members", "support_contacts"]:
+        if item in {"agreement_type", "agreement_reason"}:
+            pass
+        elif item not in {"team_members", "support_contacts"}:
             setattr(agreement, item, data[item])
 
         elif item == "team_members":
-            tmp_team_members = data[item] if data[item] else []
-            agreement.team_members = []
+            tmp_team_members = _get_user_list(data[item])
             if tmp_team_members:
-                agreement.team_members.extend(
-                    [current_app.db_session.get(User, tm_id.id) for tm_id in tmp_team_members]
-                )
+                agreement.team_members = tmp_team_members
 
         elif item == "support_contacts":
-            tmp_support_contacts = data[item] if data[item] else []
-            agreement.support_contacts = []
+            tmp_support_contacts = _get_user_list(data[item])
             if tmp_support_contacts:
-                agreement.support_contacts.extend(
-                    [current_app.db_session.get(User, tm_id.id) for tm_id in tmp_support_contacts]
-                )
+                agreement.support_contacts = tmp_support_contacts
 
 
 def update_agreement(data: dict[str, Any], agreement: Agreement):
