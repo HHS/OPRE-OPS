@@ -50,7 +50,6 @@
       agreement_reason: "NEW_REQ",
       incumbent: "",
       project_officer: 1,
-      team_members: [],
       agreement_type: "CONTRACT",
       research_project_id: 1,
       procurement_shop_id: 1,
@@ -63,7 +62,6 @@
       agreement_reason: "NEW_REQ",
       incumbent: "",
       project_officer: 1,
-      team_members: [],
       agreement_type: "DIRECT_ALLOCATION",
       research_project_id: 1,
       procurement_shop_id: 3,
@@ -76,7 +74,6 @@
       agreement_reason: "NEW_REQ",
       incumbent: "",
       project_officer: 1,
-      team_members: [],
       agreement_type: "GRANT",
       research_project_id: 2,
       procurement_shop_id: 3,
@@ -89,7 +86,6 @@
       agreement_reason: "NEW_REQ",
       incumbent: "",
       project_officer: 1,
-      team_members: [],
       agreement_type: "IAA",
       research_project_id: 2,
       procurement_shop_id: 3,
@@ -102,7 +98,6 @@
       agreement_reason: "NEW_REQ",
       incumbent: "",
       project_officer: 1,
-      team_members: [],
       agreement_type: "MISCELLANEOUS",
       research_project_id: 3,
       procurement_shop_id: 3,
@@ -115,7 +110,6 @@
       agreement_reason: "NEW_REQ",
       incumbent: "",
       project_officer: 1,
-      team_members: [],
       agreement_type: "CONTRACT",
       research_project_id: 3,
       procurement_shop_id: 4,
@@ -128,7 +122,6 @@
       agreement_reason: "NEW_REQ",
       incumbent: "",
       project_officer: null,
-      team_members: [],
       agreement_type: "CONTRACT",
       research_project_id: 13,
       procurement_shop_id: 4,
@@ -141,7 +134,6 @@
       agreement_reason: "NEW_REQ",
       incumbent: "",
       project_officer: null,
-      team_members: [],
       agreement_type: "CONTRACT",
       research_project_id: 13,
       procurement_shop_id: 4,
@@ -408,4 +400,14 @@
       psc_fee_amount: 4.8,
     },
   ],
+  "agreement_team_members": [
+    {
+      "agreement_id": 1,
+      "users_id": 1,
+    },
+    {
+      "agreement_id": 2,
+      "users_id": 1,
+    }
+  ]
 }
