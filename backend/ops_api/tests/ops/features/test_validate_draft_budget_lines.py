@@ -124,6 +124,14 @@ def test_valid_description_request_empty(loaded_db, context):
 
 @scenario(
     "validate_draft_budget_lines.feature",
+    "Valid BLI Description: Both Empty",
+)
+def test_valid_description_both_empty(loaded_db, context):
+    ...
+
+
+@scenario(
+    "validate_draft_budget_lines.feature",
     "Valid Need By Date: Exists",
 )
 def test_valid_need_by_date_exists(loaded_db, context):
