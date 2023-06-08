@@ -100,12 +100,12 @@ Feature: Validate "Draft" Budget Lines
 
     Then I should get an error message that the BLI's Agreement must have at least one Team Member
 
-  Scenario: Valid BLI Description
+  Scenario: Valid BLI Description: Both NULL
     Given I am logged in as an OPS user
     And I have a valid Agreement
 
     When I have a BLI in DRAFT status without a Description
-    And I submit a BLI to move to IN_REVIEW status
+    And I submit a BLI to move to IN_REVIEW status (without Description)
 
     Then I should get an error message that the BLI must have a Description
 

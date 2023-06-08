@@ -108,9 +108,9 @@ def test_valid_team_members(loaded_db, context):
 
 @scenario(
     "validate_draft_budget_lines.feature",
-    "Valid BLI Description",
+    "Valid BLI Description: Both NULL",
 )
-def test_valid_description(loaded_db, context):
+def test_valid_description_both_null(loaded_db, context):
     ...
 
 
@@ -387,6 +387,7 @@ def valid_agreement(loaded_db, context):
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
+        project_officer=1,
         procurement_shop_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
@@ -665,6 +666,28 @@ def submit(client, context):
     )
 
 
+@when("I submit a BLI to move to IN_REVIEW status (without Description)")
+def submit_without_description(client, context):
+    data = {
+        "agreement_id": context["agreement"].id,
+        "comments": "hah hah",
+        "can_id": 2,
+        "amount": 200.24,
+        "status": "UNDER_REVIEW",
+        "date_needed": "2024-01-01",
+        "psc_fee_amount": 2.34,
+    }
+
+    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+
+    context["response_patch"] = client.patch(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
+        json={
+            "status": "UNDER_REVIEW",
+        },
+    )
+
+
 @when("I submit a BLI to move to IN_REVIEW status (without an Agreement)")
 def submit_without_agreement(client, context):
     data = {
@@ -817,8 +840,12 @@ def error_message_valid_team_members(context, setup_and_teardown):
 
 @then("I should get an error message that the BLI must have a Description")
 def error_message_valid_description(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {"_schema": ["BLI must valid a valid Description when status is not DRAFT"]}
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": ["BLI must valid a valid Description when status is not DRAFT"]
+    }
 
 
 @then("I should get an error message that the BLI must have a Need By Date")

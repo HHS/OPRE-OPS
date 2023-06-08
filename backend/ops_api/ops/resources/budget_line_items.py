@@ -24,6 +24,12 @@ from typing_extensions import Any, override
 ENDPOINT_STRING = "/budget-line-items"
 
 
+def is_changing_status(data: dict) -> bool:
+    # status defaults to EnumField so the isinstance is checking for if status has been set
+    status = data.get("status") if not isinstance(data.get("status"), EnumField) else None
+    return status and status != BudgetLineItemStatus.DRAFT
+
+
 @dataclass(kw_only=True)
 class RequestBody:
     status: Optional[BudgetLineItemStatus] = EnumField(BudgetLineItemStatus)
@@ -138,6 +144,19 @@ class RequestBody:
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
             if bli and bli.agreement_id and not bli.agreement.team_members:
                 raise ValidationError("BLI's Agreement must have at least one Team Member when status is not DRAFT")
+
+    @validates_schema
+    def validate_description(self, data: dict, **kwargs):
+        if is_changing_status(data):
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            bli_description = bli.line_description if bli else None
+            data_description = data.get("line_description")
+            if (
+                (not data_description and not bli_description)
+                or (data_description and len(data_description.strip()) == 0)
+                or (not data_description and bli_description and len(bli_description) == 0)
+            ):
+                raise ValidationError("BLI must valid a valid Description when status is not DRAFT")
 
 
 @dataclass(kw_only=True)
