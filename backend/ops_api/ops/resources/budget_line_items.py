@@ -135,14 +135,38 @@ class RequestBody:
                 raise ValidationError("BLI's Agreement must have at least one Team Member when status is not DRAFT")
 
     @validates_schema
-    def validate_description(self, data: dict, **kwargs):
-        if is_changing_status(data):
+    def validate_description_full(self, data: dict, **kwargs):
+        if is_changing_status(data) and self.context.get("method") in ["POST", "PUT"]:
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
             bli_description = bli.line_description if bli else None
             data_description = data.get("line_description")
             if (
                 (not data_description and not bli_description)
                 or (data_description and len(data_description.strip()) == 0)
+                or (
+                    bli_description
+                    and len(bli_description.strip()) == 0
+                    and data_description
+                    and len(data_description.strip()) == 0
+                )
+                or (not data_description and bli_description and len(bli_description) == 0)
+            ):
+                raise ValidationError("BLI must valid a valid Description when status is not DRAFT")
+
+    @validates_schema
+    def validate_description_partial(self, data: dict, **kwargs):
+        if is_changing_status(data) and self.context.get("method") in ["PATCH"]:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            bli_description = bli.line_description if bli else None
+            data_description = data.get("line_description")
+            if (
+                (not data_description and not bli_description)
+                or (
+                    bli_description
+                    and len(bli_description.strip()) == 0
+                    and data_description
+                    and len(data_description.strip()) == 0
+                )
                 or (not data_description and bli_description and len(bli_description) == 0)
             ):
                 raise ValidationError("BLI must valid a valid Description when status is not DRAFT")
@@ -222,6 +246,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         try:
             with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
                 self._put_schema.context["id"] = id
+                self._put_schema.context["method"] = "PUT"
 
                 data = self._put_schema.dump(self._put_schema.load(request.json))
                 data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
@@ -252,6 +277,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         try:
             with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
                 self._patch_schema.context["id"] = id
+                self._patch_schema.context["method"] = "PATCH"
 
                 data = self._patch_schema.dump(self._patch_schema.load(request.json))
                 data = {
@@ -356,6 +382,8 @@ class BudgetLineItemsListAPI(BaseListAPI):
         message_prefix = f"POST to {ENDPOINT_STRING}"
         try:
             with OpsEventHandler(OpsEventType.CREATE_BLI) as meta:
+                self._post_schema.context["method"] = "POST"
+
                 data = self._post_schema.dump(self._post_schema.load(request.json))
                 data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
                 data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None

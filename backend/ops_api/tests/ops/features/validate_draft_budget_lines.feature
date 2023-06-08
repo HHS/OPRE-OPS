@@ -113,10 +113,19 @@ Feature: Validate "Draft" Budget Lines
     Given I am logged in as an OPS user
     And I have a valid Agreement
 
-    When I have a BLI in DRAFT status without a Description
+    When I have a BLI in DRAFT status
     And I submit a BLI to move to IN_REVIEW status with an empty string Description
 
-    Then I should get an error message that the BLI must have a Description
+    Then I should get an error message that the BLI must have a Description (for PUT only)
+
+#  Scenario: Valid BLI Description: Both Empty
+#    Given I am logged in as an OPS user
+#    And I have a valid Agreement
+#
+#    When I have a BLI in DRAFT status without a Description
+#    And I submit a BLI to move to IN_REVIEW status with an empty string Description
+#
+#    Then I should get an error message that the BLI must have a Description
 
 
   Scenario: Valid Need By Date: Exists

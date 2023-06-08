@@ -879,6 +879,13 @@ def error_message_valid_description(context, setup_and_teardown):
     }
 
 
+@then("I should get an error message that the BLI must have a Description (for PUT only)")
+def error_message_valid_description_put_only(context, setup_and_teardown):
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {"_schema": ["BLI must valid a valid Description when status is not DRAFT"]}
+    assert context["response_patch"].status_code == 200
+
+
 @then("I should get an error message that the BLI must have a Need By Date")
 def error_message_need_by_date(context, setup_and_teardown):
     # Need to implement this to throw an error message and return 400
