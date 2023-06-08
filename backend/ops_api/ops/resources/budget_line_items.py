@@ -42,64 +42,56 @@ class RequestBody:
 
     @validates_schema
     def validate_agreement_id(self, data, **kwargs):
-        # we are changing/promoting the status
-        if data.get("status") != BudgetLineItemStatus.DRAFT:
+        if is_changing_status(data):
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
             if bli and not bli.agreement_id and not data.get("agreement_id"):
                 raise ValidationError("BLI must have an Agreement when status is not DRAFT")
 
     @validates_schema
     def validate_research_project_id(self, data, **kwargs):
-        # we are changing/promoting the status
-        if data.get("status") != BudgetLineItemStatus.DRAFT:
+        if is_changing_status(data):
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
             if bli and bli.agreement_id and not bli.agreement.research_project_id:
                 raise ValidationError("BLI's Agreement must have a ResearchProject when status is not DRAFT")
 
     @validates_schema
     def validate_agreement_type(self, data, **kwargs):
-        # we are changing/promoting the status
-        if data.get("status") != BudgetLineItemStatus.DRAFT:
+        if is_changing_status(data):
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
             if bli and bli.agreement_id and not bli.agreement.agreement_type:
                 raise ValidationError("BLI's Agreement must have an AgreementType when status is not DRAFT")
 
     @validates_schema
     def validate_agreement_description(self, data, **kwargs):
-        # we are changing/promoting the status
-        if data.get("status") != BudgetLineItemStatus.DRAFT:
+        if is_changing_status(data):
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
             if bli and bli.agreement_id and not bli.agreement.description:
                 raise ValidationError("BLI's Agreement must have a Description when status is not DRAFT")
 
     @validates_schema
     def validate_product_service_code(self, data, **kwargs):
-        # we are changing/promoting the status
-        if data.get("status") != BudgetLineItemStatus.DRAFT:
+        if is_changing_status(data):
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
             if bli and bli.agreement_id and not bli.agreement.product_service_code_id:
                 raise ValidationError("BLI's Agreement must have a ProductServiceCode when status is not DRAFT")
 
     @validates_schema
     def validate_procurement_shop(self, data, **kwargs):
-        # we are changing/promoting the status
-        if data.get("status") != BudgetLineItemStatus.DRAFT:
+        if is_changing_status(data):
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
             if bli and bli.agreement_id and not bli.agreement.procurement_shop_id:
                 raise ValidationError("BLI's Agreement must have a ProcurementShop when status is not DRAFT")
 
     @validates_schema
     def validate_agreement_reason(self, data, **kwargs):
-        # we are changing/promoting the status
-        if data.get("status") != BudgetLineItemStatus.DRAFT:
+        if is_changing_status(data):
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
             if bli and bli.agreement_id and not bli.agreement.agreement_reason:
                 raise ValidationError("BLI's Agreement must have an AgreementReason when status is not DRAFT")
 
     @validates_schema
     def validate_agreement_reason_must_not_have_incumbent(self, data, **kwargs):
-        # we are changing/promoting the status
-        if data.get("status") != BudgetLineItemStatus.DRAFT:
+        if is_changing_status(data):
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
             if (
                 bli
@@ -113,8 +105,7 @@ class RequestBody:
 
     @validates_schema
     def validate_agreement_reason_must_have_incumbent(self, data, **kwargs):
-        # we are changing/promoting the status
-        if data.get("status") != BudgetLineItemStatus.DRAFT:
+        if is_changing_status(data):
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
             if (
                 bli
@@ -131,16 +122,14 @@ class RequestBody:
 
     @validates_schema
     def validate_project_officer(self, data, **kwargs):
-        # we are changing/promoting the status
-        if data.get("status") != BudgetLineItemStatus.DRAFT:
+        if is_changing_status(data):
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
             if bli and bli.agreement_id and not bli.agreement.project_officer:
                 raise ValidationError("BLI's Agreement must have a ProjectOfficer when status is not DRAFT")
 
     @validates_schema
     def validate_team_members(self, data, **kwargs):
-        # we are changing/promoting the status
-        if data.get("status") != BudgetLineItemStatus.DRAFT:
+        if is_changing_status(data):
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
             if bli and bli.agreement_id and not bli.agreement.team_members:
                 raise ValidationError("BLI's Agreement must have at least one Team Member when status is not DRAFT")
