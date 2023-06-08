@@ -9,7 +9,7 @@ from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
 from marshmallow import ValidationError, validates_schema
 from marshmallow_enum import EnumField
-from models import BudgetLineItemStatus, OpsEventType
+from models import AgreementReason, BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -65,6 +65,63 @@ class RequestBody:
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
             if bli and bli.agreement_id and not bli.agreement.description:
                 raise ValidationError("BLI's Agreement must have a Description when status is not DRAFT")
+
+    @validates_schema
+    def validate_product_service_code(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if bli and bli.agreement_id and not bli.agreement.product_service_code_id:
+                raise ValidationError("BLI's Agreement must have a ProductServiceCode when status is not DRAFT")
+
+    @validates_schema
+    def validate_procurement_shop(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if bli and bli.agreement_id and not bli.agreement.procurement_shop_id:
+                raise ValidationError("BLI's Agreement must have a ProcurementShop when status is not DRAFT")
+
+    @validates_schema
+    def validate_agreement_reason(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if bli and bli.agreement_id and not bli.agreement.agreement_reason:
+                raise ValidationError("BLI's Agreement must have an AgreementReason when status is not DRAFT")
+
+    @validates_schema
+    def validate_agreement_reason_must_not_have_incumbent(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if (
+                bli
+                and bli.agreement_id
+                and bli.agreement.agreement_reason == AgreementReason.NEW_REQ
+                and bli.agreement.incumbent
+            ):
+                raise ValidationError(
+                    "BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ"
+                )
+
+    @validates_schema
+    def validate_agreement_reason_must_have_incumbent(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if (
+                bli
+                and bli.agreement_id
+                and (
+                    bli.agreement.agreement_reason == AgreementReason.RECOMPETE
+                    or bli.agreement.agreement_reason == AgreementReason.LOGICAL_FOLLOW_ON
+                )
+                and not bli.agreement.incumbent
+            ):
+                raise ValidationError(
+                    "BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
+                )
 
 
 @dataclass(kw_only=True)

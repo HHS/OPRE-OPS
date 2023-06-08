@@ -232,7 +232,6 @@ def agreement_null_product_service_code(loaded_db, context):
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
         research_project_id=1,
-        product_service_code_id=2,
         procurement_shop_id=1,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
@@ -278,6 +277,7 @@ def agreement_null_agreement_reason(loaded_db, context):
         product_service_code_id=2,
         description="Using Innovative Data...",
         project_officer=1,
+        procurement_shop_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
     loaded_db.add(contract_agreement)
@@ -300,6 +300,7 @@ def agreement_reason_with_incumbent(loaded_db, context):
         agreement_reason=AgreementReason.NEW_REQ,
         incumbent="CURRENT VENDOR",
         project_officer=1,
+        procurement_shop_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
     loaded_db.add(contract_agreement)
@@ -323,6 +324,7 @@ def agreement_reason_with_incumbent_required(loaded_db, context):
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.RECOMPETE,
         project_officer=1,
+        procurement_shop_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
     loaded_db.add(contract_agreement)
@@ -343,6 +345,7 @@ def agreement_null_project_officer(loaded_db, context):
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
+        procurement_shop_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
     loaded_db.add(contract_agreement)
@@ -363,6 +366,7 @@ def agreement_null_team_members(loaded_db, context):
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
+        procurement_shop_id=1,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -382,6 +386,7 @@ def valid_agreement(loaded_db, context):
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
+        procurement_shop_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
     loaded_db.add(contract_agreement)
@@ -719,36 +724,70 @@ def error_message_valid_agreement_description(context, setup_and_teardown):
 
 @then("I should get an error message that the BLI's Agreement must have a valid Product Service Code")
 def error_message_valid_product_service_code(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI's Agreement must have a ProductServiceCode when status is " "not DRAFT"]
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": ["BLI's Agreement must have a ProductServiceCode when status is " "not DRAFT"]
+    }
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Procurement Shop")
 def error_message_valid_procurement_shop(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI's Agreement must have a ProcurementShop when status is " "not DRAFT"]
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": ["BLI's Agreement must have a ProcurementShop when status is " "not DRAFT"]
+    }
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Agreement Reason")
 def error_message_valid_agreement_reason(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI's Agreement must have an AgreementReason when status is " "not DRAFT"]
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": ["BLI's Agreement must have an AgreementReason when status is " "not DRAFT"]
+    }
 
 
 @then(
     "I should get an error message that the BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ"
 )
 def error_message_valid_agreement_reason_with_incumbent(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ"]
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": ["BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ"]
+    }
 
 
 @then(
     "I should get an error message that the BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
 )
 def error_message_valid_agreement_reason_with_incumbent_required(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": [
+            "BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
+        ]
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": [
+            "BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
+        ]
+    }
 
 
 @then("I should get an error message that the BLI's Agreement must have a Project Officer")
