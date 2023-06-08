@@ -109,6 +109,15 @@ Feature: Validate "Draft" Budget Lines
 
     Then I should get an error message that the BLI must have a Description
 
+  Scenario: Valid BLI Description: Request Empty
+    Given I am logged in as an OPS user
+    And I have a valid Agreement
+
+    When I have a BLI in DRAFT status without a Description
+    And I submit a BLI to move to IN_REVIEW status with an empty string Description
+
+    Then I should get an error message that the BLI must have a Description
+
 
   Scenario: Valid Need By Date: Exists
     Given I am logged in as an OPS user

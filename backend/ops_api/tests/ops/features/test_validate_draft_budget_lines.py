@@ -116,6 +116,14 @@ def test_valid_description_both_null(loaded_db, context):
 
 @scenario(
     "validate_draft_budget_lines.feature",
+    "Valid BLI Description: Request Empty",
+)
+def test_valid_description_request_empty(loaded_db, context):
+    ...
+
+
+@scenario(
+    "validate_draft_budget_lines.feature",
     "Valid Need By Date: Exists",
 )
 def test_valid_need_by_date_exists(loaded_db, context):
@@ -670,6 +678,29 @@ def submit(client, context):
 def submit_without_description(client, context):
     data = {
         "agreement_id": context["agreement"].id,
+        "comments": "hah hah",
+        "can_id": 2,
+        "amount": 200.24,
+        "status": "UNDER_REVIEW",
+        "date_needed": "2024-01-01",
+        "psc_fee_amount": 2.34,
+    }
+
+    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+
+    context["response_patch"] = client.patch(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
+        json={
+            "status": "UNDER_REVIEW",
+        },
+    )
+
+
+@when("I submit a BLI to move to IN_REVIEW status with an empty string Description")
+def submit_empty_description(client, context):
+    data = {
+        "agreement_id": context["agreement"].id,
+        "line_description": "  ",
         "comments": "hah hah",
         "can_id": 2,
         "amount": 200.24,
