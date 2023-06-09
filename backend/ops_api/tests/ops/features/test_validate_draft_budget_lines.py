@@ -975,7 +975,10 @@ def error_message_need_by_date_put_only(context, setup_and_teardown):
 @then("I should get an error message that the BLI must have a Need By Date (with empty Request)")
 def error_message_need_by_date_empty_request(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {"date_needed": ["Not a valid date."]}
+    assert context["response_put"].json == {
+        "_schema": ["BLI must valid a valid Need By Date when status is not DRAFT"],
+        "date_needed": ["Not a valid date."],
+    }
     assert context["response_patch"].status_code == 400
     assert context["response_patch"].json == {
         "_schema": ["BLI must valid a valid Need By Date when status is not DRAFT"]
@@ -997,7 +1000,10 @@ def error_message_amount(context, setup_and_teardown):
 @then("I should get an error message that the BLI must have an Agreement")
 def error_message_agreement(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {"agreement_id": ["Missing data for required field."]}
+    assert context["response_put"].json == {
+        "_schema": ["BLI must have an Agreement when status is not DRAFT"],
+        "agreement_id": ["Missing data for required field."],
+    }
     assert context["response_patch"].status_code == 400
     assert context["response_patch"].json == {"_schema": ["BLI must have an Agreement when status is not DRAFT"]}
 
