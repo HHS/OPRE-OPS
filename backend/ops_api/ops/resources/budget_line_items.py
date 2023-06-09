@@ -30,6 +30,18 @@ def is_changing_status(data: dict) -> bool:
     return status and status != BudgetLineItemStatus.DRAFT
 
 
+def is_invalid_full(bli_data, request_data) -> bool:
+    return is_invalid_partial(bli_data, request_data) or (request_data and len(request_data.strip()) == 0)
+
+
+def is_invalid_partial(bli_data, request_data) -> bool:
+    return (
+        (not request_data and not bli_data)
+        or (bli_data and len(bli_data.strip()) == 0 and request_data and len(request_data.strip()) == 0)
+        or (not request_data and bli_data and len(bli_data) == 0)
+    )
+
+
 @dataclass(kw_only=True)
 class RequestBody:
     status: Optional[BudgetLineItemStatus] = EnumField(BudgetLineItemStatus)
@@ -140,17 +152,7 @@ class RequestBody:
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
             bli_description = bli.line_description if bli else None
             data_description = data.get("line_description")
-            if (
-                (not data_description and not bli_description)
-                or (data_description and len(data_description.strip()) == 0)
-                or (
-                    bli_description
-                    and len(bli_description.strip()) == 0
-                    and data_description
-                    and len(data_description.strip()) == 0
-                )
-                or (not data_description and bli_description and len(bli_description) == 0)
-            ):
+            if is_invalid_full(bli_description, data_description):
                 raise ValidationError("BLI must valid a valid Description when status is not DRAFT")
 
     @validates_schema
@@ -159,16 +161,7 @@ class RequestBody:
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
             bli_description = bli.line_description if bli else None
             data_description = data.get("line_description")
-            if (
-                (not data_description and not bli_description)
-                or (
-                    bli_description
-                    and len(bli_description.strip()) == 0
-                    and data_description
-                    and len(data_description.strip()) == 0
-                )
-                or (not data_description and bli_description and len(bli_description) == 0)
-            ):
+            if is_invalid_partial(bli_description, data_description):
                 raise ValidationError("BLI must valid a valid Description when status is not DRAFT")
 
 
