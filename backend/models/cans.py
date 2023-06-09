@@ -7,8 +7,9 @@ import sqlalchemy as sa
 from models.base import BaseModel, currency, intpk, optional_str, reg, required_str
 from models.portfolios import Portfolio, shared_portfolio_cans
 from models.users import User
-from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Identity, Integer, Numeric, String, Table, Text
-from sqlalchemy.orm import column_property, relationship, with_polymorphic, InstrumentedAttribute
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Identity, Integer, Numeric, String, Table, Text, case, select
+from sqlalchemy.sql import functions, expression
+from sqlalchemy.orm import column_property, relationship, with_polymorphic, InstrumentedAttribute, object_session
 from typing_extensions import override
 
 
@@ -110,6 +111,46 @@ class ProductServiceCode(BaseModel):
     agreement = relationship("Agreement")
 
 
+class BudgetLineItem(BaseModel):
+    __tablename__ = "budget_line_item"
+
+    id = Column(Integer, Identity(), primary_key=True)
+    line_description = Column(String)
+    comments = Column(Text)
+
+    agreement_id = Column(Integer, ForeignKey("agreement.id"))
+    agreement = relationship("Agreement", back_populates="budget_line_items")
+
+    can_id = Column(Integer, ForeignKey("can.id"))
+    can = relationship("CAN", back_populates="budget_line_items")
+
+    amount = Column(Numeric(12, 2))
+
+    status = Column(sa.Enum(BudgetLineItemStatus))
+
+    date_needed = Column(Date)
+    psc_fee_amount = Column(
+        Numeric(12, 2)
+    )  # may need to be a different object, i.e. flat rate or percentage
+
+    @override
+    def to_dict(self):
+        d = super().to_dict()
+
+        if isinstance(self.status, str):
+            self.status = BudgetLineItemStatus[self.status]
+
+        d.update(
+            status=self.status.name if self.status else None,
+            amount=float(self.amount) if self.amount else None,
+            psc_fee_amount=float(self.psc_fee_amount) if self.psc_fee_amount else None,
+            date_needed=self.date_needed.isoformat() if self.date_needed else None,
+            can=self.can.to_dict() if self.can else None,
+        )
+
+        return d
+
+
 class Agreement(BaseModel):
     """Base Agreement Model"""
 
@@ -143,12 +184,20 @@ class Agreement(BaseModel):
     research_project = relationship("ResearchProject", back_populates="agreements")
 
     budget_line_items = relationship(
-        "BudgetLineItem", back_populates="agreement", lazy=True
+        BudgetLineItem, back_populates="agreement", lazy=True
     )
     procurement_shop_id = Column(Integer, ForeignKey("procurement_shop.id"))
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
 
     notes = Column(Text, nullable=True)
+
+    @property
+    def status(self):
+        subq = select(
+            functions.min(case({s.name: s.value for s in BudgetLineItemStatus}, value=BudgetLineItem.status)).label("status_num")
+        ).where(BudgetLineItem.agreement_id == self.id).group_by(BudgetLineItem.agreement_id).scalar_subquery()
+
+        return object_session(self).scalar(select(case({s.value: s.name for s in BudgetLineItemStatus}, value=subq)))
 
     __mapper_args__: dict[str, str | AgreementType] = {
         "polymorphic_identity": "agreement",
@@ -169,7 +218,7 @@ class Agreement(BaseModel):
             table_class = Agreement
         else:
             for subclass in cls._subclasses.values():
-                if field_name in set(subclass.columns):
+                if field_name in set(subclass.columns) | {"status"}:
                     table_class = subclass
                     break
             else:
@@ -193,6 +242,8 @@ class Agreement(BaseModel):
 
         if isinstance(self.agreement_reason, str):
             self.agreement_reason = AgreementReason[self.agreement_reason]
+
+        d["status"] = self.status
 
         d.update(
             agreement_type=self.agreement_type.name if self.agreement_type else None,
@@ -394,46 +445,6 @@ class CANFiscalYearCarryForward(BaseModel):
             if self.expected_amount
             else None,
             total_amount=float(self.total_amount) if self.total_amount else None,
-        )
-
-        return d
-
-
-class BudgetLineItem(BaseModel):
-    __tablename__ = "budget_line_item"
-
-    id = Column(Integer, Identity(), primary_key=True)
-    line_description = Column(String)
-    comments = Column(Text)
-
-    agreement_id = Column(Integer, ForeignKey("agreement.id"))
-    agreement = relationship(Agreement, back_populates="budget_line_items")
-
-    can_id = Column(Integer, ForeignKey("can.id"))
-    can = relationship("CAN", back_populates="budget_line_items")
-
-    amount = Column(Numeric(12, 2))
-
-    status = Column(sa.Enum(BudgetLineItemStatus))
-
-    date_needed = Column(Date)
-    psc_fee_amount = Column(
-        Numeric(12, 2)
-    )  # may need to be a different object, i.e. flat rate or percentage
-
-    @override
-    def to_dict(self):
-        d = super().to_dict()
-
-        if isinstance(self.status, str):
-            self.status = BudgetLineItemStatus[self.status]
-
-        d.update(
-            status=self.status.name if self.status else None,
-            amount=float(self.amount) if self.amount else None,
-            psc_fee_amount=float(self.psc_fee_amount) if self.psc_fee_amount else None,
-            date_needed=self.date_needed.isoformat() if self.date_needed else None,
-            can=self.can.to_dict() if self.can else None,
         )
 
         return d

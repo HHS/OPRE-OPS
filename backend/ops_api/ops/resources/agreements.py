@@ -8,7 +8,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_req
 from marshmallow import ValidationError, fields, Schema
 from models import ContractType, OpsEventType, User
 from models.base import BaseModel
-from models.cans import Agreement, AgreementReason, AgreementType, ContractAgreement, ProductServiceCode, BudgetLineItem, BudgetLineItemStatus
+from models.cans import Agreement, AgreementReason, AgreementType, ContractAgreement, ProductServiceCode, BudgetLineItem
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
@@ -264,14 +264,7 @@ class AgreementListAPI(BaseListAPI):
             case {**filter_args}:
                 pass
 
-        match filter_args:
-            case {"status": status, **filter_args}:
-                query_helper.add_join(BudgetLineItem)
-                query_helper.add_distinct()
-                query_helper.add_column_equals(BudgetLineItem.status, BudgetLineItemStatus[status])
-
-            case {**filter_args}:
-                pass
+        status: str | None = filter_args.pop("status", None)
 
         for key, value in filter_args.items():
             query_helper.add_column_equals(Agreement.get_class_field(key), value)
@@ -279,7 +272,7 @@ class AgreementListAPI(BaseListAPI):
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")
 
-        return stmt
+        return stmt, status
 
     @override
     @jwt_required()
@@ -288,11 +281,16 @@ class AgreementListAPI(BaseListAPI):
         is_authorized = self.auth_gateway.is_authorized(identity, ["GET_AGREEMENTS"])
 
         if is_authorized:
-            stmt = self._get_query(request.args)
+            stmt, status = self._get_query(request.args)
 
             result = current_app.db_session.execute(stmt).all()
 
-            response = make_response_with_headers([i.to_dict() for item in result for i in item])
+            items = (i for item in result for i in item)
+
+            if status:
+                items = (i for i in items if i.status == status)
+
+            response = make_response_with_headers([i.to_dict() for i in items])
         else:
             response = make_response_with_headers({}, 401)
 

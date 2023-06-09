@@ -109,6 +109,7 @@ def test_agreements_with_research_project_found(auth_client, loaded_db):
         ("research_project_id", 1),
         ("foa", "This is an FOA value"),
         ("name", "Contract #1: African American Child and Family Research Center"),
+        ("status", "PLANNED")
     ),
 )
 @pytest.mark.usefixtures("app_ctx")
@@ -117,7 +118,12 @@ def test_agreements_with_filter(auth_client, key, value, loaded_db):
     assert response.status_code == 200
     from pprint import pprint
 
-    success = all(item[key] == value for item in response.json)
+    match key:
+        case "status":
+            success = all(any(bl.status == key for bl in item.budget_line_items) for item in response.json)
+        case _:
+            success = all(item[key] == value for item in response.json)
+
     if not success:
         pprint([item[key] for item in response.json])
         pprint(value)
