@@ -176,6 +176,17 @@ class RequestBody:
             if self.context.get("method") in ["PATCH"] and is_invalid_partial(bli_date_needed, data_date_needed):
                 raise ValidationError(msg)
 
+    @validates_schema(skip_on_field_errors=False)
+    def validate_need_by_date_in_the_future(self, data: dict, **kwargs):
+        if is_changing_status(data):
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            bli_date_needed = bli.date_needed if bli else None
+            data_date_needed = data.get("date_needed")
+            today = date.today()
+            msg = "BLI must valid a Need By Date in the future when status is not DRAFT"
+            if (data_date_needed and data_date_needed <= today) or (bli_date_needed and bli_date_needed <= today):
+                raise ValidationError(msg)
+
 
 @dataclass(kw_only=True)
 class POSTRequestBody(RequestBody):
