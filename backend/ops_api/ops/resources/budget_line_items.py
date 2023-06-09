@@ -34,7 +34,7 @@ def is_invalid_full(bli_data, request_data) -> bool:
     if isinstance(request_data, str):
         return is_invalid_partial(bli_data, request_data) or (request_data and len(request_data.strip()) == 0)
     else:
-        return is_invalid_partial(bli_data, request_data)
+        return is_invalid_partial(bli_data, request_data) or not request_data
 
 
 def is_invalid_partial(bli_data, request_data) -> bool:
