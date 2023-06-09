@@ -128,12 +128,12 @@ Feature: Validate "Draft" Budget Lines
     Then I should get an error message that the BLI must have a Description
 
 
-  Scenario: Valid Need By Date: Exists
+  Scenario: Valid Need By Date: Both NULL
     Given I am logged in as an OPS user
     And I have a valid Agreement
 
     When I have a BLI in DRAFT status without a Need By Date
-    And I submit a BLI to move to IN_REVIEW status
+    And I submit a BLI to move to IN_REVIEW status (without Need By Date)
 
     Then I should get an error message that the BLI must have a Need By Date
 

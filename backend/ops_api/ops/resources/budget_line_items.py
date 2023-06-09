@@ -31,15 +31,21 @@ def is_changing_status(data: dict) -> bool:
 
 
 def is_invalid_full(bli_data, request_data) -> bool:
-    return is_invalid_partial(bli_data, request_data) or (request_data and len(request_data.strip()) == 0)
+    if isinstance(request_data, str):
+        return is_invalid_partial(bli_data, request_data) or (request_data and len(request_data.strip()) == 0)
+    else:
+        return is_invalid_partial(bli_data, request_data)
 
 
 def is_invalid_partial(bli_data, request_data) -> bool:
-    return (
-        (not request_data and not bli_data)
-        or (bli_data and len(bli_data.strip()) == 0 and request_data and len(request_data.strip()) == 0)
-        or (not request_data and bli_data and len(bli_data) == 0)
-    )
+    if isinstance(bli_data, str):
+        return (
+            (not request_data and not bli_data)
+            or (bli_data and len(bli_data.strip()) == 0 and request_data and len(request_data.strip()) == 0)
+            or (not request_data and bli_data and len(bli_data.strip()) == 0)
+        )
+    else:
+        return not request_data and not bli_data
 
 
 @dataclass(kw_only=True)
@@ -156,6 +162,18 @@ class RequestBody:
             if self.context.get("method") in ["POST", "PUT"] and is_invalid_full(bli_description, data_description):
                 raise ValidationError(msg)
             if self.context.get("method") in ["PATCH"] and is_invalid_partial(bli_description, data_description):
+                raise ValidationError(msg)
+
+    @validates_schema
+    def validate_need_by_date(self, data: dict, **kwargs):
+        if is_changing_status(data):
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            bli_date_needed = bli.date_needed if bli else None
+            data_date_needed = data.get("date_needed")
+            msg = "BLI must valid a valid Need By Date when status is not DRAFT"
+            if self.context.get("method") in ["POST", "PUT"] and is_invalid_full(bli_date_needed, data_date_needed):
+                raise ValidationError(msg)
+            if self.context.get("method") in ["PATCH"] and is_invalid_partial(bli_date_needed, data_date_needed):
                 raise ValidationError(msg)
 
 
