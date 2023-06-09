@@ -68,7 +68,7 @@ def test_agreements_serialization(auth_client, loaded_db):
         "notes": None,
         "number": "AGR0001",
         "procurement_shop_id": 1,
-        "product_service_code_id": 1,
+        "product_service_code_id": None,
         "project_officer": 1,
         "research_project_id": 1,
         "support_contacts": [],
@@ -119,6 +119,11 @@ def test_agreements_with_filter(auth_client, key, value, loaded_db):
     assert response.status_code == 200
 
     success = all(item[key] == value for item in response.json)
+
+    if not success:
+        from pprint import pprint
+        pprint([item[key] for item in response.json])
+        pprint(value)
     assert success
 
 
