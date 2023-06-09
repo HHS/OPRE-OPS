@@ -140,6 +140,14 @@ def test_valid_need_by_date_both_null(loaded_db, context):
 
 @scenario(
     "validate_draft_budget_lines.feature",
+    "Valid Need By Date: Request Empty",
+)
+def test_valid_need_by_date_request_empty(loaded_db, context):
+    ...
+
+
+@scenario(
+    "validate_draft_budget_lines.feature",
     "Valid Need By Date: Future Date",
 )
 def test_valid_need_by_date_exists_future_date(loaded_db, context):
@@ -771,6 +779,29 @@ def submit_without_need_by_date(client, context):
     )
 
 
+@when("I submit a BLI to move to IN_REVIEW status with an empty Need By Date")
+def submit_empty_need_by_date(client, context):
+    data = {
+        "agreement_id": context["agreement"].id,
+        "line_description": "Updated LI 1",
+        "comments": "hah hah",
+        "can_id": 2,
+        "amount": 200.24,
+        "status": "UNDER_REVIEW",
+        "date_needed": "  ",
+        "psc_fee_amount": 2.34,
+    }
+
+    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+
+    context["response_patch"] = client.patch(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
+        json={
+            "status": "UNDER_REVIEW",
+        },
+    )
+
+
 @then("I should get an error message that the BLI's Agreement must have a valid Project")
 def error_message_valid_project(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
@@ -924,6 +955,13 @@ def error_message_need_by_date(context, setup_and_teardown):
     assert context["response_patch"].json == {
         "_schema": ["BLI must valid a valid Need By Date when status is not DRAFT"]
     }
+
+
+@then("I should get an error message that the BLI must have a Need By Date (for PUT only)")
+def error_message_need_by_date_put_only(context, setup_and_teardown):
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {"date_needed": ["Not a valid date."]}
+    assert context["response_patch"].status_code == 200
 
 
 @then("I should get an error message that the BLI must have a CAN")
