@@ -146,6 +146,15 @@ Feature: Validate "Draft" Budget Lines
 
     Then I should get an error message that the BLI must have a Need By Date (for PUT only)
 
+  Scenario: Valid Need By Date: Both Empty
+    Given I am logged in as an OPS user
+    And I have a valid Agreement
+
+    When I have a BLI in DRAFT status without a Need By Date
+    And I submit a BLI to move to IN_REVIEW status with an empty Need By Date
+
+    Then I should get an error message that the BLI must have a Need By Date (with empty Request)
+
   Scenario: Valid Need By Date: Future Date
     Given I am logged in as an OPS user
     And I have a valid Agreement

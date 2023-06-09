@@ -148,6 +148,14 @@ def test_valid_need_by_date_request_empty(loaded_db, context):
 
 @scenario(
     "validate_draft_budget_lines.feature",
+    "Valid Need By Date: Both Empty",
+)
+def test_valid_need_by_date_both_empty(loaded_db, context):
+    ...
+
+
+@scenario(
+    "validate_draft_budget_lines.feature",
     "Valid Need By Date: Future Date",
 )
 def test_valid_need_by_date_exists_future_date(loaded_db, context):
@@ -962,6 +970,16 @@ def error_message_need_by_date_put_only(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
     assert context["response_put"].json == {"date_needed": ["Not a valid date."]}
     assert context["response_patch"].status_code == 200
+
+
+@then("I should get an error message that the BLI must have a Need By Date (with empty Request)")
+def error_message_need_by_date_empty_request(context, setup_and_teardown):
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {"date_needed": ["Not a valid date."]}
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": ["BLI must valid a valid Need By Date when status is not DRAFT"]
+    }
 
 
 @then("I should get an error message that the BLI must have a CAN")
