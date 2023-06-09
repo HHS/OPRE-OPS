@@ -164,9 +164,9 @@ def test_valid_need_by_date_exists_future_date(loaded_db, context):
 
 @scenario(
     "validate_draft_budget_lines.feature",
-    "Valid CAN",
+    "Valid CAN: Both NULL",
 )
-def test_valid_can(loaded_db, context):
+def test_valid_can_both_null(loaded_db, context):
     ...
 
 
@@ -810,6 +810,28 @@ def submit_empty_need_by_date(client, context):
     )
 
 
+@when("I submit a BLI to move to IN_REVIEW status (without a CAN)")
+def submit_without_can(client, context):
+    data = {
+        "agreement_id": context["agreement"].id,
+        "line_description": "Updated LI 1",
+        "comments": "hah hah",
+        "amount": 200.24,
+        "status": "UNDER_REVIEW",
+        "date_needed": "2044-01-01",
+        "psc_fee_amount": 2.34,
+    }
+
+    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+
+    context["response_patch"] = client.patch(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
+        json={
+            "status": "UNDER_REVIEW",
+        },
+    )
+
+
 @then("I should get an error message that the BLI's Agreement must have a valid Project")
 def error_message_valid_project(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
@@ -992,8 +1014,12 @@ def error_message_need_by_date_empty_request(context, setup_and_teardown):
 
 @then("I should get an error message that the BLI must have a CAN")
 def error_message_can(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI must valid a valid CAN when status is not DRAFT"],
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {"_schema": ["BLI must valid a valid CAN when status is not DRAFT"]}
 
 
 @then("I should get an error message that the BLI must have an Amount")

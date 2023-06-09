@@ -164,12 +164,12 @@ Feature: Validate "Draft" Budget Lines
 
     Then I should get an error message that the BLI must have a Need By Date in the future
 
-  Scenario: Valid CAN
+  Scenario: Valid CAN: Both NULL
     Given I am logged in as an OPS user
     And I have a valid Agreement
 
     When I have a BLI in DRAFT status without a CAN
-    And I submit a BLI to move to IN_REVIEW status
+    And I submit a BLI to move to IN_REVIEW status (without a CAN)
 
     Then I should get an error message that the BLI must have a CAN
 

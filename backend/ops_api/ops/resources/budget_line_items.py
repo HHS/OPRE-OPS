@@ -187,6 +187,18 @@ class RequestBody:
             if (data_date_needed and data_date_needed <= today) or (bli_date_needed and bli_date_needed <= today):
                 raise ValidationError(msg)
 
+    @validates_schema(skip_on_field_errors=False)
+    def validate_can(self, data: dict, **kwargs):
+        if is_changing_status(data):
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            bli_can_id = bli.can_id if bli else None
+            data_can_id = data.get("can_id")
+            msg = "BLI must valid a valid CAN when status is not DRAFT"
+            if self.context.get("method") in ["POST", "PUT"] and is_invalid_full(bli_can_id, data_can_id):
+                raise ValidationError(msg)
+            if self.context.get("method") in ["PATCH"] and is_invalid_partial(bli_can_id, data_can_id):
+                raise ValidationError(msg)
+
 
 @dataclass(kw_only=True)
 class POSTRequestBody(RequestBody):
