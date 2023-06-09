@@ -122,6 +122,7 @@ def test_agreements_with_filter(auth_client, key, value, loaded_db):
 
     if not success:
         from pprint import pprint
+
         pprint([item[key] for item in response.json])
         pprint(value)
     assert success

@@ -2,7 +2,6 @@ from typing import Any, cast
 
 from sqlalchemy import ColumnElement, Select, and_
 from sqlalchemy.orm import InstrumentedAttribute
-from models.base import BaseModel
 
 
 class QueryHelper:
