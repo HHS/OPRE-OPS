@@ -147,22 +147,16 @@ class RequestBody:
                 raise ValidationError("BLI's Agreement must have at least one Team Member when status is not DRAFT")
 
     @validates_schema
-    def validate_description_full(self, data: dict, **kwargs):
-        if is_changing_status(data) and self.context.get("method") in ["POST", "PUT"]:
+    def validate_description(self, data: dict, **kwargs):
+        if is_changing_status(data):
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
             bli_description = bli.line_description if bli else None
             data_description = data.get("line_description")
-            if is_invalid_full(bli_description, data_description):
-                raise ValidationError("BLI must valid a valid Description when status is not DRAFT")
-
-    @validates_schema
-    def validate_description_partial(self, data: dict, **kwargs):
-        if is_changing_status(data) and self.context.get("method") in ["PATCH"]:
-            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
-            bli_description = bli.line_description if bli else None
-            data_description = data.get("line_description")
-            if is_invalid_partial(bli_description, data_description):
-                raise ValidationError("BLI must valid a valid Description when status is not DRAFT")
+            msg = "BLI must valid a valid Description when status is not DRAFT"
+            if self.context.get("method") in ["POST", "PUT"] and is_invalid_full(bli_description, data_description):
+                raise ValidationError(msg)
+            if self.context.get("method") in ["PATCH"] and is_invalid_partial(bli_description, data_description):
+                raise ValidationError(msg)
 
 
 @dataclass(kw_only=True)
