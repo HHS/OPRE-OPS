@@ -8,7 +8,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_req
 from marshmallow import ValidationError, fields, Schema
 from models import ContractType, OpsEventType, User
 from models.base import BaseModel
-from models.cans import Agreement, AgreementReason, AgreementType, ContractAgreement, ProductServiceCode
+from models.cans import Agreement, AgreementReason, AgreementType, ContractAgreement, ProductServiceCode, BudgetLineItem, BudgetLineItemStatus
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
@@ -260,6 +260,15 @@ class AgreementListAPI(BaseListAPI):
 
             case {"search": search, **filter_args}:
                 query_helper.add_search(polymorphic_agreement.name, search)
+
+            case {**filter_args}:
+                pass
+
+        match filter_args:
+            case {"status": status, **filter_args}:
+                query_helper.add_join(BudgetLineItem)
+                query_helper.add_distinct()
+                query_helper.add_column_equals(BudgetLineItem.status, BudgetLineItemStatus[status])
 
             case {**filter_args}:
                 pass

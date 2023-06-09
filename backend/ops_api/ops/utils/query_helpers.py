@@ -2,6 +2,7 @@ from typing import Any, cast
 
 from sqlalchemy import ColumnElement, Select, and_
 from sqlalchemy.orm import InstrumentedAttribute
+from models.base import BaseModel
 
 
 class QueryHelper:
@@ -17,6 +18,12 @@ class QueryHelper:
 
     def return_none(self):
         self.where_clauses.append(cast(ColumnElement, False))
+
+    def add_join(self, joined_table: BaseModel):
+        self.stmt = self.stmt.join(joined_table)
+
+    def add_distinct(self):
+        self.stmt = self.stmt.distinct()
 
     def get_stmt(self):
         if not self.where_clauses:
