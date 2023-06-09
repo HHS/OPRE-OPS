@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session, scoped_session, sessionmaker
 def init_db(
     conn_string: str, is_unit_test: Optional[bool] = False
 ) -> tuple[scoped_session[Session | Any], Engine]:  # noqa: F405
-    engine = create_engine(conn_string, echo=True)
+    engine = create_engine(conn_string)
     db_session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
     Base = declarative_base(cls=BaseModel)  # noqa: F405
     BaseModel.query = db_session.query_property()  # noqa: F405
