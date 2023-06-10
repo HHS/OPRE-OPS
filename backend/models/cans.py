@@ -144,7 +144,7 @@ class Agreement(BaseModel):
     research_project = relationship("ResearchProject", back_populates="agreements")
 
     budget_line_items = relationship(
-        BudgetLineItem, back_populates="agreement", lazy=True
+        "BudgetLineItem", back_populates="agreement", lazy=True
     )
     procurement_shop_id = Column(Integer, ForeignKey("procurement_shop.id"))
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
@@ -418,7 +418,7 @@ class BudgetLineItem(BaseModel):
     comments = Column(Text)
 
     agreement_id = Column(Integer, ForeignKey("agreement.id"))
-    agreement = relationship("Agreement", back_populates="budget_line_items")
+    agreement = relationship(Agreement, back_populates="budget_line_items")
 
     can_id = Column(Integer, ForeignKey("can.id"))
     can = relationship("CAN", back_populates="budget_line_items")
