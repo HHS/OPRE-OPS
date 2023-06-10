@@ -111,46 +111,6 @@ class ProductServiceCode(BaseModel):
     agreement = relationship("Agreement")
 
 
-class BudgetLineItem(BaseModel):
-    __tablename__ = "budget_line_item"
-
-    id = Column(Integer, Identity(), primary_key=True)
-    line_description = Column(String)
-    comments = Column(Text)
-
-    agreement_id = Column(Integer, ForeignKey("agreement.id"))
-    agreement = relationship("Agreement", back_populates="budget_line_items")
-
-    can_id = Column(Integer, ForeignKey("can.id"))
-    can = relationship("CAN", back_populates="budget_line_items")
-
-    amount = Column(Numeric(12, 2))
-
-    status = Column(sa.Enum(BudgetLineItemStatus))
-
-    date_needed = Column(Date)
-    psc_fee_amount = Column(
-        Numeric(12, 2)
-    )  # may need to be a different object, i.e. flat rate or percentage
-
-    @override
-    def to_dict(self):
-        d = super().to_dict()
-
-        if isinstance(self.status, str):
-            self.status = BudgetLineItemStatus[self.status]
-
-        d.update(
-            status=self.status.name if self.status else None,
-            amount=float(self.amount) if self.amount else None,
-            psc_fee_amount=float(self.psc_fee_amount) if self.psc_fee_amount else None,
-            date_needed=self.date_needed.isoformat() if self.date_needed else None,
-            can=self.can.to_dict() if self.can else None,
-        )
-
-        return d
-
-
 class Agreement(BaseModel):
     """Base Agreement Model"""
 
@@ -445,6 +405,46 @@ class CANFiscalYearCarryForward(BaseModel):
             if self.expected_amount
             else None,
             total_amount=float(self.total_amount) if self.total_amount else None,
+        )
+
+        return d
+
+
+class BudgetLineItem(BaseModel):
+    __tablename__ = "budget_line_item"
+
+    id = Column(Integer, Identity(), primary_key=True)
+    line_description = Column(String)
+    comments = Column(Text)
+
+    agreement_id = Column(Integer, ForeignKey("agreement.id"))
+    agreement = relationship("Agreement", back_populates="budget_line_items")
+
+    can_id = Column(Integer, ForeignKey("can.id"))
+    can = relationship("CAN", back_populates="budget_line_items")
+
+    amount = Column(Numeric(12, 2))
+
+    status = Column(sa.Enum(BudgetLineItemStatus))
+
+    date_needed = Column(Date)
+    psc_fee_amount = Column(
+        Numeric(12, 2)
+    )  # may need to be a different object, i.e. flat rate or percentage
+
+    @override
+    def to_dict(self):
+        d = super().to_dict()
+
+        if isinstance(self.status, str):
+            self.status = BudgetLineItemStatus[self.status]
+
+        d.update(
+            status=self.status.name if self.status else None,
+            amount=float(self.amount) if self.amount else None,
+            psc_fee_amount=float(self.psc_fee_amount) if self.psc_fee_amount else None,
+            date_needed=self.date_needed.isoformat() if self.date_needed else None,
+            can=self.can.to_dict() if self.can else None,
         )
 
         return d
