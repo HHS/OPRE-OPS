@@ -200,6 +200,20 @@ class RequestBody:
             if self.context.get("method") in ["PATCH"] and is_invalid_partial(bli_amount, data_amount):
                 raise ValidationError(msg)
 
+    @validates_schema(skip_on_field_errors=False)
+    def validate_amount_greater_than_zero(self, data: dict, **kwargs):
+        if is_changing_status(data):
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            bli_amount = bli.amount if bli else None
+            data_amount = data.get("amount")
+            msg = "BLI must be a valid Amount (greater than zero) when status is not DRAFT"
+            if (
+                (data_amount is None and bli_amount is not None and bli_amount <= 0)
+                or (bli_amount is None and data_amount is not None and data_amount <= 0)
+                or (bli_amount is not None and bli_amount <= 0 and data_amount is not None and data_amount <= 0)
+            ):
+                raise ValidationError(msg)
+
 
 @dataclass(kw_only=True)
 class POSTRequestBody(RequestBody):

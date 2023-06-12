@@ -205,6 +205,6 @@ Feature: Validate "Draft" Budget Lines
     And I have a valid Agreement
 
     When I have a BLI in DRAFT status with an Amount less than or equal to 0
-    And I submit a BLI to move to IN_REVIEW status
+    And I submit a BLI to move to IN_REVIEW status (with an Amount less than or equal to 0)
 
     Then I should get an error message that the BLI must have an Amount greater than 0

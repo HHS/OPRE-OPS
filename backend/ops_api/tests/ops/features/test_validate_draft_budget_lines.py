@@ -194,6 +194,14 @@ def test_valid_amount_request_empty(loaded_db, context):
     ...
 
 
+@scenario(
+    "validate_draft_budget_lines.feature",
+    "Valid Amount: Greater than 0",
+)
+def test_valid_amount_greater_than_zero(loaded_db, context):
+    ...
+
+
 @pytest.fixture()
 def setup_and_teardown(loaded_db, context):
     ...
@@ -870,6 +878,29 @@ def submit_without_amount(client, context):
     )
 
 
+@when("I submit a BLI to move to IN_REVIEW status (with an Amount less than or equal to 0)")
+def submit_amount_less_than_zero(client, context):
+    data = {
+        "agreement_id": context["agreement"].id,
+        "line_description": "Updated LI 1",
+        "comments": "hah hah",
+        "can_id": 2,
+        "amount": -200.24,
+        "status": "UNDER_REVIEW",
+        "date_needed": "2044-01-01",
+        "psc_fee_amount": 2.34,
+    }
+
+    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+
+    context["response_patch"] = client.patch(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
+        json={
+            "status": "UNDER_REVIEW",
+        },
+    )
+
+
 @then("I should get an error message that the BLI's Agreement must have a valid Project")
 def error_message_valid_project(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
@@ -1116,5 +1147,16 @@ def error_message_future_need_by_date(context, setup_and_teardown):
 
 @then("I should get an error message that the BLI must have an Amount greater than 0")
 def error_message_amount_less_than_or_equal_to_zero(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": [
+            "BLI must be a valid Amount (greater than zero) when status is " "not DRAFT",
+        ]
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": [
+            "BLI must have a valid Amount when status is not DRAFT",
+            "BLI must be a valid Amount (greater than zero) when status is " "not DRAFT",
+        ]
+    }
