@@ -10,6 +10,7 @@ import ProductServiceCodeSummaryBox from "../../../components/UI/Form/ProductSer
 import {formatTeamMember} from "../../../api/postAgreements";
 import { patchAgreement } from "../../../api/patchAgreements";
 import ProcurementShopSelect from "../../../components/UI/Form/ProcurementShopSelect";
+import AgreementReasonSelect from "../../../components/UI/Form/AgreementReasonSelect";
 
 // import {
 //     useEditAgreement,
@@ -110,6 +111,12 @@ export const EditAgreementForm = ({ agreement }) => {
     const [agreementDescription, setAgreementDescription] = useState(agreement.description)
     const [selectedProductServiceCode, setSelectedProductServiceCode] = useState(agreement.product_service_code)
     const [selectedProcurementShop, setSelectedProcurementShop] = useState(agreement.procurement_shop)
+    const [selectedAgreementReason, setSelectedAgreementReason] = useState(agreement.agreement_reason)
+    const [agreementIncumbent, setAgreementIncumbent] = useState(agreement.incumbent)
+
+    const incumbentDisabled =
+        selectedAgreementReason === "NEW_REQ" || selectedAgreementReason === null || selectedAgreementReason === "0";
+
 
     const saveAgreement = async () => {
         const id = agreement.id;
@@ -117,7 +124,9 @@ export const EditAgreementForm = ({ agreement }) => {
             name: agreementTitle,
             description: agreementDescription,
             product_service_code_id: (selectedProductServiceCode?.id || null),
-            procurement_shop_id: (selectedProcurementShop?.id || null)
+            procurement_shop_id: (selectedProcurementShop?.id || null),
+            agreement_reason: selectedAgreementReason,
+            incumbent: agreementIncumbent
         };
         const response = await patchAgreement(id, data);
         console.log(`Agreement Updated: ${response.id}`);
@@ -205,6 +214,32 @@ export const EditAgreementForm = ({ agreement }) => {
                 selectedProcurementShop={selectedProcurementShop}
                 onChangeSelectedProcurementShop={setSelectedProcurementShop}
             />
+
+            <h2 className="font-sans-lg margin-top-3">Reason for Agreement</h2>
+            <div className="display-flex">
+                <AgreementReasonSelect
+                    selectedAgreementReason={selectedAgreementReason}
+                    setSelectedAgreementReason={setSelectedAgreementReason}
+                    setAgreementIncumbent={setAgreementIncumbent}
+                />
+                <fieldset
+                    className={`usa-fieldset margin-left-4 ${incumbentDisabled && "text-disabled"}`}
+                    disabled={incumbentDisabled}
+                >
+                    <label className="usa-label margin-top-0" htmlFor="agreement-incumbent">
+                        Incumbent
+                    </label>
+                    <input
+                        className="usa-input width-card-lg"
+                        id="agreement-incumbent"
+                        name="agreement-incumbent"
+                        type="text"
+                        value={agreementIncumbent || ""}
+                        onChange={(e) => setAgreementIncumbent(e.target.value)}
+                        required
+                    />
+                </fieldset>
+            </div>
 
             <div className="grid-row flex-justify margin-top-8">
                 <div>
