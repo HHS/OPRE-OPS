@@ -4811,10 +4811,10 @@ cypress-localstorage-commands@2.2.3:
   resolved "https://registry.yarnpkg.com/cypress-localstorage-commands/-/cypress-localstorage-commands-2.2.3.tgz#ef5b736226b8316b7d948e30bc4b94a157cfa025"
   integrity sha512-EUEaHzbstw9AsEheIqr+RyXuxIzUS64nBBwl+Q4/mSdzfXpfcaV1nrHF+6H9zbTuFVTc+oWu6eC1l8aSjiWW6w==
 
-cypress@12.13.0:
-  version "12.13.0"
-  resolved "https://registry.yarnpkg.com/cypress/-/cypress-12.13.0.tgz#725b6617ea19e41e5c59cc509fc3e08097142b01"
-  integrity sha512-QJlSmdPk+53Zhy69woJMySZQJoWfEWun3X5OOenGsXjRPVfByVTHorxNehbzhZrEzH9RDUDqVcck0ahtlS+N/Q==
+cypress@12.14.0:
+  version "12.14.0"
+  resolved "https://registry.yarnpkg.com/cypress/-/cypress-12.14.0.tgz#37a19b85f5e9d881995e9fee1ddf41b3d3a623dd"
+  integrity sha512-HiLIXKXZaIT1RT7sw1sVPt+qKtis3uYNm6KwC4qoYjabwLKaqZlyS/P+uVvvlBNcHIwL/BC6nQZajpbUd7hOgQ==
   dependencies:
     "@cypress/request" "^2.88.10"
     "@cypress/xvfb" "^1.2.4"
@@ -11747,10 +11747,10 @@ sass-loader@^12.3.0:
     klona "^2.0.4"
     neo-async "^2.6.2"
 
-sass@1.62.1:
-  version "1.62.1"
-  resolved "https://registry.yarnpkg.com/sass/-/sass-1.62.1.tgz#caa8d6bf098935bc92fc73fa169fb3790cacd029"
-  integrity sha512-NHpxIzN29MXvWiuswfc1W3I0N8SXBd8UR26WntmDlRYf0bSADnwnOjsyMZ3lMezSlArD33Vs3YFhp7dWvL770A==
+sass@1.63.2:
+  version "1.63.2"
+  resolved "https://registry.yarnpkg.com/sass/-/sass-1.63.2.tgz#75f7d9a8e67d1d5b98a989507f4d98b6067b1f75"
+  integrity sha512-u56TU0AIFqMtauKl/OJ1AeFsXqRHkgO7nCWmHaDwfxDo9GUMSqBA4NEh6GMuh1CYVM7zuROYtZrHzPc2ixK+ww==
   dependencies:
     chokidar ">=3.0.0 <4.0.0"
     immutable "^4.0.0"
