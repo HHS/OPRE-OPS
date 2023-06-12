@@ -1,15 +1,14 @@
-from dataclasses import dataclass
-from dataclasses import fields as dc_fields
-from typing import Optional, Type
+from dataclasses import dataclass, fields as dc_fields
+from typing import Optional, ClassVar
 
 import desert
 from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
-from marshmallow import ValidationError, fields
+from marshmallow import ValidationError, fields, Schema
 from models import ContractType, OpsEventType, User
 from models.base import BaseModel
-from models.cans import Agreement, AgreementReason, AgreementType, ContractAgreement, GrantAgreement, ProductServiceCode
+from models.cans import Agreement, AgreementReason, AgreementType, ContractAgreement, ProductServiceCode
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
@@ -17,7 +16,6 @@ from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 from sqlalchemy.future import select
-from sqlalchemy.orm import with_polymorphic
 from typing_extensions import Any, override
 
 ENDPOINT_STRING = "/agreements"
@@ -32,6 +30,8 @@ class TeamMembers:
 
 @dataclass
 class AgreementData:
+    _subclasses: ClassVar[dict[Optional[AgreementType], type["AgreementData"]]] = {}
+    _schemas: ClassVar[dict[Optional[AgreementType], Schema]] = {}
     name: str
     number: str
     agreement_type: AgreementType = fields.Enum(AgreementType)
@@ -48,9 +48,28 @@ class AgreementData:
     procurement_shop_id: Optional[int] = None
     notes: Optional[str] = None
 
+    def __init_subclass__(cls, agreement_type: AgreementType, **kwargs):
+        cls._subclasses[agreement_type] = cls  # type: ignore [assignment]
+        super().__init_subclass__(**kwargs)
+
+    @classmethod
+    def get_schema(cls, agreement_type: Optional[AgreementType] = None) -> Schema:
+        try:
+            return cls._schemas[agreement_type]
+        except KeyError:
+            cls._schemas[agreement_type] = desert.schema(cls._subclasses.get(agreement_type, AgreementData))
+            return cls._schemas[agreement_type]
+
+    @classmethod
+    def get_class(cls, agreement_type: Optional[AgreementType] = None) -> type["AgreementData"]:
+        try:
+            return cls._subclasses[agreement_type]
+        except KeyError:
+            return AgreementData
+
 
 @dataclass
-class ContractAgreementData(AgreementData):
+class ContractAgreementData(AgreementData, agreement_type=AgreementType.CONTRACT):
     contract_number: Optional[str] = None
     vendor: Optional[str] = None
     delivered_status: Optional[bool] = fields.Boolean(default=False)
@@ -61,42 +80,24 @@ class ContractAgreementData(AgreementData):
     )
 
 
-@dataclass(kw_only=True)
-class ContractAgreementPatchBody(ContractAgreementData):
-    name: Optional[str] = None
-    number: Optional[str] = None
-
-
 @dataclass
-class GrantAgreementData(AgreementData):
+class GrantAgreementData(AgreementData, agreement_type=AgreementType.GRANT):
     foa: Optional[str] = None
 
 
 @dataclass
-class GrantAgreementPatchBody(GrantAgreementData):
-    name: Optional[str] = None
-    number: Optional[str] = None
+class DirectAgreementData(AgreementData, agreement_type=AgreementType.DIRECT_ALLOCATION):
+    pass
 
 
-REQUEST_SCHEMAS = {
-    AgreementType.CONTRACT: {
-        "PUT": ContractAgreementData,
-        "PATCH": ContractAgreementPatchBody,
-    },
-    AgreementType.GRANT: {"PUT": GrantAgreementData, "PATCH": GrantAgreementPatchBody},
-}
+@dataclass
+class IaaAgreementData(AgreementData, agreement_type=AgreementType.IAA):
+    pass
 
 
-def pick_schema_class(
-    agreement_type: AgreementType, method: str
-) -> Type[ContractAgreementData | ContractAgreementPatchBody | GrantAgreementData | GrantAgreementPatchBody]:
-    type_methods = REQUEST_SCHEMAS.get(agreement_type)
-    if not type_methods:
-        raise ValueError(f"Invalid agreement_type ({agreement_type})")
-    schema = type_methods.get(method, None)
-    if not schema:
-        raise ValueError(f"Invalid agreement_type for method={method}")
-    return schema
+@dataclass
+class IaaAaAgreementData(AgreementData, agreement_type=AgreementType.IAA_AA):
+    pass
 
 
 @dataclass
@@ -160,11 +161,13 @@ class AgreementItemAPI(BaseItemAPI):
                     raise RuntimeError("Invalid Agreement id.")
                 # reject change of agreement_type
                 # for PUT, it must exist in request
-                req_type = request.json.get("agreement_type", None)
-                if req_type != old_agreement.agreement_type.name:
-                    raise RuntimeError("Invalid agreement_type, agreement_type must not change")
-                agreement_cls = pick_schema_class(old_agreement.agreement_type, "PUT")
-                schema = desert.schema(agreement_cls)
+                try:
+                    req_type = request.json["agreement_type"]
+                    if req_type != old_agreement.agreement_type.name:
+                        raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
+                except (KeyError, ValueError) as e:
+                    raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
+                schema = AgreementData.get_schema(old_agreement.agreement_type)
 
                 OPSMethodView._validate_request(
                     schema=schema,
@@ -179,6 +182,7 @@ class AgreementItemAPI(BaseItemAPI):
                 current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
 
                 return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
+
         except (KeyError, RuntimeError, PendingRollbackError) as re:
             current_app.logger.error(f"{message_prefix}: {re}")
             return make_response_with_headers({}, 400)
@@ -204,25 +208,24 @@ class AgreementItemAPI(BaseItemAPI):
             with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
                 old_agreement: Agreement = self._get_item(id)
                 if not old_agreement:
-                    raise RuntimeError("Invalid Agreement id.")
+                    raise RuntimeError(f"Invalid Agreement id: {id}.")
                 # reject change of agreement_type
-                if "agreement_type" in request.json:
-                    req_type = request.json["agreement_type"]
+                try:
+                    req_type = request.json.get("agreement_type", old_agreement.agreement_type.name)
                     if req_type != old_agreement.agreement_type.name:
-                        raise RuntimeError("Invalid agreement_type, agreement_type must not change")
-                agreement_cls = pick_schema_class(old_agreement.agreement_type, "PATCH")
-                schema = desert.schema(agreement_cls)
+                        raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
+                except (KeyError, ValueError) as e:
+                    raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
+                schema = AgreementData.get_schema(old_agreement.agreement_type)
 
                 OPSMethodView._validate_request(
                     schema=schema,
                     message=f"{message_prefix}: Params failed validation:",
+                    partial=True,
                 )
 
-                data = schema.load(request.json)
-                data = data.__dict__
-                data = {
-                    k: v for (k, v) in data.items() if k in request.json
-                }  # only keep the attributes from the request body
+                agreement_fields = set(f.name for f in dc_fields(AgreementData.get_class(old_agreement.agreement_type)))
+                data = {k: v for k, v in request.json.items() if k in agreement_fields}
                 agreement = update_agreement(data, old_agreement)
                 agreement_dict = agreement.to_dict()
                 meta.metadata.update({"updated_agreement": agreement_dict})
@@ -244,12 +247,10 @@ class AgreementItemAPI(BaseItemAPI):
 class AgreementListAPI(BaseListAPI):
     def __init__(self, model: BaseModel = Agreement):
         super().__init__(model)
-        self._schema_contract = desert.schema(ContractAgreementData)
-        self._schema_grant = desert.schema(GrantAgreementData)
 
     @staticmethod
     def _get_query(args):
-        polymorphic_agreement = with_polymorphic(Agreement, [ContractAgreement, GrantAgreement])
+        polymorphic_agreement = Agreement.get_polymorphic()
         stmt = select(polymorphic_agreement).order_by(Agreement.id)
         query_helper = QueryHelper(stmt)
 
@@ -263,19 +264,8 @@ class AgreementListAPI(BaseListAPI):
             case {**filter_args}:
                 pass
 
-        if filter_args:
-            # This part is necessary because otherwise the system gets confused. Need to
-            # know what table to use to look up parameters from for filtering.
-            contract_keys = {field.name for field in dc_fields(ContractAgreementData)}
-            grant_keys = {field.name for field in dc_fields(GrantAgreementData)}
-            for key, value in filter_args.items():
-                if key in contract_keys:
-                    agreement_model = ContractAgreement
-                elif key in grant_keys:
-                    agreement_model = GrantAgreement
-                else:
-                    agreement_model = Agreement
-                query_helper.add_column_equals(getattr(agreement_model, key), value)
+        for key, value in filter_args.items():
+            query_helper.add_column_equals(Agreement.get_class_field(key), value)
 
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")
@@ -308,26 +298,17 @@ class AgreementListAPI(BaseListAPI):
                 if "agreement_type" not in request.json:
                     raise RuntimeError(f"{message_prefix}: Params failed validation")
 
-                agreement_type = request.json["agreement_type"]
-                match agreement_type:
-                    case "CONTRACT":
-                        print("contract")
-                        errors = self._schema_contract.validate(request.json)
-                        self.check_errors(errors)
+                try:
+                    agreement_type = AgreementType[request.json["agreement_type"]]
+                except KeyError:
+                    raise ValueError("Invalid agreement_type")
 
-                        data = self._schema_contract.load(request.json)
-                        new_agreement = self._create_agreement(data, ContractAgreement)
+                current_app.logger.info(agreement_type.name)
+                errors = AgreementData.get_schema(agreement_type).validate(request.json)
+                self.check_errors(errors)
 
-                    case "GRANT":
-                        print("grant")
-                        errors = self._schema_grant.validate(request.json)
-                        self.check_errors(errors)
-
-                        data = self._schema_grant.load(request.json)
-                        new_agreement = self._create_agreement(data, GrantAgreement)
-
-                    case _:
-                        raise ValueError("Invalid agreement_type")
+                data = AgreementData.get_schema(agreement_type).load(request.json)
+                new_agreement = self._create_agreement(data, Agreement.get_class(agreement_type))
 
                 token = verify_jwt_in_request()
                 user = get_user_from_token(token[1])
@@ -388,26 +369,34 @@ class AgreementTypeListAPI(MethodView):
         return jsonify([e.name for e in AgreementType])
 
 
+def _get_user_list(data: Any):
+    tmp_ids = []
+    if data:
+        for item in data:
+            try:
+                tmp_ids.append(item.id)
+            except AttributeError:
+                tmp_ids.append(item["id"])
+    if tmp_ids:
+        return [current_app.db_session.get(User, tm_id) for tm_id in tmp_ids]
+
+
 def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
     for item in data:
-        if item not in ["team_members", "support_contacts"]:
+        if item in {"agreement_type", "agreement_reason"}:
+            pass
+        elif item not in {"team_members", "support_contacts"}:
             setattr(agreement, item, data[item])
 
         elif item == "team_members":
-            tmp_team_members = data[item] if data[item] else []
-            agreement.team_members = []
+            tmp_team_members = _get_user_list(data[item])
             if tmp_team_members:
-                agreement.team_members.extend(
-                    [current_app.db_session.get(User, tm_id.id) for tm_id in tmp_team_members]
-                )
+                agreement.team_members = tmp_team_members
 
         elif item == "support_contacts":
-            tmp_support_contacts = data[item] if data[item] else []
-            agreement.support_contacts = []
+            tmp_support_contacts = _get_user_list(data[item])
             if tmp_support_contacts:
-                agreement.support_contacts.extend(
-                    [current_app.db_session.get(User, tm_id.id) for tm_id in tmp_support_contacts]
-                )
+                agreement.support_contacts = tmp_support_contacts
 
 
 def update_agreement(data: dict[str, Any], agreement: Agreement):

@@ -1,14 +1,14 @@
 """CAN models."""
 from dataclasses import dataclass
 from enum import Enum, IntEnum
-from typing import Any
+from typing import Any, ClassVar, Optional
 
 import sqlalchemy as sa
 from models.base import BaseModel, currency, intpk, optional_str, reg, required_str
 from models.portfolios import Portfolio, shared_portfolio_cans
 from models.users import User
 from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Identity, Integer, Numeric, String, Table, Text
-from sqlalchemy.orm import column_property, relationship
+from sqlalchemy.orm import column_property, relationship, with_polymorphic, InstrumentedAttribute
 from typing_extensions import override
 
 
@@ -77,7 +77,8 @@ class AgreementType(Enum):
     GRANT = 2
     DIRECT_ALLOCATION = 3
     IAA = 4
-    MISCELLANEOUS = 5
+    IAA_AA = 5
+    MISCELLANEOUS = 6
 
 
 class AgreementReason(Enum):
@@ -111,6 +112,8 @@ class ProductServiceCode(BaseModel):
 
 class Agreement(BaseModel):
     """Base Agreement Model"""
+
+    _subclasses: ClassVar[dict[Optional[AgreementType], type["Agreement"]]] = {}
 
     __tablename__ = "agreement"
 
@@ -152,9 +155,44 @@ class Agreement(BaseModel):
         "polymorphic_on": "agreement_type",
     }
 
+    def __init_subclass__(cls, agreement_type: AgreementType, **kwargs):
+        cls._subclasses[agreement_type] = cls  # type: ignore [assignment]
+        super().__init_subclass__(**kwargs)
+
+    @classmethod
+    def get_polymorphic(cls) -> "Agreement":
+        return with_polymorphic(Agreement, list(cls._subclasses.values()))
+
+    @classmethod
+    def get_class_field(cls, field_name: str) -> InstrumentedAttribute:
+        if field_name in set(Agreement.columns):
+            table_class = Agreement
+        else:
+            for subclass in cls._subclasses.values():
+                if field_name in set(subclass.columns):
+                    table_class = subclass
+                    break
+            else:
+                raise ValueError(f"Column name does not exist for agreements: {field_name}")
+        return getattr(table_class, field_name)
+
+    @classmethod
+    def get_class(cls, agreement_type: Optional[AgreementType] = None) -> type["Agreement"]:
+        try:
+            return cls._subclasses[agreement_type]
+        except KeyError:
+            return Agreement
+
+
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
         d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
+
+        if isinstance(self.agreement_type, str):
+            self.agreement_type = AgreementType[self.agreement_type]
+
+        if isinstance(self.agreement_reason, str):
+            self.agreement_reason = AgreementReason[self.agreement_reason]
 
         d.update(
             agreement_type=self.agreement_type.name if self.agreement_type else None,
@@ -194,7 +232,7 @@ class ContractType(Enum):
     SERVICE = 1
 
 
-class ContractAgreement(Agreement):
+class ContractAgreement(Agreement, agreement_type=AgreementType.CONTRACT):
     """Contract Agreement Model"""
 
     __tablename__ = "contract_agreement"
@@ -218,6 +256,9 @@ class ContractAgreement(Agreement):
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
         d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
 
+        if isinstance(self.contract_type, str):
+            self.contract_type = ContractType[self.contract_type]
+
         d.update(
             {
                 "contract_type": self.contract_type.name
@@ -233,7 +274,7 @@ class ContractAgreement(Agreement):
 
 
 # TODO: Skeleton, will need flushed out more when we know what all a Grant is.
-class GrantAgreement(Agreement):
+class GrantAgreement(Agreement, agreement_type=AgreementType.GRANT):
     """Grant Agreement Model"""
 
     __tablename__ = "grant_agreement"
@@ -248,7 +289,7 @@ class GrantAgreement(Agreement):
 
 # TODO: Skeleton, will need flushed out more when we know what all an IAA is.
 ### Inter-Agency-Agreement
-class IaaAgreement(Agreement):
+class IaaAgreement(Agreement, agreement_type=AgreementType.IAA):
     """IAA Agreement Model"""
 
     __tablename__ = "iaa_agreement"
@@ -263,7 +304,7 @@ class IaaAgreement(Agreement):
 
 # TODO: Skeleton, will need flushed out more when we know what all an IAA-AA is. Inter-Agency-Agreement-Assisted-Aquisition
 ### Inter-Agency-Agreement-Assisted-Aquisition
-class IaaAaAgreement(Agreement):
+class IaaAaAgreement(Agreement, agreement_type=AgreementType.IAA_AA):
     """IAA-AA Agreement Model"""
 
     __tablename__ = "iaa_aa_agreement"
@@ -276,7 +317,7 @@ class IaaAaAgreement(Agreement):
     }
 
 
-class DirectAgreement(Agreement):
+class DirectAgreement(Agreement, agreement_type=AgreementType.DIRECT_ALLOCATION):
     """Direct Obligation Agreement Model"""
 
     __tablename__ = "direct_agreement"
@@ -384,6 +425,9 @@ class BudgetLineItem(BaseModel):
     def to_dict(self):
         d = super().to_dict()
 
+        if isinstance(self.status, str):
+            self.status = BudgetLineItemStatus[self.status]
+
         d.update(
             status=self.status.name if self.status else None,
             amount=float(self.amount) if self.amount else None,
@@ -431,6 +475,9 @@ class CAN(BaseModel):
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
         d: dict[str, Any] = super().to_dict()
+
+        if isinstance(self.arrangement_type, str):
+            self.arrangement_type = CANArrangementType[self.arrangement_type]
 
         d.update(
             appropriation_date=self.appropriation_date.strftime("%d/%m/%Y")

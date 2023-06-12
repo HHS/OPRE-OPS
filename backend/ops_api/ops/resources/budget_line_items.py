@@ -1,17 +1,18 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Optional
 
-import desert
+import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
-from marshmallow import ValidationError, fields
-from models import BudgetLineItemStatus, OpsEventType
+from marshmallow import ValidationError, validates_schema
+from marshmallow_enum import EnumField
+from models import AgreementReason, BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -25,15 +26,102 @@ ENDPOINT_STRING = "/budget-line-items"
 
 @dataclass(kw_only=True)
 class RequestBody:
-    status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus)
+    status: Optional[BudgetLineItemStatus] = EnumField(BudgetLineItemStatus)
     line_description: Optional[str] = None
     can_id: Optional[int] = None
     amount: Optional[float] = None
-    date_needed: Optional[date] = fields.Date(
-        format="%Y-%m-%d",
-    )
+    date_needed: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
     comments: Optional[str] = None
     psc_fee_amount: Optional[float] = None
+
+    @validates_schema
+    def validate_agreement_id(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if bli and not bli.agreement_id and not data.get("agreement_id"):
+                raise ValidationError("BLI must have an Agreement when status is not DRAFT")
+
+    @validates_schema
+    def validate_research_project_id(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if bli and bli.agreement_id and not bli.agreement.research_project_id:
+                raise ValidationError("BLI's Agreement must have a ResearchProject when status is not DRAFT")
+
+    @validates_schema
+    def validate_agreement_type(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if bli and bli.agreement_id and not bli.agreement.agreement_type:
+                raise ValidationError("BLI's Agreement must have an AgreementType when status is not DRAFT")
+
+    @validates_schema
+    def validate_agreement_description(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if bli and bli.agreement_id and not bli.agreement.description:
+                raise ValidationError("BLI's Agreement must have a Description when status is not DRAFT")
+
+    @validates_schema
+    def validate_product_service_code(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if bli and bli.agreement_id and not bli.agreement.product_service_code_id:
+                raise ValidationError("BLI's Agreement must have a ProductServiceCode when status is not DRAFT")
+
+    @validates_schema
+    def validate_procurement_shop(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if bli and bli.agreement_id and not bli.agreement.procurement_shop_id:
+                raise ValidationError("BLI's Agreement must have a ProcurementShop when status is not DRAFT")
+
+    @validates_schema
+    def validate_agreement_reason(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if bli and bli.agreement_id and not bli.agreement.agreement_reason:
+                raise ValidationError("BLI's Agreement must have an AgreementReason when status is not DRAFT")
+
+    @validates_schema
+    def validate_agreement_reason_must_not_have_incumbent(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if (
+                bli
+                and bli.agreement_id
+                and bli.agreement.agreement_reason == AgreementReason.NEW_REQ
+                and bli.agreement.incumbent
+            ):
+                raise ValidationError(
+                    "BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ"
+                )
+
+    @validates_schema
+    def validate_agreement_reason_must_have_incumbent(self, data, **kwargs):
+        # we are changing/promoting the status
+        if data.get("status") != BudgetLineItemStatus.DRAFT:
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if (
+                bli
+                and bli.agreement_id
+                and (
+                    bli.agreement.agreement_reason == AgreementReason.RECOMPETE
+                    or bli.agreement.agreement_reason == AgreementReason.LOGICAL_FOLLOW_ON
+                )
+                and not bli.agreement.incumbent
+            ):
+                raise ValidationError(
+                    "BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
+                )
 
 
 @dataclass(kw_only=True)
@@ -50,7 +138,7 @@ class PATCHRequestBody(RequestBody):
 class QueryParameters:
     can_id: Optional[int] = None
     agreement_id: Optional[int] = None
-    status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus, default=None)
+    status: Optional[BudgetLineItemStatus] = EnumField(BudgetLineItemStatus)
 
 
 @dataclass
@@ -61,20 +149,20 @@ class BudgetLineItemResponse:
     amount: float
     created_by: int
     line_description: str
-    status: BudgetLineItemStatus = fields.Enum(BudgetLineItemStatus)
+    status: BudgetLineItemStatus = EnumField(BudgetLineItemStatus)
     comments: Optional[str] = None
     psc_fee_amount: Optional[float] = None
-    created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%f")
-    updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%f")
-    date_needed: date = fields.Date(format="%Y-%m-%d")
+    created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%f"})
+    updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%f"})
+    date_needed: date = field(default=None, metadata={"format": "%Y-%m-%d"})
 
 
 class BudgetLineItemsItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
-        self._response_schema = desert.schema(BudgetLineItemResponse)
-        self._put_schema = desert.schema(POSTRequestBody)
-        self._patch_schema = desert.schema(PATCHRequestBody)
+        self._response_schema = mmdc.class_schema(BudgetLineItemResponse)()
+        self._put_schema = mmdc.class_schema(POSTRequestBody)()
+        self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
 
     def _get_item_with_try(self, id: int) -> Response:
         try:
@@ -109,16 +197,13 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         message_prefix = f"PUT to {ENDPOINT_STRING}"
         try:
             with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
-                OPSMethodView._validate_request(
-                    schema=self._put_schema,
-                    message=f"{message_prefix}: Params failed validation:",
-                )
+                self._put_schema.context["id"] = id
 
-                data = self._put_schema.load(request.json)
+                data = self._put_schema.dump(self._put_schema.load(request.json))
+                data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
+                data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
 
-                validate(data.__dict__, id)
-
-                budget_line_item = update_budget_line_item(data.__dict__, id)
+                budget_line_item = update_budget_line_item(data, id)
 
                 bli_dict = self._response_schema.dump(budget_line_item)
                 meta.metadata.update({"updated_bli": bli_dict})
@@ -142,18 +227,16 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
         try:
             with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
-                OPSMethodView._validate_request(
-                    schema=self._patch_schema,
-                    message=f"{message_prefix}: Params failed validation:",
-                )
+                self._patch_schema.context["id"] = id
 
-                data = self._patch_schema.load(request.json)
-                data = data.__dict__
+                data = self._patch_schema.dump(self._patch_schema.load(request.json))
                 data = {
                     k: v for (k, v) in data.items() if k in request.json
                 }  # only keep the attributes from the request body
-
-                validate(data, id)
+                if "status" in data:
+                    data["status"] = BudgetLineItemStatus[data["status"]]
+                if "date_needed" in data:
+                    data["date_needed"] = date.fromisoformat(data["date_needed"])
 
                 budget_line_item = update_budget_line_item(data, id)
 
@@ -180,10 +263,10 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 class BudgetLineItemsListAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
-        self._post_schema = desert.schema(POSTRequestBody)
-        self._get_schema = desert.schema(QueryParameters)
-        self._response_schema = desert.schema(BudgetLineItemResponse)
-        self._response_schema_collection = desert.schema(BudgetLineItemResponse, many=True)
+        self._post_schema = mmdc.class_schema(POSTRequestBody)()
+        self._get_schema = mmdc.class_schema(QueryParameters)()
+        self._response_schema = mmdc.class_schema(BudgetLineItemResponse)()
+        self._response_schema_collection = mmdc.class_schema(BudgetLineItemResponse)(many=True)
 
     @staticmethod
     def _get_query(
@@ -212,23 +295,32 @@ class BudgetLineItemsListAPI(BaseListAPI):
     @override
     @jwt_required()
     def get(self) -> Response:
+        message_prefix = f"GET to {ENDPOINT_STRING}"
         identity = get_jwt_identity()
         is_authorized = self.auth_gateway.is_authorized(identity, ["GET_BUDGET_LINE_ITEMS"])
 
         if is_authorized:
-            errors = self._get_schema.validate(request.args)
+            try:
+                data = self._get_schema.dump(self._get_schema.load(request.args))
 
-            if errors:
-                current_app.logger.error(f"GET {ENDPOINT_STRING}: Query Params failed validation: {errors}")
-                return make_response_with_headers(errors, 400)
+                data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
+                data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
 
-            data = self._get_schema.load(request.args)
+                stmt = self._get_query(data.get("can_id"), data.get("agreement_id"), data.get("status"))
 
-            stmt = self._get_query(data.can_id, data.agreement_id, data.status)
+                result = current_app.db_session.execute(stmt).all()
 
-            result = current_app.db_session.execute(stmt).all()
-
-            response = make_response_with_headers(self._response_schema_collection.dump([bli[0] for bli in result]))
+                response = make_response_with_headers(self._response_schema_collection.dump([bli[0] for bli in result]))
+            except (KeyError, RuntimeError, PendingRollbackError) as re:
+                current_app.logger.error(f"{message_prefix}: {re}")
+                return make_response_with_headers({}, 400)
+            except ValidationError as ve:
+                # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
+                current_app.logger.error(f"{message_prefix}: {ve}")
+                return make_response_with_headers(ve.normalized_messages(), 400)
+            except SQLAlchemyError as se:
+                current_app.logger.error(f"{message_prefix}: {se}")
+                return make_response_with_headers({}, 500)
         else:
             response = make_response_with_headers([], 401)
 
@@ -240,13 +332,11 @@ class BudgetLineItemsListAPI(BaseListAPI):
         message_prefix = f"POST to {ENDPOINT_STRING}"
         try:
             with OpsEventHandler(OpsEventType.CREATE_BLI) as meta:
-                OPSMethodView._validate_request(
-                    schema=self._post_schema,
-                    message=f"{message_prefix}: Params failed validation:",
-                )
+                data = self._post_schema.dump(self._post_schema.load(request.json))
+                data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
+                data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
 
-                data = self._post_schema.load(request.json)
-                new_bli = BudgetLineItem(**data.__dict__)
+                new_bli = BudgetLineItem(**data)
 
                 token = verify_jwt_in_request()
                 user = get_user_from_token(token[1])
@@ -285,24 +375,3 @@ def update_budget_line_item(data: dict[str, Any], id: int):
     current_app.db_session.add(budget_line_item)
     current_app.db_session.commit()
     return budget_line_item
-
-
-def validate(data, id):
-    # TODO: @validates_schema is not working for some reason, so we have to do this outside marshmallow
-    bli = current_app.db_session.get(BudgetLineItem, id)
-    if not bli:
-        raise RuntimeError("Invalid BLI id.")
-    validation_error_messages = []
-    validate_status_change(data, bli, validation_error_messages)
-    if validation_error_messages:
-        raise ValidationError(validation_error_messages)
-
-
-def validate_status_change(data, bli, validation_error_messages):
-    if data.get("status") != BudgetLineItemStatus.DRAFT:  # we are changing/promoting the status
-        if not bli.agreement_id and not data.get("agreement_id"):
-            validation_error_messages.append("BLI must have an Agreement when status is not DRAFT")
-        elif not bli.agreement.research_project_id:
-            validation_error_messages.append("BLI's Agreement must have a ResearchProject when status is not DRAFT")
-
-    return validation_error_messages

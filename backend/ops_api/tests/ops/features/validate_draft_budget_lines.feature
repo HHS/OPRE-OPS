@@ -28,7 +28,7 @@ Feature: Validate "Draft" Budget Lines
 
     Then I should get an error message that the BLI's Agreement must have a valid Agreement Type
 
-  Scenario: Valid Description
+  Scenario: Valid Agreement Description
     Given I am logged in as an OPS user
     And I have an Agreement with an empty string Description
 
@@ -100,7 +100,7 @@ Feature: Validate "Draft" Budget Lines
 
     Then I should get an error message that the BLI's Agreement must have at least one Team Member
 
-  Scenario: Valid Description
+  Scenario: Valid BLI Description
     Given I am logged in as an OPS user
     And I have a valid Agreement
 
