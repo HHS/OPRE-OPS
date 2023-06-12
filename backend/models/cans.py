@@ -153,6 +153,8 @@ class Agreement(BaseModel):
 
     @property
     def status(self):
+        # We may change this. We can keep it for now, but we will want to review this before utilizing
+        # it in the frontend or for any other business logic calculations.
         subq = select(
             functions.min(case({s.name: s.value for s in BudgetLineItemStatus}, value=BudgetLineItem.status)).label("status_num")
         ).where(BudgetLineItem.agreement_id == self.id).group_by(BudgetLineItem.agreement_id).scalar_subquery()
