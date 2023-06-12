@@ -182,12 +182,12 @@ Feature: Validate "Draft" Budget Lines
 
     Then I should get an error message that the BLI must have a CAN (for PUT only)
 
-  Scenario: Valid Amount: Exists
+  Scenario: Valid Amount: Both NULL
     Given I am logged in as an OPS user
     And I have a valid Agreement
 
     When I have a BLI in DRAFT status without an Amount
-    And I submit a BLI to move to IN_REVIEW status
+    And I submit a BLI to move to IN_REVIEW status (without an Amount)
 
     Then I should get an error message that the BLI must have an Amount
 

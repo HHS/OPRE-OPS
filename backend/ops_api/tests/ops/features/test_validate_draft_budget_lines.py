@@ -180,7 +180,7 @@ def test_valid_can_request_empty(loaded_db, context):
 
 @scenario(
     "validate_draft_budget_lines.feature",
-    "Valid Amount: Exists",
+    "Valid Amount: Both NULL",
 )
 def test_valid_amount(loaded_db, context):
     ...
@@ -840,6 +840,28 @@ def submit_without_can(client, context):
     )
 
 
+@when("I submit a BLI to move to IN_REVIEW status (without an Amount)")
+def submit_without_amount(client, context):
+    data = {
+        "agreement_id": context["agreement"].id,
+        "line_description": "Updated LI 1",
+        "comments": "hah hah",
+        "can_id": 2,
+        "status": "UNDER_REVIEW",
+        "date_needed": "2044-01-01",
+        "psc_fee_amount": 2.34,
+    }
+
+    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+
+    context["response_patch"] = client.patch(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
+        json={
+            "status": "UNDER_REVIEW",
+        },
+    )
+
+
 @then("I should get an error message that the BLI's Agreement must have a valid Project")
 def error_message_valid_project(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
@@ -1027,25 +1049,29 @@ def error_message_need_by_date_empty_request(context, setup_and_teardown):
 def error_message_can(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
     assert context["response_put"].json == {
-        "_schema": ["BLI must valid a valid CAN when status is not DRAFT"],
+        "_schema": ["BLI must have a valid CAN when status is not DRAFT"],
     }
     assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {"_schema": ["BLI must valid a valid CAN when status is not DRAFT"]}
+    assert context["response_patch"].json == {"_schema": ["BLI must have a valid CAN when status is not DRAFT"]}
 
 
 @then("I should get an error message that the BLI must have a CAN (for PUT only)")
 def error_message_can_put_only(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
     assert context["response_put"].json == {
-        "_schema": ["BLI must valid a valid CAN when status is not DRAFT"],
+        "_schema": ["BLI must have a valid CAN when status is not DRAFT"],
     }
     assert context["response_patch"].status_code == 200
 
 
 @then("I should get an error message that the BLI must have an Amount")
 def error_message_amount(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI must have a valid Amount when status is not DRAFT"],
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {"_schema": ["BLI must have a valid Amount when status is not DRAFT"]}
 
 
 @then("I should get an error message that the BLI must have an Agreement")

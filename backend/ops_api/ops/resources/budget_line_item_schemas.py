@@ -182,10 +182,22 @@ class RequestBody:
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
             bli_can_id = bli.can_id if bli else None
             data_can_id = data.get("can_id")
-            msg = "BLI must valid a valid CAN when status is not DRAFT"
+            msg = "BLI must have a valid CAN when status is not DRAFT"
             if self.context.get("method") in ["POST", "PUT"] and is_invalid_full(bli_can_id, data_can_id):
                 raise ValidationError(msg)
             if self.context.get("method") in ["PATCH"] and is_invalid_partial(bli_can_id, data_can_id):
+                raise ValidationError(msg)
+
+    @validates_schema(skip_on_field_errors=False)
+    def validate_amount(self, data: dict, **kwargs):
+        if is_changing_status(data):
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            bli_amount = bli.amount if bli else None
+            data_amount = data.get("amount")
+            msg = "BLI must have a valid Amount when status is not DRAFT"
+            if self.context.get("method") in ["POST", "PUT"] and is_invalid_full(bli_amount, data_amount):
+                raise ValidationError(msg)
+            if self.context.get("method") in ["PATCH"] and is_invalid_partial(bli_amount, data_amount):
                 raise ValidationError(msg)
 
 
