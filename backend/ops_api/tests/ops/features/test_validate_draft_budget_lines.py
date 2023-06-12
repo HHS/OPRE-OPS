@@ -182,7 +182,15 @@ def test_valid_can_request_empty(loaded_db, context):
     "validate_draft_budget_lines.feature",
     "Valid Amount: Both NULL",
 )
-def test_valid_amount(loaded_db, context):
+def test_valid_amount_both_null(loaded_db, context):
+    ...
+
+
+@scenario(
+    "validate_draft_budget_lines.feature",
+    "Valid Amount: Request Empty",
+)
+def test_valid_amount_request_empty(loaded_db, context):
     ...
 
 
@@ -1072,6 +1080,15 @@ def error_message_amount(context, setup_and_teardown):
     }
     assert context["response_patch"].status_code == 400
     assert context["response_patch"].json == {"_schema": ["BLI must have a valid Amount when status is not DRAFT"]}
+
+
+@then("I should get an error message that the BLI must have an Amount (for PUT only)")
+def error_message_amount_put_only(context, setup_and_teardown):
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI must have a valid Amount when status is not DRAFT"],
+    }
+    assert context["response_patch"].status_code == 200
 
 
 @then("I should get an error message that the BLI must have an Agreement")
