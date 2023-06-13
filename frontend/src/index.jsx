@@ -23,7 +23,7 @@ import CreateAgreements from "./pages/agreements";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
 import { CreateProject } from "./pages/projects/CreateProject";
 import { AgreementsList } from "./pages/agreements/list/AgreementsList";
-import { EditAgreement } from "./pages/agreements/edit/EditAgreement";
+import EditAgreement from "./pages/agreements/EditAgreement";
 import { ApproveAgreement } from "./pages/agreements/approve/ApproveAgreement";
 
 const router = createBrowserRouter(

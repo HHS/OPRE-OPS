@@ -1,9 +1,10 @@
-import { createContext, useContext, useReducer } from "react";
+import {createContext, useContext, useReducer} from "react";
+import {getUser} from "../../api/getUser";
 
 export const CreateAgreementContext = createContext(null);
 export const CreateAgreementDispatchContext = createContext(null);
 
-const initialState = {
+const defaultState = {
     agreement: {
         id: null,
         selected_agreement_type: null,
@@ -22,8 +23,32 @@ const initialState = {
     selected_procurement_shop: {},
     wizardSteps: ["Project", "Agreement", "Budget Lines"],
 };
+let initialState = defaultState;
 
-export function CreateAgreementProvider({ children }) {
+export function CreateAgreementProvider({ agreement, children }) {
+    if (agreement) {
+        initialState.agreement = {...agreement};
+        initialState.agreement.selected_agreement_type = agreement.agreement_type;
+        initialState.agreement.selected_agreement_reason = agreement.agreement_reason;
+        initialState.agreement.selected_product_service_code = agreement.product_service_code;
+        // there's inconsistent use of "project_officer" - int vs object
+        // the API returns the int, but we need to load the object
+        if (agreement.project_officer) {
+            console.log("GET PROJECT OFFICER: " + agreement.project_officer);
+            (async function() {
+                initialState.agreement.project_officer = await getUser(agreement.project_officer);
+            })();
+        }
+        else {
+            initialState.agreement.project_officer = null
+        }
+
+        initialState.agreement.project_officer = agreement.team_leaders ? agreement.team_leaders[0] : null;
+
+        initialState.selected_project = agreement.research_project;
+        initialState.selected_procurement_shop = agreement.procurement_shop;
+    }
+
     const [state, dispatch] = useReducer(createAgreementReducer, initialState);
 
     return (
