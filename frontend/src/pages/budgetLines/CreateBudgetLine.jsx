@@ -23,6 +23,7 @@ export const CreateBudgetLine = () => {
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}
                 existingBudgetLines={existingBudgetLines}
+                continueBtnText="Create Budget Lines"
             />
             <StepSuccess />
         </CreateBudgetLineFlow>
