@@ -19,7 +19,7 @@ import {
     useUpdateAgreement,
     useCreateAgreementDispatch,
 } from "./CreateAgreementContext";
-import {patchAgreement} from "../../api/patchAgreements";
+import { patchAgreement } from "../../api/patchAgreements";
 
 export const StepCreateAgreement = ({ goBack, goToNext }) => {
     const navigate = useNavigate();
@@ -107,9 +107,9 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
         };
         if (agreement.id) {
             // TODO: handle failures
-            const response = await patchAgreement(agreement.id, data);
-        }
-        else {
+            // const response = await patchAgreement(agreement.id, data);
+            patchAgreement(agreement.id, data);
+        } else {
             // TODO: handle failures
             const response = await postAgreement(data);
             const newAgreementId = response.id;
@@ -194,7 +194,7 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
                 className="usa-textarea"
                 id="agreement-description"
                 name="agreement-description"
-                rows="5"
+                rows={5}
                 style={{ height: "7rem" }}
                 value={agreementDescription || ""}
                 onChange={(e) => setAgreementDescription(e.target.value)}
@@ -268,9 +268,9 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
                     <textarea
                         className="usa-textarea usa-character-count__field"
                         id="with-hint-textarea"
-                        maxLength="150"
+                        maxLength={150}
                         name="with-hint-textarea"
-                        rows="5"
+                        rows={5}
                         aria-describedby="with-hint-textarea-info with-hint-textarea-hint"
                         style={{ height: "7rem" }}
                         value={agreementNotes || ""}
