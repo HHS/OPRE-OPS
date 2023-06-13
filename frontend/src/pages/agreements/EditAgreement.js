@@ -3,7 +3,6 @@ import { CreateAgreementProvider } from "./CreateAgreementContext";
 import CreateEditAgreement from "./CreateEditAgreement";
 import { useParams } from "react-router-dom";
 import { useGetAgreementByIdQuery } from "../../api/opsAPI";
-import { AgreementCard } from "./edit/AgreementCard";
 import { useEffect, useState } from "react";
 import { getUser } from "../../api/getUser";
 
@@ -50,8 +49,6 @@ const EditAgreement = () => {
             </CreateAgreementProvider>
 
             <pre>{JSON.stringify(agreement, null, 2)}</pre>
-
-            <AgreementCard agreement={agreement} />
         </App>
     );
 };
