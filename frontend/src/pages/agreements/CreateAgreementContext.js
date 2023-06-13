@@ -1,5 +1,4 @@
-import {createContext, useContext, useReducer} from "react";
-import {getUser} from "../../api/getUser";
+import { createContext, useContext, useReducer } from "react";
 
 export const CreateAgreementContext = createContext(null);
 export const CreateAgreementDispatchContext = createContext(null);
@@ -23,11 +22,11 @@ const defaultState = {
     selected_procurement_shop: {},
     wizardSteps: ["Project", "Agreement", "Budget Lines"],
 };
-let initialState = {...defaultState};
+let initialState = { ...defaultState };
 
-export function CreateAgreementProvider({agreement, project_officer, children }) {
+export function CreateAgreementProvider({ agreement, project_officer, children }) {
     if (agreement) {
-        initialState.agreement = {...agreement};
+        initialState.agreement = { ...agreement };
         initialState.agreement.selected_agreement_type = agreement.agreement_type;
         initialState.agreement.selected_agreement_reason = agreement.agreement_reason;
         initialState.agreement.selected_product_service_code = agreement.product_service_code;
@@ -35,9 +34,8 @@ export function CreateAgreementProvider({agreement, project_officer, children })
         initialState.agreement.project_officer = project_officer ? project_officer : null;
         initialState.selected_project = agreement.research_project;
         initialState.selected_procurement_shop = agreement.procurement_shop;
-    }
-    else {
-        initialState = {...defaultState};
+    } else {
+        initialState = { ...defaultState };
     }
 
     const [state, dispatch] = useReducer(createAgreementReducer, initialState);

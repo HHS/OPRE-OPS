@@ -48,8 +48,6 @@ const EditAgreement = () => {
         return <div>Oops, an error occurred</div>;
     }
 
-    let project_officer = null;
-
     return (
         <App>
             <CreateAgreementProvider agreement={agreement} project_officer={projectOfficer}>

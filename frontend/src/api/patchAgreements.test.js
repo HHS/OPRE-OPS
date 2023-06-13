@@ -2,7 +2,7 @@ import { patchAgreement } from "./patchAgreements";
 import TestApplicationContext from "../applicationContext/TestApplicationContext";
 
 describe("patchAgreement function", () => {
-    const agreementId = 1
+    const agreementId = 1;
     const mockAgreement = {
         description: "PATCH Description",
         notes: "PATCH Notes",
@@ -22,5 +22,4 @@ describe("patchAgreement function", () => {
         const response = await patchAgreement(agreementId, mockAgreement);
         expect(response).toStrictEqual(mockApiResponse);
     });
-
 });
