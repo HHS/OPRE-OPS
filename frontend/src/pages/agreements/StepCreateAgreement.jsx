@@ -216,7 +216,6 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
             />
 
             <h2 className="font-sans-lg margin-top-3">Reason for Agreement</h2>
-            <div>selectedAgreementReason: {selectedAgreementReason}</div>
             <div className="display-flex">
                 <AgreementReasonSelect
                     selectedAgreementReason={selectedAgreementReason}
@@ -243,7 +242,6 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
             </div>
 
             <h2 className="font-sans-lg margin-top-3">Points of Contact</h2>
-            <div>selectedProjectOfficer: {JSON.stringify(selectedProjectOfficer, null, 2)}</div>
             <div className="display-flex">
                 <ProjectOfficerSelect
                     selectedProjectOfficer={selectedProjectOfficer}

@@ -4,8 +4,9 @@ import StepCreateAgreement from "./StepCreateAgreement";
 import StepCreateBudgetLines from "../../components/UI/WizardSteps/StepCreateBudgetLines";
 import StepAgreementSuccess from "./StepAgreementSuccess";
 import { useCreateAgreement } from "./CreateAgreementContext";
+import agreements from "./index";
 
-export const CreateAgreement = () => {
+export const CreateAgreement = ({existingBudgetLines}) => {
     const createAgreementContext = useCreateAgreement();
 
     const {
@@ -26,6 +27,7 @@ export const CreateAgreement = () => {
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}
                 continueBtnText="Save Draft"
+                existingBudgetLines={existingBudgetLines}
             />
             <StepAgreementSuccess />
         </CreateAgreementFlow>
