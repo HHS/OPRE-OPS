@@ -16,7 +16,15 @@ const EditAgreement = () => {
         data: agreement,
         error: errorAgreement,
         isLoading: isLoadingAgreement,
-    } = useGetAgreementByIdQuery(agreementId);
+        refetch,
+    } = useGetAgreementByIdQuery(agreementId, {
+        refetchOnMountOrArgChange: true,
+    });
+
+    useEffect(() => {
+        refetch();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         const getProjectOfficerSetState = async (id) => {
