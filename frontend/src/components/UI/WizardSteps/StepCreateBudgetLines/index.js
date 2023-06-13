@@ -10,6 +10,7 @@ const CreateBudgetLines = ({
     selectedAgreement,
     selectedProcurementShop,
     existingBudgetLines,
+    continueBtnText,
 }) => {
     return (
         <CreateBudgetLinesProvider>
@@ -22,6 +23,7 @@ const CreateBudgetLines = ({
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}
                 existingBudgetLines={existingBudgetLines}
+                continueBtnText={continueBtnText}
             />
         </CreateBudgetLinesProvider>
     );

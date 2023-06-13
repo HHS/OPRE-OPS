@@ -25,6 +25,7 @@ export const CreateAgreement = () => {
                 selectedResearchProject={selectedResearchProject}
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}
+                continueBtnText="Save Draft"
             />
             <StepAgreementSuccess />
         </CreateAgreementFlow>

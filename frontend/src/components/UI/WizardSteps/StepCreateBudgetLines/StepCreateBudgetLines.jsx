@@ -18,6 +18,7 @@ export const StepCreateBudgetLines = ({
     selectedAgreement = {},
     selectedProcurementShop = {},
     existingBudgetLines = [],
+    continueBtnText,
 }) => {
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
@@ -256,7 +257,7 @@ export const StepCreateBudgetLines = ({
                     Back
                 </button>
                 <button className="usa-button" data-cy="step-two-continue" onClick={saveBudgetLineItems}>
-                    Create Budget Lines
+                    {continueBtnText}
                 </button>
             </div>
         </>
