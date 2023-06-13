@@ -1,11 +1,11 @@
 import App from "../../App";
 import { CreateAgreementProvider } from "./CreateAgreementContext";
-import CreateAgreement from "./CreateAgreement";
-import {useParams} from "react-router-dom";
-import {useGetAgreementByIdQuery} from "../../api/opsAPI";
-import {AgreementCard} from "./edit/AgreementCard";
-import React, {useEffect, useState} from "react";
-import {getUser} from "../../api/getUser";
+import CreateEditAgreement from "./CreateEditAgreement";
+import { useParams } from "react-router-dom";
+import { useGetAgreementByIdQuery } from "../../api/opsAPI";
+import { AgreementCard } from "./edit/AgreementCard";
+import { useEffect, useState } from "react";
+import { getUser } from "../../api/getUser";
 
 const EditAgreement = () => {
     const urlPathParams = useParams();
@@ -46,7 +46,7 @@ const EditAgreement = () => {
     return (
         <App>
             <CreateAgreementProvider agreement={agreement} project_officer={projectOfficer}>
-                <CreateAgreement existingBudgetLines={agreement.budget_line_items}/>
+                <CreateEditAgreement existingBudgetLines={agreement.budget_line_items} />
             </CreateAgreementProvider>
 
             <pre>{JSON.stringify(agreement, null, 2)}</pre>
