@@ -11,7 +11,7 @@
         "@nivo/core": "0.83.0",
         "@nivo/pie": "0.83.0",
         "@reduxjs/toolkit": "1.9.5",
-        "@uswds/uswds": "3.4.1",
+        "@uswds/uswds": "3.5.0",
         "axios": "1.4.0",
         "babel-plugin-macros": "3.1.0",
         "clsx": "1.2.1",
