@@ -1,8 +1,10 @@
+import React from "react";
 import { Link } from "react-router-dom";
 import { CheckAuth } from "../../Auth/auth";
 
 export const Menu = () => {
     const isAuthorized = CheckAuth();
+    const [isMenuOpen, setIsMenuOpen] = React.useState(false);
     return (
         <div id="nav-menu">
             <button type="button" className="usa-nav__close">
@@ -34,12 +36,17 @@ export const Menu = () => {
                     <button
                         type="button"
                         className="usa-accordion__button usa-nav__link"
-                        aria-expanded={false}
+                        aria-expanded={isMenuOpen}
                         aria-controls="basic-mega-nav-section-two"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
                     >
                         <span>Create</span>
                     </button>
-                    <ul id="basic-mega-nav-section-two" className="usa-nav__submenu" hidden>
+                    <ul
+                        id="basic-mega-nav-section-two"
+                        className="usa-nav__submenu"
+                        style={{ display: isMenuOpen ? "block" : "none" }}
+                    >
                         <li className="usa-nav__submenu-item">
                             <Link to="/projects/create">Project</Link>
                             <Link to="/agreements/create">Agreement</Link>
