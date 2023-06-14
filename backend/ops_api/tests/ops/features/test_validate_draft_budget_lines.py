@@ -108,17 +108,49 @@ def test_valid_team_members(loaded_db, context):
 
 @scenario(
     "validate_draft_budget_lines.feature",
-    "Valid BLI Description",
+    "Valid BLI Description: Both NULL",
 )
-def test_valid_description(loaded_db, context):
+def test_valid_description_both_null(loaded_db, context):
     ...
 
 
 @scenario(
     "validate_draft_budget_lines.feature",
-    "Valid Need By Date: Exists",
+    "Valid BLI Description: Request Empty",
 )
-def test_valid_need_by_date_exists(loaded_db, context):
+def test_valid_description_request_empty(loaded_db, context):
+    ...
+
+
+@scenario(
+    "validate_draft_budget_lines.feature",
+    "Valid BLI Description: Both Empty",
+)
+def test_valid_description_both_empty(loaded_db, context):
+    ...
+
+
+@scenario(
+    "validate_draft_budget_lines.feature",
+    "Valid Need By Date: Both NULL",
+)
+def test_valid_need_by_date_both_null(loaded_db, context):
+    ...
+
+
+@scenario(
+    "validate_draft_budget_lines.feature",
+    "Valid Need By Date: Request Empty",
+)
+def test_valid_need_by_date_request_empty(loaded_db, context):
+    ...
+
+
+@scenario(
+    "validate_draft_budget_lines.feature",
+    "Valid Need By Date: Both Empty",
+)
+def test_valid_need_by_date_both_empty(loaded_db, context):
     ...
 
 
@@ -132,17 +164,41 @@ def test_valid_need_by_date_exists_future_date(loaded_db, context):
 
 @scenario(
     "validate_draft_budget_lines.feature",
-    "Valid CAN",
+    "Valid CAN: Both NULL",
 )
-def test_valid_can(loaded_db, context):
+def test_valid_can_both_null(loaded_db, context):
     ...
 
 
 @scenario(
     "validate_draft_budget_lines.feature",
-    "Valid Amount: Exists",
+    "Valid CAN: Request Empty",
 )
-def test_valid_amount(loaded_db, context):
+def test_valid_can_request_empty(loaded_db, context):
+    ...
+
+
+@scenario(
+    "validate_draft_budget_lines.feature",
+    "Valid Amount: Both NULL",
+)
+def test_valid_amount_both_null(loaded_db, context):
+    ...
+
+
+@scenario(
+    "validate_draft_budget_lines.feature",
+    "Valid Amount: Request Empty",
+)
+def test_valid_amount_request_empty(loaded_db, context):
+    ...
+
+
+@scenario(
+    "validate_draft_budget_lines.feature",
+    "Valid Amount: Greater than 0",
+)
+def test_valid_amount_greater_than_zero(loaded_db, context):
     ...
 
 
@@ -232,7 +288,6 @@ def agreement_null_product_service_code(loaded_db, context):
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
         research_project_id=1,
-        product_service_code_id=2,
         procurement_shop_id=1,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
@@ -278,6 +333,7 @@ def agreement_null_agreement_reason(loaded_db, context):
         product_service_code_id=2,
         description="Using Innovative Data...",
         project_officer=1,
+        procurement_shop_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
     loaded_db.add(contract_agreement)
@@ -300,6 +356,7 @@ def agreement_reason_with_incumbent(loaded_db, context):
         agreement_reason=AgreementReason.NEW_REQ,
         incumbent="CURRENT VENDOR",
         project_officer=1,
+        procurement_shop_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
     loaded_db.add(contract_agreement)
@@ -323,6 +380,7 @@ def agreement_reason_with_incumbent_required(loaded_db, context):
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.RECOMPETE,
         project_officer=1,
+        procurement_shop_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
     loaded_db.add(contract_agreement)
@@ -343,6 +401,7 @@ def agreement_null_project_officer(loaded_db, context):
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
+        procurement_shop_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
     loaded_db.add(contract_agreement)
@@ -363,6 +422,8 @@ def agreement_null_team_members(loaded_db, context):
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
+        project_officer=1,
+        procurement_shop_id=1,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -382,6 +443,8 @@ def valid_agreement(loaded_db, context):
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
+        project_officer=1,
+        procurement_shop_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
     loaded_db.add(contract_agreement)
@@ -398,7 +461,7 @@ def bli(loaded_db, context):
         line_description="LI 1",
         amount=100.12,
         can_id=1,
-        date_needed=datetime.date(2023, 1, 1),
+        date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         psc_fee_amount=1.23,
         created_by=1,
@@ -409,7 +472,7 @@ def bli(loaded_db, context):
         line_description="LI 1",
         amount=100.12,
         can_id=1,
-        date_needed=datetime.date(2023, 1, 1),
+        date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         psc_fee_amount=1.23,
         created_by=1,
@@ -439,7 +502,7 @@ def bli_without_description(loaded_db, context):
         comments="blah blah",
         amount=100.12,
         can_id=1,
-        date_needed=datetime.date(2023, 1, 1),
+        date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         psc_fee_amount=1.23,
         created_by=1,
@@ -521,7 +584,7 @@ def bli_without_can(loaded_db, context):
         comments="blah blah",
         line_description="LI 1",
         amount=100.12,
-        date_needed=datetime.date(2023, 1, 1),
+        date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         psc_fee_amount=1.23,
         created_by=1,
@@ -531,7 +594,7 @@ def bli_without_can(loaded_db, context):
         comments="blah blah",
         line_description="LI 1",
         amount=100.12,
-        date_needed=datetime.date(2023, 1, 1),
+        date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         psc_fee_amount=1.23,
         created_by=1,
@@ -551,7 +614,7 @@ def bli_without_amount(loaded_db, context):
         comments="blah blah",
         line_description="LI 1",
         can_id=1,
-        date_needed=datetime.date(2023, 1, 1),
+        date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         psc_fee_amount=1.23,
         created_by=1,
@@ -561,7 +624,7 @@ def bli_without_amount(loaded_db, context):
         comments="blah blah",
         line_description="LI 1",
         can_id=1,
-        date_needed=datetime.date(2023, 1, 1),
+        date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         psc_fee_amount=1.23,
         created_by=1,
@@ -582,7 +645,7 @@ def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context):
         line_description="LI 1",
         amount=0,
         can_id=1,
-        date_needed=datetime.date(2023, 1, 1),
+        date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         psc_fee_amount=1.23,
         created_by=1,
@@ -593,7 +656,7 @@ def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context):
         line_description="LI 1",
         amount=0,
         can_id=1,
-        date_needed=datetime.date(2023, 1, 1),
+        date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         psc_fee_amount=1.23,
         created_by=1,
@@ -613,7 +676,7 @@ def bli_without_agreement(loaded_db, context):
         line_description="LI 1",
         amount=100.12,
         can_id=1,
-        date_needed=datetime.date(2023, 1, 1),
+        date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         psc_fee_amount=1.23,
         created_by=1,
@@ -623,7 +686,7 @@ def bli_without_agreement(loaded_db, context):
         line_description="LI 1",
         amount=100.12,
         can_id=1,
-        date_needed=datetime.date(2023, 1, 1),
+        date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         psc_fee_amount=1.23,
         created_by=1,
@@ -645,7 +708,52 @@ def submit(client, context):
         "can_id": 2,
         "amount": 200.24,
         "status": "UNDER_REVIEW",
-        "date_needed": "2024-01-01",
+        "date_needed": "2044-01-01",
+        "psc_fee_amount": 2.34,
+    }
+
+    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+
+    context["response_patch"] = client.patch(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
+        json={
+            "status": "UNDER_REVIEW",
+        },
+    )
+
+
+@when("I submit a BLI to move to IN_REVIEW status (without Description)")
+def submit_without_description(client, context):
+    data = {
+        "agreement_id": context["agreement"].id,
+        "comments": "hah hah",
+        "can_id": 2,
+        "amount": 200.24,
+        "status": "UNDER_REVIEW",
+        "date_needed": "2044-01-01",
+        "psc_fee_amount": 2.34,
+    }
+
+    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+
+    context["response_patch"] = client.patch(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
+        json={
+            "status": "UNDER_REVIEW",
+        },
+    )
+
+
+@when("I submit a BLI to move to IN_REVIEW status with an empty string Description")
+def submit_empty_description(client, context):
+    data = {
+        "agreement_id": context["agreement"].id,
+        "line_description": "  ",
+        "comments": "hah hah",
+        "can_id": 2,
+        "amount": 200.24,
+        "status": "UNDER_REVIEW",
+        "date_needed": "2044-01-01",
         "psc_fee_amount": 2.34,
     }
 
@@ -667,7 +775,119 @@ def submit_without_agreement(client, context):
         "can_id": 2,
         "amount": 200.24,
         "status": "UNDER_REVIEW",
-        "date_needed": "2024-01-01",
+        "date_needed": "2044-01-01",
+        "psc_fee_amount": 2.34,
+    }
+
+    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+
+    context["response_patch"] = client.patch(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
+        json={
+            "status": "UNDER_REVIEW",
+        },
+    )
+
+
+@when("I submit a BLI to move to IN_REVIEW status (without Need By Date)")
+def submit_without_need_by_date(client, context):
+    data = {
+        "agreement_id": context["agreement"].id,
+        "line_description": "Updated LI 1",
+        "comments": "hah hah",
+        "can_id": 2,
+        "amount": 200.24,
+        "status": "UNDER_REVIEW",
+        "psc_fee_amount": 2.34,
+    }
+
+    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+
+    context["response_patch"] = client.patch(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
+        json={
+            "status": "UNDER_REVIEW",
+        },
+    )
+
+
+@when("I submit a BLI to move to IN_REVIEW status with an empty Need By Date")
+def submit_empty_need_by_date(client, context):
+    data = {
+        "agreement_id": context["agreement"].id,
+        "line_description": "Updated LI 1",
+        "comments": "hah hah",
+        "can_id": 2,
+        "amount": 200.24,
+        "status": "UNDER_REVIEW",
+        "date_needed": "  ",
+        "psc_fee_amount": 2.34,
+    }
+
+    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+
+    context["response_patch"] = client.patch(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
+        json={
+            "status": "UNDER_REVIEW",
+        },
+    )
+
+
+@when("I submit a BLI to move to IN_REVIEW status (without a CAN)")
+def submit_without_can(client, context):
+    data = {
+        "agreement_id": context["agreement"].id,
+        "line_description": "Updated LI 1",
+        "comments": "hah hah",
+        "amount": 200.24,
+        "status": "UNDER_REVIEW",
+        "date_needed": "2044-01-01",
+        "psc_fee_amount": 2.34,
+    }
+
+    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+
+    context["response_patch"] = client.patch(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
+        json={
+            "status": "UNDER_REVIEW",
+        },
+    )
+
+
+@when("I submit a BLI to move to IN_REVIEW status (without an Amount)")
+def submit_without_amount(client, context):
+    data = {
+        "agreement_id": context["agreement"].id,
+        "line_description": "Updated LI 1",
+        "comments": "hah hah",
+        "can_id": 2,
+        "status": "UNDER_REVIEW",
+        "date_needed": "2044-01-01",
+        "psc_fee_amount": 2.34,
+    }
+
+    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+
+    context["response_patch"] = client.patch(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
+        json={
+            "status": "UNDER_REVIEW",
+        },
+    )
+
+
+@when("I submit a BLI to move to IN_REVIEW status (with an Amount less than or equal to 0)")
+def submit_amount_less_than_zero(client, context):
+    data = {
+        "agreement_id": context["agreement"].id,
+        "line_description": "Updated LI 1",
+        "comments": "hah hah",
+        "can_id": 2,
+        "amount": -200.24,
+        "status": "UNDER_REVIEW",
+        "date_needed": "2044-01-01",
         "psc_fee_amount": 2.34,
     }
 
@@ -719,89 +939,224 @@ def error_message_valid_agreement_description(context, setup_and_teardown):
 
 @then("I should get an error message that the BLI's Agreement must have a valid Product Service Code")
 def error_message_valid_product_service_code(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI's Agreement must have a ProductServiceCode when status is " "not DRAFT"]
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": ["BLI's Agreement must have a ProductServiceCode when status is " "not DRAFT"]
+    }
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Procurement Shop")
 def error_message_valid_procurement_shop(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI's Agreement must have a ProcurementShop when status is " "not DRAFT"]
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": ["BLI's Agreement must have a ProcurementShop when status is " "not DRAFT"]
+    }
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Agreement Reason")
 def error_message_valid_agreement_reason(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI's Agreement must have an AgreementReason when status is " "not DRAFT"]
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": ["BLI's Agreement must have an AgreementReason when status is " "not DRAFT"]
+    }
 
 
 @then(
     "I should get an error message that the BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ"
 )
 def error_message_valid_agreement_reason_with_incumbent(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ"]
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": ["BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ"]
+    }
 
 
 @then(
     "I should get an error message that the BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
 )
 def error_message_valid_agreement_reason_with_incumbent_required(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": [
+            "BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
+        ]
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": [
+            "BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
+        ]
+    }
 
 
 @then("I should get an error message that the BLI's Agreement must have a Project Officer")
 def error_message_valid_project_officer(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI's Agreement must have a ProjectOfficer when status is not DRAFT"]
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": ["BLI's Agreement must have a ProjectOfficer when status is not DRAFT"]
+    }
 
 
 @then("I should get an error message that the BLI's Agreement must have at least one Team Member")
 def error_message_valid_team_members(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI's Agreement must have at least one Team Member when status is not DRAFT"]
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": ["BLI's Agreement must have at least one Team Member when status is not DRAFT"]
+    }
 
 
 @then("I should get an error message that the BLI must have a Description")
 def error_message_valid_description(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": [
+            "BLI must valid a valid Description when status is not DRAFT",
+            "BLI must valid a Need By Date in the future when status is not " "DRAFT",
+        ]
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": ["BLI must valid a valid Description when status is not DRAFT"]
+    }
+
+
+@then("I should get an error message that the BLI must have a Description (for PUT only)")
+def error_message_valid_description_put_only(context, setup_and_teardown):
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {"_schema": ["BLI must valid a valid Description when status is not DRAFT"]}
+    assert context["response_patch"].status_code == 200
 
 
 @then("I should get an error message that the BLI must have a Need By Date")
 def error_message_need_by_date(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {"_schema": ["BLI must valid a valid Need By Date when status is not DRAFT"]}
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": ["BLI must valid a valid Need By Date when status is not DRAFT"]
+    }
+
+
+@then("I should get an error message that the BLI must have a Need By Date (for PUT only)")
+def error_message_need_by_date_put_only(context, setup_and_teardown):
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI must valid a valid Need By Date when status is not DRAFT"],
+        "date_needed": ["Not a valid date."],
+    }
+    assert context["response_patch"].status_code == 200
+
+
+@then("I should get an error message that the BLI must have a Need By Date (with empty Request)")
+def error_message_need_by_date_empty_request(context, setup_and_teardown):
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI must valid a valid Need By Date when status is not DRAFT"],
+        "date_needed": ["Not a valid date."],
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": ["BLI must valid a valid Need By Date when status is not DRAFT"]
+    }
 
 
 @then("I should get an error message that the BLI must have a CAN")
 def error_message_can(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI must have a valid CAN when status is not DRAFT"],
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {"_schema": ["BLI must have a valid CAN when status is not DRAFT"]}
+
+
+@then("I should get an error message that the BLI must have a CAN (for PUT only)")
+def error_message_can_put_only(context, setup_and_teardown):
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI must have a valid CAN when status is not DRAFT"],
+    }
+    assert context["response_patch"].status_code == 200
 
 
 @then("I should get an error message that the BLI must have an Amount")
 def error_message_amount(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI must have a valid Amount when status is not DRAFT"],
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {"_schema": ["BLI must have a valid Amount when status is not DRAFT"]}
+
+
+@then("I should get an error message that the BLI must have an Amount (for PUT only)")
+def error_message_amount_put_only(context, setup_and_teardown):
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI must have a valid Amount when status is not DRAFT"],
+    }
+    assert context["response_patch"].status_code == 200
 
 
 @then("I should get an error message that the BLI must have an Agreement")
 def error_message_agreement(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {"agreement_id": ["Missing data for required field."]}
+    assert context["response_put"].json == {
+        "_schema": ["BLI must have an Agreement when status is not DRAFT"],
+        "agreement_id": ["Missing data for required field."],
+    }
     assert context["response_patch"].status_code == 400
     assert context["response_patch"].json == {"_schema": ["BLI must have an Agreement when status is not DRAFT"]}
 
 
 @then("I should get an error message that the BLI must have a Need By Date in the future")
 def error_message_future_need_by_date(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": ["BLI must valid a Need By Date in the future when status is not DRAFT"],
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": ["BLI must valid a Need By Date in the future when status is not DRAFT"]
+    }
 
 
 @then("I should get an error message that the BLI must have an Amount greater than 0")
 def error_message_amount_less_than_or_equal_to_zero(context, setup_and_teardown):
-    # Need to implement this to throw an error message and return 400
-    ...
+    assert context["response_put"].status_code == 400
+    assert context["response_put"].json == {
+        "_schema": [
+            "BLI must be a valid Amount (greater than zero) when status is " "not DRAFT",
+        ]
+    }
+    assert context["response_patch"].status_code == 400
+    assert context["response_patch"].json == {
+        "_schema": [
+            "BLI must have a valid Amount when status is not DRAFT",
+            "BLI must be a valid Amount (greater than zero) when status is " "not DRAFT",
+        ]
+    }

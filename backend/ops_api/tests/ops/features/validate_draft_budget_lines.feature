@@ -100,24 +100,60 @@ Feature: Validate "Draft" Budget Lines
 
     Then I should get an error message that the BLI's Agreement must have at least one Team Member
 
-  Scenario: Valid BLI Description
+  Scenario: Valid BLI Description: Both NULL
     Given I am logged in as an OPS user
     And I have a valid Agreement
 
     When I have a BLI in DRAFT status without a Description
-    And I submit a BLI to move to IN_REVIEW status
+    And I submit a BLI to move to IN_REVIEW status (without Description)
+
+    Then I should get an error message that the BLI must have a Description
+
+  Scenario: Valid BLI Description: Request Empty
+    Given I am logged in as an OPS user
+    And I have a valid Agreement
+
+    When I have a BLI in DRAFT status
+    And I submit a BLI to move to IN_REVIEW status with an empty string Description
+
+    Then I should get an error message that the BLI must have a Description (for PUT only)
+
+  Scenario: Valid BLI Description: Both Empty
+    Given I am logged in as an OPS user
+    And I have a valid Agreement
+
+    When I have a BLI in DRAFT status without a Description
+    And I submit a BLI to move to IN_REVIEW status with an empty string Description
 
     Then I should get an error message that the BLI must have a Description
 
 
-  Scenario: Valid Need By Date: Exists
+  Scenario: Valid Need By Date: Both NULL
     Given I am logged in as an OPS user
     And I have a valid Agreement
 
     When I have a BLI in DRAFT status without a Need By Date
-    And I submit a BLI to move to IN_REVIEW status
+    And I submit a BLI to move to IN_REVIEW status (without Need By Date)
 
     Then I should get an error message that the BLI must have a Need By Date
+
+  Scenario: Valid Need By Date: Request Empty
+    Given I am logged in as an OPS user
+    And I have a valid Agreement
+
+    When I have a BLI in DRAFT status
+    And I submit a BLI to move to IN_REVIEW status with an empty Need By Date
+
+    Then I should get an error message that the BLI must have a Need By Date (for PUT only)
+
+  Scenario: Valid Need By Date: Both Empty
+    Given I am logged in as an OPS user
+    And I have a valid Agreement
+
+    When I have a BLI in DRAFT status without a Need By Date
+    And I submit a BLI to move to IN_REVIEW status with an empty Need By Date
+
+    Then I should get an error message that the BLI must have a Need By Date (with empty Request)
 
   Scenario: Valid Need By Date: Future Date
     Given I am logged in as an OPS user
@@ -128,29 +164,47 @@ Feature: Validate "Draft" Budget Lines
 
     Then I should get an error message that the BLI must have a Need By Date in the future
 
-  Scenario: Valid CAN
+  Scenario: Valid CAN: Both NULL
     Given I am logged in as an OPS user
     And I have a valid Agreement
 
     When I have a BLI in DRAFT status without a CAN
-    And I submit a BLI to move to IN_REVIEW status
+    And I submit a BLI to move to IN_REVIEW status (without a CAN)
 
     Then I should get an error message that the BLI must have a CAN
 
-  Scenario: Valid Amount: Exists
+  Scenario: Valid CAN: Request Empty
+    Given I am logged in as an OPS user
+    And I have a valid Agreement
+
+    When I have a BLI in DRAFT status
+    And I submit a BLI to move to IN_REVIEW status (without a CAN)
+
+    Then I should get an error message that the BLI must have a CAN (for PUT only)
+
+  Scenario: Valid Amount: Both NULL
     Given I am logged in as an OPS user
     And I have a valid Agreement
 
     When I have a BLI in DRAFT status without an Amount
-    And I submit a BLI to move to IN_REVIEW status
+    And I submit a BLI to move to IN_REVIEW status (without an Amount)
 
     Then I should get an error message that the BLI must have an Amount
+
+  Scenario: Valid Amount: Request Empty
+    Given I am logged in as an OPS user
+    And I have a valid Agreement
+
+    When I have a BLI in DRAFT status
+    And I submit a BLI to move to IN_REVIEW status (without an Amount)
+
+    Then I should get an error message that the BLI must have an Amount (for PUT only)
 
   Scenario: Valid Amount: Greater than 0
     Given I am logged in as an OPS user
     And I have a valid Agreement
 
     When I have a BLI in DRAFT status with an Amount less than or equal to 0
-    And I submit a BLI to move to IN_REVIEW status
+    And I submit a BLI to move to IN_REVIEW status (with an Amount less than or equal to 0)
 
     Then I should get an error message that the BLI must have an Amount greater than 0
