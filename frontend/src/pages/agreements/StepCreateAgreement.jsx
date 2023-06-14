@@ -20,8 +20,17 @@ import {
     useCreateAgreementDispatch,
 } from "./CreateAgreementContext";
 import { patchAgreement } from "../../api/patchAgreements";
+import EditModeTitle from "./EditModeTitle";
 
-export const StepCreateAgreement = ({ goBack, goToNext }) => {
+/**
+ * Renders the "Create Agreement" step of the Create Agreement flow.
+ *
+ * @param {Object} props - The component props.
+ * @param {Function} props.goBack - A function to go back to the previous step.
+ * @param {Function} props.goToNext - A function to go to the next step.
+ * @param {boolean} props.isEditMode - A flag indicating whether the component is in edit mode.
+ */
+export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) => {
     const navigate = useNavigate();
     const dispatch = useCreateAgreementDispatch();
     const {
@@ -168,10 +177,7 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
                     {alertProps.message}
                 </Alert>
             ) : (
-                <>
-                    <h1 className="font-sans-lg">Create New Agreement</h1>
-                    <p>Follow the steps to create an agreement</p>
-                </>
+                <EditModeTitle isEditMode={isEditMode} />
             )}
             <StepIndicator steps={wizardSteps} currentStep={2} />
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />

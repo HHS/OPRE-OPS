@@ -5,7 +5,14 @@ import StepCreateBudgetLines from "../../components/UI/WizardSteps/StepCreateBud
 import StepAgreementSuccess from "./StepAgreementSuccess";
 import { useCreateAgreement } from "./CreateAgreementContext";
 
-export const CreateAgreement = ({ existingBudgetLines }) => {
+/**
+ * Renders the Create Agreement flow, which consists of several steps.
+ * @param {Object} props - The component props.
+ * @param {Array<any>} props.existingBudgetLines - An array of existing budget lines.
+ * @param {boolean} props.isEditMode - A flag indicating whether the component is in edit mode.
+ * @returns {JSX.Element} - The rendered component.
+ */
+export const CreateAgreement = ({ existingBudgetLines, isEditMode }) => {
     const createAgreementContext = useCreateAgreement();
 
     const {
@@ -17,9 +24,11 @@ export const CreateAgreement = ({ existingBudgetLines }) => {
 
     return (
         <CreateAgreementFlow>
-            <StepSelectProject />
-            <StepCreateAgreement />
+            <StepSelectProject goToNext={() => {}} isEditMode={isEditMode} />
+            <StepCreateAgreement goToNext={() => {}} goBack={() => {}} isEditMode={isEditMode} />
             <StepCreateBudgetLines
+                goToNext={() => {}}
+                goBack={() => {}}
                 wizardSteps={wizardSteps}
                 currentStep={3}
                 selectedResearchProject={selectedResearchProject}
@@ -27,8 +36,10 @@ export const CreateAgreement = ({ existingBudgetLines }) => {
                 selectedProcurementShop={selectedProcurementShop}
                 continueBtnText="Save Draft"
                 existingBudgetLines={existingBudgetLines}
+                isEditMode={isEditMode}
+                workflow="agreement"
             />
-            <StepAgreementSuccess />
+            <StepAgreementSuccess isEditMode={isEditMode} />
         </CreateAgreementFlow>
     );
 };

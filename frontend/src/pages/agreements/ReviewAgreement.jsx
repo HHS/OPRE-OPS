@@ -168,9 +168,8 @@ export const ReviewAgreement = ({ agreement_id }) => {
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className="usa-button usa-button--outline margin-right-2"
-                    // TODO: Implement edit agreement
                     onClick={() => {
-                        alert("not implemented yet");
+                        navigate(`/agreements/edit/${agreement?.id}`);
                     }}
                 >
                     Edit
