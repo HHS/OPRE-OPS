@@ -15,6 +15,7 @@ class OpsEventType(Enum):
     CREATE_RESEARCH_PROJECT = 4
     CREATE_NEW_AGREEMENT = 5
     UPDATE_AGREEMENT = 6
+    SEND_FOR_APPROVAL = 7
 
 
 class OpsEventStatus(Enum):
