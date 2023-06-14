@@ -6,6 +6,14 @@ import Modal from "../../components/UI/Modal/Modal";
 import { useGetResearchProjectsQuery } from "../../api/opsAPI";
 import { useCreateAgreement, useSetState, useUpdateAgreement } from "./CreateAgreementContext";
 
+/**
+ * Renders the "Select Project" step in the Create Agreement flow.
+ *
+ * @param {Object} props - The component props.
+ * @param {Function} props.goToNext - A function to navigate to the next step in the flow.
+ * @param {boolean} props.isEditMode - A flag indicating whether the component is in edit mode.
+ * @returns {JSX.Element} - The rendered component.
+ */
 export const StepSelectProject = ({ goToNext, isEditMode }) => {
     const navigate = useNavigate();
     const { wizardSteps, selected_project: selectedResearchProject } = useCreateAgreement();

@@ -24,8 +24,8 @@ export const CreateAgreement = ({ existingBudgetLines, isEditMode }) => {
 
     return (
         <CreateAgreementFlow>
-            <StepSelectProject isEditMode={isEditMode} />
-            <StepCreateAgreement isEditMode={isEditMode} />
+            <StepSelectProject goToNext={() => {}} isEditMode={isEditMode} />
+            <StepCreateAgreement goToNext={() => {}} goBack={() => {}} isEditMode={isEditMode} />
             <StepCreateBudgetLines
                 goToNext={() => {}}
                 goBack={() => {}}
