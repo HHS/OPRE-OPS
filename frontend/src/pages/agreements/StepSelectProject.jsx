@@ -6,7 +6,7 @@ import Modal from "../../components/UI/Modal/Modal";
 import { useGetResearchProjectsQuery } from "../../api/opsAPI";
 import { useCreateAgreement, useSetState, useUpdateAgreement } from "./CreateAgreementContext";
 
-export const StepSelectProject = ({ goToNext }) => {
+export const StepSelectProject = ({ goToNext, isEditMode }) => {
     const navigate = useNavigate();
     const { wizardSteps, selected_project: selectedResearchProject } = useCreateAgreement();
     // setters
@@ -57,8 +57,17 @@ export const StepSelectProject = ({ goToNext }) => {
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            <h1 className="font-sans-lg">Create New Agreement</h1>
-            <p>Follow the steps to create an agreement</p>
+            {isEditMode ? (
+                <>
+                    <h1 className="font-sans-lg">Edit Agreement</h1>
+                    <p>Follow the steps to edit an agreement</p>
+                </>
+            ) : (
+                <>
+                    <h1 className="font-sans-lg">Create New Agreement</h1>
+                    <p>Follow the steps to create an agreement</p>
+                </>
+            )}
             <StepIndicator steps={wizardSteps} currentStep={1} />
             <h2 className="font-sans-lg">Select a Project</h2>
             <p>

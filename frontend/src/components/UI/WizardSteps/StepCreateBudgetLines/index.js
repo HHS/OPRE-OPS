@@ -11,6 +11,8 @@ const CreateBudgetLines = ({
     selectedProcurementShop,
     existingBudgetLines,
     continueBtnText,
+    isEditMode,
+    workflow,
 }) => {
     return (
         <CreateBudgetLinesProvider>
@@ -24,6 +26,8 @@ const CreateBudgetLines = ({
                 selectedProcurementShop={selectedProcurementShop}
                 existingBudgetLines={existingBudgetLines}
                 continueBtnText={continueBtnText}
+                isEditMode={isEditMode}
+                workflow={workflow}
             />
         </CreateBudgetLinesProvider>
     );

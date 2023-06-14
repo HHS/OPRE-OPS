@@ -51,7 +51,7 @@ const EditAgreement = () => {
     return (
         <App>
             <CreateAgreementProvider agreement={agreement} project_officer={projectOfficer}>
-                <CreateEditAgreement existingBudgetLines={agreement.budget_line_items} />
+                <CreateEditAgreement existingBudgetLines={agreement.budget_line_items} isEditMode={true} />
             </CreateAgreementProvider>
 
             <pre>{JSON.stringify(agreement, null, 2)}</pre>

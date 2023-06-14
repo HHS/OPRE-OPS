@@ -8,6 +8,7 @@ import Modal from "../../Modal/Modal";
 import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
 import { postBudgetLineItems } from "../../../../api/postBudgetLineItems";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
+import EditModeTitle from "../../../../pages/agreements/EditModeTitle";
 
 export const StepCreateBudgetLines = ({
     goToNext,
@@ -19,6 +20,8 @@ export const StepCreateBudgetLines = ({
     selectedProcurementShop = {},
     existingBudgetLines = [],
     continueBtnText,
+    isEditMode,
+    workflow,
 }) => {
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
@@ -184,8 +187,14 @@ export const StepCreateBudgetLines = ({
                 </Alert>
             ) : (
                 <>
-                    <h2 className="font-sans-lg">Create New Budget Line</h2>
-                    <p>Step Two: Text explaining this page</p>
+                    {workflow === "agreement" ? (
+                        <EditModeTitle isEditMode={isEditMode} />
+                    ) : (
+                        <>
+                            <h2 className="font-sans-lg">Create New Budget Line</h2>
+                            <p>Step Two: Text explaining this page</p>
+                        </>
+                    )}
                 </>
             )}
             <StepIndicator steps={wizardSteps} currentStep={currentStep} />
