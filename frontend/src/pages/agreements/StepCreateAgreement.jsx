@@ -63,20 +63,19 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
 
-    const incumbentDisabled =
-        agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
+    const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
 
     const changeSelectedProductServiceCode = (selectedProductServiceCode) => {
         setSelectedProductServiceCode(selectedProductServiceCode);
         const productServiceCodeId = selectedProductServiceCode ? selectedProductServiceCode.id : null;
         setProductServiceCodeId(productServiceCodeId);
-    }
+    };
 
     const changeSelectedProjectOfficer = (selectedProjectOfficer) => {
         setSelectedProjectOfficer(selectedProjectOfficer);
         const projectOfficerId = selectedProjectOfficer ? selectedProjectOfficer.id : null;
-        setProjectOfficerId(selectedProjectOfficer.id)
-    }
+        setProjectOfficerId(selectedProjectOfficer.id);
+    };
 
     const setSelectedTeamMembers = (teamMember) => {
         dispatch({
@@ -178,10 +177,7 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg">Select the Agreement Type</h2>
             <p>Select the type of agreement you&#39;d like to create.</p>
-            <AgreementTypeSelect
-                selectedAgreementType={agreementType}
-                setSelectedAgreementType={setAgreementType}
-            />
+            <AgreementTypeSelect selectedAgreementType={agreementType} setSelectedAgreementType={setAgreementType} />
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
             <label className="usa-label" htmlFor="agreement-title">
                 Agreement Title

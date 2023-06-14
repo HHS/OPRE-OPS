@@ -12,7 +12,7 @@ const defaultState = {
         description: "",
         product_service_code_id: null,
         incumbent: null,
-        project_officer: null,  // this is the ID
+        project_officer: null, // this is the ID
         team_members: [],
         notes: "",
         research_project_id: null,
@@ -28,7 +28,7 @@ let initialState = { ...defaultState };
 
 export function CreateAgreementProvider({ agreement, projectOfficer, children }) {
     if (agreement) {
-        initialState.agreement = {...defaultState, ...agreement };
+        initialState.agreement = { ...defaultState, ...agreement };
         initialState.selected_project = agreement.research_project;
         initialState.selected_product_service_code = agreement.product_service_code;
         initialState.selected_procurement_shop = agreement.procurement_shop;
