@@ -74,7 +74,7 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
     const changeSelectedProjectOfficer = (selectedProjectOfficer) => {
         setSelectedProjectOfficer(selectedProjectOfficer);
         const projectOfficerId = selectedProjectOfficer ? selectedProjectOfficer.id : null;
-        setProjectOfficerId(selectedProjectOfficer.id);
+        setProjectOfficerId(projectOfficerId);
     };
 
     const setSelectedTeamMembers = (teamMember) => {
@@ -207,7 +207,7 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
 
             <ProductServiceCodeSelect
                 selectedProductServiceCode={selectedProductServiceCode}
-                setSelectedProductServiceCode={setSelectedProductServiceCode}
+                setSelectedProductServiceCode={changeSelectedProductServiceCode}
             />
             {selectedProductServiceCode &&
                 selectedProductServiceCode.naics &&
