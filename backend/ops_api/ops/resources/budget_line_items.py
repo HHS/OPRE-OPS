@@ -71,7 +71,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 self._put_schema.context["id"] = id
                 self._put_schema.context["method"] = "PUT"
 
-                if request.json.get("status") == BudgetLineItemStatus.UNDER_REVIEW:
+                if request.json.get("status") == BudgetLineItemStatus.UNDER_REVIEW.name:
                     with OpsEventHandler(OpsEventType.SEND_BLI_FOR_APPROVAL) as approval_meta:
                         data = validate_and_normalize_request_data_for_put(self._put_schema)
                         budget_line_item = self.update_and_commit_budget_line_item(data, id)
@@ -110,7 +110,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 self._patch_schema.context["id"] = id
                 self._patch_schema.context["method"] = "PATCH"
 
-                if request.json.get("status") == BudgetLineItemStatus.UNDER_REVIEW:
+                if request.json.get("status") == BudgetLineItemStatus.UNDER_REVIEW.name:
                     with OpsEventHandler(OpsEventType.SEND_BLI_FOR_APPROVAL) as approval_meta:
                         data = validate_and_normalize_request_data_for_patch(self._patch_schema)
                         budget_line_item = self.update_and_commit_budget_line_item(data, id)
