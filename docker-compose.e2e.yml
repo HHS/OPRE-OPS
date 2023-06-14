@@ -63,7 +63,7 @@ services:
       - JWT_PRIVATE_KEY
       - OPS_CONFIG=environment/local/e2e.py
     volumes:
-      - ./backend/ops_api/ops:/home/app/ops
+      - ./backend/ops_api/ops:/home/app/ops_api/ops
     depends_on:
       db:
         condition: service_healthy
