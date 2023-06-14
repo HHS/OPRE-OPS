@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import classnames from "vest/classnames";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import ProcurementShopSelect from "../../components/UI/Form/ProcurementShopSelect";
 import AgreementReasonSelect from "../../components/UI/Form/AgreementReasonSelect";
@@ -21,6 +22,8 @@ import {
 } from "./CreateAgreementContext";
 import { patchAgreement } from "../../api/patchAgreements";
 import EditModeTitle from "./EditModeTitle";
+import suite from "./stepCreateAgreementSuite";
+import Input from "../../components/UI/Form/Input/Input";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -50,6 +53,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
         agreement_reason: agreementReason,
         team_members: selectedTeamMembers,
     } = agreement;
+
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setSelectedProductServiceCode = useSetState("selected_product_service_code");
@@ -73,6 +77,12 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
     const [alertProps, setAlertProps] = React.useState({});
 
     const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
+    let res = suite.get();
+    const cn = classnames(suite.get(), {
+        invalid: "usa-form-group--error",
+        valid: "success",
+        warning: "warning",
+    });
 
     const changeSelectedProductServiceCode = (selectedProductServiceCode) => {
         setSelectedProductServiceCode(selectedProductServiceCode);
@@ -157,6 +167,11 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
         });
     };
 
+    const handleChange = (currentField, value) => {
+        const nextState = { currentField: value };
+        suite(nextState, currentField);
+    };
+
     const handleOnChangeSelectedProcurementShop = (procurementShop) => {
         setSelectedProcurementShop(procurementShop);
         setAgreementProcurementShopId(procurementShop.id);
@@ -197,6 +212,14 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
                 value={agreementTitle || ""}
                 onChange={(e) => setAgreementTitle(e.target.value)}
                 required
+            />
+
+            <Input
+                name="agreement_title"
+                label="Agreement Title"
+                onChange={handleChange}
+                messages={res.getErrors("agreement_title")}
+                className={cn("agreement_title")}
             />
 
             <label className="usa-label" htmlFor="agreement-description">
