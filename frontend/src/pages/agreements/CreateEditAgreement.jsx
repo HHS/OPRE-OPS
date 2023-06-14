@@ -37,7 +37,7 @@ export const CreateAgreement = ({ existingBudgetLines, isEditMode }) => {
                 isEditMode={isEditMode}
                 workflow="agreement"
             />
-            <StepAgreementSuccess />
+            <StepAgreementSuccess isEditMode={isEditMode} />
         </CreateAgreementFlow>
     );
 };
