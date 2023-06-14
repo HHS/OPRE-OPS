@@ -11,10 +11,6 @@ export const patchAgreement = async (id, item) => {
         budget_line_items,
         created_by,
         created_on,
-        procurement_shop,
-        product_service_code,
-        research_project,
-        selected_product_service_code,
         updated_on,
         ...patchData
     } = data;

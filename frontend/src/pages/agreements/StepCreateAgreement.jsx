@@ -29,6 +29,8 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
         selected_project: selectedResearchProject,
         agreement,
         selected_procurement_shop: selectedProcurementShop,
+        selected_product_service_code: selectedProductServiceCode,
+        selected_project_officer: selectedProjectOfficer,
     } = useCreateAgreement();
     const {
         notes: agreementNotes,
@@ -36,13 +38,13 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
         agreement_type: agreementType,
         name: agreementTitle,
         description: agreementDescription,
-        selected_product_service_code: selectedProductServiceCode,
         agreement_reason: agreementReason,
-        project_officer: selectedProjectOfficer,
         team_members: selectedTeamMembers,
     } = agreement;
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
+    const setSelectedProductServiceCode = useSetState("selected_product_service_code");
+    const setSelectedProjectOfficer = useSetState("selected_project_officer");
 
     // AGREEMENT SETTERS
     const setAgreementType = useUpdateAgreement("agreement_type");
@@ -50,9 +52,9 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
     const setAgreementDescription = useUpdateAgreement("description");
     const setAgreementProcurementShopId = useUpdateAgreement("procurement_shop_id");
     const setAgreementId = useUpdateAgreement("id");
-    const setSelectedProductServiceCode = useUpdateAgreement("selected_product_service_code");
+    const setProductServiceCodeId = useUpdateAgreement("product_service_code_id");
     const setAgreementReason = useUpdateAgreement("agreement_reason");
-    const setSelectedProjectOfficer = useUpdateAgreement("project_officer");
+    const setProjectOfficerId = useUpdateAgreement("project_officer");
     const setAgreementIncumbent = useUpdateAgreement("incumbent");
     const setAgreementNotes = useUpdateAgreement("notes");
 
@@ -63,6 +65,18 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
 
     const incumbentDisabled =
         agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
+
+    const changeSelectedProductServiceCode = (selectedProductServiceCode) => {
+        setSelectedProductServiceCode(selectedProductServiceCode);
+        const productServiceCodeId = selectedProductServiceCode ? selectedProductServiceCode.id : null;
+        setProductServiceCodeId(productServiceCodeId);
+    }
+
+    const changeSelectedProjectOfficer = (selectedProjectOfficer) => {
+        setSelectedProjectOfficer(selectedProjectOfficer);
+        const projectOfficerId = selectedProjectOfficer ? selectedProjectOfficer.id : null;
+        setProjectOfficerId(selectedProjectOfficer.id)
+    }
 
     const setSelectedTeamMembers = (teamMember) => {
         dispatch({
@@ -97,8 +111,6 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
     const saveAgreement = async () => {
         const data = {
             ...agreement,
-            product_service_code_id: selectedProductServiceCode ? selectedProductServiceCode.id : null,
-            project_officer: selectedProjectOfficer && selectedProjectOfficer.id > 0 ? selectedProjectOfficer.id : null,
             team_members: selectedTeamMembers.map((team_member) => {
                 return formatTeamMember(team_member);
             }),
@@ -242,7 +254,7 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
             <div className="display-flex">
                 <ProjectOfficerSelect
                     selectedProjectOfficer={selectedProjectOfficer}
-                    setSelectedProjectOfficer={setSelectedProjectOfficer}
+                    setSelectedProjectOfficer={changeSelectedProjectOfficer}
                 />
                 <TeamMemberSelect
                     className="margin-left-4"

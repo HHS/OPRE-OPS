@@ -10,7 +10,6 @@ export const postAgreement = async (item) => {
     };
 
     delete newAgreement.id;
-    delete newAgreement.selected_product_service_code;
 
     const responseData = await ApplicationContext.get()
         .helpers()
