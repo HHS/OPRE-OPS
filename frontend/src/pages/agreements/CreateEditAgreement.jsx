@@ -27,6 +27,8 @@ export const CreateAgreement = ({ existingBudgetLines, isEditMode }) => {
             <StepSelectProject isEditMode={isEditMode} />
             <StepCreateAgreement isEditMode={isEditMode} />
             <StepCreateBudgetLines
+                goToNext={() => {}}
+                goBack={() => {}}
                 wizardSteps={wizardSteps}
                 currentStep={3}
                 selectedResearchProject={selectedResearchProject}
