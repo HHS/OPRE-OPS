@@ -6,18 +6,7 @@ export const patchAgreement = async (id, item) => {
     console.log(item);
     const data = { ...item };
     // remove fields that are not allowed
-    const {
-        id: _id,
-        budget_line_items,
-        created_by,
-        created_on,
-        procurement_shop,
-        product_service_code,
-        research_project,
-        selected_product_service_code,
-        updated_on,
-        ...patchData
-    } = data;
+    const { id: _id, budget_line_items, created_by, created_on, updated_on, ...patchData } = data;
 
     console.log("patchData:");
     console.log(patchData);

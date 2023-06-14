@@ -10,27 +10,34 @@ const defaultState = {
         agreement_reason: null,
         name: "",
         description: "",
-        selected_product_service_code: null,
+        product_service_code_id: null,
         incumbent: null,
-        project_officer: null,
+        project_officer: null, // this is the ID
         team_members: [],
         notes: "",
         research_project_id: null,
         procurement_shop_id: null,
     },
     selected_project: {},
+    selected_product_service_code: {},
     selected_procurement_shop: {},
+    selected_project_officer: {},
     wizardSteps: ["Project", "Agreement", "Budget Lines"],
 };
 let initialState = { ...defaultState };
 
-export function CreateAgreementProvider({ agreement, project_officer, children }) {
+export function CreateAgreementProvider({ agreement, projectOfficer, children }) {
     if (agreement) {
-        initialState.agreement = { ...agreement };
-        initialState.agreement.selected_product_service_code = agreement.product_service_code;
-        initialState.agreement.project_officer = project_officer ? project_officer : null;
+        initialState.agreement = { ...defaultState, ...agreement };
         initialState.selected_project = agreement.research_project;
+        initialState.selected_product_service_code = agreement.product_service_code;
         initialState.selected_procurement_shop = agreement.procurement_shop;
+        if (projectOfficer) {
+            initialState.selected_project_officer = projectOfficer;
+        }
+        delete initialState.agreement.procurement_shop;
+        delete initialState.agreement.product_service_code;
+        delete initialState.agreement.procurement_shop;
     } else {
         initialState = { ...defaultState };
     }

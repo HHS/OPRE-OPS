@@ -38,6 +38,8 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
         selected_project: selectedResearchProject,
         agreement,
         selected_procurement_shop: selectedProcurementShop,
+        selected_product_service_code: selectedProductServiceCode,
+        selected_project_officer: selectedProjectOfficer,
     } = useCreateAgreement();
     const {
         notes: agreementNotes,
@@ -45,13 +47,13 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
         agreement_type: agreementType,
         name: agreementTitle,
         description: agreementDescription,
-        selected_product_service_code: selectedProductServiceCode,
         agreement_reason: agreementReason,
-        project_officer: selectedProjectOfficer,
         team_members: selectedTeamMembers,
     } = agreement;
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
+    const setSelectedProductServiceCode = useSetState("selected_product_service_code");
+    const setSelectedProjectOfficer = useSetState("selected_project_officer");
 
     // AGREEMENT SETTERS
     const setAgreementType = useUpdateAgreement("agreement_type");
@@ -59,9 +61,9 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
     const setAgreementDescription = useUpdateAgreement("description");
     const setAgreementProcurementShopId = useUpdateAgreement("procurement_shop_id");
     const setAgreementId = useUpdateAgreement("id");
-    const setSelectedProductServiceCode = useUpdateAgreement("selected_product_service_code");
+    const setProductServiceCodeId = useUpdateAgreement("product_service_code_id");
     const setAgreementReason = useUpdateAgreement("agreement_reason");
-    const setSelectedProjectOfficer = useUpdateAgreement("project_officer");
+    const setProjectOfficerId = useUpdateAgreement("project_officer");
     const setAgreementIncumbent = useUpdateAgreement("incumbent");
     const setAgreementNotes = useUpdateAgreement("notes");
 
@@ -70,8 +72,19 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
 
-    const incumbentDisabled =
-        agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
+    const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
+
+    const changeSelectedProductServiceCode = (selectedProductServiceCode) => {
+        setSelectedProductServiceCode(selectedProductServiceCode);
+        const productServiceCodeId = selectedProductServiceCode ? selectedProductServiceCode.id : null;
+        setProductServiceCodeId(productServiceCodeId);
+    };
+
+    const changeSelectedProjectOfficer = (selectedProjectOfficer) => {
+        setSelectedProjectOfficer(selectedProjectOfficer);
+        const projectOfficerId = selectedProjectOfficer ? selectedProjectOfficer.id : null;
+        setProjectOfficerId(projectOfficerId);
+    };
 
     const setSelectedTeamMembers = (teamMember) => {
         dispatch({
@@ -106,8 +119,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
     const saveAgreement = async () => {
         const data = {
             ...agreement,
-            product_service_code_id: selectedProductServiceCode ? selectedProductServiceCode.id : null,
-            project_officer: selectedProjectOfficer && selectedProjectOfficer.id > 0 ? selectedProjectOfficer.id : null,
             team_members: selectedTeamMembers.map((team_member) => {
                 return formatTeamMember(team_member);
             }),
@@ -172,10 +183,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg">Select the Agreement Type</h2>
             <p>Select the type of agreement you&#39;d like to create.</p>
-            <AgreementTypeSelect
-                selectedAgreementType={agreementType}
-                setSelectedAgreementType={setAgreementType}
-            />
+            <AgreementTypeSelect selectedAgreementType={agreementType} setSelectedAgreementType={setAgreementType} />
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
             <label className="usa-label" htmlFor="agreement-title">
                 Agreement Title
@@ -205,7 +213,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
 
             <ProductServiceCodeSelect
                 selectedProductServiceCode={selectedProductServiceCode}
-                setSelectedProductServiceCode={setSelectedProductServiceCode}
+                setSelectedProductServiceCode={changeSelectedProductServiceCode}
             />
             {selectedProductServiceCode &&
                 selectedProductServiceCode.naics &&
@@ -248,7 +256,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
             <div className="display-flex">
                 <ProjectOfficerSelect
                     selectedProjectOfficer={selectedProjectOfficer}
-                    setSelectedProjectOfficer={setSelectedProjectOfficer}
+                    setSelectedProjectOfficer={changeSelectedProjectOfficer}
                 />
                 <TeamMemberSelect
                     className="margin-left-4"

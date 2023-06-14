@@ -50,7 +50,7 @@ const EditAgreement = () => {
 
     return (
         <App>
-            <CreateAgreementProvider agreement={agreement} project_officer={projectOfficer}>
+            <CreateAgreementProvider agreement={agreement} projectOfficer={projectOfficer}>
                 <CreateEditAgreement existingBudgetLines={agreement.budget_line_items} isEditMode={true} />
             </CreateAgreementProvider>
 
