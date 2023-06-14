@@ -125,7 +125,8 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
         };
         if (agreement.id) {
             // TODO: handle failures
-            const response = await patchAgreement(agreement.id, data);
+            // const response = await patchAgreement(agreement.id, data);
+            patchAgreement(agreement.id, data);
         } else {
             // TODO: handle failures
             const response = await postAgreement(data);

@@ -168,6 +168,7 @@ export const StepCreateBudgetLines = ({
         );
 
         const existingBudgetLineItems = newBudgetLines.filter((budgetLineItem) =>
+            // eslint-disable-next-line no-prototype-builtins
             budgetLineItem.hasOwnProperty("created_on")
         );
 
