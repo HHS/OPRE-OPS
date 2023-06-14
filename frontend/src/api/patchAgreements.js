@@ -14,8 +14,6 @@ export const patchAgreement = async (id, item) => {
         procurement_shop,
         product_service_code,
         research_project,
-        selected_agreement_reason,
-        selected_agreement_type,
         selected_product_service_code,
         updated_on,
         ...patchData

@@ -3,8 +3,8 @@ import TestApplicationContext from "../applicationContext/TestApplicationContext
 
 describe("postAgreement function", () => {
     const mockAgreement = {
-        selected_agreement_type: "CONTRACT",
-        selected_agreement_reason: "NEW_REQ",
+        agreement_type: "CONTRACT",
+        agreement_reason: "NEW_REQ",
         name: "Agreement144",
         description: "Description",
         selected_product_service_code: {
@@ -64,8 +64,8 @@ describe("postAgreement function", () => {
     };
 
     const emptyMockAgreement = {
-        selected_agreement_type: null,
-        selected_agreement_reason: null,
+        agreement_type: null,
+        agreement_reason: null,
         name: "",
         description: "",
         selected_product_service_code: null,
