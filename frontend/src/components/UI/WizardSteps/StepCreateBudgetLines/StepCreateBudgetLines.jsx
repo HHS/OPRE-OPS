@@ -7,6 +7,7 @@ import Alert from "../../Alert/Alert";
 import Modal from "../../Modal/Modal";
 import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
 import { postBudgetLineItems } from "../../../../api/postBudgetLineItems";
+import { patchBudgetLineItems } from "../../../../api/patchBudgetLineItems";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
 import EditModeTitle from "../../../../pages/agreements/EditModeTitle";
 import { loggedInName } from "../../../../helpers/utils";
@@ -161,11 +162,20 @@ export const StepCreateBudgetLines = ({
 
     const saveBudgetLineItems = (event) => {
         event.preventDefault();
-        const newBudgetLineItems = newBudgetLines.filter(
-            // eslint-disable-next-line no-prototype-builtins
-            (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on")
-        );
-        postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
+
+        if (isEditMode) {
+            const newBudgetLineItems = newBudgetLines.filter(
+                // eslint-disable-next-line no-prototype-builtins
+                (budgetLineItem) => budgetLineItem.status !== "DRAFT"
+            );
+            patchBudgetLineItems(newBudgetLineItems).then(() => console.log("Updated BLIs."));
+        } else {
+            const newBudgetLineItems = newBudgetLines.filter(
+                // eslint-disable-next-line no-prototype-builtins
+                (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on")
+            );
+            postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
+        }
         dispatch({ type: "RESET_FORM_AND_BUDGET_LINES" });
         goToNext();
     };
