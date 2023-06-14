@@ -17,13 +17,10 @@ export const patchBudgetLineItem = async (item) => {
     delete data.can;
     delete data.id;
 
-    console.log("item", data);
-
     const responseData = ApplicationContext.get()
         .helpers()
         .callBackend(`/api/${api_version}/budget-line-items/${budgetLineId}`, "PATCH", data)
         .then(function (response) {
-            console.log(`Budget Line Patched: ${response}`);
             return response;
         })
         .catch(function (error) {
@@ -49,6 +46,5 @@ export const patchBudgetLineItem = async (item) => {
 };
 
 export const patchBudgetLineItems = async (items) => {
-    console.log("patch budget line items", items);
     return Promise.all(items.map((item) => patchBudgetLineItem(item)));
 };
