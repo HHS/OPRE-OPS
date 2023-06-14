@@ -11,7 +11,7 @@ const defaultState = {
         name: "",
         description: "",
         selected_product_service_code: null,
-        incumbent_entered: null,
+        incumbent: null,
         project_officer: null,
         team_members: [],
         notes: "",
@@ -30,7 +30,6 @@ export function CreateAgreementProvider({ agreement, project_officer, children }
         initialState.agreement.selected_agreement_type = agreement.agreement_type;
         initialState.agreement.selected_agreement_reason = agreement.agreement_reason;
         initialState.agreement.selected_product_service_code = agreement.product_service_code;
-        initialState.agreement.incumbent_entered = agreement.incumbent;
         initialState.agreement.project_officer = project_officer ? project_officer : null;
         initialState.selected_project = agreement.research_project;
         initialState.selected_procurement_shop = agreement.procurement_shop;

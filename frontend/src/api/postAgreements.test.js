@@ -15,7 +15,7 @@ describe("postAgreement function", () => {
             name: "Service-Code-1",
             updated_on: "2023-04-25T17:22:15.122472",
         },
-        incumbent_entered: "Vendor A",
+        incumbent: "Vendor A",
         project_officer: {
             created_by: null,
             created_on: "2023-04-25T17:22:11.766571",
@@ -69,7 +69,7 @@ describe("postAgreement function", () => {
         name: "",
         description: "",
         selected_product_service_code: null,
-        incumbent_entered: null,
+        incumbent: null,
         project_officer: null,
         team_members: [],
         notes: "",

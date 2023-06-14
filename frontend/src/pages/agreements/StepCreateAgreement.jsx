@@ -32,7 +32,7 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
     } = useCreateAgreement();
     const {
         notes: agreementNotes,
-        incumbent_entered: agreementIncumbent,
+        incumbent: agreementIncumbent,
         selected_agreement_type: selectedAgreementType,
         name: agreementTitle,
         description: agreementDescription,
@@ -53,7 +53,7 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
     const setSelectedProductServiceCode = useUpdateAgreement("selected_product_service_code");
     const setSelectedAgreementReason = useUpdateAgreement("selected_agreement_reason");
     const setSelectedProjectOfficer = useUpdateAgreement("project_officer");
-    const setAgreementIncumbent = useUpdateAgreement("incumbent_entered");
+    const setAgreementIncumbent = useUpdateAgreement("incumbent");
     const setAgreementNotes = useUpdateAgreement("notes");
 
     const [showModal, setShowModal] = React.useState(false);
