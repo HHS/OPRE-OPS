@@ -173,7 +173,9 @@ class RequestBody:
             data_date_needed = data.get("date_needed")
             today = date.today()
             msg = "BLI must valid a Need By Date in the future when status is not DRAFT"
-            if (data_date_needed and data_date_needed <= today) or (bli_date_needed and bli_date_needed <= today):
+            if (data_date_needed and data_date_needed <= today) or (
+                not data_date_needed and bli_date_needed and bli_date_needed <= today
+            ):
                 raise ValidationError(msg)
 
     @validates_schema(skip_on_field_errors=False)
