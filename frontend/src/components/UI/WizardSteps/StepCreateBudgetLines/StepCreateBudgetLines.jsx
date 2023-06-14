@@ -9,6 +9,7 @@ import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
 import { postBudgetLineItems } from "../../../../api/postBudgetLineItems";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
 import EditModeTitle from "../../../../pages/agreements/EditModeTitle";
+import { loggedInName } from "../../../../helpers/utils";
 
 export const StepCreateBudgetLines = ({
     goToNext,
@@ -59,12 +60,7 @@ export const StepCreateBudgetLines = ({
     const setEnteredDay = useSetState("entered_day");
     const setEnteredYear = useSetState("entered_year");
     const setEnteredComments = useSetState("entered_comments");
-    let loggedInUserFullName = useSelector((state) => state.auth.activeUser.full_name);
-
-    // NOTE: set to logged in user to Sheila if no name is found
-    if (!loggedInUserFullName) {
-        loggedInUserFullName = "Sheila Celentano";
-    }
+    let loggedInUserFullName = useSelector((state) => loggedInName(state.auth?.activeUser));
 
     // combine arrays of new budget lines and existing budget lines added
     // only run once on page load if there are existing budget lines
