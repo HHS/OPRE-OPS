@@ -10,8 +10,10 @@ export const patchBudgetLineItem = async (item) => {
     if (data.date_needed === "--") {
         data.date_needed = null;
     }
-
+    const budgetLineId = data.id;
     delete data.created_by;
+    delete data.created_on;
+    delete data.updated_on;
     delete data.can;
     delete data.id;
 
@@ -19,7 +21,7 @@ export const patchBudgetLineItem = async (item) => {
 
     const responseData = ApplicationContext.get()
         .helpers()
-        .callBackend(`/api/${api_version}/budget-line-items/`, "PATCH", data)
+        .callBackend(`/api/${api_version}/budget-line-items/${budgetLineId}`, "PATCH", data)
         .then(function (response) {
             console.log(`Budget Line Patched: ${response}`);
             return response;
