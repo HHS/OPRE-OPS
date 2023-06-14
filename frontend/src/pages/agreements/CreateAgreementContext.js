@@ -6,8 +6,8 @@ export const CreateAgreementDispatchContext = createContext(null);
 const defaultState = {
     agreement: {
         id: null,
-        selected_agreement_type: null,
-        selected_agreement_reason: null,
+        agreement_type: null,
+        agreement_reason: null,
         name: "",
         description: "",
         selected_product_service_code: null,
@@ -27,8 +27,6 @@ let initialState = { ...defaultState };
 export function CreateAgreementProvider({ agreement, project_officer, children }) {
     if (agreement) {
         initialState.agreement = { ...agreement };
-        initialState.agreement.selected_agreement_type = agreement.agreement_type;
-        initialState.agreement.selected_agreement_reason = agreement.agreement_reason;
         initialState.agreement.selected_product_service_code = agreement.product_service_code;
         initialState.agreement.project_officer = project_officer ? project_officer : null;
         initialState.selected_project = agreement.research_project;

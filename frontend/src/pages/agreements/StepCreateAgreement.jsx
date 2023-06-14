@@ -42,11 +42,11 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
     const {
         notes: agreementNotes,
         incumbent: agreementIncumbent,
-        selected_agreement_type: selectedAgreementType,
+        agreement_type: agreementType,
         name: agreementTitle,
         description: agreementDescription,
         selected_product_service_code: selectedProductServiceCode,
-        selected_agreement_reason: selectedAgreementReason,
+        agreement_reason: agreementReason,
         project_officer: selectedProjectOfficer,
         team_members: selectedTeamMembers,
     } = agreement;
@@ -54,13 +54,13 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
 
     // AGREEMENT SETTERS
-    const setSelectedAgreementType = useUpdateAgreement("selected_agreement_type");
+    const setAgreementType = useUpdateAgreement("agreement_type");
     const setAgreementTitle = useUpdateAgreement("name");
     const setAgreementDescription = useUpdateAgreement("description");
     const setAgreementProcurementShopId = useUpdateAgreement("procurement_shop_id");
     const setAgreementId = useUpdateAgreement("id");
     const setSelectedProductServiceCode = useUpdateAgreement("selected_product_service_code");
-    const setSelectedAgreementReason = useUpdateAgreement("selected_agreement_reason");
+    const setAgreementReason = useUpdateAgreement("agreement_reason");
     const setSelectedProjectOfficer = useUpdateAgreement("project_officer");
     const setAgreementIncumbent = useUpdateAgreement("incumbent");
     const setAgreementNotes = useUpdateAgreement("notes");
@@ -71,7 +71,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
     const [alertProps, setAlertProps] = React.useState({});
 
     const incumbentDisabled =
-        selectedAgreementReason === "NEW_REQ" || selectedAgreementReason === null || selectedAgreementReason === "0";
+        agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
 
     const setSelectedTeamMembers = (teamMember) => {
         dispatch({
@@ -106,9 +106,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
     const saveAgreement = async () => {
         const data = {
             ...agreement,
-            selected_agreement_type: selectedAgreementType,
             product_service_code_id: selectedProductServiceCode ? selectedProductServiceCode.id : null,
-            agreement_reason: selectedAgreementReason,
             project_officer: selectedProjectOfficer && selectedProjectOfficer.id > 0 ? selectedProjectOfficer.id : null,
             team_members: selectedTeamMembers.map((team_member) => {
                 return formatTeamMember(team_member);
@@ -116,8 +114,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
         };
         if (agreement.id) {
             // TODO: handle failures
-            // const response = await patchAgreement(agreement.id, data);
-            patchAgreement(agreement.id, data);
+            const response = await patchAgreement(agreement.id, data);
         } else {
             // TODO: handle failures
             const response = await postAgreement(data);
@@ -176,8 +173,8 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
             <h2 className="font-sans-lg">Select the Agreement Type</h2>
             <p>Select the type of agreement you&#39;d like to create.</p>
             <AgreementTypeSelect
-                selectedAgreementType={selectedAgreementType}
-                setSelectedAgreementType={setSelectedAgreementType}
+                selectedAgreementType={agreementType}
+                setSelectedAgreementType={setAgreementType}
             />
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
             <label className="usa-label" htmlFor="agreement-title">
@@ -224,8 +221,8 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
             <h2 className="font-sans-lg margin-top-3">Reason for Agreement</h2>
             <div className="display-flex">
                 <AgreementReasonSelect
-                    selectedAgreementReason={selectedAgreementReason}
-                    setSelectedAgreementReason={setSelectedAgreementReason}
+                    selectedAgreementReason={agreementReason}
+                    setSelectedAgreementReason={setAgreementReason}
                     setAgreementIncumbent={setAgreementIncumbent}
                 />
                 <fieldset
