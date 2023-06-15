@@ -160,7 +160,7 @@ Feature: Validate "Draft" Budget Lines
     And I have a valid Agreement
 
     When I have a BLI in DRAFT status with a Need By Date in the past or today
-    And I submit a BLI to move to IN_REVIEW status
+    And I submit a BLI to move to IN_REVIEW status with an empty Need By Date
 
     Then I should get an error message that the BLI must have a Need By Date in the future
 

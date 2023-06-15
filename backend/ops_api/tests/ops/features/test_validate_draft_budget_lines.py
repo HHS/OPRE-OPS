@@ -1035,7 +1035,6 @@ def error_message_valid_description(context, setup_and_teardown):
     assert context["response_put"].json == {
         "_schema": [
             "BLI must valid a valid Description when status is not DRAFT",
-            "BLI must valid a Need By Date in the future when status is not " "DRAFT",
         ]
     }
     assert context["response_patch"].status_code == 400
@@ -1137,7 +1136,11 @@ def error_message_agreement(context, setup_and_teardown):
 def error_message_future_need_by_date(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
     assert context["response_put"].json == {
-        "_schema": ["BLI must valid a Need By Date in the future when status is not DRAFT"],
+        "_schema": [
+            "BLI must valid a valid Need By Date when status is not DRAFT",
+            "BLI must valid a Need By Date in the future when status is not " "DRAFT",
+        ],
+        "date_needed": ["Not a valid date."],
     }
     assert context["response_patch"].status_code == 400
     assert context["response_patch"].json == {
