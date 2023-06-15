@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import classnames from "vest/classnames";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import ProcurementShopSelect from "../../components/UI/Form/ProcurementShopSelect";
 import AgreementReasonSelect from "../../components/UI/Form/AgreementReasonSelect";
@@ -21,6 +22,8 @@ import {
 } from "./CreateAgreementContext";
 import { patchAgreement } from "../../api/patchAgreements";
 import EditModeTitle from "./EditModeTitle";
+import suite from "./stepCreateAgreementSuite";
+import Input from "../../components/UI/Form/Input/Input";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -50,6 +53,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
         agreement_reason: agreementReason,
         team_members: selectedTeamMembers,
     } = agreement;
+
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setSelectedProductServiceCode = useSetState("selected_product_service_code");
@@ -73,6 +77,14 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
     const [alertProps, setAlertProps] = React.useState({});
 
     const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
+
+    let res = suite.get();
+
+    const cn = classnames(suite.get(), {
+        invalid: "usa-form-group--error",
+        valid: "success",
+        warning: "warning",
+    });
 
     const changeSelectedProductServiceCode = (selectedProductServiceCode) => {
         setSelectedProductServiceCode(selectedProductServiceCode);
@@ -140,6 +152,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
         saveAgreement();
         await goToNext();
     };
+
     const handleDraft = async () => {
         saveAgreement();
         await showAlertAndNavigate("success", "Agreement Draft Saved", "The agreement has been successfully saved.");
@@ -155,6 +168,12 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
                 navigate("/agreements/");
             },
         });
+    };
+
+    const handleChange = (currentField, value) => {
+        const nextState = { [currentField]: value };
+        setAgreementTitle(value);
+        suite(nextState, currentField);
     };
 
     const handleOnChangeSelectedProcurementShop = (procurementShop) => {
@@ -186,17 +205,14 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
             <p>Select the type of agreement you&#39;d like to create.</p>
             <AgreementTypeSelect selectedAgreementType={agreementType} setSelectedAgreementType={setAgreementType} />
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
-            <label className="usa-label" htmlFor="agreement-title">
-                Agreement Title
-            </label>
-            <input
-                className="usa-input"
-                id="agreement-title"
-                name="agreement-title"
-                type="text"
+
+            <Input
+                name="agreement_title"
+                label="Agreement Title"
+                messages={res.getErrors("agreement_title")}
+                className={cn("agreement_title")}
                 value={agreementTitle || ""}
-                onChange={(e) => setAgreementTitle(e.target.value)}
-                required
+                onChange={handleChange}
             />
 
             <label className="usa-label" htmlFor="agreement-description">
@@ -305,10 +321,10 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
                     >
                         Cancel
                     </button>
-                    <button className="usa-button usa-button--outline" onClick={handleDraft}>
+                    <button className="usa-button usa-button--outline" onClick={handleDraft} disabled={!res.isValid()}>
                         Save Draft
                     </button>
-                    <button id="continue" className="usa-button" onClick={handleContinue}>
+                    <button id="continue" className="usa-button" onClick={handleContinue} disabled={!res.isValid()}>
                         Continue
                     </button>
                 </div>
