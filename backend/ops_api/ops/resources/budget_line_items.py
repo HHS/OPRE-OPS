@@ -6,7 +6,7 @@ from typing import Optional
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
-from marshmallow import ValidationError
+from marshmallow import Schema, ValidationError
 from models import BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
@@ -71,14 +71,22 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 self._put_schema.context["id"] = id
                 self._put_schema.context["method"] = "PUT"
 
-                data = self._put_schema.dump(self._put_schema.load(request.json))
-                data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
-                data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
+                if request.json.get("status") == BudgetLineItemStatus.UNDER_REVIEW.name:
+                    with OpsEventHandler(OpsEventType.SEND_BLI_FOR_APPROVAL) as approval_meta:
+                        data = validate_and_normalize_request_data_for_put(self._put_schema)
+                        budget_line_item = self.update_and_commit_budget_line_item(data, id)
 
-                budget_line_item = update_budget_line_item(data, id)
+                        approval_meta.metadata.update({"bli": budget_line_item.to_dict()})
+                        approval_meta.metadata.update({"agreement": budget_line_item.agreement.to_dict()})
+                        current_app.logger.info(
+                            f"{message_prefix}: BLI Sent For Approval: {budget_line_item.to_dict()}"
+                        )
+                else:
+                    data = validate_and_normalize_request_data_for_put(self._put_schema)
+                    budget_line_item = self.update_and_commit_budget_line_item(data, id)
 
                 bli_dict = self._response_schema.dump(budget_line_item)
-                meta.metadata.update({"updated_bli": bli_dict})
+                meta.metadata.update({"bli": bli_dict})
                 current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
 
                 return make_response_with_headers(bli_dict, 200)
@@ -102,22 +110,22 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 self._patch_schema.context["id"] = id
                 self._patch_schema.context["method"] = "PATCH"
 
-                data = self._patch_schema.dump(self._patch_schema.load(request.json))
-                data = {
-                    k: v for (k, v) in data.items() if k in request.json
-                }  # only keep the attributes from the request body
-                if "status" in data:
-                    data["status"] = BudgetLineItemStatus[data["status"]]
-                if "date_needed" in data:
-                    data["date_needed"] = date.fromisoformat(data["date_needed"])
+                if request.json.get("status") == BudgetLineItemStatus.UNDER_REVIEW.name:
+                    with OpsEventHandler(OpsEventType.SEND_BLI_FOR_APPROVAL) as approval_meta:
+                        data = validate_and_normalize_request_data_for_patch(self._patch_schema)
+                        budget_line_item = self.update_and_commit_budget_line_item(data, id)
 
-                budget_line_item = update_budget_line_item(data, id)
-
-                current_app.db_session.add(budget_line_item)
-                current_app.db_session.commit()
+                        approval_meta.metadata.update({"bli": budget_line_item.to_dict()})
+                        approval_meta.metadata.update({"agreement": budget_line_item.agreement.to_dict()})
+                        current_app.logger.info(
+                            f"{message_prefix}: BLI Sent For Approval: {budget_line_item.to_dict()}"
+                        )
+                else:
+                    data = validate_and_normalize_request_data_for_patch(self._patch_schema)
+                    budget_line_item = self.update_and_commit_budget_line_item(data, id)
 
                 bli_dict = self._response_schema.dump(budget_line_item)
-                meta.metadata.update({"updated_bli": bli_dict})
+                meta.metadata.update({"bli": bli_dict})
                 current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
 
                 return make_response_with_headers(bli_dict, 200)
@@ -131,6 +139,12 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
+
+    def update_and_commit_budget_line_item(self, data, id):
+        budget_line_item = update_budget_line_item(data, id)
+        current_app.db_session.add(budget_line_item)
+        current_app.db_session.commit()
+        return budget_line_item
 
 
 class BudgetLineItemsListAPI(BaseListAPI):
@@ -250,3 +264,20 @@ def update_budget_line_item(data: dict[str, Any], id: int):
     current_app.db_session.add(budget_line_item)
     current_app.db_session.commit()
     return budget_line_item
+
+
+def validate_and_normalize_request_data_for_patch(schema: Schema) -> dict[str, Any]:
+    data = schema.dump(schema.load(request.json))
+    data = {k: v for (k, v) in data.items() if k in request.json}  # only keep the attributes from the request body
+    if "status" in data:
+        data["status"] = BudgetLineItemStatus[data["status"]]
+    if "date_needed" in data:
+        data["date_needed"] = date.fromisoformat(data["date_needed"])
+    return data
+
+
+def validate_and_normalize_request_data_for_put(schema: Schema) -> dict[str, Any]:
+    data = schema.dump(schema.load(request.json))
+    data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
+    data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
+    return data

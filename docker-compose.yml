@@ -64,7 +64,7 @@ services:
       - JWT_PUBLIC_KEY
       - OPS_CONFIG=environment/local/container.py
     volumes:
-      - ./backend/ops_api/ops:/home/app/ops
+      - ./backend/ops_api/ops:/home/app/ops_api/ops
     depends_on:
       db:
         condition: service_healthy
