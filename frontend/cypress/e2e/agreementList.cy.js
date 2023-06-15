@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
@@ -20,5 +21,5 @@ it("navigates to the approveAgreements page when the approve button is clicked",
     // click the approve svg with an id of "submit-for-approval-x" where x is the id of the agreement
     cy.get("svg[id^='submit-for-approval-']").first().click();
     cy.url().should("include", "/agreements/approve");
-    cy.get("h1").should('exist');
+    cy.get("h1").should("exist");
 });
