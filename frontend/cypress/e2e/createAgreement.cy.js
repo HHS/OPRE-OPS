@@ -91,6 +91,7 @@ it("can create an agreement", () => {
             expect(body.message).to.equal("Agreement created");
         })
         .then(cy.log);
+    cy.get("h1").should('exist');
 });
 
 it("should handle cancelling out of workflow on step 1", () => {
@@ -102,6 +103,7 @@ it("should handle cancelling out of workflow on step 1", () => {
     cy.get('[data-cy="confirm-action"]').click();
     // check that we are back on the home page
     cy.url().should("eq", Cypress.config().baseUrl + "/");
+    cy.get("h1").should('exist');
 });
 
 it("should handle cancelling out of workflow on step 2", () => {
@@ -124,4 +126,5 @@ it("should handle cancelling out of workflow on step 2", () => {
     cy.get('[data-cy="confirm-action"]').click();
     // check that we are back on the agreements page
     cy.url().should("eq", Cypress.config().baseUrl + "/agreements/");
+    cy.get("h1").should('exist');
 });
