@@ -286,7 +286,7 @@ export const StepCreateBudgetLines = ({
                 >
                     Back
                 </button>
-                <button className="usa-button" data-cy="step-two-continue" onClick={saveBudgetLineItems}>
+                <button className="usa-button" data-cy="continue-btn" onClick={saveBudgetLineItems}>
                     {continueBtnText}
                 </button>
             </div>

@@ -321,10 +321,21 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
                     >
                         Cancel
                     </button>
-                    <button className="usa-button usa-button--outline" onClick={handleDraft} disabled={!res.isValid()}>
+                    <button
+                        className="usa-button usa-button--outline"
+                        onClick={handleDraft}
+                        disabled={!res.isValid()}
+                        data-cy="save-draft-btn"
+                    >
                         Save Draft
                     </button>
-                    <button id="continue" className="usa-button" onClick={handleContinue} disabled={!res.isValid()}>
+                    <button
+                        id="continue"
+                        className="usa-button"
+                        onClick={handleContinue}
+                        disabled={!res.isValid()}
+                        data-cy="continue-btn"
+                    >
                         Continue
                     </button>
                 </div>
