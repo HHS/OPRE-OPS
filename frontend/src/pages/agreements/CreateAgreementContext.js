@@ -28,14 +28,15 @@ let initialState = { ...defaultState };
 
 export function CreateAgreementProvider({ agreement, projectOfficer, children }) {
     if (agreement) {
-        initialState.agreement = { ...defaultState, ...agreement };
+        initialState = { ...defaultState };
+        initialState.agreement = { ...agreement };
         initialState.selected_project = agreement.research_project;
         initialState.selected_product_service_code = agreement.product_service_code;
         initialState.selected_procurement_shop = agreement.procurement_shop;
         if (projectOfficer) {
             initialState.selected_project_officer = projectOfficer;
         }
-        delete initialState.agreement.procurement_shop;
+        delete initialState.agreement.research_project;
         delete initialState.agreement.product_service_code;
         delete initialState.agreement.procurement_shop;
     } else {
