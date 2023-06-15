@@ -77,7 +77,9 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
     const [alertProps, setAlertProps] = React.useState({});
 
     const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
+
     let res = suite.get();
+
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
         valid: "success",
@@ -150,6 +152,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
         saveAgreement();
         await goToNext();
     };
+
     const handleDraft = async () => {
         saveAgreement();
         await showAlertAndNavigate("success", "Agreement Draft Saved", "The agreement has been successfully saved.");
@@ -168,7 +171,8 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
     };
 
     const handleChange = (currentField, value) => {
-        const nextState = { currentField: value };
+        const nextState = { [currentField]: value };
+        setAgreementTitle(value);
         suite(nextState, currentField);
     };
 
@@ -201,25 +205,14 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
             <p>Select the type of agreement you&#39;d like to create.</p>
             <AgreementTypeSelect selectedAgreementType={agreementType} setSelectedAgreementType={setAgreementType} />
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
-            <label className="usa-label" htmlFor="agreement-title">
-                Agreement Title
-            </label>
-            <input
-                className="usa-input"
-                id="agreement-title"
-                name="agreement-title"
-                type="text"
-                value={agreementTitle || ""}
-                onChange={(e) => setAgreementTitle(e.target.value)}
-                required
-            />
 
             <Input
                 name="agreement_title"
                 label="Agreement Title"
-                onChange={handleChange}
                 messages={res.getErrors("agreement_title")}
                 className={cn("agreement_title")}
+                value={agreementTitle || ""}
+                onChange={handleChange}
             />
 
             <label className="usa-label" htmlFor="agreement-description">
