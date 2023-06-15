@@ -60,16 +60,18 @@ def _get_token_and_user_data_from_internal_auth(user_data):
 def _get_token_and_user_data_from_oauth_provider(auth_code: str):
     try:
         authlib_client_config = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]
+        current_app.logger.debug(f"authlib_client_config={authlib_client_config}")
         oauth.register(
             "hhsams",
             client_id=authlib_client_config["client_id"],
             server_metadata_url=authlib_client_config["server_metadata_url"],
             client_kwargs=authlib_client_config["client_kwargs"],
         )
-
+        jwt = create_oauth_jwt()
+        current_app.logger.debug(f"jwt={jwt}")
         token = oauth.hhsams.fetch_access_token(
             authlib_client_config["token_endpoint"],
-            client_assertion=create_oauth_jwt(),
+            client_assertion=jwt,
             client_assertion_type="urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
             grant_type="authorization_code",
             code=auth_code,
@@ -81,6 +83,7 @@ def _get_token_and_user_data_from_oauth_provider(auth_code: str):
             authlib_client_config["user_info_url"],
             headers=header,
         ).json()
+        current_app.logger.debug(f"user_data={user_data}")
     except Exception as e:
         current_app.logger.exception(e)
         raise e
