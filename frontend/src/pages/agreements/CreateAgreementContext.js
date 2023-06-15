@@ -28,7 +28,6 @@ let initialState = { ...defaultState };
 
 export function CreateAgreementProvider({ agreement, projectOfficer, children }) {
     if (agreement) {
-        initialState = { ...defaultState };
         initialState.agreement = { ...agreement };
         initialState.selected_project = agreement.research_project;
         initialState.selected_product_service_code = agreement.product_service_code;
