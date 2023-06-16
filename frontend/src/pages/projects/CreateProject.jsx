@@ -117,11 +117,11 @@ export const CreateProject = () => {
             <h2 className="font-sans-lg">Project Details</h2>
 
             <Input
-                name="short-title"
+                name="short_title"
                 label="Project Nickname or Acronym"
                 onChange={handleChange}
-                messages={res.getErrors("short-title")}
-                className={cn("short-title")}
+                messages={res.getErrors("short_title")}
+                className={cn("short_title")}
             />
 
             <Input
