@@ -18,12 +18,12 @@ it("edit an agreement", () => {
     cy.get("h1").should("have.text", "Edit Agreement");
     cy.get("#continue").click();
     // test validation
-    cy.get("#agreement_title").clear();
-    cy.get("#agreement_title").blur();
+    cy.get("#agreement-title").clear();
+    cy.get("#agreement-title").blur();
     cy.get("#input-error-message").should("contain", "This is required information");
     cy.get("[data-cy='continue-btn']").should("be.disabled");
     cy.get("[data-cy='save-draft-btn']").should("be.disabled");
-    cy.get("#agreement_title").type("Test Edit Title");
+    cy.get("#agreement-title").type("Test Edit Title");
     cy.get("#input-error-message").should("not.exist");
     cy.get("[data-cy='continue-btn']").should("not.be.disabled");
     cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");

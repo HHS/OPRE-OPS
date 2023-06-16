@@ -207,10 +207,10 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
 
             <Input
-                name="agreement_title"
+                name="agreement-title"
                 label="Agreement Title"
-                messages={res.getErrors("agreement_title")}
-                className={cn("agreement_title")}
+                messages={res.getErrors("agreement-title")}
+                className={cn("agreement-title")}
                 value={agreementTitle || ""}
                 onChange={handleChange}
             />
