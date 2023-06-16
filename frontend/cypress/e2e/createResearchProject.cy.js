@@ -27,7 +27,7 @@ it("can create a project", () => {
     // select the project type
     cy.get('[data-cy="project-type-select"]').select("Research");
     // only allow 3 characters so this should fail
-    cy.get("#short_title").as("nickname").type("Test Project Abbreviation");
+    cy.get("#short-title").as("nickname").type("Test Project Abbreviation");
     cy.get("#input-error-message").as("err-msg").should("exist");
     // clear the input and try again
     cy.get("@nickname").clear();
@@ -53,7 +53,7 @@ it("can create a project", () => {
         .then((interception) => {
             const { statusCode, body } = interception.response;
             expect(statusCode).to.equal(201);
-            expect(body.short_title).to.equal("TPN");
+            expect(body["short-title"]).to.equal("TPN");
             expect(body.title).to.equal("Test Project Name");
             expect(body.description).to.equal("Test Project Description");
         })
@@ -64,7 +64,7 @@ it("can create a project", () => {
 it("can cancel a project", () => {
     // complete the form
     cy.get('[data-cy="project-type-select"]').select("Research");
-    cy.get("#short_title").type("TPN");
+    cy.get("#short-title").type("TPN");
     cy.get("#title").type("Test Project Name");
     cy.get("#description").type("Test Project Description");
     // cancel the form
