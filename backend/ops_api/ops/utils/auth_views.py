@@ -1,11 +1,12 @@
 from typing import Union
 
 import requests
+from authlib.integrations.requests_client import OAuth2Session
 from flask import Response, current_app, request
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
 
 # from models.events import OpsEventType
-from ops_api.ops.utils.auth import create_oauth_jwt, oauth
+from ops_api.ops.utils.auth import create_oauth_jwt, decode_jwt
 
 # from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -61,28 +62,34 @@ def _get_token_and_user_data_from_oauth_provider(auth_code: str):
     try:
         authlib_client_config = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]
         current_app.logger.debug(f"authlib_client_config={authlib_client_config}")
-        oauth.register(
-            "hhsams",
-            client_id=authlib_client_config["client_id"],
-            server_metadata_url=authlib_client_config["server_metadata_url"],
-            client_kwargs=authlib_client_config["client_kwargs"],
-        )
         jwt = create_oauth_jwt()
         current_app.logger.debug(f"jwt={jwt}")
-        token = oauth.hhsams.fetch_access_token(
+
+        client = OAuth2Session(
+            authlib_client_config["client_id"],
+            scope="openid profile email",
+            redirect_uri="https://ops-staging.app.cloud.gov",
+        )
+        token = client.fetch_token(
             authlib_client_config["token_endpoint"],
             client_assertion=jwt,
             client_assertion_type="urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
             grant_type="authorization_code",
             code=auth_code,
         )
-        print(f"token={token}")
         current_app.logger.debug(f"token={token}")
-        header = {"Authorization": f'Bearer {token["access_token"]}'}
-        user_data = requests.get(
+        access_token = token["access_token"].strip()
+        header = {
+            "Authorization": f"Bearer {access_token}",
+            "Accept": "application/json",
+        }
+        current_app.logger.debug(f"header={header}")
+        user_jwt = requests.get(
             authlib_client_config["user_info_url"],
             headers=header,
-        ).json()
+        ).content.decode("utf-8")
+        current_app.logger.debug(f"user_jwt={user_jwt}")
+        user_data = decode_jwt(payload=user_jwt)
         current_app.logger.debug(f"user_data={user_data}")
     except Exception as e:
         current_app.logger.exception(e)

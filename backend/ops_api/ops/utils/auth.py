@@ -2,6 +2,7 @@ import time
 import uuid
 from typing import Optional
 
+import jwt as py_jwt
 from authlib.integrations.flask_client import OAuth
 from authlib.jose import jwt as jose_jwt
 from flask import current_app
@@ -55,6 +56,13 @@ def create_oauth_jwt(
         "jti": str(uuid.uuid4()),
         "exp": int(time.time()) + expire.seconds,
     }
+    current_app.logger.debug(f"_payload={_payload}")
     _header = header or {"alg": "RS256"}
     jws = jose_jwt.encode(header=_header, payload=_payload, key=jwt_private_key)
     return jws
+
+
+def decode_jwt(
+    payload: Optional[str] = None,
+) -> dict[str, str]:
+    return py_jwt.decode(payload, options={"verify_signature": False})
