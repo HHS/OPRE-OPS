@@ -9,7 +9,7 @@ import { useCreateAgreement } from "./CreateAgreementContext";
  * Renders the Create Agreement flow, which consists of several steps.
  * @param {Object} props - The component props.
  * @param {Array<any>} props.existingBudgetLines - An array of existing budget lines.
- * @param {boolean} props.isEditMode - A flag indicating whether the component is in edit mode.
+ * @param {boolean} [props.isEditMode] - A flag indicating whether the component is in edit mode. - optional
  * @returns {JSX.Element} - The rendered component.
  */
 export const CreateAgreement = ({ existingBudgetLines, isEditMode }) => {
@@ -24,11 +24,9 @@ export const CreateAgreement = ({ existingBudgetLines, isEditMode }) => {
 
     return (
         <CreateAgreementFlow>
-            <StepSelectProject goToNext={() => {}} isEditMode={isEditMode} />
-            <StepCreateAgreement goToNext={() => {}} goBack={() => {}} isEditMode={isEditMode} />
+            <StepSelectProject isEditMode={isEditMode} />
+            <StepCreateAgreement isEditMode={isEditMode} />
             <StepCreateBudgetLines
-                goToNext={() => {}}
-                goBack={() => {}}
                 wizardSteps={wizardSteps}
                 currentStep={3}
                 selectedResearchProject={selectedResearchProject}

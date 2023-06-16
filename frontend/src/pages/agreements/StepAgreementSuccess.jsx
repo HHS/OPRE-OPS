@@ -6,8 +6,8 @@ import Alert from "../../components/UI/Alert/Alert";
  * Renders the "Agreement Success" step of the Create Agreement flow.
  *
  * @param {Object} props - The component props.
- * @param {number} [props.delay=6000] - The delay (in milliseconds) before redirecting to the Agreements list page.
- * @param {boolean} props.isEditMode - A flag indicating whether the component is in edit mode.
+ * @param {number} [props.delay=6000] - The delay (in milliseconds) before redirecting to the Agreements list page. - optional
+ * @param {boolean} [props.isEditMode] - A flag indicating whether the component is in edit mode. - optional
  * @returns {JSX.Element} - The rendered component.
  */
 export const StepAgreementSuccess = ({ delay = 6000, isEditMode }) => {

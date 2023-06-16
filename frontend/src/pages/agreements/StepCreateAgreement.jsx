@@ -29,9 +29,9 @@ import Input from "../../components/UI/Form/Input/Input";
  * Renders the "Create Agreement" step of the Create Agreement flow.
  *
  * @param {Object} props - The component props.
- * @param {Function} props.goBack - A function to go back to the previous step.
- * @param {Function} props.goToNext - A function to go to the next step.
- * @param {boolean} props.isEditMode - A flag indicating whether the component is in edit mode.
+ * @param {Function} [props.goBack] - A function to go back to the previous step. - optional
+ * @param {Function} [props.goToNext] - A function to go to the next step. - optional
+ * @param {boolean} [props.isEditMode] - A flag indicating whether the component is in edit mode. - optional
  */
 export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) => {
     const navigate = useNavigate();

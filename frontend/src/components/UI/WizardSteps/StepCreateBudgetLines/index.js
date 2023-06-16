@@ -14,7 +14,7 @@ import { CreateBudgetLinesProvider } from "./context";
  * @param {Object} props.selectedProcurementShop - The selected procurement shop.
  * @param {Array<any>} props.existingBudgetLines - An array of existing budget lines.
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
- * @param {boolean} props.isEditMode - A flag indicating whether the component is in edit mode.
+ * @param {boolean} [props.isEditMode ]- A flag indicating whether the component is in edit mode.- optional
  * @param {"agreement" | "budgetLines"} props.workflow - The workflow type ("agreement" or "budgetLines").
  * @returns {JSX.Element} - The rendered component.
  */

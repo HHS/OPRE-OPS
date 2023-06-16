@@ -10,8 +10,8 @@ import { useCreateAgreement, useSetState, useUpdateAgreement } from "./CreateAgr
  * Renders the "Select Project" step in the Create Agreement flow.
  *
  * @param {Object} props - The component props.
- * @param {Function} props.goToNext - A function to navigate to the next step in the flow.
- * @param {boolean} props.isEditMode - A flag indicating whether the component is in edit mode.
+ * @param {Function} [props.goToNext] - A function to navigate to the next step in the flow. - optional
+ * @param {boolean} [props.isEditMode] - A flag indicating whether the component is in edit mode.
  * @returns {JSX.Element} - The rendered component.
  */
 export const StepSelectProject = ({ goToNext, isEditMode }) => {
