@@ -1,5 +1,4 @@
 import { createContext, useContext, useReducer } from "react";
-
 export const CreateAgreementContext = createContext(null);
 export const CreateAgreementDispatchContext = createContext(null);
 
@@ -26,6 +25,14 @@ const defaultState = {
 };
 let initialState = { ...defaultState };
 
+/**
+ * Provides a context for creating an agreement.
+ * @param {Object} props - The component props.
+ * @param {Object} props.agreement - The agreement to edit, if any.
+ * @param {Object} props.projectOfficer - The project officer to set, if any.
+ * @param {ReactNode} props.children - The child components.
+ * @returns {ReactNode} The rendered component.
+ */
 export function CreateAgreementProvider({ agreement, projectOfficer, children }) {
     if (agreement) {
         initialState.agreement = { ...agreement };
@@ -60,6 +67,7 @@ export function useCreateAgreement() {
 export function useCreateAgreementDispatch() {
     return useContext(CreateAgreementDispatchContext);
 }
+
 export function useSetState(key) {
     const dispatch = useContext(CreateAgreementDispatchContext);
 
