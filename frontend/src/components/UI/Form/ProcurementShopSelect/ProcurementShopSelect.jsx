@@ -57,12 +57,16 @@ export const ProcurementShopSelect = ({ selectedProcurementShop, onChangeSelecte
 
         if (selectedProcurementShop?.id) {
             return (
-                <span className="margin-left-1 text-base-dark font-12px">
+                <span className="margin-left-1 text-base-dark font-12px" data-cy="fee">
                     Fee Rate: {selectedProcurementShop?.fee * 100}%
                 </span>
             );
         } else {
-            return <span className="margin-left-1 text-base-dark font-12px">Fee Rate:0%</span>;
+            return (
+                <span className="margin-left-1 text-base-dark font-12px" data-cy="fee">
+                    Fee Rate: 0%
+                </span>
+            );
         }
     };
     return (
