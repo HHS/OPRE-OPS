@@ -22,7 +22,7 @@ flake8-bugbear = "==23.6.5"
 flake8-bandit = "==4.1.1"
 pytest = "==7.3.2"
 pytest-cov = "==4.1.0"
-pytest-mock = "==3.10.0"
+pytest-mock = "==3.11.1"
 ipython = "==8.14.0"
 pytest-docker = {extras = ["docker-compose-v2"], version = "==1.0.1"}
 black = {extras = ["d"], version = "==23.3.0"}
