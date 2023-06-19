@@ -2,14 +2,10 @@ import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
-import { setIsActive, clearState, setAlert } from "./alertSlice";
+import { setIsActive, clearState } from "./alertSlice";
 
 /**
  * A component that displays an alert.
- * @param {object} props - The component props.
- * @param {("success"|"warning"|"error")} props.type - The type of the alert to be styled.
- * @param {string} props.heading - The heading of the alert.
- * @param {string} props.message - The message of the alert.
  * @returns {JSX.Element} The JSX element to render.
  * @see {@link https://designsystem.digital.gov/components/alerts/}
  */
