@@ -1,5 +1,4 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
@@ -11,15 +10,12 @@ import { setIsActive, clearState } from "./alertSlice";
  * @param {("success"|"warning"|"error")} props.type - The type of the alert to be styled.
  * @param {string} props.heading - The heading of the alert.
  * @param {string} props.message - The message of the alert.
- * @param {string} [props.navigateUrl] - The URL to navigate to - if any.
  * @returns {JSX.Element} The JSX element to render.
  * @see {@link https://designsystem.digital.gov/components/alerts/}
  */
 export const Alert = () => {
     const dispatch = useDispatch();
-    const navigate = useNavigate();
     const isActive = useSelector((state) => state.alert.isActive);
-    const navigateUrl = useSelector((state) => state.alert.navigateUrl);
     const heading = useSelector((state) => state.alert.heading);
     const message = useSelector((state) => state.alert.message);
     const type = useSelector((state) => state.alert.type);
@@ -27,9 +23,6 @@ export const Alert = () => {
 
     React.useEffect(() => {
         const showAlert = async () => {
-            if (navigateUrl) {
-                navigate(navigateUrl);
-            }
             await new Promise((resolve) => setTimeout(resolve, 500));
             window.scrollTo(0, 0);
             dispatch(setIsActive(true));
@@ -40,7 +33,7 @@ export const Alert = () => {
         };
 
         showAlert();
-    }, [dispatch, navigate, navigateUrl]);
+    }, [dispatch]);
 
     switch (type) {
         case "success":
