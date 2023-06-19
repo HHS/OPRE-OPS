@@ -5,6 +5,7 @@ const initialState = {
     heading: "",
     message: "",
     isActive: false,
+    redirectUrl: "",
 };
 
 const alertSlice = createSlice({
@@ -15,6 +16,7 @@ const alertSlice = createSlice({
             state.type = action.payload.type;
             state.heading = action.payload.heading;
             state.message = action.payload.message;
+            state.redirectUrl = action.payload.redirectUrl;
             state.isActive = true;
         },
         setIsActive: (state, action) => {
