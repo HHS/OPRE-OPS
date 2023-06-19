@@ -2,7 +2,7 @@ import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
-import { setIsActive, clearState } from "./alertSlice";
+import { setIsActive, clearState, setAlert } from "./alertSlice";
 
 /**
  * A component that displays an alert.
@@ -25,15 +25,14 @@ export const Alert = () => {
         const showAlert = async () => {
             await new Promise((resolve) => setTimeout(resolve, 500));
             window.scrollTo(0, 0);
-            dispatch(setIsActive(true));
 
             await new Promise((resolve) => setTimeout(resolve, 6000));
-            dispatch(setIsActive(false));
             dispatch(clearState());
         };
 
         showAlert();
-    }, [dispatch]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     switch (type) {
         case "success":

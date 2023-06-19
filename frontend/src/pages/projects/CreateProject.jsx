@@ -62,6 +62,7 @@ export const CreateProject = () => {
                 message: "The project has been successfully created.",
             })
         );
+        // navigate("/");
     }
 
     const handleCancel = () => {
