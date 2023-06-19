@@ -45,6 +45,7 @@ export function CreateAgreementProvider({ agreement, projectOfficer, children })
         delete initialState.agreement.research_project;
         delete initialState.agreement.product_service_code;
         delete initialState.agreement.procurement_shop;
+        delete initialState.agreement.status;
     } else {
         initialState = { ...defaultState };
     }
