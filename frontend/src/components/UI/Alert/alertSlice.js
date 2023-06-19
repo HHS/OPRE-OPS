@@ -20,8 +20,8 @@ const alertSlice = createSlice({
         setIsActive: (state, action) => {
             state.isActive = action.payload;
         },
-        clearState: (state) => {
-            state = initialState;
+        clearState: () => {
+            return initialState;
         },
     },
 });
