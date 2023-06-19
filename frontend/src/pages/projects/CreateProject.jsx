@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import App from "../../App";
 import ProjectTypeSelect from "../../components/UI/Form/ProjectTypeSelect/ProjectTypeSelect";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
@@ -9,18 +10,18 @@ import Input from "../../components/UI/Form/Input";
 import TextArea from "../../components/UI/Form/TextArea";
 import suite from "./suite";
 import classnames from "vest/classnames";
+import { setAlert } from "../../components/UI/Alert/alertSlice";
 
 export const CreateProject = () => {
     const [showModal, setShowModal] = useState(false);
     const [modalProps, setModalProps] = useState({});
     const [project, setProject] = useState({});
-    const [isAlertActive, setIsAlertActive] = useState(false);
-    const [alertProps, setAlertProps] = useState({});
+    const isAlertActive = useSelector((state) => state.alert.isActive);
+    const [addResearchProject, { isSuccess, isError, error, reset, data: rpData }] = useAddResearchProjectsMutation();
 
     let res = suite.get();
     const navigate = useNavigate();
-
-    const [addResearchProject, { isSuccess, isError, error, reset, data: rpData }] = useAddResearchProjectsMutation();
+    const dispatch = useDispatch();
 
     const handleClearingForm = () => {
         setProject({});
@@ -44,18 +45,6 @@ export const CreateProject = () => {
     };
     delete editedProject.type;
 
-    const showAlert = async (type, heading, message) => {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        window.scrollTo(0, 0);
-        setIsAlertActive(true);
-        setAlertProps({ type, heading, message });
-
-        await new Promise((resolve) => setTimeout(resolve, 6000));
-        setIsAlertActive(false);
-        setAlertProps({});
-        navigate("/");
-    };
-
     if (isError) {
         // TODO: Add error handling
         console.log("Error Submitting Project");
@@ -66,7 +55,13 @@ export const CreateProject = () => {
         console.log(`New Project Created: ${rpData.id}`);
         handleClearingForm();
         reset();
-        showAlert("success", "New Project Created!", "The project has been successfully created.");
+        dispatch(
+            setAlert({
+                type: "success",
+                heading: "New Project Created!",
+                message: "The project has been successfully created.",
+            })
+        );
     }
 
     const handleCancel = () => {
@@ -85,9 +80,7 @@ export const CreateProject = () => {
     return (
         <App>
             {isAlertActive ? (
-                <Alert heading={alertProps.heading} type={alertProps.type} setIsAlertActive={setIsAlertActive}>
-                    {alertProps.message}
-                </Alert>
+                <Alert />
             ) : (
                 <>
                     <h1 className="font-sans-lg">Create New Project</h1>
