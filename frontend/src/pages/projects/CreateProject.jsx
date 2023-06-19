@@ -1,3 +1,4 @@
+import React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -14,8 +15,18 @@ import { setAlert } from "../../components/UI/Alert/alertSlice";
 
 export const CreateProject = () => {
     const [showModal, setShowModal] = useState(false);
-    const [modalProps, setModalProps] = useState({});
-    const [project, setProject] = useState({});
+    const [modalProps, setModalProps] = useState({
+        heading: "",
+        actionButtonText: "",
+        secondaryButtonText: "",
+        handleConfirm: () => {},
+    });
+    const [project, setProject] = useState({
+        type: "",
+        short_title: "",
+        title: "",
+        description: "",
+    });
     const isAlertActive = useSelector((state) => state.alert.isActive);
     const [addResearchProject, { isSuccess, isError, error, reset, data: rpData }] = useAddResearchProjectsMutation();
 
@@ -24,7 +35,12 @@ export const CreateProject = () => {
     const dispatch = useDispatch();
 
     const handleClearingForm = () => {
-        setProject({});
+        setProject({
+            type: "",
+            short_title: "",
+            title: "",
+            description: "",
+        });
     };
 
     const handleChange = (currentField, value) => {
@@ -51,19 +67,21 @@ export const CreateProject = () => {
         console.dir(error);
     }
 
-    if (isSuccess) {
-        console.log(`New Project Created: ${rpData.id}`);
-        handleClearingForm();
-        reset();
-        dispatch(
-            setAlert({
-                type: "success",
-                heading: "New Project Created!",
-                message: "The project has been successfully created.",
-            })
-        );
-        // navigate("/");
-    }
+    React.useEffect(() => {
+        if (isSuccess) {
+            console.log(`New Project Created: ${rpData.id}`);
+            reset();
+            handleClearingForm();
+            dispatch(
+                setAlert({
+                    type: "success",
+                    heading: "New Project Created!",
+                    message: "The project has been successfully created.",
+                    redirectUrl: `/agreements`,
+                })
+            );
+        }
+    }, [isSuccess, rpData, reset, dispatch, navigate]);
 
     const handleCancel = () => {
         setShowModal(true);
@@ -104,6 +122,7 @@ export const CreateProject = () => {
                 name="type"
                 label="Project Type"
                 onChange={handleChange}
+                value={project.type || ""}
                 messages={res.getErrors("type")}
                 className={cn("type")}
             />
@@ -115,6 +134,7 @@ export const CreateProject = () => {
                 label="Project Nickname or Acronym"
                 onChange={handleChange}
                 messages={res.getErrors("short_title")}
+                value={project.short_title || ""}
                 className={cn("short_title")}
             />
 
@@ -123,6 +143,7 @@ export const CreateProject = () => {
                 label="Project Title"
                 onChange={handleChange}
                 messages={res.getErrors("title")}
+                value={project.title || ""}
                 className={cn("title")}
             />
 
@@ -132,6 +153,7 @@ export const CreateProject = () => {
                 onChange={handleChange}
                 hintMsg="Brief Description for internal purposes, not for the OPRE website."
                 messages={res.getErrors("description")}
+                value={project.description || ""}
                 className={cn("description")}
             />
 
