@@ -7,8 +7,9 @@ import sqlalchemy as sa
 from models.base import BaseModel, currency, intpk, optional_str, reg, required_str
 from models.portfolios import Portfolio, shared_portfolio_cans
 from models.users import User
-from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Identity, Integer, Numeric, String, Table, Text
-from sqlalchemy.orm import column_property, relationship, with_polymorphic, InstrumentedAttribute
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Identity, Integer, Numeric, String, Table, Text, case, select
+from sqlalchemy.sql import functions, expression
+from sqlalchemy.orm import column_property, relationship, with_polymorphic, InstrumentedAttribute, object_session
 from typing_extensions import override
 
 
@@ -150,6 +151,16 @@ class Agreement(BaseModel):
 
     notes = Column(Text, nullable=True)
 
+    @property
+    def status(self):
+        # We may change this. We can keep it for now, but we will want to review this before utilizing
+        # it in the frontend or for any other business logic calculations.
+        subq = select(
+            functions.min(case({s.name: s.value for s in BudgetLineItemStatus}, value=BudgetLineItem.status)).label("status_num")
+        ).where(BudgetLineItem.agreement_id == self.id).group_by(BudgetLineItem.agreement_id).scalar_subquery()
+
+        return object_session(self).scalar(select(case({s.value: s.name for s in BudgetLineItemStatus}, value=subq)))
+
     __mapper_args__: dict[str, str | AgreementType] = {
         "polymorphic_identity": "agreement",
         "polymorphic_on": "agreement_type",
@@ -169,7 +180,7 @@ class Agreement(BaseModel):
             table_class = Agreement
         else:
             for subclass in cls._subclasses.values():
-                if field_name in set(subclass.columns):
+                if field_name in set(subclass.columns) | {"status"}:
                     table_class = subclass
                     break
             else:
@@ -193,6 +204,8 @@ class Agreement(BaseModel):
 
         if isinstance(self.agreement_reason, str):
             self.agreement_reason = AgreementReason[self.agreement_reason]
+
+        d["status"] = self.status
 
         d.update(
             agreement_type=self.agreement_type.name if self.agreement_type else None,
