@@ -1,4 +1,4 @@
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { useGetAgreementsQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import { AgreementTableRow } from "./AgreementTableRow";
