@@ -15,7 +15,7 @@ from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
-from sqlalchemy.future import select, delete
+from sqlalchemy.future import select
 from typing_extensions import Any, override
 
 ENDPOINT_STRING = "/agreements"
@@ -256,6 +256,7 @@ class AgreementItemAPI(BaseItemAPI):
         try:
             with OpsEventHandler(OpsEventType.DELETE_AGREEMENT) as meta:
                 agreement: Agreement = self._get_item(id)
+
                 if not agreement:
                     raise RuntimeError(f"Invalid Agreement id: {id}.")
                 elif agreement.agreement_type != AgreementType.CONTRACT:
