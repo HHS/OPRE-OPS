@@ -5,7 +5,7 @@ import { AgreementTableRow } from "./AgreementTableRow";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import sortAgreements from "./utils";
 import { useEffect } from "react";
-import Alert from "../../../components/UI/Alert/Alert";
+import Alert from "../../../components/UI/Alert";
 import "./AgreementsList.scss";
 
 export const AgreementsList = () => {

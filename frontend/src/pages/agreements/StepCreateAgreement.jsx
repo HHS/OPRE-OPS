@@ -5,11 +5,11 @@ import ProcurementShopSelect from "../../components/UI/Form/ProcurementShopSelec
 import AgreementReasonSelect from "../../components/UI/Form/AgreementReasonSelect";
 import AgreementTypeSelect from "../../components/UI/Form/AgreementTypeSelect";
 import ProductServiceCodeSelect from "../../components/UI/Form/ProductServiceCodeSelect";
-import Alert from "../../components/UI/Alert/Alert";
+import Alert from "../../components/UI/Alert";
 import ProjectOfficerSelect from "../../components/UI/Form/ProjectOfficerSelect";
 import TeamMemberSelect from "../../components/UI/Form/TeamMemberSelect";
 import TeamMemberList from "../../components/UI/Form/TeamMemberList";
-import Modal from "../../components/UI/Modal/Modal";
+import Modal from "../../components/UI/Modal";
 import { formatTeamMember, postAgreement } from "../../api/postAgreements";
 import ProjectSummaryCard from "../../components/ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";
 import ProductServiceCodeSummaryBox from "../../components/UI/Form/ProductServiceCodeSummaryBox";

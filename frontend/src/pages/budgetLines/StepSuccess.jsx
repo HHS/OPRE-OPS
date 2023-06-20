@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import Alert from "../../components/UI/Alert/Alert";
+import Alert from "../../components/UI/Alert";
 
 export const StepSuccess = ({ delay = 6000 }) => {
     const navigate = useNavigate();

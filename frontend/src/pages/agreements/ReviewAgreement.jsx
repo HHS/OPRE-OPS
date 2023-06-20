@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PreviewTable from "../../components/UI/PreviewTable";
-import Alert from "../../components/UI/Alert/Alert";
+import Alert from "../../components/UI/Alert";
 import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../api/opsAPI";
 import { getUser } from "../../api/getUser";
 import { convertCodeForDisplay } from "../../helpers/utils";
