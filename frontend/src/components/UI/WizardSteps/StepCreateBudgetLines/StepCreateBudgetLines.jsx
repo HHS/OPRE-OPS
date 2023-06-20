@@ -1,13 +1,14 @@
 import React from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import StepIndicator from "../../StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
 import PreviewTable from "../../PreviewTable";
-import Alert from "../../Alert/Alert";
-import Modal from "../../Modal/Modal";
+import Alert from "../../Alert";
+import Modal from "../../Modal";
 import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
 import { postBudgetLineItems } from "../../../../api/postBudgetLineItems";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
+import { setAlert } from "../../Alert/alertSlice";
 
 export const StepCreateBudgetLines = ({
     goToNext,
@@ -20,8 +21,6 @@ export const StepCreateBudgetLines = ({
     existingBudgetLines = [],
     continueBtnText,
 }) => {
-    const [isAlertActive, setIsAlertActive] = React.useState(false);
-    const [alertProps, setAlertProps] = React.useState({});
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const {
@@ -48,6 +47,7 @@ export const StepCreateBudgetLines = ({
         new_budget_lines: [],
     };
     const dispatch = useBudgetLinesDispatch();
+    const globalDispatch = useDispatch();
     // setters
     const setEnteredDescription = useSetState("entered_description");
     const setSelectedCan = useSetState("selected_can");
@@ -57,6 +57,7 @@ export const StepCreateBudgetLines = ({
     const setEnteredYear = useSetState("entered_year");
     const setEnteredComments = useSetState("entered_comments");
     let loggedInUserFullName = useSelector((state) => state.auth.activeUser.full_name);
+    const isAlertActive = useSelector((state) => state.alert.isActive);
 
     // NOTE: set to logged in user to Sheila if no name is found
     if (!loggedInUserFullName) {
@@ -71,17 +72,6 @@ export const StepCreateBudgetLines = ({
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    const showAlert = async (type, heading, message) => {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        window.scrollTo(0, 0);
-        setIsAlertActive(true);
-        setAlertProps({ type, heading, message });
-
-        await new Promise((resolve) => setTimeout(resolve, 6000));
-        setIsAlertActive(false);
-        setAlertProps({});
-    };
 
     const handleSubmitForm = (e) => {
         e.preventDefault();
@@ -101,7 +91,13 @@ export const StepCreateBudgetLines = ({
             },
         });
         dispatch({ type: "RESET_FORM" });
-        showAlert("success", "Budget Line Added", "The budget line has been successfully added.");
+        globalDispatch(
+            setAlert({
+                type: "success",
+                heading: "Budget Line Added",
+                message: "The budget line has been successfully added.",
+            })
+        );
     };
 
     const handleEditForm = (e) => {
@@ -123,7 +119,13 @@ export const StepCreateBudgetLines = ({
         });
 
         dispatch({ type: "RESET_FORM" });
-        showAlert("success", "Budget Line Updated", "The budget line has been successfully edited.");
+        globalDispatch(
+            setAlert({
+                type: "success",
+                heading: "Budget Line Updated",
+                message: "The budget line has been successfully edited.",
+            })
+        );
     };
 
     const handleDeleteBudgetLine = (budgetLineId) => {
@@ -137,7 +139,13 @@ export const StepCreateBudgetLines = ({
                     id: budgetLineId,
                 });
                 dispatch({ type: "RESET_FORM" });
-                showAlert("success", "Budget Line Deleted", "The budget line has been successfully deleted.");
+                globalDispatch(
+                    setAlert({
+                        type: "success",
+                        heading: "Budget Line Deleted",
+                        message: "The budget line has been successfully deleted.",
+                    })
+                );
                 setModalProps({});
             },
         });
@@ -179,9 +187,7 @@ export const StepCreateBudgetLines = ({
             )}
 
             {isAlertActive ? (
-                <Alert heading={alertProps.heading} type={alertProps.type} setIsAlertActive={setIsAlertActive}>
-                    {alertProps.message}
-                </Alert>
+                <Alert />
             ) : (
                 <>
                     <h2 className="font-sans-lg">Create New Budget Line</h2>
