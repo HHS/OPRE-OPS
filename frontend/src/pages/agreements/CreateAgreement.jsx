@@ -32,9 +32,8 @@ export const CreateAgreement = () => {
                     globalDispatch(
                         setAlert({
                             type: "success",
-                            heading: "Agreement Created",
-                            message:
-                                "The agreement has been successfully created. You will be redirected to the Agreements list page.",
+                            heading: "Agreement Draft Saved",
+                            message: "The agreement has been successfully saved.",
                             redirectUrl: "/agreements",
                         })
                     )
