@@ -48,18 +48,12 @@ describe("procurement shop select", () => {
     it("should display all shops in the dropdown", () => {
         getToProcurementShopSelect();
         // Step Two - Select Procurement Shop
-        cy.get("#procurement-shop-select option").should("have.length", 5);
+        cy.get("#procurement-shop-select option").should("have.length", 4);
     });
     it("should default to GCS", () => {
         getToProcurementShopSelect();
         // Step Two - Select Procurement Shop
-        cy.get("#procurement-shop-select").should("have.value", "2");
+        cy.get("#procurement-shop-select").should("have.value", "1");
         cy.get('[data-cy="fee"]').contains("0%");
-    });
-    it("should not display fee for no selection", () => {
-        getToProcurementShopSelect();
-        // Step Two - Select Procurement Shop none
-        cy.get("#procurement-shop-select").select("0");
-        cy.get('[data-cy="fee"]').should("not.exist");
     });
 });
