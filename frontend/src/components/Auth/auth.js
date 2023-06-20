@@ -23,7 +23,7 @@ export const logoutUser = async (stateToken) => {
     //   client_id=${CLIENT_ID}&
     //   post_logout_redirect_uri=${REDIRECT_URI}&
     //   state=abcdefghijklmnopabcdefghijklmnop
-    const providerLogout = new URL(authConfig.loginGovLogoutEndpoint);
+    const providerLogout = new URL(authConfig.hhsAmsAuthorizationEndpoint);
     providerLogout.searchParams.set("client_id", authConfig.client_id);
     providerLogout.searchParams.set("post_logout_redirect_uri", window.location.hostname);
     providerLogout.searchParams.set("state", stateToken);

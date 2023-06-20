@@ -29,10 +29,8 @@ export const callBackend = async (urlPath, action, requestBody, queryParams) => 
 // };
 
 export const authConfig = {
-    loginGovAuthorizationEndpoint: "https://idp.int.identitysandbox.gov/openid_connect/authorize",
-    acr_values: "http://idmanagement.gov/ns/assurance/ial/1",
-    client_id: "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops_staging",
     hhsAmsAuthorizationEndpoint: "https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/auth",
+    client_id: "44fe2c7a-e9c5-43ec-87e9-3de78d2d3a11",
     response_type: "code",
     scope: "openid profile email",
     redirect_uri: window.location.origin,
