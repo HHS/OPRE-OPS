@@ -20,7 +20,7 @@ export const StepCreateBudgetLines = ({
     selectedProcurementShop = {},
     existingBudgetLines = [],
     continueBtnText,
-    continueOverRide = () => {},
+    continueOverRide,
 }) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
