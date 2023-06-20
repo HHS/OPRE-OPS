@@ -1,3 +1,4 @@
+import React from "react";
 import { useGetProcurementShopsQuery } from "../../../../api/opsAPI";
 
 /**
@@ -23,6 +24,12 @@ export const ProcurementShopSelect = ({ selectedProcurementShop, onChangeSelecte
         isLoading: isLoadingProcurementShops,
     } = useGetProcurementShopsQuery();
 
+    React.useEffect(() => {
+        if (!selectedProcurementShop?.id && procurementShops) {
+            onChangeSelectedProcurementShop(procurementShops[1]);
+        }
+    }, [procurementShops, selectedProcurementShop, onChangeSelectedProcurementShop]);
+
     if (isLoadingProcurementShops) {
         return <div>Loading...</div>;
     }
@@ -32,10 +39,7 @@ export const ProcurementShopSelect = ({ selectedProcurementShop, onChangeSelecte
 
     const handleChange = (e) => {
         const procurementShopId = e.target.value;
-        if (procurementShopId === "0") {
-            onChangeSelectedProcurementShop(0);
-            return;
-        }
+
         const procurementShop = {
             id: procurementShops[procurementShopId - 1].id,
             name: procurementShops[procurementShopId - 1].name,
@@ -48,23 +52,13 @@ export const ProcurementShopSelect = ({ selectedProcurementShop, onChangeSelecte
      * Displays the fee rate for a selected procurement shop.
      * @param {Object} props - The component props.
      * @param {selectedProcurementShop} props.selectedProcurementShop - The selected procurement shop object.
-     * @returns {React.JSX.Element} - The fee rate element.
+     * @returns {React.JSX.Element|null} - The fee rate element, or null if no procurement shop is selected.
      */
     const FeeRate = ({ selectedProcurementShop }) => {
-        if (!selectedProcurementShop || selectedProcurementShop === 0) {
-            return <></>;
-        }
-
         if (selectedProcurementShop?.id) {
             return (
                 <span className="margin-left-1 text-base-dark font-12px" data-cy="fee">
                     Fee Rate: {selectedProcurementShop?.fee * 100}%
-                </span>
-            );
-        } else {
-            return (
-                <span className="margin-left-1 text-base-dark font-12px" data-cy="fee">
-                    Fee Rate: 0%
                 </span>
             );
         }
@@ -80,10 +74,9 @@ export const ProcurementShopSelect = ({ selectedProcurementShop, onChangeSelecte
                     name="procurement-shop-select"
                     id="procurement-shop-select"
                     onChange={handleChange}
-                    value={selectedProcurementShop?.id || 2}
+                    value={selectedProcurementShop?.id}
                     required
                 >
-                    <option value={0}>- Select a Procurement Shop -</option>
                     {procurementShops.map((shop) => (
                         <option key={shop?.id} value={shop?.id}>
                             {shop?.name} ({shop?.abbr})
