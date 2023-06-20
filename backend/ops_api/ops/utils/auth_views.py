@@ -68,7 +68,7 @@ def _get_token_and_user_data_from_oauth_provider(auth_code: str):
         client = OAuth2Session(
             authlib_client_config["client_id"],
             scope="openid profile email",
-            redirect_uri="https://ops-staging.app.cloud.gov",
+            redirect_uri="http://locahost:3000",
         )
         token = client.fetch_token(
             authlib_client_config["token_endpoint"],
