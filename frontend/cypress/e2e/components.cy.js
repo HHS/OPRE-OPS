@@ -53,7 +53,7 @@ describe("procurement shop select", () => {
     it("should default to GCS", () => {
         getToProcurementShopSelect();
         // Step Two - Select Procurement Shop
-        cy.get("#procurement-shop-select").should("have.value", "1");
+        cy.get("#procurement-shop-select").should("have.value", "2");
         cy.get('[data-cy="fee"]').contains("0%");
     });
 });
