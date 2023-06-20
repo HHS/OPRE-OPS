@@ -23,7 +23,7 @@ import {
 import { patchAgreement } from "../../api/patchAgreements";
 import EditModeTitle from "./EditModeTitle";
 import suite from "./stepCreateAgreementSuite";
-import Input from "../../components/UI/Form/Input/Input";
+import Input from "../../components/UI/Form/Input";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -76,9 +76,9 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [alertProps, setAlertProps] = React.useState({});
 
-    const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
-
     let res = suite.get();
+    const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
+    const shouldDisableBtn = !agreementTitle && !res.isValid();
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -324,7 +324,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
                     <button
                         className="usa-button usa-button--outline"
                         onClick={handleDraft}
-                        disabled={!res.isValid()}
+                        disabled={shouldDisableBtn}
                         data-cy="save-draft-btn"
                     >
                         Save Draft
@@ -333,7 +333,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
                         id="continue"
                         className="usa-button"
                         onClick={handleContinue}
-                        disabled={!res.isValid()}
+                        disabled={shouldDisableBtn}
                         data-cy="continue-btn"
                     >
                         Continue
