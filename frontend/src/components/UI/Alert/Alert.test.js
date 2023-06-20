@@ -1,4 +1,5 @@
-import { render } from "@testing-library/react";
+/// <reference types="jest" />
+import { render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { MemoryRouter } from "react-router-dom";
 import configureStore from "redux-mock-store";
@@ -29,36 +30,31 @@ describe("Alert component", () => {
             </Provider>
         );
 
-        const alert = document.querySelector(".usa-alert");
-        expect(alert).toBeInTheDocument();
+        expect(screen.getByRole("status")).toBeInTheDocument();
     });
 
     it("renders the correct heading and message", () => {
         render(
             <Provider store={store}>
                 <MemoryRouter>
-                    <Alert heading="Test Heading" message="Test Message" />
+                    <Alert />
                 </MemoryRouter>
             </Provider>
         );
 
-        const heading = document.querySelector(".usa-alert__heading");
-        const message = document.querySelector(".usa-alert__text");
-
-        expect(heading).toHaveTextContent("Test Heading");
-        expect(message).toHaveTextContent("Test Message");
+        expect(screen.getByText("Test Heading")).toBeInTheDocument();
+        expect(screen.getByText("Test Message")).toBeInTheDocument();
     });
 
     it("renders the correct class based on the type prop", () => {
         render(
             <Provider store={store}>
                 <MemoryRouter>
-                    <Alert type="success" />
+                    <Alert />
                 </MemoryRouter>
             </Provider>
         );
 
-        const alert = document.querySelector(".usa-alert");
-        expect(alert).toHaveClass("usa-alert--success");
+        expect(screen.getByRole("status")).toHaveClass("usa-alert--success");
     });
 });

@@ -49,7 +49,7 @@ export const Alert = () => {
     }
 
     return (
-        <div className={classNames}>
+        <div className={classNames} role="status">
             <div className="usa-alert__body display-flex flex-justify">
                 <div>
                     <h1 className="usa-alert__heading">{heading}</h1>
