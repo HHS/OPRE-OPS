@@ -1,6 +1,6 @@
 from models import User
 from models.base import BaseModel
-from sqlalchemy import Boolean, Column, ForeignKey, Identity, Integer, String, Table
+from sqlalchemy import Boolean, Column, Date, ForeignKey, Identity, Integer, String, Table
 from sqlalchemy.orm import relationship
 
 notification_recipients = Table(
@@ -24,3 +24,4 @@ class Notification(BaseModel):
     recipients = relationship(
         User, secondary=notification_recipients, back_populates="notifications"
     )
+    expires = Column(Date)
