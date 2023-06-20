@@ -56,6 +56,10 @@ class User(BaseModel):
         secondary="contract_support_contacts",
     )
 
+    notifications = relationship(
+        "Notification", secondary="notification_recipients", back_populates="recipients"
+    )
+
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
         d = super().to_dict()  # type: ignore [no-untyped-call]
