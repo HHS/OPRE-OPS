@@ -20,7 +20,8 @@ def init_db(
     return engine, metadata_obj
 
 
-def get_config(environment_name: str):
+def get_config(environment_name: str) -> DataToolsConfig:
+    config: DataToolsConfig
     match environment_name:
         case "cloudgov":
             config = CloudGovConfig()
@@ -35,6 +36,8 @@ def get_config(environment_name: str):
 
 if __name__ == "__main__":
     script_env = os.getenv("ENV")
+    if script_env is None:
+        raise ValueError
     script_config = get_config(script_env)
 
     db_engine, db_metadata_obj = init_db(script_config)

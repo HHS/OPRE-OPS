@@ -1,39 +1,31 @@
-before(() => {
-    cy.fakeLogin();
-    cy.visit("/cans/3/");
+import { terminalLog, testLogin } from "./utils";
+
+beforeEach(() => {
+    testLogin("admin");
+});
+
+afterEach(() => {
     cy.injectAxe();
+    cy.checkA11y(null, null, terminalLog);
 });
 
 it("loads", () => {
-    cy.fakeLogin();
+    cy.visit("/cans/3/");
     cy.get("h1").should("contain", "G99PHS9");
 });
 
-it("passes a11y checks", () => {
-    cy.checkA11y();
-});
-
-it.skip("get can fiscal year details - skip while the UI is being updated and data changes", () => {
-    cy.fakeLogin();
-    clickOnFiscalYearOption(2);
-    cy.contains("7512000");
-    cy.checkA11y();
+it("get can fiscal year details - skip while the UI is being updated and data changes", () => {
+    clickOnFiscalYearOption("2022");
+    cy.contains("7000000");
 });
 
 it.skip("get a negative value - skip for now because we are working on requirements for how to calculate total/pending/funded/etc", () => {
-    cy.fakeLogin();
-    clickOnFiscalYearOption(3);
+    clickOnFiscalYearOption("2023");
     cy.contains("-300000");
     cy.get("[class*='redNegative']").contains("-300000");
-    cy.checkA11y();
 });
 
-const clickOnFiscalYearOption = (optionIndex) => {
-    cy.fakeLogin();
-    cy.get("[class*='-control']").click(0, 0, { force: true });
-
-    cy.get("[class*='-menu']"); //ensure the dropdown menu is visible so the check a11y checks the visible menu
-    cy.checkA11y();
-
-    cy.get("[class*='-menu']").find("[id*='-option']").eq(optionIndex).click(0, 0, { force: true });
+const clickOnFiscalYearOption = (year) => {
+    cy.visit("/cans/3/");
+    cy.get("[class*='fiscalYearSelector']").select(year);
 };

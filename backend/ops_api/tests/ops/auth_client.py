@@ -8,14 +8,13 @@ from models.users import User
 class AuthClient(FlaskClient):
     def open(self, *args, **kwargs):
         user = User(
-            id="00000000-0000-1111-a111-000000000004",
+            id="4",
             oidc_id="00000000-0000-1111-a111-000000000004",
             email="unit-test@ops-api.gov",
             first_name="Unit",
             last_name="Test",
             date_joined=datetime.now(),
             updated=datetime.now(),
-            role="Admin",
             division=1,
         )
         access_token = create_access_token(identity=user)

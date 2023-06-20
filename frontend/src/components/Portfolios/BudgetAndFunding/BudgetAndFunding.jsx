@@ -5,10 +5,9 @@ const BudgetAndFunding = () => {
     const [portfolioId, canCards] = useOutletContext();
 
     return (
-        <div>
-            <section>
-                <PortfolioBudgetSummary portfolioId={portfolioId} />
-            </section>
+        <>
+            <PortfolioBudgetSummary portfolioId={portfolioId} />
+
             <section>
                 <h2>Portfolio Budget Details by CAN </h2>
                 <p>
@@ -18,7 +17,7 @@ const BudgetAndFunding = () => {
                 </p>
                 {canCards.length ? canCards : <span>No CANs to display.</span>}
             </section>
-        </div>
+        </>
     );
 };
 

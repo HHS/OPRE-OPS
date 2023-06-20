@@ -30,13 +30,15 @@ services:
       - ENV=local
     command: >
       bash -c "
+      python ./data_tools/src/import_static_data/load_db.py &&
       DATA=./data_tools/data/portfolio_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/funding_partner_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/funding_source_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/research_project_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-      DATA=./data_tools/data/user_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/can_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-      DATA=./data_tools/data/agreements_and_blin_data.json5 python ./data_tools/src/import_static_data/import_data.py
+      DATA=./data_tools/data/user_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
+      DATA=./data_tools/data/agreements_and_blin_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
+      DATA=./data_tools/data/team_leader_data.json5 python ./data_tools/src/import_static_data/import_data.py
       "
 
     volumes:
@@ -45,7 +47,7 @@ services:
       # having to rebuild the migration container.
       - ./backend/ops_api:/home/app/ops_api
     depends_on:
-      backend:
+      db:
         condition: service_healthy
 
   backend:
@@ -62,7 +64,7 @@ services:
       - JWT_PUBLIC_KEY
       - OPS_CONFIG=environment/local/container.py
     volumes:
-      - ./backend/ops_api/ops:/home/app/ops
+      - ./backend/ops_api/ops:/home/app/ops_api/ops
     depends_on:
       db:
         condition: service_healthy

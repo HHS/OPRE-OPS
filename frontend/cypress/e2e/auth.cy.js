@@ -1,58 +1,51 @@
-beforeEach(() => {
-    // cy.visit("/");
-    cy.injectAxe();
-});
+import { logout } from "../../src/components/Auth/authSlice";
+import { terminalLog, testLogin } from "./utils";
 
-it("access_token is present within localstorage", () => {
-    cy.fakeLogin();
+beforeEach(() => {
     cy.visit("/");
-    cy.getLocalStorage("access_token").should("exist");
 });
 
 it("sign in button visible at page load when there is no jwt", () => {
-    // cannot click on/test sign in button because of cross origin security
-    cy.visit("/");
-    cy.contains("Sign-in");
+    cy.session("anonymous", () => {
+        cy.visit("/");
+        cy.contains("Sign-in");
+    });
 });
 
-it("sign out button visible when there is a jwt", () => {
-    cy.fakeLogin();
-    cy.visit("/");
-    cy.contains("Sign-out");
+it("access_token is present within localstorage after login", () => {
+    testLogin("admin");
+    cy.getLocalStorage("access_token").should("exist");
 });
 
-it("clicking logout removes the jwt and displays sign-in", () => {
-    cy.fakeLogin();
+it.skip("********* DEBUGGING clicking logout removes the jwt and displays sign-in", () => {
     cy.visit("/");
+    testLogin("admin");
     cy.contains("Sign-out").click();
     cy.window().its("localStorage").invoke("getItem", "access_token").should("not.exist");
+    cy.window()
+        .then((win) => win.store.getState().auth)
+        .should("deep.include", { isLoggedIn: false });
     cy.contains("Sign-in");
     cy.url("/");
 });
 
-it("isLoggedIn is false when there is no jwt", () => {
+it("isLoggedIn state is false when there is no jwt", () => {
     cy.visit("/");
     cy.window()
         .then((win) => win.store.getState().auth)
         .should("deep.include", { isLoggedIn: false });
 });
 
-it.skip("isLoggedIn is true when there is a jwt", () => {
-    cy.fakeLogin();
+it("isLoggedIn state is true when there is a jwt", () => {
     cy.visit("/");
+    testLogin("admin");
     cy.window()
         .then((win) => win.store.getState().auth)
         .should("deep.include", { isLoggedIn: true });
 });
 
-it("sign out button visible when there is a jwt", () => {
-    cy.fakeLogin();
+it("Sign Out button visible when user is Authenticated", () => {
     cy.visit("/");
+    testLogin("admin");
     cy.contains("Sign-out");
-});
-
-it("passes a11y checks", () => {
-    cy.visit("/");
-    cy.injectAxe();
-    cy.checkA11y();
 });

@@ -1,6 +1,8 @@
 import { setCanList } from "./canListSlice";
 import ApplicationContext from "../../../applicationContext/ApplicationContext";
 
+// TODO: Replace with RTK Query
+
 export const getCanList = () => {
     return async (dispatch, getState) => {
         const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;

@@ -11,6 +11,59 @@ servers:
   - url: https://ops-api-staging.app.cloud.gov
     description: Staging Server (Live)
 paths:
+  /api/v1/agreements/:
+    get:
+      description: Get Agreements
+      parameters:
+        - name: research_project_id
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: search
+          in: query
+          schema:
+            type: string
+          example: 'contract'
+        - name: filter_params
+          in: query
+          schema:
+            type: object
+            additionalProperties: true
+          description: "Any property from agreements can be used to filter the agreements that are returned. For example `agreement_type=CONTRACT` would return only contracts."
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agreements'
+              examples:
+                '0':
+                  $ref: '#/components/examples/Agreements'
+  /api/v1/agreements/{agreement_id}:
+    get:
+      description: Get Agreement By Id
+      parameters:
+        - in: path
+          name: agreement_id
+          description: Agreement Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agreement'
+              examples:
+                '0':
+                  $ref: '#/components/examples/Agreement'
   /api/v1/cans/:
     get:
       description: Get CANs
@@ -130,7 +183,7 @@ paths:
                         type: number
                       percent:
                         type: string
-                  carry_over_funding:
+                  carry_forward_funding:
                     type: object
                     properties:
                       amount:
@@ -145,7 +198,7 @@ paths:
                         "amount": 12000000.0,
                         "percent": "60.0"
                       },
-                      "carry_over_funding": {
+                      "carry_forward_funding": {
                         "amount": 0.0,
                         "percent": "Carry Over"
                       },
@@ -191,7 +244,7 @@ paths:
             application/json:
               schema:
                 type: array
-                properties: {}
+                properties: { }
                 items:
                   type: string
               examples:
@@ -280,7 +333,7 @@ paths:
                         type: string
                       managing_research_project_id:
                         type: integer
-                  current_funding:
+                  received_funding:
                     type: string
                   planned_funding:
                     type: integer
@@ -294,8 +347,10 @@ paths:
                     type: string
                   in_execution_funding:
                     type: string
-                  carry_over_funding:
+                  carry_forward_funding:
                     type: integer
+                  carry_forward_label:
+                    type: string
                   expected_funding:
                     type: string
               examples:
@@ -317,8 +372,9 @@ paths:
                         "number": "G990136",
                         "purpose": ""
                       },
-                      "carry_over_funding": 0,
-                      "current_funding": "6000000.00",
+                      "carry_forward_funding": 0,
+                      "carry_forward_label": "Carry-Forward",
+                      "received_funding": "6000000.00",
                       "expected_funding": "4000000.00",
                       "expiration_date": "09/01/2023",
                       "in_execution_funding": "2000000.00",
@@ -359,14 +415,14 @@ paths:
                     type: integer
                   first_name:
                     type: string
-                  updated: {}
+                  updated: { }
                   email:
                     type: string
               examples:
                 '0':
                   value: |
                     {
-                      "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                      "date_joined": "2023-04-06T20:33:38.292475",
                       "division": 3,
                       "email": "tdonaworth+dev@flexion.us",
                       "first_name": "Tim",
@@ -381,7 +437,7 @@ paths:
                   value: |
                     [
                       {
-                        "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                        "date_joined": "2023-04-06T20:33:38.292475",
                         "division": 1,
                         "email": "emily.ball@example.com",
                         "first_name": "Emily",
@@ -393,7 +449,7 @@ paths:
                         "updated": null
                       },
                       {
-                        "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                        "date_joined": "2023-04-06T20:33:38.292475",
                         "division": 4,
                         "email": "Bethanne.Barnes@example.com",
                         "first_name": "Bethanne",
@@ -405,7 +461,7 @@ paths:
                         "updated": null
                       },
                       {
-                        "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                        "date_joined": "2023-04-06T20:33:38.292475",
                         "division": 1,
                         "email": "Meryl.Barofsky@example.com",
                         "first_name": "Meryl",
@@ -417,7 +473,7 @@ paths:
                         "updated": null
                       },
                       {
-                        "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                        "date_joined": "2023-04-06T20:33:38.292475",
                         "division": 3,
                         "email": "Anne.Bergan@example.com",
                         "first_name": "Anne",
@@ -429,7 +485,7 @@ paths:
                         "updated": null
                       },
                       {
-                        "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                        "date_joined": "2023-04-06T20:33:38.292475",
                         "division": 3,
                         "email": "tdonaworth+dev@flexion.us",
                         "first_name": "Tim",
@@ -482,13 +538,13 @@ paths:
                 value: >-
                   {"callbackUrl":"http://localhost:3000/?code=fd6a4ef9-686b-4dca-84a9-f2e9c8cb44a7&state=b0c4a75ec9405edc88f13e9de8807d3daa7d2202ed94ca04cb5b77698cdcc782","code":"fd6a4ef9-686b-4dca-84a9-f2e9c8cb44a7"}
       responses:
-          '200':
-            description: OK
-          '204':
-            description: Created
+        '200':
+          description: OK
+        '204':
+          description: Created
   /api/v1/research-projects/:
     get:
-      description: Get all ResearchProjects
+      description: Get ResearchProjects
       parameters:
         - name: fiscal_year
           in: query
@@ -500,18 +556,71 @@ paths:
           schema:
             type: string
           example: '1'
+        - name: search
+          in: query
+          schema:
+            type: string
+          example: 'father'
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                properties: {}
+                $ref: '#/components/schemas/ResearchProjects'
               examples:
                 '0':
-                  value: |
-                    []
+                  $ref: '#/components/examples/ResearchProjects'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+
+    post:
+      summary: Create a new Research Project
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResearchProjectRequest'
+
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+  /api/v1/research-projects/{id}:
+    get:
+      description: Get Research Projects by id
+      parameters:
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResearchProject'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+
   /api/v1/research-project-funding-summary/:
     get:
       description: ''
@@ -520,22 +629,264 @@ paths:
           in: query
           schema:
             type: integer
-          example: '5'
+          example: 5
         - name: fiscalYear
           in: query
           schema:
-            type: string
-          example: '2023'
+            type: integer
+          example: 2023
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResearchProjectFundingSummary'
+              example: { total_funding: 1000000.01 }
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  portfolio_id:
+                    type: array
+                    items:
+                      type: string
+                      example: 'Must be greater than or equal to 1.'
+                  fiscal_year:
+                    type: array
+                    items:
+                      type: string
+                      example: 'Must be greater than or equal to 1900.'
+  /api/v1/procurement-shops/:
+    get:
+      description: Get all Procurement Shops
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  abbr:
+                    type: string
+                  fee:
+                    type: number
+              examples:
+                '0':
+                  value: |
+                    [
+                      {
+                        "id": 0,
+                        "name": "Product Service Center",
+                        "abbr": "PSC",
+                        "fee": 0
+                      },
+                      {
+                        "id": 1,
+                        "name": "Government Contracting Services",
+                        "abbr": "GCS",
+                        "fee": 0
+                      },
+                      {
+                        "id": 2,
+                        "name": "National Institute of Health",
+                        "abbr": "NIH",
+                        "fee": 0.5
+                      },
+                      {
+                        "id": 3,
+                        "name": "Interior Business Center",
+                        "abbr": "IBC",
+                        "fee": 4.8
+                      }
+                    ]
+  /api/v1/procurement-shops/{id}:
+    get:
+      description: Get Procurement Shop by id
+      parameters:
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  abbr:
+                    type: string
+                  fee:
+                    type: number
+              examples:
+                '0':
+                  value: |
+                    {
+                      "id": 0,
+                      "name": "Product Service Center",
+                      "abbr": "PSC",
+                      "fee": 0
+                    }
+                '1':
+                  value: |
+                    {
+                      "id": 1,
+                      "name": "Government Contracting Services",
+                      "abbr": "GCS",
+                      "fee": 0
+                    }
+                '2':
+                  value: |
+                    {
+                      "id": 2,
+                      "name": "National Institute of Health",
+                      "abbr": "NIH",
+                      "fee": 0.5
+                    }
+                '3':
+                  value: |
+                    {
+                      "id": 3,
+                      "name": "Interior Business Center",
+                      "abbr": "IBC",
+                      "fee": 4.8
+                    }
+
+  /api/v1/budget-line-items/:
+    get:
+      description: Get Budget Line Items
+      parameters:
+        - name: can_id
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: agreement_id
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: status
+          in: query
+          schema:
+            type: string
+          example: 'DRAFT'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetLineItems'
+              examples:
+                '0':
+                  $ref: '#/components/examples/BudgetLineItems'
+    post:
+      summary: Create a new Budget Line Item
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetLineItemRequest'
+
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+
+  /api/v1/budget-line-items/{id}:
+    get:
+      description: Get Budget Line Items by id
+      parameters:
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetLineItem'
+
+    put:
+      summary: Update a new Budget Line Item (Over-write)
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetLineItemRequest'
+
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+    patch:
+      summary: Update a new Budget Line Item (Merge)
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetLineItemRequest'
+
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
 components:
   securitySchemes:
-      bearerAuth:            # arbitrary name for the security scheme
-        type: http
-        scheme: bearer
-        bearerFormat: JWT
+    bearerAuth: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
+
     CAN:
       description: Common Accounting Number (CAN) Object
       type: object
@@ -554,14 +905,14 @@ components:
           type: integer
         nickname:
           type: string
-        appropriation_date: {}
+        appropriation_date: { }
         description:
           type: string
         id:
           type: integer
         expiration_date:
           type: string
-        managing_research_project_id: {}
+        managing_research_project_id: { }
 
     Portfolio:
       description: Portfolio Object
@@ -588,10 +939,280 @@ components:
           type: integer
         first_name:
           type: string
-        updated: {}
+        updated: { }
         email:
           type: string
+
+    ResearchProjectFundingSummary:
+      description: Research Project funding data for a Portfolio
+      type: object
+      properties:
+        total_funding:
+          type: number
+
+    TeamLeader:
+      type: object
+      properties:
+        created_by:
+          type: integer
+        created_on:
+          type: string
+        date_joined:
+          type: string
+        division:
+          type: integer
+        email:
+          type: string
+        first_name:
+          type: string
+        full_name:
+          type: string
+        id:
+          type: integer
+        last_name:
+          type: string
+        oidc_id:
+          type: string
+        role:
+          type: string
+        updated_on:
+          type: string
+
+    ResearchProject:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        created_by:
+          type: integer
+          example: 10
+        created_on:
+          type: string
+          example: '2023-04-06T20:33:38.292475'
+        updated_on:
+          type: string
+          example: '2023-04-06T20:33:38.292475'
+        description:
+          type: string
+        methodologies:
+          type: array
+          items:
+            type: string
+            example: [ 'SURVEY', 'FIELD_RESEARCH', 'PARTICIPANT_OBSERVATION' ]
+        populations:
+          type: array
+          items:
+            type: string
+            example: [ 'POPULATION_1', 'POPULATION_2' ]
+        team_leaders:
+          type: array
+          items:
+            type: array
+            example: [ {
+              "created_by": null,
+              "created_on": "2023-04-17T14:43:15.216759",
+              "date_joined": "2023-04-17T14:43:15.216759",
+              "division": 1,
+              "email": "chris.fortunato@example.com",
+              "first_name": "Chris",
+              "full_name": "Chris Fortunato",
+              "id": 1,
+              "last_name": "Fortunato",
+              "oidc_id": "00000000-0000-1111-a111-000000000001",
+              "updated": null,
+              "updated_on": "2023-04-17T14:43:15.216759"
+            } ]
+        origination_date:
+          type: string
+          example: '2022-01-01'
+        short_title:
+          type: string
+        title:
+          type: string
+          example: 'African American Child and Family Research Center'
+        url:
+          type: string
+          example: 'https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center'
+
+    ResearchProjects:
+      description: OPS List of Research Projects
+      type: array
+      items:
+        anyOf:
+          - $ref: "#/components/schemas/ResearchProject"
+
+    AGREEMENTS:
+      description: All Agreements
+      type: array
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        agreement_type:
+          type: string
+        project_officer:
+          type: string
+        period_of_performance_start:
+          type: string
+        period_of_performance_end:
+        procurement_shop:
+          type: object
+        budget_line_items:
+          type: array
+
+    Agreement:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        agreement_type:
+          type: integer
+          example: "CONTRACT"
+        created_by:
+          type: integer
+          example: 1
+        created_on:
+          type: string
+          example: "2023-04-06T20:33:38.292475"
+        updated_on:
+          type: string
+          example: "2023-04-06T20:33:38.292475"
+        research_project_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Contract #2: African American Child and Family Research Center"
+
+    Agreements:
+      description: OPS List of Agreements
+      type: array
+      items:
+        anyOf:
+          - $ref: "#/components/schemas/Agreement"
+
+    BudgetLineItems:
+      description: OPS List of Budget Line Items
+      type: array
+      items:
+        anyOf:
+          - $ref: "#/components/schemas/BudgetLineItem"
+
+    BudgetLineItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        agreement_id:
+          type: integer
+          example: 1
+        created_by:
+          type: string
+        created_on:
+          type: string
+          example: '2023-04-06T19:02:38.409254'
+        updated_on:
+          type: string
+          example: '2023-04-06T19:02:38.409254'
+        amount:
+          type: number
+          example: 1000000.0
+        can_id:
+          type: integer
+          example: 1
+        comments:
+          type: string
+        date_needed:
+          type: string
+          example: '2023-05-06'
+        line_description:
+          type: string
+        psc_fee_amount:
+          type: number
+          example: 100.2
+        status:
+          type: string
+          example: 'PLANNED'
+
+    BudgetLineItemRequest:
+      type: object
+      properties:
+        agreement_id:
+          type: integer
+          example: 1
+        amount:
+          type: number
+          example: 1000000.0
+        can_id:
+          type: integer
+          example: 1
+        comments:
+          type: string
+        date_needed:
+          type: string
+          example: '2023-05-06'
+        line_description:
+          type: string
+        psc_fee_amount:
+          type: number
+          example: 100.2
+        status:
+          type: string
+          example: 'PLANNED'
+      required:
+        - line_description
+        - agreement_id
+        - can_id
+        - amount
+        - status
+        - date_needed
+
+    ResearchProjectRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          example: 'Research Project #1'
+        short_title:
+          type: string
+          example: 'RP#1'
+        description:
+          type: string
+          example: 'Description #1'
+        url:
+          type: string
+          example: 'https://example.com'
+        origination_date:
+          type: string
+          example: '2023-05-06'
+        methodologies:
+          type: array
+          items:
+            type: string
+            example: [ 'SURVEY', 'FIELD_RESEARCH', 'PARTICIPANT_OBSERVATION' ]
+        populations:
+          type: array
+          items:
+            type: string
+            example: [ 'POPULATION_1', 'POPULATION_2' ]
+        team_leaders:
+          type: array
+          items:
+            type: array
+            example: [ { 'id': 1 }, { 'id': 2 }, { 'id': 3 } ]
+
+      required:
+        - title
+
+
   examples:
+
     CAN:
       value:
         - appropriation_date: "01/10/2023"
@@ -652,7 +1273,7 @@ components:
           "status_id": 1,
           "team_leaders": [
               {
-                  "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+                  "date_joined": "2023-04-06T20:33:38.292475",
                   "division": 1,
                   "email": "emily.ball@example.com",
                   "first_name": "Emily",
@@ -675,7 +1296,7 @@ components:
     User:
       value: |
         {
-          "date_joined": "Wed, 22 Feb 2023 15:28:58 GMT",
+          "date_joined": "2023-04-06T20:33:38.292475",
           "division": 3,
           "email": "user@email.com",
           "first_name": "Jon",
@@ -686,6 +1307,260 @@ components:
           "role": "Administrator",
           "updated": null
         }
+    ResearchProjects:
+      value: |
+        [
+          {
+            "created_by": null,
+            "created_on": "2023-04-17T14:43:13.928419",
+            "description": "        The National African American Child and Family Research Center, supported by a five-year OPRE        grant (2021 — 2026), will provide national leadership and excellence by investigating the assets, needs,        and experiences of the diverse population of African American families and children served (or potentially        served) by ACF programs, as well as promising approaches to address economic and social inequities and,        ultimately, promote social and economic well-being.  The primary focus of this Center will be on childcare        assistance, TANF, and Head Start and Early Head Start programs and the populations they serve. The work of        the Center will draw on interdisciplinary approaches to accomplish the three goals listed below.        \n\n1. Advance Research        The Center will plan, initiate, and maintain a community-engaged, focused, and high-caliber research program.        The Center’s program of research will build on the existing literature related to African American children        and families and should be directly relevant to the needs and interests of ACF areas of programmatic concern.        \n\n2. Build Research Capacity        The Center will build research capacity and infrastructure to conduct research relevant to ACF program and        policy goals that is culturally rigorous and informed by an understanding of current and historical        circumstances that shape the experiences of African Americans. In addition, the Center will contribute to the        development and expansion of the pool of researchers reflective of the communities being studied by the Center.        \n\n3. Communicate Research        The Center will develop and implement a dissemination strategy that broadly and efficiently communicates        findings from research conducted within and outside of the Center and increases the use of research, data, and        relevant resources for a wide audience including researchers, federal and state policymakers, ACF grantees,        program administrators, and communities participating in the research.        \n\nThe Center is led by the Morehouse School of Medicine.        \n\nThe OPRE point of contact is Megan Reid.        ",
+            "id": 1,
+            "methodologies": [
+                "SURVEY",
+                "FIELD_RESEARCH",
+                "PARTICIPANT_OBSERVATION",
+                "ETHNOGRAPHY",
+                "EXPERIMENT",
+                "SECONDARY_DATA_ANALYSIS",
+                "CASE_STUDY"
+            ],
+            "origination_date": "2022-01-01",
+            "populations": [
+                "POPULATION_1"
+            ],
+            "short_title": "",
+            "team_leaders": [
+                {
+                    "created_by": null,
+                    "created_on": "2023-04-17T14:43:15.216759",
+                    "date_joined": "2023-04-17T14:43:15.216759",
+                    "division": 1,
+                    "email": "chris.fortunato@example.com",
+                    "first_name": "Chris",
+                    "full_name": "Chris Fortunato",
+                    "id": 1,
+                    "last_name": "Fortunato",
+                    "oidc_id": "00000000-0000-1111-a111-000000000001",
+                    "updated": null,
+                    "updated_on": "2023-04-17T14:43:15.216759"
+                }
+            ],
+            "title": "African American Child and Family Research Center",
+            "updated_on": "2023-04-17T14:43:13.928419",
+            "url": "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center"
+          }
+        ]
+    AGREEMENTS:
+      value: |
+       [
+          {
+              "id": 1,
+              "created_by": null,
+              "created_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+              "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+              "name": "Using Innovative Data to Explore Racial and Ethnic Disparities in Human Services",
+              "research_project_id": 1,
+              "description":
+                  "This will be a contract to continue planned analyses to explore racial and ethnic disparities in Human Services.",
+              "agreement_type": "CONTRACT",
+              "project_officer": "Ivelisse Martinez-Beck",
+              "period_of_performance_start": "2021-01-01",
+              "period_of_performance_end": "2021-12-31",
+              procurement_shop: {
+                  id: 2,
+                  name: "Government Contracting Services",
+                  fee: 0,
+              },
+              budget_line_items: [
+                  {
+                      id: 123456,
+                      line_description: "LI 1",
+                      comments: "",
+                      can_id: 5,
+                      can_number: "G994426",
+                      agreement_id: 1,
+                      amount: 1000000.0,
+                      status: "EXECUTING",
+                      date_needed: "2111-1-11",
+                      psc_fee_amount: 0,
+                      created_by: "Carolyn Hsu",
+                      created_on: "2023-4-5",
+                      updated_on: "2023-4-15",
+                  },
+                  {
+                      id: 123457,
+                      line_description: "LI 2",
+                      comments: "",
+                      can_id: 5,
+                      can_number: "G994426",
+                      agreement_id: 1,
+                      amount: 1000000.0,
+                      status: "OBLIGATED",
+                      date_needed: "2222-2-22",
+                      psc_fee_amount: 0,
+                      created_by: "Carolyn Hsu",
+                      created_on: "2023-4-1",
+                      updated_on: "2023-4-15",
+                  },
+                  {
+                      id: 123458,
+                      line_description: "LI 3",
+                      comments: "",
+                      can_id: 5,
+                      can_number: "G994426",
+                      agreement_id: 1,
+                      amount: 1000000.0,
+                      status: "PLANNED",
+                      date_needed: "2333-3-13",
+                      psc_fee_amount: 0,
+                      created_by: "Carolyn Hsu",
+                      created_on: "2023-3-11",
+                      updated_on: "2023-4-15",
+                  },
+                ],
+          },
+
+        ];
+    Agreements:
+      value: |
+        [{
+          "agreement_type": "CONTRACT",
+          "created_by": null,
+          "created_on": "2023-04-06T20:33:38.292475",
+          "id": 2,
+          "name": "Contract #2: African American Child and Family Research Center",
+          "research_project_id": 1,
+          "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+           cans: [],
+           budget_line_items: [
+            {
+                line_description: "LI 1",
+                comments: "",
+                can_id: 5,
+                agreement_id: 1,
+                amount: 1000000.0,
+                status: "EXECUTING",
+                date_needed: "2111-1-11",
+                psc_fee_amount: 0.5,
+            },
+            {
+                line_description: "LI 2",
+                comments: "",
+                can_id: 5,
+                agreement_id: 1,
+                amount: 1000000.0,
+                status: "OBLIGATED",
+                date_needed: "2222-2-22",
+                psc_fee_amount: 0.5,
+            },
+            {
+                line_description: "LI 3",
+                comments: "",
+                can_id: 5,
+                agreement_id: 1,
+                amount: 1000000.0,
+                status: "PLANNED",
+                date_needed: "2333-3-13",
+                psc_fee_amount: 0.5,
+            },
+        ],
+        }]
+
+    Agreement:
+      value: |
+        {
+          "agreement_type": "CONTRACT",
+          "created_by": null,
+          "created_on": "2023-04-06T20:33:38.292475",
+          "id": 2,
+          "name": "Contract #2: African American Child and Family Research Center",
+          "research_project_id": 1,
+          "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+          cans: [],
+          budget_line_items: [
+            {
+                line_description: "LI 1",
+                comments: "",
+                can_id: 5,
+                agreement_id: 2,
+                amount: 1000000.0,
+                status: "EXECUTING",
+                date_needed: "2111-1-11",
+                psc_fee_amount: 0.5,
+            },
+            {
+                line_description: "LI 2",
+                comments: "",
+                can_id: 5,
+                agreement_id: 2,
+                amount: 1000000.0,
+                status: "OBLIGATED",
+                date_needed: "2222-2-22",
+                psc_fee_amount: 0.5,
+            },
+            {
+                line_description: "LI 3",
+                comments: "",
+                can_id: 5,
+                agreement_id: 2,
+                amount: 1000000.0,
+                status: "PLANNED",
+                date_needed: "2333-3-13",
+                psc_fee_amount: 0.5,
+            },
+        ],
+        }
+
+    BudgetLineItems:
+      value: |
+        [
+          {
+              "agreement_id": 1,
+              "amount": 1000000.0,
+              "can_id": 5,
+              "comments": "",
+              "created_by": null,
+              "created_on": "2023-04-06T19:02:38.409254",
+              "date_needed": "2023-05-06",
+              "id": 1,
+              "line_description": "LI 1",
+              "psc_fee_amount": null,
+              "status": "PLANNED",
+              "updated_on": "2023-04-06T19:02:38.409254"
+          },
+          {
+              "agreement_id": 1,
+              "amount": 1000000.0,
+              "can_id": 5,
+              "comments": "",
+              "created_by": null,
+              "created_on": "2023-04-06T19:02:38.409254",
+              "date_needed": "2023-05-06",
+              "id": 2,
+              "line_description": "LI 2",
+              "psc_fee_amount": null,
+              "status": "PLANNED",
+              "updated_on": "2023-04-06T19:02:38.409254"
+          },
+          {
+              "agreement_id": 2,
+              "amount": 1000000.0,
+              "can_id": 8,
+              "comments": "",
+              "created_by": null,
+              "created_on": "2023-04-06T19:02:38.409254",
+              "date_needed": "2023-05-06",
+              "id": 3,
+              "line_description": "Line Item 1",
+              "psc_fee_amount": null,
+              "status": "PLANNED",
+              "updated_on": "2023-04-06T19:02:38.409254"
+          }
+        ]
+
+
+
+
 
 security:
-  - bearerAuth: []
+  - bearerAuth: [ ]  # pragma: allowlist secret

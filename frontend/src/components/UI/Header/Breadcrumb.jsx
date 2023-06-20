@@ -12,10 +12,7 @@ export const Breadcrumb = ({ currentName }) => {
 
     return (
         <section>
-            <nav
-                className="usa-breadcrumb margin-left-2 margin-right-2 padding-top-3 padding-bottom-4"
-                aria-label="Breadcrumbs"
-            >
+            <nav className="usa-breadcrumb margin-right-2 padding-top-3 padding-bottom-4" aria-label="Breadcrumbs">
                 <ol className="usa-breadcrumb__list">
                     <li className="usa-breadcrumb__list-item">
                         <Link to="/" className="usa-breadbrumb__link text-primary">

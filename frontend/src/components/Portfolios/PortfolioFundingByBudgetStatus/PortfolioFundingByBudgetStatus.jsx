@@ -41,7 +41,7 @@ const PortfolioFundingByBudgetStatus = ({ portfolioId }) => {
             id: 4,
             label: "Obligated",
             value: portfolioFunding.obligated_funding.amount || 0,
-            color: "#3E8D61",
+            color: "#3A835B",
             percent: Math.round(portfolioFunding.obligated_funding.percent) + "%",
         },
     ];
@@ -78,7 +78,7 @@ const PortfolioFundingByBudgetStatus = ({ portfolioId }) => {
 
     return (
         <RoundedBox className=" padding-y-205 padding-x-4 display-inline-block">
-            <h3 className="margin-0 margin-bottom-3 font-12px text-base-darker text-normal">
+            <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
                 FY {fiscalYear.value} Budget Status
             </h3>
 

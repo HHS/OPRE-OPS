@@ -6,7 +6,7 @@ Base = declarative_base()
 
 
 # an example mapping using the base
-class AllBudgetCur(Base):
+class AllBudgetCur(Base):  # type: ignore [valid-type, misc]
     __tablename__ = "staging_all_budget"
 
     CAN = Column(String)

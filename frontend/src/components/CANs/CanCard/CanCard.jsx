@@ -19,8 +19,6 @@ const CanCard = ({ can, fiscalYear }) => {
     const [canFundingData, setCanFundingDataLocal] = useState({});
     const [percent, setPercent] = useState("");
     const [hoverId, setHoverId] = useState("");
-    // generate a random number between 0 and 100
-    const randomCanId = Math.floor(Math.random() * 100);
 
     const data = [
         {
@@ -48,7 +46,7 @@ const CanCard = ({ can, fiscalYear }) => {
             id: 4,
             label: "Obligated",
             value: canFundingData.obligated_funding || 0,
-            color: "#3E8D61",
+            color: "#3A835B",
             percent: `${calculatePercent(canFundingData.obligated_funding, canFundingData?.total_funding)}%`,
         },
     ];
@@ -100,15 +98,15 @@ const CanCard = ({ can, fiscalYear }) => {
             <div className={sectionClasses}>
                 <dl className={`margin-0 ${leftMarginClasses}`}>
                     <div>
-                        <dt className="margin-0 text-base-darker">CAN</dt>
+                        <dt className="margin-0 text-base-dark">CAN</dt>
                         <dd className="text-semibold margin-0">{can.number}</dd>
                     </div>
                     <div className="margin-y-3">
-                        <dt className="margin-0 text-base-darker">Description</dt>
+                        <dt className="margin-0 text-base-dark">Description</dt>
                         <dd className="text-semibold margin-0">{can.nickname}</dd>
                     </div>
                     <div className="margin-y-3">
-                        <dt className="margin-0 text-base-darker">Appropriation</dt>
+                        <dt className="margin-0 text-base-dark">Appropriation</dt>
                         <dd className="text-semibold margin-0">
                             {/* TODO: Get value from backend */}
                             {can.appropriation_date || "---"} ({can.appropriation_term}{" "}
@@ -116,26 +114,26 @@ const CanCard = ({ can, fiscalYear }) => {
                         </dd>
                     </div>
                     <div className="margin-y-3">
-                        <dt className="margin-0 text-base-darker">Expiration</dt>
+                        <dt className="margin-0 text-base-dark">Expiration</dt>
                         <dd className="text-semibold margin-0">{canFundingData?.expiration_date || "---"}</dd>
                     </div>
                 </dl>
                 <div className={`grid-row  padding-y-205 padding-left-205 padding-right-05 ${style.rightContainer}`}>
                     {/*NOTE: LEFT SIDE */}
                     <div className="grid-col-5">
-                        <h3 className="font-sans-3xs text-normal text-base-darker">
-                            FY {fiscalYear} CAN Total Funding
-                        </h3>
+                        <h3 className="font-sans-3xs text-normal text-base-dark">FY {fiscalYear} CAN Total Funding</h3>
                         <CANFundingYTD
                             className="margin-top-5"
                             total_funding={canFundingData?.total_funding}
-                            current_funding={canFundingData?.current_funding}
+                            received_funding={canFundingData?.received_funding}
                             expected_funding={canFundingData?.expected_funding}
+                            carry_forward_funding={canFundingData?.carry_forward_funding}
+                            carry_forward_label={canFundingData?.carry_forward_label}
                         />
                     </div>
                     {/* NOTE: RIGHT SIDE */}
                     <div className="grid-col margin-left-5">
-                        <h3 className="font-sans-3xs text-normal text-base-darker margin-bottom-4">
+                        <h3 className="font-sans-3xs text-normal text-base-dark margin-bottom-4">
                             FY {fiscalYear} CAN Budget Status
                         </h3>
                         <div className="display-flex flex-justify">
@@ -153,10 +151,11 @@ const CanCard = ({ can, fiscalYear }) => {
                             </div>
 
                             <div
-                                id={`can-graph-${randomCanId}`}
+                                id={`can-graph-${can.id}`}
                                 className="width-card height-card margin-right-2 margin-top-neg-2"
                                 aria-label="This is a Donut Chart that displays the percent by budget line status in the center."
                                 role="img"
+                                title="Donut Chart"
                             >
                                 <ResponsiveDonutWithInnerPercent
                                     data={data}
@@ -166,7 +165,7 @@ const CanCard = ({ can, fiscalYear }) => {
                                     setPercent={setPercent}
                                     setHoverId={setHoverId}
                                     CustomLayerComponent={CustomLayerComponent(percent)}
-                                    container_id={`can-graph-${randomCanId}`}
+                                    container_id={`can-graph-${can.id}`}
                                 />
                             </div>
                         </div>

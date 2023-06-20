@@ -7,7 +7,8 @@ on:
   push:
     branches: [main, development, staging]
     paths-ignore:
-      - 'docs/**'
+      - '.github/**' # We don't want to trigger when we update the workflows.
+      - 'docs/**' # We don't want to trigger when we update the docs.
       - '*.md'
 
 jobs:
@@ -34,7 +35,7 @@ jobs:
     name: Linting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
       - uses: ./.github/actions/setup-python
 
       # Not needed here, as this is run in our ^^ setup-python

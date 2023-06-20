@@ -4,11 +4,7 @@ from models.cans import CANFiscalYear
 
 @pytest.mark.usefixtures("app_ctx")
 def test_can_fiscal_year_lookup(loaded_db):
-    cfy = (
-        loaded_db.session.query(CANFiscalYear)
-        .filter(CANFiscalYear.can_id == 3, CANFiscalYear.fiscal_year == 2022)
-        .one()
-    )
+    cfy = loaded_db.query(CANFiscalYear).filter(CANFiscalYear.can_id == 3, CANFiscalYear.fiscal_year == 2022).one()
     assert cfy is not None
     assert cfy.fiscal_year == 2022
     assert cfy.total_fiscal_year_funding == 7000000.00
@@ -34,7 +30,7 @@ def test_can_fiscal_year_create():
 def test_can_get_can_fiscal_year_list(client):
     response = client.get("/api/v1/can-fiscal-year/")
     assert response.status_code == 200
-    assert len(response.json) == 20
+    assert len(response.json) == 30
     assert response.json[0]["can_id"] == 1
     assert response.json[1]["can_id"] == 2
     assert response.json[2]["can_id"] == 3
