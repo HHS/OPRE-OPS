@@ -20,6 +20,7 @@ export const StepCreateBudgetLines = ({
     selectedProcurementShop = {},
     existingBudgetLines = [],
     continueBtnText,
+    continueOverRide = () => {},
 }) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -159,7 +160,12 @@ export const StepCreateBudgetLines = ({
         );
         postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
         dispatch({ type: "RESET_FORM_AND_BUDGET_LINES" });
-        goToNext();
+
+        if (continueOverRide) {
+            continueOverRide();
+        } else {
+            goToNext();
+        }
     };
 
     const handleResetForm = () => dispatch({ type: "RESET_FORM" });

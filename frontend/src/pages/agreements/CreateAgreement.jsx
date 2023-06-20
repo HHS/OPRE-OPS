@@ -1,12 +1,14 @@
+import { useDispatch } from "react-redux";
 import CreateAgreementFlow from "./CreateAgreementFlow";
 import StepSelectProject from "./StepSelectProject";
 import StepCreateAgreement from "./StepCreateAgreement";
 import StepCreateBudgetLines from "../../components/UI/WizardSteps/StepCreateBudgetLines";
-import StepAgreementSuccess from "./StepAgreementSuccess";
 import { useCreateAgreement } from "./CreateAgreementContext";
+import { setAlert } from "../../components/UI/Alert/alertSlice";
 
 export const CreateAgreement = () => {
     const createAgreementContext = useCreateAgreement();
+    const globalDispatch = useDispatch();
 
     const {
         wizardSteps,
@@ -26,8 +28,18 @@ export const CreateAgreement = () => {
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}
                 continueBtnText="Save Draft"
+                continueOverRide={() =>
+                    globalDispatch(
+                        setAlert({
+                            type: "success",
+                            heading: "Agreement Created",
+                            message:
+                                "The agreement has been successfully created. You will be redirected to the Agreements list page.",
+                            redirectUrl: "/agreements",
+                        })
+                    )
+                }
             />
-            <StepAgreementSuccess />
         </CreateAgreementFlow>
     );
 };

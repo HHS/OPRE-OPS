@@ -11,6 +11,7 @@ const CreateBudgetLines = ({
     selectedProcurementShop,
     existingBudgetLines,
     continueBtnText,
+    continueOverRide,
 }) => {
     return (
         <CreateBudgetLinesProvider>
@@ -24,6 +25,7 @@ const CreateBudgetLines = ({
                 selectedProcurementShop={selectedProcurementShop}
                 existingBudgetLines={existingBudgetLines}
                 continueBtnText={continueBtnText}
+                continueOverRide={continueOverRide}
             />
         </CreateBudgetLinesProvider>
     );
