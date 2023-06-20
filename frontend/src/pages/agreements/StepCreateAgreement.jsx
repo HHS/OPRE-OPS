@@ -1,11 +1,11 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import ProcurementShopSelect from "../../components/UI/Form/ProcurementShopSelect";
 import AgreementReasonSelect from "../../components/UI/Form/AgreementReasonSelect";
 import AgreementTypeSelect from "../../components/UI/Form/AgreementTypeSelect";
 import ProductServiceCodeSelect from "../../components/UI/Form/ProductServiceCodeSelect";
-import Alert from "../../components/UI/Alert";
 import ProjectOfficerSelect from "../../components/UI/Form/ProjectOfficerSelect";
 import TeamMemberSelect from "../../components/UI/Form/TeamMemberSelect";
 import TeamMemberList from "../../components/UI/Form/TeamMemberList";
@@ -19,10 +19,12 @@ import {
     useUpdateAgreement,
     useCreateAgreementDispatch,
 } from "./CreateAgreementContext";
+import { setAlert } from "../../components/UI/Alert/alertSlice";
 
 export const StepCreateAgreement = ({ goBack, goToNext }) => {
     const navigate = useNavigate();
     const dispatch = useCreateAgreementDispatch();
+    const globalDispatch = useDispatch();
     const {
         wizardSteps,
         selected_project: selectedResearchProject,
@@ -40,6 +42,7 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
         project_officer: selectedProjectOfficer,
         team_members: selectedTeamMembers,
     } = agreement;
+
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
 
@@ -57,8 +60,6 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
-    const [isAlertActive, setIsAlertActive] = React.useState(false);
-    const [alertProps, setAlertProps] = React.useState({});
 
     const incumbentDisabled =
         selectedAgreementReason === "NEW_REQ" || selectedAgreementReason === null || selectedAgreementReason === "0";
@@ -75,22 +76,6 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
             type: "REMOVE_TEAM_MEMBER",
             payload: teamMember,
         });
-    };
-
-    const showAlertAndNavigate = async (type, heading, message) => {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        window.scrollTo(0, 0);
-        setIsAlertActive(true);
-        setAlertProps({ type, heading, message });
-
-        await new Promise((resolve) =>
-            setTimeout(() => {
-                setIsAlertActive(false);
-                setAlertProps({});
-                navigate("/agreements/");
-                resolve();
-            }, 5000)
-        );
     };
 
     const saveAgreement = async () => {
@@ -114,9 +99,17 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
         saveAgreement();
         await goToNext();
     };
+
     const handleDraft = async () => {
         saveAgreement();
-        await showAlertAndNavigate("success", "Agreement Draft Saved", "The agreement has been successfully saved.");
+        await globalDispatch(
+            setAlert({
+                type: "success",
+                heading: "Agreement Draft Saved",
+                message: "The agreement has been successfully saved.",
+                redirectUrl: "/agreements",
+            })
+        );
     };
 
     const handleCancel = () => {
@@ -126,7 +119,7 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
             actionButtonText: "Cancel",
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                navigate("/agreements/");
+                navigate("/agreements");
             },
         });
     };
@@ -147,16 +140,10 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            {isAlertActive ? (
-                <Alert heading={alertProps.heading} type={alertProps.type} setIsAlertActive={setIsAlertActive}>
-                    {alertProps.message}
-                </Alert>
-            ) : (
-                <>
-                    <h1 className="font-sans-lg">Create New Agreement</h1>
-                    <p>Follow the steps to create an agreement</p>
-                </>
-            )}
+
+            <h1 className="font-sans-lg">Create New Agreement</h1>
+            <p>Follow the steps to create an agreement</p>
+
             <StepIndicator steps={wizardSteps} currentStep={2} />
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg">Select the Agreement Type</h2>
