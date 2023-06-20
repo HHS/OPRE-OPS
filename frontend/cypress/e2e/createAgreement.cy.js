@@ -123,5 +123,5 @@ it("should handle cancelling out of workflow on step 2", () => {
     cy.get('[data-cy="cancel-button"]').click();
     cy.get('[data-cy="confirm-action"]').click();
     // check that we are back on the agreements page
-    cy.url().should("eq", Cypress.config().baseUrl + "/agreements/");
+    cy.url().should("eq", Cypress.config().baseUrl + "/agreements");
 });
