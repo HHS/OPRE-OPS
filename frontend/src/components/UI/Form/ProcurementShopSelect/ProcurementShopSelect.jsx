@@ -80,8 +80,7 @@ export const ProcurementShopSelect = ({ selectedProcurementShop, onChangeSelecte
                     name="procurement-shop-select"
                     id="procurement-shop-select"
                     onChange={handleChange}
-                    value={selectedProcurementShop?.id}
-                    defaultValue={2}
+                    value={selectedProcurementShop?.id || 2}
                     required
                 >
                     <option value={0}>- Select a Procurement Shop -</option>
