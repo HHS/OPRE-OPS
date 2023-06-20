@@ -28,7 +28,7 @@ export const Alert = () => {
             await new Promise((resolve) => setTimeout(resolve, 500));
             window.scrollTo(0, 0);
 
-            await new Promise((resolve) => setTimeout(resolve, 6000));
+            await new Promise((resolve) => setTimeout(resolve, 5000));
             dispatch(clearState());
         };
 
