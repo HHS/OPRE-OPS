@@ -6,7 +6,14 @@ import StepCreateBudgetLines from "../../components/UI/WizardSteps/StepCreateBud
 import { useCreateAgreement } from "./CreateAgreementContext";
 import { setAlert } from "../../components/UI/Alert/alertSlice";
 
-export const CreateAgreement = () => {
+/**
+ * Renders the Create Agreement flow, which consists of several steps.
+ * @param {Object} props - The component props.
+ * @param {Array<any>} props.existingBudgetLines - An array of existing budget lines.
+ * @param {boolean} [props.isEditMode] - A flag indicating whether the component is in edit mode. - optional
+ * @returns {JSX.Element} - The rendered component.
+ */
+export const CreateAgreement = ({ existingBudgetLines, isEditMode }) => {
     const createAgreementContext = useCreateAgreement();
     const globalDispatch = useDispatch();
 
@@ -19,8 +26,8 @@ export const CreateAgreement = () => {
 
     return (
         <CreateAgreementFlow>
-            <StepSelectProject />
-            <StepCreateAgreement />
+            <StepSelectProject isEditMode={isEditMode} />
+            <StepCreateAgreement isEditMode={isEditMode} />
             <StepCreateBudgetLines
                 wizardSteps={wizardSteps}
                 currentStep={3}
@@ -38,6 +45,9 @@ export const CreateAgreement = () => {
                         })
                     )
                 }
+                existingBudgetLines={existingBudgetLines}
+                isEditMode={isEditMode}
+                workflow="agreement"
             />
         </CreateAgreementFlow>
     );

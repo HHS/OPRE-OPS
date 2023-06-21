@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
+import classnames from "vest/classnames";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import ProcurementShopSelect from "../../components/UI/Form/ProcurementShopSelect";
 import AgreementReasonSelect from "../../components/UI/Form/AgreementReasonSelect";
@@ -20,8 +21,19 @@ import {
     useCreateAgreementDispatch,
 } from "./CreateAgreementContext";
 import { setAlert } from "../../components/UI/Alert/alertSlice";
+import { patchAgreement } from "../../api/patchAgreements";
+import suite from "./stepCreateAgreementSuite";
+import Input from "../../components/UI/Form/Input";
 
-export const StepCreateAgreement = ({ goBack, goToNext }) => {
+/**
+ * Renders the "Create Agreement" step of the Create Agreement flow.
+ *
+ * @param {Object} props - The component props.
+ * @param {Function} [props.goBack] - A function to go back to the previous step. - optional
+ * @param {Function} [props.goToNext] - A function to go to the next step. - optional
+ * @param {boolean} [props.isEditMode] - A flag indicating whether the component is in edit mode. - optional
+ */
+export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) => {
     const navigate = useNavigate();
     const dispatch = useCreateAgreementDispatch();
     const globalDispatch = useDispatch();
@@ -30,39 +42,60 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
         selected_project: selectedResearchProject,
         agreement,
         selected_procurement_shop: selectedProcurementShop,
+        selected_product_service_code: selectedProductServiceCode,
+        selected_project_officer: selectedProjectOfficer,
     } = useCreateAgreement();
     const {
         notes: agreementNotes,
-        incumbent_entered: agreementIncumbent,
-        selected_agreement_type: selectedAgreementType,
+        incumbent: agreementIncumbent,
+        agreement_type: agreementType,
         name: agreementTitle,
         description: agreementDescription,
-        selected_product_service_code: selectedProductServiceCode,
-        selected_agreement_reason: selectedAgreementReason,
-        project_officer: selectedProjectOfficer,
+        agreement_reason: agreementReason,
         team_members: selectedTeamMembers,
     } = agreement;
 
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
+    const setSelectedProductServiceCode = useSetState("selected_product_service_code");
+    const setSelectedProjectOfficer = useSetState("selected_project_officer");
 
     // AGREEMENT SETTERS
-    const setSelectedAgreementType = useUpdateAgreement("selected_agreement_type");
+    const setAgreementType = useUpdateAgreement("agreement_type");
     const setAgreementTitle = useUpdateAgreement("name");
     const setAgreementDescription = useUpdateAgreement("description");
     const setAgreementProcurementShopId = useUpdateAgreement("procurement_shop_id");
     const setAgreementId = useUpdateAgreement("id");
-    const setSelectedProductServiceCode = useUpdateAgreement("selected_product_service_code");
-    const setSelectedAgreementReason = useUpdateAgreement("selected_agreement_reason");
-    const setSelectedProjectOfficer = useUpdateAgreement("project_officer");
-    const setAgreementIncumbent = useUpdateAgreement("incumbent_entered");
+    const setProductServiceCodeId = useUpdateAgreement("product_service_code_id");
+    const setAgreementReason = useUpdateAgreement("agreement_reason");
+    const setProjectOfficerId = useUpdateAgreement("project_officer");
+    const setAgreementIncumbent = useUpdateAgreement("incumbent");
     const setAgreementNotes = useUpdateAgreement("notes");
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
 
-    const incumbentDisabled =
-        selectedAgreementReason === "NEW_REQ" || selectedAgreementReason === null || selectedAgreementReason === "0";
+    let res = suite.get();
+    const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
+    const shouldDisableBtn = !agreementTitle && !res.isValid();
+
+    const cn = classnames(suite.get(), {
+        invalid: "usa-form-group--error",
+        valid: "success",
+        warning: "warning",
+    });
+
+    const changeSelectedProductServiceCode = (selectedProductServiceCode) => {
+        setSelectedProductServiceCode(selectedProductServiceCode);
+        const productServiceCodeId = selectedProductServiceCode ? selectedProductServiceCode.id : null;
+        setProductServiceCodeId(productServiceCodeId);
+    };
+
+    const changeSelectedProjectOfficer = (selectedProjectOfficer) => {
+        setSelectedProjectOfficer(selectedProjectOfficer);
+        const projectOfficerId = selectedProjectOfficer ? selectedProjectOfficer.id : null;
+        setProjectOfficerId(projectOfficerId);
+    };
 
     const setSelectedTeamMembers = (teamMember) => {
         dispatch({
@@ -81,18 +114,21 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
     const saveAgreement = async () => {
         const data = {
             ...agreement,
-            selected_agreement_type: selectedAgreementType,
-            product_service_code_id: selectedProductServiceCode ? selectedProductServiceCode.id : null,
-            agreement_reason: selectedAgreementReason,
-            project_officer: selectedProjectOfficer && selectedProjectOfficer.id > 0 ? selectedProjectOfficer.id : null,
             team_members: selectedTeamMembers.map((team_member) => {
                 return formatTeamMember(team_member);
             }),
         };
-        const response = await postAgreement(data);
-        const newAgreementId = response.id;
-        console.log(`New Agreement Created: ${newAgreementId}`);
-        setAgreementId(newAgreementId);
+        if (agreement.id) {
+            // TODO: handle failures
+            // const response = await patchAgreement(agreement.id, data);
+            patchAgreement(agreement.id, data);
+        } else {
+            // TODO: handle failures
+            const response = await postAgreement(data);
+            const newAgreementId = response.id;
+            console.log(`New Agreement Created: ${newAgreementId}`);
+            setAgreementId(newAgreementId);
+        }
     };
 
     const handleContinue = async () => {
@@ -124,6 +160,12 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
         });
     };
 
+    const handleChange = (currentField, value) => {
+        const nextState = { [currentField]: value };
+        setAgreementTitle(value);
+        suite(nextState, currentField);
+    };
+
     const handleOnChangeSelectedProcurementShop = (procurementShop) => {
         setSelectedProcurementShop(procurementShop);
         setAgreementProcurementShopId(procurementShop.id);
@@ -148,22 +190,16 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg">Select the Agreement Type</h2>
             <p>Select the type of agreement you&#39;d like to create.</p>
-            <AgreementTypeSelect
-                selectedAgreementType={selectedAgreementType}
-                setSelectedAgreementType={setSelectedAgreementType}
-            />
+            <AgreementTypeSelect selectedAgreementType={agreementType} setSelectedAgreementType={setAgreementType} />
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
-            <label className="usa-label" htmlFor="agreement-title">
-                Agreement Title
-            </label>
-            <input
-                className="usa-input"
-                id="agreement-title"
+
+            <Input
                 name="agreement-title"
-                type="text"
+                label="Agreement Title"
+                messages={res.getErrors("agreement-title")}
+                className={cn("agreement-title")}
                 value={agreementTitle || ""}
-                onChange={(e) => setAgreementTitle(e.target.value)}
-                required
+                onChange={handleChange}
             />
 
             <label className="usa-label" htmlFor="agreement-description">
@@ -173,7 +209,7 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
                 className="usa-textarea"
                 id="agreement-description"
                 name="agreement-description"
-                rows="5"
+                rows={5}
                 style={{ height: "7rem" }}
                 value={agreementDescription || ""}
                 onChange={(e) => setAgreementDescription(e.target.value)}
@@ -181,7 +217,7 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
 
             <ProductServiceCodeSelect
                 selectedProductServiceCode={selectedProductServiceCode}
-                setSelectedProductServiceCode={setSelectedProductServiceCode}
+                setSelectedProductServiceCode={changeSelectedProductServiceCode}
             />
             {selectedProductServiceCode &&
                 selectedProductServiceCode.naics &&
@@ -197,8 +233,8 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
             <h2 className="font-sans-lg margin-top-3">Reason for Agreement</h2>
             <div className="display-flex">
                 <AgreementReasonSelect
-                    selectedAgreementReason={selectedAgreementReason}
-                    setSelectedAgreementReason={setSelectedAgreementReason}
+                    selectedAgreementReason={agreementReason}
+                    setSelectedAgreementReason={setAgreementReason}
                     setAgreementIncumbent={setAgreementIncumbent}
                 />
                 <fieldset
@@ -224,7 +260,7 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
             <div className="display-flex">
                 <ProjectOfficerSelect
                     selectedProjectOfficer={selectedProjectOfficer}
-                    setSelectedProjectOfficer={setSelectedProjectOfficer}
+                    setSelectedProjectOfficer={changeSelectedProjectOfficer}
                 />
                 <TeamMemberSelect
                     className="margin-left-4"
@@ -247,9 +283,9 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
                     <textarea
                         className="usa-textarea usa-character-count__field"
                         id="with-hint-textarea"
-                        maxLength="150"
+                        maxLength={150}
                         name="with-hint-textarea"
-                        rows="5"
+                        rows={5}
                         aria-describedby="with-hint-textarea-info with-hint-textarea-hint"
                         style={{ height: "7rem" }}
                         value={agreementNotes || ""}
@@ -272,10 +308,21 @@ export const StepCreateAgreement = ({ goBack, goToNext }) => {
                     >
                         Cancel
                     </button>
-                    <button className="usa-button usa-button--outline" onClick={handleDraft}>
+                    <button
+                        className="usa-button usa-button--outline"
+                        onClick={handleDraft}
+                        disabled={shouldDisableBtn}
+                        data-cy="save-draft-btn"
+                    >
                         Save Draft
                     </button>
-                    <button id="continue" className="usa-button" onClick={handleContinue}>
+                    <button
+                        id="continue"
+                        className="usa-button"
+                        onClick={handleContinue}
+                        disabled={shouldDisableBtn}
+                        data-cy="continue-btn"
+                    >
                         Continue
                     </button>
                 </div>

@@ -106,7 +106,7 @@ const completeCreateBudgetLines = () => {
     cy.get("@table-rows").should("have.length", 4);
     cy.get("@tsc").should("contain", "Draft Total").and("contain", "$ 444,444.00");
     //post the budget lines
-    cy.get("[data-cy='step-two-continue']").click();
+    cy.get("[data-cy='continue-btn']").click();
     cy.wait("@postBudgetLines")
         .then((interception) => {
             const { statusCode } = interception.response;
@@ -132,5 +132,7 @@ it("should handle cancelling out of workflow", () => {
     cy.get("[data-cy='back-button']").click();
     cy.get('[data-cy="confirm-action"]').click();
     // check that we are back on the create budget lines page
+    cy.url().should("include", "/budget-lines/create");
+    cy.get("h1").should("exist");
     cy.get(".usa-step-indicator__segment--current").should("contain", "Project & Agreement");
 });

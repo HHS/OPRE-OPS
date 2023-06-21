@@ -1,4 +1,4 @@
-/// <reference types="Cypress"/>
+/// <reference types="cypress" />
 
 import { terminalLog, testLogin } from "./utils";
 
@@ -35,9 +35,19 @@ it("can create an agreement", () => {
     // test for rendered ProjectSummaryCard
     cy.get("dt").should("contain", "Project");
     cy.get("dd").should("contain", "Human Services Interoperability Support");
-
+    // test validation
     cy.get("#agreement-type-options").select("CONTRACT");
     cy.get("#agreement-title").type("Test Agreement Title");
+    cy.get("#agreement-title").clear();
+    cy.get("#agreement-title").blur();
+    cy.get("#input-error-message").should("contain", "This is required information");
+    cy.get("[data-cy='continue-btn']").should("be.disabled");
+    cy.get("[data-cy='save-draft-btn']").should("be.disabled");
+    cy.get("#agreement-title").type("Test Agreement Title");
+    cy.get("#input-error-message").should("not.exist");
+    cy.get("[data-cy='continue-btn']").should("not.be.disabled");
+    cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");
+
     cy.get("#agreement-description").type("Test Agreement Description");
     cy.get("#product-service-code-options").select("Other Scientific and Technical Consulting Services");
     cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
@@ -52,7 +62,7 @@ it("can create an agreement", () => {
 
     // Skip Select Team Members for now - something is wrong with the select
     cy.get("#with-hint-textarea").type("This is a note.");
-    cy.get("#continue").click();
+    cy.get("[data-cy='continue-btn']").click();
 
     // Add a new budget line item
     cy.get("#bl-description").type("Test BLI Description");
@@ -91,6 +101,7 @@ it("can create an agreement", () => {
             expect(body.message).to.equal("Agreement created");
         })
         .then(cy.log);
+    cy.get("h1").should("exist");
 });
 
 it("should handle cancelling out of workflow on step 1", () => {
@@ -102,6 +113,7 @@ it("should handle cancelling out of workflow on step 1", () => {
     cy.get('[data-cy="confirm-action"]').click();
     // check that we are back on the home page
     cy.url().should("eq", Cypress.config().baseUrl + "/");
+    cy.get("h1").should("exist");
 });
 
 it("should handle cancelling out of workflow on step 2", () => {
@@ -124,4 +136,5 @@ it("should handle cancelling out of workflow on step 2", () => {
     cy.get('[data-cy="confirm-action"]').click();
     // check that we are back on the agreements page
     cy.url().should("eq", Cypress.config().baseUrl + "/agreements");
+    cy.get("h1").should("exist");
 });

@@ -1,19 +1,19 @@
 import ApplicationContext from "../applicationContext/ApplicationContext";
 
-export const postAgreement = async (item) => {
+export const patchAgreement = async (id, item) => {
     const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;
-
+    console.log("patchAgreement item:");
+    console.log(item);
     const data = { ...item };
-    const newAgreement = {
-        ...data,
-        number: "",
-    };
+    // remove fields that are not allowed
+    const { id: _id, budget_line_items, created_by, created_on, updated_on, ...patchData } = data;
 
-    delete newAgreement.id;
+    console.log("patchData:");
+    console.log(patchData);
 
     const responseData = await ApplicationContext.get()
         .helpers()
-        .callBackend(`/api/${api_version}/agreements/`, "POST", newAgreement)
+        .callBackend(`/api/${api_version}/agreements/${id}`, "PATCH", patchData)
         .then(function (response) {
             return response;
         })
@@ -21,7 +21,7 @@ export const postAgreement = async (item) => {
             if (error.response) {
                 // The request was made and the server responded with a status code
                 // that falls out of the range of 2xx
-                console.log(error.response.newAgreement);
+                console.log(error.response.message);
                 console.log(error.response.status);
                 console.log(error.response.headers);
             } else if (error.request) {
@@ -37,12 +37,4 @@ export const postAgreement = async (item) => {
         });
 
     return responseData;
-};
-
-export const formatTeamMember = (team_member) => {
-    return {
-        id: team_member.id,
-        full_name: team_member.full_name,
-        email: team_member.email,
-    };
 };

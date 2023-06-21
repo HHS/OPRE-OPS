@@ -1,29 +1,55 @@
 import { createContext, useContext, useReducer } from "react";
-
 export const CreateAgreementContext = createContext(null);
 export const CreateAgreementDispatchContext = createContext(null);
 
-const initialState = {
+const defaultState = {
     agreement: {
         id: null,
-        selected_agreement_type: null,
-        selected_agreement_reason: null,
+        agreement_type: null,
+        agreement_reason: null,
         name: "",
         description: "",
-        selected_product_service_code: null,
-        incumbent_entered: null,
-        project_officer: null,
+        product_service_code_id: null,
+        incumbent: null,
+        project_officer: null, // this is the ID
         team_members: [],
         notes: "",
         research_project_id: null,
         procurement_shop_id: null,
     },
     selected_project: {},
+    selected_product_service_code: {},
     selected_procurement_shop: {},
+    selected_project_officer: {},
     wizardSteps: ["Project", "Agreement", "Budget Lines"],
 };
+let initialState = { ...defaultState };
 
-export function CreateAgreementProvider({ children }) {
+/**
+ * Provides a context for creating an agreement.
+ * @param {Object} props - The component props.
+ * @param {Object} props.agreement - The agreement to edit, if any.
+ * @param {Object} props.projectOfficer - The project officer to set, if any.
+ * @param {ReactNode} props.children - The child components.
+ * @returns {ReactNode} The rendered component.
+ */
+export function CreateAgreementProvider({ agreement, projectOfficer, children }) {
+    if (agreement) {
+        initialState.agreement = { ...agreement };
+        initialState.selected_project = agreement.research_project;
+        initialState.selected_product_service_code = agreement.product_service_code;
+        initialState.selected_procurement_shop = agreement.procurement_shop;
+        if (projectOfficer) {
+            initialState.selected_project_officer = projectOfficer;
+        }
+        delete initialState.agreement.research_project;
+        delete initialState.agreement.product_service_code;
+        delete initialState.agreement.procurement_shop;
+        delete initialState.agreement.status;
+    } else {
+        initialState = { ...defaultState };
+    }
+
     const [state, dispatch] = useReducer(createAgreementReducer, initialState);
 
     return (
@@ -42,6 +68,7 @@ export function useCreateAgreement() {
 export function useCreateAgreementDispatch() {
     return useContext(CreateAgreementDispatchContext);
 }
+
 export function useSetState(key) {
     const dispatch = useContext(CreateAgreementDispatchContext);
 
