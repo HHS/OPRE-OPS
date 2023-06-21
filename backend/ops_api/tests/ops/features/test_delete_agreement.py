@@ -26,7 +26,7 @@ def contract_agreement(loaded_db):
 
 
 @pytest.fixture()
-def draft_bli(loaded_db, contract_agreement):
+def contract_with_draft_bli(loaded_db, contract_agreement):
     draft_bli = BudgetLineItem(
         agreement_id=contract_agreement.id,
         comments="blah bleh bleh blah",
@@ -41,14 +41,14 @@ def draft_bli(loaded_db, contract_agreement):
     loaded_db.add(draft_bli)
     loaded_db.commit()
 
-    yield draft_bli
+    yield contract_agreement
 
     loaded_db.delete(draft_bli)
     loaded_db.commit()
 
 
 @pytest.fixture()
-def planned_bli(loaded_db, contract_agreement):
+def contract_with_planned_bli(loaded_db, contract_agreement):
     planned_bli = BudgetLineItem(
         agreement_id=contract_agreement.id,
         comments="blah blah bleh blah",
@@ -60,12 +60,12 @@ def planned_bli(loaded_db, contract_agreement):
         psc_fee_amount=2.34,
         created_by=1,
     )
-    loaded_db.add(draft_bli)
+    loaded_db.add(planned_bli)
     loaded_db.commit()
 
-    yield draft_bli
+    yield contract_agreement
 
-    loaded_db.delete(draft_bli)
+    loaded_db.delete(planned_bli)
     loaded_db.commit()
 
 
@@ -74,6 +74,7 @@ def direct_agreement(loaded_db):
     direct_agreement = DirectAgreement(
         name="Feature Test Direct",
         number="BDD0969",
+        payee="Somebody who needs money",
         agreement_type=AgreementType.DIRECT_ALLOCATION,
         research_project_id=1,
     )
@@ -108,24 +109,22 @@ def client(auth_client):
 
 
 @given("I have a contract agreement with only draft BLIs", target_fixture="agreement")
-@pytest.mark.usefixtures("draft_bli")
-def contract_draft_bli(contract_agreement):
-    return contract_agreement
+def contract_draft_bli(contract_with_draft_bli):
+    return contract_with_draft_bli
 
 
 @given("I have a contract agreement with non-draft BLIs", target_fixture="agreement")
-@pytest.mark.usefixtures("draft_bli", "planned_bli")
-def contract_non_draft_bli(contract_agreement):
-    return contract_agreement
+def contract_non_draft_bli(contract_with_planned_bli):
+    return contract_with_planned_bli
 
 
 @given("I have a non-contract agreement", target_fixture="agreement")
-def direct(direct_agreement):
+def non_contract(direct_agreement):
     return direct_agreement
 
 
-@when("I delete the agreement")
-def submit_response(client, agreement):
+@when("I delete the agreement", target_fixture="submit_response")
+def delete_agreement(client, agreement):
     resp = client.delete(f"/api/v1/agreements/{agreement.id}")
     return resp
 
