@@ -19,6 +19,8 @@ from ops_api.ops.views import (
     DIVISIONS_ITEM_API_VIEW_FUNC,
     DIVISIONS_LIST_API_VIEW_FUNC,
     HEALTH_CHECK_VIEW_FUNC,
+    NOTIFICATIONS_ITEM_API_VIEW_FUNC,
+    NOTIFICATIONS_LIST_API_VIEW_FUNC,
     PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC,
     PORTFOLIO_CANS_API_VIEW_FUNC,
     PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
@@ -192,4 +194,13 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/product-service-codes/<int:id>",
         view_func=PRODUCT_SERVICE_CODE_ITEM_API_VIEW_FUNC,
+    )
+
+    api_bp.add_url_rule(
+        "/notifications/",
+        view_func=NOTIFICATIONS_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/notifications/<int:id>",
+        view_func=NOTIFICATIONS_ITEM_API_VIEW_FUNC,
     )
