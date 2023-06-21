@@ -1,30 +1,69 @@
 import pytest
+from models import User
 from models.notifications import Notification
+from sqlalchemy import select
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_can_retrieve(loaded_db):
+def test_notification_retrieve(loaded_db):
     notification = loaded_db.get(Notification, 1)
 
     assert notification is not None
     assert notification.title == "System Notification"
+    assert notification.message == "This is a system notification"
+    assert notification.status is False
+    assert notification.recipients is not None
+    assert notification.expires is None
 
 
-# def test_can_creation():
-#     can = CAN(
-#         number="G990991-X",
-#         description="Secondary Analyses Data On Child Care & Early Edu",
-#         purpose="Secondary Analyses of Child Care and Early Education Data (2022)",
-#         nickname="ABCD",
-#         arrangement_type=CANArrangementType.COST_SHARE,
-#         authorizer_id=1,
-#         managing_portfolio_id=2,
-#     )
-#
-#     serialized = can.to_dict()
-#
-#     assert can is not None
-#     assert serialized["number"] == "G990991-X"
+@pytest.fixture()
+@pytest.mark.usefixtures("app_ctx")
+def notification(loaded_db):
+    john = User(
+        oidc_id="41b88469-b7e8-4dbc-83d1-7e9a61d596b3",
+        email="john@example.com",
+    )
+    jane = User(
+        oidc_id="41b88469-b7e8-4dbc-83d1-7e9a61d596b4",
+        email="jane@example.com",
+    )
+    notification = Notification(
+        title="System Notification",
+        message="This is a system notification",
+        status=False,
+    )
+    notification.recipients.append(john)
+    notification.recipients.append(jane)
+
+    loaded_db.add(notification)
+    loaded_db.add(john)
+    loaded_db.add(jane)
+    loaded_db.commit()
+
+    yield notification
+
+    loaded_db.delete(notification)
+    loaded_db.delete(john)
+    loaded_db.delete(jane)
+    loaded_db.commit()
+
+
+def test_notification_creation(loaded_db, notification):
+    assert notification is not None
+    assert notification.recipients is not None
+    assert len(notification.recipients) == 2
+
+    stmt = select(User).where(User.email == "john@example.com")
+    john = loaded_db.scalar(stmt)
+    assert john.notifications is not None
+    assert john.notifications[0] == notification
+
+    stmt = select(User).where(User.email == "jane@example.com")
+    jane = loaded_db.scalar(stmt)
+    assert jane.notifications is not None
+    assert jane.notifications[0] == notification
+
+
 #
 #
 # @pytest.mark.usefixtures("app_ctx")

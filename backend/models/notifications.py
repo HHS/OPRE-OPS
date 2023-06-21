@@ -20,7 +20,7 @@ class Notification(BaseModel):
     id = Column(Integer, Identity(), primary_key=True)
     title = Column(String)
     message = Column(String)
-    status = Column(Boolean)
+    status = Column(Boolean, default=False)
     recipients = relationship(
         User, secondary=notification_recipients, back_populates="notifications"
     )
