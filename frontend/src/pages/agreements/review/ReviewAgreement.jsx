@@ -9,6 +9,7 @@ import { getUser } from "../../../api/getUser";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import Input from "../../../components/UI/Form/Input/Input";
+import Terms from "./Terms";
 import suite from "./suite";
 
 /**
@@ -114,50 +115,32 @@ export const ReviewAgreement = ({ agreement_id }) => {
             </p>
 
             <dl className="margin-0 font-12px">
-                {agreement?.name ? (
-                    <>
-                        <dt className="margin-0 text-base-dark margin-top-3">Project</dt>
-                        <dd className="text-semibold margin-0 margin-top-05">{agreement?.name}</dd>
-                    </>
-                ) : (
-                    <>
-                        <dt className="margin-0 text-base-dark margin-top-3">Project</dt>
-                        <p>This information is required for approval</p>
-                        <dd className="text-semibold margin-0 margin-top-05">TBD</dd>
-                    </>
-                )}
+                <Terms
+                    name="name"
+                    label="Project"
+                    messages={res.getErrors("name")}
+                    className={cn("name")}
+                    value={agreement?.name}
+                />
 
-                <dt className="margin-0 text-base-dark margin-top-3">Agreement Type</dt>
-                <dd className="text-semibold margin-0 margin-top-05">
-                    {convertCodeForDisplay("agreementType", agreement?.agreement_type)}
-                </dd>
-                <dt className="margin-0 text-base-dark margin-top-3">Agreement</dt>
-                <dd className="text-semibold margin-0 margin-top-05">{agreement?.name}</dd>
-                {agreement?.description ? (
-                    <>
-                        <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
-                        <dd className="text-semibold margin-0 margin-top-05">{agreement?.description}</dd>
-                    </>
-                ) : (
-                    <div className="usa-form-group usa-form-group--error">
-                        <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
-                        <p className="usa-error-message">This information is required for approval</p>
-                        <dd className="text-semibold margin-0 margin-top-05">TBD</dd>
-                    </div>
-                )}
+                <Terms
+                    name="type"
+                    label="Agreement Type"
+                    messages={res.getErrors("type")}
+                    className={cn("type")}
+                    value={convertCodeForDisplay("agreementType", agreement?.agreement_type)}
+                />
 
-                <Input
+                <Terms
                     name="description"
                     label="Description"
-                    onChange={() => {}}
                     messages={res.getErrors("description")}
                     className={cn("description")}
                     value={agreement?.description}
                 />
-                <Input
+                <Terms
                     name="psc"
                     label="Product Service Code"
-                    onChange={() => {}}
                     messages={res.getErrors("psc")}
                     className={cn("psc")}
                     value={agreement?.product_service_code?.name}
