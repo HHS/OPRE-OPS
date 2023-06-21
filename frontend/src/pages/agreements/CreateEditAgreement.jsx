@@ -39,7 +39,7 @@ export const CreateAgreement = ({ existingBudgetLines, isEditMode }) => {
                     globalDispatch(
                         setAlert({
                             type: "success",
-                            heading: "Agreement Draft Saved",
+                            heading: "Agreement draft saved",
                             message: "The agreement has been successfully saved.",
                             redirectUrl: "/agreements",
                         })

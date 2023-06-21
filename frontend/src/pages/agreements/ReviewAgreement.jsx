@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import PreviewTable from "../../components/UI/PreviewTable";
 import Alert from "../../components/UI/Alert";
 import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../api/opsAPI";
@@ -9,6 +10,7 @@ import { setAlert } from "../../components/UI/Alert/alertSlice";
 
 export const ReviewAgreement = ({ agreement_id }) => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const {
         data: agreement,
         error: errorAgreement,

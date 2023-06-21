@@ -5,8 +5,8 @@ import { CreateBudgetLinesProvider } from "./context";
  * Renders the Create Budget Lines component with React context.
  *
  * @param {Object} props - The component props.
- * @param {Function} props.goToNext - A function to navigate to the next step in the flow.
- * @param {Function} props.goBack - A function to navigate to the previous step in the flow.
+ * @param {Function} [props.goToNext] - A function to navigate to the next step in the flow. - optional
+ * @param {Function} [props.goBack] - A function to navigate to the previous step in the flow. - optional
  * @param {Array<String>} props.wizardSteps - An array of objects representing the steps in the flow.
  * @param {number} props.currentStep - The index of the current step in the flow.
  * @param {Object} props.selectedResearchProject - The selected research project.
