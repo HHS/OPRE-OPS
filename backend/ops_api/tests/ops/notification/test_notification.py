@@ -85,6 +85,12 @@ def test_can_get_by_id(auth_client, loaded_db):
     response = auth_client.get("/api/v1/notifications/1")
     assert response.status_code == 200
     assert response.json["title"] == "System Notification"
+    assert response.json["message"] == "This is a system notification"
+    assert response.json["status"] is False
+    assert len(response.json["recipients"]) == 17
+    assert response.json["recipients"][0]["id"] == 1
+    assert response.json["recipients"][0]["email"] == "chris.fortunato@example.com"
+    assert response.json["recipients"][0]["full_name"] == "Chris Fortunato"
 
 
 #

@@ -5,12 +5,14 @@ from typing import Optional
 import desert
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from models import Notification
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
+from typing_extensions import override
 
 
 @dataclass
@@ -41,13 +43,40 @@ class ListAPIRequest:
 class NotificationItemAPI(BaseItemAPI):
     def __init__(self, model):
         super().__init__(model)
+        self._response_schema = mmdc.class_schema(NotificationResponse)()
+
+    def _get_item_with_try(self, id: int) -> Response:
+        try:
+            item = self._get_item(id)
+
+            if item:
+                response = make_response_with_headers(self._response_schema.dump(item))
+            else:
+                response = make_response_with_headers({}, 404)
+        except SQLAlchemyError as se:
+            current_app.logger.error(se)
+            response = make_response_with_headers({}, 500)
+
+        return response
+
+    @override
+    @jwt_required()
+    def get(self, id: int) -> Response:
+        identity = get_jwt_identity()
+        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_NOTIFICATION"])
+
+        if is_authorized:
+            response = self._get_item_with_try(id)
+        else:
+            response = make_response_with_headers({}, 401)
+
+        return response
 
 
 class NotificationListAPI(BaseListAPI):
     def __init__(self, model):
         super().__init__(model)
         self._get_input_schema = desert.schema(ListAPIRequest)
-        self._response_schema = mmdc.class_schema(NotificationResponse)()
         self._response_schema_collection = mmdc.class_schema(NotificationResponse)(many=True)
 
     @staticmethod
