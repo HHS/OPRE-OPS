@@ -73,12 +73,20 @@ def test_notifications_get_all(auth_client, loaded_db):
     assert len(response.json) == 1
 
 
-#
 # @pytest.mark.usefixtures("app_ctx")
-# def test_can_get_by_id(auth_client, loaded_db):
-#     response = auth_client.get("/api/v1/cans/1")
+# def test_notifications_get_by_user(auth_client, loaded_db, notification):
+#     response = auth_client.get("/api/v1/notifications/?user_id=1")
 #     assert response.status_code == 200
-#     assert response.json["number"] == "G99HRF2"
+#     assert len(response.json) == 1
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_by_id(auth_client, loaded_db):
+    response = auth_client.get("/api/v1/notifications/1")
+    assert response.status_code == 200
+    assert response.json["title"] == "System Notification"
+
+
 #
 #
 # @pytest.mark.usefixtures("app_ctx")
@@ -89,18 +97,18 @@ def test_notifications_get_all(auth_client, loaded_db):
 #     assert response.json[0]["id"] == 2
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_cans_search_filter(auth_client, loaded_db):
-    response = auth_client.get("/api/v1/cans/?search=XXX8")
-    assert response.status_code == 200
-    assert len(response.json) == 1
-    assert response.json[0]["id"] == 13
-
-    response = auth_client.get("/api/v1/cans/?search=G99HRF2")
-    assert response.status_code == 200
-    assert len(response.json) == 1
-    assert response.json[0]["id"] == 1
-
-    response = auth_client.get("/api/v1/cans/?search=")
-    assert response.status_code == 200
-    assert len(response.json) == 0
+# @pytest.mark.usefixtures("app_ctx")
+# def test_get_cans_search_filter(auth_client, loaded_db):
+#     response = auth_client.get("/api/v1/cans/?search=XXX8")
+#     assert response.status_code == 200
+#     assert len(response.json) == 1
+#     assert response.json[0]["id"] == 13
+#
+#     response = auth_client.get("/api/v1/cans/?search=G99HRF2")
+#     assert response.status_code == 200
+#     assert len(response.json) == 1
+#     assert response.json[0]["id"] == 1
+#
+#     response = auth_client.get("/api/v1/cans/?search=")
+#     assert response.status_code == 200
+#     assert len(response.json) == 0
