@@ -3,7 +3,9 @@ import uuid
 from typing import Optional
 
 import jwt as py_jwt
+import requests
 from authlib.integrations.flask_client import OAuth
+from authlib.jose import JsonWebToken
 from authlib.jose import jwt as jose_jwt
 from flask import current_app
 from flask_jwt_extended import JWTManager
@@ -60,6 +62,26 @@ def create_oauth_jwt(
     _header = header or {"alg": "RS256"}
     jws = jose_jwt.encode(header=_header, payload=_payload, key=jwt_private_key)
     return jws
+
+
+def get_jwks():
+    jwks_uri = requests.get(
+        current_app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["server_metadata_url"],
+        headers={"Accept": "application/json"},
+    ).content.decode("utf-8")["jwks_uri"]
+    current_app.logger.debug(f"********  jwks_uri={jwks_uri}")
+    jwks = requests.get(jwks_uri).content.decode("utf-8")
+    current_app.logger.debug(f"********  jwks={jwks}")
+    return jwks
+
+
+def decode_user(
+    payload: Optional[str] = None,
+) -> dict[str, str]:
+    jwt = JsonWebToken(["RS256"])
+    claims = jwt.decode(payload, get_jwks())
+    current_app.logger.debug(f"********  claims={claims}")
+    return claims
 
 
 def decode_jwt(

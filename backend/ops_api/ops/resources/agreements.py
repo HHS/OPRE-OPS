@@ -1,11 +1,12 @@
-from dataclasses import dataclass, fields as dc_fields
-from typing import Optional, ClassVar
+from dataclasses import dataclass
+from dataclasses import fields as dc_fields
+from typing import ClassVar, Optional
 
 import desert
 from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
-from marshmallow import ValidationError, fields, Schema
+from marshmallow import Schema, ValidationError, fields
 from models import ContractType, OpsEventType, User
 from models.base import BaseModel
 from models.cans import Agreement, AgreementReason, AgreementType, ContractAgreement, ProductServiceCode
