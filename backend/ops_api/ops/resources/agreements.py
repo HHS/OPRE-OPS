@@ -256,7 +256,7 @@ class AgreementItemAPI(BaseItemAPI):
         message_prefix = f"DELETE from {ENDPOINT_STRING}"
 
         identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["PATCH_AGREEMENT"])
+        is_authorized = self.auth_gateway.is_authorized(identity, ["DELETE_AGREEMENT"])
         if not is_authorized:
             return make_response_with_headers({}, 401)
 
