@@ -1,17 +1,18 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
+from typing import Optional, cast
 
 import desert
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
-from models import Notification
+from models import Notification, User
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import InstrumentedAttribute
 from typing_extensions import override
 
 
@@ -37,7 +38,7 @@ class NotificationResponse:
 
 @dataclass
 class ListAPIRequest:
-    search: Optional[str]
+    user_id: Optional[str]
 
 
 class NotificationItemAPI(BaseItemAPI):
@@ -80,16 +81,15 @@ class NotificationListAPI(BaseListAPI):
         self._response_schema_collection = mmdc.class_schema(NotificationResponse)(many=True)
 
     @staticmethod
-    def _get_query(search=None):
-        stmt = select(Notification).order_by(Notification.id)
+    def _get_query(user_id=None):
+        stmt = select(Notification).join(Notification.recipients).order_by(Notification.id)
 
         query_helper = QueryHelper(stmt)
 
-        if search is not None and len(search) == 0:
+        if user_id is not None and len(user_id) == 0:
             query_helper.return_none()
-        elif search:
-            # query_helper.add_search(cast(InstrumentedAttribute, CAN.number), search)
-            ...
+        elif user_id:
+            query_helper.add_column_equals(cast(InstrumentedAttribute, User.id), user_id)
 
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")
@@ -104,6 +104,6 @@ class NotificationListAPI(BaseListAPI):
             return make_response_with_headers(errors, 400)
 
         request_data: ListAPIRequest = self._get_input_schema.load(request.args)
-        stmt = self._get_query(request_data.search)
+        stmt = self._get_query(request_data.user_id)
         result = current_app.db_session.execute(stmt).all()
         return make_response_with_headers(self._response_schema_collection.dump([item[0] for item in result]))
