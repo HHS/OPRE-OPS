@@ -1,3 +1,4 @@
+import json
 import time
 import uuid
 from typing import Optional
@@ -5,7 +6,7 @@ from typing import Optional
 import jwt as py_jwt
 import requests
 from authlib.integrations.flask_client import OAuth
-from authlib.jose import JsonWebToken
+from authlib.jose import JsonWebToken, JWTClaims
 from authlib.jose import jwt as jose_jwt
 from flask import current_app
 from flask_jwt_extended import JWTManager
@@ -65,10 +66,14 @@ def create_oauth_jwt(
 
 
 def get_jwks():
-    jwks_uri = requests.get(
-        current_app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["server_metadata_url"],
-        headers={"Accept": "application/json"},
-    ).content.decode("utf-8")["jwks_uri"]
+    provider_uris = json.loads(
+        requests.get(
+            current_app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["server_metadata_url"],
+            headers={"Accept": "application/json"},
+        ).content.decode("utf-8")
+    )
+    current_app.logger.debug(f"********  provider_uris={provider_uris}")
+    jwks_uri = provider_uris["jwks_uri"]
     current_app.logger.debug(f"********  jwks_uri={jwks_uri}")
     jwks = requests.get(jwks_uri).content.decode("utf-8")
     current_app.logger.debug(f"********  jwks={jwks}")
@@ -78,8 +83,16 @@ def get_jwks():
 def decode_user(
     payload: Optional[str] = None,
 ) -> dict[str, str]:
+    claims_options = {
+        "iss": {
+            "essential": True,
+            "values": ["https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO"],
+        },
+        "jti": {"validate": JWTClaims.validate_jti},
+        "exp": {"validate": JWTClaims.validate_exp},
+    }
     jwt = JsonWebToken(["RS256"])
-    claims = jwt.decode(payload, get_jwks())
+    claims = jwt.decode(payload, get_jwks(), claims_options=claims_options)
     current_app.logger.debug(f"********  claims={claims}")
     return claims
 
