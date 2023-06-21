@@ -1,13 +1,22 @@
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import PreviewTable from "../../components/UI/PreviewTable";
-import Alert from "../../components/UI/Alert";
-import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../api/opsAPI";
-import { getUser } from "../../api/getUser";
-import { convertCodeForDisplay } from "../../helpers/utils";
-import { setAlert } from "../../components/UI/Alert/alertSlice";
+import classnames from "vest/classnames";
+import PreviewTable from "../../../components/UI/PreviewTable";
+import Alert from "../../../components/UI/Alert";
+import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../../api/opsAPI";
+import { getUser } from "../../../api/getUser";
+import { convertCodeForDisplay } from "../../../helpers/utils";
+import { setAlert } from "../../../components/UI/Alert/alertSlice";
+import Input from "../../../components/UI/Form/Input/Input";
+import suite from "./suite";
 
+/**
+ * Renders a page for reviewing and sending an agreement to approval.
+ * @param {Object} props - The component props.
+ * @param {string} props.agreement_id - The ID of the agreement to review.
+ * @returns {JSX.Element} - The rendered component.
+ */
 export const ReviewAgreement = ({ agreement_id }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -21,6 +30,23 @@ export const ReviewAgreement = ({ agreement_id }) => {
 
     const [user, setUser] = useState({});
     const isAlertActive = useSelector((state) => state.alert.isActive);
+    let res = suite.get();
+    console.log(JSON.stringify(res, null, 2));
+    const cn = classnames(suite.get(), {
+        invalid: "usa-form-group--error",
+        valid: "success",
+        warning: "warning",
+    });
+
+    // add agreement data to suite
+    useEffect(() => {
+        if (agreement) {
+            suite.reset();
+            suite({
+                ...agreement,
+            });
+        }
+    }, [agreement]);
 
     useEffect(() => {
         const getUserAndSetState = async (id) => {
@@ -88,18 +114,57 @@ export const ReviewAgreement = ({ agreement_id }) => {
             </p>
 
             <dl className="margin-0 font-12px">
-                <dt className="margin-0 text-base-dark margin-top-3">Project</dt>
-                <dd className="text-semibold margin-0 margin-top-05">{agreement?.name}</dd>
+                {agreement?.name ? (
+                    <>
+                        <dt className="margin-0 text-base-dark margin-top-3">Project</dt>
+                        <dd className="text-semibold margin-0 margin-top-05">{agreement?.name}</dd>
+                    </>
+                ) : (
+                    <>
+                        <dt className="margin-0 text-base-dark margin-top-3">Project</dt>
+                        <p>This information is required for approval</p>
+                        <dd className="text-semibold margin-0 margin-top-05">TBD</dd>
+                    </>
+                )}
+
                 <dt className="margin-0 text-base-dark margin-top-3">Agreement Type</dt>
                 <dd className="text-semibold margin-0 margin-top-05">
                     {convertCodeForDisplay("agreementType", agreement?.agreement_type)}
                 </dd>
                 <dt className="margin-0 text-base-dark margin-top-3">Agreement</dt>
                 <dd className="text-semibold margin-0 margin-top-05">{agreement?.name}</dd>
-                <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
-                <dd className="text-semibold margin-0 margin-top-05">{agreement?.description}</dd>
-                <dt className="margin-0 text-base-dark margin-top-3">Product Service Code</dt>
-                <dd className="text-semibold margin-0 margin-top-05">{agreement?.product_service_code?.name}</dd>
+                {agreement?.description ? (
+                    <>
+                        <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
+                        <dd className="text-semibold margin-0 margin-top-05">{agreement?.description}</dd>
+                    </>
+                ) : (
+                    <div className="usa-form-group usa-form-group--error">
+                        <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
+                        <p className="usa-error-message">This information is required for approval</p>
+                        <dd className="text-semibold margin-0 margin-top-05">TBD</dd>
+                    </div>
+                )}
+
+                <Input
+                    name="description"
+                    label="Description"
+                    onChange={() => {}}
+                    messages={res.getErrors("description")}
+                    className={cn("description")}
+                    value={agreement?.description}
+                />
+                <Input
+                    name="psc"
+                    label="Product Service Code"
+                    onChange={() => {}}
+                    messages={res.getErrors("psc")}
+                    className={cn("psc")}
+                    value={agreement?.product_service_code?.name}
+                />
+
+                {/* <dt className="margin-0 text-base-dark margin-top-3">Product Service Code</dt>
+                <dd className="text-semibold margin-0 margin-top-05">{agreement?.product_service_code?.name}</dd> */}
                 <dt className="margin-0 text-base-dark margin-top-3">NAICS Code</dt>
                 <dd className="text-semibold margin-0 margin-top-05">{agreement?.product_service_code?.naics}</dd>
                 <dt className="margin-0 text-base-dark margin-top-3">Program Support Code</dt>
@@ -137,11 +202,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 Budget Lines
             </h2>
             <p>This is a list of all budget lines within this agreement.</p>
-            <PreviewTable
-                readOnly={true}
-                handleDeleteBudgetLine={() => {}}
-                budgetLinesAdded={agreement?.budget_line_items}
-            />
+            <PreviewTable readOnly={true} budgetLinesAdded={agreement?.budget_line_items} />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className="usa-button usa-button--outline margin-right-2"
