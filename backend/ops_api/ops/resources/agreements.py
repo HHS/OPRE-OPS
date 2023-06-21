@@ -429,7 +429,7 @@ def _get_user_list(data: Any):
 
 def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
     for item in data:
-        if item in {"agreement_type", "agreement_reason"}:
+        if item in {"agreement_type"}:
             pass
         elif item not in {"team_members", "support_contacts"}:
             setattr(agreement, item, data[item])
