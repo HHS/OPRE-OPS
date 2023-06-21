@@ -8,7 +8,14 @@ from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_req
 from marshmallow import ValidationError, fields, Schema
 from models import ContractType, OpsEventType, User
 from models.base import BaseModel
-from models.cans import Agreement, AgreementReason, AgreementType, ContractAgreement, ProductServiceCode
+from models.cans import (
+    Agreement,
+    AgreementReason,
+    AgreementType,
+    ContractAgreement,
+    ProductServiceCode,
+    BudgetLineItemStatus,
+)
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
@@ -239,6 +246,38 @@ class AgreementItemAPI(BaseItemAPI):
             # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
             current_app.logger.error(f"{message_prefix}: {ve}")
             return make_response_with_headers(ve.normalized_messages(), 400)
+        except SQLAlchemyError as se:
+            current_app.logger.error(f"{message_prefix}: {se}")
+            return make_response_with_headers({}, 500)
+
+    @override
+    @jwt_required()
+    def delete(self, id: int) -> Response:
+        message_prefix = f"DELETE from {ENDPOINT_STRING}"
+
+        identity = get_jwt_identity()
+        is_authorized = self.auth_gateway.is_authorized(identity, ["DELETE_AGREEMENT"])
+        if not is_authorized:
+            return make_response_with_headers({}, 401)
+
+        try:
+            with OpsEventHandler(OpsEventType.DELETE_AGREEMENT) as meta:
+                agreement: Agreement = self._get_item(id)
+
+                if not agreement:
+                    raise RuntimeError(f"Invalid Agreement id: {id}.")
+                elif agreement.agreement_type != AgreementType.CONTRACT:
+                    raise RuntimeError(f"Invalid Agreement type: {agreement.agreement_type}.")
+                elif any(bli.status != BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items):
+                    raise RuntimeError(f"Agreement {id} has budget line items not in draft status.")
+
+                current_app.db_session.delete(agreement)
+                current_app.db_session.commit()
+
+                meta.metadata.update({"Deleted Agreement": id})
+
+                return make_response_with_headers({"message": "Agreement deleted", "id": agreement.id}, 200)
+
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)

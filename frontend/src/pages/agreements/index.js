@@ -1,12 +1,12 @@
 import App from "../../App";
 import { CreateAgreementProvider } from "./CreateAgreementContext";
-import CreateAgreement from "./CreateAgreement";
+import CreateEditAgreement from "./CreateEditAgreement";
 
 const CreateAgreements = () => {
     return (
         <App>
             <CreateAgreementProvider>
-                <CreateAgreement />
+                <CreateEditAgreement />
             </CreateAgreementProvider>
         </App>
     );

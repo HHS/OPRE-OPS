@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import PreviewTable from "../../components/UI/PreviewTable";
-import Alert from "../../components/UI/Alert/Alert";
+import Alert from "../../components/UI/Alert";
 import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../api/opsAPI";
 import { getUser } from "../../api/getUser";
 import { convertCodeForDisplay } from "../../helpers/utils";
+import { setAlert } from "../../components/UI/Alert/alertSlice";
 
 export const ReviewAgreement = ({ agreement_id }) => {
+    const dispatch = useDispatch();
     const navigate = useNavigate();
     const {
         data: agreement,
@@ -17,12 +20,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const [updateBudgetLineItemStatus] = useUpdateBudgetLineItemStatusMutation();
 
     const [user, setUser] = useState({});
-    const [isAlertActive, setIsAlertActive] = useState(false);
-    const [alertProps, setAlertProps] = useState({
-        type: "",
-        heading: "",
-        message: "",
-    });
+    const isAlertActive = useSelector((state) => state.alert.isActive);
 
     useEffect(() => {
         const getUserAndSetState = async (id) => {
@@ -48,27 +46,6 @@ export const ReviewAgreement = ({ agreement_id }) => {
         return <div>Oops, an error occured</div>;
     }
 
-    /**
-     * Shows an alert with the specified type, heading, and message.
-     *
-     * @async
-     * @param {string} type - The type of the alert (e.g. "success", "warning", "error").
-     * @param {string} heading - The heading of the alert.
-     * @param {string} message - The message of the alert.
-     * @returns {Promise<void>} A Promise that resolves when the alert is dismissed.
-     */
-    const showAlert = async (type, heading, message) => {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        window.scrollTo(0, 0);
-        setIsAlertActive(true);
-        setAlertProps({ type, heading, message });
-
-        await new Promise((resolve) => setTimeout(resolve, 6000));
-        setIsAlertActive(false);
-        setAlertProps({});
-        navigate("/agreements");
-    };
-
     const anyBudgetLinesAreDraft = agreement.budget_line_items.some((item) => item.status === "DRAFT");
 
     const handleSendToApproval = () => {
@@ -86,20 +63,20 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 }
             });
         }
-
-        showAlert(
-            "success",
-            "Agreement sent to approval",
-            "The agreement has been successfully sent to approval for Planned Status."
+        dispatch(
+            setAlert({
+                type: "success",
+                heading: "Agreement sent to approval",
+                message: "The agreement has been successfully sent to approval for Planned Status.",
+                redirectUrl: "/agreements",
+            })
         );
     };
 
     return (
         <>
             {isAlertActive ? (
-                <Alert heading={alertProps.heading} type={alertProps.type} setIsAlertActive={setIsAlertActive}>
-                    {alertProps.message}
-                </Alert>
+                <Alert />
             ) : (
                 <h1 className="text-bold margin-top-0" style={{ fontSize: "1.375rem" }}>
                     Review and Send Agreement to Approval
@@ -168,9 +145,8 @@ export const ReviewAgreement = ({ agreement_id }) => {
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className="usa-button usa-button--outline margin-right-2"
-                    // TODO: Implement edit agreement
                     onClick={() => {
-                        alert("not implemented yet");
+                        navigate(`/agreements/edit/${agreement?.id}`);
                     }}
                 >
                     Edit

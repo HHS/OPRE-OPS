@@ -17,7 +17,6 @@ export const CreateAgreementFlow = ({ children, onFinish }) => {
             ...formData,
             ...stepData,
         };
-        console.log(updatedData);
 
         if (nextIndex < children.length) {
             setCurrentIndex(nextIndex);

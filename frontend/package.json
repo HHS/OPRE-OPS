@@ -22,15 +22,16 @@
         "react-currency-format": "1.1.0",
         "react-dom": "18.2.0",
         "react-markdown": "8.0.7",
-        "react-redux": "8.1.0",
+        "react-redux": "8.1.1",
         "react-router-dom": "6.13.0",
         "react-scripts": "5.0.1",
         "react-select": "5.7.3",
-        "sass": "1.63.4",
+        "sass": "1.63.5",
         "sass-loader": "13.3.2",
         "vest": "4.6.11"
     },
     "devDependencies": {
+        "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
         "@testing-library/jest-dom": "5.16.5",
         "@testing-library/react": "14.0.0",
         "@tsconfig/create-react-app": "^1.0.3",
@@ -48,8 +49,8 @@
         "eslint-plugin-prettier": "4.2.1",
         "jose": "4.14.4",
         "msw": "1.2.2",
-        "prettier": "2.8.8"
-
+        "prettier": "2.8.8",
+        "redux-mock-store": "^1.5.4"
     },
     "scripts": {
         "start": "DISABLE_ESLINT_PLUGIN=true react-scripts start",

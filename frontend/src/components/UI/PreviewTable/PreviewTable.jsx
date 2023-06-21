@@ -10,6 +10,16 @@ import { formatDate, loggedInName } from "../../../helpers/utils";
 import TableTag from "./TableTag";
 import "./PreviewTable.scss";
 
+/**
+ * A table component that displays budget lines.
+ * @param {Object} props - The component props.
+ * @param {Array<any>} [props.budgetLinesAdded] - An array of budget lines to display.
+ * @param {Function} props.handleSetBudgetLineForEditing - A function to handle editing a budget line.
+ * @param {Function} props.handleDeleteBudgetLine - A function to handle deleting a budget line.
+ * @param {Function} props.handleDuplicateBudgetLine - A function to handle duplicating a budget line.
+ * @param {Boolean} [props.readOnly] - A flag to indicate if the table is read-only.
+ * @returns {JSX.Element} - The rendered table component.
+ */
 export const PreviewTable = ({
     budgetLinesAdded = [],
     handleSetBudgetLineForEditing = () => {},

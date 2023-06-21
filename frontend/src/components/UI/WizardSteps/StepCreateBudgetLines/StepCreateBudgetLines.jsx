@@ -1,14 +1,36 @@
 import React from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import StepIndicator from "../../StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
 import PreviewTable from "../../PreviewTable";
-import Alert from "../../Alert/Alert";
-import Modal from "../../Modal/Modal";
+import Alert from "../../Alert";
+import Modal from "../../Modal";
 import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
 import { postBudgetLineItems } from "../../../../api/postBudgetLineItems";
+import { patchBudgetLineItems } from "../../../../api/patchBudgetLineItems";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
+import { setAlert } from "../../Alert/alertSlice";
+import EditModeTitle from "../../../../pages/agreements/EditModeTitle";
+import { loggedInName } from "../../../../helpers/utils";
 
+/**
+ * Renders the Create Budget Lines component with React context.
+ *
+ * @param {Object} props - The component props.
+ * @param {Function} [props.goToNext] - A function to navigate to the next step in the flow. - optional
+ * @param {Function} [props.goBack] - A function to navigate to the previous step in the flow. - optional
+ * @param {Array<String>} props.wizardSteps - An array of objects representing the steps in the flow.
+ * @param {number} props.currentStep - The index of the current step in the flow.
+ * @param {Object} props.selectedResearchProject - The selected research project.
+ * @param {Object} props.selectedAgreement - The selected agreement.
+ * @param {Object} props.selectedProcurementShop - The selected procurement shop.
+ * @param {Array<any>} props.existingBudgetLines - An array of existing budget lines.
+ * @param {string} props.continueBtnText - The text to display on the "Continue" button.
+ * @param {boolean} [props.isEditMode] - A flag indicating whether the component is in edit mode. - optional
+ * @param {Function} [props.continueOverRide] - A function to override the default "Continue" button behavior. - optional
+ * @param {"agreement" | "budgetLines"} props.workflow - The workflow type ("agreement" or "budgetLines").
+ * @returns {JSX.Element} - The rendered component.
+ */
 export const StepCreateBudgetLines = ({
     goToNext,
     goBack,
@@ -19,9 +41,10 @@ export const StepCreateBudgetLines = ({
     selectedProcurementShop = {},
     existingBudgetLines = [],
     continueBtnText,
+    continueOverRide,
+    isEditMode,
+    workflow,
 }) => {
-    const [isAlertActive, setIsAlertActive] = React.useState(false);
-    const [alertProps, setAlertProps] = React.useState({});
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const {
@@ -48,6 +71,7 @@ export const StepCreateBudgetLines = ({
         new_budget_lines: [],
     };
     const dispatch = useBudgetLinesDispatch();
+    const globalDispatch = useDispatch();
     // setters
     const setEnteredDescription = useSetState("entered_description");
     const setSelectedCan = useSetState("selected_can");
@@ -56,12 +80,9 @@ export const StepCreateBudgetLines = ({
     const setEnteredDay = useSetState("entered_day");
     const setEnteredYear = useSetState("entered_year");
     const setEnteredComments = useSetState("entered_comments");
-    let loggedInUserFullName = useSelector((state) => state.auth.activeUser.full_name);
+    const isAlertActive = useSelector((state) => state.alert.isActive);
 
-    // NOTE: set to logged in user to Sheila if no name is found
-    if (!loggedInUserFullName) {
-        loggedInUserFullName = "Sheila Celentano";
-    }
+    let loggedInUserFullName = useSelector((state) => loggedInName(state.auth?.activeUser));
 
     // combine arrays of new budget lines and existing budget lines added
     // only run once on page load if there are existing budget lines
@@ -71,17 +92,6 @@ export const StepCreateBudgetLines = ({
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    const showAlert = async (type, heading, message) => {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        window.scrollTo(0, 0);
-        setIsAlertActive(true);
-        setAlertProps({ type, heading, message });
-
-        await new Promise((resolve) => setTimeout(resolve, 6000));
-        setIsAlertActive(false);
-        setAlertProps({});
-    };
 
     const handleSubmitForm = (e) => {
         e.preventDefault();
@@ -101,7 +111,13 @@ export const StepCreateBudgetLines = ({
             },
         });
         dispatch({ type: "RESET_FORM" });
-        showAlert("success", "Budget Line Added", "The budget line has been successfully added.");
+        globalDispatch(
+            setAlert({
+                type: "success",
+                heading: "Budget Line Added",
+                message: "The budget line has been successfully added.",
+            })
+        );
     };
 
     const handleEditForm = (e) => {
@@ -123,7 +139,13 @@ export const StepCreateBudgetLines = ({
         });
 
         dispatch({ type: "RESET_FORM" });
-        showAlert("success", "Budget Line Updated", "The budget line has been successfully edited.");
+        globalDispatch(
+            setAlert({
+                type: "success",
+                heading: "Budget Line Updated",
+                message: "The budget line has been successfully edited.",
+            })
+        );
     };
 
     const handleDeleteBudgetLine = (budgetLineId) => {
@@ -137,7 +159,13 @@ export const StepCreateBudgetLines = ({
                     id: budgetLineId,
                 });
                 dispatch({ type: "RESET_FORM" });
-                showAlert("success", "Budget Line Deleted", "The budget line has been successfully deleted.");
+                globalDispatch(
+                    setAlert({
+                        type: "success",
+                        heading: "Budget Line Deleted",
+                        message: "The budget line has been successfully deleted.",
+                    })
+                );
                 setModalProps({});
             },
         });
@@ -149,9 +177,22 @@ export const StepCreateBudgetLines = ({
             // eslint-disable-next-line no-prototype-builtins
             (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on")
         );
+
+        const existingBudgetLineItems = newBudgetLines.filter((budgetLineItem) =>
+            // eslint-disable-next-line no-prototype-builtins
+            budgetLineItem.hasOwnProperty("created_on")
+        );
+
+        patchBudgetLineItems(existingBudgetLineItems).then(() => console.log("Updated BLIs."));
         postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
+
         dispatch({ type: "RESET_FORM_AND_BUDGET_LINES" });
-        goToNext();
+
+        if (continueOverRide) {
+            continueOverRide();
+        } else {
+            goToNext();
+        }
     };
 
     const handleResetForm = () => dispatch({ type: "RESET_FORM" });
@@ -179,13 +220,17 @@ export const StepCreateBudgetLines = ({
             )}
 
             {isAlertActive ? (
-                <Alert heading={alertProps.heading} type={alertProps.type} setIsAlertActive={setIsAlertActive}>
-                    {alertProps.message}
-                </Alert>
+                <Alert />
             ) : (
                 <>
-                    <h2 className="font-sans-lg">Create New Budget Line</h2>
-                    <p>Step Two: Text explaining this page</p>
+                    {workflow === "agreement" ? (
+                        <EditModeTitle isEditMode={isEditMode} />
+                    ) : (
+                        <>
+                            <h2 className="font-sans-lg">Create New Budget Line</h2>
+                            <p>Step Two: Text explaining this page</p>
+                        </>
+                    )}
                 </>
             )}
             <StepIndicator steps={wizardSteps} currentStep={currentStep} />
@@ -225,7 +270,6 @@ export const StepCreateBudgetLines = ({
                 display in draft status. The Fiscal Year (FY) will populate based on the election date you provide.
             </p>
             <PreviewTable
-                loggedInUserName={loggedInUserFullName}
                 budgetLinesAdded={newBudgetLines}
                 handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                 handleDeleteBudgetLine={handleDeleteBudgetLine}
@@ -256,7 +300,7 @@ export const StepCreateBudgetLines = ({
                 >
                     Back
                 </button>
-                <button className="usa-button" data-cy="step-two-continue" onClick={saveBudgetLineItems}>
+                <button className="usa-button" data-cy="continue-btn" onClick={saveBudgetLineItems}>
                     {continueBtnText}
                 </button>
             </div>

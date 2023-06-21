@@ -1,19 +1,25 @@
 import ApplicationContext from "../applicationContext/ApplicationContext";
 
-export const postAgreement = async (item) => {
+export const patchBudgetLineItem = async (item) => {
     const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;
+    console.log("patch item", item);
 
-    const data = { ...item };
-    const newAgreement = {
-        ...data,
-        number: "",
-    };
+    // TODO: These are hacks to transform the state into a valid BLI for the backend
+    const data = { ...item }; // make a copy - item is read only
 
-    delete newAgreement.id;
+    if (data.date_needed === "--") {
+        data.date_needed = null;
+    }
+    const budgetLineId = data.id;
+    delete data.created_by;
+    delete data.created_on;
+    delete data.updated_on;
+    delete data.can;
+    delete data.id;
 
-    const responseData = await ApplicationContext.get()
+    const responseData = ApplicationContext.get()
         .helpers()
-        .callBackend(`/api/${api_version}/agreements/`, "POST", newAgreement)
+        .callBackend(`/api/${api_version}/budget-line-items/${budgetLineId}`, "PATCH", data)
         .then(function (response) {
             return response;
         })
@@ -21,9 +27,9 @@ export const postAgreement = async (item) => {
             if (error.response) {
                 // The request was made and the server responded with a status code
                 // that falls out of the range of 2xx
-                console.log(error.response.newAgreement);
-                console.log(error.response.status);
-                console.log(error.response.headers);
+                console.log(`error.data: ${error.response.data}`);
+                console.log(`error.status: ${error.response.status}`);
+                console.log(`error.headers: ${error.response.headers}`);
             } else if (error.request) {
                 // The request was made but no response was received
                 // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
@@ -39,10 +45,6 @@ export const postAgreement = async (item) => {
     return responseData;
 };
 
-export const formatTeamMember = (team_member) => {
-    return {
-        id: team_member.id,
-        full_name: team_member.full_name,
-        email: team_member.email,
-    };
+export const patchBudgetLineItems = async (items) => {
+    return Promise.all(items.map((item) => patchBudgetLineItem(item)));
 };

@@ -464,11 +464,11 @@ def test_agreements_patch_by_id_just_notes(auth_client, loaded_db):
         agreement = loaded_db.execute(stmt)
 
 
-@pytest.mark.skip("Not yet implemented")
+# @pytest.mark.skip("Not yet implemented")
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_delete_by_id(auth_client, loaded_db, test_contract):
     response = auth_client.delete(f"/api/v1/agreements/{test_contract.id}")
-    assert response.status_code == 204
+    assert response.status_code == 200
 
     stmt = select(Agreement).where(Agreement.id == test_contract.id)
     agreement = loaded_db.scalar(stmt)

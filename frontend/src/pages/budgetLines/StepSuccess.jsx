@@ -1,28 +1,35 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import PropTypes from "prop-types";
-import Alert from "../../components/UI/Alert/Alert";
+import { useDispatch } from "react-redux";
+import Alert from "../../components/UI/Alert";
+import { setAlert } from "../../components/UI/Alert/alertSlice";
 
+/**
+ * Renders a success message and redirects the user to the Agreements list page after a delay.
+ * @param {Object} props - The component props.
+ * @param {number} [props.delay=6000] - The delay in milliseconds before redirecting the user.
+ * @returns {React.JSX.Element} - The success message element.
+ */
 export const StepSuccess = ({ delay = 6000 }) => {
+    const globalDispatch = useDispatch();
     const navigate = useNavigate();
 
     React.useEffect(() => {
-        const timer = setTimeout(() => {
-            navigate("/agreements/");
+        setTimeout(() => {
+            navigate("/agreements");
         }, delay);
-        return () => clearTimeout(timer);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
-    return (
-        <Alert heading="Budget Lines Created" type="success" setIsAlertActive={() => {}}>
-            The budget lines have been successfully created. You will be redirected to the Agreements list page.
-        </Alert>
-    );
-};
+        globalDispatch(
+            setAlert({
+                type: "success",
+                heading: "Budget Lines Created",
+                message:
+                    " The budget lines have been successfully created. You will be redirected to the Agreements list page.",
+            })
+        );
+    }, [globalDispatch, navigate, delay]);
 
-StepSuccess.propTypes = {
-    delay: PropTypes.number,
+    return <Alert />;
 };
 
 export default StepSuccess;
