@@ -3,33 +3,13 @@ import TestApplicationContext from "../applicationContext/TestApplicationContext
 
 describe("postAgreement function", () => {
     const mockAgreement = {
-        selected_agreement_type: "CONTRACT",
-        selected_agreement_reason: "NEW_REQ",
+        agreement_type: "CONTRACT",
+        agreement_reason: "NEW_REQ",
         name: "Agreement144",
         description: "Description",
-        selected_product_service_code: {
-            created_by: null,
-            created_on: "2023-04-25T17:22:15.122472",
-            description: "",
-            id: 1,
-            name: "Service-Code-1",
-            updated_on: "2023-04-25T17:22:15.122472",
-        },
-        incumbent_entered: "Vendor A",
-        project_officer: {
-            created_by: null,
-            created_on: "2023-04-25T17:22:11.766571",
-            date_joined: "2023-04-25T17:22:11.766571",
-            division: 1,
-            email: "chris.fortunato@example.com",
-            first_name: "Chris",
-            full_name: "Chris Fortunato",
-            id: 1,
-            last_name: "Fortunato",
-            oidc_id: "00000000-0000-1111-a111-000000000001",
-            updated: null,
-            updated_on: "2023-04-25T17:22:11.766571",
-        },
+        product_service_code_id: 1,
+        incumbent: "Vendor A",
+        project_officer: 1,
         team_members: [
             {
                 created_by: null,
@@ -64,12 +44,12 @@ describe("postAgreement function", () => {
     };
 
     const emptyMockAgreement = {
-        selected_agreement_type: null,
-        selected_agreement_reason: null,
+        agreement_type: null,
+        agreement_reason: null,
         name: "",
         description: "",
-        selected_product_service_code: null,
-        incumbent_entered: null,
+        product_service_id: null,
+        incumbent: null,
         project_officer: null,
         team_members: [],
         notes: "",

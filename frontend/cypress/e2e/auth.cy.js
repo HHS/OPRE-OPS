@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 import { logout } from "../../src/components/Auth/authSlice";
 import { terminalLog, testLogin } from "./utils";
 
