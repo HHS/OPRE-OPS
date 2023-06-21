@@ -2,9 +2,10 @@
 applications:
   - name: ops-backend
     env:
-      OPS_CONFIG: environment/cloud/dev.py
+      OPS_CONFIG: environment/cloud/staging.py
     memory: 700M
     buildpack: python_buildpack
+    stack: cflinuxfs4
     path: ./backend
     command: ./ops_api/deployed_run.sh
 
@@ -15,6 +16,7 @@ applications:
     no-route: true
     memory: 700M
     buildpack: python_buildpack
+    stack: cflinuxfs4
     path: ./backend
     command: ./data_tools/scripts/import_data.sh
     timeout: 90
@@ -22,6 +24,7 @@ applications:
   - name: ops-frontend
     memory: 64M
     buildpack: https://github.com/cloudfoundry/staticfile-buildpack
+    stack: cflinuxfs4
     path: ./frontend/build/
 
 services:
