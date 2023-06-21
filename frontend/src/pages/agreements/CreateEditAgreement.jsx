@@ -1,9 +1,10 @@
+import { useDispatch } from "react-redux";
 import CreateAgreementFlow from "./CreateAgreementFlow";
 import StepSelectProject from "./StepSelectProject";
 import StepCreateAgreement from "./StepCreateAgreement";
 import StepCreateBudgetLines from "../../components/UI/WizardSteps/StepCreateBudgetLines";
-import StepAgreementSuccess from "./StepAgreementSuccess";
 import { useCreateAgreement } from "./CreateAgreementContext";
+import { setAlert } from "../../components/UI/Alert/alertSlice";
 
 /**
  * Renders the Create Agreement flow, which consists of several steps.
@@ -14,6 +15,7 @@ import { useCreateAgreement } from "./CreateAgreementContext";
  */
 export const CreateAgreement = ({ existingBudgetLines, isEditMode }) => {
     const createAgreementContext = useCreateAgreement();
+    const globalDispatch = useDispatch();
 
     const {
         wizardSteps,
@@ -33,11 +35,20 @@ export const CreateAgreement = ({ existingBudgetLines, isEditMode }) => {
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}
                 continueBtnText="Save Draft"
+                continueOverRide={() =>
+                    globalDispatch(
+                        setAlert({
+                            type: "success",
+                            heading: "Agreement draft saved",
+                            message: "The agreement has been successfully saved.",
+                            redirectUrl: "/agreements",
+                        })
+                    )
+                }
                 existingBudgetLines={existingBudgetLines}
                 isEditMode={isEditMode}
                 workflow="agreement"
             />
-            <StepAgreementSuccess isEditMode={isEditMode} />
         </CreateAgreementFlow>
     );
 };

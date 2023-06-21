@@ -5,8 +5,8 @@ import { CreateBudgetLinesProvider } from "./context";
  * Renders the Create Budget Lines component with React context.
  *
  * @param {Object} props - The component props.
- * @param {Function} props.goToNext - A function to navigate to the next step in the flow.
- * @param {Function} props.goBack - A function to navigate to the previous step in the flow.
+ * @param {Function} [props.goToNext] - A function to navigate to the next step in the flow. - optional
+ * @param {Function} [props.goBack] - A function to navigate to the previous step in the flow. - optional
  * @param {Array<String>} props.wizardSteps - An array of objects representing the steps in the flow.
  * @param {number} props.currentStep - The index of the current step in the flow.
  * @param {Object} props.selectedResearchProject - The selected research project.
@@ -15,6 +15,7 @@ import { CreateBudgetLinesProvider } from "./context";
  * @param {Array<any>} props.existingBudgetLines - An array of existing budget lines.
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
  * @param {boolean} [props.isEditMode ]- A flag indicating whether the component is in edit mode.- optional
+ * @param {Function} [props.continueOverRide] - A function to override the default continue functionality.- optional
  * @param {"agreement" | "budgetLines"} props.workflow - The workflow type ("agreement" or "budgetLines").
  * @returns {JSX.Element} - The rendered component.
  */
@@ -28,6 +29,7 @@ const CreateBudgetLines = ({
     selectedProcurementShop,
     existingBudgetLines,
     continueBtnText,
+    continueOverRide,
     isEditMode,
     workflow,
 }) => {
@@ -43,6 +45,7 @@ const CreateBudgetLines = ({
                 selectedProcurementShop={selectedProcurementShop}
                 existingBudgetLines={existingBudgetLines}
                 continueBtnText={continueBtnText}
+                continueOverRide={continueOverRide}
                 isEditMode={isEditMode}
                 workflow={workflow}
             />

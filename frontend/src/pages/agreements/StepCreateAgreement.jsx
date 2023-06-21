@@ -1,16 +1,16 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import classnames from "vest/classnames";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import ProcurementShopSelect from "../../components/UI/Form/ProcurementShopSelect";
 import AgreementReasonSelect from "../../components/UI/Form/AgreementReasonSelect";
 import AgreementTypeSelect from "../../components/UI/Form/AgreementTypeSelect";
 import ProductServiceCodeSelect from "../../components/UI/Form/ProductServiceCodeSelect";
-import Alert from "../../components/UI/Alert/Alert";
 import ProjectOfficerSelect from "../../components/UI/Form/ProjectOfficerSelect";
 import TeamMemberSelect from "../../components/UI/Form/TeamMemberSelect";
 import TeamMemberList from "../../components/UI/Form/TeamMemberList";
-import Modal from "../../components/UI/Modal/Modal";
+import Modal from "../../components/UI/Modal";
 import { formatTeamMember, postAgreement } from "../../api/postAgreements";
 import ProjectSummaryCard from "../../components/ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";
 import ProductServiceCodeSummaryBox from "../../components/UI/Form/ProductServiceCodeSummaryBox";
@@ -20,8 +20,8 @@ import {
     useUpdateAgreement,
     useCreateAgreementDispatch,
 } from "./CreateAgreementContext";
+import { setAlert } from "../../components/UI/Alert/alertSlice";
 import { patchAgreement } from "../../api/patchAgreements";
-import EditModeTitle from "./EditModeTitle";
 import suite from "./stepCreateAgreementSuite";
 import Input from "../../components/UI/Form/Input";
 
@@ -36,6 +36,7 @@ import Input from "../../components/UI/Form/Input";
 export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) => {
     const navigate = useNavigate();
     const dispatch = useCreateAgreementDispatch();
+    const globalDispatch = useDispatch();
     const {
         wizardSteps,
         selected_project: selectedResearchProject,
@@ -73,8 +74,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
-    const [isAlertActive, setIsAlertActive] = React.useState(false);
-    const [alertProps, setAlertProps] = React.useState({});
 
     let res = suite.get();
     const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
@@ -112,22 +111,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
         });
     };
 
-    const showAlertAndNavigate = async (type, heading, message) => {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        window.scrollTo(0, 0);
-        setIsAlertActive(true);
-        setAlertProps({ type, heading, message });
-
-        await new Promise((resolve) =>
-            setTimeout(() => {
-                setIsAlertActive(false);
-                setAlertProps({});
-                navigate("/agreements/");
-                resolve();
-            }, 5000)
-        );
-    };
-
     const saveAgreement = async () => {
         const data = {
             ...agreement,
@@ -155,7 +138,14 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
 
     const handleDraft = async () => {
         saveAgreement();
-        await showAlertAndNavigate("success", "Agreement Draft Saved", "The agreement has been successfully saved.");
+        await globalDispatch(
+            setAlert({
+                type: "success",
+                heading: "Agreement Draft Saved",
+                message: "The agreement has been successfully saved.",
+                redirectUrl: "/agreements",
+            })
+        );
     };
 
     const handleCancel = () => {
@@ -165,7 +155,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
             actionButtonText: "Cancel",
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                navigate("/agreements/");
+                navigate("/agreements");
             },
         });
     };
@@ -192,13 +182,10 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            {isAlertActive ? (
-                <Alert heading={alertProps.heading} type={alertProps.type} setIsAlertActive={setIsAlertActive}>
-                    {alertProps.message}
-                </Alert>
-            ) : (
-                <EditModeTitle isEditMode={isEditMode} />
-            )}
+
+            <h1 className="font-sans-lg">Create New Agreement</h1>
+            <p>Follow the steps to create an agreement</p>
+
             <StepIndicator steps={wizardSteps} currentStep={2} />
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg">Select the Agreement Type</h2>

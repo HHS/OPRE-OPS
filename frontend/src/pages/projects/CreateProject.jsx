@@ -1,29 +1,46 @@
+import React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import App from "../../App";
 import ProjectTypeSelect from "../../components/UI/Form/ProjectTypeSelect/ProjectTypeSelect";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
-import Alert from "../../components/UI/Alert/Alert";
-import { Modal } from "../../components/UI/Modal/Modal";
+import Alert from "../../components/UI/Alert";
+import Modal from "../../components/UI/Modal";
 import Input from "../../components/UI/Form/Input";
 import TextArea from "../../components/UI/Form/TextArea";
 import suite from "./suite";
 import classnames from "vest/classnames";
+import { setAlert } from "../../components/UI/Alert/alertSlice";
 
 export const CreateProject = () => {
     const [showModal, setShowModal] = useState(false);
-    const [modalProps, setModalProps] = useState({});
-    const [project, setProject] = useState({});
-    const [isAlertActive, setIsAlertActive] = useState(false);
-    const [alertProps, setAlertProps] = useState({});
+    const [modalProps, setModalProps] = useState({
+        heading: "",
+        actionButtonText: "",
+        secondaryButtonText: "",
+        handleConfirm: () => {},
+    });
+    const [project, setProject] = useState({
+        type: "",
+        short_title: "",
+        title: "",
+        description: "",
+    });
+    const isAlertActive = useSelector((state) => state.alert.isActive);
+    const [addResearchProject, { isSuccess, isError, error, reset, data: rpData }] = useAddResearchProjectsMutation();
 
     let res = suite.get();
     const navigate = useNavigate();
-
-    const [addResearchProject, { isSuccess, isError, error, reset, data: rpData }] = useAddResearchProjectsMutation();
+    const dispatch = useDispatch();
 
     const handleClearingForm = () => {
-        setProject({});
+        setProject({
+            type: "",
+            short_title: "",
+            title: "",
+            description: "",
+        });
     };
 
     const handleChange = (currentField, value) => {
@@ -44,30 +61,27 @@ export const CreateProject = () => {
     };
     delete editedProject.type;
 
-    const showAlert = async (type, heading, message) => {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        window.scrollTo(0, 0);
-        setIsAlertActive(true);
-        setAlertProps({ type, heading, message });
-
-        await new Promise((resolve) => setTimeout(resolve, 6000));
-        setIsAlertActive(false);
-        setAlertProps({});
-        navigate("/");
-    };
-
     if (isError) {
         // TODO: Add error handling
         console.log("Error Submitting Project");
         console.dir(error);
     }
 
-    if (isSuccess) {
-        console.log(`New Project Created: ${rpData.id}`);
-        handleClearingForm();
-        reset();
-        showAlert("success", "New Project Created!", "The project has been successfully created.");
-    }
+    React.useEffect(() => {
+        if (isSuccess) {
+            console.log(`New Project Created: ${rpData.id}`);
+            reset();
+            handleClearingForm();
+            dispatch(
+                setAlert({
+                    type: "success",
+                    heading: "New Project Created!",
+                    message: "The project has been successfully created.",
+                    redirectUrl: `/agreements`,
+                })
+            );
+        }
+    }, [isSuccess, rpData, reset, dispatch, navigate]);
 
     const handleCancel = () => {
         setShowModal(true);
@@ -85,9 +99,7 @@ export const CreateProject = () => {
     return (
         <App>
             {isAlertActive ? (
-                <Alert heading={alertProps.heading} type={alertProps.type} setIsAlertActive={setIsAlertActive}>
-                    {alertProps.message}
-                </Alert>
+                <Alert />
             ) : (
                 <>
                     <h1 className="font-sans-lg">Create New Project</h1>
@@ -110,6 +122,7 @@ export const CreateProject = () => {
                 name="type"
                 label="Project Type"
                 onChange={handleChange}
+                value={project.type || ""}
                 messages={res.getErrors("type")}
                 className={cn("type")}
             />
@@ -121,6 +134,7 @@ export const CreateProject = () => {
                 label="Project Nickname or Acronym"
                 onChange={handleChange}
                 messages={res.getErrors("short_title")}
+                value={project.short_title || ""}
                 className={cn("short_title")}
             />
 
@@ -129,6 +143,7 @@ export const CreateProject = () => {
                 label="Project Title"
                 onChange={handleChange}
                 messages={res.getErrors("title")}
+                value={project.title || ""}
                 className={cn("title")}
             />
 
@@ -138,6 +153,7 @@ export const CreateProject = () => {
                 onChange={handleChange}
                 hintMsg="Brief Description for internal purposes, not for the OPRE website."
                 messages={res.getErrors("description")}
+                value={project.description || ""}
                 className={cn("description")}
             />
 

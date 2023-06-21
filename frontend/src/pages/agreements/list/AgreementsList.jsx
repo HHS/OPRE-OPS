@@ -1,12 +1,15 @@
-import "./AgreementsList.scss";
+import { useSelector } from "react-redux";
 import { useGetAgreementsQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import { AgreementTableRow } from "./AgreementTableRow";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import sortAgreements from "./utils";
 import { useEffect } from "react";
+import Alert from "../../../components/UI/Alert";
+import "./AgreementsList.scss";
 
 export const AgreementsList = () => {
+    const isAlertActive = useSelector((state) => state.alert.isActive);
     const {
         data: agreements,
         error: errorAgreement,
@@ -31,6 +34,7 @@ export const AgreementsList = () => {
     return (
         <App>
             <Breadcrumb currentName={"Agreements"} />
+            {isAlertActive && <Alert />}
 
             <h1 className="font-sans-lg">Agreements</h1>
             <p>This is a list of the agreements you are listed as a Team Member on.</p>

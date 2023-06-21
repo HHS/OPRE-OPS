@@ -24,34 +24,31 @@ const testAgreement = {
     notes: "Test Notes",
 };
 
-
 beforeEach(() => {
     testLogin("admin");
     cy.visit(`/`);
 });
-
 
 afterEach(() => {
     cy.injectAxe();
     cy.checkA11y(null, null, terminalLog);
 });
 
-
 it("edit an agreement", () => {
-    expect(localStorage.getItem('access_token')).to.exist;
+    expect(localStorage.getItem("access_token")).to.exist;
 
     // create test agreement
-    const bearer_token = `Bearer ${ window.localStorage.getItem("access_token") }`;
+    const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
     cy.request({
-        method: 'POST',
-        url: 'http://localhost:8080/api/v1/agreements/',
+        method: "POST",
+        url: "http://localhost:8080/api/v1/agreements/",
         body: testAgreement,
-        headers : {
-            "Authorization": bearer_token,
+        headers: {
+            Authorization: bearer_token,
             "Content-Type": "application/json",
-            "Accept": "application/json",
-        }
-    }).then( (response) => {
+            Accept: "application/json",
+        },
+    }).then((response) => {
         expect(response.status).to.eq(201);
         expect(response.body.id).to.exist;
         const agreementId = response.body.id;
@@ -87,7 +84,8 @@ it("edit an agreement", () => {
         cy.get("h2").first().should("have.text", "Budget Line Details");
 
         cy.get('[data-cy="continue-btn"]').click();
-        cy.get("h1").should("have.text", "Agreement draft saved");
+        // get Alert role status
+        cy.get("[data-cy='alert']").find("h1").should("have.text", "Agreement draft saved");
         cy.get("h1").should("exist");
 
         // TODO: DELETE test agreement (after API implemented)
