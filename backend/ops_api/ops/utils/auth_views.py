@@ -67,7 +67,7 @@ def _get_token_and_user_data_from_oauth_provider(auth_code: str):
 
         client = OAuth2Session(
             authlib_client_config["client_id"],
-            scope="openid profile email phone address roles web-origins acr microprofile-jwt",
+            scope="openid profile email phone address roles web-origins acr microprofile-jwt offline_access",
             redirect_uri="https://ops-staging.app.cloud.gov",
         )
         token = client.fetch_token(
