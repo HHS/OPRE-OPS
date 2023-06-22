@@ -34,6 +34,30 @@ const suite = create((fieldName) => {
     test("team-member", "Must have at least one team member", () => {
         enforce(fieldName.team_members).longerThan(0);
     });
+    // test budget_line_items array
+    test("budget-line-items", "Must have at least one budget line item", () => {
+        enforce(fieldName.budget_line_items).longerThan(0);
+    });
+    test("budget-line-items", "Budget Lines description cannot be blank", () => {
+        fieldName.budget_line_items.forEach((item) => {
+            enforce(item.line_description).isNotBlank();
+        });
+    });
+    test("budget-line-items", "Need by date is required information", () => {
+        fieldName.budget_line_items.forEach((item) => {
+            enforce(item.date_needed).isNotBlank();
+        });
+    });
+    test("budget-line-items", "CAN is required information", () => {
+        fieldName.budget_line_items.forEach((item) => {
+            enforce(item.can_id).isNotBlank();
+        });
+    });
+    test("budget-line-items", "Amount must be more than $0", () => {
+        fieldName.budget_line_items.forEach((item) => {
+            enforce(item.amount).greaterThan(0);
+        });
+    });
 });
 
 export default suite;
