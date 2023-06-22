@@ -29,8 +29,10 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const [updateBudgetLineItemStatus] = useUpdateBudgetLineItemStatusMutation();
 
     const [projectOfficerName, setProjectOfficerName] = useState({ full_name: "" });
+    const [pageErrors, setPageErrors] = useState({});
     const isAlertActive = useSelector((state) => state.alert.isActive);
     let res = suite.get();
+
     console.log(JSON.stringify(res, null, 2));
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -46,7 +48,18 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 ...agreement,
             });
         }
-    }, [agreement]);
+        if (!res.isValid()) {
+            dispatch(
+                setAlert({
+                    type: "error",
+                    heading: "Please resolve the errors outlined below",
+                    message:
+                        "In order to send this agreement to approval, click edit to update the required information.",
+                })
+            );
+            setPageErrors(res.getErrors());
+        }
+    }, [agreement, dispatch, res]);
 
     useEffect(() => {
         const getUserAndSetState = async (id) => {
@@ -100,7 +113,18 @@ export const ReviewAgreement = ({ agreement_id }) => {
     return (
         <>
             {isAlertActive ? (
-                <Alert />
+                <Alert noClear={true}>
+                    <ul>
+                        {Object.entries(pageErrors).map(([key, value]) => (
+                            <li key={key}>
+                                <strong>{key}: </strong>
+                                {value.map((message, index) => (
+                                    <span key={index}>{message}</span>
+                                ))}
+                            </li>
+                        ))}
+                    </ul>
+                </Alert>
             ) : (
                 <h1 className="text-bold margin-top-0" style={{ fontSize: "1.375rem" }}>
                     Review and Send Agreement to Approval
