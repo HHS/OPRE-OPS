@@ -11,7 +11,7 @@ class UserInfoDict(TypedDict):
     given_name: Optional[str]
 
 
-def process_user(userinfo: UserInfoDict) -> User:
+def register_user(userinfo: UserInfoDict) -> User:
     user = get_user_from_token(userinfo)
     current_app.logger.debug(f"User Lookup Response: {user}")
     if not user:

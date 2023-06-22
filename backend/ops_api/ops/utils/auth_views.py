@@ -4,35 +4,31 @@ import requests
 from authlib.integrations.requests_client import OAuth2Session
 from flask import Response, current_app, request
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
-
-# from models.events import OpsEventType
+from models.events import OpsEventType
 from ops_api.ops.utils.auth import create_oauth_jwt, decode_user
-
-# from ops_api.ops.utils.events import OpsEventHandler
+from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
-from ops_api.ops.utils.user import process_user
+from ops_api.ops.utils.user import register_user
 
 
 def login() -> Union[Response, tuple[str, int]]:
     auth_code = request.json.get("code")
     current_app.logger.debug(f"Got an OIDC request with the code of {auth_code}")
-    # with OpsEventHandler(OpsEventType.LOGIN_ATTEMPT) as la:
-    token, user_data = _get_token_and_user_data_from_oauth_provider(auth_code)
-    current_app.logger.debug(f"token={token};user_data={user_data}")
-    current_app.logger.debug(f" token={token};user_data={user_data}")
+    with OpsEventHandler(OpsEventType.LOGIN_ATTEMPT) as la:
+        token, user_data = _get_token_and_user_data_from_oauth_provider(auth_code)
+        current_app.logger.debug(f"provider_access_token={token};user_data={user_data}")
 
-    access_token, refresh_token, user = _get_token_and_user_data_from_internal_auth(user_data)
+        access_token, refresh_token, user = _get_token_and_user_data_from_internal_auth(user_data)
+        current_app.logger.debug(f"api_access_token={access_token};api_refresh_token={refresh_token};user={user}")
 
-    current_app.logger.debug(f"access_token={access_token};refresh_token={refresh_token};user={user}")
-
-    # la.metadata.update(
-    #     {
-    #         "user": user.to_dict(),
-    #         "access_token": access_token,
-    #         "refresh_token": refresh_token,
-    #         "logingov_token": token,
-    #     }
-    # )
+        la.metadata.update(
+            {
+                "user": user.to_dict(),
+                "api_access_token": access_token,
+                "api_refresh_token": refresh_token,
+                "oidc_access_token": token,
+            }
+        )
 
     return make_response_with_headers({"access_token": access_token, "refresh_token": refresh_token})
 
@@ -45,31 +41,28 @@ def _get_token_and_user_data_from_internal_auth(user_data):
     #   - invalid JWT
     # - create backend-JWT endpoints /refesh /validate (drf-simplejwt)
     # See if user exists
-    user = process_user(user_data)  # Refactor me
-    current_app.logger.debug(f"user={user}")
+    user = register_user(user_data)  # Refactor me
     # TODO
     # Do we want to embed the user's roles or permissions in the scope: [read write]?
     # The next two tokens are specific to our backend API, these are used for our API
     # authZ, given a valid login from the prior AuthN steps above.
     access_token = create_access_token(identity=user)
-    current_app.logger.debug(f"access_token={access_token}")
     refresh_token = create_refresh_token(identity=user)
-    current_app.logger.debug(f"refresh_token={refresh_token}")
     return access_token, refresh_token, user
 
 
 def _get_token_and_user_data_from_oauth_provider(auth_code: str):
     try:
         authlib_client_config = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]
-        current_app.logger.debug(f"authlib_client_config={authlib_client_config}")
         jwt = create_oauth_jwt()
         current_app.logger.debug(f"jwt={jwt}")
 
         client = OAuth2Session(
             authlib_client_config["client_id"],
-            scope="openid profile email phone address roles web-origins acr microprofile-jwt offline_access",
-            redirect_uri="https://ops-staging.app.cloud.gov",
+            scope=current_app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["client_kwargs"].scope,
+            redirect_uri=current_app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["redirect_uri"],
         )
+
         token = client.fetch_token(
             authlib_client_config["token_endpoint"],
             client_assertion=jwt,
@@ -77,22 +70,17 @@ def _get_token_and_user_data_from_oauth_provider(auth_code: str):
             grant_type="authorization_code",
             code=auth_code,
         )
-        current_app.logger.debug(f"token={token}")
         access_token = token["access_token"].strip()
         header = {
             "Authorization": f"Bearer {access_token}",
             "Accept": "application/json",
         }
-        current_app.logger.debug(f"header={header}")
         user_jwt = requests.get(
             authlib_client_config["user_info_url"],
             headers=header,
         ).content.decode("utf-8")
 
-        current_app.logger.debug(f"user_jwt={user_jwt}")
-        # user_data = decode_jwt(payload=user_jwt)
         user_data = decode_user(payload=user_jwt)
-        current_app.logger.debug(f"user_data={user_data}")
     except Exception as e:
         current_app.logger.exception(e)
         raise e
