@@ -120,6 +120,9 @@ class EnumListAPI(MethodView):
         self.enum = enum
         super().__init_subclass__(**kwargs)
 
+    def __init__(self, enum: Enum, **kwargs):
+        super().__init__(**kwargs)
+
     def get(self) -> Response:
         enum_items = {e.name: e.value for e in self.enum}  # type: ignore [attr-defined]
         return jsonify(enum_items)
