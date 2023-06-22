@@ -28,7 +28,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
 
     const [updateBudgetLineItemStatus] = useUpdateBudgetLineItemStatusMutation();
 
-    const [user, setUser] = useState({});
+    const [projectOfficerName, setProjectOfficerName] = useState({ full_name: "" });
     const isAlertActive = useSelector((state) => state.alert.isActive);
     let res = suite.get();
     console.log(JSON.stringify(res, null, 2));
@@ -51,17 +51,15 @@ export const ReviewAgreement = ({ agreement_id }) => {
     useEffect(() => {
         const getUserAndSetState = async (id) => {
             const results = await getUser(id);
-            setUser(results);
+            setProjectOfficerName(results);
         };
 
         if (agreement?.project_officer) {
             getUserAndSetState(agreement?.project_officer).catch(console.error);
-        } else {
-            setUser({ full_name: "Sheila Celentano" });
         }
 
         return () => {
-            setUser({});
+            setProjectOfficerName({});
         };
     }, [agreement]);
 
@@ -149,36 +147,55 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     className={cn("naics")}
                     value={agreement?.product_service_code?.naics}
                 />
-                <dt className="margin-0 text-base-dark margin-top-3">Program Support Code</dt>
-                <dd className="text-semibold margin-0 margin-top-05">
-                    {agreement?.product_service_code?.support_code}
-                </dd>
-                <dt className="margin-0 text-base-dark margin-top-3">Procurement Shop</dt>
-                <dd className="text-semibold margin-0 margin-top-05">{`${
-                    agreement?.procurement_shop?.abbr
-                } - Fee Rate: ${agreement?.procurement_shop?.fee * 100}%`}</dd>
-                <dt className="margin-0 text-base-dark margin-top-3">Reason for creating the agreement</dt>
-                <dd className="text-semibold margin-0 margin-top-05">
-                    {convertCodeForDisplay("agreementReason", agreement?.agreement_reason)}
-                </dd>
-                {agreement.incumbent && (
-                    <>
-                        <dt className="margin-0 text-base-dark margin-top-3">Incumbent</dt>
-                        <dd className="text-semibold margin-0 margin-top-05">{agreement?.incumbent}</dd>
-                    </>
+                <Terms
+                    name="program-support-code"
+                    label="Program Support Code"
+                    messages={res.getErrors("program-support-code")}
+                    className={cn("program-support-code")}
+                    value={agreement?.product_service_code?.support_code}
+                />
+                <Terms
+                    name="procurement-shop"
+                    label="Procurement Shop"
+                    messages={res.getErrors("procurement-shop")}
+                    className={cn("procurement-shop")}
+                    value={`${agreement?.procurement_shop?.abbr} - Fee Rate: ${
+                        agreement?.procurement_shop?.fee * 100
+                    }%`}
+                />
+                <Terms
+                    name="reason"
+                    label="Reason for creating the agreement"
+                    messages={res.getErrors("reason")}
+                    className={cn("reason")}
+                    value={convertCodeForDisplay("agreementReason", agreement?.agreement_reason)}
+                />
+
+                {agreement?.incumbent && (
+                    <Terms
+                        name="incumbent"
+                        label="Incumbent"
+                        messages={res.getErrors("incumbent")}
+                        className={cn("incumbent")}
+                        value={agreement?.incumbent}
+                    />
                 )}
-                <dt className="margin-0 text-base-dark margin-top-3">Project Officer</dt>
-                <dd className="text-semibold margin-0 margin-top-05">{user?.full_name}</dd>
-                {agreement?.team_members.length > 0 && (
-                    <>
-                        <dt className="margin-0 text-base-dark margin-top-3">Team Members</dt>
-                        {agreement?.team_members.map((member) => (
-                            <dd key={member.id} className="text-semibold margin-0 margin-top-05">
-                                {member.full_name}
-                            </dd>
-                        ))}
-                    </>
-                )}
+                <Terms
+                    name="project-officer"
+                    label="Project Officer"
+                    messages={res.getErrors("project-officer")}
+                    className={cn("project-officer")}
+                    value={projectOfficerName?.full_name}
+                />
+
+                <>
+                    <dt className="margin-0 text-base-dark margin-top-3">Team Members</dt>
+                    {agreement?.team_members.map((member) => (
+                        <dd key={member.id} className="text-semibold margin-0 margin-top-05">
+                            {member.full_name}
+                        </dd>
+                    ))}
+                </>
             </dl>
             <h2 className="text-bold" style={{ fontSize: "1.375rem" }}>
                 Budget Lines
@@ -194,7 +211,11 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 >
                     Edit
                 </button>
-                <button className="usa-button" onClick={handleSendToApproval} disabled={!anyBudgetLinesAreDraft}>
+                <button
+                    className="usa-button"
+                    onClick={handleSendToApproval}
+                    disabled={!anyBudgetLinesAreDraft || !res.isValid()}
+                >
                     Send to Approval
                 </button>
             </div>
