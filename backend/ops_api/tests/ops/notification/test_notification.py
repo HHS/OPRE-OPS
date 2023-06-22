@@ -98,7 +98,7 @@ def test_notifications_get_by_oidc_id(auth_client, loaded_db, notification):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_can_get_by_id(auth_client, loaded_db):
+def test_notification_get_by_id(auth_client, loaded_db):
     response = auth_client.get("/api/v1/notifications/1")
     assert response.status_code == 200
     assert response.json["title"] == "System Notification"
@@ -110,28 +110,10 @@ def test_can_get_by_id(auth_client, loaded_db):
     assert response.json["recipients"][0]["full_name"] == "Chris Fortunato"
 
 
-#
-#
-# @pytest.mark.usefixtures("app_ctx")
-# def test_can_get_portfolio_cans(auth_client, loaded_db):
-#     response = auth_client.get("/api/v1/cans/portfolio/1")
-#     assert response.status_code == 200
-#     assert len(response.json) == 2
-#     assert response.json[0]["id"] == 2
+@pytest.mark.usefixtures("app_ctx")
+def test_notification_auth(client, loaded_db):
+    response = client.get("/api/v1/notifications/1")
+    assert response.status_code == 401
 
-
-# @pytest.mark.usefixtures("app_ctx")
-# def test_get_cans_search_filter(auth_client, loaded_db):
-#     response = auth_client.get("/api/v1/cans/?search=XXX8")
-#     assert response.status_code == 200
-#     assert len(response.json) == 1
-#     assert response.json[0]["id"] == 13
-#
-#     response = auth_client.get("/api/v1/cans/?search=G99HRF2")
-#     assert response.status_code == 200
-#     assert len(response.json) == 1
-#     assert response.json[0]["id"] == 1
-#
-#     response = auth_client.get("/api/v1/cans/?search=")
-#     assert response.status_code == 200
-#     assert len(response.json) == 0
+    response = client.get("/api/v1/notifications/")
+    assert response.status_code == 401

@@ -83,7 +83,7 @@ class NotificationListAPI(BaseListAPI):
 
     @staticmethod
     def _get_query(user_id=None, oidc_id=None):
-        stmt = select(Notification).join(Notification.recipients).order_by(Notification.id)
+        stmt = select(Notification).distinct(Notification.id).join(Notification.recipients).order_by(Notification.id)
 
         query_helper = QueryHelper(stmt)
 
