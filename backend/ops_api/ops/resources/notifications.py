@@ -17,8 +17,9 @@ from typing_extensions import override
 
 
 @dataclass
-class TeamMembers:
+class Recipient:
     id: int
+    oidc_id: str
     full_name: Optional[str] = None
     email: Optional[str] = None
 
@@ -33,7 +34,7 @@ class NotificationResponse:
     updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%f"})
     title: Optional[str] = None
     message: Optional[str] = None
-    recipients: Optional[list[TeamMembers]] = field(default_factory=list)
+    recipient: Optional[Recipient] = None
 
 
 @dataclass
@@ -84,7 +85,12 @@ class NotificationListAPI(BaseListAPI):
 
     @staticmethod
     def _get_query(user_id=None, oidc_id=None, status=None):
-        stmt = select(Notification).distinct(Notification.id).join(Notification.recipients).order_by(Notification.id)
+        stmt = (
+            select(Notification)
+            .distinct(Notification.id)
+            .join(User, Notification.recipient_id == User.id, isouter=True)
+            .order_by(Notification.id)
+        )
 
         query_helper = QueryHelper(stmt)
 

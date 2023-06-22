@@ -1,18 +1,7 @@
 from models import User
 from models.base import BaseModel
-from sqlalchemy import Boolean, Column, Date, ForeignKey, Identity, Integer, String, Table
+from sqlalchemy import Boolean, Column, Date, ForeignKey, Identity, Integer, String
 from sqlalchemy.orm import relationship
-
-notification_recipients = Table(
-    "notification_recipients",
-    BaseModel.metadata,
-    Column("notification_id", ForeignKey("notification.id"), primary_key=True),
-    Column(
-        "user_id",
-        ForeignKey("users.id"),
-        primary_key=True,
-    ),
-)
 
 
 class Notification(BaseModel):
@@ -21,7 +10,9 @@ class Notification(BaseModel):
     title = Column(String)
     message = Column(String)
     status = Column(Boolean, default=False)
-    recipients = relationship(
-        User, secondary=notification_recipients, back_populates="notifications"
-    )
     expires = Column(Date)
+
+    recipient_id = Column(Integer, ForeignKey("users.id"))
+    recipient = relationship(
+        "User", back_populates="notifications", foreign_keys=[recipient_id]
+    )

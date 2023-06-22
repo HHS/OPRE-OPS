@@ -12,7 +12,7 @@ def test_notification_retrieve(loaded_db):
     assert notification.title == "System Notification"
     assert notification.message == "This is a system notification"
     assert notification.status is False
-    assert notification.recipients is not None
+    assert notification.recipient is not None
     assert notification.expires is None
 
 
@@ -23,28 +23,24 @@ def notification(loaded_db):
         oidc_id="41b88469-b7e8-4dbc-83d1-7e9a61d596b3",
         email="john@example.com",
     )
-    jane = User(
-        oidc_id="41b88469-b7e8-4dbc-83d1-7e9a61d596b4",
-        email="jane@example.com",
-    )
+
+    loaded_db.add(john)
+    loaded_db.commit()
+
     notification = Notification(
         title="System Notification",
         message="This is a system notification",
         status=False,
+        recipient_id=john.id,
     )
-    notification.recipients.append(john)
-    notification.recipients.append(jane)
 
     loaded_db.add(notification)
-    loaded_db.add(john)
-    loaded_db.add(jane)
     loaded_db.commit()
 
     yield notification
 
     loaded_db.delete(notification)
     loaded_db.delete(john)
-    loaded_db.delete(jane)
     loaded_db.commit()
 
 
@@ -55,89 +51,79 @@ def notification_status_is_true(loaded_db):
         oidc_id="41b88469-b7e8-4dbc-83d1-7e9a61d596b3",
         email="john@example.com",
     )
-    jane = User(
-        oidc_id="41b88469-b7e8-4dbc-83d1-7e9a61d596b4",
-        email="jane@example.com",
-    )
+
+    loaded_db.add(john)
+    loaded_db.commit()
+
     notification = Notification(
         title="System Notification",
         message="This is a system notification",
         status=True,
+        recipient_id=john.id,
     )
-    notification.recipients.append(john)
-    notification.recipients.append(jane)
 
     loaded_db.add(notification)
-    loaded_db.add(john)
-    loaded_db.add(jane)
     loaded_db.commit()
 
     yield notification
 
     loaded_db.delete(notification)
     loaded_db.delete(john)
-    loaded_db.delete(jane)
     loaded_db.commit()
 
 
 def test_notification_creation(loaded_db, notification):
     assert notification is not None
-    assert notification.recipients is not None
-    assert len(notification.recipients) == 2
+    assert notification.recipient is not None
 
     stmt = select(User).where(User.email == "john@example.com")
     john = loaded_db.scalar(stmt)
     assert john.notifications is not None
     assert john.notifications[0] == notification
 
-    stmt = select(User).where(User.email == "jane@example.com")
-    jane = loaded_db.scalar(stmt)
-    assert jane.notifications is not None
-    assert jane.notifications[0] == notification
-
 
 @pytest.mark.usefixtures("app_ctx")
 def test_notifications_get_all(auth_client, loaded_db):
-    assert loaded_db.query(Notification).count() == 1
+    assert loaded_db.query(Notification).count() == 17
 
     response = auth_client.get("/api/v1/notifications/")
     assert response.status_code == 200
-    assert len(response.json) == 1
+    assert len(response.json) == 17
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_notifications_get_by_user_id(auth_client, loaded_db, notification):
-    user_id = notification.recipients[0].id
+    user_id = notification.recipient.id
     response = auth_client.get(f"/api/v1/notifications/?user_id={user_id}")
     assert response.status_code == 200
     assert len(response.json) == 1
     assert response.json[0]["title"] == "System Notification"
     assert response.json[0]["message"] == "This is a system notification"
     assert response.json[0]["status"] is False
-    assert len(response.json[0]["recipients"]) == 2
+    assert response.json[0]["recipient"]["id"] == user_id
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_notifications_get_by_oidc_id(auth_client, loaded_db, notification):
-    oidc_id = notification.recipients[0].oidc_id
+    oidc_id = str(notification.recipient.oidc_id)
     response = auth_client.get(f"/api/v1/notifications/?oidc_id={oidc_id}")
     assert response.status_code == 200
     assert len(response.json) == 1
     assert response.json[0]["title"] == "System Notification"
     assert response.json[0]["message"] == "This is a system notification"
     assert response.json[0]["status"] is False
-    assert len(response.json[0]["recipients"]) == 2
+    assert response.json[0]["recipient"]["oidc_id"] == oidc_id
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_notifications_get_by_status(auth_client, loaded_db, notification_status_is_true):
     response = auth_client.get("/api/v1/notifications/?status=False")
     assert response.status_code == 200
-    assert len(response.json) == 1
+    assert len(response.json) == 17
     assert response.json[0]["title"] == "System Notification"
     assert response.json[0]["message"] == "This is a system notification"
     assert response.json[0]["status"] is False
-    assert len(response.json[0]["recipients"]) == 17
+    assert response.json[0]["recipient"] is not None
 
     response = auth_client.get("/api/v1/notifications/?status=True")
     assert response.status_code == 200
@@ -145,7 +131,7 @@ def test_notifications_get_by_status(auth_client, loaded_db, notification_status
     assert response.json[0]["title"] == "System Notification"
     assert response.json[0]["message"] == "This is a system notification"
     assert response.json[0]["status"] is True
-    assert len(response.json[0]["recipients"]) == 2
+    assert response.json[0]["recipient"] is not None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -155,10 +141,10 @@ def test_notification_get_by_id(auth_client, loaded_db):
     assert response.json["title"] == "System Notification"
     assert response.json["message"] == "This is a system notification"
     assert response.json["status"] is False
-    assert len(response.json["recipients"]) == 17
-    assert response.json["recipients"][0]["id"] == 1
-    assert response.json["recipients"][0]["email"] == "chris.fortunato@example.com"
-    assert response.json["recipients"][0]["full_name"] == "Chris Fortunato"
+    assert response.json["recipient"] is not None
+    assert response.json["recipient"]["id"] == 1
+    assert response.json["recipient"]["email"] == "chris.fortunato@example.com"
+    assert response.json["recipient"]["full_name"] == "Chris Fortunato"
 
 
 @pytest.mark.usefixtures("app_ctx")

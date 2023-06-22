@@ -57,7 +57,7 @@ class User(BaseModel):
     )
 
     notifications = relationship(
-        "Notification", secondary="notification_recipients", back_populates="recipients"
+        "Notification", foreign_keys="Notification.recipient_id"
     )
 
     @override
