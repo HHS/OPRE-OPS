@@ -21,6 +21,12 @@ class OpsDBHistory(BaseModel):
     id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
     event_type = sa.Column(sa.Enum(OpsDBHistoryType))
     event_details = sa.Column(JSONB)
+    table_name = sa.Column(sa.String)
+    base_table_name = sa.Column(sa.String)
+    row_key = sa.Column(sa.String)
+    original = sa.Column(JSONB)
+    diff = sa.Column(JSONB)
+    changes = sa.Column(JSONB)
 
     @override
     def to_dict(self) -> dict[str, Any]:
