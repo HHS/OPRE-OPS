@@ -7,7 +7,7 @@ import Alert from "../../../components/UI/Alert";
 import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../../api/opsAPI";
 import { getUser } from "../../../api/getUser";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import { setAlert } from "../../../components/UI/Alert/alertSlice";
+import { clearState, setAlert } from "../../../components/UI/Alert/alertSlice";
 import Terms from "./Terms";
 import suite from "./suite";
 
@@ -43,22 +43,26 @@ export const ReviewAgreement = ({ agreement_id }) => {
     // add agreement data to suite
     useEffect(() => {
         if (agreement) {
-            suite.reset();
             suite({
                 ...agreement,
             });
+            if (!res.isValid()) {
+                dispatch(
+                    setAlert({
+                        type: "error",
+                        heading: "Please resolve the errors outlined below",
+                        message:
+                            "In order to send this agreement to approval, click edit to update the required information.",
+                    })
+                );
+                setPageErrors(res.getErrors());
+            }
         }
-        if (!res.isValid()) {
-            dispatch(
-                setAlert({
-                    type: "error",
-                    heading: "Please resolve the errors outlined below",
-                    message:
-                        "In order to send this agreement to approval, click edit to update the required information.",
-                })
-            );
-            setPageErrors(res.getErrors());
-        }
+        return () => {
+            suite.reset();
+            dispatch(clearState());
+            setPageErrors({});
+        };
     }, [agreement, dispatch, res]);
 
     useEffect(() => {
@@ -114,7 +118,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
 
     return (
         <>
-            {isAlertActive ? (
+            {isAlertActive || pageErrors.length > 0 ? (
                 <Alert noClear={true}>
                     <ul>
                         {Object.entries(pageErrors).map(([key, value]) => (
