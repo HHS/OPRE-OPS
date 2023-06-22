@@ -39,6 +39,7 @@ class NotificationResponse:
 @dataclass
 class ListAPIRequest:
     user_id: Optional[str]
+    oidc_id: Optional[str]
 
 
 class NotificationItemAPI(BaseItemAPI):
@@ -81,7 +82,7 @@ class NotificationListAPI(BaseListAPI):
         self._response_schema_collection = mmdc.class_schema(NotificationResponse)(many=True)
 
     @staticmethod
-    def _get_query(user_id=None):
+    def _get_query(user_id=None, oidc_id=None):
         stmt = select(Notification).join(Notification.recipients).order_by(Notification.id)
 
         query_helper = QueryHelper(stmt)
@@ -90,6 +91,11 @@ class NotificationListAPI(BaseListAPI):
             query_helper.return_none()
         elif user_id:
             query_helper.add_column_equals(cast(InstrumentedAttribute, User.id), user_id)
+
+        if oidc_id is not None and len(oidc_id) == 0:
+            query_helper.return_none()
+        elif oidc_id:
+            query_helper.add_column_equals(cast(InstrumentedAttribute, User.oidc_id), oidc_id)
 
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")
@@ -104,6 +110,6 @@ class NotificationListAPI(BaseListAPI):
             return make_response_with_headers(errors, 400)
 
         request_data: ListAPIRequest = self._get_input_schema.load(request.args)
-        stmt = self._get_query(request_data.user_id)
+        stmt = self._get_query(user_id=request_data.user_id, oidc_id=request_data.oidc_id)
         result = current_app.db_session.execute(stmt).all()
         return make_response_with_headers(self._response_schema_collection.dump([item[0] for item in result]))

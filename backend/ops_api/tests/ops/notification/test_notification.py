@@ -86,6 +86,18 @@ def test_notifications_get_by_user_id(auth_client, loaded_db, notification):
 
 
 @pytest.mark.usefixtures("app_ctx")
+def test_notifications_get_by_oidc_id(auth_client, loaded_db, notification):
+    oidc_id = notification.recipients[0].oidc_id
+    response = auth_client.get(f"/api/v1/notifications/?oidc_id={oidc_id}")
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["title"] == "System Notification"
+    assert response.json[0]["message"] == "This is a system notification"
+    assert response.json[0]["status"] is False
+    assert len(response.json[0]["recipients"]) == 2
+
+
+@pytest.mark.usefixtures("app_ctx")
 def test_can_get_by_id(auth_client, loaded_db):
     response = auth_client.get("/api/v1/notifications/1")
     assert response.status_code == 200
