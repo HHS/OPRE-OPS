@@ -48,6 +48,38 @@ def notification(loaded_db):
     loaded_db.commit()
 
 
+@pytest.fixture()
+@pytest.mark.usefixtures("app_ctx")
+def notification_status_is_true(loaded_db):
+    john = User(
+        oidc_id="41b88469-b7e8-4dbc-83d1-7e9a61d596b3",
+        email="john@example.com",
+    )
+    jane = User(
+        oidc_id="41b88469-b7e8-4dbc-83d1-7e9a61d596b4",
+        email="jane@example.com",
+    )
+    notification = Notification(
+        title="System Notification",
+        message="This is a system notification",
+        status=True,
+    )
+    notification.recipients.append(john)
+    notification.recipients.append(jane)
+
+    loaded_db.add(notification)
+    loaded_db.add(john)
+    loaded_db.add(jane)
+    loaded_db.commit()
+
+    yield notification
+
+    loaded_db.delete(notification)
+    loaded_db.delete(john)
+    loaded_db.delete(jane)
+    loaded_db.commit()
+
+
 def test_notification_creation(loaded_db, notification):
     assert notification is not None
     assert notification.recipients is not None
@@ -94,6 +126,25 @@ def test_notifications_get_by_oidc_id(auth_client, loaded_db, notification):
     assert response.json[0]["title"] == "System Notification"
     assert response.json[0]["message"] == "This is a system notification"
     assert response.json[0]["status"] is False
+    assert len(response.json[0]["recipients"]) == 2
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_notifications_get_by_status(auth_client, loaded_db, notification_status_is_true):
+    response = auth_client.get("/api/v1/notifications/?status=False")
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["title"] == "System Notification"
+    assert response.json[0]["message"] == "This is a system notification"
+    assert response.json[0]["status"] is False
+    assert len(response.json[0]["recipients"]) == 17
+
+    response = auth_client.get("/api/v1/notifications/?status=True")
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["title"] == "System Notification"
+    assert response.json[0]["message"] == "This is a system notification"
+    assert response.json[0]["status"] is True
     assert len(response.json[0]["recipients"]) == 2
 
 
