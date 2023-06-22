@@ -31,7 +31,6 @@ const suite = create((fieldName) => {
     test("project-officer", "This is required information", () => {
         enforce(fieldName.project_officer).isNotBlank();
     });
-    // must have at least one team member
     test("team-member", "Must have at least one team member", () => {
         enforce(fieldName.team_members).isNotEmptyArray();
     });
