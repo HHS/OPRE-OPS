@@ -32,7 +32,7 @@ const suite = create((fieldName) => {
         enforce(fieldName.project_officer).isNotBlank();
     });
     test("team-member", "Must have at least one team member", () => {
-        enforce(fieldName.team_members).isNotEmptyArray();
+        enforce(fieldName.team_members).longerThan(0);
     });
 });
 
