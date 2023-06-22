@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, Fragment } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
@@ -21,6 +21,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const {
+        isSuccess,
         data: agreement,
         error: errorAgreement,
         isLoading: isLoadingAgreement,
@@ -33,16 +34,15 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const isAlertActive = useSelector((state) => state.alert.isActive);
     let res = suite.get();
 
-    console.log(JSON.stringify(res, null, 2));
+    // console.log(JSON.stringify(res, null, 2));
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
         valid: "success",
         warning: "warning",
     });
 
-    // add agreement data to suite
     useEffect(() => {
-        if (agreement) {
+        if (isSuccess) {
             suite({
                 ...agreement,
             });
@@ -60,27 +60,29 @@ export const ReviewAgreement = ({ agreement_id }) => {
         }
         return () => {
             suite.reset();
-            dispatch(clearState());
             setPageErrors({});
+            dispatch(clearState());
         };
-    }, [agreement, dispatch, res]);
+    }, [isSuccess, agreement, dispatch, res]);
 
     useEffect(() => {
-        const getUserAndSetState = async (id) => {
-            const results = await getUser(id);
-            setProjectOfficerName(results);
-        };
+        if (isSuccess) {
+            const getUserAndSetState = async (id) => {
+                const results = await getUser(id);
+                setProjectOfficerName(results);
+            };
 
-        if (agreement?.project_officer) {
-            getUserAndSetState(agreement?.project_officer).catch(console.error);
+            if (agreement?.project_officer) {
+                getUserAndSetState(agreement?.project_officer).catch(console.error);
+            }
+
+            return () => {
+                setProjectOfficerName({
+                    full_name: "",
+                });
+            };
         }
-
-        return () => {
-            setProjectOfficerName({
-                full_name: "",
-            });
-        };
-    }, [agreement]);
+    }, [agreement, isSuccess]);
 
     if (isLoadingAgreement) {
         return <div>Loading...</div>;
@@ -90,6 +92,8 @@ export const ReviewAgreement = ({ agreement_id }) => {
     }
 
     const anyBudgetLinesAreDraft = agreement.budget_line_items.some((item) => item.status === "DRAFT");
+    const budgetLineErrors = res.getErrors("budget-line-items");
+    const budgetLineErrorsExist = Object.keys(budgetLineErrors).length > 0;
 
     const handleSendToApproval = () => {
         if (anyBudgetLinesAreDraft) {
@@ -118,15 +122,22 @@ export const ReviewAgreement = ({ agreement_id }) => {
 
     return (
         <>
-            {isAlertActive || pageErrors.length > 0 ? (
+            {isAlertActive || Object.entries(pageErrors).length > 0 ? (
                 <Alert noClear={true}>
                     <ul>
                         {Object.entries(pageErrors).map(([key, value]) => (
                             <li key={key}>
                                 <strong>{key}: </strong>
-                                {value.map((message, index) => (
-                                    <span key={index}>{message}</span>
-                                ))}
+                                {
+                                    <span>
+                                        {value.map((message, index) => (
+                                            <Fragment key={index}>
+                                                <span>{message}</span>
+                                                {index < value.length - 1 && <span>, </span>}
+                                            </Fragment>
+                                        ))}
+                                    </span>
+                                }
                             </li>
                         ))}
                     </ul>
@@ -237,10 +248,20 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     />
                 )}
             </dl>
-            <h2 className="text-bold" style={{ fontSize: "1.375rem" }}>
-                Budget Lines
-            </h2>
-            <p>This is a list of all budget lines within this agreement.</p>
+            <div className={`font-12px usa-form-group ${budgetLineErrorsExist ? "usa-form-group--error" : null}`}>
+                <h2 className="text-bold" style={{ fontSize: "1.375rem" }}>
+                    Budget Lines
+                </h2>
+                <p>This is a list of all budget lines within this agreement.</p>
+                {budgetLineErrorsExist && (
+                    <ul className="usa-error-message padding-left-1">
+                        {budgetLineErrors.map((error, index) => (
+                            <li key={index}>{error}</li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+
             <PreviewTable readOnly={true} budgetLinesAdded={agreement?.budget_line_items} />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
