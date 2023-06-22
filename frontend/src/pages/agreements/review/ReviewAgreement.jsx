@@ -188,14 +188,24 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     value={projectOfficerName?.full_name}
                 />
 
-                <>
-                    <dt className="margin-0 text-base-dark margin-top-3">Team Members</dt>
-                    {agreement?.team_members.map((member) => (
-                        <dd key={member.id} className="text-semibold margin-0 margin-top-05">
-                            {member.full_name}
-                        </dd>
-                    ))}
-                </>
+                {agreement?.team_members.length > 0 ? (
+                    <>
+                        <dt className="margin-0 text-base-dark margin-top-3">Team Members</dt>
+                        {agreement?.team_members.map((member) => (
+                            <dd key={member.id} className="text-semibold margin-0 margin-top-05">
+                                {member.full_name}
+                            </dd>
+                        ))}
+                    </>
+                ) : (
+                    <Terms
+                        name="team-member"
+                        label="Team Members"
+                        messages={res.getErrors("team-member")}
+                        className={cn("team-member")}
+                        value={agreement?.team_members[0]}
+                    />
+                )}
             </dl>
             <h2 className="text-bold" style={{ fontSize: "1.375rem" }}>
                 Budget Lines
