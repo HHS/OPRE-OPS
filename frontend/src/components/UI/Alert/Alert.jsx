@@ -30,10 +30,12 @@ export const Alert = ({ children, noClear = false }) => {
         const showAlert = async () => {
             await new Promise((resolve) => setTimeout(resolve, 500));
             window.scrollTo(0, 0);
-            if (noClear) return;
-
-            await new Promise((resolve) => setTimeout(resolve, 5000));
-            dispatch(clearState());
+            if (noClear) {
+                return;
+            } else {
+                await new Promise((resolve) => setTimeout(resolve, 5000));
+                dispatch(clearState());
+            }
         };
 
         showAlert();
