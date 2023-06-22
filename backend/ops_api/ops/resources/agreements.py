@@ -278,6 +278,9 @@ class AgreementItemAPI(BaseItemAPI):
 
                 return make_response_with_headers({"message": "Agreement deleted", "id": agreement.id}, 200)
 
+        except RuntimeError as e:
+            return make_response_with_headers({"message": f"{type(e)}: {e!s}", "id": agreement.id}, 400)
+
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
