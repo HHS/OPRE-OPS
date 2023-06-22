@@ -56,6 +56,9 @@ class User(BaseModel):
         secondary="contract_support_contacts",
     )
 
+    def get_user_id(self):
+        return self.id
+
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
         d = super().to_dict()  # type: ignore [no-untyped-call]

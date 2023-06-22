@@ -49,6 +49,7 @@ def create_oauth_jwt(
         raise NotImplementedError
 
     expire = current_app.config["JWT_ACCESS_TOKEN_EXPIRES"]
+    current_app.logger.debug(f"expire={expire}")
     # client_id = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"]["client_id"]
     _payload = payload or {
         "iss": current_app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["client_id"],
@@ -70,8 +71,11 @@ def get_jwks():
             headers={"Accept": "application/json"},
         ).content.decode("utf-8")
     )
+    current_app.logger.debug(f"********  provider_uris={provider_uris}")
     jwks_uri = provider_uris["jwks_uri"]
+    current_app.logger.debug(f"********  jwks_uri={jwks_uri}")
     jwks = requests.get(jwks_uri).content.decode("utf-8")
+    current_app.logger.debug(f"********  jwks={jwks}")
     return jwks
 
 
@@ -88,4 +92,5 @@ def decode_user(
     }
     jwt = JsonWebToken(["RS256"])
     claims = jwt.decode(payload, get_jwks(), claims_options=claims_options)
+    current_app.logger.debug(f"********  claims={claims}")
     return claims
