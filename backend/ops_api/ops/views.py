@@ -2,7 +2,7 @@ from models.base import BaseModel
 from models.cans import CAN, Agreement, BudgetLineItem, CANFiscalYear, ContractAgreement, ProductServiceCode
 from models.portfolios import Division, Portfolio, PortfolioStatus
 from models.procurement_shops import ProcurementShop
-from models.research_projects import ResearchProject
+from models.research_projects import ResearchProject, ResearchType
 from models.users import User
 from ops_api.ops.resources.agreements import (
     AgreementItemAPI,
@@ -27,6 +27,7 @@ from ops_api.ops.resources.procurement_shops import ProcurementShopsItemAPI, Pro
 from ops_api.ops.resources.product_service_code import ProductServiceCodeItemAPI, ProductServiceCodeListAPI
 from ops_api.ops.resources.research_project_funding_summary import ResearchProjectFundingSummaryListAPI
 from ops_api.ops.resources.research_projects import ResearchProjectItemAPI, ResearchProjectListAPI
+from ops_api.ops.resources.research_type import ResearchTypeListAPI
 from ops_api.ops.resources.users import UsersItemAPI, UsersListAPI
 
 # AGREEMENT ENDPOINTS
@@ -108,6 +109,9 @@ RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC = ResearchProjectFundingSumm
 # RESEARCH PROJECT ENDPOINTS
 RESEARCH_PROJECT_ITEM_API_VIEW_FUNC = ResearchProjectItemAPI.as_view("research-projects-item", ResearchProject)
 RESEARCH_PROJECT_LIST_API_VIEW_FUNC = ResearchProjectListAPI.as_view("research-projects-group", ResearchProject)
+
+# RESEARCH TYPE ENDPOINTS
+RESEARCH_TYPE_LIST_API_VIEW_FUNC = ResearchTypeListAPI.as_view("research-type-group", ResearchType)
 
 # HEALTH CHECK
 HEALTH_CHECK_VIEW_FUNC = HealthCheckAPI.as_view("health-check")

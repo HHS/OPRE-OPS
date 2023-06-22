@@ -90,10 +90,6 @@ class OPSMethodView(MethodView):
             current_app.logger.error(f"{message}: {errors}")
             raise ValidationError(errors)
 
-    def _get_enum_items(self) -> Response:
-        enum_items = [e.name for e in self]
-        return jsonify(enum_items)
-
 
 class BaseItemAPI(OPSMethodView):
     def __init__(self, model: BaseModel):
@@ -114,9 +110,16 @@ class BaseListAPI(OPSMethodView):
 
     @jwt_required()
     def post(self) -> Response:
-        ...
+        raise NotImplementedError
 
 
 class EnumListAPI(MethodView):
-    def __init__(self, enum: Enum):
-        super().__init__(enum)
+    enum: Enum
+
+    def __init_subclass__(self, enum: Enum, **kwargs):
+        self.enum = enum
+        super().__init_subclass__(**kwargs)
+
+    def get(self) -> Response:
+        enum_items = {e.name: e.value for e in self.enum}  # type: ignore [attr-defined]
+        return jsonify(enum_items)
