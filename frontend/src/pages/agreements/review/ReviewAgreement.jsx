@@ -72,7 +72,9 @@ export const ReviewAgreement = ({ agreement_id }) => {
         }
 
         return () => {
-            setProjectOfficerName({});
+            setProjectOfficerName({
+                full_name: "",
+            });
         };
     }, [agreement]);
 
