@@ -8,7 +8,6 @@ import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from 
 import { getUser } from "../../../api/getUser";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
-import Input from "../../../components/UI/Form/Input/Input";
 import Terms from "./Terms";
 import suite from "./suite";
 
@@ -122,7 +121,6 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     className={cn("name")}
                     value={agreement?.name}
                 />
-
                 <Terms
                     name="type"
                     label="Agreement Type"
@@ -130,7 +128,6 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     className={cn("type")}
                     value={convertCodeForDisplay("agreementType", agreement?.agreement_type)}
                 />
-
                 <Terms
                     name="description"
                     label="Description"
@@ -145,11 +142,13 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     className={cn("psc")}
                     value={agreement?.product_service_code?.name}
                 />
-
-                {/* <dt className="margin-0 text-base-dark margin-top-3">Product Service Code</dt>
-                <dd className="text-semibold margin-0 margin-top-05">{agreement?.product_service_code?.name}</dd> */}
-                <dt className="margin-0 text-base-dark margin-top-3">NAICS Code</dt>
-                <dd className="text-semibold margin-0 margin-top-05">{agreement?.product_service_code?.naics}</dd>
+                <Terms
+                    name="naics"
+                    label="NAICS Code"
+                    messages={res.getErrors("naics")}
+                    className={cn("naics")}
+                    value={agreement?.product_service_code?.naics}
+                />
                 <dt className="margin-0 text-base-dark margin-top-3">Program Support Code</dt>
                 <dd className="text-semibold margin-0 margin-top-05">
                     {agreement?.product_service_code?.support_code}

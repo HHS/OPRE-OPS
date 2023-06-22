@@ -15,24 +15,13 @@ import cx from "clsx";
 const Terms = ({ name, label = name, pending = false, messages = [], value, className }) => {
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>
-            {/* <label className={`usa-label ${messages.length ? "usa-label--error" : null} `} htmlFor={name}>
-                {label}
-            </label> */}
             <dt className="margin-0 text-base-dark margin-top-3">{label}</dt>
             {messages.length ? (
                 <span className="usa-error-message" id="input-error-message" role="alert">
                     {messages[0]}
                 </span>
             ) : null}
-            {/* <input
-                id={name}
-                name={name}
-                className={`usa-input ${messages.length ? "usa-input--error" : null} `}
-                onChange={handleChange}
-                autoComplete="off"
-                autoCorrect="off"
-                value={value}
-            /> */}
+
             <dd className="text-semibold margin-0 margin-top-05">{value || "TBD"}</dd>
         </div>
     );
