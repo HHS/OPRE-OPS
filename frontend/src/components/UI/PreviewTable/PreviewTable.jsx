@@ -1,4 +1,3 @@
-import { func, bool, arrayOf, shape, string, number } from "prop-types";
 import { useState, Fragment } from "react";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

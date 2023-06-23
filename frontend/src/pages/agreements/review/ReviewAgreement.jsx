@@ -1,5 +1,5 @@
 import { useEffect, useState, Fragment } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 import PreviewTable from "../../../components/UI/PreviewTable";
@@ -9,7 +9,7 @@ import { getUser } from "../../../api/getUser";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import Terms from "./Terms";
 import suite from "./suite";
-import { set } from "lodash";
+import { setAlert } from "../../../components/UI/Alert/alertSlice";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
