@@ -6,14 +6,26 @@ import desert
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
-from models import Notification, User
+from marshmallow import ValidationError
+from models import Notification, OpsEventType, User
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 from sqlalchemy.orm import InstrumentedAttribute
 from typing_extensions import override
+
+ENDPOINT_STRING = "/notifications"
+
+
+@dataclass()
+class PUTSchema:
+    status: Optional[bool] = None
+    title: Optional[str] = None
+    message: Optional[str] = None
+    recipient_id: Optional[int] = None
 
 
 @dataclass
@@ -48,6 +60,7 @@ class NotificationItemAPI(BaseItemAPI):
     def __init__(self, model):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(NotificationResponse)()
+        self._put_schema = mmdc.class_schema(PUTSchema)()
 
     def _get_item_with_try(self, id: int) -> Response:
         try:
@@ -75,6 +88,51 @@ class NotificationItemAPI(BaseItemAPI):
             response = make_response_with_headers({}, 401)
 
         return response
+
+    @override
+    @jwt_required()
+    def put(self, id: int) -> Response:
+        message_prefix = f"PUT to {ENDPOINT_STRING}"
+        try:
+            existing_notification = current_app.db_session.get(Notification, id)
+            if existing_notification and not existing_notification.status and request.json.get("status"):
+                with OpsEventHandler(OpsEventType.ACKNOWLEDGE_NOTIFICATION) as meta:
+                    data = self._put_schema.dump(self._put_schema.load(request.json))
+
+                    for item in data:
+                        setattr(existing_notification, item, data[item])
+
+                    current_app.db_session.add(existing_notification)
+                    current_app.db_session.commit()
+
+                    notification_dict = existing_notification.to_dict()
+
+                    meta.metadata.update({"notification": notification_dict})
+
+                    current_app.logger.info(f"{message_prefix}: Notification Acknowledged: {notification_dict}")
+            else:
+                data = self._put_schema.dump(self._put_schema.load(request.json))
+
+                for item in data:
+                    setattr(existing_notification, item, data[item])
+
+                current_app.db_session.add(existing_notification)
+                current_app.db_session.commit()
+
+                notification_dict = existing_notification.to_dict()
+
+                current_app.logger.info(f"{message_prefix}: Notification Updated: {notification_dict}")
+            return make_response_with_headers(notification_dict, 200)
+        except (KeyError, RuntimeError, PendingRollbackError) as re:
+            current_app.logger.error(f"{message_prefix}: {re}")
+            return make_response_with_headers({}, 400)
+        except ValidationError as ve:
+            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
+            current_app.logger.error(f"{message_prefix}: {ve}")
+            return make_response_with_headers(ve.normalized_messages(), 400)
+        except SQLAlchemyError as se:
+            current_app.logger.error(f"{message_prefix}: {se}")
+            return make_response_with_headers({}, 500)
 
 
 class NotificationListAPI(BaseListAPI):
