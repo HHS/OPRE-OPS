@@ -65,7 +65,7 @@ const codesToDisplayText = {
         reason: "Reason for creating the agreement",
         incumbent: "Incumbent",
         "project-officer": "Project Officer",
-        "team-members": "Team Members",
+        "team-member": "Team Members",
         "budget-line-items": "Budget Line Items",
     },
 };
@@ -77,6 +77,8 @@ const codesToDisplayText = {
  * @returns {string} The display text value for the code, or the original code value if no mapping is found.
  * @throws {Error} If either the listName or code parameter is not provided.
  * @example convertCodeForDisplay("agreementReason", reason)
+ * @example convertCodeForDisplay("budgetLineType", budgetLineType)
+ * @example convertCodeForDisplay("validation", "name")
  */
 export const convertCodeForDisplay = (listName, code) => {
     if (!codesToDisplayText[listName]) {
