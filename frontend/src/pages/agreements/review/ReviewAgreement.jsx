@@ -25,7 +25,9 @@ export const ReviewAgreement = ({ agreement_id }) => {
         data: agreement,
         error: errorAgreement,
         isLoading: isLoadingAgreement,
-    } = useGetAgreementByIdQuery(agreement_id);
+    } = useGetAgreementByIdQuery(agreement_id, {
+        refetchOnMountOrArgChange: true,
+    });
 
     const [updateBudgetLineItemStatus] = useUpdateBudgetLineItemStatusMutation();
 

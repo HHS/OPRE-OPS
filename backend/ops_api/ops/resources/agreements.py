@@ -278,6 +278,9 @@ class AgreementItemAPI(BaseItemAPI):
 
                 return make_response_with_headers({"message": "Agreement deleted", "id": agreement.id}, 200)
 
+        except RuntimeError as e:
+            return make_response_with_headers({"message": f"{type(e)}: {e!s}", "id": agreement.id}, 400)
+
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
@@ -429,7 +432,7 @@ def _get_user_list(data: Any):
 
 def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
     for item in data:
-        if item in {"agreement_type", "agreement_reason"}:
+        if item in {"agreement_type"}:
             pass
         elif item not in {"team_members", "support_contacts"}:
             setattr(agreement, item, data[item])
