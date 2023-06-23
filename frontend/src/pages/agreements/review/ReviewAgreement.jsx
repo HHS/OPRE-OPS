@@ -42,23 +42,29 @@ export const ReviewAgreement = ({ agreement_id }) => {
         valid: "success",
         warning: "warning",
     });
-
+    // pass in the agreement object to the suite
     useEffect(() => {
         if (isSuccess) {
             suite({
                 ...agreement,
             });
-            if (!res.isValid()) {
-                setIsAlertActive(true);
-                setPageErrors(res.getErrors());
-            }
         }
         return () => {
             suite.reset();
+        };
+    }, [isSuccess, agreement]);
+
+    // fire the page errors based on the suite results
+    useEffect(() => {
+        if (isSuccess && !res.isValid()) {
+            setIsAlertActive(true);
+            setPageErrors(res.getErrors());
+        }
+        return () => {
             setPageErrors({});
             setIsAlertActive(false);
         };
-    }, [isSuccess, agreement, dispatch, res]);
+    }, [res, isSuccess]);
 
     useEffect(() => {
         if (isSuccess) {
@@ -117,7 +123,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
 
     return (
         <>
-            {isAlertActive || Object.entries(pageErrors).length > 0 ? (
+            {Object.entries(pageErrors).length > 0 ? (
                 <SimpleAlert
                     type="error"
                     heading="Please resolve the errors outlined below"
