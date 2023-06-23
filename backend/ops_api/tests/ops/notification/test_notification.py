@@ -1,6 +1,7 @@
 import pytest
 from models import User
 from models.notifications import Notification
+from ops_api.ops.resources.notifications import PUTSchema
 from sqlalchemy import select
 
 
@@ -154,3 +155,39 @@ def test_notification_auth(client, loaded_db):
 
     response = client.get("/api/v1/notifications/")
     assert response.status_code == 401
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_put_notification(auth_client, notification):
+    data = PUTSchema(
+        status=False,
+        title="Updated Notification",
+        message="This is an updated notification",
+        recipient_id=1,
+    )
+    response = auth_client.put(f"/api/v1/notifications/{notification.id}", json=data.__dict__)
+    assert response.status_code == 200
+    assert response.json["id"] == notification.id
+    assert response.json["title"] == "Updated Notification"
+    assert response.json["message"] == "This is an updated notification"
+    assert response.json["recipient_id"] == 1
+    assert response.json["status"] is False
+    assert response.json["created_on"] != response.json["updated_on"]
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_put_notification_ack(auth_client, notification):
+    data = PUTSchema(
+        status=True,
+        title="Updated Notification",
+        message="This is an updated notification",
+        recipient_id=1,
+    )
+    response = auth_client.put(f"/api/v1/notifications/{notification.id}", json=data.__dict__)
+    assert response.status_code == 200
+    assert response.json["id"] == notification.id
+    assert response.json["title"] == "Updated Notification"
+    assert response.json["message"] == "This is an updated notification"
+    assert response.json["recipient_id"] == 1
+    assert response.json["status"] is True
+    assert response.json["created_on"] != response.json["updated_on"]
