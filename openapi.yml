@@ -893,7 +893,7 @@ paths:
           schema:
             type: string
           example: '6dd69df5-b6ab-4f27-890a-e64dd1d7f1e6'
-        - name: status
+        - name: is_read
           in: query
           schema:
             type: boolean
@@ -1319,7 +1319,7 @@ components:
         title:
           type: string
           example: 'Notification #1'
-        status:
+        is_read:
           type: boolean
           example: True
         message:
@@ -1342,7 +1342,7 @@ components:
     NotificationRequest:
       type: object
       properties:
-        status:
+        is_read:
           type: boolean
           example: True
         title:

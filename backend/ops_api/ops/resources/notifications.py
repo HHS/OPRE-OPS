@@ -22,7 +22,7 @@ ENDPOINT_STRING = "/notifications"
 
 @dataclass()
 class UpdateSchema:
-    status: Optional[bool] = None
+    is_read: Optional[bool] = None
     title: Optional[str] = None
     message: Optional[str] = None
     recipient_id: Optional[int] = None
@@ -39,7 +39,7 @@ class Recipient:
 @dataclass
 class NotificationResponse:
     id: int
-    status: bool
+    is_read: bool
     created_by: int
     updated_by: int
     created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%f"})
@@ -53,7 +53,7 @@ class NotificationResponse:
 class ListAPIRequest:
     user_id: Optional[str]
     oidc_id: Optional[str]
-    status: Optional[bool]
+    is_read: Optional[bool]
 
 
 class NotificationItemAPI(BaseItemAPI):
@@ -96,7 +96,7 @@ class NotificationItemAPI(BaseItemAPI):
         message_prefix = f"PUT to {ENDPOINT_STRING}"
         try:
             existing_notification = current_app.db_session.get(Notification, id)
-            if existing_notification and not existing_notification.status and request.json.get("status"):
+            if existing_notification and not existing_notification.is_read and request.json.get("is_read"):
                 with OpsEventHandler(OpsEventType.ACKNOWLEDGE_NOTIFICATION) as meta:
                     data = self._put_schema.dump(self._put_schema.load(request.json))
 
@@ -141,7 +141,7 @@ class NotificationItemAPI(BaseItemAPI):
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
         try:
             existing_notification = current_app.db_session.get(Notification, id)
-            if existing_notification and not existing_notification.status and request.json.get("status"):
+            if existing_notification and not existing_notification.is_read and request.json.get("is_read"):
                 with OpsEventHandler(OpsEventType.ACKNOWLEDGE_NOTIFICATION) as meta:
                     data = self._patch_schema.dump(self._patch_schema.load(request.json))
                     data = {
@@ -194,7 +194,7 @@ class NotificationListAPI(BaseListAPI):
         self._response_schema_collection = mmdc.class_schema(NotificationResponse)(many=True)
 
     @staticmethod
-    def _get_query(user_id=None, oidc_id=None, status=None):
+    def _get_query(user_id=None, oidc_id=None, is_read=None):
         stmt = (
             select(Notification)
             .distinct(Notification.id)
@@ -214,8 +214,8 @@ class NotificationListAPI(BaseListAPI):
         elif oidc_id:
             query_helper.add_column_equals(cast(InstrumentedAttribute, User.oidc_id), oidc_id)
 
-        if status is not None:
-            query_helper.add_column_equals(cast(InstrumentedAttribute, Notification.status), status)
+        if is_read is not None:
+            query_helper.add_column_equals(cast(InstrumentedAttribute, Notification.is_read), is_read)
 
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")
@@ -233,7 +233,7 @@ class NotificationListAPI(BaseListAPI):
         stmt = self._get_query(
             user_id=request_data.user_id,
             oidc_id=request_data.oidc_id,
-            status=request_data.status,
+            is_read=request_data.is_read,
         )
         result = current_app.db_session.execute(stmt).all()
         return make_response_with_headers(self._response_schema_collection.dump([item[0] for item in result]))

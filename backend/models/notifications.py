@@ -9,7 +9,7 @@ class Notification(BaseModel):
     id = Column(Integer, Identity(), primary_key=True)
     title = Column(String)
     message = Column(String)
-    status = Column(Boolean, default=False)
+    is_read = Column(Boolean, default=False)
     expires = Column(Date)
 
     recipient_id = Column(Integer, ForeignKey("users.id"))
