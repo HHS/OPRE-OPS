@@ -108,7 +108,7 @@ class NotificationItemAPI(BaseItemAPI):
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
 
-    def put_notification(self, id, message_prefix):
+    def put_notification(self, id: int, message_prefix: str):
         existing_notification = current_app.db_session.get(Notification, id)
         if existing_notification and not existing_notification.is_read and request.json.get("is_read"):
             with OpsEventHandler(OpsEventType.ACKNOWLEDGE_NOTIFICATION) as meta:
@@ -117,7 +117,12 @@ class NotificationItemAPI(BaseItemAPI):
             notification_dict = self.handle_put(existing_notification, message_prefix)
         return notification_dict
 
-    def handle_put(self, existing_notification, message_prefix, meta=None):
+    def handle_put(
+        self,
+        existing_notification: Notification,
+        message_prefix: str,
+        meta: Optional[OpsEventHandler] = None,
+    ):
         data = self._put_schema.dump(self._put_schema.load(request.json))
         for item in data:
             setattr(existing_notification, item, data[item])
@@ -147,7 +152,7 @@ class NotificationItemAPI(BaseItemAPI):
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
 
-    def patch_notification(self, id, message_prefix):
+    def patch_notification(self, id: int, message_prefix: str):
         existing_notification = current_app.db_session.get(Notification, id)
         if existing_notification and not existing_notification.is_read and request.json.get("is_read"):
             with OpsEventHandler(OpsEventType.ACKNOWLEDGE_NOTIFICATION) as meta:
@@ -156,7 +161,12 @@ class NotificationItemAPI(BaseItemAPI):
             notification_dict = self.handle_patch(existing_notification, message_prefix)
         return notification_dict
 
-    def handle_patch(self, existing_notification, message_prefix, meta=None):
+    def handle_patch(
+        self,
+        existing_notification: Notification,
+        message_prefix: str,
+        meta: Optional[OpsEventHandler] = None,
+    ):
         data = self._patch_schema.dump(self._patch_schema.load(request.json))
         data = {k: v for (k, v) in data.items() if k in request.json}  # only keep the attributes from the request body
         for item in data:
@@ -177,7 +187,11 @@ class NotificationListAPI(BaseListAPI):
         self._response_schema_collection = mmdc.class_schema(NotificationResponse)(many=True)
 
     @staticmethod
-    def _get_query(user_id=None, oidc_id=None, is_read=None):
+    def _get_query(
+        user_id: Optional[int] = None,
+        oidc_id: Optional[str] = None,
+        is_read: Optional[bool] = None,
+    ):
         stmt = (
             select(Notification)
             .distinct(Notification.id)
