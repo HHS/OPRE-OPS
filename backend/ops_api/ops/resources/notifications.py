@@ -106,7 +106,7 @@ class NotificationItemAPI(BaseItemAPI):
                     current_app.db_session.add(existing_notification)
                     current_app.db_session.commit()
 
-                    notification_dict = existing_notification.to_dict()
+                    notification_dict = self._response_schema.dump(existing_notification)
 
                     meta.metadata.update({"notification": notification_dict})
 
@@ -120,7 +120,7 @@ class NotificationItemAPI(BaseItemAPI):
                 current_app.db_session.add(existing_notification)
                 current_app.db_session.commit()
 
-                notification_dict = existing_notification.to_dict()
+                notification_dict = self._response_schema.dump(existing_notification)
 
                 current_app.logger.info(f"{message_prefix}: Notification Updated: {notification_dict}")
             return make_response_with_headers(notification_dict, 200)
@@ -154,7 +154,7 @@ class NotificationItemAPI(BaseItemAPI):
                     current_app.db_session.add(existing_notification)
                     current_app.db_session.commit()
 
-                    notification_dict = existing_notification.to_dict()
+                    notification_dict = self._response_schema.dump(existing_notification)
 
                     meta.metadata.update({"notification": notification_dict})
 
@@ -171,7 +171,7 @@ class NotificationItemAPI(BaseItemAPI):
                 current_app.db_session.add(existing_notification)
                 current_app.db_session.commit()
 
-                notification_dict = existing_notification.to_dict()
+                notification_dict = self._response_schema.dump(existing_notification)
 
                 current_app.logger.info(f"{message_prefix}: Notification Updated: {notification_dict}")
             return make_response_with_headers(notification_dict, 200)

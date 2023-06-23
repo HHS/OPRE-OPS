@@ -170,7 +170,12 @@ def test_put_notification(auth_client, notification):
     assert response.json["id"] == notification.id
     assert response.json["title"] == "Updated Notification"
     assert response.json["message"] == "This is an updated notification"
-    assert response.json["recipient_id"] == 1
+    assert response.json["recipient"] == {
+        "email": "chris.fortunato@example.com",
+        "full_name": "Chris Fortunato",
+        "id": 1,
+        "oidc_id": "00000000-0000-1111-a111-000000000001",
+    }
     assert response.json["status"] is False
     assert response.json["created_on"] != response.json["updated_on"]
 
@@ -188,7 +193,12 @@ def test_put_notification_ack(auth_client, notification):
     assert response.json["id"] == notification.id
     assert response.json["title"] == "Updated Notification"
     assert response.json["message"] == "This is an updated notification"
-    assert response.json["recipient_id"] == 1
+    assert response.json["recipient"] == {
+        "email": "chris.fortunato@example.com",
+        "full_name": "Chris Fortunato",
+        "id": 1,
+        "oidc_id": "00000000-0000-1111-a111-000000000001",
+    }
     assert response.json["status"] is True
     assert response.json["created_on"] != response.json["updated_on"]
 
@@ -202,7 +212,7 @@ def test_patch_notification(auth_client, notification):
     assert response.json["id"] == notification.id
     assert response.json["title"] == notification.title
     assert response.json["message"] == notification.message
-    assert response.json["recipient_id"] == notification.recipient_id
+    assert response.json["recipient"] == notification.recipient
     assert response.json["status"] is False
     assert response.json["created_on"] != response.json["updated_on"]
 
@@ -216,6 +226,6 @@ def test_patch_notification_ack(auth_client, notification):
     assert response.json["id"] == notification.id
     assert response.json["title"] == notification.title
     assert response.json["message"] == notification.message
-    assert response.json["recipient_id"] == notification.recipient_id
+    assert response.json["recipient"] == notification.recipient
     assert response.json["status"] is True
     assert response.json["created_on"] != response.json["updated_on"]
