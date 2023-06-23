@@ -95,12 +95,7 @@ class NotificationItemAPI(BaseItemAPI):
     def put(self, id: int) -> Response:
         message_prefix = f"PUT to {ENDPOINT_STRING}"
         try:
-            existing_notification = current_app.db_session.get(Notification, id)
-            if existing_notification and not existing_notification.is_read and request.json.get("is_read"):
-                with OpsEventHandler(OpsEventType.ACKNOWLEDGE_NOTIFICATION) as meta:
-                    notification_dict = self.handle_put(existing_notification, message_prefix, meta)
-            else:
-                notification_dict = self.handle_put(existing_notification, message_prefix)
+            notification_dict = self.put_notification(id, message_prefix)
             return make_response_with_headers(notification_dict, 200)
         except (KeyError, RuntimeError, PendingRollbackError) as re:
             current_app.logger.error(f"{message_prefix}: {re}")
@@ -112,6 +107,15 @@ class NotificationItemAPI(BaseItemAPI):
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
+
+    def put_notification(self, id, message_prefix):
+        existing_notification = current_app.db_session.get(Notification, id)
+        if existing_notification and not existing_notification.is_read and request.json.get("is_read"):
+            with OpsEventHandler(OpsEventType.ACKNOWLEDGE_NOTIFICATION) as meta:
+                notification_dict = self.handle_put(existing_notification, message_prefix, meta)
+        else:
+            notification_dict = self.handle_put(existing_notification, message_prefix)
+        return notification_dict
 
     def handle_put(self, existing_notification, message_prefix, meta=None):
         data = self._put_schema.dump(self._put_schema.load(request.json))
@@ -122,7 +126,7 @@ class NotificationItemAPI(BaseItemAPI):
         notification_dict = self._response_schema.dump(existing_notification)
         if meta:
             meta.metadata.update({"notification": notification_dict})
-        current_app.logger.info(f"{message_prefix}: Notification Acknowledged: {notification_dict}")
+        current_app.logger.info(f"{message_prefix}: Notification Updated: {notification_dict}")
         return notification_dict
 
     @override
@@ -130,40 +134,7 @@ class NotificationItemAPI(BaseItemAPI):
     def patch(self, id: int) -> Response:
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
         try:
-            existing_notification = current_app.db_session.get(Notification, id)
-            if existing_notification and not existing_notification.is_read and request.json.get("is_read"):
-                with OpsEventHandler(OpsEventType.ACKNOWLEDGE_NOTIFICATION) as meta:
-                    data = self._patch_schema.dump(self._patch_schema.load(request.json))
-                    data = {
-                        k: v for (k, v) in data.items() if k in request.json
-                    }  # only keep the attributes from the request body
-
-                    for item in data:
-                        setattr(existing_notification, item, data[item])
-
-                    current_app.db_session.add(existing_notification)
-                    current_app.db_session.commit()
-
-                    notification_dict = self._response_schema.dump(existing_notification)
-
-                    meta.metadata.update({"notification": notification_dict})
-
-                    current_app.logger.info(f"{message_prefix}: Notification Acknowledged: {notification_dict}")
-            else:
-                data = self._patch_schema.dump(self._patch_schema.load(request.json))
-                data = {
-                    k: v for (k, v) in data.items() if k in request.json
-                }  # only keep the attributes from the request body
-
-                for item in data:
-                    setattr(existing_notification, item, data[item])
-
-                current_app.db_session.add(existing_notification)
-                current_app.db_session.commit()
-
-                notification_dict = self._response_schema.dump(existing_notification)
-
-                current_app.logger.info(f"{message_prefix}: Notification Updated: {notification_dict}")
+            notification_dict = self.patch_notification(id, message_prefix)
             return make_response_with_headers(notification_dict, 200)
         except (KeyError, RuntimeError, PendingRollbackError) as re:
             current_app.logger.error(f"{message_prefix}: {re}")
@@ -175,6 +146,28 @@ class NotificationItemAPI(BaseItemAPI):
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
+
+    def patch_notification(self, id, message_prefix):
+        existing_notification = current_app.db_session.get(Notification, id)
+        if existing_notification and not existing_notification.is_read and request.json.get("is_read"):
+            with OpsEventHandler(OpsEventType.ACKNOWLEDGE_NOTIFICATION) as meta:
+                notification_dict = self.handle_patch(existing_notification, message_prefix, meta)
+        else:
+            notification_dict = self.handle_patch(existing_notification, message_prefix)
+        return notification_dict
+
+    def handle_patch(self, existing_notification, message_prefix, meta=None):
+        data = self._patch_schema.dump(self._patch_schema.load(request.json))
+        data = {k: v for (k, v) in data.items() if k in request.json}  # only keep the attributes from the request body
+        for item in data:
+            setattr(existing_notification, item, data[item])
+        current_app.db_session.add(existing_notification)
+        current_app.db_session.commit()
+        notification_dict = self._response_schema.dump(existing_notification)
+        if meta:
+            meta.metadata.update({"notification": notification_dict})
+        current_app.logger.info(f"{message_prefix}: Notification Updated: {notification_dict}")
+        return notification_dict
 
 
 class NotificationListAPI(BaseListAPI):
