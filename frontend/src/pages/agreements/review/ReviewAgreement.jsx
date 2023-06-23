@@ -1,8 +1,9 @@
 import { useEffect, useState, Fragment } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 import PreviewTable from "../../../components/UI/PreviewTable";
+import Alert from "../../../components/UI/Alert";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../../api/opsAPI";
 import { getUser } from "../../../api/getUser";
@@ -34,6 +35,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const [projectOfficerName, setProjectOfficerName] = useState({ full_name: "" });
     const [pageErrors, setPageErrors] = useState({});
     const [isAlertActive, setIsAlertActive] = useState(false);
+    const isGlobalAlertActive = useSelector((state) => state.alert.isActive);
     let res = suite.get();
 
     // console.log(JSON.stringify(res, null, 2));
@@ -123,7 +125,8 @@ export const ReviewAgreement = ({ agreement_id }) => {
 
     return (
         <>
-            {Object.entries(pageErrors).length > 0 ? (
+            {isGlobalAlertActive && <Alert />}
+            {isAlertActive && Object.entries(pageErrors).length > 0 ? (
                 <SimpleAlert
                     type="error"
                     heading="Please resolve the errors outlined below"
@@ -132,7 +135,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     <ul>
                         {Object.entries(pageErrors).map(([key, value]) => (
                             <li key={key}>
-                                <strong>{key}: </strong>
+                                <strong>{convertCodeForDisplay("validation", key)}: </strong>
                                 {
                                     <span>
                                         {value.map((message, index) => (
