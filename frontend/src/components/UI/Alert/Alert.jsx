@@ -9,11 +9,10 @@ import { setIsActive, clearState } from "./alertSlice";
  * A component that displays an alert.
  * @param {Object} props - The component props.
  * @param {React.JSX.Element} [props.children] - The JSX children to render. (optional)
- * @param {boolean} [props.noClear] - A flag to indicate if the alert should not be cleared. (optional)
  * @returns {React.JSX.Element} The JSX element to render.
  * @see {@link https://designsystem.digital.gov/components/alerts/}
  */
-export const Alert = ({ children, noClear = false }) => {
+export const Alert = ({ children }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const heading = useSelector((state) => state.alert.heading);
@@ -30,16 +29,13 @@ export const Alert = ({ children, noClear = false }) => {
         const showAlert = async () => {
             await new Promise((resolve) => setTimeout(resolve, 500));
             window.scrollTo(0, 0);
-            if (noClear) {
-                return;
-            } else {
-                await new Promise((resolve) => setTimeout(resolve, 5000));
-                dispatch(clearState());
-            }
+
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+            dispatch(clearState());
         };
 
         showAlert();
-    }, [navigate, dispatch, redirectUrl, noClear]);
+    }, [navigate, dispatch, redirectUrl]);
 
     switch (type) {
         case "success":
@@ -62,6 +58,7 @@ export const Alert = ({ children, noClear = false }) => {
                     <p className="usa-alert__text">{message}</p>
                     {children}
                 </div>
+
                 <FontAwesomeIcon
                     icon={faClose}
                     className="height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"

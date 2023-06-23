@@ -3,13 +3,13 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 import PreviewTable from "../../../components/UI/PreviewTable";
-import Alert from "../../../components/UI/Alert";
+import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../../api/opsAPI";
 import { getUser } from "../../../api/getUser";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import { clearState, setAlert } from "../../../components/UI/Alert/alertSlice";
 import Terms from "./Terms";
 import suite from "./suite";
+import { set } from "lodash";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -33,7 +33,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
 
     const [projectOfficerName, setProjectOfficerName] = useState({ full_name: "" });
     const [pageErrors, setPageErrors] = useState({});
-    const isAlertActive = useSelector((state) => state.alert.isActive);
+    const [isAlertActive, setIsAlertActive] = useState(false);
     let res = suite.get();
 
     // console.log(JSON.stringify(res, null, 2));
@@ -49,21 +49,14 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 ...agreement,
             });
             if (!res.isValid()) {
-                dispatch(
-                    setAlert({
-                        type: "error",
-                        heading: "Please resolve the errors outlined below",
-                        message:
-                            "In order to send this agreement to approval, click edit to update the required information.",
-                    })
-                );
+                setIsAlertActive(true);
                 setPageErrors(res.getErrors());
             }
         }
         return () => {
             suite.reset();
             setPageErrors({});
-            dispatch(clearState());
+            setIsAlertActive(false);
         };
     }, [isSuccess, agreement, dispatch, res]);
 
@@ -125,7 +118,11 @@ export const ReviewAgreement = ({ agreement_id }) => {
     return (
         <>
             {isAlertActive || Object.entries(pageErrors).length > 0 ? (
-                <Alert noClear={true}>
+                <SimpleAlert
+                    type="error"
+                    heading="Please resolve the errors outlined below"
+                    message="In order to send this agreement to approval, click edit to update the required information."
+                >
                     <ul>
                         {Object.entries(pageErrors).map(([key, value]) => (
                             <li key={key}>
@@ -143,7 +140,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                             </li>
                         ))}
                     </ul>
-                </Alert>
+                </SimpleAlert>
             ) : (
                 <h1 className="text-bold margin-top-0" style={{ fontSize: "1.375rem" }}>
                     Review and Send Agreement to Approval
