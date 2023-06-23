@@ -1,5 +1,5 @@
 import pytest
-from models.research_projects import ResearchProject
+from models.research_projects import ResearchProject, ResearchType
 from ops_api.ops.resources.research_projects import RequestBody, ResearchProjectListAPI
 
 
@@ -287,3 +287,10 @@ def test_post_research_projects_auth_required(client):
     )
     response = client.post("/api/v1/research-projects/", json=data.__dict__)
     assert response.status_code == 401
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_research_types(client):
+    response = client.get("/api/v1/research-types/")
+    assert response.status_code == 200
+    assert response.json == {e.name: e.value for e in ResearchType}
