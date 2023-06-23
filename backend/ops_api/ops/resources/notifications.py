@@ -21,7 +21,7 @@ ENDPOINT_STRING = "/notifications"
 
 
 @dataclass()
-class PUTSchema:
+class UpdateSchema:
     status: Optional[bool] = None
     title: Optional[str] = None
     message: Optional[str] = None
@@ -60,7 +60,8 @@ class NotificationItemAPI(BaseItemAPI):
     def __init__(self, model):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(NotificationResponse)()
-        self._put_schema = mmdc.class_schema(PUTSchema)()
+        self._put_schema = mmdc.class_schema(UpdateSchema)()
+        self._patch_schema = mmdc.class_schema(UpdateSchema)()
 
     def _get_item_with_try(self, id: int) -> Response:
         try:
@@ -112,6 +113,57 @@ class NotificationItemAPI(BaseItemAPI):
                     current_app.logger.info(f"{message_prefix}: Notification Acknowledged: {notification_dict}")
             else:
                 data = self._put_schema.dump(self._put_schema.load(request.json))
+
+                for item in data:
+                    setattr(existing_notification, item, data[item])
+
+                current_app.db_session.add(existing_notification)
+                current_app.db_session.commit()
+
+                notification_dict = existing_notification.to_dict()
+
+                current_app.logger.info(f"{message_prefix}: Notification Updated: {notification_dict}")
+            return make_response_with_headers(notification_dict, 200)
+        except (KeyError, RuntimeError, PendingRollbackError) as re:
+            current_app.logger.error(f"{message_prefix}: {re}")
+            return make_response_with_headers({}, 400)
+        except ValidationError as ve:
+            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
+            current_app.logger.error(f"{message_prefix}: {ve}")
+            return make_response_with_headers(ve.normalized_messages(), 400)
+        except SQLAlchemyError as se:
+            current_app.logger.error(f"{message_prefix}: {se}")
+            return make_response_with_headers({}, 500)
+
+    @override
+    @jwt_required()
+    def patch(self, id: int) -> Response:
+        message_prefix = f"PATCH to {ENDPOINT_STRING}"
+        try:
+            existing_notification = current_app.db_session.get(Notification, id)
+            if existing_notification and not existing_notification.status and request.json.get("status"):
+                with OpsEventHandler(OpsEventType.ACKNOWLEDGE_NOTIFICATION) as meta:
+                    data = self._patch_schema.dump(self._patch_schema.load(request.json))
+                    data = {
+                        k: v for (k, v) in data.items() if k in request.json
+                    }  # only keep the attributes from the request body
+
+                    for item in data:
+                        setattr(existing_notification, item, data[item])
+
+                    current_app.db_session.add(existing_notification)
+                    current_app.db_session.commit()
+
+                    notification_dict = existing_notification.to_dict()
+
+                    meta.metadata.update({"notification": notification_dict})
+
+                    current_app.logger.info(f"{message_prefix}: Notification Acknowledged: {notification_dict}")
+            else:
+                data = self._patch_schema.dump(self._patch_schema.load(request.json))
+                data = {
+                    k: v for (k, v) in data.items() if k in request.json
+                }  # only keep the attributes from the request body
 
                 for item in data:
                     setattr(existing_notification, item, data[item])

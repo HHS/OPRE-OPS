@@ -1,7 +1,7 @@
 import pytest
 from models import User
 from models.notifications import Notification
-from ops_api.ops.resources.notifications import PUTSchema
+from ops_api.ops.resources.notifications import UpdateSchema
 from sqlalchemy import select
 
 
@@ -159,7 +159,7 @@ def test_notification_auth(client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_put_notification(auth_client, notification):
-    data = PUTSchema(
+    data = UpdateSchema(
         status=False,
         title="Updated Notification",
         message="This is an updated notification",
@@ -177,7 +177,7 @@ def test_put_notification(auth_client, notification):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_put_notification_ack(auth_client, notification):
-    data = PUTSchema(
+    data = UpdateSchema(
         status=True,
         title="Updated Notification",
         message="This is an updated notification",
@@ -189,5 +189,33 @@ def test_put_notification_ack(auth_client, notification):
     assert response.json["title"] == "Updated Notification"
     assert response.json["message"] == "This is an updated notification"
     assert response.json["recipient_id"] == 1
+    assert response.json["status"] is True
+    assert response.json["created_on"] != response.json["updated_on"]
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_patch_notification(auth_client, notification):
+    data = UpdateSchema(status=False)
+    response = auth_client.patch(f"/api/v1/notifications/{notification.id}", json=data.__dict__)
+
+    assert response.json["id"] == notification.id
+    assert response.json["title"] == notification.title
+    assert response.json["message"] == notification.message
+    assert response.json["recipient_id"] == notification.recipient_id
+    assert response.json["status"] is False
+    assert response.json["created_on"] != response.json["updated_on"]
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_patch_notification_ack(auth_client, notification):
+    data = UpdateSchema(status=True)
+    response = auth_client.patch(f"/api/v1/notifications/{notification.id}", json=data.__dict__)
+
+    assert response.json["id"] == notification.id
+    assert response.json["title"] == notification.title
+    assert response.json["message"] == notification.message
+    assert response.json["recipient_id"] == notification.recipient_id
     assert response.json["status"] is True
     assert response.json["created_on"] != response.json["updated_on"]
