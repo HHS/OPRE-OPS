@@ -161,7 +161,7 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=RESEARCH_PROJECT_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
-        "/research-type/",
+        "/research-types/",
         view_func=RESEARCH_TYPE_LIST_API_VIEW_FUNC,
     )
 
