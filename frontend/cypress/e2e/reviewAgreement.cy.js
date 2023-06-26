@@ -62,16 +62,15 @@ it("edit an agreement", () => {
         cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
 
         // TODO: DELETE test agreement (after API implemented)
-        // cy.request({
-        //     method: 'DELETE',
-        //     url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-        //     headers : {
-        //         "Authorization": bearer_token,
-        //         "Content-Type": "application/json",
-        //         "Accept": "application/json",
-        //     }
-        // }).then( (response) => {
-        //     expect(response.status).to.eq(200);
-        // });
+        cy.request({
+            method: "DELETE",
+            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+            headers: {
+                Authorization: bearer_token,
+                Accept: "application/json",
+            },
+        }).then((response) => {
+            expect(response.status).to.eq(200);
+        });
     });
 });
