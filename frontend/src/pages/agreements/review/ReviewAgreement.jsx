@@ -88,10 +88,10 @@ export const ReviewAgreement = ({ agreement_id }) => {
     }, [agreement, isSuccess]);
 
     if (isLoadingAgreement) {
-        return <div>Loading...</div>;
+        return <h1>Loading...</h1>;
     }
     if (errorAgreement) {
-        return <div>Oops, an error occured</div>;
+        return <h1>Oops, an error occured</h1>;
     }
 
     const anyBudgetLinesAreDraft = agreement.budget_line_items.some((item) => item.status === "DRAFT");
@@ -132,9 +132,9 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     heading="Please resolve the errors outlined below"
                     message="In order to send this agreement to approval, click edit to update the required information."
                 >
-                    <ul>
+                    <ul data-cy="error-list">
                         {Object.entries(pageErrors).map(([key, value]) => (
-                            <li key={key}>
+                            <li key={key} data-cy="error-item">
                                 <strong>{convertCodeForDisplay("validation", key)}: </strong>
                                 {
                                     <span>
@@ -282,6 +282,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 </button>
                 <button
                     className="usa-button"
+                    data-cy="send-to-approval-btn"
                     onClick={handleSendToApproval}
                     disabled={!anyBudgetLinesAreDraft || !res.isValid()}
                 >
