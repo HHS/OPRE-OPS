@@ -27,6 +27,7 @@ def user_lookup_callback(_jwt_header: dict, jwt_data: dict) -> Optional[User]:
     users = current_app.db_session.execute(stmt).all()
     if users and len(users) == 1:
         return users[0][0]
+    return None
 
 
 def create_oauth_jwt(

@@ -7,6 +7,8 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import column_property, relationship
 from typing_extensions import override
 
+from flask_authorize import AllowancesMixin
+
 # Define a many-to-many relationship between Users and Roles
 user_role_table = Table(
     "user_role",
@@ -76,7 +78,7 @@ class User(BaseModel):
         return cast(dict[str, Any], d)
 
 
-class Role(BaseModel):
+class Role(BaseModel, AllowancesMixin):
     """Main Role model."""
 
     __tablename__ = "roles"
