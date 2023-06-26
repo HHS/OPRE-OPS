@@ -34,6 +34,10 @@ const suite = create((fieldName) => {
     test("team-member", "Must have at least one team member", () => {
         enforce(fieldName.team_members).longerThan(0);
     });
+    // test to ensure at least one budget line item exists
+    test("budget-line-items", "Must have at least one budget line item", () => {
+        enforce(fieldName.budget_line_items).longerThan(0);
+    });
     // test budget_line_items array
     each(fieldName.budget_line_items, (item, index) => {
         test(`Budget line item ${index + 1} (${item.line_description})`, "Description cannot be blank", () => {
