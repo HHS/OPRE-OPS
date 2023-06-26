@@ -66,6 +66,13 @@ def track_db_history_before(session: Session):
     session.add_all(add_obj_to_db_history(session.dirty, OpsDBHistoryType.UPDATED))
 
 
+def track_db_history_after(session: Session):
+    print(session.deleted)
+    print(session.new)
+    print(session.dirty)
+    session.add_all(add_obj_to_db_history(session.new, OpsDBHistoryType.NEW))
+
+
 def track_db_history_catch_errors(exception_context):
     ops_db = OpsDBHistory(
         event_type=OpsDBHistoryType.ERROR,
