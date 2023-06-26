@@ -1,0 +1,14 @@
+{
+  "_output_dir": "/Users/chill/Projects/Flexion/HHS/OPRE-OPS/backend",
+  "_template": "gh:cjolowicz/cookiecutter-hypermodern-python",
+  "author": "Tim Donaworth",
+  "copyright_year": "2023",
+  "development_status": "Development Status :: 1 - Planning",
+  "email": "tdonaworth@flexion.us",
+  "friendly_name": "OPRE-OPS",
+  "github_user": "tdonaworth",
+  "license": "MIT",
+  "package_name": "opre_ops",
+  "project_name": "opre-ops",
+  "version": "0.0.0"
+}
