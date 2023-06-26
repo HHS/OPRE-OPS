@@ -61,7 +61,7 @@ it("edit an agreement", () => {
         //send-to-approval button should be disabled
         cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
 
-        // TODO: DELETE test agreement (after API implemented)
+        // delete test agreement
         cy.request({
             method: "DELETE",
             url: `http://localhost:8080/api/v1/agreements/${agreementId}`,

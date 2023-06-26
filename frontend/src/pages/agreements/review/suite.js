@@ -48,6 +48,14 @@ const suite = create((fieldName) => {
             enforce(item.date_needed).isNotBlank();
         });
     });
+    // need by date must be in the future
+    test("budget-line-items", "Need by date must be in the future", () => {
+        fieldName.budget_line_items.forEach((item) => {
+            const today = new Date().valueOf();
+            const dateNeeded = new Date(item.date_needed).valueOf();
+            enforce(dateNeeded).greaterThan(today);
+        });
+    });
     test("budget-line-items", "CAN is required information", () => {
         fieldName.budget_line_items.forEach((item) => {
             enforce(item.can_id).isNotBlank();
