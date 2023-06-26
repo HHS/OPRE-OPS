@@ -99,10 +99,11 @@ export const ReviewAgreement = ({ agreement_id }) => {
     // 1. convert into an array of objects
     // 2. filter page errors on object to only show errors that contain the text regex "Budget line item"
     // 3. map over the filtered array and return the error message
+
     const budgetLinePageErrors = Object.entries(pageErrors)
         .filter((error) => error[0].includes("Budget line item"))
         .map((error) => error[1]);
-    // console.log(`budgetLinePageErrors: ${JSON.stringify(budgetLinePageErrors, null, 2)}s`);
+    console.log(`budgetLinePageErrors: ${JSON.stringify(budgetLinePageErrors, null, 2)}s`);
 
     const anyBudgetLinesAreDraft = agreement.budget_line_items.some((item) => item.status === "DRAFT");
     const handleSendToApproval = () => {
@@ -263,12 +264,16 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     />
                 )}
             </dl>
-            <div className={`font-12px usa-form-group ${budgetLinePageErrors ? "usa-form-group--error" : null}`}>
+            <div
+                className={`font-12px usa-form-group ${
+                    budgetLinePageErrors.length > 0 ? "usa-form-group--error" : null
+                }`}
+            >
                 <h2 className="text-bold" style={{ fontSize: "1.375rem" }}>
                     Budget Lines
                 </h2>
                 <p>This is a list of all budget lines within this agreement.</p>
-                {budgetLinePageErrors && (
+                {budgetLinePageErrors.length > 0 && (
                     <ul className="usa-error-message padding-left-1">
                         {budgetLinePageErrors.map((error, index) => (
                             <li key={index}>
