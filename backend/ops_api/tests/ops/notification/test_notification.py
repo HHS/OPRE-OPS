@@ -1,7 +1,10 @@
+from datetime import date
+
+import marshmallow_dataclass as mmdc
 import pytest
 from models import User
 from models.notifications import Notification
-from ops_api.ops.resources.notifications import UpdateSchema
+from ops_api.ops.resources.notifications import Recipient, UpdateSchema
 from sqlalchemy import select
 
 
@@ -14,7 +17,7 @@ def test_notification_retrieve(loaded_db):
     assert notification.message == "This is a system notification"
     assert notification.is_read is False
     assert notification.recipient is not None
-    assert notification.expires is None
+    assert notification.expires == date(2031, 12, 31)
 
 
 @pytest.fixture()
@@ -33,6 +36,7 @@ def notification(loaded_db):
         message="This is a system notification",
         is_read=False,
         recipient_id=john.id,
+        expires=date(2031, 12, 31),
     )
 
     loaded_db.add(notification)
@@ -61,6 +65,7 @@ def notification_is_read_is_true(loaded_db):
         message="This is a system notification",
         is_read=True,
         recipient_id=john.id,
+        expires=date(2031, 12, 31),
     )
 
     loaded_db.add(notification)
@@ -101,6 +106,7 @@ def test_notifications_get_by_user_id(auth_client, loaded_db, notification):
     assert response.json[0]["title"] == "System Notification"
     assert response.json[0]["message"] == "This is a system notification"
     assert response.json[0]["is_read"] is False
+    assert response.json[0]["expires"] == "2031-12-31"
     assert response.json[0]["recipient"]["id"] == user_id
 
 
@@ -113,6 +119,7 @@ def test_notifications_get_by_oidc_id(auth_client, loaded_db, notification):
     assert response.json[0]["title"] == "System Notification"
     assert response.json[0]["message"] == "This is a system notification"
     assert response.json[0]["is_read"] is False
+    assert response.json[0]["expires"] == "2031-12-31"
     assert response.json[0]["recipient"]["oidc_id"] == oidc_id
 
 
@@ -124,6 +131,7 @@ def test_notifications_get_by_is_read(auth_client, loaded_db, notification_is_re
     assert response.json[0]["title"] == "System Notification"
     assert response.json[0]["message"] == "This is a system notification"
     assert response.json[0]["is_read"] is False
+    assert response.json[0]["expires"] == "2031-12-31"
     assert response.json[0]["recipient"] is not None
 
     response = auth_client.get("/api/v1/notifications/?is_read=True")
@@ -133,6 +141,7 @@ def test_notifications_get_by_is_read(auth_client, loaded_db, notification_is_re
     assert response.json[0]["message"] == "This is a system notification"
     assert response.json[0]["is_read"] is True
     assert response.json[0]["recipient"] is not None
+    assert response.json[0]["expires"] == "2031-12-31"
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -142,6 +151,7 @@ def test_notification_get_by_id(auth_client, loaded_db):
     assert response.json["title"] == "System Notification"
     assert response.json["message"] == "This is a system notification"
     assert response.json["is_read"] is False
+    assert response.json["expires"] == "2031-12-31"
     assert response.json["recipient"] is not None
     assert response.json["recipient"]["id"] == 1
     assert response.json["recipient"]["email"] == "chris.fortunato@example.com"
@@ -164,12 +174,14 @@ def test_put_notification(auth_client, notification):
         title="Updated Notification",
         message="This is an updated notification",
         recipient_id=1,
+        expires="2041-12-31",
     )
     response = auth_client.put(f"/api/v1/notifications/{notification.id}", json=data.__dict__)
     assert response.status_code == 200
     assert response.json["id"] == notification.id
     assert response.json["title"] == "Updated Notification"
     assert response.json["message"] == "This is an updated notification"
+    assert response.json["expires"] == "2041-12-31"
     assert response.json["recipient"] == {
         "email": "chris.fortunato@example.com",
         "full_name": "Chris Fortunato",
@@ -187,12 +199,14 @@ def test_put_notification_ack(auth_client, notification):
         title="Updated Notification",
         message="This is an updated notification",
         recipient_id=1,
+        expires="2041-12-31",
     )
     response = auth_client.put(f"/api/v1/notifications/{notification.id}", json=data.__dict__)
     assert response.status_code == 200
     assert response.json["id"] == notification.id
     assert response.json["title"] == "Updated Notification"
     assert response.json["message"] == "This is an updated notification"
+    assert response.json["expires"] == "2041-12-31"
     assert response.json["recipient"] == {
         "email": "chris.fortunato@example.com",
         "full_name": "Chris Fortunato",
@@ -206,26 +220,25 @@ def test_put_notification_ack(auth_client, notification):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_notification(auth_client, notification):
-    data = UpdateSchema(is_read=False)
-    response = auth_client.patch(f"/api/v1/notifications/{notification.id}", json=data.__dict__)
-
+    response = auth_client.patch(f"/api/v1/notifications/{notification.id}", json={"is_read": False})
+    recipient = mmdc.class_schema(Recipient)()
     assert response.json["id"] == notification.id
     assert response.json["title"] == notification.title
     assert response.json["message"] == notification.message
-    assert response.json["recipient"] == notification.recipient
+    assert response.json["recipient"] == recipient.dump(notification.recipient)
     assert response.json["is_read"] is False
-    assert response.json["created_on"] != response.json["updated_on"]
+    assert response.json["expires"] == notification.expires.isoformat()
 
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_notification_ack(auth_client, notification):
-    data = UpdateSchema(is_read=True)
-    response = auth_client.patch(f"/api/v1/notifications/{notification.id}", json=data.__dict__)
-
+    response = auth_client.patch(f"/api/v1/notifications/{notification.id}", json={"is_read": True})
+    recipient = mmdc.class_schema(Recipient)()
     assert response.json["id"] == notification.id
     assert response.json["title"] == notification.title
     assert response.json["message"] == notification.message
-    assert response.json["recipient"] == notification.recipient
+    assert response.json["recipient"] == recipient.dump(notification.recipient)
     assert response.json["is_read"] is True
     assert response.json["created_on"] != response.json["updated_on"]
+    assert response.json["expires"] == notification.expires.isoformat()

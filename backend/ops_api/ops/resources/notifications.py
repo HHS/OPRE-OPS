@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional, cast
 
 import desert
@@ -26,6 +26,7 @@ class UpdateSchema:
     title: Optional[str] = None
     message: Optional[str] = None
     recipient_id: Optional[int] = None
+    expires: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
 
 
 @dataclass
@@ -47,6 +48,7 @@ class NotificationResponse:
     title: Optional[str] = None
     message: Optional[str] = None
     recipient: Optional[Recipient] = None
+    expires: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
 
 
 @dataclass
@@ -124,6 +126,7 @@ class NotificationItemAPI(BaseItemAPI):
         meta: Optional[OpsEventHandler] = None,
     ):
         data = self._put_schema.dump(self._put_schema.load(request.json))
+        data["expires"] = date.fromisoformat(data["expires"]) if data.get("expires") else None
         for item in data:
             setattr(existing_notification, item, data[item])
         current_app.db_session.add(existing_notification)
@@ -169,6 +172,8 @@ class NotificationItemAPI(BaseItemAPI):
     ):
         data = self._patch_schema.dump(self._patch_schema.load(request.json))
         data = {k: v for (k, v) in data.items() if k in request.json}  # only keep the attributes from the request body
+        if "expires" in data:
+            data["expires"] = date.fromisoformat(data["expires"])
         for item in data:
             setattr(existing_notification, item, data[item])
         current_app.db_session.add(existing_notification)

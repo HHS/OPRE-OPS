@@ -2,6 +2,7 @@ from models import User
 from models.base import BaseModel
 from sqlalchemy import Boolean, Column, Date, ForeignKey, Identity, Integer, String
 from sqlalchemy.orm import relationship
+from typing_extensions import override
 
 
 class Notification(BaseModel):
@@ -16,3 +17,13 @@ class Notification(BaseModel):
     recipient = relationship(
         "User", back_populates="notifications", foreign_keys=[recipient_id]
     )
+
+    @override
+    def to_dict(self):
+        d = super().to_dict()
+
+        d.update(
+            expires=self.expires.isoformat() if self.expires else None,
+        )
+
+        return d
