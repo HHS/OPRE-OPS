@@ -54,7 +54,7 @@ it("edit an agreement", () => {
         const agreementId = response.body.id;
 
         cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
-        cy.visit(`/agreements/edit/${agreementId}`);
+        cy.visit(`/agreements/edit/${agreementId}?mode=edit`);
         cy.get("h1").should("have.text", "Edit Agreement");
         cy.get("#continue").click();
         // test validation

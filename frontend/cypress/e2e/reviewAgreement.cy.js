@@ -54,7 +54,7 @@ it("edit an agreement", () => {
         const agreementId = response.body.id;
 
         cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
-        cy.visit(`/agreements/approve/${agreementId}`);
+        cy.visit(`/agreements/approve/${agreementId}?mode=review`);
         cy.get("h1").should("have.text", "Please resolve the errors outlined below");
         cy.get('[data-cy="error-list"]').should("exist");
         cy.get('[data-cy="error-item"]').should("have.length", 7);
