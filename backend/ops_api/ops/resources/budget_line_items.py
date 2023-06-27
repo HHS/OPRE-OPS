@@ -17,6 +17,7 @@ from ops_api.ops.resources.budget_line_item_schemas import (
     POSTRequestBody,
     QueryParameters,
 )
+from ops_api.ops.utils.auth import is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -51,14 +52,9 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
     @override
     @jwt_required()
+    @is_authorized("GET_BUDGET_LINE_ITEM")
     def get(self, id: int) -> Response:
-        identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_BUDGET_LINE_ITEM"])
-
-        if is_authorized:
-            response = self._get_item_with_try(id)
-        else:
-            response = make_response_with_headers({}, 401)
+        response = self._get_item_with_try(id)
 
         return response
 
@@ -181,35 +177,30 @@ class BudgetLineItemsListAPI(BaseListAPI):
 
     @override
     @jwt_required()
+    @is_authorized("GET_BUDGET_LINE_ITEMS")
     def get(self) -> Response:
         message_prefix = f"GET to {ENDPOINT_STRING}"
-        identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_BUDGET_LINE_ITEMS"])
+        try:
+            data = self._get_schema.dump(self._get_schema.load(request.args))
 
-        if is_authorized:
-            try:
-                data = self._get_schema.dump(self._get_schema.load(request.args))
+            data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
+            data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
 
-                data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
-                data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
+            stmt = self._get_query(data.get("can_id"), data.get("agreement_id"), data.get("status"))
 
-                stmt = self._get_query(data.get("can_id"), data.get("agreement_id"), data.get("status"))
+            result = current_app.db_session.execute(stmt).all()
 
-                result = current_app.db_session.execute(stmt).all()
-
-                response = make_response_with_headers(self._response_schema_collection.dump([bli[0] for bli in result]))
-            except (KeyError, RuntimeError, PendingRollbackError) as re:
-                current_app.logger.error(f"{message_prefix}: {re}")
-                return make_response_with_headers({}, 400)
-            except ValidationError as ve:
-                # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
-                current_app.logger.error(f"{message_prefix}: {ve}")
-                return make_response_with_headers(ve.normalized_messages(), 400)
-            except SQLAlchemyError as se:
-                current_app.logger.error(f"{message_prefix}: {se}")
-                return make_response_with_headers({}, 500)
-        else:
-            response = make_response_with_headers([], 401)
+            response = make_response_with_headers(self._response_schema_collection.dump([bli[0] for bli in result]))
+        except (KeyError, RuntimeError, PendingRollbackError) as re:
+            current_app.logger.error(f"{message_prefix}: {re}")
+            return make_response_with_headers({}, 400)
+        except ValidationError as ve:
+            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
+            current_app.logger.error(f"{message_prefix}: {ve}")
+            return make_response_with_headers(ve.normalized_messages(), 400)
+        except SQLAlchemyError as se:
+            current_app.logger.error(f"{message_prefix}: {se}")
+            return make_response_with_headers({}, 500)
 
         return response
 

@@ -41,7 +41,7 @@ class OpaAuthorizationProvider(AuthorizationProvider):
         self.policy = policy
         self.opa_url = opa_url
 
-    def is_authorized(self, policy: str) -> bool:
+    def is_authorized(self, oidc_id: str, permission: list[str]) -> bool:
         # Make a call to the OPA API, passing along the policy you want to
         # check against
         # TODO: implement me

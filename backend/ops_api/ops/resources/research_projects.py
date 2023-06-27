@@ -119,21 +119,16 @@ class ResearchProjectListAPI(BaseListAPI):
 
     @override
     @jwt_required()
+    @is_authorized("GET_RESEARCH_PROJECTS")
     def get(self) -> Response:
-        identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_RESEARCH_PROJECTS"])
+        fiscal_year = request.args.get("fiscal_year")
+        portfolio_id = request.args.get("portfolio_id")
+        search = request.args.get("search")
 
-        if is_authorized:
-            fiscal_year = request.args.get("fiscal_year")
-            portfolio_id = request.args.get("portfolio_id")
-            search = request.args.get("search")
+        stmt = self._get_query(fiscal_year, portfolio_id, search)
 
-            stmt = self._get_query(fiscal_year, portfolio_id, search)
-
-            result = current_app.db_session.execute(stmt).all()
-            response = make_response_with_headers([i.to_dict() for item in result for i in item])
-        else:
-            response = make_response_with_headers([], 401)
+        result = current_app.db_session.execute(stmt).all()
+        response = make_response_with_headers([i.to_dict() for item in result for i in item])
 
         return response
 
