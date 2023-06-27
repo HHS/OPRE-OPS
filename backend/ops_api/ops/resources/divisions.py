@@ -10,7 +10,6 @@ class DivisionsItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
-
     @override
     @jwt_required()
     @is_authorized("GET_DIVISION")

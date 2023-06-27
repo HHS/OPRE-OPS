@@ -169,6 +169,9 @@
 
         "GET_RESEARCH_PROJECTS",
         "POST_RESEARCH_PROJECTS",
+
+        "GET_USER",
+        "GET_USERS",
       ],
     },
     {
@@ -186,6 +189,8 @@
         "GET_PORTFOLIOS",
         "GET_RESEARCH_PROJECT",
         "GET_RESEARCH_PROJECTS",
+        "GET_USER",
+        "GET_USERS",
       ],
     },
   ],

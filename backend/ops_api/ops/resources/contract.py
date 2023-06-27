@@ -1,5 +1,5 @@
 from flask import Response, current_app, jsonify, request
-from flask_jwt_extended import get_jwt_identity, jwt_required
+from flask_jwt_extended import jwt_required
 from models.base import BaseData
 from models.cans import ContractAgreement
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI

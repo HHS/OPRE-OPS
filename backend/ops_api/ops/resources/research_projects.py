@@ -4,7 +4,7 @@ from typing import Optional
 
 import desert
 from flask import Response, current_app, request
-from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
+from flask_jwt_extended import jwt_required, verify_jwt_in_request
 from marshmallow import fields
 from models import CAN, Agreement, BudgetLineItem, MethodologyType, OpsEventType, PopulationType, User
 from models.base import BaseModel
