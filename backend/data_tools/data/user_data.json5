@@ -140,11 +140,11 @@
   roles: [
     {
       name: "admin",
-      permissions: ["can_read", "can_write", "can_update", "can_delete"],
+      permissions: ["GET_AGREEMENT", "PUT_AGREEMENT", "PATCH_AGREEMENT", "DELETE_AGREEMENT", "GET_AGREEMENTS", "POST_AGREEMENTS", "GET_BUDGET_LINE_ITEM", "PUT_BUDGET_LINE_ITEM", "PATCH_BUDGET_LINE_ITEM", "GET_BUDGET_LINE_ITEMS", "POST_BUDGET_LINE_ITEMS", "GET_AGREEMENT", "GET_AGREEMENTS", "GET_RESEARCH_PROJECT", "GET_RESEARCH_PROJECTS", "POST_RESEARCH_PROJECTS"],
     },
     {
       name: "user",
-      permissions: ["can_read", "portfolio_read", "user_read", "project_read"],
+      permissions: ["GET_AGREEMENT", "GET_AGREEMENT", "GET_BUDGET_LINE_ITEM", "GET_BUDGET_LINE_ITEMS", "GET_AGREEMENTS", "GET_AGREEMENTS", "GET_RESEARCH_PROJECT", "GET_RESEARCH_PROJECTS"],
     },
   ],
   user_role: [

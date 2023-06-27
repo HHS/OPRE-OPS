@@ -4,7 +4,7 @@ from typing import Optional, ClassVar
 import desert
 from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
-from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
+from flask_jwt_extended import jwt_required, verify_jwt_in_request
 from marshmallow import ValidationError, fields, Schema
 from models import ContractType, OpsEventType, User
 from models.base import BaseModel
@@ -317,6 +317,7 @@ class AgreementListAPI(BaseListAPI):
 
     @override
     @jwt_required()
+    @is_authorized("POST_AGREEMENTS")
     def post(self) -> Response:
         message_prefix = f"POST to {ENDPOINT_STRING}"
         try:

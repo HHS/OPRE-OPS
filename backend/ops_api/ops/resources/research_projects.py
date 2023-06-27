@@ -76,7 +76,7 @@ class ResearchProjectItemAPI(BaseItemAPI):
 
     @override
     @jwt_required()
-    @is_authorized("GET_RESEARCH_PROJECTS")
+    @is_authorized("GET_RESEARCH_PROJECT")
     def get(self, id: int) -> Response:
         response = self._get_item_with_try(id)
         return response
@@ -134,6 +134,7 @@ class ResearchProjectListAPI(BaseListAPI):
 
     @override
     @jwt_required()
+    @is_authorized("POST_RESEARCH_PROJECTS")
     def post(self) -> Response:
         try:
             with OpsEventHandler(OpsEventType.CREATE_RESEARCH_PROJECT) as meta:
