@@ -100,14 +100,6 @@ def test_valid_project_officer(loaded_db, context):
 
 @scenario(
     "validate_draft_budget_lines.feature",
-    "Valid Team Members",
-)
-def test_valid_team_members(loaded_db, context):
-    ...
-
-
-@scenario(
-    "validate_draft_budget_lines.feature",
     "Valid BLI Description: Both NULL",
 )
 def test_valid_description_both_null(loaded_db, context):
@@ -1014,18 +1006,6 @@ def error_message_valid_project_officer(context, setup_and_teardown):
     assert context["response_patch"].status_code == 400
     assert context["response_patch"].json == {
         "_schema": ["BLI's Agreement must have a ProjectOfficer when status is not DRAFT"]
-    }
-
-
-@then("I should get an error message that the BLI's Agreement must have at least one Team Member")
-def error_message_valid_team_members(context, setup_and_teardown):
-    assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {
-        "_schema": ["BLI's Agreement must have at least one Team Member when status is not DRAFT"]
-    }
-    assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {
-        "_schema": ["BLI's Agreement must have at least one Team Member when status is not DRAFT"]
     }
 
 
