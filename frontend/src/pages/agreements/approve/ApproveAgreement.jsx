@@ -1,6 +1,6 @@
 import App from "../../../App";
 import { useParams } from "react-router-dom";
-import { ReviewAgreement } from "../ReviewAgreement";
+import ReviewAgreement from "../review";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 
 export const ApproveAgreement = () => {

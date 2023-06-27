@@ -7,10 +7,12 @@ import { setIsActive, clearState } from "./alertSlice";
 
 /**
  * A component that displays an alert.
- * @returns {JSX.Element} The JSX element to render.
+ * @param {Object} props - The component props.
+ * @param {React.JSX.Element} [props.children] - The JSX children to render. (optional)
+ * @returns {React.JSX.Element} The JSX element to render.
  * @see {@link https://designsystem.digital.gov/components/alerts/}
  */
-export const Alert = () => {
+export const Alert = ({ children }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const heading = useSelector((state) => state.alert.heading);
@@ -54,7 +56,9 @@ export const Alert = () => {
                 <div>
                     <h1 className="usa-alert__heading">{heading}</h1>
                     <p className="usa-alert__text">{message}</p>
+                    {children}
                 </div>
+
                 <FontAwesomeIcon
                     icon={faClose}
                     className="height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"

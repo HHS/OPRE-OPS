@@ -26,6 +26,12 @@ class PopulationType(Enum):
     POPULATION_3 = 3
 
 
+class ResearchType(Enum):
+    APPLIED_RESEARCH = 1
+    EVALUATIVE_RESEARCH = 2
+    PROGRAM_SUPPORT = 3
+
+
 research_project_cans = Table(
     "research_project_cans",
     BaseModel.metadata,
