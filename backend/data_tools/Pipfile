@@ -12,7 +12,6 @@ cfenv = "==0.5.3"
 sqlalchemy-mixins = "==1.5.3"
 typing-extensions = "==4.6.3"
 desert = "2022.9.22"
-flask-rbac = "*"
 
 [dev-packages]
 nox = "==2023.4.22"
