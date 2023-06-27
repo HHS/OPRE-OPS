@@ -16,9 +16,6 @@ export const Search = () => {
                     </button>
                 </form>
             </section>
-            <div>
-                <NotificationCenter />
-            </div>
         </>
     );
 };
