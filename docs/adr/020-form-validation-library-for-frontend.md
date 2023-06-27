@@ -31,5 +31,5 @@ We predict that using Vest will have a positive impact on our development proces
 We predict that using Vest will have a positive impact on the maintainability of our codebase by providing a clear and consistent way to define form validation rules.
 
 ## Links
-- [Vest GitHub repository]([Title](https://github.com/ealush/vest))
-- [Vest website]([Title](https://vestjs.dev/))
+- [Vest GitHub repository](https://github.com/ealush/vest)
+- [Vest website](https://vestjs.dev/)
