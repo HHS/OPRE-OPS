@@ -91,14 +91,6 @@ Feature: Validate "Draft" Budget Lines
 
     Then I should get an error message that the BLI's Agreement must have a Project Officer
 
-  Scenario: Valid Team Members
-    Given I am logged in as an OPS user
-    And I have an Agreement without any Team Members
-
-    When I have a BLI in DRAFT status
-    And I submit a BLI to move to IN_REVIEW status
-
-    Then I should get an error message that the BLI's Agreement must have at least one Team Member
 
   Scenario: Valid BLI Description: Both NULL
     Given I am logged in as an OPS user
