@@ -1,12 +1,14 @@
+from functools import wraps
 import time
 import uuid
-from typing import Optional
+from typing import Callable, Optional
 
 from authlib.integrations.flask_client import OAuth
 from authlib.jose import jwt as jose_jwt
-from flask import current_app
-from flask_jwt_extended import JWTManager
+from flask import current_app, Response
+from flask_jwt_extended import JWTManager, get_jwt_identity
 from models.users import User
+from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.authorization import AuthorizationGateway, BasicAuthorizationPrivider
 from sqlalchemy import select
 
@@ -59,3 +61,23 @@ def create_oauth_jwt(
     _header = header or {"alg": "RS256"}
     jws = jose_jwt.encode(header=_header, payload=_payload, key=jwt_private_key)
     return jws
+
+
+class is_authorized:
+    def __init__(self, *permissions: list[str]) -> None:
+        self.permissions = permissions
+
+    def __call__(self, func: Callable) -> Callable:
+        @wraps(func)
+        def wrapper(*args, **kwargs) -> Response:
+            identity = get_jwt_identity()
+            is_authorized = auth_gateway.is_authorized(identity, self.permissions)
+
+            if is_authorized:
+                response = func(*args, **kwargs)
+            else:
+                response = make_response_with_headers({}, 401)
+
+            return response
+
+        return wrapper

@@ -11,6 +11,7 @@ from models.base import BaseModel
 from models.cans import CANFiscalYear
 from models.research_projects import ResearchProject
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.utils.auth import is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -75,15 +76,9 @@ class ResearchProjectItemAPI(BaseItemAPI):
 
     @override
     @jwt_required()
+    @is_authorized("GET_RESEARCH_PROJECTS")
     def get(self, id: int) -> Response:
-        identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_RESEARCH_PROJECTS"])
-
-        if is_authorized:
-            response = self._get_item_with_try(id)
-        else:
-            response = make_response_with_headers({}, 401)
-
+        response = self._get_item_with_try(id)
         return response
 
 

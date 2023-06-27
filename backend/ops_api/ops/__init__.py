@@ -4,6 +4,7 @@ from typing import Any, Optional
 
 from flask import Blueprint, Flask
 from flask_cors import CORS
+from models.users import rbac
 from ops_api.ops.db import init_db
 from ops_api.ops.history import track_db_history_before, track_db_history_catch_errors
 from ops_api.ops.home_page.views import home
@@ -35,7 +36,7 @@ def configure_logging(log_level: str = "INFO") -> None:
 
 
 def create_app(config_overrides: Optional[dict[str, Any]] = {}) -> Flask:
-    is_unit_test = config_overrides.get("TESTING") is True
+    is_unit_test = False if config_overrides is None else config_overrides.get("TESTING") is True
     log_level = "INFO" if not is_unit_test else "DEBUG"
     configure_logging(log_level)  # should be configured before any access to app.logger
     app = Flask(__name__)
