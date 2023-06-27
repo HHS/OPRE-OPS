@@ -17,6 +17,7 @@ from models.cans import (
     BudgetLineItemStatus,
 )
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
+from ops_api.ops.utils.auth import is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -139,27 +140,16 @@ class AgreementItemAPI(BaseItemAPI):
 
     @override
     @jwt_required()
+    @is_authorized("GET_AGREEMENT")
     def get(self, id: int) -> Response:
-        identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_AGREEMENT"])
-
-        if is_authorized:
-            response = self._get_item_with_try(id)
-
-        else:
-            response = make_response_with_headers({}, 401)
-
+        response = self._get_item_with_try(id)
         return response
 
     @override
     @jwt_required()
+    @is_authorized("PUT_AGREEMENT")
     def put(self, id: int) -> Response:
         message_prefix = f"PUT to {ENDPOINT_STRING}"
-
-        identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["PUT_AGREEMENT"])
-        if not is_authorized:
-            return make_response_with_headers({}, 401)
 
         try:
             with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
@@ -203,13 +193,9 @@ class AgreementItemAPI(BaseItemAPI):
 
     @override
     @jwt_required()
+    @is_authorized("PATCH_AGREEMENT")
     def patch(self, id: int) -> Response:
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
-
-        identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["PATCH_AGREEMENT"])
-        if not is_authorized:
-            return make_response_with_headers({}, 401)
 
         try:
             with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
@@ -252,13 +238,9 @@ class AgreementItemAPI(BaseItemAPI):
 
     @override
     @jwt_required()
+    @is_authorized("DELETE_AGREEMENT")
     def delete(self, id: int) -> Response:
         message_prefix = f"DELETE from {ENDPOINT_STRING}"
-
-        identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["DELETE_AGREEMENT"])
-        if not is_authorized:
-            return make_response_with_headers({}, 401)
 
         try:
             with OpsEventHandler(OpsEventType.DELETE_AGREEMENT) as meta:
@@ -318,23 +300,18 @@ class AgreementListAPI(BaseListAPI):
 
     @override
     @jwt_required()
+    @is_authorized("GET_AGREEMENTS")
     def get(self) -> Response:
-        identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_AGREEMENTS"])
+        stmt, status = self._get_query(request.args)
 
-        if is_authorized:
-            stmt, status = self._get_query(request.args)
+        result = current_app.db_session.execute(stmt).all()
 
-            result = current_app.db_session.execute(stmt).all()
+        items = (i for item in result for i in item)
 
-            items = (i for item in result for i in item)
+        if status:
+            items = (i for i in items if i.status == status)
 
-            if status:
-                items = (i for i in items if i.status == status)
-
-            response = make_response_with_headers([i.to_dict() for i in items])
-        else:
-            response = make_response_with_headers({}, 401)
+        response = make_response_with_headers([i.to_dict() for i in items])
 
         return response
 

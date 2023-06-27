@@ -4,7 +4,6 @@ from typing import Any, Optional
 
 from flask import Blueprint, Flask
 from flask_cors import CORS
-from models.users import rbac
 from ops_api.ops.db import init_db
 from ops_api.ops.history import track_db_history_before, track_db_history_catch_errors
 from ops_api.ops.home_page.views import home
