@@ -33,6 +33,7 @@ from ops_api.ops.views import (
     RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
     RESEARCH_PROJECT_ITEM_API_VIEW_FUNC,
     RESEARCH_PROJECT_LIST_API_VIEW_FUNC,
+    RESEARCH_TYPE_LIST_API_VIEW_FUNC,
     USERS_ITEM_API_VIEW_FUNC,
     USERS_LIST_API_VIEW_FUNC,
 )
@@ -52,7 +53,7 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/health/",
         view_func=HEALTH_CHECK_VIEW_FUNC,
-    ),
+    )
 
     api_bp.add_url_rule(
         "/portfolios/<int:id>/calcFunding/",
@@ -158,6 +159,10 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/research-projects/",
         view_func=RESEARCH_PROJECT_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/research-types/",
+        view_func=RESEARCH_TYPE_LIST_API_VIEW_FUNC,
     )
 
     api_bp.add_url_rule(
