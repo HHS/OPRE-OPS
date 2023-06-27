@@ -26,7 +26,7 @@ import { loggedInName } from "../../../../helpers/utils";
  * @param {Object} props.selectedProcurementShop - The selected procurement shop.
  * @param {Array<any>} props.existingBudgetLines - An array of existing budget lines.
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
- * @param {boolean} [props.isEditMode] - A flag indicating whether the component is in edit mode. - optional
+ * @param {string} [props.formMode] - The mode of the form (e.g. "create", "edit", "review"). - optional
  * @param {Function} [props.continueOverRide] - A function to override the default "Continue" button behavior. - optional
  * @param {"agreement" | "budgetLines"} props.workflow - The workflow type ("agreement" or "budgetLines").
  * @returns {JSX.Element} - The rendered component.
@@ -42,11 +42,12 @@ export const StepCreateBudgetLines = ({
     existingBudgetLines = [],
     continueBtnText,
     continueOverRide,
-    isEditMode,
+    formMode,
     workflow,
 }) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const [isEditMode, setIsEditMode] = React.useState(false);
     const {
         selected_can: selectedCan,
         entered_description: enteredDescription,
@@ -83,7 +84,11 @@ export const StepCreateBudgetLines = ({
     const isAlertActive = useSelector((state) => state.alert.isActive);
 
     let loggedInUserFullName = useSelector((state) => loggedInName(state.auth?.activeUser));
-
+    React.useEffect(() => {
+        if (formMode === "edit" || formMode === "review") {
+            setIsEditMode(true);
+        }
+    }, [formMode]);
     // combine arrays of new budget lines and existing budget lines added
     // only run once on page load if there are existing budget lines
     React.useEffect(() => {

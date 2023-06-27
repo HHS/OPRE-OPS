@@ -24,6 +24,7 @@ import { setAlert } from "../../components/UI/Alert/alertSlice";
 import { patchAgreement } from "../../api/patchAgreements";
 import suite from "./stepCreateAgreementSuite";
 import Input from "../../components/UI/Form/Input";
+import EditModeTitle from "./EditModeTitle";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -31,9 +32,9 @@ import Input from "../../components/UI/Form/Input";
  * @param {Object} props - The component props.
  * @param {Function} [props.goBack] - A function to go back to the previous step. - optional
  * @param {Function} [props.goToNext] - A function to go to the next step. - optional
- * @param {boolean} [props.isEditMode] - A flag indicating whether the component is in edit mode. - optional
+ * @param {string} [props.formMode] - The mode of the form (e.g. "create", "edit", "review"). - optional
  */
-export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) => {
+export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
     const navigate = useNavigate();
     const dispatch = useCreateAgreementDispatch();
     const globalDispatch = useDispatch();
@@ -55,6 +56,12 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
         team_members: selectedTeamMembers,
     } = agreement;
 
+    React.useEffect(() => {
+        if (formMode === "edit" || formMode === "review") {
+            setIsEditMode(true);
+        }
+    }, [formMode]);
+
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setSelectedProductServiceCode = useSetState("selected_product_service_code");
@@ -74,6 +81,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const [isEditMode, setIsEditMode] = React.useState(false);
 
     let res = suite.get();
     const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
@@ -183,9 +191,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
                 />
             )}
 
-            <h1 className="font-sans-lg">Create New Agreement</h1>
-            <p>Follow the steps to create an agreement</p>
-
+            <EditModeTitle isEditMode={isEditMode} />
             <StepIndicator steps={wizardSteps} currentStep={2} />
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg">Select the Agreement Type</h2>

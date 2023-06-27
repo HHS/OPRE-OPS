@@ -76,7 +76,7 @@ export const AgreementTableRow = ({ agreement }) => {
     const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
 
     const handleEditAgreement = (event) => {
-        navigate(`/agreements/edit/${event}`);
+        navigate(`/agreements/edit/${event}?mode=edit`);
     };
     const handleDeleteAgreement = (event) => {
         // TODO: implement delete agreement

@@ -5,16 +5,17 @@ import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import Modal from "../../components/UI/Modal";
 import { useGetResearchProjectsQuery } from "../../api/opsAPI";
 import { useCreateAgreement, useSetState, useUpdateAgreement } from "./CreateAgreementContext";
+import EditModeTitle from "./EditModeTitle";
 
 /**
- * Renders the "Select Project" step in the Create Agreement flow.
+ * Renders a step in the Create Agreement wizard for selecting a research project.
  *
  * @param {Object} props - The component props.
- * @param {Function} [props.goToNext] - A function to navigate to the next step in the flow. - optional
- * @param {boolean} [props.isEditMode] - A flag indicating whether the component is in edit mode.
+ * @param {Function} [props.goToNext] - A function to go to the next step in the wizard. - optional
+ * @param {string} [props.formMode] - The mode of the form (e.g. "create", "edit", "review"). - optional
  * @returns {JSX.Element} - The rendered component.
  */
-export const StepSelectProject = ({ goToNext, isEditMode }) => {
+export const StepSelectProject = ({ goToNext, formMode }) => {
     const navigate = useNavigate();
     const { wizardSteps, selected_project: selectedResearchProject } = useCreateAgreement();
     // setters
@@ -23,7 +24,14 @@ export const StepSelectProject = ({ goToNext, isEditMode }) => {
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const [isEditMode, setIsEditMode] = React.useState(false);
     const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
+
+    React.useEffect(() => {
+        if (formMode === "edit" || formMode === "review") {
+            setIsEditMode(true);
+        }
+    }, [formMode]);
 
     if (isLoadingProjects) {
         return <div>Loading...</div>;
@@ -65,17 +73,7 @@ export const StepSelectProject = ({ goToNext, isEditMode }) => {
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            {isEditMode ? (
-                <>
-                    <h1 className="font-sans-lg">Edit Agreement</h1>
-                    <p>Follow the steps to edit an agreement</p>
-                </>
-            ) : (
-                <>
-                    <h1 className="font-sans-lg">Create New Agreement</h1>
-                    <p>Follow the steps to create an agreement</p>
-                </>
-            )}
+            <EditModeTitle isEditMode={isEditMode} />
             <StepIndicator steps={wizardSteps} currentStep={1} />
             <h2 className="font-sans-lg">Select a Project</h2>
             <p>
