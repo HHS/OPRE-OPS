@@ -2,7 +2,6 @@ import AuthSection from "../../Auth/AuthSection";
 import { Menu } from "./Menu";
 import { Search } from "./Search";
 import logo from "./OPRE_Logo.png";
-import NotificationCenter from "../NotificationCenter/NotificationCenter";
 
 const Header = () => {
     const styles = {

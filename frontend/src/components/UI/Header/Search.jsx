@@ -1,6 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-import NotificationCenter from "../NotificationCenter/NotificationCenter";
 
 export const Search = () => {
     return (

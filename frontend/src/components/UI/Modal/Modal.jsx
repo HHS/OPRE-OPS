@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import Notification from "../Notification/Notification";
 
@@ -71,7 +71,7 @@ export const Modal = ({
                                 >
                                     {heading}
                                 </h2>
-                                {description && description instanceof Array && (
+                                {description && description instanceof Array && description.length > 0 && (
                                     <ul>
                                         {description.map((item) => (
                                             <Notification key={item.id} data={item} />
@@ -122,7 +122,7 @@ export default Modal;
 
 Modal.propTypes = {
     heading: PropTypes.string.isRequired,
-    description: PropTypes.string,
+    description: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
     setShowModal: PropTypes.func.isRequired,
     actionButtonText: PropTypes.string.isRequired,
     secondaryButtonText: PropTypes.string,

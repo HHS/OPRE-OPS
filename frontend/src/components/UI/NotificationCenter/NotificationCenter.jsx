@@ -1,5 +1,4 @@
 import { useGetNotificationsByUserIdQuery } from "../../../api/opsAPI";
-import Notification from "../Notification/Notification";
 import jwt_decode from "jwt-decode";
 import icons from "../../../uswds/img/sprite.svg";
 import Modal from "../Modal";
