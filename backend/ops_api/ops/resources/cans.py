@@ -7,6 +7,7 @@ from flask_jwt_extended import jwt_required
 from models.base import BaseModel
 from models.cans import CAN
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.utils.auth import is_authorized
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
@@ -45,7 +46,9 @@ class CANListAPI(BaseListAPI):
 
         return stmt
 
-    @jwt_required(True)  # For an example case, we're allowing CANs to be queried unauthed
+    @override
+    @jwt_required()
+    @is_authorized("GET_CANS")
     def get(self) -> Response:
         errors = self._get_input_schema.validate(request.args)
 
@@ -69,6 +72,8 @@ class CANsByPortfolioAPI(BaseItemAPI):
         return cans
 
     @override
+    @jwt_required()
+    @is_authorized("GET_CAN")
     def get(self, id: int) -> Response:
         cans = self._get_item(id)
         return make_response_with_headers([can.to_dict() for can in cans])

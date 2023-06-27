@@ -1,9 +1,12 @@
 from typing import List, Optional
+from typing_extensions import override
 
 from flask import Response, request
+from flask_jwt_extended import jwt_required
 from models.base import BaseModel
 from models.cans import CAN
 from ops_api.ops.base_views import BaseItemAPI
+from ops_api.ops.utils.auth import is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -19,6 +22,9 @@ class PortfolioCansAPI(BaseItemAPI):
 
         return [cfy.can for cfy in can_fiscal_year_query.all()]
 
+    @override
+    @jwt_required()
+    @is_authorized("GET_PORTFOLIO", "GET_PORTFOLIOS")
     def get(self, id: int) -> Response:
         year = request.args.get("year")
         cans = self._get_item(id, year)

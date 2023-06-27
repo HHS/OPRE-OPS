@@ -386,12 +386,18 @@ class AgreementListAPI(BaseListAPI):
 
 
 class AgreementReasonListAPI(MethodView):
+    @override
+    @jwt_required
+    @is_authorized("GET_AGREEMENT", "GET_AGREEMENTS")
     def get(self) -> Response:
         reasons = [item.name for item in AgreementReason]
         return jsonify(reasons)
 
 
 class AgreementTypeListAPI(MethodView):
+    @override
+    @jwt_required
+    @is_authorized("GET_AGREEMENT", "GET_AGREEMENTS")
     def get(self) -> Response:
         return jsonify([e.name for e in AgreementType])
 

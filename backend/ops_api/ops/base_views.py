@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Optional
+from typing_extensions import override
 
 from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
@@ -95,6 +96,7 @@ class BaseItemAPI(OPSMethodView):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
+    @override
     @jwt_required()
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
@@ -104,10 +106,12 @@ class BaseListAPI(OPSMethodView):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
+    @override
     @jwt_required()
     def get(self) -> Response:
         return self._get_all_items_with_try()
 
+    @override
     @jwt_required()
     def post(self) -> Response:
         raise NotImplementedError
@@ -123,6 +127,8 @@ class EnumListAPI(MethodView):
     def __init__(self, enum: Enum, **kwargs):
         super().__init__(**kwargs)
 
+    @override
+    @jwt_required()
     def get(self) -> Response:
         enum_items = {e.name: e.value for e in self.enum}  # type: ignore [attr-defined]
         return jsonify(enum_items)
