@@ -6,6 +6,9 @@ const suite = create((data = {}, fieldName) => {
     test("agreement-title", "This is required information", () => {
         enforce(data["agreement-title"]).isNotBlank();
     });
+    test("agreement-description", "This is required information", () => {
+        enforce(data["agreement-description"]).isNotBlank();
+    });
 });
 
 export default suite;
