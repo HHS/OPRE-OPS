@@ -56,19 +56,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
         team_members: selectedTeamMembers,
     } = agreement;
 
-    React.useEffect(() => {
-        switch (formMode) {
-            case "edit":
-                setIsEditMode(true);
-                break;
-            case "review":
-                setIsReviewMode(true);
-                break;
-            default:
-                return;
-        }
-    }, [formMode]);
-
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setSelectedProductServiceCode = useSetState("selected_product_service_code");
@@ -90,6 +77,19 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
     const [modalProps, setModalProps] = React.useState({});
     const [isEditMode, setIsEditMode] = React.useState(false);
     const [isReviewMode, setIsReviewMode] = React.useState(false);
+
+    React.useEffect(() => {
+        switch (formMode) {
+            case "edit":
+                setIsEditMode(true);
+                break;
+            case "review":
+                setIsReviewMode(true);
+                break;
+            default:
+                return;
+        }
+    }, [formMode]);
 
     let res = suite.get();
     console.log(`res: ${JSON.stringify(res, null, 2)}`);
