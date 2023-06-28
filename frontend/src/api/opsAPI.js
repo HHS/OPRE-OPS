@@ -78,6 +78,10 @@ export const opsApi = createApi({
             query: () => `/cans/`,
             providesTags: ["Cans"],
         }),
+        getNotificationsByUserId: builder.query({
+            query: (id) => `/notifications/?oidc_id=${id}`,
+            providesTags: ["Notifications"],
+        }),
     }),
 });
 
@@ -95,4 +99,5 @@ export const {
     useGetAgreementReasonsQuery,
     useGetUsersQuery,
     useGetCansQuery,
+    useGetNotificationsByUserIdQuery,
 } = opsApi;
