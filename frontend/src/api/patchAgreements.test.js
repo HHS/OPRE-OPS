@@ -22,4 +22,33 @@ describe("patchAgreement function", () => {
         const response = await patchAgreement(agreementId, mockAgreement);
         expect(response).toStrictEqual(mockApiResponse);
     });
+
+    // simple test for coverage, need to revisit how APIs work with errors
+    test("returns nothing with 500", async () => {
+        TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+            // eslint-disable-next-line no-throw-literal
+            throw { response: { status: 500, data: "Internal Server Error" } };
+        });
+        const response = await patchAgreement(agreementId, mockAgreement);
+        expect(response).toStrictEqual(undefined);
+    });
+
+    // simple test for coverage, need to revisit how APIs work with errors
+    test("returns nothing with response-less error", async () => {
+        TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+            // eslint-disable-next-line no-throw-literal
+            throw { request: "whatever" };
+        });
+        const response = await patchAgreement(agreementId, mockAgreement);
+        expect(response).toStrictEqual(undefined);
+    });
+
+    // simple test for coverage, need to revisit how APIs work with errors
+    test("returns nothing with bad error", async () => {
+        TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+            throw new Error("ERROR");
+        });
+        const response = await patchAgreement(agreementId, mockAgreement);
+        expect(response).toStrictEqual(undefined);
+    });
 });
