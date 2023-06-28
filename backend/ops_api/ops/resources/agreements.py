@@ -2,7 +2,7 @@ from dataclasses import dataclass, fields as dc_fields
 from typing import Optional, ClassVar
 
 import desert
-from flask import Response, current_app, jsonify, request
+from flask import Response, current_app, request
 from flask.views import MethodView
 from flask_jwt_extended import verify_jwt_in_request
 from marshmallow import ValidationError, fields, Schema

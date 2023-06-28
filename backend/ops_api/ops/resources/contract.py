@@ -1,4 +1,4 @@
-from flask import Response, current_app, jsonify, request
+from flask import Response, current_app, request
 from models.base import BaseData
 from models.cans import ContractAgreement
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
