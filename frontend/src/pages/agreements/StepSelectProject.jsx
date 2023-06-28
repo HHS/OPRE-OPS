@@ -25,11 +25,19 @@ export const StepSelectProject = ({ goToNext, formMode }) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const [isEditMode, setIsEditMode] = React.useState(false);
+    const [isReviewMode, setIsReviewMode] = React.useState(false);
     const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
 
     React.useEffect(() => {
-        if (formMode === "edit" || formMode === "review") {
-            setIsEditMode(true);
+        switch (formMode) {
+            case "edit":
+                setIsEditMode(true);
+                break;
+            case "review":
+                setIsReviewMode(true);
+                break;
+            default:
+                return;
         }
     }, [formMode]);
 
@@ -73,7 +81,7 @@ export const StepSelectProject = ({ goToNext, formMode }) => {
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            <EditModeTitle isEditMode={isEditMode} />
+            <EditModeTitle isEditMode={isEditMode || isReviewMode} />
             <StepIndicator steps={wizardSteps} currentStep={1} />
             <h2 className="font-sans-lg">Select a Project</h2>
             <p>
