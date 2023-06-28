@@ -84,13 +84,15 @@ export const AgreementTableRow = ({ agreement }) => {
         return (
             <>
                 <div className="display-flex flex-align-center">
-                    <FontAwesomeIcon
-                        icon={faPen}
-                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
-                        title="edit"
-                        data-position="top"
-                        onClick={() => handleEditAgreement(agreement.id)}
-                    />
+                    {(agreement.status === "DRAFT" || agreement.status === "UNDER_REVIEW") && (
+                        <FontAwesomeIcon
+                            icon={faPen}
+                            className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                            title="edit"
+                            data-position="top"
+                            onClick={() => handleEditAgreement(agreement.id)}
+                        />
+                    )}
                     <FontAwesomeIcon
                         icon={faTrash}
                         title="delete"
