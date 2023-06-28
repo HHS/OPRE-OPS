@@ -89,7 +89,7 @@ def test_agreements_serialization(auth_client, loaded_db):
             }
         ],
         "vendor": "Vendor 1",
-        "status": "PLANNED",
+        "status": "DRAFT",
     }
 
 
@@ -482,7 +482,7 @@ def test_agreement_status(loaded_db):
     agreement = loaded_db.scalar(stmt)
 
     assert agreement is not None
-    assert agreement.status == "PLANNED"
+    assert agreement.status == "DRAFT"
 
 
 @pytest.mark.usefixtures("app_ctx")
