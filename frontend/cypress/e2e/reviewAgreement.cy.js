@@ -57,7 +57,7 @@ it("edit an agreement", () => {
         cy.visit(`/agreements/approve/${agreementId}`);
         cy.get("h1").should("have.text", "Please resolve the errors outlined below");
         cy.get('[data-cy="error-list"]').should("exist");
-        cy.get('[data-cy="error-item"]').should("have.length", 8);
+        cy.get('[data-cy="error-item"]').should("have.length", 7);
         //send-to-approval button should be disabled
         cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
 

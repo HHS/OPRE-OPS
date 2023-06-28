@@ -34,7 +34,7 @@
         "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
         "@testing-library/jest-dom": "5.16.5",
         "@testing-library/react": "14.0.0",
-        "@tsconfig/create-react-app": "^1.0.3",
+        "@tsconfig/create-react-app": "^2.0.0",
         "@types/jest": "^29.5.2",
         "@types/testing-library__jest-dom": "^5.14.6",
         "@types/testing-library__react": "^10.2.0",
