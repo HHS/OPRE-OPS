@@ -1,6 +1,5 @@
 import desert
 from flask import Response, request
-from flask_jwt_extended import jwt_required
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseListAPI
 from ops_api.ops.utils.research_project_helper import (
@@ -19,7 +18,6 @@ class ResearchProjectFundingSummaryListAPI(BaseListAPI):
         self.get_input_schema = desert.schema(GetResearchProjectFundingSummaryQueryParams)
 
     @override
-    @jwt_required()
     @is_authorized("GET_RESEARCH_PROJECT", "GET_RESEARCH_PROJECTS")
     def get(self) -> Response:
         portfolio_id = request.args.get("portfolioId")

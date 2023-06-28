@@ -2,7 +2,6 @@ from typing import List, Optional
 from typing_extensions import override
 
 from flask import Response, request
-from flask_jwt_extended import jwt_required
 from models.base import BaseModel
 from models.cans import CAN
 from ops_api.ops.base_views import BaseItemAPI
@@ -23,7 +22,6 @@ class PortfolioCansAPI(BaseItemAPI):
         return [cfy.can for cfy in can_fiscal_year_query.all()]
 
     @override
-    @jwt_required()
     @is_authorized("GET_PORTFOLIO", "GET_PORTFOLIOS")
     def get(self, id: int) -> Response:
         year = request.args.get("year")

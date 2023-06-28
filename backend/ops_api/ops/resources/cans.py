@@ -3,7 +3,6 @@ from typing import List, Optional, cast
 
 import desert
 from flask import Response, current_app, request
-from flask_jwt_extended import jwt_required
 from models.base import BaseModel
 from models.cans import CAN
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -47,7 +46,6 @@ class CANListAPI(BaseListAPI):
         return stmt
 
     @override
-    @jwt_required()
     @is_authorized("GET_CANS")
     def get(self) -> Response:
         errors = self._get_input_schema.validate(request.args)
@@ -72,7 +70,6 @@ class CANsByPortfolioAPI(BaseItemAPI):
         return cans
 
     @override
-    @jwt_required()
     @is_authorized("GET_CAN")
     def get(self, id: int) -> Response:
         cans = self._get_item(id)

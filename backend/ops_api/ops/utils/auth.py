@@ -6,7 +6,7 @@ from typing import Callable, Optional
 from authlib.integrations.flask_client import OAuth
 from authlib.jose import jwt as jose_jwt
 from flask import current_app, Response
-from flask_jwt_extended import JWTManager, get_jwt_identity
+from flask_jwt_extended import JWTManager, get_jwt_identity, jwt_required
 from models.users import User
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.authorization import AuthorizationGateway, BasicAuthorizationPrivider
@@ -69,6 +69,7 @@ class is_authorized:
 
     def __call__(self, func: Callable) -> Callable:
         @wraps(func)
+        @jwt_required()
         def wrapper(*args, **kwargs) -> Response:
             identity = get_jwt_identity()
             is_authorized = auth_gateway.is_authorized(identity, self.permissions)

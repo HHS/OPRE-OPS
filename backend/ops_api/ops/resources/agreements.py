@@ -4,7 +4,7 @@ from typing import Optional, ClassVar
 import desert
 from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
-from flask_jwt_extended import jwt_required, verify_jwt_in_request
+from flask_jwt_extended import verify_jwt_in_request
 from marshmallow import ValidationError, fields, Schema
 from models import ContractType, OpsEventType, User
 from models.base import BaseModel
@@ -139,14 +139,12 @@ class AgreementItemAPI(BaseItemAPI):
         super().__init__(model)
 
     @override
-    @jwt_required()
     @is_authorized("GET_AGREEMENT")
     def get(self, id: int) -> Response:
         response = self._get_item_with_try(id)
         return response
 
     @override
-    @jwt_required()
     @is_authorized("PUT_AGREEMENT")
     def put(self, id: int) -> Response:
         message_prefix = f"PUT to {ENDPOINT_STRING}"
@@ -192,7 +190,6 @@ class AgreementItemAPI(BaseItemAPI):
             return make_response_with_headers({}, 500)
 
     @override
-    @jwt_required()
     @is_authorized("PATCH_AGREEMENT")
     def patch(self, id: int) -> Response:
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
@@ -237,7 +234,6 @@ class AgreementItemAPI(BaseItemAPI):
             return make_response_with_headers({}, 500)
 
     @override
-    @jwt_required()
     @is_authorized("DELETE_AGREEMENT")
     def delete(self, id: int) -> Response:
         message_prefix = f"DELETE from {ENDPOINT_STRING}"
@@ -299,7 +295,6 @@ class AgreementListAPI(BaseListAPI):
         return stmt, status
 
     @override
-    @jwt_required()
     @is_authorized("GET_AGREEMENTS")
     def get(self) -> Response:
         stmt, status = self._get_query(request.args)
@@ -316,7 +311,6 @@ class AgreementListAPI(BaseListAPI):
         return response
 
     @override
-    @jwt_required()
     @is_authorized("POST_AGREEMENTS")
     def post(self) -> Response:
         message_prefix = f"POST to {ENDPOINT_STRING}"
@@ -387,19 +381,17 @@ class AgreementListAPI(BaseListAPI):
 
 class AgreementReasonListAPI(MethodView):
     @override
-    @jwt_required
     @is_authorized("GET_AGREEMENT", "GET_AGREEMENTS")
     def get(self) -> Response:
         reasons = [item.name for item in AgreementReason]
-        return jsonify(reasons)
+        return make_response_with_headers(reasons)
 
 
 class AgreementTypeListAPI(MethodView):
     @override
-    @jwt_required
     @is_authorized("GET_AGREEMENT", "GET_AGREEMENTS")
     def get(self) -> Response:
-        return jsonify([e.name for e in AgreementType])
+        return make_response_with_headers([e.name for e in AgreementType])
 
 
 def _get_user_list(data: Any):

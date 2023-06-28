@@ -1,7 +1,6 @@
 from typing import Optional, cast
 
 from flask import Response, request
-from flask_jwt_extended import jwt_required
 from models.base import BaseModel
 from models.cans import CANFiscalYear
 from ops_api.ops.base_views import BaseListAPI
@@ -27,7 +26,6 @@ class CANFiscalYearItemAPI(BaseListAPI):
         return can_fiscal_year_query.all()
 
     @override
-    @jwt_required()
     @is_authorized("GET_CAN", "GET_CANS")
     def get(self, id: int) -> Response:
         year = request.args.get("year")
@@ -51,7 +49,6 @@ class CANFiscalYearListAPI(BaseListAPI):
         return can_fiscal_years_query.all()
 
     @override
-    @jwt_required()
     @is_authorized("GET_CAN", "GET_CANS")
     def get(self) -> Response:
         can_id: int = cast(int, request.args.get("can_id"))

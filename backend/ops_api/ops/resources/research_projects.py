@@ -4,7 +4,7 @@ from typing import Optional
 
 import desert
 from flask import Response, current_app, request
-from flask_jwt_extended import jwt_required, verify_jwt_in_request
+from flask_jwt_extended import verify_jwt_in_request
 from marshmallow import fields
 from models import CAN, Agreement, BudgetLineItem, MethodologyType, OpsEventType, PopulationType, User
 from models.base import BaseModel
@@ -75,7 +75,6 @@ class ResearchProjectItemAPI(BaseItemAPI):
         super().__init__(model)
 
     @override
-    @jwt_required()
     @is_authorized("GET_RESEARCH_PROJECT")
     def get(self, id: int) -> Response:
         response = self._get_item_with_try(id)
@@ -118,7 +117,6 @@ class ResearchProjectListAPI(BaseListAPI):
         return stmt
 
     @override
-    @jwt_required()
     @is_authorized("GET_RESEARCH_PROJECTS")
     def get(self) -> Response:
         fiscal_year = request.args.get("fiscal_year")
@@ -133,7 +131,6 @@ class ResearchProjectListAPI(BaseListAPI):
         return response
 
     @override
-    @jwt_required()
     @is_authorized("POST_RESEARCH_PROJECTS")
     def post(self) -> Response:
         try:

@@ -5,7 +5,7 @@ from typing import Optional
 
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
-from flask_jwt_extended import jwt_required, verify_jwt_in_request
+from flask_jwt_extended import verify_jwt_in_request
 from marshmallow import Schema, ValidationError
 from models import BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
@@ -51,7 +51,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         return response
 
     @override
-    @jwt_required()
     @is_authorized("GET_BUDGET_LINE_ITEM")
     def get(self, id: int) -> Response:
         response = self._get_item_with_try(id)
@@ -59,7 +58,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         return response
 
     @override
-    @jwt_required()
     @is_authorized("PUT_BUDGET_LINE_ITEM")
     def put(self, id: int) -> Response:
         message_prefix = f"PUT to {ENDPOINT_STRING}"
@@ -99,7 +97,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             return make_response_with_headers({}, 500)
 
     @override
-    @jwt_required()
     @is_authorized("PATCH_BUDGET_LINE_ITEM")
     def patch(self, id: int) -> Response:
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
@@ -178,7 +175,6 @@ class BudgetLineItemsListAPI(BaseListAPI):
         return stmt
 
     @override
-    @jwt_required()
     @is_authorized("GET_BUDGET_LINE_ITEMS")
     def get(self) -> Response:
         message_prefix = f"GET to {ENDPOINT_STRING}"
@@ -207,7 +203,6 @@ class BudgetLineItemsListAPI(BaseListAPI):
         return response
 
     @override
-    @jwt_required()
     @is_authorized("POST_BUDGET_LINE_ITEMS")
     def post(self) -> Response:
         message_prefix = f"POST to {ENDPOINT_STRING}"
