@@ -48,11 +48,7 @@ const EditAgreement = () => {
         return <div>Oops, an error occurred</div>;
     }
     if (agreement.status !== "DRAFT" && agreement.status !== "UNDER_REVIEW") {
-        return (
-            <App>
-                This Agreement cannot be edited because it's status is {agreement.status}.
-            </App>
-        );
+        return <App>This Agreement cannot be edited because its status is {agreement.status}.</App>;
     }
 
     return (
