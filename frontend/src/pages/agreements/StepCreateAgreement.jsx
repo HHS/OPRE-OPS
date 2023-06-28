@@ -25,7 +25,7 @@ import { patchAgreement } from "../../api/patchAgreements";
 import suite from "./stepCreateAgreementSuite";
 import Input from "../../components/UI/Form/Input";
 import EditModeTitle from "./EditModeTitle";
-
+import TextArea from "../../components/UI/Form/TextArea/TextArea";
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
  *
@@ -57,8 +57,15 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
     } = agreement;
 
     React.useEffect(() => {
-        if (formMode === "edit" || formMode === "review") {
-            setIsEditMode(true);
+        switch (formMode) {
+            case "edit":
+                setIsEditMode(true);
+                break;
+            case "review":
+                setIsReviewMode(true);
+                break;
+            default:
+                return;
         }
     }, [formMode]);
 
@@ -82,8 +89,10 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const [isEditMode, setIsEditMode] = React.useState(false);
+    const [isReviewMode, setIsReviewMode] = React.useState(false);
 
     let res = suite.get();
+    console.log(`res: ${JSON.stringify(res, null, 2)}`);
     const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
     const shouldDisableBtn = !agreementTitle && !res.isValid();
 
@@ -168,12 +177,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
         });
     };
 
-    const handleChange = (currentField, value) => {
-        const nextState = { [currentField]: value };
-        setAgreementTitle(value);
-        suite(nextState, currentField);
-    };
-
     const handleOnChangeSelectedProcurementShop = (procurementShop) => {
         setSelectedProcurementShop(procurementShop);
         setAgreementProcurementShopId(procurementShop.id);
@@ -191,7 +194,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
                 />
             )}
 
-            <EditModeTitle isEditMode={isEditMode} />
+            <EditModeTitle isEditMode={isEditMode || isReviewMode} />
             <StepIndicator steps={wizardSteps} currentStep={2} />
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg">Select the Agreement Type</h2>
@@ -205,21 +208,25 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
                 messages={res.getErrors("agreement-title")}
                 className={cn("agreement-title")}
                 value={agreementTitle || ""}
-                onChange={handleChange}
+                onChange={(currentField, value) => {
+                    setAgreementTitle(value);
+                    suite({ [currentField]: value }, currentField);
+                }}
             />
 
-            <label className="usa-label" htmlFor="agreement-description">
-                Description
-            </label>
-            <textarea
-                className="usa-textarea"
-                id="agreement-description"
+            <TextArea
                 name="agreement-description"
-                rows={5}
-                style={{ height: "7rem" }}
+                label="Description"
+                messages={res.getErrors("agreement-description")}
+                className={cn("agreement-description")}
                 value={agreementDescription || ""}
-                onChange={(e) => setAgreementDescription(e.target.value)}
-            ></textarea>
+                onChange={(currentField, value) => {
+                    setAgreementDescription(value);
+                    if (isReviewMode) {
+                        suite({ [currentField]: value }, currentField);
+                    }
+                }}
+            />
 
             <ProductServiceCodeSelect
                 selectedProductServiceCode={selectedProductServiceCode}
