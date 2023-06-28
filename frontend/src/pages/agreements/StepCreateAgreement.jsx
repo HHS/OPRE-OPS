@@ -199,7 +199,17 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg">Select the Agreement Type</h2>
             <p>Select the type of agreement you&#39;d like to create.</p>
-            <AgreementTypeSelect selectedAgreementType={agreementType} setSelectedAgreementType={setAgreementType} />
+            <AgreementTypeSelect
+                name="agreement-type"
+                label="Agreement Type"
+                messages={res.getErrors("agreement-type")}
+                className={cn("agreement-type")}
+                selectedAgreementType={agreementType}
+                onChange={(currentField, value) => {
+                    setAgreementType(value);
+                    suite({ [currentField]: value }, currentField);
+                }}
+            />
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
 
             <Input
@@ -207,7 +217,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
                 label="Agreement Title"
                 messages={res.getErrors("agreement-title")}
                 className={cn("agreement-title")}
-                value={agreementTitle || ""}
+                value={agreementTitle}
                 onChange={(currentField, value) => {
                     setAgreementTitle(value);
                     suite({ [currentField]: value }, currentField);
@@ -219,7 +229,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
                 label="Description"
                 messages={res.getErrors("agreement-description")}
                 className={cn("agreement-description")}
-                value={agreementDescription || ""}
+                value={agreementDescription}
                 onChange={(currentField, value) => {
                     setAgreementDescription(value);
                     if (isReviewMode) {
