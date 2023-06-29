@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom";
 import { useGetAgreementByIdQuery } from "../../api/opsAPI";
 import { useEffect, useState } from "react";
 import { getUser } from "../../api/getUser";
+import SimpleAlert from "../../components/UI/Alert/SimpleAlert";
 
 const EditAgreement = () => {
     const urlPathParams = useParams();
@@ -46,6 +47,17 @@ const EditAgreement = () => {
     }
     if (errorAgreement) {
         return <div>Oops, an error occurred</div>;
+    }
+    if (agreement.status !== "DRAFT" && agreement.status !== "UNDER_REVIEW") {
+        return (
+            <App>
+                <SimpleAlert
+                    type="error"
+                    heading="Error"
+                    message={`This Agreement cannot be edited because its status is ${agreement.status}.`}
+                ></SimpleAlert>
+            </App>
+        );
     }
 
     return (
