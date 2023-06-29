@@ -1,9 +1,7 @@
 """Base model and other useful tools for project models."""
 import decimal
-from dataclasses import dataclass
 from typing import Annotated, ClassVar, Final, TypeAlias, TypedDict, TypeVar, cast
 
-# from desert import schema
 from marshmallow import Schema as MMSchema
 from models.mixins.repr import ReprMixin
 from models.mixins.serialize import SerializeMixin

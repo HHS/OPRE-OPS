@@ -17,6 +17,7 @@ class OpsEventType(Enum):
     UPDATE_AGREEMENT = 6
     SEND_BLI_FOR_APPROVAL = 7
     DELETE_AGREEMENT = 8
+    ACKNOWLEDGE_NOTIFICATION = 9
 
 
 class OpsEventStatus(Enum):

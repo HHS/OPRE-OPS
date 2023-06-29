@@ -31,6 +31,7 @@ describe("AgreementTableRow", () => {
         created_by: "user1",
         notes: "Test notes",
         created_on: "2021-10-21T03:24:00",
+        status: "In Review",
     };
 
     test("renders correctly", () => {

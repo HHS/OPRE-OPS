@@ -89,7 +89,7 @@ def test_agreements_serialization(auth_client, loaded_db):
             }
         ],
         "vendor": "Vendor 1",
-        "status": "PLANNED",
+        "status": "DRAFT",
     }
 
 
@@ -474,3 +474,21 @@ def test_agreements_delete_by_id(auth_client, loaded_db, test_contract):
     agreement = loaded_db.scalar(stmt)
 
     assert agreement is None
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_status(loaded_db):
+    stmt = select(Agreement).where(Agreement.id == 1)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement is not None
+    assert agreement.status == "DRAFT"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_status_no_budget_lines(loaded_db):
+    stmt = select(Agreement).where(Agreement.id == 6)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement is not None
+    assert agreement.status == "DRAFT"

@@ -2,14 +2,9 @@ import ApplicationContext from "../applicationContext/ApplicationContext";
 
 export const patchAgreement = async (id, item) => {
     const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;
-    console.log("patchAgreement item:");
-    console.log(item);
     const data = { ...item };
     // remove fields that are not allowed
     const { id: _id, budget_line_items, created_by, created_on, updated_on, ...patchData } = data;
-
-    console.log("patchData:");
-    console.log(patchData);
 
     const responseData = await ApplicationContext.get()
         .helpers()

@@ -14,7 +14,7 @@ def test_budget_line_item_lookup(loaded_db):
     assert bli.agreement_id == 1
     assert bli.can_id == 5
     assert bli.amount == 1000000.00
-    assert bli.status == BudgetLineItemStatus.PLANNED
+    assert bli.status == BudgetLineItemStatus.DRAFT
 
 
 def test_budget_line_item_creation():

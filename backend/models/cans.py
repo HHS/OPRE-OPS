@@ -1,15 +1,28 @@
 """CAN models."""
-from dataclasses import dataclass
-from enum import Enum, IntEnum
+from enum import Enum
 from typing import Any, ClassVar, Optional
 
 import sqlalchemy as sa
-from models.base import BaseModel, currency, intpk, optional_str, reg, required_str
+from models.base import BaseModel
 from models.portfolios import Portfolio, shared_portfolio_cans
 from models.users import User
-from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Identity, Integer, Numeric, String, Table, Text, case, select
-from sqlalchemy.sql import functions, expression
-from sqlalchemy.orm import column_property, relationship, with_polymorphic, InstrumentedAttribute, object_session
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    Identity,
+    Integer,
+    Numeric,
+    String,
+    Table,
+    Text,
+    case,
+    select,
+)
+from sqlalchemy.orm import InstrumentedAttribute, column_property, object_session, relationship, with_polymorphic
+from sqlalchemy.sql import functions
 from typing_extensions import override
 
 
@@ -155,11 +168,28 @@ class Agreement(BaseModel):
     def status(self):
         # We may change this. We can keep it for now, but we will want to review this before utilizing
         # it in the frontend or for any other business logic calculations.
-        subq = select(
-            functions.min(case({s.name: s.value for s in BudgetLineItemStatus}, value=BudgetLineItem.status)).label("status_num")
-        ).where(BudgetLineItem.agreement_id == self.id).group_by(BudgetLineItem.agreement_id).scalar_subquery()
+        subq = (
+            select(
+                functions.min(
+                    case(
+                        {s.name: s.value for s in BudgetLineItemStatus},
+                        value=BudgetLineItem.status,
+                    )
+                ).label("status_num"),
+            )
+            .where(BudgetLineItem.agreement_id == self.id)
+            .group_by(BudgetLineItem.agreement_id)
+            .scalar_subquery()
+        )
 
-        return object_session(self).scalar(select(case({s.value: s.name for s in BudgetLineItemStatus}, value=subq)))
+        stmt = select(
+            functions.coalesce(
+                case({s.value: s.name for s in BudgetLineItemStatus}, value=subq),
+                "DRAFT",
+            )
+        )
+
+        return object_session(self).scalar(stmt)
 
     __mapper_args__: dict[str, str | AgreementType] = {
         "polymorphic_identity": "agreement",
@@ -184,16 +214,19 @@ class Agreement(BaseModel):
                     table_class = subclass
                     break
             else:
-                raise ValueError(f"Column name does not exist for agreements: {field_name}")
+                raise ValueError(
+                    f"Column name does not exist for agreements: {field_name}"
+                )
         return getattr(table_class, field_name)
 
     @classmethod
-    def get_class(cls, agreement_type: Optional[AgreementType] = None) -> type["Agreement"]:
+    def get_class(
+        cls, agreement_type: Optional[AgreementType] = None
+    ) -> type["Agreement"]:
         try:
             return cls._subclasses[agreement_type]
         except KeyError:
             return Agreement
-
 
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
