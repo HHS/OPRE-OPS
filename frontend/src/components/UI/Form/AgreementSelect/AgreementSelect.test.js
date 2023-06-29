@@ -1,5 +1,8 @@
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import AgreementSelect from "./AgreementSelect";
+import { useGetUserByIdQuery } from "../../../../api/opsAPI";
+
+jest.mock("../../../../api/opsAPI");
 
 describe("AgreementSelect", () => {
     const agreementsMock = [
@@ -80,6 +83,7 @@ describe("AgreementSelect", () => {
 
     it("displays the correct agreement information in the summary card", () => {
         const selectedAgreementMock = agreementsMock[0];
+        useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
         render(<AgreementSelect selectedAgreement={selectedAgreementMock} agreements={agreementsMock} />);
 
         const summaryCard = screen.getByTestId("agreement-summary-card");

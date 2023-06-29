@@ -25,14 +25,31 @@ it("navigates to the approveAgreements page when the approve button is clicked",
 });
 
 it("the agreements have the correct status", () => {
-    cy.get("tbody").children().as("table-rows").should("have.length", 8);
+    cy.get("tbody").children().as("table-rows");
 
-    cy.get("@table-rows").eq(0).should("contain", "Draft");
-    cy.get("@table-rows").eq(1).should("contain", "Planned");
-    cy.get("@table-rows").eq(2).should("contain", "Obligated");
-    cy.get("@table-rows").eq(3).should("contain", "Obligated");
-    cy.get("@table-rows").eq(4).should("contain", "Draft");
-    cy.get("@table-rows").eq(5).should("contain", "Draft");
-    cy.get("@table-rows").eq(6).should("contain", "Draft");
-    cy.get("@table-rows").eq(7).should("contain", "Draft");
+    cy.get("@table-rows")
+        .should("contain", "Contract #1: African American Child and Family Research Center")
+        .and("contain", "Draft");
+
+    cy.get("@table-rows")
+        .should("contain", "DIRECT ALLOCATION #2: African American Child and Family Research Center")
+        .and("contain", "Planned");
+
+    cy.get("@table-rows").should("contain", "MIHOPE Check-In").and("contain", "Obligated");
+
+    cy.get("@table-rows").should("contain", "MIHOPE Long-Term").and("contain", "Obligated");
+
+    cy.get("@table-rows")
+        .should("contain", "Grant #1: Early Care and Education Leadership Study (ExCELS)")
+        .and("contain", "Draft");
+
+    cy.get("@table-rows")
+        .should("contain", "IAA #1: Early Care and Education Leadership Study (ExCELS)")
+        .and("contain", "Draft");
+
+    cy.get("@table-rows").should("contain", "IAA-AA #1: Fathers and Continuous Learning (FCL)").and("contain", "Draft");
+
+    cy.get("@table-rows")
+        .should("contain", "CONTRACT #2: Fathers and Continuous Learning (FCL)")
+        .and("contain", "Draft");
 });
