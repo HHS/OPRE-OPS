@@ -162,6 +162,12 @@
         "GET_DIVISION",
         "GET_DIVISIONS",
 
+        "GET_NOTIFICATION",
+        "PUT_NOTIFICATION",
+        "PATCH_NOTIFICATION",
+
+        "GET_NOTIFICATIONS",
+
         "GET_PORTFOLIO",
         "GET_PORTFOLIOS",
 
@@ -185,6 +191,8 @@
         "GET_CANS",
         "GET_DIVISION",
         "GET_DIVISIONS",
+        "GET_NOTIFICATION",
+        "GET_NOTIFICATIONS",
         "GET_PORTFOLIO",
         "GET_PORTFOLIOS",
         "GET_RESEARCH_PROJECT",
