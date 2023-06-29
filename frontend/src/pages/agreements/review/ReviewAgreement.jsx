@@ -36,9 +36,9 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const [pageErrors, setPageErrors] = useState({});
     const [isAlertActive, setIsAlertActive] = useState(false);
     const isGlobalAlertActive = useSelector((state) => state.alert.isActive);
+
     let res = suite.get();
 
-    // console.log(JSON.stringify(res, null, 2));
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
         valid: "success",
@@ -94,10 +94,14 @@ export const ReviewAgreement = ({ agreement_id }) => {
         return <h1>Oops, an error occured</h1>;
     }
 
-    const anyBudgetLinesAreDraft = agreement.budget_line_items.some((item) => item.status === "DRAFT");
+    // convert page errors about budget lines object into an array of objects
+    const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
+    const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
     const budgetLineErrors = res.getErrors("budget-line-items");
-    const budgetLineErrorsExist = Object.keys(budgetLineErrors).length > 0;
+    const budgetLineErrorsExist = budgetLineErrors.length > 0;
+    const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist;
 
+    const anyBudgetLinesAreDraft = agreement.budget_line_items.some((item) => item.status === "DRAFT");
     const handleSendToApproval = () => {
         if (anyBudgetLinesAreDraft) {
             agreement?.budget_line_items.forEach((bli) => {
@@ -256,16 +260,29 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     />
                 )}
             </dl>
-            <div className={`font-12px usa-form-group ${budgetLineErrorsExist ? "usa-form-group--error" : null}`}>
+            <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : null}`}>
                 <h2 className="text-bold" style={{ fontSize: "1.375rem" }}>
                     Budget Lines
                 </h2>
                 <p>This is a list of all budget lines within this agreement.</p>
-                {budgetLineErrorsExist && (
+                {areThereBudgetLineErrors && (
                     <ul className="usa-error-message padding-left-1">
-                        {budgetLineErrors.map((error, index) => (
-                            <li key={index}>{error}</li>
-                        ))}
+                        {budgetLineErrorsExist && (
+                            <li>
+                                {budgetLineErrors.map((error, index) => (
+                                    <Fragment key={index}>
+                                        <span>{error}</span>
+                                        {index < budgetLineErrors.length - 1 && <span>, </span>}
+                                    </Fragment>
+                                ))}
+                            </li>
+                        )}
+                        {budgetLinePageErrorsExist &&
+                            budgetLinePageErrors.map(([budgetLineItem, errors]) => (
+                                <li key={budgetLineItem}>
+                                    {budgetLineItem}: {errors.join(", ")}
+                                </li>
+                            ))}
                     </ul>
                 )}
             </div>
