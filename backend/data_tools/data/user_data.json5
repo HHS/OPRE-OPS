@@ -1,6 +1,6 @@
 {
   users: [
-    {
+    { // 1
       first_name: "Chris",
       last_name: "Fortunato",
       division: 1,
@@ -8,7 +8,7 @@
       role: "COR",
       oidc_id: "00000000-0000-1111-a111-000000000001",
     },
-    {
+    { // 2
       first_name: "Amy",
       last_name: "Madigan",
       division: 1,
@@ -16,7 +16,7 @@
       role: "Division Director",
       oidc_id: "00000000-0000-1111-a111-000000000002",
     },
-    {
+    { // 3
       first_name: "Ivelisse",
       last_name: "Martinez-Beck",
       division: 1,
@@ -24,7 +24,7 @@
       role: "COR",
       oidc_id: "00000000-0000-1111-a111-000000000003",
     },
-    {
+    { // 4
       first_name: "Amelia",
       last_name: "Popham",
       division: 2,
@@ -32,7 +32,7 @@
       role: "COR",
       oidc_id: "00000000-0000-1111-a111-000000000004",
     },
-    {
+    { // 5
       first_name: "Tia",
       last_name: "Brown",
       division: 3,
@@ -40,7 +40,7 @@
       role: "Non-COR/Contractor",
       oidc_id: "00000000-0000-1111-a111-000000000005",
     },
-    {
+    { // 6
       first_name: "Katie",
       last_name: "Pahigiannis",
       division: 3,
@@ -48,7 +48,7 @@
       role: "COR",
       oidc_id: "00000000-0000-1111-a111-000000000006",
     },
-    {
+    { // 7
       first_name: "Nancy",
       last_name: "Margie",
       division: 3,
@@ -56,7 +56,7 @@
       role: "Non-COR/Contractor",
       oidc_id: "00000000-0000-1111-a111-000000000007",
     },
-    {
+    { // 8
       first_name: "Nicole",
       last_name: "Deterding",
       division: 4,
@@ -64,7 +64,7 @@
       role: "Non-COR/Contractor",
       oidc_id: "00000000-0000-1111-a111-000000000008",
     },
-    {
+    { // 9
       first_name: "Valeria",
       last_name: "Butler",
       division: 4,
@@ -72,7 +72,7 @@
       role: "Non-COR/Contractor",
       oidc_id: "00000000-0000-1111-a111-000000000009",
     },
-    {
+    { // 10
       first_name: "Beth Ann",
       last_name: "Barnes",
       division: 4,
@@ -80,7 +80,7 @@
       role: "Team Leader",
       oidc_id: "00000000-0000-1111-a111-000000000010",
     },
-    {
+    { // 11
       first_name: "Laura",
       last_name: "Nerenberg",
       division: 4,
@@ -88,7 +88,7 @@
       role: "COR",
       oidc_id: "00000000-0000-1111-a111-000000000011",
     },
-    {
+    { // 12
       first_name: "Niki",
       last_name: "Denmark",
       division: 4,
@@ -96,7 +96,7 @@
       role: "Non-COR/Contractor",
       oidc_id: "00000000-0000-1111-a111-000000000012",
     },
-    {
+    { // 13
       first_name: "Tim",
       last_name: "Donaworth",
       division: 3,
@@ -104,7 +104,7 @@
       role: "Tech Lead",
       oidc_id: "e5711101-bc3e-41e5-a6a2-051874b307ca",
     },
-    {
+    { // 14
       first_name: "John",
       last_name: "DeAngelis",
       division: 3,
@@ -112,7 +112,7 @@
       role: "Software Engineer",
       oidc_id: "838861c4-8bee-427d-8b49-0892875483ba",
     },
-    {
+    { // 15
       first_name: "Frank",
       last_name: "Pigeon",
       division: 3,
@@ -120,7 +120,7 @@
       role: "Software Engineer",
       oidc_id: "3e4c46ae-0ff9-4dd7-8671-b9801460a052",
     },
-    {
+    { // 16
       first_name: "Cliff",
       last_name: "Hill",
       division: 3,
@@ -225,6 +225,26 @@
     },
     {
       user_id: 6,
+      role_id: 1,
+    },
+    {
+      user_id: 12,
+      role_id: 1,
+    },
+    {
+      user_id: 13,
+      role_id: 1,
+    },
+    {
+      user_id: 14,
+      role_id: 1,
+    },
+    {
+      user_id: 15,
+      role_id: 1,
+    },
+    {
+      user_id: 16,
       role_id: 1,
     },
   ],
