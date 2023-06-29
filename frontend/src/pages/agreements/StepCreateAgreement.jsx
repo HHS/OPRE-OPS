@@ -103,6 +103,11 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
             default:
                 return;
         }
+        return () => {
+            setIsReviewMode(false);
+            setIsEditMode(false);
+            suite.reset();
+        };
     }, [formMode, agreement]);
 
     const changeSelectedProductServiceCode = (selectedProductServiceCode) => {
