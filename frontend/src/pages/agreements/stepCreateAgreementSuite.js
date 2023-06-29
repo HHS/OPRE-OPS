@@ -16,7 +16,7 @@ const suite = create((data = {}, fieldName) => {
         enforce(data.product_service_code_id).isNotBlank();
     });
     test("product_service_code_id", "This is required information", () => {
-        enforce(data.product_service_code_id).notEquals("0");
+        enforce(data.product_service_code_id).greaterThan(0);
     });
 });
 

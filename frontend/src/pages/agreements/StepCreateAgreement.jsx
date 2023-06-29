@@ -26,6 +26,7 @@ import suite from "./stepCreateAgreementSuite";
 import Input from "../../components/UI/Form/Input";
 import EditModeTitle from "./EditModeTitle";
 import TextArea from "../../components/UI/Form/TextArea/TextArea";
+import { useGetProductServiceCodesQuery } from "../../api/opsAPI";
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
  *
@@ -35,27 +36,6 @@ import TextArea from "../../components/UI/Form/TextArea/TextArea";
  * @param {string} [props.formMode] - The mode of the form (e.g. "create", "edit", "review"). - optional
  */
 export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
-    const navigate = useNavigate();
-    const dispatch = useCreateAgreementDispatch();
-    const globalDispatch = useDispatch();
-    const {
-        wizardSteps,
-        selected_project: selectedResearchProject,
-        agreement,
-        selected_procurement_shop: selectedProcurementShop,
-        selected_product_service_code: selectedProductServiceCode,
-        selected_project_officer: selectedProjectOfficer,
-    } = useCreateAgreement();
-    const {
-        notes: agreementNotes,
-        incumbent: agreementIncumbent,
-        agreement_type: agreementType,
-        name: agreementTitle,
-        description: agreementDescription,
-        agreement_reason: agreementReason,
-        team_members: selectedTeamMembers,
-    } = agreement;
-
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setSelectedProductServiceCode = useSetState("selected_product_service_code");
@@ -78,16 +58,33 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
     const [isEditMode, setIsEditMode] = React.useState(false);
     const [isReviewMode, setIsReviewMode] = React.useState(false);
 
-    let res = suite.get();
-    console.log(`res: ${JSON.stringify(res, null, 2)}`);
-    const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
-    const shouldDisableBtn = !agreementTitle && !res.isValid();
+    const navigate = useNavigate();
+    const dispatch = useCreateAgreementDispatch();
+    const globalDispatch = useDispatch();
 
-    const cn = classnames(suite.get(), {
-        invalid: "usa-form-group--error",
-        valid: "success",
-        warning: "warning",
-    });
+    const {
+        wizardSteps,
+        selected_project: selectedResearchProject,
+        agreement,
+        selected_procurement_shop: selectedProcurementShop,
+        selected_product_service_code: selectedProductServiceCode,
+        selected_project_officer: selectedProjectOfficer,
+    } = useCreateAgreement();
+    const {
+        notes: agreementNotes,
+        incumbent: agreementIncumbent,
+        agreement_type: agreementType,
+        name: agreementTitle,
+        description: agreementDescription,
+        agreement_reason: agreementReason,
+        team_members: selectedTeamMembers,
+    } = agreement;
+
+    const {
+        data: productServiceCodes,
+        error: errorProductServiceCodes,
+        isLoading: isLoadingProductServiceCodes,
+    } = useGetProductServiceCodesQuery();
 
     React.useEffect(() => {
         switch (formMode) {
@@ -109,6 +106,24 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
             suite.reset();
         };
     }, [formMode, agreement]);
+
+    if (isLoadingProductServiceCodes) {
+        return <div>Loading...</div>;
+    }
+    if (errorProductServiceCodes) {
+        return <div>Oops, an error occurred</div>;
+    }
+
+    let res = suite.get();
+    console.log(`res: ${JSON.stringify(res, null, 2)}`);
+    const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
+    const shouldDisableBtn = !agreementTitle && !res.isValid();
+
+    const cn = classnames(suite.get(), {
+        invalid: "usa-form-group--error",
+        valid: "success",
+        warning: "warning",
+    });
 
     const changeSelectedProductServiceCode = (selectedProductServiceCode) => {
         setSelectedProductServiceCode(selectedProductServiceCode);
@@ -257,8 +272,18 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
             />
 
             <ProductServiceCodeSelect
-                selectedProductServiceCode={selectedProductServiceCode}
-                setSelectedProductServiceCode={changeSelectedProductServiceCode}
+                name="product_service_code_id"
+                label="Product Service Code"
+                messages={res.getErrors("product_service_code_id")}
+                className={cn("product_service_code_id")}
+                selectedProductServiceCode={selectedProductServiceCode || ""}
+                codes={productServiceCodes}
+                onChange={(name, value) => {
+                    changeSelectedProductServiceCode(productServiceCodes[value - 1]);
+                    if (isReviewMode) {
+                        runValidate(name, value);
+                    }
+                }}
             />
             {selectedProductServiceCode &&
                 selectedProductServiceCode.naics &&
