@@ -54,7 +54,7 @@ const EditAgreement = () => {
                 <SimpleAlert
                     type="error"
                     heading="Error"
-                    message={`This Agreement cannot be edited because it's status is ${agreement.status}.`}
+                    message={`This Agreement cannot be edited because its status is ${agreement.status}.`}
                 ></SimpleAlert>
             </App>
         );
