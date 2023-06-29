@@ -42,7 +42,10 @@ export const AgreementTypeSelect = ({
 
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>
-            <label className="usa-label margin-top-205" htmlFor="agreement-type-options">
+            <label
+                className={`usa-label margin-top-205 ${messages.length ? "usa-label--error" : null} `}
+                htmlFor={name}
+            >
                 {label}
             </label>
             {messages.length ? (
@@ -52,7 +55,7 @@ export const AgreementTypeSelect = ({
             ) : null}
             <div className="display-flex flex-align-center margin-top-1">
                 <select
-                    className="usa-select margin-top-0 width-card-lg"
+                    className={`usa-select margin-top-0 width-card-lg ${messages.length ? "usa-input--error" : null}`}
                     name={name}
                     id={name}
                     onChange={handleChange}
