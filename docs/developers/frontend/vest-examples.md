@@ -9,6 +9,12 @@ Here are a few examples we have so far in our codebase.
 ## Example 1: Create a Project with local React useState object
 *Mode*: CREATE
 
+
+
+https://github.com/HHS/OPRE-OPS/assets/4629398/1d11aa61-339f-4208-ab13-6d29ccb12087
+
+
+
 In this example we are working with single state object called `project` with local React state. We want to allow users to have to first interact with the form elements before firing off the validation.
 
 1. First step is to create our test suite with the fields we want to enforce are not blank and other tests
@@ -100,6 +106,8 @@ We are not interacting with the elements and not firing re-validations.
 
 *Mode*: READ
 
+https://github.com/HHS/OPRE-OPS/assets/4629398/707c0c70-2afc-4f4c-ad32-8652ab8f40ed
+
 1. Setup our test suite
 
 ```javascript
@@ -174,6 +182,10 @@ const Terms = ({ name, label = name, pending = false, messages = [], value, clas
 
 ## Example 3: Working with state from Context in an Agreement workflow
 We want to kickoff the tests if the form is in Review mode even if the user has not interacted with the form elements. 
+
+*Mode*: REVIEW/EDIT
+
+https://github.com/HHS/OPRE-OPS/assets/4629398/312ef2f4-ac1a-4a73-a183-ee175170b6df
 
 1. Setup the test suite
 
