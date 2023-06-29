@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import AgreementSelect from "./AgreementSelect";
-import { useGetProcurementShopsQuery, useGetUserByIdQuery } from "../../../../api/opsAPI";
+import { useGetUserByIdQuery } from "../../../../api/opsAPI";
 
 jest.mock("../../../../api/opsAPI");
 
