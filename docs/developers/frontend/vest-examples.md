@@ -9,11 +9,7 @@ Here are a few examples we have so far in our codebase.
 ## Example 1: Create a Project with local React useState object
 *Mode*: CREATE
 
-
-
 https://github.com/HHS/OPRE-OPS/assets/4629398/1d11aa61-339f-4208-ab13-6d29ccb12087
-
-
 
 In this example we are working with single state object called `project` with local React state. We want to allow users to have to first interact with the form elements before firing off the validation.
 
@@ -148,7 +144,6 @@ React.useEffect(() => {
 }, [isSuccess, agreement]);
 ```
 
-
 3. Display any errors in the Component
 
 ```javascript
@@ -252,7 +247,6 @@ const runValidate = (name, value) => {
   );
 };
 ```
-
 4. Component structure fires the `runValidate` function on the onChange event. The `<TextArea />` component *only* runs the validation when the form is in review mode. The `<Input />` component runs in any mode. 
 
 ```javascript
@@ -285,7 +279,6 @@ const runValidate = (name, value) => {
 />
 
 ```
-
 
 ## Resources
 - [Vest documentation site](https://vestjs.dev/)
