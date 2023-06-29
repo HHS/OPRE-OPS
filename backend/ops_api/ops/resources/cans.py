@@ -23,6 +23,11 @@ class CANItemAPI(BaseItemAPI):
     def __init__(self, model):
         super().__init__(model)
 
+    @override
+    @is_authorized("GET_CAN")
+    def get(self) -> Response:
+        return super().get()
+
 
 class CANListAPI(BaseListAPI):
     def __init__(self, model):
@@ -70,7 +75,7 @@ class CANsByPortfolioAPI(BaseItemAPI):
         return cans
 
     @override
-    @is_authorized("GET_CAN")
+    @is_authorized("GET_CANS")
     def get(self, id: int) -> Response:
         cans = self._get_item(id)
         return make_response_with_headers([can.to_dict() for can in cans])
