@@ -23,10 +23,18 @@ export const AgreementsList = () => {
     }, []);
 
     if (isLoadingAgreement) {
-        return <div>Loading...</div>;
+        return (
+            <App>
+                <h1>Loading...</h1>
+            </App>
+        );
     }
     if (errorAgreement) {
-        return <div>Oops, an error occurred</div>;
+        return (
+            <App>
+                <h1>Oops, an error occurred</h1>
+            </App>
+        );
     }
 
     const sortedAgreements = sortAgreements(agreements);
