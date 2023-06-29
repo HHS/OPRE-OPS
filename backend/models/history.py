@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Any
 
 import sqlalchemy as sa
+from sqlalchemy import Index
 from sqlalchemy.dialects.postgresql import JSONB
 from typing_extensions import override
 
@@ -17,16 +18,15 @@ class OpsDBHistoryType(Enum):
 
 class OpsDBHistory(BaseModel):
     __tablename__ = "ops_db_history"
-
     id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
     event_type = sa.Column(sa.Enum(OpsDBHistoryType))
     event_details = sa.Column(JSONB)
+    class_name = sa.Column(sa.String)
     table_name = sa.Column(sa.String)
     base_table_name = sa.Column(sa.String)
     row_key = sa.Column(sa.String)
     original = sa.Column(JSONB)
     diff = sa.Column(JSONB)
-    changes = sa.Column(JSONB)
 
     @override
     def to_dict(self) -> dict[str, Any]:
@@ -39,3 +39,7 @@ class OpsDBHistory(BaseModel):
         )
 
         return d
+
+
+index = Index('idx_ops_db_history_table_name_row_key_created_on', OpsDBHistory.table_name, OpsDBHistory.row_key,
+              sa.desc(OpsDBHistory.created_on))
