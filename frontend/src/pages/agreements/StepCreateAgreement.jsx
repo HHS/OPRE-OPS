@@ -78,19 +78,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
     const [isEditMode, setIsEditMode] = React.useState(false);
     const [isReviewMode, setIsReviewMode] = React.useState(false);
 
-    React.useEffect(() => {
-        switch (formMode) {
-            case "edit":
-                setIsEditMode(true);
-                break;
-            case "review":
-                setIsReviewMode(true);
-                break;
-            default:
-                return;
-        }
-    }, [formMode]);
-
     let res = suite.get();
     console.log(`res: ${JSON.stringify(res, null, 2)}`);
     const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
@@ -101,6 +88,22 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
         valid: "success",
         warning: "warning",
     });
+
+    React.useEffect(() => {
+        switch (formMode) {
+            case "edit":
+                setIsEditMode(true);
+                break;
+            case "review":
+                setIsReviewMode(true);
+                suite({
+                    ...agreement,
+                });
+                break;
+            default:
+                return;
+        }
+    }, [formMode, agreement]);
 
     const changeSelectedProductServiceCode = (selectedProductServiceCode) => {
         setSelectedProductServiceCode(selectedProductServiceCode);
@@ -182,6 +185,16 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
         setAgreementProcurementShopId(procurementShop.id);
     };
 
+    const runValidate = (name, value) => {
+        suite(
+            {
+                ...agreement,
+                ...{ [name]: value },
+            },
+            name
+        );
+    };
+
     return (
         <>
             {showModal && (
@@ -200,40 +213,40 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
             <h2 className="font-sans-lg">Select the Agreement Type</h2>
             <p>Select the type of agreement you&#39;d like to create.</p>
             <AgreementTypeSelect
-                name="agreement-type"
+                name="agreement_type"
                 label="Agreement Type"
-                messages={res.getErrors("agreement-type")}
-                className={cn("agreement-type")}
-                selectedAgreementType={agreementType}
-                onChange={(currentField, value) => {
+                messages={res.getErrors("agreement_type")}
+                className={cn("agreement_type")}
+                selectedAgreementType={agreementType || ""}
+                onChange={(name, value) => {
                     setAgreementType(value);
-                    suite({ [currentField]: value }, currentField);
+                    runValidate(name, value);
                 }}
             />
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
 
             <Input
-                name="agreement-title"
+                name="name"
                 label="Agreement Title"
-                messages={res.getErrors("agreement-title")}
-                className={cn("agreement-title")}
+                messages={res.getErrors("name")}
+                className={cn("name")}
                 value={agreementTitle}
-                onChange={(currentField, value) => {
+                onChange={(name, value) => {
                     setAgreementTitle(value);
-                    suite({ [currentField]: value }, currentField);
+                    runValidate(name, value);
                 }}
             />
 
             <TextArea
-                name="agreement-description"
+                name="description"
                 label="Description"
-                messages={res.getErrors("agreement-description")}
-                className={cn("agreement-description")}
+                messages={res.getErrors("description")}
+                className={cn("description")}
                 value={agreementDescription}
-                onChange={(currentField, value) => {
+                onChange={(name, value) => {
                     setAgreementDescription(value);
                     if (isReviewMode) {
-                        suite({ [currentField]: value }, currentField);
+                        runValidate(name, value);
                     }
                 }}
             />
