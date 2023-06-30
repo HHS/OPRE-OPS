@@ -299,25 +299,35 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
             <h2 className="font-sans-lg margin-top-3">Reason for Agreement</h2>
             <div className="display-flex">
                 <AgreementReasonSelect
+                    name="agreement_reason"
+                    label="Reason for Agreement"
+                    messages={res.getErrors("agreement_reason")}
+                    className={cn("agreement_reason")}
                     selectedAgreementReason={agreementReason}
-                    setSelectedAgreementReason={setAgreementReason}
-                    setAgreementIncumbent={setAgreementIncumbent}
+                    onChange={(name, value) => {
+                        setAgreementIncumbent(null);
+                        setAgreementReason(value);
+                        if (isReviewMode) {
+                            runValidate(name, value);
+                        }
+                    }}
                 />
                 <fieldset
                     className={`usa-fieldset margin-left-4 ${incumbentDisabled && "text-disabled"}`}
                     disabled={incumbentDisabled}
                 >
-                    <label className="usa-label margin-top-0" htmlFor="agreement-incumbent">
-                        Incumbent
-                    </label>
-                    <input
-                        className="usa-input width-card-lg"
-                        id="agreement-incumbent"
-                        name="agreement-incumbent"
-                        type="text"
+                    <Input
+                        name="incumbent"
+                        label="Incumbent"
+                        messages={res.getErrors("incumbent")}
+                        className={`margin-top-0 cn("incumbent")`}
                         value={agreementIncumbent || ""}
-                        onChange={(e) => setAgreementIncumbent(e.target.value)}
-                        required
+                        onChange={(name, value) => {
+                            setAgreementIncumbent(value);
+                            if (isReviewMode) {
+                                runValidate(name, value);
+                            }
+                        }}
                     />
                 </fieldset>
             </div>
