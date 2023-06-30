@@ -97,7 +97,7 @@ export const ProjectOfficerSelect = ({
                     aria-expanded="false"
                     autoCapitalize="off"
                     autoComplete="off"
-                    className="usa-combo-box__input"
+                    className={`usa-combo-box__input ${messages.length ? "usa-input--error" : null} `}
                     type="text"
                     role="combobox"
                     aria-activedescendant=""
@@ -144,10 +144,10 @@ export const ProjectOfficerSelect = ({
                                 key={user?.id}
                                 aria-setsize={users?.length}
                                 aria-posinset={index + 1}
-                                aria-selected="false"
+                                aria-selected={false}
                                 id={`project-officer-dynamic-select--list--option-${index}`}
                                 className="usa-combo-box__list-option"
-                                tabIndex={index === 0 ? "0" : "-1"}
+                                tabIndex={index === 0 ? 0 : -1}
                                 role="option"
                                 data-value={user?.full_name || user?.email}
                             >
