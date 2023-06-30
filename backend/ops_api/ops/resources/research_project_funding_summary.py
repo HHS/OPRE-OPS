@@ -8,7 +8,7 @@ from ops_api.ops.utils.research_project_helper import (
     ResearchProjectHelper,
 )
 from ops_api.ops.utils.response import make_response_with_headers
-from ops_api.ops.utils.auth import is_authorized
+from ops_api.ops.utils.auth import is_authorized, Permission, PermissionType
 from typing_extensions import override
 
 
@@ -18,7 +18,7 @@ class ResearchProjectFundingSummaryListAPI(BaseListAPI):
         self.get_input_schema = desert.schema(GetResearchProjectFundingSummaryQueryParams)
 
     @override
-    @is_authorized("GET_RESEARCH_PROJECT", "GET_RESEARCH_PROJECTS")
+    @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
         portfolio_id = request.args.get("portfolioId")
         fiscal_year = request.args.get("fiscalYear")

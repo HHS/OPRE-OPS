@@ -2,7 +2,7 @@
 from flask import Response
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.utils.auth import is_authorized
+from ops_api.ops.utils.auth import is_authorized, PermissionType, Permission
 from typing_extensions import override
 
 
@@ -11,7 +11,7 @@ class ProductServiceCodeItemAPI(BaseItemAPI):
         super().__init__(model)
 
     @override
-    @is_authorized("GET_AGREEMENT", "GET_AGREEMENTS")
+    @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self, id: int) -> Response:
         return super().get(id)
 
@@ -21,6 +21,6 @@ class ProductServiceCodeListAPI(BaseListAPI):
         super().__init__(model)
 
     @override
-    @is_authorized("GET_AGREEMENT", "GET_AGREEMENTS")
+    @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
         return super().get()

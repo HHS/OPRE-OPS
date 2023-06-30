@@ -9,7 +9,7 @@ from flask_jwt_extended import get_jwt_identity
 from marshmallow import ValidationError
 from models import Notification, OpsEventType, User
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.utils.auth import is_authorized
+from ops_api.ops.utils.auth import is_authorized, PermissionType, Permission
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -44,8 +44,8 @@ class NotificationResponse:
     is_read: bool
     created_by: int
     updated_by: int
-    created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%f"})
-    updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%f"})
+    created_on: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%f"})
+    updated_on: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%f"})
     title: Optional[str] = None
     message: Optional[str] = None
     recipient: Optional[Recipient] = None
@@ -81,7 +81,7 @@ class NotificationItemAPI(BaseItemAPI):
         return response
 
     @override
-    @is_authorized("GET_NOTIFICATION")
+    @is_authorized(PermissionType.GET, Permission.NOTIFICATION)
     def get(self, id: int) -> Response:
         identity = get_jwt_identity()
         is_authorized = self.auth_gateway.is_authorized(identity, ["GET_NOTIFICATION"])
@@ -94,7 +94,7 @@ class NotificationItemAPI(BaseItemAPI):
         return response
 
     @override
-    @is_authorized("PUT_NOTIFICATION")
+    @is_authorized(PermissionType.PUT, Permission.NOTIFICATION)
     def put(self, id: int) -> Response:
         message_prefix = f"PUT to {ENDPOINT_STRING}"
         try:
@@ -139,7 +139,7 @@ class NotificationItemAPI(BaseItemAPI):
         return notification_dict
 
     @override
-    @is_authorized("PATCH_NOTIFICATION")
+    @is_authorized(PermissionType.PATCH, Permission.NOTIFICATION)
     def patch(self, id: int) -> Response:
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
         try:
@@ -226,7 +226,7 @@ class NotificationListAPI(BaseListAPI):
         return stmt
 
     @override
-    @is_authorized("GET_NOTIFICATIONS")
+    @is_authorized(PermissionType.GET, Permission.NOTIFICATION)
     def get(self) -> Response:
         errors = self._get_input_schema.validate(request.args)
 

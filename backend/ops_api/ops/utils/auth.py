@@ -1,3 +1,4 @@
+from enum import auto, Enum
 from functools import wraps
 import time
 import uuid
@@ -15,6 +16,25 @@ from sqlalchemy import select
 jwtMgr = JWTManager()
 oauth = OAuth()
 auth_gateway = AuthorizationGateway(BasicAuthorizationPrivider())
+
+
+class PermissionType(Enum):
+    GET = auto()
+    PUT = auto()
+    PATCH = auto()
+    DELETE = auto()
+    POST = auto()
+
+
+class Permission(Enum):
+    AGREEMENT = auto()
+    BUDGET_LINE_ITEM = auto()
+    CAN = auto()
+    DIVISION = auto()
+    NOTIFICATION = auto()
+    PORTFOLIO = auto()
+    RESEARCH_PROJECT = auto()
+    USER = auto()
 
 
 @jwtMgr.user_identity_loader
@@ -64,15 +84,16 @@ def create_oauth_jwt(
 
 
 class is_authorized:
-    def __init__(self, *permissions: list[str]) -> None:
-        self.permissions = permissions
+    def __init__(self, permission_type: PermissionType, permission: Permission) -> None:
+        self.permission_type = permission_type
+        self.permission = permission
 
     def __call__(self, func: Callable) -> Callable:
         @wraps(func)
         @jwt_required()
         def wrapper(*args, **kwargs) -> Response:
             identity = get_jwt_identity()
-            is_authorized = auth_gateway.is_authorized(identity, self.permissions)
+            is_authorized = auth_gateway.is_authorized(identity, f"{self.permission_type}_{self.permission}".upper())
 
             if is_authorized:
                 response = func(*args, **kwargs)

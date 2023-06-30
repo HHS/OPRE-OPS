@@ -17,7 +17,7 @@ from ops_api.ops.resources.budget_line_item_schemas import (
     POSTRequestBody,
     QueryParameters,
 )
-from ops_api.ops.utils.auth import is_authorized
+from ops_api.ops.utils.auth import is_authorized, Permission, PermissionType
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -51,14 +51,14 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         return response
 
     @override
-    @is_authorized("GET_BUDGET_LINE_ITEM")
+    @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
     def get(self, id: int) -> Response:
         response = self._get_item_with_try(id)
 
         return response
 
     @override
-    @is_authorized("PUT_BUDGET_LINE_ITEM")
+    @is_authorized(PermissionType.PUT, Permission.BUDGET_LINE_ITEM)
     def put(self, id: int) -> Response:
         message_prefix = f"PUT to {ENDPOINT_STRING}"
         try:
@@ -97,7 +97,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             return make_response_with_headers({}, 500)
 
     @override
-    @is_authorized("PATCH_BUDGET_LINE_ITEM")
+    @is_authorized(PermissionType.PATCH, Permission.BUDGET_LINE_ITEM)
     def patch(self, id: int) -> Response:
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
         try:
@@ -175,7 +175,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
         return stmt
 
     @override
-    @is_authorized("GET_BUDGET_LINE_ITEMS")
+    @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
     def get(self) -> Response:
         message_prefix = f"GET to {ENDPOINT_STRING}"
         try:
@@ -203,7 +203,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
         return response
 
     @override
-    @is_authorized("POST_BUDGET_LINE_ITEMS")
+    @is_authorized(PermissionType.POST, Permission.BUDGET_LINE_ITEM)
     def post(self) -> Response:
         message_prefix = f"POST to {ENDPOINT_STRING}"
         try:

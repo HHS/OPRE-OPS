@@ -17,7 +17,7 @@ from models.cans import (
     BudgetLineItemStatus,
 )
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
-from ops_api.ops.utils.auth import is_authorized
+from ops_api.ops.utils.auth import is_authorized, Permission, PermissionType
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -139,13 +139,13 @@ class AgreementItemAPI(BaseItemAPI):
         super().__init__(model)
 
     @override
-    @is_authorized("GET_AGREEMENT")
+    @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self, id: int) -> Response:
         response = self._get_item_with_try(id)
         return response
 
     @override
-    @is_authorized("PUT_AGREEMENT")
+    @is_authorized(PermissionType.PUT, Permission.AGREEMENT)
     def put(self, id: int) -> Response:
         message_prefix = f"PUT to {ENDPOINT_STRING}"
 
@@ -190,7 +190,7 @@ class AgreementItemAPI(BaseItemAPI):
             return make_response_with_headers({}, 500)
 
     @override
-    @is_authorized("PATCH_AGREEMENT")
+    @is_authorized(PermissionType.PATCH, Permission.AGREEMENT)
     def patch(self, id: int) -> Response:
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
 
@@ -234,7 +234,7 @@ class AgreementItemAPI(BaseItemAPI):
             return make_response_with_headers({}, 500)
 
     @override
-    @is_authorized("DELETE_AGREEMENT")
+    @is_authorized(PermissionType.DELETE, Permission.AGREEMENT)
     def delete(self, id: int) -> Response:
         message_prefix = f"DELETE from {ENDPOINT_STRING}"
 
@@ -295,7 +295,7 @@ class AgreementListAPI(BaseListAPI):
         return stmt, status
 
     @override
-    @is_authorized("GET_AGREEMENTS")
+    @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
         stmt, status = self._get_query(request.args)
 
@@ -311,7 +311,7 @@ class AgreementListAPI(BaseListAPI):
         return response
 
     @override
-    @is_authorized("POST_AGREEMENTS")
+    @is_authorized(PermissionType.POST, Permission.AGREEMENT)
     def post(self) -> Response:
         message_prefix = f"POST to {ENDPOINT_STRING}"
         try:
@@ -381,7 +381,7 @@ class AgreementListAPI(BaseListAPI):
 
 class AgreementReasonListAPI(MethodView):
     @override
-    @is_authorized("GET_AGREEMENT", "GET_AGREEMENTS")
+    @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
         reasons = [item.name for item in AgreementReason]
         return make_response_with_headers(reasons)
@@ -389,7 +389,7 @@ class AgreementReasonListAPI(MethodView):
 
 class AgreementTypeListAPI(MethodView):
     @override
-    @is_authorized("GET_AGREEMENT", "GET_AGREEMENTS")
+    @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
         return make_response_with_headers([e.name for e in AgreementType])
 
