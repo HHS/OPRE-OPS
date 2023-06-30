@@ -1,7 +1,29 @@
+import cx from "clsx";
 import { useEffect, useState } from "react";
 import { useGetUsersQuery } from "../../../api/opsAPI";
 
-export const ProjectOfficerSelect = ({ selectedProjectOfficer, setSelectedProjectOfficer }) => {
+/**
+ *  A comboBox for choosing a project officer.
+ * @param {Object} props - The component props.
+ * @param {string} props.name - The name of the input field.
+ * @param {string} [props.label] - The label to display for the input field (optional).
+ * @param {string} props.selectedProjectOfficer - The currently selected agreement type.
+ * @param {Function} props.onChange - A function to call when the input value changes.
+ * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
+ * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
+ * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
+ * @returns {JSX.Element} - The rendered component.
+ */
+export const ProjectOfficerSelect = ({
+    name,
+    label = name,
+    selectedProjectOfficer,
+    setSelectedProjectOfficer,
+    onChange,
+    pending = false,
+    messages = [],
+    className,
+}) => {
     const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery();
     const [inputValue, setInputValue] = useState(selectedProjectOfficer?.full_name ?? "");
 
@@ -16,34 +38,48 @@ export const ProjectOfficerSelect = ({ selectedProjectOfficer, setSelectedProjec
         return <div>Oops, an error occurred</div>;
     }
 
-    const onChangeSelect = (userId = 0) => {
-        if (userId === 0) {
-            setSelectedProjectOfficer(null);
-            return;
-        }
-        const selected = users[userId - 1];
-        setSelectedProjectOfficer({ ...selected });
+    // const onChangeSelect = (userId = 0) => {
+    //     if (userId === 0) {
+    //         setSelectedProjectOfficer(null);
+    //         return;
+    //     }
+    //     const selected = users[userId - 1];
+    //     setSelectedProjectOfficer({ ...selected });
+    // };
+
+    const handleChange = (e) => {
+        onChange(name, e.target.value);
     };
 
     return (
-        <fieldset className="usa-fieldset">
-            <label
+        <fieldset className={cx("usa-fieldset", pending && "pending", className)}>
+            <label className={`usa-label margin-top-0 ${messages.length ? "usa-label--error" : null} `} htmlFor={name}>
+                {label}
+            </label>
+            {/* <label
                 className="usa-label margin-top-0"
                 htmlFor="project-officer-select"
                 id="project-officer-select-label"
             >
                 Project Officer
-            </label>
+            </label> */}
+            {messages.length ? (
+                <span className="usa-error-message" id="input-error-message" role="alert">
+                    {messages[0]}
+                </span>
+            ) : null}
             <div className="usa-combo-box width-card-lg" data-enhanced="true">
                 <select
-                    className="usa-select usa-sr-only usa-combo-box__select "
-                    id="project-officer-select"
-                    name="project-officer-select"
+                    className={`usa-select usa-sr-only usa-combo-box__select ${
+                        messages.length ? "usa-input--error" : null
+                    } `}
+                    id={name}
+                    name={name}
                     aria-hidden="true"
-                    tabIndex="-1"
+                    tabIndex={-1}
                     value={selectedProjectOfficer?.id}
-                    onChange={(e) => onChangeSelect(Number(e.target.value))}
-                    required
+                    // onChange={(e) => onChangeSelect(Number(e.target.value))}
+                    onChange={handleChange}
                 >
                     {users.map((user) => (
                         <option key={user?.id} value={user?.id}>
@@ -68,24 +104,25 @@ export const ProjectOfficerSelect = ({ selectedProjectOfficer, setSelectedProjec
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                 />
-                <span className="usa-combo-box__clear-input__wrapper" tabIndex="-1">
+                <span className="usa-combo-box__clear-input__wrapper" tabIndex={-1}>
                     <button
+                        name={name}
                         type="button"
                         className="usa-combo-box__clear-input"
                         aria-label="Clear the select contents"
-                        onClick={() => {
-                            setSelectedProjectOfficer(null);
+                        onClick={(e) => {
+                            handleChange(e);
                         }}
                     >
                         &nbsp;
                     </button>
                 </span>
                 <span className="usa-combo-box__input-button-separator">&nbsp;</span>
-                <span className="usa-combo-box__toggle-list__wrapper" tabIndex="-1">
+                <span className="usa-combo-box__toggle-list__wrapper" tabIndex={-1}>
                     <button
                         id="project-officer-select-toggle-list"
                         type="button"
-                        tabIndex="-1"
+                        tabIndex={-1}
                         className="usa-combo-box__toggle-list"
                         aria-label="Toggle the dropdown list"
                     >
@@ -94,7 +131,7 @@ export const ProjectOfficerSelect = ({ selectedProjectOfficer, setSelectedProjec
                 </span>
 
                 <ul
-                    tabIndex="-1"
+                    tabIndex={-1}
                     id="users--list"
                     className="usa-combo-box__list"
                     role="listbox"

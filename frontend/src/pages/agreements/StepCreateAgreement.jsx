@@ -335,8 +335,17 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
             <h2 className="font-sans-lg margin-top-3">Points of Contact</h2>
             <div className="display-flex">
                 <ProjectOfficerSelect
+                    name="project_officer"
+                    label="Project Officer"
+                    messages={res.getErrors("project_officer")}
+                    className={cn("project_officer")}
                     selectedProjectOfficer={selectedProjectOfficer}
-                    setSelectedProjectOfficer={changeSelectedProjectOfficer}
+                    onChange={(name, value) => {
+                        changeSelectedProjectOfficer(value);
+                        if (isReviewMode) {
+                            runValidate(name, value);
+                        }
+                    }}
                 />
                 <TeamMemberSelect
                     className="margin-left-4"

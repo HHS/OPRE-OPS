@@ -29,6 +29,9 @@ const suite = create((data = {}, fieldName) => {
             enforce(data.incumbent).isNotBlank();
         }
     });
+    test("project_officer", "This is required information", () => {
+        enforce(data.project_officer).greaterThan(0);
+    });
 });
 
 export default suite;
