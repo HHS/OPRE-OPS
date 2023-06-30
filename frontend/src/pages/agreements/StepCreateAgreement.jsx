@@ -117,7 +117,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
     let res = suite.get();
     console.log(`res: ${JSON.stringify(res, null, 2)}`);
     const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
-    const shouldDisableBtn = !agreementTitle && !res.isValid();
+    const shouldDisableBtn = !agreementTitle || res.hasErrors();
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -393,12 +393,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
                     >
                         Cancel
                     </button>
-                    <button
-                        className="usa-button usa-button--outline"
-                        onClick={handleDraft}
-                        disabled={shouldDisableBtn}
-                        data-cy="save-draft-btn"
-                    >
+                    <button className="usa-button usa-button--outline" onClick={handleDraft} data-cy="save-draft-btn">
                         Save Draft
                     </button>
                     <button
