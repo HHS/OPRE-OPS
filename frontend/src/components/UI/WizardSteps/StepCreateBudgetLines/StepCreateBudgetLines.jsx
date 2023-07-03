@@ -108,15 +108,6 @@ export const StepCreateBudgetLines = ({
             case "review":
                 setIsReviewMode(true);
                 suite({
-                    selected_can: selectedCan,
-                    entered_description: enteredDescription,
-                    entered_amount: enteredAmount,
-                    entered_month: enteredMonth,
-                    entered_day: enteredDay,
-                    entered_year: enteredYear,
-                    entered_comments: enteredComments,
-                    is_editing_budget_line: isEditing,
-                    budget_line_being_edited: budgetLineBeingEdited,
                     new_budget_lines: newBudgetLines,
                 });
                 break;
@@ -128,20 +119,7 @@ export const StepCreateBudgetLines = ({
             setIsEditMode(false);
             suite.reset();
         };
-    }, [
-        formMode,
-        newBudgetLines,
-        existingBudgetLines,
-        selectedCan,
-        enteredDescription,
-        enteredAmount,
-        enteredMonth,
-        enteredDay,
-        enteredYear,
-        enteredComments,
-        isEditing,
-        budgetLineBeingEdited,
-    ]);
+    }, [formMode, newBudgetLines]);
 
     let res = suite.get();
     console.log(`res: ${JSON.stringify(res, null, 2)})}`);
