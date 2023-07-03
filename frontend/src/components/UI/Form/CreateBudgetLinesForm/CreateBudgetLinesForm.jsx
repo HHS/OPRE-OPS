@@ -1,7 +1,10 @@
+import React from "react";
 import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
+import classnames from "vest/classnames";
 import CanSelect from "../CanSelect";
 import DesiredAwardDate from "../DesiredAwardDate";
+import suite from "./suite";
 
 /**
  * A form for creating or editing a budget line.
@@ -24,6 +27,7 @@ import DesiredAwardDate from "../DesiredAwardDate";
  * @param {function} props.handleEditForm - A function to handle editing the budget line form.
  * @param {function} props.handleSubmitForm - A function to handle submitting the budget line form.
  * @param {function} props.handleResetForm - A function to handle resetting the budget line form.
+ * @param {string} props.formMode - The form mode.
  * @returns {JSX.Element} - The rendered component.
  */
 export const CreateBudgetLinesForm = ({
@@ -45,7 +49,17 @@ export const CreateBudgetLinesForm = ({
     handleEditForm = () => {},
     handleSubmitForm = () => {},
     handleResetForm = () => {},
+    formMode,
 }) => {
+    const [isReviewMode, setIsReviewMode] = React.useState(false);
+    // let res = suite.get();
+    // console.log(`res: ${JSON.stringify(res, null, 2)})}`);
+    const cn = classnames(suite.get(), {
+        invalid: "usa-form-group--error",
+        valid: "success",
+        warning: "warning",
+    });
+
     return (
         <form className="grid-row grid-gap">
             <div className="grid-col-4">
