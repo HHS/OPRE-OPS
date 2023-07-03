@@ -14,6 +14,7 @@ import { setAlert } from "../../Alert/alertSlice";
 import EditModeTitle from "../../../../pages/agreements/EditModeTitle";
 import { loggedInName } from "../../../../helpers/utils";
 import suite from "./suite";
+import { convertCodeForDisplay } from "../../../../helpers/utils";
 
 /**
  * Renders the Create Budget Lines component with React context.
@@ -51,6 +52,7 @@ export const StepCreateBudgetLines = ({
     const [modalProps, setModalProps] = React.useState({});
     const [isEditMode, setIsEditMode] = React.useState(false);
     const [isReviewMode, setIsReviewMode] = React.useState(false);
+    const [pageErrors, setPageErrors] = React.useState({});
     const {
         selected_can: selectedCan,
         entered_description: enteredDescription,
@@ -126,7 +128,20 @@ export const StepCreateBudgetLines = ({
             setIsEditMode(false);
             suite.reset();
         };
-    }, [formMode, newBudgetLines, existingBudgetLines]);
+    }, [
+        formMode,
+        newBudgetLines,
+        existingBudgetLines,
+        selectedCan,
+        enteredDescription,
+        enteredAmount,
+        enteredMonth,
+        enteredDay,
+        enteredYear,
+        enteredComments,
+        isEditing,
+        budgetLineBeingEdited,
+    ]);
 
     let res = suite.get();
     console.log(`res: ${JSON.stringify(res, null, 2)})}`);
@@ -135,6 +150,18 @@ export const StepCreateBudgetLines = ({
         valid: "success",
         warning: "warning",
     });
+    // fire the page errors based on the suite results
+    React.useEffect(() => {
+        if (!res.isValid()) {
+            setPageErrors(res.getErrors());
+        }
+        return () => {
+            setPageErrors({});
+        };
+    }, [res]);
+
+    const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
+    const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
 
     const handleSubmitForm = (e) => {
         e.preventDefault();
@@ -267,7 +294,7 @@ export const StepCreateBudgetLines = ({
             ) : (
                 <>
                     {workflow === "agreement" ? (
-                        <EditModeTitle isEditMode={isEditMode} />
+                        <EditModeTitle isEditMode={isEditMode || isReviewMode} />
                     ) : (
                         <>
                             <h2 className="font-sans-lg">Create New Budget Line</h2>
@@ -312,6 +339,25 @@ export const StepCreateBudgetLines = ({
                 This is a list of all budget lines for the selected project and agreement. The budget lines you add will
                 display in draft status. The Fiscal Year (FY) will populate based on the election date you provide.
             </p>
+            {budgetLinePageErrorsExist && (
+                <ul className="usa-list--unstyled font-12px text-error" data-cy="error-list">
+                    {Object.entries(pageErrors).map(([key, value]) => (
+                        <li key={key} className="border-left-2px border-error padding-left-1" data-cy="error-item">
+                            <strong>{convertCodeForDisplay("validation", key)}: </strong>
+                            {
+                                <span>
+                                    {value.map((message, index) => (
+                                        <React.Fragment key={index}>
+                                            <span>{message}</span>
+                                            {index < value.length - 1 && <span>, </span>}
+                                        </React.Fragment>
+                                    ))}
+                                </span>
+                            }
+                        </li>
+                    ))}
+                </ul>
+            )}
             <PreviewTable
                 budgetLinesAdded={newBudgetLines}
                 handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
@@ -343,7 +389,12 @@ export const StepCreateBudgetLines = ({
                 >
                     Back
                 </button>
-                <button className="usa-button" data-cy="continue-btn" onClick={saveBudgetLineItems}>
+                <button
+                    className="usa-button"
+                    data-cy="continue-btn"
+                    onClick={saveBudgetLineItems}
+                    disabled={res.hasErrors()}
+                >
                     {continueBtnText}
                 </button>
             </div>
