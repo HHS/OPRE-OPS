@@ -5,6 +5,7 @@ import classnames from "vest/classnames";
 import CanSelect from "../CanSelect";
 import DesiredAwardDate from "../DesiredAwardDate";
 import suite from "./suite";
+import Input from "../Input";
 
 /**
  * A form for creating or editing a budget line.
@@ -51,9 +52,52 @@ export const CreateBudgetLinesForm = ({
     handleResetForm = () => {},
     formMode,
 }) => {
+    const [isEditMode, setIsEditMode] = React.useState(false);
     const [isReviewMode, setIsReviewMode] = React.useState(false);
-    // let res = suite.get();
-    // console.log(`res: ${JSON.stringify(res, null, 2)})}`);
+    React.useEffect(() => {
+        switch (formMode) {
+            case "edit":
+                setIsEditMode(true);
+                break;
+            case "review":
+                setIsReviewMode(true);
+                suite({
+                    selectedCan,
+                    enteredDescription,
+                    enteredAmount,
+                    enteredMonth,
+                    enteredDay,
+                    enteredYear,
+                    enteredComments,
+                });
+                break;
+            default:
+                return;
+        }
+        return () => {
+            setIsReviewMode(false);
+            setIsEditMode(false);
+            suite.reset();
+        };
+    }, [formMode]);
+
+    const runValidate = (name, value) => {
+        suite(
+            {
+                enteredDescription,
+                selectedCan,
+                // enteredAmount,
+                // enteredMonth,
+                // enteredDay,
+                // enteredYear,
+                // enteredComments,
+                ...{ [name]: value },
+            },
+            name
+        );
+    };
+    let res = suite.get();
+    console.log(`res: ${JSON.stringify(res, null, 2)})}`);
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
         valid: "success",
@@ -64,21 +108,32 @@ export const CreateBudgetLinesForm = ({
         <form className="grid-row grid-gap">
             <div className="grid-col-4">
                 <div className="usa-form-group">
-                    <label className="usa-label" htmlFor="bl-description">
-                        Description
-                    </label>
-                    <input
-                        className="usa-input"
-                        id="bl-description"
-                        name="bl-description"
-                        type="text"
+                    <Input
+                        name="enteredDescription"
+                        label="Description"
+                        messages={res.getErrors("enteredDescription")}
+                        className={cn("enteredDescription")}
                         value={enteredDescription || ""}
-                        onChange={(e) => setEnteredDescription(e.target.value)}
-                        required
+                        onChange={(name, value) => {
+                            setEnteredDescription(value);
+                            if (isReviewMode) {
+                                runValidate(name, value);
+                            }
+                        }}
                     />
                 </div>
                 <div className="usa-form-group">
-                    <CanSelect selectedCan={selectedCan} setSelectedCan={setSelectedCan} />
+                    <CanSelect
+                        name="selectedCan"
+                        label="CAN"
+                        messages={res.getErrors("selectedCan")}
+                        className={cn("selectedCan")}
+                        selectedCan={selectedCan}
+                        setSelectedCan={setSelectedCan}
+                        onChange={(name, value) => {
+                            runValidate(name, value);
+                        }}
+                    />
                 </div>
             </div>
             <div className="grid-col-4">

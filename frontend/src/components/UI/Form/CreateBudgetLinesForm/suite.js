@@ -1,11 +1,17 @@
 import { create, test, enforce, only } from "vest";
 
 const suite = create((data) => {
-    // only(data);
-    // console.log(`data: ${JSON.stringify(data, null, 2)}`);
-    // test to ensure at least one budget line item exists
-    test("entered_description", "This is required information", () => {
-        enforce(data.entered_description).longerThan(0);
+    only(data);
+    console.log(`data: ${JSON.stringify(data, null, 2)}`);
+
+    test("enteredDescription", "This is required information", () => {
+        enforce(data.enteredDescription).isNotBlank();
+    });
+    test("selectedCan", "This is required information", () => {
+        enforce(data.selectedCan).isNotBlank();
+    });
+    test("selectedCan", "This is required information", () => {
+        enforce(data.selectedCan).greaterThan(0);
     });
 });
 

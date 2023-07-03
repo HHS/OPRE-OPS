@@ -2,7 +2,7 @@ import { create, test, enforce, only, each } from "vest";
 
 const suite = create((data) => {
     only(data);
-    console.log(`data: ${JSON.stringify(data, null, 2)}`);
+    // console.log(`data: ${JSON.stringify(data, null, 2)}`);
     // test to ensure at least one budget line item exists
     test("data", "Must have at least one budget line item", () => {
         enforce(data.new_budget_lines).longerThan(0);

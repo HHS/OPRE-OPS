@@ -122,7 +122,7 @@ export const StepCreateBudgetLines = ({
     }, [formMode, newBudgetLines]);
 
     let res = suite.get();
-    console.log(`res: ${JSON.stringify(res, null, 2)})}`);
+    // console.log(`res: ${JSON.stringify(res, null, 2)})}`);
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
         valid: "success",
@@ -311,6 +311,7 @@ export const StepCreateBudgetLines = ({
                 handleEditForm={handleEditForm}
                 handleResetForm={handleResetForm}
                 handleSubmitForm={handleSubmitForm}
+                formMode={formMode}
             />
             <h2 className="font-sans-lg">Budget Lines</h2>
             <p>
