@@ -3,6 +3,29 @@ import CurrencyFormat from "react-currency-format";
 import CanSelect from "../CanSelect";
 import DesiredAwardDate from "../DesiredAwardDate";
 
+/**
+ * A form for creating or editing a budget line.
+ * @param {Object} props - The component props.
+ * @param {Object} props.selectedCan - The currently selected CAN.
+ * @param {string} props.enteredDescription - The entered budget line description.
+ * @param {number} props.enteredAmount - The entered budget line amount.
+ * @param {string|number} props.enteredMonth - The entered budget line desired award month.
+ * @param {string|number} props.enteredDay - The entered budget line desired award day.
+ * @param {string|number} props.enteredYear - The entered budget line desired award year.
+ * @param {string} props.enteredComments - The entered budget line comments.
+ * @param {boolean} props.isEditing - Whether the form is in edit mode.
+ * @param {function} props.setEnteredDescription - A function to set the entered budget line description.
+ * @param {function} props.setSelectedCan - A function to set the selected CAN.
+ * @param {function} props.setEnteredAmount - A function to set the entered budget line amount.
+ * @param {function} props.setEnteredMonth - A function to set the entered budget line desired award month.
+ * @param {function} props.setEnteredDay - A function to set the entered budget line desired award day.
+ * @param {function} props.setEnteredYear - A function to set the entered budget line desired award year.
+ * @param {function} props.setEnteredComments - A function to set the entered budget line comments.
+ * @param {function} props.handleEditForm - A function to handle editing the budget line form.
+ * @param {function} props.handleSubmitForm - A function to handle submitting the budget line form.
+ * @param {function} props.handleResetForm - A function to handle resetting the budget line form.
+ * @returns {JSX.Element} - The rendered component.
+ */
 export const CreateBudgetLinesForm = ({
     selectedCan,
     enteredDescription,
