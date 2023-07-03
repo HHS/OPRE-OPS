@@ -3,7 +3,7 @@ import { create, test, enforce, only } from "vest";
 const suite = create((data = {}, fieldName) => {
     only(fieldName); // only run the tests for the field that changed
 
-    test("agreement_type", "Contract is required for now.", () => {
+    test("agreement_type", "Contract is the only available type for now", () => {
         enforce(data.agreement_type).equals("CONTRACT");
     });
     test("name", "This is required information", () => {
