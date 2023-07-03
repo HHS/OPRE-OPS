@@ -115,7 +115,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
     }
 
     let res = suite.get();
-    console.log(`res: ${JSON.stringify(res, null, 2)}`);
+
     const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
     const shouldDisableBtn = !agreementTitle || res.hasErrors();
 
