@@ -151,14 +151,14 @@ export const StepCreateBudgetLines = ({
         warning: "warning",
     });
     // fire the page errors based on the suite results
-    React.useEffect(() => {
-        if (!res.isValid()) {
-            setPageErrors(res.getErrors());
-        }
-        return () => {
-            setPageErrors({});
-        };
-    }, [res]);
+    // React.useEffect(() => {
+    //     if (!res.isValid()) {
+    //         setPageErrors(res.getErrors());
+    //     }
+    //     return () => {
+    //         setPageErrors({});
+    //     };
+    // }, [res]);
 
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
