@@ -8,6 +8,7 @@ import { useGetUsersQuery } from "../../../api/opsAPI";
  * @param {string} props.name - The name of the input field.
  * @param {string} [props.label] - The label to display for the input field (optional).
  * @param {string} props.selectedProjectOfficer - The currently selected agreement type.
+ * @param {Function} props.setSelectedProjectOfficer - A function to call when the selected agreement type changes.
  * @param {Function} props.onChange - A function to call when the input value changes.
  * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
@@ -38,17 +39,14 @@ export const ProjectOfficerSelect = ({
         return <div>Oops, an error occurred</div>;
     }
 
-    // const onChangeSelect = (userId = 0) => {
-    //     if (userId === 0) {
-    //         setSelectedProjectOfficer(null);
-    //         return;
-    //     }
-    //     const selected = users[userId - 1];
-    //     setSelectedProjectOfficer({ ...selected });
-    // };
-
-    const handleChange = (e) => {
-        onChange(name, e.target.value);
+    const handleChange = (userId = 0) => {
+        if (userId === 0) {
+            setSelectedProjectOfficer(0);
+            return;
+        }
+        const selected = users[userId - 1];
+        setSelectedProjectOfficer({ ...selected });
+        onChange(name, userId);
     };
 
     return (
@@ -56,13 +54,6 @@ export const ProjectOfficerSelect = ({
             <label className={`usa-label margin-top-0 ${messages.length ? "usa-label--error" : null} `} htmlFor={name}>
                 {label}
             </label>
-            {/* <label
-                className="usa-label margin-top-0"
-                htmlFor="project-officer-select"
-                id="project-officer-select-label"
-            >
-                Project Officer
-            </label> */}
             {messages.length ? (
                 <span className="usa-error-message" id="input-error-message" role="alert">
                     {messages[0]}
@@ -78,8 +69,7 @@ export const ProjectOfficerSelect = ({
                     aria-hidden="true"
                     tabIndex={-1}
                     value={selectedProjectOfficer?.id}
-                    // onChange={(e) => onChangeSelect(Number(e.target.value))}
-                    onChange={handleChange}
+                    onChange={(e) => handleChange(Number(e.target.value))}
                 >
                     {users.map((user) => (
                         <option key={user?.id} value={user?.id}>
@@ -110,8 +100,8 @@ export const ProjectOfficerSelect = ({
                         type="button"
                         className="usa-combo-box__clear-input"
                         aria-label="Clear the select contents"
-                        onClick={(e) => {
-                            handleChange(e);
+                        onClick={() => {
+                            handleChange(0);
                         }}
                     >
                         &nbsp;

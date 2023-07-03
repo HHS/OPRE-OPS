@@ -340,8 +340,8 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
                     messages={res.getErrors("project_officer")}
                     className={cn("project_officer")}
                     selectedProjectOfficer={selectedProjectOfficer}
+                    setSelectedProjectOfficer={changeSelectedProjectOfficer}
                     onChange={(name, value) => {
-                        changeSelectedProjectOfficer(value);
                         if (isReviewMode) {
                             runValidate(name, value);
                         }
