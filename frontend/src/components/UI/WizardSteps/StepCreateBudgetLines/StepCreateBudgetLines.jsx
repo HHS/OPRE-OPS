@@ -1,5 +1,6 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
+import classnames from "vest/classnames";
 import StepIndicator from "../../StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
 import PreviewTable from "../../PreviewTable";
@@ -12,6 +13,7 @@ import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
 import { setAlert } from "../../Alert/alertSlice";
 import EditModeTitle from "../../../../pages/agreements/EditModeTitle";
 import { loggedInName } from "../../../../helpers/utils";
+import suite from "./suite";
 
 /**
  * Renders the Create Budget Lines component with React context.
@@ -48,6 +50,7 @@ export const StepCreateBudgetLines = ({
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const [isEditMode, setIsEditMode] = React.useState(false);
+    const [isReviewMode, setIsReviewMode] = React.useState(false);
     const {
         selected_can: selectedCan,
         entered_description: enteredDescription,
@@ -81,14 +84,11 @@ export const StepCreateBudgetLines = ({
     const setEnteredDay = useSetState("entered_day");
     const setEnteredYear = useSetState("entered_year");
     const setEnteredComments = useSetState("entered_comments");
+
     const isAlertActive = useSelector((state) => state.alert.isActive);
 
     let loggedInUserFullName = useSelector((state) => loggedInName(state.auth?.activeUser));
-    React.useEffect(() => {
-        if (formMode === "edit" || formMode === "review") {
-            setIsEditMode(true);
-        }
-    }, [formMode]);
+
     // combine arrays of new budget lines and existing budget lines added
     // only run once on page load if there are existing budget lines
     React.useEffect(() => {
@@ -96,7 +96,45 @@ export const StepCreateBudgetLines = ({
             dispatch({ type: "ADD_EXISTING_BUDGET_LINES", payload: existingBudgetLines });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [existingBudgetLines]);
+
+    React.useEffect(() => {
+        switch (formMode) {
+            case "edit":
+                setIsEditMode(true);
+                break;
+            case "review":
+                setIsReviewMode(true);
+                suite({
+                    selected_can: selectedCan,
+                    entered_description: enteredDescription,
+                    entered_amount: enteredAmount,
+                    entered_month: enteredMonth,
+                    entered_day: enteredDay,
+                    entered_year: enteredYear,
+                    entered_comments: enteredComments,
+                    is_editing_budget_line: isEditing,
+                    budget_line_being_edited: budgetLineBeingEdited,
+                    new_budget_lines: newBudgetLines,
+                });
+                break;
+            default:
+                return;
+        }
+        return () => {
+            setIsReviewMode(false);
+            setIsEditMode(false);
+            suite.reset();
+        };
+    }, [formMode, newBudgetLines, existingBudgetLines]);
+
+    let res = suite.get();
+    console.log(`res: ${JSON.stringify(res, null, 2)})}`);
+    const cn = classnames(suite.get(), {
+        invalid: "usa-form-group--error",
+        valid: "success",
+        warning: "warning",
+    });
 
     const handleSubmitForm = (e) => {
         e.preventDefault();
