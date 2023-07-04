@@ -357,12 +357,12 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
 
             <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
             <TeamMemberList selectedTeamMembers={selectedTeamMembers} removeTeamMember={removeTeamMember} />
-            <div className="usa-character-count margin-top-3">
+            {/* <div className="usa-character-count margin-top-3">
                 <div className="usa-form-group">
-                    <label className="usa-label font-sans-lg text-bold" htmlFor="with-hint-textarea">
+                    <label className="usa-label font-sans-lg text-bold" htmlFor="notes-with-hint-textarea">
                         Notes (optional)
                     </label>
-                    <span id="with-hint-textarea-hint" className="usa-hint">
+                    <span id="notes-with-hint-textarea-hint" className="usa-hint">
                         Maximum 150 characters
                     </span>
                     <textarea
@@ -371,7 +371,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
                         maxLength={150}
                         name="with-hint-textarea"
                         rows={5}
-                        aria-describedby="with-hint-textarea-info with-hint-textarea-hint"
+                        aria-describedby="with-hint-textarea-info notes-with-hint-textarea-hint"
                         style={{ height: "7rem" }}
                         value={agreementNotes || ""}
                         onChange={(e) => setAgreementNotes(e.target.value)}
@@ -380,7 +380,16 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
                 <span id="with-hint-textarea-info" className="usa-character-count__message sr-only">
                     You can enter up to 150 characters
                 </span>
-            </div>
+            </div> */}
+            <TextArea
+                name="agreementNotes"
+                label="Notes (optional)"
+                hintMsg="Maximum 150 characters"
+                messages={res.getErrors("agreementNotes")}
+                className={cn("agreementNotes")}
+                value={agreementNotes}
+                onChange={(name, value) => setAgreementNotes(value)}
+            />
             <div className="grid-row flex-justify margin-top-8">
                 <button className="usa-button usa-button--unstyled margin-right-2" onClick={() => goBack()}>
                     Go Back

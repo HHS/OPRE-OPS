@@ -24,29 +24,35 @@ export const TextArea = ({
     className,
 }) => {
     return (
-        <div className={cx("usa-form-group", pending && "pending", className)}>
-            <label className={`usa-label ${messages.length ? "usa-label--error" : null} `} htmlFor={name}>
-                {label}
-            </label>
+        <div className="usa-character-count margin-top-3">
+            <div className={cx("usa-form-group", pending && "pending", className)}>
+                <label className={`usa-label ${messages.length ? "usa-label--error" : null} `} htmlFor={name}>
+                    {label}
+                </label>
 
-            {messages.length ? (
-                <span className="usa-error-message" id="input-error-message" role="alert">
-                    {messages[0]}
-                </span>
-            ) : (
-                <span id="with-hint-textarea-hint" className="usa-hint">
-                    {hintMsg}
-                </span>
-            )}
-            <textarea
-                className={`usa-textarea ${messages.length ? "usa-input--error" : null} `}
-                id={name}
-                name="description"
-                rows={5}
-                style={{ height: "7rem" }}
-                onChange={handleChange}
-                value={value}
-            />
+                {messages.length ? (
+                    <span className="usa-error-message" id="input-error-message" role="alert">
+                        {messages[0]}
+                    </span>
+                ) : (
+                    <span id={`${name}-with-hint-textarea-hint`} className="usa-hint">
+                        {hintMsg}
+                    </span>
+                )}
+                <textarea
+                    className={`usa-textarea ${messages.length ? "usa-input--error" : null} `}
+                    id={name}
+                    name={name}
+                    rows={5}
+                    style={{ height: "7rem" }}
+                    onChange={handleChange}
+                    value={value}
+                    aria-describedby={`${name}-with-hint-textarea-info ${name}-with-hint-textarea-hint`}
+                />
+            </div>
+            <span id={`${name}-with-hint-textarea-info`} className="usa-character-count__message sr-only">
+                You can enter up to 150 characters
+            </span>
         </div>
     );
     function handleChange(e) {
