@@ -126,6 +126,7 @@ export const CanSelect = ({
                     className="usa-combo-box__list"
                     role="listbox"
                     aria-labelledby={`${name}-label`}
+                    hidden={true}
                 >
                     {canList?.map((can, index) => {
                         return (
