@@ -132,7 +132,9 @@ export const CreateBudgetLinesForm = ({
                         selectedCan={selectedCan}
                         setSelectedCan={setSelectedCan}
                         onChange={(name, value) => {
-                            runValidate(name, value);
+                            if (isReviewMode) {
+                                runValidate(name, value);
+                            }
                         }}
                     />
                 </div>
@@ -167,37 +169,26 @@ export const CreateBudgetLinesForm = ({
                 </div>
             </div>
             <div className="grid-col-4">
-                <div className="usa-character-count">
-                    <div className="usa-form-group">
-                        <label className="usa-label" htmlFor="with-hint-textarea">
-                            Notes (optional)
-                        </label>
-                        <span id="with-hint-textarea-hint" className="usa-hint">
-                            Maximum 150 characters
-                        </span>
-                        <textarea
-                            className="usa-textarea usa-character-count__field"
-                            id="with-hint-textarea"
-                            maxLength={150}
-                            name="with-hint-textarea"
-                            rows={5}
-                            aria-describedby="with-hint-textarea-info with-hint-textarea-hint"
-                            style={{ height: "7rem" }}
-                            value={enteredComments || ""}
-                            onChange={(e) => setEnteredComments(e.target.value)}
-                            data-cy="bl-notes"
-                        ></textarea>
-                    </div>
-                    <span id="with-hint-textarea-info" className="usa-character-count__message sr-only">
-                        You can enter up to 150 characters
-                    </span>
-                </div>
+                <TextArea
+                    name="enteredComments"
+                    label="Notes (optional)"
+                    value={enteredComments || ""}
+                    hintMsg="Maximum 150 characters"
+                    onChange={(name, value) => {
+                        setEnteredComments(value);
+                    }}
+                />
 
                 {isEditing ? (
                     <div className="display-flex flex-justify-end">
                         <button
                             className="usa-button usa-button--unstyled margin-top-2 margin-right-2"
-                            onClick={handleResetForm}
+                            onClick={() => {
+                                handleResetForm();
+                                if (isReviewMode) {
+                                    suite.reset();
+                                }
+                            }}
                         >
                             Cancel
                         </button>
