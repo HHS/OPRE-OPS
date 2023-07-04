@@ -88,10 +88,10 @@ export const CreateBudgetLinesForm = ({
                 enteredDescription,
                 selectedCan,
                 // enteredAmount,
-                // enteredMonth,
-                // enteredDay,
-                // enteredYear,
                 // enteredComments,
+                enteredMonth,
+                enteredDay,
+                enteredYear,
                 ...{ [name]: value },
             },
             name

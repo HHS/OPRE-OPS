@@ -13,6 +13,15 @@ const suite = create((data, fieldName) => {
     test("selectedCan", "This is required information", () => {
         enforce(data.selectedCan).greaterThan(0);
     });
+    test("enteredMonth", "This is required information", () => {
+        enforce(data.selectedCan).isNotBlank();
+    });
+    test("enteredDay", "This is required information", () => {
+        enforce(data.selectedCan).isNotBlank();
+    });
+    test("enteredYear", "This is required information", () => {
+        enforce(data.selectedCan).isNotBlank();
+    });
 });
 
 export default suite;
