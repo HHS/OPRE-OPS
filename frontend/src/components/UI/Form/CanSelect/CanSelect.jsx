@@ -31,11 +31,11 @@ export const CanSelect = ({
         setInputValue(selectedCan?.number ?? "");
     }, [selectedCan]);
 
-    const handleChange = (canId = 0) => {
-        if (canId === 0) {
-            setSelectedCan(0);
-            return;
-        }
+    /**
+     * function to handle changes to the comboBox
+     * @param {number} canId - The component props.
+     */
+    const handleChange = (canId) => {
         const selected = canList[canId - 1];
         setSelectedCan({ ...selected });
         onChange(name, canId);
