@@ -52,7 +52,11 @@ export const CanSelect = ({
 
     return (
         <fieldset className={cx("usa-fieldset", pending && "pending", className)}>
-            <label className={`usa-label ${messages.length ? "usa-label--error" : null} `} htmlFor={name}>
+            <label
+                id={`${name}-label`}
+                className={`usa-label ${messages.length ? "usa-label--error" : null} `}
+                htmlFor={name}
+            >
                 {label}
             </label>
             {messages.length ? (
@@ -63,7 +67,6 @@ export const CanSelect = ({
             <div className="usa-combo-box" data-enhanced="true">
                 <select
                     className="usa-select usa-sr-only usa-combo-box__select"
-                    id={name}
                     name={name}
                     aria-hidden="true"
                     tabIndex={-1}
@@ -77,7 +80,7 @@ export const CanSelect = ({
                     ))}
                 </select>
                 <input
-                    id="can-select"
+                    id={name}
                     aria-owns="can--list"
                     aria-controls="can--list"
                     aria-autocomplete="list"
@@ -122,8 +125,7 @@ export const CanSelect = ({
                     id="can--list"
                     className="usa-combo-box__list"
                     role="listbox"
-                    aria-labelledby="can-select-label"
-                    hidden
+                    aria-labelledby={`${name}-label`}
                 >
                     {canList?.map((can, index) => {
                         return (

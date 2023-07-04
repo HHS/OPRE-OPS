@@ -402,7 +402,12 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
                     >
                         Cancel
                     </button>
-                    <button className="usa-button usa-button--outline" onClick={handleDraft} data-cy="save-draft-btn">
+                    <button
+                        className="usa-button usa-button--outline"
+                        onClick={handleDraft}
+                        disabled={shouldDisableBtn}
+                        data-cy="save-draft-btn"
+                    >
                         Save Draft
                     </button>
                     <button

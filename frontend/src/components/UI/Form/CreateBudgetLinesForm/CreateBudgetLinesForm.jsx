@@ -6,6 +6,7 @@ import CanSelect from "../CanSelect";
 import DesiredAwardDate from "../DesiredAwardDate";
 import suite from "./suite";
 import Input from "../Input";
+import TextArea from "../TextArea/TextArea";
 
 /**
  * A form for creating or editing a budget line.
@@ -177,19 +178,21 @@ export const CreateBudgetLinesForm = ({
                         <textarea
                             className="usa-textarea usa-character-count__field"
                             id="with-hint-textarea"
-                            maxLength="150"
+                            maxLength={150}
                             name="with-hint-textarea"
-                            rows="5"
+                            rows={5}
                             aria-describedby="with-hint-textarea-info with-hint-textarea-hint"
                             style={{ height: "7rem" }}
                             value={enteredComments || ""}
                             onChange={(e) => setEnteredComments(e.target.value)}
+                            data-cy="bl-notes"
                         ></textarea>
                     </div>
                     <span id="with-hint-textarea-info" className="usa-character-count__message sr-only">
                         You can enter up to 150 characters
                     </span>
                 </div>
+
                 {isEditing ? (
                     <div className="display-flex flex-justify-end">
                         <button
