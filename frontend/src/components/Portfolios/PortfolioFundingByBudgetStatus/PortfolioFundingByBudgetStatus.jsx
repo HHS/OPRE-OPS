@@ -9,7 +9,7 @@ import Tag from "../../UI/Tag/Tag";
 import styles from "./styles.module.css";
 import RoundedBox from "../../UI/RoundedBox/RoundedBox";
 
-const PortfolioFundingByBudgetStatus = ({ portfolioId }) => {
+const PortfolioFundingByBudgetStatus = () => {
     const portfolioFunding = useSelector((state) => state.portfolioBudgetSummary.portfolioBudget);
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
     const [percent, setPercent] = useState("");

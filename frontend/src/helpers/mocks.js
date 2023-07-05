@@ -1,7 +1,7 @@
 import { rest } from "msw";
 import { setupServer } from "msw/lib/node";
 
-const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
+const BACKEND_DOMAIN = process.env.VITE_BACKEND_DOMAIN;
 
 export const handlers = [
     rest.get(`${BACKEND_DOMAIN}/api/v1/agreements/`, (req, res, ctx) => {

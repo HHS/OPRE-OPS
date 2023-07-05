@@ -20,7 +20,7 @@ export const Modal = ({
         const handleKeydown = (event) => {
             // get all focusable elements in the modal container
             const focusableElements = currentModalRef.querySelectorAll(
-                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
             );
             const firstElement = focusableElements[0];
             const lastElement = focusableElements[focusableElements.length - 1];
@@ -52,6 +52,7 @@ export const Modal = ({
     }, [setShowModal]);
     return (
         <>
+            {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-noninteractive-element-interactions */}
             <div
                 className="usa-modal-wrapper is-visible"
                 role="dialog"
@@ -61,6 +62,7 @@ export const Modal = ({
                 onClick={() => setShowModal(false)}
             >
                 <div className="usa-modal-overlay" aria-controls="ops-modal">
+                    {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions */}
                     <div className="usa-modal" tabIndex="-1" onClick={(e) => e.stopPropagation()} ref={modalRef}>
                         <div className="usa-modal__content">
                             <div className="usa-modal__main">

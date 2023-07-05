@@ -25,14 +25,14 @@ export const AgreementTableRow = ({ agreement }) => {
     const agreementSubTotal = agreement?.budget_line_items?.reduce((n, { amount }) => n + amount, 0);
     const procurementShopSubTotal = agreement?.budget_line_items?.reduce(
         (n, { amount }) => n + amount * (agreement.procurement_shop ? agreement.procurement_shop.fee : 0),
-        0
+        0,
     );
     const agreementTotal = agreementSubTotal + procurementShopSubTotal;
 
     // find the min(date_needed) of the BLIs
     let nextNeedBy = agreement?.budget_line_items?.reduce(
         (n, { date_needed }) => (n < date_needed ? n : date_needed),
-        0
+        0,
     );
 
     nextNeedBy = nextNeedBy ? formatDate(new Date(nextNeedBy)) : "";
@@ -72,7 +72,7 @@ export const AgreementTableRow = ({ agreement }) => {
     const handleEditAgreement = (event) => {
         navigate(`/agreements/edit/${event}`);
     };
-    const handleDeleteAgreement = (event) => {
+    const handleDeleteAgreement = () => {
         // TODO: implement delete agreement
         alert("not implemented yet");
     };

@@ -1,0 +1,7 @@
+node_modules/
+build/
+sass/
+cypress/
+.prettierrc.js
+.eslintrc.js
+env.d.ts

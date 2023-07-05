@@ -4,7 +4,6 @@ import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCar
 import Tag from "../../UI/Tag/Tag";
 
 const ProjectsAndAgreements = ({
-    portfolioId = 0,
     numberOfProjects = 0,
     numOfResearchProjects = 0,
     numOfAdminAndSupportProjects = 0,

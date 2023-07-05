@@ -90,7 +90,6 @@ export const StepCreateBudgetLines = ({
         if (existingBudgetLines.length > 0) {
             dispatch({ type: "ADD_EXISTING_BUDGET_LINES", payload: existingBudgetLines });
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleSubmitForm = (e) => {
@@ -116,7 +115,7 @@ export const StepCreateBudgetLines = ({
                 type: "success",
                 heading: "Budget Line Added",
                 message: "The budget line has been successfully added.",
-            })
+            }),
         );
     };
 
@@ -144,7 +143,7 @@ export const StepCreateBudgetLines = ({
                 type: "success",
                 heading: "Budget Line Updated",
                 message: "The budget line has been successfully edited.",
-            })
+            }),
         );
     };
 
@@ -164,7 +163,7 @@ export const StepCreateBudgetLines = ({
                         type: "success",
                         heading: "Budget Line Deleted",
                         message: "The budget line has been successfully deleted.",
-                    })
+                    }),
                 );
                 setModalProps({});
             },
@@ -175,12 +174,12 @@ export const StepCreateBudgetLines = ({
         event.preventDefault();
         const newBudgetLineItems = newBudgetLines.filter(
             // eslint-disable-next-line no-prototype-builtins
-            (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on")
+            (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on"),
         );
 
         const existingBudgetLineItems = newBudgetLines.filter((budgetLineItem) =>
             // eslint-disable-next-line no-prototype-builtins
-            budgetLineItem.hasOwnProperty("created_on")
+            budgetLineItem.hasOwnProperty("created_on"),
         );
 
         patchBudgetLineItems(existingBudgetLineItems).then(() => console.log("Updated BLIs."));

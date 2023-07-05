@@ -1,5 +1,4 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import App from "../../App";
@@ -78,7 +77,7 @@ export const CreateProject = () => {
                     heading: "New Project Created!",
                     message: "The project has been successfully created.",
                     redirectUrl: `/agreements`,
-                })
+                }),
             );
         }
     }, [isSuccess, rpData, reset, dispatch, navigate]);

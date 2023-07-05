@@ -33,7 +33,7 @@ import Input from "../../components/UI/Form/Input";
  * @param {Function} [props.goToNext] - A function to go to the next step. - optional
  * @param {boolean} [props.isEditMode] - A flag indicating whether the component is in edit mode. - optional
  */
-export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) => {
+export const StepCreateAgreement = ({ goBack, goToNext }) => {
     const navigate = useNavigate();
     const dispatch = useCreateAgreementDispatch();
     const globalDispatch = useDispatch();
@@ -144,7 +144,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode = false }) =>
                 heading: "Agreement Draft Saved",
                 message: "The agreement has been successfully saved.",
                 redirectUrl: "/agreements",
-            })
+            }),
         );
     };
 

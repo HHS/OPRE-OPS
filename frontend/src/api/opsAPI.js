@@ -1,13 +1,13 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
+const BACKEND_DOMAIN = process.env.VITE_BACKEND_DOMAIN;
 
 export const opsApi = createApi({
     reducerPath: "opsApi",
     tagTypes: ["Agreements", "ResearchProjects"],
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
-        prepareHeaders: (headers, { getState }) => {
+        prepareHeaders: (headers) => {
             const access_token = localStorage.getItem("access_token");
 
             if (access_token) {
