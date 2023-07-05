@@ -21,6 +21,22 @@ class AuthLoginAPI(BaseListAPI):
             return make_response_with_headers(f"Login Error: {ex}", 400)
 
 
+class AuthLogoutAPI(BaseListAPI):
+    def __init__(self, model: BaseModel):
+        super().__init__(model)
+
+    def post(self) -> Response:
+        errors = self.validator.validate(self, request.json)
+
+        if errors:
+            return make_response_with_headers(errors, 400)
+
+        try:
+            return logout()
+        except Exception as ex:
+            return make_response_with_headers(f"Logout Error: {ex}", 400)
+
+
 class AuthRefreshAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
