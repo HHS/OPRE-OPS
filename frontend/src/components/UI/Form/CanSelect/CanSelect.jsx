@@ -38,7 +38,7 @@ export const CanSelect = ({
     const handleChange = (canId) => {
         const selected = canList[canId - 1];
         setSelectedCan({ ...selected });
-        onChange(name, canId);
+        onChange(name, selected);
     };
 
     const { data: canList, error: errorCanList, isLoading: isLoadingCanList } = useGetCansQuery();

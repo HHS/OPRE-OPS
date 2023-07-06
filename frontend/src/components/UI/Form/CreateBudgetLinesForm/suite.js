@@ -11,16 +11,16 @@ const suite = create((data, fieldName) => {
         enforce(data.selectedCan).isNotBlank();
     });
     test("selectedCan", "This is required information", () => {
-        enforce(data.selectedCan).greaterThan(0);
+        enforce(data.selectedCan.id).greaterThan(0);
     });
     test("enteredMonth", "This is required information", () => {
-        enforce(data.selectedCan).isNotBlank();
+        enforce(data.enteredMonth).greaterThan(0);
     });
     test("enteredDay", "This is required information", () => {
-        enforce(data.selectedCan).isNotBlank();
+        enforce(data.enteredDay).isNotBlank();
     });
     test("enteredYear", "This is required information", () => {
-        enforce(data.selectedCan).isNotBlank();
+        enforce(data.enteredYear).isNotBlank();
     });
 });
 
