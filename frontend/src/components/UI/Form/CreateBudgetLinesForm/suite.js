@@ -33,6 +33,9 @@ const suite = create((data, fieldName) => {
         const enteredYear = data.enteredYear;
         enforce(enteredYear).greaterThanOrEquals(currentYear);
     });
+    test("enteredAmount", "This is required information", () => {
+        enforce(data.enteredAmount).isNotBlank();
+    });
 });
 
 export default suite;
