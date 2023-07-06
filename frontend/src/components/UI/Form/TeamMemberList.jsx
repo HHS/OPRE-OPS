@@ -1,21 +1,20 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faXmarkCircle } from "@fortawesome/free-solid-svg-icons";
+import icons from "../../../uswds/img/sprite.svg";
 
 const TeamMemberList = ({ selectedTeamMembers, removeTeamMember }) => {
     const TeamTag = ({ teamMember }) => (
-        <span
-            className="font-12px padding-05 height-205 radius-md bg-brand-primary-light display-flex flex-align-center"
-            style={{ width: "fit-content" }}
+        <div
+            className="font-12px height-205 radius-md bg-brand-primary-light display-flex flex-align-center"
+            style={{ width: "fit-content", padding: "5px" }}
         >
             {teamMember.full_name}
-            <FontAwesomeIcon
-                icon={faXmarkCircle}
-                className="height-2 width-2 text-primary-dark margin-left-1 hover: cursor-pointer usa-tooltip"
-                title="delete"
-                data-position="top"
+            <svg
+                className="height-2 width-2 text-primary-dark margin-left-05 hover: cursor-pointer usa-tooltip"
                 onClick={() => removeTeamMember(teamMember)}
-            />
-        </span>
+                id={`submit-for-approval-${teamMember.id}`}
+            >
+                <use xlinkHref={`${icons}#cancel`}></use>
+            </svg>
+        </div>
     );
 
     return selectedTeamMembers.length > 0 ? (
