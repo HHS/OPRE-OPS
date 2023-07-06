@@ -18,6 +18,7 @@ class OpsEventType(Enum):
     SEND_BLI_FOR_APPROVAL = 7
     DELETE_AGREEMENT = 8
     ACKNOWLEDGE_NOTIFICATION = 9
+    LOGOUT = 10
 
 
 class OpsEventStatus(Enum):

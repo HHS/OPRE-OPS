@@ -2,12 +2,12 @@ from typing import Union
 
 import requests
 from flask import Response, current_app, request
-from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, verify_jwt_in_request
 from models.events import OpsEventType
 from ops_api.ops.utils.auth import create_oauth_jwt, oauth
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
-from ops_api.ops.utils.user import process_user
+from ops_api.ops.utils.user import process_user, get_user_from_token
 
 
 def login() -> Union[Response, tuple[str, int]]:
@@ -33,6 +33,21 @@ def login() -> Union[Response, tuple[str, int]]:
         )
 
         return make_response_with_headers({"access_token": access_token, "refresh_token": refresh_token})
+
+
+@jwt_required
+def logout() -> Union[Response, tuple[str, int]]:
+    with OpsEventHandler(OpsEventType.LOGOUT) as la:
+
+        token = verify_jwt_in_request()
+        user = get_user_from_token(token[1])
+        la.metadata.update(
+            {
+                "user": user.to_dict(),
+            }
+        )
+
+        return make_response_with_headers({"message": f"User {user.full_name} Logged out"})
 
 
 def _get_token_and_user_data_from_internal_auth(user_data):
