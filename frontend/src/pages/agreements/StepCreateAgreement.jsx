@@ -405,7 +405,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
                     <button
                         className="usa-button usa-button--outline"
                         onClick={handleDraft}
-                        disabled={isEditMode && shouldDisableBtn}
+                        disabled={!isReviewMode && shouldDisableBtn}
                         data-cy="save-draft-btn"
                     >
                         Save Draft

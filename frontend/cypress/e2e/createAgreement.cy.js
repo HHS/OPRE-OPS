@@ -71,7 +71,7 @@ it("can create an agreement", () => {
     cy.get("#procurement_year").type("2024");
     cy.get("#selectedCan").type("G99MVT3");
     cy.get("#bl-amount").type("1000000");
-    cy.get('[data-cy="bl-notes"]').type("Something something note something.");
+    cy.get("#enteredComments").type("Something something note something.");
     cy.get("#add-budget-line").click();
 
     // Duplicate budget line item
