@@ -1,12 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
-import CurrencyFormat from "react-currency-format";
 import classnames from "vest/classnames";
 import CanSelect from "../CanSelect";
 import DesiredAwardDate from "../DesiredAwardDate";
 import suite from "./suite";
 import Input from "../Input";
 import TextArea from "../TextArea/TextArea";
+import CurrencyInput from "./CurrencyInput";
 
 /**
  * A form for creating or editing a budget line.
@@ -152,25 +152,19 @@ export const CreateBudgetLinesForm = ({
                     res={res}
                     cn={cn}
                 />
-                <div className="usa-form-group">
-                    <label className="usa-label" htmlFor="bl-amount">
-                        Amount
-                    </label>
-                    <CurrencyFormat
-                        id="bl-amount"
-                        value={enteredAmount || ""}
-                        className="usa-input"
-                        name="bl-amount"
-                        thousandSeparator={true}
-                        decimalScale={2}
-                        renderText={(value) => value}
-                        placeholder="$"
-                        onValueChange={(values) => {
-                            const { floatValue } = values;
-                            setEnteredAmount(floatValue);
-                        }}
-                    />
-                </div>
+                <CurrencyInput
+                    name="enteredAmount"
+                    label="Amount"
+                    messages={res.getErrors("enteredAmount")}
+                    className={cn("enteredAmount")}
+                    value={enteredAmount || ""}
+                    setEnteredAmount={setEnteredAmount}
+                    onChange={(name, value) => {
+                        if (isReviewMode) {
+                            runValidate(name, value);
+                        }
+                    }}
+                />
             </div>
             <div className="grid-col-4">
                 <TextArea
