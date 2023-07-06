@@ -147,6 +147,10 @@ export const CreateBudgetLinesForm = ({
                     setEnteredDay={setEnteredDay}
                     enteredYear={enteredYear}
                     setEnteredYear={setEnteredYear}
+                    isReviewMode={isReviewMode}
+                    runValidate={runValidate}
+                    res={res}
+                    cn={cn}
                 />
                 <div className="usa-form-group">
                     <label className="usa-label" htmlFor="bl-amount">

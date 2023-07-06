@@ -1,3 +1,21 @@
+import cx from "clsx";
+import MonthSelect from "./MonthSelect";
+import DayInput from "./DayInput";
+/**
+ * Renders a form for entering a desired award date.
+ * @param {Object} props - The component props.
+ * @param {string} props.enteredMonth - The currently entered month.
+ * @param {function} props.setEnteredMonth - A function to update the entered month.
+ * @param {string} props.enteredDay - The currently entered day.
+ * @param {function} props.setEnteredDay - A function to update the entered day.
+ * @param {string} props.enteredYear - The currently entered year.
+ * @param {function} props.setEnteredYear - A function to update the entered year.
+ * @param {boolean} props.isReviewMode - Whether the form is in review mode.
+ * @param {function} props.runValidate - A function to run Vest validation.
+ * @param {Object} props.res - The Vest validation result object.
+ * @param {string} props.cn - The className to apply to the component.
+ * @returns {JSX.Element} - The rendered component.
+ */
 export const DesiredAwardDate = ({
     enteredMonth,
     setEnteredMonth,
@@ -5,40 +23,30 @@ export const DesiredAwardDate = ({
     setEnteredDay,
     enteredYear,
     setEnteredYear,
+    isReviewMode,
+    runValidate,
+    res,
+    cn,
 }) => {
     return (
         <div className="usa-form-group">
-            <fieldset className="usa-fieldset" required>
+            <fieldset className="usa-fieldset">
                 <legend className="usa-legend">Need By Date</legend>
                 <div className="display-flex">
-                    <div className="usa-form-group usa-form-group--month margin-top-0">
-                        <label className="usa-label sr-only" htmlFor="procurement_month">
-                            Month
-                        </label>
-                        <select
-                            className="usa-select"
-                            id="procurement_month"
-                            name="procurement_month"
-                            aria-describedby="mdHint"
-                            style={{ width: "6.9375rem" }}
-                            value={enteredMonth || 0}
-                            onChange={(e) => setEnteredMonth(e.target.value)}
-                        >
-                            <option value>Month</option>
-                            <option value="1">01 - Jan</option>
-                            <option value="2">02 - Feb</option>
-                            <option value="3">03 - Mar</option>
-                            <option value="4">04 - Apr</option>
-                            <option value="5">05 - May</option>
-                            <option value="6">06 - Jun</option>
-                            <option value="7">07 - Jul</option>
-                            <option value="8">08 - Aug</option>
-                            <option value="9">09 - Sep</option>
-                            <option value="10">10 - Oct</option>
-                            <option value="11">11 - Nov</option>
-                            <option value="12">12 - Dec</option>
-                        </select>
-                    </div>
+                    <MonthSelect
+                        name="enteredMonth"
+                        label="Month"
+                        messages={res.getErrors("enteredMonth")}
+                        className={cn("enteredMonth")}
+                        value={enteredMonth || 0}
+                        onChange={(name, value) => {
+                            setEnteredMonth(value);
+                            if (isReviewMode) {
+                                runValidate(name, value);
+                            }
+                        }}
+                    />
+                    {/* 
                     <div className="usa-form-group usa-form-group--day margin-top-0">
                         <label className="usa-label sr-only" htmlFor="procurement_day">
                             Day
@@ -55,7 +63,20 @@ export const DesiredAwardDate = ({
                             value={enteredDay || ""}
                             onChange={(e) => setEnteredDay(e.target.value)}
                         />
-                    </div>
+                    </div> */}
+                    <DayInput
+                        name="enteredDay"
+                        label="Day"
+                        messages={res.getErrors("enteredDay")}
+                        className={cn("enteredDay")}
+                        value={enteredDay || ""}
+                        onChange={(name, value) => {
+                            setEnteredDay(value);
+                            if (isReviewMode) {
+                                runValidate(name, value);
+                            }
+                        }}
+                    />
                     <div className="usa-form-group usa-form-group--year margin-top-0">
                         <label className="usa-label sr-only" htmlFor="procurement_year">
                             Year

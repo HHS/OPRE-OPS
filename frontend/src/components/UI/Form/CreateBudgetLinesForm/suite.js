@@ -19,6 +19,9 @@ const suite = create((data, fieldName) => {
     test("enteredDay", "This is required information", () => {
         enforce(data.enteredDay).isNotBlank();
     });
+    test("enteredDay", "Must be between 1 and 31", () => {
+        enforce(data.enteredDay).isBetween(1, 31);
+    });
     test("enteredYear", "This is required information", () => {
         enforce(data.enteredYear).isNotBlank();
     });
