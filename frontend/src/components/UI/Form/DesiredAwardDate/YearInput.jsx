@@ -13,9 +13,9 @@ import cx from "clsx";
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @returns {JSX.Element} - The rendered input component.
  */
-const DayInput = ({ name, label = name, onChange, pending = false, messages = [], value, className }) => {
+const YearInput = ({ name, label = name, onChange, pending = false, messages = [], value, className }) => {
     return (
-        <div className={cx("usa-form-group usa-form-group--day margin-top-0", pending && "pending", className)}>
+        <div className={cx("usa-form-group usa-form-group--year margin-top-0", pending && "pending", className)}>
             <label className={`usa-label sr-only ${messages.length ? "usa-label--error" : null} `} htmlFor={name}>
                 {label}
             </label>
@@ -29,10 +29,11 @@ const DayInput = ({ name, label = name, onChange, pending = false, messages = []
                 name={name}
                 aria-describedby="mdHint"
                 className={`usa-input ${messages.length ? "usa-input--error" : null} `}
-                maxLength={2}
+                minLength={4}
+                maxLength={4}
                 pattern="[0-9]*"
                 inputMode="numeric"
-                placeholder="DD"
+                placeholder="YYYY"
                 value={value}
                 onChange={handleChange}
             />
@@ -46,4 +47,4 @@ const DayInput = ({ name, label = name, onChange, pending = false, messages = []
     }
 };
 
-export default DayInput;
+export default YearInput;

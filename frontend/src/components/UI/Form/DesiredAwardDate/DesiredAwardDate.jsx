@@ -1,10 +1,12 @@
 import cx from "clsx";
 import MonthSelect from "./MonthSelect";
 import DayInput from "./DayInput";
+import YearInput from "./YearInput";
+
 /**
  * Renders a form for entering a desired award date.
  * @param {Object} props - The component props.
- * @param {string} props.enteredMonth - The currently entered month.
+ * @param {number} props.enteredMonth - The currently entered month.
  * @param {function} props.setEnteredMonth - A function to update the entered month.
  * @param {string} props.enteredDay - The currently entered day.
  * @param {function} props.setEnteredDay - A function to update the entered day.
@@ -46,24 +48,6 @@ export const DesiredAwardDate = ({
                             }
                         }}
                     />
-                    {/* 
-                    <div className="usa-form-group usa-form-group--day margin-top-0">
-                        <label className="usa-label sr-only" htmlFor="procurement_day">
-                            Day
-                        </label>
-                        <input
-                            className="usa-input"
-                            aria-describedby="mdHint"
-                            id="procurement_day"
-                            name="procurement_day"
-                            maxLength={2}
-                            pattern="[0-9]*"
-                            inputMode="numeric"
-                            placeholder="DD"
-                            value={enteredDay || ""}
-                            onChange={(e) => setEnteredDay(e.target.value)}
-                        />
-                    </div> */}
                     <DayInput
                         name="enteredDay"
                         label="Day"
@@ -77,24 +61,19 @@ export const DesiredAwardDate = ({
                             }
                         }}
                     />
-                    <div className="usa-form-group usa-form-group--year margin-top-0">
-                        <label className="usa-label sr-only" htmlFor="procurement_year">
-                            Year
-                        </label>
-                        <input
-                            className="usa-input"
-                            aria-describedby="mdHint"
-                            id="procurement_year"
-                            name="procurement_year"
-                            minLength={4}
-                            maxLength={4}
-                            pattern="[0-9]*"
-                            inputMode="numeric"
-                            placeholder="YYYY"
-                            value={enteredYear || ""}
-                            onChange={(e) => setEnteredYear(e.target.value)}
-                        />
-                    </div>
+                    <YearInput
+                        name="enteredYear"
+                        label="Year"
+                        messages={res.getErrors("enteredYear")}
+                        className={cn("enteredYear")}
+                        value={enteredYear || ""}
+                        onChange={(name, value) => {
+                            setEnteredYear(value);
+                            if (isReviewMode) {
+                                runValidate(name, value);
+                            }
+                        }}
+                    />
                 </div>
             </fieldset>
         </div>

@@ -25,6 +25,14 @@ const suite = create((data, fieldName) => {
     test("enteredYear", "This is required information", () => {
         enforce(data.enteredYear).isNotBlank();
     });
+    test("enteredYear", "Must be 4 digits", () => {
+        enforce(data.enteredYear).matches(/^\d{4}$/);
+    });
+    test("enteredYear", "Must be the current year or in the future", () => {
+        const currentYear = new Date().getFullYear();
+        const enteredYear = data.enteredYear;
+        enforce(enteredYear).greaterThanOrEquals(currentYear);
+    });
 });
 
 export default suite;
