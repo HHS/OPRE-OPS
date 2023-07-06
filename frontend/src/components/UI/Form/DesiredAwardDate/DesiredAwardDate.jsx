@@ -1,4 +1,3 @@
-import cx from "clsx";
 import MonthSelect from "./MonthSelect";
 import DayInput from "./DayInput";
 import YearInput from "./YearInput";
@@ -15,7 +14,7 @@ import YearInput from "./YearInput";
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {function} props.runValidate - A function to run Vest validation.
  * @param {Object} props.res - The Vest validation result object.
- * @param {string} props.cn - The className to apply to the component.
+ * @param {function} props.cn - The className to apply to the component.
  * @returns {JSX.Element} - The rendered component.
  */
 export const DesiredAwardDate = ({
