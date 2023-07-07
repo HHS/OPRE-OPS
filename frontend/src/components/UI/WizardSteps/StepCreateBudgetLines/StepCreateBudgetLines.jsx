@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import classnames from "vest/classnames";
+// import classnames from "vest/classnames";
 import StepIndicator from "../../StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
 import PreviewTable from "../../PreviewTable";
@@ -52,7 +52,7 @@ export const StepCreateBudgetLines = ({
     const [modalProps, setModalProps] = React.useState({});
     const [isEditMode, setIsEditMode] = React.useState(false);
     const [isReviewMode, setIsReviewMode] = React.useState(false);
-    const [pageErrors, setPageErrors] = React.useState({});
+    const [pageErrors] = React.useState({});
     const {
         selected_can: selectedCan,
         entered_description: enteredDescription,
@@ -123,11 +123,11 @@ export const StepCreateBudgetLines = ({
 
     let res = suite.get();
     // console.log(`res: ${JSON.stringify(res, null, 2)})}`);
-    const cn = classnames(suite.get(), {
-        invalid: "usa-form-group--error",
-        valid: "success",
-        warning: "warning",
-    });
+    // const cn = classnames(suite.get(), {
+    //     invalid: "usa-form-group--error",
+    //     valid: "success",
+    //     warning: "warning",
+    // });
     // fire the page errors based on the suite results
     // React.useEffect(() => {
     //     if (!res.isValid()) {
