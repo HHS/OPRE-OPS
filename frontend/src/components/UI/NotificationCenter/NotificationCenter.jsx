@@ -57,7 +57,23 @@ const NotificationCenter = () => {
                                 <use xlinkHref={`${icons}#close`}></use>
                             </svg>
                         </div>
-                        <h2>Hello</h2>
+                        <div className={customStyles.headerSection}>
+                            <h1 className="font-sans-lg">Notifications</h1>
+                            <button
+                                className={customStyles.clearButton}
+                                onClick={() => {
+                                    return true;
+                                }}
+                            >
+                                <svg
+                                    className={`${customStyles.clearButtonIcon} usa-icon text-primary height-205 width-205 hover: cursor-pointer usa-tooltip`}
+                                    id="notification-center-clear-all"
+                                >
+                                    <use xlinkHref={`${icons}#close`}></use>
+                                </svg>
+                                Clear
+                            </button>
+                        </div>
                         {/*<button onClick={() => setShowModal(false)}>close</button>*/}
                         <div>I am a modal</div>
                         <ul>

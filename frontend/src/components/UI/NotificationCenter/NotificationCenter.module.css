@@ -35,3 +35,22 @@
     justify-content: flex-end;
     padding: 8px;
 }
+
+.headerSection {
+    display: flex;
+    padding-left: 20px;
+    gap: 40%;
+    line-height: 0;
+    vertical-align: center;
+    padding-top: 10%;
+}
+
+.clearButton {
+    color: #005EA2;
+    padding: 2px;
+}
+
+.clearButtonIcon {
+    position: relative;
+    top: 4px;
+}
