@@ -30,7 +30,7 @@ const NotificationCenter = () => {
     return (
         <>
             <svg
-                className="usa-icon text-primary height-205 width-205 hover: cursor-pointer usa-tooltip"
+                className="usa-icon height-205 width-205"
                 onClick={() => setShowModal(true)}
                 id="notification-center-bell"
             >
@@ -48,8 +48,17 @@ const NotificationCenter = () => {
                     <div className={customStyles.flexLeft}></div>
 
                     <div className={customStyles.flexRight}>
+                        <div className={customStyles.closeButtonWrapper}>
+                            <svg
+                                className="usa-icon text-primary height-205 width-205 hover: cursor-pointer usa-tooltip"
+                                onClick={() => setShowModal(false)}
+                                id="notification-center-close"
+                            >
+                                <use xlinkHref={`${icons}#close`}></use>
+                            </svg>
+                        </div>
                         <h2>Hello</h2>
-                        <button onClick={() => setShowModal(false)}>close</button>
+                        {/*<button onClick={() => setShowModal(false)}>close</button>*/}
                         <div>I am a modal</div>
                         <ul>
                             {data.map((item) => (

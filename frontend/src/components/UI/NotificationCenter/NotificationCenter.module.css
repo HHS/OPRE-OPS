@@ -29,3 +29,9 @@
     flex: 3;
     background: #F0F0F0;
 }
+
+.closeButtonWrapper {
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px;
+}
