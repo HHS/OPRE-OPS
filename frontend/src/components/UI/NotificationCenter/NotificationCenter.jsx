@@ -1,8 +1,10 @@
 import { useGetNotificationsByUserIdQuery } from "../../../api/opsAPI";
 import jwt_decode from "jwt-decode";
 import icons from "../../../uswds/img/sprite.svg";
-import Modal from "../Modal";
+import Modal from "react-modal";
 import React from "react";
+import Notification from "../Notification";
+import customStyles from "./NotificationCenter.module.css";
 
 const NotificationCenter = () => {
     const [showModal, setShowModal] = React.useState(false);
@@ -23,6 +25,8 @@ const NotificationCenter = () => {
         return <div>Oops, an error occurred</div>;
     }
 
+    Modal.setAppElement("#root");
+
     return (
         <>
             <svg
@@ -32,15 +36,29 @@ const NotificationCenter = () => {
             >
                 <use xlinkHref={`${icons}#notifications`}></use>
             </svg>
-            {showModal && (
-                <Modal
-                    heading="Notification Center"
-                    description={data}
-                    setShowModal={setShowModal}
-                    actionButtonText="Close"
-                    handleConfirm={() => setShowModal(false)}
-                />
-            )}
+
+            <Modal
+                isOpen={showModal}
+                onRequestClose={() => setShowModal(false)}
+                className={customStyles.Modal}
+                overlayClassName={customStyles.Overlay}
+                contentLabel="Notifications"
+            >
+                <div className={customStyles.flexContainer}>
+                    <div className={customStyles.flexLeft}></div>
+
+                    <div className={customStyles.flexRight}>
+                        <h2>Hello</h2>
+                        <button onClick={() => setShowModal(false)}>close</button>
+                        <div>I am a modal</div>
+                        <ul>
+                            {data.map((item) => (
+                                <Notification key={item.id} data={item} />
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+            </Modal>
         </>
     );
 };

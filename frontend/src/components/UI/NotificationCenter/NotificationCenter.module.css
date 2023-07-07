@@ -1,0 +1,31 @@
+.Modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.Overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.flexContainer {
+    display: flex;
+    height: 100%;
+}
+
+.flexLeft {
+    flex: 5;
+    opacity: 0.7;
+    background-color: black;
+}
+
+.flexRight {
+    flex: 3;
+    background: #F0F0F0;
+}
