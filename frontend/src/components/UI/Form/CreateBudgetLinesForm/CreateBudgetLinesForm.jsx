@@ -53,8 +53,9 @@ export const CreateBudgetLinesForm = ({
     handleResetForm = () => {},
     formMode,
 }) => {
-    const [isEditMode, setIsEditMode] = React.useState(false);
+    const [, setIsEditMode] = React.useState(false);
     const [isReviewMode, setIsReviewMode] = React.useState(false);
+
     let res = suite.get();
     console.log(`res: ${JSON.stringify(res, null, 2)})}`);
     const cn = classnames(suite.get(), {
@@ -71,15 +72,6 @@ export const CreateBudgetLinesForm = ({
                 break;
             case "review":
                 setIsReviewMode(true);
-                // suite({
-                //     selectedCan,
-                //     enteredDescription,
-                //     enteredAmount,
-                //     enteredMonth,
-                //     enteredDay,
-                //     enteredYear,
-                //     enteredComments,
-                // });
                 break;
             default:
                 return;
@@ -91,11 +83,23 @@ export const CreateBudgetLinesForm = ({
         };
     }, [formMode]);
 
+    // validate all budgetline fields if in review mode and is editing
+    if (isReviewMode && isEditing) {
+        suite({
+            selectedCan,
+            enteredDescription,
+            enteredAmount,
+            enteredMonth,
+            enteredDay,
+            enteredYear,
+        });
+    }
+
     const runValidate = (name, value) => {
         suite(
             {
-                enteredDescription,
                 selectedCan,
+                enteredDescription,
                 enteredAmount,
                 enteredMonth,
                 enteredDay,
