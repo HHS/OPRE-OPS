@@ -66,11 +66,11 @@ it("can create an agreement", () => {
 
     // Add a new budget line item
     cy.get("#enteredDescription").type("Test BLI Description");
-    cy.get("#procurement_month").select("01 - Jan");
-    cy.get("#procurement_day").type("1");
-    cy.get("#procurement_year").type("2024");
+    cy.get("#enteredMonth").select("01 - Jan");
+    cy.get("#enteredDay").type("1");
+    cy.get("#enteredYear").type("2024");
     cy.get("#selectedCan").type("G99MVT3");
-    cy.get("#bl-amount").type("1000000");
+    cy.get("#enteredAmount").type("1000000");
     cy.get("#enteredComments").type("Something something note something.");
     cy.get("#add-budget-line").click();
 
