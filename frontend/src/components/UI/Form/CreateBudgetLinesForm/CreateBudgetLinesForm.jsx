@@ -55,6 +55,15 @@ export const CreateBudgetLinesForm = ({
 }) => {
     const [isEditMode, setIsEditMode] = React.useState(false);
     const [isReviewMode, setIsReviewMode] = React.useState(false);
+    let res = suite.get();
+    console.log(`res: ${JSON.stringify(res, null, 2)})}`);
+    const cn = classnames(suite.get(), {
+        invalid: "usa-form-group--error",
+        valid: "success",
+        warning: "warning",
+    });
+    const isFormComplete =
+        selectedCan && enteredDescription && enteredAmount && enteredMonth && enteredDay && enteredYear;
     React.useEffect(() => {
         switch (formMode) {
             case "edit":
@@ -62,15 +71,15 @@ export const CreateBudgetLinesForm = ({
                 break;
             case "review":
                 setIsReviewMode(true);
-                suite({
-                    selectedCan,
-                    enteredDescription,
-                    enteredAmount,
-                    enteredMonth,
-                    enteredDay,
-                    enteredYear,
-                    enteredComments,
-                });
+                // suite({
+                //     selectedCan,
+                //     enteredDescription,
+                //     enteredAmount,
+                //     enteredMonth,
+                //     enteredDay,
+                //     enteredYear,
+                //     enteredComments,
+                // });
                 break;
             default:
                 return;
@@ -87,8 +96,7 @@ export const CreateBudgetLinesForm = ({
             {
                 enteredDescription,
                 selectedCan,
-                // enteredAmount,
-                // enteredComments,
+                enteredAmount,
                 enteredMonth,
                 enteredDay,
                 enteredYear,
@@ -97,13 +105,6 @@ export const CreateBudgetLinesForm = ({
             name
         );
     };
-    let res = suite.get();
-    console.log(`res: ${JSON.stringify(res, null, 2)})}`);
-    const cn = classnames(suite.get(), {
-        invalid: "usa-form-group--error",
-        valid: "success",
-        warning: "warning",
-    });
 
     return (
         <form className="grid-row grid-gap">
@@ -193,6 +194,7 @@ export const CreateBudgetLinesForm = ({
                         <button
                             className="usa-button usa-button--outline margin-top-2 margin-right-0"
                             data-cy="update-budget-line"
+                            disabled={res.hasErrors() || !isFormComplete}
                             onClick={handleEditForm}
                         >
                             Update Budget Line
@@ -202,6 +204,7 @@ export const CreateBudgetLinesForm = ({
                     <button
                         id="add-budget-line"
                         className="usa-button usa-button--outline margin-top-2 float-right margin-right-0"
+                        disabled={res.hasErrors() || !isFormComplete}
                         onClick={handleSubmitForm}
                     >
                         Add Budget Line
