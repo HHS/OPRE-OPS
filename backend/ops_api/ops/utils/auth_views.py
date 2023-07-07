@@ -38,7 +38,6 @@ def login() -> Union[Response, tuple[str, int]]:
 @jwt_required(True)
 def logout() -> Union[Response, tuple[str, int]]:
     with OpsEventHandler(OpsEventType.LOGOUT) as la:
-
         try:
             identity = get_jwt_identity()
             la.metadata.update({"oidc_id": identity})
