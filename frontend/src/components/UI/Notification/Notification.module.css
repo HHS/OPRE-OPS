@@ -1,22 +1,17 @@
-.Modal {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-}
-
-.Overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-}
-
 .flexContainer {
     display: flex;
-    height: 100%;
+}
+
+.notificationListItem {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.notificationHeader {
+}
+
+.notificationDateTime {
 }
 
 .flexLeft {

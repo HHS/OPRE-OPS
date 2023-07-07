@@ -74,13 +74,13 @@ const NotificationCenter = () => {
                                 Clear
                             </button>
                         </div>
-                        {/*<button onClick={() => setShowModal(false)}>close</button>*/}
-                        <div>I am a modal</div>
-                        <ul>
-                            {data.map((item) => (
-                                <Notification key={item.id} data={item} />
-                            ))}
-                        </ul>
+                        {data.length > 0 && (
+                            <ul>
+                                {data.map((item) => (
+                                    <Notification key={item.id} data={item} />
+                                ))}
+                            </ul>
+                        )}
                     </div>
                 </div>
             </Modal>

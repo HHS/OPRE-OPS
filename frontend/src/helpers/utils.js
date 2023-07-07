@@ -99,3 +99,30 @@ export const loggedInName = (activeUser) => {
     }
     return loggedInUser;
 };
+
+export const timeAgo = (dateParam) => {
+    if (!dateParam) {
+        return null;
+    }
+
+    const date = typeof dateParam === "object" ? dateParam : new Date(dateParam);
+    const today = new Date();
+    const seconds = Math.round((today - date) / 1000);
+    const minutes = Math.round(seconds / 60);
+
+    if (seconds < 5) {
+        return "now";
+    } else if (seconds < 60) {
+        return `${seconds} seconds ago`;
+    } else if (seconds < 90) {
+        return "about a minute ago";
+    } else if (minutes < 60) {
+        return `${minutes} minutes ago`;
+    }
+
+    return date.toLocaleString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+    });
+};
