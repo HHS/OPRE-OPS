@@ -13,7 +13,7 @@ import { apiLogin } from "../../api/apiLogin";
 
 async function setActiveUser(token, dispatch) {
     // TODO: Vefiry the Token!
-    //const isValidToken = validateTooken(token);
+    //const isValidToken = validateToken(token);
     const decodedJwt = jwt_decode(token);
     const userId = decodedJwt["sub"];
     const userDetails = await getUserByOidc(userId);
@@ -32,6 +32,10 @@ const AuthSection = () => {
 
             localStorage.setItem("access_token", response.access_token);
             dispatch(login());
+            if (response.is_new_user) {
+                navigate("/user/edit");
+                return;
+            }
 
             await setActiveUser(response.access_token, dispatch);
 

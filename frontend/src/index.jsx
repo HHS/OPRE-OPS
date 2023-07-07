@@ -14,6 +14,7 @@ import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
 import CanList from "./pages/cans/list/CanList";
 import CanDetail from "./pages/cans/detail/CanDetail";
 import UserDetail from "./pages/users/detail/UserDetail";
+import EditUser from "./pages/users/edit/EditUser";
 import ResearchProjects from "./components/Portfolios/ResearchProjects/ResearchProjects";
 import PeopleAndTeams from "./components/Portfolios/PeopleAndTeams/PeopleAndTeams";
 import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAndFunding";
@@ -89,6 +90,19 @@ const router = createBrowserRouter(
                             <div>
                                 <Link to="/" className="text-primary">
                                     Users
+                                </Link>
+                            </div>
+                        ),
+                    }}
+                />
+                <Route
+                    path="/users/edit/:id"
+                    element={<EditUser />}
+                    handle={{
+                        crumb: () => (
+                            <div>
+                                <Link to="/" className="text-primary">
+                                    Edit User
                                 </Link>
                             </div>
                         ),

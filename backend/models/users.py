@@ -22,6 +22,7 @@ class User(BaseModel):
     __tablename__ = "users"
     id = Column(Integer, Identity(always=True, start=1, cycle=True), primary_key=True)
     oidc_id = Column(UUID(as_uuid=True), unique=True, index=True)
+    hhs_id = Column(String)
     email = Column(String, index=True, nullable=False)
     first_name = Column(String)
     last_name = Column(String)

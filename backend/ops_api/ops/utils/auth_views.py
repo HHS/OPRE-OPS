@@ -18,7 +18,7 @@ def login() -> Union[Response, tuple[str, int]]:
         token, user_data = _get_token_and_user_data_from_oauth_provider(auth_code)
         current_app.logger.debug(f"provider_access_token={token};user_data={user_data}")
 
-        access_token, refresh_token, user = _get_token_and_user_data_from_internal_auth(user_data)
+        access_token, refresh_token, user, is_new_user = _get_token_and_user_data_from_internal_auth(user_data)
         current_app.logger.debug(f"api_access_token={access_token};api_refresh_token={refresh_token};user={user}")
 
         la.metadata.update(
@@ -30,7 +30,9 @@ def login() -> Union[Response, tuple[str, int]]:
             }
         )
 
-    return make_response_with_headers({"access_token": access_token, "refresh_token": refresh_token})
+    return make_response_with_headers(
+        {"access_token": access_token, "refresh_token": refresh_token, "is_new_user": is_new_user}
+    )
 
 
 def logout():
@@ -45,14 +47,14 @@ def _get_token_and_user_data_from_internal_auth(user_data):
     #   - invalid JWT
     # - create backend-JWT endpoints /refesh /validate (drf-simplejwt)
     # See if user exists
-    user = register_user(user_data)  # Refactor me
+    user, is_new_user = register_user(user_data)  # Refactor me
     # TODO
     # Do we want to embed the user's roles or permissions in the scope: [read write]?
     # The next two tokens are specific to our backend API, these are used for our API
     # authZ, given a valid login from the prior AuthN steps above.
     access_token = create_access_token(identity=user)
     refresh_token = create_refresh_token(identity=user)
-    return access_token, refresh_token, user
+    return access_token, refresh_token, user, is_new_user
 
 
 def _get_token_and_user_data_from_oauth_provider(auth_code: str):
