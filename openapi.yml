@@ -41,6 +41,21 @@ paths:
               examples:
                 '0':
                   $ref: '#/components/examples/Agreements'
+    post:
+      summary: Create a new Agreement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agreements'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
   /api/v1/agreements/{agreement_id}:
     get:
       description: Get Agreement By Id
@@ -64,6 +79,40 @@ paths:
               examples:
                 '0':
                   $ref: '#/components/examples/Agreement'
+    put:
+      summary: Update an Agreement (Over-write)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agreement'
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+    patch:
+      summary: Update an Agreement (Merge)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agreement'
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
   /api/v1/cans/:
     get:
       description: Get CANs
