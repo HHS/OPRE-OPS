@@ -4,7 +4,7 @@ runs:
   using: composite
   steps:
     - name: Set up Python
-      uses: actions/setup-python@3f824b7ca6388f5e27e362d31352e6456c8e3bfb # tag: v4.3.0
+      uses: actions/setup-python@0d5da6a89a3aa5b4dbd48e38b0c9d678b0caa0e5 # tag: v4.3.0
       with:
         python-version: '3.10'
         cache: pipenv

@@ -30,6 +30,10 @@ export const opsApi = createApi({
             providesTags: ["Agreements", "FilterAgreements"],
         }),
         getUserById: builder.query({
+            query: (id) => `/users/${id}`,
+            providesTags: ["Users"],
+        }),
+        getUserByOIDCId: builder.query({
             query: (id) => `/users/?oidc_id=${id}`,
             providesTags: ["Users"],
         }),
@@ -90,6 +94,7 @@ export const {
     useGetAgreementByIdQuery,
     useGetAgreementsByResearchProjectFilterQuery,
     useGetUserByIdQuery,
+    useGetUserByOIDCIdQuery,
     useGetResearchProjectsQuery,
     useAddResearchProjectsMutation,
     useUpdateBudgetLineItemStatusMutation,
