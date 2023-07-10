@@ -57,8 +57,9 @@ const NotificationCenter = () => {
                                 <use xlinkHref={`${icons}#close`}></use>
                             </svg>
                         </div>
+
                         <div className={customStyles.headerSection}>
-                            <h1 className="font-sans-lg">Notifications</h1>
+                            <h1 className={`${customStyles.notificationHeader} font-sans-lg`}>Notifications</h1>
                             <button
                                 className={customStyles.clearButton}
                                 onClick={() => {
@@ -75,7 +76,7 @@ const NotificationCenter = () => {
                             </button>
                         </div>
                         {data.length > 0 && (
-                            <ul>
+                            <ul className={customStyles.listStyle}>
                                 {data.map((item) => (
                                     <Notification key={item.id} data={item} />
                                 ))}
