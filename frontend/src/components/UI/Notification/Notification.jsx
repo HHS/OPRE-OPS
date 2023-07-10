@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export const Notification = ({ data }) => {
     return (
-        <li className={customStyles.notificationListItem}>
+        <li className={customStyles.notificationListItem} id="notification-center-list">
             <div className={customStyles.flexContainer}>
                 <span className="text-bold">{data.title}</span>
                 <span className="font-12px">
