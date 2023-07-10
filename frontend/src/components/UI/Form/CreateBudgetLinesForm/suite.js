@@ -36,6 +36,9 @@ const suite = create((data, fieldName) => {
     test("enteredAmount", "This is required information", () => {
         enforce(data.enteredAmount).isNotBlank();
     });
+    test("enteredAmount", "This is required information", () => {
+        enforce(data.enteredAmount).isNotEmpty();
+    });
 });
 
 export default suite;
