@@ -93,6 +93,9 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
         user = get_user_from_token(token[1] if token else None)
     except NoAuthorizationError:
         current_app.logger.warning("JWT is invalid")
+    except Exception as e:
+        # Is there's not a request, then a RuntimeError occurs
+        print(f"Failed trying to get the user from the request. {type(e)}: {e}")
 
     for obj in objs:
         if not isinstance(obj, OpsEvent) and not isinstance(obj, OpsDBHistory):  # not interested in tracking these
