@@ -1,7 +1,6 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-// import classnames from "vest/classnames";
 import StepIndicator from "../../StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
 import PreviewTable from "../../PreviewTable";
@@ -124,21 +123,6 @@ export const StepCreateBudgetLines = ({
     }, [formMode, newBudgetLines]);
 
     let res = suite.get();
-    // console.log(`res: ${JSON.stringify(res, null, 2)})}`);
-    // const cn = classnames(suite.get(), {
-    //     invalid: "usa-form-group--error",
-    //     valid: "success",
-    //     warning: "warning",
-    // });
-    // fire the page errors based on the suite results
-    // React.useEffect(() => {
-    //     if (!res.isValid()) {
-    //         setPageErrors(res.getErrors());
-    //     }
-    //     return () => {
-    //         setPageErrors({});
-    //     };
-    // }, [res]);
 
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
@@ -239,7 +223,6 @@ export const StepCreateBudgetLines = ({
         dispatch({ type: "RESET_FORM_AND_BUDGET_LINES" });
 
         if (isReviewMode) {
-            // TODO: navigate to the Agreement review page
             navigate(`/agreements/approve/${selectedAgreement.id}`);
         } else if (continueOverRide) {
             continueOverRide();
