@@ -1,5 +1,6 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 // import classnames from "vest/classnames";
 import StepIndicator from "../../StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
@@ -78,6 +79,7 @@ export const StepCreateBudgetLines = ({
     };
     const dispatch = useBudgetLinesDispatch();
     const globalDispatch = useDispatch();
+    const navigate = useNavigate();
     // setters
     const setEnteredDescription = useSetState("entered_description");
     const setSelectedCan = useSetState("selected_can");
@@ -236,7 +238,10 @@ export const StepCreateBudgetLines = ({
 
         dispatch({ type: "RESET_FORM_AND_BUDGET_LINES" });
 
-        if (continueOverRide) {
+        if (isReviewMode) {
+            // TODO: navigate to the Agreement review page
+            navigate(`/agreements/approve/${selectedAgreement.id}`);
+        } else if (continueOverRide) {
             continueOverRide();
         } else {
             goToNext();
@@ -372,9 +377,10 @@ export const StepCreateBudgetLines = ({
                     className="usa-button"
                     data-cy="continue-btn"
                     onClick={saveBudgetLineItems}
-                    disabled={res.hasErrors()}
+                    // TODO: uncomment this when validation is working
+                    // disabled={res.hasErrors()}
                 >
-                    {continueBtnText}
+                    {isReviewMode ? "Review" : continueBtnText}
                 </button>
             </div>
         </>
