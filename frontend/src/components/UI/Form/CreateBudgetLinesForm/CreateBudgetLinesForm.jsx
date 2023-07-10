@@ -208,7 +208,7 @@ export const CreateBudgetLinesForm = ({
                     <button
                         id="add-budget-line"
                         className="usa-button usa-button--outline margin-top-2 float-right margin-right-0"
-                        disabled={res.hasErrors() || !isFormComplete}
+                        disabled={isReviewMode && (res.hasErrors() || !isFormComplete)}
                         onClick={handleSubmitForm}
                     >
                         Add Budget Line
