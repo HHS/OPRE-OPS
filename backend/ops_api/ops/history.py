@@ -109,7 +109,7 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
                 base_table_name=db_audit.base_table_name,
                 row_key=db_audit.row_key,
                 original=db_audit.original,
-                diff=db_audit.diff
+                diff=db_audit.diff,
             )
             result.append(ops_db)
     return result
