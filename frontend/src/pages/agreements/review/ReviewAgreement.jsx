@@ -292,7 +292,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 <button
                     className="usa-button usa-button--outline margin-right-2"
                     onClick={() => {
-                        navigate(`/agreements/edit/${agreement?.id}`);
+                        navigate(`/agreements/edit/${agreement?.id}?mode=review`);
                     }}
                 >
                     Edit

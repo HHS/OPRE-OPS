@@ -290,7 +290,7 @@ def test_post_research_projects_auth_required(client):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_research_types(client):
-    response = client.get("/api/v1/research-types/")
+def test_get_research_types(auth_client):
+    response = auth_client.get("/api/v1/research-types/")
     assert response.status_code == 200
     assert response.json == {e.name: e.value for e in ResearchType}

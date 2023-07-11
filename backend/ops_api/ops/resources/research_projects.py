@@ -4,13 +4,14 @@ from typing import Optional
 
 import desert
 from flask import Response, current_app, request
-from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
+from flask_jwt_extended import verify_jwt_in_request
 from marshmallow import fields
 from models import CAN, Agreement, BudgetLineItem, MethodologyType, OpsEventType, PopulationType, User
 from models.base import BaseModel
 from models.cans import CANFiscalYear
 from models.research_projects import ResearchProject
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.utils.auth import is_authorized, Permission, PermissionType
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -74,16 +75,9 @@ class ResearchProjectItemAPI(BaseItemAPI):
         super().__init__(model)
 
     @override
-    @jwt_required()
+    @is_authorized(PermissionType.GET, Permission.RESEARCH_PROJECT)
     def get(self, id: int) -> Response:
-        identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_RESEARCH_PROJECTS"])
-
-        if is_authorized:
-            response = self._get_item_with_try(id)
-        else:
-            response = make_response_with_headers({}, 401)
-
+        response = self._get_item_with_try(id)
         return response
 
 
@@ -123,27 +117,21 @@ class ResearchProjectListAPI(BaseListAPI):
         return stmt
 
     @override
-    @jwt_required()
+    @is_authorized(PermissionType.GET, Permission.RESEARCH_PROJECT)
     def get(self) -> Response:
-        identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_RESEARCH_PROJECTS"])
+        fiscal_year = request.args.get("fiscal_year")
+        portfolio_id = request.args.get("portfolio_id")
+        search = request.args.get("search")
 
-        if is_authorized:
-            fiscal_year = request.args.get("fiscal_year")
-            portfolio_id = request.args.get("portfolio_id")
-            search = request.args.get("search")
+        stmt = self._get_query(fiscal_year, portfolio_id, search)
 
-            stmt = self._get_query(fiscal_year, portfolio_id, search)
-
-            result = current_app.db_session.execute(stmt).all()
-            response = make_response_with_headers([i.to_dict() for item in result for i in item])
-        else:
-            response = make_response_with_headers([], 401)
+        result = current_app.db_session.execute(stmt).all()
+        response = make_response_with_headers([i.to_dict() for item in result for i in item])
 
         return response
 
     @override
-    @jwt_required()
+    @is_authorized(PermissionType.POST, Permission.RESEARCH_PROJECT)
     def post(self) -> Response:
         try:
             with OpsEventHandler(OpsEventType.CREATE_RESEARCH_PROJECT) as meta:

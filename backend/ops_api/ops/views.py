@@ -11,7 +11,7 @@ from ops_api.ops.resources.agreements import (
     AgreementReasonListAPI,
     AgreementTypeListAPI,
 )
-from ops_api.ops.resources.auth import AuthLoginAPI, AuthRefreshAPI
+from ops_api.ops.resources.auth import AuthLoginAPI, AuthLogoutAPI, AuthRefreshAPI
 from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, BudgetLineItemsListAPI
 from ops_api.ops.resources.can_fiscal_year import CANFiscalYearItemAPI, CANFiscalYearListAPI
 from ops_api.ops.resources.can_funding_summary import CANFundingSummaryItemAPI
@@ -46,6 +46,7 @@ CONTRACT_LIST_API_VIEW_FUNC = ContractListAPI.as_view("contract-list", ContractL
 
 # Auth endpoints
 AUTH_LOGIN_API_VIEW_FUNC = AuthLoginAPI.as_view("auth-login", BaseModel)
+AUTH_LOGOUT_API_VIEW_FUNC = AuthLogoutAPI.as_view("auth-logout", BaseModel)
 AUTH_REFRESH_API_VIEW_FUNC = AuthRefreshAPI.as_view("auth-refresh", BaseModel)
 
 # Portfolio endpoints

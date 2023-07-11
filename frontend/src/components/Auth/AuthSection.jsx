@@ -9,7 +9,7 @@ import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { User } from "../UI/Header/User";
 import jwt_decode from "jwt-decode";
 import { getUserByOidc } from "../../api/getUser";
-import { apiLogin } from "../../api/apiLogin";
+import { apiLogin, apiLogout } from "../../api/apiLogin";
 import NotificationCenter from "../UI/NotificationCenter/NotificationCenter";
 
 async function setActiveUser(token, dispatch) {
@@ -79,6 +79,7 @@ const AuthSection = () => {
     }, [callBackend, dispatch]);
 
     const logoutHandler = async () => {
+        await apiLogout();
         dispatch(logout());
         localStorage.removeItem("access_token");
         // TODO: ⬇ Logout from Auth Provider ⬇
