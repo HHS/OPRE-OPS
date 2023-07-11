@@ -9,13 +9,12 @@ from models import OpsDBHistory, OpsDBHistoryType, OpsEvent, User
 from sqlalchemy.cyextension.collections import IdentitySet
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import get_history
-from sqlalchemy import inspect
 from decimal import Decimal
 from datetime import datetime, date
 from ops_api.ops.utils.user import get_user_from_token
 
 
-DbRecordAudit = namedtuple("DbRecordDiff", "table_name, base_table_name row_key original diff")
+DbRecordAudit = namedtuple("DbRecordDiff", "row_key original diff")
 
 
 def convert_for_jsonb(value):
@@ -33,10 +32,6 @@ def convert_for_jsonb(value):
 
 
 def build_audit(obj) -> DbRecordAudit:
-    table_name = obj.__table__.name
-    mapper = inspect(obj.__class__)
-    base_mapper = mapper.base_mapper
-    base_table_name = base_mapper.mapped_table.name
     row_key = "|".join([str(getattr(obj, pk)) for pk in obj.primary_keys])
 
     original = {}
@@ -55,12 +50,11 @@ def build_audit(obj) -> DbRecordAudit:
                     original[key] = old_val
                 diff[key] = new_val
 
-    return DbRecordAudit(table_name, base_table_name, row_key, original, diff)
+    return DbRecordAudit(row_key, original, diff)
 
 
 def track_db_history_before(session: Session):
     session.add_all(add_obj_to_db_history(session.deleted, OpsDBHistoryType.DELETED))
-    # session.add_all(add_obj_to_db_history(session.new, OpsDBHistoryType.NEW))
     session.add_all(add_obj_to_db_history(session.dirty, OpsDBHistoryType.UPDATED))
 
 
@@ -87,6 +81,8 @@ def track_db_history_catch_errors(exception_context):
 def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
     result = []
 
+    # Get the current user for setting created_by.  This depends on there being a web request with a valid JWT.
+    # If a user cannot be obtained, it will still add the history record without the user.id
     user: User | None = None
     try:
         token = verify_jwt_in_request()
@@ -95,7 +91,7 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
         current_app.logger.warning("JWT is invalid")
     except Exception as e:
         # Is there's not a request, then a RuntimeError occurs
-        print(f"Failed trying to get the user from the request. {type(e)}: {e}")
+        current_app.logger.info(f"Failed trying to get the user from the request. {type(e)}: {e}")
 
     for obj in objs:
         if not isinstance(obj, OpsEvent) and not isinstance(obj, OpsDBHistory):  # not interested in tracking these
@@ -105,8 +101,6 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
                 event_details=obj.to_dict(),
                 created_by=user.id if user else None,
                 class_name=obj.__class__.__name__,
-                table_name=db_audit.table_name,
-                base_table_name=db_audit.base_table_name,
                 row_key=db_audit.row_key,
                 original=db_audit.original,
                 diff=db_audit.diff,
