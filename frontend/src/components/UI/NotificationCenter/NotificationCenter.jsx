@@ -1,8 +1,8 @@
+import React from "react";
+import Modal from "react-modal";
 import { useGetNotificationsByUserIdQuery } from "../../../api/opsAPI";
 import jwt_decode from "jwt-decode";
 import icons from "../../../uswds/img/sprite.svg";
-import Modal from "react-modal";
-import React from "react";
 import Notification from "../Notification";
 import customStyles from "./NotificationCenter.module.css";
 
@@ -16,7 +16,11 @@ const NotificationCenter = () => {
         userId = decodedJwt["sub"];
     }
 
-    const { data, error, isLoading } = useGetNotificationsByUserIdQuery(userId, { pollingInterval: 5000 });
+    const {
+        data: notifications,
+        error,
+        isLoading,
+    } = useGetNotificationsByUserIdQuery(userId, { pollingInterval: 5000 });
 
     if (isLoading) {
         return <div>Loading...</div>;
@@ -44,13 +48,13 @@ const NotificationCenter = () => {
                 overlayClassName={customStyles.Overlay}
                 contentLabel="Notifications"
             >
-                <div className={customStyles.flexContainer}>
+                <div className="display-flex height-full">
                     <div className={customStyles.flexLeft}></div>
 
                     <div className={customStyles.flexRight}>
                         <div className={customStyles.closeButtonWrapper}>
                             <svg
-                                className="usa-icon text-primary height-205 width-205 hover: cursor-pointer usa-tooltip"
+                                className="usa-icon text-ink height-205 width-205 hover: cursor-pointer usa-tooltip"
                                 onClick={() => setShowModal(false)}
                                 id="notification-center-close"
                             >
@@ -59,7 +63,7 @@ const NotificationCenter = () => {
                         </div>
 
                         <div className={customStyles.headerSection}>
-                            <h1 className={`${customStyles.notificationHeader} font-sans-lg`}>Notifications</h1>
+                            <h1 className="font-sans-lg">Notifications</h1>
                             <button
                                 className={customStyles.clearButton}
                                 onClick={() => {
@@ -75,10 +79,10 @@ const NotificationCenter = () => {
                                 Clear
                             </button>
                         </div>
-                        {data.length > 0 && (
+                        {notifications.length > 0 && (
                             <ul className={customStyles.listStyle}>
-                                {data.map((item) => (
-                                    <Notification key={item.id} data={item} />
+                                {notifications.map((notification) => (
+                                    <Notification key={notification.id} data={notification} />
                                 ))}
                             </ul>
                         )}
