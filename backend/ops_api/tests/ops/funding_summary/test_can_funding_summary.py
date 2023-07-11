@@ -84,8 +84,8 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db) -> None:
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_funding_summary(
-    client: FlaskClient,  # type: ignore [type-arg]
+    auth_client: FlaskClient,  # type: ignore [type-arg]
 ) -> None:
-    response = client.get("/api/v1/can-funding-summary/1")
+    response = auth_client.get("/api/v1/can-funding-summary/1")
     assert response.status_code == 200
     assert response.json["can"]["id"] == 1

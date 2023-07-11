@@ -1,7 +1,7 @@
 from flask import Response, request
-from flask_jwt_extended import jwt_required
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.utils.auth import is_authorized, PermissionType, Permission
 from ops_api.ops.utils.response import make_response_with_headers
 from typing_extensions import override
 
@@ -11,6 +11,7 @@ class UsersItemAPI(BaseItemAPI):
         super().__init__(model)
 
     @override
+    @is_authorized(PermissionType.GET, Permission.USER)
     def get(self, id: int) -> Response:
         # token = verify_jwt_in_request()
         # Get the user from the token to see who's making the request
@@ -38,8 +39,8 @@ class UsersListAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
-    @jwt_required()
     @override
+    @is_authorized(PermissionType.GET, Permission.USER)
     def get(self) -> Response:
         oidc_id = request.args.get("oidc_id", type=str)
 
