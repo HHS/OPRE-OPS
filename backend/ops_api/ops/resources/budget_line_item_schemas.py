@@ -245,6 +245,6 @@ class BudgetLineItemResponse:
     status: BudgetLineItemStatus = EnumField(BudgetLineItemStatus)
     comments: Optional[str] = None
     psc_fee_amount: Optional[float] = None
-    created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%f"})
-    updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%f"})
+    created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
+    updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     date_needed: date = field(default=None, metadata={"format": "%Y-%m-%d"})

@@ -65,8 +65,8 @@ class ResearchProjectResponse:
     methodologies: Optional[list[MethodologyType]] = fields.List(fields.Enum(MethodologyType), default=[])
     populations: Optional[list[PopulationType]] = fields.List(fields.Enum(PopulationType), default=[])
     team_leaders: Optional[list[TeamLeaders]] = fields.List(fields.Nested(TeamLeaders), default=[])
-    created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%f")
-    updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%f")
+    created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
+    updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
 
 
 class ResearchProjectItemAPI(BaseItemAPI):

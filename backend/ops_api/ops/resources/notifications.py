@@ -43,8 +43,8 @@ class NotificationResponse:
     is_read: bool
     created_by: int
     updated_by: int
-    created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%f"})
-    updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%f"})
+    created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
+    updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     title: Optional[str] = None
     message: Optional[str] = None
     recipient: Optional[Recipient] = None
