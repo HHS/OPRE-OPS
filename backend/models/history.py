@@ -39,5 +39,6 @@ class OpsDBHistory(BaseModel):
         return d
 
 
+# index for typical change history queries to find all changes for a record (class+row_key), with recent first
 index = Index('idx_ops_db_history_class_name_row_key_created_on', OpsDBHistory.class_name, OpsDBHistory.row_key,
               sa.desc(OpsDBHistory.created_on))
