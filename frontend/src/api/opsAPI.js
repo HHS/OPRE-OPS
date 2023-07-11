@@ -86,6 +86,15 @@ export const opsApi = createApi({
             query: (id) => `/notifications/?oidc_id=${id}`,
             providesTags: ["Notifications"],
         }),
+        dismissNotification: builder.mutation({
+            query: (id) => ({
+                url: `/notifications/${id}`,
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: { is_read: true },
+            }),
+            invalidatesTags: ["Notifications"],
+        }),
     }),
 });
 
@@ -105,4 +114,5 @@ export const {
     useGetUsersQuery,
     useGetCansQuery,
     useGetNotificationsByUserIdQuery,
+    useDismissNotificationMutation,
 } = opsApi;
