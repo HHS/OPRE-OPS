@@ -284,27 +284,22 @@ class AgreementListAPI(BaseListAPI):
             case {**filter_args}:
                 pass
 
-        status: str | None = filter_args.pop("status", None)
-
         for key, value in filter_args.items():
             query_helper.add_column_equals(Agreement.get_class_field(key), value)
 
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")
 
-        return stmt, status
+        return stmt
 
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
-        stmt, status = self._get_query(request.args)
+        stmt = self._get_query(request.args)
 
         result = current_app.db_session.execute(stmt).all()
 
         items = (i for item in result for i in item)
-
-        if status:
-            items = (i for i in items if i.status == status)
 
         response = make_response_with_headers([i.to_dict() for i in items])
 

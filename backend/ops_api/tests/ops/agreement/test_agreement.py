@@ -89,7 +89,6 @@ def test_agreements_serialization(auth_client, loaded_db):
             }
         ],
         "vendor": "Vendor 1",
-        "status": "DRAFT",
     }
 
 
@@ -125,7 +124,6 @@ def test_agreements_with_research_project_found(auth_client, loaded_db):
         ("research_project_id", 1),
         ("foa", "This is an FOA value"),
         ("name", "Contract #1: African American Child and Family Research Center"),
-        ("status", "PLANNED"),
     ),
 )
 @pytest.mark.usefixtures("app_ctx")
@@ -474,21 +472,3 @@ def test_agreements_delete_by_id(auth_client, loaded_db, test_contract):
     agreement = loaded_db.scalar(stmt)
 
     assert agreement is None
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_status(loaded_db):
-    stmt = select(Agreement).where(Agreement.id == 1)
-    agreement = loaded_db.scalar(stmt)
-
-    assert agreement is not None
-    assert agreement.status == "DRAFT"
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_status_no_budget_lines(loaded_db):
-    stmt = select(Agreement).where(Agreement.id == 6)
-    agreement = loaded_db.scalar(stmt)
-
-    assert agreement is not None
-    assert agreement.status == "DRAFT"
