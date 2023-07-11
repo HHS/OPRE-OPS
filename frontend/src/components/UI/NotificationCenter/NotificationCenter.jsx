@@ -34,7 +34,7 @@ const NotificationCenter = () => {
     return (
         <>
             <svg
-                className="usa-icon height-205 width-205"
+                className="usa-icon height-205 width-205 text-primary hover: cursor-pointer"
                 onClick={() => setShowModal(true)}
                 id="notification-center-bell"
             >
