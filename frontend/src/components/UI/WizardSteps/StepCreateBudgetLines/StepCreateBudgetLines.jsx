@@ -1,5 +1,6 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import StepIndicator from "../../StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
 import PreviewTable from "../../PreviewTable";
@@ -12,6 +13,8 @@ import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
 import { setAlert } from "../../Alert/alertSlice";
 import EditModeTitle from "../../../../pages/agreements/EditModeTitle";
 import { loggedInName } from "../../../../helpers/utils";
+import suite from "./suite";
+import { convertCodeForDisplay } from "../../../../helpers/utils";
 
 /**
  * Renders the Create Budget Lines component with React context.
@@ -26,7 +29,7 @@ import { loggedInName } from "../../../../helpers/utils";
  * @param {Object} props.selectedProcurementShop - The selected procurement shop.
  * @param {Array<any>} props.existingBudgetLines - An array of existing budget lines.
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
- * @param {boolean} [props.isEditMode] - A flag indicating whether the component is in edit mode. - optional
+ * @param {string} [props.formMode] - The mode of the form (e.g. "create", "edit", "review"). - optional
  * @param {Function} [props.continueOverRide] - A function to override the default "Continue" button behavior. - optional
  * @param {"agreement" | "budgetLines"} props.workflow - The workflow type ("agreement" or "budgetLines").
  * @returns {JSX.Element} - The rendered component.
@@ -42,11 +45,14 @@ export const StepCreateBudgetLines = ({
     existingBudgetLines = [],
     continueBtnText,
     continueOverRide,
-    isEditMode,
+    formMode,
     workflow,
 }) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const [isEditMode, setIsEditMode] = React.useState(false);
+    const [isReviewMode, setIsReviewMode] = React.useState(false);
+    const [pageErrors] = React.useState({});
     const {
         selected_can: selectedCan,
         entered_description: enteredDescription,
@@ -72,6 +78,7 @@ export const StepCreateBudgetLines = ({
     };
     const dispatch = useBudgetLinesDispatch();
     const globalDispatch = useDispatch();
+    const navigate = useNavigate();
     // setters
     const setEnteredDescription = useSetState("entered_description");
     const setSelectedCan = useSetState("selected_can");
@@ -80,6 +87,7 @@ export const StepCreateBudgetLines = ({
     const setEnteredDay = useSetState("entered_day");
     const setEnteredYear = useSetState("entered_year");
     const setEnteredComments = useSetState("entered_comments");
+
     const isAlertActive = useSelector((state) => state.alert.isActive);
 
     let loggedInUserFullName = useSelector((state) => loggedInName(state.auth?.activeUser));
@@ -91,7 +99,33 @@ export const StepCreateBudgetLines = ({
             dispatch({ type: "ADD_EXISTING_BUDGET_LINES", payload: existingBudgetLines });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [existingBudgetLines]);
+
+    React.useEffect(() => {
+        switch (formMode) {
+            case "edit":
+                setIsEditMode(true);
+                break;
+            case "review":
+                setIsReviewMode(true);
+                suite({
+                    new_budget_lines: newBudgetLines,
+                });
+                break;
+            default:
+                return;
+        }
+        return () => {
+            setIsReviewMode(false);
+            setIsEditMode(false);
+            suite.reset();
+        };
+    }, [formMode, newBudgetLines]);
+
+    let res = suite.get();
+
+    const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
+    const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
 
     const handleSubmitForm = (e) => {
         e.preventDefault();
@@ -188,7 +222,9 @@ export const StepCreateBudgetLines = ({
 
         dispatch({ type: "RESET_FORM_AND_BUDGET_LINES" });
 
-        if (continueOverRide) {
+        if (isReviewMode) {
+            navigate(`/agreements/approve/${selectedAgreement.id}`);
+        } else if (continueOverRide) {
             continueOverRide();
         } else {
             goToNext();
@@ -224,7 +260,7 @@ export const StepCreateBudgetLines = ({
             ) : (
                 <>
                     {workflow === "agreement" ? (
-                        <EditModeTitle isEditMode={isEditMode} />
+                        <EditModeTitle isEditMode={isEditMode || isReviewMode} />
                     ) : (
                         <>
                             <h2 className="font-sans-lg">Create New Budget Line</h2>
@@ -263,12 +299,32 @@ export const StepCreateBudgetLines = ({
                 handleEditForm={handleEditForm}
                 handleResetForm={handleResetForm}
                 handleSubmitForm={handleSubmitForm}
+                formMode={formMode}
             />
             <h2 className="font-sans-lg">Budget Lines</h2>
             <p>
                 This is a list of all budget lines for the selected project and agreement. The budget lines you add will
                 display in draft status. The Fiscal Year (FY) will populate based on the election date you provide.
             </p>
+            {budgetLinePageErrorsExist && (
+                <ul className="usa-list--unstyled font-12px text-error" data-cy="error-list">
+                    {Object.entries(pageErrors).map(([key, value]) => (
+                        <li key={key} className="border-left-2px border-error padding-left-1" data-cy="error-item">
+                            <strong>{convertCodeForDisplay("validation", key)}: </strong>
+                            {
+                                <span>
+                                    {value.map((message, index) => (
+                                        <React.Fragment key={index}>
+                                            <span>{message}</span>
+                                            {index < value.length - 1 && <span>, </span>}
+                                        </React.Fragment>
+                                    ))}
+                                </span>
+                            }
+                        </li>
+                    ))}
+                </ul>
+            )}
             <PreviewTable
                 budgetLinesAdded={newBudgetLines}
                 handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
@@ -300,8 +356,14 @@ export const StepCreateBudgetLines = ({
                 >
                     Back
                 </button>
-                <button className="usa-button" data-cy="continue-btn" onClick={saveBudgetLineItems}>
-                    {continueBtnText}
+                <button
+                    className="usa-button"
+                    data-cy="continue-btn"
+                    onClick={saveBudgetLineItems}
+                    // TODO: uncomment this when validation is working
+                    // disabled={res.hasErrors()}
+                >
+                    {isReviewMode ? "Review" : continueBtnText}
                 </button>
             </div>
         </>

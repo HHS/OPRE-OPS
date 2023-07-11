@@ -14,7 +14,7 @@ import { CreateBudgetLinesProvider } from "./context";
  * @param {Object} props.selectedProcurementShop - The selected procurement shop.
  * @param {Array<any>} props.existingBudgetLines - An array of existing budget lines.
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
- * @param {boolean} [props.isEditMode ]- A flag indicating whether the component is in edit mode.- optional
+ * @param {string} [props.formMode] - The mode of the form (e.g. "create", "edit", "review"). - optional
  * @param {Function} [props.continueOverRide] - A function to override the default continue functionality.- optional
  * @param {"agreement" | "budgetLines"} props.workflow - The workflow type ("agreement" or "budgetLines").
  * @returns {JSX.Element} - The rendered component.
@@ -30,7 +30,7 @@ const CreateBudgetLines = ({
     existingBudgetLines,
     continueBtnText,
     continueOverRide,
-    isEditMode,
+    formMode,
     workflow,
 }) => {
     return (
@@ -46,7 +46,7 @@ const CreateBudgetLines = ({
                 existingBudgetLines={existingBudgetLines}
                 continueBtnText={continueBtnText}
                 continueOverRide={continueOverRide}
-                isEditMode={isEditMode}
+                formMode={formMode}
                 workflow={workflow}
             />
         </CreateBudgetLinesProvider>
