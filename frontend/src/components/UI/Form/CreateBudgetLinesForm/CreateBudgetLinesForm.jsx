@@ -57,7 +57,7 @@ export const CreateBudgetLinesForm = ({
     const [isReviewMode, setIsReviewMode] = React.useState(false);
 
     let res = suite.get();
-    console.log(`res: ${JSON.stringify(res, null, 2)})}`);
+
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
         valid: "success",
