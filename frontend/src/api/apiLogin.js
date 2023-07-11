@@ -11,3 +11,12 @@ export const apiLogin = async (authCode) => {
         });
     return responseData;
 };
+
+export const apiLogout = async () => {
+    const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;
+
+    const responseData = await ApplicationContext.get()
+        .helpers()
+        .callBackend(`/api/${api_version}/auth/logout/`, "post", {});
+    return responseData;
+};

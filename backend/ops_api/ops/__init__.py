@@ -35,7 +35,7 @@ def configure_logging(log_level: str = "INFO") -> None:
 
 
 def create_app(config_overrides: Optional[dict[str, Any]] = {}) -> Flask:
-    is_unit_test = config_overrides.get("TESTING") is True
+    is_unit_test = False if config_overrides is None else config_overrides.get("TESTING") is True
     log_level = "INFO" if not is_unit_test else "DEBUG"
     configure_logging(log_level)  # should be configured before any access to app.logger
     app = Flask(__name__)

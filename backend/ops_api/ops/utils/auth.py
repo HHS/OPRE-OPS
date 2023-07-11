@@ -1,18 +1,40 @@
+from enum import auto, Enum
+from functools import wraps
 import time
 import uuid
-from typing import Optional
+from typing import Callable, Optional
 
 from authlib.integrations.flask_client import OAuth
 from authlib.jose import jwt as jose_jwt
-from flask import current_app
-from flask_jwt_extended import JWTManager
+from flask import current_app, Response
+from flask_jwt_extended import JWTManager, get_jwt_identity, jwt_required
 from models.users import User
+from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.authorization import AuthorizationGateway, BasicAuthorizationPrivider
 from sqlalchemy import select
 
 jwtMgr = JWTManager()
 oauth = OAuth()
 auth_gateway = AuthorizationGateway(BasicAuthorizationPrivider())
+
+
+class PermissionType(Enum):
+    GET = auto()
+    PUT = auto()
+    PATCH = auto()
+    DELETE = auto()
+    POST = auto()
+
+
+class Permission(Enum):
+    AGREEMENT = auto()
+    BUDGET_LINE_ITEM = auto()
+    CAN = auto()
+    DIVISION = auto()
+    NOTIFICATION = auto()
+    PORTFOLIO = auto()
+    RESEARCH_PROJECT = auto()
+    USER = auto()
 
 
 @jwtMgr.user_identity_loader
@@ -27,6 +49,7 @@ def user_lookup_callback(_jwt_header: dict, jwt_data: dict) -> Optional[User]:
     users = current_app.db_session.execute(stmt).all()
     if users and len(users) == 1:
         return users[0][0]
+    return None
 
 
 def create_oauth_jwt(
@@ -58,3 +81,25 @@ def create_oauth_jwt(
     _header = header or {"alg": "RS256"}
     jws = jose_jwt.encode(header=_header, payload=_payload, key=jwt_private_key)
     return jws
+
+
+class is_authorized:
+    def __init__(self, permission_type: PermissionType, permission: Permission) -> None:
+        self.permission_type = permission_type
+        self.permission = permission
+
+    def __call__(self, func: Callable) -> Callable:
+        @wraps(func)
+        @jwt_required()
+        def wrapper(*args, **kwargs) -> Response:
+            identity = get_jwt_identity()
+            is_authorized = auth_gateway.is_authorized(identity, f"{self.permission_type}_{self.permission}".upper())
+
+            if is_authorized:
+                response = func(*args, **kwargs)
+            else:
+                response = make_response_with_headers({}, 401)
+
+            return response
+
+        return wrapper
