@@ -41,5 +41,5 @@ class OpsDBHistory(BaseModel):
         return d
 
 
-index = Index('idx_ops_db_history_table_name_row_key_created_on', OpsDBHistory.table_name, OpsDBHistory.row_key,
+index = Index('idx_ops_db_history_class_name_row_key_created_on', OpsDBHistory.class_name, OpsDBHistory.row_key,
               sa.desc(OpsDBHistory.created_on))
