@@ -55,8 +55,13 @@ def test_history_enhanced(loaded_db: Session):
     row_key = str(bli.id)
     class_name = bli.__class__.__name__
 
-    stmt = select(OpsDBHistory).where(and_(OpsDBHistory.class_name == class_name, OpsDBHistory.row_key == row_key,
-                                           OpsDBHistory.event_type == OpsDBHistoryType.NEW))
+    stmt = select(OpsDBHistory).where(
+        and_(
+            OpsDBHistory.class_name == class_name,
+            OpsDBHistory.row_key == row_key,
+            OpsDBHistory.event_type == OpsDBHistoryType.NEW,
+        )
+    )
     result = loaded_db.scalars(stmt).all()
     assert result[0].event_details["line_description"] == "Grant Expenditure GA999"
     assert "line_description" not in result[0].original
@@ -66,8 +71,13 @@ def test_history_enhanced(loaded_db: Session):
     loaded_db.add(bli)
     loaded_db.commit()
 
-    stmt = select(OpsDBHistory).where(and_(OpsDBHistory.class_name == class_name, OpsDBHistory.row_key == row_key,
-                                           OpsDBHistory.event_type == OpsDBHistoryType.UPDATED))
+    stmt = select(OpsDBHistory).where(
+        and_(
+            OpsDBHistory.class_name == class_name,
+            OpsDBHistory.row_key == row_key,
+            OpsDBHistory.event_type == OpsDBHistoryType.UPDATED,
+        )
+    )
     result = loaded_db.scalars(stmt).all()
     assert result[0].event_details["line_description"] == "(UPDATED) Grant Expenditure GA999"
     assert result[0].original["line_description"] == "Grant Expenditure GA999"
@@ -78,12 +88,18 @@ def test_history_enhanced(loaded_db: Session):
     loaded_db.delete(bli)
     loaded_db.commit()
 
-    stmt = select(OpsDBHistory).where(and_(OpsDBHistory.class_name == class_name, OpsDBHistory.row_key == row_key,
-                                           OpsDBHistory.event_type == OpsDBHistoryType.DELETED))
+    stmt = select(OpsDBHistory).where(
+        and_(
+            OpsDBHistory.class_name == class_name,
+            OpsDBHistory.row_key == row_key,
+            OpsDBHistory.event_type == OpsDBHistoryType.DELETED,
+        )
+    )
     result = loaded_db.scalars(stmt).all()
     assert result[0].event_details["line_description"] == "(UPDATED) Grant Expenditure GA999"
     assert result[0].original["line_description"] == "(UPDATED) Grant Expenditure GA999"
     assert len(result[0].diff) == 0
+
 
 @pytest.mark.usefixtures("app_ctx")
 def test_bli_history_force_an_error(loaded_db):
