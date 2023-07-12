@@ -31,7 +31,9 @@ const NotificationCenter = () => {
         return <div>Oops, an error occurred</div>;
     }
 
-    const unreadNotifications = notifications.filter((notification) => !notification.is_read);
+    const unreadNotifications = notifications
+        .filter((notification) => !notification.is_read)
+        .sort((a, b) => new Date(b.created_on) - new Date(a.created_on));
 
     Modal.setAppElement("#root");
 
@@ -69,6 +71,7 @@ const NotificationCenter = () => {
                         <div className={customStyles.headerSection}>
                             <h1 className="font-sans-lg">Notifications</h1>
                             <button
+                                id={"clear-all-button"}
                                 className={customStyles.clearButton}
                                 onClick={() => {
                                     unreadNotifications.map((notification) => dismissNotification(notification.id));
