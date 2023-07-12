@@ -10,7 +10,7 @@ import { User } from "../UI/Header/User";
 import jwt_decode from "jwt-decode";
 import { getUserByOidc } from "../../api/getUser";
 import { apiLogin, apiLogout } from "../../api/apiLogin";
-import NotificationCenter from "../UI/NotificationCenter/NotificationCenter";
+import NotificationCenter from "../UI/NotificationCenter";
 
 async function setActiveUser(token, dispatch) {
     // TODO: Vefiry the Token!
@@ -105,11 +105,16 @@ const AuthSection = () => {
             )}
             {isLoggedIn && (
                 <div>
-                    <User />
-                    <NotificationCenter />
-                    <button className="usa-button fa-solid fa-arrow-right-to-bracket margin-1" onClick={logoutHandler}>
-                        <span className="margin-1">Sign-out</span>
-                    </button>
+                    <div className="display-flex flex-align-center">
+                        <User />
+                        <NotificationCenter />
+                        <button
+                            className="usa-button fa-solid fa-arrow-right-to-bracket margin-1"
+                            onClick={logoutHandler}
+                        >
+                            <span className="margin-1">Sign-out</span>
+                        </button>
+                    </div>
                 </div>
             )}
         </div>
