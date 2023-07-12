@@ -5,7 +5,6 @@ import pytest
 from models import User
 from models.notifications import Notification
 from ops_api.ops.resources.notifications import Recipient, UpdateSchema
-from sqlalchemy import select
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -23,6 +22,26 @@ def test_notification_retrieve(loaded_db):
 @pytest.fixture()
 @pytest.mark.usefixtures("app_ctx")
 def notification(loaded_db):
+    notification = Notification(
+        title="System Notification",
+        message="This is a system notification",
+        is_read=False,
+        recipient_id=4,  # user associated to the auth_client
+        expires=date(2031, 12, 31),
+    )
+
+    loaded_db.add(notification)
+    loaded_db.commit()
+
+    yield notification
+
+    loaded_db.delete(notification)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+@pytest.mark.usefixtures("app_ctx")
+def notification_for_another_user(loaded_db):
     john = User(
         oidc_id="41b88469-b7e8-4dbc-83d1-7e9a61d596b3",
         email="john@example.com",
@@ -30,7 +49,6 @@ def notification(loaded_db):
 
     loaded_db.add(john)
     loaded_db.commit()
-
     notification = Notification(
         title="System Notification",
         message="This is a system notification",
@@ -82,10 +100,9 @@ def test_notification_creation(loaded_db, notification):
     assert notification is not None
     assert notification.recipient is not None
 
-    stmt = select(User).where(User.email == "john@example.com")
-    john = loaded_db.scalar(stmt)
-    assert john.notifications is not None
-    assert john.notifications[0] == notification
+    user = loaded_db.get(User, notification.recipient_id)
+    assert user.notifications is not None
+    assert notification in user.notifications
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -102,7 +119,7 @@ def test_notifications_get_by_user_id(auth_client, loaded_db, notification):
     user_id = notification.recipient.id
     response = auth_client.get(f"/api/v1/notifications/?user_id={user_id}")
     assert response.status_code == 200
-    assert len(response.json) == 1
+    assert len(response.json) == 2
     assert response.json[0]["title"] == "System Notification"
     assert response.json[0]["message"] == "This is a system notification"
     assert response.json[0]["is_read"] is False
@@ -115,7 +132,7 @@ def test_notifications_get_by_oidc_id(auth_client, loaded_db, notification):
     oidc_id = str(notification.recipient.oidc_id)
     response = auth_client.get(f"/api/v1/notifications/?oidc_id={oidc_id}")
     assert response.status_code == 200
-    assert len(response.json) == 1
+    assert len(response.json) == 2
     assert response.json[0]["title"] == "System Notification"
     assert response.json[0]["message"] == "This is a system notification"
     assert response.json[0]["is_read"] is False
@@ -242,3 +259,14 @@ def test_patch_notification_ack(auth_client, notification):
     assert response.json["is_read"] is True
     assert response.json["created_on"] != response.json["updated_on"]
     assert response.json["expires"] == notification.expires.isoformat()
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_patch_notification_ack_must_be_user(auth_client, notification_for_another_user):
+    # Test that a user cannot acknowledge a notification that is not theirs
+    response = auth_client.patch(
+        f"/api/v1/notifications/{notification_for_another_user.id}",
+        json={"is_read": True},
+    )
+    assert response.status_code == 400

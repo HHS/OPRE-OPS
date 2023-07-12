@@ -1,6 +1,6 @@
 import React from "react";
 import Modal from "react-modal";
-import { useGetNotificationsByUserIdQuery } from "../../../api/opsAPI";
+import { useDismissNotificationMutation, useGetNotificationsByUserIdQuery } from "../../../api/opsAPI";
 import jwt_decode from "jwt-decode";
 import icons from "../../../uswds/img/sprite.svg";
 import Notification from "../Notification";
@@ -16,6 +16,8 @@ const NotificationCenter = () => {
         userId = decodedJwt["sub"];
     }
 
+    const [dismissNotification] = useDismissNotificationMutation();
+
     const {
         data: notifications,
         error,
@@ -28,6 +30,10 @@ const NotificationCenter = () => {
     if (error) {
         return <div>Oops, an error occurred</div>;
     }
+
+    const unreadNotifications = notifications
+        .filter((notification) => !notification.is_read)
+        .sort((a, b) => new Date(b.created_on) - new Date(a.created_on));
 
     Modal.setAppElement("#root");
 
@@ -65,9 +71,10 @@ const NotificationCenter = () => {
                         <div className={customStyles.headerSection}>
                             <h1 className="font-sans-lg">Notifications</h1>
                             <button
+                                id={"clear-all-button"}
                                 className={customStyles.clearButton}
                                 onClick={() => {
-                                    return true;
+                                    unreadNotifications.map((notification) => dismissNotification(notification.id));
                                 }}
                             >
                                 <svg
@@ -79,12 +86,15 @@ const NotificationCenter = () => {
                                 Clear
                             </button>
                         </div>
-                        {notifications.length > 0 && (
+                        {unreadNotifications.length > 0 && (
                             <ul className={customStyles.listStyle}>
-                                {notifications.map((notification) => (
+                                {unreadNotifications.map((notification) => (
                                     <Notification key={notification.id} data={notification} />
                                 ))}
                             </ul>
+                        )}
+                        {unreadNotifications.length === 0 && (
+                            <div style={{ padding: "20px" }}>There are no notifications.</div>
                         )}
                     </div>
                 </div>
