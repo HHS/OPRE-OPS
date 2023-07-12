@@ -6,6 +6,7 @@
         "strict": true,
         "noEmit": true,
         "module": "ES2015",
+        "jsx": "react",
         "typeRoots": ["./node_modules/@types"]
     },
     "$schema": "https://json.schemastore.org/tsconfig",

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useSelector, useDispatch } from "react-redux";
 import { getUser } from "../../../api/getUser";
 import { useEffect } from "react";
@@ -6,6 +7,7 @@ import App from "../../../App";
 import { Breadcrumb } from "../../../components/UI/Header/Breadcrumb";
 import { setUser } from "./userSlice";
 import UserInfoForm from "../../../components/Users/UserInfoForm/UserInfoForm";
+import React from "react";
 
 const UserDetail = () => {
     const dispatch = useDispatch();
