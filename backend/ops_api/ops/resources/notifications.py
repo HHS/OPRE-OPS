@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Optional, cast
@@ -5,14 +7,15 @@ from typing import Optional, cast
 import desert
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
-from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from marshmallow import ValidationError
 from models import Notification, OpsEventType, User
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.utils.auth import is_authorized, PermissionType, Permission
+from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
+from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy import select
 from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 from sqlalchemy.orm import InstrumentedAttribute
@@ -44,8 +47,8 @@ class NotificationResponse:
     is_read: bool
     created_by: int
     updated_by: int
-    created_on: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%f"})
-    updated_on: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%f"})
+    created_on: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
+    updated_on: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     title: Optional[str] = None
     message: Optional[str] = None
     recipient: Optional[Recipient] = None
@@ -113,8 +116,9 @@ class NotificationItemAPI(BaseItemAPI):
 
     def put_notification(self, id: int, message_prefix: str):
         existing_notification = current_app.db_session.get(Notification, id)
-        if existing_notification and not existing_notification.is_read and request.json.get("is_read"):
+        if is_acknowledging(existing_notification):
             with OpsEventHandler(OpsEventType.ACKNOWLEDGE_NOTIFICATION) as meta:
+                check_can_acknowledge(existing_notification)
                 notification_dict = self.handle_put(existing_notification, message_prefix, meta)
         else:
             notification_dict = self.handle_put(existing_notification, message_prefix)
@@ -158,8 +162,9 @@ class NotificationItemAPI(BaseItemAPI):
 
     def patch_notification(self, id: int, message_prefix: str):
         existing_notification = current_app.db_session.get(Notification, id)
-        if existing_notification and not existing_notification.is_read and request.json.get("is_read"):
+        if is_acknowledging(existing_notification):
             with OpsEventHandler(OpsEventType.ACKNOWLEDGE_NOTIFICATION) as meta:
+                check_can_acknowledge(existing_notification)
                 notification_dict = self.handle_patch(existing_notification, message_prefix, meta)
         else:
             notification_dict = self.handle_patch(existing_notification, message_prefix)
@@ -241,3 +246,14 @@ class NotificationListAPI(BaseListAPI):
         )
         result = current_app.db_session.execute(stmt).all()
         return make_response_with_headers(self._response_schema_collection.dump([item[0] for item in result]))
+
+
+def is_acknowledging(notification: Notification | None):
+    return notification and not notification.is_read and request.json.get("is_read")
+
+
+def check_can_acknowledge(notification):
+    token = verify_jwt_in_request()
+    user = get_user_from_token(token[1])
+    if notification and notification.recipient_id != user.id:
+        raise RuntimeError("Cannot acknowledge a notification for another user")

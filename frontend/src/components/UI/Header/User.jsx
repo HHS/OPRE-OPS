@@ -9,5 +9,15 @@ export const User = () => {
     const userId = decodedJwt["sub"];
     const { data: user } = useGetUserByOIDCIdQuery(userId);
     const isAuthorized = CheckAuth() && user;
-    return <span>{isAuthorized ? <Link to={`/users/${user?.id}`}>{user?.email}</Link> : <span></span>}</span>;
+    return (
+        <span>
+            {isAuthorized ? (
+                <Link className="text-primary margin-right-1" to={`/users/${user?.id}`}>
+                    {user?.email}
+                </Link>
+            ) : (
+                <span></span>
+            )}
+        </span>
+    );
 };
