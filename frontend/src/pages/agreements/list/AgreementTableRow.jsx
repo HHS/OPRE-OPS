@@ -8,7 +8,6 @@ import "./AgreementsList.scss";
 import { getUser } from "../../../api/getUser";
 import icons from "../../../uswds/img/sprite.svg";
 import { convertCodeForDisplay, formatDate } from "../../../helpers/utils";
-import TableTag from "../../../components/UI/PreviewTable/TableTag";
 
 export const AgreementTableRow = ({ agreement }) => {
     const [user, setUser] = useState({});
@@ -81,16 +80,22 @@ export const AgreementTableRow = ({ agreement }) => {
     };
 
     const ChangeIcons = ({ agreement }) => {
+        const agreement_editable = agreement?.budget_line_items.every(
+            (item) => item.status === "DRAFT" || item.status === "UNDER_REVIEW"
+        );
         return (
             <>
                 <div className="display-flex flex-align-center">
-                    <FontAwesomeIcon
-                        icon={faPen}
-                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
-                        title="edit"
-                        data-position="top"
-                        onClick={() => handleEditAgreement(agreement.id)}
-                    />
+                    {agreement_editable === true && (
+                        <FontAwesomeIcon
+                            icon={faPen}
+                            className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                            title="edit"
+                            data-position="top"
+                            onClick={() => handleEditAgreement(agreement.id)}
+                        />
+                    )}
+
                     <FontAwesomeIcon
                         icon={faTrash}
                         title="delete"
@@ -99,13 +104,15 @@ export const AgreementTableRow = ({ agreement }) => {
                         onClick={() => handleDeleteAgreement(agreement.id)}
                     />
 
-                    <svg
-                        className="usa-icon text-primary height-205 width-205 hover: cursor-pointer usa-tooltip"
-                        onClick={() => handleSubmitAgreementForApproval(agreement.id)}
-                        id={`submit-for-approval-${agreement.id}`}
-                    >
-                        <use xlinkHref={`${icons}#send`}></use>
-                    </svg>
+                    {agreement_editable === true && (
+                        <svg
+                            className="usa-icon text-primary height-205 width-205 hover: cursor-pointer usa-tooltip"
+                            onClick={() => handleSubmitAgreementForApproval(agreement.id)}
+                            id={`submit-for-approval-${agreement.id}`}
+                        >
+                            <use xlinkHref={`${icons}#send`}></use>
+                        </svg>
+                    )}
                 </div>
             </>
         );
