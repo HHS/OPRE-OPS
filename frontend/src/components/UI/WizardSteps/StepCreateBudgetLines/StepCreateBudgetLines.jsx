@@ -52,7 +52,7 @@ export const StepCreateBudgetLines = ({
     const [modalProps, setModalProps] = React.useState({});
     const [isEditMode, setIsEditMode] = React.useState(false);
     const [isReviewMode, setIsReviewMode] = React.useState(false);
-    const [pageErrors] = React.useState({});
+
     const {
         selected_can: selectedCan,
         entered_description: enteredDescription,
@@ -108,9 +108,6 @@ export const StepCreateBudgetLines = ({
                 break;
             case "review":
                 setIsReviewMode(true);
-                suite({
-                    new_budget_lines: newBudgetLines,
-                });
                 break;
             default:
                 return;
@@ -123,6 +120,13 @@ export const StepCreateBudgetLines = ({
     }, [formMode, newBudgetLines]);
 
     let res = suite.get();
+    const pageErrors = res.getErrors();
+
+    if (isReviewMode) {
+        suite({
+            new_budget_lines: newBudgetLines,
+        });
+    }
 
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
