@@ -41,6 +41,21 @@ paths:
               examples:
                 '0':
                   $ref: '#/components/examples/Agreements'
+    post:
+      summary: Create a new Agreement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agreements'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
   /api/v1/agreements/{agreement_id}:
     get:
       description: Get Agreement By Id
@@ -64,6 +79,40 @@ paths:
               examples:
                 '0':
                   $ref: '#/components/examples/Agreement'
+    put:
+      summary: Update an Agreement (Over-write)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agreement'
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+    patch:
+      summary: Update an Agreement (Merge)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agreement'
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
   /api/v1/cans/:
     get:
       description: Get CANs
@@ -879,6 +928,99 @@ paths:
         '500':
           description: Internal Server Error
 
+  /api/v1/notifications/:
+    get:
+      description: Get Notifications
+      parameters:
+        - name: user_id
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: oidc_id
+          in: query
+          schema:
+            type: string
+          example: '6dd69df5-b6ab-4f27-890a-e64dd1d7f1e6'
+        - name: is_read
+          in: query
+          schema:
+            type: boolean
+          example: True
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notifications'
+              examples:
+                '0':
+                  $ref: '#/components/examples/Notifications'
+
+
+  /api/v1/notifications/{id}:
+    get:
+      description: Get Notifications By Id
+      parameters:
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+
+    put:
+      summary: Update a Notification (Over-write)
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+    patch:
+      summary: Update a Notification (Merge)
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+
 components:
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
@@ -1210,6 +1352,57 @@ components:
       required:
         - title
 
+    Notifications:
+      description: OPS List of Notifications
+      type: array
+      items:
+        anyOf:
+          - $ref: "#/components/schemas/Notification"
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: 'Notification #1'
+        is_read:
+          type: boolean
+          example: True
+        message:
+          type: string
+          example: 'Message #1'
+        expires:
+          type: string
+          example: '2023-04-06'
+        created_by:
+          type: string
+        updated_by:
+          type: string
+        created_on:
+          type: string
+          example: '2023-04-06T19:02:38.409254'
+        updated_on:
+          type: string
+          example: '2023-04-06T19:02:38.409254'
+
+    NotificationRequest:
+      type: object
+      properties:
+        is_read:
+          type: boolean
+          example: True
+        title:
+          type: string
+          example: 'Notification #1'
+        message:
+          type: string
+          example: 'Message #1'
+        recipient_id:
+          type: integer
+          example: 1
 
   examples:
 
@@ -1352,75 +1545,75 @@ components:
         ]
     AGREEMENTS:
       value: |
-       [
-          {
-              "id": 1,
-              "created_by": null,
-              "created_on": "Fri, 17 Mar 2023 15:01:09 GMT",
-              "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
-              "name": "Using Innovative Data to Explore Racial and Ethnic Disparities in Human Services",
-              "research_project_id": 1,
-              "description":
-                  "This will be a contract to continue planned analyses to explore racial and ethnic disparities in Human Services.",
-              "agreement_type": "CONTRACT",
-              "project_officer": "Ivelisse Martinez-Beck",
-              "period_of_performance_start": "2021-01-01",
-              "period_of_performance_end": "2021-12-31",
-              procurement_shop: {
-                  id: 2,
-                  name: "Government Contracting Services",
-                  fee: 0,
-              },
-              budget_line_items: [
-                  {
-                      id: 123456,
-                      line_description: "LI 1",
-                      comments: "",
-                      can_id: 5,
-                      can_number: "G994426",
-                      agreement_id: 1,
-                      amount: 1000000.0,
-                      status: "EXECUTING",
-                      date_needed: "2111-1-11",
-                      psc_fee_amount: 0,
-                      created_by: "Carolyn Hsu",
-                      created_on: "2023-4-5",
-                      updated_on: "2023-4-15",
-                  },
-                  {
-                      id: 123457,
-                      line_description: "LI 2",
-                      comments: "",
-                      can_id: 5,
-                      can_number: "G994426",
-                      agreement_id: 1,
-                      amount: 1000000.0,
-                      status: "OBLIGATED",
-                      date_needed: "2222-2-22",
-                      psc_fee_amount: 0,
-                      created_by: "Carolyn Hsu",
-                      created_on: "2023-4-1",
-                      updated_on: "2023-4-15",
-                  },
-                  {
-                      id: 123458,
-                      line_description: "LI 3",
-                      comments: "",
-                      can_id: 5,
-                      can_number: "G994426",
-                      agreement_id: 1,
-                      amount: 1000000.0,
-                      status: "PLANNED",
-                      date_needed: "2333-3-13",
-                      psc_fee_amount: 0,
-                      created_by: "Carolyn Hsu",
-                      created_on: "2023-3-11",
-                      updated_on: "2023-4-15",
-                  },
-                ],
-          },
+        [
+           {
+               "id": 1,
+               "created_by": null,
+               "created_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+               "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+               "name": "Using Innovative Data to Explore Racial and Ethnic Disparities in Human Services",
+               "research_project_id": 1,
+               "description":
+                   "This will be a contract to continue planned analyses to explore racial and ethnic disparities in Human Services.",
+               "agreement_type": "CONTRACT",
+               "project_officer": "Ivelisse Martinez-Beck",
+               "period_of_performance_start": "2021-01-01",
+               "period_of_performance_end": "2021-12-31",
+               procurement_shop: {
+                   id: 2,
+                   name: "Government Contracting Services",
+                   fee: 0,
+               },
+               budget_line_items: [
+                   {
+                       id: 123456,
+                       line_description: "LI 1",
+                       comments: "",
+                       can_id: 5,
+                       can_number: "G994426",
+                       agreement_id: 1,
+                       amount: 1000000.0,
+                       status: "EXECUTING",
+                       date_needed: "2111-1-11",
+                       psc_fee_amount: 0,
+                       created_by: "Carolyn Hsu",
+                       created_on: "2023-4-5",
+                       updated_on: "2023-4-15",
+                   },
+                   {
+                       id: 123457,
+                       line_description: "LI 2",
+                       comments: "",
+                       can_id: 5,
+                       can_number: "G994426",
+                       agreement_id: 1,
+                       amount: 1000000.0,
+                       status: "OBLIGATED",
+                       date_needed: "2222-2-22",
+                       psc_fee_amount: 0,
+                       created_by: "Carolyn Hsu",
+                       created_on: "2023-4-1",
+                       updated_on: "2023-4-15",
+                   },
+                   {
+                       id: 123458,
+                       line_description: "LI 3",
+                       comments: "",
+                       can_id: 5,
+                       can_number: "G994426",
+                       agreement_id: 1,
+                       amount: 1000000.0,
+                       status: "PLANNED",
+                       date_needed: "2333-3-13",
+                       psc_fee_amount: 0,
+                       created_by: "Carolyn Hsu",
+                       created_on: "2023-3-11",
+                       updated_on: "2023-4-15",
+                   },
+                 ],
+           },
 
-        ];
+         ];
     Agreements:
       value: |
         [{
@@ -1556,6 +1749,11 @@ components:
               "status": "PLANNED",
               "updated_on": "2023-04-06T19:02:38.409254"
           }
+        ]
+
+    Notifications:
+      value: |
+        [
         ]
 
 

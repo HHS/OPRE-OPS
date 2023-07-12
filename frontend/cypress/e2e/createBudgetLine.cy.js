@@ -59,6 +59,10 @@ const completeStepOne = () => {
     cy.get("#agreement").should("not.be.disabled");
     cy.get("#agreement").select(1);
     cy.get('[data-cy="agreement-summary-card"]').should("exist");
+    cy.get('[data-cy="agreement-summary-card"]')
+        .should("contain", "Contract #1: African American Child and Family Research Center")
+        .and("contain", "Test description")
+        .and("contain", "Chris Fortunato");
     cy.get('[data-cy="continue-button-step-one"]').as("continue-btn").should("not.disabled");
     cy.get("@continue-btn").click();
 };
@@ -106,7 +110,7 @@ const completeCreateBudgetLines = () => {
     cy.get("@table-rows").should("have.length", 4);
     cy.get("@tsc").should("contain", "Draft Total").and("contain", "$ 444,444.00");
     //post the budget lines
-    cy.get("[data-cy='step-two-continue']").click();
+    cy.get("[data-cy='continue-btn']").click();
     cy.wait("@postBudgetLines")
         .then((interception) => {
             const { statusCode } = interception.response;

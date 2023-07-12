@@ -8,6 +8,7 @@ import userSlice from "./pages/users/detail/userSlice";
 import portfolioSlice from "./pages/portfolios/detail/portfolioSlice";
 import researchProjectSlice from "./pages/researchProjects/detail/researchProjectSlice";
 import ResearchProjectFundingSlice from "./components/Portfolios/ResearchProjects/ResearchProjectFundingSlice";
+import alertSlice from "./components/UI/Alert/alertSlice";
 import { opsApi } from "./api/opsAPI";
 
 const rootReducer = combineReducers({
@@ -21,6 +22,7 @@ const rootReducer = combineReducers({
     userDetail: userSlice,
     researchProject: researchProjectSlice,
     researchProjectFunding: ResearchProjectFundingSlice,
+    alert: alertSlice,
 });
 
 export const setupStore = (preloadedState = {}) => {

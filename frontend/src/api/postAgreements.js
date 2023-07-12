@@ -6,16 +6,10 @@ export const postAgreement = async (item) => {
     const data = { ...item };
     const newAgreement = {
         ...data,
-        agreement_type: data.selected_agreement_type,
-        incumbent: data.incumbent_entered,
         number: "",
     };
 
     delete newAgreement.id;
-    delete newAgreement.selected_agreement_reason;
-    delete newAgreement.selected_agreement_type;
-    delete newAgreement.selected_product_service_code;
-    delete newAgreement.incumbent_entered;
 
     const responseData = await ApplicationContext.get()
         .helpers()

@@ -24,6 +24,7 @@ import CreateAgreements from "./pages/agreements";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
 import { CreateProject } from "./pages/projects/CreateProject";
 import { AgreementsList } from "./pages/agreements/list/AgreementsList";
+import EditAgreement from "./pages/agreements/EditAgreement";
 import { ApproveAgreement } from "./pages/agreements/approve/ApproveAgreement";
 
 const router = createBrowserRouter(
@@ -134,6 +135,7 @@ const router = createBrowserRouter(
                 <Route path="/agreements/create" element={<CreateAgreements />} />
                 <Route path="/projects/create" element={<CreateProject />} />
                 <Route path="/agreements/" element={<AgreementsList />} />
+                <Route path="/agreements/edit/:id" element={<EditAgreement />} />
                 <Route path="/agreements/approve/:id" element={<ApproveAgreement />} />
             </Route>
         </>

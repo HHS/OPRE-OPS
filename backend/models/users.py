@@ -57,8 +57,14 @@ class User(BaseModel):
         secondary="contract_support_contacts",
     )
 
+    notifications = relationship(
+        "Notification", foreign_keys="Notification.recipient_id"
+    )
+
+
     def get_user_id(self):
         return self.id
+
 
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]

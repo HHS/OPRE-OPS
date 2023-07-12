@@ -1,4 +1,3 @@
-import { func, bool, arrayOf, shape, string, number } from "prop-types";
 import { useState, Fragment } from "react";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -10,6 +9,16 @@ import { formatDate, loggedInName } from "../../../helpers/utils";
 import TableTag from "./TableTag";
 import "./PreviewTable.scss";
 
+/**
+ * A table component that displays budget lines.
+ * @param {Object} props - The component props.
+ * @param {Array<any>} [props.budgetLinesAdded] - An array of budget lines to display. - optional
+ * @param {Function} [props.handleSetBudgetLineForEditing ]- A function to handle editing a budget line. - optional
+ * @param {Function} [props.handleDeleteBudgetLine] - A function to handle deleting a budget line. - optional
+ * @param {Function} [props.handleDuplicateBudgetLine] - A function to handle duplicating a budget line. - optional
+ * @param {Boolean} [props.readOnly] - A flag to indicate if the table is read-only.
+ * @returns {JSX.Element} - The rendered table component.
+ */
 export const PreviewTable = ({
     budgetLinesAdded = [],
     handleSetBudgetLineForEditing = () => {},
@@ -229,29 +238,3 @@ export const PreviewTable = ({
 };
 
 export default PreviewTable;
-
-PreviewTable.propTypes = {
-    handleDeleteBudgetLine: func.isRequired,
-    readOnly: bool,
-    budgetLines: arrayOf(
-        shape({
-            id: number.isRequired,
-            line_description: string.isRequired,
-            created_on: string.isRequired,
-            date_needed: string.isRequired,
-            can: shape({
-                number: string.isRequired,
-            }).isRequired,
-            amount: number.isRequired,
-            psc_fee_amount: number.isRequired,
-            status: string.isRequired,
-            created_by: string,
-            comments: string.isRequired,
-        })
-    ),
-    budgetLinesAdded: arrayOf(
-        shape({
-            id: number.isRequired,
-        })
-    ),
-};

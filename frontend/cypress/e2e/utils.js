@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 import { login } from "../../src/components/Auth/authSlice";
 
 // Define at the top of the spec file or just import it

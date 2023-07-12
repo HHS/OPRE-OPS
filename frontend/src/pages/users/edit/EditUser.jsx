@@ -7,7 +7,6 @@ import App from "../../../App";
 import { Breadcrumb } from "../../../components/UI/Header/Breadcrumb";
 import { setUser } from "./userSlice";
 import UserInfoForm from "../../../components/Users/UserInfoForm/UserInfoForm";
-import React from "react";
 
 const UserDetail = () => {
     const dispatch = useDispatch();

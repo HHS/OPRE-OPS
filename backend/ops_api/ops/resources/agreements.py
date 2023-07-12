@@ -3,14 +3,22 @@ from dataclasses import fields as dc_fields
 from typing import ClassVar, Optional
 
 import desert
-from flask import Response, current_app, jsonify, request
+from flask import Response, current_app, request
 from flask.views import MethodView
-from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
+from flask_jwt_extended import verify_jwt_in_request
 from marshmallow import Schema, ValidationError, fields
 from models import ContractType, OpsEventType, User
 from models.base import BaseModel
-from models.cans import Agreement, AgreementReason, AgreementType, ContractAgreement, ProductServiceCode
+from models.cans import (
+    Agreement,
+    AgreementReason,
+    AgreementType,
+    BudgetLineItemStatus,
+    ContractAgreement,
+    ProductServiceCode,
+)
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
+from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -132,28 +140,15 @@ class AgreementItemAPI(BaseItemAPI):
         super().__init__(model)
 
     @override
-    @jwt_required()
+    @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self, id: int) -> Response:
-        identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_AGREEMENT"])
-
-        if is_authorized:
-            response = self._get_item_with_try(id)
-
-        else:
-            response = make_response_with_headers({}, 401)
-
+        response = self._get_item_with_try(id)
         return response
 
     @override
-    @jwt_required()
+    @is_authorized(PermissionType.PUT, Permission.AGREEMENT)
     def put(self, id: int) -> Response:
         message_prefix = f"PUT to {ENDPOINT_STRING}"
-
-        identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["PUT_AGREEMENT"])
-        if not is_authorized:
-            return make_response_with_headers({}, 401)
 
         try:
             with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
@@ -196,14 +191,9 @@ class AgreementItemAPI(BaseItemAPI):
             return make_response_with_headers({}, 500)
 
     @override
-    @jwt_required()
+    @is_authorized(PermissionType.PATCH, Permission.AGREEMENT)
     def patch(self, id: int) -> Response:
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
-
-        identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["PATCH_AGREEMENT"])
-        if not is_authorized:
-            return make_response_with_headers({}, 401)
 
         try:
             with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
@@ -244,6 +234,36 @@ class AgreementItemAPI(BaseItemAPI):
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
 
+    @override
+    @is_authorized(PermissionType.DELETE, Permission.AGREEMENT)
+    def delete(self, id: int) -> Response:
+        message_prefix = f"DELETE from {ENDPOINT_STRING}"
+
+        try:
+            with OpsEventHandler(OpsEventType.DELETE_AGREEMENT) as meta:
+                agreement: Agreement = self._get_item(id)
+
+                if not agreement:
+                    raise RuntimeError(f"Invalid Agreement id: {id}.")
+                elif agreement.agreement_type != AgreementType.CONTRACT:
+                    raise RuntimeError(f"Invalid Agreement type: {agreement.agreement_type}.")
+                elif any(bli.status != BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items):
+                    raise RuntimeError(f"Agreement {id} has budget line items not in draft status.")
+
+                current_app.db_session.delete(agreement)
+                current_app.db_session.commit()
+
+                meta.metadata.update({"Deleted Agreement": id})
+
+                return make_response_with_headers({"message": "Agreement deleted", "id": agreement.id}, 200)
+
+        except RuntimeError as e:
+            return make_response_with_headers({"message": f"{type(e)}: {e!s}", "id": agreement.id}, 400)
+
+        except SQLAlchemyError as se:
+            current_app.logger.error(f"{message_prefix}: {se}")
+            return make_response_with_headers({}, 500)
+
 
 class AgreementListAPI(BaseListAPI):
     def __init__(self, model: BaseModel = Agreement):
@@ -265,33 +285,34 @@ class AgreementListAPI(BaseListAPI):
             case {**filter_args}:
                 pass
 
+        status: str | None = filter_args.pop("status", None)
+
         for key, value in filter_args.items():
             query_helper.add_column_equals(Agreement.get_class_field(key), value)
 
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")
 
-        return stmt
+        return stmt, status
 
     @override
-    @jwt_required()
+    @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
-        identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_AGREEMENTS"])
+        stmt, status = self._get_query(request.args)
 
-        if is_authorized:
-            stmt = self._get_query(request.args)
+        result = current_app.db_session.execute(stmt).all()
 
-            result = current_app.db_session.execute(stmt).all()
+        items = (i for item in result for i in item)
 
-            response = make_response_with_headers([i.to_dict() for item in result for i in item])
-        else:
-            response = make_response_with_headers({}, 401)
+        if status:
+            items = (i for i in items if i.status == status)
+
+        response = make_response_with_headers([i.to_dict() for i in items])
 
         return response
 
     @override
-    @jwt_required()
+    @is_authorized(PermissionType.POST, Permission.AGREEMENT)
     def post(self) -> Response:
         message_prefix = f"POST to {ENDPOINT_STRING}"
         try:
@@ -360,14 +381,18 @@ class AgreementListAPI(BaseListAPI):
 
 
 class AgreementReasonListAPI(MethodView):
+    @override
+    @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
         reasons = [item.name for item in AgreementReason]
-        return jsonify(reasons)
+        return make_response_with_headers(reasons)
 
 
 class AgreementTypeListAPI(MethodView):
+    @override
+    @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
-        return jsonify([e.name for e in AgreementType])
+        return make_response_with_headers([e.name for e in AgreementType])
 
 
 def _get_user_list(data: Any):
@@ -384,7 +409,7 @@ def _get_user_list(data: Any):
 
 def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
     for item in data:
-        if item in {"agreement_type", "agreement_reason"}:
+        if item in {"agreement_type"}:
             pass
         elif item not in {"team_members", "support_contacts"}:
             setattr(agreement, item, data[item])

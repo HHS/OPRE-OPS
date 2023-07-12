@@ -1,8 +1,37 @@
+import React from "react";
 import PropTypes from "prop-types";
-import CurrencyFormat from "react-currency-format";
+import classnames from "vest/classnames";
 import CanSelect from "../CanSelect";
 import DesiredAwardDate from "../DesiredAwardDate";
+import suite from "./suite";
+import Input from "../Input";
+import TextArea from "../TextArea/TextArea";
+import CurrencyInput from "./CurrencyInput";
 
+/**
+ * A form for creating or editing a budget line.
+ * @param {Object} props - The component props.
+ * @param {Object} props.selectedCan - The currently selected CAN.
+ * @param {string} props.enteredDescription - The entered budget line description.
+ * @param {number} props.enteredAmount - The entered budget line amount.
+ * @param {string|number} props.enteredMonth - The entered budget line desired award month.
+ * @param {string|number} props.enteredDay - The entered budget line desired award day.
+ * @param {string|number} props.enteredYear - The entered budget line desired award year.
+ * @param {string} props.enteredComments - The entered budget line comments.
+ * @param {boolean} props.isEditing - Whether the form is in edit mode.
+ * @param {function} props.setEnteredDescription - A function to set the entered budget line description.
+ * @param {function} props.setSelectedCan - A function to set the selected CAN.
+ * @param {function} props.setEnteredAmount - A function to set the entered budget line amount.
+ * @param {function} props.setEnteredMonth - A function to set the entered budget line desired award month.
+ * @param {function} props.setEnteredDay - A function to set the entered budget line desired award day.
+ * @param {function} props.setEnteredYear - A function to set the entered budget line desired award year.
+ * @param {function} props.setEnteredComments - A function to set the entered budget line comments.
+ * @param {function} props.handleEditForm - A function to handle editing the budget line form.
+ * @param {function} props.handleSubmitForm - A function to handle submitting the budget line form.
+ * @param {function} props.handleResetForm - A function to handle resetting the budget line form.
+ * @param {string} props.formMode - The form mode.
+ * @returns {JSX.Element} - The rendered component.
+ */
 export const CreateBudgetLinesForm = ({
     selectedCan,
     enteredDescription,
@@ -22,26 +51,97 @@ export const CreateBudgetLinesForm = ({
     handleEditForm = () => {},
     handleSubmitForm = () => {},
     handleResetForm = () => {},
+    formMode,
 }) => {
+    const [, setIsEditMode] = React.useState(false);
+    const [isReviewMode, setIsReviewMode] = React.useState(false);
+
+    let res = suite.get();
+
+    const cn = classnames(suite.get(), {
+        invalid: "usa-form-group--error",
+        valid: "success",
+        warning: "warning",
+    });
+    const isFormComplete =
+        selectedCan && enteredDescription && enteredAmount && enteredMonth && enteredDay && enteredYear;
+    React.useEffect(() => {
+        switch (formMode) {
+            case "edit":
+                setIsEditMode(true);
+                break;
+            case "review":
+                setIsReviewMode(true);
+                break;
+            default:
+                return;
+        }
+        return () => {
+            setIsReviewMode(false);
+            setIsEditMode(false);
+            suite.reset();
+        };
+    }, [formMode]);
+
+    // validate all budgetline fields if in review mode and is editing
+    if (isReviewMode && isEditing) {
+        suite({
+            selectedCan,
+            enteredDescription,
+            enteredAmount,
+            enteredMonth,
+            enteredDay,
+            enteredYear,
+        });
+    }
+
+    const runValidate = (name, value) => {
+        suite(
+            {
+                selectedCan,
+                enteredDescription,
+                enteredAmount,
+                enteredMonth,
+                enteredDay,
+                enteredYear,
+                ...{ [name]: value },
+            },
+            name
+        );
+    };
+
     return (
         <form className="grid-row grid-gap">
             <div className="grid-col-4">
                 <div className="usa-form-group">
-                    <label className="usa-label" htmlFor="bl-description">
-                        Description
-                    </label>
-                    <input
-                        className="usa-input"
-                        id="bl-description"
-                        name="bl-description"
-                        type="text"
+                    <Input
+                        name="enteredDescription"
+                        label="Description"
+                        messages={res.getErrors("enteredDescription")}
+                        className={cn("enteredDescription")}
                         value={enteredDescription || ""}
-                        onChange={(e) => setEnteredDescription(e.target.value)}
-                        required
+                        onChange={(name, value) => {
+                            setEnteredDescription(value);
+                            if (isReviewMode) {
+                                runValidate(name, value);
+                            }
+                        }}
                     />
                 </div>
                 <div className="usa-form-group">
-                    <CanSelect selectedCan={selectedCan} setSelectedCan={setSelectedCan} />
+                    <CanSelect
+                        name="selectedCan"
+                        label="CAN"
+                        messages={res.getErrors("selectedCan")}
+                        className={cn("selectedCan")}
+                        selectedCan={selectedCan}
+                        setSelectedCan={setSelectedCan}
+                        onChange={(name, value) => {
+                            if (isReviewMode) {
+                                runValidate(name, value);
+                            }
+                        }}
+                    />
                 </div>
             </div>
             <div className="grid-col-4">
@@ -52,63 +152,53 @@ export const CreateBudgetLinesForm = ({
                     setEnteredDay={setEnteredDay}
                     enteredYear={enteredYear}
                     setEnteredYear={setEnteredYear}
+                    isReviewMode={isReviewMode}
+                    runValidate={runValidate}
+                    res={res}
+                    cn={cn}
                 />
-                <div className="usa-form-group">
-                    <label className="usa-label" htmlFor="bl-amount">
-                        Amount
-                    </label>
-                    <CurrencyFormat
-                        id="bl-amount"
-                        value={enteredAmount || ""}
-                        className="usa-input"
-                        name="bl-amount"
-                        thousandSeparator={true}
-                        decimalScale={2}
-                        renderText={(value) => value}
-                        placeholder="$"
-                        onValueChange={(values) => {
-                            const { floatValue } = values;
-                            setEnteredAmount(floatValue);
-                        }}
-                    />
-                </div>
+                <CurrencyInput
+                    name="enteredAmount"
+                    label="Amount"
+                    messages={res.getErrors("enteredAmount")}
+                    className={cn("enteredAmount")}
+                    value={enteredAmount || ""}
+                    setEnteredAmount={setEnteredAmount}
+                    onChange={(name, value) => {
+                        if (isReviewMode) {
+                            runValidate(name, value);
+                        }
+                    }}
+                />
             </div>
             <div className="grid-col-4">
-                <div className="usa-character-count">
-                    <div className="usa-form-group">
-                        <label className="usa-label" htmlFor="with-hint-textarea">
-                            Notes (optional)
-                        </label>
-                        <span id="with-hint-textarea-hint" className="usa-hint">
-                            Maximum 150 characters
-                        </span>
-                        <textarea
-                            className="usa-textarea usa-character-count__field"
-                            id="with-hint-textarea"
-                            maxLength="150"
-                            name="with-hint-textarea"
-                            rows="5"
-                            aria-describedby="with-hint-textarea-info with-hint-textarea-hint"
-                            style={{ height: "7rem" }}
-                            value={enteredComments || ""}
-                            onChange={(e) => setEnteredComments(e.target.value)}
-                        ></textarea>
-                    </div>
-                    <span id="with-hint-textarea-info" className="usa-character-count__message sr-only">
-                        You can enter up to 150 characters
-                    </span>
-                </div>
+                <TextArea
+                    name="enteredComments"
+                    label="Notes (optional)"
+                    value={enteredComments || ""}
+                    hintMsg="Maximum 150 characters"
+                    onChange={(name, value) => {
+                        setEnteredComments(value);
+                    }}
+                />
+
                 {isEditing ? (
                     <div className="display-flex flex-justify-end">
                         <button
                             className="usa-button usa-button--unstyled margin-top-2 margin-right-2"
-                            onClick={handleResetForm}
+                            onClick={() => {
+                                handleResetForm();
+                                if (isReviewMode) {
+                                    suite.reset();
+                                }
+                            }}
                         >
                             Cancel
                         </button>
                         <button
                             className="usa-button usa-button--outline margin-top-2 margin-right-0"
                             data-cy="update-budget-line"
+                            disabled={res.hasErrors() || !isFormComplete}
                             onClick={handleEditForm}
                         >
                             Update Budget Line
@@ -118,6 +208,7 @@ export const CreateBudgetLinesForm = ({
                     <button
                         id="add-budget-line"
                         className="usa-button usa-button--outline margin-top-2 float-right margin-right-0"
+                        disabled={isReviewMode && (res.hasErrors() || !isFormComplete)}
                         onClick={handleSubmitForm}
                     >
                         Add Budget Line

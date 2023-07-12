@@ -1,4 +1,4 @@
-/// <reference types="Cypress"/>
+/// <reference types="cypress" />
 
 import { terminalLog, testLogin } from "./utils";
 
@@ -35,33 +35,43 @@ it("can create an agreement", () => {
     // test for rendered ProjectSummaryCard
     cy.get("dt").should("contain", "Project");
     cy.get("dd").should("contain", "Human Services Interoperability Support");
+    // test validation
+    cy.get("#agreement_type").select("CONTRACT");
+    cy.get("#name").type("Test Agreement Title");
+    cy.get("#name").clear();
+    cy.get("#name").blur();
+    cy.get("#input-error-message").should("contain", "This is required information");
+    cy.get("[data-cy='continue-btn']").should("be.disabled");
+    cy.get("[data-cy='save-draft-btn']").should("be.disabled");
+    cy.get("#name").type("Test Agreement Title");
+    cy.get("#input-error-message").should("not.exist");
+    cy.get("[data-cy='continue-btn']").should("not.be.disabled");
+    cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");
 
-    cy.get("#agreement-type-options").select("CONTRACT");
-    cy.get("#agreement-title").type("Test Agreement Title");
-    cy.get("#agreement-description").type("Test Agreement Description");
-    cy.get("#product-service-code-options").select("Other Scientific and Technical Consulting Services");
+    cy.get("#description").type("Test Agreement Description");
+    cy.get("#product_service_code_id").select("Other Scientific and Technical Consulting Services");
     cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
     cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
-    cy.get("#reason-for-agreement-select").select("NEW_REQ");
+    cy.get("#agreement_reason").select("NEW_REQ");
 
     // Select Project Officer
     cy.get("#project-officer-select-toggle-list").click();
-    cy.get("#project-officer-select").invoke("show");
+    cy.get("#project-officer-select-input").invoke("show");
     cy.get("#users--list").invoke("show");
     cy.get("li").contains("Chris Fortunato").click();
 
     // Skip Select Team Members for now - something is wrong with the select
-    cy.get("#with-hint-textarea").type("This is a note.");
-    cy.get("#continue").click();
+    cy.get("#agreementNotes").type("This is a note.");
+    cy.get("[data-cy='continue-btn']").click();
 
     // Add a new budget line item
-    cy.get("#bl-description").type("Test BLI Description");
-    cy.get("#procurement_month").select("01 - Jan");
-    cy.get("#procurement_day").type("1");
-    cy.get("#procurement_year").type("2024");
-    cy.get("#can-select").type("G99MVT3");
-    cy.get("#bl-amount").type("1000000");
-    cy.get("#with-hint-textarea").type("Something something note something.");
+    cy.get("#enteredDescription").type("Test BLI Description");
+    cy.get("#enteredMonth").select("01 - Jan");
+    cy.get("#enteredDay").type("1");
+    cy.get("#enteredYear").type("2024");
+    cy.get("#selectedCan").type("G99MVT3");
+    cy.get("#enteredAmount").type("1000000");
+    cy.get("#enteredComments").type("Something something note something.");
     cy.get("#add-budget-line").click();
 
     // Duplicate budget line item
@@ -91,6 +101,7 @@ it("can create an agreement", () => {
             expect(body.message).to.equal("Agreement created");
         })
         .then(cy.log);
+    cy.get("h1").should("exist");
 });
 
 it("should handle cancelling out of workflow on step 1", () => {
@@ -102,6 +113,7 @@ it("should handle cancelling out of workflow on step 1", () => {
     cy.get('[data-cy="confirm-action"]').click();
     // check that we are back on the home page
     cy.url().should("eq", Cypress.config().baseUrl + "/");
+    cy.get("h1").should("exist");
 });
 
 it("should handle cancelling out of workflow on step 2", () => {
@@ -113,15 +125,16 @@ it("should handle cancelling out of workflow on step 2", () => {
     // Step Two - Create an Agreement
     cy.get("dt").should("contain", "Project");
     cy.get("dd").should("contain", "Human Services Interoperability Support");
-    cy.get("#agreement-type-options").select("CONTRACT");
-    cy.get("#agreement-title").type("Test Agreement Title");
-    cy.get("#agreement-description").type("Test Agreement Description");
-    cy.get("#product-service-code-options").select("Other Scientific and Technical Consulting Services");
+    cy.get("#agreement_type").select("CONTRACT");
+    cy.get("#name").type("Test Agreement Title");
+    cy.get("#description").type("Test Agreement Description");
+    cy.get("#product_service_code_id").select("Other Scientific and Technical Consulting Services");
     cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
-    cy.get("#reason-for-agreement-select").select("NEW_REQ");
+    cy.get("#agreement_reason").select("NEW_REQ");
     // cancel out of workflow
     cy.get('[data-cy="cancel-button"]').click();
     cy.get('[data-cy="confirm-action"]').click();
     // check that we are back on the agreements page
-    cy.url().should("eq", Cypress.config().baseUrl + "/agreements/");
+    cy.url().should("eq", Cypress.config().baseUrl + "/agreements");
+    cy.get("h1").should("exist");
 });

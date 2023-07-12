@@ -1,19 +1,41 @@
-import PropTypes from "prop-types";
+import React from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
+import { setIsActive, clearState } from "./alertSlice";
 
 /**
  * A component that displays an alert.
- * @param {object} props - The component props.
- * @param {("success"|"warning"|"error")} props.type - The type of the alert to be styled.
- * @param {string} props.heading - The heading of the alert.
- * @param {string} props.children - The message of the alert.
- * @param {function} props.setIsAlertActive - A function that sets whether the alert is active.
- * @returns {JSX.Element} The JSX element to render.
+ * @param {Object} props - The component props.
+ * @param {React.JSX.Element} [props.children] - The JSX children to render. (optional)
+ * @returns {React.JSX.Element} The JSX element to render.
  * @see {@link https://designsystem.digital.gov/components/alerts/}
  */
-export const Alert = ({ type, heading, children, setIsAlertActive }) => {
+export const Alert = ({ children }) => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const heading = useSelector((state) => state.alert.heading);
+    const message = useSelector((state) => state.alert.message);
+    const type = useSelector((state) => state.alert.type);
+    const redirectUrl = useSelector((state) => state.alert.redirectUrl);
     let classNames = "usa-alert margin-left-neg-4 margin-right-neg-4";
+
+    React.useEffect(() => {
+        if (redirectUrl) {
+            navigate(redirectUrl);
+        }
+
+        const showAlert = async () => {
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            window.scrollTo(0, 0);
+
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+            dispatch(clearState());
+        };
+
+        showAlert();
+    }, [navigate, dispatch, redirectUrl]);
 
     switch (type) {
         case "success":
@@ -29,29 +51,24 @@ export const Alert = ({ type, heading, children, setIsAlertActive }) => {
     }
 
     return (
-        <div className={classNames}>
+        <div className={classNames} role="status" data-cy="alert">
             <div className="usa-alert__body display-flex flex-justify">
                 <div>
                     <h1 className="usa-alert__heading">{heading}</h1>
-                    <p className="usa-alert__text">{children}</p>
+                    <p className="usa-alert__text">{message}</p>
+                    {children}
                 </div>
+
                 <FontAwesomeIcon
                     icon={faClose}
                     className="height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
                     title="close"
                     data-position="top"
-                    onClick={() => setIsAlertActive(false)}
+                    onClick={() => dispatch(setIsActive(false))}
                 />
             </div>
         </div>
     );
-};
-
-Alert.propTypes = {
-    type: PropTypes.oneOf(["success", "warning", "error"]),
-    heading: PropTypes.string.isRequired,
-    children: PropTypes.node,
-    setIsAlertActive: PropTypes.func.isRequired,
 };
 
 export default Alert;

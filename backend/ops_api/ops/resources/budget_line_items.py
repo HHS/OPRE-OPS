@@ -5,8 +5,8 @@ from typing import Optional
 
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
-from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
-from marshmallow import ValidationError
+from flask_jwt_extended import verify_jwt_in_request
+from marshmallow import Schema, ValidationError
 from models import BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
@@ -17,6 +17,7 @@ from ops_api.ops.resources.budget_line_item_schemas import (
     POSTRequestBody,
     QueryParameters,
 )
+from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -50,20 +51,14 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         return response
 
     @override
-    @jwt_required()
+    @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
     def get(self, id: int) -> Response:
-        identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_BUDGET_LINE_ITEM"])
-
-        if is_authorized:
-            response = self._get_item_with_try(id)
-        else:
-            response = make_response_with_headers({}, 401)
+        response = self._get_item_with_try(id)
 
         return response
 
     @override
-    @jwt_required()
+    @is_authorized(PermissionType.PUT, Permission.BUDGET_LINE_ITEM)
     def put(self, id: int) -> Response:
         message_prefix = f"PUT to {ENDPOINT_STRING}"
         try:
@@ -71,14 +66,22 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 self._put_schema.context["id"] = id
                 self._put_schema.context["method"] = "PUT"
 
-                data = self._put_schema.dump(self._put_schema.load(request.json))
-                data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
-                data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
+                if request.json.get("status") == BudgetLineItemStatus.UNDER_REVIEW.name:
+                    with OpsEventHandler(OpsEventType.SEND_BLI_FOR_APPROVAL) as approval_meta:
+                        data = validate_and_normalize_request_data_for_put(self._put_schema)
+                        budget_line_item = self.update_and_commit_budget_line_item(data, id)
 
-                budget_line_item = update_budget_line_item(data, id)
+                        approval_meta.metadata.update({"bli": budget_line_item.to_dict()})
+                        approval_meta.metadata.update({"agreement": budget_line_item.agreement.to_dict()})
+                        current_app.logger.info(
+                            f"{message_prefix}: BLI Sent For Approval: {budget_line_item.to_dict()}"
+                        )
+                else:
+                    data = validate_and_normalize_request_data_for_put(self._put_schema)
+                    budget_line_item = self.update_and_commit_budget_line_item(data, id)
 
                 bli_dict = self._response_schema.dump(budget_line_item)
-                meta.metadata.update({"updated_bli": bli_dict})
+                meta.metadata.update({"bli": bli_dict})
                 current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
 
                 return make_response_with_headers(bli_dict, 200)
@@ -94,7 +97,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             return make_response_with_headers({}, 500)
 
     @override
-    @jwt_required()
+    @is_authorized(PermissionType.PATCH, Permission.BUDGET_LINE_ITEM)
     def patch(self, id: int) -> Response:
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
         try:
@@ -102,22 +105,22 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 self._patch_schema.context["id"] = id
                 self._patch_schema.context["method"] = "PATCH"
 
-                data = self._patch_schema.dump(self._patch_schema.load(request.json))
-                data = {
-                    k: v for (k, v) in data.items() if k in request.json
-                }  # only keep the attributes from the request body
-                if "status" in data:
-                    data["status"] = BudgetLineItemStatus[data["status"]]
-                if "date_needed" in data:
-                    data["date_needed"] = date.fromisoformat(data["date_needed"])
+                if request.json.get("status") == BudgetLineItemStatus.UNDER_REVIEW.name:
+                    with OpsEventHandler(OpsEventType.SEND_BLI_FOR_APPROVAL) as approval_meta:
+                        data = validate_and_normalize_request_data_for_patch(self._patch_schema)
+                        budget_line_item = self.update_and_commit_budget_line_item(data, id)
 
-                budget_line_item = update_budget_line_item(data, id)
-
-                current_app.db_session.add(budget_line_item)
-                current_app.db_session.commit()
+                        approval_meta.metadata.update({"bli": budget_line_item.to_dict()})
+                        approval_meta.metadata.update({"agreement": budget_line_item.agreement.to_dict()})
+                        current_app.logger.info(
+                            f"{message_prefix}: BLI Sent For Approval: {budget_line_item.to_dict()}"
+                        )
+                else:
+                    data = validate_and_normalize_request_data_for_patch(self._patch_schema)
+                    budget_line_item = self.update_and_commit_budget_line_item(data, id)
 
                 bli_dict = self._response_schema.dump(budget_line_item)
-                meta.metadata.update({"updated_bli": bli_dict})
+                meta.metadata.update({"bli": bli_dict})
                 current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
 
                 return make_response_with_headers(bli_dict, 200)
@@ -131,6 +134,12 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
+
+    def update_and_commit_budget_line_item(self, data, id):
+        budget_line_item = update_budget_line_item(data, id)
+        current_app.db_session.add(budget_line_item)
+        current_app.db_session.commit()
+        return budget_line_item
 
 
 class BudgetLineItemsListAPI(BaseListAPI):
@@ -166,41 +175,35 @@ class BudgetLineItemsListAPI(BaseListAPI):
         return stmt
 
     @override
-    @jwt_required()
+    @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
     def get(self) -> Response:
         message_prefix = f"GET to {ENDPOINT_STRING}"
-        identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_BUDGET_LINE_ITEMS"])
+        try:
+            data = self._get_schema.dump(self._get_schema.load(request.args))
 
-        if is_authorized:
-            try:
-                data = self._get_schema.dump(self._get_schema.load(request.args))
+            data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
+            data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
 
-                data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
-                data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
+            stmt = self._get_query(data.get("can_id"), data.get("agreement_id"), data.get("status"))
 
-                stmt = self._get_query(data.get("can_id"), data.get("agreement_id"), data.get("status"))
+            result = current_app.db_session.execute(stmt).all()
 
-                result = current_app.db_session.execute(stmt).all()
-
-                response = make_response_with_headers(self._response_schema_collection.dump([bli[0] for bli in result]))
-            except (KeyError, RuntimeError, PendingRollbackError) as re:
-                current_app.logger.error(f"{message_prefix}: {re}")
-                return make_response_with_headers({}, 400)
-            except ValidationError as ve:
-                # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
-                current_app.logger.error(f"{message_prefix}: {ve}")
-                return make_response_with_headers(ve.normalized_messages(), 400)
-            except SQLAlchemyError as se:
-                current_app.logger.error(f"{message_prefix}: {se}")
-                return make_response_with_headers({}, 500)
-        else:
-            response = make_response_with_headers([], 401)
+            response = make_response_with_headers(self._response_schema_collection.dump([bli[0] for bli in result]))
+        except (KeyError, RuntimeError, PendingRollbackError) as re:
+            current_app.logger.error(f"{message_prefix}: {re}")
+            return make_response_with_headers({}, 400)
+        except ValidationError as ve:
+            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
+            current_app.logger.error(f"{message_prefix}: {ve}")
+            return make_response_with_headers(ve.normalized_messages(), 400)
+        except SQLAlchemyError as se:
+            current_app.logger.error(f"{message_prefix}: {se}")
+            return make_response_with_headers({}, 500)
 
         return response
 
     @override
-    @jwt_required()
+    @is_authorized(PermissionType.POST, Permission.BUDGET_LINE_ITEM)
     def post(self) -> Response:
         message_prefix = f"POST to {ENDPOINT_STRING}"
         try:
@@ -250,3 +253,20 @@ def update_budget_line_item(data: dict[str, Any], id: int):
     current_app.db_session.add(budget_line_item)
     current_app.db_session.commit()
     return budget_line_item
+
+
+def validate_and_normalize_request_data_for_patch(schema: Schema) -> dict[str, Any]:
+    data = schema.dump(schema.load(request.json))
+    data = {k: v for (k, v) in data.items() if k in request.json}  # only keep the attributes from the request body
+    if "status" in data:
+        data["status"] = BudgetLineItemStatus[data["status"]]
+    if "date_needed" in data:
+        data["date_needed"] = date.fromisoformat(data["date_needed"])
+    return data
+
+
+def validate_and_normalize_request_data_for_put(schema: Schema) -> dict[str, Any]:
+    data = schema.dump(schema.load(request.json))
+    data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
+    data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
+    return data

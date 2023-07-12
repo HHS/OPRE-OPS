@@ -2,11 +2,20 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import ProjectSelect from "../../components/UI/Form/ProjectSelect";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-import Modal from "../../components/UI/Modal/Modal";
+import Modal from "../../components/UI/Modal";
 import { useGetResearchProjectsQuery } from "../../api/opsAPI";
 import { useCreateAgreement, useSetState, useUpdateAgreement } from "./CreateAgreementContext";
+import EditModeTitle from "./EditModeTitle";
 
-export const StepSelectProject = ({ goToNext }) => {
+/**
+ * Renders a step in the Create Agreement wizard for selecting a research project.
+ *
+ * @param {Object} props - The component props.
+ * @param {Function} [props.goToNext] - A function to go to the next step in the wizard. - optional
+ * @param {string} [props.formMode] - The mode of the form (e.g. "create", "edit", "review"). - optional
+ * @returns {JSX.Element} - The rendered component.
+ */
+export const StepSelectProject = ({ goToNext, formMode }) => {
     const navigate = useNavigate();
     const { wizardSteps, selected_project: selectedResearchProject } = useCreateAgreement();
     // setters
@@ -15,7 +24,22 @@ export const StepSelectProject = ({ goToNext }) => {
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const [isEditMode, setIsEditMode] = React.useState(false);
+    const [isReviewMode, setIsReviewMode] = React.useState(false);
     const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
+
+    React.useEffect(() => {
+        switch (formMode) {
+            case "edit":
+                setIsEditMode(true);
+                break;
+            case "review":
+                setIsReviewMode(true);
+                break;
+            default:
+                return;
+        }
+    }, [formMode]);
 
     if (isLoadingProjects) {
         return <div>Loading...</div>;
@@ -57,8 +81,7 @@ export const StepSelectProject = ({ goToNext }) => {
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            <h1 className="font-sans-lg">Create New Agreement</h1>
-            <p>Follow the steps to create an agreement</p>
+            <EditModeTitle isEditMode={isEditMode || isReviewMode} />
             <StepIndicator steps={wizardSteps} currentStep={1} />
             <h2 className="font-sans-lg">Select a Project</h2>
             <p>

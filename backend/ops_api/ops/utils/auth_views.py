@@ -35,8 +35,16 @@ def login() -> Union[Response, tuple[str, int]]:
     )
 
 
-def logout():
-    ...
+@jwt_required(True)
+def logout() -> Union[Response, tuple[str, int]]:
+    with OpsEventHandler(OpsEventType.LOGOUT) as la:
+        try:
+            identity = get_jwt_identity()
+            la.metadata.update({"oidc_id": identity})
+
+            return make_response_with_headers({"message": f"User {identity} Logged out"})
+        except RuntimeError:
+            return make_response_with_headers({"message": "Logged out"})
 
 
 def _get_token_and_user_data_from_internal_auth(user_data):

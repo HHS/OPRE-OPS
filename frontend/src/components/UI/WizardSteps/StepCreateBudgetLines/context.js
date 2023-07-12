@@ -68,7 +68,13 @@ function budgetLinesReducer(state, action) {
 
             if (index !== -1) {
                 const { line_description, comments, can, amount, date_needed } = state.new_budget_lines[index];
-                const [entered_year, entered_month, entered_day] = date_needed.split("-").map((d) => parseInt(d, 10));
+                let entered_year = "";
+                let entered_month = "";
+                let entered_day = "";
+
+                if (date_needed) {
+                    [entered_year, entered_month, entered_day] = date_needed.split("-").map((d) => parseInt(d, 10));
+                }
 
                 return {
                     ...state,

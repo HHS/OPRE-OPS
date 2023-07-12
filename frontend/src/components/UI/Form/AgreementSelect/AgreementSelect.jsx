@@ -1,3 +1,5 @@
+import { useGetUserByIdQuery } from "../../../../api/opsAPI";
+
 export const AgreementSelect = ({
     selectedProject,
     selectedAgreement,
@@ -31,6 +33,15 @@ export const AgreementSelect = ({
     };
 
     const AgreementSummaryCard = () => {
+        const { data: poData, error, isLoading } = useGetUserByIdQuery(selectedAgreement?.projectOfficer);
+
+        if (isLoading) {
+            return <div>Loading...</div>;
+        }
+        if (error) {
+            return <div>Oops, an error occurred</div>;
+        }
+
         return (
             <div
                 className="bg-base-lightest font-family-sans font-12px border-1px border-base-light radius-sm margin-top-4"
@@ -63,7 +74,7 @@ export const AgreementSelect = ({
                                     Project Officer
                                 </dt>
                                 <dd aria-labelledby="project-officer" className="text-semibold margin-0">
-                                    {selectedAgreement.projectOfficer}
+                                    {poData.full_name || "Unknown"}
                                 </dd>
                             </dl>
                         </div>

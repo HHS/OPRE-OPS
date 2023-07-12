@@ -1,150 +1,188 @@
 {
   users: [
-    {
+    { // 1
       first_name: "Chris",
       last_name: "Fortunato",
       division: 1,
       email: "chris.fortunato@example.com",
-      role: "COR",
       oidc_id: "00000000-0000-1111-a111-000000000001",
     },
-    {
+    { // 2
       first_name: "Amy",
       last_name: "Madigan",
       division: 1,
       email: "Amy.Madigan@example.com",
-      role: "Division Director",
       oidc_id: "00000000-0000-1111-a111-000000000002",
     },
-    {
+    { // 3
       first_name: "Ivelisse",
       last_name: "Martinez-Beck",
       division: 1,
       email: "Ivelisse.Martinez-Beck@example.com",
-      role: "COR",
       oidc_id: "00000000-0000-1111-a111-000000000003",
     },
-    {
+    { // 4
       first_name: "Amelia",
       last_name: "Popham",
       division: 2,
       email: "Amelia.Popham@example.com",
-      role: "COR",
       oidc_id: "00000000-0000-1111-a111-000000000004",
     },
-    {
+    { // 5
       first_name: "Tia",
       last_name: "Brown",
       division: 3,
       email: "Tia.Brown@example.com",
-      role: "Non-COR/Contractor",
       oidc_id: "00000000-0000-1111-a111-000000000005",
     },
-    {
+    { // 6
       first_name: "Katie",
       last_name: "Pahigiannis",
       division: 3,
       email: "Katie.Pahigiannis@example.com",
-      role: "COR",
       oidc_id: "00000000-0000-1111-a111-000000000006",
     },
-    {
+    { // 7
       first_name: "Nancy",
       last_name: "Margie",
       division: 3,
       email: "Nancy.Margie@example.com",
-      role: "Non-COR/Contractor",
       oidc_id: "00000000-0000-1111-a111-000000000007",
     },
-    {
+    { // 8
       first_name: "Nicole",
       last_name: "Deterding",
       division: 4,
       email: "Nicole.Deterding@example.com",
-      role: "Non-COR/Contractor",
       oidc_id: "00000000-0000-1111-a111-000000000008",
     },
-    {
+    { // 9
       first_name: "Valeria",
       last_name: "Butler",
       division: 4,
       email: "Valeria.Butler@example.com",
-      role: "Non-COR/Contractor",
       oidc_id: "00000000-0000-1111-a111-000000000009",
     },
-    {
+    { // 10
       first_name: "Beth Ann",
       last_name: "Barnes",
       division: 4,
       email: "BethAnn.Barnes@example.com",
-      role: "Team Leader",
       oidc_id: "00000000-0000-1111-a111-000000000010",
     },
-    {
+    { // 11
       first_name: "Laura",
       last_name: "Nerenberg",
       division: 4,
       email: "Laura.Nerenberg@example.com",
-      role: "COR",
       oidc_id: "00000000-0000-1111-a111-000000000011",
     },
-    {
+    { // 12
       first_name: "Niki",
       last_name: "Denmark",
       division: 4,
       email: "Niki.Denmark@example.com",
-      role: "Non-COR/Contractor",
       oidc_id: "00000000-0000-1111-a111-000000000012",
     },
-    {
+    { // 13
       first_name: "Tim",
       last_name: "Donaworth",
       division: 3,
       email: "tdonaworth+dev@flexion.us",
-      role: "Tech Lead",
       oidc_id: "e5711101-bc3e-41e5-a6a2-051874b307ca",
     },
-    {
+    { // 14
       first_name: "John",
       last_name: "DeAngelis",
       division: 3,
       email: "jdeangelis@flexion.us",
-      role: "Software Engineer",
       oidc_id: "838861c4-8bee-427d-8b49-0892875483ba",
     },
-    {
+    { // 15
       first_name: "Frank",
       last_name: "Pigeon",
       division: 3,
       email: "fpigeon@flexion.us",
-      role: "Software Engineer",
       oidc_id: "3e4c46ae-0ff9-4dd7-8671-b9801460a052",
     },
-    {
+    { // 16
       first_name: "Cliff",
       last_name: "Hill",
       division: 3,
       email: "chill@flexion.us",
-      role: "Software Engineer",
       oidc_id: "c8102694-a707-418d-9698-1d33db337b86",
     },
-    {
+    { // 17
       first_name: "Steve",
       last_name: "Tekell",
       division: 3,
       email: "stekell+sandbox@flexion.us",
-      role: "Software Engineer",
       oidc_id: "7716138a-dec6-4976-9f31-e30fade3254d",
     }
   ],
   roles: [
     {
       name: "admin",
-      permissions: ["can_read", "can_write", "can_update", "can_delete"],
+      permissions: [
+        "GET_AGREEMENT",
+        "PUT_AGREEMENT",
+        "PATCH_AGREEMENT",
+        "DELETE_AGREEMENT",
+
+        "GET_AGREEMENTS",
+        "POST_AGREEMENTS",
+
+        "GET_BUDGET_LINE_ITEM",
+        "PUT_BUDGET_LINE_ITEM",
+        "PATCH_BUDGET_LINE_ITEM",
+
+        "GET_BUDGET_LINE_ITEMS",
+        "POST_BUDGET_LINE_ITEMS",
+
+        "GET_CAN",
+        "GET_CANS",
+
+        "GET_DIVISION",
+        "GET_DIVISIONS",
+
+        "GET_NOTIFICATION",
+        "PUT_NOTIFICATION",
+        "PATCH_NOTIFICATION",
+
+        "GET_NOTIFICATIONS",
+
+        "GET_PORTFOLIO",
+        "GET_PORTFOLIOS",
+
+        "GET_RESEARCH_PROJECT",
+
+        "GET_RESEARCH_PROJECTS",
+        "POST_RESEARCH_PROJECTS",
+
+        "GET_USER",
+        "GET_USERS",
+      ],
     },
     {
       name: "user",
-      permissions: ["can_read", "portfolio_read", "user_read", "project_read"],
+      permissions: [
+        "GET_AGREEMENT",
+        "GET_AGREEMENTS",
+        "GET_BUDGET_LINE_ITEM",
+        "GET_BUDGET_LINE_ITEMS",
+        "GET_CAN",
+        "GET_CANS",
+        "GET_DIVISION",
+        "GET_DIVISIONS",
+        "GET_NOTIFICATION",
+        "GET_NOTIFICATIONS",
+        "GET_PORTFOLIO",
+        "GET_PORTFOLIOS",
+        "GET_RESEARCH_PROJECT",
+        "GET_RESEARCH_PROJECTS",
+        "GET_USER",
+        "GET_USERS",
+      ],
     },
   ],
   user_role: [
@@ -172,5 +210,150 @@
       user_id: 6,
       role_id: 1,
     },
+    {
+      user_id: 12,
+      role_id: 1,
+    },
+    {
+      user_id: 13,
+      role_id: 1,
+    },
+    {
+      user_id: 14,
+      role_id: 1,
+    },
+    {
+      user_id: 15,
+      role_id: 1,
+    },
+    {
+      user_id: 16,
+      role_id: 1,
+    },
+    {
+      user_id: 17,
+      role_id: 1,
+    },
+  ],
+  notification: [
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 1,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 2,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 3,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 4,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 5,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 6,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 7,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 8,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 9,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 10,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 11,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 12,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 13,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 14,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 15,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 16,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 17,
+      expires: "2031-12-31"
+    }
   ],
 }

@@ -37,3 +37,4 @@ def get_user_from_token(userinfo: UserInfoDict) -> Optional[User]:
         users = current_app.db_session.execute(stmt).all()
         if users and len(users) == 1:
             return users[0][0]
+    return None

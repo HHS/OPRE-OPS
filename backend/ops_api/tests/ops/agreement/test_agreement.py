@@ -89,6 +89,7 @@ def test_agreements_serialization(auth_client, loaded_db):
             }
         ],
         "vendor": "Vendor 1",
+        "status": "DRAFT",
     }
 
 
@@ -124,16 +125,19 @@ def test_agreements_with_research_project_found(auth_client, loaded_db):
         ("research_project_id", 1),
         ("foa", "This is an FOA value"),
         ("name", "Contract #1: African American Child and Family Research Center"),
+        ("status", "PLANNED"),
     ),
 )
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_with_filter(auth_client, key, value, loaded_db):
     response = auth_client.get(f"/api/v1/agreements/?{key}={value}")
     assert response.status_code == 200
-    from pprint import pprint
 
     success = all(item[key] == value for item in response.json)
+
     if not success:
+        from pprint import pprint
+
         pprint([item[key] for item in response.json])
         pprint(value)
     assert success
@@ -460,13 +464,31 @@ def test_agreements_patch_by_id_just_notes(auth_client, loaded_db):
         agreement = loaded_db.execute(stmt)
 
 
-@pytest.mark.skip("Not yet implemented")
+# @pytest.mark.skip("Not yet implemented")
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_delete_by_id(auth_client, loaded_db, test_contract):
     response = auth_client.delete(f"/api/v1/agreements/{test_contract.id}")
-    assert response.status_code == 204
+    assert response.status_code == 200
 
     stmt = select(Agreement).where(Agreement.id == test_contract.id)
     agreement = loaded_db.scalar(stmt)
 
     assert agreement is None
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_status(loaded_db):
+    stmt = select(Agreement).where(Agreement.id == 1)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement is not None
+    assert agreement.status == "DRAFT"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_status_no_budget_lines(loaded_db):
+    stmt = select(Agreement).where(Agreement.id == 6)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement is not None
+    assert agreement.status == "DRAFT"

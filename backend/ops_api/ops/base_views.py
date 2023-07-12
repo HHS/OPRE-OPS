@@ -10,6 +10,7 @@ from ops_api.ops.utils.auth import auth_gateway
 from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
+from typing_extensions import override
 
 
 def generate_validator(model: BaseModel) -> BaseModel.Validator:
@@ -90,15 +91,12 @@ class OPSMethodView(MethodView):
             current_app.logger.error(f"{message}: {errors}")
             raise ValidationError(errors)
 
-    def _get_enum_items(self) -> Response:
-        enum_items = [e.name for e in self]
-        return jsonify(enum_items)
-
 
 class BaseItemAPI(OPSMethodView):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
+    @override
     @jwt_required()
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
@@ -108,15 +106,29 @@ class BaseListAPI(OPSMethodView):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
+    @override
     @jwt_required()
     def get(self) -> Response:
         return self._get_all_items_with_try()
 
+    @override
     @jwt_required()
     def post(self) -> Response:
-        ...
+        raise NotImplementedError
 
 
 class EnumListAPI(MethodView):
-    def __init__(self, enum: Enum):
-        super().__init__(enum)
+    enum: Enum
+
+    def __init_subclass__(self, enum: Enum, **kwargs):
+        self.enum = enum
+        super().__init_subclass__(**kwargs)
+
+    def __init__(self, enum: Enum, **kwargs):
+        super().__init__(**kwargs)
+
+    @override
+    @jwt_required()
+    def get(self) -> Response:
+        enum_items = {e.name: e.value for e in self.enum}  # type: ignore [attr-defined]
+        return jsonify(enum_items)
