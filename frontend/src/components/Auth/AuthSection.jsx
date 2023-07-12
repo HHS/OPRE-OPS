@@ -106,8 +106,12 @@ const AuthSection = () => {
             {isLoggedIn && (
                 <div>
                     <div className="display-flex flex-align-center">
-                        <User />
-                        <NotificationCenter />
+                        <div style={{ paddingRight: "20px" }}>
+                            <User />
+                        </div>
+                        <div style={{ paddingRight: "20px" }}>
+                            <NotificationCenter />
+                        </div>
                         <button
                             className="usa-button fa-solid fa-arrow-right-to-bracket margin-1"
                             onClick={logoutHandler}
