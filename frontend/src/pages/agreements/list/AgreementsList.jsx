@@ -55,7 +55,7 @@ export const AgreementsList = () => {
                         <th scope="col">Total</th>
                         <th scope="col">Need By</th>
                         <th scope="col" className="padding-0" style={{ width: "6.25rem" }}>
-                            Status
+                            Actions
                         </th>
                     </tr>
                 </thead>

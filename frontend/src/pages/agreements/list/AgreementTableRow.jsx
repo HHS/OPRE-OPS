@@ -84,15 +84,13 @@ export const AgreementTableRow = ({ agreement }) => {
         return (
             <>
                 <div className="display-flex flex-align-center">
-                    {(agreement.status === "DRAFT" || agreement.status === "UNDER_REVIEW") && (
-                        <FontAwesomeIcon
-                            icon={faPen}
-                            className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
-                            title="edit"
-                            data-position="top"
-                            onClick={() => handleEditAgreement(agreement.id)}
-                        />
-                    )}
+                    <FontAwesomeIcon
+                        icon={faPen}
+                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                        title="edit"
+                        data-position="top"
+                        onClick={() => handleEditAgreement(agreement.id)}
+                    />
                     <FontAwesomeIcon
                         icon={faTrash}
                         title="delete"
@@ -101,15 +99,13 @@ export const AgreementTableRow = ({ agreement }) => {
                         onClick={() => handleDeleteAgreement(agreement.id)}
                     />
 
-                    {(agreement.status === "DRAFT" || agreement.status === "UNDER_REVIEW") && (
-                        <svg
-                            className="usa-icon text-primary height-205 width-205 hover: cursor-pointer usa-tooltip"
-                            onClick={() => handleSubmitAgreementForApproval(agreement.id)}
-                            id={`submit-for-approval-${agreement.id}`}
-                        >
-                            <use xlinkHref={`${icons}#send`}></use>
-                        </svg>
-                    )}
+                    <svg
+                        className="usa-icon text-primary height-205 width-205 hover: cursor-pointer usa-tooltip"
+                        onClick={() => handleSubmitAgreementForApproval(agreement.id)}
+                        id={`submit-for-approval-${agreement.id}`}
+                    >
+                        <use xlinkHref={`${icons}#send`}></use>
+                    </svg>
                 </div>
             </>
         );
@@ -146,7 +142,7 @@ export const AgreementTableRow = ({ agreement }) => {
                             <ChangeIcons agreement={agreement} />
                         </div>
                     ) : (
-                        <TableTag status={agreement?.status} />
+                        <div></div>
                     )}
                 </td>
                 <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
