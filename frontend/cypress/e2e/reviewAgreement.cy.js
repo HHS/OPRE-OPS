@@ -25,17 +25,6 @@ const minAgreement = {
     procurement_shop_id: 1,
 };
 
-const createBudgetLine = (bl) => {
-    cy.get("#bl-description").type(bl.descr);
-    cy.get("#can-select").type(`${bl.can}{enter}`);
-    cy.get("#procurement_month").select(bl.month);
-    cy.get("#procurement_day").type(bl.day);
-    cy.get("#procurement_year").type(bl.year);
-    cy.get("#bl-amount").type(bl.amount);
-    cy.get("#with-hint-textarea").type(bl.note);
-    cy.get("#add-budget-line").click();
-};
-
 beforeEach(() => {
     testLogin("admin");
     cy.visit(`/`);
@@ -150,6 +139,52 @@ it("review an agreement", () => {
         cy.get("#add-budget-line").click();
         // go back to review page
         cy.get('[data-cy="continue-btn"]').click();
+        cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
+        cy.get('[data-cy="error-list"]').should("not.exist");
+        cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
+        // go back to edit mode and look for budget line errors
+        cy.visit(`/agreements/edit/${agreementId}?mode=edit`);
+        cy.get("#continue").click();
+        cy.get(".usa-form-group--error").should("not.exist");
+        cy.get('[data-cy="continue-btn"]').click();
+        // add incomplete budget line
+        cy.get("#enteredDescription").type(`${blData[0].descr}`);
+        cy.get("#add-budget-line").should("not.be.disabled");
+        cy.get("#add-budget-line").click();
+        // patch agreement
+        cy.get('[data-cy="continue-btn"]').click();
+        // check for new budget line errors
+        cy.visit(`/agreements/approve/${agreementId}?mode=review`);
+        cy.get("h1").should("have.text", "Please resolve the errors outlined below");
+        cy.get('[data-cy="error-list"]').should("exist");
+        cy.get('[data-cy="error-item"]').should("have.length", 1);
+        //send-to-approval button should be disabled
+        cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
+        // fix errors
+        cy.get('[data-cy="edit-agreement-btn"]').click();
+        cy.get("#continue").click();
+        cy.get('[data-cy="continue-btn"]').click();
+        // check for new budget line errors
+        cy.get('[data-cy="error-item"]').should("exist");
+        cy.get("tbody").children().as("table-rows").should("have.length", 2);
+        cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
+        cy.get("[data-cy='edit-row']").click();
+        cy.get(".usa-form-group--error").should("have.length", 5);
+        cy.get('[data-cy="update-budget-line"]').should("be.disabled");
+        // fix errors
+        cy.get("#selectedCan").type(`${blData[0].can}{enter}`);
+        cy.get("#enteredMonth").select(blData[0].month);
+        cy.get("#enteredDay").type(`${blData[0].day}`);
+        cy.get("#enteredYear").type(`${blData[0].year}`);
+        cy.get("#enteredAmount").type(`${blData[0].amount}`);
+        cy.get("#enteredComments").type(`${blData[0].note}`);
+        cy.get('[data-cy="update-budget-line"]').should("not.be.disabled");
+        cy.get('[data-cy="update-budget-line"]').click();
+        cy.get('[data-cy="error-item"]').should("not.exist");
+        // patch agreement
+        cy.get('[data-cy="continue-btn"]').click();
+        // check review page
+        cy.visit(`/agreements/approve/${agreementId}?mode=review`);
         cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
         cy.get('[data-cy="error-list"]').should("not.exist");
         cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
