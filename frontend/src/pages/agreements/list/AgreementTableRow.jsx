@@ -8,6 +8,7 @@ import "./AgreementsList.scss";
 import { getUser } from "../../../api/getUser";
 import icons from "../../../uswds/img/sprite.svg";
 import { convertCodeForDisplay, formatDate } from "../../../helpers/utils";
+import TableTag from "../../../components/UI/PreviewTable/TableTag";
 
 export const AgreementTableRow = ({ agreement }) => {
     const [user, setUser] = useState({});
@@ -79,14 +80,15 @@ export const AgreementTableRow = ({ agreement }) => {
         navigate(`/agreements/approve/${event}`);
     };
 
-    const ChangeIcons = ({ agreement }) => {
-        const agreement_editable = agreement?.budget_line_items.every(
-            (item) => item.status === "DRAFT" || item.status === "UNDER_REVIEW"
-        );
+    const agreementStatus = agreement?.budget_line_items?.find((bli) => bli.status === "UNDER_REVIEW")
+        ? "In Review"
+        : "Draft";
+
+    const ChangeIcons = ({ agreement, status }) => {
         return (
             <>
-                <div className="display-flex flex-align-center">
-                    {agreement_editable === true && (
+                {(status === "Draft" || status === "In Review") && (
+                    <div className="display-flex flex-align-center">
                         <FontAwesomeIcon
                             icon={faPen}
                             className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
@@ -94,17 +96,15 @@ export const AgreementTableRow = ({ agreement }) => {
                             data-position="top"
                             onClick={() => handleEditAgreement(agreement.id)}
                         />
-                    )}
 
-                    <FontAwesomeIcon
-                        icon={faTrash}
-                        title="delete"
-                        data-position="top"
-                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
-                        onClick={() => handleDeleteAgreement(agreement.id)}
-                    />
+                        <FontAwesomeIcon
+                            icon={faTrash}
+                            title="delete"
+                            data-position="top"
+                            className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                            onClick={() => handleDeleteAgreement(agreement.id)}
+                        />
 
-                    {agreement_editable === true && (
                         <svg
                             className="usa-icon text-primary height-205 width-205 hover: cursor-pointer usa-tooltip"
                             onClick={() => handleSubmitAgreementForApproval(agreement.id)}
@@ -112,8 +112,8 @@ export const AgreementTableRow = ({ agreement }) => {
                         >
                             <use xlinkHref={`${icons}#send`}></use>
                         </svg>
-                    )}
-                </div>
+                    </div>
+                )}
             </>
         );
     };
@@ -146,10 +146,10 @@ export const AgreementTableRow = ({ agreement }) => {
                 <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     {isRowActive && !isExpanded ? (
                         <div>
-                            <ChangeIcons agreement={agreement} />
+                            <ChangeIcons agreement={agreement} status={agreementStatus} />
                         </div>
                     ) : (
-                        <div></div>
+                        <TableTag status={agreementStatus} />
                     )}
                 </td>
                 <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
