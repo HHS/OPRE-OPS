@@ -9,7 +9,7 @@ from flask_jwt_extended import get_jwt_identity
 from marshmallow import ValidationError
 from models import Notification, OpsEventType, User
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.utils.auth import is_authorized, PermissionType, Permission
+from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -44,8 +44,8 @@ class NotificationResponse:
     is_read: bool
     created_by: int
     updated_by: int
-    created_on: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%f"})
-    updated_on: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%f"})
+    created_on: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
+    updated_on: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     title: Optional[str] = None
     message: Optional[str] = None
     recipient: Optional[Recipient] = None

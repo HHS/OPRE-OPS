@@ -1,0 +1,9 @@
+.notificationListItem {
+    list-style-type: none;
+    padding-right: 10%;
+}
+
+.notificationClock {
+    width: 18px;
+    height: 18px;
+}
