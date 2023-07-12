@@ -1,3 +1,4 @@
+import { useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import CreateAgreementFlow from "./CreateAgreementFlow";
 import StepSelectProject from "./StepSelectProject";
@@ -10,12 +11,18 @@ import { setAlert } from "../../components/UI/Alert/alertSlice";
  * Renders the Create Agreement flow, which consists of several steps.
  * @param {Object} props - The component props.
  * @param {Array<any>} props.existingBudgetLines - An array of existing budget lines.
- * @param {boolean} [props.isEditMode] - A flag indicating whether the component is in edit mode. - optional
+ *
  * @returns {JSX.Element} - The rendered component.
  */
-export const CreateAgreement = ({ existingBudgetLines, isEditMode }) => {
+export const CreateAgreement = ({ existingBudgetLines }) => {
     const createAgreementContext = useCreateAgreement();
     const globalDispatch = useDispatch();
+
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const mode = searchParams.get("mode");
+
+    console.log(`mode: ${mode}`);
 
     const {
         wizardSteps,
@@ -26,8 +33,8 @@ export const CreateAgreement = ({ existingBudgetLines, isEditMode }) => {
 
     return (
         <CreateAgreementFlow>
-            <StepSelectProject isEditMode={isEditMode} />
-            <StepCreateAgreement isEditMode={isEditMode} />
+            <StepSelectProject formMode={mode ?? undefined} />
+            <StepCreateAgreement formMode={mode ?? undefined} />
             <StepCreateBudgetLines
                 wizardSteps={wizardSteps}
                 currentStep={3}
@@ -46,7 +53,7 @@ export const CreateAgreement = ({ existingBudgetLines, isEditMode }) => {
                     )
                 }
                 existingBudgetLines={existingBudgetLines}
-                isEditMode={isEditMode}
+                formMode={mode ?? undefined}
                 workflow="agreement"
             />
         </CreateAgreementFlow>
