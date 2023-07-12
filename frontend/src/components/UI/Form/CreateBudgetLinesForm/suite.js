@@ -1,4 +1,4 @@
-import { create, test, enforce, only } from "vest";
+import { create, test, enforce, only, group, include } from "vest";
 
 const suite = create((data, fieldName) => {
     only(fieldName);
@@ -38,6 +38,22 @@ const suite = create((data, fieldName) => {
     test("enteredAmount", "This is required information", () => {
         enforce(data.enteredAmount).isNotEmpty();
     });
+    // group tests for enteredMonth, enteredDay, enteredYear
+
+    if (data.enteredYear && data.enteredMonth && data.enteredDay) {
+        const today = new Date();
+        const enteredDate = new Date(Date.UTC(data.enteredYear, data.enteredMonth - 1, data.enteredDay));
+
+        test("enteredYear", "Date must be in the future", () => {
+            enforce(enteredDate.getTime()).greaterThan(today.getTime());
+        });
+        test("enteredDay", "Date must be in the future", () => {
+            enforce(enteredDate.getTime()).greaterThan(today.getTime());
+        });
+        test("enteredMonth", "Date must be in the future", () => {
+            enforce(enteredDate.getTime()).greaterThan(today.getTime());
+        });
+    }
 });
 
 export default suite;
