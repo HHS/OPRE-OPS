@@ -49,7 +49,11 @@ const EditAgreement = () => {
         return <div>Oops, an error occurred</div>;
     }
 
-    if (agreement?.budget_line_items.every((item) => item.status !== "DRAFT" && item.status !== "UNDER_REVIEW")) {
+    const agreementStatus = agreement?.budget_line_items?.find((bli) => bli.status === "UNDER_REVIEW")
+        ? "In Review"
+        : "Draft";
+
+    if (agreementStatus !== "Draft" && agreementStatus !== "In Review") {
         return (
             <App>
                 <SimpleAlert
