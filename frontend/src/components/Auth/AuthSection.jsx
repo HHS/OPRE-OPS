@@ -106,10 +106,10 @@ const AuthSection = () => {
             {isLoggedIn && (
                 <div>
                     <div className="display-flex flex-align-center">
-                        <div style={{ paddingRight: "20px" }}>
+                        <div className="padding-right-205">
                             <User />
                         </div>
-                        <div style={{ paddingRight: "20px" }}>
+                        <div className="padding-right-205">
                             <NotificationCenter />
                         </div>
                         <button
