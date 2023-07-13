@@ -1,7 +1,7 @@
 import MonthSelect from "./MonthSelect";
 import DayInput from "./DayInput";
 import YearInput from "./YearInput";
-import suite from "./suite";
+
 /**
  * Renders a form for entering a desired award date.
  * @param {Object} props - The component props.
@@ -25,30 +25,21 @@ export const DesiredAwardDate = ({
     enteredYear,
     setEnteredYear,
     isReviewMode,
+    runValidate,
+    res,
     cn,
 }) => {
-    let res = suite.get();
-
-    const runValidate = (name, value) => {
-        suite(
-            {
-                enteredMonth,
-                enteredDay,
-                enteredYear,
-                ...{ [name]: value },
-            },
-            name
-        );
-    };
-    const dateErrors = Object.values(res.getErrorsByGroup("allDates"));
-    const isThereDateErrors = dateErrors.length > 0;
+    const dateGroupErrors = Object.values(res.getErrorsByGroup("allDates"));
+    const isThereDateGroupErrors = dateGroupErrors.length > 0;
     return (
         <div className="usa-form-group">
             <fieldset className="usa-fieldset">
-                <legend className={`usa-legend ${isThereDateErrors ? "usa-error-message text-bold" : null}`}>
+                <legend className={`usa-legend ${isThereDateGroupErrors ? "usa-error-message text-bold" : null}`}>
                     Need By Date
                 </legend>
-                {isThereDateErrors && <span className="text-error border-left-2px padding-left-2px">{dateErrors}</span>}
+                {isThereDateGroupErrors && (
+                    <span className="text-error border-left-2px padding-left-2px">{dateGroupErrors}</span>
+                )}
                 <div className="display-flex">
                     <MonthSelect
                         name="enteredMonth"
