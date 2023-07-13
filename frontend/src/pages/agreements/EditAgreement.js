@@ -5,7 +5,7 @@ import { useParams } from "react-router-dom";
 import { useGetAgreementByIdQuery } from "../../api/opsAPI";
 import { useEffect, useState } from "react";
 import { getUser } from "../../api/getUser";
-import { SimpleAlert } from "../../components/UI/Alert/SimpleAlert";
+import SimpleAlert from "../../components/UI/Alert/SimpleAlert";
 
 const EditAgreement = () => {
     const urlPathParams = useParams();
@@ -67,7 +67,7 @@ const EditAgreement = () => {
     return (
         <App>
             <CreateAgreementProvider agreement={agreement} projectOfficer={projectOfficer}>
-                <CreateEditAgreement existingBudgetLines={agreement.budget_line_items} isEditMode={true} />
+                <CreateEditAgreement existingBudgetLines={agreement.budget_line_items} />
             </CreateAgreementProvider>
         </App>
     );
