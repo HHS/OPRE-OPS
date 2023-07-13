@@ -22,8 +22,6 @@ export const CreateAgreement = ({ existingBudgetLines }) => {
     const searchParams = new URLSearchParams(location.search);
     const mode = searchParams.get("mode");
 
-    console.log(`mode: ${mode}`);
-
     const {
         wizardSteps,
         selected_project: selectedResearchProject,
