@@ -106,8 +106,12 @@ const AuthSection = () => {
             {isLoggedIn && (
                 <div>
                     <div className="display-flex flex-align-center">
-                        <User />
-                        <NotificationCenter />
+                        <div className="padding-right-205">
+                            <User />
+                        </div>
+                        <div className="padding-right-205">
+                            <NotificationCenter />
+                        </div>
                         <button
                             className="usa-button fa-solid fa-arrow-right-to-bracket margin-1"
                             onClick={logoutHandler}
