@@ -153,8 +153,8 @@ export const CreateBudgetLinesForm = ({
                     enteredYear={enteredYear}
                     setEnteredYear={setEnteredYear}
                     isReviewMode={isReviewMode}
-                    runValidate={runValidate}
-                    res={res}
+                    // runValidate={runValidate}
+                    // res={res}
                     cn={cn}
                 />
                 <CurrencyInput
