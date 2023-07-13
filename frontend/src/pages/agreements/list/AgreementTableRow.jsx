@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -69,6 +69,9 @@ export const AgreementTableRow = ({ agreement }) => {
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
     const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
 
+    const handleViewAgreement = (event) => {
+        navigate(`/agreements/${event}`);
+    };
     const handleEditAgreement = (event) => {
         navigate(`/agreements/edit/${event}?mode=edit`);
     };
@@ -117,8 +120,9 @@ export const AgreementTableRow = ({ agreement }) => {
     return (
         <Fragment key={agreement?.id}>
             <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
+                {/*<th scope="row" className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded} onClick={() => handleViewAgreement(agreement.id)}>*/}
                 <th scope="row" className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
-                    {agreementName}
+                    <Link to={"/agreements/" + agreement.id}>{agreementName}</Link>
                 </th>
                 <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     {researchProjectName}
