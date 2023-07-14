@@ -7,6 +7,7 @@ import sortAgreements from "./utils";
 import { useEffect } from "react";
 import Alert from "../../../components/UI/Alert";
 import "./AgreementsList.scss";
+import AgreementsTable from "./AgreementsTable";
 
 export const AgreementsList = () => {
     const isAlertActive = useSelector((state) => state.alert.isActive);
@@ -46,25 +47,7 @@ export const AgreementsList = () => {
 
             <h1 className="font-sans-lg">Agreements</h1>
             <p>This is a list of the agreements you are listed as a Team Member on.</p>
-            <table className="usa-table usa-table--borderless width-full ">
-                <thead>
-                    <tr>
-                        <th scope="col">Agreement</th>
-                        <th scope="col">Project</th>
-                        <th scope="col">Type</th>
-                        <th scope="col">Total</th>
-                        <th scope="col">Need By</th>
-                        <th scope="col" className="padding-0" style={{ width: "6.25rem" }}>
-                            Status
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {sortedAgreements?.map((agreement) => (
-                        <AgreementTableRow key={agreement?.id} agreement={agreement} />
-                    ))}
-                </tbody>
-            </table>
+            <AgreementsTable agreements={sortedAgreements} />
         </App>
     );
 };
