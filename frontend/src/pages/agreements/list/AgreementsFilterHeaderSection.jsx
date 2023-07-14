@@ -1,5 +1,4 @@
 import "./AgreementsList.scss";
-import { AgreementTableRow } from "./AgreementTableRow";
 import { Link, useLocation } from "react-router-dom";
 import styles from "../../../components/Portfolios/PortfolioTabsSection/PortfolioTabsSection.module.scss";
 import TabsSection from "../../../components/UI/TabsSection";

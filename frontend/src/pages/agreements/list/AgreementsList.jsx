@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux";
-import { useGetAgreementsByUserIdQuery, useGetAgreementsQuery, useGetUserByOIDCIdQuery } from "../../../api/opsAPI";
+import { useGetAgreementsByUserIdQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import sortAgreements from "./utils";
