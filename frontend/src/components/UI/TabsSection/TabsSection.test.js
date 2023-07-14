@@ -1,4 +1,4 @@
-import TabsSection from "./TabsSection";
+import TabsSection from "../../UI/TabsSection/TabsSection";
 import store from "../../../store";
 import { Provider } from "react-redux";
 import { render } from "@testing-library/react";

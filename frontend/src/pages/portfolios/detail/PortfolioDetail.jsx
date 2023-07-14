@@ -13,7 +13,7 @@ import { Breadcrumb } from "../../../components/UI/Header/Breadcrumb";
 import CanCard from "../../../components/CANs/CanCard/CanCard";
 
 import { getPortfolioCansFundingDetails } from "../../../api/getCanFundingSummary";
-import TabsSection from "../../../components/Portfolios/TabsSection/TabsSection";
+import PortfolioTabsSection from "../../../components/Portfolios/PortfolioTabsSection";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 import Hero from "../../../components/UI/Hero/Hero";
 
@@ -88,7 +88,7 @@ const PortfolioDetail = () => {
                         backgroundColor={"bg-brand-neutral-lightest"}
                     />
                     <section className="display-flex flex-justify margin-top-3">
-                        <TabsSection portfolioId={portfolioId} />
+                        <PortfolioTabsSection portfolioId={portfolioId} />
                         <FiscalYear
                             className="margin-left-auto"
                             fiscalYear={fiscalYear}
