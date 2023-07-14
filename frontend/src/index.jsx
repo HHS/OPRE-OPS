@@ -120,7 +120,13 @@ const router = createBrowserRouter(
                 <Route path="/budget-lines/create" element={<CreateBudgetLines />} />
                 <Route path="/agreements/create" element={<CreateAgreements />} />
                 <Route path="/projects/create" element={<CreateProject />} />
-                <Route path="/agreements/" element={<AgreementsList />} />
+
+                <Route path="/agreements/" element={<AgreementsList />}>
+                    <Route exact path="" element={<Navigate to={"all-agreements"} />} />
+                    <Route path="all-agreements" element={<AgreementsList filter="all-agreements" />} />
+                    <Route path="my-agreements" element={<AgreementsList filter="my-agreements" />} />
+                </Route>
+
                 <Route path="/agreements/edit/:id" element={<EditAgreement />} />
                 <Route path="/agreements/approve/:id" element={<ApproveAgreement />} />
             </Route>

@@ -1,22 +1,26 @@
 import { useSelector } from "react-redux";
-import { useGetAgreementsQuery } from "../../../api/opsAPI";
+import { useGetAgreementsByUserIdQuery, useGetAgreementsQuery, useGetUserByOIDCIdQuery } from "../../../api/opsAPI";
 import App from "../../../App";
-import { AgreementTableRow } from "./AgreementTableRow";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import sortAgreements from "./utils";
 import { useEffect } from "react";
 import Alert from "../../../components/UI/Alert";
 import "./AgreementsList.scss";
 import AgreementsTable from "./AgreementsTable";
+import AgreementsFilterHeaderSection from "./AgreementsFilterHeaderSection";
 
-export const AgreementsList = () => {
+export const AgreementsList = ({ filter }) => {
     const isAlertActive = useSelector((state) => state.alert.isActive);
+    const activeUser = useSelector((state) => state.auth.activeUser);
+
     const {
         data: agreements,
         error: errorAgreement,
         isLoading: isLoadingAgreement,
         refetch,
-    } = useGetAgreementsQuery({ refetchOnMountOrArgChange: true });
+    } = useGetAgreementsByUserIdQuery(filter === "my-agreements" ? activeUser?.id : null, {
+        refetchOnMountOrArgChange: true,
+    });
 
     useEffect(() => {
         refetch();
@@ -47,6 +51,7 @@ export const AgreementsList = () => {
 
             <h1 className="font-sans-lg">Agreements</h1>
             <p>This is a list of the agreements you are listed as a Team Member on.</p>
+            <AgreementsFilterHeaderSection />
             <AgreementsTable agreements={sortedAgreements} />
         </App>
     );
