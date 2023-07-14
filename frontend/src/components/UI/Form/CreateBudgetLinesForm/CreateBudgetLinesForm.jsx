@@ -1,5 +1,3 @@
-import React from "react";
-import PropTypes from "prop-types";
 import classnames from "vest/classnames";
 import CanSelect from "../CanSelect";
 import DesiredAwardDate from "../DesiredAwardDate";
@@ -29,7 +27,8 @@ import CurrencyInput from "./CurrencyInput";
  * @param {function} props.handleEditForm - A function to handle editing the budget line form.
  * @param {function} props.handleSubmitForm - A function to handle submitting the budget line form.
  * @param {function} props.handleResetForm - A function to handle resetting the budget line form.
- * @param {string} props.formMode - The form mode.
+ * @param {boolean} props.isEditMode - Whether the form is in edit mode.
+ * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @returns {JSX.Element} - The rendered component.
  */
 export const CreateBudgetLinesForm = ({
@@ -51,11 +50,9 @@ export const CreateBudgetLinesForm = ({
     handleEditForm = () => {},
     handleSubmitForm = () => {},
     handleResetForm = () => {},
-    formMode,
+    isEditMode,
+    isReviewMode,
 }) => {
-    const [, setIsEditMode] = React.useState(false);
-    const [isReviewMode, setIsReviewMode] = React.useState(false);
-
     let res = suite.get();
 
     const cn = classnames(suite.get(), {
@@ -65,23 +62,6 @@ export const CreateBudgetLinesForm = ({
     });
     const isFormComplete =
         selectedCan && enteredDescription && enteredAmount && enteredMonth && enteredDay && enteredYear;
-    React.useEffect(() => {
-        switch (formMode) {
-            case "edit":
-                setIsEditMode(true);
-                break;
-            case "review":
-                setIsReviewMode(true);
-                break;
-            default:
-                return;
-        }
-        return () => {
-            setIsReviewMode(false);
-            setIsEditMode(false);
-            suite.reset();
-        };
-    }, [formMode]);
 
     // validate all budgetline fields if in review mode and is editing
     if (isReviewMode && isEditing) {
@@ -217,27 +197,6 @@ export const CreateBudgetLinesForm = ({
             </div>
         </form>
     );
-};
-
-CreateBudgetLinesForm.propTypes = {
-    selectedCan: PropTypes.object,
-    enteredDescription: PropTypes.string,
-    enteredAmount: PropTypes.number,
-    enteredMonth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    enteredDay: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    enteredYear: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    enteredComments: PropTypes.string,
-    isEditing: PropTypes.bool,
-    setEnteredDescription: PropTypes.func.isRequired,
-    setSelectedCan: PropTypes.func.isRequired,
-    setEnteredAmount: PropTypes.func.isRequired,
-    setEnteredMonth: PropTypes.func.isRequired,
-    setEnteredDay: PropTypes.func.isRequired,
-    setEnteredYear: PropTypes.func.isRequired,
-    setEnteredComments: PropTypes.func.isRequired,
-    handleEditForm: PropTypes.func.isRequired,
-    handleSubmitForm: PropTypes.func.isRequired,
-    handleResetForm: PropTypes.func.isRequired,
 };
 
 export default CreateBudgetLinesForm;
