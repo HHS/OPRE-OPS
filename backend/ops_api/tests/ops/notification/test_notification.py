@@ -111,7 +111,7 @@ def test_notifications_get_all(auth_client, loaded_db):
 
     response = auth_client.get("/api/v1/notifications/")
     assert response.status_code == 200
-    assert len(response.json) == 17
+    assert len(response.json) == 18
 
 
 @pytest.mark.usefixtures("app_ctx")
