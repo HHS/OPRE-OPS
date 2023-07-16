@@ -2277,9 +2277,9 @@
   integrity sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==
 
 "@tsconfig/create-react-app@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@tsconfig/create-react-app/-/create-react-app-2.0.0.tgz#21f1a1bc26676645a203e975a94b4b6555f1b04c"
-  integrity sha512-FwBmf+PZjk+scQ05XRGvVL2XBWQEOBQ10B3ZVc4RaFkNj2Zukumdn0xLQ+LVO8NycjQfxuUw/ecYLEELs5R8oQ==
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@tsconfig/create-react-app/-/create-react-app-2.0.1.tgz#64e5e5da03f33b6e66446cea5165b79ee2717589"
+  integrity sha512-M/wUfGIifMUNqDO5APZmlHTmHXiO5kUPQehxi3Jz6VdaUJqQehuvAB0oNzGHevbl9od/9fS41KvQChgjVgg2tw==
 
 "@types/aria-query@^5.0.1":
   version "5.0.1"
