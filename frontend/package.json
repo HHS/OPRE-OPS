@@ -14,7 +14,7 @@
         "@uswds/uswds": "3.5.0",
         "axios": "1.4.0",
         "babel-plugin-macros": "3.1.0",
-        "clsx": "1.2.1",
+        "clsx": "2.0.0",
         "crypto-random-string": "5.0.0",
         "jwt-decode": "3.1.2",
         "lodash": "4.17.21",
