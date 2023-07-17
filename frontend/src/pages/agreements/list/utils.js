@@ -7,32 +7,24 @@ const sortAgreements = (agreements) => {
         return [];
     }
 
+    const agreementsCopy = _.cloneDeep(agreements);
+
+    // keep track of the original data type of date_needed so we can return the same type
     let datesAreStrings = false;
 
-    agreements.forEach((agreement) => {
+    // convert all date_needed to Date if needed
+    agreementsCopy.forEach((agreement) => {
         agreement.budget_line_items.forEach((bli) => {
             if (typeof bli.date_needed === "string") {
                 datesAreStrings = true;
+                bli.date_needed = new Date(bli.date_needed);
             }
         });
     });
 
-    const agreementsCopy = _.cloneDeep(agreements);
-
     const sortedAgreements = agreementsCopy.sort((a, b) => {
-        // convert strings to dates
-        const aDates = a.budget_line_items
-            .filter((n) => n.date_needed)
-            .map((item) => {
-                return (item.date_needed = new Date(item.date_needed));
-            });
-        const bDates = b.budget_line_items
-            .filter((n) => n.date_needed)
-            .map((item) => {
-                return (item.date_needed = new Date(item.date_needed));
-            });
-        const aMinDateNeeded = Math.min(...aDates);
-        const bMinDateNeeded = Math.min(...bDates);
+        const aMinDateNeeded = Math.min(...a.budget_line_items);
+        const bMinDateNeeded = Math.min(...b.budget_line_items);
 
         if ((!aMinDateNeeded && bMinDateNeeded) || aMinDateNeeded < bMinDateNeeded) {
             return -1;
@@ -43,6 +35,7 @@ const sortAgreements = (agreements) => {
         return 0;
     });
 
+    // convert all date_needed back to string if needed
     if (datesAreStrings) {
         return sortedAgreements.map((agreement) => {
             return {
