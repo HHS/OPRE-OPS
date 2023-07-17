@@ -1,11 +1,6 @@
 import os
-from typing import Optional, Tuple
+from typing import Tuple
 
-import models.cans
-import models.portfolios
-import models.procurement_shops
-import models.research_projects
-import models.users
 import sqlalchemy.engine
 from data_tools.environment.cloudgov import CloudGovConfig
 from data_tools.environment.common import DataToolsConfig
@@ -13,23 +8,21 @@ from data_tools.environment.dev import DevConfig
 from data_tools.environment.local import LocalConfig
 from data_tools.environment.pytest import PytestConfig
 from data_tools.environment.test import TestConfig
-from models.base import BaseModel
+from models import *
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
+from sqlalchemy.orm import configure_mappers
 
-# Adding these print statements to suppress unused import warnings
-print("Loading models for CANs", models.cans)
-print("Loading models for Portfolios", models.portfolios)
-print("Loading models for Research Projects", models.research_projects)
-print("Loading models for Users", models.users)
-print("Loading models for Procurement Shop", models.procurement_shops)
+configure_mappers()
 
 
 def init_db(
     config: DataToolsConfig, db: Optional[Engine] = None
 ) -> Tuple[sqlalchemy.engine.Engine, sqlalchemy.MetaData]:
     if not db:
-        engine = create_engine(config.db_connection_string, echo=config.verbosity, future=True)
+        engine = create_engine(
+            config.db_connection_string, echo=config.verbosity, future=True
+        )
     else:
         engine = db
     return engine, BaseModel.metadata
