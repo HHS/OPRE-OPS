@@ -29,10 +29,6 @@ export const opsApi = createApi({
             query: (id) => `/agreements/?research_project_id=${id}`,
             providesTags: ["Agreements", "FilterAgreements"],
         }),
-        getAgreementsByUserId: builder.query({
-            query: (id) => `/agreements/?user_id=${id}`,
-            providesTags: ["Agreements"],
-        }),
         getUserById: builder.query({
             query: (id) => `/users/${id}`,
             providesTags: ["Users"],
@@ -106,7 +102,6 @@ export const {
     useGetAgreementsQuery,
     useGetAgreementByIdQuery,
     useGetAgreementsByResearchProjectFilterQuery,
-    useGetAgreementsByUserIdQuery,
     useGetUserByIdQuery,
     useGetUserByOIDCIdQuery,
     useGetResearchProjectsQuery,
