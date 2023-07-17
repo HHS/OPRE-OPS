@@ -53,3 +53,11 @@ it("the agreements have the correct status", () => {
         .should("contain", "CONTRACT #2: Fathers and Continuous Learning (FCL)")
         .and("contain", "Draft");
 });
+
+it("Agreements Table is correctly filtered on all-agreements or my-agreements", () => {
+    cy.visit("/agreements?filter=all-agreements");
+    cy.get("tbody").children().should("have.length.at.least", 1);
+
+    cy.visit("/agreements?filter=my-agreements");
+    cy.get("tbody").children().should("have.length.at.least", 1);
+});
