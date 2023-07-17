@@ -98,6 +98,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
     const budgetLineErrors = res.getErrors("budget-line-items");
+    console.log(`budgetLinePageErrors:  ${budgetLinePageErrors}`);
     const budgetLineErrorsExist = budgetLineErrors.length > 0;
     const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist;
 
@@ -287,7 +288,11 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 )}
             </div>
 
-            <PreviewTable readOnly={true} budgetLinesAdded={agreement?.budget_line_items} errors={budgetLineErrors} />
+            <PreviewTable
+                readOnly={true}
+                budgetLinesAdded={agreement?.budget_line_items}
+                errors={budgetLinePageErrors}
+            />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className="usa-button usa-button--outline margin-right-2"

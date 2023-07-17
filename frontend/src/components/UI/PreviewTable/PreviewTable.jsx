@@ -1,10 +1,11 @@
 import { useState, Fragment } from "react";
+import { useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
+import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import TotalSummaryCard from "./TotalSummaryCard";
-import { useSelector } from "react-redux";
 import { formatDate, loggedInName } from "../../../helpers/utils";
 import TableTag from "./TableTag";
 import "./PreviewTable.scss";
@@ -17,7 +18,7 @@ import "./PreviewTable.scss";
  * @param {Function} [props.handleDeleteBudgetLine] - A function to handle deleting a budget line. - optional
  * @param {Function} [props.handleDuplicateBudgetLine] - A function to handle duplicating a budget line. - optional
  * @param {Boolean} [props.readOnly] - A flag to indicate if the table is read-only.
- * @param {Array<String>} [props.errors] - An array of error messages to display (optional).
+ * @param {Array<any>} [props.errors] - An array of errors to display. - optional
  * @returns {JSX.Element} - The rendered table component.
  */
 export const PreviewTable = ({
@@ -213,6 +214,7 @@ export const PreviewTable = ({
 
     return (
         <>
+            <pre>{JSON.stringify(errors, null, 2)}</pre>
             <table className="usa-table usa-table--borderless width-full">
                 <thead>
                     <tr>
@@ -240,3 +242,12 @@ export const PreviewTable = ({
 };
 
 export default PreviewTable;
+
+PreviewTable.propTypes = {
+    budgetLinesAdded: PropTypes.arrayOf(PropTypes.object),
+    handleSetBudgetLineForEditing: PropTypes.func,
+    handleDeleteBudgetLine: PropTypes.func,
+    handleDuplicateBudgetLine: PropTypes.func,
+    readOnly: PropTypes.bool,
+    errors: PropTypes.arrayOf(PropTypes.array),
+};
