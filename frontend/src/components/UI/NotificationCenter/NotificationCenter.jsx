@@ -44,7 +44,8 @@ const NotificationCenter = () => {
                 onClick={() => setShowModal(true)}
                 id="notification-center-bell"
             >
-                <use xlinkHref={`${icons}#notifications`}></use>
+                {unreadNotifications.length !== 0 && <use xlinkHref={`${icons}#notifications_active`}></use>}
+                {unreadNotifications.length === 0 && <use xlinkHref={`${icons}#notifications_none`}></use>}
             </svg>
 
             <Modal

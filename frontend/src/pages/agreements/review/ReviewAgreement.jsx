@@ -291,6 +291,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className="usa-button usa-button--outline margin-right-2"
+                    data-cy="edit-agreement-btn"
                     onClick={() => {
                         navigate(`/agreements/edit/${agreement?.id}?mode=review`);
                     }}
