@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux";
-import { useGetAgreementsByUserIdQuery } from "../../../api/opsAPI";
+import { useGetAgreementsQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import sortAgreements from "./utils";
@@ -11,16 +11,15 @@ import AgreementsFilterHeaderSection from "./AgreementsFilterHeaderSection";
 
 export const AgreementsList = ({ filter }) => {
     const isAlertActive = useSelector((state) => state.alert.isActive);
-    const activeUser = useSelector((state) => state.auth.activeUser);
 
     const {
         data: agreements,
         error: errorAgreement,
         isLoading: isLoadingAgreement,
         refetch,
-    } = useGetAgreementsByUserIdQuery(filter === "my-agreements" ? activeUser?.id : null, {
-        refetchOnMountOrArgChange: true,
-    });
+    } = useGetAgreementsQuery({ refetchOnMountOrArgChange: true });
+
+    const activeUser = useSelector((state) => state.auth.activeUser);
 
     useEffect(() => {
         refetch();
@@ -42,7 +41,18 @@ export const AgreementsList = ({ filter }) => {
         );
     }
 
-    const sortedAgreements = sortAgreements(agreements);
+    let sortedAgreements;
+    if (filter === "my-agreements") {
+        const filteredAgreements = agreements.filter((agreement) => {
+            return agreement.team_members?.some((teamMember) => {
+                return teamMember.id === activeUser.id;
+            });
+        });
+        sortedAgreements = sortAgreements(filteredAgreements);
+    } else {
+        // all-agreements
+        sortedAgreements = sortAgreements(agreements);
+    }
 
     return (
         <App>
