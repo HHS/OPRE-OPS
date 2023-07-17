@@ -85,6 +85,11 @@ class BaseData:
         return cast(str, self.Schema.dumps(self))
 
 
+from sqlalchemy_continuum import make_versioned
+
+make_versioned(user_cls=None)
+
+
 class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc, valid-type]
     __abstract__ = True
     __repr__ = ReprMixin.__repr__
