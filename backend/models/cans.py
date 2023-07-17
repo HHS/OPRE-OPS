@@ -446,6 +446,7 @@ class CANFiscalYearCarryForward(BaseModel):
 
 
 class BudgetLineItem(BaseModel):
+    __versioned__ = {}
     __tablename__ = "budget_line_item"
 
     id = Column(Integer, Identity(), primary_key=True)
