@@ -1,19 +1,23 @@
+/* eslint-env node */
 {
+    "env": { "browser": true, "es2020": true },
     "extends": [
         "eslint:recommended",
-        "react-app",
         "react-app/jest",
+        "plugin:react-hooks/recommended",
         "plugin:react/recommended",
         "plugin:react/jsx-runtime",
         "plugin:prettier/recommended",
         "plugin:cypress/recommended"
     ],
+    "parserOptions": { "ecmaVersion": "latest", "sourceType": "module" },
     "rules": {
-        "react/prop-types": "off"
+        "react-refresh/only-export-components": ["warn", { "allowConstantExport": true }]
     },
-    "plugins": [],
+    "plugins": ["react-refresh"],
     "ignorePatterns": ["**/*.css", "**/*.css.map", "**/*.scss", "**/*.svg", "**/*.png", "**/*.jpg", "**/uswds/**"],
     "settings": {
+        "react": { "version": "18.2" },
         "import/resolver": {
             "node": {
                 "extensions": [".js", ".jsx"]
