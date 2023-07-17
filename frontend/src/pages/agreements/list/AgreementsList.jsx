@@ -14,8 +14,6 @@ export const AgreementsList = () => {
     const [searchParams] = useSearchParams();
     const isAlertActive = useSelector((state) => state.alert.isActive);
 
-    console.log("searchParams", searchParams);
-
     const {
         data: agreements,
         error: errorAgreement,
