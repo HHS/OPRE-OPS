@@ -408,6 +408,14 @@
     {
       "agreement_id": 2,
       "users_id": 1,
+    },
+    {
+      "agreement_id": 1,
+      "users_id": 4,
+    },
+    {
+      "agreement_id": 2,
+      "users_id": 4,
     }
   ]
 }
