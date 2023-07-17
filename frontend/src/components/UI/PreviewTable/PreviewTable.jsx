@@ -17,6 +17,7 @@ import "./PreviewTable.scss";
  * @param {Function} [props.handleDeleteBudgetLine] - A function to handle deleting a budget line. - optional
  * @param {Function} [props.handleDuplicateBudgetLine] - A function to handle duplicating a budget line. - optional
  * @param {Boolean} [props.readOnly] - A flag to indicate if the table is read-only.
+ * @param {Array<String>} [props.errors] - An array of error messages to display (optional).
  * @returns {JSX.Element} - The rendered table component.
  */
 export const PreviewTable = ({
@@ -25,6 +26,7 @@ export const PreviewTable = ({
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
+    errors = [],
 }) => {
     const sortedBudgetLines = budgetLinesAdded
         .slice()
