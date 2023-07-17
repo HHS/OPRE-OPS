@@ -8,9 +8,13 @@ import Alert from "../../../components/UI/Alert";
 import "./AgreementsList.scss";
 import AgreementsTable from "./AgreementsTable";
 import AgreementsFilterHeaderSection from "./AgreementsFilterHeaderSection";
+import { useSearchParams } from "react-router-dom";
 
-export const AgreementsList = ({ filter }) => {
+export const AgreementsList = () => {
+    const [searchParams] = useSearchParams();
     const isAlertActive = useSelector((state) => state.alert.isActive);
+
+    console.log("searchParams", searchParams);
 
     const {
         data: agreements,
@@ -42,7 +46,7 @@ export const AgreementsList = ({ filter }) => {
     }
 
     let sortedAgreements;
-    if (filter === "my-agreements") {
+    if (searchParams.get("filter") === "my-agreements") {
         const filteredAgreements = agreements.filter((agreement) => {
             return agreement.team_members?.some((teamMember) => {
                 return teamMember.id === activeUser.id;

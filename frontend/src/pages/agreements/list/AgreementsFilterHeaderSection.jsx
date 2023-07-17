@@ -12,20 +12,24 @@ export const AgreementsFilterHeaderSection = () => {
 
     const paths = [
         {
-            name: "/all-agreements",
+            name: "?filter=all-agreements",
             label: "All Agreements",
         },
         {
-            name: "/my-agreements",
+            name: "?filter=my-agreements",
             label: "My Agreements",
         },
     ];
 
     const links = paths.map((path) => {
-        const pathName = `/agreements${path.name}`;
+        const queryString = `${path.name}`;
 
         return (
-            <Link to={pathName} className={location.pathname === pathName ? selected : notSelected} key={pathName}>
+            <Link
+                to={queryString}
+                className={location.search === queryString ? selected : notSelected}
+                key={queryString}
+            >
                 {path.label}
             </Link>
         );
