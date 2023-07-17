@@ -29,7 +29,8 @@ import { convertCodeForDisplay } from "../../../../helpers/utils";
  * @param {Object} props.selectedProcurementShop - The selected procurement shop.
  * @param {Array<any>} props.existingBudgetLines - An array of existing budget lines.
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
- * @param {string} [props.formMode] - The mode of the form (e.g. "create", "edit", "review"). - optional
+ * @param {boolean} props.isEditMode - Whether the form is in edit mode.
+ * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {Function} [props.continueOverRide] - A function to override the default "Continue" button behavior. - optional
  * @param {"agreement" | "budgetLines"} props.workflow - The workflow type ("agreement" or "budgetLines").
  * @returns {JSX.Element} - The rendered component.
@@ -45,13 +46,12 @@ export const StepCreateBudgetLines = ({
     existingBudgetLines = [],
     continueBtnText,
     continueOverRide,
-    formMode,
+    isEditMode,
+    isReviewMode,
     workflow,
 }) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
-    const [isEditMode, setIsEditMode] = React.useState(false);
-    const [isReviewMode, setIsReviewMode] = React.useState(false);
 
     const {
         selected_can: selectedCan,
@@ -100,24 +100,6 @@ export const StepCreateBudgetLines = ({
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [existingBudgetLines]);
-
-    React.useEffect(() => {
-        switch (formMode) {
-            case "edit":
-                setIsEditMode(true);
-                break;
-            case "review":
-                setIsReviewMode(true);
-                break;
-            default:
-                return;
-        }
-        return () => {
-            setIsReviewMode(false);
-            setIsEditMode(false);
-            suite.reset();
-        };
-    }, [formMode, newBudgetLines]);
 
     let res = suite.get();
     const pageErrors = res.getErrors();
@@ -303,7 +285,8 @@ export const StepCreateBudgetLines = ({
                 handleEditForm={handleEditForm}
                 handleResetForm={handleResetForm}
                 handleSubmitForm={handleSubmitForm}
-                formMode={formMode}
+                isEditMode={isEditMode}
+                isReviewMode={isReviewMode}
             />
             <h2 className="font-sans-lg">Budget Lines</h2>
             <p>
