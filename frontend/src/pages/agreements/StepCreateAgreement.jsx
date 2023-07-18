@@ -33,9 +33,10 @@ import { useGetProductServiceCodesQuery } from "../../api/opsAPI";
  * @param {Object} props - The component props.
  * @param {Function} [props.goBack] - A function to go back to the previous step. - optional
  * @param {Function} [props.goToNext] - A function to go to the next step. - optional
- * @param {string} [props.formMode] - The mode of the form (e.g. "create", "edit", "review"). - optional
+ * @param {boolean} [props.isEditMode] - Whether the form is in edit mode. - optional
+ * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
  */
-export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
+export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode }) => {
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setSelectedProductServiceCode = useSetState("selected_product_service_code");
@@ -55,8 +56,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
-    const [isEditMode, setIsEditMode] = React.useState(false);
-    const [isReviewMode, setIsReviewMode] = React.useState(false);
 
     const navigate = useNavigate();
     const dispatch = useCreateAgreementDispatch();
@@ -86,26 +85,11 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
         isLoading: isLoadingProductServiceCodes,
     } = useGetProductServiceCodesQuery();
 
-    React.useEffect(() => {
-        switch (formMode) {
-            case "edit":
-                setIsEditMode(true);
-                break;
-            case "review":
-                setIsReviewMode(true);
-                suite({
-                    ...agreement,
-                });
-                break;
-            default:
-                return;
-        }
-        return () => {
-            setIsReviewMode(false);
-            setIsEditMode(false);
-            suite.reset();
-        };
-    }, [formMode, agreement]);
+    if (isReviewMode) {
+        suite({
+            ...agreement,
+        });
+    }
 
     if (isLoadingProductServiceCodes) {
         return <div>Loading...</div>;
