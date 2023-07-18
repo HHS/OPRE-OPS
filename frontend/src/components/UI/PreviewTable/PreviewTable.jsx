@@ -63,7 +63,15 @@ export const PreviewTable = ({
         };
 
         const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
+        const ifNoDescription = bl?.line_description ? "border-error" : undefined;
         const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
+        const errorClass = (item) => {
+            if (!item) {
+                return "border-error";
+            } else {
+                return undefined;
+            }
+        };
 
         const ChangeIcons = ({ budgetLine }) => {
             return (
@@ -108,19 +116,35 @@ export const PreviewTable = ({
         return (
             <Fragment key={bl?.id}>
                 <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
-                    <th scope="row" className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                    <th
+                        scope="row"
+                        className={`${errorClass(bl?.line_description)} ${removeBorderBottomIfExpanded}`}
+                        style={changeBgColorIfExpanded}
+                    >
                         {bl?.line_description}
                     </th>
-                    <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                    <td
+                        className={`${errorClass(formatted_date_needed)} ${removeBorderBottomIfExpanded}`}
+                        style={changeBgColorIfExpanded}
+                    >
                         {formatted_date_needed}
                     </td>
-                    <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                    <td
+                        className={`${errorClass(fiscalYear)} ${removeBorderBottomIfExpanded}`}
+                        style={changeBgColorIfExpanded}
+                    >
                         {fiscalYear || ""}
                     </td>
-                    <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                    <td
+                        className={`${errorClass(bl?.can?.number)} ${removeBorderBottomIfExpanded}`}
+                        style={changeBgColorIfExpanded}
+                    >
                         {bl?.can?.number}
                     </td>
-                    <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                    <td
+                        className={`${errorClass(bl?.amount)} ${removeBorderBottomIfExpanded}`}
+                        style={changeBgColorIfExpanded}
+                    >
                         <CurrencyFormat
                             value={bl?.amount || 0}
                             displayType={"text"}
@@ -214,7 +238,8 @@ export const PreviewTable = ({
 
     return (
         <>
-            <pre>{JSON.stringify(errors, null, 2)}</pre>
+            {/* <pre>{JSON.stringify(errors, null, 2)}</pre>
+            <pre>{JSON.stringify(sortedBudgetLines, null, 2)}</pre> */}
             <table className="usa-table usa-table--borderless width-full">
                 <thead>
                     <tr>

@@ -9,5 +9,9 @@
 }
 .border-bottom-none {
     border-bottom: none !important;
+}
 
+.border-error {
+    border-bottom: 0.25em solid #b50909 !important;
+    color: #b50909;
 }
