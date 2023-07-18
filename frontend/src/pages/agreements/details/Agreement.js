@@ -58,19 +58,22 @@ const Agreement = () => {
 
     return (
         <App>
-            <h2>WIP: View Agreement</h2>
-            <Breadcrumb currentName={`TODO: Portfolios > Project Name > ${agreement.name}`} />
+            <Breadcrumb currentName={`> TODO: Project Name > ${agreement.name}`} />
 
-            <h1>{agreement.name}</h1>
-            <div>
+            <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>
+                {agreement.name}
+            </h1>
+            <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>{agreement.research_project.title}</h2>
+
+           <div>
                 <section className="display-flex flex-justify margin-top-3">
                     <DetailsTabs agreementId={agreement.id} />
                 </section>
 
-                     <Routes>
-                        <Route path="" element={<AgreementDetails agreement={agreement} />} />
-                        <Route path="budget-lines" element={<AgreementBudgetLines agreement={agreement} />} />
-                     </Routes>
+                 <Routes>
+                    <Route path="" element={<AgreementDetails agreement={agreement} />} />
+                    <Route path="budget-lines" element={<AgreementBudgetLines agreement={agreement} />} />
+                 </Routes>
             </div>
         </App>
     );

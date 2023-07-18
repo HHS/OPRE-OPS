@@ -13,7 +13,7 @@ import Tag from "../Tag/Tag";
  * @returns {JSX.Element} - The rendered component.
  */
 export const TableTag = ({ status }) => {
-    const statusText = convertCodeForDisplay("budgetLineType", status);
+    const statusText = convertCodeForDisplay("budgetLineStatus", status);
     let classNames = "padding-x-105 padding-y-1 ";
     switch (statusText) {
         case "Draft":

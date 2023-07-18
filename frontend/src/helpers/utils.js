@@ -26,7 +26,7 @@ export const formatDate = (date) => {
  * @typedef {Object} CodesToDisplayText
  * @property {Object.<string, string>} agreementType - Display text for agreement types.
  * @property {Object.<string, string>} agreementReason - Display text for agreement reasons.
- * @property {Object.<string, string>} budgetLineType - Display text for budget line types.
+ * @property {Object.<string, string>} budgetLineStatus - Display text for budget line types.
  * @property {Object.<string, string>} validation - Display text for validation errors.
  */
 
@@ -47,11 +47,11 @@ const codesToDisplayText = {
         RECOMPETE: "Recompete",
         LOGICAL_FOLLOW_ON: "Logical Follow On",
     },
-    budgetLineType: {
+    budgetLineStatus: {
         DRAFT: "Draft",
         UNDER_REVIEW: "In Review",
-        IN_EXECUTION: "Executing",
         PLANNED: "Planned",
+        IN_EXECUTION: "Executing",
         OBLIGATED: "Obligated",
     },
     validation: {
@@ -72,12 +72,12 @@ const codesToDisplayText = {
 
 /**
  * Converts a code value into a display text value based on a predefined mapping.
- * @param {("agreementType" | "agreementReason" | "budgetLineType" | "validation")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
+ * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
  * @param {string} code - The code value to convert. This parameter is required.
  * @returns {string} The display text value for the code, or the original code value if no mapping is found.
  * @throws {Error} If either the listName or code parameter is not provided.
  * @example convertCodeForDisplay("agreementReason", reason)
- * @example convertCodeForDisplay("budgetLineType", budgetLineType)
+ * @example convertCodeForDisplay("budgetLineStatus", budgetLineStatus)
  * @example convertCodeForDisplay("validation", "name")
  */
 export const convertCodeForDisplay = (listName, code) => {
