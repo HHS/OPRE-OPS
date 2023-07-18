@@ -56,6 +56,9 @@ def test_agreements_serialization(auth_client, loaded_db):
     del json_to_compare["team_members"][0]["created_on"]
     del json_to_compare["team_members"][0]["date_joined"]
     del json_to_compare["team_members"][0]["updated_on"]
+    del json_to_compare["team_members"][1]["created_on"]
+    del json_to_compare["team_members"][1]["date_joined"]
+    del json_to_compare["team_members"][1]["updated_on"]
 
     assert json_to_compare == {
         "agreement_reason": "NEW_REQ",
@@ -86,7 +89,18 @@ def test_agreements_serialization(auth_client, loaded_db):
                 "last_name": "Fortunato",
                 "oidc_id": "00000000-0000-1111-a111-000000000001",
                 "updated": None,
-            }
+            },
+            {
+                "created_by": None,
+                "division": 2,
+                "email": "Amelia.Popham@example.com",
+                "first_name": "Amelia",
+                "full_name": "Amelia Popham",
+                "id": 4,
+                "last_name": "Popham",
+                "oidc_id": "00000000-0000-1111-a111-000000000004",
+                "updated": None,
+            },
         ],
         "vendor": "Vendor 1",
         "status": "DRAFT",
