@@ -23,8 +23,12 @@ const sortAgreements = (agreements) => {
     });
 
     const sortedAgreements = agreementsCopy.sort((a, b) => {
-        const aMinDateNeeded = Math.min(...a.budget_line_items);
-        const bMinDateNeeded = Math.min(...b.budget_line_items);
+        const aMinDateNeeded = Math.min(
+            ...a.budget_line_items.filter((bli) => bli.date_needed).map((bli) => bli.date_needed)
+        );
+        const bMinDateNeeded = Math.min(
+            ...b.budget_line_items.filter((bli) => bli.date_needed).map((bli) => bli.date_needed)
+        );
 
         if ((!aMinDateNeeded && bMinDateNeeded) || aMinDateNeeded < bMinDateNeeded) {
             return -1;
