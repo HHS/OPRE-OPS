@@ -1,6 +1,6 @@
 import { create, test, enforce, group, skip } from "vest";
 
-const suite = create((data, fieldName) => {
+const suite = create((data) => {
     // uncomment to test only one field at a time which breaks the group validation
     // only(fieldName);
     if (!data.enteredDay || !data.enteredMonth || !data.enteredYear) skip.group("allDates");

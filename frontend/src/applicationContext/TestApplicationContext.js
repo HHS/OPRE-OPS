@@ -1,5 +1,6 @@
-import "jest";
+import "@testing-library/jest-dom";
 import { authConfig, backEndConfig } from "../helpers/test";
+import { jest } from "@jest/globals";
 
 class TestApplicationContext {
     static #helpers = {

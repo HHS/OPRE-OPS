@@ -3,14 +3,14 @@ import { setPortfolio, setPortfolioBudget } from "./portfolioBudgetSummarySlice"
 import ApplicationContext from "../../../applicationContext/ApplicationContext";
 
 export const getPortfolioAndSetState = (portfolioId) => {
-    return async (dispatch, getState) => {
+    return async (dispatch) => {
         const returnedPortfolio = await getPortfolio(portfolioId);
         dispatch(setPortfolio(returnedPortfolio));
     };
 };
 
 export const getPortfolioFundingAndSetState = (portfolioId, fiscalYear) => {
-    return async (dispatch, getState) => {
+    return async (dispatch) => {
         const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;
 
         const data = await ApplicationContext.get()

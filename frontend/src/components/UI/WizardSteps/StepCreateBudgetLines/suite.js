@@ -8,7 +8,7 @@ const suite = create((data) => {
         enforce(data.new_budget_lines).longerThan(0);
     });
     // test budget_line_items array
-    each(data.new_budget_lines, (item, index) => {
+    each(data.new_budget_lines, (item) => {
         test(`Budget line item (${item.line_description})`, "Description cannot be blank", () => {
             enforce(item.line_description).isNotBlank();
         });

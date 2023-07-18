@@ -27,7 +27,6 @@ import CurrencyInput from "./CurrencyInput";
  * @param {function} props.handleEditForm - A function to handle editing the budget line form.
  * @param {function} props.handleSubmitForm - A function to handle submitting the budget line form.
  * @param {function} props.handleResetForm - A function to handle resetting the budget line form.
- * @param {boolean} props.isEditMode - Whether the form is in edit mode.
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @returns {JSX.Element} - The rendered component.
  */
@@ -50,7 +49,6 @@ export const CreateBudgetLinesForm = ({
     handleEditForm = () => {},
     handleSubmitForm = () => {},
     handleResetForm = () => {},
-    isEditMode,
     isReviewMode,
 }) => {
     let res = suite.get();
