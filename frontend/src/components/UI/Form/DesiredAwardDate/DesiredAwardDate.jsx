@@ -29,10 +29,17 @@ export const DesiredAwardDate = ({
     res,
     cn,
 }) => {
+    const dateGroupErrors = Object.values(res.getErrorsByGroup("allDates"));
+    const isThereDateGroupErrors = dateGroupErrors.length > 0;
     return (
         <div className="usa-form-group">
             <fieldset className="usa-fieldset">
-                <legend className="usa-legend">Need By Date</legend>
+                <legend className={`usa-legend ${isThereDateGroupErrors ? "usa-error-message text-bold" : null}`}>
+                    Need By Date
+                </legend>
+                {isThereDateGroupErrors && (
+                    <span className="text-error border-left-2px padding-left-2px">{dateGroupErrors}</span>
+                )}
                 <div className="display-flex">
                     <MonthSelect
                         name="enteredMonth"
