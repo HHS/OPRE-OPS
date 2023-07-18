@@ -208,3 +208,10 @@ def test_history_expanded_with_web_client(auth_client, loaded_db):
     assert result.original["description"] == patch_data["description"]
     assert result.original["notes"] == patch_data["notes"]
     assert len(result.diff) == 0
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_get_history_list(auth_client):
+    response = auth_client.get("/api/v1/ops-db-histories/")
+    assert response.status_code == 200

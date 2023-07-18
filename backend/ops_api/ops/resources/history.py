@@ -16,7 +16,7 @@ class OpsDBHistoryListAPI(BaseListAPI):
     def get(self) -> Response:
         class_name = request.args.get("class_name", None)
         row_key = request.args.get("row_key", None)
-        with handle_sql_error:
+        with handle_sql_error():
             stmt = select(self.model)
             if class_name:
                 stmt = stmt.where(self.model.class_name == class_name)
