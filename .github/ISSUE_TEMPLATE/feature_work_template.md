@@ -20,7 +20,7 @@ _As a [type of user], I want to [do something] [to produce this outcome]_
 ### Tasks
 #### UX
 
-#### Devß
+#### Dev
 
 ### Definition of Done Checklist
 - [ ] Usability validated
