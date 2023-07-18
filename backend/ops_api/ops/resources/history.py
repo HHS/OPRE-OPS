@@ -31,4 +31,3 @@ class OpsDBHistoryListAPI(BaseListAPI):
             else:
                 response = make_response_with_headers({}, 404)
             return response
-
