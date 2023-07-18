@@ -4,6 +4,7 @@ export const patchAgreement = async (id, item) => {
     const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;
     const data = { ...item };
     // remove fields that are not allowed
+    // eslint-disable-next-line no-unused-vars
     const { id: _id, budget_line_items, created_by, created_on, updated_on, ...patchData } = data;
 
     const responseData = await ApplicationContext.get()
