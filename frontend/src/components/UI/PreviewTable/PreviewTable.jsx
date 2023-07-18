@@ -62,8 +62,8 @@ export const PreviewTable = ({
             setIsRowActive(true);
         };
 
+        // styles for the table row
         const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
-        const ifNoDescription = bl?.line_description ? "border-error" : undefined;
         const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
         const errorClass = (item) => {
             if (!item) {
