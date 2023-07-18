@@ -10,6 +10,10 @@ import AgreementsTable from "./AgreementsTable";
 import AgreementsFilterHeaderSection from "./AgreementsFilterHeaderSection";
 import { useSearchParams } from "react-router-dom";
 
+/**
+ * Page for the Agreements List.
+ * @returns {ReactNode} The rendered component.
+ */
 export const AgreementsList = () => {
     const [searchParams] = useSearchParams();
     const isAlertActive = useSelector((state) => state.alert.isActive);

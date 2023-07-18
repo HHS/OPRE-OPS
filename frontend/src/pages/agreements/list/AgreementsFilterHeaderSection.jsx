@@ -3,6 +3,10 @@ import { Link, useLocation } from "react-router-dom";
 import styles from "../../../components/Portfolios/PortfolioTabsSection/PortfolioTabsSection.module.scss";
 import TabsSection from "../../../components/UI/TabsSection";
 
+/**
+ * Header section above the Agreements List table.
+ * @returns {ReactNode} The rendered component.
+ */
 export const AgreementsFilterHeaderSection = () => {
     const location = useLocation();
 

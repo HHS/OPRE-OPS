@@ -1,6 +1,12 @@
 import "./AgreementsList.scss";
 import { AgreementTableRow } from "./AgreementTableRow";
 
+/**
+ * Agreement table.
+ * @param {Object} props - The component props.
+ * @param {Object[]} props.agreements - Array of Agreement to display in the table.
+ * @returns {ReactNode} The rendered component.
+ */
 export const AgreementsTable = ({ agreements }) => {
     return (
         <table className="usa-table usa-table--borderless width-full ">
