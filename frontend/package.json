@@ -44,7 +44,7 @@
         "cypress": "12.17.1",
         "cypress-axe": "1.4.0",
         "cypress-localstorage-commands": "2.2.3",
-        "eslint-config-prettier": "8.8.0",
+        "eslint-config-prettier": "^8.8.0",
         "eslint-plugin-cypress": "2.13.3",
         "eslint-plugin-import": "2.27.5",
         "eslint-plugin-prettier": "4.2.1",
