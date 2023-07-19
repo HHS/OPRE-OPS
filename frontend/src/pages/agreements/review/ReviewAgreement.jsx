@@ -91,14 +91,13 @@ export const ReviewAgreement = ({ agreement_id }) => {
         return <h1>Loading...</h1>;
     }
     if (errorAgreement) {
-        return <h1>Oops, an error occured</h1>;
+        return <h1>Oops, an error occurred</h1>;
     }
 
     // convert page errors about budget lines object into an array of objects
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
     const budgetLineErrors = res.getErrors("budget-line-items");
-    console.log(`budgetLinePageErrors:  ${budgetLinePageErrors}`);
     const budgetLineErrorsExist = budgetLineErrors.length > 0;
     const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist;
 
