@@ -18,7 +18,6 @@ import "./PreviewTable.scss";
  * @param {Function} [props.handleDeleteBudgetLine] - A function to handle deleting a budget line. - optional
  * @param {Function} [props.handleDuplicateBudgetLine] - A function to handle duplicating a budget line. - optional
  * @param {Boolean} [props.readOnly] - A flag to indicate if the table is read-only.
- * @param {Array<any>} [props.errors] - An array of errors to display. - optional
  * @returns {JSX.Element} - The rendered table component.
  */
 export const PreviewTable = ({
@@ -27,7 +26,6 @@ export const PreviewTable = ({
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
-    errors = [],
 }) => {
     const sortedBudgetLines = budgetLinesAdded
         .slice()
@@ -67,6 +65,17 @@ export const PreviewTable = ({
         const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
         const errorClass = (item) => {
             if (!item) {
+                return "border-error";
+            } else {
+                return undefined;
+            }
+        };
+        // error class for need_by_date to be in the future
+        const futureDateErrorClass = (item) => {
+            const today = new Date().valueOf();
+            const dateNeeded = new Date(item).valueOf();
+            // enforce(dateNeeded).greaterThan(today);
+            if (dateNeeded < today) {
                 return "border-error";
             } else {
                 return undefined;
@@ -124,7 +133,9 @@ export const PreviewTable = ({
                         {bl?.line_description}
                     </th>
                     <td
-                        className={`${errorClass(formatted_date_needed)} ${removeBorderBottomIfExpanded}`}
+                        className={`${futureDateErrorClass(formatted_date_needed)} ${errorClass(
+                            formatted_date_needed
+                        )} ${removeBorderBottomIfExpanded}`}
                         style={changeBgColorIfExpanded}
                     >
                         {formatted_date_needed}
@@ -238,8 +249,6 @@ export const PreviewTable = ({
 
     return (
         <>
-            {/* <pre>{JSON.stringify(errors, null, 2)}</pre>
-            <pre>{JSON.stringify(sortedBudgetLines, null, 2)}</pre> */}
             <table className="usa-table usa-table--borderless width-full">
                 <thead>
                     <tr>
