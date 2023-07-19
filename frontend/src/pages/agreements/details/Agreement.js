@@ -71,7 +71,7 @@ const Agreement = () => {
                 </section>
 
                  <Routes>
-                    <Route path="" element={<AgreementDetails agreement={agreement} />} />
+                    <Route path="" element={<AgreementDetails agreement={agreement} projectOfficer={projectOfficer} />} />
                     <Route path="budget-lines" element={<AgreementBudgetLines agreement={agreement} />} />
                  </Routes>
             </div>

@@ -4,8 +4,9 @@ import {Link} from "react-router-dom";
 import Terms from "../review/Terms";
 import {convertCodeForDisplay} from "../../../helpers/utils";
 import Tag from "../../../components/UI/Tag/Tag";
+import {useState} from "react";
 
-const AgreementDetails =  ({ agreement }) => {
+const AgreementDetails =  ({ agreement, projectOfficer }) => {
 
     let {budget_line_items: _, ...agreement_details} = agreement;
 
@@ -46,7 +47,7 @@ const AgreementDetails =  ({ agreement }) => {
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
                             <dd className="text-semibold margin-0 margin-top-05">
-                                {agreement.description}
+                                {agreement?.description}
                             </dd>
                             <dt className="margin-0 text-base-dark margin-top-3">Notes</dt>
                             <dd className="text-semibold margin-0 margin-top-05">
@@ -61,52 +62,93 @@ const AgreementDetails =  ({ agreement }) => {
                     <div className="grid-col-6">
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Agreement Type</dt>
-                            <dd className="text-semibold margin-0 margin-top-05">
-                                <Tag tagStyle="darkTextLightBackground" text={convertCodeForDisplay("agreementType", agreement.agreement_type)}/>
+                            <dd className="text-semibold margin-0 margin-top-1">
+                                <Tag tagStyle="primaryDarkTextLightBackground" text={convertCodeForDisplay("agreementType", agreement?.agreement_type)}/>
 
                             </dd>
                             <dt className="margin-0 text-base-dark margin-top-3">Product Service Code</dt>
-                            <dd className="text-semibold margin-0 margin-top-05">
-                                <Tag tagStyle="darkTextLightBackground" text={agreement.product_service_code?.name}/>
+                            <dd className="text-semibold margin-0 margin-top-1">
+                                <Tag tagStyle="primaryDarkTextLightBackground" text={agreement?.product_service_code?.name}/>
                             </dd>
-                            <dt className="margin-0 text-base-dark margin-top-3">NAICS Code</dt>
-                            <dd className="text-semibold margin-0 margin-top-05">
-                                <Tag tagStyle="darkTextLightBackground" text={agreement.product_service_code?.naics}/>
-                            </dd>
-                            <dt className="margin-0 text-base-dark margin-top-3">Program Support Code</dt>
-                            <dd className="text-semibold margin-0 margin-top-05">
-                                <Tag tagStyle="darkTextLightBackground" text={agreement?.product_service_code?.support_code}/>
-                            </dd>
+                        </dl>
+                        <div className="display-flex">
+                            <dl className="grid-col-4 margin-0 font-12px">
+                                <dt className="margin-0 text-base-dark margin-top-3">NAICS Code</dt>
+                                <dd className="text-semibold margin-0 margin-top-1">
+                                    <Tag tagStyle="primaryDarkTextLightBackground" text={agreement?.product_service_code?.naics}/>
+                                </dd>
+                            </dl>
+                            <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
+                                <dt className="margin-0 text-base-dark margin-top-3">Program Support Code</dt>
+                                <dd className="text-semibold margin-0 margin-top-1">
+                                    <Tag tagStyle="primaryDarkTextLightBackground" text={agreement?.product_service_code?.support_code}/>
+                                </dd>
 
+                            </dl>
+                        </div>
+                        <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Procurement Shop</dt>
-                            <dd className="text-semibold margin-0 margin-top-05">
-                                <Tag tagStyle="darkTextLightBackground" text={`${agreement?.procurement_shop?.abbr} - Fee Rate: ${
+                            <dd className="text-semibold margin-0 margin-top-1">
+                                <Tag tagStyle="primaryDarkTextLightBackground" text={`${agreement?.procurement_shop?.abbr} - Fee Rate: ${
                                     agreement?.procurement_shop?.fee * 100
                                 }%`}/>
                             </dd>
-                            <dt className="margin-0 text-base-dark margin-top-3">Agreement Reason</dt>
-                            <dd className="text-semibold margin-0 margin-top-05">
-                                <Tag tagStyle="darkTextLightBackground" text={convertCodeForDisplay("agreementReason", agreement?.agreement_reason)}/>
-                            </dd>
-                            <dt className="margin-0 text-base-dark margin-top-3">Incumbent</dt>
-                            <dd className="text-semibold margin-0 margin-top-05">
-                                <Tag tagStyle="darkTextLightBackground" text={agreement?.incumbent}/>
-                            </dd>
+
+                        </dl>
+                        <div className="display-flex">
+                            <dl className="grid-col-4 margin-0 font-12px">
+                                <dt className="margin-0 text-base-dark margin-top-3">Agreement Reason</dt>
+                                <dd className="text-semibold margin-0 margin-top-1">
+                                    <Tag tagStyle="primaryDarkTextLightBackground" text={convertCodeForDisplay("agreementReason", agreement?.agreement_reason)}/>
+                                </dd>
+                            </dl>
+                            {agreement?.incumbent && (
+                                <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
+                                    <dt className="margin-0 text-base-dark margin-top-3">Incumbent</dt>
+                                    <dd className="text-semibold margin-0 margin-top-1">
+                                        <Tag tagStyle="primaryDarkTextLightBackground" text={agreement?.incumbent}/>
+                                    </dd>
+                                </dl>
+                            )}
+                        </div>
+                        <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Project Officer</dt>
-                            <dd className="text-semibold margin-0 margin-top-05">
-                                <Tag tagStyle="darkTextLightBackground" text="TODO"/>
+                            <dd className="text-semibold margin-0 margin-top-1">
+                                <Tag tagStyle="primaryDarkTextLightBackground" text={projectOfficer && Object.keys(projectOfficer).length !== 0 ? projectOfficer?.full_name : ""}/>
                             </dd>
                         </dl>
-
+                        <dl className="margin-0 font-12px">
+                            <dt className="margin-0 text-base-dark margin-top-3">Team Members</dt>
+                            {agreement?.team_members.length > 0 ? (
+                                <>
+                                    {agreement?.team_members.map((member) => (
+                                        <dd key={member.id} className="text-semibold margin-0 margin-top-1 margin-bottom-2">
+                                            <Tag tagStyle="primaryDarkTextLightBackground" text= {member.full_name}/>
+                                        </dd>
+                                    ))}
+                                </>
+                            ) : (
+                                <dd className="text-semibold margin-0 margin-top-1 margin-bottom-2">
+                                    <Tag tagStyle="primaryDarkTextLightBackground" text=""/>
+                                </dd>
+                            )}
+                        </dl>
                     </div>
                 </div>
             </section>
-            <pre>
-            {JSON.stringify(countsByStatus, null, 2)}
-            </pre>
-            <pre>
-            {JSON.stringify(agreement_details, null, 2)}
-            </pre>
+
+            <div style={{background: "#cccccc", border: "1px dashed #999999"}}>
+                <h2>TEMP DEBUG</h2>
+                <pre>
+                {JSON.stringify(countsByStatus, null, 2)}
+                </pre>
+                <pre>
+                {JSON.stringify(projectOfficer, null, 2)}
+                </pre>
+                <pre>
+                {JSON.stringify(agreement_details, null, 2)}
+                </pre>
+            </div>
         </div>
     );
 };
