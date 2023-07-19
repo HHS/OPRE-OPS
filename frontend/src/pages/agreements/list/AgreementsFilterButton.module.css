@@ -10,9 +10,11 @@
   right: 0;
   top: 3em;
   background-color: #A9AEB1;
+  z-index: 10;
 }
 
 .agreementsFilterOverlay {
+  background-color: #A9AEB1;
 }
 
 .container {
