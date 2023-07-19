@@ -5,10 +5,10 @@ import { AgreementTableRow } from "./AgreementTableRow";
  * Agreement table.
  * @param {Object} props - The component props.
  * @param {Object[]} props.agreements - Array of Agreement to display in the table.
- * @returns {ReactNode} The rendered component.
+ * @returns {{agreements}} The rendered component.
  */
-export const AgreementsTable = ({ agreements }) => {
-    return (
+export const AgreementsTable = ({ agreements = [] }) => {
+    return agreements.length > 0 ? (
         <table className="usa-table usa-table--borderless width-full ">
             <thead>
                 <tr>
@@ -28,6 +28,8 @@ export const AgreementsTable = ({ agreements }) => {
                 ))}
             </tbody>
         </table>
+    ) : (
+        <div className="padding-1 text-bold">No agreements found.</div>
     );
 };
 

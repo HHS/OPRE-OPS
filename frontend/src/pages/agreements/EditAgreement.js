@@ -48,7 +48,12 @@ const EditAgreement = () => {
     if (errorAgreement) {
         return <div>Oops, an error occurred</div>;
     }
-    if (agreement.status !== "DRAFT" && agreement.status !== "UNDER_REVIEW") {
+
+    const agreementStatus = agreement?.budget_line_items?.find((bli) => bli.status === "UNDER_REVIEW")
+        ? "In Review"
+        : "Draft";
+
+    if (agreementStatus !== "Draft" && agreementStatus !== "In Review") {
         return (
             <App>
                 <SimpleAlert
@@ -59,11 +64,10 @@ const EditAgreement = () => {
             </App>
         );
     }
-
     return (
         <App>
             <CreateAgreementProvider agreement={agreement} projectOfficer={projectOfficer}>
-                <CreateEditAgreement existingBudgetLines={agreement.budget_line_items} isEditMode={true} />
+                <CreateEditAgreement existingBudgetLines={agreement.budget_line_items} />
             </CreateAgreementProvider>
         </App>
     );
