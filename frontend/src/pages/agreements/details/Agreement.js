@@ -1,15 +1,10 @@
 import App from "../../../App";
-import { CreateAgreementProvider } from "../CreateAgreementContext";
-import CreateEditAgreement from "../CreateEditAgreement";
-import { useParams, Switch, Route, Routes } from "react-router-dom";
+import { useParams, Route, Routes } from "react-router-dom";
 import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 import { useEffect, useState } from "react";
 import { getUser } from "../../../api/getUser";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs/DetailsTabs";
-import TabsSection from "../../../components/Portfolios/TabsSection/TabsSection";
-import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
-import { setSelectedFiscalYear } from "../../portfolios/detail/portfolioSlice";
 import AgreementDetails from "./AgreementDetails";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 

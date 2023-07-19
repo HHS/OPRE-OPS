@@ -16,7 +16,7 @@ const DetailsTabs = ({ agreementId }) => {
         {
             name: "/budget-lines",
             label: "Budget Lines",
-        }
+        },
     ];
 
     const links = paths.map((path) => {
