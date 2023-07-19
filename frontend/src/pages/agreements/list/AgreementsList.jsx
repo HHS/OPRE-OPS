@@ -1,21 +1,31 @@
 import { useSelector } from "react-redux";
 import { useGetAgreementsQuery } from "../../../api/opsAPI";
 import App from "../../../App";
-import { AgreementTableRow } from "./AgreementTableRow";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import sortAgreements from "./utils";
 import { useEffect } from "react";
 import Alert from "../../../components/UI/Alert";
 import "./AgreementsList.scss";
+import AgreementsTable from "./AgreementsTable";
+import AgreementsFilterHeaderSection from "./AgreementsFilterHeaderSection";
+import { useSearchParams } from "react-router-dom";
 
+/**
+ * Page for the Agreements List.
+ * @returns {ReactNode} The rendered component.
+ */
 export const AgreementsList = () => {
+    const [searchParams] = useSearchParams();
     const isAlertActive = useSelector((state) => state.alert.isActive);
+
     const {
         data: agreements,
         error: errorAgreement,
         isLoading: isLoadingAgreement,
         refetch,
     } = useGetAgreementsQuery({ refetchOnMountOrArgChange: true });
+
+    const activeUser = useSelector((state) => state.auth.activeUser);
 
     useEffect(() => {
         refetch();
@@ -37,7 +47,18 @@ export const AgreementsList = () => {
         );
     }
 
-    const sortedAgreements = sortAgreements(agreements);
+    let sortedAgreements;
+    if (searchParams.get("filter") === "my-agreements") {
+        const filteredAgreements = agreements.filter((agreement) => {
+            return agreement.team_members?.some((teamMember) => {
+                return teamMember.id === activeUser.id;
+            });
+        });
+        sortedAgreements = sortAgreements(filteredAgreements);
+    } else {
+        // all-agreements
+        sortedAgreements = sortAgreements(agreements);
+    }
 
     return (
         <App>
@@ -46,25 +67,8 @@ export const AgreementsList = () => {
 
             <h1 className="font-sans-lg">Agreements</h1>
             <p>This is a list of the agreements you are listed as a Team Member on.</p>
-            <table className="usa-table usa-table--borderless width-full ">
-                <thead>
-                    <tr>
-                        <th scope="col">Agreement</th>
-                        <th scope="col">Project</th>
-                        <th scope="col">Type</th>
-                        <th scope="col">Total</th>
-                        <th scope="col">Need By</th>
-                        <th scope="col" className="padding-0" style={{ width: "6.25rem" }}>
-                            Status
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {sortedAgreements?.map((agreement) => (
-                        <AgreementTableRow key={agreement?.id} agreement={agreement} />
-                    ))}
-                </tbody>
-            </table>
+            <AgreementsFilterHeaderSection />
+            <AgreementsTable agreements={sortedAgreements} />
         </App>
     );
 };
