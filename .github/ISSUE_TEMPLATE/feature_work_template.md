@@ -23,7 +23,7 @@ _As a [type of user], I want to [do something] [to produce this outcome]_
 #### Dev
 
 ### Definition of Done Checklist
-- [ ] Usability validated
+- [ ] Usability validated (UX team)
 - [ ] PR(s) have been merged to main
 - [ ] Design/tech debt eliminated
 - [ ] Build process updated

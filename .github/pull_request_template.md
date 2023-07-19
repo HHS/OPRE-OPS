@@ -15,7 +15,7 @@ _Write out steps for how someone could test this PR against the acceptance crite
 _If relevant, e.g. for a front-end feature_
 
 ## Definition of Done Checklist
-- [ ] UI works as designed
+- [ ] UI works as designed (UX team)
 - [ ] OESA: Code refactored for clarity
 - [ ] OESA: Dependency rules followed
 - [ ] Automated unit tests updated and passed
