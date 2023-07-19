@@ -14,17 +14,18 @@ import styles from "./ListItem.module.css";
  * @returns {JSX.Element} - The rendered component.
  */
 export const ListItem = ({ title, createdOn, message, variant }) => {
+    const isCondensed = variant === "condensed";
     return (
         <li className={styles.notificationListItem} id="notification-center-list">
             <div className="display-flex flex-justify">
-                <span className="text-bold">{title}</span>
+                <span className={`text-bold ${isCondensed ? "font-12px" : undefined}`}>{title}</span>
                 <span className="font-12px display-flex flex-align-center">
                     <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1 text-base-dark" />
                     <span className="text-base-dark">{timeAgo(createdOn)}</span>
                 </span>
             </div>
-            <p>{message}</p>
-            {variant === "condensed" ? null : <hr className="height-1px bg-brand-neutral-lighter" />}
+            <p className={isCondensed ? "font-12px" : undefined}>{message}</p>
+            {isCondensed ? null : <hr className="height-1px bg-brand-neutral-lighter" />}
         </li>
     );
 };
