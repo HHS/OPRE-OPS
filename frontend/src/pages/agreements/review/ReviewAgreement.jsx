@@ -288,11 +288,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 )}
             </div>
 
-            <PreviewTable
-                readOnly={true}
-                budgetLinesAdded={agreement?.budget_line_items}
-                errors={budgetLinePageErrors}
-            />
+            <PreviewTable readOnly={true} budgetLinesAdded={agreement?.budget_line_items} />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className="usa-button usa-button--outline margin-right-2"
