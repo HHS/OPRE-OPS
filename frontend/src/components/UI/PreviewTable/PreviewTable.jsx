@@ -63,9 +63,10 @@ export const PreviewTable = ({
         // styles for the table row
         const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
         const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
-        const errorClass = (item) => {
+
+        const addErrorClassIfNotFound = (item) => {
             if (!item) {
-                return "border-error";
+                return "table-item-error";
             } else {
                 return undefined;
             }
@@ -74,9 +75,9 @@ export const PreviewTable = ({
         const futureDateErrorClass = (item) => {
             const today = new Date().valueOf();
             const dateNeeded = new Date(item).valueOf();
-            // enforce(dateNeeded).greaterThan(today);
+
             if (dateNeeded < today) {
-                return "border-error";
+                return "table-item-error";
             } else {
                 return undefined;
             }
@@ -127,13 +128,13 @@ export const PreviewTable = ({
                 <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
                     <th
                         scope="row"
-                        className={`${errorClass(bl?.line_description)} ${removeBorderBottomIfExpanded}`}
+                        className={`${addErrorClassIfNotFound(bl?.line_description)} ${removeBorderBottomIfExpanded}`}
                         style={changeBgColorIfExpanded}
                     >
                         {bl?.line_description}
                     </th>
                     <td
-                        className={`${futureDateErrorClass(formatted_date_needed)} ${errorClass(
+                        className={`${futureDateErrorClass(formatted_date_needed)} ${addErrorClassIfNotFound(
                             formatted_date_needed
                         )} ${removeBorderBottomIfExpanded}`}
                         style={changeBgColorIfExpanded}
@@ -141,19 +142,19 @@ export const PreviewTable = ({
                         {formatted_date_needed}
                     </td>
                     <td
-                        className={`${errorClass(fiscalYear)} ${removeBorderBottomIfExpanded}`}
+                        className={`${addErrorClassIfNotFound(fiscalYear)} ${removeBorderBottomIfExpanded}`}
                         style={changeBgColorIfExpanded}
                     >
                         {fiscalYear || ""}
                     </td>
                     <td
-                        className={`${errorClass(bl?.can?.number)} ${removeBorderBottomIfExpanded}`}
+                        className={`${addErrorClassIfNotFound(bl?.can?.number)} ${removeBorderBottomIfExpanded}`}
                         style={changeBgColorIfExpanded}
                     >
                         {bl?.can?.number}
                     </td>
                     <td
-                        className={`${errorClass(bl?.amount)} ${removeBorderBottomIfExpanded}`}
+                        className={`${addErrorClassIfNotFound(bl?.amount)} ${removeBorderBottomIfExpanded}`}
                         style={changeBgColorIfExpanded}
                     >
                         <CurrencyFormat
