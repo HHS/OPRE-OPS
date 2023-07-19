@@ -118,6 +118,13 @@
       division: 3,
       email: "stekell+sandbox@flexion.us",
       oidc_id: "7716138a-dec6-4976-9f31-e30fade3254d",
+    },
+    { // 18
+      first_name: "Jonathan",
+      last_name: "Nalley",
+      division: 3,
+      email: "jnalley+logingovsandbox@flexion.us",
+      oidc_id: "48f7db91-1861-4d4b-813c-a6221cb61b60",
     }
   ],
   roles: [
@@ -232,6 +239,10 @@
     },
     {
       user_id: 17,
+      role_id: 1,
+    },
+    {
+      user_id: 18,
       role_id: 1,
     },
   ],
@@ -353,6 +364,13 @@
       message: "This is a system notification",
       is_read: false,
       recipient_id: 17,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 18,
       expires: "2031-12-31"
     }
   ],
