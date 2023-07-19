@@ -7,7 +7,7 @@ import { AgreementTableRow } from "./AgreementTableRow";
  * @param {Object[]} props.agreements - Array of Agreement to display in the table.
  * @returns {{agreements}} The rendered component.
  */
-export const AgreementsTable = ({ agreements }) => {
+export const AgreementsTable = ({ agreements = [] }) => {
     return (
         agreements.length > 0 && (
             <table className="usa-table usa-table--borderless width-full ">
