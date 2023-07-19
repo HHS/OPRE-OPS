@@ -1,7 +1,7 @@
 import App from "../../../App";
 import { CreateAgreementProvider } from "../CreateAgreementContext";
 import CreateEditAgreement from "../CreateEditAgreement";
-import {useParams, Switch, Route, Routes} from "react-router-dom";
+import { useParams, Switch, Route, Routes } from "react-router-dom";
 import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 import { useEffect, useState } from "react";
 import { getUser } from "../../../api/getUser";
@@ -9,10 +9,9 @@ import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs/DetailsTabs";
 import TabsSection from "../../../components/Portfolios/TabsSection/TabsSection";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
-import {setSelectedFiscalYear} from "../../portfolios/detail/portfolioSlice";
+import { setSelectedFiscalYear } from "../../portfolios/detail/portfolioSlice";
 import AgreementDetails from "./AgreementDetails";
 import AgreementBudgetLines from "./AgreementBudgetLines";
-
 
 const Agreement = () => {
     const urlPathParams = useParams();
@@ -24,15 +23,9 @@ const Agreement = () => {
         data: agreement,
         error: errorAgreement,
         isLoading: isLoadingAgreement,
-        refetch,
     } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true,
     });
-
-    useEffect(() => {
-        refetch();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     useEffect(() => {
         const getProjectOfficerSetState = async (id) => {
@@ -60,20 +53,23 @@ const Agreement = () => {
         <App>
             <Breadcrumb currentName={`> TODO: Project Name > ${agreement.name}`} />
 
-            <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>
-                {agreement.name}
-            </h1>
-            <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>{agreement.research_project.title}</h2>
+            <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement.name}</h1>
+            <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
+                {agreement.research_project.title}
+            </h2>
 
-           <div>
+            <div>
                 <section className="display-flex flex-justify margin-top-3">
                     <DetailsTabs agreementId={agreement.id} />
                 </section>
 
-                 <Routes>
-                    <Route path="" element={<AgreementDetails agreement={agreement} projectOfficer={projectOfficer} />} />
+                <Routes>
+                    <Route
+                        path=""
+                        element={<AgreementDetails agreement={agreement} projectOfficer={projectOfficer} />}
+                    />
                     <Route path="budget-lines" element={<AgreementBudgetLines agreement={agreement} />} />
-                 </Routes>
+                </Routes>
             </div>
         </App>
     );
