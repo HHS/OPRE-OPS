@@ -9,11 +9,13 @@ import styles from "./TabsSection.module.scss";
  */
 const TabsSection = ({ links, label }) => {
     return (
-        <>
-            <nav className={`margin-bottom-4 ${styles.tabsList}`} aria-label={label} role={"navigation"}>
-                {links}
-            </nav>
-        </>
+        <nav
+            className={`margin-bottom-4 padding-left-0 flex-align-center flex-justify-center margin-top-2 ${styles.tabsList}`}
+            aria-label={label}
+            role={"navigation"}
+        >
+            {links}
+        </nav>
     );
 };
 

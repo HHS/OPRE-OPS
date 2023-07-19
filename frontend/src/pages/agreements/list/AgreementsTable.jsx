@@ -26,6 +26,7 @@ export const AgreementsTable = ({ agreements }) => {
                 {agreements?.map((agreement) => (
                     <AgreementTableRow key={agreement?.id} agreement={agreement} />
                 ))}
+                {agreements?.length === 0 && <div className="padding-1 text-bold">There are no agreements.</div>}
             </tbody>
         </table>
     );
