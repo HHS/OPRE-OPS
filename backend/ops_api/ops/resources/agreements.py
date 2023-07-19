@@ -4,7 +4,7 @@ from typing import Optional, ClassVar
 import desert
 from flask import Response, current_app, request
 from flask.views import MethodView
-from flask_jwt_extended import verify_jwt_in_request
+from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 from marshmallow import ValidationError, fields, Schema
 from models import ContractType, OpsEventType, User
 from models.base import BaseModel
@@ -238,14 +238,23 @@ class AgreementItemAPI(BaseItemAPI):
     def delete(self, id: int) -> Response:
         message_prefix = f"DELETE from {ENDPOINT_STRING}"
 
+        identity = get_jwt_identity()
+
         try:
             with OpsEventHandler(OpsEventType.DELETE_AGREEMENT) as meta:
                 agreement: Agreement = self._get_item(id)
+
+                from pprint import pprint
+                print("*"*80)
+                pprint(agreement.to_dict())
+                print("*"*80)
 
                 if not agreement:
                     raise RuntimeError(f"Invalid Agreement id: {id}.")
                 elif agreement.agreement_type != AgreementType.CONTRACT:
                     raise RuntimeError(f"Invalid Agreement type: {agreement.agreement_type}.")
+                elif identity not in set(([agreement.project_officer.oidc_id] if agreement.project_officer else []) + [tm.oidc_id for tm in agreement.team_members]):
+                    return make_response_with_headers({}, 401)
                 elif any(bli.status != BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items):
                     raise RuntimeError(f"Agreement {id} has budget line items not in draft status.")
 
