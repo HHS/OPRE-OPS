@@ -347,7 +347,7 @@ export const StepCreateBudgetLines = ({
                     className="usa-button"
                     data-cy="continue-btn"
                     onClick={saveBudgetLineItems}
-                    disabled={!res.isValid()}
+                    disabled={isReviewMode && !res.isValid()}
                 >
                     {isReviewMode ? "Review" : continueBtnText}
                 </button>
