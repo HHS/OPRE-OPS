@@ -52,7 +52,7 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
                 <h2 className="font-sans-lg">Agreement Details</h2>
 
                 <div className="grid-row margin-top-2">
-                    <div className="grid-col-6">
+                    <div className="grid-col-6 padding-right-1">
                         {/* NOTE: Left Column */}
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
@@ -60,14 +60,16 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
                                 {agreement?.description ? agreement.description : missingValueText}
                             </dd>
                         </dl>
-                        <h3 className="margin-0 text-base-dark margin-top-3 text-normal font-12px">Notes</h3>
-                        <ul className="usa-list--unstyled">
+                        <h3 className="text-base-dark margin-top-3 text-normal font-12px">Notes</h3>
+                        <ul className="usa-list--unstyled overflow-y-scroll" style={{ height: "11.375rem" }}>
+                            {/* TODO: Replace with real data */}
                             {notesData.map((note) => (
                                 <ListItem
                                     key={note.id}
                                     title={note.created_by}
                                     createdOn={note.created_on}
                                     message={note.message}
+                                    variant="condensed"
                                 />
                             ))}
                         </ul>
