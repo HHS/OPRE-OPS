@@ -296,7 +296,7 @@ export const StepCreateBudgetLines = ({
             {budgetLinePageErrorsExist && (
                 <ul className="usa-list--unstyled font-12px text-error" data-cy="error-list">
                     {Object.entries(pageErrors).map(([key, value]) => (
-                        <li key={key} className="border-left-2px border-error padding-left-1" data-cy="error-item">
+                        <li key={key} className="border-left-2px padding-left-1" data-cy="error-item">
                             <strong>{convertCodeForDisplay("validation", key)}: </strong>
                             {
                                 <span>
@@ -347,8 +347,7 @@ export const StepCreateBudgetLines = ({
                     className="usa-button"
                     data-cy="continue-btn"
                     onClick={saveBudgetLineItems}
-                    // TODO: uncomment this when validation is working
-                    // disabled={res.hasErrors()}
+                    disabled={!res.isValid()}
                 >
                     {isReviewMode ? "Review" : continueBtnText}
                 </button>
