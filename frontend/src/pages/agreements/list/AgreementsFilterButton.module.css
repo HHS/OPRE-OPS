@@ -1,0 +1,20 @@
+.filterButton {
+  background-color: #162E51;
+  color: #FFFFFF;
+}
+
+.agreementsFilterModal {
+  position: absolute;
+  height: 650px;
+  width: 460px;
+  right: 0;
+  top: 3em;
+  background-color: #A9AEB1;
+}
+
+.agreementsFilterOverlay {
+}
+
+.container {
+  position: relative;
+}

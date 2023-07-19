@@ -51,7 +51,7 @@ export const AgreementsFilterHeaderSection = ({ setFilterFunctions }) => {
                 <TabsSection links={links} label="Agreements Tabs Section" />
             </div>
             <div className="padding-top-05 padding-bottom-05 display-flex flex-justify-end">
-                <AgreementsFilterButton />
+                <AgreementsFilterButton setFilterFunctions={setFilterFunctions} />
             </div>
         </div>
     );
