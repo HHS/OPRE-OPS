@@ -33,11 +33,29 @@ export const AgreementsFilterButton = ({ setFilterFunctions }) => {
                 className={customStyles.agreementsFilterModal}
                 overlayClassName={customStyles.agreementsFilterOverlay}
             >
-                <div className="">
-                    <h1 className={`text-bold`}>Filters</h1>
-                    <div>
-                        <h3>Upcoming Need By Date</h3>
-                    </div>
+                <div className="margin-left-2">
+                    <h1 className="text-bold font-sans-lg margin-bottom-205 margin-top-205">Filters</h1>
+                    <fieldset className="usa-fieldset">
+                        <legend className="usa-legend font-sans-3xs">Upcoming Need By Date</legend>
+                        <ul className={customStyles.noBullets}>
+                            <li>
+                                <input id="next-30-days" type="radio" name="upcoming-need-by-date" checked />
+                                <label htmlFor="next-30-days">Next 30 days</label>
+                            </li>
+                            <li>
+                                <input id="next-6-months" type="radio" name="upcoming-need-by-date" />
+                                <label htmlFor="next-6-months">Next 6 months</label>
+                            </li>
+                            <li>
+                                <input id="current-fy" type="radio" name="upcoming-need-by-date" />
+                                <label htmlFor="current-fy">Current FY</label>
+                            </li>
+                            <li>
+                                <input id="all-time" type="radio" name="upcoming-need-by-date" />
+                                <label htmlFor="all-time">All time</label>
+                            </li>
+                        </ul>
+                    </fieldset>
                     <div>
                         <h3>Project</h3>
                     </div>
