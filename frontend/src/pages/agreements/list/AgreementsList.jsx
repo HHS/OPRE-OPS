@@ -3,12 +3,13 @@ import { useGetAgreementsQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import sortAgreements from "./utils";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Alert from "../../../components/UI/Alert";
 import "./AgreementsList.scss";
 import AgreementsTable from "./AgreementsTable";
 import AgreementsFilterHeaderSection from "./AgreementsFilterHeaderSection";
 import { useSearchParams } from "react-router-dom";
+import _ from "lodash";
 
 /**
  * Page for the Agreements List.
@@ -17,6 +18,7 @@ import { useSearchParams } from "react-router-dom";
 export const AgreementsList = () => {
     const [searchParams] = useSearchParams();
     const isAlertActive = useSelector((state) => state.alert.isActive);
+    const [filterFunctions, setFilterFunctions] = useState([]);
 
     const {
         data: agreements,
@@ -47,17 +49,25 @@ export const AgreementsList = () => {
         );
     }
 
+    let filteredAgreements = _.cloneDeep(agreements);
+    for (let filterFunction of filterFunctions) {
+        filteredAgreements = filteredAgreements.filter(filterFunction);
+    }
+
+    console.log("filteredAgreements", filteredAgreements);
+    console.log("filterFunctions", filterFunctions);
+
     let sortedAgreements;
     if (searchParams.get("filter") === "my-agreements") {
-        const filteredAgreements = agreements.filter((agreement) => {
+        const myAgreements = filteredAgreements.filter((agreement) => {
             return agreement.team_members?.some((teamMember) => {
                 return teamMember.id === activeUser.id;
             });
         });
-        sortedAgreements = sortAgreements(filteredAgreements);
+        sortedAgreements = sortAgreements(myAgreements);
     } else {
         // all-agreements
-        sortedAgreements = sortAgreements(agreements);
+        sortedAgreements = sortAgreements(filteredAgreements);
     }
 
     return (
@@ -67,7 +77,7 @@ export const AgreementsList = () => {
 
             <h1 className="font-sans-lg">Agreements</h1>
             <p>This is a list of the agreements you are listed as a Team Member on.</p>
-            <AgreementsFilterHeaderSection />
+            <AgreementsFilterHeaderSection setFilterFunctions={setFilterFunctions} />
             <AgreementsTable agreements={sortedAgreements} />
         </App>
     );
