@@ -1,7 +1,14 @@
-import styles from "./TabsSection.module.scss";
+import styles from "./PortfolioTabsSection.module.scss";
 import { Link, useLocation } from "react-router-dom";
+import TabsSection from "../../UI/TabsSection";
 
-const TabsSection = ({ portfolioId }) => {
+/**
+ * Tabs (navigation) section for the portfolio page.
+ * @param {Object} props - The component props.
+ * @param {number} props.portfolioId - The Portfolio ID.
+ * @returns {ReactNode} The rendered component.
+ */
+const PortfolioTabsSection = ({ portfolioId }) => {
     const location = useLocation();
 
     const selected = `font-sans-2xs text-bold ${styles.listItemSelected}`;
@@ -35,15 +42,9 @@ const TabsSection = ({ portfolioId }) => {
 
     return (
         <>
-            <nav
-                className={`margin-bottom-4 ${styles.tabsList}`}
-                aria-label={"Portfolio Tab Sections"}
-                role={"navigation"}
-            >
-                {links}
-            </nav>
+            <TabsSection links={links} label="Portfolio Tabs Section" />
         </>
     );
 };
 
-export default TabsSection;
+export default PortfolioTabsSection;

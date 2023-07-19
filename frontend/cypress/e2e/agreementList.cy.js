@@ -23,3 +23,11 @@ it("navigates to the approveAgreements page when the approve button is clicked",
     cy.url().should("include", "/agreements/approve");
     cy.get("h1").should("exist");
 });
+
+it("Agreements Table is correctly filtered on all-agreements or my-agreements", () => {
+    cy.visit("/agreements?filter=all-agreements");
+    cy.get("tbody").children().should("have.length.at.least", 1);
+
+    cy.visit("/agreements?filter=my-agreements");
+    cy.get("tbody").children().should("have.length.at.least", 1);
+});
