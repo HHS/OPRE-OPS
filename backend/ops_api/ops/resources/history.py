@@ -22,7 +22,7 @@ class OpsDBHistoryListAPI(BaseListAPI):
                 stmt = stmt.where(self.model.class_name == class_name)
             if row_key:
                 stmt = stmt.where(self.model.row_key == row_key)
-            stmt = stmt.order_by(self.model.created_on)
+            stmt = stmt.order_by(self.model.created_on.desc())
 
             item_list = [row[0] for row in current_app.db_session.execute(stmt).all()]
 
