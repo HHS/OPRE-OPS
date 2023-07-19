@@ -25,6 +25,7 @@ _If relevant, e.g. for a front-end feature_
 - [ ] Automated a11y tests updated and passed
 - [ ] Automated security tests updated and passed
 - [ ] 90%+ Code coverage achieved
+- [ ] Form validations updated
 
 
 ## Links
