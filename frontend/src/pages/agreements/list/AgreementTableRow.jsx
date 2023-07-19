@@ -80,11 +80,15 @@ export const AgreementTableRow = ({ agreement }) => {
         navigate(`/agreements/approve/${event}`);
     };
 
-    const ChangeIcons = ({ agreement }) => {
+    const agreementStatus = agreement?.budget_line_items?.find((bli) => bli.status === "UNDER_REVIEW")
+        ? "In Review"
+        : "Draft";
+
+    const ChangeIcons = ({ agreement, status }) => {
         return (
             <>
-                <div className="display-flex flex-align-center">
-                    {(agreement.status === "DRAFT" || agreement.status === "UNDER_REVIEW") && (
+                {(status === "Draft" || status === "In Review") && (
+                    <div className="display-flex flex-align-center">
                         <FontAwesomeIcon
                             icon={faPen}
                             className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
@@ -92,16 +96,15 @@ export const AgreementTableRow = ({ agreement }) => {
                             data-position="top"
                             onClick={() => handleEditAgreement(agreement.id)}
                         />
-                    )}
-                    <FontAwesomeIcon
-                        icon={faTrash}
-                        title="delete"
-                        data-position="top"
-                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
-                        onClick={() => handleDeleteAgreement(agreement.id)}
-                    />
 
-                    {(agreement.status === "DRAFT" || agreement.status === "UNDER_REVIEW") && (
+                        <FontAwesomeIcon
+                            icon={faTrash}
+                            title="delete"
+                            data-position="top"
+                            className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                            onClick={() => handleDeleteAgreement(agreement.id)}
+                        />
+
                         <svg
                             className="usa-icon text-primary height-205 width-205 hover: cursor-pointer usa-tooltip"
                             onClick={() => handleSubmitAgreementForApproval(agreement.id)}
@@ -109,8 +112,8 @@ export const AgreementTableRow = ({ agreement }) => {
                         >
                             <use xlinkHref={`${icons}#send`}></use>
                         </svg>
-                    )}
-                </div>
+                    </div>
+                )}
             </>
         );
     };
@@ -143,10 +146,10 @@ export const AgreementTableRow = ({ agreement }) => {
                 <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     {isRowActive && !isExpanded ? (
                         <div>
-                            <ChangeIcons agreement={agreement} />
+                            <ChangeIcons agreement={agreement} status={agreementStatus} />
                         </div>
                     ) : (
-                        <TableTag status={agreement?.status} />
+                        <TableTag status={agreementStatus} />
                     )}
                 </td>
                 <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
