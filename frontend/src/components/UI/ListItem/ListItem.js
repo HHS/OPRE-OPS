@@ -10,9 +10,10 @@ import styles from "./ListItem.module.css";
  * @param {string} props.title - The list item title.
  * @param {string} props.message - The list item message.
  * @param {string} props.createdOn - The list item creation date.
+ * @param {string} props.variant - The list item variant.
  * @returns {JSX.Element} - The rendered component.
  */
-export const ListItem = ({ title, createdOn, message }) => {
+export const ListItem = ({ title, createdOn, message, variant }) => {
     return (
         <li className={styles.notificationListItem} id="notification-center-list">
             <div className="display-flex flex-justify">
@@ -22,12 +23,8 @@ export const ListItem = ({ title, createdOn, message }) => {
                     <span className="text-base-dark">{timeAgo(createdOn)}</span>
                 </span>
             </div>
-            <div>
-                <p>{message}</p>
-            </div>
-            <div>
-                <hr className="height-1px bg-brand-neutral-lighter" />
-            </div>
+            <p>{message}</p>
+            {variant === "condensed" ? null : <hr className="height-1px bg-brand-neutral-lighter" />}
         </li>
     );
 };
