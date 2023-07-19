@@ -5,11 +5,13 @@ import Terms from "../review/Terms";
 import {convertCodeForDisplay} from "../../../helpers/utils";
 import Tag from "../../../components/UI/Tag/Tag";
 import {useState} from "react";
+import {faPen} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 const AgreementDetails =  ({ agreement, projectOfficer }) => {
 
     let {budget_line_items: _, ...agreement_details} = agreement;
-
+    const missingValueText = "TBD";
     // details for AgreementTotalBudgetLinesCard
     const blis = agreement.budget_line_items ? agreement.budget_line_items : []
     const numberOfAgreements = blis.length;
@@ -24,11 +26,19 @@ const AgreementDetails =  ({ agreement, projectOfficer }) => {
 
     return (
         <div>
-            <h2 className="font-sans-lg">Agreement Summary
-             <Link to={"/agreements/edit/" + agreement.id + "?mode=edit"}>
-                <span style={{float:"right"}}>Edit</span>
-             </Link>
-            </h2>
+            <div className="display-flex flex-justify flex-align-center">
+                <h2 className="font-sans-lg">Agreement Summary</h2>
+
+                <Link to={"/agreements/edit/" + agreement.id + "?mode=edit"}>
+                    <FontAwesomeIcon
+                            icon={faPen}
+                            className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                            title="edit"
+                            data-position="top"
+                        />
+                    <span className="text-primary">Edit</span>
+                 </Link>
+            </div>
             <p className="font-sans-sm">
                 The summary below shows the budget lines and spending for this agreement.
             </p>
@@ -46,15 +56,15 @@ const AgreementDetails =  ({ agreement, projectOfficer }) => {
                     <div className="grid-col-6">
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
-                            <dd className="text-semibold margin-0 margin-top-05">
-                                {agreement?.description}
+                            <dd className="margin-0 margin-top-05">
+                                {agreement?.description ? agreement.description :missingValueText}
                             </dd>
                             <dt className="margin-0 text-base-dark margin-top-3">Notes</dt>
-                            <dd className="text-semibold margin-0 margin-top-05">
+                            <dd className="margin-0 margin-top-05">
                                 TODO
                             </dd>
                             <dt className="margin-0 text-base-dark margin-top-3">History</dt>
-                            <dd className="text-semibold margin-0 margin-top-05">
+                            <dd className="margin-0 margin-top-05">
                                 TODO
                             </dd>
                         </dl>
@@ -62,33 +72,32 @@ const AgreementDetails =  ({ agreement, projectOfficer }) => {
                     <div className="grid-col-6">
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Agreement Type</dt>
-                            <dd className="text-semibold margin-0 margin-top-1">
+                            <dd className="margin-0 margin-top-1">
                                 <Tag tagStyle="primaryDarkTextLightBackground" text={convertCodeForDisplay("agreementType", agreement?.agreement_type)}/>
-
                             </dd>
                             <dt className="margin-0 text-base-dark margin-top-3">Product Service Code</dt>
-                            <dd className="text-semibold margin-0 margin-top-1">
-                                <Tag tagStyle="primaryDarkTextLightBackground" text={agreement?.product_service_code?.name}/>
+                            <dd className="margin-0 margin-top-1">
+                                <Tag tagStyle="primaryDarkTextLightBackground" text={agreement?.product_service_code?.name ? agreement.product_service_code.name : missingValueText}/>
                             </dd>
                         </dl>
                         <div className="display-flex">
                             <dl className="grid-col-4 margin-0 font-12px">
                                 <dt className="margin-0 text-base-dark margin-top-3">NAICS Code</dt>
-                                <dd className="text-semibold margin-0 margin-top-1">
-                                    <Tag tagStyle="primaryDarkTextLightBackground" text={agreement?.product_service_code?.naics}/>
+                                <dd className="margin-0 margin-top-1">
+                                    <Tag tagStyle="primaryDarkTextLightBackground" text={agreement?.product_service_code?.naics ? agreement.product_service_code.naics : missingValueText}/>
                                 </dd>
                             </dl>
                             <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
                                 <dt className="margin-0 text-base-dark margin-top-3">Program Support Code</dt>
-                                <dd className="text-semibold margin-0 margin-top-1">
-                                    <Tag tagStyle="primaryDarkTextLightBackground" text={agreement?.product_service_code?.support_code}/>
+                                <dd className="margin-0 margin-top-1">
+                                    <Tag tagStyle="primaryDarkTextLightBackground" text={agreement?.product_service_code?.support_code ? agreement?.product_service_code?.support_code : missingValueText}/>
                                 </dd>
 
                             </dl>
                         </div>
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Procurement Shop</dt>
-                            <dd className="text-semibold margin-0 margin-top-1">
+                            <dd className="margin-0 margin-top-1">
                                 <Tag tagStyle="primaryDarkTextLightBackground" text={`${agreement?.procurement_shop?.abbr} - Fee Rate: ${
                                     agreement?.procurement_shop?.fee * 100
                                 }%`}/>
@@ -98,14 +107,14 @@ const AgreementDetails =  ({ agreement, projectOfficer }) => {
                         <div className="display-flex">
                             <dl className="grid-col-4 margin-0 font-12px">
                                 <dt className="margin-0 text-base-dark margin-top-3">Agreement Reason</dt>
-                                <dd className="text-semibold margin-0 margin-top-1">
-                                    <Tag tagStyle="primaryDarkTextLightBackground" text={convertCodeForDisplay("agreementReason", agreement?.agreement_reason)}/>
+                                <dd className="margin-0 margin-top-1">
+                                    <Tag tagStyle="primaryDarkTextLightBackground" text={agreement?.agreement_reason ? convertCodeForDisplay("agreementReason", agreement?.agreement_reason) : missingValueText}/>
                                 </dd>
                             </dl>
                             {agreement?.incumbent && (
                                 <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
                                     <dt className="margin-0 text-base-dark margin-top-3">Incumbent</dt>
-                                    <dd className="text-semibold margin-0 margin-top-1">
+                                    <dd className="margin-0 margin-top-1">
                                         <Tag tagStyle="primaryDarkTextLightBackground" text={agreement?.incumbent}/>
                                     </dd>
                                 </dl>
@@ -113,23 +122,23 @@ const AgreementDetails =  ({ agreement, projectOfficer }) => {
                         </div>
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Project Officer</dt>
-                            <dd className="text-semibold margin-0 margin-top-1">
-                                <Tag tagStyle="primaryDarkTextLightBackground" text={projectOfficer && Object.keys(projectOfficer).length !== 0 ? projectOfficer?.full_name : ""}/>
+                            <dd className="margin-0 margin-top-1">
+                                <Tag tagStyle="primaryDarkTextLightBackground" text={projectOfficer && Object.keys(projectOfficer).length !== 0 ? projectOfficer?.full_name : missingValueText}/>
                             </dd>
                         </dl>
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Team Members</dt>
-                            {agreement?.team_members.length > 0 ? (
+                            {agreement?.team_members?.length > 0 ? (
                                 <>
                                     {agreement?.team_members.map((member) => (
-                                        <dd key={member.id} className="text-semibold margin-0 margin-top-1 margin-bottom-2">
+                                        <dd key={member.id} className="margin-0 margin-top-1 margin-bottom-2">
                                             <Tag tagStyle="primaryDarkTextLightBackground" text= {member.full_name}/>
                                         </dd>
                                     ))}
                                 </>
                             ) : (
-                                <dd className="text-semibold margin-0 margin-top-1 margin-bottom-2">
-                                    <Tag tagStyle="primaryDarkTextLightBackground" text=""/>
+                                <dd className="margin-0 margin-top-1 margin-bottom-2">
+                                    <Tag tagStyle="primaryDarkTextLightBackground" text={missingValueText}/>
                                 </dd>
                             )}
                         </dl>
