@@ -52,7 +52,7 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
                 <h2 className="font-sans-lg">Agreement Details</h2>
 
                 <div className="grid-row margin-top-2">
-                    <div className="grid-col-6 padding-right-1">
+                    <div className="grid-col-6 padding-right-1" data-cy="details-left-col">
                         {/* NOTE: Left Column */}
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
@@ -78,7 +78,7 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
                             <dd className="text-semibold margin-0 margin-top-05">TODO</dd>
                         </dl>
                     </div>
-                    <div className="grid-col-6">
+                    <div className="grid-col-6" data-cy="details-right-col">
                         {/* NOTE: Right Column */}
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Agreement Type</dt>
