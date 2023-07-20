@@ -1,7 +1,9 @@
-import { create, test, enforce, only } from "vest";
+import { create, test, enforce, group, skip } from "vest";
 
 const suite = create((data, fieldName) => {
-    only(fieldName);
+    // uncomment to test only one field at a time which breaks the group validation
+    // only(fieldName);
+    if (!data.enteredDay || !data.enteredMonth || !data.enteredYear) skip.group("allDates");
 
     test("enteredDescription", "This is required information", () => {
         enforce(data.enteredDescription).isNotBlank();
@@ -37,6 +39,13 @@ const suite = create((data, fieldName) => {
     });
     test("enteredAmount", "This is required information", () => {
         enforce(data.enteredAmount).isNotEmpty();
+    });
+    group("allDates", () => {
+        const today = new Date();
+        const enteredDate = new Date(Date.UTC(data.enteredYear, data.enteredMonth - 1, data.enteredDay));
+        test("enteredDate", "Date must be in the future", () => {
+            enforce(enteredDate.getTime()).greaterThan(today.getTime());
+        });
     });
 });
 

@@ -19,6 +19,7 @@ flask-marshmallow = "==0.15.0"
 desert = "==2022.9.22"
 marshmallow-enum = "==1.5.1"
 marshmallow-dataclass = "==8.5.14"
+sqlalchemy-continuum = "==1.4.0"
 
 [dev-packages]
 flake8 = "==6.0.0"
@@ -31,7 +32,7 @@ pytest-flask = "==1.2.0"
 black = {extras = ["d"], version = "==23.7.0"}
 flake8-black = "==0.3.6"
 pytest-cov = "==4.1.0"
-pytest-docker = {extras = ["docker-compose-v2"], version = "==1.0.1"}
+pytest-docker = {extras = ["docker-compose-v2"], version = "==2.0.0"}
 pytest-mock = "==3.11.1"
 pytest-bdd = "==6.1.1"
 

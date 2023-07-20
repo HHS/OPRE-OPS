@@ -1,3 +1,4 @@
+import React from "react";
 import { useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import CreateAgreementFlow from "./CreateAgreementFlow";
@@ -15,12 +16,27 @@ import { setAlert } from "../../components/UI/Alert/alertSlice";
  * @returns {JSX.Element} - The rendered component.
  */
 export const CreateAgreement = ({ existingBudgetLines }) => {
+    const [isEditMode, setIsEditMode] = React.useState(false);
+    const [isReviewMode, setIsReviewMode] = React.useState(false);
     const createAgreementContext = useCreateAgreement();
     const globalDispatch = useDispatch();
 
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
-    const mode = searchParams.get("mode");
+    const mode = searchParams.get("mode") || undefined;
+    // check mode on mount
+    React.useEffect(() => {
+        switch (mode) {
+            case "edit":
+                setIsEditMode(true);
+                break;
+            case "review":
+                setIsReviewMode(true);
+                break;
+            default:
+                return;
+        }
+    }, [mode]);
 
     const {
         wizardSteps,
@@ -31,8 +47,8 @@ export const CreateAgreement = ({ existingBudgetLines }) => {
 
     return (
         <CreateAgreementFlow>
-            <StepSelectProject formMode={mode ?? undefined} />
-            <StepCreateAgreement formMode={mode ?? undefined} />
+            <StepSelectProject isEditMode={isEditMode} isReviewMode={isReviewMode} />
+            <StepCreateAgreement isEditMode={isEditMode} isReviewMode={isReviewMode} />
             <StepCreateBudgetLines
                 wizardSteps={wizardSteps}
                 currentStep={3}
@@ -51,7 +67,8 @@ export const CreateAgreement = ({ existingBudgetLines }) => {
                     )
                 }
                 existingBudgetLines={existingBudgetLines}
-                formMode={mode ?? undefined}
+                isEditMode={isEditMode}
+                isReviewMode={isReviewMode}
                 workflow="agreement"
             />
         </CreateAgreementFlow>

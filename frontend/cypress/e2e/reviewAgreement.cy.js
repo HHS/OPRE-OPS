@@ -4,6 +4,8 @@ import { terminalLog, testLogin } from "./utils";
 // get current year
 const today = new Date();
 const year = today.getFullYear();
+const month = today.getMonth() + 1;
+const day = today.getDate();
 
 const blData = [
     {
@@ -11,7 +13,7 @@ const blData = [
         can: "G99HRF2",
         month: "09 - Sep",
         day: "01",
-        year: "2023",
+        year: year,
         amount: "111111",
         note: "note one",
     },
@@ -108,7 +110,7 @@ it("review an agreement", () => {
         cy.get("#enteredYear").type(`${blData[0].year}`);
         cy.get("#enteredYear").clear();
         cy.get("#input-error-message").should("exist");
-        // check fpr invalid years
+        // check for invalid years
         cy.get("#enteredYear").type("0");
         cy.get("#input-error-message").should("exist");
         cy.get("#enteredYear").clear();
@@ -123,7 +125,21 @@ it("review an agreement", () => {
         cy.get("#input-error-message").should("exist");
         cy.get("#enteredYear").clear();
         cy.get("#enteredYear").type(`${year}`);
-        cy.get("#input-error-message").should("not.exist");
+
+        // TODO: check to ensure the group date is in the future
+        cy.get("#enteredMonth").select(month);
+        cy.get("#enteredDay").clear();
+        cy.get("#enteredDay").type(day);
+        cy.get("#enteredYear").clear();
+        cy.get("#enteredYear").type(`${year - 1}`);
+        // check for date to be in the future  which should error
+        cy.get(".text-error").should("exist");
+        // fix by adding a valid date
+        cy.get("#enteredDay").clear();
+        cy.get("#enteredDay").type(day + 1);
+        cy.get("#enteredYear").clear();
+        cy.get("#enteredYear").type(`${year + 1}`);
+        cy.get(".text-error").should("not.exist");
         // add entered amount and clear it
         cy.get("#enteredAmount").type(`${blData[0].amount}`);
         cy.get("#enteredAmount").clear();

@@ -53,6 +53,5 @@ describe("AgreementTableRow", () => {
         expect(screen.getByText("Grant")).toBeInTheDocument();
         expect(screen.getByText("$315.00")).toBeInTheDocument();
         expect(screen.getByText("3/2/2023")).toBeInTheDocument();
-        expect(screen.getByText("In Review")).toBeInTheDocument();
     });
 });

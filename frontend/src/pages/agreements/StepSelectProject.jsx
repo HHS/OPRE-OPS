@@ -12,10 +12,11 @@ import EditModeTitle from "./EditModeTitle";
  *
  * @param {Object} props - The component props.
  * @param {Function} [props.goToNext] - A function to go to the next step in the wizard. - optional
- * @param {string} [props.formMode] - The mode of the form (e.g. "create", "edit", "review"). - optional
+ * @param {boolean} [props.isEditMode] - Whether the form is in edit mode. - optional
+ * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
  * @returns {JSX.Element} - The rendered component.
  */
-export const StepSelectProject = ({ goToNext, formMode }) => {
+export const StepSelectProject = ({ goToNext, isEditMode, isReviewMode }) => {
     const navigate = useNavigate();
     const { wizardSteps, selected_project: selectedResearchProject } = useCreateAgreement();
     // setters
@@ -24,22 +25,7 @@ export const StepSelectProject = ({ goToNext, formMode }) => {
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
-    const [isEditMode, setIsEditMode] = React.useState(false);
-    const [isReviewMode, setIsReviewMode] = React.useState(false);
     const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
-
-    React.useEffect(() => {
-        switch (formMode) {
-            case "edit":
-                setIsEditMode(true);
-                break;
-            case "review":
-                setIsReviewMode(true);
-                break;
-            default:
-                return;
-        }
-    }, [formMode]);
 
     if (isLoadingProjects) {
         return <div>Loading...</div>;

@@ -23,14 +23,8 @@ export const Menu = () => {
                 <li className="usa-nav__primary-item">
                     <Link to="/cans/">CANs</Link>
                 </li>
-                {/* <li className="usa-nav__primary-item">
-                    <Link to="/projects/create">Create Project</Link>
-                </li>
                 <li className="usa-nav__primary-item">
-                    <Link to="/agreements/create">Create Agreement</Link>
-                </li> */}
-                <li className="usa-nav__primary-item">
-                    <Link to="/agreements/">Agreements</Link>
+                    <Link to="/agreements?filter=all-agreements">Agreements</Link>
                 </li>
                 <li className="usa-nav__primary-item margin-left-auto">
                     <button
