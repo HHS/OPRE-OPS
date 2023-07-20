@@ -17,7 +17,7 @@
     "rules": {
         "react-refresh/only-export-components": ["warn", { "allowConstantExport": true }],
         // 1 warns instead of errors and we can ignore children props
-        "react/prop-types": [1, { "ignore": ["children"] }]
+        "react/prop-types": [1, { "ignore": ["children"], "skipUndeclared": true }]
     },
     "plugins": ["react-refresh"],
     "ignorePatterns": ["**/*.css", "**/*.css.map", "**/*.scss", "**/*.svg", "**/*.png", "**/*.jpg", "**/uswds/**"],
