@@ -1,7 +1,7 @@
 import { useState, Fragment } from "react";
+import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
-import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
@@ -18,6 +18,7 @@ import "./PreviewTable.scss";
  * @param {Function} [props.handleDeleteBudgetLine] - A function to handle deleting a budget line. - optional
  * @param {Function} [props.handleDuplicateBudgetLine] - A function to handle duplicating a budget line. - optional
  * @param {Boolean} [props.readOnly] - A flag to indicate if the table is read-only.
+ * @param {Boolean} [props.isReviewMode] - A flag to indicate if the table is in review mode.
  * @returns {JSX.Element} - The rendered table component.
  */
 export const PreviewTable = ({
@@ -26,6 +27,7 @@ export const PreviewTable = ({
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
+    isReviewMode = false,
 }) => {
     const sortedBudgetLines = budgetLinesAdded
         .slice()
@@ -65,7 +67,7 @@ export const PreviewTable = ({
         const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
 
         const addErrorClassIfNotFound = (item) => {
-            if (!item) {
+            if (isReviewMode && !item) {
                 return "table-item-error";
             } else {
                 return undefined;
@@ -76,7 +78,7 @@ export const PreviewTable = ({
             const today = new Date().valueOf();
             const dateNeeded = new Date(item).valueOf();
 
-            if (dateNeeded < today) {
+            if (isReviewMode && dateNeeded < today) {
                 return "table-item-error";
             } else {
                 return undefined;
@@ -276,8 +278,6 @@ export const PreviewTable = ({
     );
 };
 
-export default PreviewTable;
-
 PreviewTable.propTypes = {
     budgetLinesAdded: PropTypes.arrayOf(PropTypes.object),
     handleSetBudgetLineForEditing: PropTypes.func,
@@ -286,3 +286,5 @@ PreviewTable.propTypes = {
     readOnly: PropTypes.bool,
     errors: PropTypes.arrayOf(PropTypes.array),
 };
+
+export default PreviewTable;
