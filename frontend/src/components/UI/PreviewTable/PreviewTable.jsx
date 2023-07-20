@@ -1,10 +1,11 @@
 import { useState, Fragment } from "react";
+import { useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
+import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import TotalSummaryCard from "./TotalSummaryCard";
-import { useSelector } from "react-redux";
 import { formatDate, loggedInName } from "../../../helpers/utils";
 import TableTag from "./TableTag";
 import "./PreviewTable.scss";
@@ -59,8 +60,28 @@ export const PreviewTable = ({
             setIsRowActive(true);
         };
 
+        // styles for the table row
         const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
         const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
+
+        const addErrorClassIfNotFound = (item) => {
+            if (!item) {
+                return "table-item-error";
+            } else {
+                return undefined;
+            }
+        };
+        // error class for need_by_date to be in the future
+        const futureDateErrorClass = (item) => {
+            const today = new Date().valueOf();
+            const dateNeeded = new Date(item).valueOf();
+
+            if (dateNeeded < today) {
+                return "table-item-error";
+            } else {
+                return undefined;
+            }
+        };
 
         const ChangeIcons = ({ budgetLine }) => {
             return (
@@ -105,19 +126,37 @@ export const PreviewTable = ({
         return (
             <Fragment key={bl?.id}>
                 <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
-                    <th scope="row" className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                    <th
+                        scope="row"
+                        className={`${addErrorClassIfNotFound(bl?.line_description)} ${removeBorderBottomIfExpanded}`}
+                        style={changeBgColorIfExpanded}
+                    >
                         {bl?.line_description}
                     </th>
-                    <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                    <td
+                        className={`${futureDateErrorClass(formatted_date_needed)} ${addErrorClassIfNotFound(
+                            formatted_date_needed
+                        )} ${removeBorderBottomIfExpanded}`}
+                        style={changeBgColorIfExpanded}
+                    >
                         {formatted_date_needed}
                     </td>
-                    <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                    <td
+                        className={`${addErrorClassIfNotFound(fiscalYear)} ${removeBorderBottomIfExpanded}`}
+                        style={changeBgColorIfExpanded}
+                    >
                         {fiscalYear || ""}
                     </td>
-                    <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                    <td
+                        className={`${addErrorClassIfNotFound(bl?.can?.number)} ${removeBorderBottomIfExpanded}`}
+                        style={changeBgColorIfExpanded}
+                    >
                         {bl?.can?.number}
                     </td>
-                    <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                    <td
+                        className={`${addErrorClassIfNotFound(bl?.amount)} ${removeBorderBottomIfExpanded}`}
+                        style={changeBgColorIfExpanded}
+                    >
                         <CurrencyFormat
                             value={bl?.amount || 0}
                             displayType={"text"}
@@ -238,3 +277,12 @@ export const PreviewTable = ({
 };
 
 export default PreviewTable;
+
+PreviewTable.propTypes = {
+    budgetLinesAdded: PropTypes.arrayOf(PropTypes.object),
+    handleSetBudgetLineForEditing: PropTypes.func,
+    handleDeleteBudgetLine: PropTypes.func,
+    handleDuplicateBudgetLine: PropTypes.func,
+    readOnly: PropTypes.bool,
+    errors: PropTypes.arrayOf(PropTypes.array),
+};
