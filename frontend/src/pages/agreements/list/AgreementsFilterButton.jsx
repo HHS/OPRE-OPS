@@ -36,25 +36,60 @@ export const AgreementsFilterButton = ({ setFilterFunctions }) => {
                 <div className="margin-left-2">
                     <h1 className="text-bold font-sans-lg margin-bottom-205 margin-top-205">Filters</h1>
                     <fieldset className="usa-fieldset">
-                        <legend className="usa-legend font-sans-3xs">Upcoming Need By Date</legend>
-                        <ul className={customStyles.noBullets}>
-                            <li>
-                                <input id="next-30-days" type="radio" name="upcoming-need-by-date" checked />
-                                <label htmlFor="next-30-days">Next 30 days</label>
-                            </li>
-                            <li>
-                                <input id="next-6-months" type="radio" name="upcoming-need-by-date" />
-                                <label htmlFor="next-6-months">Next 6 months</label>
-                            </li>
-                            <li>
-                                <input id="current-fy" type="radio" name="upcoming-need-by-date" />
-                                <label htmlFor="current-fy">Current FY</label>
-                            </li>
-                            <li>
-                                <input id="all-time" type="radio" name="upcoming-need-by-date" />
-                                <label htmlFor="all-time">All time</label>
-                            </li>
-                        </ul>
+                        <legend className={`usa-legend font-sans-3xs ${customStyles.legendColor}`}>
+                            Upcoming Need By Date
+                        </legend>
+                        <div className="display-flex">
+                            <div className="padding-right-5">
+                                <div className="display-flex flex-align-center padding-bottom-1">
+                                    <input
+                                        className="height-3 width-3"
+                                        id="next-30-days"
+                                        type="radio"
+                                        name="upcoming-need-by-date"
+                                        checked
+                                    />
+                                    <label className="padding-left-1" htmlFor="next-30-days">
+                                        Next 30 days
+                                    </label>
+                                </div>
+                                <div className="display-flex flex-align-center">
+                                    <input
+                                        className="height-3 width-3"
+                                        id="current-fy"
+                                        type="radio"
+                                        name="upcoming-need-by-date"
+                                    />
+                                    <label className="padding-left-1" htmlFor="current-fy">
+                                        Current FY
+                                    </label>
+                                </div>
+                            </div>
+                            <div className="">
+                                <div className="display-flex flex-align-center padding-bottom-1">
+                                    <input
+                                        className="height-3 width-3"
+                                        id="next-6-months"
+                                        type="radio"
+                                        name="upcoming-need-by-date"
+                                    />
+                                    <label className="padding-left-1" htmlFor="next-6-months">
+                                        Next 6 months
+                                    </label>
+                                </div>
+                                <div className="display-flex flex-align-center">
+                                    <input
+                                        className="height-3 width-3"
+                                        id="all-time"
+                                        type="radio"
+                                        name="upcoming-need-by-date"
+                                    />
+                                    <label className="padding-left-1" htmlFor="all-time">
+                                        All time
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                     </fieldset>
                     <div>
                         <h3>Project</h3>
