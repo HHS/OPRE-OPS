@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import classnames from "vest/classnames";
 import CanSelect from "../CanSelect";
 import DesiredAwardDate from "../DesiredAwardDate";
@@ -28,7 +29,7 @@ import CurrencyInput from "./CurrencyInput";
  * @param {function} props.handleSubmitForm - A function to handle submitting the budget line form.
  * @param {function} props.handleResetForm - A function to handle resetting the budget line form.
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.JSX.Element} - The rendered component.
  */
 export const CreateBudgetLinesForm = ({
     selectedCan,
@@ -195,6 +196,28 @@ export const CreateBudgetLinesForm = ({
             </div>
         </form>
     );
+};
+
+CreateBudgetLinesForm.propTypes = {
+    selectedCan: PropTypes.object,
+    enteredDescription: PropTypes.string,
+    enteredAmount: PropTypes.string,
+    enteredMonth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    enteredDay: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    enteredYear: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    enteredComments: PropTypes.string,
+    isEditing: PropTypes.bool,
+    setEnteredDescription: PropTypes.func,
+    setSelectedCan: PropTypes.func,
+    setEnteredAmount: PropTypes.func,
+    setEnteredMonth: PropTypes.func,
+    setEnteredDay: PropTypes.func,
+    setEnteredYear: PropTypes.func,
+    setEnteredComments: PropTypes.func,
+    handleEditForm: PropTypes.func,
+    handleSubmitForm: PropTypes.func,
+    handleResetForm: PropTypes.func,
+    isReviewMode: PropTypes.bool,
 };
 
 export default CreateBudgetLinesForm;
