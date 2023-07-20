@@ -12,7 +12,7 @@ export const User = () => {
     return (
         <span>
             {isAuthorized ? (
-                <Link className="text-primary margin-right-1" to={`/users/${user?.id}`}>
+                <Link className="text-primary" to={`/users/${user?.id}`}>
                     {user?.email}
                 </Link>
             ) : (
