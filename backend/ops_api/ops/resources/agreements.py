@@ -134,6 +134,35 @@ class QueryParameters:
     research_project_id: Optional[int] = None
 
 
+
+def associated_with_agreement(id: int) -> bool:
+    jwt_identity = get_jwt_identity()
+    agreement_stmt = select(Agreement).join(Agreement.created_by).join(Agreement.project_officer).join(Agreement.team_members).where(Agreement.id == id)
+    agreement = current_app.db_session.scalar(agreement_stmt)
+
+    oidc_ids = set()
+    if agreement.created_by:
+        oidc_ids.add(agreement.created_by.oidc_id)
+    if agreement.project_officer:
+        oidc_ids.add(agreement.project_officer.oidc_id)
+    oidc_ids |= set(tm.oidc_id for tm in agreement.team_members)
+
+    from pprint import pprint
+    print("*"*80)
+    print(agreement.created_by)
+    print(agreement.project_officer)
+    print(agreement.team_members)
+    print("^"*80)
+    pprint(agreement.to_dict())
+    print("#"*80)
+    print(jwt_identity)
+    print("-"*80)
+    pprint(oidc_ids)
+    print("*"*80)
+
+    return jwt_identity in oidc_ids
+
+
 class AgreementItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel = Agreement):
         super().__init__(model)
@@ -234,27 +263,18 @@ class AgreementItemAPI(BaseItemAPI):
             return make_response_with_headers({}, 500)
 
     @override
-    @is_authorized(PermissionType.DELETE, Permission.AGREEMENT)
+    @is_authorized(PermissionType.DELETE, Permission.AGREEMENT, extra=associated_with_agreement)
     def delete(self, id: int) -> Response:
         message_prefix = f"DELETE from {ENDPOINT_STRING}"
-
-        identity = get_jwt_identity()
 
         try:
             with OpsEventHandler(OpsEventType.DELETE_AGREEMENT) as meta:
                 agreement: Agreement = self._get_item(id)
 
-                from pprint import pprint
-                print("*"*80)
-                pprint(agreement.to_dict())
-                print("*"*80)
-
                 if not agreement:
                     raise RuntimeError(f"Invalid Agreement id: {id}.")
                 elif agreement.agreement_type != AgreementType.CONTRACT:
                     raise RuntimeError(f"Invalid Agreement type: {agreement.agreement_type}.")
-                elif identity not in set(([agreement.project_officer.oidc_id] if agreement.project_officer else []) + [tm.oidc_id for tm in agreement.team_members]):
-                    return make_response_with_headers({}, 401)
                 elif any(bli.status != BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items):
                     raise RuntimeError(f"Agreement {id} has budget line items not in draft status.")
 
