@@ -52,7 +52,7 @@
         "eslint-plugin-react-hooks": "^4.6.0",
         "eslint-plugin-react-refresh": "^0.4.3",
         "jose": "4.14.4",
-        "msw": "1.2.2",
+        "msw": "1.2.3",
         "prettier": "2.8.8",
         "redux-mock-store": "^1.5.4"
     },
