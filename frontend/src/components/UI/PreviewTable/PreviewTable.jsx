@@ -285,6 +285,7 @@ PreviewTable.propTypes = {
     handleDuplicateBudgetLine: PropTypes.func,
     readOnly: PropTypes.bool,
     errors: PropTypes.arrayOf(PropTypes.array),
+    isReviewMode: PropTypes.bool,
 };
 
 export default PreviewTable;
