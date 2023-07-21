@@ -118,6 +118,20 @@
       division: 3,
       email: "stekell+sandbox@flexion.us",
       oidc_id: "7716138a-dec6-4976-9f31-e30fade3254d",
+    },
+    { // 18
+      first_name: "Admin",
+      last_name: "Demo",
+      division: 3,
+      email: "admin.demo@email.com",
+      oidc_id: "00000000-0000-1111-a111-000000000018",
+    },
+    { // 19
+      first_name: "User",
+      last_name: "Demo",
+      division: 3,
+      email: "user.demo@email.com",
+      oidc_id: "00000000-0000-1111-a111-000000000019",
     }
   ],
   roles: [
@@ -160,6 +174,10 @@
         "POST_RESEARCH_PROJECTS",
 
         "GET_USER",
+        "PUT_USER",
+        "POST_USER",
+        "PATCH_USER",
+
         "GET_USERS",
       ],
     },
@@ -182,6 +200,15 @@
         "GET_RESEARCH_PROJECTS",
         "GET_USER",
         "GET_USERS",
+      ],
+    },
+        {
+      name: "unassigned",
+      permissions: [
+        "GET_USER",
+        "POST_USER",
+        "PUT_USER",
+        "PATCH_USER",
       ],
     },
   ],
@@ -233,6 +260,14 @@
     {
       user_id: 17,
       role_id: 1,
+    },
+    {
+      user_id: 18,
+      role_id: 1,
+    },
+    {
+      user_id: 19,
+      role_id: 2,
     },
   ],
   notification: [
