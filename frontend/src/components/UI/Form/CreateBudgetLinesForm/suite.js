@@ -24,9 +24,6 @@ const suite = create((data) => {
         const enteredDate = new Date(Date.UTC(data.enteredYear, data.enteredMonth - 1, data.enteredDay));
 
         test("enteredMonth", "This is required information", () => {
-            enforce(data.enteredMonth).isNotBlank();
-        });
-        test("enteredMonth", "This is required information", () => {
             enforce(data.enteredMonth).greaterThan(0);
         });
         test("enteredDay", "This is required information", () => {
