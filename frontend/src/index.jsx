@@ -26,24 +26,26 @@ import { CreateProject } from "./pages/projects/CreateProject";
 import { AgreementsList } from "./pages/agreements/list/AgreementsList";
 import EditAgreement from "./pages/agreements/EditAgreement";
 import { ApproveAgreement } from "./pages/agreements/approve/ApproveAgreement";
+import Login from "./pages/Login";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
         <>
+            <Route path="/login" element={<Login />} />
             <Route path="/" element={<Home />} />
             <Route
                 element={
                     // This demonstrates a Protected Route. All children within this Route
                     // will have to be processed by the Protection rules before rendering.
-                    // by default, we redirect back to "/" if they're not allowed. This can
+                    // By default, we redirect back to "/login" if they're not allowed. This can
                     // overwritten with a 'redirectPath="/whatever"' prop.
                     //
                     // In this example, all /portfolio routes are currently protected.
-                    // See below for a mixed example, where /cans is allowed, but all
-                    // children of /cans ie: /cans/{id} are not allowed unless authenticated.
+
                     <ProtectedRoute />
                 }
             >
+                {/* BEGIN PROTECTED ROUTES */}
                 <Route path="/portfolios" element={<PortfolioList />} />
                 <Route
                     path="/portfolios/:id"
@@ -70,10 +72,6 @@ const router = createBrowserRouter(
                     path="/research-projects/:id"
                     element={<ResearchProjectDetail />}
                     handle={{
-                        // you can put whatever you want on a route handle
-                        // here we use "crumb" and return some elements,
-                        // this is what we'll render in the breadcrumbs
-                        // for this route
                         crumb: () => (
                             <div>
                                 <Link to="/" className="text-primary">
@@ -109,16 +107,10 @@ const router = createBrowserRouter(
                         ),
                     }}
                 />
-            </Route>
-            <Route element={<ProtectedRoute redirectPath="/cans" />}>
                 <Route
                     path="/cans/:id"
                     element={<CanDetail />}
                     handle={{
-                        // you can put whatever you want on a route handle
-                        // here we use "crumb" and return some elements,
-                        // this is what we'll render in the breadcrumbs
-                        // for this route
                         crumb: () => (
                             <Link to="/cans" className="text-primary">
                                 Cans
@@ -126,17 +118,13 @@ const router = createBrowserRouter(
                         ),
                     }}
                 />
-            </Route>
-            <Route path="/cans" element={<CanList />} />
-            <Route path="/login" handle={{}} />
-
-            <Route element={<ProtectedRoute redirectPath="/" />}>
                 <Route path="/budget-lines/create" element={<CreateBudgetLines />} />
                 <Route path="/agreements/create" element={<CreateAgreements />} />
                 <Route path="/projects/create" element={<CreateProject />} />
                 <Route path="/agreements/" element={<AgreementsList />} />
                 <Route path="/agreements/edit/:id" element={<EditAgreement />} />
                 <Route path="/agreements/approve/:id" element={<ApproveAgreement />} />
+                <Route path="/cans" element={<CanList />} />
             </Route>
         </>
     )

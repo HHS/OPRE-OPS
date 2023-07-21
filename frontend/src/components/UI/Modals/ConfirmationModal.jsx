@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import Notification from "../Notification";
 
-export const Modal = ({
+export const ConfirmationModal = ({
     heading,
     description = "",
     setShowModal = () => {},
@@ -118,9 +118,9 @@ export const Modal = ({
     );
 };
 
-export default Modal;
+export default ConfirmationModal;
 
-Modal.propTypes = {
+ConfirmationModal.propTypes = {
     heading: PropTypes.string.isRequired,
     description: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
     setShowModal: PropTypes.func.isRequired,

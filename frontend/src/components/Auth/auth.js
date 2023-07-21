@@ -3,13 +3,14 @@ import cryptoRandomString from "crypto-random-string";
 
 const authConfig = ApplicationContext.get().helpers().authConfig;
 
-export const getAuthorizationCode = (stateToken) => {
-    const providerUrl = new URL(authConfig.hhsAmsAuthorizationEndpoint);
-    providerUrl.searchParams.set("acr_values", authConfig.acr_values);
-    providerUrl.searchParams.set("client_id", authConfig.client_id);
-    providerUrl.searchParams.set("response_type", authConfig.response_type);
-    providerUrl.searchParams.set("scope", authConfig.scope);
-    providerUrl.searchParams.set("redirect_uri", authConfig.redirect_uri);
+export const getAuthorizationCode = (provider, stateToken) => {
+    const authProvider = authConfig[provider];
+    const providerUrl = new URL(authProvider.auth_endpoint);
+    providerUrl.searchParams.set("acr_values", authProvider.acr_values);
+    providerUrl.searchParams.set("client_id", authProvider.client_id);
+    providerUrl.searchParams.set("response_type", authProvider.response_type);
+    providerUrl.searchParams.set("scope", authProvider.scope);
+    providerUrl.searchParams.set("redirect_uri", authProvider.redirect_uri);
     providerUrl.searchParams.set("state", stateToken);
     providerUrl.searchParams.set("nonce", cryptoRandomString({ length: 64 }));
     return providerUrl;
@@ -23,7 +24,7 @@ export const logoutUser = async (stateToken) => {
     //   client_id=${CLIENT_ID}&
     //   post_logout_redirect_uri=${REDIRECT_URI}&
     //   state=abcdefghijklmnopabcdefghijklmnop
-    const providerLogout = new URL(authConfig.hhsAmsAuthorizationEndpoint);
+    const providerLogout = new URL(authConfig.logout_endpoint);
     providerLogout.searchParams.set("client_id", authConfig.client_id);
     providerLogout.searchParams.set("post_logout_redirect_uri", window.location.hostname);
     providerLogout.searchParams.set("state", stateToken);

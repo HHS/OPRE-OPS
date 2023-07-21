@@ -5,7 +5,6 @@ import StepIndicator from "../../StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
 import PreviewTable from "../../PreviewTable";
 import Alert from "../../Alert";
-import Modal from "../../Modal";
 import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
 import { postBudgetLineItems } from "../../../../api/postBudgetLineItems";
 import { patchBudgetLineItems } from "../../../../api/patchBudgetLineItems";
@@ -15,6 +14,7 @@ import EditModeTitle from "../../../../pages/agreements/EditModeTitle";
 import { loggedInName } from "../../../../helpers/utils";
 import suite from "./suite";
 import { convertCodeForDisplay } from "../../../../helpers/utils";
+import ConfirmationModal from "../../Modals/ConfirmationModal";
 
 /**
  * Renders the Create Budget Lines component with React context.
@@ -245,7 +245,7 @@ export const StepCreateBudgetLines = ({
     return (
         <>
             {showModal && (
-                <Modal
+                <ConfirmationModal
                     heading={modalProps.heading}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}

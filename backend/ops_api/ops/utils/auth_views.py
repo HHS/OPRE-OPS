@@ -41,7 +41,7 @@ def logout() -> Union[Response, tuple[str, int]]:
         try:
             identity = get_jwt_identity()
             la.metadata.update({"oidc_id": identity})
-
+            # TODO: Process the /logout endpoint for the OIDC Provider here.
             return make_response_with_headers({"message": f"User {identity} Logged out"})
         except RuntimeError:
             return make_response_with_headers({"message": "Logged out"})

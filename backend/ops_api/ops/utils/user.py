@@ -1,7 +1,7 @@
 from typing import Optional, TypedDict
 
 from flask import current_app
-from models.users import User
+from models.users import Role, User
 from sqlalchemy import select
 
 
@@ -16,12 +16,16 @@ def register_user(userinfo: UserInfoDict) -> User:
     current_app.logger.debug(f"User Lookup Response: {user}")
     if not user:
         # Create new user
+        # Default to an 'unassigned' role.
+        role = Role.query.filter(Role.name.__eq__("unassigned"))
+
         user = User(
             email=userinfo["email"],
             oidc_id=userinfo["sub"],
             hhs_id=userinfo["hhsid"],
             first_name=userinfo["given_name"],
             last_name=userinfo["family_name"],
+            roles=[role],
         )
 
         current_app.db_session.add(user)

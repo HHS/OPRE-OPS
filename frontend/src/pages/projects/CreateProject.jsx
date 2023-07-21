@@ -6,12 +6,12 @@ import App from "../../App";
 import ProjectTypeSelect from "../../components/UI/Form/ProjectTypeSelect/ProjectTypeSelect";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
 import Alert from "../../components/UI/Alert";
-import Modal from "../../components/UI/Modal";
 import Input from "../../components/UI/Form/Input";
 import TextArea from "../../components/UI/Form/TextArea";
 import suite from "./suite";
 import classnames from "vest/classnames";
 import { setAlert } from "../../components/UI/Alert/alertSlice";
+import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
 
 export const CreateProject = () => {
     const [showModal, setShowModal] = useState(false);
@@ -108,7 +108,7 @@ export const CreateProject = () => {
             )}
 
             {showModal && (
-                <Modal
+                <ConfirmationModal
                     heading={modalProps.heading}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}

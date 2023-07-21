@@ -8,8 +8,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { User } from "../UI/Header/User";
 import jwt_decode from "jwt-decode";
-import { getUserByOidc } from "../../api/getUser";
-import { apiLogin, apiLogout } from "../../api/apiLogin";
+import { useGetUserByOIDCIdQuery } from "../../api/opsAPI";
+import { apiLogin } from "../../api/apiLogin";
 import NotificationCenter from "../UI/NotificationCenter/NotificationCenter";
 
 async function setActiveUser(token, dispatch) {
@@ -17,9 +17,10 @@ async function setActiveUser(token, dispatch) {
     //const isValidToken = validateToken(token);
     const decodedJwt = jwt_decode(token);
     const userId = decodedJwt["sub"];
-    const userDetails = await getUserByOidc(userId);
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const { data: user } = useGetUserByOIDCIdQuery(userId);
 
-    dispatch(setUserDetails(userDetails));
+    dispatch(setUserDetails(user));
 }
 
 const AuthSection = () => {
@@ -53,6 +54,8 @@ const AuthSection = () => {
             dispatch(login());
             setActiveUser(currentJWT, dispatch);
             return;
+        } else {
+            navigate("/login");
         }
 
         const localStateString = localStorage.getItem("ops-state-key");
@@ -80,12 +83,14 @@ const AuthSection = () => {
             // first page load - generate state token and set on localStorage
             localStorage.setItem("ops-state-key", cryptoRandomString({ length: 64 }));
         }
-    }, [callBackend, dispatch]);
+    }, [callBackend, dispatch, navigate]);
 
     const logoutHandler = async () => {
-        await apiLogout();
         dispatch(logout());
         localStorage.removeItem("access_token");
+        navigate("/login");
+        //await apiLogout();
+
         // TODO: ⬇ Logout from Auth Provider ⬇
         // const output = await logoutUser(localStorage.getItem("ops-state-key"));
         // console.log(output);

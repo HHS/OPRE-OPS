@@ -1,8 +1,8 @@
 import { useGetNotificationsByUserIdQuery } from "../../../api/opsAPI";
 import jwt_decode from "jwt-decode";
 import icons from "../../../uswds/img/sprite.svg";
-import Modal from "../Modal";
 import React from "react";
+import ConfirmationModal from "../Modals/ConfirmationModal";
 
 const NotificationCenter = () => {
     const [showModal, setShowModal] = React.useState(false);
@@ -14,7 +14,7 @@ const NotificationCenter = () => {
         userId = decodedJwt["sub"];
     }
 
-    const { data, error, isLoading } = useGetNotificationsByUserIdQuery(userId, { pollingInterval: 5000 });
+    const { data, error, isLoading } = useGetNotificationsByUserIdQuery(userId, { pollingInterval: 5000000 });
 
     if (isLoading) {
         return <div>Loading...</div>;
@@ -33,7 +33,7 @@ const NotificationCenter = () => {
                 <use xlinkHref={`${icons}#notifications`}></use>
             </svg>
             {showModal && (
-                <Modal
+                <ConfirmationModal
                     heading="Notification Center"
                     description={data}
                     setShowModal={setShowModal}

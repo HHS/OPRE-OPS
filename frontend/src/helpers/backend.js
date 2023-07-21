@@ -29,13 +29,24 @@ export const callBackend = async (urlPath, action, requestBody, queryParams) => 
 // };
 
 export const authConfig = {
-    hhsAmsAuthorizationEndpoint: "https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/auth",
-    client_id: "44fe2c7a-e9c5-43ec-87e9-3de78d2d3a11",
-    response_type: "code",
-    scope: "openid profile email",
-    redirect_uri: window.location.origin,
-    acr_values: 1,
-    logoutEndpoint: "https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/logout",
+    hhsams: {
+        auth_endpoint: "https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/auth",
+        client_id: "44fe2c7a-e9c5-43ec-87e9-3de78d2d3a11",
+        response_type: "code",
+        scope: "openid profile email",
+        redirect_uri: window.location.origin,
+        acr_values: 1,
+        logout_endpoint: "https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/logout",
+    },
+    logingov: {
+        auth_endpoint: "https://idp.int.identitysandbox.gov/openid_connect/authorize",
+        client_id: "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
+        response_type: "code",
+        scope: "openid email",
+        redirect_uri: window.location.origin,
+        acr_values: "http://idmanagement.gov/ns/assurance/ial/1",
+        logout_endpoint: "https://idp.int.identitysandbox.gov/openid_connect/logout",
+    },
 };
 
 export const backEndConfig = {

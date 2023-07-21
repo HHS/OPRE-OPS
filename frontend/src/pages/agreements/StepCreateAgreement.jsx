@@ -10,7 +10,6 @@ import ProductServiceCodeSelect from "../../components/UI/Form/ProductServiceCod
 import ProjectOfficerSelect from "../../components/UI/Form/ProjectOfficerSelect";
 import TeamMemberSelect from "../../components/UI/Form/TeamMemberSelect";
 import TeamMemberList from "../../components/UI/Form/TeamMemberList";
-import Modal from "../../components/UI/Modal";
 import { formatTeamMember, postAgreement } from "../../api/postAgreements";
 import ProjectSummaryCard from "../../components/ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";
 import ProductServiceCodeSummaryBox from "../../components/UI/Form/ProductServiceCodeSummaryBox";
@@ -27,6 +26,7 @@ import Input from "../../components/UI/Form/Input";
 import EditModeTitle from "./EditModeTitle";
 import TextArea from "../../components/UI/Form/TextArea/TextArea";
 import { useGetProductServiceCodesQuery } from "../../api/opsAPI";
+import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
  *
@@ -218,7 +218,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
     return (
         <>
             {showModal && (
-                <Modal
+                <ConfirmationModal
                     heading={modalProps.heading}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}

@@ -33,8 +33,24 @@ const UserInfoForm = () => {
                     className={cn("provider-id")}
                     value={user?.oidc_id}
                     onChange={null}
+                    disabled={true}
                 />
-                <Input name="email" label="Email" className={cn("user-email")} value={user?.email} onChange={null} />
+                <Input
+                    name="hhsId"
+                    label="HHS ID"
+                    className={cn("provider-id")}
+                    value={user?.hhs_id}
+                    onChange={null}
+                    disabled={true}
+                />
+                <Input
+                    name="email"
+                    label="Email"
+                    className={cn("user-email")}
+                    value={user?.email}
+                    onChange={null}
+                    disabled={true}
+                />
                 <Input
                     name="firstName"
                     label="First Name"
