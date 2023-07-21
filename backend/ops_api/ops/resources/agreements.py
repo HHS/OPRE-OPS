@@ -135,32 +135,32 @@ class QueryParameters:
 
 
 
-def associated_with_agreement(id: int) -> bool:
+def associated_with_agreement(self, id: int) -> bool:
     jwt_identity = get_jwt_identity()
-    agreement_stmt = select(Agreement).join(Agreement.created_by).join(Agreement.project_officer).join(Agreement.team_members).where(Agreement.id == id)
+    agreement_stmt = select(Agreement).where(Agreement.id == id)
     agreement = current_app.db_session.scalar(agreement_stmt)
 
     oidc_ids = set()
-    if agreement.created_by:
-        oidc_ids.add(agreement.created_by.oidc_id)
-    if agreement.project_officer:
-        oidc_ids.add(agreement.project_officer.oidc_id)
-    oidc_ids |= set(tm.oidc_id for tm in agreement.team_members)
+    if agreement.created_by_user:
+        oidc_ids.add(str(agreement.created_by_user.oidc_id))
+    if agreement.project_officer_user:
+        oidc_ids.add(str(agreement.project_officer_user.oidc_id))
+    oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
+
+    ret = jwt_identity in oidc_ids
 
     from pprint import pprint
     print("*"*80)
-    print(agreement.created_by)
-    print(agreement.project_officer)
-    print(agreement.team_members)
-    print("^"*80)
     pprint(agreement.to_dict())
     print("#"*80)
     print(jwt_identity)
     print("-"*80)
     pprint(oidc_ids)
+    print("^"*80)
+    print(ret)
     print("*"*80)
 
-    return jwt_identity in oidc_ids
+    return ret
 
 
 class AgreementItemAPI(BaseItemAPI):
