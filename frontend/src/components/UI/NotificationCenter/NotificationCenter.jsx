@@ -3,8 +3,8 @@ import Modal from "react-modal";
 import { useDismissNotificationMutation, useGetNotificationsByUserIdQuery } from "../../../api/opsAPI";
 import jwt_decode from "jwt-decode";
 import icons from "../../../uswds/img/sprite.svg";
-import Notification from "../Notification";
 import customStyles from "./NotificationCenter.module.css";
+import LogItem from "../LogItem";
 
 const NotificationCenter = () => {
     const [showModal, setShowModal] = React.useState(false);
@@ -93,7 +93,14 @@ const NotificationCenter = () => {
                         {unreadNotifications.length > 0 && (
                             <ul className={customStyles.listStyle}>
                                 {unreadNotifications.map((notification) => (
-                                    <Notification key={notification.id} data={notification} />
+                                    <LogItem
+                                        key={notification.id}
+                                        title={notification.title}
+                                        createdOn={notification.created_on}
+                                        message={notification.message}
+                                        variant="large"
+                                        withSeparator={true}
+                                    />
                                 ))}
                             </ul>
                         )}

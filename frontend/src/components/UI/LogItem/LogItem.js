@@ -18,16 +18,16 @@ export const LogItem = ({ title, message, createdOn, variant, withSeparator = fa
     const isLarge = variant === "large";
 
     return (
-        <li className={`font-12px ${styles.notificationListItem}`}>
+        <li className={`${isLarge ? "font-body-sm" : "font-12px"} ${styles.notificationListItem}`}>
             <div className="display-flex flex-justify">
-                <span className={`text-bold ${isLarge ? "text-normal" : undefined}`}>{title}</span>
+                <span className={`text-bold ${isLarge ? "font-body-sm" : undefined}`}>{title}</span>
                 <span className="display-flex flex-align-center">
                     <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1 text-base-dark" />
                     <span className="text-base-dark">{timeAgo(createdOn)}</span>
                 </span>
             </div>
-            <p className={`margin-0 margin-y-1 ${isLarge ? "text-normal" : undefined}`}>{message}</p>
-            {withSeparator ? <hr className="height-1px bg-brand-neutral-lighter" /> : null}
+            <p className={`margin-0 margin-y-1 ${isLarge ? "font-body-sm" : undefined}`}>{message}</p>
+            {withSeparator ? <hr className="height-1px bg-brand-neutral-lighter margin-bottom-1" /> : null}
         </li>
     );
 };
