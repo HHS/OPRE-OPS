@@ -2,6 +2,15 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import { useGetUsersQuery } from "../../../api/opsAPI";
 
+/**
+ * A component that renders a select input for choosing team members.
+ * @param {Object} props - The component props.
+ * @param {string} [props.className] - The class name to apply to the component.
+ * @param {Object} props.selectedProjectOfficer - The currently selected project officer.
+ * @param {Array} props.selectedTeamMembers - The currently selected team members.
+ * @param {Function} props.setSelectedTeamMembers - A function to set the selected team members.
+ * @returns {React.JSX.Element} - The rendered component.
+ */
 export const TeamMemberSelect = ({
     className,
     selectedProjectOfficer,
@@ -23,7 +32,10 @@ export const TeamMemberSelect = ({
             user.id !== selectedProjectOfficer?.id && // Check if the user is not a selected project officer
             !selectedTeamMembers.some((teamMember) => teamMember.id === user.id) // Check if the user is not already a team member
     );
-
+    /**
+     * Handles the change event of the select input.
+     * @param {number} userId - The ID of the selected user.
+     */
     const onChangeSelect = (userId = 0) => {
         if (userId === 0) {
             return;
@@ -43,7 +55,7 @@ export const TeamMemberSelect = ({
                     className="usa-select usa-sr-only usa-combo-box__select "
                     name="team-member-select"
                     aria-hidden="true"
-                    tabIndex="-1"
+                    tabIndex={-1}
                     value={remainingUsers?.id}
                     onChange={(e) => onChangeSelect(Number(e.target.value))}
                     required
@@ -70,7 +82,7 @@ export const TeamMemberSelect = ({
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                 />
-                <span className="usa-combo-box__clear-input__wrapper" tabIndex="-1">
+                <span className="usa-combo-box__clear-input__wrapper" tabIndex={-1}>
                     <button
                         type="button"
                         className="usa-combo-box__clear-input"
@@ -81,11 +93,11 @@ export const TeamMemberSelect = ({
                     </button>
                 </span>
                 <span className="usa-combo-box__input-button-separator">&nbsp;</span>
-                <span className="usa-combo-box__toggle-list__wrapper" tabIndex="-1">
+                <span className="usa-combo-box__toggle-list__wrapper" tabIndex={-1}>
                     <button
                         id="team-member-select-toggle-list"
                         type="button"
-                        tabIndex="-1"
+                        tabIndex={-1}
                         className="usa-combo-box__toggle-list"
                         aria-label="Toggle the dropdown list"
                     >
@@ -94,7 +106,7 @@ export const TeamMemberSelect = ({
                 </span>
 
                 <ul
-                    tabIndex="-1"
+                    tabIndex={-1}
                     id="team-members--list"
                     className="usa-combo-box__list"
                     role="listbox"
@@ -110,7 +122,7 @@ export const TeamMemberSelect = ({
                                 aria-selected="false"
                                 id={`team-member-dynamic-select--list--option-${index}`}
                                 className="usa-combo-box__list-option"
-                                tabIndex={index === 0 ? "0" : "-1"}
+                                tabIndex={index === 0 ? 0 : -1}
                                 role="option"
                                 data-value={user?.full_name || user?.email}
                             >
@@ -130,8 +142,11 @@ export const TeamMemberSelect = ({
     );
 };
 
-export default TeamMemberSelect;
-
 TeamMemberSelect.propTypes = {
     className: PropTypes.string,
+    selectedProjectOfficer: PropTypes.object,
+    selectedTeamMembers: PropTypes.array,
+    setSelectedTeamMembers: PropTypes.func,
 };
+
+export default TeamMemberSelect;

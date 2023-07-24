@@ -2,6 +2,7 @@ import { useEffect, useState, Fragment } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
+import PropTypes from "prop-types";
 import PreviewTable from "../../../components/UI/PreviewTable";
 import Alert from "../../../components/UI/Alert";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
@@ -15,8 +16,8 @@ import { setAlert } from "../../../components/UI/Alert/alertSlice";
 /**
  * Renders a page for reviewing and sending an agreement to approval.
  * @param {Object} props - The component props.
- * @param {string} props.agreement_id - The ID of the agreement to review.
- * @returns {JSX.Element} - The rendered component.
+ * @param {number} props.agreement_id - The ID of the agreement to review.
+ * @returns {React.JSX.Element} - The rendered component.
  */
 export const ReviewAgreement = ({ agreement_id }) => {
     const dispatch = useDispatch();
@@ -287,7 +288,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 )}
             </div>
 
-            <PreviewTable readOnly={true} budgetLinesAdded={agreement?.budget_line_items} />
+            <PreviewTable readOnly={true} budgetLinesAdded={agreement?.budget_line_items} isReviewMode={true} />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className="usa-button usa-button--outline margin-right-2"
@@ -309,6 +310,10 @@ export const ReviewAgreement = ({ agreement_id }) => {
             </div>
         </>
     );
+};
+
+ReviewAgreement.propTypes = {
+    agreement_id: PropTypes.number.isRequired,
 };
 
 export default ReviewAgreement;
