@@ -34,6 +34,7 @@ ListItem.propTypes = {
     title: PropTypes.string.isRequired,
     message: PropTypes.string.isRequired,
     createdOn: PropTypes.string.isRequired,
+    variant: PropTypes.string,
 };
 
 export default ListItem;

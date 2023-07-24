@@ -1,10 +1,8 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import AgreementTotalBudgetLinesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalBudgetLinesCard";
 import AgreementValuesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementValuesCard";
-import Terms from "../review/Terms";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import Tag from "../../../components/UI/Tag/Tag";
 import { notesData } from "./data";
@@ -62,7 +60,7 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
                         </dl>
                         <h3 className="text-base-dark margin-top-3 text-normal font-12px">Notes</h3>
                         <ul className="usa-list--unstyled overflow-y-scroll" style={{ height: "11.375rem" }}>
-                            {/* TODO: Replace with real data */}
+                            {/* // TODO: Replace with real data */}
                             {notesData.map((note) => (
                                 <ListItem
                                     key={note.id}
