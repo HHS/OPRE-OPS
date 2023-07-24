@@ -185,7 +185,7 @@ it("review an agreement", () => {
         cy.get("tbody").children().as("table-rows").should("have.length", 2);
         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
         cy.get("[data-cy='edit-row']").click();
-        cy.get(".usa-form-group--error").should("have.length", 5);
+        cy.get(".usa-form-group--error").should("have.length", 2);
         cy.get('[data-cy="update-budget-line"]').should("be.disabled");
         // fix errors
         cy.get("#selectedCan").type(`${blData[0].can}{enter}`);

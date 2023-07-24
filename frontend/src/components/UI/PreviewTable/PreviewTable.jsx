@@ -1,10 +1,11 @@
 import { useState, Fragment } from "react";
+import PropTypes from "prop-types";
+import { useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import TotalSummaryCard from "./TotalSummaryCard";
-import { useSelector } from "react-redux";
 import { formatDate, loggedInName } from "../../../helpers/utils";
 import TableTag from "./TableTag";
 import "./PreviewTable.scss";
@@ -17,6 +18,7 @@ import "./PreviewTable.scss";
  * @param {Function} [props.handleDeleteBudgetLine] - A function to handle deleting a budget line. - optional
  * @param {Function} [props.handleDuplicateBudgetLine] - A function to handle duplicating a budget line. - optional
  * @param {Boolean} [props.readOnly] - A flag to indicate if the table is read-only.
+ * @param {Boolean} [props.isReviewMode] - A flag to indicate if the table is in review mode.
  * @returns {JSX.Element} - The rendered table component.
  */
 export const PreviewTable = ({
@@ -25,6 +27,7 @@ export const PreviewTable = ({
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
+    isReviewMode = false,
 }) => {
     const sortedBudgetLines = budgetLinesAdded
         .slice()
@@ -59,8 +62,28 @@ export const PreviewTable = ({
             setIsRowActive(true);
         };
 
+        // styles for the table row
         const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
         const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
+
+        const addErrorClassIfNotFound = (item) => {
+            if (isReviewMode && !item) {
+                return "table-item-error";
+            } else {
+                return undefined;
+            }
+        };
+        // error class for need_by_date to be in the future
+        const futureDateErrorClass = (item) => {
+            const today = new Date().valueOf();
+            const dateNeeded = new Date(item).valueOf();
+
+            if (isReviewMode && dateNeeded < today) {
+                return "table-item-error";
+            } else {
+                return undefined;
+            }
+        };
 
         const ChangeIcons = ({ budgetLine }) => {
             return (
@@ -105,19 +128,37 @@ export const PreviewTable = ({
         return (
             <Fragment key={bl?.id}>
                 <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
-                    <th scope="row" className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                    <th
+                        scope="row"
+                        className={`${addErrorClassIfNotFound(bl?.line_description)} ${removeBorderBottomIfExpanded}`}
+                        style={changeBgColorIfExpanded}
+                    >
                         {bl?.line_description}
                     </th>
-                    <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                    <td
+                        className={`${futureDateErrorClass(formatted_date_needed)} ${addErrorClassIfNotFound(
+                            formatted_date_needed
+                        )} ${removeBorderBottomIfExpanded}`}
+                        style={changeBgColorIfExpanded}
+                    >
                         {formatted_date_needed}
                     </td>
-                    <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                    <td
+                        className={`${addErrorClassIfNotFound(fiscalYear)} ${removeBorderBottomIfExpanded}`}
+                        style={changeBgColorIfExpanded}
+                    >
                         {fiscalYear || ""}
                     </td>
-                    <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                    <td
+                        className={`${addErrorClassIfNotFound(bl?.can?.number)} ${removeBorderBottomIfExpanded}`}
+                        style={changeBgColorIfExpanded}
+                    >
                         {bl?.can?.number}
                     </td>
-                    <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                    <td
+                        className={`${addErrorClassIfNotFound(bl?.amount)} ${removeBorderBottomIfExpanded}`}
+                        style={changeBgColorIfExpanded}
+                    >
                         <CurrencyFormat
                             value={bl?.amount || 0}
                             displayType={"text"}
@@ -235,6 +276,16 @@ export const PreviewTable = ({
             <TotalSummaryCard budgetLines={sortedBudgetLines}></TotalSummaryCard>
         </>
     );
+};
+
+PreviewTable.propTypes = {
+    budgetLinesAdded: PropTypes.arrayOf(PropTypes.object),
+    handleSetBudgetLineForEditing: PropTypes.func,
+    handleDeleteBudgetLine: PropTypes.func,
+    handleDuplicateBudgetLine: PropTypes.func,
+    readOnly: PropTypes.bool,
+    errors: PropTypes.arrayOf(PropTypes.array),
+    isReviewMode: PropTypes.bool,
 };
 
 export default PreviewTable;

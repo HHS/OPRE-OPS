@@ -36,7 +36,7 @@ const suite = create((fieldName) => {
         enforce(fieldName.budget_line_items).longerThan(0);
     });
     // test budget_line_items array
-    each(fieldName.budget_line_items, (item, index) => {
+    each(fieldName.budget_line_items, (item) => {
         test(`Budget line item (${item.line_description})`, "Description cannot be blank", () => {
             enforce(item.line_description).isNotBlank();
         });
