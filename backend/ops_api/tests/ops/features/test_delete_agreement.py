@@ -15,6 +15,7 @@ def contract_agreement(loaded_db):
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
         research_project_id=1,
+        created_by=4,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -77,6 +78,7 @@ def direct_agreement(loaded_db):
         payee="Somebody who needs money",
         agreement_type=AgreementType.DIRECT_ALLOCATION,
         research_project_id=1,
+        created_by=4,
     )
     loaded_db.add(direct_agreement)
     loaded_db.commit()

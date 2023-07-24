@@ -247,6 +247,7 @@ def test_contract(loaded_db):
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
         research_project_id=1,
+        created_by=4,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
