@@ -5,7 +5,7 @@ import AgreementTotalBudgetLinesCard from "../../../components/Agreements/Agreem
 import AgreementValuesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementValuesCard";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import Tag from "../../../components/UI/Tag/Tag";
-import { notesData } from "./data";
+import { notesData, historyData } from "./data";
 import ListItem from "../../../components/UI/LogItem";
 
 const AgreementDetails = ({ agreement, projectOfficer }) => {
@@ -72,14 +72,25 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
                                     title={note.created_by}
                                     createdOn={note.created_on}
                                     message={note.message}
-                                    variant="condensed"
                                 />
                             ))}
                         </ul>
-                        <dl className="margin-0 font-12px">
-                            <dt className="margin-0 text-base-dark margin-top-3">History</dt>
-                            <dd className="text-semibold margin-0 margin-top-05">TODO</dd>
-                        </dl>
+                        <h3 className="text-base-dark margin-top-3 text-normal font-12px">History</h3>
+                        <ul
+                            className="usa-list--unstyled overflow-y-scroll"
+                            style={{ height: "7.3125rem" }}
+                            tabIndex={0}
+                        >
+                            {/* // TODO: Replace with real data */}
+                            {historyData.map((note) => (
+                                <ListItem
+                                    key={note.id}
+                                    title={note.created_by}
+                                    createdOn={note.created_on}
+                                    message={note.message}
+                                />
+                            ))}
+                        </ul>
                     </div>
                     <div className="grid-col-6" data-cy="details-right-col">
                         {/* NOTE: Right Column */}
