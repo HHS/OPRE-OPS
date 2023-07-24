@@ -6,7 +6,7 @@ import AgreementValuesCard from "../../../components/Agreements/AgreementDetails
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import Tag from "../../../components/UI/Tag/Tag";
 import { notesData } from "./data";
-import ListItem from "../../../components/UI/ListItem";
+import ListItem from "../../../components/UI/LogItem";
 
 const AgreementDetails = ({ agreement, projectOfficer }) => {
     // eslint-disable-next-line no-unused-vars
