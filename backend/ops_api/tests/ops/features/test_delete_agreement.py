@@ -1,10 +1,11 @@
+from contextlib import suppress
 import datetime
 
 import pytest
 from pytest_bdd import given, scenario, then, when
 
-from models import AgreementType, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ContractType, DirectAgreement
-
+from models import AgreementType, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ContractType, DirectAgreement, User
+from sqlalchemy.orm.exc import StaleDataError
 
 @pytest.fixture()
 def contract_agreement(loaded_db):
@@ -16,6 +17,72 @@ def contract_agreement(loaded_db):
         agreement_type=AgreementType.CONTRACT,
         research_project_id=1,
         created_by=4,
+    )
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
+    yield contract_agreement
+
+    loaded_db.delete(contract_agreement)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def contract_agreement_project_officer(loaded_db):
+    contract_agreement = ContractAgreement(
+        name="Feature Test Contract",
+        number="BDD0999",
+        contract_number="CT0999",
+        contract_type=ContractType.RESEARCH,
+        agreement_type=AgreementType.CONTRACT,
+        research_project_id=1,
+        created_by=1,
+        project_officer=4,
+    )
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
+    yield contract_agreement
+
+    loaded_db.delete(contract_agreement)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def contract_agreement_team_member(loaded_db):
+    user = loaded_db.get(User, 4)
+    contract_agreement = ContractAgreement(
+        name="Feature Test Contract",
+        number="BDD0999",
+        contract_number="CT0999",
+        contract_type=ContractType.RESEARCH,
+        agreement_type=AgreementType.CONTRACT,
+        research_project_id=1,
+        created_by=1,
+        project_officer=1,
+        team_members=[user],
+    )
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
+    yield contract_agreement
+
+    loaded_db.delete(contract_agreement)
+
+    with suppress(StaleDataError):
+        loaded_db.commit()
+
+
+@pytest.fixture()
+def contract_agreement_not_associated(loaded_db):
+    contract_agreement = ContractAgreement(
+        name="Feature Test Contract",
+        number="BDD0999",
+        contract_number="CT0999",
+        contract_type=ContractType.RESEARCH,
+        agreement_type=AgreementType.CONTRACT,
+        research_project_id=1,
+        created_by=1,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -110,6 +177,21 @@ def client(auth_client):
     return auth_client
 
 
+@scenario("delete_agreement.feature", "Contract Agreement as Project Officer")
+def test_contract_project_officer():
+    pass
+
+
+@scenario("delete_agreement.feature", "Contract Agreement as Team Member")
+def test_contract_team_member():
+    pass
+
+
+@scenario("delete_agreement.feature", "Contract Agreement I am not an authorized user for")
+def test_contract_not_associated():
+    pass
+
+
 @given("I have a contract agreement with only draft BLIs", target_fixture="agreement")
 def contract_draft_bli(contract_with_draft_bli):
     return contract_with_draft_bli
@@ -123,6 +205,21 @@ def contract_non_draft_bli(contract_with_planned_bli):
 @given("I have a non-contract agreement", target_fixture="agreement")
 def non_contract(direct_agreement):
     return direct_agreement
+
+
+@given("I have a contract agreement as the project officer", target_fixture="agreement")
+def project_officer(contract_agreement_project_officer):
+    return contract_agreement_project_officer
+
+
+@given("I have a contract agreement as a team member", target_fixture="agreement")
+def team_member(contract_agreement_team_member):
+    return contract_agreement_team_member
+
+
+@given("I have a contract agreement I am not allowed to delete", target_fixture="agreement")
+def not_associated(contract_agreement_not_associated):
+    return contract_agreement_not_associated
 
 
 @when("I delete the agreement", target_fixture="submit_response")
@@ -139,3 +236,8 @@ def delete_success(submit_response):
 @then("I should get an error message that it's invalid")
 def delete_failure(submit_response):
     assert submit_response.status_code == 400
+
+
+@then("I should get an error message that I'm not authorized")
+def delete_failure(submit_response):
+    assert submit_response.status_code == 401

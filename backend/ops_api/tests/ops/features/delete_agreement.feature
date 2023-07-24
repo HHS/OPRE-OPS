@@ -19,3 +19,21 @@ Scenario: Non-Contract Agreement
     And I have a non-contract agreement
     When I delete the agreement
     Then I should get an error message that it's invalid
+
+Scenario: Contract Agreement as Project Officer
+    Given I am logged in as an OPS user with the correct authorization
+    And I have a contract agreement as the project officer
+    When I delete the agreement
+    Then I should get a message that it was successful
+
+Scenario: Contract Agreement as Team Member
+    Given I am logged in as an OPS user with the correct authorization
+    And I have a contract agreement as a team member
+    When I delete the agreement
+    Then I should get a message that it was successful
+
+Scenario: Contract Agreement I am not an authorized user for
+    Given I am logged in as an OPS user with the correct authorization
+    And I have a contract agreement I am not allowed to delete
+    When I delete the agreement
+    Then I should get an error message that I'm not authorized
