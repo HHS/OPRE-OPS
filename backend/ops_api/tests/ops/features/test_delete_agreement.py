@@ -4,8 +4,17 @@ import datetime
 import pytest
 from pytest_bdd import given, scenario, then, when
 
-from models import AgreementType, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ContractType, DirectAgreement, User
+from models import (
+    AgreementType,
+    BudgetLineItem,
+    BudgetLineItemStatus,
+    ContractAgreement,
+    ContractType,
+    DirectAgreement,
+    User,
+)
 from sqlalchemy.orm.exc import StaleDataError
+
 
 @pytest.fixture()
 def contract_agreement(loaded_db):
@@ -239,5 +248,5 @@ def delete_failure(submit_response):
 
 
 @then("I should get an error message that I'm not authorized")
-def delete_failure(submit_response):
+def delete_failure_not_authorized(submit_response):
     assert submit_response.status_code == 401
