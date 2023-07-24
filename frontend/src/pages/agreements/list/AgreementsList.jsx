@@ -18,7 +18,14 @@ import _ from "lodash";
 export const AgreementsList = () => {
     const [searchParams] = useSearchParams();
     const isAlertActive = useSelector((state) => state.alert.isActive);
-    const [filterFunctions, setFilterFunctions] = useState([]);
+    const [filters, setFilters] = useState({
+        upcomingNeedByDate: null,
+        project: null,
+        projectOfficer: null,
+        type: null,
+        procurementShop: null,
+        budgetLineStatus: [],
+    });
 
     const {
         data: agreements,
@@ -50,12 +57,14 @@ export const AgreementsList = () => {
     }
 
     let filteredAgreements = _.cloneDeep(agreements);
-    for (let filterFunction of filterFunctions) {
-        filteredAgreements = filteredAgreements.filter(filterFunction);
-    }
+    // for (let filter of filters) {
+    //     filteredAgreements = filteredAgreements.filter(filterFunction);
+    // }
 
-    console.log("filteredAgreements", filteredAgreements);
-    console.log("filterFunctions", filterFunctions);
+    // console.log("filteredAgreements", filteredAgreements);
+    // console.log("filterFunctions", filterFunctions);
+
+    console.log("filters", filters);
 
     let sortedAgreements;
     if (searchParams.get("filter") === "my-agreements") {
@@ -77,7 +86,7 @@ export const AgreementsList = () => {
 
             <h1 className="font-sans-lg">Agreements</h1>
             <p>This is a list of the agreements you are listed as a Team Member on.</p>
-            <AgreementsFilterHeaderSection setFilterFunctions={setFilterFunctions} />
+            <AgreementsFilterHeaderSection filters={filters} setFilters={setFilters} />
             <AgreementsTable agreements={sortedAgreements} />
         </App>
     );

@@ -3,13 +3,12 @@ import { Link, useLocation } from "react-router-dom";
 import styles from "../../../components/Portfolios/PortfolioTabsSection/PortfolioTabsSection.module.scss";
 import TabsSection from "../../../components/UI/TabsSection";
 import AgreementsFilterButton from "./AgreementsFilterButton";
-import { useEffect } from "react";
 
 /**
  * Header section above the Agreements List table.
  * @returns {ReactNode} The rendered component.
  */
-export const AgreementsFilterHeaderSection = ({ setFilterFunctions }) => {
+export const AgreementsFilterHeaderSection = ({ filters, setFilters }) => {
     const location = useLocation();
 
     const selected = `font-sans-2xs text-bold ${styles.listItemSelected}`;
@@ -41,9 +40,9 @@ export const AgreementsFilterHeaderSection = ({ setFilterFunctions }) => {
         );
     });
 
-    useEffect(() => {
-        setFilterFunctions((prevState) => [...prevState, () => false]);
-    }, [setFilterFunctions]);
+    // useEffect(() => {
+    //     setFilterFunctions((prevState) => [...prevState, () => false]);
+    // }, [setFilterFunctions]);
 
     return (
         <div>
@@ -51,7 +50,7 @@ export const AgreementsFilterHeaderSection = ({ setFilterFunctions }) => {
                 <TabsSection links={links} label="Agreements Tabs Section" />
             </div>
             <div className="padding-top-05 padding-bottom-05 display-flex flex-justify-end">
-                <AgreementsFilterButton setFilterFunctions={setFilterFunctions} />
+                <AgreementsFilterButton filters={filters} setFilters={setFilters} />
             </div>
         </div>
     );

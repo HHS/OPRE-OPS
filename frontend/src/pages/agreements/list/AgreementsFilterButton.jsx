@@ -1,5 +1,5 @@
 import icons from "../../../uswds/img/sprite.svg";
-import React from "react";
+import React, { useEffect } from "react";
 import Modal from "react-modal";
 import customStyles from "./AgreementsFilterButton.module.css";
 
@@ -7,10 +7,28 @@ import customStyles from "./AgreementsFilterButton.module.css";
  * Page for the Agreements List.
  * @returns {ReactNode} The rendered component.
  */
-export const AgreementsFilterButton = ({ setFilterFunctions }) => {
+export const AgreementsFilterButton = ({ filters, setFilters }) => {
     const [showModal, setShowModal] = React.useState(false);
 
     Modal.setAppElement("#root");
+
+    useEffect(() => {
+        setFilters((prevState) => {
+            return {
+                ...prevState,
+                upcomingNeedByDate: "next-30-days",
+            };
+        });
+    }, [setFilters]);
+
+    const handleRadioButtons = (event) => {
+        setFilters((prevState) => {
+            return {
+                ...prevState,
+                upcomingNeedByDate: event.target.id,
+            };
+        });
+    };
 
     return (
         <div className={customStyles.container} id="filter-container">
@@ -47,7 +65,9 @@ export const AgreementsFilterButton = ({ setFilterFunctions }) => {
                                         id="next-30-days"
                                         type="radio"
                                         name="upcoming-need-by-date"
-                                        checked
+                                        defaultChecked={filters.upcomingNeedByDate === "next-30-days"}
+                                        onChange={handleRadioButtons}
+                                        value={filters.upcomingNeedByDate}
                                     />
                                     <label className="padding-left-1" htmlFor="next-30-days">
                                         Next 30 days
@@ -59,6 +79,8 @@ export const AgreementsFilterButton = ({ setFilterFunctions }) => {
                                         id="current-fy"
                                         type="radio"
                                         name="upcoming-need-by-date"
+                                        onChange={handleRadioButtons}
+                                        value={filters.upcomingNeedByDate}
                                     />
                                     <label className="padding-left-1" htmlFor="current-fy">
                                         Current FY
@@ -72,6 +94,8 @@ export const AgreementsFilterButton = ({ setFilterFunctions }) => {
                                         id="next-6-months"
                                         type="radio"
                                         name="upcoming-need-by-date"
+                                        onChange={handleRadioButtons}
+                                        value={filters.upcomingNeedByDate}
                                     />
                                     <label className="padding-left-1" htmlFor="next-6-months">
                                         Next 6 months
@@ -83,6 +107,8 @@ export const AgreementsFilterButton = ({ setFilterFunctions }) => {
                                         id="all-time"
                                         type="radio"
                                         name="upcoming-need-by-date"
+                                        onChange={handleRadioButtons}
+                                        value={filters.upcomingNeedByDate}
                                     />
                                     <label className="padding-left-1" htmlFor="all-time">
                                         All time
