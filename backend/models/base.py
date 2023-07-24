@@ -1,14 +1,12 @@
 """Base model and other useful tools for project models."""
 import decimal
-from dataclasses import dataclass
 from typing import Annotated, ClassVar, Final, TypeAlias, TypedDict, TypeVar, cast
 
-# from desert import schema
 from marshmallow import Schema as MMSchema
 from models.mixins.repr import ReprMixin
 from models.mixins.serialize import SerializeMixin
 from sqlalchemy import Column, DateTime, ForeignKey, Numeric, func
-from sqlalchemy.orm import Mapped, declarative_base, declared_attr, mapped_column, registry
+from sqlalchemy.orm import declarative_base, declared_attr, mapped_column, registry
 from typing_extensions import Any, override
 
 Base = declarative_base()
@@ -85,6 +83,11 @@ class BaseData:
     def to_json(self) -> str:
         """Dump the instance data into a json string."""
         return cast(str, self.Schema.dumps(self))
+
+
+from sqlalchemy_continuum import make_versioned
+
+make_versioned(user_cls=None)
 
 
 class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc, valid-type]

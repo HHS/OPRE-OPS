@@ -3,6 +3,7 @@ import datetime
 import pytest
 from models.cans import BudgetLineItem, BudgetLineItemStatus
 from ops_api.ops.resources.budget_line_items import PATCHRequestBody, POSTRequestBody
+from sqlalchemy_continuum import parent_class, version_class
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -14,7 +15,7 @@ def test_budget_line_item_lookup(loaded_db):
     assert bli.agreement_id == 1
     assert bli.can_id == 5
     assert bli.amount == 1000000.00
-    assert bli.status == BudgetLineItemStatus.PLANNED
+    assert bli.status == BudgetLineItemStatus.DRAFT
 
 
 def test_budget_line_item_creation():
@@ -33,7 +34,7 @@ def test_budget_line_item_creation():
 def test_get_budget_line_items_list(auth_client):
     response = auth_client.get("/api/v1/budget-line-items/")
     assert response.status_code == 200
-    assert len(response.json) == 19
+    assert len(response.json) == 20
     assert response.json[0]["id"] == 1
     assert response.json[1]["id"] == 2
 
@@ -89,7 +90,7 @@ def test_get_budget_line_items_list_by_status_invalid(auth_client):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_post_budget_line_items_empty_post(auth_client):
-    response = auth_client.post("/api/v1/budget-line-items/", data={})
+    response = auth_client.post("/api/v1/budget-line-items/", json={})
     assert response.status_code == 400
 
 
@@ -103,7 +104,7 @@ def test_post_budget_line_items(auth_client):
         can_id=1,
         amount=100.12,
         status="DRAFT",
-        date_needed="2023-01-01",
+        date_needed="2043-01-01",
         psc_fee_amount=1.23,
     )
     response = auth_client.post("/api/v1/budget-line-items/", json=data.__dict__)
@@ -123,7 +124,7 @@ def test_post_budget_line_items_bad_status(auth_client):
         can_id=1,
         amount=100.12,
         status="blah blah",
-        date_needed="2023-01-01",
+        date_needed="2043-01-01",
         psc_fee_amount=1.23,
     )
     response = auth_client.post("/api/v1/budget-line-items/", json=data.__dict__)
@@ -140,7 +141,7 @@ def test_post_budget_line_items_missing_agreement(auth_client):
         "can_id": 1,
         "amount": 100.12,
         "status": "DRAFT",
-        "date_needed": "2023-01-01",
+        "date_needed": "2043-01-01",
         "psc_fee_amount": 1.23,
     }
     response = auth_client.post("/api/v1/budget-line-items/", json=data)
@@ -156,7 +157,7 @@ def test_post_budget_line_items_missing_optional_comments(auth_client):
         can_id=1,
         amount=100.12,
         status="DRAFT",
-        date_needed="2023-01-01",
+        date_needed="2043-01-01",
         psc_fee_amount=1.23,
     )
     response = auth_client.post("/api/v1/budget-line-items/", json=data.__dict__)
@@ -173,7 +174,7 @@ def test_post_budget_line_items_invalid_can(auth_client):
         can_id=10000000,
         amount=100.12,
         status="DRAFT",
-        date_needed="2023-01-01",
+        date_needed="2043-01-01",
         psc_fee_amount=1.23,
     )
     response = auth_client.post("/api/v1/budget-line-items/", json=data.__dict__)
@@ -190,7 +191,7 @@ def test_post_budget_line_items_auth_required(client):
         can_id=1,
         amount=100.12,
         status="DRAFT",
-        date_needed="2023-01-01",
+        date_needed="2043-01-01",
         psc_fee_amount=1.23,
     )
     response = client.post("/api/v1/budget-line-items/", json=data.__dict__)
@@ -207,24 +208,30 @@ def test_post_budget_line_items_only_agreement_id_required(auth_client):
     assert response.json["agreement_id"] == 1
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_put_budget_line_items(auth_client, loaded_db):
+@pytest.fixture()
+def test_bli(loaded_db):
     bli = BudgetLineItem(
-        id=1000,
         line_description="LI 1",
         comments="blah blah",
         agreement_id=1,
         can_id=1,
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
-        date_needed=datetime.date(2023, 1, 1),
+        date_needed=datetime.date(2043, 1, 1),
         psc_fee_amount=1.23,
         created_by=1,
     )
     loaded_db.add(bli)
     loaded_db.commit()
 
+    yield bli
+
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_put_budget_line_items(auth_client, test_bli):
     data = POSTRequestBody(
         line_description="Updated LI 1",
         comments="hah hah",
@@ -232,25 +239,21 @@ def test_put_budget_line_items(auth_client, loaded_db):
         can_id=2,
         amount=200.24,
         status="PLANNED",
-        date_needed="2024-01-01",
+        date_needed="2044-01-01",
         psc_fee_amount=2.34,
     )
-    response = auth_client.put("/api/v1/budget-line-items/1000", json=data.__dict__)
+    response = auth_client.put(f"/api/v1/budget-line-items/{test_bli.id}", json=data.__dict__)
     assert response.status_code == 200
     assert response.json["line_description"] == "Updated LI 1"
-    assert response.json["id"] == 1000
+    assert response.json["id"] == test_bli.id
     assert response.json["comments"] == "hah hah"
     assert response.json["agreement_id"] == 2
     assert response.json["can_id"] == 2
     assert response.json["amount"] == 200.24
     assert response.json["status"] == "PLANNED"
-    assert response.json["date_needed"] == "2024-01-01"
+    assert response.json["date_needed"] == "2044-01-01"
     assert response.json["psc_fee_amount"] == 2.34
     assert response.json["created_on"] != response.json["updated_on"]
-
-    # cleanup
-    loaded_db.delete(bli)
-    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -264,7 +267,7 @@ def test_put_budget_line_items_minimum(auth_client, loaded_db):
         can_id=1,
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
-        date_needed=datetime.date(2023, 1, 1),
+        date_needed=datetime.date(2043, 1, 1),
         psc_fee_amount=1.23,
         created_by=1,
     )
@@ -301,7 +304,7 @@ def test_put_budget_line_items_bad_status(auth_client, loaded_db):
         can_id=1,
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
-        date_needed=datetime.date(2023, 1, 1),
+        date_needed=datetime.date(2043, 1, 1),
         psc_fee_amount=1.23,
         created_by=1,
     )
@@ -328,7 +331,7 @@ def test_put_budget_line_items_bad_date(auth_client, loaded_db):
         can_id=1,
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
-        date_needed=datetime.date(2023, 1, 1),
+        date_needed=datetime.date(2043, 1, 1),
         psc_fee_amount=1.23,
         created_by=1,
     )
@@ -355,7 +358,7 @@ def test_put_budget_line_items_bad_can(auth_client, loaded_db):
         can_id=1,
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
-        date_needed=datetime.date(2023, 1, 1),
+        date_needed=datetime.date(2043, 1, 1),
         psc_fee_amount=1.23,
         created_by=1,
     )
@@ -395,7 +398,7 @@ def test_put_budget_line_items_non_existent_bli(auth_client, loaded_db):
         can_id=2,
         amount=200.24,
         status="PLANNED",
-        date_needed="2024-01-01",
+        date_needed="2044-01-01",
         psc_fee_amount=2.34,
     )
     response = auth_client.put("/api/v1/budget-line-items/1000", json=data.__dict__)
@@ -413,7 +416,7 @@ def test_patch_budget_line_items(auth_client, loaded_db):
         can_id=1,
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
-        date_needed=datetime.date(2023, 1, 1),
+        date_needed=datetime.date(2043, 1, 1),
         psc_fee_amount=1.23,
         created_by=1,
     )
@@ -427,7 +430,7 @@ def test_patch_budget_line_items(auth_client, loaded_db):
         can_id=2,
         amount=200.24,
         status="PLANNED",
-        date_needed="2024-01-01",
+        date_needed="2044-01-01",
         psc_fee_amount=2.34,
     )
     response = auth_client.patch("/api/v1/budget-line-items/1000", json=data.__dict__)
@@ -439,7 +442,7 @@ def test_patch_budget_line_items(auth_client, loaded_db):
     assert response.json["can_id"] == 2
     assert response.json["amount"] == 200.24
     assert response.json["status"] == "PLANNED"
-    assert response.json["date_needed"] == "2024-01-01"
+    assert response.json["date_needed"] == "2044-01-01"
     assert response.json["psc_fee_amount"] == 2.34
     assert response.json["created_on"] != response.json["updated_on"]
 
@@ -459,7 +462,7 @@ def test_patch_budget_line_items_update_two_attributes(auth_client, loaded_db):
         can_id=1,
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
-        date_needed=datetime.date(2023, 1, 1),
+        date_needed=datetime.date(2043, 1, 1),
         psc_fee_amount=1.23,
         created_by=1,
     )
@@ -479,7 +482,7 @@ def test_patch_budget_line_items_update_two_attributes(auth_client, loaded_db):
     assert response.json["can_id"] == 1
     assert response.json["amount"] == 100.12
     assert response.json["status"] == "DRAFT"
-    assert response.json["date_needed"] == "2023-01-01"
+    assert response.json["date_needed"] == "2043-01-01"
     assert response.json["psc_fee_amount"] == 1.23
     assert response.json["created_on"] != response.json["updated_on"]
 
@@ -504,7 +507,7 @@ def test_patch_budget_line_items_bad_status(auth_client, loaded_db):
         can_id=1,
         amount=100.12,
         status="blah blah",
-        date_needed="2023-01-01",
+        date_needed="2043-01-01",
         psc_fee_amount=1.23,
     )
     response = auth_client.patch("/api/v1/budget-line-items/1", json=data.__dict__)
@@ -514,8 +517,8 @@ def test_patch_budget_line_items_bad_status(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_budget_line_items_empty_data(auth_client):
-    response = auth_client.patch("/api/v1/budget-line-items/1", data={})
-    assert response.status_code == 400
+    response = auth_client.patch("/api/v1/budget-line-items/1", json={})
+    assert response.status_code == 200
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -528,8 +531,75 @@ def test_patch_budget_line_items_invalid_can(auth_client):
         can_id=10000000,
         amount=100.12,
         status="DRAFT",
-        date_needed="2023-01-01",
+        date_needed="2043-01-01",
         psc_fee_amount=1.23,
     )
     response = auth_client.patch("/api/v1/budget-line-items/1", json=data.__dict__)
     assert response.status_code == 400
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_patch_budget_line_items_update_status(auth_client, loaded_db):
+    bli = BudgetLineItem(
+        id=1000,
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=1,
+        can_id=1,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2043, 1, 1),
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    data = {"status": "UNDER_REVIEW"}
+    response = auth_client.patch("/api/v1/budget-line-items/1000", json=data)
+    assert response.status_code == 200
+    assert response.json["status"] == "UNDER_REVIEW"
+
+    # cleanup
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_patch_budget_line_items_history(loaded_db):
+    bli = BudgetLineItem(
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=1,
+        can_id=1,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2043, 1, 1),
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    # these will throw if the history tables don't exist
+    version_class(BudgetLineItem)
+    parent_class(version_class(BudgetLineItem))
+
+    # initial version is 0
+    assert bli.versions[0].line_description == "LI 1"
+
+    # update the line description
+    bli.line_description = "Updated LI 1"
+    loaded_db.commit()
+
+    # new version is 1
+    assert bli.versions[1].line_description == "Updated LI 1"
+
+    # SQL pulls back latest version (1 in this case)
+    updated_bli = loaded_db.get(BudgetLineItem, bli.id)
+    assert updated_bli.line_description == "Updated LI 1"
+
+    # cleanup
+    loaded_db.delete(bli)
+    loaded_db.commit()

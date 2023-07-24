@@ -49,7 +49,7 @@ docker compose up
 ## Access
 
 Whether you run the application through Docker or locally, you can access the frontend at `http://localhost:3000` and
-the backend at `http://localhost:8080`.
+the backend api at `http://localhost:8080`.
 
 ## Checks
 
@@ -57,7 +57,14 @@ the backend at `http://localhost:8080`.
 
 #### Backend
 
-TBD.  Pytest, etc.
+The backend api utilizes `pytest`. 
+
+To run them...
+
+```shell
+cd ./backend/ops_api
+pytest
+```
 
 #### Frontend
 
@@ -85,21 +92,21 @@ We require 90% code coverage.
 ### End-to-end Tests
 
 Note: Currently E2E tests require you to have a local stack running for Cypress to connect to.
-This can be achieved by running the `docker-compose.e2e.yml` via `docker compose`
-```
+This can be achieved by running the `docker-compose.e2e.yml` via `docker compose`. The separate compose file
+is used to create fake login tokens, versus the standard `docker-compose.yml`.
+
+```shell
 docker compose -f docker-compose.e2e.yml up
 ```
 
 End-to-end (E2E) can be run from the `frontend` via:
-```
+```shell
 yarn test:e2e
 ```
 or Interactively via:
-```
+```shell
 yarn test:e2e:interactive
 ```
-
-
 
 The E2E uses it's own TEST keys for generating and validating JWT Signatures, as it bypasses any live OAuth providers.
 The test-private-key is currently configured within the `cypress.config.js` directly (base64url encoded).  The `backend`, then requires the test-public-key in order to validate the signatures of the JWT. This is configured within the `/ops/environment/local/e2e.py` (path); which points to the `/static/test-public-key.pem`.
@@ -127,6 +134,8 @@ fix these issues, run...
 cd ./backend/ops_api
 pipenv run nox -s black
 ```
+
+If you're running within a `pipenv shell`, you may ommit the `pipenv run` prefix and run the commands as `nox -s <command>`.
 
 #### Frontend
 
@@ -159,16 +168,18 @@ from succeeding.  Fix the problem and try the commit again.
 
 ## Deployment
 
-This application is deployed to [Cloud.gov](https://cloud.gov) through [Cloud Foundry](https://www.cloudfoundry.org)
-though a [manifest.yml](manifest.yml) file.
+This application is currently deployed to [Cloud.gov](https://cloud.gov) through [Cloud Foundry](https://www.cloudfoundry.org)
+via a [manifest.yml](manifest.yml) file.
 
-For now, while we are waiting for full Cloud.gov access, we only have access to a non-production environment.  Eventually, we will have a production environment.
+For now, while we are waiting for full Cloud.gov access, we only have access to a non-production environment.
 
 ### Development Environment
 
 The development environment is deployed at https://ops-dev.fr.cloud.gov
 
-This environment can be deployed to by authorized committers in the repository. You accomplish this by force pushing
+Currently all `push` to `main` will automatically deploy to the `Development` environment. 
+
+This environment can be deployed to manually as well by authorized committers in the repository. You accomplish this by force pushing
 an existing commit to the `development` branch.
 
 ```shell

@@ -38,3 +38,5 @@ export const CreateBudgetLineFlow = ({ children, onFinish }) => {
 
     return currentChild;
 };
+
+export default CreateBudgetLineFlow;

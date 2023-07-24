@@ -9,7 +9,8 @@ import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { User } from "../UI/Header/User";
 import jwt_decode from "jwt-decode";
 import { getUserByOidc } from "../../api/getUser";
-import { apiLogin } from "../../api/apiLogin";
+import { apiLogin, apiLogout } from "../../api/apiLogin";
+import NotificationCenter from "../UI/NotificationCenter";
 
 async function setActiveUser(token, dispatch) {
     // TODO: Vefiry the Token!
@@ -78,6 +79,7 @@ const AuthSection = () => {
     }, [callBackend, dispatch]);
 
     const logoutHandler = async () => {
+        await apiLogout();
         dispatch(logout());
         localStorage.removeItem("access_token");
         // TODO: ⬇ Logout from Auth Provider ⬇
@@ -103,10 +105,20 @@ const AuthSection = () => {
             )}
             {isLoggedIn && (
                 <div>
-                    <User />
-                    <button className="usa-button fa-solid fa-arrow-right-to-bracket margin-1" onClick={logoutHandler}>
-                        <span className="margin-1">Sign-out</span>
-                    </button>
+                    <div className="display-flex flex-align-center">
+                        <div className="padding-right-1">
+                            <User />
+                        </div>
+                        <div className="padding-right-205">
+                            <NotificationCenter />
+                        </div>
+                        <button
+                            className="usa-button fa-solid fa-arrow-right-to-bracket margin-1"
+                            onClick={logoutHandler}
+                        >
+                            <span className="margin-1">Sign-out</span>
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

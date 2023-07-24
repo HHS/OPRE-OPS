@@ -12,6 +12,7 @@ export const postBudgetLineItem = async (item) => {
         data.date_needed = null;
     }
 
+    delete data.created_by;
     delete data.can;
     delete data.id;
 
@@ -21,16 +22,16 @@ export const postBudgetLineItem = async (item) => {
         .helpers()
         .callBackend(`/api/${api_version}/budget-line-items/`, "POST", data)
         .then(function (response) {
-            console.log(response);
+            console.log(`Budget Line Created: ${response}`);
             return response;
         })
         .catch(function (error) {
             if (error.response) {
                 // The request was made and the server responded with a status code
                 // that falls out of the range of 2xx
-                console.log(error.response.data);
-                console.log(error.response.status);
-                console.log(error.response.headers);
+                console.log(`error.data: ${error.response.data}`);
+                console.log(`error.status: ${error.response.status}`);
+                console.log(`error.headers: ${error.response.headers}`);
             } else if (error.request) {
                 // The request was made but no response was received
                 // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
@@ -47,6 +48,6 @@ export const postBudgetLineItem = async (item) => {
 };
 
 export const postBudgetLineItems = async (items) => {
-    console.log("items", items);
+    console.log("post budget line items", items);
     return Promise.all(items.map((item) => postBudgetLineItem(item)));
 };

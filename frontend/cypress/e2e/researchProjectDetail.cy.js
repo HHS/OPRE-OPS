@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 import { testLogin } from "./utils";
 
 before(() => {

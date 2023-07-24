@@ -8,6 +8,7 @@ from models import User
 from models.events import OpsEvent, OpsEventStatus, OpsEventType
 from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy.orm import Session
+from werkzeug.exceptions import UnsupportedMediaType
 
 
 class OpsEventHandler:
@@ -18,13 +19,18 @@ class OpsEventHandler:
     def __enter__(self):
         self.metadata.update(
             {
-                "request.json": request.json,
                 "request.values": request.values,
                 "request.headers": {k: v for k, v in request.headers},
                 "request.remote_addr": request.remote_addr,
                 "request.remote_user": request.remote_user,
             }
         )
+
+        try:
+            self.metadata["request.json"] = request.json
+        except UnsupportedMediaType:
+            if request.data:
+                self.metadata["request.data"] = request.data
 
         return self
 

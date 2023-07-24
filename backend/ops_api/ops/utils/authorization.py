@@ -1,5 +1,9 @@
 from abc import ABC, abstractmethod
 
+from flask import current_app
+from models.users import User
+from sqlalchemy import select
+
 
 class AuthorizationProvider(ABC):
     @abstractmethod
@@ -11,17 +15,18 @@ class BasicAuthorizationPrivider(AuthorizationProvider):
     def __init__(self, authirized_users: list[str] = []):
         self.authorized_users = authirized_users
 
-    def is_authorized(self, oidc_id: str, permission: list[str]) -> bool:
-        # Perform some basic user lookup and permission check
-        # user = User.query.filter_by(oidc_id=id).first()
-        # if user is not None:
-        #     for role in user.roles:
-        #         if permission in role.permissions.split(",");
-        #             return True
-        # return False
+    def is_authorized(self, oidc_id: str, permissions: list[str]) -> bool:
+        stmt = select(User).where(User.oidc_id == oidc_id)
+        users = current_app.db_session.execute(stmt).all()
+        if users and len(users) == 1:
+            user = users[0][0]
 
-        # TODO: While we flush this out, EVERYONE GETS ACCESS!!
-        return True
+            for role in user.roles:
+                for permission in permissions:
+                    if permission in role.permissions:
+                        return True
+
+        return False
 
 
 class OAuthAuthorizationProvider(AuthorizationProvider):
@@ -41,7 +46,7 @@ class OpaAuthorizationProvider(AuthorizationProvider):
         self.policy = policy
         self.opa_url = opa_url
 
-    def is_authorized(self, policy: str) -> bool:
+    def is_authorized(self, oidc_id: str, permission: list[str]) -> bool:
         # Make a call to the OPA API, passing along the policy you want to
         # check against
         # TODO: implement me

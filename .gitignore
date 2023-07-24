@@ -186,7 +186,10 @@ yarn-error.log*
 .DS_Store
 
 # IDE
-.vscode
+.vscode/*
+# allow vscode launch/tasks to be shared
+!.vscode/launch.json
+!.vscode/tasks.json
 .idea
 
 # HTTP-Client

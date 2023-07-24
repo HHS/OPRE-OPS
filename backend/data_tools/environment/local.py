@@ -12,4 +12,4 @@ class LocalConfig(DataToolsConfig):
 
     @property
     def verbosity(self) -> bool:
-        return True
+        return False

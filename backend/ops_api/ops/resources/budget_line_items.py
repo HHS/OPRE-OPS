@@ -1,17 +1,23 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date
 from typing import Optional
 
-import desert
+import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
-from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
-from marshmallow import fields
+from flask_jwt_extended import verify_jwt_in_request
+from marshmallow import Schema, ValidationError
 from models import BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.resources.budget_line_item_schemas import (
+    BudgetLineItemResponse,
+    PATCHRequestBody,
+    POSTRequestBody,
+    QueryParameters,
+)
+from ops_api.ops.utils.auth import is_authorized, Permission, PermissionType
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -23,59 +29,12 @@ from typing_extensions import Any, override
 ENDPOINT_STRING = "/budget-line-items"
 
 
-@dataclass(kw_only=True)
-class RequestBody:
-    status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus)
-    line_description: Optional[str] = None
-    can_id: Optional[int] = None
-    amount: Optional[float] = None
-    date_needed: Optional[date] = fields.Date(
-        format="%Y-%m-%d",
-    )
-    status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus)
-    comments: Optional[str] = None
-    psc_fee_amount: Optional[float] = None
-
-
-@dataclass(kw_only=True)
-class POSTRequestBody(RequestBody):
-    agreement_id: int  # agreement_id is required for POST
-
-
-@dataclass(kw_only=True)
-class PATCHRequestBody(RequestBody):
-    agreement_id: Optional[int] = None  # agreement_id (and all params) are optional for PATCH
-
-
-@dataclass
-class QueryParameters:
-    can_id: Optional[int] = None
-    agreement_id: Optional[int] = None
-    status: Optional[BudgetLineItemStatus] = fields.Enum(BudgetLineItemStatus, default=None)
-
-
-@dataclass
-class BudgetLineItemResponse:
-    id: int
-    agreement_id: int
-    can_id: int
-    amount: float
-    created_by: int
-    line_description: str
-    status: BudgetLineItemStatus = fields.Enum(BudgetLineItemStatus)
-    comments: Optional[str] = None
-    psc_fee_amount: Optional[float] = None
-    created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%f")
-    updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%f")
-    date_needed: date = fields.Date(format="%Y-%m-%d")
-
-
 class BudgetLineItemsItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
-        self._response_schema = desert.schema(BudgetLineItemResponse)
-        self._put_schema = desert.schema(POSTRequestBody)
-        self._patch_schema = desert.schema(PATCHRequestBody)
+        self._response_schema = mmdc.class_schema(BudgetLineItemResponse)()
+        self._put_schema = mmdc.class_schema(POSTRequestBody)()
+        self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
 
     def _get_item_with_try(self, id: int) -> Response:
         try:
@@ -92,89 +51,104 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         return response
 
     @override
-    @jwt_required()
+    @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
     def get(self, id: int) -> Response:
-        identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_BUDGET_LINE_ITEM"])
-
-        if is_authorized:
-            response = self._get_item_with_try(id)
-        else:
-            response = make_response_with_headers({}, 401)
+        response = self._get_item_with_try(id)
 
         return response
 
     @override
-    @jwt_required()
+    @is_authorized(PermissionType.PUT, Permission.BUDGET_LINE_ITEM)
     def put(self, id: int) -> Response:
         message_prefix = f"PUT to {ENDPOINT_STRING}"
         try:
             with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
-                OPSMethodView._validate_request(
-                    schema=self._put_schema,
-                    message=f"{message_prefix}: Params failed validation:",
-                )
+                self._put_schema.context["id"] = id
+                self._put_schema.context["method"] = "PUT"
 
-                data = self._put_schema.load(request.json)
+                if request.json.get("status") == BudgetLineItemStatus.UNDER_REVIEW.name:
+                    with OpsEventHandler(OpsEventType.SEND_BLI_FOR_APPROVAL) as approval_meta:
+                        data = validate_and_normalize_request_data_for_put(self._put_schema)
+                        budget_line_item = self.update_and_commit_budget_line_item(data, id)
 
-                budget_line_item = update_budget_line_item(data.__dict__, id)
+                        approval_meta.metadata.update({"bli": budget_line_item.to_dict()})
+                        approval_meta.metadata.update({"agreement": budget_line_item.agreement.to_dict()})
+                        current_app.logger.info(
+                            f"{message_prefix}: BLI Sent For Approval: {budget_line_item.to_dict()}"
+                        )
+                else:
+                    data = validate_and_normalize_request_data_for_put(self._put_schema)
+                    budget_line_item = self.update_and_commit_budget_line_item(data, id)
 
                 bli_dict = self._response_schema.dump(budget_line_item)
-                meta.metadata.update({"updated_bli": bli_dict})
+                meta.metadata.update({"bli": bli_dict})
                 current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
 
                 return make_response_with_headers(bli_dict, 200)
         except (KeyError, RuntimeError, PendingRollbackError) as re:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
             current_app.logger.error(f"{message_prefix}: {re}")
             return make_response_with_headers({}, 400)
+        except ValidationError as ve:
+            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
+            current_app.logger.error(f"{message_prefix}: {ve}")
+            return make_response_with_headers(ve.normalized_messages(), 400)
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
 
     @override
-    @jwt_required()
+    @is_authorized(PermissionType.PATCH, Permission.BUDGET_LINE_ITEM)
     def patch(self, id: int) -> Response:
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
         try:
             with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
-                OPSMethodView._validate_request(
-                    schema=self._patch_schema,
-                    message=f"{message_prefix}: Params failed validation:",
-                )
+                self._patch_schema.context["id"] = id
+                self._patch_schema.context["method"] = "PATCH"
 
-                data = self._patch_schema.load(request.json)
-                data = data.__dict__
-                data = {
-                    k: v for (k, v) in data.items() if k in request.json
-                }  # only keep the attributes from the request body
+                if request.json.get("status") == BudgetLineItemStatus.UNDER_REVIEW.name:
+                    with OpsEventHandler(OpsEventType.SEND_BLI_FOR_APPROVAL) as approval_meta:
+                        data = validate_and_normalize_request_data_for_patch(self._patch_schema)
+                        budget_line_item = self.update_and_commit_budget_line_item(data, id)
 
-                budget_line_item = update_budget_line_item(data, id)
-
-                current_app.db_session.add(budget_line_item)
-                current_app.db_session.commit()
+                        approval_meta.metadata.update({"bli": budget_line_item.to_dict()})
+                        approval_meta.metadata.update({"agreement": budget_line_item.agreement.to_dict()})
+                        current_app.logger.info(
+                            f"{message_prefix}: BLI Sent For Approval: {budget_line_item.to_dict()}"
+                        )
+                else:
+                    data = validate_and_normalize_request_data_for_patch(self._patch_schema)
+                    budget_line_item = self.update_and_commit_budget_line_item(data, id)
 
                 bli_dict = self._response_schema.dump(budget_line_item)
-                meta.metadata.update({"updated_bli": bli_dict})
+                meta.metadata.update({"bli": bli_dict})
                 current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
 
                 return make_response_with_headers(bli_dict, 200)
         except (KeyError, RuntimeError, PendingRollbackError) as re:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
             current_app.logger.error(f"{message_prefix}: {re}")
             return make_response_with_headers({}, 400)
+        except ValidationError as ve:
+            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
+            current_app.logger.error(f"{message_prefix}: {ve}")
+            return make_response_with_headers(ve.normalized_messages(), 400)
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
+
+    def update_and_commit_budget_line_item(self, data, id):
+        budget_line_item = update_budget_line_item(data, id)
+        current_app.db_session.add(budget_line_item)
+        current_app.db_session.commit()
+        return budget_line_item
 
 
 class BudgetLineItemsListAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
-        self._post_schema = desert.schema(POSTRequestBody)
-        self._get_schema = desert.schema(QueryParameters)
-        self._response_schema = desert.schema(BudgetLineItemResponse)
-        self._response_schema_collection = desert.schema(BudgetLineItemResponse, many=True)
+        self._post_schema = mmdc.class_schema(POSTRequestBody)()
+        self._get_schema = mmdc.class_schema(QueryParameters)()
+        self._response_schema = mmdc.class_schema(BudgetLineItemResponse)()
+        self._response_schema_collection = mmdc.class_schema(BudgetLineItemResponse)(many=True)
 
     @staticmethod
     def _get_query(
@@ -201,43 +175,46 @@ class BudgetLineItemsListAPI(BaseListAPI):
         return stmt
 
     @override
-    @jwt_required()
+    @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
     def get(self) -> Response:
-        identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_BUDGET_LINE_ITEMS"])
+        message_prefix = f"GET to {ENDPOINT_STRING}"
+        try:
+            data = self._get_schema.dump(self._get_schema.load(request.args))
 
-        if is_authorized:
-            errors = self._get_schema.validate(request.args)
+            data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
+            data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
 
-            if errors:
-                current_app.logger.error(f"GET {ENDPOINT_STRING}: Query Params failed validation: {errors}")
-                return make_response_with_headers(errors, 400)
-
-            data = self._get_schema.load(request.args)
-
-            stmt = self._get_query(data.can_id, data.agreement_id, data.status)
+            stmt = self._get_query(data.get("can_id"), data.get("agreement_id"), data.get("status"))
 
             result = current_app.db_session.execute(stmt).all()
 
             response = make_response_with_headers(self._response_schema_collection.dump([bli[0] for bli in result]))
-        else:
-            response = make_response_with_headers([], 401)
+        except (KeyError, RuntimeError, PendingRollbackError) as re:
+            current_app.logger.error(f"{message_prefix}: {re}")
+            return make_response_with_headers({}, 400)
+        except ValidationError as ve:
+            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
+            current_app.logger.error(f"{message_prefix}: {ve}")
+            return make_response_with_headers(ve.normalized_messages(), 400)
+        except SQLAlchemyError as se:
+            current_app.logger.error(f"{message_prefix}: {se}")
+            return make_response_with_headers({}, 500)
 
         return response
 
     @override
-    @jwt_required()
+    @is_authorized(PermissionType.POST, Permission.BUDGET_LINE_ITEM)
     def post(self) -> Response:
         message_prefix = f"POST to {ENDPOINT_STRING}"
         try:
             with OpsEventHandler(OpsEventType.CREATE_BLI) as meta:
-                OPSMethodView._validate_request(
-                    schema=self._post_schema,
-                    message=f"{message_prefix}: Params failed validation:",
-                )
+                self._post_schema.context["method"] = "POST"
 
-                data = self._post_schema.load(request.json)
-                new_bli = BudgetLineItem(**data.__dict__)
+                data = self._post_schema.dump(self._post_schema.load(request.json))
+                data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
+                data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
+
+                new_bli = BudgetLineItem(**data)
 
                 token = verify_jwt_in_request()
                 user = get_user_from_token(token[1])
@@ -251,10 +228,13 @@ class BudgetLineItemsListAPI(BaseListAPI):
                 current_app.logger.info(f"{message_prefix}: New BLI created: {new_bli_dict}")
 
                 return make_response_with_headers(new_bli_dict, 201)
-        except (KeyError, PendingRollbackError, RuntimeError) as ve:
+        except (KeyError, RuntimeError, PendingRollbackError) as re:
+            current_app.logger.error(f"{message_prefix}: {re}")
+            return make_response_with_headers({}, 400)
+        except ValidationError as ve:
             # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
             current_app.logger.error(f"{message_prefix}: {ve}")
-            return make_response_with_headers({}, 400)
+            return make_response_with_headers(ve.normalized_messages(), 400)
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
@@ -273,3 +253,20 @@ def update_budget_line_item(data: dict[str, Any], id: int):
     current_app.db_session.add(budget_line_item)
     current_app.db_session.commit()
     return budget_line_item
+
+
+def validate_and_normalize_request_data_for_patch(schema: Schema) -> dict[str, Any]:
+    data = schema.dump(schema.load(request.json))
+    data = {k: v for (k, v) in data.items() if k in request.json}  # only keep the attributes from the request body
+    if "status" in data:
+        data["status"] = BudgetLineItemStatus[data["status"]]
+    if "date_needed" in data:
+        data["date_needed"] = date.fromisoformat(data["date_needed"])
+    return data
+
+
+def validate_and_normalize_request_data_for_put(schema: Schema) -> dict[str, Any]:
+    data = schema.dump(schema.load(request.json))
+    data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
+    data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
+    return data

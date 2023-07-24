@@ -1,6 +1,7 @@
 from flask import Response, jsonify, request
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseItemAPI
+from ops_api.ops.utils.auth import is_authorized, PermissionType, Permission
 from ops_api.ops.utils.portfolios import get_total_funding
 from typing_extensions import override
 
@@ -10,6 +11,7 @@ class PortfolioCalculateFundingAPI(BaseItemAPI):
         super().__init__(model)
 
     @override
+    @is_authorized(PermissionType.GET, Permission.PORTFOLIO)
     def get(self, id: int) -> Response:
         fiscal_year = request.args.get("fiscal_year")
         portfolio = self._get_item(id)

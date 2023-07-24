@@ -1,208 +1,384 @@
+import React from "react";
 import PropTypes from "prop-types";
-import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import classnames from "vest/classnames";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-import ProcurementShopSelect from "./ProcurementShopSelect";
-import AgreementReasonSelect from "./AgreementReasonSelect";
-import AgreementTypeSelect from "./AgreementTypeSelect";
-import ProductServiceCodeSelect from "./ProductServiceCodeSelect";
+import ProcurementShopSelect from "../../components/UI/Form/ProcurementShopSelect";
+import AgreementReasonSelect from "../../components/UI/Form/AgreementReasonSelect";
+import AgreementTypeSelect from "../../components/UI/Form/AgreementTypeSelect";
+import ProductServiceCodeSelect from "../../components/UI/Form/ProductServiceCodeSelect";
+import ProjectOfficerSelect from "../../components/UI/Form/ProjectOfficerSelect";
+import TeamMemberSelect from "../../components/UI/Form/TeamMemberSelect";
+import TeamMemberList from "../../components/UI/Form/TeamMemberList";
+import Modal from "../../components/UI/Modal";
+import { formatTeamMember, postAgreement } from "../../api/postAgreements";
+import ProjectSummaryCard from "../../components/ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";
+import ProductServiceCodeSummaryBox from "../../components/UI/Form/ProductServiceCodeSummaryBox";
 import {
-    setAgreementTitle,
-    setAgreementDescription,
-    setAgreementIncumbent,
-    setAgreementNotes,
-    setAgreementId,
-} from "./createAgreementSlice";
-import ProjectOfficerSelect from "./ProjectOfficerSelect";
-import TeamMemberSelect from "./TeamMemberSelect";
-import TeamMemberList from "./TeamMemberList";
-import { postAgreement } from "../../api/postAgreements";
+    useCreateAgreement,
+    useSetState,
+    useUpdateAgreement,
+    useCreateAgreementDispatch,
+} from "./CreateAgreementContext";
+import { setAlert } from "../../components/UI/Alert/alertSlice";
+import { patchAgreement } from "../../api/patchAgreements";
+import suite from "./stepCreateAgreementSuite";
+import Input from "../../components/UI/Form/Input";
+import EditModeTitle from "./EditModeTitle";
+import TextArea from "../../components/UI/Form/TextArea/TextArea";
+import { useGetProductServiceCodesQuery } from "../../api/opsAPI";
 
-export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
-    const dispatch = useDispatch();
-    const agreementTitle = useSelector((state) => state.createAgreement.agreement.name);
-    const agreementDescription = useSelector((state) => state.createAgreement.agreement.description);
-    const agreementNotes = useSelector((state) => state.createAgreement.agreement.notes);
-    const agreement = useSelector((state) => state.createAgreement.agreement);
-    const selectedProductServiceCode = useSelector(
-        (state) => state.createAgreement.agreement.selected_product_service_code
-    );
-    const agreementIncumbent = useSelector((state) => state.createAgreement.agreement.incumbent_entered);
-    const selectedResearchProject = useSelector((state) => state.createAgreement.selected_project);
+/**
+ * Renders the "Create Agreement" step of the Create Agreement flow.
+ *
+ * @param {Object} props - The component props.
+ * @param {Function} [props.goBack] - A function to go back to the previous step. - optional
+ * @param {Function} [props.goToNext] - A function to go to the next step. - optional
+ * @param {boolean} [props.isEditMode] - Whether the form is in edit mode. - optional
+ * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
+ */
+export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode }) => {
+    // SETTERS
+    const setSelectedProcurementShop = useSetState("selected_procurement_shop");
+    const setSelectedProductServiceCode = useSetState("selected_product_service_code");
+    const setSelectedProjectOfficer = useSetState("selected_project_officer");
+
+    // AGREEMENT SETTERS
+    const setAgreementType = useUpdateAgreement("agreement_type");
+    const setAgreementTitle = useUpdateAgreement("name");
+    const setAgreementDescription = useUpdateAgreement("description");
+    const setAgreementProcurementShopId = useUpdateAgreement("procurement_shop_id");
+    const setAgreementId = useUpdateAgreement("id");
+    const setProductServiceCodeId = useUpdateAgreement("product_service_code_id");
+    const setAgreementReason = useUpdateAgreement("agreement_reason");
+    const setProjectOfficerId = useUpdateAgreement("project_officer");
+    const setAgreementIncumbent = useUpdateAgreement("incumbent");
+    const setAgreementNotes = useUpdateAgreement("notes");
+
+    const [showModal, setShowModal] = React.useState(false);
+    const [modalProps, setModalProps] = React.useState({});
+
+    const navigate = useNavigate();
+    const dispatch = useCreateAgreementDispatch();
+    const globalDispatch = useDispatch();
+
+    const {
+        wizardSteps,
+        selected_project: selectedResearchProject,
+        agreement,
+        selected_procurement_shop: selectedProcurementShop,
+        selected_product_service_code: selectedProductServiceCode,
+        selected_project_officer: selectedProjectOfficer,
+    } = useCreateAgreement();
+    const {
+        notes: agreementNotes,
+        incumbent: agreementIncumbent,
+        agreement_type: agreementType,
+        name: agreementTitle,
+        description: agreementDescription,
+        agreement_reason: agreementReason,
+        team_members: selectedTeamMembers,
+    } = agreement;
+
+    const {
+        data: productServiceCodes,
+        error: errorProductServiceCodes,
+        isLoading: isLoadingProductServiceCodes,
+    } = useGetProductServiceCodesQuery();
+
+    if (isReviewMode) {
+        suite({
+            ...agreement,
+        });
+    }
+
+    if (isLoadingProductServiceCodes) {
+        return <div>Loading...</div>;
+    }
+    if (errorProductServiceCodes) {
+        return <div>Oops, an error occurred</div>;
+    }
+
+    let res = suite.get();
+
+    const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
+    const shouldDisableBtn = !agreementTitle || res.hasErrors();
+
+    const cn = classnames(suite.get(), {
+        invalid: "usa-form-group--error",
+        valid: "success",
+        warning: "warning",
+    });
+
+    const changeSelectedProductServiceCode = (selectedProductServiceCode) => {
+        setSelectedProductServiceCode(selectedProductServiceCode);
+        const productServiceCodeId = selectedProductServiceCode ? selectedProductServiceCode.id : null;
+        setProductServiceCodeId(productServiceCodeId);
+    };
+
+    const changeSelectedProjectOfficer = (selectedProjectOfficer) => {
+        setSelectedProjectOfficer(selectedProjectOfficer);
+        const projectOfficerId = selectedProjectOfficer ? selectedProjectOfficer.id : null;
+        setProjectOfficerId(projectOfficerId);
+    };
+
+    const setSelectedTeamMembers = (teamMember) => {
+        dispatch({
+            type: "ADD_TEAM_MEMBER",
+            payload: teamMember,
+        });
+    };
+
+    const removeTeamMember = (teamMember) => {
+        dispatch({
+            type: "REMOVE_TEAM_MEMBER",
+            payload: teamMember,
+        });
+    };
+
+    const saveAgreement = async () => {
+        const data = {
+            ...agreement,
+            team_members: selectedTeamMembers.map((team_member) => {
+                return formatTeamMember(team_member);
+            }),
+        };
+        if (agreement.id) {
+            // TODO: handle failures
+            // const response = await patchAgreement(agreement.id, data);
+            patchAgreement(agreement.id, data);
+        } else {
+            // TODO: handle failures
+            const response = await postAgreement(data);
+            const newAgreementId = response.id;
+            console.log(`New Agreement Created: ${newAgreementId}`);
+            setAgreementId(newAgreementId);
+        }
+    };
 
     const handleContinue = async () => {
-        // Save Agreement to DB
-        const response = await postAgreement(agreement);
-        const newAgreementId = response.id;
-        console.log(`New Agreement Created: ${newAgreementId}`);
-        dispatch(setAgreementId(newAgreementId));
-        goToNext();
-    };
-    const handleDraft = () => {
-        // TODO: Save Agreement as Draft
-        const response = postAgreement(agreement);
-        alert(`Draft Agreement: ${response} saved`);
-        // TODO: Redirect to /agreements when available.
-    };
-    const handleCancel = () => {
-        // TODO: Add cancel stuff
-        // TODO: Clear createAgreement State
-        // TODO: Navigate to /agreements when available.
-        goBack();
+        saveAgreement();
+        await goToNext();
     };
 
-    const ProductServiceCodeSummaryBox = ({ selectedProductServiceCode }) => {
-        const { naics, support_code } = selectedProductServiceCode;
-
-        return (
-            <div
-                className="bg-base-lightest font-family-sans font-12px border-1px border-base-light radius-sm margin-top-4"
-                style={{ width: "19.5625rem", minHeight: "4.375rem" }}
-            >
-                <dl className="margin-0 padding-y-2 padding-x-105 display-flex flex-justify">
-                    <div>
-                        <dt className="margin-0 text-base-dark">NAICS Code</dt>
-                        <dd className="text-semibold margin-0">{naics}</dd>
-                    </div>
-                    <div>
-                        <dt className="margin-0 text-base-dark">Program Support Code</dt>
-                        <dd className="text-semibold margin-0">{support_code}</dd>
-                    </div>
-                </dl>
-            </div>
+    const handleDraft = async () => {
+        saveAgreement();
+        await globalDispatch(
+            setAlert({
+                type: "success",
+                heading: "Agreement Draft Saved",
+                message: "The agreement has been successfully saved.",
+                redirectUrl: "/agreements",
+            })
         );
     };
-    ProductServiceCodeSummaryBox.propTypes = {
-        selectedProductServiceCode: PropTypes.shape({
-            naics: PropTypes.number.isRequired,
-            support_code: PropTypes.string.isRequired,
-        }).isRequired,
+
+    const handleCancel = () => {
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel? Your agreement will not be saved.",
+            actionButtonText: "Cancel",
+            secondaryButtonText: "Continue Editing",
+            handleConfirm: () => {
+                navigate("/agreements");
+            },
+        });
     };
 
-    const ProjectSummaryCard = ({ selectedResearchProject }) => {
-        const { title } = selectedResearchProject;
-        return (
-            <div className="bg-base-lightest font-family-sans border-1px border-base-light radius-sm margin-y-7">
-                <dl className="margin-0 padding-y-2 padding-x-3">
-                    <dt className="margin-0">Project</dt>
-                    <dd className="margin-0 text-bold margin-top-1" style={{ fontSize: "1.375rem" }}>
-                        {title}
-                    </dd>
-                </dl>
-            </div>
+    const handleOnChangeSelectedProcurementShop = (procurementShop) => {
+        setSelectedProcurementShop(procurementShop);
+        setAgreementProcurementShopId(procurementShop.id);
+    };
+
+    const runValidate = (name, value) => {
+        suite(
+            {
+                ...agreement,
+                ...{ [name]: value },
+            },
+            name
         );
     };
 
     return (
         <>
-            <h1 className="font-sans-lg">Create New Budget Line</h1>
-            <p>Step Two: Creating a new Agreement</p>
+            {showModal && (
+                <Modal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+
+            <EditModeTitle isEditMode={isEditMode || isReviewMode} />
             <StepIndicator steps={wizardSteps} currentStep={2} />
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg">Select the Agreement Type</h2>
-            <p>Select the type of agreement you would like to create.</p>
-            <AgreementTypeSelect />
+            <p>Select the type of agreement you&#39;d like to create.</p>
+            <AgreementTypeSelect
+                name="agreement_type"
+                label="Agreement Type"
+                messages={res.getErrors("agreement_type")}
+                className={cn("agreement_type")}
+                selectedAgreementType={agreementType || ""}
+                onChange={(name, value) => {
+                    setAgreementType(value);
+                    runValidate(name, value);
+                }}
+            />
+            <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
 
-            <h2 className="font-sans-lg">Agreement Details</h2>
-            <label className="usa-label" htmlFor="agreement-title">
-                Agreement Title
-            </label>
-            <input
-                className="usa-input"
-                id="agreement-title"
-                name="agreement-title"
-                type="text"
-                value={agreementTitle || ""}
-                onChange={(e) => dispatch(setAgreementTitle(e.target.value))}
-                required
+            <Input
+                name="name"
+                label="Agreement Title"
+                messages={res.getErrors("name")}
+                className={cn("name")}
+                value={agreementTitle}
+                onChange={(name, value) => {
+                    setAgreementTitle(value);
+                    runValidate(name, value);
+                }}
             />
 
-            <label className="usa-label" htmlFor="agreement-description">
-                Description
-            </label>
-            <textarea
-                className="usa-textarea"
-                id="agreement-description"
-                name="agreement-description"
-                rows="5"
-                style={{ height: "7rem" }}
-                value={agreementDescription || ""}
-                onChange={(e) => dispatch(setAgreementDescription(e.target.value))}
-            ></textarea>
+            <TextArea
+                name="description"
+                label="Description"
+                messages={res.getErrors("description")}
+                className={cn("description")}
+                value={agreementDescription}
+                onChange={(name, value) => {
+                    setAgreementDescription(value);
+                    if (isReviewMode) {
+                        runValidate(name, value);
+                    }
+                }}
+            />
 
-            <ProductServiceCodeSelect />
-            {selectedProductServiceCode && (
-                <ProductServiceCodeSummaryBox selectedProductServiceCode={selectedProductServiceCode} />
-            )}
-            <h2 className="font-sans-lg">Procurement Shop</h2>
-            <p>
-                Select the Procurement Shop, and the fee rates will be populated in the table below. If this is an
-                active agreement, it will default to the procurement shop currently being used.
-            </p>
-            <ProcurementShopSelect />
+            <ProductServiceCodeSelect
+                name="product_service_code_id"
+                label="Product Service Code"
+                messages={res.getErrors("product_service_code_id")}
+                className={cn("product_service_code_id")}
+                selectedProductServiceCode={selectedProductServiceCode || ""}
+                codes={productServiceCodes}
+                onChange={(name, value) => {
+                    changeSelectedProductServiceCode(productServiceCodes[value - 1]);
+                    if (isReviewMode) {
+                        runValidate(name, value);
+                    }
+                }}
+            />
+            {selectedProductServiceCode &&
+                selectedProductServiceCode.naics &&
+                selectedProductServiceCode.support_code && (
+                    <ProductServiceCodeSummaryBox selectedProductServiceCode={selectedProductServiceCode} />
+                )}
+            <h2 className="font-sans-lg margin-top-3">Procurement Shop</h2>
+            <ProcurementShopSelect
+                selectedProcurementShop={selectedProcurementShop}
+                onChangeSelectedProcurementShop={handleOnChangeSelectedProcurementShop}
+            />
 
-            <h2 className="font-sans-lg">Reason for Agreement</h2>
+            <h2 className="font-sans-lg margin-top-3">Reason for Agreement</h2>
             <div className="display-flex">
-                <AgreementReasonSelect />
-                <fieldset className="usa-fieldset margin-left-4">
-                    <label className="usa-label" htmlFor="agreement-incumbent">
-                        Incumbent
-                    </label>
-                    <input
-                        className="usa-input width-card-lg"
-                        id="agreement-incumbent"
-                        name="agreement-incumbent"
-                        type="text"
+                <AgreementReasonSelect
+                    name="agreement_reason"
+                    label="Reason for Agreement"
+                    messages={res.getErrors("agreement_reason")}
+                    className={cn("agreement_reason")}
+                    selectedAgreementReason={agreementReason}
+                    onChange={(name, value) => {
+                        setAgreementIncumbent(null);
+                        setAgreementReason(value);
+                        if (isReviewMode) {
+                            runValidate(name, value);
+                        }
+                    }}
+                />
+                <fieldset
+                    className={`usa-fieldset margin-left-4 ${incumbentDisabled && "text-disabled"}`}
+                    disabled={incumbentDisabled}
+                >
+                    <Input
+                        name="incumbent"
+                        label="Incumbent"
+                        messages={res.getErrors("incumbent")}
+                        className={`margin-top-0 cn("incumbent")`}
                         value={agreementIncumbent || ""}
-                        onChange={(e) => dispatch(setAgreementIncumbent(e.target.value))}
-                        required
+                        onChange={(name, value) => {
+                            setAgreementIncumbent(value);
+                            if (isReviewMode) {
+                                runValidate(name, value);
+                            }
+                        }}
                     />
                 </fieldset>
             </div>
 
-            <h2 className="font-sans-lg">Points of Contact</h2>
+            <h2 className="font-sans-lg margin-top-3">Points of Contact</h2>
             <div className="display-flex">
-                <ProjectOfficerSelect />
-                <TeamMemberSelect className="margin-left-4" />
+                <ProjectOfficerSelect
+                    name="project_officer"
+                    label="Project Officer"
+                    messages={res.getErrors("project_officer")}
+                    className={cn("project_officer")}
+                    selectedProjectOfficer={selectedProjectOfficer}
+                    setSelectedProjectOfficer={changeSelectedProjectOfficer}
+                    onChange={(name, value) => {
+                        if (isReviewMode) {
+                            runValidate(name, value);
+                        }
+                    }}
+                />
+                <TeamMemberSelect
+                    className="margin-left-4"
+                    selectedTeamMembers={selectedTeamMembers}
+                    selectedProjectOfficer={selectedProjectOfficer}
+                    setSelectedTeamMembers={setSelectedTeamMembers}
+                />
             </div>
 
             <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
-            <TeamMemberList />
-            <div className="usa-character-count">
-                <div className="usa-form-group">
-                    <label className="usa-label font-sans-lg text-bold" htmlFor="with-hint-textarea">
-                        Notes (optional)
-                    </label>
-                    <span id="with-hint-textarea-hint" className="usa-hint">
-                        Maximum 150 characters
-                    </span>
-                    <textarea
-                        className="usa-textarea usa-character-count__field"
-                        id="with-hint-textarea"
-                        maxLength="150"
-                        name="with-hint-textarea"
-                        rows="5"
-                        aria-describedby="with-hint-textarea-info with-hint-textarea-hint"
-                        style={{ height: "7rem" }}
-                        value={agreementNotes || ""}
-                        onChange={(e) => dispatch(setAgreementNotes(e.target.value))}
-                    ></textarea>
-                </div>
-                <span id="with-hint-textarea-info" className="usa-character-count__message sr-only">
-                    You can enter up to 150 characters
-                </span>
-            </div>
+            <TeamMemberList selectedTeamMembers={selectedTeamMembers} removeTeamMember={removeTeamMember} />
+            <TextArea
+                name="agreementNotes"
+                label="Notes (optional)"
+                hintMsg="Maximum 150 characters"
+                messages={res.getErrors("agreementNotes")}
+                className={cn("agreementNotes")}
+                value={agreementNotes}
+                onChange={(name, value) => setAgreementNotes(value)}
+            />
             <div className="grid-row flex-justify margin-top-8">
                 <button className="usa-button usa-button--unstyled margin-right-2" onClick={() => goBack()}>
                     Go Back
                 </button>
                 <div>
-                    <button className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
+                    <button
+                        className="usa-button usa-button--unstyled margin-right-2"
+                        data-cy="cancel-button"
+                        onClick={handleCancel}
+                    >
                         Cancel
                     </button>
-                    <button className="usa-button usa-button--outline" onClick={handleDraft}>
+                    <button
+                        className="usa-button usa-button--outline"
+                        onClick={handleDraft}
+                        disabled={!isReviewMode && shouldDisableBtn}
+                        data-cy="save-draft-btn"
+                    >
                         Save Draft
                     </button>
-                    <button className="usa-button" onClick={handleContinue}>
+                    <button
+                        id="continue"
+                        className="usa-button"
+                        onClick={handleContinue}
+                        disabled={shouldDisableBtn}
+                        data-cy="continue-btn"
+                    >
                         Continue
                     </button>
                 </div>
@@ -210,3 +386,12 @@ export const StepCreateAgreement = ({ goBack, goToNext, wizardSteps }) => {
         </>
     );
 };
+
+StepCreateAgreement.propTypes = {
+    goBack: PropTypes.func,
+    goToNext: PropTypes.func,
+    isEditMode: PropTypes.bool,
+    isReviewMode: PropTypes.bool,
+};
+
+export default StepCreateAgreement;

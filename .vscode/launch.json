@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Attach OPS API",
+      "type": "python",
+      "request": "attach",
+      "connect": { "host": "localhost", "port": 5678 },
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}/backend",
+          "remoteRoot": "/home/app"
+        }
+      ],
+      "justMyCode": true,
+      "preLaunchTask": "Check and Start Docker Container"
+    }
+  ]
+}

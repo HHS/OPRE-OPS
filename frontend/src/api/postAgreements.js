@@ -6,31 +6,15 @@ export const postAgreement = async (item) => {
     const data = { ...item };
     const newAgreement = {
         ...data,
-        agreement_type: data.selected_agreement_type,
-        agreement_reason: data.selected_agreement_reason,
-        product_service_code:
-            data.selected_product_service_code && data.selected_product_service_code.id > 0
-                ? data.selected_product_service_code.id
-                : null,
-        incumbent: data.incumbent_entered,
-        project_officer: data.project_officer && data.project_officer.id > 0 ? data.project_officer.id : null,
-        team_members: data.team_members.map((team_member) => {
-            return formatTeamMember(team_member);
-        }),
         number: "",
     };
 
     delete newAgreement.id;
-    delete newAgreement.selected_agreement_reason;
-    delete newAgreement.selected_agreement_type;
-    delete newAgreement.selected_product_service_code;
-    delete newAgreement.incumbent_entered;
 
     const responseData = await ApplicationContext.get()
         .helpers()
         .callBackend(`/api/${api_version}/agreements/`, "POST", newAgreement)
         .then(function (response) {
-            console.log(response);
             return response;
         })
         .catch(function (error) {
