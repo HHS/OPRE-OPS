@@ -52,7 +52,7 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
 
                 <div className="grid-row margin-top-2">
                     <div className="grid-col-6 padding-right-1" data-cy="details-left-col">
-                        {/* NOTE: Left Column */}
+                        {/* // NOTE: Left Column */}
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
                             <dd className="margin-0 margin-top-05">
@@ -60,40 +60,48 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
                             </dd>
                         </dl>
                         <h3 className="text-base-dark margin-top-3 text-normal font-12px">Notes</h3>
-                        <ul
-                            className="usa-list--unstyled overflow-y-scroll"
-                            style={{ height: "11.375rem" }}
-                            tabIndex={0}
-                        >
-                            {/* // TODO: Replace with real data */}
-                            {notesData.map((note) => (
-                                <ListItem
-                                    key={note.id}
-                                    title={note.created_by}
-                                    createdOn={note.created_on}
-                                    message={note.message}
-                                />
-                            ))}
-                        </ul>
+                        {notesData.length > 0 ? (
+                            <ul
+                                className="usa-list--unstyled overflow-y-scroll"
+                                style={{ height: "11.375rem" }}
+                                tabIndex={0}
+                            >
+                                {/* // TODO: Replace with real data */}
+                                {notesData.map((note) => (
+                                    <ListItem
+                                        key={note.id}
+                                        title={note.created_by}
+                                        createdOn={note.created_on}
+                                        message={note.message}
+                                    />
+                                ))}
+                            </ul>
+                        ) : (
+                            <p>Sorry no notes</p>
+                        )}
                         <h3 className="text-base-dark margin-top-3 text-normal font-12px">History</h3>
-                        <ul
-                            className="usa-list--unstyled overflow-y-scroll"
-                            style={{ height: "7.3125rem" }}
-                            tabIndex={0}
-                        >
-                            {/* // TODO: Replace with real data */}
-                            {historyData.map((note) => (
-                                <ListItem
-                                    key={note.id}
-                                    title={note.created_by}
-                                    createdOn={note.created_on}
-                                    message={note.message}
-                                />
-                            ))}
-                        </ul>
+                        {historyData.length > 0 ? (
+                            <ul
+                                className="usa-list--unstyled overflow-y-scroll"
+                                style={{ height: "7.3125rem" }}
+                                tabIndex={0}
+                            >
+                                {/* // TODO: Replace with real data */}
+                                {historyData.map((note) => (
+                                    <ListItem
+                                        key={note.id}
+                                        title={note.created_by}
+                                        createdOn={note.created_on}
+                                        message={note.message}
+                                    />
+                                ))}
+                            </ul>
+                        ) : (
+                            <p>Sorry no history</p>
+                        )}
                     </div>
                     <div className="grid-col-6" data-cy="details-right-col">
-                        {/* NOTE: Right Column */}
+                        {/* // NOTE: Right Column */}
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Agreement Type</dt>
                             <dd className="margin-0 margin-top-1">
