@@ -90,8 +90,8 @@ const NotificationCenter = () => {
                                 Clear All
                             </button>
                         </div>
-                        {unreadNotifications.length > 0 && (
-                            <ul className={customStyles.listStyle}>
+                        {unreadNotifications.length > 0 ? (
+                            <ul className={customStyles.listStyle} data-cy="notification-center-list">
                                 {unreadNotifications.map((notification) => (
                                     <LogItem
                                         key={notification.id}
@@ -103,9 +103,8 @@ const NotificationCenter = () => {
                                     />
                                 ))}
                             </ul>
-                        )}
-                        {unreadNotifications.length === 0 && (
-                            <div style={{ padding: "20px" }}>There are no notifications.</div>
+                        ) : (
+                            <div className="padding-205">There are no notifications.</div>
                         )}
                     </div>
                 </div>
