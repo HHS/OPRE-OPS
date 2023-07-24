@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-export const ProjectSelect = ({
+export const ProjectSelectWithSummaryCard = ({
     researchProjects,
     selectedResearchProject,
     setSelectedProject,
@@ -160,9 +160,9 @@ export const ProjectSelect = ({
     );
 };
 
-export default ProjectSelect;
+export default ProjectSelectWithSummaryCard;
 
-ProjectSelect.propTypes = {
+ProjectSelectWithSummaryCard.propTypes = {
     researchProjects: PropTypes.array.isRequired,
     selectedResearchProject: PropTypes.object.isRequired,
     setSelectedProject: PropTypes.func.isRequired,

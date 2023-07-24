@@ -1,7 +1,7 @@
 import { useGetResearchProjectsQuery, useGetAgreementsByResearchProjectFilterQuery } from "../../api/opsAPI";
 import { Link } from "react-router-dom";
 import StepIndicator from "../../components/UI/StepIndicator";
-import ProjectSelect from "../../components/UI/Form/ProjectSelect";
+import ProjectSelectWithSummaryCard from "../../components/UI/Form/ProjectSelectWithSummaryCard";
 import AgreementSelect from "../../components/UI/Form/AgreementSelect";
 import { useBudgetLines, useSetState } from "./budgetLineContext";
 
@@ -51,7 +51,7 @@ export const StepSelectProjectAndAgreement = ({ goToNext }) => {
                 Select the project this budget line should be associated with. If you need to create a new project,
                 click Add New Project.
             </p>
-            <ProjectSelect
+            <ProjectSelectWithSummaryCard
                 researchProjects={projects}
                 selectedResearchProject={selectedProject}
                 setSelectedProject={setSelectedProject}
