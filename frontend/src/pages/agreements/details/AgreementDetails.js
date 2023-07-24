@@ -60,7 +60,11 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
                             </dd>
                         </dl>
                         <h3 className="text-base-dark margin-top-3 text-normal font-12px">Notes</h3>
-                        <ul className="usa-list--unstyled overflow-y-scroll" style={{ height: "11.375rem" }}>
+                        <ul
+                            className="usa-list--unstyled overflow-y-scroll"
+                            style={{ height: "11.375rem" }}
+                            tabIndex={0}
+                        >
                             {/* // TODO: Replace with real data */}
                             {notesData.map((note) => (
                                 <ListItem
