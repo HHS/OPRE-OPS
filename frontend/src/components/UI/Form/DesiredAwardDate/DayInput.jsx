@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import cx from "clsx";
 
 /**
@@ -13,17 +14,12 @@ import cx from "clsx";
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @returns {JSX.Element} - The rendered input component.
  */
-const DayInput = ({ name, label = name, onChange, pending = false, messages = [], value, className }) => {
+const DayInput = ({ name, label = name, onChange, pending = false, messages = [], value }) => {
     return (
-        <div className={cx("usa-form-group usa-form-group--day margin-top-0", pending && "pending", className)}>
+        <div className={cx("usa-form-group usa-form-group--day margin-top-0", pending && "pending")}>
             <label className={`usa-label sr-only ${messages.length ? "usa-label--error" : null} `} htmlFor={name}>
                 {label}
             </label>
-            {messages.length ? (
-                <span className="usa-error-message" id="input-error-message" role="alert">
-                    {messages[0]}
-                </span>
-            ) : null}
             <input
                 id={name}
                 name={name}
@@ -44,6 +40,16 @@ const DayInput = ({ name, label = name, onChange, pending = false, messages = []
             onChange(name, e.target.value);
         }
     }
+};
+
+DayInput.propTypes = {
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    onChange: PropTypes.func.isRequired,
+    pending: PropTypes.bool,
+    messages: PropTypes.arrayOf(PropTypes.string),
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    className: PropTypes.string,
 };
 
 export default DayInput;
