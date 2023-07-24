@@ -42,7 +42,7 @@ export const StatusTagList = ({ countsByStatus }) => {
 
     return (
         <>
-            {Object.entries(countsByStatusWithZeros).map(([key, value], i) => (
+            {Object.entries(countsByStatusWithZeros).map(([key, value]) => (
                 <StatusTag status={key} count={value} key={key} />
             ))}
         </>

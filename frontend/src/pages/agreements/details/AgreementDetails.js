@@ -9,6 +9,7 @@ import { notesData } from "./data";
 import ListItem from "../../../components/UI/ListItem";
 
 const AgreementDetails = ({ agreement, projectOfficer }) => {
+    // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
     const missingValueText = "TBD";
     // details for AgreementTotalBudgetLinesCard
