@@ -85,11 +85,11 @@ def create_oauth_jwt(
 
 class is_authorized:
     def __init__(
-        self, permission_type: PermissionType, permission: Permission, extra: Optional[Callable[..., bool]] = None
+        self, permission_type: PermissionType, permission: Permission, extra_check: Optional[Callable[..., bool]] = None
     ) -> None:
         self.permission_type = permission_type
         self.permission = permission
-        self.extra = extra
+        self.extra_check = extra_check
 
     def __call__(self, func: Callable) -> Callable:
         @wraps(func)
@@ -98,8 +98,8 @@ class is_authorized:
             identity = get_jwt_identity()
             is_authorized = auth_gateway.is_authorized(identity, f"{self.permission_type}_{self.permission}".upper())
             extra_valid = True
-            if self.extra is not None:
-                extra_valid = self.extra(*args, **kwargs)  # nosec
+            if self.extra_check is not None:
+                extra_valid = self.extra_check(*args, **kwargs)
 
             if is_authorized and extra_valid:
                 response = func(*args, **kwargs)

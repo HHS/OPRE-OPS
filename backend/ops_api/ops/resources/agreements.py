@@ -251,7 +251,7 @@ class AgreementItemAPI(BaseItemAPI):
             return make_response_with_headers({}, 500)
 
     @override
-    @is_authorized(PermissionType.DELETE, Permission.AGREEMENT, extra=associated_with_agreement)
+    @is_authorized(PermissionType.DELETE, Permission.AGREEMENT, extra_check=associated_with_agreement)
     def delete(self, id: int) -> Response:
         message_prefix = f"DELETE from {ENDPOINT_STRING}"
 
