@@ -101,7 +101,5 @@ ContainerModal.propTypes = {
     heading: PropTypes.string.isRequired,
     description: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
     setShowModal: PropTypes.func.isRequired,
-    actionButtonText: PropTypes.string.isRequired,
-    secondaryButtonText: PropTypes.string,
-    handleConfirm: PropTypes.func.isRequired,
+    cancelButtonText: PropTypes.string,
 };

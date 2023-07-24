@@ -130,12 +130,10 @@ class is_authorized:
         def wrapper(*args, **kwargs) -> Response:
             identity = get_jwt_identity()
             is_authorized = auth_gateway.is_authorized(identity, f"{self.permission_type}_{self.permission}".upper())
-
             if is_authorized:
                 response = func(*args, **kwargs)
             else:
                 response = make_response_with_headers({}, 401)
-
             return response
 
         return wrapper

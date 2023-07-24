@@ -1,5 +1,8 @@
 import ApplicationContext from "../../applicationContext/ApplicationContext";
 import cryptoRandomString from "crypto-random-string";
+import jwt_decode from "jwt-decode";
+import { getUserByOidc } from "../../api/getUser";
+import { setUserDetails } from "../Auth/authSlice";
 
 const authConfig = ApplicationContext.get().helpers().authConfig;
 
@@ -43,3 +46,13 @@ export const CheckAuth = () => {
     // TODO: Check Authorization
     return tokenExists; // && payload;
 };
+
+export async function setActiveUser(token, dispatch) {
+    // TODO: Vefiry the Token!
+    //const isValidToken = validateTooken(token);
+    const decodedJwt = jwt_decode(token);
+    const userId = decodedJwt["sub"];
+    const userDetails = await getUserByOidc(userId);
+
+    dispatch(setUserDetails(userDetails));
+}

@@ -8,18 +8,18 @@ import jwt_decode from "jwt-decode";
 import { apiLogin } from "../../api/apiLogin";
 import ContainerModal from "../UI/Modals/ContainerModal";
 import { useGetUserByOIDCIdQuery } from "../../api/opsAPI";
+import { setActiveUser } from "./auth";
 
-async function setActiveUser(token, dispatch) {
-    // TODO: Vefiry the Token!
-    //const isValidToken = validateToken(token);
-    const decodedJwt = jwt_decode(token);
+// async function setActiveUser(token, dispatch) {
+//     // TODO: Vefiry the Token!
+//     //const isValidToken = validateToken(token);
+//     const decodedJwt = jwt_decode(token);
+//     const userId = decodedJwt["sub"];
+//     // eslint-disable-next-line react-hooks/rules-of-hooks
+//     const { data: user } = useGetUserByOIDCIdQuery(userId);
 
-    const userId = decodedJwt["sub"];
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const { data: user } = useGetUserByOIDCIdQuery(userId);
-
-    dispatch(setUserDetails(user));
-}
+//     dispatch(setUserDetails(user));
+// }
 
 const MultiAuthSection = () => {
     const dispatch = useDispatch();
@@ -56,8 +56,6 @@ const MultiAuthSection = () => {
         }
 
         const localStateString = localStorage.getItem("ops-state-key");
-        console.debug(`localStateString = ${localStateString}`);
-
         if (localStateString) {
             const queryParams = new URLSearchParams(window.location.search);
 
@@ -86,7 +84,6 @@ const MultiAuthSection = () => {
     // TODO: Replace these tokens with config variables, that can be passed in at deploy-time,
     //       So that we don't actually store anything in code.
     const handleFakeAuthLogin = (user_type) => {
-        console.log("FakeAuth Login--!!");
         const fakeUsers = {
             admin: {
                 access_token:
@@ -108,8 +105,8 @@ const MultiAuthSection = () => {
         //console.log(`localStorage.getItem("access_token") = ${localStorage.getItem("access_token")}`);
         dispatch(login());
         setActiveUser(fakeUsers[user_type].access_token, dispatch);
+        console.debug("FakeUser Logged In!");
         navigate("/");
-        console.log("FakeUser Logged In!");
     };
 
     return (

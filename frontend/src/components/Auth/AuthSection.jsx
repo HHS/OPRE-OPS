@@ -8,39 +8,29 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { User } from "../UI/Header/User";
 import jwt_decode from "jwt-decode";
-import { useGetUserByOIDCIdQuery } from "../../api/opsAPI";
-import { apiLogin } from "../../api/apiLogin";
+import { getUserByOidc } from "../../api/getUser";
+import { apiLogin, apiLogout } from "../../api/apiLogin";
 import NotificationCenter from "../UI/NotificationCenter/NotificationCenter";
-
-async function setActiveUser(token, dispatch) {
-    // TODO: Vefiry the Token!
-    //const isValidToken = validateToken(token);
-    const decodedJwt = jwt_decode(token);
-    const userId = decodedJwt["sub"];
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const { data: user } = useGetUserByOIDCIdQuery(userId);
-
-    dispatch(setUserDetails(user));
-}
+import { setActiveUser } from "./auth";
 
 const AuthSection = () => {
     const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+    const activeUser = useSelector((state) => state.auth.activeUser);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const callBackend = useCallback(
         async (authCode) => {
             const response = await apiLogin(authCode);
-
-            localStorage.setItem("access_token", response.access_token);
-            dispatch(login());
-            if (response.is_new_user) {
-                navigate("/user/edit");
-                return;
+            if (response.access_token) {
+                localStorage.setItem("access_token", response.access_token);
+                dispatch(login());
+                if (!activeUser) await setActiveUser(response.access_token, dispatch);
+                if (response.is_new_user) {
+                    navigate("/user/edit");
+                    return;
+                }
             }
-
-            await setActiveUser(response.access_token, dispatch);
-
             navigate("/");
         },
         [dispatch, navigate]
@@ -52,7 +42,7 @@ const AuthSection = () => {
         if (currentJWT) {
             // TODO: we should validate the JWT here and set it on state if valid else logout
             dispatch(login());
-            setActiveUser(currentJWT, dispatch);
+            if (!activeUser) setActiveUser(currentJWT, dispatch);
             return;
         } else {
             navigate("/login");
@@ -88,9 +78,8 @@ const AuthSection = () => {
     const logoutHandler = async () => {
         dispatch(logout());
         localStorage.removeItem("access_token");
-        navigate("/login");
         //await apiLogout();
-
+        navigate("/login");
         // TODO: ⬇ Logout from Auth Provider ⬇
         // const output = await logoutUser(localStorage.getItem("ops-state-key"));
         // console.log(output);
