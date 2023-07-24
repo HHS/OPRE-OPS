@@ -7,7 +7,7 @@ export const opsApi = createApi({
     tagTypes: ["Agreements", "ResearchProjects"],
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
-        prepareHeaders: (headers, { getState }) => {
+        prepareHeaders: (headers) => {
             const access_token = localStorage.getItem("access_token");
 
             if (access_token) {

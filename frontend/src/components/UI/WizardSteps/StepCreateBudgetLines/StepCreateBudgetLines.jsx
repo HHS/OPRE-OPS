@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import StepIndicator from "../../StepIndicator/StepIndicator";
@@ -33,7 +34,7 @@ import { convertCodeForDisplay } from "../../../../helpers/utils";
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {Function} [props.continueOverRide] - A function to override the default "Continue" button behavior. - optional
  * @param {"agreement" | "budgetLines"} props.workflow - The workflow type ("agreement" or "budgetLines").
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.JSX.Element} - The rendered component.
  */
 export const StepCreateBudgetLines = ({
     goToNext,
@@ -317,6 +318,7 @@ export const StepCreateBudgetLines = ({
                 handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                 handleDeleteBudgetLine={handleDeleteBudgetLine}
                 handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                isReviewMode={isReviewMode}
             />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
@@ -354,6 +356,22 @@ export const StepCreateBudgetLines = ({
             </div>
         </>
     );
+};
+
+StepCreateBudgetLines.propTypes = {
+    goToNext: PropTypes.func,
+    goBack: PropTypes.func,
+    wizardSteps: PropTypes.arrayOf(PropTypes.string).isRequired,
+    currentStep: PropTypes.number.isRequired,
+    selectedResearchProject: PropTypes.object,
+    selectedAgreement: PropTypes.object,
+    selectedProcurementShop: PropTypes.object,
+    existingBudgetLines: PropTypes.arrayOf(PropTypes.object),
+    continueBtnText: PropTypes.string.isRequired,
+    isEditMode: PropTypes.bool,
+    isReviewMode: PropTypes.bool,
+    continueOverRide: PropTypes.func,
+    workflow: PropTypes.oneOf(["agreement", "budgetLines"]).isRequired,
 };
 
 export default StepCreateBudgetLines;
