@@ -84,7 +84,9 @@ def create_oauth_jwt(
 
 
 class is_authorized:
-    def __init__(self, permission_type: PermissionType, permission: Permission, extra: Optional[Callable[..., bool]] = None) -> None:
+    def __init__(
+        self, permission_type: PermissionType, permission: Permission, extra: Optional[Callable[..., bool]] = None
+    ) -> None:
         self.permission_type = permission_type
         self.permission = permission
         self.extra = extra
@@ -98,7 +100,6 @@ class is_authorized:
             extra_valid = True
             if self.extra is not None:
                 extra_valid = self.extra(*args, **kwargs)  # nosec
-
 
             if is_authorized and extra_valid:
                 response = func(*args, **kwargs)

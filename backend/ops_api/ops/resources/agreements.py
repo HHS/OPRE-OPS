@@ -134,7 +134,6 @@ class QueryParameters:
     research_project_id: Optional[int] = None
 
 
-
 def associated_with_agreement(self, id: int) -> bool:
     jwt_identity = get_jwt_identity()
     agreement_stmt = select(Agreement).where(Agreement.id == id)
@@ -148,17 +147,6 @@ def associated_with_agreement(self, id: int) -> bool:
     oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
 
     ret = jwt_identity in oidc_ids
-
-    from pprint import pprint
-    print("*"*80)
-    pprint(agreement.to_dict())
-    print("#"*80)
-    print(jwt_identity)
-    print("-"*80)
-    pprint(oidc_ids)
-    print("^"*80)
-    print(ret)
-    print("*"*80)
 
     return ret
 
