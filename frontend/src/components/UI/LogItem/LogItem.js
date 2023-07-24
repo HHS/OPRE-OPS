@@ -26,7 +26,7 @@ export const LogItem = ({ title, message, createdOn, variant, withSeparator = fa
                     <span className="text-base-dark">{timeAgo(createdOn)}</span>
                 </span>
             </div>
-            <p className={isLarge ? "text-normal" : undefined}>{message}</p>
+            <p className={`margin-0 margin-y-1 ${isLarge ? "text-normal" : undefined}`}>{message}</p>
             {withSeparator ? <hr className="height-1px bg-brand-neutral-lighter" /> : null}
         </li>
     );
