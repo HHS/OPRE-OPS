@@ -5,6 +5,7 @@ import customStyles from "./AgreementsFilterButton.module.css";
 import { useGetResearchProjectsQuery } from "../../../api/opsAPI";
 import ProjectSelect from "../../../components/UI/Form/ProjectSelect";
 import ProjectOfficerSelect from "../../../components/UI/Form/ProjectOfficerSelect";
+import AgreementTypeSelect from "../../../components/UI/Form/AgreementTypeSelect";
 
 /**
  * Page for the Agreements List.
@@ -14,6 +15,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
     const [showModal, setShowModal] = React.useState(false);
     const [project, setProject] = React.useState({});
     const [po, setPO] = React.useState({});
+    const [agreementType, setAgreementType] = React.useState({});
 
     const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
 
@@ -52,6 +54,15 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
             };
         });
     }, [po, setFilters]);
+
+    useEffect(() => {
+        setFilters((prevState) => {
+            return {
+                ...prevState,
+                type: agreementType || "",
+            };
+        });
+    }, [agreementType, setFilters]);
 
     if (isLoadingProjects) {
         return <div>Loading...</div>;
@@ -174,7 +185,18 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                         </fieldset>
                     </div>
                     <div>
-                        <h3>Type</h3>
+                        <fieldset className="usa-fieldset" style={{ width: "363px" }}>
+                            <AgreementTypeSelect
+                                name="agreement_type"
+                                label="Type"
+                                className=""
+                                selectedAgreementType={agreementType || ""}
+                                onChange={(name, value) => {
+                                    setAgreementType(value);
+                                }}
+                                legendClassname={`usa-legend font-sans-3xs margin-top-0 ${customStyles.legendColor}`}
+                            />
+                        </fieldset>
                     </div>
                     <div>
                         <h3>Procurement Shop</h3>
