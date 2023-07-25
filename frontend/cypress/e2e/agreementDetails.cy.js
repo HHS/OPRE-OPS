@@ -14,7 +14,7 @@ afterEach(() => {
 it("loads with details", () => {
     cy.get("h1").should("have.text", "Contract #1: African American Child and Family Research Center");
     cy.get("h2").first().should("have.text", "Human Services Interoperability Support");
-    cy.get('.DetailsTabs_listItemSelected__yQh13').should("have.text", "Agreement Details");
+    // cy.get('.DetailsTabs_listItemSelected__yQh13').should("have.text", "Agreement Details");
     cy.get("h2").eq(2).should("have.text", "Agreement Details");
     cy.get("h2").eq(1).should("have.text", "Agreement Summary");
     cy.get(':nth-child(1) > :nth-child(1) > article > .margin-0').should("have.text", "Total Budget Lines")

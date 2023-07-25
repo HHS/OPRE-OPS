@@ -45,7 +45,7 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
                     numberOfAgreements={numberOfAgreements}
                     countsByStatus={countsByStatus}
                 />
-                <AgreementValuesCard />
+                <AgreementValuesCard budgetLineItems={blis} />
             </div>
             <section>
                 <h2 className="font-sans-lg">Agreement Details</h2>
