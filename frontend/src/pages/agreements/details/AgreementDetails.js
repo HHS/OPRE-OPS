@@ -216,13 +216,6 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
                     </div>
                 </div>
             </section>
-
-            <div style={{ background: "#cccccc", border: "1px dashed #999999" }}>
-                <h2>TEMP DEBUG</h2>
-                <pre>{JSON.stringify(countsByStatus, null, 2)}</pre>
-                <pre>{JSON.stringify(projectOfficer, null, 2)}</pre>
-                <pre>{JSON.stringify(agreement_details, null, 2)}</pre>
-            </div>
         </div>
     );
 };
