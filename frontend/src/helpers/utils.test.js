@@ -1,6 +1,6 @@
 /// <reference types="jest" />
 
-import {getCurrentFiscalYear, calculatePercent, convertCodeForDisplay, fiscalYearFromDate} from "./utils";
+import { getCurrentFiscalYear, calculatePercent, convertCodeForDisplay, fiscalYearFromDate } from "./utils";
 
 test("current federal fiscal year is calculated correctly", async () => {
     const lastDay = new Date("September 30, 2022");

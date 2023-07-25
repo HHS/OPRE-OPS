@@ -1,5 +1,3 @@
-import fiscalYear from "../components/UI/FiscalYear/FiscalYear";
-
 export const getCurrentFiscalYear = (today) => {
     const currentMonth = today.getMonth();
 
@@ -136,11 +134,10 @@ export const timeAgo = (dateParam) => {
  * @returns {number|null} the fiscal year
  */
 export const fiscalYearFromDate = (date) => {
-    if (date == "--" || date == null) return null;
+    if (date === "--" || date === null) return null;
     if (!date) return null;
     let dt = new Date(date);
     const month = dt.getUTCMonth();
     const year = dt.getUTCFullYear();
-    const fiscalYear = month > 8 ? year + 1 : year
-    return month > 8 ? year + 1 : year
-}
+    return month > 8 ? year + 1 : year;
+};
