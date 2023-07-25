@@ -1,22 +1,29 @@
-import RoundedBox from "../../UI/RoundedBox/RoundedBox";
 import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
 import styles from "./AgreementValuesCard.scss";
-import {calculatePercent} from "../../../helpers/utils";
-import CANFundingBar from "../../CANs/CANFundingBar/CANFundingBar";
+import {calculatePercent, fiscalYearFromDate} from "../../../helpers/utils";
 import React from "react";
 
+
+const statusesExcludedFromValue = ["DRAFT", "UNDER_REVIEW"]
 const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
     const headerText = "Total Agreement Value";
-    // valuedBlis =
+    const valuedBlis = budgetLineItems.filter(bli => !(statusesExcludedFromValue.includes(bli.status)));
+    const valuedBlisFy = valuedBlis.map(bli => ({ ...bli, fiscalYear: fiscalYearFromDate(bli.date_needed) }))
+    const fyValues = valuedBlisFy.reduce((acc, cur) => {
+        if (!cur.fiscalYear || cur.amount == null) return acc;
+        if (!(cur.fiscalYear in acc)) {
+            acc[cur.fiscalYear] = cur.amount;
+        }
+        else {
+            acc[cur.fiscalYear] = acc[cur.fiscalYear] + cur.amount;
+        }
+        return acc
+    }, {});
+    const totalValue = fyValues.reduce((acc, cur) => acc + cur, 0)
+    const currentFiscalYear = fiscalYearFromDate(new Date());
 
-    // const data = {
-    //     total_value : 3500000.00,
-    //     yearly_values : [
-    //         {fiscal_year: 2023, value: 2000000.00},
-    //         {fiscal_year: 2024, value: 500000.00},
-    //         {fiscal_year: 2025, value: 1000000.00},
-    //     ]
-    // }
+
+    // ~~~~~
 
     const total_value = 3500000.00;
     const ratio = 4;

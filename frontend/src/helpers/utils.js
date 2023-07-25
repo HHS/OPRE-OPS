@@ -1,3 +1,5 @@
+import fiscalYear from "../components/UI/FiscalYear/FiscalYear";
+
 export const getCurrentFiscalYear = (today) => {
     const currentMonth = today.getMonth();
 
@@ -126,3 +128,19 @@ export const timeAgo = (dateParam) => {
         year: "numeric",
     });
 };
+
+/**
+ * Find the fiscal year for a date, which is the same as it's year unless it's after
+ * September 30th then it rolls over into the next FY.
+ * @param date - a date as string such as "2023-02-15" or a Date
+ * @returns {number|null} the fiscal year
+ */
+export const fiscalYearFromDate = (date) => {
+    if (date == "--" || date == null) return null;
+    if (!date) return null;
+    let dt = new Date(date);
+    const month = dt.getUTCMonth();
+    const year = dt.getUTCFullYear();
+    const fiscalYear = month > 8 ? year + 1 : year
+    return month > 8 ? year + 1 : year
+}
