@@ -19,7 +19,7 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
         }
         return acc
     }, {});
-    const totalValue = fyValues.reduce((acc, cur) => acc + cur, 0)
+    // const totalValue = fyValues.reduce((acc, cur) => acc + cur, 0)
     const currentFiscalYear = fiscalYearFromDate(new Date());
 
 
