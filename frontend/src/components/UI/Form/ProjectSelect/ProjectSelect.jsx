@@ -8,6 +8,7 @@ export const ProjectSelect = ({
     setAgreementProjectId = () => {},
     clearFunction = () => {},
     legendClassname = "usa-label margin-top-0",
+    inputBoxClassname = "",
 }) => {
     const [inputValue, setInputValue] = React.useState(selectedResearchProject?.title ?? "");
 
@@ -61,7 +62,7 @@ export const ProjectSelect = ({
                         aria-expanded="false"
                         autoCapitalize="off"
                         autoComplete="off"
-                        className="usa-combo-box__input"
+                        className={`usa-combo-box__input ${inputBoxClassname}`}
                         type="text"
                         role="combobox"
                         data-testid="project-input"
