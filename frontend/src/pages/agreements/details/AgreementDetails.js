@@ -6,7 +6,7 @@ import AgreementValuesCard from "../../../components/Agreements/AgreementDetails
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import Tag from "../../../components/UI/Tag/Tag";
 import { notesData, historyData } from "./data";
-import ListItem from "../../../components/UI/LogItem";
+import LogItem from "../../../components/UI/LogItem";
 
 const AgreementDetails = ({ agreement, projectOfficer }) => {
     // eslint-disable-next-line no-unused-vars
@@ -68,7 +68,7 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
                             >
                                 {/* // TODO: Replace with real data */}
                                 {notesData.map((note) => (
-                                    <ListItem
+                                    <LogItem
                                         key={note.id}
                                         title={note.created_by}
                                         createdOn={note.created_on}
@@ -88,7 +88,7 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
                             >
                                 {/* // TODO: Replace with real data */}
                                 {historyData.map((note) => (
-                                    <ListItem
+                                    <LogItem
                                         key={note.id}
                                         title={note.created_by}
                                         createdOn={note.created_on}
