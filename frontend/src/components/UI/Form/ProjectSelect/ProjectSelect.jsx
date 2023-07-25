@@ -7,6 +7,7 @@ export const ProjectSelect = ({
     setSelectedProject,
     setAgreementProjectId = () => {},
     clearFunction = () => {},
+    legendClassname = "usa-label margin-top-0",
 }) => {
     const [inputValue, setInputValue] = React.useState(selectedResearchProject?.title ?? "");
 
@@ -27,9 +28,9 @@ export const ProjectSelect = ({
     };
 
     return (
-        <div className="display-flex flex-justify padding-top-105">
+        <div className="display-flex flex-justify">
             <div className="left-half width-full">
-                <label className="usa-label margin-top-0" htmlFor="project" id="project-label">
+                <label className={legendClassname} htmlFor="project" id="project-label">
                     Project
                 </label>
                 <div className="usa-combo-box" data-enhanced="true">
