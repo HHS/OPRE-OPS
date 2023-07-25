@@ -29,6 +29,9 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
                     </li>
                 ))}
             </ul> */}
+            <h4 className="margin-0 margin-top-2 margin-bottom-1 font-12px text-base-dark text-normal">
+                Budget Lines Over Next 3 FYs
+            </h4>
             <div className="width-full height-9">
                 <ResponsiveBar
                     data={data}
