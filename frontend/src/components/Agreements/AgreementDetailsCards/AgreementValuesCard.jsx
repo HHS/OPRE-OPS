@@ -38,6 +38,7 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
                     margin={{ bottom: 0, left: 50, right: 20, top: 0 }}
                     padding={0.3}
                     layout="horizontal"
+                    colors={{ datum: "data.color" }}
                     borderColor={{
                         from: "color",
                         modifiers: [["darker", 1.6]],
