@@ -20,7 +20,7 @@ export const ProjectOfficerSelect = ({
     label = name,
     selectedProjectOfficer,
     setSelectedProjectOfficer,
-    onChange,
+    onChange = () => {},
     pending = false,
     messages = [],
     className,

@@ -4,6 +4,7 @@ import Modal from "react-modal";
 import customStyles from "./AgreementsFilterButton.module.css";
 import { useGetResearchProjectsQuery } from "../../../api/opsAPI";
 import ProjectSelect from "../../../components/UI/Form/ProjectSelect";
+import ProjectOfficerSelect from "../../../components/UI/Form/ProjectOfficerSelect";
 
 /**
  * Page for the Agreements List.
@@ -12,6 +13,7 @@ import ProjectSelect from "../../../components/UI/Form/ProjectSelect";
 export const AgreementsFilterButton = ({ filters, setFilters }) => {
     const [showModal, setShowModal] = React.useState(false);
     const [project, setProject] = React.useState({});
+    const [po, setPO] = React.useState({});
 
     const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
 
@@ -42,15 +44,14 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         });
     }, [project, setFilters]);
 
-    // const handleProjects = (item) => {
-    //     console.log("item", item);
-    //     setFilters((prevState) => {
-    //         return {
-    //             ...prevState,
-    //             project: item,
-    //         };
-    //     });
-    // };
+    useEffect(() => {
+        setFilters((prevState) => {
+            return {
+                ...prevState,
+                projectOfficer: po || {},
+            };
+        });
+    }, [po, setFilters]);
 
     if (isLoadingProjects) {
         return <div>Loading...</div>;
@@ -149,7 +150,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                         </div>
                     </fieldset>
                     <div>
-                        <fieldset className="usa-fieldset" style={{ width: "363px" }}>
+                        <fieldset className="usa-fieldset margin-bottom-205" style={{ width: "363px" }}>
                             <ProjectSelect
                                 researchProjects={projects}
                                 selectedResearchProject={project || {}}
@@ -160,7 +161,17 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                         </fieldset>
                     </div>
                     <div>
-                        <h3>Project Officer</h3>
+                        <fieldset className="usa-fieldset" style={{ width: "363px" }}>
+                            <ProjectOfficerSelect
+                                name="project_officer"
+                                label="Project Officer"
+                                className=""
+                                selectedProjectOfficer={po}
+                                setSelectedProjectOfficer={setPO}
+                                legendClassname={`usa-legend font-sans-3xs margin-top-0 ${customStyles.legendColor}`}
+                                inputBoxClassname="margin-top-0"
+                            />
+                        </fieldset>
                     </div>
                     <div>
                         <h3>Type</h3>
