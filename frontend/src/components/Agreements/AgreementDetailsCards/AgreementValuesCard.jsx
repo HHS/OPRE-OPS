@@ -51,8 +51,9 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
                     enableLabel={true}
                     isInteractive={false}
                     role="application"
-                    ariaLabel="Nivo bar chart demo"
+                    ariaLabel="Total Agreement Value by Fiscal Year"
                     borderRadius={2}
+                    valueFormat=">-$,.2f"
                 />
             </div>
         </CurrencySummaryCard>
