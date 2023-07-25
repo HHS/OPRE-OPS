@@ -23,7 +23,7 @@ export const AgreementsList = () => {
         project: {},
         projectOfficer: null,
         type: null,
-        procurementShop: null,
+        procurementShop: {},
         budgetLineStatus: [],
     });
 

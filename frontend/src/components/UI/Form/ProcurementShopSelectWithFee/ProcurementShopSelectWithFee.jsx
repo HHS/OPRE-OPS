@@ -1,5 +1,4 @@
-import React from "react";
-import { useGetProcurementShopsQuery } from "../../../../api/opsAPI";
+import ProcurementShopSelect from "../ProcurementShopSelect";
 
 /**
  * Object representing a procurement shop.
@@ -23,36 +22,6 @@ export const ProcurementShopSelectWithFee = ({
     onChangeSelectedProcurementShop,
     legendClassname = "",
 }) => {
-    const {
-        data: procurementShops,
-        error: errorProcurementShops,
-        isLoading: isLoadingProcurementShops,
-    } = useGetProcurementShopsQuery();
-
-    React.useEffect(() => {
-        if (!selectedProcurementShop?.id && procurementShops) {
-            onChangeSelectedProcurementShop(procurementShops[1]);
-        }
-    }, [procurementShops, selectedProcurementShop, onChangeSelectedProcurementShop]);
-
-    if (isLoadingProcurementShops) {
-        return <div>Loading...</div>;
-    }
-    if (errorProcurementShops) {
-        return <div>Oops, an error occurred</div>;
-    }
-
-    const handleChange = (e) => {
-        const procurementShopId = e.target.value;
-
-        const procurementShop = {
-            id: procurementShops[procurementShopId - 1].id,
-            name: procurementShops[procurementShopId - 1].name,
-            fee: procurementShops[procurementShopId - 1].fee,
-        };
-        onChangeSelectedProcurementShop(procurementShop);
-    };
-
     /**
      * Displays the fee rate for a selected procurement shop.
      * @param {Object} props - The component props.
@@ -69,29 +38,15 @@ export const ProcurementShopSelectWithFee = ({
         }
     };
     return (
-        <fieldset className="usa-fieldset">
-            <label className={`usa-label margin-top-0 ${legendClassname}`} htmlFor="procurement-shop-select">
-                Procurement Shop
-            </label>
-            <div className="display-flex flex-align-center">
-                <select
-                    className="usa-select margin-top-0 width-fit-content"
-                    name="procurement-shop-select"
-                    id="procurement-shop-select"
-                    onChange={handleChange}
-                    value={selectedProcurementShop?.id}
-                    required
-                >
-                    {procurementShops.map((shop) => (
-                        <option key={shop?.id} value={shop?.id}>
-                            {shop?.name} ({shop?.abbr})
-                        </option>
-                    ))}
-                </select>
+        <>
+            <ProcurementShopSelect
+                selectedProcurementShop={selectedProcurementShop}
+                onChangeSelectedProcurementShop={onChangeSelectedProcurementShop}
+                legendClassname={legendClassname}
+            />
 
-                <FeeRate selectedProcurementShop={selectedProcurementShop} />
-            </div>
-        </fieldset>
+            <FeeRate selectedProcurementShop={selectedProcurementShop} />
+        </>
     );
 };
 

@@ -6,6 +6,7 @@ import { useGetResearchProjectsQuery } from "../../../api/opsAPI";
 import ProjectSelect from "../../../components/UI/Form/ProjectSelect";
 import ProjectOfficerSelect from "../../../components/UI/Form/ProjectOfficerSelect";
 import AgreementTypeSelect from "../../../components/UI/Form/AgreementTypeSelect";
+import ProcurementShopSelect from "../../../components/UI/Form/ProcurementShopSelect";
 
 /**
  * Page for the Agreements List.
@@ -16,6 +17,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
     const [project, setProject] = React.useState({});
     const [po, setPO] = React.useState({});
     const [agreementType, setAgreementType] = React.useState({});
+    const [procurementShop, setProcurementShop] = React.useState({});
 
     const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
 
@@ -63,6 +65,15 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
             };
         });
     }, [agreementType, setFilters]);
+
+    useEffect(() => {
+        setFilters((prevState) => {
+            return {
+                ...prevState,
+                procurementShop: procurementShop || {},
+            };
+        });
+    }, [procurementShop, setFilters]);
 
     if (isLoadingProjects) {
         return <div>Loading...</div>;
@@ -185,7 +196,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                         </fieldset>
                     </div>
                     <div>
-                        <fieldset className="usa-fieldset" style={{ width: "363px" }}>
+                        <fieldset className="usa-fieldset margin-bottom-205" style={{ width: "363px" }}>
                             <AgreementTypeSelect
                                 name="agreement_type"
                                 label="Type"
@@ -199,7 +210,13 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                         </fieldset>
                     </div>
                     <div>
-                        <h3>Procurement Shop</h3>
+                        <fieldset className="usa-fieldset" style={{ width: "363px" }}>
+                            <ProcurementShopSelect
+                                selectedProcurementShop={procurementShop || {}}
+                                onChangeSelectedProcurementShop={setProcurementShop}
+                                legendClassname={`usa-legend font-sans-3xs margin-top-0 ${customStyles.legendColor}`}
+                            />
+                        </fieldset>
                     </div>
                     <div>
                         <h3>Budget Line Status</h3>
