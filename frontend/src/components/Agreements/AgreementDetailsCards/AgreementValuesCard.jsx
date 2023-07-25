@@ -1,5 +1,7 @@
+import { ResponsiveBar } from "@nivo/bar";
 import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
 import { fiscalYearFromDate } from "../../../helpers/utils";
+import { data } from "./tempChartData.js";
 
 const statusesExcludedFromValue = ["DRAFT", "UNDER_REVIEW"];
 const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
@@ -20,13 +22,38 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
 
     return (
         <CurrencySummaryCard headerText={headerText} amount={totalValue}>
-            <ul>
+            {/* <ul>
                 {fyValues.map((fyVal) => (
                     <li key={fyVal.fiscalYear}>
                         FY {fyVal.fiscalYear}: {fyVal.amount}
                     </li>
                 ))}
-            </ul>
+            </ul> */}
+            <div className="width-full height-9">
+                <ResponsiveBar
+                    data={data}
+                    keys={["budget"]}
+                    indexBy="FY"
+                    // margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
+                    margin={{ bottom: 0, left: 50, right: 20, top: 0 }}
+                    padding={0.3}
+                    layout="horizontal"
+                    borderColor={{
+                        from: "color",
+                        modifiers: [["darker", 1.6]],
+                    }}
+                    axisTop={null}
+                    axisRight={null}
+                    axisBottom={null}
+                    enableGridY={false}
+                    enableGridX={false}
+                    enableLabel={true}
+                    isInteractive={false}
+                    role="application"
+                    ariaLabel="Nivo bar chart demo"
+                    borderRadius={2}
+                />
+            </div>
         </CurrencySummaryCard>
     );
 };
