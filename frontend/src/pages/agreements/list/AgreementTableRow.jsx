@@ -67,7 +67,7 @@ export const AgreementTableRow = ({ agreement }) => {
     };
 
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
-    const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
+    const changeBgColorIfExpanded = { backgroundColor: isRowActive ? "#F0F0F0" : undefined };
 
     const handleEditAgreement = (event) => {
         navigate(`/agreements/edit/${event}?mode=edit`);
