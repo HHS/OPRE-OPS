@@ -105,12 +105,9 @@ const router = createBrowserRouter(
                         // this is what we'll render in the breadcrumbs
                         // for this route
                         crumb: () => (
-                            <Link to="/portfolios" className="text-primary">
-                                Portfolios
+                            <Link to="/agreements" className="text-primary">
+                                Agreements
                             </Link>
-                            // <Link to="/agreements" className="text-primary">
-                            //     Agreements
-                            // </Link>
                         ),
                     }}
                 >
