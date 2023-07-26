@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import "./AgreementsList.scss";
 import { AgreementTableRow } from "./AgreementTableRow";
 
@@ -5,7 +6,7 @@ import { AgreementTableRow } from "./AgreementTableRow";
  * Agreement table.
  * @param {Object} props - The component props.
  * @param {Object[]} props.agreements - Array of Agreement to display in the table.
- * @returns {{agreements}} The rendered component.
+ * @returns {React.JSX.Element} - The rendered component.
  */
 export const AgreementsTable = ({ agreements = [] }) => {
     return agreements.length > 0 ? (
@@ -33,4 +34,7 @@ export const AgreementsTable = ({ agreements = [] }) => {
     );
 };
 
+AgreementsTable.propTypes = {
+    agreements: PropTypes.arrayOf(PropTypes.object),
+};
 export default AgreementsTable;
