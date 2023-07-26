@@ -31,18 +31,19 @@ export const DesiredAwardDate = ({
     cn,
 }) => {
     const dateGroupErrors = Object.values(res.getErrorsByGroup("allDates"));
-    console.log(`dateGroupErrors: ${JSON.stringify(dateGroupErrors, null, 2)}`);
+
     const isThereDateGroupErrors = dateGroupErrors.length > 0;
     return (
-        <div className="usa-form-group">
+        <div
+            className={`usa-form-group ${isThereDateGroupErrors ? "usa-form-group--error" : null}`}
+            data-cy="date-group-errors"
+        >
             <fieldset className="usa-fieldset">
-                <legend className={`usa-legend ${isThereDateGroupErrors ? "usa-error-message text-bold" : null}`}>
-                    Need By Date
-                </legend>
+                <legend className={`usa-legend ${isThereDateGroupErrors ? "text-bold" : null}`}>Need By Date</legend>
                 {isThereDateGroupErrors &&
                     // instead of mapping over the array of errors, we just want the first one
                     dateGroupErrors[0].map((error, index) => (
-                        <span key={index} className="text-error border-left-2px padding-left-2px">
+                        <span key={index} className="usa-error-message padding-left-2px">
                             {error}
                             <br />
                         </span>
