@@ -100,7 +100,7 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
                             <p>Sorry no history</p>
                         )}
                     </div>
-                    <div className="grid-col-6" data-cy="details-right-col">
+                    <div className="grid-col-6 padding-left-2" data-cy="details-right-col">
                         {/* // NOTE: Right Column */}
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Agreement Type</dt>

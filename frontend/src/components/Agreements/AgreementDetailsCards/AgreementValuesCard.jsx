@@ -1,3 +1,4 @@
+import { ResponsiveBar } from "@nivo/bar";
 import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
 import { fiscalYearFromDate } from "../../../helpers/utils";
 
@@ -18,28 +19,59 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
     const currentFiscalYear = fiscalYearFromDate(new Date());
     const nextThreeFyValues = fyValues.filter((fyVal) => {
         return fyVal.fiscalYear >= currentFiscalYear && fyVal.fiscalYear < currentFiscalYear + 3;
-    })
+    });
+
+    const barChartColors = [
+        {
+            color: "hsla(153, 49%, 47%, 1)",
+        },
+        {
+            color: "hsla(157, 33%, 72%, 1)",
+        },
+        {
+            color: "hsla(116, 44%, 32%, 1)",
+        },
+    ];
+    // combine the data and colors from fyValues and barChartColors
+    const chartData = fyValues.map((fyVal, index) => {
+        return {
+            FY: fyVal.fiscalYear,
+            budget: fyVal.amount,
+            color: barChartColors[index].color,
+        };
+    });
 
     return (
         <CurrencySummaryCard headerText={headerText} amount={totalValue}>
-            <div>next three</div>
-            <ul>
-                {nextThreeFyValues.map((fyVal) => (
-                    <li key={fyVal.fiscalYear}>
-                        FY {fyVal.fiscalYear}: {fyVal.amount}
-                    </li>
-                ))}
-            </ul>
-            <hr/>
-            <div style={{color: "#999999", borderTop: "1em"}}>
-                <div>All years</div>
-                <ul style={{color: "#999999"}}>
-                    {fyValues.map((fyVal) => (
-                        <li key={fyVal.fiscalYear}>
-                            FY {fyVal.fiscalYear}: {fyVal.amount}
-                        </li>
-                    ))}
-                </ul>
+            <h4 className="margin-0 margin-top-2 margin-bottom-1 font-12px text-base-dark text-normal">
+                Budget Lines Over Next 3 FYs
+            </h4>
+            <div className="width-full height-9">
+                <ResponsiveBar
+                    data={chartData}
+                    keys={["budget"]}
+                    indexBy="FY"
+                    // margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
+                    margin={{ bottom: 0, left: 50, right: 20, top: 0 }}
+                    padding={0.3}
+                    layout="horizontal"
+                    colors={{ datum: "data.color" }}
+                    borderColor={{
+                        from: "color",
+                        modifiers: [["darker", 1.6]],
+                    }}
+                    axisTop={null}
+                    axisRight={null}
+                    axisBottom={null}
+                    enableGridY={false}
+                    enableGridX={false}
+                    enableLabel={true}
+                    isInteractive={false}
+                    role="application"
+                    ariaLabel="Total Agreement Value by Fiscal Year"
+                    borderRadius={2}
+                    valueFormat=">-$,.2f"
+                />
             </div>
         </CurrencySummaryCard>
     );
