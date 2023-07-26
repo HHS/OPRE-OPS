@@ -1,11 +1,9 @@
 import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
 import { fiscalYearFromDate } from "../../../helpers/utils";
 
-const statusesExcludedFromValue = ["DRAFT", "UNDER_REVIEW"];
 const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
     const headerText = "Total Agreement Value";
-    const valuedBlis = budgetLineItems.filter((bli) => !statusesExcludedFromValue.includes(bli.status));
-    const valuedBlisFy = valuedBlis.map((bli) => ({ ...bli, fiscalYear: fiscalYearFromDate(bli.date_needed) }));
+    const valuedBlisFy = budgetLineItems.map((bli) => ({ ...bli, fiscalYear: fiscalYearFromDate(bli.date_needed) }));
     const fyValuesMap = valuedBlisFy.reduce((acc, cur) => {
         if (!cur.fiscalYear || cur.amount == null) return acc;
         if (!(cur.fiscalYear in acc)) {
