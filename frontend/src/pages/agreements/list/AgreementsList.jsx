@@ -22,15 +22,9 @@ export const AgreementsList = () => {
         data: agreements,
         error: errorAgreement,
         isLoading: isLoadingAgreement,
-        refetch,
     } = useGetAgreementsQuery({ refetchOnMountOrArgChange: true });
 
     const activeUser = useSelector((state) => state.auth.activeUser);
-
-    useEffect(() => {
-        refetch();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     if (isLoadingAgreement) {
         return (
