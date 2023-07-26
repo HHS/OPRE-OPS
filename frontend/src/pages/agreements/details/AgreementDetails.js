@@ -55,7 +55,7 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
                         {/* // NOTE: Left Column */}
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
-                            <dd className="margin-0 margin-top-05">
+                            <dd className="margin-0 margin-top-05 text-semibold">
                                 {agreement?.description ? agreement.description : missingValueText}
                             </dd>
                         </dl>
