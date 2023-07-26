@@ -1,7 +1,15 @@
+import PropTypes from "prop-types";
 import { ResponsiveBar } from "@nivo/bar";
 import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
 import { fiscalYearFromDate } from "../../../helpers/utils";
 
+/**
+ * A component that displays the total budget lines for an agreement.
+ *
+ * @param {Object} props - The component props.
+ * @param {Array<any>} props.budgetLineItems - The budget line items for the agreement.
+ * @returns {React.JSX.Element} - The agreement total budget lines card component JSX.
+ */
 const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
     const headerText = "Total Agreement Value";
     const valuedBlisFy = budgetLineItems.map((bli) => ({ ...bli, fiscalYear: fiscalYearFromDate(bli.date_needed) }));
@@ -16,10 +24,10 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
     }, {});
     const fyValues = Object.keys(fyValuesMap).map((fy) => ({ fiscalYear: fy, amount: fyValuesMap[fy] }));
     const totalValue = fyValues.reduce((acc, cur) => acc + cur.amount, 0);
-    const currentFiscalYear = fiscalYearFromDate(new Date());
-    const nextThreeFyValues = fyValues.filter((fyVal) => {
-        return fyVal.fiscalYear >= currentFiscalYear && fyVal.fiscalYear < currentFiscalYear + 3;
-    });
+    // const currentFiscalYear = fiscalYearFromDate(new Date());
+    // const nextThreeFyValues = fyValues.filter((fyVal) => {
+    //     return fyVal.fiscalYear >= currentFiscalYear && fyVal.fiscalYear < currentFiscalYear + 3;
+    // });
 
     const barChartColors = [
         {
@@ -32,7 +40,7 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
             color: "hsla(116, 44%, 32%, 1)",
         },
     ];
-    // combine the data and colors from fyValues and barChartColors
+    // combine the fyValues and barChartColors
     const chartData = fyValues.map((fyVal, index) => {
         return {
             FY: fyVal.fiscalYear,
@@ -51,7 +59,6 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
                     data={chartData}
                     keys={["budget"]}
                     indexBy="FY"
-                    // margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
                     margin={{ bottom: 0, left: 50, right: 20, top: 0 }}
                     padding={0.3}
                     layout="horizontal"
@@ -75,6 +82,10 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
             </div>
         </CurrencySummaryCard>
     );
+};
+
+AgreementTotalBudgetLinesCard.propTypes = {
+    budgetLineItems: PropTypes.array.isRequired,
 };
 
 export default AgreementTotalBudgetLinesCard;
