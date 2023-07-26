@@ -1,18 +1,17 @@
 import { useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
 import { useGetAgreementsQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import sortAgreements from "./utils";
-import { useEffect } from "react";
 import Alert from "../../../components/UI/Alert";
 import "./AgreementsList.scss";
 import AgreementsTable from "./AgreementsTable";
 import AgreementsFilterHeaderSection from "./AgreementsFilterHeaderSection";
-import { useSearchParams } from "react-router-dom";
 
 /**
- * Page for the Agreements List.
- * @returns {ReactNode} The rendered component.
+ *  Agreements list page.
+ * @returns {React.JSX.Element} - The rendered component.
  */
 export const AgreementsList = () => {
     const [searchParams] = useSearchParams();
