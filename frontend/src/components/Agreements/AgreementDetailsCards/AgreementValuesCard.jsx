@@ -24,10 +24,10 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
     }, {});
     const fyValues = Object.keys(fyValuesMap).map((fy) => ({ fiscalYear: fy, amount: fyValuesMap[fy] }));
     const totalValue = fyValues.reduce((acc, cur) => acc + cur.amount, 0);
-    // const currentFiscalYear = fiscalYearFromDate(new Date());
-    // const nextThreeFyValues = fyValues.filter((fyVal) => {
-    //     return fyVal.fiscalYear >= currentFiscalYear && fyVal.fiscalYear < currentFiscalYear + 3;
-    // });
+    const currentFiscalYear = fiscalYearFromDate(new Date());
+    const nextThreeFyValues = fyValues.filter((fyVal) => {
+        return fyVal.fiscalYear >= currentFiscalYear && fyVal.fiscalYear < currentFiscalYear + 3;
+    });
 
     const barChartColors = [
         {
@@ -41,7 +41,7 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
         },
     ];
     // combine the fyValues and barChartColors
-    const chartData = fyValues.map((fyVal, index) => {
+    const chartData = nextThreeFyValues.map((fyVal, index) => {
         return {
             FY: fyVal.fiscalYear,
             budget: fyVal.amount,
@@ -54,32 +54,36 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
             <h4 className="margin-0 margin-top-2 margin-bottom-1 font-12px text-base-dark text-normal">
                 Budget Lines Over Next 3 FYs
             </h4>
-            <div className="width-full height-9">
-                <ResponsiveBar
-                    data={chartData}
-                    keys={["budget"]}
-                    indexBy="FY"
-                    margin={{ bottom: 0, left: 50, right: 20, top: 0 }}
-                    padding={0.3}
-                    layout="horizontal"
-                    colors={{ datum: "data.color" }}
-                    borderColor={{
-                        from: "color",
-                        modifiers: [["darker", 1.6]],
-                    }}
-                    axisTop={null}
-                    axisRight={null}
-                    axisBottom={null}
-                    enableGridY={false}
-                    enableGridX={false}
-                    enableLabel={true}
-                    isInteractive={false}
-                    role="application"
-                    ariaLabel="Total Agreement Value by Fiscal Year"
-                    borderRadius={2}
-                    valueFormat=">-$,.2f"
-                />
-            </div>
+            {chartData.length > 0 ? (
+                <div className="width-full height-9">
+                    <ResponsiveBar
+                        data={chartData}
+                        keys={["budget"]}
+                        indexBy="FY"
+                        margin={{ bottom: 0, left: 50, right: 20, top: 0 }}
+                        padding={0.3}
+                        layout="horizontal"
+                        colors={{ datum: "data.color" }}
+                        borderColor={{
+                            from: "color",
+                            modifiers: [["darker", 1.6]],
+                        }}
+                        axisTop={null}
+                        axisRight={null}
+                        axisBottom={null}
+                        enableGridY={false}
+                        enableGridX={false}
+                        enableLabel={true}
+                        isInteractive={false}
+                        role="application"
+                        ariaLabel="Total Agreement Value by Fiscal Year"
+                        borderRadius={2}
+                        valueFormat=">-$,.2f"
+                    />
+                </div>
+            ) : (
+                <p>No budget lines in the next 3 FYs</p>
+            )}
         </CurrencySummaryCard>
     );
 };
