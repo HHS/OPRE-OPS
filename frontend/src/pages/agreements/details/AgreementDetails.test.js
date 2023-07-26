@@ -68,16 +68,10 @@ describe("AgreementDetails", () => {
     test("renders correctly", () => {
         render(
             <Router location={history.location} navigator={history}>
-                <table>
-                    <tbody>
-                        <AgreementDetails agreement={agreement} projectOfficer={projectOfficer} />
-                    </tbody>
-                </table>
+                <AgreementDetails agreement={agreement} projectOfficer={projectOfficer} />
             </Router>
         );
 
-        // expect(screen.getByText("Test Agreement")).toBeInTheDocument();
-        // expect(screen.getByText("Test Project")).toBeInTheDocument();
         expect(screen.getByText("Test Description")).toBeInTheDocument();
         expect(screen.getByText("Agreement Type")).toBeInTheDocument();
         expect(screen.getByText("Contract")).toBeInTheDocument();
