@@ -34,7 +34,10 @@ export const DesiredAwardDate = ({
 
     const isThereDateGroupErrors = dateGroupErrors.length > 0;
     return (
-        <div className={`usa-form-group ${isThereDateGroupErrors ? "usa-form-group--error" : null}`}>
+        <div
+            className={`usa-form-group ${isThereDateGroupErrors ? "usa-form-group--error" : null}`}
+            data-cy="date-group-errors"
+        >
             <fieldset className="usa-fieldset">
                 <legend className={`usa-legend ${isThereDateGroupErrors ? "text-bold" : null}`}>Need By Date</legend>
                 {isThereDateGroupErrors &&
