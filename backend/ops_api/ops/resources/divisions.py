@@ -1,8 +1,8 @@
-from typing_extensions import override
 from flask import Response
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.utils.auth import is_authorized, PermissionType, Permission
+from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
+from typing_extensions import override
 
 
 class DivisionsItemAPI(BaseItemAPI):

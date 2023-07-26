@@ -3,7 +3,6 @@ import datetime
 
 import pytest
 from pytest_bdd import given, scenario, then, when
-
 from models import (
     AgreementType,
     BudgetLineItem,

@@ -1,8 +1,7 @@
 import pytest
-from pytest_bdd import given, scenario, then, when
-
 from models import AgreementType, ContractAgreement, ContractType
 from ops_api.ops.resources.agreements import AgreementData
+from pytest_bdd import given, scenario, then, when
 
 AGREEMENT_ID = 1
 

@@ -1,7 +1,6 @@
 from contextlib import contextmanager
 from enum import Enum
 from typing import Optional
-from typing_extensions import override
 
 from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
@@ -12,6 +11,7 @@ from ops_api.ops.utils.auth import auth_gateway
 from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
+from typing_extensions import override
 
 
 def generate_validator(model: BaseModel) -> BaseModel.Validator:
