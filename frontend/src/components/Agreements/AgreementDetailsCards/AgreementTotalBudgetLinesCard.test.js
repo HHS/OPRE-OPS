@@ -2,7 +2,6 @@ import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import AgreementTotalBudgetLinesCard from "./AgreementTotalBudgetLinesCard";
 
-
 jest.mock("react", () => ({
     ...jest.requireActual("react"),
     useState: () => [null, jest.fn()],
@@ -14,16 +13,13 @@ afterEach(() => {
 });
 
 describe("AgreementTotalBudgetLinesCard", () => {
-
     test("renders correctly", () => {
         const countsByStatus = {
-        IN_EXECUTION: 8,
-        OBLIGATED: 1,
-        PLANNED: 7
-    }
-        render(
-            <AgreementTotalBudgetLinesCard numberOfAgreements={16} countsByStatus={countsByStatus}/>
-        );
+            IN_EXECUTION: 8,
+            OBLIGATED: 1,
+            PLANNED: 7,
+        };
+        render(<AgreementTotalBudgetLinesCard numberOfAgreements={16} countsByStatus={countsByStatus} />);
 
         expect(screen.getByText("0 Draft")).toBeInTheDocument();
         expect(screen.getByText("0 In Review")).toBeInTheDocument();

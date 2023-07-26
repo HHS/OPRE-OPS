@@ -1,10 +1,19 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import AgreementDetails from "./AgreementDetails";
 import { Router } from "react-router-dom";
 import { createMemoryHistory } from "history";
+import { ResponsiveBar } from "@nivo/bar";
 
 const history = createMemoryHistory();
+
+// mocking ResponsiveBar until there's a solution for TypeError: Cannot read properties of null (reading 'width')
+jest.mock("@nivo/bar", () => ({
+    __esModule: true,
+    ResponsiveBar: () => {
+        return <div />;
+    },
+}));
 
 jest.mock("react-router-dom", () => ({
     ...jest.requireActual("react-router-dom"),
