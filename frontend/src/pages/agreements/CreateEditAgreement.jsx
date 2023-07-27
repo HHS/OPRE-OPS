@@ -7,6 +7,7 @@ import StepCreateAgreement from "./StepCreateAgreement";
 import StepCreateBudgetLines from "../../components/UI/WizardSteps/StepCreateBudgetLines";
 import { useEditAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import { setAlert } from "../../components/UI/Alert/alertSlice";
+import {StepCreateAgreement2} from "./StepCreateAgreement2";
 
 /**
  * Renders the Create Agreement flow, which consists of several steps.
@@ -48,7 +49,7 @@ export const CreateAgreement = ({ existingBudgetLines }) => {
     return (
         <CreateAgreementFlow>
             <StepSelectProject isEditMode={isEditMode} isReviewMode={isReviewMode} />
-            <StepCreateAgreement isEditMode={isEditMode} isReviewMode={isReviewMode} />
+            <StepCreateAgreement2 isEditMode={isEditMode} isReviewMode={isReviewMode} />
             <StepCreateBudgetLines
                 selectedResearchProject={selectedResearchProject}
                 selectedAgreement={selectedAgreement}

@@ -8,6 +8,7 @@ import DetailsTabs from "../../../components/Agreements/DetailsTabs/DetailsTabs"
 import AgreementDetails from "./AgreementDetails";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
+import AgreementBudgetLinesEdit from "./AgreementBudgetLinesEdit";
 
 const Agreement = () => {
     const urlPathParams = useParams();
@@ -68,6 +69,10 @@ const Agreement = () => {
                         element={<AgreementDetailsEdit agreement={agreement} projectOfficer={projectOfficer} />}
                     />
                     <Route path="budget-lines" element={<AgreementBudgetLines agreement={agreement} />} />
+                    <Route
+                        path="budget-lines/edit"
+                        element={<AgreementBudgetLinesEdit agreement={agreement} projectOfficer={projectOfficer} />}
+                    />
                 </Routes>
             </div>
         </App>

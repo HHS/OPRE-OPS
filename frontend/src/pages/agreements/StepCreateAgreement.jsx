@@ -391,6 +391,8 @@ StepCreateAgreement.propTypes = {
     goToNext: PropTypes.func,
     isEditMode: PropTypes.bool,
     isReviewMode: PropTypes.bool,
+    wizardSteps: PropTypes.arrayOf(PropTypes.string),
+    currentStep: PropTypes.number
 };
 
 export default StepCreateAgreement;
