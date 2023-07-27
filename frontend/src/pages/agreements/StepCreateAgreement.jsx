@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import classnames from "vest/classnames";
@@ -27,6 +28,7 @@ import Input from "../../components/UI/Form/Input";
 import EditModeTitle from "./EditModeTitle";
 import TextArea from "../../components/UI/Form/TextArea/TextArea";
 import { useGetProductServiceCodesQuery } from "../../api/opsAPI";
+
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
  *
@@ -341,30 +343,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode
 
             <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
             <TeamMemberList selectedTeamMembers={selectedTeamMembers} removeTeamMember={removeTeamMember} />
-            {/* <div className="usa-character-count margin-top-3">
-                <div className="usa-form-group">
-                    <label className="usa-label font-sans-lg text-bold" htmlFor="notes-with-hint-textarea">
-                        Notes (optional)
-                    </label>
-                    <span id="notes-with-hint-textarea-hint" className="usa-hint">
-                        Maximum 150 characters
-                    </span>
-                    <textarea
-                        className="usa-textarea usa-character-count__field"
-                        id="with-hint-textarea"
-                        maxLength={150}
-                        name="with-hint-textarea"
-                        rows={5}
-                        aria-describedby="with-hint-textarea-info notes-with-hint-textarea-hint"
-                        style={{ height: "7rem" }}
-                        value={agreementNotes || ""}
-                        onChange={(e) => setAgreementNotes(e.target.value)}
-                    ></textarea>
-                </div>
-                <span id="with-hint-textarea-info" className="usa-character-count__message sr-only">
-                    You can enter up to 150 characters
-                </span>
-            </div> */}
             <TextArea
                 name="agreementNotes"
                 label="Notes (optional)"
@@ -407,6 +385,13 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode
             </div>
         </>
     );
+};
+
+StepCreateAgreement.propTypes = {
+    goBack: PropTypes.func,
+    goToNext: PropTypes.func,
+    isEditMode: PropTypes.bool,
+    isReviewMode: PropTypes.bool,
 };
 
 export default StepCreateAgreement;

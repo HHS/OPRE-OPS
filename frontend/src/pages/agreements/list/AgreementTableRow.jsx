@@ -72,7 +72,7 @@ export const AgreementTableRow = ({ agreement }) => {
     const handleEditAgreement = (event) => {
         navigate(`/agreements/edit/${event}?mode=edit`);
     };
-    const handleDeleteAgreement = (event) => {
+    const handleDeleteAgreement = () => {
         // TODO: implement delete agreement
         alert("not implemented yet");
     };
