@@ -1,19 +1,16 @@
-# System and Communications Protection
-## SC-08 - TRANSMISSION CONFIDENTIALITY AND INTEGRITY
+# Transmission Confidentiality and Integrity
+## SC-08 - Transmission Confidentiality and Integrity
 
-The information system protects the [Selection (one or more): confidentiality; integrity] of transmitted information.
+Protect the [Selection (one or more): confidentiality; integrity] of transmitted information.
 
-For CSP Only
-SC-8 [confidentiality AND integrity]
+## OPS Implementation
 
-### OPS Implementation
+OPS utilizes TLS connections for traffic passing between components and end user traffic and any interconnecting systems TODO: Check for standardized text
 
-TODO: Update as applicable - is PII stored in OPRE?
+TODO: Seek inherited text
 
-Data file uploads and downloads with PII are transmitted through connections encrypted via
-[Transport Layer Security (TLS)](https://www.cloudflare.com/learning/ssl/transport-layer-security-tls/).
+### Control Origination
 
-All data transmitted between the frontend and backend of the web application are also
-encrypted via TLS.
+Inherited from IaaS provider
 
-For our TLS connections, clients connect to cloud.gov through [AWS load balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-security-policy-table.html) which implement the [ELBSecurityPolicy-TLS-1-2-2017-01](https://cloud.gov/docs/compliance/domain-standards/#ssltls-implementation)
+### Related Content

@@ -7,7 +7,7 @@ Implement cryptographic mechanisms to [Selection (one or more): prevent unauthor
 
 TODO: Seek inherited text
 
-OPS utilizes TLS connections for traffic passing between components and end user traffic and interconnecting systems TODO: Check for standardized text
+OPS utilizes TLS connections for traffic passing between components and end user traffic and any interconnecting systems TODO: Check for standardized text
 
 ### Control Origination
 

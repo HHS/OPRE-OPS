@@ -1,16 +1,16 @@
-# System and Communications Protection
-## SC-28 - PROTECTION OF INFORMATION AT REST
+# Protection of Information at Rest
+## SC-28 - Protection of Information at Rest
 
-The information system protects the [confidentiality and integrity] of [sensitive information at rest when it is located on a secondary storage device within an information system].  
-
-SC-28 Additional FedRAMP Requirements and Guidance:  
-Guidance: The organization supports the capability to use cryptographic mechanisms to protect information at rest.  
-
-For CSP Only  
-SC-28 [confidentiality AND integrity]  
+Protect the [Selection (one or more): confidentiality; integrity] of the following information at rest: [Assignment: organization-defined information at rest].
 
 ### OPS Implementation
 
-OPS stores sensitive information in cloud.gov S3 buckets, when applicable, which are encrypted by default with [AES-256](https://www.idera.com/glossary/aes-256-bit-encryption) encryption.
-	
-#### Related Files
+Databases as well as file and object-based storage used by OPS are configured to utilize encryption as defined and managed by the IaaS provider.
+
+TODO: Seek inherited text
+
+### Control Origination
+
+Hybrid inheritance with IaaS provider and OPS
+
+### Related Content
