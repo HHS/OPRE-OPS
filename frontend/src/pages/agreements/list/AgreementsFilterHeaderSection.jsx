@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import styles from "../../../components/Portfolios/PortfolioTabsSection/PortfolioTabsSection.module.scss";
 import TabsSection from "../../../components/UI/TabsSection";
 import AgreementsFilterButton from "./AgreementsFilterButton";
+import AgreementsFilterTags from "./AgreementsFilterTags";
 
 /**
  * Header section above the Agreements List table.
@@ -49,8 +50,13 @@ export const AgreementsFilterHeaderSection = ({ filters, setFilters }) => {
             <div className="padding-top-05 padding-bottom-05 display-flex flex-align-center">
                 <TabsSection links={links} label="Agreements Tabs Section" />
             </div>
-            <div className="padding-top-05 padding-bottom-05 display-flex flex-justify-end">
-                <AgreementsFilterButton filters={filters} setFilters={setFilters} />
+            <div className="padding-top-05 padding-bottom-05 display-flex" style={{ justifyContent: "space-between" }}>
+                <span>
+                    <AgreementsFilterTags filters={filters} setFilters={setFilters} />
+                </span>
+                <span>
+                    <AgreementsFilterButton filters={filters} setFilters={setFilters} />
+                </span>
             </div>
         </div>
     );
