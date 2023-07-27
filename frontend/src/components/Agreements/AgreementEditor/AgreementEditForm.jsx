@@ -39,6 +39,7 @@ import { useGetProductServiceCodesQuery } from "../../../api/opsAPI";
  * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
  */
 export const AgreementEditForm = ({ goBack, goToNext, isEditMode, isReviewMode }) => {
+    const isWizardMode = location.pathname === "/agreements/create";
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setSelectedProductServiceCode = useSetState("selected_product_service_code");
@@ -180,7 +181,13 @@ export const AgreementEditForm = ({ goBack, goToNext, isEditMode, isReviewMode }
             actionButtonText: "Cancel",
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                navigate("/agreements");
+                if (isWizardMode) {
+                    navigate("/agreements");
+                }
+                else {
+                    navigate(`/agreements/${agreement.id}`);
+                }
+
             },
         });
     };
@@ -349,9 +356,13 @@ export const AgreementEditForm = ({ goBack, goToNext, isEditMode, isReviewMode }
                 onChange={(name, value) => setAgreementNotes(value)}
             />
             <div className="grid-row flex-justify margin-top-8">
-                <button className="usa-button usa-button--unstyled margin-right-2" onClick={() => goBack()}>
-                    Go Back
-                </button>
+                { isWizardMode ? (
+                    <button className="usa-button usa-button--unstyled margin-right-2" onClick={() => goBack()}>
+                        Go Back
+                    </button>
+                ) : (
+                    <div/>
+                )}
                 <div>
                     <button
                         className="usa-button usa-button--unstyled margin-right-2"
@@ -360,14 +371,16 @@ export const AgreementEditForm = ({ goBack, goToNext, isEditMode, isReviewMode }
                     >
                         Cancel
                     </button>
-                    <button
-                        className="usa-button usa-button--outline"
-                        onClick={handleDraft}
-                        disabled={!isReviewMode && shouldDisableBtn}
-                        data-cy="save-draft-btn"
-                    >
-                        Save Draft
-                    </button>
+                    { isWizardMode && (
+                        <button
+                            className="usa-button usa-button--outline"
+                            onClick={handleDraft}
+                            disabled={!isReviewMode && shouldDisableBtn}
+                            data-cy="save-draft-btn"
+                        >
+                            Save Draft
+                        </button>
+                    )}
                     <button
                         id="continue"
                         className="usa-button"
@@ -375,7 +388,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isEditMode, isReviewMode }
                         disabled={shouldDisableBtn}
                         data-cy="continue-btn"
                     >
-                        Continue
+                        { isWizardMode ? "Continue" : "Save Changes" }
                     </button>
                 </div>
             </div>

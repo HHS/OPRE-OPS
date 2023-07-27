@@ -11,18 +11,13 @@ const AgreementDetailsEdit = ({ agreement, projectOfficer }) => {
         navigate(`/agreements/${agreement.id}`);
     };
     const goToNext = () => {
-        navigate(`/agreements/${agreement.id}`);
+        window.location = `/agreements/${agreement.id}`;
     };
     const isEditMode = true;
     const isReviewMode = false;
 
     return (
         <div>
-            <h2>Edit Agreement Metadata: The is a WIP, but you can still&nbsp;
-                <Link to={"/agreements/edit/" + agreement.id + "?mode=edit"}>
-                    <span className="text-primary">edit it in the wizard</span>
-                </Link>
-            </h2>
             <EditAgreementProvider agreement={agreement} projectOfficer={projectOfficer}>
                 <AgreementEditForm
                     goBack={goBack} goToNext={goToNext} isEditMode={isEditMode} isReviewMode={isReviewMode}
