@@ -145,10 +145,10 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                             Upcoming Need By Date
                         </legend>
                         <div className="display-flex">
-                            <div className="padding-right-5">
+                            <div className={`usa-radio padding-right-5 ${customStyles.modalBackgroundColor}`}>
                                 <div className="display-flex flex-align-center padding-bottom-1">
                                     <input
-                                        className="height-3 width-3"
+                                        className="usa-radio__input height-3 width-3"
                                         id="next-30-days"
                                         type="radio"
                                         name="upcoming-need-by-date"
@@ -156,20 +156,20 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                         onChange={handleRadioButtons}
                                         value={filters.upcomingNeedByDate}
                                     />
-                                    <label className="padding-left-1" htmlFor="next-30-days">
+                                    <label className="usa-radio__label margin-top-0" htmlFor="next-30-days">
                                         Next 30 days
                                     </label>
                                 </div>
                                 <div className="display-flex flex-align-center">
                                     <input
-                                        className="height-3 width-3"
+                                        className="usa-radio__input height-3 width-3"
                                         id="current-fy"
                                         type="radio"
                                         name="upcoming-need-by-date"
                                         onChange={handleRadioButtons}
                                         value={filters.upcomingNeedByDate}
                                     />
-                                    <label className="padding-left-1" htmlFor="current-fy">
+                                    <label className="usa-radio__label margin-top-0" htmlFor="current-fy">
                                         Current FY
                                     </label>
                                 </div>
@@ -177,27 +177,27 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                             <div className="">
                                 <div className="display-flex flex-align-center padding-bottom-1">
                                     <input
-                                        className="height-3 width-3"
+                                        className="usa-radio__input height-3 width-3"
                                         id="next-6-months"
                                         type="radio"
                                         name="upcoming-need-by-date"
                                         onChange={handleRadioButtons}
                                         value={filters.upcomingNeedByDate}
                                     />
-                                    <label className="padding-left-1" htmlFor="next-6-months">
+                                    <label className="usa-radio__label margin-top-0" htmlFor="next-6-months">
                                         Next 6 months
                                     </label>
                                 </div>
                                 <div className="display-flex flex-align-center">
                                     <input
-                                        className="height-3 width-3"
+                                        className="usa-radio__input height-3 width-3"
                                         id="all-time"
                                         type="radio"
                                         name="upcoming-need-by-date"
                                         onChange={handleRadioButtons}
                                         value={filters.upcomingNeedByDate}
                                     />
-                                    <label className="padding-left-1" htmlFor="all-time">
+                                    <label className="usa-radio__label margin-top-0" htmlFor="all-time">
                                         All time
                                     </label>
                                 </div>
@@ -270,11 +270,13 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                             onChange={handleBudgetLineStatus}
                                             value={filters.budgetLineStatus.draft}
                                         />
-                                        <label className="usa-checkbox__label" htmlFor="draft">
+                                        <label className="usa-checkbox__label margin-top-0" htmlFor="draft">
                                             Draft
                                         </label>
                                     </div>
-                                    <div className="usa-checkbox display-flex flex-align-center">
+                                    <div
+                                        className={`usa-checkbox display-flex flex-align-center ${customStyles.modalBackgroundColor}`}
+                                    >
                                         <input
                                             className="usa-checkbox__input height-3 width-3"
                                             id="planned"
@@ -283,13 +285,15 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                             onChange={handleBudgetLineStatus}
                                             value={filters.budgetLineStatus.planned}
                                         />
-                                        <label className="usa-checkbox__label" htmlFor="planned">
+                                        <label className="usa-checkbox__label margin-top-0" htmlFor="planned">
                                             Planned
                                         </label>
                                     </div>
                                 </div>
                                 <div className="">
-                                    <div className="usa-checkbox display-flex flex-align-center padding-bottom-1">
+                                    <div
+                                        className={`usa-checkbox display-flex flex-align-center padding-bottom-1 ${customStyles.modalBackgroundColor}`}
+                                    >
                                         <input
                                             className="usa-checkbox__input height-3 width-3"
                                             id="executing"
@@ -298,11 +302,13 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                             onChange={handleBudgetLineStatus}
                                             value={filters.budgetLineStatus.executing}
                                         />
-                                        <label className="usa-checkbox__label" htmlFor="executing">
+                                        <label className="usa-checkbox__label margin-top-0" htmlFor="executing">
                                             Executing
                                         </label>
                                     </div>
-                                    <div className="usa-checkbox display-flex flex-align-center">
+                                    <div
+                                        className={`usa-checkbox display-flex flex-align-center ${customStyles.modalBackgroundColor}`}
+                                    >
                                         <input
                                             className="usa-checkbox__input height-3 width-3"
                                             id="obligated"
@@ -311,7 +317,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                             onChange={handleBudgetLineStatus}
                                             value={filters.budgetLineStatus.obligated}
                                         />
-                                        <label className="usa-checkbox__label" htmlFor="obligated">
+                                        <label className="usa-checkbox__label margin-top-0" htmlFor="obligated">
                                             Obligated
                                         </label>
                                     </div>
@@ -319,7 +325,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                             </div>
                         </fieldset>
                     </div>
-                    <div className="display-flex flex-justify-end padding-right-1">
+                    <div className="display-flex flex-justify-end padding-right-1 padding-top-1">
                         <button className="usa-button usa-button--outline" onClick={resetFilter}>
                             <span className="">Reset</span>
                         </button>
