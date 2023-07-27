@@ -30,7 +30,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         });
     }, [setFilters]);
 
-    const resetFilter = (event) => {
+    const resetFilter = () => {
         setFilters({
             upcomingNeedByDate: null,
             project: {},

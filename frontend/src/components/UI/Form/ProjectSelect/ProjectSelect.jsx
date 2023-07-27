@@ -138,4 +138,6 @@ ProjectSelect.propTypes = {
     setSelectedProject: PropTypes.func.isRequired,
     setAgreementProjectId: PropTypes.func,
     clearFunction: PropTypes.func,
+    legendClassname: PropTypes.string,
+    inputBoxClassname: PropTypes.string,
 };
