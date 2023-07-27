@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import LogItem from "../LogItem/LogItem";
+import LogItem from "../LogItem";
 
 /**
  * A modal component that can be used to display a message or prompt the user for confirmation.
