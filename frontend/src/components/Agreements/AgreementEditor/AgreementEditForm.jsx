@@ -3,31 +3,31 @@ import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import classnames from "vest/classnames";
-import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-import ProcurementShopSelect from "../../components/UI/Form/ProcurementShopSelect";
-import AgreementReasonSelect from "../../components/UI/Form/AgreementReasonSelect";
-import AgreementTypeSelect from "../../components/UI/Form/AgreementTypeSelect";
-import ProductServiceCodeSelect from "../../components/UI/Form/ProductServiceCodeSelect";
-import ProjectOfficerSelect from "../../components/UI/Form/ProjectOfficerSelect";
-import TeamMemberSelect from "../../components/UI/Form/TeamMemberSelect";
-import TeamMemberList from "../../components/UI/Form/TeamMemberList";
-import Modal from "../../components/UI/Modal";
-import { formatTeamMember, postAgreement } from "../../api/postAgreements";
-import ProjectSummaryCard from "../../components/ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";
-import ProductServiceCodeSummaryBox from "../../components/UI/Form/ProductServiceCodeSummaryBox";
+import StepIndicator from "../../UI/StepIndicator/StepIndicator";
+import ProcurementShopSelect from "../../UI/Form/ProcurementShopSelect";
+import AgreementReasonSelect from "../../UI/Form/AgreementReasonSelect";
+import AgreementTypeSelect from "../../UI/Form/AgreementTypeSelect";
+import ProductServiceCodeSelect from "../../UI/Form/ProductServiceCodeSelect";
+import ProjectOfficerSelect from "../../UI/Form/ProjectOfficerSelect";
+import TeamMemberSelect from "../../UI/Form/TeamMemberSelect";
+import TeamMemberList from "../../UI/Form/TeamMemberList";
+import Modal from "../../UI/Modal";
+import { formatTeamMember, postAgreement } from "../../../api/postAgreements";
+import ProjectSummaryCard from "../../ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";
+import ProductServiceCodeSummaryBox from "../../UI/Form/ProductServiceCodeSummaryBox";
 import {
     useEditAgreement,
     useSetState,
     useUpdateAgreement,
     useEditAgreementDispatch,
-} from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
-import { setAlert } from "../../components/UI/Alert/alertSlice";
-import { patchAgreement } from "../../api/patchAgreements";
-import suite from "./stepCreateAgreementSuite";
-import Input from "../../components/UI/Form/Input";
-import EditModeTitle from "./EditModeTitle";
-import TextArea from "../../components/UI/Form/TextArea/TextArea";
-import { useGetProductServiceCodesQuery } from "../../api/opsAPI";
+} from "./AgreementEditorContext";
+import { setAlert } from "../../UI/Alert/alertSlice";
+import { patchAgreement } from "../../../api/patchAgreements";
+import suite from "../../../pages/agreements/stepCreateAgreementSuite";
+import Input from "../../UI/Form/Input";
+import EditModeTitle from "../../../pages/agreements/EditModeTitle";
+import TextArea from "../../UI/Form/TextArea/TextArea";
+import { useGetProductServiceCodesQuery } from "../../../api/opsAPI";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -38,7 +38,7 @@ import { useGetProductServiceCodesQuery } from "../../api/opsAPI";
  * @param {boolean} [props.isEditMode] - Whether the form is in edit mode. - optional
  * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
  */
-export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode, wizardSteps, currentStep }) => {
+export const AgreementEditForm = ({ goBack, goToNext, isEditMode, isReviewMode }) => {
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setSelectedProductServiceCode = useSetState("selected_product_service_code");
@@ -212,9 +212,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode
                 />
             )}
 
-            <EditModeTitle isEditMode={isEditMode || isReviewMode} />
-            <StepIndicator steps={wizardSteps} currentStep={2} />
-            <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg">Select the Agreement Type</h2>
             <p>Select the type of agreement you&#39;d like to create.</p>
             <AgreementTypeSelect
@@ -386,13 +383,11 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode
     );
 };
 
-StepCreateAgreement.propTypes = {
+AgreementEditForm.propTypes = {
     goBack: PropTypes.func,
     goToNext: PropTypes.func,
     isEditMode: PropTypes.bool,
-    isReviewMode: PropTypes.bool,
-    wizardSteps: PropTypes.arrayOf(PropTypes.string),
-    currentStep: PropTypes.number
+    isReviewMode: PropTypes.bool
 };
 
-export default StepCreateAgreement;
+export default AgreementEditForm;

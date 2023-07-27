@@ -25,10 +25,6 @@ const DetailsTabs = ({ agreementId }) => {
         const pathName = `/agreements/${agreementId}${path.name}`;
         const editorPathName = `/agreements/${agreementId}${path.editorName}`;
         const tabSelected = [pathName, editorPathName].includes(location.pathname);
-        console.log("location.pathname:", location.pathname);
-        console.log(pathName, (location.pathname === pathName));
-        console.log(editorPathName, (location.pathname === editorPathName));
-        console.log(location.pathname in [pathName, editorPathName]);
 
         return (
             <Link to={pathName} className={tabSelected ? selected : notSelected} key={pathName}>

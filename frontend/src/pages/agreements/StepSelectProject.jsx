@@ -18,7 +18,6 @@ import EditModeTitle from "./EditModeTitle";
  */
 export const StepSelectProject = ({ goToNext, isEditMode, isReviewMode, wizardSteps, currentStep }) => {
     const navigate = useNavigate();
-    console.log("steps:", wizardSteps, "cur:", currentStep);
     const { selected_project: selectedResearchProject } = useEditAgreement();
     // setters
     const setSelectedProject = useSetState("selected_project");
