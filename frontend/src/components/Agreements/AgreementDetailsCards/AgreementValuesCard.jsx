@@ -2,6 +2,8 @@ import PropTypes from "prop-types";
 import { ResponsiveBar } from "@nivo/bar";
 import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
 import { fiscalYearFromDate } from "../../../helpers/utils";
+import constants from "../../../constants";
+const { barChartColors } = constants;
 
 /**
  * A component that displays the total budget lines for an agreement.
@@ -29,17 +31,6 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
         return fyVal.fiscalYear >= currentFiscalYear && fyVal.fiscalYear < currentFiscalYear + 3;
     });
 
-    const barChartColors = [
-        {
-            color: "hsla(153, 49%, 47%, 1)",
-        },
-        {
-            color: "hsla(157, 33%, 72%, 1)",
-        },
-        {
-            color: "hsla(116, 44%, 32%, 1)",
-        },
-    ];
     // combine the fyValues and barChartColors
     const chartData = nextThreeFyValues.map((fyVal, index) => {
         return {

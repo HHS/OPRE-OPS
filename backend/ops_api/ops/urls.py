@@ -20,6 +20,7 @@ from ops_api.ops.views import (
     DIVISIONS_ITEM_API_VIEW_FUNC,
     DIVISIONS_LIST_API_VIEW_FUNC,
     HEALTH_CHECK_VIEW_FUNC,
+    OPS_DB_HISTORY_LIST_API_VIEW_FUNC,
     NOTIFICATIONS_ITEM_API_VIEW_FUNC,
     NOTIFICATIONS_LIST_API_VIEW_FUNC,
     PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC,
@@ -86,6 +87,10 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/cans/",
         view_func=CAN_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/ops-db-histories/",
+        view_func=OPS_DB_HISTORY_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/cans/portfolio/<int:id>",
