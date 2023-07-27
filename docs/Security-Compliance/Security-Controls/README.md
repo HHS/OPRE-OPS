@@ -100,14 +100,13 @@
 20. [sc-15](sc-15/index.md)
 21. [sc-17](sc-17/index.md)
 22. [sc-18](sc-18/index.md)
-23. [sc-19](sc-19/index.md)
-24. [sc-20](sc-20/index.md)
-25. [sc-21](sc-21/index.md)
-26. [sc-22](sc-22/index.md)
-27. [sc-23](sc-23/index.md)
-28. [sc-28](sc-28/index.md)
-29. [sc-28-1](sc-28-1/index.md)
-30. [sc-39)](sc-39/index.md)
+23. [sc-20](sc-20/index.md)
+24. [sc-21](sc-21/index.md)
+25. [sc-22](sc-22/index.md)
+26. [sc-23](sc-23/index.md)
+27. [sc-28](sc-28/index.md)
+28. [sc-28-1](sc-28-1/index.md)
+29. [sc-39)](sc-39/index.md)
 
 ### System and Information Integrity
 

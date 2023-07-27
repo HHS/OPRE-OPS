@@ -12,10 +12,10 @@ The "frontend" or user interface component of OPS is heavily reliant on client-e
 * All user-supplied form input is validated and sanitized by a separate code library that interacts with React.
 * Multiple types of security and linting scans take place on every pull request to an environment branch in our source code repository, as well as nightly scans for SCA security needs.
 * Additiionally, OPS utilizes an automated dependency management mechanism to rapidly and automatically update and apply security patches for React and any other Javascript dependencies. More info on the security scans and dependency management can be found in [RA-05](../ra-05/index.md)
-* OPS routienly undergoes independent penetration testing orchestrated by ACF/OCIO
+* OPS routinely undergoes independent penetration testing orchestrated by ACF/OCIO
 
 * TODO: setting Content-Security-Policy?? Additionally, Content Security Policy headers are transimitted to the user's browser to restrict the execution of unsafe scripts and prevent unauthorized code execution. This helps mitigate the risks associated with malicious mobile code.
-* TODO: Investigate setting certain security paramters in React like setting "HTTPOnly" and the "Secure" flags for any cookies
+* TODO: Investigate setting certain security parameters in React like  "HTTPOnly" and the "Secure" flags for any cookies
 
 ### Control Origination
 
