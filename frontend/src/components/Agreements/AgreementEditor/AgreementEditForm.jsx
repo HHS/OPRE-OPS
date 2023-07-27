@@ -23,7 +23,7 @@ import {
 } from "./AgreementEditorContext";
 import { setAlert } from "../../UI/Alert/alertSlice";
 import { patchAgreement } from "../../../api/patchAgreements";
-import suite from "../../../pages/agreements/stepCreateAgreementSuite";
+import suite from "./AgreementEditFormSuite";
 import Input from "../../UI/Form/Input";
 import EditModeTitle from "../../../pages/agreements/EditModeTitle";
 import TextArea from "../../UI/Form/TextArea/TextArea";
