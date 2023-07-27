@@ -16,7 +16,6 @@ export const AgreementDetailHeader = ({ heading, details, agreementId }) => {
         <>
             <div className="display-flex flex-justify flex-align-center">
                 <h2 className="font-sans-lg">{heading}</h2>
-                {/* <Link to={"/agreements/edit/" + agreement?.id + "?mode=edit"}> */}
                 <Link to={`/agreements/edit/${agreementId}?mode=edit`}>
                     <FontAwesomeIcon
                         icon={faPen}
