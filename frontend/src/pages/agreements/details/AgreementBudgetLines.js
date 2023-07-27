@@ -8,6 +8,9 @@ import AgreementDetailHeader from "./AgreementDetailHeader";
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const AgreementBudgetLines = ({ agreement }) => {
+    const handlePlanorExecute = () => {
+        alert("Not yet implemented");
+    };
     return (
         <>
             <AgreementDetailHeader
@@ -20,6 +23,11 @@ export const AgreementBudgetLines = ({ agreement }) => {
             ) : (
                 <p>No budget lines.</p>
             )}
+            <div className="grid-row flex-justify-end margin-top-1">
+                <button className="usa-button float-right margin-top-4 margin-right-0" onClick={handlePlanorExecute}>
+                    Plan or Execute Budget Lines
+                </button>
+            </div>
         </>
     );
 };
