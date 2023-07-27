@@ -1,6 +1,7 @@
 import datetime
+
 import pytest
-from models import AgreementType, ContractAgreement, ContractType, BudgetLineItem, BudgetLineItemStatus
+from models import AgreementType, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ContractType
 from ops_api.ops.resources.agreements import AgreementData
 from pytest_bdd import given, scenario, then, when
 
@@ -104,6 +105,7 @@ def test_successful_edit_bli_draft():
 def test_failed_edit_execution_bli():
     pass
 
+
 @given("I am a logged in as an OPS user", target_fixture="client")
 def client(auth_client):
     return auth_client
@@ -177,6 +179,7 @@ def invalid(submit_response):
 @then("I should get an message that it was successful")
 def success(submit_response):
     assert submit_response.status_code == 200
+
 
 @then("the Agreement's budget line items are all now Draft")
 def draft_check(client, contract_agreement):
