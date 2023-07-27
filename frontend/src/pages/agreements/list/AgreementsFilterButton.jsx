@@ -30,11 +30,44 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         });
     }, [setFilters]);
 
+    const resetFilter = (event) => {
+        setFilters({
+            upcomingNeedByDate: null,
+            project: {},
+            projectOfficer: null,
+            type: null,
+            procurementShop: {},
+            budgetLineStatus: {
+                draft: false,
+                planned: false,
+                executing: false,
+                obligated: false,
+            },
+        });
+        setProject({});
+        setPO({});
+        setAgreementType({});
+        setProcurementShop({});
+    };
+
     const handleRadioButtons = (event) => {
         setFilters((prevState) => {
             return {
                 ...prevState,
                 upcomingNeedByDate: event.target.id,
+            };
+        });
+    };
+
+    const handleBudgetLineStatus = (event) => {
+        console.log("event.target.id", event.target.id);
+        setFilters((prevState) => {
+            return {
+                ...prevState,
+                budgetLineStatus: {
+                    ...prevState.budgetLineStatus,
+                    [event.target.id]: event.target.checked,
+                },
             };
         });
     };
@@ -87,7 +120,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
     return (
         <div className={customStyles.container} id="filter-container">
             <button
-                className={`usa-button display-flex flex-align-center ${customStyles.filterButton}`}
+                className={`usa-button display-flex flex-align-center ${customStyles.filterButton} margin-right-0`}
                 onClick={() => setShowModal(true)}
             >
                 <svg
@@ -102,7 +135,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                 isOpen={showModal}
                 onRequestClose={() => setShowModal(false)}
                 parentSelector={() => document.querySelector("#filter-container")}
-                className={customStyles.agreementsFilterModal}
+                className={`${customStyles.agreementsFilterModal} ${customStyles.modalBackgroundColor}`}
                 overlayClassName={customStyles.agreementsFilterOverlay}
             >
                 <div className="margin-left-2">
@@ -210,7 +243,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                         </fieldset>
                     </div>
                     <div>
-                        <fieldset className="usa-fieldset" style={{ width: "363px" }}>
+                        <fieldset className="usa-fieldset margin-bottom-205" style={{ width: "363px" }}>
                             <ProcurementShopSelect
                                 selectedProcurementShop={procurementShop || {}}
                                 onChangeSelectedProcurementShop={setProcurementShop}
@@ -219,13 +252,78 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                         </fieldset>
                     </div>
                     <div>
-                        <h3>Budget Line Status</h3>
+                        <fieldset className="usa-fieldset margin-bottom-205">
+                            <legend className={`usa-legend font-sans-3xs ${customStyles.legendColor}`}>
+                                Budget Line Status
+                            </legend>
+                            <div className="display-flex">
+                                <div className="padding-right-9">
+                                    <div
+                                        className={`usa-checkbox display-flex flex-align-center padding-bottom-1 ${customStyles.modalBackgroundColor}`}
+                                    >
+                                        <input
+                                            className="usa-checkbox__input height-3 width-3"
+                                            id="draft"
+                                            type="checkbox"
+                                            name="budget-line-status"
+                                            defaultChecked={filters.budgetLineStatus.draft === true}
+                                            onChange={handleBudgetLineStatus}
+                                            value={filters.budgetLineStatus.draft}
+                                        />
+                                        <label className="usa-checkbox__label" htmlFor="draft">
+                                            Draft
+                                        </label>
+                                    </div>
+                                    <div className="usa-checkbox display-flex flex-align-center">
+                                        <input
+                                            className="usa-checkbox__input height-3 width-3"
+                                            id="planned"
+                                            type="checkbox"
+                                            name="budget-line-status"
+                                            onChange={handleBudgetLineStatus}
+                                            value={filters.budgetLineStatus.planned}
+                                        />
+                                        <label className="usa-checkbox__label" htmlFor="planned">
+                                            Planned
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="">
+                                    <div className="usa-checkbox display-flex flex-align-center padding-bottom-1">
+                                        <input
+                                            className="usa-checkbox__input height-3 width-3"
+                                            id="executing"
+                                            type="checkbox"
+                                            name="budget-line-status"
+                                            onChange={handleBudgetLineStatus}
+                                            value={filters.budgetLineStatus.executing}
+                                        />
+                                        <label className="usa-checkbox__label" htmlFor="executing">
+                                            Executing
+                                        </label>
+                                    </div>
+                                    <div className="usa-checkbox display-flex flex-align-center">
+                                        <input
+                                            className="usa-checkbox__input height-3 width-3"
+                                            id="obligated"
+                                            type="checkbox"
+                                            name="budget-line-status"
+                                            onChange={handleBudgetLineStatus}
+                                            value={filters.budgetLineStatus.obligated}
+                                        />
+                                        <label className="usa-checkbox__label" htmlFor="obligated">
+                                            Obligated
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
                     </div>
-                    <div>
-                        <button onClick={() => setShowModal(false)}>
-                            <span>Reset</span>
+                    <div className="display-flex flex-justify-end padding-right-1">
+                        <button className="usa-button usa-button--outline" onClick={resetFilter}>
+                            <span className="">Reset</span>
                         </button>
-                        <button onClick={() => setShowModal(false)}>
+                        <button className="usa-button usa-button--primary" onClick={() => setShowModal(false)}>
                             <span>Apply</span>
                         </button>
                     </div>

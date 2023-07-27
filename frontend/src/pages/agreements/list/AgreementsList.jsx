@@ -24,7 +24,12 @@ export const AgreementsList = () => {
         projectOfficer: null,
         type: null,
         procurementShop: {},
-        budgetLineStatus: [],
+        budgetLineStatus: {
+            draft: false,
+            planned: false,
+            executing: false,
+            obligated: false,
+        },
     });
 
     const {
