@@ -25,17 +25,15 @@ Feature: Edit Agreement Metadata
 
   Scenario: Failed Edit because In Execution
     Given I am a logged in as an OPS user
-    And I have a Contract Agreement
-    And the Agreement has a budget line item that's in execution.
+    And I have a Contract Agreement with a BLI in execution
     And I edit the agreement to change a value
     When I submit the agreement
-    Then I should get an message that it was successful
+    Then I should get an error message that it's invalid
 
-  Scenario: Successful Edit Non-Draft BLI.
+  Scenario: Successful Edit Non-Draft BLI
     Given I am a logged in as an OPS user
-    And I have a Contract Agreement
-    And the Agreement has a budget line item that's not in Draft
+    And I have a Contract Agreement with a BLI in planned
     And I edit the agreement to change a value
     When I submit the agreement
     Then I should get an message that it was successful
-    Then the Agreement's budget line items are all now Draft.
+    And the Agreement's budget line items are all now Draft
