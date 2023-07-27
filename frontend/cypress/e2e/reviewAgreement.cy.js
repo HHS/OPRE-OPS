@@ -133,13 +133,13 @@ it("review an agreement", () => {
         cy.get("#enteredYear").clear();
         cy.get("#enteredYear").type(`${year - 1}`);
         // check for date to be in the future  which should error
-        cy.get(".text-error").should("exist");
+        cy.get('[data-cy="date-group-errors"] .usa-error-message').should("exist");
         // fix by adding a valid date
         cy.get("#enteredDay").clear();
         cy.get("#enteredDay").type(day + 1);
         cy.get("#enteredYear").clear();
         cy.get("#enteredYear").type(`${year + 1}`);
-        cy.get(".text-error").should("not.exist");
+        cy.get('[data-cy="date-group-errors"] .usa-error-message').should("not.exist");
         // add entered amount and clear it
         cy.get("#enteredAmount").type(`${blData[0].amount}`);
         cy.get("#enteredAmount").clear();
@@ -185,7 +185,7 @@ it("review an agreement", () => {
         cy.get("tbody").children().as("table-rows").should("have.length", 2);
         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
         cy.get("[data-cy='edit-row']").click();
-        cy.get(".usa-form-group--error").should("have.length", 2);
+        cy.get(".usa-form-group--error").should("have.length", 3);
         cy.get('[data-cy="update-budget-line"]').should("be.disabled");
         // fix errors
         cy.get("#selectedCan").type(`${blData[0].can}{enter}`);
