@@ -208,3 +208,25 @@ def test_history_expanded_with_web_client(auth_client, loaded_db):
     assert result.original["description"] == patch_data["description"]
     assert result.original["notes"] == patch_data["notes"]
     assert len(result.diff) == 0
+
+
+@pytest.mark.parametrize(
+    "class_name,row_key,expected_status",
+    [
+        (None, None, 404),
+        ("BudgetLineItem", "21", 404),  # Something that doesn't exist in the history.
+    ],
+)
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_get_history_list(auth_client, class_name, row_key, expected_status):
+    url = "/api/v1/ops-db-histories/"
+    params = []
+    if class_name is not None:
+        params.append(f"class_name={class_name}")
+    if row_key is not None:
+        params.append(f"row_key={row_key}")
+    if params:
+        url += "?" + "&".join(params)
+    response = auth_client.get(url)
+    assert response.status_code == expected_status
