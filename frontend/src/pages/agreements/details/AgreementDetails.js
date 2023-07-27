@@ -29,7 +29,7 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
             <div className="display-flex flex-justify flex-align-center">
                 <h2 className="font-sans-lg">Agreement Summary</h2>
 
-                <Link to={"/agreements/edit/" + agreement.id + "?mode=edit"}>
+                <Link to={"/agreements/" + agreement.id + "/details/edit"}>
                     <FontAwesomeIcon
                         icon={faPen}
                         className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"

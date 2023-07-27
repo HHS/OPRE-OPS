@@ -5,7 +5,7 @@ import CreateAgreementFlow from "./CreateAgreementFlow";
 import StepSelectProject from "./StepSelectProject";
 import StepCreateAgreement from "./StepCreateAgreement";
 import StepCreateBudgetLines from "../../components/UI/WizardSteps/StepCreateBudgetLines";
-import { useCreateAgreement } from "./CreateAgreementContext";
+import { useEditAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import { setAlert } from "../../components/UI/Alert/alertSlice";
 
 /**
@@ -18,7 +18,7 @@ import { setAlert } from "../../components/UI/Alert/alertSlice";
 export const CreateAgreement = ({ existingBudgetLines }) => {
     const [isEditMode, setIsEditMode] = React.useState(false);
     const [isReviewMode, setIsReviewMode] = React.useState(false);
-    const createAgreementContext = useCreateAgreement();
+    const createAgreementContext = useEditAgreement();
     const globalDispatch = useDispatch();
 
     const location = useLocation();
@@ -50,8 +50,6 @@ export const CreateAgreement = ({ existingBudgetLines }) => {
             <StepSelectProject isEditMode={isEditMode} isReviewMode={isReviewMode} />
             <StepCreateAgreement isEditMode={isEditMode} isReviewMode={isReviewMode} />
             <StepCreateBudgetLines
-                wizardSteps={wizardSteps}
-                currentStep={3}
                 selectedResearchProject={selectedResearchProject}
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}

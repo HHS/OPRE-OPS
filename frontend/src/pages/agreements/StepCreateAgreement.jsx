@@ -16,11 +16,11 @@ import { formatTeamMember, postAgreement } from "../../api/postAgreements";
 import ProjectSummaryCard from "../../components/ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";
 import ProductServiceCodeSummaryBox from "../../components/UI/Form/ProductServiceCodeSummaryBox";
 import {
-    useCreateAgreement,
+    useEditAgreement,
     useSetState,
     useUpdateAgreement,
-    useCreateAgreementDispatch,
-} from "./CreateAgreementContext";
+    useEditAgreementDispatch,
+} from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import { setAlert } from "../../components/UI/Alert/alertSlice";
 import { patchAgreement } from "../../api/patchAgreements";
 import suite from "./stepCreateAgreementSuite";
@@ -38,7 +38,7 @@ import { useGetProductServiceCodesQuery } from "../../api/opsAPI";
  * @param {boolean} [props.isEditMode] - Whether the form is in edit mode. - optional
  * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
  */
-export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode }) => {
+export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode, wizardSteps, currentStep }) => {
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setSelectedProductServiceCode = useSetState("selected_product_service_code");
@@ -60,17 +60,16 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode
     const [modalProps, setModalProps] = React.useState({});
 
     const navigate = useNavigate();
-    const dispatch = useCreateAgreementDispatch();
+    const dispatch = useEditAgreementDispatch();
     const globalDispatch = useDispatch();
 
     const {
-        wizardSteps,
         selected_project: selectedResearchProject,
         agreement,
         selected_procurement_shop: selectedProcurementShop,
         selected_product_service_code: selectedProductServiceCode,
         selected_project_officer: selectedProjectOfficer,
-    } = useCreateAgreement();
+    } = useEditAgreement();
     const {
         notes: agreementNotes,
         incumbent: agreementIncumbent,

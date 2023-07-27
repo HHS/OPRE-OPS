@@ -7,6 +7,7 @@ import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs/DetailsTabs";
 import AgreementDetails from "./AgreementDetails";
 import AgreementBudgetLines from "./AgreementBudgetLines";
+import AgreementDetailsEdit from "./AgreementDetailsEdit";
 
 const Agreement = () => {
     const urlPathParams = useParams();
@@ -61,6 +62,10 @@ const Agreement = () => {
                     <Route
                         path=""
                         element={<AgreementDetails agreement={agreement} projectOfficer={projectOfficer} />}
+                    />
+                    <Route
+                        path="details/edit"
+                        element={<AgreementDetailsEdit agreement={agreement} projectOfficer={projectOfficer} />}
                     />
                     <Route path="budget-lines" element={<AgreementBudgetLines agreement={agreement} />} />
                 </Routes>
