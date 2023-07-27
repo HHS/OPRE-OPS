@@ -1,15 +1,19 @@
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { AgreementTableRow } from "./AgreementTableRow";
+import { Router } from "react-router-dom";
+import { createMemoryHistory } from "history";
 
-jest.mock("react-router-dom", () => ({
-    ...jest.requireActual("react-router-dom"),
-    useNavigate: () => jest.fn(),
-}));
+const history = createMemoryHistory();
 
 jest.mock("react", () => ({
     ...jest.requireActual("react"),
     useState: () => [null, jest.fn()],
+}));
+
+jest.mock("react-router-dom", () => ({
+    ...jest.requireActual("react-router-dom"),
+    useNavigate: () => jest.fn(),
 }));
 
 // This will reset all mocks after each test
@@ -36,13 +40,14 @@ describe("AgreementTableRow", () => {
 
     test("renders correctly", () => {
         render(
-            <table>
-                <tbody>
-                    <AgreementTableRow agreement={agreement} />
-                </tbody>
-            </table>
+            <Router location={history.location} navigator={history}>
+                <table>
+                    <tbody>
+                        <AgreementTableRow agreement={agreement} />
+                    </tbody>
+                </table>
+            </Router>
         );
-
         expect(screen.getByText("Test Agreement")).toBeInTheDocument();
         expect(screen.getByText("Test Project")).toBeInTheDocument();
         expect(screen.getByText("Grant")).toBeInTheDocument();
