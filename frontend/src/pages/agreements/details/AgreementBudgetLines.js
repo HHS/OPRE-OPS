@@ -1,4 +1,5 @@
 import PropTypes from "prop-types";
+import { Link } from "react-router-dom";
 import PreviewTable from "../../../components/UI/PreviewTable/PreviewTable";
 import AgreementDetailHeader from "./AgreementDetailHeader";
 /**
@@ -8,9 +9,6 @@ import AgreementDetailHeader from "./AgreementDetailHeader";
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const AgreementBudgetLines = ({ agreement }) => {
-    const handlePlanorExecute = () => {
-        alert("Not yet implemented");
-    };
     return (
         <>
             <AgreementDetailHeader
@@ -24,9 +22,12 @@ export const AgreementBudgetLines = ({ agreement }) => {
                 <p>No budget lines.</p>
             )}
             <div className="grid-row flex-justify-end margin-top-1">
-                <button className="usa-button float-right margin-top-4 margin-right-0" onClick={handlePlanorExecute}>
+                <Link
+                    className="usa-button float-right margin-top-4 margin-right-0"
+                    to={`/agreements/approve/${agreement?.id}`}
+                >
                     Plan or Execute Budget Lines
-                </button>
+                </Link>
             </div>
         </>
     );
