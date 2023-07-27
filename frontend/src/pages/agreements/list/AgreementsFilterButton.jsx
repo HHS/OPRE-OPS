@@ -121,7 +121,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         <div className={customStyles.container} id="filter-container">
             <button
                 className={`usa-button display-flex flex-align-center ${customStyles.filterButton} margin-right-0`}
-                onClick={() => setShowModal(true)}
+                onClick={() => (showModal ? setShowModal(false) : setShowModal(true))}
             >
                 <svg
                     className="height-2 width-2 margin-right-05 hover: cursor-pointer usa-tooltip"
