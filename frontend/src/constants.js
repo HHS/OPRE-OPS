@@ -13,6 +13,17 @@ const constants = {
         "#429195",
     ],
     fiscalYears: [2020, 2021, 2022, 2023, 2024],
+    barChartColors: [
+        {
+            color: "hsla(153, 49%, 47%, 1)",
+        },
+        {
+            color: "hsla(157, 33%, 72%, 1)",
+        },
+        {
+            color: "hsla(116, 44%, 32%, 1)",
+        },
+    ],
 };
 
 export default constants;

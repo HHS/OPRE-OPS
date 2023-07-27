@@ -23,6 +23,7 @@ import CreateAgreements from "./pages/agreements";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
 import { CreateProject } from "./pages/projects/CreateProject";
 import { AgreementsList } from "./pages/agreements/list/AgreementsList";
+import Agreement from "./pages/agreements/details/Agreement";
 import EditAgreement from "./pages/agreements/EditAgreement";
 import { ApproveAgreement } from "./pages/agreements/approve/ApproveAgreement";
 
@@ -66,7 +67,7 @@ const router = createBrowserRouter(
                     <Route path="people-and-teams" element={<PeopleAndTeams />} />
                 </Route>
                 <Route
-                    path="/research-projects/:id"
+                    path="/research-projects/:id/*"
                     element={<ResearchProjectDetail />}
                     handle={{
                         // you can put whatever you want on a route handle
@@ -83,7 +84,7 @@ const router = createBrowserRouter(
                     }}
                 />
                 <Route
-                    path="/users/:id"
+                    path="/users/:id/*"
                     element={<UserDetail />}
                     handle={{
                         crumb: () => (
@@ -95,10 +96,29 @@ const router = createBrowserRouter(
                         ),
                     }}
                 />
+                <Route
+                    path="/agreements/:id/*"
+                    element={<Agreement />}
+                    handle={{
+                        // you can put whatever you want on a route handle
+                        // here we use "crumb" and return some elements,
+                        // this is what we'll render in the breadcrumbs
+                        // for this route
+                        crumb: () => (
+                            <Link to="/agreements" className="text-primary">
+                                Agreements
+                            </Link>
+                        ),
+                    }}
+                >
+                    {/*/!* Default to BudgetAndFunding *!/*/}
+                    {/*<Route exact path="" element={<Navigate to={"budget-and-funding"} />} />*/}
+                    <Route path="budget-lines" element={<Agreement />} />
+                </Route>
             </Route>
             <Route element={<ProtectedRoute redirectPath="/cans" />}>
                 <Route
-                    path="/cans/:id"
+                    path="/cans/:id/*"
                     element={<CanDetail />}
                     handle={{
                         // you can put whatever you want on a route handle
@@ -121,8 +141,8 @@ const router = createBrowserRouter(
                 <Route path="/agreements/create" element={<CreateAgreements />} />
                 <Route path="/projects/create" element={<CreateProject />} />
                 <Route path="/agreements" element={<AgreementsList />} />
-                <Route path="/agreements/edit/:id" element={<EditAgreement />} />
-                <Route path="/agreements/approve/:id" element={<ApproveAgreement />} />
+                <Route path="/agreements/edit/:id/*" element={<EditAgreement />} />
+                <Route path="/agreements/approve/:id/*" element={<ApproveAgreement />} />
             </Route>
         </>
     )
