@@ -7,6 +7,7 @@ import ProjectSelect from "../../../components/UI/Form/ProjectSelect";
 import ProjectOfficerSelect from "../../../components/UI/Form/ProjectOfficerSelect";
 import AgreementTypeSelect from "../../../components/UI/Form/AgreementTypeSelect";
 import ProcurementShopSelect from "../../../components/UI/Form/ProcurementShopSelect";
+import _ from "lodash";
 
 /**
  * Page for the Agreements List.
@@ -19,7 +20,11 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
     const [agreementType, setAgreementType] = React.useState({});
     const [procurementShop, setProcurementShop] = React.useState({});
 
-    const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
+    const {
+        data: projectData,
+        error: errorProjectData,
+        isLoading: isLoadingProjectData,
+    } = useGetResearchProjectsQuery();
 
     useEffect(() => {
         setFilters((prevState) => {
@@ -33,7 +38,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
     const resetFilter = () => {
         setFilters({
             upcomingNeedByDate: null,
-            project: {},
+            projects: [],
             projectOfficer: null,
             type: null,
             procurementShop: {},
@@ -74,10 +79,13 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
 
     useEffect(() => {
         setFilters((prevState) => {
-            return {
-                ...prevState,
-                project: project || {},
-            };
+            let updatedFilters = { ...prevState };
+            updatedFilters.projects = updatedFilters.projects || [];
+            updatedFilters.projects.push(project);
+            updatedFilters.projects = updatedFilters.projects.filter((filter) => !_.isEmpty(filter));
+            updatedFilters.projects = [...new Set(updatedFilters.projects)]; // remove dups
+
+            return updatedFilters;
         });
     }, [project, setFilters]);
 
@@ -108,10 +116,10 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         });
     }, [procurementShop, setFilters]);
 
-    if (isLoadingProjects) {
+    if (isLoadingProjectData) {
         return <div>Loading...</div>;
     }
-    if (errorProjects) {
+    if (errorProjectData) {
         return <div>Oops, an error occurred</div>;
     }
 
@@ -207,8 +215,8 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                     <div>
                         <fieldset className="usa-fieldset margin-bottom-205" style={{ width: "363px" }}>
                             <ProjectSelect
-                                researchProjects={projects}
-                                selectedResearchProject={project || {}}
+                                researchProjects={projectData}
+                                selectedResearchProject={project || []}
                                 setSelectedProject={setProject}
                                 legendClassname={`usa-legend font-sans-3xs margin-top-0 ${customStyles.legendColor}`}
                                 inputBoxClassname="margin-top-0"

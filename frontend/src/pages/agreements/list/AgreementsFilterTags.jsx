@@ -14,7 +14,7 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
 
     const FilterTag = ({ tag }) => (
         <div
-            className="font-12px height-205 radius-md bg-brand-primary-light display-flex flex-align-center padding-right-205"
+            className="font-12px height-205 radius-md bg-brand-primary-light display-flex flex-align-center"
             style={{ width: "fit-content", padding: "5px" }}
         >
             {tag.tagText}
@@ -55,13 +55,24 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
             break;
     }
 
+    const selectedProjects = [];
+    filters.projects.forEach((project) => {
+        selectedProjects.push(project.title);
+    });
+    if (selectedProjects.length > 0) {
+        tagsList.push({
+            tagText: `Project: ${selectedProjects.join(", ")}`,
+            filter: "projects",
+        });
+    }
+
     return (
         <div>
             {tagsList.map((tag, index) => {
                 return (
-                    <div key={index}>
+                    <span key={index} className="padding-right-205 padding-bottom-1">
                         <FilterTag tag={tag} />
-                    </div>
+                    </span>
                 );
             })}
         </div>
