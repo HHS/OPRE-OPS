@@ -142,60 +142,43 @@
         "PUT_AGREEMENT",
         "PATCH_AGREEMENT",
         "DELETE_AGREEMENT",
-
-        "GET_AGREEMENTS",
-        "POST_AGREEMENTS",
+        "POST_AGREEMENT",
 
         "GET_BUDGET_LINE_ITEM",
         "PUT_BUDGET_LINE_ITEM",
         "PATCH_BUDGET_LINE_ITEM",
-
-        "GET_BUDGET_LINE_ITEMS",
-        "POST_BUDGET_LINE_ITEMS",
+        "POST_BUDGET_LINE_ITEM",
 
         "GET_CAN",
-        "GET_CANS",
 
         "GET_DIVISION",
-        "GET_DIVISIONS",
 
         "GET_NOTIFICATION",
         "PUT_NOTIFICATION",
         "PATCH_NOTIFICATION",
 
-        "GET_NOTIFICATIONS",
-
         "GET_PORTFOLIO",
-        "GET_PORTFOLIOS",
 
         "GET_RESEARCH_PROJECT",
-
-        "GET_RESEARCH_PROJECTS",
-        "POST_RESEARCH_PROJECTS",
+        "POST_RESEARCH_PROJECT",
 
         "GET_USER",
-        "GET_USERS",
+
+        "GET_HISTORY",
       ],
     },
     {
       name: "user",
       permissions: [
         "GET_AGREEMENT",
-        "GET_AGREEMENTS",
         "GET_BUDGET_LINE_ITEM",
-        "GET_BUDGET_LINE_ITEMS",
         "GET_CAN",
-        "GET_CANS",
         "GET_DIVISION",
-        "GET_DIVISIONS",
         "GET_NOTIFICATION",
-        "GET_NOTIFICATIONS",
         "GET_PORTFOLIO",
-        "GET_PORTFOLIOS",
         "GET_RESEARCH_PROJECT",
-        "GET_RESEARCH_PROJECTS",
         "GET_USER",
-        "GET_USERS",
+        "GET_HISTORY",
       ],
     },
   ],
