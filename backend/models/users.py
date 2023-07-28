@@ -16,6 +16,15 @@ user_role_table = Table(
 )
 
 
+# Define a many-to-many relationship between Users and Roles
+user_group_table = Table(
+    "user_group",
+    BaseModel.metadata,
+    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
+    Column("group_id", Integer, ForeignKey("groups.id"), primary_key=True),
+)
+
+
 class User(BaseModel):
     """Main User model."""
 
@@ -84,3 +93,12 @@ class Role(BaseModel):
     name = Column(String, index=True, nullable=False)
     permissions = Column(String, nullable=False)
     users = relationship("User", secondary=user_role_table, back_populates="roles")
+
+
+class Group(BaseModel):
+    """Main Group model."""
+
+    __tablename__ = "groups"
+    id = Column(Integer, Identity(always=True, start=1, cycle=True), primary_key=True)
+    name = Column(String, index=True, nullable=False)
+    users = relationship("User", secondary=user_role_table, back_populates="groups")
