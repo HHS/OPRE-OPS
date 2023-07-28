@@ -1,16 +1,16 @@
-from enum import auto, Enum
-from functools import wraps
 import time
 import uuid
+from enum import Enum, auto
+from functools import wraps
 from typing import Callable, Optional
 
 from authlib.integrations.flask_client import OAuth
 from authlib.jose import jwt as jose_jwt
-from flask import current_app, Response
+from flask import Response, current_app
 from flask_jwt_extended import JWTManager, get_jwt_identity, jwt_required
 from models.users import User
-from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.authorization import AuthorizationGateway, BasicAuthorizationPrivider
+from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
 
 jwtMgr = JWTManager()
@@ -19,11 +19,11 @@ auth_gateway = AuthorizationGateway(BasicAuthorizationPrivider())
 
 
 class PermissionType(Enum):
-    GET = auto()
-    PUT = auto()
-    PATCH = auto()
     DELETE = auto()
+    GET = auto()
+    PATCH = auto()
     POST = auto()
+    PUT = auto()
 
 
 class Permission(Enum):
@@ -31,6 +31,7 @@ class Permission(Enum):
     BUDGET_LINE_ITEM = auto()
     CAN = auto()
     DIVISION = auto()
+    HISTORY = auto()
     NOTIFICATION = auto()
     PORTFOLIO = auto()
     RESEARCH_PROJECT = auto()

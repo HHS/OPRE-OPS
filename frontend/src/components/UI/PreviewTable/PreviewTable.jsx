@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import TotalSummaryCard from "./TotalSummaryCard";
-import { formatDate, loggedInName } from "../../../helpers/utils";
+import { formatDate, loggedInName, fiscalYearFromDate } from "../../../helpers/utils";
 import TableTag from "./TableTag";
 import "./PreviewTable.scss";
 
@@ -49,10 +49,7 @@ export const PreviewTable = ({
         if (bl?.date_needed !== "--" && bl?.date_needed !== null) {
             let date_needed = new Date(bl?.date_needed);
             formatted_date_needed = formatDate(date_needed);
-            // FY will automate based on the Need by Date. Anything after September 30th rolls over into the next FY.
-            let month = date_needed.getMonth();
-            let year = date_needed.getFullYear();
-            fiscalYear = month > 8 ? year + 1 : year;
+            fiscalYear = fiscalYearFromDate(bl?.date_needed);
         }
         let feeTotal = bl?.amount * bl?.psc_fee_amount;
         let total = bl?.amount + feeTotal;
