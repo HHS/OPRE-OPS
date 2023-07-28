@@ -1,13 +1,12 @@
 import React from "react";
-import { login, setUserDetails } from "./authSlice";
+import { useState } from "react";
+import { login } from "./authSlice";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import cryptoRandomString from "crypto-random-string";
 import { getAuthorizationCode } from "./auth";
-import jwt_decode from "jwt-decode";
 import { apiLogin } from "../../api/apiLogin";
 import ContainerModal from "../UI/Modals/ContainerModal";
-import { useGetUserByOIDCIdQuery } from "../../api/opsAPI";
 import { setActiveUser } from "./auth";
 
 // async function setActiveUser(token, dispatch) {
@@ -24,26 +23,33 @@ import { setActiveUser } from "./auth";
 const MultiAuthSection = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const [showModal, setShowModal] = React.useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const activeProvider = sessionStorage.getItem("activeProvider") || null;
+
     const callBackend = React.useCallback(
         async (authCode) => {
             console.log(`Received Authentication Code = ${authCode}`);
 
-            const response = await apiLogin(authCode);
-            console.debug(`API Login Response = ${response}`);
+            const response = await apiLogin(activeProvider, authCode);
+            console.debug(`API Login Response = ${JSON.stringify(response)}`);
+            if (!response.access_token === undefined) {
+                localStorage.setItem("access_token", response.access_token);
+                dispatch(login());
 
-            localStorage.setItem("access_token", response.access_token);
-            dispatch(login());
-            if (response.is_new_user) {
-                navigate("/user/edit");
-                return;
+                if (response.is_new_user) {
+                    navigate("/user/edit");
+                    return;
+                }
+
+                await setActiveUser(response.access_token, dispatch);
+
+                navigate("/");
+            } else {
+                console.error("API Login Failed!");
+                navigate("/login");
             }
-
-            await setActiveUser(response.access_token, dispatch);
-
-            navigate("/");
         },
-        [dispatch, navigate]
+        [activeProvider, dispatch, navigate]
     );
 
     React.useEffect(() => {
@@ -109,6 +115,13 @@ const MultiAuthSection = () => {
         navigate("/");
     };
 
+    const handleSSOLogin = (provider) => {
+        console.debug(`Logging in with SSO: ${provider}`);
+        window.location.href = getAuthorizationCode(provider, localStorage.getItem("ops-state-key"));
+        sessionStorage.setItem("activeProvider", provider);
+        console.debug(`Setting Provider State: ${sessionStorage.getItem("activeProvider")}`);
+    };
+
     return (
         <>
             <div className="bg-white padding-y-3 padding-x-5 border border-base-lighter">
@@ -121,12 +134,7 @@ const MultiAuthSection = () => {
                 <p>
                     <button
                         className="usa-button usa-button--outline width-full"
-                        onClick={() =>
-                            (window.location.href = getAuthorizationCode(
-                                "logingov",
-                                localStorage.getItem("ops-state-key")
-                            ))
-                        }
+                        onClick={() => handleSSOLogin("logingov")}
                     >
                         Sign in with Login.gov
                     </button>
@@ -134,12 +142,7 @@ const MultiAuthSection = () => {
                 <p>
                     <button
                         className="usa-button usa-button--outline width-full"
-                        onClick={() =>
-                            (window.location.href = getAuthorizationCode(
-                                "hhsams",
-                                localStorage.getItem("ops-state-key")
-                            ))
-                        }
+                        onClick={() => handleSSOLogin("hhsams")}
                     >
                         Sign in with HHS AMS
                     </button>

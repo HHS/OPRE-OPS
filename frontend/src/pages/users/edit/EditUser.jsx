@@ -7,6 +7,7 @@ import App from "../../../App";
 import { Breadcrumb } from "../../../components/UI/Header/Breadcrumb";
 import { setUser } from "./userSlice";
 import UserInfoForm from "../../../components/Users/UserInfoForm/UserInfoForm";
+import EditUserForm from "../../../components/UI/Form/EditUserForm/EditUserForm";
 
 const UserDetail = () => {
     const dispatch = useDispatch();
@@ -27,7 +28,8 @@ const UserDetail = () => {
         <>
             <App>
                 <Breadcrumb currentName={user?.email} />
-                <UserInfoForm user={user} />
+                <EditUserForm user={user} />
+                {/* <UserInfoForm user={user} /> */}
             </App>
         </>
     );

@@ -35,7 +35,7 @@ const UserInfo = () => {
                         </tr>
                         <tr>
                             <td>Role(s)</td>
-                            <td>: {user?.role}</td>
+                            <td>: {user?.roles}</td>
                         </tr>
                         <tr>
                             <td>Division(s)</td>

@@ -11,9 +11,19 @@ import cx from "clsx";
  * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
  * @param {string} [props.value] - The value of the input field.(optional)
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
+ * @param {boolean} [props.disabled] - A flag to indicate if the input is disabled (optional).
  * @returns {JSX.Element} - The rendered input component.
  */
-const Input = ({ name, label = name, onChange, pending = false, messages = [], value, className }) => {
+const Input = ({
+    name,
+    label = name,
+    onChange,
+    pending = false,
+    messages = [],
+    value,
+    className,
+    disabled = false,
+}) => {
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>
             <label className={`usa-label ${messages.length ? "usa-label--error" : null} `} htmlFor={name}>
@@ -32,6 +42,7 @@ const Input = ({ name, label = name, onChange, pending = false, messages = [], v
                 autoComplete="off"
                 autoCorrect="off"
                 value={value}
+                disabled={disabled}
             />
         </div>
     );

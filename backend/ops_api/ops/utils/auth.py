@@ -7,7 +7,7 @@ from typing import Callable, Optional
 
 import requests
 from authlib.integrations.flask_client import OAuth
-from authlib.jose import JsonWebToken, JWTClaims
+from authlib.jose import JsonWebToken
 from authlib.jose import jwt as jose_jwt
 from flask import Response, current_app
 from flask_jwt_extended import JWTManager, get_jwt_identity, jwt_required
@@ -56,6 +56,7 @@ def user_lookup_callback(_jwt_header: dict, jwt_data: dict) -> Optional[User]:
 
 
 def create_oauth_jwt(
+    provider: str,
     key: Optional[str] = None,
     header: Optional[str] = None,
     payload: Optional[str] = None,
@@ -75,11 +76,12 @@ def create_oauth_jwt(
     current_app.logger.debug(f"expire={expire}")
     # client_id = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"]["client_id"]
     _payload = payload or {
-        "iss": current_app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["client_id"],
-        "sub": current_app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["client_id"],
-        "aud": current_app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["aud"],
+        "iss": current_app.config["AUTHLIB_OAUTH_CLIENTS"][provider]["client_id"],
+        "sub": current_app.config["AUTHLIB_OAUTH_CLIENTS"][provider]["client_id"],
+        "aud": current_app.config["AUTHLIB_OAUTH_CLIENTS"][provider]["aud"],
         "jti": str(uuid.uuid4()),
         "exp": int(time.time()) + expire.seconds,
+        "sso": provider,
     }
     current_app.logger.debug(f"_payload={_payload}")
     _header = header or {"alg": "RS256"}
@@ -87,34 +89,37 @@ def create_oauth_jwt(
     return jws
 
 
-def get_jwks():
+def get_jwks(provider_metadata_url: str):
     provider_uris = json.loads(
         requests.get(
-            current_app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["server_metadata_url"],
+            provider_metadata_url,
             headers={"Accept": "application/json"},
         ).content.decode("utf-8")
     )
-    current_app.logger.debug(f"********  provider_uris={provider_uris}")
+    # current_app.logger.debug(f"********  provider_uris={provider_uris}")
     jwks_uri = provider_uris["jwks_uri"]
-    current_app.logger.debug(f"********  jwks_uri={jwks_uri}")
+    # current_app.logger.debug(f"********  jwks_uri={jwks_uri}")
     jwks = requests.get(jwks_uri).content.decode("utf-8")
-    current_app.logger.debug(f"********  jwks={jwks}")
+    # current_app.logger.debug(f"********  jwks={jwks}")
     return jwks
 
 
 def decode_user(
     payload: Optional[str] = None,
+    provider: Optional[str] = None,
 ) -> dict[str, str]:
-    claims_options = {
-        "iss": {
-            "essential": True,
-            "values": ["https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO"],
-        },
-        "jti": {"validate": JWTClaims.validate_jti},
-        "exp": {"validate": JWTClaims.validate_exp},
-    }
+    # claims_options = {
+    #     "iss": {
+    #         "essential": True,
+    #         "values": current_app.config["AUTHLIB_OAUTH_CLIENTS"][provider]["client_id"],
+    #     },
+    #     "jti": {"validate": JWTClaims.validate_jti},
+    #     "exp": {"validate": JWTClaims.validate_exp},
+    # }
     jwt = JsonWebToken(["RS256"])
-    claims = jwt.decode(payload, get_jwks(), claims_options=claims_options)
+    # claims = jwt.decode(payload, get_jwks(provider), claims_options=claims_options)
+    current_app.logger.debug(f"********  payload={payload}")
+    claims = jwt.decode(payload, get_jwks(provider))
     current_app.logger.debug(f"********  claims={claims}")
     return claims
 

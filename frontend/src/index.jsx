@@ -108,6 +108,19 @@ const router = createBrowserRouter(
                     }}
                 />
                 <Route
+                    path="/users/edit"
+                    element={<EditUser />}
+                    handle={{
+                        crumb: () => (
+                            <div>
+                                <Link to="/" className="text-primary">
+                                    Edit User
+                                </Link>
+                            </div>
+                        ),
+                    }}
+                />
+                <Route
                     path="/cans/:id"
                     element={<CanDetail />}
                     handle={{
