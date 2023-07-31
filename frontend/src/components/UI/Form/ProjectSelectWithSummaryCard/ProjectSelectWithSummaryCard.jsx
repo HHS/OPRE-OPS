@@ -1,7 +1,12 @@
 import PropTypes from "prop-types";
 import ProjectSelect from "../ProjectSelect";
 
-export const ProjectSelectWithSummaryCard = ({ researchProjects, selectedResearchProject, setSelectedProject }) => {
+export const ProjectSelectWithSummaryCard = ({
+    researchProjects,
+    selectedResearchProject,
+    setSelectedProject,
+    setAgreementProjectId,
+}) => {
     const ProjectSummaryCard = ({ selectedResearchProject }) => {
         const { title, description } = selectedResearchProject;
         return (
@@ -33,6 +38,7 @@ export const ProjectSelectWithSummaryCard = ({ researchProjects, selectedResearc
             {/* NOTE: Left side */}
             <ProjectSelect
                 setSelectedProject={setSelectedProject}
+                setAgreementProjectId={setAgreementProjectId}
                 researchProjects={researchProjects}
                 selectedResearchProject={selectedResearchProject}
             />
@@ -52,4 +58,5 @@ ProjectSelectWithSummaryCard.propTypes = {
     researchProjects: PropTypes.array.isRequired,
     selectedResearchProject: PropTypes.object.isRequired,
     setSelectedProject: PropTypes.func.isRequired,
+    setAgreementProjectId: PropTypes.func,
 };

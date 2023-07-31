@@ -21,9 +21,10 @@ const DetailsTabs = ({ agreementId }) => {
 
     const links = paths.map((path) => {
         const pathName = `/agreements/${agreementId}${path.name}`;
+        const tabSelected = location.pathname == pathName;
 
         return (
-            <Link to={pathName} className={location.pathname === pathName ? selected : notSelected} key={pathName}>
+            <Link to={pathName} className={tabSelected ? selected : notSelected} key={pathName}>
                 {path.label}
             </Link>
         );
