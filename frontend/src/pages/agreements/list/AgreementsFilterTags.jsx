@@ -27,6 +27,9 @@ export const AgreementsFilterTags = ({ filters }) => {
             case "projects":
                 setTagsList((prevState) => prevState.filter((tag) => tag.filter !== "projects"));
                 break;
+            case "projectOfficers":
+                setTagsList((prevState) => prevState.filter((tag) => tag.filter !== "projectOfficers"));
+                break;
         }
     };
 
