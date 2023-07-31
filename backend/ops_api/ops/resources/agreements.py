@@ -4,7 +4,7 @@ from typing import Optional, ClassVar
 import desert
 from flask import Response, current_app, request
 from flask.views import MethodView
-from flask_jwt_extended import verify_jwt_in_request
+from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 from marshmallow import ValidationError, fields, Schema
 from models import ContractType, OpsEventType, User
 from models.base import BaseModel
@@ -134,6 +134,23 @@ class QueryParameters:
     research_project_id: Optional[int] = None
 
 
+def associated_with_agreement(self, id: int) -> bool:
+    jwt_identity = get_jwt_identity()
+    agreement_stmt = select(Agreement).where(Agreement.id == id)
+    agreement = current_app.db_session.scalar(agreement_stmt)
+
+    oidc_ids = set()
+    if agreement.created_by_user:
+        oidc_ids.add(str(agreement.created_by_user.oidc_id))
+    if agreement.project_officer_user:
+        oidc_ids.add(str(agreement.project_officer_user.oidc_id))
+    oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
+
+    ret = jwt_identity in oidc_ids
+
+    return ret
+
+
 class AgreementItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel = Agreement):
         super().__init__(model)
@@ -234,7 +251,7 @@ class AgreementItemAPI(BaseItemAPI):
             return make_response_with_headers({}, 500)
 
     @override
-    @is_authorized(PermissionType.DELETE, Permission.AGREEMENT)
+    @is_authorized(PermissionType.DELETE, Permission.AGREEMENT, extra_check=associated_with_agreement)
     def delete(self, id: int) -> Response:
         message_prefix = f"DELETE from {ENDPOINT_STRING}"
 

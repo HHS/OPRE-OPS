@@ -14,7 +14,7 @@ from datetime import datetime, date
 from ops_api.ops.utils.user import get_user_from_token
 
 
-DbRecordAudit = namedtuple("DbRecordDiff", "row_key original diff")
+DbRecordAudit = namedtuple("DbRecordAudit", "row_key original diff")
 
 
 def convert_for_jsonb(value):
