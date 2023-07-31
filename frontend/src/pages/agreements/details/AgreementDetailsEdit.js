@@ -1,9 +1,8 @@
 //
 
-import {Link, useNavigate} from "react-router-dom";
-import {EditAgreementProvider} from "../../../components/Agreements/AgreementEditor/AgreementEditorContext";
+import { EditAgreementProvider } from "../../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import AgreementEditForm from "../../../components/Agreements/AgreementEditor/AgreementEditForm";
-import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const AgreementDetailsEdit = ({ agreement, projectOfficer }) => {
     const navigate = useNavigate();
@@ -20,7 +19,10 @@ const AgreementDetailsEdit = ({ agreement, projectOfficer }) => {
         <div>
             <EditAgreementProvider agreement={agreement} projectOfficer={projectOfficer}>
                 <AgreementEditForm
-                    goBack={goBack} goToNext={goToNext} isEditMode={isEditMode} isReviewMode={isReviewMode}
+                    goBack={goBack}
+                    goToNext={goToNext}
+                    isEditMode={isEditMode}
+                    isReviewMode={isReviewMode}
                 />
             </EditAgreementProvider>
             <div style={{ background: "#cccccc", border: "1px dashed #999999" }}>

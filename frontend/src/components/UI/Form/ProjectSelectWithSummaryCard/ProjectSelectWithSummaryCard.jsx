@@ -1,7 +1,12 @@
 import PropTypes from "prop-types";
 import ProjectSelect from "../ProjectSelect";
 
-export const ProjectSelectWithSummaryCard = ({ researchProjects, selectedResearchProject, setSelectedProject, setAgreementProjectId }) => {
+export const ProjectSelectWithSummaryCard = ({
+    researchProjects,
+    selectedResearchProject,
+    setSelectedProject,
+    setAgreementProjectId,
+}) => {
     const ProjectSummaryCard = ({ selectedResearchProject }) => {
         const { title, description } = selectedResearchProject;
         return (

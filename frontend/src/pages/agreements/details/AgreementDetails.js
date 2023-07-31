@@ -2,10 +2,6 @@ import React from "react";
 import PropTypes from "prop-types";
 import AgreementTotalBudgetLinesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalBudgetLinesCard";
 import AgreementValuesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementValuesCard";
-import { convertCodeForDisplay } from "../../../helpers/utils";
-import Tag from "../../../components/UI/Tag/Tag";
-import { notesData, historyData } from "./data";
-import LogItem from "../../../components/UI/LogItem";
 import AgreementDetailHeader from "./AgreementDetailHeader";
 import AgreementDetailsView from "./AgreementDetailsView";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
@@ -49,10 +45,10 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
                 <AgreementValuesCard budgetLineItems={blis} />
             </div>
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
-            { isEditMode ? (
+            {isEditMode ? (
                 <AgreementDetailsEdit agreement={agreement} projectOfficer={projectOfficer} />
             ) : (
-                <AgreementDetailsView agreement={agreement} projectOfficer={projectOfficer}/>
+                <AgreementDetailsView agreement={agreement} projectOfficer={projectOfficer} />
             )}
         </div>
     );

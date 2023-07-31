@@ -4,7 +4,11 @@ import ProjectSelectWithSummaryCard from "../../components/UI/Form/ProjectSelect
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import Modal from "../../components/UI/Modal";
 import { useGetResearchProjectsQuery } from "../../api/opsAPI";
-import { useEditAgreement, useSetState, useUpdateAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
+import {
+    useEditAgreement,
+    useSetState,
+    useUpdateAgreement,
+} from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import EditModeTitle from "./EditModeTitle";
 
 /**

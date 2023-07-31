@@ -54,9 +54,7 @@ export function EditAgreementProvider({ agreement, projectOfficer, children }) {
 
     return (
         <AgreementEditorContext.Provider value={state}>
-            <EditAgreementDispatchContext.Provider value={dispatch}>
-                {children}
-            </EditAgreementDispatchContext.Provider>
+            <EditAgreementDispatchContext.Provider value={dispatch}>{children}</EditAgreementDispatchContext.Provider>
         </AgreementEditorContext.Provider>
     );
 }

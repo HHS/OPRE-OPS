@@ -7,8 +7,6 @@ import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs/DetailsTabs";
 import AgreementDetails from "./AgreementDetails";
 import AgreementBudgetLines from "./AgreementBudgetLines";
-import AgreementDetailsEdit from "./AgreementDetailsEdit";
-import AgreementBudgetLinesEdit from "./AgreementBudgetLinesEdit";
 
 const Agreement = () => {
     const urlPathParams = useParams();

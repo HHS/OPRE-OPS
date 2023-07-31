@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import classnames from "vest/classnames";
-import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import ProcurementShopSelect from "../../UI/Form/ProcurementShopSelect";
 import AgreementReasonSelect from "../../UI/Form/AgreementReasonSelect";
 import AgreementTypeSelect from "../../UI/Form/AgreementTypeSelect";
@@ -13,19 +12,12 @@ import TeamMemberSelect from "../../UI/Form/TeamMemberSelect";
 import TeamMemberList from "../../UI/Form/TeamMemberList";
 import Modal from "../../UI/Modal";
 import { formatTeamMember, postAgreement } from "../../../api/postAgreements";
-import ProjectSummaryCard from "../../ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";
 import ProductServiceCodeSummaryBox from "../../UI/Form/ProductServiceCodeSummaryBox";
-import {
-    useEditAgreement,
-    useSetState,
-    useUpdateAgreement,
-    useEditAgreementDispatch,
-} from "./AgreementEditorContext";
+import { useEditAgreement, useSetState, useUpdateAgreement, useEditAgreementDispatch } from "./AgreementEditorContext";
 import { setAlert } from "../../UI/Alert/alertSlice";
 import { patchAgreement } from "../../../api/patchAgreements";
 import suite from "./AgreementEditFormSuite";
 import Input from "../../UI/Form/Input";
-import EditModeTitle from "../../../pages/agreements/EditModeTitle";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import { useGetProductServiceCodesQuery } from "../../../api/opsAPI";
 
@@ -38,7 +30,7 @@ import { useGetProductServiceCodesQuery } from "../../../api/opsAPI";
  * @param {boolean} [props.isEditMode] - Whether the form is in edit mode. - optional
  * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
  */
-export const AgreementEditForm = ({ goBack, goToNext, isEditMode, isReviewMode }) => {
+export const AgreementEditForm = ({ goBack, goToNext, isReviewMode }) => {
     const isWizardMode = location.pathname === "/agreements/create";
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
@@ -65,7 +57,6 @@ export const AgreementEditForm = ({ goBack, goToNext, isEditMode, isReviewMode }
     const globalDispatch = useDispatch();
 
     const {
-        selected_project: selectedResearchProject,
         agreement,
         selected_procurement_shop: selectedProcurementShop,
         selected_product_service_code: selectedProductServiceCode,
@@ -183,11 +174,9 @@ export const AgreementEditForm = ({ goBack, goToNext, isEditMode, isReviewMode }
             handleConfirm: () => {
                 if (isWizardMode) {
                     navigate("/agreements");
-                }
-                else {
+                } else {
                     navigate(`/agreements/${agreement.id}`);
                 }
-
             },
         });
     };
@@ -277,10 +266,10 @@ export const AgreementEditForm = ({ goBack, goToNext, isEditMode, isReviewMode }
                     <ProductServiceCodeSummaryBox selectedProductServiceCode={selectedProductServiceCode} />
                 )}
             <div className="margin-top-3">
-            <ProcurementShopSelect
-                selectedProcurementShop={selectedProcurementShop}
-                onChangeSelectedProcurementShop={handleOnChangeSelectedProcurementShop}
-            />
+                <ProcurementShopSelect
+                    selectedProcurementShop={selectedProcurementShop}
+                    onChangeSelectedProcurementShop={handleOnChangeSelectedProcurementShop}
+                />
             </div>
 
             <div className="display-flex margin-top-3">
@@ -352,12 +341,12 @@ export const AgreementEditForm = ({ goBack, goToNext, isEditMode, isReviewMode }
                 onChange={(name, value) => setAgreementNotes(value)}
             />
             <div className="grid-row flex-justify margin-top-8">
-                { isWizardMode ? (
+                {isWizardMode ? (
                     <button className="usa-button usa-button--unstyled margin-right-2" onClick={() => goBack()}>
                         Go Back
                     </button>
                 ) : (
-                    <div/>
+                    <div />
                 )}
                 <div>
                     <button
@@ -367,7 +356,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isEditMode, isReviewMode }
                     >
                         Cancel
                     </button>
-                    { isWizardMode && (
+                    {isWizardMode && (
                         <button
                             className="usa-button usa-button--outline"
                             onClick={handleDraft}
@@ -384,7 +373,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isEditMode, isReviewMode }
                         disabled={shouldDisableBtn}
                         data-cy="continue-btn"
                     >
-                        { isWizardMode ? "Continue" : "Save Changes" }
+                        {isWizardMode ? "Continue" : "Save Changes"}
                     </button>
                 </div>
             </div>
@@ -396,7 +385,7 @@ AgreementEditForm.propTypes = {
     goBack: PropTypes.func,
     goToNext: PropTypes.func,
     isEditMode: PropTypes.bool,
-    isReviewMode: PropTypes.bool
+    isReviewMode: PropTypes.bool,
 };
 
 export default AgreementEditForm;

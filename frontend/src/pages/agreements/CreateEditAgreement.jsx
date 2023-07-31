@@ -8,7 +8,6 @@ import StepCreateBudgetLines from "../../components/UI/WizardSteps/StepCreateBud
 import { useEditAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import { setAlert } from "../../components/UI/Alert/alertSlice";
 
-
 /**
  * Renders the Create Agreement flow, which consists of several steps.
  * @param {Object} props - The component props.
@@ -40,7 +39,6 @@ export const CreateAgreement = ({ existingBudgetLines }) => {
     }, [mode]);
 
     const {
-        wizardSteps,
         selected_project: selectedResearchProject,
         agreement: selectedAgreement,
         selected_procurement_shop: selectedProcurementShop,

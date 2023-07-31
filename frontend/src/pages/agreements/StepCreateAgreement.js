@@ -3,13 +3,10 @@ import PropTypes from "prop-types";
 import EditModeTitle from "./EditModeTitle";
 import StepIndicator from "../../components/UI/StepIndicator";
 import ProjectSummaryCard from "../../components/ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";
-import React from "react";
-import {useEditAgreement} from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
+import { useEditAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 
 export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode, wizardSteps, currentStep }) => {
-    const {
-        selected_project: selectedResearchProject
-    } = useEditAgreement();
+    const { selected_project: selectedResearchProject } = useEditAgreement();
 
     return (
         <>
@@ -18,12 +15,15 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
             <AgreementEditForm
-                goBack={goBack} goToNext={goToNext} isEditMode={isEditMode} isReviewMode={isReviewMode}
-                wizardSteps={wizardSteps} currentStep={currentStep}
+                goBack={goBack}
+                goToNext={goToNext}
+                isReviewMode={isReviewMode}
+                wizardSteps={wizardSteps}
+                currentStep={currentStep}
             />
         </>
-    )
-}
+    );
+};
 
 StepCreateAgreement.propTypes = {
     goBack: PropTypes.func,
@@ -31,7 +31,7 @@ StepCreateAgreement.propTypes = {
     isEditMode: PropTypes.bool,
     isReviewMode: PropTypes.bool,
     wizardSteps: PropTypes.arrayOf(PropTypes.string),
-    currentStep: PropTypes.number
+    currentStep: PropTypes.number,
 };
 
 export default StepCreateAgreement;
