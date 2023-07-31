@@ -22,7 +22,12 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                 setIsEditMode={setIsEditMode}
             />
             {isEditMode ? (
-                <AgreementBudgetLinesEdit agreement={agreement} isEditMode={isEditMode} isReviewMode={false} />
+                <AgreementBudgetLinesEdit
+                    agreement={agreement}
+                    isEditMode={isEditMode}
+                    setIsEditMode={setIsEditMode}
+                    isReviewMode={false}
+                />
             ) : agreement?.budget_line_items.length > 0 ? (
                 <PreviewTable budgetLinesAdded={agreement?.budget_line_items} readOnly={!isEditMode} />
             ) : (

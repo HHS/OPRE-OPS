@@ -16,7 +16,7 @@ import {
     useSetState,
 } from "../../../components/UI/WizardSteps/StepCreateBudgetLines/context";
 
-const AgreementDetailsEdit = ({ agreement, isEditMode, isReviewMode }) => {
+const AgreementDetailsEdit = ({ agreement, isEditMode, setIsEditMode, isReviewMode }) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const {
@@ -161,15 +161,8 @@ const AgreementDetailsEdit = ({ agreement, isEditMode, isReviewMode }) => {
         postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
 
         dispatch({ type: "RESET_FORM" });
-        navigate(`/agreements/${agreement?.id}/budget-lines`);
-
-        // if (isReviewMode) {
-        //     navigate(`/agreements/approve/${agreement?.id}`);
-        // } else if (continueOverRide) {
-        //     continueOverRide();
-        // } else {
-        //     goToNext();
-        // }
+        setIsEditMode(false);
+        window.location.href = `/agreements/${agreement?.id}/budget-lines`;
     };
 
     const handleResetForm = () => dispatch({ type: "RESET_FORM" });
@@ -232,6 +225,7 @@ const AgreementDetailsEdit = ({ agreement, isEditMode, isReviewMode }) => {
                     onClick={() => {
                         // if no budget lines have been added, go back
                         if (newBudgetLines?.length === 0) {
+                            setIsEditMode(false);
                             navigate(`/agreements/${agreement?.id}`);
                         }
                         // if budget lines have been added, show modal
@@ -242,6 +236,7 @@ const AgreementDetailsEdit = ({ agreement, isEditMode, isReviewMode }) => {
                             handleConfirm: () => {
                                 dispatch({ type: "RESET_FORM_AND_BUDGET_LINES" });
                                 setModalProps({});
+                                setIsEditMode(false);
                                 navigate(`/agreements/${agreement?.id}`);
                             },
                         });
@@ -250,7 +245,7 @@ const AgreementDetailsEdit = ({ agreement, isEditMode, isReviewMode }) => {
                     Cancel
                 </button>
                 <button className="usa-button" onClick={saveBudgetLineItems}>
-                    Save
+                    Save Changes
                 </button>
             </div>
             {/* <pre>{JSON.stringify(agreement, null, 2)}</pre> */}
