@@ -96,24 +96,28 @@ export const AgreementsFilterTags = ({ filters }) => {
         }
     }, [filters.upcomingNeedByDate]);
 
+    const createTagString = (selectedList, filterType, filterText) => {
+        if (selectedList.length > 0) {
+            setTagsList((prevState) => prevState.filter((tag) => tag.filter !== filterType));
+            setTagsList((prevState) => {
+                return [
+                    ...prevState,
+                    {
+                        tagText: `${filterText} ${selectedList.join(", ")}`,
+                        filter: filterType,
+                    },
+                ];
+            });
+        }
+    };
+
     const selectedProjects = [];
     filters.projects.forEach((project) => {
         selectedProjects.push(project.title);
     });
 
     useEffect(() => {
-        if (selectedProjects.length > 0) {
-            setTagsList((prevState) => prevState.filter((tag) => tag.filter !== "projects"));
-            setTagsList((prevState) => {
-                return [
-                    ...prevState,
-                    {
-                        tagText: `Project: ${selectedProjects.join(", ")}`,
-                        filter: "projects",
-                    },
-                ];
-            });
-        }
+        createTagString(selectedProjects, "projects", "Project:");
     }, [filters.projects]);
 
     const selectedProjectOfficers = [];
@@ -122,18 +126,7 @@ export const AgreementsFilterTags = ({ filters }) => {
     });
 
     useEffect(() => {
-        if (selectedProjectOfficers.length > 0) {
-            setTagsList((prevState) => prevState.filter((tag) => tag.filter !== "projectOfficers"));
-            setTagsList((prevState) => {
-                return [
-                    ...prevState,
-                    {
-                        tagText: `Project Officer: ${selectedProjectOfficers.join(", ")}`,
-                        filter: "projectOfficers",
-                    },
-                ];
-            });
-        }
+        createTagString(selectedProjectOfficers, "projectOfficers", "Project Officer:");
     }, [filters.projectOfficers]);
 
     return (
