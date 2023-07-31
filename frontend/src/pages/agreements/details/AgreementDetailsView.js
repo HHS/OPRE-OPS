@@ -89,7 +89,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                                     tagStyle="primaryDarkTextLightBackground"
                                     text={
                                         agreement?.product_service_code?.naics
-                                            ? agreement.product_service_code.naics
+                                            ? `${agreement.product_service_code.naics}`
                                             : missingValueText
                                     }
                                 />

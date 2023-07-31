@@ -1,7 +1,7 @@
 import App from "../../../App";
 import { useParams, Route, Routes } from "react-router-dom";
 import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getUser } from "../../../api/getUser";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs/DetailsTabs";
@@ -11,8 +11,14 @@ import AgreementBudgetLines from "./AgreementBudgetLines";
 const Agreement = () => {
     const urlPathParams = useParams();
     const agreementId = parseInt(urlPathParams.id);
-
+    const [isEditMode, setIsEditMode] = React.useState(false);
     const [projectOfficer, setProjectOfficer] = useState({});
+
+    const searchParams = new URLSearchParams(location.search);
+    const mode = searchParams.get("mode") || undefined;
+    if (mode === 'edit' && !isEditMode) {
+        setIsEditMode(true);
+    }
 
     const {
         data: agreement,
@@ -54,15 +60,20 @@ const Agreement = () => {
 
             <div>
                 <section className="display-flex flex-justify margin-top-3">
-                    <DetailsTabs agreementId={agreement.id} />
+                    <DetailsTabs agreementId={agreement.id} isEditMode={isEditMode} setIsEditMode={setIsEditMode} />
                 </section>
 
                 <Routes>
                     <Route
                         path=""
-                        element={<AgreementDetails agreement={agreement} projectOfficer={projectOfficer} />}
+                        element={<AgreementDetails agreement={agreement} projectOfficer={projectOfficer}
+                                                   isEditMode={isEditMode} setIsEditMode={setIsEditMode} />}
                     />
-                    <Route path="budget-lines" element={<AgreementBudgetLines agreement={agreement} />} />
+                    <Route
+                        path="budget-lines"
+                        element={<AgreementBudgetLines agreement={agreement}
+                                                   isEditMode={isEditMode} setIsEditMode={setIsEditMode} />}
+                    />
                 </Routes>
             </div>
         </App>

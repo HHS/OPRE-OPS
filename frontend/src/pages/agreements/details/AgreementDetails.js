@@ -13,8 +13,7 @@ import AgreementDetailsEdit from "./AgreementDetailsEdit";
  * @param {object} props.projectOfficer - The project officer object for the agreement.
  * @returns {React.JSX.Element} - The rendered component.
  */
-const AgreementDetails = ({ agreement, projectOfficer }) => {
-    const [isEditMode, setIsEditMode] = React.useState(false);
+const AgreementDetails = ({ agreement, projectOfficer, isEditMode, setIsEditMode }) => {
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
     // details for AgreementTotalBudgetLinesCard
