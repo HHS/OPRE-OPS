@@ -47,6 +47,7 @@ export const AgreementsFilterTags = ({ filters }) => {
     );
 
     useEffect(() => {
+        setTagsList((prevState) => prevState.filter((tag) => tag.filter !== "upcomingNeedByDate"));
         switch (filters.upcomingNeedByDate) {
             case "next-30-days":
                 setTagsList((prevState) => {
@@ -93,12 +94,16 @@ export const AgreementsFilterTags = ({ filters }) => {
                 });
                 break;
         }
+    }, [filters.upcomingNeedByDate]);
 
-        const selectedProjects = [];
-        filters.projects.forEach((project) => {
-            selectedProjects.push(project.title);
-        });
+    const selectedProjects = [];
+    filters.projects.forEach((project) => {
+        selectedProjects.push(project.title);
+    });
+
+    useEffect(() => {
         if (selectedProjects.length > 0) {
+            setTagsList((prevState) => prevState.filter((tag) => tag.filter !== "projects"));
             setTagsList((prevState) => {
                 return [
                     ...prevState,
@@ -109,7 +114,7 @@ export const AgreementsFilterTags = ({ filters }) => {
                 ];
             });
         }
-    }, [filters.projects, filters.upcomingNeedByDate]);
+    }, [filters.projects]);
 
     return (
         <div>
