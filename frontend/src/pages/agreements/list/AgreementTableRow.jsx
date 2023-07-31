@@ -67,7 +67,7 @@ export const AgreementTableRow = ({ agreement }) => {
     };
 
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
-    const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
+    const changeBgColorIfExpanded = { backgroundColor: isRowActive ? "#F0F0F0" : undefined };
 
     const handleEditAgreement = (event) => {
         navigate(`/agreements/edit/${event}?mode=edit`);
@@ -121,7 +121,9 @@ export const AgreementTableRow = ({ agreement }) => {
         <Fragment key={agreement?.id}>
             <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
                 <th scope="row" className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
-                    <Link to={"/agreements/" + agreement.id}>{agreementName}</Link>
+                    <Link className="text-ink text-no-underline" to={"/agreements/" + agreement.id}>
+                        {agreementName}
+                    </Link>
                 </th>
                 <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     {researchProjectName}
