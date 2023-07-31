@@ -120,10 +120,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
 
     useEffect(() => {
         setFilters((prevState) => {
-            return {
-                ...prevState,
-                type: agreementType || "",
-            };
+            return setFilterList(prevState, "types", agreementType);
         });
     }, [agreementType, setFilters]);
 

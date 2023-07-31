@@ -1,13 +1,17 @@
 import "./AgreementsList.scss";
 import icons from "../../../uswds/img/sprite.svg";
 import { useEffect, useState } from "react";
+import { convertCodeForDisplay } from "../../../helpers/utils";
 
 /**
  * Header section above the Agreements List table.
  * @returns {ReactNode} The rendered component.
  */
-export const AgreementsFilterTags = ({ filters }) => {
+export const AgreementsFilterTags = ({ filters, setFilters }) => {
     const [tagsList, setTagsList] = useState([]);
+
+    console.log("tagsList", tagsList);
+    console.log("filters", filters);
 
     const removeFilter = (tag) => {
         console.log("tag", tag);
@@ -23,12 +27,39 @@ export const AgreementsFilterTags = ({ filters }) => {
                         },
                     ];
                 });
+                setFilters((prevState) => {
+                    return {
+                        ...prevState,
+                        upcomingNeedByDate: "next-30-days",
+                    };
+                });
                 break;
             case "projects":
                 setTagsList((prevState) => prevState.filter((tag) => tag.filter !== "projects"));
+                setFilters((prevState) => {
+                    return {
+                        ...prevState,
+                        projects: [],
+                    };
+                });
                 break;
             case "projectOfficers":
                 setTagsList((prevState) => prevState.filter((tag) => tag.filter !== "projectOfficers"));
+                setFilters((prevState) => {
+                    return {
+                        ...prevState,
+                        projectOfficers: [],
+                    };
+                });
+                break;
+            case "types":
+                setTagsList((prevState) => prevState.filter((tag) => tag.filter !== "types"));
+                setFilters((prevState) => {
+                    return {
+                        ...prevState,
+                        types: [],
+                    };
+                });
                 break;
         }
     };
@@ -129,6 +160,14 @@ export const AgreementsFilterTags = ({ filters }) => {
         });
         createTagString(selectedProjectOfficers, "projectOfficers", "Project Officer:");
     }, [filters.projectOfficers]);
+
+    useEffect(() => {
+        const selectedAgreementTypes = [];
+        filters.types.forEach((agreementType) => {
+            selectedAgreementTypes.push(convertCodeForDisplay("agreementType", agreementType));
+        });
+        createTagString(selectedAgreementTypes, "types", "Type:");
+    }, [filters.types]);
 
     return (
         <div>
