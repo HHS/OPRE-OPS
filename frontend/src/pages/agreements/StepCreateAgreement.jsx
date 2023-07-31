@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import classnames from "vest/classnames";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-import ProcurementShopSelect from "../../components/UI/Form/ProcurementShopSelect";
+import ProcurementShopSelectWithFee from "../../components/UI/Form/ProcurementShopSelectWithFee";
 import AgreementReasonSelect from "../../components/UI/Form/AgreementReasonSelect";
 import AgreementTypeSelect from "../../components/UI/Form/AgreementTypeSelect";
 import ProductServiceCodeSelect from "../../components/UI/Form/ProductServiceCodeSelect";
@@ -277,7 +277,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode
                     <ProductServiceCodeSummaryBox selectedProductServiceCode={selectedProductServiceCode} />
                 )}
             <h2 className="font-sans-lg margin-top-3">Procurement Shop</h2>
-            <ProcurementShopSelect
+            <ProcurementShopSelectWithFee
                 selectedProcurementShop={selectedProcurementShop}
                 onChangeSelectedProcurementShop={handleOnChangeSelectedProcurementShop}
             />

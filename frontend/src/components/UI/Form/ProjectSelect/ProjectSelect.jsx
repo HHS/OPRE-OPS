@@ -7,6 +7,8 @@ export const ProjectSelect = ({
     setSelectedProject,
     setAgreementProjectId = () => {},
     clearFunction = () => {},
+    legendClassname = "usa-label margin-top-0",
+    inputBoxClassname = "",
 }) => {
     const [inputValue, setInputValue] = React.useState(selectedResearchProject?.title ?? "");
 
@@ -26,36 +28,10 @@ export const ProjectSelect = ({
         setSelectedProject({});
     };
 
-    const ProjectSummaryCard = ({ selectedResearchProject }) => {
-        const { title, description } = selectedResearchProject;
-        return (
-            <div
-                className="bg-base-lightest font-family-sans font-12px border-1px border-base-light radius-sm margin-top-4"
-                style={{ width: "23.9375rem", minHeight: "7.5625rem" }}
-                data-cy="project-summary-card"
-            >
-                <dl className="margin-0 padding-y-2 padding-x-105">
-                    <dt className="margin-0 text-base-dark">Project</dt>
-                    <dd className="text-semibold margin-0">{title}</dd>
-                    {description && <dt className="margin-0 text-base-dark margin-top-205">Description</dt>}
-                    <dd className="text-semibold margin-0" style={{ maxWidth: "15.625rem" }}>
-                        {description}
-                    </dd>
-                </dl>
-            </div>
-        );
-    };
-    ProjectSummaryCard.propTypes = {
-        selectedResearchProject: PropTypes.shape({
-            title: PropTypes.string.isRequired,
-            description: PropTypes.string,
-        }).isRequired,
-    };
     return (
-        <div className="display-flex flex-justify padding-top-105">
-            {/* NOTE: Left side */}
+        <div className="display-flex flex-justify">
             <div className="left-half width-full">
-                <label className="usa-label margin-top-0" htmlFor="project" id="project-label">
+                <label className={legendClassname} htmlFor="project" id="project-label">
                     Project
                 </label>
                 <div className="usa-combo-box" data-enhanced="true">
@@ -86,7 +62,7 @@ export const ProjectSelect = ({
                         aria-expanded="false"
                         autoCapitalize="off"
                         autoComplete="off"
-                        className="usa-combo-box__input"
+                        className={`usa-combo-box__input ${inputBoxClassname}`}
                         type="text"
                         role="combobox"
                         data-testid="project-input"
@@ -150,12 +126,6 @@ export const ProjectSelect = ({
                     </span>
                 </div>
             </div>
-            {/* NOTE: Right side */}
-            <div className="right-half">
-                {selectedResearchProject?.id && (
-                    <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
-                )}
-            </div>
         </div>
     );
 };
@@ -168,4 +138,6 @@ ProjectSelect.propTypes = {
     setSelectedProject: PropTypes.func.isRequired,
     setAgreementProjectId: PropTypes.func,
     clearFunction: PropTypes.func,
+    legendClassname: PropTypes.string,
+    inputBoxClassname: PropTypes.string,
 };
