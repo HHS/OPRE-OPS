@@ -219,8 +219,8 @@ export const AgreementEditForm = ({ goBack, goToNext, isEditMode, isReviewMode }
                 />
             )}
 
-            <h2 className="font-sans-lg">Select the Agreement Type</h2>
-            <p>Select the type of agreement you&#39;d like to create.</p>
+            <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
+
             <AgreementTypeSelect
                 name="agreement_type"
                 label="Agreement Type"
@@ -232,7 +232,6 @@ export const AgreementEditForm = ({ goBack, goToNext, isEditMode, isReviewMode }
                     runValidate(name, value);
                 }}
             />
-            <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
 
             <Input
                 name="name"
@@ -279,14 +278,14 @@ export const AgreementEditForm = ({ goBack, goToNext, isEditMode, isReviewMode }
                 selectedProductServiceCode.support_code && (
                     <ProductServiceCodeSummaryBox selectedProductServiceCode={selectedProductServiceCode} />
                 )}
-            <h2 className="font-sans-lg margin-top-3">Procurement Shop</h2>
+            <div className="margin-top-3">
             <ProcurementShopSelect
                 selectedProcurementShop={selectedProcurementShop}
                 onChangeSelectedProcurementShop={handleOnChangeSelectedProcurementShop}
             />
+            </div>
 
-            <h2 className="font-sans-lg margin-top-3">Reason for Agreement</h2>
-            <div className="display-flex">
+            <div className="display-flex margin-top-3">
                 <AgreementReasonSelect
                     name="agreement_reason"
                     label="Reason for Agreement"
@@ -321,8 +320,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isEditMode, isReviewMode }
                 </fieldset>
             </div>
 
-            <h2 className="font-sans-lg margin-top-3">Points of Contact</h2>
-            <div className="display-flex">
+            <div className="display-flex margin-top-3">
                 <ProjectOfficerSelect
                     name="project_officer"
                     label="Project Officer"
