@@ -111,21 +111,19 @@ export const AgreementsFilterTags = ({ filters }) => {
         }
     };
 
-    const selectedProjects = [];
-    filters.projects.forEach((project) => {
-        selectedProjects.push(project.title);
-    });
-
     useEffect(() => {
+        const selectedProjects = [];
+        filters.projects.forEach((project) => {
+            selectedProjects.push(project.title);
+        });
         createTagString(selectedProjects, "projects", "Project:");
     }, [filters.projects]);
 
-    const selectedProjectOfficers = [];
-    filters.projectOfficers.forEach((po) => {
-        selectedProjectOfficers.push(po.full_name);
-    });
-
     useEffect(() => {
+        const selectedProjectOfficers = [];
+        filters.projectOfficers.forEach((po) => {
+            selectedProjectOfficers.push(po.full_name);
+        });
         createTagString(selectedProjectOfficers, "projectOfficers", "Project Officer:");
     }, [filters.projectOfficers]);
 
