@@ -21,7 +21,7 @@ export const AgreementsList = () => {
     const [filters, setFilters] = useState({
         upcomingNeedByDate: null,
         projects: [],
-        projectOfficer: null,
+        projectOfficers: [],
         type: null,
         procurementShop: {},
         budgetLineStatus: {

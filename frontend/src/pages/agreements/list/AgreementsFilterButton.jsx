@@ -39,7 +39,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         setFilters({
             upcomingNeedByDate: null,
             projects: [],
-            projectOfficer: null,
+            projectOfficer: [],
             type: null,
             procurementShop: {},
             budgetLineStatus: {
@@ -77,6 +77,20 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         });
     };
 
+    // const addToFilterList = (filter, obj, prevState) => {
+    //     let updatedFilters = { ...prevState };
+    //
+    //     let filterKey = _.get(updatedFilters, filter, []);
+    //     console.log("first filterKey", filterKey);
+    //     filterKey.push(obj);
+    //     filterKey = filterKey.filter((filter) => !_.isEmpty(filter));
+    //     filterKey = [...new Set(filterKey)]; // remove dups
+    //
+    //     console.log("filterKey", filterKey);
+    //
+    //     return filterKey;
+    // };
+
     useEffect(() => {
         setFilters((prevState) => {
             let updatedFilters = { ...prevState };
@@ -91,10 +105,13 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
 
     useEffect(() => {
         setFilters((prevState) => {
-            return {
-                ...prevState,
-                projectOfficer: po || {},
-            };
+            let updatedFilters = { ...prevState };
+            updatedFilters.projectOfficers = updatedFilters.projectOfficers || [];
+            updatedFilters.projectOfficers.push(po);
+            updatedFilters.projectOfficers = updatedFilters.projectOfficers.filter((filter) => !_.isEmpty(filter));
+            updatedFilters.projectOfficers = [...new Set(updatedFilters.projectOfficers)]; // remove dups
+
+            return updatedFilters;
         });
     }, [po, setFilters]);
 

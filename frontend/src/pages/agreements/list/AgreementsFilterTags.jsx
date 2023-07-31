@@ -116,6 +116,26 @@ export const AgreementsFilterTags = ({ filters }) => {
         }
     }, [filters.projects]);
 
+    const selectedProjectOfficers = [];
+    filters.projectOfficers.forEach((po) => {
+        selectedProjectOfficers.push(po.full_name);
+    });
+
+    useEffect(() => {
+        if (selectedProjectOfficers.length > 0) {
+            setTagsList((prevState) => prevState.filter((tag) => tag.filter !== "projectOfficers"));
+            setTagsList((prevState) => {
+                return [
+                    ...prevState,
+                    {
+                        tagText: `Project Officer: ${selectedProjectOfficers.join(", ")}`,
+                        filter: "projectOfficers",
+                    },
+                ];
+            });
+        }
+    }, [filters.projectOfficers]);
+
     return (
         <div>
             {tagsList.map((tag, index) => {
