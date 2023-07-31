@@ -35,9 +35,9 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
     return (
         <div>
             <AgreementDetailHeader
-                agreementId={agreement?.id}
                 heading="Agreement Summary"
                 details="The summary below shows the budget lines and spending for this agreement."
+                isEditMode={isEditMode}
                 setIsEditMode={setIsEditMode}
             />
             <div className="display-flex flex-justify">
