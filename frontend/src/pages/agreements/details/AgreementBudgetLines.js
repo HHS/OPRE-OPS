@@ -11,8 +11,7 @@ import CreateBudgetLinesForm from "../../../components/UI/Form/CreateBudgetLines
  * @param {Object} props.agreement - The agreement to display.
  * @returns {React.JSX.Element} - The rendered component.
  */
-export const AgreementBudgetLines = ({ agreement }) => {
-    const [isEditMode, setIsEditMode] = React.useState(false);
+export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
     const initialState = {
         selectedCan: "",
         enteredDescription: "",

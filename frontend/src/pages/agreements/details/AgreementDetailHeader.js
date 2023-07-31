@@ -16,16 +16,17 @@ export const AgreementDetailHeader = ({ heading, details, isEditMode, setIsEditM
         <>
             <div className="display-flex flex-justify flex-align-center">
                 <h2 className="font-sans-lg">{heading}</h2>
-                {/* //TODO: Hide button when editMode is true */}
-                <button className="hover:text-underline cursor-pointer" onClick={() => setIsEditMode(!isEditMode)}>
-                    <FontAwesomeIcon
-                        icon={faPen}
-                        className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
-                        title="edit"
-                        data-position="top"
-                    />
-                    <span className="text-primary">Edit</span>
-                </button>
+                {!isEditMode && (
+                    <button className="hover:text-underline cursor-pointer" onClick={() => setIsEditMode(!isEditMode)}>
+                        <FontAwesomeIcon
+                            icon={faPen}
+                            className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
+                            title="edit"
+                            data-position="top"
+                        />
+                        <span className="text-primary">Edit</span>
+                    </button>
+                )}
             </div>
             <p className="font-sans-sm">{details}</p>
         </>
