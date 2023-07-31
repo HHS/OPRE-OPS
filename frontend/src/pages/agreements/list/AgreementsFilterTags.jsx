@@ -1,15 +1,33 @@
 import "./AgreementsList.scss";
 import icons from "../../../uswds/img/sprite.svg";
+import { useEffect, useState } from "react";
 
 /**
  * Header section above the Agreements List table.
  * @returns {ReactNode} The rendered component.
  */
-export const AgreementsFilterTags = ({ filters, setFilters }) => {
-    const tagsList = [];
+export const AgreementsFilterTags = ({ filters }) => {
+    const [tagsList, setTagsList] = useState([]);
 
-    const removeFilter = () => {
-        console.log(setFilters());
+    const removeFilter = (tag) => {
+        console.log("tag", tag);
+        switch (tag.filter) {
+            case "upcomingNeedByDate":
+                setTagsList((prevState) => prevState.filter((tag) => tag.filter !== "upcomingNeedByDate"));
+                setTagsList((prevState) => {
+                    return [
+                        ...prevState,
+                        {
+                            tagText: "Upcoming Need By Date: Next 30 Days",
+                            filter: "upcomingNeedByDate",
+                        },
+                    ];
+                });
+                break;
+            case "projects":
+                setTagsList((prevState) => prevState.filter((tag) => tag.filter !== "projects"));
+                break;
+        }
     };
 
     const FilterTag = ({ tag }) => (
@@ -28,43 +46,70 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
         </div>
     );
 
-    switch (filters.upcomingNeedByDate) {
-        case "next-30-days":
-            tagsList.push({
-                tagText: "Upcoming Need By Date: Next 30 Days",
-                filter: "upcomingNeedByDate",
-            });
-            break;
-        case "current-fy":
-            tagsList.push({
-                tagText: "Upcoming Need By Date: Current FY",
-                filter: "upcomingNeedByDate",
-            });
-            break;
-        case "next-6-months":
-            tagsList.push({
-                tagText: "Upcoming Need By Date: Next 6 Months",
-                filter: "upcomingNeedByDate",
-            });
-            break;
-        case "all-time":
-            tagsList.push({
-                tagText: "Upcoming Need By Date: All Time",
-                filter: "upcomingNeedByDate",
-            });
-            break;
-    }
+    useEffect(() => {
+        switch (filters.upcomingNeedByDate) {
+            case "next-30-days":
+                setTagsList((prevState) => {
+                    return [
+                        ...prevState,
+                        {
+                            tagText: "Upcoming Need By Date: Next 30 Days",
+                            filter: "upcomingNeedByDate",
+                        },
+                    ];
+                });
+                break;
+            case "current-fy":
+                setTagsList((prevState) => {
+                    return [
+                        ...prevState,
+                        {
+                            tagText: "Upcoming Need By Date: Current FY",
+                            filter: "upcomingNeedByDate",
+                        },
+                    ];
+                });
+                break;
+            case "next-6-months":
+                setTagsList((prevState) => {
+                    return [
+                        ...prevState,
+                        {
+                            tagText: "Upcoming Need By Date: Next 6 Months",
+                            filter: "upcomingNeedByDate",
+                        },
+                    ];
+                });
+                break;
+            case "all-time":
+                setTagsList((prevState) => {
+                    return [
+                        ...prevState,
+                        {
+                            tagText: "Upcoming Need By Date: All Time",
+                            filter: "upcomingNeedByDate",
+                        },
+                    ];
+                });
+                break;
+        }
 
-    const selectedProjects = [];
-    filters.projects.forEach((project) => {
-        selectedProjects.push(project.title);
-    });
-    if (selectedProjects.length > 0) {
-        tagsList.push({
-            tagText: `Project: ${selectedProjects.join(", ")}`,
-            filter: "projects",
+        const selectedProjects = [];
+        filters.projects.forEach((project) => {
+            selectedProjects.push(project.title);
         });
-    }
+        if (selectedProjects.length > 0) {
+            setTagsList((prevState) => {
+                return [
+                    ...prevState,
+                    {
+                        tagText: `Project: ${selectedProjects.join(", ")}`,
+                        filter: "projects",
+                    },
+                ];
+            });
+        }
+    }, [filters.projects, filters.upcomingNeedByDate]);
 
     return (
         <div>
