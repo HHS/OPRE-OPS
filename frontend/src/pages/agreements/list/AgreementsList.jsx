@@ -23,7 +23,7 @@ export const AgreementsList = () => {
         projects: [],
         projectOfficers: [],
         types: [],
-        procurementShop: {},
+        procurementShops: [],
         budgetLineStatus: {
             draft: false,
             planned: false,

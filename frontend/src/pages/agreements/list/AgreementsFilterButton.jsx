@@ -41,7 +41,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
             projects: [],
             projectOfficer: [],
             types: [],
-            procurementShop: {},
+            procurementShops: [],
             budgetLineStatus: {
                 draft: false,
                 planned: false,
@@ -76,20 +76,6 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
             };
         });
     };
-
-    // const addToFilterList = (filter, obj, prevState) => {
-    //     let updatedFilters = { ...prevState };
-    //
-    //     let filterKey = _.get(updatedFilters, filter, []);
-    //     console.log("first filterKey", filterKey);
-    //     filterKey.push(obj);
-    //     filterKey = filterKey.filter((filter) => !_.isEmpty(filter));
-    //     filterKey = [...new Set(filterKey)]; // remove dups
-    //
-    //     console.log("filterKey", filterKey);
-    //
-    //     return filterKey;
-    // };
 
     function setFilterList(prevState, filterKeyString, stateObject) {
         let updatedFilters = { ...prevState };
@@ -126,10 +112,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
 
     useEffect(() => {
         setFilters((prevState) => {
-            return {
-                ...prevState,
-                procurementShop: procurementShop || {},
-            };
+            return setFilterList(prevState, "procurementShops", procurementShop);
         });
     }, [procurementShop, setFilters]);
 
@@ -270,9 +253,10 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                     <div>
                         <fieldset className="usa-fieldset margin-bottom-205" style={{ width: "363px" }}>
                             <ProcurementShopSelect
-                                selectedProcurementShop={procurementShop || {}}
+                                selectedProcurementShop={procurementShop}
                                 onChangeSelectedProcurementShop={setProcurementShop}
                                 legendClassname={`usa-legend font-sans-3xs margin-top-0 ${customStyles.legendColor}`}
+                                defaultToAll={true}
                             />
                         </fieldset>
                     </div>

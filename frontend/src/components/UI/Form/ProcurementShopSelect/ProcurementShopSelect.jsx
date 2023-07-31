@@ -22,6 +22,7 @@ export const ProcurementShopSelect = ({
     selectedProcurementShop,
     onChangeSelectedProcurementShop,
     legendClassname = "",
+    defaultToAll = false,
 }) => {
     const {
         data: procurementShops,
@@ -30,10 +31,10 @@ export const ProcurementShopSelect = ({
     } = useGetProcurementShopsQuery();
 
     React.useEffect(() => {
-        if (!selectedProcurementShop?.id && procurementShops) {
+        if (!defaultToAll && !selectedProcurementShop?.id && procurementShops) {
             onChangeSelectedProcurementShop(procurementShops[1]);
         }
-    }, [procurementShops, selectedProcurementShop, onChangeSelectedProcurementShop]);
+    }, [defaultToAll, procurementShops, selectedProcurementShop, onChangeSelectedProcurementShop]);
 
     if (isLoadingProcurementShops) {
         return <div>Loading...</div>;
@@ -67,6 +68,7 @@ export const ProcurementShopSelect = ({
                     value={selectedProcurementShop?.id}
                     required
                 >
+                    {defaultToAll && <option value="">-Select Procurement Shop-</option>}
                     {procurementShops.map((shop) => (
                         <option key={shop?.id} value={shop?.id}>
                             {shop?.name} ({shop?.abbr})

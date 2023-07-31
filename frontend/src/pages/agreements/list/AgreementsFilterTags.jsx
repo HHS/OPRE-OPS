@@ -61,6 +61,15 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
                     };
                 });
                 break;
+            case "procurementShops":
+                setTagsList((prevState) => prevState.filter((tag) => tag.filter !== "procurementShops"));
+                setFilters((prevState) => {
+                    return {
+                        ...prevState,
+                        procurementShops: [],
+                    };
+                });
+                break;
         }
     };
 
@@ -168,6 +177,14 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
         });
         createTagString(selectedAgreementTypes, "types", "Type:");
     }, [filters.types]);
+
+    useEffect(() => {
+        const selectedProcurementShops = [];
+        filters.procurementShops.forEach((shop) => {
+            selectedProcurementShops.push(shop.name);
+        });
+        createTagString(selectedProcurementShops, "procurementShops", "Procurement Shop:");
+    }, [filters.procurementShops]);
 
     return (
         <div>
