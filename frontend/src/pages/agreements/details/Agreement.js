@@ -14,6 +14,12 @@ const Agreement = () => {
     const [isEditMode, setIsEditMode] = React.useState(false);
     const [projectOfficer, setProjectOfficer] = useState({});
 
+    const searchParams = new URLSearchParams(location.search);
+    const mode = searchParams.get("mode") || undefined;
+    if (mode === 'edit' && !isEditMode) {
+        setIsEditMode(true);
+    }
+
     const {
         data: agreement,
         error: errorAgreement,
