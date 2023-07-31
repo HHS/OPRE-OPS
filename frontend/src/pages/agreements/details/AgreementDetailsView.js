@@ -5,10 +5,11 @@ import Tag from "../../../components/UI/Tag/Tag";
 import {convertCodeForDisplay} from "../../../helpers/utils";
 
 const AgreementDetailsView = ({ agreement, projectOfficer }) => {
+    const missingValueText = "TBD";
+
 
     return (
         <section>
-            <h2 className="font-sans-lg">Agreement Details</h2>
             <div className="grid-row margin-top-2">
                     <div className="grid-col-6 padding-right-1" data-cy="details-left-col">
                         {/* // NOTE: Left Column */}

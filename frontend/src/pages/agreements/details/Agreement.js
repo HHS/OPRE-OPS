@@ -51,7 +51,7 @@ const Agreement = () => {
             <Breadcrumb currentName={`${agreement.name}`} />
             <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement.name}</h1>
             <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
-                {agreement.research_project.title}
+                {agreement.research_project?.title}
             </h2>
 
             <div>
@@ -64,15 +64,7 @@ const Agreement = () => {
                         path=""
                         element={<AgreementDetails agreement={agreement} projectOfficer={projectOfficer} />}
                     />
-                    <Route
-                        path="details/edit"
-                        element={<AgreementDetailsEdit agreement={agreement} projectOfficer={projectOfficer} />}
-                    />
                     <Route path="budget-lines" element={<AgreementBudgetLines agreement={agreement} />} />
-                    <Route
-                        path="budget-lines/edit"
-                        element={<AgreementBudgetLinesEdit agreement={agreement} projectOfficer={projectOfficer} />}
-                    />
                 </Routes>
             </div>
         </App>

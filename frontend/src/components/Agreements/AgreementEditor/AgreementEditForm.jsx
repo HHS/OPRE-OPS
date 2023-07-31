@@ -219,8 +219,6 @@ export const AgreementEditForm = ({ goBack, goToNext, isEditMode, isReviewMode }
                 />
             )}
 
-            <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
-
             <AgreementTypeSelect
                 name="agreement_type"
                 label="Agreement Type"

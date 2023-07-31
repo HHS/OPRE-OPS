@@ -8,6 +8,7 @@ import { notesData, historyData } from "./data";
 import LogItem from "../../../components/UI/LogItem";
 import AgreementDetailHeader from "./AgreementDetailHeader";
 import AgreementDetailsView from "./AgreementDetailsView";
+import AgreementDetailsEdit from "./AgreementDetailsEdit";
 
 /**
  * Renders the details of an agreement, including budget lines, spending, and other information.
@@ -20,7 +21,6 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
     const [isEditMode, setIsEditMode] = React.useState(false);
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
-    const missingValueText = "TBD";
     // details for AgreementTotalBudgetLinesCard
     const blis = agreement.budget_line_items ? agreement.budget_line_items : [];
     const numberOfAgreements = blis.length;
@@ -48,7 +48,12 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
                 />
                 <AgreementValuesCard budgetLineItems={blis} />
             </div>
-            <AgreementDetailsView agreement={agreement} projectOfficer={projectOfficer}/>
+            <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
+            { isEditMode ? (
+                <AgreementDetailsEdit agreement={agreement} projectOfficer={projectOfficer} />
+            ) : (
+                <AgreementDetailsView agreement={agreement} projectOfficer={projectOfficer}/>
+            )}
         </div>
     );
 };

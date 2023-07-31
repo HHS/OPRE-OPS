@@ -70,6 +70,7 @@ export function useEditAgreementDispatch() {
 }
 
 export function useSetState(key) {
+    console.log("useSetState:", key);
     const dispatch = useContext(EditAgreementDispatchContext);
 
     const setValue = (value) => {
@@ -79,6 +80,7 @@ export function useSetState(key) {
     return setValue;
 }
 export function useUpdateAgreement(key) {
+    console.log("useUpdateAgreement:", key);
     const dispatch = useContext(EditAgreementDispatchContext);
 
     const setValue = (value) => {

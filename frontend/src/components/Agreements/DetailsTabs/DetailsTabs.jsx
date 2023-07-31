@@ -11,20 +11,17 @@ const DetailsTabs = ({ agreementId }) => {
     const paths = [
         {
             name: "",
-            editorName: "/details/edit",
             label: "Agreement Details",
         },
         {
             name: "/budget-lines",
-            editorName: "/budget-lines/edit",
             label: "Budget Lines",
         },
     ];
 
     const links = paths.map((path) => {
         const pathName = `/agreements/${agreementId}${path.name}`;
-        const editorPathName = `/agreements/${agreementId}${path.editorName}`;
-        const tabSelected = [pathName, editorPathName].includes(location.pathname);
+        const tabSelected = location.pathname == pathName;
 
         return (
             <Link to={pathName} className={tabSelected ? selected : notSelected} key={pathName}>

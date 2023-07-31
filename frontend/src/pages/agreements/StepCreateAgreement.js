@@ -16,6 +16,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode
             <EditModeTitle isEditMode={isEditMode || isReviewMode} />
             <StepIndicator steps={wizardSteps} currentStep={2} />
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
+            <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
             <AgreementEditForm
                 goBack={goBack} goToNext={goToNext} isEditMode={isEditMode} isReviewMode={isReviewMode}
                 wizardSteps={wizardSteps} currentStep={currentStep}
