@@ -1,4 +1,3 @@
-import React from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import AgreementDetailHeader from "./AgreementDetailHeader";
@@ -9,6 +8,8 @@ import PreviewTable from "../../../components/UI/PreviewTable/PreviewTable";
  * Agreement budget lines.
  * @param {Object} props - The component props.
  * @param {Object} props.agreement - The agreement to display.
+ * @param {boolean} props.isEditMode - Whether or not the edit mode is on.
+ * @param {function} props.setIsEditMode - The function to set the edit mode.
  * @returns {React.JSX.Element} - The rendered component.
  */
 
@@ -53,6 +54,8 @@ AgreementBudgetLines.propTypes = {
         id: PropTypes.number,
         budget_line_items: PropTypes.arrayOf(PropTypes.object),
     }),
+    isEditMode: PropTypes.bool,
+    setIsEditMode: PropTypes.func,
 };
 
 export default AgreementBudgetLines;

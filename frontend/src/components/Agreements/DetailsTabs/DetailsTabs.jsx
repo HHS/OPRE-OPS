@@ -1,9 +1,9 @@
 import styles from "./DetailsTabs.module.scss";
-import {Link, useLocation, useNavigate} from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import React from "react";
 import Modal from "../../UI/Modal";
 
-const DetailsTabs = ({ agreementId, isEditMode, setIsEditMode  }) => {
+const DetailsTabs = ({ agreementId, isEditMode, setIsEditMode }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const selected = `font-sans-2xs text-bold ${styles.listItemSelected} margin-right-2 cursor-pointer`;
@@ -23,11 +23,10 @@ const DetailsTabs = ({ agreementId, isEditMode, setIsEditMode  }) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const handleClick = (e) => {
-        const pathName = e.currentTarget.getAttribute("data-value")
+        const pathName = e.currentTarget.getAttribute("data-value");
         if (!isEditMode) {
             navigate(pathName);
-        }
-        else {
+        } else {
             setShowModal(true);
             setModalProps({
                 heading: "Are you sure you want to exit? Your changes will not be saved.",
@@ -47,7 +46,12 @@ const DetailsTabs = ({ agreementId, isEditMode, setIsEditMode  }) => {
         const tabSelected = location.pathname == pathName;
 
         return (
-            <button data-value={pathName} className={tabSelected ? selected : notSelected} key={pathName} onClick={handleClick}>
+            <button
+                data-value={pathName}
+                className={tabSelected ? selected : notSelected}
+                key={pathName}
+                onClick={handleClick}
+            >
                 {path.label}
             </button>
         );
@@ -71,7 +75,7 @@ const DetailsTabs = ({ agreementId, isEditMode, setIsEditMode  }) => {
             >
                 {links}
             </nav>
-            <span className="cursor-pointer"/>
+            <span className="cursor-pointer" />
         </>
     );
 };

@@ -1,4 +1,3 @@
-import React from "react";
 import PropTypes from "prop-types";
 import AgreementTotalBudgetLinesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalBudgetLinesCard";
 import AgreementValuesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementValuesCard";
@@ -11,6 +10,8 @@ import AgreementDetailsEdit from "./AgreementDetailsEdit";
  * @param {object} props - The component props.
  * @param {object} props.agreement - The agreement object to display details for.
  * @param {object} props.projectOfficer - The project officer object for the agreement.
+ * @param {boolean} props.isEditMode - Whether or not the edit mode is on.
+ * @param {function} props.setIsEditMode - The function to set the edit mode.
  * @returns {React.JSX.Element} - The rendered component.
  */
 const AgreementDetails = ({ agreement, projectOfficer, isEditMode, setIsEditMode }) => {
@@ -56,6 +57,8 @@ const AgreementDetails = ({ agreement, projectOfficer, isEditMode, setIsEditMode
 AgreementDetails.propTypes = {
     agreement: PropTypes.object.isRequired,
     projectOfficer: PropTypes.object.isRequired,
+    isEditMode: PropTypes.bool.isRequired,
+    setIsEditMode: PropTypes.func.isRequired,
 };
 
 export default AgreementDetails;

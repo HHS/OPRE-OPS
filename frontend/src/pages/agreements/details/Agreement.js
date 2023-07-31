@@ -16,7 +16,7 @@ const Agreement = () => {
 
     const searchParams = new URLSearchParams(location.search);
     const mode = searchParams.get("mode") || undefined;
-    if (mode === 'edit' && !isEditMode) {
+    if (mode === "edit" && !isEditMode) {
         setIsEditMode(true);
     }
 
@@ -66,13 +66,24 @@ const Agreement = () => {
                 <Routes>
                     <Route
                         path=""
-                        element={<AgreementDetails agreement={agreement} projectOfficer={projectOfficer}
-                                                   isEditMode={isEditMode} setIsEditMode={setIsEditMode} />}
+                        element={
+                            <AgreementDetails
+                                agreement={agreement}
+                                projectOfficer={projectOfficer}
+                                isEditMode={isEditMode}
+                                setIsEditMode={setIsEditMode}
+                            />
+                        }
                     />
                     <Route
                         path="budget-lines"
-                        element={<AgreementBudgetLines agreement={agreement}
-                                                   isEditMode={isEditMode} setIsEditMode={setIsEditMode} />}
+                        element={
+                            <AgreementBudgetLines
+                                agreement={agreement}
+                                isEditMode={isEditMode}
+                                setIsEditMode={setIsEditMode}
+                            />
+                        }
                     />
                 </Routes>
             </div>
