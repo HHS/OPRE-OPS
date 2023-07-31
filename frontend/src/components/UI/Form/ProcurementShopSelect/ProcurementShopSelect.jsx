@@ -15,9 +15,14 @@ import { useGetProcurementShopsQuery } from "../../../../api/opsAPI";
  * @param {Object} props - The component props.
  * @param {selectedProcurementShop} props.selectedProcurementShop - The currently selected procurement shop object.
  * @param {Function} props.onChangeSelectedProcurementShop - A function to call when the selected procurement shop changes.
+ * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
  * @returns {JSX.Element} - The procurement shop select element.
  */
-export const ProcurementShopSelect = ({ selectedProcurementShop, onChangeSelectedProcurementShop }) => {
+export const ProcurementShopSelect = ({
+    selectedProcurementShop,
+    onChangeSelectedProcurementShop,
+    legendClassname = "",
+}) => {
     const {
         data: procurementShops,
         error: errorProcurementShops,
@@ -48,27 +53,12 @@ export const ProcurementShopSelect = ({ selectedProcurementShop, onChangeSelecte
         onChangeSelectedProcurementShop(procurementShop);
     };
 
-    /**
-     * Displays the fee rate for a selected procurement shop.
-     * @param {Object} props - The component props.
-     * @param {selectedProcurementShop} props.selectedProcurementShop - The selected procurement shop object.
-     * @returns {React.JSX.Element|null} - The fee rate element, or null if no procurement shop is selected.
-     */
-    const FeeRate = ({ selectedProcurementShop }) => {
-        if (selectedProcurementShop?.id) {
-            return (
-                <span className="margin-left-1 text-base-dark font-12px" data-cy="fee">
-                    Fee Rate: {selectedProcurementShop?.fee * 100}%
-                </span>
-            );
-        }
-    };
     return (
         <fieldset className="usa-fieldset">
-            <label className="usa-label margin-top-0" htmlFor="procurement-shop-select">
+            <label className={`usa-label margin-top-0 ${legendClassname}`} htmlFor="procurement-shop-select">
                 Procurement Shop
             </label>
-            <div className="display-flex flex-align-center margin-top-1">
+            <div className="display-flex flex-align-center">
                 <select
                     className="usa-select margin-top-0 width-fit-content"
                     name="procurement-shop-select"
@@ -83,8 +73,6 @@ export const ProcurementShopSelect = ({ selectedProcurementShop, onChangeSelecte
                         </option>
                     ))}
                 </select>
-
-                <FeeRate selectedProcurementShop={selectedProcurementShop} />
             </div>
         </fieldset>
     );
