@@ -1,13 +1,19 @@
-import { Link } from "react-router-dom";
-import { faPen } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import PropTypes from "prop-types";
 import AgreementTotalBudgetLinesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalBudgetLinesCard";
 import AgreementValuesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementValuesCard";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import Tag from "../../../components/UI/Tag/Tag";
 import { notesData, historyData } from "./data";
 import LogItem from "../../../components/UI/LogItem";
+import AgreementDetailHeader from "./AgreementDetailHeader";
 
+/**
+ * Renders the details of an agreement, including budget lines, spending, and other information.
+ * @param {object} props - The component props.
+ * @param {object} props.agreement - The agreement object to display details for.
+ * @param {object} props.projectOfficer - The project officer object for the agreement.
+ * @returns {React.JSX.Element} - The rendered component.
+ */
 const AgreementDetails = ({ agreement, projectOfficer }) => {
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
@@ -26,20 +32,11 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
 
     return (
         <div>
-            <div className="display-flex flex-justify flex-align-center">
-                <h2 className="font-sans-lg">Agreement Summary</h2>
-
-                <Link to={"/agreements/" + agreement.id + "/details/edit"}>
-                    <FontAwesomeIcon
-                        icon={faPen}
-                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
-                        title="edit"
-                        data-position="top"
-                    />
-                    <span className="text-primary">Edit</span>
-                </Link>
-            </div>
-            <p className="font-sans-sm">The summary below shows the budget lines and spending for this agreement.</p>
+            <AgreementDetailHeader
+                agreementId={agreement?.id}
+                heading="Agreement Summary"
+                details="The summary below shows the budget lines and spending for this agreement."
+            />
             <div className="display-flex flex-justify">
                 <AgreementTotalBudgetLinesCard
                     numberOfAgreements={numberOfAgreements}
@@ -218,6 +215,11 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
             </section>
         </div>
     );
+};
+
+AgreementDetails.propTypes = {
+    agreement: PropTypes.object.isRequired,
+    projectOfficer: PropTypes.object.isRequired,
 };
 
 export default AgreementDetails;
