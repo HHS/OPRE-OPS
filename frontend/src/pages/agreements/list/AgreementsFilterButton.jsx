@@ -17,7 +17,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
     const [showModal, setShowModal] = React.useState(false);
     const [project, setProject] = React.useState({});
     const [po, setPO] = React.useState({});
-    const [agreementType, setAgreementType] = React.useState({});
+    const [agreementType, setAgreementType] = React.useState("");
     const [procurementShop, setProcurementShop] = React.useState({});
 
     const {
@@ -40,7 +40,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
             upcomingNeedByDate: null,
             projects: [],
             projectOfficer: [],
-            type: null,
+            types: [],
             procurementShop: {},
             budgetLineStatus: {
                 draft: false,
@@ -91,27 +91,30 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
     //     return filterKey;
     // };
 
+    function setFilterList(prevState, filterKeyString, stateObject) {
+        let updatedFilters = { ...prevState };
+        let filterList = _.get(updatedFilters, filterKeyString, []);
+        _.set(updatedFilters, filterKeyString, filterList);
+        filterList.push(stateObject);
+        _.set(
+            updatedFilters,
+            filterKeyString,
+            filterList.filter((filter) => !_.isEmpty(filter))
+        );
+        _.set(updatedFilters, filterKeyString, [...new Set(_.get(updatedFilters, filterKeyString, []))]); // remove dups
+
+        return updatedFilters;
+    }
+
     useEffect(() => {
         setFilters((prevState) => {
-            let updatedFilters = { ...prevState };
-            updatedFilters.projects = updatedFilters.projects || [];
-            updatedFilters.projects.push(project);
-            updatedFilters.projects = updatedFilters.projects.filter((filter) => !_.isEmpty(filter));
-            updatedFilters.projects = [...new Set(updatedFilters.projects)]; // remove dups
-
-            return updatedFilters;
+            return setFilterList(prevState, "projects", project);
         });
     }, [project, setFilters]);
 
     useEffect(() => {
         setFilters((prevState) => {
-            let updatedFilters = { ...prevState };
-            updatedFilters.projectOfficers = updatedFilters.projectOfficers || [];
-            updatedFilters.projectOfficers.push(po);
-            updatedFilters.projectOfficers = updatedFilters.projectOfficers.filter((filter) => !_.isEmpty(filter));
-            updatedFilters.projectOfficers = [...new Set(updatedFilters.projectOfficers)]; // remove dups
-
-            return updatedFilters;
+            return setFilterList(prevState, "projectOfficers", po);
         });
     }, [po, setFilters]);
 

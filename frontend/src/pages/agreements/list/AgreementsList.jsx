@@ -22,7 +22,7 @@ export const AgreementsList = () => {
         upcomingNeedByDate: null,
         projects: [],
         projectOfficers: [],
-        type: null,
+        types: [],
         procurementShop: {},
         budgetLineStatus: {
             draft: false,
