@@ -129,14 +129,14 @@ it("review an agreement", () => {
         // TODO: check to ensure the group date is in the future
         cy.get("#enteredMonth").select(month);
         cy.get("#enteredDay").clear();
-        cy.get("#enteredDay").type(day);
+        cy.get("#enteredDay").type(blData[0].day);
         cy.get("#enteredYear").clear();
         cy.get("#enteredYear").type(`${year - 1}`);
         // check for date to be in the future  which should error
         cy.get('[data-cy="date-group-errors"] .usa-error-message').should("exist");
         // fix by adding a valid date
         cy.get("#enteredDay").clear();
-        cy.get("#enteredDay").type(day + 1);
+        cy.get("#enteredDay").type(blData[0].day + 1);
         cy.get("#enteredYear").clear();
         cy.get("#enteredYear").type(`${year + 1}`);
         cy.get('[data-cy="date-group-errors"] .usa-error-message').should("not.exist");
