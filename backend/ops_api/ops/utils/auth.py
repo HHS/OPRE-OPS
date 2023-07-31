@@ -7,7 +7,7 @@ from typing import Callable, Optional
 from authlib.integrations.flask_client import OAuth
 from authlib.jose import jwt as jose_jwt
 from flask import Response, current_app
-from flask_jwt_extended import JWTManager, get_jwt_identity, jwt_required
+from flask_jwt_extended import JWTManager, get_current_user, get_jwt_identity, jwt_required
 from models.users import User
 from ops_api.ops.utils.authorization import AuthorizationGateway, BasicAuthorizationPrivider
 from ops_api.ops.utils.response import make_response_with_headers
@@ -87,10 +87,11 @@ def create_oauth_jwt(
 class is_authorized:
     def __init__(
         self, permission_type: PermissionType, permission: Permission, extra_check: Optional[Callable[..., bool]] = None
-    ) -> None:
+    , groups: Optional[list[str]] = None) -> None:
         self.permission_type = permission_type
         self.permission = permission
         self.extra_check = extra_check
+        self.groups = groups
 
     def __call__(self, func: Callable) -> Callable:
         @wraps(func)
@@ -102,7 +103,16 @@ class is_authorized:
             if self.extra_check is not None:
                 extra_valid = self.extra_check(*args, **kwargs)
 
-            if is_authorized and extra_valid:
+            if self.groups:
+                user = get_current_user()
+                if set(self.groups) & {g.name for g in user.groups}:
+                    auth_group = True
+                else:
+                    auth_group = False
+            else:
+                auth_group = True
+
+            if is_authorized and extra_valid and auth_group:
                 response = func(*args, **kwargs)
             else:
                 response = make_response_with_headers({}, 401)

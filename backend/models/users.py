@@ -40,6 +40,7 @@ class User(BaseModel):
 
     division = Column(Integer, ForeignKey("division.id", name="fk_user_division"))
     roles = relationship("Role", secondary=user_role_table, back_populates="users")
+    groups = relationship("Group", secondary=user_group_table, back_populates="users")
 
     portfolios = relationship(
         "Portfolio",
