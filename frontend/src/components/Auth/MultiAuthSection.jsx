@@ -32,21 +32,21 @@ const MultiAuthSection = () => {
 
             const response = await apiLogin(activeProvider, authCode);
             console.debug(`API Login Response = ${JSON.stringify(response)}`);
-            if (!response.access_token === undefined) {
+            if (response.access_token === null || response.access_token === undefined) {
+                console.error("API Login Failed!");
+                navigate("/login");
+            } else {
                 localStorage.setItem("access_token", response.access_token);
                 dispatch(login());
 
                 if (response.is_new_user) {
-                    navigate("/user/edit");
+                    navigate(`/user/edit/${response?.user?.id}`);
                     return;
                 }
 
                 await setActiveUser(response.access_token, dispatch);
 
                 navigate("/");
-            } else {
-                console.error("API Login Failed!");
-                navigate("/login");
             }
         },
         [activeProvider, dispatch, navigate]

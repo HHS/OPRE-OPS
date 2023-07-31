@@ -21,8 +21,8 @@ export const EditUserForm = ({
                 <Input name="division" label="Division" value={user?.division} />
                 <Input name="roles" label="Roles" value={user?.roles} disabled />
                 <Input name="date-joined" label="Date Joined" value={dateJoined} disabled={true} />
-                <Input name="oidc-id" label="OIDC ID" value={user?.oidc_id} disabled />
-                <Input name="hhs-id" label="HHS ID" value={user?.hhs_id} disabled />
+                <Input name="oidc-id" label="OIDC ID" value={user?.oidc_id} disabled={true} />
+                <Input name="hhs-id" label="HHS ID" value={user?.hhs_id} disabled={true} />
             </fieldset>
         </form>
     );

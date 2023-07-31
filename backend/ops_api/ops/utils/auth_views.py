@@ -23,19 +23,27 @@ def login() -> Union[Response, tuple[str, int]]:
         if not auth_code:
             return "Invalid Auth Code", 400
 
-        if not provider not in auth_gateway.providers.keys():
+        if provider not in auth_gateway.providers.keys():
             return "Invalid provider name", 400
 
         token = auth_gateway.authenticate(provider, auth_code)
+        # current_app.logger.debug(f"auth_gateway.authenticate() - token: {token['access_token'].strip()}")
         if not token:
+            current_app.logger.error(f"Failed to authenticate with provider {provider} using auth code {auth_code}")
             return "Invalid Provider Auth Token", 400
-        user_data = auth_gateway.get_user_info(provider, token)
 
-        current_app.logger.debug(f"Got an OIDC request with the code of {auth_code}")
-        current_app.logger.debug(f"Login for SSO: {provider}")
+        user_data = auth_gateway.get_user_info(provider, token["access_token"].strip())
+        # Issues where user_data is sometimes just a string, and sometimes a dict.
+        if isinstance(user_data, str):
+            user_data = json.loads(user_data)
+        else:
+            user_data = user_data
+
+        # current_app.logger.debug(f"Got an OIDC request with the code of {auth_code}")
+        # current_app.logger.debug(f"Login for SSO: {provider}")
         # with OpsEventHandler(OpsEventType.LOGIN_ATTEMPT) as la:
         # ### token, user_data = _get_token_and_user_data_from_oauth_provider(provider, auth_code)
-        current_app.logger.debug(f"provider_access_token: {token}")
+        # current_app.logger.debug(f"provider_access_token: {token}")
         current_app.logger.debug(f"Provider Returned user_data: {user_data}")
 
         (
@@ -43,8 +51,10 @@ def login() -> Union[Response, tuple[str, int]]:
             refresh_token,
             user,
             is_new_user,
-        ) = _get_token_and_user_data_from_internal_auth(json.loads(user_data))
-        current_app.logger.debug(f"api_access_token={access_token};api_refresh_token={refresh_token};user={user}")
+        ) = _get_token_and_user_data_from_internal_auth(user_data)
+        current_app.logger.debug(
+            f"api_access_token={access_token};   api_refresh_token={refresh_token};    user={user};    is_new_user={is_new_user}"
+        )
 
         # la.metadata.update(
         #     {
@@ -60,6 +70,7 @@ def login() -> Union[Response, tuple[str, int]]:
                 "access_token": access_token,
                 "refresh_token": refresh_token,
                 "is_new_user": is_new_user,
+                "user": user.to_dict(),
             }
         )
     except Exception as e:
@@ -87,17 +98,22 @@ def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
     #   - invalid JWT
     # - create backend-JWT endpoints /refesh /validate (drf-simplejwt)
     # See if user exists
-    user, is_new_user = register_user(user_data)  # Refactor me
-    current_app.logger.debug(f"User: {user}")
-    current_app.logger.debug(f"Is New User: {is_new_user}")
-    # TODO
-    # Do we want to embed the user's roles or permissions in the scope: [read write]?
-    # The next two tokens are specific to our backend API, these are used for our API
-    # authZ, given a valid login from the prior AuthN steps above.
     try:
+        user, is_new_user = register_user(user_data)  # Refactor me
+        current_app.logger.debug(f"User: {user}")
+        current_app.logger.debug(f"Is New User: {is_new_user}")
+        # TODO
+        # Do we want to embed the user's roles or permissions in the scope: [read write]?
+        # The next two tokens are specific to our backend API, these are used for our API
+        # authZ, given a valid login from the prior AuthN steps above.
+
+        additional_claims = {}
+        if user.roles:
+            additional_claims["roles"] = [role.name for role in user.roles]
+
         access_token = create_access_token(
             identity=user,
-            additional_claims={"roles": [role.name for role in user.roles]},
+            additional_claims=additional_claims,
         )
         refresh_token = create_refresh_token(identity=user)
     except Exception as e:

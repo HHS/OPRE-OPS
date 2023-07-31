@@ -15,7 +15,9 @@ class UserInfoDict(TypedDict):
 def register_user(userinfo: UserInfoDict) -> User:
     user = get_user_from_token(userinfo)
     current_app.logger.debug(f"User Lookup Response: {user}")
-    if not user:
+    if user:
+        return user, False
+    else:
         # Create new user
         # Default to an 'unassigned' role.
         current_app.logger.debug("Creating new user")
@@ -42,6 +44,8 @@ def register_user(userinfo: UserInfoDict) -> User:
 
 def get_user_from_token(userinfo: UserInfoDict) -> Optional[User]:
     current_app.logger.debug("Getting User from Token")
+
+    current_app.logger.debug(f"get_user_from_token - Userinfo:{type(userinfo)} {userinfo}")
     if userinfo is None:
         return None
     try:
@@ -49,6 +53,7 @@ def get_user_from_token(userinfo: UserInfoDict) -> Optional[User]:
             or_(User.oidc_id == userinfo["sub"], User.email == userinfo["email"])  # or User.hhs_id == userinfo["hhsid"]
         )
         users = current_app.db_session.execute(stmt).all()
+        current_app.logger.debug(f"User Lookup Response: {len(users)} {users}")
         if users and len(users) == 1:
             return users[0][0]
     except Exception as e:
