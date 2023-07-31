@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import ProjectSelect from "../../components/UI/Form/ProjectSelect";
+import ProjectSelectWithSummaryCard from "../../components/UI/Form/ProjectSelectWithSummaryCard";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import Modal from "../../components/UI/Modal";
 import { useGetResearchProjectsQuery } from "../../api/opsAPI";
@@ -74,7 +74,7 @@ export const StepSelectProject = ({ goToNext, isEditMode, isReviewMode, wizardSt
                 Select a project the agreement should be associated with. If you need to create a new project, click Add
                 New Project.
             </p>
-            <ProjectSelect
+            <ProjectSelectWithSummaryCard
                 researchProjects={projects}
                 selectedResearchProject={selectedResearchProject}
                 setSelectedProject={setSelectedProject}

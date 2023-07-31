@@ -1,7 +1,10 @@
+import React from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import PreviewTable from "../../../components/UI/PreviewTable/PreviewTable";
 import AgreementDetailHeader from "./AgreementDetailHeader";
+import CreateBudgetLinesForm from "../../../components/UI/Form/CreateBudgetLinesForm";
+
 /**
  * Agreement budget lines.
  * @param {Object} props - The component props.
@@ -9,18 +12,59 @@ import AgreementDetailHeader from "./AgreementDetailHeader";
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const AgreementBudgetLines = ({ agreement }) => {
+    const [isEditMode, setIsEditMode] = React.useState(false);
+    const initialState = {
+        selectedCan: "",
+        enteredDescription: "",
+        enteredAmount: "",
+        enteredMonth: "",
+        enteredDay: "",
+        enteredYear: "",
+        enteredComments: "",
+        isEditing: false,
+    };
+    const [formDetails, setFormDetails] = React.useReducer(
+        (state, newState) => ({ ...state, ...newState }),
+        initialState
+    );
     return (
-        <>
+        <form onSubmit={(e) => e.preventDefault()}>
             <AgreementDetailHeader
-                agreementId={agreement?.id}
                 heading="Budget Lines"
                 details="This is a list of all budget lines within this agreement."
+                isEditMode={isEditMode}
+                setIsEditMode={setIsEditMode}
             />
+            {isEditMode && (
+                <CreateBudgetLinesForm
+                    selectedCan={formDetails.selectedCan}
+                    enteredDescription={formDetails.enteredDescription}
+                    enteredAmount={formDetails.enteredAmount}
+                    enteredMonth={formDetails.enteredMonth}
+                    enteredDay={formDetails.enteredDay}
+                    enteredYear={formDetails.enteredYear}
+                    enteredComments={formDetails.enteredComments}
+                    isEditing={formDetails.isEditing}
+                    setEnteredDescription={() => setFormDetails({ enteredDescription: event.target.value })}
+                    setSelectedCan={() => setFormDetails({ selectedCan: event.target.value })}
+                    setEnteredAmount={() => setFormDetails({ enteredAmount: event.target.value })}
+                    setEnteredMonth={() => setFormDetails({ enteredMonth: event.target.value })}
+                    setEnteredDay={() => setFormDetails({ enteredDay: event.target.value })}
+                    setEnteredYear={() => setFormDetails({ enteredYear: event.target.value })}
+                    setEnteredComments={() => setFormDetails({ enteredComments: event.target.value })}
+                    handleEditForm={() => {}}
+                    handleResetForm={() => {}}
+                    handleSubmitForm={() => {}}
+                    isEditMode={isEditMode}
+                    isReviewMode={false}
+                />
+            )}
             {agreement?.budget_line_items.length > 0 ? (
-                <PreviewTable budgetLinesAdded={agreement?.budget_line_items} readOnly={true} />
+                <PreviewTable budgetLinesAdded={agreement?.budget_line_items} readOnly={!isEditMode} />
             ) : (
                 <p>No budget lines.</p>
             )}
+            {isEditMode && <p>EDIT MODE IS ON!</p>}
             <div className="grid-row flex-justify-end margin-top-1">
                 <Link
                     className="usa-button float-right margin-top-4 margin-right-0"
@@ -29,7 +73,7 @@ export const AgreementBudgetLines = ({ agreement }) => {
                     Plan or Execute Budget Lines
                 </Link>
             </div>
-        </>
+        </form>
     );
 };
 

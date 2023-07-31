@@ -1,5 +1,4 @@
 import PropTypes from "prop-types";
-import { Link } from "react-router-dom";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -8,23 +7,25 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
  * @param {Object} props - The component props.
  * @param {string} props.heading - The heading to display.
  * @param {string} props.details - The details to display.
- * @param {number} props.agreementId - The ID of the agreement.
+ * @param {boolean} props.isEditMode - Whether or not the edit mode is on.
+ * @param {function} props.setIsEditMode - The function to set the edit mode.
  * @returns {React.JSX.Element} - The rendered component.
  */
-export const AgreementDetailHeader = ({ heading, details, agreementId }) => {
+export const AgreementDetailHeader = ({ heading, details, isEditMode, setIsEditMode }) => {
     return (
         <>
             <div className="display-flex flex-justify flex-align-center">
                 <h2 className="font-sans-lg">{heading}</h2>
-                <Link to={`/agreements/${agreementId}/details/edit`}>
+                {/* //TODO: Hide button when editMode is true */}
+                <button className="hover:text-underline cursor-pointer" onClick={() => setIsEditMode(!isEditMode)}>
                     <FontAwesomeIcon
                         icon={faPen}
-                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                        className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
                         title="edit"
                         data-position="top"
                     />
                     <span className="text-primary">Edit</span>
-                </Link>
+                </button>
             </div>
             <p className="font-sans-sm">{details}</p>
         </>
@@ -34,7 +35,8 @@ export const AgreementDetailHeader = ({ heading, details, agreementId }) => {
 AgreementDetailHeader.propTypes = {
     heading: PropTypes.string.isRequired,
     details: PropTypes.string.isRequired,
-    agreementId: PropTypes.number.isRequired,
+    isEditMode: PropTypes.bool.isRequired,
+    setIsEditMode: PropTypes.func.isRequired,
 };
 
 export default AgreementDetailHeader;

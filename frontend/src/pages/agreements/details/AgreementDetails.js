@@ -1,3 +1,4 @@
+import React from "react";
 import PropTypes from "prop-types";
 import AgreementTotalBudgetLinesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalBudgetLinesCard";
 import AgreementValuesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementValuesCard";
@@ -16,6 +17,7 @@ import AgreementDetailsView from "./AgreementDetailsView";
  * @returns {React.JSX.Element} - The rendered component.
  */
 const AgreementDetails = ({ agreement, projectOfficer }) => {
+    const [isEditMode, setIsEditMode] = React.useState(false);
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
     const missingValueText = "TBD";
@@ -34,9 +36,10 @@ const AgreementDetails = ({ agreement, projectOfficer }) => {
     return (
         <div>
             <AgreementDetailHeader
-                agreementId={agreement?.id}
                 heading="Agreement Summary"
                 details="The summary below shows the budget lines and spending for this agreement."
+                isEditMode={isEditMode}
+                setIsEditMode={setIsEditMode}
             />
             <div className="display-flex flex-justify">
                 <AgreementTotalBudgetLinesCard
