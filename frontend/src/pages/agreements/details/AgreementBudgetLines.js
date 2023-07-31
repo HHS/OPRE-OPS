@@ -1,3 +1,4 @@
+import React from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import PreviewTable from "../../../components/UI/PreviewTable/PreviewTable";
@@ -9,18 +10,22 @@ import AgreementDetailHeader from "./AgreementDetailHeader";
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const AgreementBudgetLines = ({ agreement }) => {
+    const [isEditMode, setIsEditMode] = React.useState(false);
     return (
         <>
             <AgreementDetailHeader
                 agreementId={agreement?.id}
                 heading="Budget Lines"
                 details="This is a list of all budget lines within this agreement."
+                isEditMode={isEditMode}
+                setIsEditMode={setIsEditMode}
             />
             {agreement?.budget_line_items.length > 0 ? (
                 <PreviewTable budgetLinesAdded={agreement?.budget_line_items} readOnly={true} />
             ) : (
                 <p>No budget lines.</p>
             )}
+            {isEditMode && <p>EDIT MODE IS ON!</p>}
             <div className="grid-row flex-justify-end margin-top-1">
                 <Link
                     className="usa-button float-right margin-top-4 margin-right-0"
