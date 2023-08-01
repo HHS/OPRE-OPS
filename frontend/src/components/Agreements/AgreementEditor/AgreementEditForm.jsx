@@ -176,7 +176,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                 if (isWizardMode) {
                     navigate("/agreements");
                 } else {
-                    if (setIsEditMode) setIsEditMode(false);
+                    if (isEditMode && setIsEditMode) setIsEditMode(false);
                     navigate(`/agreements/${agreement.id}`);
                 }
             },
@@ -388,7 +388,7 @@ AgreementEditForm.propTypes = {
     goToNext: PropTypes.func,
     isReviewMode: PropTypes.bool,
     isEditMode: PropTypes.bool,
-    setIsEditMode: PropTypes.func
+    setIsEditMode: PropTypes.func,
 };
 
 export default AgreementEditForm;

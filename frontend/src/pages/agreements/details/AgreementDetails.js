@@ -1,4 +1,3 @@
-import React from "react";
 import PropTypes from "prop-types";
 import AgreementTotalBudgetLinesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalBudgetLinesCard";
 import AgreementValuesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementValuesCard";
@@ -47,8 +46,12 @@ const AgreementDetails = ({ agreement, projectOfficer, isEditMode, setIsEditMode
             </div>
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
             {isEditMode ? (
-                <AgreementDetailsEdit agreement={agreement} projectOfficer={projectOfficer} isEditMode={isEditMode}
-                        setIsEditMode={setIsEditMode}/>
+                <AgreementDetailsEdit
+                    agreement={agreement}
+                    projectOfficer={projectOfficer}
+                    isEditMode={isEditMode}
+                    setIsEditMode={setIsEditMode}
+                />
             ) : (
                 <AgreementDetailsView agreement={agreement} projectOfficer={projectOfficer} />
             )}
@@ -60,7 +63,7 @@ AgreementDetails.propTypes = {
     agreement: PropTypes.object.isRequired,
     projectOfficer: PropTypes.object.isRequired,
     isEditMode: PropTypes.bool,
-    setIsEditMode: PropTypes.func
+    setIsEditMode: PropTypes.func,
 };
 
 export default AgreementDetails;

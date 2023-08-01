@@ -9,6 +9,8 @@ import CreateBudgetLinesForm from "../../../components/UI/Form/CreateBudgetLines
  * Agreement budget lines.
  * @param {Object} props - The component props.
  * @param {Object} props.agreement - The agreement to display.
+ * @param {boolean} props.isEditMode - Whether the edit mode is on.
+ * @param {function} props.setIsEditMode - The function to set the edit mode.
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
@@ -81,6 +83,8 @@ AgreementBudgetLines.propTypes = {
         id: PropTypes.number,
         budget_line_items: PropTypes.arrayOf(PropTypes.object),
     }),
+    isEditMode: PropTypes.bool,
+    setIsEditMode: PropTypes.func,
 };
 
 export default AgreementBudgetLines;
