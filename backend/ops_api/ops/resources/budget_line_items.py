@@ -5,7 +5,7 @@ from typing import Optional
 
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
-from flask_jwt_extended import verify_jwt_in_request
+from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 from marshmallow import Schema, ValidationError
 from models import BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
@@ -27,6 +27,30 @@ from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 from typing_extensions import Any, override
 
 ENDPOINT_STRING = "/budget-line-items"
+
+
+def bli_associated_with_agreement(self, id: int) -> bool:
+    jwt_identity = get_jwt_identity()
+    print("*"*80)
+    print(id)
+    budget_line_item_stmt = select(BudgetLineItem).where(BudgetLineItem.id == id)
+    print(budget_line_item_stmt)
+    budget_line_item = current_app.db_session.scalar(budget_line_item_stmt)
+    print(budget_line_item)
+    agreement = budget_line_item.agreement
+    print(agreement)
+    print("*"*80)
+
+    oidc_ids = set()
+    if agreement.created_by_user:
+        oidc_ids.add(str(agreement.created_by_user.oidc_id))
+    if agreement.project_officer_user:
+        oidc_ids.add(str(agreement.project_officer_user.oidc_id))
+    oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
+
+    ret = jwt_identity in oidc_ids
+
+    return ret
 
 
 class BudgetLineItemsItemAPI(BaseItemAPI):
@@ -58,7 +82,12 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         return response
 
     @override
-    @is_authorized(PermissionType.PUT, Permission.BUDGET_LINE_ITEM)
+    @is_authorized(
+        PermissionType.PUT,
+        Permission.BUDGET_LINE_ITEM,
+        extra_check=bli_associated_with_agreement,
+        groups=["Budget Team"],
+    )
     def put(self, id: int) -> Response:
         message_prefix = f"PUT to {ENDPOINT_STRING}"
         try:
@@ -97,7 +126,12 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             return make_response_with_headers({}, 500)
 
     @override
-    @is_authorized(PermissionType.PATCH, Permission.BUDGET_LINE_ITEM)
+    @is_authorized(
+        PermissionType.PATCH,
+        Permission.BUDGET_LINE_ITEM,
+        extra_check=bli_associated_with_agreement,
+        groups=["Budget Team"],
+    )
     def patch(self, id: int) -> Response:
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
         try:
