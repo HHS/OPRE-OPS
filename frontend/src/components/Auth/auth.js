@@ -16,7 +16,7 @@ export const getAuthorizationCode = (provider, stateToken) => {
     providerUrl.searchParams.set("redirect_uri", authProvider.redirect_uri);
     providerUrl.searchParams.set("state", stateToken);
     providerUrl.searchParams.set("nonce", cryptoRandomString({ length: 64 }));
-    return [providerUrl, provider];
+    return providerUrl;
 };
 
 export const logoutUser = async (stateToken) => {
