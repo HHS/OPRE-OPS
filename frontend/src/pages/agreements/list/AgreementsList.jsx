@@ -117,6 +117,16 @@ export const AgreementsList = () => {
         );
     });
 
+    // filter by types
+    filteredAgreements = filteredAgreements.filter((agreement) => {
+        return (
+            filters.types.length === 0 ||
+            filters.types.some((agreementType) => {
+                return agreementType === agreement.agreement_type;
+            })
+        );
+    });
+
     let sortedAgreements;
     if (searchParams.get("filter") === "my-agreements") {
         const myAgreements = filteredAgreements.filter((agreement) => {
