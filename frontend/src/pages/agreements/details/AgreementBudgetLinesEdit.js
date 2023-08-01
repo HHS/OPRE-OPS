@@ -181,9 +181,10 @@ const AgreementDetailsEdit = ({ agreement, isEditMode, setIsEditMode, isReviewMo
     };
 
     const handleDuplicateBudgetLine = (budgetLine) => {
+        const { updated_on, created_on, ...budgetLineRest } = budgetLine;
         dispatch({
             type: "DUPLICATE_BUDGET_LINE",
-            payload: { ...budgetLine, created_by: loggedInUserFullName },
+            payload: { ...budgetLineRest, created_by: loggedInUserFullName },
         });
     };
     return (
