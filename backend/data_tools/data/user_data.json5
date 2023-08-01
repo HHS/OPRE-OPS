@@ -121,13 +121,34 @@
       oidc_id: "7716138a-dec6-4976-9f31-e30fade3254d",
     },
     { // 18
+      first_name: "Jonathan",
+      last_name: "Nalley",
+      division: 3,
+      email: "jnalley+logingovsandbox@flexion.us",
+      oidc_id: "48f7db91-1861-4d4b-813c-a6221cb61b60",
+    },
+    { // 19
+      first_name: "Andressa",
+      last_name: "Silva",
+      division: 3,
+      email: "acurvelodasilva@flexion.us",
+      oidc_id: "6e672c19-15bc-4901-8cee-b57cd8c6d0c1",
+    },
+    { // 20
+      first_name: "Kim",
+      last_name: "Schulke",
+      division: 3,
+      email: "kschulke@flexion.us",
+      oidc_id: "b5f7598b-e5e6-4b11-8321-b3acabc780f7",
+    },
+    { // 21
       first_name: "Admin",
       last_name: "Demo",
       division: 3,
       email: "admin.demo@email.com",
       oidc_id: "00000000-0000-1111-a111-000000000018",
     },
-    { // 19
+    { // 22
       first_name: "User",
       last_name: "Demo",
       division: 3,
@@ -143,64 +164,48 @@
         "PUT_AGREEMENT",
         "PATCH_AGREEMENT",
         "DELETE_AGREEMENT",
-
-        "GET_AGREEMENTS",
-        "POST_AGREEMENTS",
+        "POST_AGREEMENT",
 
         "GET_BUDGET_LINE_ITEM",
         "PUT_BUDGET_LINE_ITEM",
         "PATCH_BUDGET_LINE_ITEM",
-
-        "GET_BUDGET_LINE_ITEMS",
-        "POST_BUDGET_LINE_ITEMS",
+        "POST_BUDGET_LINE_ITEM",
 
         "GET_CAN",
-        "GET_CANS",
 
         "GET_DIVISION",
-        "GET_DIVISIONS",
 
         "GET_NOTIFICATION",
         "PUT_NOTIFICATION",
         "PATCH_NOTIFICATION",
 
-        "GET_NOTIFICATIONS",
-
         "GET_PORTFOLIO",
-        "GET_PORTFOLIOS",
 
         "GET_RESEARCH_PROJECT",
-
-        "GET_RESEARCH_PROJECTS",
-        "POST_RESEARCH_PROJECTS",
+        "POST_RESEARCH_PROJECT",
 
         "GET_USER",
+
         "PUT_USER",
         "POST_USER",
         "PATCH_USER",
 
         "GET_USERS",
+        "GET_HISTORY",
       ],
     },
     {
       name: "user",
       permissions: [
         "GET_AGREEMENT",
-        "GET_AGREEMENTS",
         "GET_BUDGET_LINE_ITEM",
-        "GET_BUDGET_LINE_ITEMS",
         "GET_CAN",
-        "GET_CANS",
         "GET_DIVISION",
-        "GET_DIVISIONS",
         "GET_NOTIFICATION",
-        "GET_NOTIFICATIONS",
         "GET_PORTFOLIO",
-        "GET_PORTFOLIOS",
         "GET_RESEARCH_PROJECT",
-        "GET_RESEARCH_PROJECTS",
         "GET_USER",
-        "GET_USERS",
+        "GET_HISTORY",
       ],
     },
         {
@@ -268,6 +273,18 @@
     },
     {
       user_id: 19,
+      role_id: 2,
+    },
+    {
+      user_id: 20,
+      role_id: 1,
+    },
+    {
+      user_id: 21,
+      role_id: 1,
+    },
+    {
+      user_id: 22,
       role_id: 2,
     },
   ],
@@ -389,6 +406,27 @@
       message: "This is a system notification",
       is_read: false,
       recipient_id: 17,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 18,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 19,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 20,
       expires: "2031-12-31"
     }
   ],

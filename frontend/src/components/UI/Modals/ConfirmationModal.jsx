@@ -1,7 +1,19 @@
 import { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import Notification from "../Notification";
+import LogItem from "../LogItem";
 
+/**
+ * A modal component that can be used to display a message or prompt the user for confirmation.
+ *
+ * @param {Object} props - The component props.
+ * @param {string} props.heading - The heading text to display in the modal.
+ * @param {string|Array<any>} [props.description=""] - The description text to display in the modal.
+ * @param {function} [props.setShowModal=() => {}] - A function to set the visibility of the modal.
+ * @param {string} props.actionButtonText - The text to display on the primary action button.
+ * @param {string} [props.secondaryButtonText="Cancel"] - The text to display on the secondary action button.
+ * @param {function} [props.handleConfirm=() => {}] - A function to handle the primary action button click.
+ * @returns {React.JSX.Element} - The modal component JSX.
+ */
 export const ConfirmationModal = ({
     heading,
     description = "",
@@ -74,7 +86,14 @@ export const ConfirmationModal = ({
                                 {description && description instanceof Array && description.length > 0 && (
                                     <ul>
                                         {description.map((item) => (
-                                            <Notification key={item.id} data={item} />
+                                            <LogItem
+                                                key={item.id}
+                                                title={item.title}
+                                                createdOn={item.created_on}
+                                                message={item.message}
+                                                variant="large"
+                                                withSeparator={true}
+                                            />
                                         ))}
                                     </ul>
                                 )}

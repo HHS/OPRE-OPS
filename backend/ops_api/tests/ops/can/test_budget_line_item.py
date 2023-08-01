@@ -3,6 +3,7 @@ import datetime
 import pytest
 from models.cans import BudgetLineItem, BudgetLineItemStatus
 from ops_api.ops.resources.budget_line_items import PATCHRequestBody, POSTRequestBody
+from sqlalchemy_continuum import parent_class, version_class
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -559,6 +560,45 @@ def test_patch_budget_line_items_update_status(auth_client, loaded_db):
     response = auth_client.patch("/api/v1/budget-line-items/1000", json=data)
     assert response.status_code == 200
     assert response.json["status"] == "UNDER_REVIEW"
+
+    # cleanup
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_patch_budget_line_items_history(loaded_db):
+    bli = BudgetLineItem(
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=1,
+        can_id=1,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2043, 1, 1),
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    # these will throw if the history tables don't exist
+    version_class(BudgetLineItem)
+    parent_class(version_class(BudgetLineItem))
+
+    # initial version is 0
+    assert bli.versions[0].line_description == "LI 1"
+
+    # update the line description
+    bli.line_description = "Updated LI 1"
+    loaded_db.commit()
+
+    # new version is 1
+    assert bli.versions[1].line_description == "Updated LI 1"
+
+    # SQL pulls back latest version (1 in this case)
+    updated_bli = loaded_db.get(BudgetLineItem, bli.id)
+    assert updated_bli.line_description == "Updated LI 1"
 
     # cleanup
     loaded_db.delete(bli)

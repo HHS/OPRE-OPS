@@ -1,4 +1,4 @@
-import { login, logout, setUserDetails } from "./authSlice";
+import { login, logout } from "./authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -7,11 +7,19 @@ import { getAuthorizationCode } from "./auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { User } from "../UI/Header/User";
-import jwt_decode from "jwt-decode";
-import { getUserByOidc } from "../../api/getUser";
-import { apiLogin, apiLogout } from "../../api/apiLogin";
+import { apiLogin } from "../../api/apiLogin";
 import NotificationCenter from "../UI/NotificationCenter/NotificationCenter";
 import { setActiveUser } from "./auth";
+
+// async function setActiveUser(token, dispatch) {
+//     // TODO: Vefiry the Token!
+//     //const isValidToken = validateTooken(token);
+//     const decodedJwt = jwt_decode(token);
+//     const userId = decodedJwt["sub"];
+//     const userDetails = await getUserByOidc(userId);
+
+//     dispatch(setUserDetails(userDetails));
+// }
 
 const AuthSection = () => {
     const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
@@ -103,11 +111,20 @@ const AuthSection = () => {
             )}
             {isLoggedIn && (
                 <div>
-                    <User />
-                    <NotificationCenter />
-                    <button className="usa-button fa-solid fa-arrow-right-to-bracket margin-1" onClick={logoutHandler}>
-                        <span className="margin-1">Sign-out</span>
-                    </button>
+                    <div className="display-flex flex-align-center">
+                        <div className="padding-right-1">
+                            <User />
+                        </div>
+                        <div className="padding-right-205">
+                            <NotificationCenter />
+                        </div>
+                        <button
+                            className="usa-button fa-solid fa-arrow-right-to-bracket margin-1"
+                            onClick={logoutHandler}
+                        >
+                            <span className="margin-1">Sign-out</span>
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

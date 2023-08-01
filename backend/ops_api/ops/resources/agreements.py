@@ -5,7 +5,7 @@ from typing import ClassVar, Optional
 import desert
 from flask import Response, current_app, request
 from flask.views import MethodView
-from flask_jwt_extended import verify_jwt_in_request
+from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from marshmallow import Schema, ValidationError, fields
 from models import ContractType, OpsEventType, User
 from models.base import BaseModel
@@ -135,6 +135,23 @@ class QueryParameters:
     research_project_id: Optional[int] = None
 
 
+def associated_with_agreement(self, id: int) -> bool:
+    jwt_identity = get_jwt_identity()
+    agreement_stmt = select(Agreement).where(Agreement.id == id)
+    agreement = current_app.db_session.scalar(agreement_stmt)
+
+    oidc_ids = set()
+    if agreement.created_by_user:
+        oidc_ids.add(str(agreement.created_by_user.oidc_id))
+    if agreement.project_officer_user:
+        oidc_ids.add(str(agreement.project_officer_user.oidc_id))
+    oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
+
+    ret = jwt_identity in oidc_ids
+
+    return ret
+
+
 class AgreementItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel = Agreement):
         super().__init__(model)
@@ -235,7 +252,7 @@ class AgreementItemAPI(BaseItemAPI):
             return make_response_with_headers({}, 500)
 
     @override
-    @is_authorized(PermissionType.DELETE, Permission.AGREEMENT)
+    @is_authorized(PermissionType.DELETE, Permission.AGREEMENT, extra_check=associated_with_agreement)
     def delete(self, id: int) -> Response:
         message_prefix = f"DELETE from {ENDPOINT_STRING}"
 
@@ -285,27 +302,22 @@ class AgreementListAPI(BaseListAPI):
             case {**filter_args}:
                 pass
 
-        status: str | None = filter_args.pop("status", None)
-
         for key, value in filter_args.items():
             query_helper.add_column_equals(Agreement.get_class_field(key), value)
 
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")
 
-        return stmt, status
+        return stmt
 
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
-        stmt, status = self._get_query(request.args)
+        stmt = self._get_query(request.args)
 
         result = current_app.db_session.execute(stmt).all()
 
         items = (i for item in result for i in item)
-
-        if status:
-            items = (i for i in items if i.status == status)
 
         response = make_response_with_headers([i.to_dict() for i in items])
 

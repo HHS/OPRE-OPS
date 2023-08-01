@@ -56,13 +56,16 @@ def test_agreements_serialization(auth_client, loaded_db):
     del json_to_compare["team_members"][0]["created_on"]
     del json_to_compare["team_members"][0]["date_joined"]
     del json_to_compare["team_members"][0]["updated_on"]
+    del json_to_compare["team_members"][1]["created_on"]
+    del json_to_compare["team_members"][1]["date_joined"]
+    del json_to_compare["team_members"][1]["updated_on"]
 
     assert json_to_compare == {
         "agreement_reason": "NEW_REQ",
         "agreement_type": "CONTRACT",
         "contract_number": "CT00XX1",
         "contract_type": "RESEARCH",
-        "created_by": None,
+        "created_by": 4,
         "delivered_status": False,
         "description": "Test description",
         "id": 1,
@@ -86,10 +89,20 @@ def test_agreements_serialization(auth_client, loaded_db):
                 "last_name": "Fortunato",
                 "oidc_id": "00000000-0000-1111-a111-000000000001",
                 "updated": None,
-            }
+            },
+            {
+                "created_by": None,
+                "division": 2,
+                "email": "Amelia.Popham@example.com",
+                "first_name": "Amelia",
+                "full_name": "Amelia Popham",
+                "id": 4,
+                "last_name": "Popham",
+                "oidc_id": "00000000-0000-1111-a111-000000000004",
+                "updated": None,
+            },
         ],
         "vendor": "Vendor 1",
-        "status": "DRAFT",
     }
 
 
@@ -125,7 +138,6 @@ def test_agreements_with_research_project_found(auth_client, loaded_db):
         ("research_project_id", 1),
         ("foa", "This is an FOA value"),
         ("name", "Contract #1: African American Child and Family Research Center"),
-        ("status", "PLANNED"),
     ),
 )
 @pytest.mark.usefixtures("app_ctx")
@@ -235,6 +247,7 @@ def test_contract(loaded_db):
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
         research_project_id=1,
+        created_by=4,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -474,21 +487,3 @@ def test_agreements_delete_by_id(auth_client, loaded_db, test_contract):
     agreement = loaded_db.scalar(stmt)
 
     assert agreement is None
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_status(loaded_db):
-    stmt = select(Agreement).where(Agreement.id == 1)
-    agreement = loaded_db.scalar(stmt)
-
-    assert agreement is not None
-    assert agreement.status == "DRAFT"
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_status_no_budget_lines(loaded_db):
-    stmt = select(Agreement).where(Agreement.id == 6)
-    agreement = loaded_db.scalar(stmt)
-
-    assert agreement is not None
-    assert agreement.status == "DRAFT"

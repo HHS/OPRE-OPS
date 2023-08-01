@@ -26,7 +26,7 @@ export const formatDate = (date) => {
  * @typedef {Object} CodesToDisplayText
  * @property {Object.<string, string>} agreementType - Display text for agreement types.
  * @property {Object.<string, string>} agreementReason - Display text for agreement reasons.
- * @property {Object.<string, string>} budgetLineType - Display text for budget line types.
+ * @property {Object.<string, string>} budgetLineStatus - Display text for budget line types.
  * @property {Object.<string, string>} validation - Display text for validation errors.
  */
 
@@ -47,11 +47,11 @@ const codesToDisplayText = {
         RECOMPETE: "Recompete",
         LOGICAL_FOLLOW_ON: "Logical Follow On",
     },
-    budgetLineType: {
+    budgetLineStatus: {
         DRAFT: "Draft",
         UNDER_REVIEW: "In Review",
-        IN_EXECUTION: "Executing",
         PLANNED: "Planned",
+        IN_EXECUTION: "Executing",
         OBLIGATED: "Obligated",
     },
     validation: {
@@ -72,12 +72,12 @@ const codesToDisplayText = {
 
 /**
  * Converts a code value into a display text value based on a predefined mapping.
- * @param {("agreementType" | "agreementReason" | "budgetLineType" | "validation")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
+ * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
  * @param {string} code - The code value to convert. This parameter is required.
  * @returns {string} The display text value for the code, or the original code value if no mapping is found.
  * @throws {Error} If either the listName or code parameter is not provided.
  * @example convertCodeForDisplay("agreementReason", reason)
- * @example convertCodeForDisplay("budgetLineType", budgetLineType)
+ * @example convertCodeForDisplay("budgetLineStatus", budgetLineStatus)
  * @example convertCodeForDisplay("validation", "name")
  */
 export const convertCodeForDisplay = (listName, code) => {
@@ -98,4 +98,46 @@ export const loggedInName = (activeUser) => {
         loggedInUser = activeUser.full_name ? activeUser.full_name : activeUser.email;
     }
     return loggedInUser;
+};
+
+export const timeAgo = (dateParam) => {
+    if (!dateParam) {
+        return null;
+    }
+
+    const date = typeof dateParam === "object" ? dateParam : new Date(dateParam);
+    const today = new Date();
+    const seconds = Math.round((today - date) / 1000);
+    const minutes = Math.round(seconds / 60);
+
+    if (seconds < 5) {
+        return "now";
+    } else if (seconds < 60) {
+        return `${seconds} seconds ago`;
+    } else if (seconds < 90) {
+        return "about a minute ago";
+    } else if (minutes < 60) {
+        return `${minutes} minutes ago`;
+    }
+
+    return date.toLocaleString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+    });
+};
+
+/**
+ * Find the fiscal year for a date, which is the same as it's year unless it's after
+ * September 30th then it rolls over into the next FY.
+ * @param date - a date as string such as "2023-02-15" or a Date
+ * @returns {number|null} the fiscal year
+ */
+export const fiscalYearFromDate = (date) => {
+    if (date === "--" || date === null) return null;
+    if (!date) return null;
+    let dt = new Date(date);
+    const month = dt.getUTCMonth();
+    const year = dt.getUTCFullYear();
+    return month > 8 ? year + 1 : year;
 };

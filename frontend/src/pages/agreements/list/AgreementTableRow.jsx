@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -67,12 +67,12 @@ export const AgreementTableRow = ({ agreement }) => {
     };
 
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
-    const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
+    const changeBgColorIfExpanded = { backgroundColor: isRowActive ? "#F0F0F0" : undefined };
 
     const handleEditAgreement = (event) => {
         navigate(`/agreements/edit/${event}?mode=edit`);
     };
-    const handleDeleteAgreement = (event) => {
+    const handleDeleteAgreement = () => {
         // TODO: implement delete agreement
         alert("not implemented yet");
     };
@@ -80,11 +80,15 @@ export const AgreementTableRow = ({ agreement }) => {
         navigate(`/agreements/approve/${event}`);
     };
 
-    const ChangeIcons = ({ agreement }) => {
+    const agreementStatus = agreement?.budget_line_items?.find((bli) => bli.status === "UNDER_REVIEW")
+        ? "In Review"
+        : "Draft";
+
+    const ChangeIcons = ({ agreement, status }) => {
         return (
             <>
-                <div className="display-flex flex-align-center">
-                    {(agreement.status === "DRAFT" || agreement.status === "UNDER_REVIEW") && (
+                {(status === "Draft" || status === "In Review") && (
+                    <div className="display-flex flex-align-center">
                         <FontAwesomeIcon
                             icon={faPen}
                             className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
@@ -92,16 +96,15 @@ export const AgreementTableRow = ({ agreement }) => {
                             data-position="top"
                             onClick={() => handleEditAgreement(agreement.id)}
                         />
-                    )}
-                    <FontAwesomeIcon
-                        icon={faTrash}
-                        title="delete"
-                        data-position="top"
-                        className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
-                        onClick={() => handleDeleteAgreement(agreement.id)}
-                    />
 
-                    {(agreement.status === "DRAFT" || agreement.status === "UNDER_REVIEW") && (
+                        <FontAwesomeIcon
+                            icon={faTrash}
+                            title="delete"
+                            data-position="top"
+                            className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                            onClick={() => handleDeleteAgreement(agreement.id)}
+                        />
+
                         <svg
                             className="usa-icon text-primary height-205 width-205 hover: cursor-pointer usa-tooltip"
                             onClick={() => handleSubmitAgreementForApproval(agreement.id)}
@@ -109,8 +112,8 @@ export const AgreementTableRow = ({ agreement }) => {
                         >
                             <use xlinkHref={`${icons}#send`}></use>
                         </svg>
-                    )}
-                </div>
+                    </div>
+                )}
             </>
         );
     };
@@ -118,7 +121,9 @@ export const AgreementTableRow = ({ agreement }) => {
         <Fragment key={agreement?.id}>
             <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
                 <th scope="row" className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
-                    {agreementName}
+                    <Link className="text-ink text-no-underline" to={"/agreements/" + agreement.id}>
+                        {agreementName}
+                    </Link>
                 </th>
                 <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     {researchProjectName}
@@ -143,10 +148,10 @@ export const AgreementTableRow = ({ agreement }) => {
                 <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     {isRowActive && !isExpanded ? (
                         <div>
-                            <ChangeIcons agreement={agreement} />
+                            <ChangeIcons agreement={agreement} status={agreementStatus} />
                         </div>
                     ) : (
-                        <TableTag status={agreement?.status} />
+                        <TableTag status={agreementStatus} />
                     )}
                 </td>
                 <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>

@@ -1,9 +1,10 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import classnames from "vest/classnames";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-import ProcurementShopSelect from "../../components/UI/Form/ProcurementShopSelect";
+import ProcurementShopSelectWithFee from "../../components/UI/Form/ProcurementShopSelectWithFee";
 import AgreementReasonSelect from "../../components/UI/Form/AgreementReasonSelect";
 import AgreementTypeSelect from "../../components/UI/Form/AgreementTypeSelect";
 import ProductServiceCodeSelect from "../../components/UI/Form/ProductServiceCodeSelect";
@@ -26,16 +27,19 @@ import Input from "../../components/UI/Form/Input";
 import EditModeTitle from "./EditModeTitle";
 import TextArea from "../../components/UI/Form/TextArea/TextArea";
 import { useGetProductServiceCodesQuery } from "../../api/opsAPI";
+
 import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
+
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
  *
  * @param {Object} props - The component props.
  * @param {Function} [props.goBack] - A function to go back to the previous step. - optional
  * @param {Function} [props.goToNext] - A function to go to the next step. - optional
- * @param {string} [props.formMode] - The mode of the form (e.g. "create", "edit", "review"). - optional
+ * @param {boolean} [props.isEditMode] - Whether the form is in edit mode. - optional
+ * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
  */
-export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
+export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode }) => {
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setSelectedProductServiceCode = useSetState("selected_product_service_code");
@@ -55,8 +59,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
-    const [isEditMode, setIsEditMode] = React.useState(false);
-    const [isReviewMode, setIsReviewMode] = React.useState(false);
 
     const navigate = useNavigate();
     const dispatch = useCreateAgreementDispatch();
@@ -86,26 +88,11 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
         isLoading: isLoadingProductServiceCodes,
     } = useGetProductServiceCodesQuery();
 
-    React.useEffect(() => {
-        switch (formMode) {
-            case "edit":
-                setIsEditMode(true);
-                break;
-            case "review":
-                setIsReviewMode(true);
-                suite({
-                    ...agreement,
-                });
-                break;
-            default:
-                return;
-        }
-        return () => {
-            setIsReviewMode(false);
-            setIsEditMode(false);
-            suite.reset();
-        };
-    }, [formMode, agreement]);
+    if (isReviewMode) {
+        suite({
+            ...agreement,
+        });
+    }
 
     if (isLoadingProductServiceCodes) {
         return <div>Loading...</div>;
@@ -291,7 +278,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
                     <ProductServiceCodeSummaryBox selectedProductServiceCode={selectedProductServiceCode} />
                 )}
             <h2 className="font-sans-lg margin-top-3">Procurement Shop</h2>
-            <ProcurementShopSelect
+            <ProcurementShopSelectWithFee
                 selectedProcurementShop={selectedProcurementShop}
                 onChangeSelectedProcurementShop={handleOnChangeSelectedProcurementShop}
             />
@@ -357,30 +344,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
 
             <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
             <TeamMemberList selectedTeamMembers={selectedTeamMembers} removeTeamMember={removeTeamMember} />
-            {/* <div className="usa-character-count margin-top-3">
-                <div className="usa-form-group">
-                    <label className="usa-label font-sans-lg text-bold" htmlFor="notes-with-hint-textarea">
-                        Notes (optional)
-                    </label>
-                    <span id="notes-with-hint-textarea-hint" className="usa-hint">
-                        Maximum 150 characters
-                    </span>
-                    <textarea
-                        className="usa-textarea usa-character-count__field"
-                        id="with-hint-textarea"
-                        maxLength={150}
-                        name="with-hint-textarea"
-                        rows={5}
-                        aria-describedby="with-hint-textarea-info notes-with-hint-textarea-hint"
-                        style={{ height: "7rem" }}
-                        value={agreementNotes || ""}
-                        onChange={(e) => setAgreementNotes(e.target.value)}
-                    ></textarea>
-                </div>
-                <span id="with-hint-textarea-info" className="usa-character-count__message sr-only">
-                    You can enter up to 150 characters
-                </span>
-            </div> */}
             <TextArea
                 name="agreementNotes"
                 label="Notes (optional)"
@@ -423,6 +386,13 @@ export const StepCreateAgreement = ({ goBack, goToNext, formMode }) => {
             </div>
         </>
     );
+};
+
+StepCreateAgreement.propTypes = {
+    goBack: PropTypes.func,
+    goToNext: PropTypes.func,
+    isEditMode: PropTypes.bool,
+    isReviewMode: PropTypes.bool,
 };
 
 export default StepCreateAgreement;

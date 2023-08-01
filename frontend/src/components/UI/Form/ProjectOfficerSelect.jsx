@@ -20,10 +20,12 @@ export const ProjectOfficerSelect = ({
     label = name,
     selectedProjectOfficer,
     setSelectedProjectOfficer,
-    onChange,
+    onChange = () => {},
     pending = false,
     messages = [],
     className,
+    legendClassname = "",
+    inputBoxClassname = "",
 }) => {
     const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery();
     const [inputValue, setInputValue] = useState(selectedProjectOfficer?.full_name ?? "");
@@ -51,7 +53,10 @@ export const ProjectOfficerSelect = ({
 
     return (
         <fieldset className={cx("usa-fieldset", pending && "pending", className)}>
-            <label className={`usa-label margin-top-0 ${messages.length ? "usa-label--error" : null} `} htmlFor={name}>
+            <label
+                className={`usa-label margin-top-0 ${messages.length ? "usa-label--error" : null} ${legendClassname}`}
+                htmlFor={name}
+            >
                 {label}
             </label>
             {messages.length ? (
@@ -87,7 +92,9 @@ export const ProjectOfficerSelect = ({
                     aria-expanded="false"
                     autoCapitalize="off"
                     autoComplete="off"
-                    className={`usa-combo-box__input ${messages.length ? "usa-input--error" : null} `}
+                    className={`usa-combo-box__input ${
+                        messages.length ? "usa-input--error" : null
+                    }  ${inputBoxClassname}`}
                     type="text"
                     role="combobox"
                     aria-activedescendant=""

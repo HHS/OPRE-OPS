@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import StepIndicator from "../../StepIndicator/StepIndicator";
@@ -29,10 +30,11 @@ import ConfirmationModal from "../../Modals/ConfirmationModal";
  * @param {Object} props.selectedProcurementShop - The selected procurement shop.
  * @param {Array<any>} props.existingBudgetLines - An array of existing budget lines.
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
- * @param {string} [props.formMode] - The mode of the form (e.g. "create", "edit", "review"). - optional
+ * @param {boolean} props.isEditMode - Whether the form is in edit mode.
+ * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {Function} [props.continueOverRide] - A function to override the default "Continue" button behavior. - optional
  * @param {"agreement" | "budgetLines"} props.workflow - The workflow type ("agreement" or "budgetLines").
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.JSX.Element} - The rendered component.
  */
 export const StepCreateBudgetLines = ({
     goToNext,
@@ -45,14 +47,13 @@ export const StepCreateBudgetLines = ({
     existingBudgetLines = [],
     continueBtnText,
     continueOverRide,
-    formMode,
+    isEditMode,
+    isReviewMode,
     workflow,
 }) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
-    const [isEditMode, setIsEditMode] = React.useState(false);
-    const [isReviewMode, setIsReviewMode] = React.useState(false);
-    const [pageErrors] = React.useState({});
+
     const {
         selected_can: selectedCan,
         entered_description: enteredDescription,
@@ -101,26 +102,14 @@ export const StepCreateBudgetLines = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [existingBudgetLines]);
 
-    React.useEffect(() => {
-        switch (formMode) {
-            case "edit":
-                setIsEditMode(true);
-                break;
-            case "review":
-                setIsReviewMode(true);
-                suite({
-                    new_budget_lines: newBudgetLines,
-                });
-                break;
-            default:
-                return;
-        }
-        return () => {
-            setIsReviewMode(false);
-            setIsEditMode(false);
-            suite.reset();
-        };
-    }, [formMode, newBudgetLines]);
+    let res = suite.get();
+    const pageErrors = res.getErrors();
+
+    if (isReviewMode) {
+        suite({
+            new_budget_lines: newBudgetLines,
+        });
+    }
 
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
@@ -297,7 +286,8 @@ export const StepCreateBudgetLines = ({
                 handleEditForm={handleEditForm}
                 handleResetForm={handleResetForm}
                 handleSubmitForm={handleSubmitForm}
-                formMode={formMode}
+                isEditMode={isEditMode}
+                isReviewMode={isReviewMode}
             />
             <h2 className="font-sans-lg">Budget Lines</h2>
             <p>
@@ -307,7 +297,7 @@ export const StepCreateBudgetLines = ({
             {budgetLinePageErrorsExist && (
                 <ul className="usa-list--unstyled font-12px text-error" data-cy="error-list">
                     {Object.entries(pageErrors).map(([key, value]) => (
-                        <li key={key} className="border-left-2px border-error padding-left-1" data-cy="error-item">
+                        <li key={key} className="border-left-2px padding-left-1" data-cy="error-item">
                             <strong>{convertCodeForDisplay("validation", key)}: </strong>
                             {
                                 <span>
@@ -328,6 +318,7 @@ export const StepCreateBudgetLines = ({
                 handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                 handleDeleteBudgetLine={handleDeleteBudgetLine}
                 handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                isReviewMode={isReviewMode}
             />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
@@ -358,14 +349,29 @@ export const StepCreateBudgetLines = ({
                     className="usa-button"
                     data-cy="continue-btn"
                     onClick={saveBudgetLineItems}
-                    // TODO: uncomment this when validation is working
-                    // disabled={res.hasErrors()}
+                    disabled={isReviewMode && !res.isValid()}
                 >
                     {isReviewMode ? "Review" : continueBtnText}
                 </button>
             </div>
         </>
     );
+};
+
+StepCreateBudgetLines.propTypes = {
+    goToNext: PropTypes.func,
+    goBack: PropTypes.func,
+    wizardSteps: PropTypes.arrayOf(PropTypes.string).isRequired,
+    currentStep: PropTypes.number.isRequired,
+    selectedResearchProject: PropTypes.object,
+    selectedAgreement: PropTypes.object,
+    selectedProcurementShop: PropTypes.object,
+    existingBudgetLines: PropTypes.arrayOf(PropTypes.object),
+    continueBtnText: PropTypes.string.isRequired,
+    isEditMode: PropTypes.bool,
+    isReviewMode: PropTypes.bool,
+    continueOverRide: PropTypes.func,
+    workflow: PropTypes.oneOf(["agreement", "budgetLines"]).isRequired,
 };
 
 export default StepCreateBudgetLines;

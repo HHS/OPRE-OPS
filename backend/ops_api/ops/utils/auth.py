@@ -22,11 +22,11 @@ auth_gateway = AuthorizationGateway(BasicAuthorizationPrivider())
 
 
 class PermissionType(Enum):
-    GET = auto()
-    PUT = auto()
-    PATCH = auto()
     DELETE = auto()
+    GET = auto()
+    PATCH = auto()
     POST = auto()
+    PUT = auto()
 
 
 class Permission(Enum):
@@ -34,6 +34,7 @@ class Permission(Enum):
     BUDGET_LINE_ITEM = auto()
     CAN = auto()
     DIVISION = auto()
+    HISTORY = auto()
     NOTIFICATION = auto()
     PORTFOLIO = auto()
     RESEARCH_PROJECT = auto()
@@ -125,9 +126,12 @@ def decode_user(
 
 
 class is_authorized:
-    def __init__(self, permission_type: PermissionType, permission: Permission) -> None:
+    def __init__(
+        self, permission_type: PermissionType, permission: Permission, extra_check: Optional[Callable[..., bool]] = None
+    ) -> None:
         self.permission_type = permission_type
         self.permission = permission
+        self.extra_check = extra_check
 
     def __call__(self, func: Callable) -> Callable:
         @wraps(func)
@@ -135,7 +139,12 @@ class is_authorized:
         def wrapper(*args, **kwargs) -> Response:
             identity = get_jwt_identity()
             is_authorized = auth_gateway.is_authorized(identity, f"{self.permission_type}_{self.permission}".upper())
-            if is_authorized:
+
+            extra_valid = True
+            if self.extra_check is not None:
+                extra_valid = self.extra_check(*args, **kwargs)
+
+            if is_authorized and extra_valid:
                 response = func(*args, **kwargs)
             else:
                 response = make_response_with_headers({}, 401)
