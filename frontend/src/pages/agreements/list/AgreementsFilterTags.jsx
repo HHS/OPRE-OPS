@@ -70,6 +70,20 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
                     };
                 });
                 break;
+            case "budgetLineStatus":
+                setTagsList((prevState) => prevState.filter((tag) => tag.filter !== "budgetLineStatus"));
+                setFilters((prevState) => {
+                    return {
+                        ...prevState,
+                        budgetLineStatus: {
+                            draft: false,
+                            planned: false,
+                            executing: false,
+                            obligated: false,
+                        },
+                    };
+                });
+                break;
         }
     };
 
@@ -185,6 +199,17 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
         });
         createTagString(selectedProcurementShops, "procurementShops", "Procurement Shop:");
     }, [filters.procurementShops]);
+
+    useEffect(() => {
+        const selectedBudgetLineStatus = [];
+
+        filters.budgetLineStatus.draft && selectedBudgetLineStatus.push("Draft");
+        filters.budgetLineStatus.planned && selectedBudgetLineStatus.push("Planned");
+        filters.budgetLineStatus.executing && selectedBudgetLineStatus.push("Executing");
+        filters.budgetLineStatus.obligated && selectedBudgetLineStatus.push("Obligated");
+
+        createTagString(selectedBudgetLineStatus, "budgetLineStatus", "Budget Line Status:");
+    }, [filters.budgetLineStatus]);
 
     return (
         <div>

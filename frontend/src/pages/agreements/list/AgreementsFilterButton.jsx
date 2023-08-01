@@ -275,9 +275,9 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                             id="draft"
                                             type="checkbox"
                                             name="budget-line-status"
-                                            defaultChecked={filters.budgetLineStatus.draft === true}
+                                            // defaultChecked={filters.budgetLineStatus.draft === true}
                                             onChange={handleBudgetLineStatus}
-                                            value={filters.budgetLineStatus.draft}
+                                            checked={filters.budgetLineStatus.draft === true}
                                         />
                                         <label className="usa-checkbox__label margin-top-0" htmlFor="draft">
                                             Draft
@@ -292,7 +292,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                             type="checkbox"
                                             name="budget-line-status"
                                             onChange={handleBudgetLineStatus}
-                                            value={filters.budgetLineStatus.planned}
+                                            checked={filters.budgetLineStatus.planned === true}
                                         />
                                         <label className="usa-checkbox__label margin-top-0" htmlFor="planned">
                                             Planned
@@ -309,7 +309,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                             type="checkbox"
                                             name="budget-line-status"
                                             onChange={handleBudgetLineStatus}
-                                            value={filters.budgetLineStatus.executing}
+                                            checked={filters.budgetLineStatus.executing === true}
                                         />
                                         <label className="usa-checkbox__label margin-top-0" htmlFor="executing">
                                             Executing
@@ -324,7 +324,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                             type="checkbox"
                                             name="budget-line-status"
                                             onChange={handleBudgetLineStatus}
-                                            value={filters.budgetLineStatus.obligated}
+                                            checked={filters.budgetLineStatus.obligated === true}
                                         />
                                         <label className="usa-checkbox__label margin-top-0" htmlFor="obligated">
                                             Obligated
