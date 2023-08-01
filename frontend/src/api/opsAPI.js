@@ -28,25 +28,29 @@ export const opsApi = createApi({
         }),
         addAgreement: builder.mutation({
             query: (data) => {
+                // remove fields that are not allowed
+                // eslint-disable-next-line no-unused-vars
                 const { id, budget_line_items, created_by, created_on, updated_on, ...postData } = data;
                 return {
                     url: `/agreements/`,
                     method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: {...postData, number:""}
-                }
+                    headers: { "Content-Type": "application/json" },
+                    body: { ...postData, number: "" },
+                };
             },
             invalidatesTags: ["Agreements", "BudgetLineItems"],
         }),
         updateAgreement: builder.mutation({
-            query: ({id, data}) => {
+            query: ({ id, data }) => {
+                // remove fields that are not allowed
+                // eslint-disable-next-line no-unused-vars
                 const { id: _id, budget_line_items, created_by, created_on, updated_on, ...patchData } = data;
                 return {
                     url: `/agreements/${id}`,
                     method: "PATCH",
-                    headers: {"Content-Type": "application/json"},
+                    headers: { "Content-Type": "application/json" },
                     body: patchData,
-                }
+                };
             },
             invalidatesTags: ["Agreements", "BudgetLineItems"],
         }),

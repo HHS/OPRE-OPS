@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import Agreement from "./Agreement";
 
@@ -9,8 +9,8 @@ describe("Agreement", () => {
     test("renders correctly", () => {
         render(
             <Provider store={store}>
-                <Agreement/>
+                <Agreement />
             </Provider>
         );
- });
+    });
 });

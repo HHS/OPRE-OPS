@@ -11,18 +11,17 @@ import ProjectOfficerSelect from "../../UI/Form/ProjectOfficerSelect";
 import TeamMemberSelect from "../../UI/Form/TeamMemberSelect";
 import TeamMemberList from "../../UI/Form/TeamMemberList";
 import Modal from "../../UI/Modal";
-import { formatTeamMember, postAgreement } from "../../../api/postAgreements";
+import { formatTeamMember } from "../../../api/postAgreements";
 import ProductServiceCodeSummaryBox from "../../UI/Form/ProductServiceCodeSummaryBox";
 import { useEditAgreement, useSetState, useUpdateAgreement, useEditAgreementDispatch } from "./AgreementEditorContext";
 import { setAlert } from "../../UI/Alert/alertSlice";
-import { patchAgreement } from "../../../api/patchAgreements";
 import suite from "./AgreementEditFormSuite";
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import {
     useAddAgreementMutation,
     useGetProductServiceCodesQuery,
-    useUpdateAgreementMutation
+    useUpdateAgreementMutation,
 } from "../../../api/opsAPI";
 
 export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, setIsEditMode }) => {
@@ -145,18 +144,19 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         };
         if (agreement.id) {
             // TODO: handle failures
-            updateAgreement({id: agreement.id, data: data}).unwrap();
+            updateAgreement({ id: agreement.id, data: data }).unwrap();
             console.log("Agreement Updated");
         } else {
             // TODO: handle failures
             // Example: `updatePost().unwrap().then(fulfilled => console.log(fulfilled)).catch(rejected => console.error(rejected))
-            addAgreement(data).unwrap()
+            addAgreement(data)
+                .unwrap()
                 .then((payload) => {
-                    console.log('Agreement Created', payload)
+                    console.log("Agreement Created", payload);
                     const newAgreementId = payload.id;
                     setAgreementId(newAgreementId);
                 })
-                .catch((error) => console.error('Agreement Failed', error));
+                .catch((error) => console.error("Agreement Failed", error));
         }
     };
 

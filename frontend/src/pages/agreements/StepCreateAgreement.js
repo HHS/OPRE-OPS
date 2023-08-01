@@ -5,7 +5,7 @@ import StepIndicator from "../../components/UI/StepIndicator";
 import ProjectSummaryCard from "../../components/ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";
 import { useEditAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 
-export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode, wizardSteps, currentStep }) => {
+export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode, wizardSteps }) => {
     const { selected_project: selectedResearchProject } = useEditAgreement();
 
     return (
@@ -14,11 +14,7 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode
             <StepIndicator steps={wizardSteps} currentStep={2} />
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
-            <AgreementEditForm
-                goBack={goBack}
-                goToNext={goToNext}
-                isReviewMode={isReviewMode}
-            />
+            <AgreementEditForm goBack={goBack} goToNext={goToNext} isReviewMode={isReviewMode} />
         </>
     );
 };
