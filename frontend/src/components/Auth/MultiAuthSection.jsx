@@ -90,36 +90,23 @@ const MultiAuthSection = () => {
     // TODO: Replace these tokens with config variables, that can be passed in at deploy-time,
     //       So that we don't actually store anything in code.
     const handleFakeAuthLogin = (user_type) => {
-        const fakeUsers = {
-            admin: {
-                access_token:
-                    "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY4OTcwMDQxOSwianRpIjoiYmE3ZmZhNmMtOWZiNy00NzQxLTkzMTYtZTVlZThiOGVhMzkxIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjAwMDAwMDAwLTAwMDAtMTExMS1hMTExLTAwMDAwMDAwMDAxOCIsIm5iZiI6MTY4OTcwMDQxOSwiZXhwIjoxOTg5NzM2NDE5fQ.qazM0iIZW-cDnNlIeC2dB5CE9P_-49T48TcKhdaj0jX4EMo-t01GMvWW0JIMmvsE4kj_yC3I2_r-HEwLL85z0jSiKEO7C_Nzgj4XgXvA_awlAA8e0Bny4pRol_wHKGEZIzIttZUaYgm8QewUC4uS1-vW92mvEH6dgDpChSlrI8Ao5352ydIeYBMQcOXDIIPRtupYjBBTTfafv87gsNDUoo4GUO53tFM_VApQl3UFxEzqkYKY9hc_TjiZMVK9OyF7uSA_4ICaF1hHnZvB6sQHTW3GcrUGvhwJ76JYnJTCPUcAmNkGlPSuwidq9ybl5sCYp1LWMigQJ50pQL2HngUMcA",
-            },
-            basic_user: {
-                access_token:
-                    "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY4OTcwMDQxOSwianRpIjoiYmE3ZmZhNmMtOWZiNy00NzQxLTkzMTYtZTVlZThiOGVhMzkxIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjAwMDAwMDAwLTAwMDAtMTExMS1hMTExLTAwMDAwMDAwMDAxOSIsIm5iZiI6MTY4OTcwMDQxOSwiZXhwIjoxOTg5NzM2NDE5fQ.Vj8vjnSSiay_XbZH3xyt0qpMUh3YEso0pfER2bAt08Lara1rsji9WdIzPljSfZMiOl0c565Rrw0oKiXFeyjZNFKpubZ8IVN-POiu9j1X8-Iw7cxIwg8gMElraSEHTz23JRSNWKmAOtre9s0wMiCfYk7kStFwvEYErQfpZjVYpTmVkgK4I4s1P4S8Z_h5BuMFGs-92_z50bIY9-ANHlNNGs0r9dut6Ta64HxOiP3mhJQFeZBazhBrXaw-5QesN9Tvo5pftvIpW2xYg3umicB5Y2LXV1uQKFC3WZ_hZekYbBoJoIiXwPJIT9LvTVhM_nAwgd16XKXNwfkQnpESwPTmcQ",
-            },
-            new_user: {
-                access_token:
-                    "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY4OTcwMDQxOSwianRpIjoiYmE3ZmZhNmMtOWZiNy00NzQxLTkzMTYtZTVlZThiOGVhMzkxIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjAwMDAwMDAwLTAwMDAtMTExMS1hMTExLTk5OTAwMDAwMDAwMCIsIm5iZiI6MTY4OTcwMDQxOSwiZXhwIjoxOTg5NzM2NDE5fQ.c_vTIVsZgjazU4TDKXjru7OymUjPuqy6Wkbq-sS2at791zXcAAX9ykfGkL17GpbaUqng8dZT_ja_aLwcFN7-53kEk4MSEITN0qISQwsEnDDdq522HxzJ5v2quIylZbw-HkzIIBLwQw6qEnhlBUeqof2TyHmevCgGwcrZaUMhz8CaBFJn26r5nppfbGCIQOwT5D_jeH33DSQPjUJg4h6kfP2gtb7zyLUMbn0HmIwdK8A6FstBI6wo3QIx-rvpxx9brVF140D73YVYeextvrjTUoNdJZ1TQSoExWoPCCTHHwNA0bvZ552jhRVmXCxR6X7-JBNccWiKOiroWffIdG8L8Q",
-                is_new_user: true, // Indicates this is a new user, so prompt for registration
-            },
-        };
-
+        console.debug(`Logging in with FakeAuth: ${user_type}`);
+        sessionStorage.setItem("activeProvider", "fakeauth");
+        callBackend(user_type).catch(console.error);
         //console.log(`API Login Response = ${JSON.stringify(fakeUsers[user].access_token)}`);
-        localStorage.setItem("access_token", fakeUsers[user_type].access_token);
+        //localStorage.setItem("access_token", fakeUsers[user_type].access_token);
         //console.log(`localStorage.getItem("access_token") = ${localStorage.getItem("access_token")}`);
-        dispatch(login());
-        setActiveUser(fakeUsers[user_type].access_token, dispatch);
-        console.debug("FakeUser Logged In!");
+        //dispatch(login());
+        //setActiveUser(fakeUsers[user_type].access_token, dispatch);
+        //console.debug("FakeUser Logged In!");
         navigate("/");
     };
 
     const handleSSOLogin = (provider) => {
-        console.debug(`Logging in with SSO: ${provider}`);
-        window.location.href = getAuthorizationCode(provider, localStorage.getItem("ops-state-key"));
+        // console.debug(`Logging in with SSO: ${provider}`);
         sessionStorage.setItem("activeProvider", provider);
-        console.debug(`Setting Provider State: ${sessionStorage.getItem("activeProvider")}`);
+        window.location.href = getAuthorizationCode(provider, localStorage.getItem("ops-state-key"));
+        // console.debug(`Setting Provider State: ${sessionStorage.getItem("activeProvider")}`);
     };
 
     return (
@@ -176,7 +163,7 @@ const MultiAuthSection = () => {
                             <p>
                                 <button
                                     className="usa-button  usa-button--outline width-full"
-                                    onClick={() => handleFakeAuthLogin("admin")}
+                                    onClick={() => handleFakeAuthLogin("admin_user")}
                                 >
                                     Admin User
                                 </button>

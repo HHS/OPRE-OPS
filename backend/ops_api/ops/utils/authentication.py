@@ -70,38 +70,35 @@ class AuthenticationProvider(ABC):
 
 class FakeAuthPrivider(AuthenticationProvider):
     def __init__(self, config_name, key) -> None:
-        pass
-
-    def authenticate(self, auth_code):
-        fakeUsers = {
-            "admin": {
-                "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY4OTcwMDQxOSwianRpIjoiYmE3ZmZhNmMtOWZiNy00NzQxLTkzMTYtZTVlZThiOGVhMzkxIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjAwMDAwMDAwLTAwMDAtMTExMS1hMTExLTAwMDAwMDAwMDAxOCIsIm5iZiI6MTY4OTcwMDQxOSwiZXhwIjoxOTg5NzM2NDE5fQ.qazM0iIZW-cDnNlIeC2dB5CE9P_-49T48TcKhdaj0jX4EMo-t01GMvWW0JIMmvsE4kj_yC3I2_r-HEwLL85z0jSiKEO7C_Nzgj4XgXvA_awlAA8e0Bny4pRol_wHKGEZIzIttZUaYgm8QewUC4uS1-vW92mvEH6dgDpChSlrI8Ao5352ydIeYBMQcOXDIIPRtupYjBBTTfafv87gsNDUoo4GUO53tFM_VApQl3UFxEzqkYKY9hc_TjiZMVK9OyF7uSA_4ICaF1hHnZvB6sQHTW3GcrUGvhwJ76JYnJTCPUcAmNkGlPSuwidq9ybl5sCYp1LWMigQJ50pQL2HngUMcA",
+        self.fakeUsers = {
+            "admin_user": {
+                "first_name": "Admin",
+                "last_name": "Demo",
+                "email": "admin.demo@email.com",
+                "sub": "00000000-0000-1111-a111-000000000018",
             },
             "basic_user": {
-                "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY4OTcwMDQxOSwianRpIjoiYmE3ZmZhNmMtOWZiNy00NzQxLTkzMTYtZTVlZThiOGVhMzkxIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjAwMDAwMDAwLTAwMDAtMTExMS1hMTExLTAwMDAwMDAwMDAxOSIsIm5iZiI6MTY4OTcwMDQxOSwiZXhwIjoxOTg5NzM2NDE5fQ.Vj8vjnSSiay_XbZH3xyt0qpMUh3YEso0pfER2bAt08Lara1rsji9WdIzPljSfZMiOl0c565Rrw0oKiXFeyjZNFKpubZ8IVN-POiu9j1X8-Iw7cxIwg8gMElraSEHTz23JRSNWKmAOtre9s0wMiCfYk7kStFwvEYErQfpZjVYpTmVkgK4I4s1P4S8Z_h5BuMFGs-92_z50bIY9-ANHlNNGs0r9dut6Ta64HxOiP3mhJQFeZBazhBrXaw-5QesN9Tvo5pftvIpW2xYg3umicB5Y2LXV1uQKFC3WZ_hZekYbBoJoIiXwPJIT9LvTVhM_nAwgd16XKXNwfkQnpESwPTmcQ",
+                "first_name": "User",
+                "last_name": "Demo",
+                "email": "user.demo@email.com",
+                "sub": "00000000-0000-1111-a111-000000000019",
             },
             "new_user": {
-                "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY4OTcwMDQxOSwianRpIjoiYmE3ZmZhNmMtOWZiNy00NzQxLTkzMTYtZTVlZThiOGVhMzkxIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjAwMDAwMDAwLTAwMDAtMTExMS1hMTExLTk5OTAwMDAwMDAwMCIsIm5iZiI6MTY4OTcwMDQxOSwiZXhwIjoxOTg5NzM2NDE5fQ.c_vTIVsZgjazU4TDKXjru7OymUjPuqy6Wkbq-sS2at791zXcAAX9ykfGkL17GpbaUqng8dZT_ja_aLwcFN7-53kEk4MSEITN0qISQwsEnDDdq522HxzJ5v2quIylZbw-HkzIIBLwQw6qEnhlBUeqof2TyHmevCgGwcrZaUMhz8CaBFJn26r5nppfbGCIQOwT5D_jeH33DSQPjUJg4h6kfP2gtb7zyLUMbn0HmIwdK8A6FstBI6wo3QIx-rvpxx9brVF140D73YVYeextvrjTUoNdJZ1TQSoExWoPCCTHHwNA0bvZ552jhRVmXCxR6X7-JBNccWiKOiroWffIdG8L8Q",
-                "is_new_user": True,  # Indicates this is a new user, so prompt for registration
+                "first_name": "New",
+                "last_name": "User",
+                "email": "user.new@email.com",
+                "sub": "00000000-0000-1111-a111-000000000017",
             },
         }
-        return fakeUsers[auth_code].value
+
+    def authenticate(self, auth_code):
+        # This simply simulates authenticating to an OIDC provider, by returning the auth_code as the token
+        # This uses the auth_code to lookup the user details in the get_user_info method
+        # This is only for testing purposes
+        return {"access_token": auth_code}
 
     def get_user_info(self, token):
-        header = {
-            "Authorization": f"Bearer {token}",
-            "Accept": "application/json",
-        }
-        try:
-            user_jwt = requests.get(
-                self.user_info_url,
-                headers=header,
-            ).content.decode("utf-8")
-            user_data = user_jwt
-            return json.loads(user_data)
-        except Exception as e:
-            current_app.logger.exception(e)
-            return None
+        return self.fakeUsers[token]
 
     def validate_token(self, token):
         return True
