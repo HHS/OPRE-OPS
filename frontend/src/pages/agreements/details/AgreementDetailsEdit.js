@@ -4,7 +4,7 @@ import { EditAgreementProvider } from "../../../components/Agreements/AgreementE
 import AgreementEditForm from "../../../components/Agreements/AgreementEditor/AgreementEditForm";
 import { useNavigate } from "react-router-dom";
 
-const AgreementDetailsEdit = ({ agreement, projectOfficer }) => {
+const AgreementDetailsEdit = ({ agreement, projectOfficer, isEditMode, setIsEditMode }) => {
     const navigate = useNavigate();
     const goBack = () => {
         navigate(`/agreements/${agreement.id}`);
@@ -12,7 +12,6 @@ const AgreementDetailsEdit = ({ agreement, projectOfficer }) => {
     const goToNext = () => {
         window.location = `/agreements/${agreement.id}`;
     };
-    const isEditMode = true;
     const isReviewMode = false;
 
     return (
@@ -21,14 +20,11 @@ const AgreementDetailsEdit = ({ agreement, projectOfficer }) => {
                 <AgreementEditForm
                     goBack={goBack}
                     goToNext={goToNext}
-                    isEditMode={isEditMode}
                     isReviewMode={isReviewMode}
+                    isEditMode={isEditMode}
+                    setIsEditMode={setIsEditMode}
                 />
             </EditAgreementProvider>
-            <div style={{ background: "#cccccc", border: "1px dashed #999999" }}>
-                <h2>TEMP DEBUG</h2>
-                <pre>{JSON.stringify(agreement, null, 2)}</pre>
-            </div>
         </div>
     );
 };

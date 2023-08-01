@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
  * @param {Object} props - The component props.
  * @param {string} props.heading - The heading to display.
  * @param {string} props.details - The details to display.
- * @param {boolean} props.isEditMode - Whether or not the edit mode is on.
+ * @param {boolean} props.isEditMode - Whether the edit mode is on.
  * @param {function} props.setIsEditMode - The function to set the edit mode.
  * @returns {React.JSX.Element} - The rendered component.
  */
