@@ -26,10 +26,10 @@ export const AgreementsList = () => {
         types: [],
         procurementShops: [],
         budgetLineStatus: {
-            draft: false,
-            planned: false,
-            executing: false,
-            obligated: false,
+            draft: true,
+            planned: true,
+            executing: true,
+            obligated: true,
         },
     });
 
@@ -158,17 +158,6 @@ export const AgreementsList = () => {
                 }))
         );
     });
-
-    // filter by budget line status (PLANNED)
-    // filteredAgreements = filteredAgreements.filter((agreement) => {
-    //     return (
-    //         filters.budgetLineStatus.planned === false ||
-    //         (filters.budgetLineStatus.planned === true &&
-    //             agreement.budget_line_items.some((bli) => {
-    //                 return bli.status === "PLANNED";
-    //             }))
-    //     );
-    // });
 
     let sortedAgreements;
     if (searchParams.get("filter") === "my-agreements") {
