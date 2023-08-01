@@ -20,6 +20,7 @@ import suite from "./AgreementEditFormSuite";
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import {
+    useAddAgreementMutation,
     useGetProductServiceCodesQuery,
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
@@ -61,6 +62,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
     const globalDispatch = useDispatch();
 
     const [updateAgreement] = useUpdateAgreementMutation();
+    const [addAgreement] = useAddAgreementMutation();
 
     const {
         agreement,
@@ -147,10 +149,14 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
             console.log("Agreement Updated");
         } else {
             // TODO: handle failures
-            const response = await postAgreement(data);
-            const newAgreementId = response.id;
-            console.log(`New Agreement Created: ${newAgreementId}`);
-            setAgreementId(newAgreementId);
+            // Example: `updatePost().unwrap().then(fulfilled => console.log(fulfilled)).catch(rejected => console.error(rejected))
+            addAgreement(data).unwrap()
+                .then((payload) => {
+                    console.log('Agreement Created', payload)
+                    const newAgreementId = payload.id;
+                    setAgreementId(newAgreementId);
+                })
+                .catch((error) => console.error('Agreement Failed', error));
         }
     };
 

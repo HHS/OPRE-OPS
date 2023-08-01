@@ -18,8 +18,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode
                 goBack={goBack}
                 goToNext={goToNext}
                 isReviewMode={isReviewMode}
-                wizardSteps={wizardSteps}
-                currentStep={currentStep}
             />
         </>
     );

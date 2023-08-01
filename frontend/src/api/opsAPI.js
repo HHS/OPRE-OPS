@@ -26,6 +26,18 @@ export const opsApi = createApi({
             query: (id) => `/agreements/${id}`,
             providesTags: ["Agreements"],
         }),
+        addAgreement: builder.mutation({
+            query: (data) => {
+                const { id, budget_line_items, created_by, created_on, updated_on, ...postData } = data;
+                return {
+                    url: `/agreements/`,
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: {...postData, number:""}
+                }
+            },
+            invalidatesTags: ["Agreements", "BudgetLineItems"],
+        }),
         updateAgreement: builder.mutation({
             query: ({id, data}) => {
                 const { id: _id, budget_line_items, created_by, created_on, updated_on, ...patchData } = data;
@@ -114,6 +126,7 @@ export const opsApi = createApi({
 export const {
     useGetAgreementsQuery,
     useGetAgreementByIdQuery,
+    useAddAgreementMutation,
     useUpdateAgreementMutation,
     useGetAgreementsByResearchProjectFilterQuery,
     useGetUserByIdQuery,
