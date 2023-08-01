@@ -97,6 +97,16 @@ export const AgreementsList = () => {
             break;
     }
 
+    // filter by projects
+    filteredAgreements = filteredAgreements.filter((agreement) => {
+        return (
+            filters.projects.length === 0 ||
+            filters.projects.some((project) => {
+                return project.id === agreement.research_project_id;
+            })
+        );
+    });
+
     let sortedAgreements;
     if (searchParams.get("filter") === "my-agreements") {
         const myAgreements = filteredAgreements.filter((agreement) => {
