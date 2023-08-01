@@ -19,7 +19,10 @@ import { patchAgreement } from "../../../api/patchAgreements";
 import suite from "./AgreementEditFormSuite";
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea/TextArea";
-import { useGetProductServiceCodesQuery } from "../../../api/opsAPI";
+import {
+    useGetProductServiceCodesQuery,
+    useUpdateAgreementMutation
+} from "../../../api/opsAPI";
 
 export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, setIsEditMode }) => {
     /**
@@ -56,6 +59,8 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
     const navigate = useNavigate();
     const dispatch = useEditAgreementDispatch();
     const globalDispatch = useDispatch();
+
+    const [updateAgreement] = useUpdateAgreementMutation();
 
     const {
         agreement,
@@ -138,8 +143,8 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         };
         if (agreement.id) {
             // TODO: handle failures
-            // const response = await patchAgreement(agreement.id, data);
-            patchAgreement(agreement.id, data);
+            updateAgreement({id: agreement.id, data: data}).unwrap();
+            console.log("Agreement Updated");
         } else {
             // TODO: handle failures
             const response = await postAgreement(data);
@@ -151,6 +156,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
 
     const handleContinue = async () => {
         saveAgreement();
+        if (isEditMode && setIsEditMode) setIsEditMode(false);
         await goToNext();
     };
 

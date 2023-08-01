@@ -24,6 +24,19 @@ export const opsApi = createApi({
         }),
         getAgreementById: builder.query({
             query: (id) => `/agreements/${id}`,
+            providesTags: ["Agreements"],
+        }),
+        updateAgreement: builder.mutation({
+            query: ({id, data}) => {
+                const { id: _id, budget_line_items, created_by, created_on, updated_on, ...patchData } = data;
+                return {
+                    url: `/agreements/${id}`,
+                    method: "PATCH",
+                    headers: {"Content-Type": "application/json"},
+                    body: patchData,
+                }
+            },
+            invalidatesTags: ["Agreements", "BudgetLineItems"],
         }),
         getAgreementsByResearchProjectFilter: builder.query({
             query: (id) => `/agreements/?research_project_id=${id}`,
@@ -101,6 +114,7 @@ export const opsApi = createApi({
 export const {
     useGetAgreementsQuery,
     useGetAgreementByIdQuery,
+    useUpdateAgreementMutation,
     useGetAgreementsByResearchProjectFilterQuery,
     useGetUserByIdQuery,
     useGetUserByOIDCIdQuery,

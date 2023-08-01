@@ -10,7 +10,7 @@ const AgreementDetailsEdit = ({ agreement, projectOfficer, isEditMode, setIsEdit
         navigate(`/agreements/${agreement.id}`);
     };
     const goToNext = () => {
-        window.location = `/agreements/${agreement.id}`;
+        navigate(`/agreements/${agreement.id}`);
     };
     const isReviewMode = false;
 
