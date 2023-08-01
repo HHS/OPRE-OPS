@@ -38,7 +38,7 @@ const Input = ({
                 id={name}
                 name={name}
                 className={`usa-input ${messages.length ? "usa-input--error" : null} `}
-                onChange={handleChange}
+                onChange={(e) => onChange(e)}
                 autoComplete="off"
                 autoCorrect="off"
                 value={value}
@@ -47,9 +47,9 @@ const Input = ({
         </div>
     );
 
-    function handleChange(e) {
-        onChange(name, e.target.value);
-    }
+    // function handleChange(e) {
+    //     onChange(name, e.target.value);
+    // }
 };
 
 export default Input;

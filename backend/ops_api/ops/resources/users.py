@@ -1,4 +1,4 @@
-from flask import Response, request
+from flask import Response, current_app, request
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
@@ -51,3 +51,19 @@ class UsersListAPI(BaseListAPI):
             response = make_response_with_headers([item.to_dict() for item in items])
 
         return response
+
+    @override
+    @is_authorized(PermissionType.PUT, Permission.USER)
+    def put(self, id: int) -> Response:
+        # Get the user to update
+        user = self._get_item_with_try(id)
+
+        # Update the user with the request data
+        user.update(request.json)
+
+        # Save the changes to the database
+        current_app.db_session.add(user)
+        current_app.db_session.commit()
+
+        # Return the updated user as a response
+        return make_response_with_headers(user.to_dict())
