@@ -26,18 +26,18 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         isLoading: isLoadingProjectData,
     } = useGetResearchProjectsQuery();
 
-    useEffect(() => {
-        setFilters((prevState) => {
-            return {
-                ...prevState,
-                upcomingNeedByDate: "next-30-days",
-            };
-        });
-    }, [setFilters]);
+    // useEffect(() => {
+    //     setFilters((prevState) => {
+    //         return {
+    //             ...prevState,
+    //             upcomingNeedByDate: "next-30-days",
+    //         };
+    //     });
+    // }, [setFilters]);
 
     const resetFilter = () => {
         setFilters({
-            upcomingNeedByDate: null,
+            upcomingNeedByDate: "all-time",
             projects: [],
             projectOfficer: [],
             types: [],
@@ -160,7 +160,6 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                         id="next-30-days"
                                         type="radio"
                                         name="upcoming-need-by-date"
-                                        defaultChecked={filters.upcomingNeedByDate === "next-30-days"}
                                         onChange={handleRadioButtons}
                                         value={filters.upcomingNeedByDate}
                                     />
@@ -204,6 +203,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                         name="upcoming-need-by-date"
                                         onChange={handleRadioButtons}
                                         value={filters.upcomingNeedByDate}
+                                        defaultChecked={filters.upcomingNeedByDate === "all-time"}
                                     />
                                     <label className="usa-radio__label margin-top-0" htmlFor="all-time">
                                         All time

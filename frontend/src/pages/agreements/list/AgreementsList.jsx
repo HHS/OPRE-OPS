@@ -20,7 +20,7 @@ export const AgreementsList = () => {
     const [searchParams] = useSearchParams();
     const isAlertActive = useSelector((state) => state.alert.isActive);
     const [filters, setFilters] = useState({
-        upcomingNeedByDate: null,
+        upcomingNeedByDate: "all-time",
         projects: [],
         projectOfficers: [],
         types: [],
