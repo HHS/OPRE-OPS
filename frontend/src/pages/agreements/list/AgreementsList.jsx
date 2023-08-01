@@ -107,6 +107,16 @@ export const AgreementsList = () => {
         );
     });
 
+    // filter by project officers
+    filteredAgreements = filteredAgreements.filter((agreement) => {
+        return (
+            filters.projectOfficers.length === 0 ||
+            filters.projectOfficers.some((po) => {
+                return po.id === agreement.project_officer;
+            })
+        );
+    });
+
     let sortedAgreements;
     if (searchParams.get("filter") === "my-agreements") {
         const myAgreements = filteredAgreements.filter((agreement) => {
