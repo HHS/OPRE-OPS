@@ -86,8 +86,12 @@ def create_oauth_jwt(
 
 class is_authorized:
     def __init__(
-        self, permission_type: PermissionType, permission: Permission, extra_check: Optional[Callable[..., bool]] = None
-    , groups: Optional[list[str]] = None) -> None:
+        self,
+        permission_type: PermissionType,
+        permission: Permission,
+        extra_check: Optional[Callable[..., bool]] = None,
+        groups: Optional[list[str]] = None,
+    ) -> None:
         self.permission_type = permission_type
         self.permission = permission
         self.extra_check = extra_check
@@ -110,9 +114,9 @@ class is_authorized:
                 else:
                     auth_group = False
             else:
-                auth_group = True
+                auth_group = None
 
-            if is_authorized and extra_valid and auth_group:
+            if is_authorized and ((auth_group is not None and auth_group) or extra_valid):
                 response = func(*args, **kwargs)
             else:
                 response = make_response_with_headers({}, 401)
