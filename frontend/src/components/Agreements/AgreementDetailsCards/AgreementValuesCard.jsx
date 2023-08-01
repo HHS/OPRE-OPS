@@ -32,13 +32,16 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
     });
 
     // combine the fyValues and barChartColors
-    const chartData = nextThreeFyValues.map((fyVal, index) => {
-        return {
-            FY: fyVal.fiscalYear,
-            budget: fyVal.amount,
-            color: barChartColors[index].color,
-        };
-    });
+    const chartData = nextThreeFyValues
+        .map((fyVal, index) => {
+            return {
+                FY: fyVal.fiscalYear,
+                budget: fyVal.amount,
+                color: barChartColors[index].color,
+            };
+        })
+        // sort by year descending
+        .sort((a, b) => b.FY - a.FY);
 
     return (
         <CurrencySummaryCard headerText={headerText} amount={totalValue}>

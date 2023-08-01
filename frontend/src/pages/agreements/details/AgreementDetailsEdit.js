@@ -25,10 +25,6 @@ const AgreementDetailsEdit = ({ agreement, projectOfficer }) => {
                     isReviewMode={isReviewMode}
                 />
             </EditAgreementProvider>
-            <div style={{ background: "#cccccc", border: "1px dashed #999999" }}>
-                <h2>TEMP DEBUG</h2>
-                <pre>{JSON.stringify(agreement, null, 2)}</pre>
-            </div>
         </div>
     );
 };
