@@ -111,11 +111,8 @@ def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
 
-        access_token = create_access_token(
-            identity=user,
-            additional_claims=additional_claims,
-        )
-        refresh_token = create_refresh_token(identity=user)
+        access_token = create_access_token(identity=user, additional_claims=additional_claims)
+        refresh_token = create_refresh_token(identity=user, additional_claims=additional_claims)
     except Exception as e:
         current_app.logger.exception(e)
         return None, None, None, None
