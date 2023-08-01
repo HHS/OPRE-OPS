@@ -74,7 +74,6 @@ const DetailsTabs = ({ agreementId, isEditMode, setIsEditMode }) => {
             >
                 {links}
             </nav>
-            <span className="cursor-pointer" />
         </>
     );
 };
