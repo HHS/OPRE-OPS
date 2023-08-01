@@ -137,6 +137,39 @@ export const AgreementsList = () => {
         );
     });
 
+    // filter by budget line status
+    filteredAgreements = filteredAgreements.filter((agreement) => {
+        return (
+            (filters.budgetLineStatus.draft === true &&
+                agreement.budget_line_items.some((bli) => {
+                    return bli.status === "DRAFT";
+                })) ||
+            (filters.budgetLineStatus.planned === true &&
+                agreement.budget_line_items.some((bli) => {
+                    return bli.status === "PLANNED";
+                })) ||
+            (filters.budgetLineStatus.executing === true &&
+                agreement.budget_line_items.some((bli) => {
+                    return bli.status === "IN_EXECUTION";
+                })) ||
+            (filters.budgetLineStatus.obligated === true &&
+                agreement.budget_line_items.some((bli) => {
+                    return bli.status === "OBLIGATED";
+                }))
+        );
+    });
+
+    // filter by budget line status (PLANNED)
+    // filteredAgreements = filteredAgreements.filter((agreement) => {
+    //     return (
+    //         filters.budgetLineStatus.planned === false ||
+    //         (filters.budgetLineStatus.planned === true &&
+    //             agreement.budget_line_items.some((bli) => {
+    //                 return bli.status === "PLANNED";
+    //             }))
+    //     );
+    // });
+
     let sortedAgreements;
     if (searchParams.get("filter") === "my-agreements") {
         const myAgreements = filteredAgreements.filter((agreement) => {
