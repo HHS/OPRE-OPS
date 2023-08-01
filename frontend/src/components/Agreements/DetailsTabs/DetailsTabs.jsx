@@ -29,11 +29,10 @@ const DetailsTabs = ({ agreementId, isEditMode, setIsEditMode }) => {
         } else {
             setShowModal(true);
             setModalProps({
-                heading: "Are you sure you want to exit? Your changes will not be saved.",
-                actionButtonText: "Exit Editing",
+                heading: "Are you sure you want to leave this page without saving it? Your changes will not be saved. ",
+                actionButtonText: "Leave the Page",
                 secondaryButtonText: "Continue Editing",
                 handleConfirm: () => {
-                    console.log("confirm");
                     setIsEditMode(false);
                     navigate(pathName);
                 },
