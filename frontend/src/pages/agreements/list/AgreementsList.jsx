@@ -127,6 +127,16 @@ export const AgreementsList = () => {
         );
     });
 
+    // filter by procurement shops
+    filteredAgreements = filteredAgreements.filter((agreement) => {
+        return (
+            filters.procurementShops.length === 0 ||
+            filters.procurementShops.some((procurementShop) => {
+                return procurementShop.id === agreement.procurement_shop_id;
+            })
+        );
+    });
+
     let sortedAgreements;
     if (searchParams.get("filter") === "my-agreements") {
         const myAgreements = filteredAgreements.filter((agreement) => {
