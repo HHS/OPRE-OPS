@@ -102,4 +102,4 @@ class Group(BaseModel):
     __tablename__ = "groups"
     id = Column(Integer, Identity(always=True, start=1, cycle=True), primary_key=True)
     name = Column(String, index=True, nullable=False)
-    users = relationship("User", secondary=user_role_table, back_populates="groups")
+    users = relationship("User", secondary=user_group_table, back_populates="groups")

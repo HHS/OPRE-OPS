@@ -103,22 +103,30 @@ class is_authorized:
         def wrapper(*args, **kwargs) -> Response:
             identity = get_jwt_identity()
             is_authorized = auth_gateway.is_authorized(identity, f"{self.permission_type}_{self.permission}".upper())
-            extra_valid = True
-            if self.extra_check is not None:
-                extra_valid = self.extra_check(*args, **kwargs)
+            response: Optional[Response] = None
+            if is_authorized:
 
-            if self.groups:
-                user = get_current_user()
-                if set(self.groups) & {g.name for g in user.groups}:
-                    auth_group = True
-                else:
-                    auth_group = False
-            else:
-                auth_group = None
+                extra_valid: Optional[bool] = None
+                auth_group: Optional[bool] = None
+                if self.extra_check is not None:
+                    extra_valid = self.extra_check(*args, **kwargs)
 
-            if is_authorized and ((auth_group is not None and auth_group) or extra_valid):
-                response = func(*args, **kwargs)
-            else:
+                if self.groups is not None:
+                    user = get_current_user()
+                    if set(self.groups) & {g.name for g in user.groups}:
+                        auth_group = True
+                    else:
+                        auth_group = False
+
+                if (
+                    (extra_valid is None and auth_group is None) or
+                    (extra_valid is None and auth_group) or
+                    (auth_group is None and extra_valid) or
+                    (extra_valid is not None and auth_group is not None and (extra_valid or auth_group))
+                ):
+                    response = func(*args, **kwargs)
+
+            if response is None:
                 response = make_response_with_headers({}, 401)
 
             return response
