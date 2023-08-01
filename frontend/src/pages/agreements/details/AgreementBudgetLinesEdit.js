@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { loggedInName } from "../../../helpers/utils";
@@ -15,6 +16,15 @@ import {
     useSetState,
 } from "../../../components/UI/WizardSteps/StepCreateBudgetLines/context";
 
+/**
+ * Renders Agreement budget lines view
+ * @param {Object} props - The component props.
+ * @param {Object} props.agreement - The agreement to display.
+ * @param {boolean} props.isEditMode - Whether or not the edit mode is on.
+ * @param {function} props.setIsEditMode - The function to set the edit mode.
+ * @param {boolean} props.isReviewMode - Whether or not the review mode is on.
+ * @returns {React.JSX.Element} - The rendered component.
+ */
 const AgreementDetailsEdit = ({ agreement, isEditMode, setIsEditMode, isReviewMode }) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -247,9 +257,20 @@ const AgreementDetailsEdit = ({ agreement, isEditMode, setIsEditMode, isReviewMo
                     Save Changes
                 </button>
             </div>
-            {/* <pre>{JSON.stringify(agreement, null, 2)}</pre> */}
         </>
     );
 };
 
+AgreementDetailsEdit.propTypes = {
+    agreement: PropTypes.shape({
+        id: PropTypes.number,
+        budget_line_items: PropTypes.arrayOf(PropTypes.object),
+        procurement_shop: PropTypes.shape({
+            fee: PropTypes.number,
+        }),
+    }),
+    isEditMode: PropTypes.bool,
+    setIsEditMode: PropTypes.func,
+    isReviewMode: PropTypes.bool,
+};
 export default AgreementDetailsEdit;

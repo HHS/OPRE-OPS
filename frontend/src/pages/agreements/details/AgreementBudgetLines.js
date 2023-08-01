@@ -4,15 +4,15 @@ import AgreementDetailHeader from "./AgreementDetailHeader";
 import AgreementBudgetLinesEdit from "./AgreementBudgetLinesEdit";
 import { CreateBudgetLinesProvider } from "../../../components/UI/WizardSteps/StepCreateBudgetLines/context";
 import PreviewTable from "../../../components/UI/PreviewTable/PreviewTable";
+
 /**
- * Agreement budget lines.
+ * Renders Agreement budget lines view
  * @param {Object} props - The component props.
  * @param {Object} props.agreement - The agreement to display.
  * @param {boolean} props.isEditMode - Whether or not the edit mode is on.
  * @param {function} props.setIsEditMode - The function to set the edit mode.
  * @returns {React.JSX.Element} - The rendered component.
  */
-
 export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
     return (
         <CreateBudgetLinesProvider>
