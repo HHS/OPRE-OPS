@@ -4,7 +4,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { loggedInName } from "../../../helpers/utils";
 import { postBudgetLineItems } from "../../../api/postBudgetLineItems";
-import { patchBudgetLineItems } from "../../../api/patchBudgetLineItems";
 import CreateBudgetLinesForm from "../../../components/UI/Form/CreateBudgetLinesForm";
 import PreviewTable from "../../../components/UI/PreviewTable/PreviewTable";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
@@ -162,15 +161,9 @@ const AgreementDetailsEdit = ({ agreement, isEditMode, setIsEditMode, isReviewMo
         const patchBudgetLineItems = async (items) => {
             return Promise.all(items.map((item) => updateBudgetLineItem({ data: item })));
         };
-        const newBudgetLineItems = newBudgetLines.filter(
-            // eslint-disable-next-line no-prototype-builtins
-            (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on")
-        );
+        const newBudgetLineItems = newBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
 
-        const existingBudgetLineItems = newBudgetLines.filter((budgetLineItem) =>
-            // eslint-disable-next-line no-prototype-builtins
-            budgetLineItem.hasOwnProperty("created_on")
-        );
+        const existingBudgetLineItems = newBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
 
         patchBudgetLineItems(existingBudgetLineItems).then(() => console.log("Updated BLIs."));
 
