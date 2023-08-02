@@ -56,10 +56,6 @@ export const opsApi = createApi({
         }),
         updateBudgetLineItem: builder.mutation({
             query: ({ data }) => {
-                // remove fields that are not allowed
-                // eslint-disable-next-line no-unused-vars
-                // const { id: _id, budget_line_items, created_by, created_on, updated_on, ...patchData } = data;
-
                 const cleanData = { ...data }; // make a copy
                 if (cleanData.date_needed === "--") {
                     cleanData.date_needed = null;
