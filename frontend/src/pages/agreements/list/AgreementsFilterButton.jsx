@@ -3,11 +3,11 @@ import React from "react";
 import Modal from "react-modal";
 import customStyles from "./AgreementsFilterButton.module.css";
 import { useGetResearchProjectsQuery } from "../../../api/opsAPI";
-import ProjectOfficerSelect from "../../../components/UI/Form/ProjectOfficerSelect";
 import AgreementTypeSelect from "../../../components/UI/Form/AgreementTypeSelect";
 import ProcurementShopSelect from "../../../components/UI/Form/ProcurementShopSelect";
 import _ from "lodash";
 import ProjectSelectComboBox from "../../../components/UI/Form/ProjectReactSelect";
+import ProjectOfficerReactSelect from "../../../components/UI/Form/ProjectOfficerReactSelect";
 
 /**
  * Page for the Agreements List.
@@ -229,14 +229,11 @@ export const AgreementsFilterButton = ({ setFilters }) => {
                     </div>
                     <div>
                         <fieldset className="usa-fieldset" style={{ width: "363px" }}>
-                            <ProjectOfficerSelect
-                                name="project_officer"
-                                label="Project Officer"
-                                className=""
+                            <ProjectOfficerReactSelect
                                 selectedProjectOfficer={po}
                                 setSelectedProjectOfficer={setPO}
                                 legendClassname={`usa-legend font-sans-3xs margin-top-0 ${customStyles.legendColor}`}
-                                inputBoxClassname="margin-top-0"
+                                defaultString={"All Users"}
                             />
                         </fieldset>
                     </div>
