@@ -1,4 +1,3 @@
-import React from "react";
 import { useGetProcurementShopsQuery } from "../../../../api/opsAPI";
 
 /**
@@ -22,7 +21,7 @@ export const ProcurementShopSelect = ({
     selectedProcurementShop,
     onChangeSelectedProcurementShop,
     legendClassname = "",
-    defaultToAll = false,
+    defaultString = "-Select Procurement Shop-",
 }) => {
     const {
         data: procurementShops,
@@ -30,11 +29,11 @@ export const ProcurementShopSelect = ({
         isLoading: isLoadingProcurementShops,
     } = useGetProcurementShopsQuery();
 
-    React.useEffect(() => {
-        if (!defaultToAll && !selectedProcurementShop?.id && procurementShops) {
-            onChangeSelectedProcurementShop(procurementShops[1]);
-        }
-    }, [defaultToAll, procurementShops, selectedProcurementShop, onChangeSelectedProcurementShop]);
+    // React.useEffect(() => {
+    //     if (!defaultToAll && !selectedProcurementShop?.id && procurementShops) {
+    //         onChangeSelectedProcurementShop(procurementShops[1]);
+    //     }
+    // }, [defaultToAll, procurementShops, selectedProcurementShop, onChangeSelectedProcurementShop]);
 
     if (isLoadingProcurementShops) {
         return <div>Loading...</div>;
@@ -68,7 +67,7 @@ export const ProcurementShopSelect = ({
                     value={selectedProcurementShop?.id}
                     required
                 >
-                    {defaultToAll && <option value="">-Select Procurement Shop-</option>}
+                    <option value="">{defaultString}</option>
                     {procurementShops.map((shop) => (
                         <option key={shop?.id} value={shop?.id}>
                             {shop?.name} ({shop?.abbr})

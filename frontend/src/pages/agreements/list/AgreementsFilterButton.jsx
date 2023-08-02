@@ -45,6 +45,14 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         setPO(filters.projectOfficers ? filters.projectOfficers[0] : {});
     }, [filters.projectOfficers]);
 
+    useEffect(() => {
+        setAgreementType(filters.types ? filters.types[0] : {});
+    }, [filters.types]);
+
+    useEffect(() => {
+        setProcurementShop(filters.procurementShops ? filters.procurementShops[0] : {});
+    }, [filters.procurementShops]);
+
     const applyFilter = () => {
         setFilters((prevState) => {
             return {
@@ -261,6 +269,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                     setAgreementType(value);
                                 }}
                                 legendClassname={`usa-legend font-sans-3xs margin-top-0 ${customStyles.legendColor}`}
+                                defaultString={"All Types"}
                             />
                         </fieldset>
                     </div>
@@ -270,7 +279,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                 selectedProcurementShop={procurementShop}
                                 onChangeSelectedProcurementShop={setProcurementShop}
                                 legendClassname={`usa-legend font-sans-3xs margin-top-0 ${customStyles.legendColor}`}
-                                defaultToAll={true}
+                                defaultString={"All Shops"}
                             />
                         </fieldset>
                     </div>

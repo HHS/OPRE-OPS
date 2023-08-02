@@ -24,6 +24,7 @@ export const AgreementTypeSelect = ({
     messages = [],
     className,
     legendClassname = "margin-top-205",
+    defaultString = "- Select Agreement Type -",
 }) => {
     const {
         data: agreementTypes,
@@ -63,7 +64,7 @@ export const AgreementTypeSelect = ({
                     onChange={handleChange}
                     value={selectedAgreementType}
                 >
-                    <option value={0}>- Select Agreement Type -</option>
+                    <option value={0}>{defaultString}</option>
                     {agreementTypes.map((type, index) => (
                         <option key={index + 1} value={type}>
                             {convertCodeForDisplay("agreementType", type)}
