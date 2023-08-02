@@ -7,7 +7,7 @@ import ProjectOfficerSelect from "../../../components/UI/Form/ProjectOfficerSele
 import AgreementTypeSelect from "../../../components/UI/Form/AgreementTypeSelect";
 import ProcurementShopSelect from "../../../components/UI/Form/ProcurementShopSelect";
 import _ from "lodash";
-import ProjectSelectComboBox from "../../../components/UI/Form/ProjectSelectComboBox";
+import ProjectSelectComboBox from "../../../components/UI/Form/ProjectReactSelect";
 
 /**
  * Page for the Agreements List.
@@ -69,7 +69,7 @@ export const AgreementsFilterButton = ({ setFilters }) => {
         setFilters({
             upcomingNeedByDate: "all-time",
             projects: [],
-            projectOfficer: [],
+            projectOfficers: [],
             types: [],
             procurementShops: [],
             budgetLineStatus: {
@@ -83,6 +83,13 @@ export const AgreementsFilterButton = ({ setFilters }) => {
         setPO({});
         setAgreementType({});
         setProcurementShop({});
+        setBliStatus({
+            draft: true,
+            planned: true,
+            executing: true,
+            obligated: true,
+        });
+        setNeedBy("all-time");
     };
 
     const handleBudgetLineStatus = (event) => {
@@ -213,7 +220,7 @@ export const AgreementsFilterButton = ({ setFilters }) => {
                         <fieldset className="usa-fieldset margin-bottom-205" style={{ width: "363px" }}>
                             <ProjectSelectComboBox
                                 researchProjects={projectData}
-                                selectedResearchProject={project || []}
+                                selectedResearchProject={project || {}}
                                 setSelectedProject={setProject}
                                 legendClassname={`usa-legend font-sans-3xs margin-top-0 ${customStyles.legendColor}`}
                                 defaultString={"All Projects"}

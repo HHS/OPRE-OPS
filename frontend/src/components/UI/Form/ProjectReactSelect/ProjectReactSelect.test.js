@@ -1,5 +1,5 @@
 import { render, fireEvent, screen } from "@testing-library/react";
-import ProjectSelectComboBox from "./ProjectSelectComboBox";
+import ProjectReactSelect from "./ProjectReactSelect";
 
 describe("ProjectSelect", () => {
     const researchProjects = [
@@ -12,7 +12,7 @@ describe("ProjectSelect", () => {
 
     it("renders the component with the correct label", () => {
         render(
-            <ProjectSelectComboBox
+            <ProjectReactSelect
                 researchProjects={researchProjects}
                 selectedResearchProject={researchProjects[0]}
                 setSelectedProject={mockSetSelectedProject}
@@ -24,7 +24,7 @@ describe("ProjectSelect", () => {
 
     it("renders the component with the correct options", () => {
         render(
-            <ProjectSelectComboBox
+            <ProjectReactSelect
                 researchProjects={researchProjects}
                 selectedResearchProject={researchProjects[0]}
                 setSelectedProject={mockSetSelectedProject}
@@ -42,7 +42,7 @@ describe("ProjectSelect", () => {
     it("updates the selected project when an option is selected", () => {
         const setSelectedProject = jest.fn();
         render(
-            <ProjectSelectComboBox
+            <ProjectReactSelect
                 researchProjects={researchProjects}
                 selectedResearchProject={researchProjects[0]}
                 setSelectedProject={setSelectedProject}
@@ -56,7 +56,7 @@ describe("ProjectSelect", () => {
 
     it("updates the input value when the user types in the input field", () => {
         render(
-            <ProjectSelectComboBox
+            <ProjectReactSelect
                 researchProjects={researchProjects}
                 selectedResearchProject={researchProjects[0]}
                 setSelectedProject={mockSetSelectedProject}
@@ -70,7 +70,7 @@ describe("ProjectSelect", () => {
 
     it("clears the input value when the clear button is clicked", () => {
         render(
-            <ProjectSelectComboBox
+            <ProjectReactSelect
                 researchProjects={researchProjects}
                 selectedResearchProject={researchProjects[0]}
                 setSelectedProject={mockSetSelectedProject}
