@@ -143,6 +143,7 @@ class Agreement(BaseModel):
     project_officer = Column(
         Integer, ForeignKey("users.id", name="fk_user_project_officer"), nullable=True
     )
+    project_officer_user = relationship(User, foreign_keys=[project_officer])
     team_members = relationship(
         User,
         secondary=agreement_team_members,

@@ -5,8 +5,8 @@ from typing import Annotated, ClassVar, Final, TypeAlias, TypedDict, TypeVar, ca
 from marshmallow import Schema as MMSchema
 from models.mixins.repr import ReprMixin
 from models.mixins.serialize import SerializeMixin
-from sqlalchemy import Column, DateTime, ForeignKey, Numeric, func
-from sqlalchemy.orm import declarative_base, declared_attr, mapped_column, registry
+from sqlalchemy import Column, Integer, DateTime, ForeignKey, Numeric, func
+from sqlalchemy.orm import declarative_base, declared_attr, mapped_column, registry, relationship
 from typing_extensions import Any, override
 
 Base = declarative_base()
@@ -97,6 +97,10 @@ class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc, valid-t
     @declared_attr
     def created_by(cls):
         return Column("created_by", ForeignKey("users.id"))
+
+    @declared_attr
+    def created_by_user(cls):
+        return relationship("User", foreign_keys=[cls.created_by])
 
     created_on = Column(DateTime, default=func.now())
     updated_on = Column(DateTime, default=func.now(), onupdate=func.now())
