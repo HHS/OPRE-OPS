@@ -11,27 +11,31 @@ import ProjectOfficerSelect from "../../UI/Form/ProjectOfficerSelect";
 import TeamMemberSelect from "../../UI/Form/TeamMemberSelect";
 import TeamMemberList from "../../UI/Form/TeamMemberList";
 import Modal from "../../UI/Modal";
-import { formatTeamMember, postAgreement } from "../../../api/postAgreements";
+import { formatTeamMember } from "../../../api/postAgreements";
 import ProductServiceCodeSummaryBox from "../../UI/Form/ProductServiceCodeSummaryBox";
 import { useEditAgreement, useSetState, useUpdateAgreement, useEditAgreementDispatch } from "./AgreementEditorContext";
 import { setAlert } from "../../UI/Alert/alertSlice";
-import { patchAgreement } from "../../../api/patchAgreements";
 import suite from "./AgreementEditFormSuite";
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea/TextArea";
-import { useGetProductServiceCodesQuery } from "../../../api/opsAPI";
+import {
+    useAddAgreementMutation,
+    useGetProductServiceCodesQuery,
+    useUpdateAgreementMutation,
+} from "../../../api/opsAPI";
 
-/**
- * Renders the "Create Agreement" step of the Create Agreement flow.
- *
- * @param {Object} props - The component props.
- * @param {Function} [props.goBack] - A function to go back to the previous step. - optional
- * @param {Function} [props.goToNext] - A function to go to the next step. - optional
- * @param {boolean} [props.isEditMode] - Whether the form is in edit mode. - optional
- * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
- */
-export const AgreementEditForm = ({ goBack, goToNext, isReviewMode }) => {
-    const isWizardMode = location.pathname === "/agreements/create";
+export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, setIsEditMode }) => {
+    /**
+     * Renders the "Create Agreement" step of the Create Agreement flow.
+     *
+     * @param {Object} props - The component props.
+     * @param {Function} [props.goBack] - A function to go back to the previous step. - optional
+     * @param {Function} [props.goToNext] - A function to go to the next step. - optional
+     * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
+     * @param {boolean} props.isEditMode - Whether the edit mode is on (in the Agreement details page) - optional.
+     * @param {function} props.setIsEditMode - The function to set the edit mode (in the Agreement details page) - optional.
+     */
+    const isWizardMode = location.pathname === "/agreements/create" || location.pathname.startsWith("/agreements/edit");
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setSelectedProductServiceCode = useSetState("selected_product_service_code");
@@ -55,6 +59,9 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode }) => {
     const navigate = useNavigate();
     const dispatch = useEditAgreementDispatch();
     const globalDispatch = useDispatch();
+
+    const [updateAgreement] = useUpdateAgreementMutation();
+    const [addAgreement] = useAddAgreementMutation();
 
     const {
         agreement,
@@ -137,19 +144,25 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode }) => {
         };
         if (agreement.id) {
             // TODO: handle failures
-            // const response = await patchAgreement(agreement.id, data);
-            patchAgreement(agreement.id, data);
+            updateAgreement({ id: agreement.id, data: data }).unwrap();
+            console.log("Agreement Updated");
         } else {
             // TODO: handle failures
-            const response = await postAgreement(data);
-            const newAgreementId = response.id;
-            console.log(`New Agreement Created: ${newAgreementId}`);
-            setAgreementId(newAgreementId);
+            // Example: `updatePost().unwrap().then(fulfilled => console.log(fulfilled)).catch(rejected => console.error(rejected))
+            addAgreement(data)
+                .unwrap()
+                .then((payload) => {
+                    console.log("Agreement Created", payload);
+                    const newAgreementId = payload.id;
+                    setAgreementId(newAgreementId);
+                })
+                .catch((error) => console.error("Agreement Failed", error));
         }
     };
 
     const handleContinue = async () => {
         saveAgreement();
+        if (isEditMode && setIsEditMode) setIsEditMode(false);
         await goToNext();
     };
 
@@ -175,6 +188,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode }) => {
                 if (isWizardMode) {
                     navigate("/agreements");
                 } else {
+                    if (isEditMode && setIsEditMode) setIsEditMode(false);
                     navigate(`/agreements/${agreement.id}`);
                 }
             },
@@ -384,8 +398,9 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode }) => {
 AgreementEditForm.propTypes = {
     goBack: PropTypes.func,
     goToNext: PropTypes.func,
-    isEditMode: PropTypes.bool,
     isReviewMode: PropTypes.bool,
+    isEditMode: PropTypes.bool,
+    setIsEditMode: PropTypes.func,
 };
 
 export default AgreementEditForm;

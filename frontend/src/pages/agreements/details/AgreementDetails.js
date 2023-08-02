@@ -10,7 +10,7 @@ import AgreementDetailsEdit from "./AgreementDetailsEdit";
  * @param {object} props - The component props.
  * @param {object} props.agreement - The agreement object to display details for.
  * @param {object} props.projectOfficer - The project officer object for the agreement.
- * @param {boolean} props.isEditMode - Whether or not the edit mode is on.
+ * @param {boolean} props.isEditMode - Whether the edit mode is on.
  * @param {function} props.setIsEditMode - The function to set the edit mode.
  * @returns {React.JSX.Element} - The rendered component.
  */
@@ -46,7 +46,12 @@ const AgreementDetails = ({ agreement, projectOfficer, isEditMode, setIsEditMode
             </div>
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
             {isEditMode ? (
-                <AgreementDetailsEdit agreement={agreement} projectOfficer={projectOfficer} />
+                <AgreementDetailsEdit
+                    agreement={agreement}
+                    projectOfficer={projectOfficer}
+                    isEditMode={isEditMode}
+                    setIsEditMode={setIsEditMode}
+                />
             ) : (
                 <AgreementDetailsView agreement={agreement} projectOfficer={projectOfficer} />
             )}

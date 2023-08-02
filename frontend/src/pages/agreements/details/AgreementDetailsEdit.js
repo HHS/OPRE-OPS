@@ -8,17 +8,18 @@ import { useNavigate } from "react-router-dom";
  * @param {object} props - The component props.
  * @param {object} props.agreement - The agreement object to display details for.
  * @param {object} props.projectOfficer - The project officer object for the agreement.
+ * @param {boolean} props.isEditMode - Whether the edit mode is on.
+ * @param {function} props.setIsEditMode - The function to set the edit mode.
  * @returns {React.JSX.Element} - The rendered component.
  */
-const AgreementDetailsEdit = ({ agreement, projectOfficer }) => {
+const AgreementDetailsEdit = ({ agreement, projectOfficer, isEditMode, setIsEditMode }) => {
     const navigate = useNavigate();
     const goBack = () => {
         navigate(`/agreements/${agreement.id}`);
     };
     const goToNext = () => {
-        window.location = `/agreements/${agreement.id}`;
+        navigate(`/agreements/${agreement.id}`);
     };
-    const isEditMode = true;
     const isReviewMode = false;
 
     return (
@@ -27,8 +28,9 @@ const AgreementDetailsEdit = ({ agreement, projectOfficer }) => {
                 <AgreementEditForm
                     goBack={goBack}
                     goToNext={goToNext}
-                    isEditMode={isEditMode}
                     isReviewMode={isReviewMode}
+                    isEditMode={isEditMode}
+                    setIsEditMode={setIsEditMode}
                 />
             </EditAgreementProvider>
         </div>
@@ -38,5 +40,7 @@ const AgreementDetailsEdit = ({ agreement, projectOfficer }) => {
 AgreementDetailsEdit.propTypes = {
     agreement: PropTypes.object.isRequired,
     projectOfficer: PropTypes.object.isRequired,
+    isEditMode: PropTypes.bool.isRequired,
+    setIsEditMode: PropTypes.func.isRequired,
 };
 export default AgreementDetailsEdit;

@@ -9,7 +9,7 @@ import PreviewTable from "../../../components/UI/PreviewTable/PreviewTable";
  * Renders Agreement budget lines view
  * @param {Object} props - The component props.
  * @param {Object} props.agreement - The agreement to display.
- * @param {boolean} props.isEditMode - Whether or not the edit mode is on.
+ * @param {boolean} props.isEditMode - Whether the edit mode is on.
  * @param {function} props.setIsEditMode - The function to set the edit mode.
  * @returns {React.JSX.Element} - The rendered component.
  */
