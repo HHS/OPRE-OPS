@@ -154,8 +154,8 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
     }, [filters.upcomingNeedByDate]);
 
     const createTagString = (selectedList, filterType, filterText) => {
+        setTagsList((prevState) => prevState.filter((tag) => tag.filter !== filterType));
         if (selectedList.length > 0) {
-            setTagsList((prevState) => prevState.filter((tag) => tag.filter !== filterType));
             setTagsList((prevState) => {
                 return [
                     ...prevState,
@@ -169,6 +169,7 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
     };
 
     useEffect(() => {
+        console.log("updating tags");
         const selectedProjects = [];
         filters.projects.forEach((project) => {
             selectedProjects.push(project.title);

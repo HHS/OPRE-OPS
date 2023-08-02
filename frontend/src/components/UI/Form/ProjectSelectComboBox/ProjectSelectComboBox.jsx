@@ -11,10 +11,14 @@ export const ProjectSelectComboBox = ({
         const projId = e.target.value;
         console.log("projId: ", projId);
 
-        const projObj = researchProjects.find((proj) => proj.id === Number(projId));
-        console.log("projObj: ", projObj);
+        if (projId === "0") {
+            setSelectedProject({});
+        } else {
+            const projObj = researchProjects.find((proj) => proj.id === Number(projId));
+            console.log("projObj: ", projObj);
 
-        setSelectedProject(projObj);
+            setSelectedProject(projObj);
+        }
     };
 
     return (

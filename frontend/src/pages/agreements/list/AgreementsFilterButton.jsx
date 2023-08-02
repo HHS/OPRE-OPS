@@ -26,15 +26,6 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         isLoading: isLoadingProjectData,
     } = useGetResearchProjectsQuery();
 
-    // useEffect(() => {
-    //     setFilters((prevState) => {
-    //         return {
-    //             ...prevState,
-    //             upcomingNeedByDate: "next-30-days",
-    //         };
-    //     });
-    // }, [setFilters]);
-
     const resetFilter = () => {
         setFilters({
             upcomingNeedByDate: "all-time",
@@ -77,11 +68,15 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         });
     };
 
-    function setFilterList(prevState, filterKeyString, stateObject) {
+    function setFilterList(prevState, filterKeyString, stateObject, onlyAllowOne = false) {
         let updatedFilters = { ...prevState };
         let filterList = _.get(updatedFilters, filterKeyString, []);
         _.set(updatedFilters, filterKeyString, filterList);
-        filterList.push(stateObject);
+        if (onlyAllowOne) {
+            filterList[0] = stateObject;
+        } else {
+            filterList.push(stateObject);
+        }
         _.set(
             updatedFilters,
             filterKeyString,
@@ -94,7 +89,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
 
     useEffect(() => {
         setFilters((prevState) => {
-            return setFilterList(prevState, "projects", project);
+            return setFilterList(prevState, "projects", project, true);
         });
     }, [project, setFilters]);
 
