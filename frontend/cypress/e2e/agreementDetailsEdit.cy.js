@@ -55,8 +55,8 @@ it("edit an agreement", () => {
 
         cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
         cy.visit(`/agreements/${agreementId}`);
-        cy.get('#edit').click();
-        cy.get('#edit').should("not.exist");
+        cy.get("#edit").click();
+        cy.get("#edit").should("not.exist");
         cy.get('[data-cy="continue-btn"]').should("exist");
         cy.get("h1").should("have.text", "Test Contract");
         // test validation
@@ -81,7 +81,7 @@ it("edit an agreement", () => {
             .then(cy.log);
 
         cy.get("h1").should("have.text", "Test Edit Title");
-        cy.get('#edit').should("exist");
+        cy.get("#edit").should("exist");
 
         cy.request({
             method: "DELETE",
