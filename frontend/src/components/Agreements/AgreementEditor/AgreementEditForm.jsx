@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import classnames from "vest/classnames";
-import ProcurementShopSelect from "../../UI/Form/ProcurementShopSelect";
+import ProcurementShopSelectWithFee from "../../UI/Form/ProcurementShopSelectWithFee";
 import AgreementReasonSelect from "../../UI/Form/AgreementReasonSelect";
 import AgreementTypeSelect from "../../UI/Form/AgreementTypeSelect";
 import ProductServiceCodeSelect from "../../UI/Form/ProductServiceCodeSelect";
@@ -280,7 +280,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                     <ProductServiceCodeSummaryBox selectedProductServiceCode={selectedProductServiceCode} />
                 )}
             <div className="margin-top-3">
-                <ProcurementShopSelect
+                <ProcurementShopSelectWithFee
                     selectedProcurementShop={selectedProcurementShop}
                     onChangeSelectedProcurementShop={handleOnChangeSelectedProcurementShop}
                 />
