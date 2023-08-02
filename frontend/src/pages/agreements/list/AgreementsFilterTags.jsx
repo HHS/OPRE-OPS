@@ -76,10 +76,10 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
                     return {
                         ...prevState,
                         budgetLineStatus: {
-                            draft: false,
-                            planned: false,
-                            executing: false,
-                            obligated: false,
+                            draft: true,
+                            planned: true,
+                            executing: true,
+                            obligated: true,
                         },
                     };
                 });

@@ -53,6 +53,10 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         setProcurementShop(filters.procurementShops ? filters.procurementShops[0] : {});
     }, [filters.procurementShops]);
 
+    useEffect(() => {
+        setBliStatus(filters.budgetLineStatus);
+    }, [filters.budgetLineStatus]);
+
     const applyFilter = () => {
         setFilters((prevState) => {
             return {
