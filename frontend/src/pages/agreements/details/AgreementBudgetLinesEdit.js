@@ -4,7 +4,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { loggedInName } from "../../../helpers/utils";
 import { postBudgetLineItems } from "../../../api/postBudgetLineItems";
-import { patchBudgetLineItems } from "../../../api/patchBudgetLineItems";
 import CreateBudgetLinesForm from "../../../components/UI/Form/CreateBudgetLinesForm";
 import PreviewTable from "../../../components/UI/PreviewTable/PreviewTable";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
@@ -16,6 +15,7 @@ import {
     useSetState,
 } from "../../../components/UI/WizardSteps/StepCreateBudgetLines/context";
 
+import { useUpdateBudgetLineItemMutation } from "../../../api/opsAPI";
 /**
  * Renders Agreement budget lines view
  * @param {Object} props - The component props.
@@ -54,6 +54,7 @@ const AgreementDetailsEdit = ({ agreement, isEditMode, setIsEditMode, isReviewMo
     const dispatch = useBudgetLinesDispatch();
     const globalDispatch = useDispatch();
     const navigate = useNavigate();
+    const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     // setters
     const setEnteredDescription = useSetState("entered_description");
     const setSelectedCan = useSetState("selected_can");
@@ -154,24 +155,24 @@ const AgreementDetailsEdit = ({ agreement, isEditMode, setIsEditMode, isReviewMo
         });
     };
 
-    const saveBudgetLineItems = (event) => {
+    const saveBudgetLineItems = async (event) => {
         event.preventDefault();
-        const newBudgetLineItems = newBudgetLines.filter(
-            // eslint-disable-next-line no-prototype-builtins
-            (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on")
-        );
 
-        const existingBudgetLineItems = newBudgetLines.filter((budgetLineItem) =>
-            // eslint-disable-next-line no-prototype-builtins
-            budgetLineItem.hasOwnProperty("created_on")
-        );
+        const patchBudgetLineItems = async (items) => {
+            return Promise.all(items.map((item) => updateBudgetLineItem({ data: item })));
+        };
+        const newBudgetLineItems = newBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
+
+        const existingBudgetLineItems = newBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
 
         patchBudgetLineItems(existingBudgetLineItems).then(() => console.log("Updated BLIs."));
-        postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
 
+        // patchBudgetLineItems(existingBudgetLineItems).then(() => console.log("Updated BLIs."));
+        // postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
         dispatch({ type: "RESET_FORM" });
         setIsEditMode(false);
-        window.location.href = `/agreements/${agreement?.id}/budget-lines`;
+        // window.location.href = `/agreements/${agreement?.id}/budget-lines`;
+        navigate(`/agreements/${agreement.id}/budget-lines`);
     };
 
     const handleResetForm = () => dispatch({ type: "RESET_FORM" });
