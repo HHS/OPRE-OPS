@@ -54,6 +54,25 @@ export const opsApi = createApi({
             },
             invalidatesTags: ["Agreements", "BudgetLineItems"],
         }),
+        addBudgetLineItem: builder.mutation({
+            query: ({ data }) => {
+                const cleanData = { ...data }; // make a copy
+                if (cleanData.date_needed === "--") {
+                    cleanData.date_needed = null;
+                }
+                delete cleanData.created_by;
+                delete cleanData.can;
+                delete cleanData.id;
+
+                return {
+                    url: `/budget-line-items/`,
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: cleanData,
+                };
+            },
+            invalidatesTags: ["Agreements", "BudgetLineItems"],
+        }),
         updateBudgetLineItem: builder.mutation({
             query: ({ data }) => {
                 const cleanData = { ...data }; // make a copy
@@ -154,7 +173,7 @@ export const {
     useGetAgreementByIdQuery,
     useAddAgreementMutation,
     useUpdateAgreementMutation,
-    // useAddBudgetLineItemMutation,
+    useAddBudgetLineItemMutation,
     useUpdateBudgetLineItemMutation,
     useGetAgreementsByResearchProjectFilterQuery,
     useGetUserByIdQuery,

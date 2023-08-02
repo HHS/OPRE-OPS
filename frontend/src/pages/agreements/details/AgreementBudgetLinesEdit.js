@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { loggedInName } from "../../../helpers/utils";
-import { postBudgetLineItems } from "../../../api/postBudgetLineItems";
 import CreateBudgetLinesForm from "../../../components/UI/Form/CreateBudgetLinesForm";
 import PreviewTable from "../../../components/UI/PreviewTable/PreviewTable";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
@@ -15,7 +14,7 @@ import {
     useSetState,
 } from "../../../components/UI/WizardSteps/StepCreateBudgetLines/context";
 
-import { useUpdateBudgetLineItemMutation } from "../../../api/opsAPI";
+import { useUpdateBudgetLineItemMutation, useAddBudgetLineItemMutation } from "../../../api/opsAPI";
 /**
  * Renders Agreement budget lines view
  * @param {Object} props - The component props.
@@ -55,6 +54,7 @@ const AgreementDetailsEdit = ({ agreement, isEditMode, setIsEditMode, isReviewMo
     const globalDispatch = useDispatch();
     const navigate = useNavigate();
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
+    const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     // setters
     const setEnteredDescription = useSetState("entered_description");
     const setSelectedCan = useSetState("selected_can");
@@ -158,20 +158,28 @@ const AgreementDetailsEdit = ({ agreement, isEditMode, setIsEditMode, isReviewMo
     const saveBudgetLineItems = async (event) => {
         event.preventDefault();
 
-        const patchBudgetLineItems = async (items) => {
-            return Promise.all(items.map((item) => updateBudgetLineItem({ data: item })));
+        const mutateBudgetLineItems = async (method, items) => {
+            if (items.length === 0) {
+                return;
+            }
+            if (method === "POST") {
+                return Promise.all(items.map((item) => addBudgetLineItem({ data: item })));
+            }
+            if (method === "PATCH") {
+                return Promise.all(items.map((item) => updateBudgetLineItem({ data: item })));
+            }
         };
         const newBudgetLineItems = newBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
-
         const existingBudgetLineItems = newBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
 
-        patchBudgetLineItems(existingBudgetLineItems).then(() => console.log("Updated BLIs."));
-
-        // patchBudgetLineItems(existingBudgetLineItems).then(() => console.log("Updated BLIs."));
-        // postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
+        if (newBudgetLineItems.length > 0) {
+            mutateBudgetLineItems("POST", newBudgetLineItems).then(() => console.log("Created New BLIs."));
+        }
+        if (existingBudgetLineItems.length > 0) {
+            mutateBudgetLineItems("PATCH", existingBudgetLineItems).then(() => console.log("Updated BLIs."));
+        }
         dispatch({ type: "RESET_FORM" });
         setIsEditMode(false);
-        // window.location.href = `/agreements/${agreement?.id}/budget-lines`;
         navigate(`/agreements/${agreement.id}/budget-lines`);
     };
 
@@ -182,6 +190,7 @@ const AgreementDetailsEdit = ({ agreement, isEditMode, setIsEditMode, isReviewMo
     };
 
     const handleDuplicateBudgetLine = (budgetLine) => {
+        // eslint-disable-next-line no-unused-vars
         const { updated_on, created_on, ...budgetLineRest } = budgetLine;
         dispatch({
             type: "DUPLICATE_BUDGET_LINE",
