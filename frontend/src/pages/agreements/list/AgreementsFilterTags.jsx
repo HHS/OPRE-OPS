@@ -96,7 +96,7 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
             <svg
                 className="height-2 width-2 text-primary-dark margin-left-05 hover: cursor-pointer usa-tooltip"
                 onClick={() => removeFilter(tag)}
-                id={`filter-tag-${tag.id}`}
+                id={`filter-tag-${tag.filter}`}
             >
                 <use xlinkHref={`${icons}#cancel`}></use>
             </svg>
