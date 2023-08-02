@@ -54,19 +54,19 @@ it("edit an agreement", () => {
         const agreementId = response.body.id;
 
         cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
-        cy.visit(`/agreements/edit/${agreementId}?mode=edit`);
-        cy.get("h1").should("have.text", "Edit Agreement");
-        cy.get("#continue").click();
+        cy.visit(`/agreements/${agreementId}`);
+        cy.get('#edit').click();
+        cy.get('#edit').should("not.exist");
+        cy.get('[data-cy="continue-btn"]').should("exist");
+        cy.get("h1").should("have.text", "Test Contract");
         // test validation
         cy.get("#name").clear();
         cy.get("#name").blur();
         cy.get("#input-error-message").should("contain", "This is required information");
         cy.get("[data-cy='continue-btn']").should("be.disabled");
-        cy.get("[data-cy='save-draft-btn']").should("be.disabled");
         cy.get("#name").type("Test Edit Title");
         cy.get("#input-error-message").should("not.exist");
         cy.get("[data-cy='continue-btn']").should("not.be.disabled");
-        cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");
         cy.get("#description").type(" more text");
         cy.get("#agreementNotes").type("test edit notes");
 
@@ -80,13 +80,8 @@ it("edit an agreement", () => {
             })
             .then(cy.log);
 
-        cy.get("h1").should("have.text", "Edit Agreement");
-        cy.get("h2").first().should("have.text", "Budget Line Details");
-
-        cy.get('[data-cy="continue-btn"]').click();
-        // get Alert role status
-        cy.get("[data-cy='alert']").find("h1").should("have.text", "Agreement draft saved");
-        cy.get("h1").should("exist");
+        cy.get("h1").should("have.text", "Test Edit Title");
+        cy.get('#edit').should("exist");
 
         cy.request({
             method: "DELETE",
