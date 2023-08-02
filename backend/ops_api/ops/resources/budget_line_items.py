@@ -7,7 +7,7 @@ import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 from marshmallow import Schema, ValidationError
-from models import BudgetLineItemStatus, OpsEventType
+from models import BudgetLineItemStatus, OpsEventType, Agreement
 from models.base import BaseModel
 from models.cans import BudgetLineItem
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -31,15 +31,15 @@ ENDPOINT_STRING = "/budget-line-items"
 
 def bli_associated_with_agreement(self, id: int) -> bool:
     jwt_identity = get_jwt_identity()
-    print("*"*80)
-    print(id)
-    budget_line_item_stmt = select(BudgetLineItem).where(BudgetLineItem.id == id)
-    print(budget_line_item_stmt)
-    budget_line_item = current_app.db_session.scalar(budget_line_item_stmt)
-    print(budget_line_item)
-    agreement = budget_line_item.agreement
-    print(agreement)
-    print("*"*80)
+    try:
+        agreement_id = request.json["agreement_id"]
+        agreement_stmt = select(Agreement).where(Agreement.id == agreement_id)
+        agreement = current_app.db_session.scalar(agreement_stmt)
+
+    except KeyError:
+        budget_line_item_stmt = select(BudgetLineItem).where(BudgetLineItem.id == id)
+        budget_line_item = current_app.db_session.scalar(budget_line_item_stmt)
+        agreement = budget_line_item.agreement
 
     oidc_ids = set()
     if agreement.created_by_user:

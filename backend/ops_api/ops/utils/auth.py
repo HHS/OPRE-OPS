@@ -109,7 +109,10 @@ class is_authorized:
                 extra_valid: Optional[bool] = None
                 auth_group: Optional[bool] = None
                 if self.extra_check is not None:
-                    extra_valid = self.extra_check(*args, **kwargs)
+                    try:
+                        extra_valid = self.extra_check(*args, **kwargs)
+                    except AttributeError:
+                        return make_response_with_headers({}, 400)
 
                 if self.groups is not None:
                     user = get_current_user()
