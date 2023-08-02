@@ -108,19 +108,11 @@ class LoginGovProvider(AuthenticationProvider):
     def __init__(self, config_name, key) -> None:
         self.config = current_app.config["AUTHLIB_OAUTH_CLIENTS"][config_name]
         self.client_id = self.config["client_id"]
-        self.server_metadata_url = self.config["server_metadata_url"]
-        self.user_info_url = self.config["user_info_url"]
-        self.client_kwargs = self.config["client_kwargs"]
-        self.aud = self.config["aud"]
-        self.redirect_uri = self.config["redirect_uri"] or None
-        self.token_url = self.config["token_endpoint"] or None
-        self.key = key
-        self.scope = self.client_kwargs["scope"]
 
     def authenticate(self, auth_code):
         client = OAuth2Session(
             client_id=self.config["client_id"],
-            scope=self.scope,
+            scope=self.config["client_kwargs"]["scope"],
             redirect_uri=self.config["redirect_uri"],
         )
         provider_jwt = super().create_oauth_jwt()
@@ -142,9 +134,9 @@ class LoginGovProvider(AuthenticationProvider):
         }
         try:
             current_app.logger.debug(f"header={header}")
-            current_app.logger.debug(f"user_info_url={self.user_info_url}")
+            current_app.logger.debug(f"user_info_url={self.config['user_info_url']}")
             user_jwt = requests.get(
-                self.user_info_url,
+                self.config["user_info_url"],
                 headers=header,
             ).content.decode("utf-8")
             current_app.logger.debug(f"user_jwt_response={user_jwt}")
@@ -161,14 +153,6 @@ class HhsAmsProvider(AuthenticationProvider):
     def __init__(self, config_name, key) -> None:
         self.config = current_app.config["AUTHLIB_OAUTH_CLIENTS"][config_name]
         self.client_id = self.config["client_id"]
-        self.server_metadata_url = self.config["server_metadata_url"]
-        self.user_info_url = self.config["user_info_url"]
-        self.client_kwargs = self.config["client_kwargs"]
-        self.aud = self.config["aud"]
-        self.redirect_uri = self.config["redirect_uri"] or None
-        self.token_url = self.config["token_endpoint"] or None
-        self.key = key
-        self.scope = self.client_kwargs["scope"]
 
     def decode_user(
         self,
@@ -184,7 +168,7 @@ class HhsAmsProvider(AuthenticationProvider):
                 "exp": {"validate": JWTClaims.validate_exp},
             }
             jwt = JsonWebToken(["RS256"])
-            jwks = get_jwks(self.server_metadata_url)
+            jwks = get_jwks(self.config["server_metadata_url"])
             # current_app.logger.debug(f"jwks={jwks}")
             claims = jwt.decode(payload, jwks, claims_options=claims_options)
             return claims
@@ -195,7 +179,7 @@ class HhsAmsProvider(AuthenticationProvider):
     def get_jwks(self):
         provider_uris = json.loads(
             requests.get(
-                self.server_metadata_url,
+                self.config["server_metadata_url"],
                 headers={"Accept": "application/json"},
             ).content.decode("utf-8")
         )
@@ -206,7 +190,7 @@ class HhsAmsProvider(AuthenticationProvider):
     def authenticate(self, auth_code):
         client = OAuth2Session(
             client_id=self.config["client_id"],
-            scope=self.scope,
+            scope=self.config["scope"],
             redirect_uri=self.config["redirect_uri"],
         )
         provider_jwt = super().create_oauth_jwt()

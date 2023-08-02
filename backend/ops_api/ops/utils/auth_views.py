@@ -17,53 +17,57 @@ def login() -> Union[Response, tuple[str, int]]:
     try:
         auth_code = request.json.get("code")
         provider = request.json.get("provider")
+        current_app.logger.debug(f"login - auth_code: {auth_code}")
+        current_app.logger.debug(f"login - provider: {provider}")
+
         with current_app.app_context():
             auth_gateway = AuthenticationGateway(current_app.config.get("JWT_PRIVATE_KEY"))
 
-        if not auth_code:
-            return "Invalid Auth Code", 400
+        with OpsEventHandler(OpsEventType.LOGIN_ATTEMPT) as la:
+            if auth_code is None:
+                return "Invalid Auth Code", 400
 
-        if provider not in auth_gateway.providers.keys():
-            return "Invalid provider name", 400
+            if provider not in auth_gateway.providers.keys():
+                return "Invalid provider name", 400
 
-        token = auth_gateway.authenticate(provider, auth_code)
-        # current_app.logger.debug(f"auth_gateway.authenticate() - token: {token['access_token'].strip()}")
-        if not token:
-            current_app.logger.error(f"Failed to authenticate with provider {provider} using auth code {auth_code}")
-            return "Invalid Provider Auth Token", 400
+            token = auth_gateway.authenticate(provider, auth_code)
+            # current_app.logger.debug(f"auth_gateway.authenticate() - token: {token['access_token'].strip()}")
+            if not token:
+                current_app.logger.error(f"Failed to authenticate with provider {provider} using auth code {auth_code}")
+                return "Invalid Provider Auth Token", 400
 
-        user_data = auth_gateway.get_user_info(provider, token["access_token"].strip())
-        # Issues where user_data is sometimes just a string, and sometimes a dict.
-        if isinstance(user_data, str):
-            user_data = json.loads(user_data)
-        else:
-            user_data = user_data
+            user_data = auth_gateway.get_user_info(provider, token["access_token"].strip())
+            # Issues where user_data is sometimes just a string, and sometimes a dict.
+            if isinstance(user_data, str):
+                user_data = json.loads(user_data)
+            else:
+                user_data = user_data
 
-        # current_app.logger.debug(f"Got an OIDC request with the code of {auth_code}")
-        # current_app.logger.debug(f"Login for SSO: {provider}")
-        # with OpsEventHandler(OpsEventType.LOGIN_ATTEMPT) as la:
-        # ### token, user_data = _get_token_and_user_data_from_oauth_provider(provider, auth_code)
-        # current_app.logger.debug(f"provider_access_token: {token}")
-        current_app.logger.debug(f"Provider Returned user_data: {user_data}")
+            # current_app.logger.debug(f"Got an OIDC request with the code of {auth_code}")
+            # current_app.logger.debug(f"Login for SSO: {provider}")
 
-        (
-            access_token,
-            refresh_token,
-            user,
-            is_new_user,
-        ) = _get_token_and_user_data_from_internal_auth(user_data)
-        current_app.logger.debug(
-            f"api_access_token={access_token};   api_refresh_token={refresh_token};    user={user};    is_new_user={is_new_user}"
+            # ### token, user_data = _get_token_and_user_data_from_oauth_provider(provider, auth_code)
+            # current_app.logger.debug(f"provider_access_token: {token}")
+            current_app.logger.debug(f"Provider Returned user_data: {user_data}")
+
+            (
+                access_token,
+                refresh_token,
+                user,
+                is_new_user,
+            ) = _get_token_and_user_data_from_internal_auth(user_data)
+            current_app.logger.debug(
+                f"api_access_token={access_token};   api_refresh_token={refresh_token};    user={user};    is_new_user={is_new_user}"
+            )
+
+        la.metadata.update(
+            {
+                "user": user.to_dict(),
+                "api_access_token": access_token,
+                "api_refresh_token": refresh_token,
+                "oidc_access_token": token,
+            }
         )
-
-        # la.metadata.update(
-        #     {
-        #         "user": user.to_dict(),
-        #         "api_access_token": access_token,
-        #         "api_refresh_token": refresh_token,
-        #         "oidc_access_token": token,
-        #     }
-        # )
 
         return make_response_with_headers(
             {
@@ -75,6 +79,11 @@ def login() -> Union[Response, tuple[str, int]]:
         )
     except Exception as e:
         current_app.logger.exception(e)
+        la.metadata.update(
+            {
+                "exception": e,
+            }
+        )
         return make_response_with_headers({"message": str(e)}, 500)
 
 
