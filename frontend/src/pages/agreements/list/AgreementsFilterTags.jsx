@@ -22,7 +22,7 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
                     return [
                         ...prevState,
                         {
-                            tagText: "Upcoming Need By Date: Next 30 Days",
+                            tagText: "Upcoming Need By Date: All Time",
                             filter: "upcomingNeedByDate",
                         },
                     ];
@@ -30,7 +30,7 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
                 setFilters((prevState) => {
                     return {
                         ...prevState,
-                        upcomingNeedByDate: "next-30-days",
+                        upcomingNeedByDate: "all-time",
                     };
                 });
                 break;

@@ -1,5 +1,5 @@
 import icons from "../../../uswds/img/sprite.svg";
-import React from "react";
+import React, { useEffect } from "react";
 import Modal from "react-modal";
 import customStyles from "./AgreementsFilterButton.module.css";
 import { useGetResearchProjectsQuery } from "../../../api/opsAPI";
@@ -13,7 +13,7 @@ import ProjectOfficerReactSelect from "../../../components/UI/Form/ProjectOffice
  * Page for the Agreements List.
  * @returns {ReactNode} The rendered component.
  */
-export const AgreementsFilterButton = ({ setFilters }) => {
+export const AgreementsFilterButton = ({ filters, setFilters }) => {
     const [showModal, setShowModal] = React.useState(false);
     const [needBy, setNeedBy] = React.useState("all-time");
     const [project, setProject] = React.useState({});
@@ -31,6 +31,19 @@ export const AgreementsFilterButton = ({ setFilters }) => {
         error: errorProjectData,
         isLoading: isLoadingProjectData,
     } = useGetResearchProjectsQuery();
+
+    // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
+    useEffect(() => {
+        setNeedBy(filters.upcomingNeedByDate);
+    }, [filters.upcomingNeedByDate]);
+
+    useEffect(() => {
+        setProject(filters.projects ? filters.projects[0] : {});
+    }, [filters.projects]);
+
+    useEffect(() => {
+        setPO(filters.projectOfficers ? filters.projectOfficers[0] : {});
+    }, [filters.projectOfficers]);
 
     const applyFilter = () => {
         setFilters((prevState) => {
