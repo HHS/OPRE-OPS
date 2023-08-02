@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useGetUsersQuery } from "../../../api/opsAPI";
 import Select from "react-select";
 
@@ -35,6 +35,11 @@ export const ProjectOfficerReactSelect = ({
             borderRadius: 0,
         }),
 
+        placeholder: (provided) => ({
+            ...provided,
+            color: "#1b1b1b",
+        }),
+
         valueContainer: (provided) => ({
             ...provided,
             height: "40px",
@@ -57,9 +62,15 @@ export const ProjectOfficerReactSelect = ({
     const handleChange = (e) => {
         const userId = e.value;
         const user = users.find((user) => user.id === Number(userId));
-        setSelectedOption(userId);
         setSelectedProjectOfficer(user);
+
+        const option = options.find((option) => option.value === Number(userId));
+        setSelectedOption(option);
     };
+
+    useEffect(() => {
+        selectedProjectOfficer === undefined && setSelectedOption(null);
+    }, [selectedProjectOfficer]);
 
     if (isLoadingUsers) {
         return <div>Loading...</div>;
@@ -68,11 +79,13 @@ export const ProjectOfficerReactSelect = ({
         return <div>Oops, an error occurred</div>;
     }
 
-    let options = users.map((user) => {
+    const options = users.map((user) => {
         return { value: user.id, label: user.full_name || user.email };
     });
 
-    const defaultOption = options.find((option) => option.value === Number(selectedProjectOfficer?.id));
+    const defaultOption = selectedProjectOfficer
+        ? options.find((option) => option.value === Number(selectedProjectOfficer?.id))
+        : null;
 
     return (
         <div className="display-flex flex-justify">
@@ -87,7 +100,7 @@ export const ProjectOfficerReactSelect = ({
                         data-testid="project-officer-select"
                         name="project-officer"
                         tabIndex="-1"
-                        defaultValue={defaultOption ?? selectedOption}
+                        value={defaultOption ?? selectedOption}
                         onChange={handleChange}
                         options={options}
                         placeholder={defaultString}

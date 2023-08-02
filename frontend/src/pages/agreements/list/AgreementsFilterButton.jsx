@@ -1,12 +1,12 @@
 import icons from "../../../uswds/img/sprite.svg";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import Modal from "react-modal";
 import customStyles from "./AgreementsFilterButton.module.css";
 import { useGetResearchProjectsQuery } from "../../../api/opsAPI";
 import AgreementTypeSelect from "../../../components/UI/Form/AgreementTypeSelect";
 import ProcurementShopSelect from "../../../components/UI/Form/ProcurementShopSelect";
 import _ from "lodash";
-import ProjectSelectComboBox from "../../../components/UI/Form/ProjectReactSelect";
+import ProjectReactSelect from "../../../components/UI/Form/ProjectReactSelect";
 import ProjectOfficerReactSelect from "../../../components/UI/Form/ProjectOfficerReactSelect";
 
 /**
@@ -15,6 +15,7 @@ import ProjectOfficerReactSelect from "../../../components/UI/Form/ProjectOffice
  */
 export const AgreementsFilterButton = ({ filters, setFilters }) => {
     const [showModal, setShowModal] = React.useState(false);
+    const projectInputRef = useRef();
     const [needBy, setNeedBy] = React.useState("all-time");
     const [project, setProject] = React.useState({});
     const [po, setPO] = React.useState({});
@@ -104,16 +105,16 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                 obligated: true,
             },
         });
-        setProject({});
-        setPO({});
-        setAgreementType({});
-        setProcurementShop({});
-        setBliStatus({
-            draft: true,
-            planned: true,
-            executing: true,
-            obligated: true,
-        });
+        // setProject({});
+        // setPO({});
+        // setAgreementType({});
+        // setProcurementShop({});
+        // setBliStatus({
+        //     draft: true,
+        //     planned: true,
+        //     executing: true,
+        //     obligated: true,
+        // });
         setNeedBy("all-time");
     };
 
@@ -243,12 +244,13 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                     </fieldset>
                     <div>
                         <fieldset className="usa-fieldset margin-bottom-205" style={{ width: "363px" }}>
-                            <ProjectSelectComboBox
+                            <ProjectReactSelect
                                 researchProjects={projectData}
-                                selectedResearchProject={project || {}}
+                                selectedResearchProject={project}
                                 setSelectedProject={setProject}
                                 legendClassname={`usa-legend font-sans-3xs margin-top-0 ${customStyles.legendColor}`}
                                 defaultString={"All Projects"}
+                                clearFunction={projectInputRef}
                             />
                         </fieldset>
                     </div>

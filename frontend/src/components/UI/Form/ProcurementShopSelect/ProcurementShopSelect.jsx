@@ -29,12 +29,6 @@ export const ProcurementShopSelect = ({
         isLoading: isLoadingProcurementShops,
     } = useGetProcurementShopsQuery();
 
-    // React.useEffect(() => {
-    //     if (!defaultToAll && !selectedProcurementShop?.id && procurementShops) {
-    //         onChangeSelectedProcurementShop(procurementShops[1]);
-    //     }
-    // }, [defaultToAll, procurementShops, selectedProcurementShop, onChangeSelectedProcurementShop]);
-
     if (isLoadingProcurementShops) {
         return <div>Loading...</div>;
     }
@@ -53,6 +47,8 @@ export const ProcurementShopSelect = ({
         onChangeSelectedProcurementShop(procurementShop);
     };
 
+    console.log("selectedProcurementShop", selectedProcurementShop);
+
     return (
         <fieldset className="usa-fieldset">
             <label className={`usa-label margin-top-0 ${legendClassname}`} htmlFor="procurement-shop-select">
@@ -64,10 +60,10 @@ export const ProcurementShopSelect = ({
                     name="procurement-shop-select"
                     id="procurement-shop-select"
                     onChange={handleChange}
-                    value={selectedProcurementShop?.id}
+                    value={selectedProcurementShop?.id || 0}
                     required
                 >
-                    <option value="">{defaultString}</option>
+                    <option value="0">{defaultString}</option>
                     {procurementShops.map((shop) => (
                         <option key={shop?.id} value={shop?.id}>
                             {shop?.name} ({shop?.abbr})

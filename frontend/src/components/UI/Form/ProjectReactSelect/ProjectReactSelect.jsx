@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import Select from "react-select";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const ProjectReactSelect = ({
     researchProjects,
@@ -11,6 +11,10 @@ export const ProjectReactSelect = ({
 }) => {
     const [selectedOption, setSelectedOption] = useState(null);
 
+    const options = researchProjects.map((project) => {
+        return { value: project.id, label: project.title };
+    });
+
     const customStyles = {
         control: (provided, state) => ({
             ...provided,
@@ -20,6 +24,11 @@ export const ProjectReactSelect = ({
             height: "40px",
             boxShadow: state.isFocused ? null : null,
             borderRadius: 0,
+        }),
+
+        placeholder: (provided) => ({
+            ...provided,
+            color: "#1b1b1b",
         }),
 
         valueContainer: (provided) => ({
@@ -41,18 +50,22 @@ export const ProjectReactSelect = ({
         }),
     };
 
+    useEffect(() => {
+        selectedResearchProject === undefined && setSelectedOption(null);
+    }, [selectedResearchProject]);
+
     const handleChange = (e) => {
         const projId = e.value;
         const projObj = researchProjects.find((proj) => proj.id === Number(projId));
-        setSelectedOption(projId);
         setSelectedProject(projObj);
+
+        const option = options.find((option) => option.value === Number(projId));
+        setSelectedOption(option);
     };
 
-    let options = researchProjects.map((project) => {
-        return { value: project.id, label: project.title };
-    });
-
-    const defaultOption = options.find((option) => option.value === Number(selectedResearchProject?.id));
+    const defaultOption = selectedResearchProject
+        ? options.find((option) => option.value === Number(selectedResearchProject?.id))
+        : null;
 
     return (
         <div className="display-flex flex-justify">
@@ -67,7 +80,7 @@ export const ProjectReactSelect = ({
                         data-testid="project-select"
                         name="project"
                         tabIndex="-1"
-                        defaultValue={defaultOption ?? selectedOption}
+                        value={defaultOption ?? selectedOption}
                         onChange={handleChange}
                         options={options}
                         placeholder={defaultString}
@@ -84,7 +97,7 @@ export default ProjectReactSelect;
 
 ProjectReactSelect.propTypes = {
     researchProjects: PropTypes.array.isRequired,
-    selectedResearchProject: PropTypes.object.isRequired,
+    selectedResearchProject: PropTypes.object,
     setSelectedProject: PropTypes.func.isRequired,
     legendClassname: PropTypes.string,
     defaultString: PropTypes.string,
