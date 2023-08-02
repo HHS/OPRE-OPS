@@ -10,29 +10,28 @@ import { Provider } from "react-redux";
 
 const productServiceCodesData = [
     {
-        "id": 1,
-        "naics": 541690,
-        "name": "Other Scientific and Technical Consulting Services",
-        "support_code": "R410 - Research",
+        id: 1,
+        naics: 541690,
+        name: "Other Scientific and Technical Consulting Services",
+        support_code: "R410 - Research",
     },
     {
-        "id": 2,
-        "naics": 561920,
-        "name": "Convention and Trade Shows",
-        "support_code": "R706 - Support",
-    }
-]
-
+        id: 2,
+        naics: 561920,
+        name: "Convention and Trade Shows",
+        support_code: "R706 - Support",
+    },
+];
 
 jest.mock("../../../api/opsAPI", () => ({
     ...jest.requireActual("../../../api/opsAPI"),
-    useGetProductServiceCodesQuery: () => jest.fn(() => ({data:productServiceCodesData})),
+    useGetProductServiceCodesQuery: () => jest.fn(() => ({ data: productServiceCodesData })),
 }));
 
+// eslint-disable-next-line react/display-name
 jest.mock("../../../components/UI/Form/ProductServiceCodeSelect", () => () => {
-  return <div/>;
+    return <div />;
 });
-
 
 // mocking ResponsiveBar until there's a solution for TypeError: Cannot read properties of null (reading 'width')
 jest.mock("@nivo/bar", () => ({
@@ -103,16 +102,18 @@ describe("AgreementDetailsEdit", () => {
         id: 1,
     };
 
-
-
     test("renders correctly", () => {
         // useGetProductServiceCodesQuery.mockReturnValue(productServiceCodesData);
-
 
         render(
             <Provider store={store}>
                 <Router location={history.location} navigator={history}>
-                    <AgreementDetailsEdit agreement={agreement} projectOfficer={projectOfficer} isEditMode={true} setIsEditMode={jest.fn()} />
+                    <AgreementDetailsEdit
+                        agreement={agreement}
+                        projectOfficer={projectOfficer}
+                        isEditMode={true}
+                        setIsEditMode={jest.fn()}
+                    />
                 </Router>
             </Provider>
         );

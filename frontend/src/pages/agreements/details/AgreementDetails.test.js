@@ -76,7 +76,12 @@ describe("AgreementDetails", () => {
     test("renders correctly", () => {
         render(
             <Router location={history.location} navigator={history}>
-                <AgreementDetails agreement={agreement} projectOfficer={projectOfficer} />
+                <AgreementDetails
+                    agreement={agreement}
+                    projectOfficer={projectOfficer}
+                    isEditMode={false}
+                    setIsEditMode={jest.fn}
+                />
             </Router>
         );
 
