@@ -37,6 +37,10 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                     continueBtnText="Save Changes"
                     currentStep={0}
                     workflow="none"
+                    goBack={() => {
+                        setIsEditMode(false);
+                        navigate(`/agreements/${agreement.id}/budget-lines`);
+                    }}
                     continueOverRide={() => {
                         navigate(`/agreements/${agreement.id}/budget-lines`);
                     }}
