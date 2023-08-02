@@ -5,6 +5,7 @@ export const patchBudgetLineItem = async (item) => {
     console.log("patch item", item);
 
     // TODO: These are hacks to transform the state into a valid BLI for the backend
+    // TODO: Deleting BLIs is not working yet
     const data = { ...item }; // make a copy - item is read only
 
     if (data.date_needed === "--") {

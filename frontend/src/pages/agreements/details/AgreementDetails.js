@@ -62,8 +62,8 @@ const AgreementDetails = ({ agreement, projectOfficer, isEditMode, setIsEditMode
 AgreementDetails.propTypes = {
     agreement: PropTypes.object.isRequired,
     projectOfficer: PropTypes.object.isRequired,
-    isEditMode: PropTypes.bool,
-    setIsEditMode: PropTypes.func,
+    isEditMode: PropTypes.bool.isRequired,
+    setIsEditMode: PropTypes.func.isRequired,
 };
 
 export default AgreementDetails;
