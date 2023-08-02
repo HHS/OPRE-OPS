@@ -140,6 +140,7 @@ export const AgreementsList = () => {
     // filter by budget line status
     filteredAgreements = filteredAgreements.filter((agreement) => {
         return (
+            (filters.budgetLineStatus.draft === true && agreement.budget_line_items.length === 0) ||
             (filters.budgetLineStatus.draft === true &&
                 agreement.budget_line_items.some((bli) => {
                     return bli.status === "DRAFT";
