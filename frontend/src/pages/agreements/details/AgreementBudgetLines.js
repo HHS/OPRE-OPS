@@ -1,10 +1,10 @@
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import AgreementDetailHeader from "./AgreementDetailHeader";
-import AgreementBudgetLinesEdit from "./AgreementBudgetLinesEdit";
 import { CreateBudgetLinesProvider } from "../../../components/UI/WizardSteps/StepCreateBudgetLines/context";
 import PreviewTable from "../../../components/UI/PreviewTable/PreviewTable";
-
+import StepCreateBudgetLines from "../../../components/UI/WizardSteps/StepCreateBudgetLines/StepCreateBudgetLines";
 /**
  * Renders Agreement budget lines view
  * @param {Object} props - The component props.
@@ -14,6 +14,8 @@ import PreviewTable from "../../../components/UI/PreviewTable/PreviewTable";
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
+    const navigate = useNavigate();
+
     return (
         <CreateBudgetLinesProvider>
             <AgreementDetailHeader
@@ -23,11 +25,25 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                 setIsEditMode={setIsEditMode}
             />
             {isEditMode ? (
-                <AgreementBudgetLinesEdit
-                    agreement={agreement}
+                <StepCreateBudgetLines
+                    selectedAgreement={agreement}
+                    existingBudgetLines={agreement?.budget_line_items}
                     isEditMode={isEditMode}
                     setIsEditMode={setIsEditMode}
                     isReviewMode={false}
+                    selectedProcurementShop={agreement?.procurement_shop}
+                    selectedResearchProject={agreement?.research_project}
+                    wizardSteps={[]}
+                    continueBtnText="Save Changes"
+                    currentStep={0}
+                    workflow="none"
+                    goBack={() => {
+                        setIsEditMode(false);
+                        navigate(`/agreements/${agreement.id}/budget-lines`);
+                    }}
+                    continueOverRide={() => {
+                        navigate(`/agreements/${agreement.id}/budget-lines`);
+                    }}
                 />
             ) : agreement?.budget_line_items.length > 0 ? (
                 <PreviewTable budgetLinesAdded={agreement?.budget_line_items} readOnly={!isEditMode} />
@@ -53,6 +69,8 @@ AgreementBudgetLines.propTypes = {
     agreement: PropTypes.shape({
         id: PropTypes.number,
         budget_line_items: PropTypes.arrayOf(PropTypes.object),
+        procurement_shop: PropTypes.object,
+        research_project: PropTypes.object,
     }),
     isEditMode: PropTypes.bool,
     setIsEditMode: PropTypes.func,
