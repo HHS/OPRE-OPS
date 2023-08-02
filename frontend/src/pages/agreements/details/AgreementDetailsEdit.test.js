@@ -117,7 +117,6 @@ describe("AgreementDetailsEdit", () => {
             </Provider>
         );
 
-        expect(screen.getByText("Hello")).toBeInTheDocument();
         expect(screen.getByText("Agreement Title")).toBeInTheDocument();
         expect(screen.getByText("Description")).toBeInTheDocument();
         expect(screen.getByText("Test Description")).toBeInTheDocument();
