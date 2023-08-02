@@ -9,7 +9,7 @@ from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 from marshmallow import Schema, ValidationError
 from models import BudgetLineItemStatus, OpsEventType, Agreement
 from models.base import BaseModel
-from models.cans import BudgetLineItem
+from models.cans import BudgetLineItem, AgreementType
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.resources.budget_line_item_schemas import (
     BudgetLineItemResponse,
@@ -33,13 +33,19 @@ def bli_associated_with_agreement(self, id: int) -> bool:
     jwt_identity = get_jwt_identity()
     try:
         agreement_id = request.json["agreement_id"]
-        agreement_stmt = select(Agreement).where(Agreement.id == agreement_id)
+        agreement_type = AgreementType[request.json["agreement_type"]]
+        agreement_cls = Agreement.get_class(agreement_type)
+        agreement_id_field = agreement_cls.get_class_field("id")
+        agreement_stmt = select(agreement_cls).where(agreement_id_field == agreement_id)
         agreement = current_app.db_session.scalar(agreement_stmt)
 
     except KeyError:
         budget_line_item_stmt = select(BudgetLineItem).where(BudgetLineItem.id == id)
         budget_line_item = current_app.db_session.scalar(budget_line_item_stmt)
         agreement = budget_line_item.agreement
+
+    if agreement is None:
+        raise ValueError
 
     oidc_ids = set()
     if agreement.created_by_user:

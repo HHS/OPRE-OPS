@@ -111,8 +111,14 @@ class is_authorized:
                 if self.extra_check is not None:
                     try:
                         extra_valid = self.extra_check(*args, **kwargs)
-                    except AttributeError:
-                        return make_response_with_headers({}, 400)
+                    except ValueError:
+                        return make_response_with_headers(
+                            {
+                                "_schema": ["BLI must have an Agreement when status is not DRAFT"],
+                                "agreement_id": ["Missing data for required field."],
+                            },
+                            400,
+                        )
 
                 if self.groups is not None:
                     user = get_current_user()
