@@ -2,7 +2,7 @@ from typing import Optional, TypedDict
 
 from flask import current_app
 from models.users import Role, User
-from sqlalchemy import or_, select
+from sqlalchemy import select
 from sqlalchemy.orm import load_only
 
 
@@ -43,17 +43,11 @@ def register_user(userinfo: UserInfoDict) -> User:
 
 
 def get_user_from_token(userinfo: UserInfoDict) -> Optional[User]:
-    current_app.logger.debug("Getting User from Token")
-
-    current_app.logger.debug(f"get_user_from_token - Userinfo:{type(userinfo)} {userinfo}")
     if userinfo is None:
         return None
     try:
-        stmt = select(User).where(
-            or_(User.oidc_id == userinfo["sub"], User.email == userinfo["email"])  # or User.hhs_id == userinfo["hhsid"]
-        )
+        stmt = select(User).where((User.oidc_id == userinfo["sub"]))
         users = current_app.db_session.execute(stmt).all()
-        current_app.logger.debug(f"User Lookup Response: {len(users)} {users}")
         if users and len(users) == 1:
             return users[0][0]
     except Exception as e:

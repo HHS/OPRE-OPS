@@ -21,7 +21,7 @@
       email: "Ivelisse.Martinez-Beck@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000003",
     },
-    { // 4
+    { // 4 - THIS IS USED IN THE TESTS (AUTH_CLIENT)
       first_name: "Amelia",
       last_name: "Popham",
       division: 2,
