@@ -54,6 +54,32 @@ export const opsApi = createApi({
             },
             invalidatesTags: ["Agreements", "BudgetLineItems"],
         }),
+        updateBudgetLineItem: builder.mutation({
+            query: ({ data }) => {
+                // remove fields that are not allowed
+                // eslint-disable-next-line no-unused-vars
+                // const { id: _id, budget_line_items, created_by, created_on, updated_on, ...patchData } = data;
+
+                const cleanData = { ...data }; // make a copy
+                if (cleanData.date_needed === "--") {
+                    cleanData.date_needed = null;
+                }
+                const budgetLineId = cleanData.id;
+                delete cleanData.created_by;
+                delete cleanData.created_on;
+                delete cleanData.updated_on;
+                delete cleanData.can;
+                delete cleanData.id;
+
+                return {
+                    url: `/budget-line-items/${budgetLineId}`,
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: cleanData,
+                };
+            },
+            invalidatesTags: ["Agreements", "BudgetLineItems"],
+        }),
         getAgreementsByResearchProjectFilter: builder.query({
             query: (id) => `/agreements/?research_project_id=${id}`,
             providesTags: ["Agreements", "FilterAgreements"],
@@ -132,6 +158,8 @@ export const {
     useGetAgreementByIdQuery,
     useAddAgreementMutation,
     useUpdateAgreementMutation,
+    // useAddBudgetLineItemMutation,
+    useUpdateBudgetLineItemMutation,
     useGetAgreementsByResearchProjectFilterQuery,
     useGetUserByIdQuery,
     useGetUserByOIDCIdQuery,
