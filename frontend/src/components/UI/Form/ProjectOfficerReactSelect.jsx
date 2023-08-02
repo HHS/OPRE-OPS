@@ -77,7 +77,7 @@ export const ProjectOfficerReactSelect = ({
     return (
         <div className="display-flex flex-justify">
             <div className="left-half width-full">
-                <label className={legendClassname} htmlFor="project" id="project-label">
+                <label className={legendClassname} htmlFor="project-officer" id="project-officer-label">
                     Project Officer
                 </label>
                 <div className="" data-enhanced="true">

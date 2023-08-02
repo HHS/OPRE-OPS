@@ -31,3 +31,8 @@ it("Agreements Table is correctly filtered on all-agreements or my-agreements", 
     cy.visit("/agreements?filter=my-agreements");
     cy.get("tbody").children().should("have.length.at.least", 1);
 });
+
+it("clicking the filter button opens the filter", () => {
+    cy.visit("/agreements?filter=all-agreements");
+    cy.get("button").contains("Filter").click();
+});
