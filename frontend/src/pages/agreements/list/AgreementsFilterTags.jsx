@@ -213,10 +213,10 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
     }, [filters.budgetLineStatus]);
 
     return (
-        <div>
+        <div className="display-flex flex-wrap">
             {tagsList.map((tag, index) => {
                 return (
-                    <span key={index} className="padding-right-205 padding-bottom-1">
+                    <span key={index} className="padding-right-205 padding-bottom-05">
                         <FilterTag tag={tag} />
                     </span>
                 );
