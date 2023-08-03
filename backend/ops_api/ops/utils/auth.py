@@ -84,6 +84,12 @@ def create_oauth_jwt(
     return jws
 
 
+class ExtraCheckError(Exception):
+    def __init__(self, response_data):
+        super().__init__()
+        self.response_data = response_data
+
+
 class is_authorized:
     def __init__(
         self,
@@ -111,14 +117,8 @@ class is_authorized:
                 if self.extra_check is not None:
                     try:
                         extra_valid = self.extra_check(*args, **kwargs)
-                    except ValueError:
-                        return make_response_with_headers(
-                            {
-                                "_schema": ["BLI must have an Agreement when status is not DRAFT"],
-                                "agreement_id": ["Missing data for required field."],
-                            },
-                            400,
-                        )
+                    except ExtraCheckError as e:
+                        return make_response_with_headers(e.response_data, 400)
 
                 if self.groups is not None:
                     user = get_current_user()

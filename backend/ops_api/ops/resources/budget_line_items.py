@@ -1,4 +1,5 @@
 from __future__ import annotations
+from functools import partial
 
 from datetime import date
 from typing import Optional
@@ -17,7 +18,7 @@ from ops_api.ops.resources.budget_line_item_schemas import (
     POSTRequestBody,
     QueryParameters,
 )
-from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
+from ops_api.ops.utils.auth import Permission, PermissionType, ExtraCheckError, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -29,7 +30,7 @@ from typing_extensions import Any, override
 ENDPOINT_STRING = "/budget-line-items"
 
 
-def bli_associated_with_agreement(self, id: int) -> bool:
+def bli_associated_with_agreement(self, id: int, permission_type: PermissionType) -> bool:
     jwt_identity = get_jwt_identity()
     try:
         agreement_id = request.json["agreement_id"]
@@ -42,10 +43,21 @@ def bli_associated_with_agreement(self, id: int) -> bool:
     except KeyError:
         budget_line_item_stmt = select(BudgetLineItem).where(BudgetLineItem.id == id)
         budget_line_item = current_app.db_session.scalar(budget_line_item_stmt)
-        agreement = budget_line_item.agreement
+        try:
+            agreement = budget_line_item.agreement
+        except AttributeError as e:
+            raise ExtraCheckError({}) from e
 
     if agreement is None:
-        raise ValueError
+            if permission_type == PermissionType.PUT:
+                raise ExtraCheckError({
+                    "_schema": ["BLI must have an Agreement when status is not DRAFT"],
+                    "agreement_id": ["Missing data for required field."],
+                })
+            elif permission_type == PermissionType.PATCH:
+                raise ExtraCheckError({"_schema": ["BLI must have an Agreement when status is not DRAFT"]})
+            else:
+                raise ExtraCheckError({})
 
     oidc_ids = set()
     if agreement.created_by_user:
@@ -91,7 +103,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
     @is_authorized(
         PermissionType.PUT,
         Permission.BUDGET_LINE_ITEM,
-        extra_check=bli_associated_with_agreement,
+        extra_check=partial(bli_associated_with_agreement, permission_type=PermissionType.PUT),
         groups=["Budget Team"],
     )
     def put(self, id: int) -> Response:
@@ -135,7 +147,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
     @is_authorized(
         PermissionType.PATCH,
         Permission.BUDGET_LINE_ITEM,
-        extra_check=bli_associated_with_agreement,
+        extra_check=partial(bli_associated_with_agreement, permission_type=PermissionType.PATCH),
         groups=["Budget Team"],
     )
     def patch(self, id: int) -> Response:
