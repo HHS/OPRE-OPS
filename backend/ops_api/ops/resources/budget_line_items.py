@@ -1,16 +1,16 @@
 from __future__ import annotations
-from functools import partial
 
 from datetime import date
+from functools import partial
 from typing import Optional
 
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
-from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
+from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from marshmallow import Schema, ValidationError
-from models import BudgetLineItemStatus, OpsEventType, Agreement
+from models import Agreement, BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
-from models.cans import BudgetLineItem, AgreementType
+from models.cans import AgreementType, BudgetLineItem
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.resources.budget_line_item_schemas import (
     BudgetLineItemResponse,
@@ -18,7 +18,7 @@ from ops_api.ops.resources.budget_line_item_schemas import (
     POSTRequestBody,
     QueryParameters,
 )
-from ops_api.ops.utils.auth import Permission, PermissionType, ExtraCheckError, is_authorized
+from ops_api.ops.utils.auth import ExtraCheckError, Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -46,18 +46,23 @@ def bli_associated_with_agreement(self, id: int, permission_type: PermissionType
         try:
             agreement = budget_line_item.agreement
         except AttributeError as e:
+            # No BLI found in the DB. Erroring out.
             raise ExtraCheckError({}) from e
 
     if agreement is None:
-            if permission_type == PermissionType.PUT:
-                raise ExtraCheckError({
+        # We are faking a validation check at this point. We know there is no agreement associated with the BLI.
+        # This is made to emulate the validation check from a marshmallow schema.
+        if permission_type == PermissionType.PUT:
+            raise ExtraCheckError(
+                {
                     "_schema": ["BLI must have an Agreement when status is not DRAFT"],
                     "agreement_id": ["Missing data for required field."],
-                })
-            elif permission_type == PermissionType.PATCH:
-                raise ExtraCheckError({"_schema": ["BLI must have an Agreement when status is not DRAFT"]})
-            else:
-                raise ExtraCheckError({})
+                }
+            )
+        elif permission_type == PermissionType.PATCH:
+            raise ExtraCheckError({"_schema": ["BLI must have an Agreement when status is not DRAFT"]})
+        else:
+            raise ExtraCheckError({})
 
     oidc_ids = set()
     if agreement.created_by_user:

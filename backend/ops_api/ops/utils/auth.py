@@ -85,6 +85,10 @@ def create_oauth_jwt(
 
 
 class ExtraCheckError(Exception):
+    """Exception used to handle errors from the extra check function that can be passed
+    into @is_authorized().
+    """
+
     def __init__(self, response_data):
         super().__init__()
         self.response_data = response_data
@@ -111,7 +115,6 @@ class is_authorized:
             is_authorized = auth_gateway.is_authorized(identity, f"{self.permission_type}_{self.permission}".upper())
             response: Optional[Response] = None
             if is_authorized:
-
                 extra_valid: Optional[bool] = None
                 auth_group: Optional[bool] = None
                 if self.extra_check is not None:
@@ -128,10 +131,10 @@ class is_authorized:
                         auth_group = False
 
                 if (
-                    (extra_valid is None and auth_group is None) or
-                    (extra_valid is None and auth_group) or
-                    (auth_group is None and extra_valid) or
-                    (extra_valid is not None and auth_group is not None and (extra_valid or auth_group))
+                    (extra_valid is None and auth_group is None)
+                    or (extra_valid is None and auth_group)
+                    or (auth_group is None and extra_valid)
+                    or (extra_valid is not None and auth_group is not None and (extra_valid or auth_group))
                 ):
                     response = func(*args, **kwargs)
 
