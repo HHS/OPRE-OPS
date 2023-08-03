@@ -30,7 +30,7 @@ export const AgreementsTable = ({ agreements = [] }) => {
                 </tbody>
             </table>
             {agreements.length === 0 && (
-                <div className="padding-top-5 display-flex flex-justify-center">
+                <div id="agreements-table-zero-results" className="padding-top-5 display-flex flex-justify-center">
                     There are 0 results based on your filter selections.
                 </div>
             )}

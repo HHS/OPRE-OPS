@@ -76,9 +76,10 @@ export const ProjectReactSelect = ({
                 <div className="" data-enhanced="true">
                     <Select
                         className="margin-0"
-                        data-cy="project-select"
-                        data-testid="project-select"
-                        name="project"
+                        classNamePrefix={"project-react-select"}
+                        data-cy="project-react-select"
+                        data-testid="project-react-select"
+                        name="project-react-select"
                         tabIndex="-1"
                         value={defaultOption ?? selectedOption}
                         onChange={handleChange}

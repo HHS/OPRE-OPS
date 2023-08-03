@@ -96,9 +96,10 @@ export const ProjectOfficerReactSelect = ({
                 <div className="" data-enhanced="true">
                     <Select
                         className="margin-0"
-                        data-cy="project-officer-select"
-                        data-testid="project-officer-select"
-                        name="project-officer"
+                        classNamePrefix={"project-officer-react-select"}
+                        data-cy="project-officer-react-select"
+                        data-testid="project-officer-react-select"
+                        name="project-officer-react-select"
                         tabIndex="-1"
                         value={defaultOption ?? selectedOption}
                         onChange={handleChange}
