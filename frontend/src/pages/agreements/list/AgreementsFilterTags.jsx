@@ -6,17 +6,16 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
 import _ from "lodash";
 
 /**
- * Header section above the Agreements List table.
- * @returns {ReactNode} The rendered component.
+ * A filter tags.
+ * @param {Object} props - The component props.
+ * @param {Object} props.filters - The current filters.
+ * @param {Function} props.setFilters - A function to call to set the filters.
+ * @returns {JSX.Element} - The procurement shop select element.
  */
 export const AgreementsFilterTags = ({ filters, setFilters }) => {
     const [tagsList, setTagsList] = useState([]);
 
-    console.log("tagsList", tagsList);
-    console.log("filters", filters);
-
     const removeFilter = (tag) => {
-        console.log("tag", tag);
         switch (tag.filter) {
             case "upcomingNeedByDate":
                 setTagsList((prevState) => prevState.filter((tag) => tag.filter !== "upcomingNeedByDate"));
@@ -171,7 +170,6 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
     };
 
     useEffect(() => {
-        console.log("updating tags");
         const selectedProjects = [];
         filters.projects.forEach((project) => {
             selectedProjects.push(project.title);

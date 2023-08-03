@@ -1,4 +1,5 @@
 import { useGetProcurementShopsQuery } from "../../../../api/opsAPI";
+import { useEffect } from "react";
 
 /**
  * Object representing a procurement shop.
@@ -15,6 +16,8 @@ import { useGetProcurementShopsQuery } from "../../../../api/opsAPI";
  * @param {selectedProcurementShop} props.selectedProcurementShop - The currently selected procurement shop object.
  * @param {Function} props.onChangeSelectedProcurementShop - A function to call when the selected procurement shop changes.
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
+ * @param {string} [props.defaultString] - Initial text to display in select (optional).
+ * @param {boolean} [props.defaultToGCS] - Whether to initially select GCS (optional).
  * @returns {JSX.Element} - The procurement shop select element.
  */
 export const ProcurementShopSelect = ({
@@ -22,12 +25,19 @@ export const ProcurementShopSelect = ({
     onChangeSelectedProcurementShop,
     legendClassname = "",
     defaultString = "-Select Procurement Shop-",
+    defaultToGCS = true,
 }) => {
     const {
         data: procurementShops,
         error: errorProcurementShops,
         isLoading: isLoadingProcurementShops,
     } = useGetProcurementShopsQuery();
+
+    useEffect(() => {
+        if (defaultToGCS && !selectedProcurementShop?.id && procurementShops) {
+            onChangeSelectedProcurementShop(procurementShops[1]);
+        }
+    }, [defaultToGCS, procurementShops, selectedProcurementShop, onChangeSelectedProcurementShop]);
 
     if (isLoadingProcurementShops) {
         return <div>Loading...</div>;
@@ -46,8 +56,6 @@ export const ProcurementShopSelect = ({
         };
         onChangeSelectedProcurementShop(procurementShop);
     };
-
-    console.log("selectedProcurementShop", selectedProcurementShop);
 
     return (
         <fieldset className="usa-fieldset">

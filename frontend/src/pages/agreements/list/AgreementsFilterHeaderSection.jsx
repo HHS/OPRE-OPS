@@ -6,8 +6,11 @@ import AgreementsFilterButton from "./AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags";
 
 /**
- * Header section above the Agreements List table.
- * @returns {ReactNode} The rendered component.
+ * A header section of the agreements page that contains the filters.
+ * @param {Object} props - The component props.
+ * @param {Object} props.filters - The current filters.
+ * @param {Function} props.setFilters - A function to call to set the filters.
+ * @returns {JSX.Element} - The procurement shop select element.
  */
 export const AgreementsFilterHeaderSection = ({ filters, setFilters }) => {
     const location = useLocation();

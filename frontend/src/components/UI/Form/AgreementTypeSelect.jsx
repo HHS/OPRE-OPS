@@ -13,6 +13,7 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
+ * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementTypeSelect = ({

@@ -1,5 +1,5 @@
 import icons from "../../../uswds/img/sprite.svg";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import Modal from "react-modal";
 import customStyles from "./AgreementsFilterButton.module.css";
 import { useGetResearchProjectsQuery } from "../../../api/opsAPI";
@@ -10,12 +10,14 @@ import ProjectReactSelect from "../../../components/UI/Form/ProjectReactSelect";
 import ProjectOfficerReactSelect from "../../../components/UI/Form/ProjectOfficerReactSelect";
 
 /**
- * Page for the Agreements List.
- * @returns {ReactNode} The rendered component.
+ * A filter for agreements.
+ * @param {Object} props - The component props.
+ * @param {Object} props.filters - The current filters.
+ * @param {Function} props.setFilters - A function to call to set the filters.
+ * @returns {JSX.Element} - The procurement shop select element.
  */
 export const AgreementsFilterButton = ({ filters, setFilters }) => {
     const [showModal, setShowModal] = React.useState(false);
-    const projectInputRef = useRef();
     const [needBy, setNeedBy] = React.useState("all-time");
     const [project, setProject] = React.useState({});
     const [po, setPO] = React.useState({});
@@ -27,6 +29,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         executing: true,
         obligated: true,
     });
+
     const {
         data: projectData,
         error: errorProjectData,
@@ -105,21 +108,10 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                 obligated: true,
             },
         });
-        // setProject({});
-        // setPO({});
-        // setAgreementType({});
-        // setProcurementShop({});
-        // setBliStatus({
-        //     draft: true,
-        //     planned: true,
-        //     executing: true,
-        //     obligated: true,
-        // });
         setNeedBy("all-time");
     };
 
     const handleBudgetLineStatus = (event) => {
-        console.log("event.target.id", event.target.id);
         setBliStatus((prevState) => {
             return {
                 ...prevState,
@@ -250,7 +242,6 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                 setSelectedProject={setProject}
                                 legendClassname={`usa-legend font-sans-3xs margin-top-0 ${customStyles.legendColor}`}
                                 defaultString={"All Projects"}
-                                clearFunction={projectInputRef}
                             />
                         </fieldset>
                     </div>
@@ -286,6 +277,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                 onChangeSelectedProcurementShop={setProcurementShop}
                                 legendClassname={`usa-legend font-sans-3xs margin-top-0 ${customStyles.legendColor}`}
                                 defaultString={"All Shops"}
+                                defaultToGCS={false}
                             />
                         </fieldset>
                     </div>

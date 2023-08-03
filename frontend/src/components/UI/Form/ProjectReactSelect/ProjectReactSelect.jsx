@@ -2,6 +2,16 @@ import PropTypes from "prop-types";
 import Select from "react-select";
 import { useEffect, useState } from "react";
 
+/**
+ *  A comboBox for choosing a project.
+ * @param {Object} props - The component props.
+ * @param {array} props.researchProjects - The projects to choose from.
+ * @param {Object} props.selectedResearchProject - The currently selected project.
+ * @param {Function} props.setSelectedProject - A function to call when the selected project changes.
+ * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
+ * @param {string} [props.defaultString] - Initial text to display in select (optional).
+ * @returns {JSX.Element} - The rendered component.
+ */
 export const ProjectReactSelect = ({
     researchProjects,
     selectedResearchProject,

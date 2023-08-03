@@ -5,14 +5,10 @@ import Select from "react-select";
 /**
  *  A comboBox for choosing a project officer.
  * @param {Object} props - The component props.
- * @param {string} props.name - The name of the input field.
- * @param {string} [props.label] - The label to display for the input field (optional).
  * @param {string} props.selectedProjectOfficer - The currently selected agreement type.
  * @param {Function} props.setSelectedProjectOfficer - A function to call when the selected agreement type changes.
- * @param {Function} props.onChange - A function to call when the input value changes.
- * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
- * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
- * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
+ * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
+ * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @returns {JSX.Element} - The rendered component.
  */
 export const ProjectOfficerReactSelect = ({
