@@ -41,10 +41,6 @@ export const AgreementsFilterHeaderSection = ({ filters, setFilters }) => {
         );
     });
 
-    // useEffect(() => {
-    //     setFilterFunctions((prevState) => [...prevState, () => false]);
-    // }, [setFilterFunctions]);
-
     return (
         <div>
             <div className="padding-top-05 padding-bottom-05 display-flex flex-align-center">

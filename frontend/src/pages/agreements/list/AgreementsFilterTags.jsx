@@ -3,6 +3,8 @@ import icons from "../../../uswds/img/sprite.svg";
 import { useEffect, useState } from "react";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 
+import _ from "lodash";
+
 /**
  * Header section above the Agreements List table.
  * @returns {ReactNode} The rendered component.
@@ -212,9 +214,26 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
         createTagString(selectedBudgetLineStatus, "budgetLineStatus", "Budget Line Status:");
     }, [filters.budgetLineStatus]);
 
+    const ignoredTags = (tag) => {
+        const tagsToIgnore = [
+            {
+                tagText: "Upcoming Need By Date: All Time",
+                filter: "upcomingNeedByDate",
+            },
+            {
+                tagText: "Budget Line Status: Draft, Planned, Executing, Obligated",
+                filter: "budgetLineStatus",
+            },
+        ];
+
+        return !tagsToIgnore.some((ignoredTag) => {
+            return _.isEqual(tag, ignoredTag);
+        });
+    };
+
     return (
         <div className="display-flex flex-wrap">
-            {tagsList.map((tag, index) => {
+            {tagsList.filter(ignoredTags).map((tag, index) => {
                 return (
                     <span key={index} className="padding-right-205 padding-bottom-05">
                         <FilterTag tag={tag} />
