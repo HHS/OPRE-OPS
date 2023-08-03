@@ -1,10 +1,37 @@
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import AgreementDetails from "./AgreementDetails";
+import AgreementDetailsEdit from "./AgreementDetailsEdit";
 import { Router } from "react-router-dom";
 import { createMemoryHistory } from "history";
+import store from "../../../store";
+import { Provider } from "react-redux";
+// import { useGetProductServiceCodesQuery } from "../../../api/opsAPI";
+// import ProductServiceCodeSelect from "../../../components/UI/Form/ProductServiceCodeSelect"
 
-const history = createMemoryHistory();
+const productServiceCodesData = [
+    {
+        id: 1,
+        naics: 541690,
+        name: "Other Scientific and Technical Consulting Services",
+        support_code: "R410 - Research",
+    },
+    {
+        id: 2,
+        naics: 561920,
+        name: "Convention and Trade Shows",
+        support_code: "R706 - Support",
+    },
+];
+
+jest.mock("../../../api/opsAPI", () => ({
+    ...jest.requireActual("../../../api/opsAPI"),
+    useGetProductServiceCodesQuery: () => jest.fn(() => ({ data: productServiceCodesData })),
+}));
+
+// eslint-disable-next-line react/display-name
+jest.mock("../../../components/UI/Form/ProductServiceCodeSelect", () => () => {
+    return <div />;
+});
 
 // mocking ResponsiveBar until there's a solution for TypeError: Cannot read properties of null (reading 'width')
 jest.mock("@nivo/bar", () => ({
@@ -29,7 +56,9 @@ afterEach(() => {
     jest.resetAllMocks();
 });
 
-describe("AgreementDetails", () => {
+const history = createMemoryHistory();
+
+describe("AgreementDetailsEdit", () => {
     const agreement = {
         id: 1,
         name: "Test Agreement",
@@ -74,34 +103,30 @@ describe("AgreementDetails", () => {
     };
 
     test("renders correctly", () => {
+        // useGetProductServiceCodesQuery.mockReturnValue(productServiceCodesData);
+
         render(
-            <Router location={history.location} navigator={history}>
-                <AgreementDetails
-                    agreement={agreement}
-                    projectOfficer={projectOfficer}
-                    isEditMode={false}
-                    setIsEditMode={jest.fn}
-                />
-            </Router>
+            <Provider store={store}>
+                <Router location={history.location} navigator={history}>
+                    <AgreementDetailsEdit
+                        agreement={agreement}
+                        projectOfficer={projectOfficer}
+                        isEditMode={true}
+                        setIsEditMode={jest.fn()}
+                    />
+                </Router>
+            </Provider>
         );
 
+        expect(screen.getByText("Agreement Title")).toBeInTheDocument();
+        expect(screen.getByText("Description")).toBeInTheDocument();
         expect(screen.getByText("Test Description")).toBeInTheDocument();
-        expect(screen.getByText("Agreement Type")).toBeInTheDocument();
-        expect(screen.getByText("Contract")).toBeInTheDocument();
-        expect(screen.getByText("Product Service Code")).toBeInTheDocument();
-        expect(screen.getByText("Test PSC")).toBeInTheDocument();
-        expect(screen.getByText("NAICS Code")).toBeInTheDocument();
-        expect(screen.getByText("Test NAICS")).toBeInTheDocument();
-        expect(screen.getByText("Procurement Shop")).toBeInTheDocument();
-        expect(screen.getByText("NIH - Fee Rate: 0.5%")).toBeInTheDocument();
-        expect(screen.getByText("Agreement Reason")).toBeInTheDocument();
-        expect(screen.getByText("Recompete")).toBeInTheDocument();
         expect(screen.getByText("Incumbent")).toBeInTheDocument();
-        expect(screen.getByText("Test Incumbent")).toBeInTheDocument();
-        expect(screen.getByText("Project Officer")).toBeInTheDocument();
-        expect(screen.getByText("Chris Fortunato")).toBeInTheDocument();
-        expect(screen.getByText("Team Members")).toBeInTheDocument();
+        expect(screen.getByText("Team Members Added")).toBeInTheDocument();
         expect(screen.getByText("Amy Madigan")).toBeInTheDocument();
         expect(screen.getByText("Ivelisse Martinez-Beck")).toBeInTheDocument();
+        expect(screen.getByText("Notes (optional)")).toBeInTheDocument();
+        expect(screen.getByText("Test notes")).toBeInTheDocument();
+        expect(screen.getByText("Save Changes")).toBeInTheDocument();
     });
 });

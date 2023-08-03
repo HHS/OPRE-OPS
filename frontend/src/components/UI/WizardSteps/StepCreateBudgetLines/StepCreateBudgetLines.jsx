@@ -8,14 +8,13 @@ import PreviewTable from "../../PreviewTable";
 import Alert from "../../Alert";
 import Modal from "../../Modal";
 import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
-import { postBudgetLineItems } from "../../../../api/postBudgetLineItems";
-import { patchBudgetLineItems } from "../../../../api/patchBudgetLineItems";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
 import { setAlert } from "../../Alert/alertSlice";
 import EditModeTitle from "../../../../pages/agreements/EditModeTitle";
 import { loggedInName } from "../../../../helpers/utils";
 import suite from "./suite";
 import { convertCodeForDisplay } from "../../../../helpers/utils";
+import { useUpdateBudgetLineItemMutation, useAddBudgetLineItemMutation } from "../../../../api/opsAPI";
 
 /**
  * Renders the Create Budget Lines component with React context.
@@ -31,9 +30,10 @@ import { convertCodeForDisplay } from "../../../../helpers/utils";
  * @param {Array<any>} props.existingBudgetLines - An array of existing budget lines.
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.
+ * @param {Function} props.setIsEditMode - A function to set the edit mode state.
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {Function} [props.continueOverRide] - A function to override the default "Continue" button behavior. - optional
- * @param {"agreement" | "budgetLines"} props.workflow - The workflow type ("agreement" or "budgetLines").
+ * @param {"agreement" | "budgetLines" | "none"} props.workflow - The workflow type.
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const StepCreateBudgetLines = ({
@@ -48,6 +48,7 @@ export const StepCreateBudgetLines = ({
     continueBtnText,
     continueOverRide,
     isEditMode,
+    setIsEditMode = () => {},
     isReviewMode,
     workflow,
 }) => {
@@ -80,6 +81,8 @@ export const StepCreateBudgetLines = ({
     const dispatch = useBudgetLinesDispatch();
     const globalDispatch = useDispatch();
     const navigate = useNavigate();
+    const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
+    const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     // setters
     const setEnteredDescription = useSetState("entered_description");
     const setSelectedCan = useSetState("selected_can");
@@ -192,23 +195,33 @@ export const StepCreateBudgetLines = ({
         });
     };
 
-    const saveBudgetLineItems = (event) => {
+    const saveBudgetLineItems = async (event) => {
         event.preventDefault();
-        const newBudgetLineItems = newBudgetLines.filter(
-            // eslint-disable-next-line no-prototype-builtins
-            (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on")
-        );
 
-        const existingBudgetLineItems = newBudgetLines.filter((budgetLineItem) =>
-            // eslint-disable-next-line no-prototype-builtins
-            budgetLineItem.hasOwnProperty("created_on")
-        );
+        const mutateBudgetLineItems = async (method, items) => {
+            if (items.length === 0) {
+                return;
+            }
+            if (method === "POST") {
+                return Promise.all(items.map((item) => addBudgetLineItem({ data: item })));
+            }
+            if (method === "PATCH") {
+                return Promise.all(items.map((item) => updateBudgetLineItem({ data: item })));
+            }
+        };
+        const newBudgetLineItems = newBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
+        const existingBudgetLineItems = newBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
 
-        patchBudgetLineItems(existingBudgetLineItems).then(() => console.log("Updated BLIs."));
-        postBudgetLineItems(newBudgetLineItems).then(() => console.log("Created New BLIs."));
-
-        dispatch({ type: "RESET_FORM_AND_BUDGET_LINES" });
-
+        if (newBudgetLineItems.length > 0) {
+            mutateBudgetLineItems("POST", newBudgetLineItems).then(() => console.log("Created New BLIs."));
+        }
+        if (existingBudgetLineItems.length > 0) {
+            mutateBudgetLineItems("PATCH", existingBudgetLineItems).then(() => console.log("Updated BLIs."));
+        }
+        // cleanup
+        dispatch({ type: "RESET_FORM" });
+        setIsEditMode(false);
+        // handle next step
         if (isReviewMode) {
             navigate(`/agreements/approve/${selectedAgreement.id}`);
         } else if (continueOverRide) {
@@ -246,27 +259,36 @@ export const StepCreateBudgetLines = ({
                 <Alert />
             ) : (
                 <>
-                    {workflow === "agreement" ? (
-                        <EditModeTitle isEditMode={isEditMode || isReviewMode} />
-                    ) : (
-                        <>
-                            <h2 className="font-sans-lg">Create New Budget Line</h2>
-                            <p>Step Two: Text explaining this page</p>
-                        </>
-                    )}
+                    {
+                        // if workflow is none, skip the title
+                        workflow !== "none" ? (
+                            workflow === "agreement" ? (
+                                <EditModeTitle isEditMode={isEditMode || isReviewMode} />
+                            ) : (
+                                <>
+                                    <h2 className="font-sans-lg">Create New Budget Line</h2>
+                                    <p>Step Two: Text explaining this page</p>
+                                </>
+                            )
+                        ) : null
+                    }
                 </>
             )}
-            <StepIndicator steps={wizardSteps} currentStep={currentStep} />
-            <ProjectAgreementSummaryCard
-                selectedResearchProject={selectedResearchProject}
-                selectedAgreement={selectedAgreement}
-                selectedProcurementShop={selectedProcurementShop}
-            />
-            <h2 className="font-sans-lg margin-top-3">Budget Line Details</h2>
-            <p>
-                Complete the information below to create new budget lines. Select Add Budget Line to create multiple
-                budget lines.
-            </p>
+            {workflow !== "none" && (
+                <>
+                    <StepIndicator steps={wizardSteps} currentStep={currentStep} />
+                    <ProjectAgreementSummaryCard
+                        selectedResearchProject={selectedResearchProject}
+                        selectedAgreement={selectedAgreement}
+                        selectedProcurementShop={selectedProcurementShop}
+                    />
+                    <h2 className="font-sans-lg margin-top-3">Budget Line Details</h2>
+                    <p>
+                        Complete the information below to create new budget lines. Select Add Budget Line to create
+                        multiple budget lines.
+                    </p>
+                </>
+            )}
             <CreateBudgetLinesForm
                 selectedCan={selectedCan}
                 enteredDescription={enteredDescription}
@@ -289,11 +311,16 @@ export const StepCreateBudgetLines = ({
                 isEditMode={isEditMode}
                 isReviewMode={isReviewMode}
             />
-            <h2 className="font-sans-lg">Budget Lines</h2>
-            <p>
-                This is a list of all budget lines for the selected project and agreement. The budget lines you add will
-                display in draft status. The Fiscal Year (FY) will populate based on the election date you provide.
-            </p>
+            {workflow !== "none" && (
+                <>
+                    <h2 className="font-sans-lg">Budget Lines</h2>
+                    <p>
+                        This is a list of all budget lines for the selected project and agreement. The budget lines you
+                        add will display in draft status. The Fiscal Year (FY) will populate based on the election date
+                        you provide.
+                    </p>
+                </>
+            )}
             {budgetLinePageErrorsExist && (
                 <ul className="usa-list--unstyled font-12px text-error" data-cy="error-list">
                     {Object.entries(pageErrors).map(([key, value]) => (
@@ -327,8 +354,13 @@ export const StepCreateBudgetLines = ({
                     onClick={() => {
                         // if no budget lines have been added, go back
                         if (newBudgetLines?.length === 0) {
-                            goBack();
-                            return;
+                            if (workflow === "none") {
+                                setIsEditMode(false);
+                                navigate(`/agreements/${selectedAgreement?.id}`);
+                            } else {
+                                goBack();
+                                return;
+                            }
                         }
                         // if budget lines have been added, show modal
                         setShowModal(true);
@@ -369,6 +401,7 @@ StepCreateBudgetLines.propTypes = {
     existingBudgetLines: PropTypes.arrayOf(PropTypes.object),
     continueBtnText: PropTypes.string.isRequired,
     isEditMode: PropTypes.bool,
+    setIsEditMode: PropTypes.func,
     isReviewMode: PropTypes.bool,
     continueOverRide: PropTypes.func,
     workflow: PropTypes.oneOf(["agreement", "budgetLines"]).isRequired,
