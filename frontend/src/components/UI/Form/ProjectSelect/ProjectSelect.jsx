@@ -9,13 +9,12 @@ export const ProjectSelect = ({
     clearFunction = () => {},
     legendClassname = "usa-label margin-top-0",
     inputBoxClassname = "",
-    defaultString = "",
 }) => {
-    const [inputValue, setInputValue] = React.useState(selectedResearchProject?.title ?? defaultString);
+    const [inputValue, setInputValue] = React.useState(selectedResearchProject?.title ?? "");
 
     React.useEffect(() => {
-        setInputValue(selectedResearchProject?.title ?? defaultString);
-    }, [defaultString, selectedResearchProject]);
+        setInputValue(selectedResearchProject?.title ?? "");
+    }, [selectedResearchProject]);
 
     const onChangeResearchProjectSelection = (projectId = 0) => {
         clearFunction();
@@ -141,5 +140,4 @@ ProjectSelect.propTypes = {
     clearFunction: PropTypes.func,
     legendClassname: PropTypes.string,
     inputBoxClassname: PropTypes.string,
-    defaultString: PropTypes.string,
 };
