@@ -1,5 +1,5 @@
-from dataclasses import fields
 import datetime
+from dataclasses import fields
 
 import pytest
 from models import (
@@ -9,8 +9,8 @@ from models import (
     BudgetLineItemStatus,
     ContractAgreement,
     ContractType,
-    User,
     Group,
+    User,
 )
 from ops_api.ops.resources.budget_line_item_schemas import RequestBody
 from pytest_bdd import given, scenario, then, when
@@ -63,7 +63,6 @@ def in_budget_team(loaded_db):
     loaded_db.commit()
 
 
-
 @scenario("edit_planned_budget_line.feature", "Successful Edit as Owner")
 def test_edit_planned_budget_line_owner():
     ...
@@ -107,7 +106,6 @@ def agreement_owner(loaded_db, original_agreement, not_budget_team):
     loaded_db.commit()
 
 
-
 @given("I have a Contract Agreement as the Project Officer", target_fixture="agreement")
 def agreement_project_officer(loaded_db, original_agreement, not_budget_team):
     original_agreement["project_officer"] = 4
@@ -119,7 +117,6 @@ def agreement_project_officer(loaded_db, original_agreement, not_budget_team):
 
     loaded_db.delete(contract_agreement)
     loaded_db.commit()
-
 
 
 @given("I have a Contract Agreement as a Team Member", target_fixture="agreement")
@@ -136,7 +133,6 @@ def agreement_team_member(loaded_db, original_agreement, not_budget_team):
     loaded_db.commit()
 
 
-
 @given("I have a Contract Agreement as a member of the Budget Team", target_fixture="agreement")
 def agreement_budget_team(loaded_db, original_agreement, in_budget_team):
     contract_agreement = ContractAgreement(**original_agreement)
@@ -149,7 +145,6 @@ def agreement_budget_team(loaded_db, original_agreement, in_budget_team):
     loaded_db.commit()
 
 
-
 @given("I have a Contract Agreement as an unauthorized user", target_fixture="agreement")
 def agreement_unauthorized(loaded_db, original_agreement, not_budget_team):
     contract_agreement = ContractAgreement(**original_agreement)
@@ -160,7 +155,6 @@ def agreement_unauthorized(loaded_db, original_agreement, not_budget_team):
 
     loaded_db.delete(contract_agreement)
     loaded_db.commit()
-
 
 
 @given("I have a budget line item in Planned status", target_fixture="bli")
@@ -203,15 +197,15 @@ def submit(client, edited_bli):
 def invalid(submit_response):
     assert submit_response.status_code == 401
     if submit_response.status_code != 401:
-        print("-"*20)
+        print("-" * 20)
         print(submit_response.data)
-        print("-"*20)
+        print("-" * 20)
 
 
 @then("I should get a message that it was successful")
 def success(submit_response):
     assert submit_response.status_code == 200
     if submit_response.status_code != 401:
-        print("-"*20)
+        print("-" * 20)
         print(submit_response.data)
-        print("-"*20)
+        print("-" * 20)
