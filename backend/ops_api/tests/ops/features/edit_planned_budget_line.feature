@@ -4,36 +4,41 @@ Feature: Edit Planned Budget Line Item
   See: (Modify planned budget lines)[https://github.com/HHS/OPRE-OPS/issues/1001]
 
   Scenario: Successful Edit as Owner
-    Given I am a logged in as an OPS user who is the original Agreement Owner
-    And I have a Contract Agreement with a budget line in Planned status
-    And I edit the agreement to change a value
-    When I submit the agreement
-    Then I should get an message that it was successful
+    Given I am logged in as an OPS user
+    And I have a Contract Agreement as the original Agreement owner
+    And I have a budget line item in Planned status
+    And I edit the budget line item to change a value
+    When I submit the budget line item
+    Then I should get a message that it was successful
 
   Scenario: Successful Edit as Project Officer
-    Given I am a logged in as an OPS user who is the Project Officer
-    And I have a Contract Agreement with a budget line in Planned status
-    And I edit the agreement to change a value
-    When I submit the agreement
-    Then I should get an message that it was successful
+    Given I am logged in as an OPS user
+    And I have a Contract Agreement as the Project Officer
+    And I have a budget line item in Planned status
+    And I edit the budget line item to change a value
+    When I submit the budget line item
+    Then I should get a message that it was successful
 
   Scenario: Successful Edit as a Team Member
-    Given I am a logged in as an OPS user who is a Team Member
-    And I have a Contract Agreement with a budget line in Planned status
-    And I edit the agreement to change a value
-    When I submit the agreement
-    Then I should get an message that it was successful
+    Given I am logged in as an OPS user
+    And I have a Contract Agreement as a Team Member
+    And I have a budget line item in Planned status
+    And I edit the budget line item to change a value
+    When I submit the budget line item
+    Then I should get a message that it was successful
 
   Scenario: Successful Edit as a member of the Budget Team
-    Given I am a logged in as an OPS user who is a member of the Budget Team
-    And I have a Contract Agreement with a budget line in Planned status
-    And I edit the agreement to change a value
-    When I submit the agreement
-    Then I should get an message that it was successful
+    Given I am logged in as an OPS user
+    And I have a Contract Agreement as a member of the Budget Team
+    And I have a budget line item in Planned status
+    And I edit the budget line item to change a value
+    When I submit the budget line item
+    Then I should get a message that it was successful
 
   Scenario: Unsuccessful Edit
-    Given I am a logged in as an OPS user who is not a part of the Agreement or the Budget Team
-    And I have a Contract Agreement with a budget line in Planned status
-    And I edit the agreement to change a value
-    When I submit the agreement
-    Then I should get an message that it was successful
+    Given I am logged in as an OPS user
+    And I have a Contract Agreement as an unauthorized user
+    And I have a budget line item in Planned status
+    And I edit the budget line item to change a value
+    When I submit the budget line item
+    Then I should get an error that I am not authorized
