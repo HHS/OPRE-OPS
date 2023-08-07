@@ -1,6 +1,6 @@
 import pytest
 from models import BudgetLineItem, BudgetLineItemStatus, OpsDBHistory, OpsDBHistoryType, User
-from sqlalchemy import select, and_
+from sqlalchemy import and_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 

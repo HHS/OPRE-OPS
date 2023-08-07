@@ -5,7 +5,7 @@ from typing import Any, Optional
 from flask import Blueprint, Flask
 from flask_cors import CORS
 from ops_api.ops.db import init_db
-from ops_api.ops.history import track_db_history_before, track_db_history_catch_errors, track_db_history_after
+from ops_api.ops.history import track_db_history_after, track_db_history_before, track_db_history_catch_errors
 from ops_api.ops.home_page.views import home
 from ops_api.ops.urls import register_api
 from ops_api.ops.utils.auth import jwtMgr, oauth
