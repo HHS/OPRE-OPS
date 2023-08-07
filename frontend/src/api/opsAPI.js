@@ -48,6 +48,13 @@ export const opsApi = createApi({
             },
             invalidatesTags: ["Agreements", "BudgetLineItems"],
         }),
+        deleteAgreement: builder.mutation({
+            query: (id) => ({
+                url: `/agreements/${id}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Agreements", "BudgetLineItems"],
+        }),
         addBudgetLineItem: builder.mutation({
             query: (data) => {
                 return {
@@ -148,6 +155,7 @@ export const {
     useGetAgreementByIdQuery,
     useAddAgreementMutation,
     useUpdateAgreementMutation,
+    useDeleteAgreementMutation,
     useAddBudgetLineItemMutation,
     useUpdateBudgetLineItemMutation,
     useGetAgreementsByResearchProjectFilterQuery,
