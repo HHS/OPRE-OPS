@@ -3,6 +3,8 @@ import "@testing-library/jest-dom";
 import { AgreementTableRow } from "./AgreementTableRow";
 import { Router } from "react-router-dom";
 import { createMemoryHistory } from "history";
+import { Provider } from "react-redux";
+import store from "../../../store";
 
 const history = createMemoryHistory();
 
@@ -40,13 +42,15 @@ describe("AgreementTableRow", () => {
 
     test("renders correctly", () => {
         render(
-            <Router location={history.location} navigator={history}>
-                <table>
-                    <tbody>
-                        <AgreementTableRow agreement={agreement} />
-                    </tbody>
-                </table>
-            </Router>
+            <Provider store={store}>
+                <Router location={history.location} navigator={history}>
+                    <table>
+                        <tbody>
+                            <AgreementTableRow agreement={agreement} />
+                        </tbody>
+                    </table>
+                </Router>
+            </Provider>
         );
         expect(screen.getByText("Test Agreement")).toBeInTheDocument();
         expect(screen.getByText("Test Project")).toBeInTheDocument();
