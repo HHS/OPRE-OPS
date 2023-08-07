@@ -24,10 +24,11 @@ export const ProjectOfficerReactSelect = ({
         control: (provided, state) => ({
             ...provided,
             background: "#fff",
-            borderColor: "#9e9e9e",
+            borderColor: "565c65",
             minHeight: "40px",
             height: "40px",
             boxShadow: state.isFocused ? null : null,
+            outline: state.isFocused ? "0.25rem solid #2491ff" : null,
             borderRadius: 0,
         }),
 
