@@ -36,11 +36,12 @@ export const AgreementsList = () => {
         data: agreements,
         error: errorAgreement,
         isLoading: isLoadingAgreement,
-        refetch,
+        refetch, // is this needed?
     } = useGetAgreementsQuery({ refetchOnMountOrArgChange: true });
 
     const activeUser = useSelector((state) => state.auth.activeUser);
 
+    // FSP@Flexion: Not sure if this is needed since we have the refetchOnMountOrArgChange: true
     useEffect(() => {
         refetch();
         // eslint-disable-next-line react-hooks/exhaustive-deps
