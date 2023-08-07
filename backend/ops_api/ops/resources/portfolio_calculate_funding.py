@@ -1,7 +1,7 @@
 from flask import Response, jsonify, request
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseItemAPI
-from ops_api.ops.utils.auth import is_authorized, PermissionType, Permission
+from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.portfolios import get_total_funding
 from typing_extensions import override
 
