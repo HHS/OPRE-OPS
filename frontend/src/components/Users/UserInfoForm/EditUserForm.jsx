@@ -1,8 +1,8 @@
 import { useState } from "react";
-// import { callBackend } from "../../../helpers/backend";
+import { callBackend } from "../../../helpers/backend";
 import Input from "../../UI/Form/Input/Input";
 import { useNavigate } from "react-router-dom";
-import { useUpdateUserMutation } from "../../../api/opsAPI";
+// import { useUpdateUserMutation } from "../../../api/opsAPI";
 
 const EditUserForm = ({ user }) => {
     const navigate = useNavigate();
@@ -16,7 +16,7 @@ const EditUserForm = ({ user }) => {
         hhs_id: user?.hhs_id || "",
     });
 
-    const [updateUserStatus] = useUpdateUserMutation();
+    // const [updateUser] = useUpdateUserMutation();
 
     function handleChange(event) {
         setFormData((prevFormData) => ({
@@ -29,17 +29,18 @@ const EditUserForm = ({ user }) => {
         event.preventDefault();
         try {
             console.log(`Initial Form Data: ${JSON.stringify(formData)}`);
+            // Future refactor to RTK Query
             // updateBudgetLineItemStatus({ id: bli.id, status: "UNDER_REVIEW" }).unwrap();
-            const updatedUser = await updateUserStatus({
-                id: formData.id,
-                first_name: formData.first_name,
-                last_name: formData.last_name,
-                email: formData.email,
-                division: formData.division,
-                oidc_id: formData.oidc_id,
-                hhs_id: formData.hhs_id,
-            }).unwrap();
-            // const response = await callBackend(`/api/v1/users/${formData.id}`, "PUT", formData);
+            // const updatedUser = await updateUser({
+            //     id: formData.id,
+            //     first_name: formData.first_name,
+            //     last_name: formData.last_name,
+            //     email: formData.email,
+            //     division: formData.division,
+            //     oidc_id: formData.oidc_id,
+            //     hhs_id: formData.hhs_id,
+            // }).unwrap();
+            const updatedUser = await callBackend(`/api/v1/users/${formData.id}`, "PUT", formData);
             // console.log(`Update Response Data: ${JSON.stringify(response)}`);
             navigate(`/users/${updatedUser.id}`);
             // handle success
