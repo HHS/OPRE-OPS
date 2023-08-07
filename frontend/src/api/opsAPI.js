@@ -4,7 +4,7 @@ const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
 
 export const opsApi = createApi({
     reducerPath: "opsApi",
-    tagTypes: ["Agreements", "ResearchProjects"],
+    tagTypes: ["Agreements", "ResearchProjects", "Users", "AgreementTypes", "AgreementReasons", "ProcurementShops"],
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
         prepareHeaders: (headers) => {
@@ -24,6 +24,76 @@ export const opsApi = createApi({
         }),
         getAgreementById: builder.query({
             query: (id) => `/agreements/${id}`,
+            providesTags: ["Agreements"],
+        }),
+        addAgreement: builder.mutation({
+            query: (data) => {
+                // remove fields that are not allowed
+                // eslint-disable-next-line no-unused-vars
+                const { id, budget_line_items, created_by, created_on, updated_on, ...postData } = data;
+                return {
+                    url: `/agreements/`,
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: { ...postData, number: "" },
+                };
+            },
+            invalidatesTags: ["Agreements", "BudgetLineItems"],
+        }),
+        updateAgreement: builder.mutation({
+            query: ({ id, data }) => {
+                // remove fields that are not allowed
+                // eslint-disable-next-line no-unused-vars
+                const { id: _id, budget_line_items, created_by, created_on, updated_on, ...patchData } = data;
+                return {
+                    url: `/agreements/${id}`,
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: patchData,
+                };
+            },
+            invalidatesTags: ["Agreements", "BudgetLineItems"],
+        }),
+        addBudgetLineItem: builder.mutation({
+            query: ({ data }) => {
+                const cleanData = { ...data }; // make a copy
+                if (cleanData.date_needed === "--") {
+                    cleanData.date_needed = null;
+                }
+                delete cleanData.created_by;
+                delete cleanData.can;
+                delete cleanData.id;
+
+                return {
+                    url: `/budget-line-items/`,
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: cleanData,
+                };
+            },
+            invalidatesTags: ["Agreements", "BudgetLineItems"],
+        }),
+        updateBudgetLineItem: builder.mutation({
+            query: ({ data }) => {
+                const cleanData = { ...data }; // make a copy
+                if (cleanData.date_needed === "--") {
+                    cleanData.date_needed = null;
+                }
+                const budgetLineId = cleanData.id;
+                delete cleanData.created_by;
+                delete cleanData.created_on;
+                delete cleanData.updated_on;
+                delete cleanData.can;
+                delete cleanData.id;
+
+                return {
+                    url: `/budget-line-items/${budgetLineId}`,
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: cleanData,
+                };
+            },
+            invalidatesTags: ["Agreements", "BudgetLineItems"],
         }),
         getAgreementsByResearchProjectFilter: builder.query({
             query: (id) => `/agreements/?research_project_id=${id}`,
@@ -127,6 +197,10 @@ export const opsApi = createApi({
 export const {
     useGetAgreementsQuery,
     useGetAgreementByIdQuery,
+    useAddAgreementMutation,
+    useUpdateAgreementMutation,
+    useAddBudgetLineItemMutation,
+    useUpdateBudgetLineItemMutation,
     useGetAgreementsByResearchProjectFilterQuery,
     useGetUserByIdQuery,
     useGetUserByOIDCIdQuery,

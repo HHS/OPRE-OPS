@@ -1,6 +1,6 @@
 import { createContext, useContext, useReducer } from "react";
-export const CreateAgreementContext = createContext(null);
-export const CreateAgreementDispatchContext = createContext(null);
+export const AgreementEditorContext = createContext(null);
+export const EditAgreementDispatchContext = createContext(null);
 
 const defaultState = {
     agreement: {
@@ -33,7 +33,7 @@ let initialState = { ...defaultState };
  * @param {ReactNode} props.children - The child components.
  * @returns {ReactNode} The rendered component.
  */
-export function CreateAgreementProvider({ agreement, projectOfficer, children }) {
+export function EditAgreementProvider({ agreement, projectOfficer, children }) {
     if (agreement) {
         initialState.agreement = { ...agreement };
         initialState.selected_project = agreement.research_project;
@@ -50,27 +50,25 @@ export function CreateAgreementProvider({ agreement, projectOfficer, children })
         initialState = { ...defaultState };
     }
 
-    const [state, dispatch] = useReducer(createAgreementReducer, initialState);
+    const [state, dispatch] = useReducer(editAgreementReducer, initialState);
 
     return (
-        <CreateAgreementContext.Provider value={state}>
-            <CreateAgreementDispatchContext.Provider value={dispatch}>
-                {children}
-            </CreateAgreementDispatchContext.Provider>
-        </CreateAgreementContext.Provider>
+        <AgreementEditorContext.Provider value={state}>
+            <EditAgreementDispatchContext.Provider value={dispatch}>{children}</EditAgreementDispatchContext.Provider>
+        </AgreementEditorContext.Provider>
     );
 }
 
-export function useCreateAgreement() {
-    return useContext(CreateAgreementContext);
+export function useEditAgreement() {
+    return useContext(AgreementEditorContext);
 }
 
-export function useCreateAgreementDispatch() {
-    return useContext(CreateAgreementDispatchContext);
+export function useEditAgreementDispatch() {
+    return useContext(EditAgreementDispatchContext);
 }
 
 export function useSetState(key) {
-    const dispatch = useContext(CreateAgreementDispatchContext);
+    const dispatch = useContext(EditAgreementDispatchContext);
 
     const setValue = (value) => {
         dispatch({ type: "SET_STATE", key, value });
@@ -79,7 +77,7 @@ export function useSetState(key) {
     return setValue;
 }
 export function useUpdateAgreement(key) {
-    const dispatch = useContext(CreateAgreementDispatchContext);
+    const dispatch = useContext(EditAgreementDispatchContext);
 
     const setValue = (value) => {
         dispatch({ type: "UPDATE_AGREEMENT", key, value });
@@ -88,7 +86,7 @@ export function useUpdateAgreement(key) {
     return setValue;
 }
 
-function createAgreementReducer(state, action) {
+function editAgreementReducer(state, action) {
     switch (action.type) {
         case "SET_STATE": {
             return { ...state, [action.key]: action.value };

@@ -1,5 +1,5 @@
 import App from "../../App";
-import { CreateAgreementProvider } from "./CreateAgreementContext";
+import { EditAgreementProvider } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import CreateEditAgreement from "./CreateEditAgreement";
 import { useParams } from "react-router-dom";
 import { useGetAgreementByIdQuery } from "../../api/opsAPI";
@@ -66,9 +66,9 @@ const EditAgreement = () => {
     }
     return (
         <App>
-            <CreateAgreementProvider agreement={agreement} projectOfficer={projectOfficer}>
+            <EditAgreementProvider agreement={agreement} projectOfficer={projectOfficer}>
                 <CreateEditAgreement existingBudgetLines={agreement.budget_line_items} />
-            </CreateAgreementProvider>
+            </EditAgreementProvider>
         </App>
     );
 };
