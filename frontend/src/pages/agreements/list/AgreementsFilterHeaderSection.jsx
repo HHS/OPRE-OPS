@@ -47,10 +47,7 @@ export const AgreementsFilterHeaderSection = ({ filters, setFilters }) => {
 
     return (
         <div>
-            <div
-                className="padding-top-05 padding-bottom-05 display-flex flex-align-center"
-                style={{ justifyContent: "space-between" }}
-            >
+            <div className="padding-top-05 padding-bottom-05 display-flex flex-align-center flex-justify">
                 <TabsSection links={links} label="Agreements Tabs Section" />
                 <Link
                     to="/agreements/create"
