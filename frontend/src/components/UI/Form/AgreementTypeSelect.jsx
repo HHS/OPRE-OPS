@@ -57,7 +57,7 @@ export const AgreementTypeSelect = ({
                     {messages[0]}
                 </span>
             ) : null}
-            <div className="display-flex flex-align-center">
+            <div className="display-flex flex-align-center margin-top-1">
                 <select
                     className={`usa-select margin-top-0 width-card-lg ${messages.length ? "usa-input--error" : null}`}
                     name={name}
