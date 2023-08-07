@@ -1,5 +1,5 @@
-import React from "react";
 import { useGetProcurementShopsQuery } from "../../../../api/opsAPI";
+import { useEffect } from "react";
 
 /**
  * Object representing a procurement shop.
@@ -16,12 +16,16 @@ import { useGetProcurementShopsQuery } from "../../../../api/opsAPI";
  * @param {selectedProcurementShop} props.selectedProcurementShop - The currently selected procurement shop object.
  * @param {Function} props.onChangeSelectedProcurementShop - A function to call when the selected procurement shop changes.
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
+ * @param {string} [props.defaultString] - Initial text to display in select (optional).
+ * @param {boolean} [props.defaultToGCS] - Whether to initially select GCS (optional).
  * @returns {JSX.Element} - The procurement shop select element.
  */
 export const ProcurementShopSelect = ({
     selectedProcurementShop,
     onChangeSelectedProcurementShop,
     legendClassname = "",
+    defaultString = "-Select Procurement Shop-",
+    defaultToGCS = true,
 }) => {
     const {
         data: procurementShops,
@@ -29,11 +33,11 @@ export const ProcurementShopSelect = ({
         isLoading: isLoadingProcurementShops,
     } = useGetProcurementShopsQuery();
 
-    React.useEffect(() => {
-        if (!selectedProcurementShop?.id && procurementShops) {
+    useEffect(() => {
+        if (defaultToGCS && !selectedProcurementShop?.id && procurementShops) {
             onChangeSelectedProcurementShop(procurementShops[1]);
         }
-    }, [procurementShops, selectedProcurementShop, onChangeSelectedProcurementShop]);
+    }, [defaultToGCS, procurementShops, selectedProcurementShop, onChangeSelectedProcurementShop]);
 
     if (isLoadingProcurementShops) {
         return <div>Loading...</div>;
@@ -64,9 +68,10 @@ export const ProcurementShopSelect = ({
                     name="procurement-shop-select"
                     id="procurement-shop-select"
                     onChange={handleChange}
-                    value={selectedProcurementShop?.id}
+                    value={selectedProcurementShop?.id || 0}
                     required
                 >
+                    <option value="0">{defaultString}</option>
                     {procurementShops.map((shop) => (
                         <option key={shop?.id} value={shop?.id}>
                             {shop?.name} ({shop?.abbr})

@@ -13,6 +13,7 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
+ * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementTypeSelect = ({
@@ -24,6 +25,7 @@ export const AgreementTypeSelect = ({
     messages = [],
     className,
     legendClassname = "margin-top-205",
+    defaultString = "- Select Agreement Type -",
 }) => {
     const {
         data: agreementTypes,
@@ -63,7 +65,7 @@ export const AgreementTypeSelect = ({
                     onChange={handleChange}
                     value={selectedAgreementType}
                 >
-                    <option value={0}>- Select Agreement Type -</option>
+                    <option value={0}>{defaultString}</option>
                     {agreementTypes.map((type, index) => (
                         <option key={index + 1} value={type}>
                             {convertCodeForDisplay("agreementType", type)}
