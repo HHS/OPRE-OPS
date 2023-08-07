@@ -64,13 +64,18 @@ export const ProjectReactSelect = ({
         selectedResearchProject === undefined && setSelectedOption(null);
     }, [selectedResearchProject]);
 
-    const handleChange = (e) => {
-        const projId = e.value;
-        const projObj = researchProjects.find((proj) => proj.id === Number(projId));
-        setSelectedProject(projObj);
+    const handleChange = (e, actionObj) => {
+        if (actionObj.action === "clear") {
+            setSelectedProject({});
+            setSelectedOption(null);
+        } else {
+            const projId = e.value;
+            const projObj = researchProjects.find((proj) => proj.id === Number(projId));
+            setSelectedProject(projObj);
 
-        const option = options.find((option) => option.value === Number(projId));
-        setSelectedOption(option);
+            const option = options.find((option) => option.value === Number(projId));
+            setSelectedOption(option);
+        }
     };
 
     const defaultOption = selectedResearchProject
@@ -90,13 +95,14 @@ export const ProjectReactSelect = ({
                         data-cy="project-react-select"
                         data-testid="project-react-select"
                         name="project-react-select"
-                        tabIndex="-1"
+                        tabIndex="0"
                         value={defaultOption ?? selectedOption}
                         onChange={handleChange}
                         options={options}
                         placeholder={defaultString}
                         styles={customStyles}
                         isSearchable={true}
+                        isClearable={true}
                     />
                 </div>
             </div>

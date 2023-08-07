@@ -55,13 +55,18 @@ export const ProjectOfficerReactSelect = ({
         }),
     };
 
-    const handleChange = (e) => {
-        const userId = e.value;
-        const user = users.find((user) => user.id === Number(userId));
-        setSelectedProjectOfficer(user);
+    const handleChange = (e, actionObj) => {
+        if (actionObj.action === "clear") {
+            setSelectedProjectOfficer({});
+            setSelectedOption(null);
+        } else {
+            const userId = e.value;
+            const user = users.find((user) => user.id === Number(userId));
+            setSelectedProjectOfficer(user);
 
-        const option = options.find((option) => option.value === Number(userId));
-        setSelectedOption(option);
+            const option = options.find((option) => option.value === Number(userId));
+            setSelectedOption(option);
+        }
     };
 
     useEffect(() => {
@@ -96,13 +101,14 @@ export const ProjectOfficerReactSelect = ({
                         data-cy="project-officer-react-select"
                         data-testid="project-officer-react-select"
                         name="project-officer-react-select"
-                        tabIndex="-1"
+                        tabIndex="0"
                         value={defaultOption ?? selectedOption}
                         onChange={handleChange}
                         options={options}
                         placeholder={defaultString}
                         styles={customStyles}
                         isSearchable={true}
+                        isClearable={true}
                     />
                 </div>
             </div>

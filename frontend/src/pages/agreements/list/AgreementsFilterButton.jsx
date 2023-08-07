@@ -72,7 +72,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
             return setFilterList(prevState, "projects", project, true);
         });
         setFilters((prevState) => {
-            return setFilterList(prevState, "projectOfficers", po);
+            return setFilterList(prevState, "projectOfficers", po, true);
         });
         setFilters((prevState) => {
             return setFilterList(prevState, "types", agreementType);
@@ -183,6 +183,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                         id="next-30-days"
                                         type="radio"
                                         name="upcoming-need-by-date"
+                                        tabIndex={0}
                                         onChange={() => setNeedBy("next-30-days")}
                                         checked={needBy === "next-30-days"}
                                     />
@@ -196,6 +197,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                         id="current-fy"
                                         type="radio"
                                         name="upcoming-need-by-date"
+                                        tabIndex={0}
                                         onChange={() => setNeedBy("current-fy")}
                                         checked={needBy === "current-fy"}
                                     />
@@ -211,6 +213,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                         id="next-6-months"
                                         type="radio"
                                         name="upcoming-need-by-date"
+                                        tabIndex={0}
                                         onChange={() => setNeedBy("next-6-months")}
                                         checked={needBy === "next-6-months"}
                                     />
@@ -224,6 +227,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                         id="all-time"
                                         type="radio"
                                         name="upcoming-need-by-date"
+                                        tabIndex={0}
                                         onChange={() => setNeedBy("all-time")}
                                         checked={needBy === "all-time"}
                                     />
