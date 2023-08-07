@@ -17,7 +17,7 @@ from ops_api.ops.resources.budget_line_item_schemas import (
     POSTRequestBody,
     QueryParameters,
 )
-from ops_api.ops.utils.auth import is_authorized, Permission, PermissionType
+from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
