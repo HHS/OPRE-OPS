@@ -19,6 +19,9 @@ class OpsEventType(Enum):
     DELETE_AGREEMENT = 8
     ACKNOWLEDGE_NOTIFICATION = 9
     LOGOUT = 10
+    CREATE_USER = 11
+    UPDATE_USER = 12
+    DEACTIVATE_USER = 13
 
 
 class OpsEventStatus(Enum):

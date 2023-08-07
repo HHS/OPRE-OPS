@@ -11,36 +11,38 @@ const UserInfo = () => {
             <RoundedBox>
                 <div className="cardBody">
                     <table>
-                        <tr>
-                            <td>User ID</td>
-                            <td>: {user?.id}</td>
-                        </tr>
-                        <tr>
-                            <td>OIDC</td>
-                            <td>: {user?.oidc_id}</td>
-                        </tr>
-                        <tr>
-                            <td>User Email</td>
-                            <td>: {user?.email}</td>
-                        </tr>
-                        <tr>
-                            <td>Name</td>
-                            <td>
-                                : {user?.first_name} {user?.last_name}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Date Joined</td>
-                            <td>: {user?.date_joined}</td>
-                        </tr>
-                        <tr>
-                            <td>Role(s)</td>
-                            <td>: {user?.roles}</td>
-                        </tr>
-                        <tr>
-                            <td>Division(s)</td>
-                            <td>: {user?.division}</td>
-                        </tr>
+                        <tbody>
+                            <tr>
+                                <td>User ID</td>
+                                <td>: {user?.id}</td>
+                            </tr>
+                            <tr>
+                                <td>OIDC</td>
+                                <td>: {user?.oidc_id}</td>
+                            </tr>
+                            <tr>
+                                <td>User Email</td>
+                                <td>: {user?.email}</td>
+                            </tr>
+                            <tr>
+                                <td>Name</td>
+                                <td>
+                                    : {user?.first_name} {user?.last_name}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Date Joined</td>
+                                <td>: {user?.date_joined}</td>
+                            </tr>
+                            <tr>
+                                <td>Role(s)</td>
+                                <td>: {user?.roles}</td>
+                            </tr>
+                            <tr>
+                                <td>Division(s)</td>
+                                <td>: {user?.division}</td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
             </RoundedBox>
