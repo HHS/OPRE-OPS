@@ -88,32 +88,40 @@ export const AgreementTableRow = ({ agreement }) => {
     const handleEditAgreement = (event) => {
         navigate(`/agreements/${event}?mode=edit`);
     };
+
+    /**
+     * Deletes an agreement.
+     * @param {number} id - The id of the agreement to delete.
+     * @returns {void}
+     */
     const handleDeleteAgreement = (id) => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to delete this budget line?",
+            heading: "Are you sure you want to delete this agreement?",
             actionButtonText: "Delete",
             handleConfirm: () => {
-                deleteAgreement(id);
-                if (error) {
-                    globalDispatch(
-                        setAlert({
-                            type: "error",
-                            heading: "Agreement error",
-                            message: "An error occurred while deleting the agreement.",
-                        })
-                    );
-                }
-                if (isSuccess) {
-                    globalDispatch(
-                        setAlert({
-                            type: "success",
-                            heading: "Agreement deleted",
-                            message: "The agreement has been successfully deleted.",
-                        })
-                    );
-                }
-                setModalProps({});
+                deleteAgreement(id)
+                    .unwrap()
+                    .then((fulfilled) => {
+                        console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+                        globalDispatch(
+                            setAlert({
+                                type: "success",
+                                heading: "Agreement deleted",
+                                message: "The agreement has been successfully deleted.",
+                            })
+                        );
+                    })
+                    .catch((rejected) => {
+                        console.error(`DELETE agreement rejected: ${JSON.stringify(rejected, null, 2)}`);
+                        globalDispatch(
+                            setAlert({
+                                type: "error",
+                                heading: "Agreement error",
+                                message: "An error occurred while deleting the agreement.",
+                            })
+                        );
+                    });
             },
         });
     };
@@ -125,6 +133,14 @@ export const AgreementTableRow = ({ agreement }) => {
         ? "In Review"
         : "Draft";
 
+    /**
+     * Renders the edit, delete, and submit for approval icons.
+     *
+     * @param {Object} props - The component props.
+     * @param {Object} props.agreement - The agreement object to display.
+     * @param {string} props.status - The status of the agreement.
+     * @returns {React.JSX.Element} - The rendered component.
+     */
     const ChangeIcons = ({ agreement, status }) => {
         return (
             <>
