@@ -25,7 +25,7 @@ import { setAlert } from "../../../components/UI/Alert/alertSlice";
 export const AgreementTableRow = ({ agreement }) => {
     const navigate = useNavigate();
     const globalDispatch = useDispatch();
-    const [deleteAgreement, { isSuccess, isError, error, isLoading, data }] = useDeleteAgreementMutation();
+    const [deleteAgreement] = useDeleteAgreementMutation();
     const [user, setUser] = useState({});
     const [isExpanded, setIsExpanded] = useState(false);
     const [isRowActive, setIsRowActive] = useState(false);
