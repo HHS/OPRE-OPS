@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -25,6 +25,7 @@ import "./AgreementsList.scss";
 export const AgreementTableRow = ({ agreement }) => {
     const navigate = useNavigate();
     const globalDispatch = useDispatch();
+    const loggedInUserId = useSelector((state) => state.auth.activeUser.id);
     const [deleteAgreement] = useDeleteAgreementMutation();
     const [user, setUser] = useState({});
     const [isExpanded, setIsExpanded] = useState(false);
@@ -84,8 +85,7 @@ export const AgreementTableRow = ({ agreement }) => {
 
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
     const changeBgColorIfExpanded = { backgroundColor: isRowActive ? "#F0F0F0" : undefined };
-    const canUserDeleteAgreement = user?.id === agreement?.created_by;
-
+    const canUserDeleteAgreement = loggedInUserId === agreement?.created_by;
     const handleEditAgreement = (event) => {
         navigate(`/agreements/${event}?mode=edit`);
     };
@@ -157,12 +157,12 @@ export const AgreementTableRow = ({ agreement }) => {
 
                         <FontAwesomeIcon
                             icon={faTrash}
-                            title={`${!canUserDeleteAgreement ? "delete" : "user does not have permissions to delete"}`}
+                            title={`${canUserDeleteAgreement ? "delete" : "user does not have permissions to delete"}`}
                             data-position="top"
                             className={`text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip ${
-                                canUserDeleteAgreement ? "opacity-30 text-ink cursor-not-allowed" : null
+                                !canUserDeleteAgreement ? "opacity-30 text-ink cursor-not-allowed" : null
                             }`}
-                            onClick={() => !canUserDeleteAgreement && handleDeleteAgreement(agreement.id)}
+                            onClick={() => canUserDeleteAgreement && handleDeleteAgreement(agreement.id)}
                         />
 
                         <svg
