@@ -87,7 +87,10 @@ export const AgreementTableRow = ({ agreement }) => {
     const changeBgColorIfExpanded = { backgroundColor: isRowActive ? "#F0F0F0" : undefined };
     const isLoggedInUserTheProjectOfficer = loggedInUserId === agreement?.project_officer;
     const isLoggedInUserTheAgreementCreator = loggedInUserId === agreement?.created_by;
-    const canUserDeleteAgreement = isLoggedInUserTheAgreementCreator || isLoggedInUserTheProjectOfficer;
+    const isLoggedInUserATeamMember = agreement?.team_members?.find((tm) => tm.id === loggedInUserId);
+
+    const canUserDeleteAgreement =
+        isLoggedInUserTheAgreementCreator || isLoggedInUserTheProjectOfficer || isLoggedInUserATeamMember;
 
     const handleEditAgreement = (event) => {
         navigate(`/agreements/${event}?mode=edit`);
