@@ -251,6 +251,17 @@
       role_id: 1,
     },
   ],
+  groups: [
+    {
+      name: "Budget Team",
+    },
+  ],
+  user_group: [
+    {
+      user_id: 4,
+      group_id: 1,
+    },
+  ],
   notification: [
     {
       title: "System Notification",
