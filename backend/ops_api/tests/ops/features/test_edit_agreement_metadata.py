@@ -1,5 +1,7 @@
+import datetime
 import pytest
-from models import AgreementType, ContractAgreement, ContractType
+from models import AgreementType, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ContractType
+
 from ops_api.ops.resources.agreements import AgreementData
 from pytest_bdd import given, scenario, then, when
 
@@ -35,6 +37,50 @@ def test_contract(loaded_db):
     loaded_db.commit()
 
 
+@pytest.fixture()
+def contract_with_executing_bli(loaded_db, test_contract):
+    executing_bli = BudgetLineItem(
+        agreement_id=test_contract.id,
+        comments="blah blah bleh blah",
+        line_description="LI Executing",
+        amount=200.24,
+        can_id=1,
+        date_needed=datetime.date(2043, 1, 1),
+        status=BudgetLineItemStatus.IN_EXECUTION,
+        psc_fee_amount=2.34,
+        created_by=1,
+    )
+    loaded_db.add(executing_bli)
+    loaded_db.commit()
+
+    yield test_contract
+
+    loaded_db.delete(executing_bli)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def contract_with_planned_bli(loaded_db, test_contract):
+    planned_bli = BudgetLineItem(
+        agreement_id=test_contract.id,
+        comments="blah blah bleh blah",
+        line_description="LI Planned",
+        amount=200.24,
+        can_id=1,
+        date_needed=datetime.date(2043, 1, 1),
+        status=BudgetLineItemStatus.PLANNED,
+        psc_fee_amount=2.34,
+        created_by=1,
+    )
+    loaded_db.add(planned_bli)
+    loaded_db.commit()
+
+    yield test_contract
+
+    loaded_db.delete(planned_bli)
+    loaded_db.commit()
+
+
 @scenario("edit_agreement_metadata.feature", "Required Fields")
 def test_required_fields():
     pass
@@ -50,6 +96,16 @@ def test_successful_edit_patch_notes():
     pass
 
 
+@scenario("edit_agreement_metadata.feature", "Successful Edit Non-Draft BLI")
+def test_successful_edit_bli_draft():
+    pass
+
+
+@scenario("edit_agreement_metadata.feature", "Failed Edit because In Execution")
+def test_failed_edit_execution_bli():
+    pass
+
+
 @given("I am a logged in as an OPS user", target_fixture="client")
 def client(auth_client):
     return auth_client
@@ -60,6 +116,22 @@ def contract_agreement(client, app, test_contract):
     get_resp = client.get(f"/api/v1/agreements/{test_contract.id}")
     data = get_resp.json
     assert data["id"] == test_contract.id
+    return data
+
+
+@given("I have a Contract Agreement with a BLI in execution", target_fixture="contract_agreement")
+def contract_agreement_execution(client, app, contract_with_executing_bli):
+    get_resp = client.get(f"/api/v1/agreements/{contract_with_executing_bli.id}")
+    data = get_resp.json
+    assert data["id"] == contract_with_executing_bli.id
+    return data
+
+
+@given("I have a Contract Agreement with a BLI in planned", target_fixture="contract_agreement")
+def contract_agreement_planned(client, app, contract_with_planned_bli):
+    get_resp = client.get(f"/api/v1/agreements/{contract_with_planned_bli.id}")
+    data = get_resp.json
+    assert data["id"] == contract_with_planned_bli.id
     return data
 
 
@@ -107,3 +179,10 @@ def invalid(submit_response):
 @then("I should get an message that it was successful")
 def success(submit_response):
     assert submit_response.status_code == 200
+
+
+@then("the Agreement's budget line items are all now Draft")
+def draft_check(client, contract_agreement):
+    get_resp = client.get(f"/api/v1/agreements/{contract_agreement['id']}")
+    data = get_resp.json
+    assert all(bli["status"] == BudgetLineItemStatus.DRAFT.name for bli in data["budget_line_items"])

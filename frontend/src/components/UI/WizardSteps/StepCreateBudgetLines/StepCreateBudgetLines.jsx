@@ -195,6 +195,20 @@ export const StepCreateBudgetLines = ({
         });
     };
 
+    const cleanBudgetLineItemForApi = (data) => {
+        const cleanData = { ...data };
+        if (cleanData.date_needed === "--") {
+            cleanData.date_needed = null;
+        }
+        const budgetLineId = cleanData.id;
+        delete cleanData.created_by;
+        delete cleanData.created_on;
+        delete cleanData.updated_on;
+        delete cleanData.can;
+        delete cleanData.id;
+        return { id: budgetLineId, data: cleanData };
+    };
+
     const saveBudgetLineItems = async (event) => {
         event.preventDefault();
 
@@ -203,10 +217,21 @@ export const StepCreateBudgetLines = ({
                 return;
             }
             if (method === "POST") {
-                return Promise.all(items.map((item) => addBudgetLineItem({ data: item })));
+                return Promise.all(
+                    items.map((item) => {
+                        // eslint-disable-next-line no-unused-vars
+                        const { id, data } = cleanBudgetLineItemForApi(item);
+                        addBudgetLineItem(data);
+                    })
+                );
             }
             if (method === "PATCH") {
-                return Promise.all(items.map((item) => updateBudgetLineItem({ data: item })));
+                return Promise.all(
+                    items.map((item) => {
+                        const { id, data } = cleanBudgetLineItemForApi(item);
+                        updateBudgetLineItem({ id, data });
+                    })
+                );
             }
         };
         const newBudgetLineItems = newBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));

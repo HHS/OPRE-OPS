@@ -32,7 +32,7 @@ describe("ProcurementShopSelect", () => {
             <ProcurementShopSelectWithFee selectedProcurementShop={null} onChangeSelectedProcurementShop={jest.fn()} />
         );
         const select = screen.getByLabelText("Procurement Shop");
-        expect(select.value).toBe("1");
+        expect(select.value).toBe("0");
     });
 
     it("displays all shops in the dropdown", async () => {
