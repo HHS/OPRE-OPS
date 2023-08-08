@@ -1,5 +1,7 @@
 import { Fragment, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import PropTypes from "prop-types";
+import { useDispatch } from "react-redux";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -10,13 +12,25 @@ import icons from "../../../uswds/img/sprite.svg";
 import { convertCodeForDisplay, formatDate } from "../../../helpers/utils";
 import TableTag from "../../../components/UI/PreviewTable/TableTag";
 import { useDeleteAgreementMutation } from "../../../api/opsAPI";
+import Modal from "../../../components/UI/Modal";
+import { setAlert } from "../../../components/UI/Alert/alertSlice";
 
+/**
+ * Renders a row in the agreements table.
+ *
+ * @param {Object} props - The component props.
+ * @param {Object} props.agreement - The agreement object to display.
+ * @returns {React.JSX.Element} - The rendered component.
+ */
 export const AgreementTableRow = ({ agreement }) => {
-    const [user, setUser] = useState({});
     const navigate = useNavigate();
+    const globalDispatch = useDispatch();
+    const [deleteAgreement] = useDeleteAgreementMutation();
+    const [user, setUser] = useState({});
     const [isExpanded, setIsExpanded] = useState(false);
     const [isRowActive, setIsRowActive] = useState(false);
-    const [deleteAgreement] = useDeleteAgreementMutation();
+    const [showModal, setShowModal] = useState(false);
+    const [modalProps, setModalProps] = useState({});
 
     const agreementName = agreement?.name;
     const researchProjectName = agreement?.research_project?.title;
@@ -74,8 +88,42 @@ export const AgreementTableRow = ({ agreement }) => {
     const handleEditAgreement = (event) => {
         navigate(`/agreements/${event}?mode=edit`);
     };
+
+    /**
+     * Deletes an agreement.
+     * @param {number} id - The id of the agreement to delete.
+     * @returns {void}
+     */
     const handleDeleteAgreement = (id) => {
-        deleteAgreement(id);
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to delete this agreement?",
+            actionButtonText: "Delete",
+            handleConfirm: () => {
+                deleteAgreement(id)
+                    .unwrap()
+                    .then((fulfilled) => {
+                        console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+                        globalDispatch(
+                            setAlert({
+                                type: "success",
+                                heading: "Agreement deleted",
+                                message: "The agreement has been successfully deleted.",
+                            })
+                        );
+                    })
+                    .catch((rejected) => {
+                        console.error(`DELETE agreement rejected: ${JSON.stringify(rejected, null, 2)}`);
+                        globalDispatch(
+                            setAlert({
+                                type: "error",
+                                heading: "Error",
+                                message: "An error occurred while deleting the agreement.",
+                            })
+                        );
+                    });
+            },
+        });
     };
     const handleSubmitAgreementForApproval = (event) => {
         navigate(`/agreements/approve/${event}`);
@@ -85,6 +133,14 @@ export const AgreementTableRow = ({ agreement }) => {
         ? "In Review"
         : "Draft";
 
+    /**
+     * Renders the edit, delete, and submit for approval icons.
+     *
+     * @param {Object} props - The component props.
+     * @param {Object} props.agreement - The agreement object to display.
+     * @param {string} props.status - The status of the agreement.
+     * @returns {React.JSX.Element} - The rendered component.
+     */
     const ChangeIcons = ({ agreement, status }) => {
         return (
             <>
@@ -120,6 +176,14 @@ export const AgreementTableRow = ({ agreement }) => {
     };
     return (
         <Fragment key={agreement?.id}>
+            {showModal && (
+                <Modal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
             <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
                 <th scope="row" className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     <Link className="text-ink text-no-underline" to={"/agreements/" + agreement.id}>
@@ -191,4 +255,28 @@ export const AgreementTableRow = ({ agreement }) => {
             )}
         </Fragment>
     );
+};
+
+AgreementTableRow.propTypes = {
+    agreement: PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired,
+        research_project: PropTypes.shape({
+            title: PropTypes.string.isRequired,
+        }),
+        agreement_type: PropTypes.string.isRequired,
+        budget_line_items: PropTypes.arrayOf(
+            PropTypes.shape({
+                amount: PropTypes.number.isRequired,
+                date_needed: PropTypes.string.isRequired,
+                status: PropTypes.string.isRequired,
+            })
+        ).isRequired,
+        procurement_shop: PropTypes.shape({
+            fee: PropTypes.number.isRequired,
+        }),
+        created_by: PropTypes.number.isRequired,
+        notes: PropTypes.string,
+        created_on: PropTypes.string,
+    }).isRequired,
 };
