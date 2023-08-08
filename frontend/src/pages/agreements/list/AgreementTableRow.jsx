@@ -85,7 +85,10 @@ export const AgreementTableRow = ({ agreement }) => {
 
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
     const changeBgColorIfExpanded = { backgroundColor: isRowActive ? "#F0F0F0" : undefined };
-    const canUserDeleteAgreement = loggedInUserId === agreement?.created_by;
+    const isLoggedInUserTheProjectOfficer = loggedInUserId === agreement?.project_officer;
+    const isLoggedInUserTheAgreementCreator = loggedInUserId === agreement?.created_by;
+    const canUserDeleteAgreement = isLoggedInUserTheAgreementCreator || isLoggedInUserTheProjectOfficer;
+
     const handleEditAgreement = (event) => {
         navigate(`/agreements/${event}?mode=edit`);
     };
