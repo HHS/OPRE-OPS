@@ -271,6 +271,9 @@ class AgreementItemAPI(BaseItemAPI):
                 elif any(bli.status != BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items):
                     raise RuntimeError(f"Agreement {id} has budget line items not in draft status.")
 
+                for bli in agreement.budget_line_items:
+                    current_app.db_session.delete(bli)
+
                 current_app.db_session.delete(agreement)
                 current_app.db_session.commit()
 
