@@ -6,14 +6,14 @@ import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
-import "./AgreementsList.scss";
 import { getUser } from "../../../api/getUser";
-import icons from "../../../uswds/img/sprite.svg";
 import { convertCodeForDisplay, formatDate } from "../../../helpers/utils";
 import TableTag from "../../../components/UI/PreviewTable/TableTag";
 import { useDeleteAgreementMutation } from "../../../api/opsAPI";
 import Modal from "../../../components/UI/Modal";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
+import icons from "../../../uswds/img/sprite.svg";
+import "./AgreementsList.scss";
 
 /**
  * Renders a row in the agreements table.
@@ -84,6 +84,7 @@ export const AgreementTableRow = ({ agreement }) => {
 
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
     const changeBgColorIfExpanded = { backgroundColor: isRowActive ? "#F0F0F0" : undefined };
+    const canUserDeleteAgreement = user?.id === agreement?.created_by;
 
     const handleEditAgreement = (event) => {
         navigate(`/agreements/${event}?mode=edit`);
@@ -145,10 +146,10 @@ export const AgreementTableRow = ({ agreement }) => {
         return (
             <>
                 {(status === "Draft" || status === "In Review") && (
-                    <div className="display-flex flex-align-center">
+                    <div className="display-flex flex-align-center ">
                         <FontAwesomeIcon
                             icon={faPen}
-                            className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                            className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
                             title="edit"
                             data-position="top"
                             onClick={() => handleEditAgreement(agreement.id)}
@@ -156,14 +157,16 @@ export const AgreementTableRow = ({ agreement }) => {
 
                         <FontAwesomeIcon
                             icon={faTrash}
-                            title="delete"
+                            title={`${!canUserDeleteAgreement ? "delete" : "user does not have permissions to delete"}`}
                             data-position="top"
-                            className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
-                            onClick={() => handleDeleteAgreement(agreement.id)}
+                            className={`text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip ${
+                                canUserDeleteAgreement ? "opacity-30 text-ink cursor-not-allowed" : null
+                            }`}
+                            onClick={() => !canUserDeleteAgreement && handleDeleteAgreement(agreement.id)}
                         />
 
                         <svg
-                            className="usa-icon text-primary height-205 width-205 hover: cursor-pointer usa-tooltip"
+                            className="usa-icon text-primary height-205 width-205 cursor-pointer usa-tooltip"
                             onClick={() => handleSubmitAgreementForApproval(agreement.id)}
                             id={`submit-for-approval-${agreement.id}`}
                         >
@@ -247,7 +250,7 @@ export const AgreementTableRow = ({ agreement }) => {
                                 </dd>
                             </dl>
                             <div className="flex-align-self-end margin-left-auto margin-bottom-1">
-                                <ChangeIcons agreement={agreement} />
+                                <ChangeIcons agreement={agreement} status={agreementStatus} />
                             </div>
                         </div>
                     </td>
