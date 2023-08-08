@@ -1,9 +1,6 @@
 from dataclasses import dataclass
 from dataclasses import fields as dc_fields
 from typing import ClassVar, Optional
-from dataclasses import dataclass
-from dataclasses import fields as dc_fields
-from typing import ClassVar, Optional
 
 import desert
 from flask import Response, current_app, request
