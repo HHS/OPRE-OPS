@@ -4,7 +4,6 @@ import { AgreementTableRow } from "./AgreementTableRow";
 import { Router } from "react-router-dom";
 import { createMemoryHistory } from "history";
 import { Provider } from "react-redux";
-import store from "../../../store";
 import configureStore from "redux-mock-store";
 
 const history = createMemoryHistory();
