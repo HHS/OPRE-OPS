@@ -86,6 +86,7 @@ const AuthSection = () => {
     const logoutHandler = async () => {
         dispatch(logout());
         localStorage.removeItem("access_token");
+        sessionStorage.removeItem("activeProvider");
         //await apiLogout();
         navigate("/login");
         // TODO: ⬇ Logout from Auth Provider ⬇

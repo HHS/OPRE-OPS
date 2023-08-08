@@ -11,7 +11,7 @@ import ProductServiceCodeSelect from "../../UI/Form/ProductServiceCodeSelect";
 import ProjectOfficerSelect from "../../UI/Form/ProjectOfficerSelect";
 import TeamMemberSelect from "../../UI/Form/TeamMemberSelect";
 import TeamMemberList from "../../UI/Form/TeamMemberList";
-import ConfirmationModal from "../../Modals/ConfirmationModal";
+import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import { formatTeamMember } from "../../../api/postAgreements";
 import ProductServiceCodeSummaryBox from "../../UI/Form/ProductServiceCodeSummaryBox";
 import { useEditAgreement, useSetState, useUpdateAgreement, useEditAgreementDispatch } from "./AgreementEditorContext";

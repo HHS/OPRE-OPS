@@ -29,6 +29,11 @@ const MultiAuthSection = () => {
     const callBackend = React.useCallback(
         async (authCode) => {
             console.log(`Received Authentication Code = ${authCode}`);
+            const activeProvider = sessionStorage.getItem("activeProvider");
+            if (activeProvider === null || activeProvider === undefined) {
+                console.error("API Login Failed! No Active Provider");
+                navigate("/login");
+            }
 
             const response = await apiLogin(activeProvider, authCode);
             console.debug(`API Login Response = ${JSON.stringify(response)}`);
