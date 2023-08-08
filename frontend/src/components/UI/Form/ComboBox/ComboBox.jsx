@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import Select from "react-select";
 import { useEffect, useState } from "react";
-import _ from "lodash";
 
 /**
  *  A comboBox.
@@ -10,7 +9,7 @@ import _ from "lodash";
  * @param {array} props.data - The data to choose from.
  * @param {Object} props.selectedData - The currently selected data item.
  * @param {Function} props.setSelectedData - A function to call when the selected item changes.
- * @param {string} [props.optionText] - The property of a data item that provides the option text.
+ * @param {Function} [props.optionText] - A function to call that returns a string that provides the option text.
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @returns {JSX.Element} - The rendered component.
  */
@@ -19,13 +18,13 @@ export const ComboBox = ({
     data,
     selectedData,
     setSelectedData,
-    optionText = "title",
+    optionText = (data) => data.title,
     defaultString = "",
 }) => {
     const [selectedOption, setSelectedOption] = useState(null);
 
     const options = data.map((item) => {
-        return { value: item.id, label: _.get(item, optionText) };
+        return { value: item.id, label: optionText(item) };
     });
 
     const customStyles = {
@@ -112,7 +111,7 @@ ComboBox.propTypes = {
     data: PropTypes.array.isRequired,
     selectedData: PropTypes.object,
     setSelectedData: PropTypes.func.isRequired,
-    optionText: PropTypes.string,
+    optionText: PropTypes.func,
     legendClassname: PropTypes.string,
     defaultString: PropTypes.string,
 };

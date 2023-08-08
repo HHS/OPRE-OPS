@@ -24,7 +24,7 @@ export const ProjectReactSelect = ({
                 <label className={legendClassname} htmlFor="project" id="project-label">
                     Project
                 </label>
-                <div className="" data-enhanced="true">
+                <div>
                     <ComboBox
                         namespace="project-react-select"
                         data={researchProjects}
