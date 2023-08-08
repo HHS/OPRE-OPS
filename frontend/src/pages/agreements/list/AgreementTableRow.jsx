@@ -292,5 +292,11 @@ AgreementTableRow.propTypes = {
         created_by: PropTypes.number.isRequired,
         notes: PropTypes.string,
         created_on: PropTypes.string,
+        project_officer: PropTypes.number.isRequired,
+        team_members: PropTypes.arrayOf(
+            PropTypes.shape({
+                id: PropTypes.number.isRequired,
+            })
+        ).isRequired,
     }).isRequired,
 };
