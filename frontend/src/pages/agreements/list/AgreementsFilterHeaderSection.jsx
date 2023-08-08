@@ -4,6 +4,7 @@ import styles from "../../../components/Portfolios/PortfolioTabsSection/Portfoli
 import TabsSection from "../../../components/UI/TabsSection";
 import AgreementsFilterButton from "./AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags";
+import icons from "../../../uswds/img/sprite.svg";
 
 /**
  * A header section of the agreements page that contains the filters.
@@ -46,8 +47,20 @@ export const AgreementsFilterHeaderSection = ({ filters, setFilters }) => {
 
     return (
         <div>
-            <div className="padding-top-05 padding-bottom-05 display-flex flex-align-center">
+            <div className="padding-top-05 padding-bottom-05 display-flex flex-align-center flex-justify">
                 <TabsSection links={links} label="Agreements Tabs Section" />
+                <Link
+                    to="/agreements/create"
+                    className="usa-button usa-button--outline display-flex flex-align-center margin-0 padding-105"
+                >
+                    <svg
+                        className="height-2 width-2 margin-right-05 hover: cursor-pointer usa-tooltip "
+                        style={{ fill: "#005ea2" }}
+                    >
+                        <use xlinkHref={`${icons}#add`}></use>
+                    </svg>
+                    <span className="">Add Agreement</span>
+                </Link>
             </div>
             <div className="padding-top-05 padding-bottom-05 display-flex" style={{ justifyContent: "space-between" }}>
                 <span>

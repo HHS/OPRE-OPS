@@ -90,3 +90,9 @@ it("clicking the filter button opens the filter", () => {
     // check that the table is filtered correctly
     cy.get("div[id='agreements-table-zero-results']").should("not.exist");
 });
+
+it("clicking the add agreement button takes you to the create agreement page", () => {
+    cy.visit("/agreements?filter=all-agreements");
+    cy.get("a").contains("Add Agreement").click();
+    cy.url().should("include", "/agreements/create");
+});
