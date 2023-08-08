@@ -22,7 +22,7 @@ const NotificationCenter = () => {
         data: notifications,
         error,
         isLoading,
-    } = useGetNotificationsByUserIdQuery(userId, { pollingInterval: 5000 });
+    } = useGetNotificationsByUserIdQuery(userId, { pollingInterval: 500000 });
 
     if (isLoading) {
         return <div>Loading...</div>;

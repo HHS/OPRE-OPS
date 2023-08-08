@@ -19,7 +19,7 @@ class AuthenticationProvider(ABC):
         self.server_metadata_url = self.config["server_metadata_url"]
         self.user_info_url = self.config["user_info_url"]
         self.client_kwargs = self.config["client_kwargs"]
-        self.aud = self.config["aud"]
+        self.aud = self.config["aud"] if "aud" in self.config else None
         self.redirect_uri = self.config["redirect_uri"] or None
         self.token_url = self.config["token_endpoint"] or None
         self.key = key
@@ -115,7 +115,16 @@ class LoginGovProvider(AuthenticationProvider):
             scope=self.config["client_kwargs"]["scope"],
             redirect_uri=self.config["redirect_uri"],
         )
-        provider_jwt = super().create_oauth_jwt()
+        expires = current_app.config["JWT_ACCESS_TOKEN_EXPIRES"]
+        payload = {
+            "iss": self.client_id,
+            "sub": self.client_id,
+            "aud": self.config["aud"],
+            "jti": str(uuid.uuid4()),
+            "exp": int(time.time()) + expires.seconds,
+            "sso": "logingov",
+        }
+        provider_jwt = super().create_oauth_jwt(payload=payload)
         current_app.logger.debug(f"provider_jwt={provider_jwt}")
 
         token = client.fetch_token(
@@ -193,7 +202,16 @@ class HhsAmsProvider(AuthenticationProvider):
             scope=self.config["scope"],
             redirect_uri=self.config["redirect_uri"],
         )
-        provider_jwt = super().create_oauth_jwt()
+        expires = current_app.config["JWT_ACCESS_TOKEN_EXPIRES"]
+        payload = {
+            "iss": self.client_id,
+            "sub": self.client_id,
+            "aud": self.config["aud"],
+            "jti": str(uuid.uuid4()),
+            "exp": int(time.time()) + expires.seconds,
+            "sso": "hhsams",
+        }
+        provider_jwt = super().create_oauth_jwt(payload=payload)
         token = client.fetch_token(
             self.config["token_endpoint"],
             client_assertion=provider_jwt,
