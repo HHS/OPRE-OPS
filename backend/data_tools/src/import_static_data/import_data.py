@@ -32,6 +32,8 @@ ALLOWED_TABLES = [
     "users",
     "roles",
     "user_role",
+    "groups",
+    "user_group",
     "can",
     "can_fiscal_year",
     "can_funding_sources",

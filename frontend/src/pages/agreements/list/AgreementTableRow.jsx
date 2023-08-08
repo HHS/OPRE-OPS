@@ -9,12 +9,14 @@ import { getUser } from "../../../api/getUser";
 import icons from "../../../uswds/img/sprite.svg";
 import { convertCodeForDisplay, formatDate } from "../../../helpers/utils";
 import TableTag from "../../../components/UI/PreviewTable/TableTag";
+import { useDeleteAgreementMutation } from "../../../api/opsAPI";
 
 export const AgreementTableRow = ({ agreement }) => {
     const [user, setUser] = useState({});
     const navigate = useNavigate();
     const [isExpanded, setIsExpanded] = useState(false);
     const [isRowActive, setIsRowActive] = useState(false);
+    const [deleteAgreement] = useDeleteAgreementMutation();
 
     const agreementName = agreement?.name;
     const researchProjectName = agreement?.research_project?.title;
@@ -72,9 +74,8 @@ export const AgreementTableRow = ({ agreement }) => {
     const handleEditAgreement = (event) => {
         navigate(`/agreements/${event}?mode=edit`);
     };
-    const handleDeleteAgreement = () => {
-        // TODO: implement delete agreement
-        alert("not implemented yet");
+    const handleDeleteAgreement = (id) => {
+        deleteAgreement(id);
     };
     const handleSubmitAgreementForApproval = (event) => {
         navigate(`/agreements/approve/${event}`);

@@ -172,6 +172,8 @@ class AgreementItemAPI(BaseItemAPI):
                 old_agreement: Agreement = self._get_item(id)
                 if not old_agreement:
                     raise RuntimeError("Invalid Agreement id.")
+                elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
+                    raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
                 # reject change of agreement_type
                 # for PUT, it must exist in request
                 try:
@@ -217,6 +219,8 @@ class AgreementItemAPI(BaseItemAPI):
                 old_agreement: Agreement = self._get_item(id)
                 if not old_agreement:
                     raise RuntimeError(f"Invalid Agreement id: {id}.")
+                elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
+                    raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
                 # reject change of agreement_type
                 try:
                     req_type = request.json.get("agreement_type", old_agreement.agreement_type.name)
@@ -435,6 +439,9 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
             tmp_support_contacts = _get_user_list(data[item])
             if tmp_support_contacts:
                 agreement.support_contacts = tmp_support_contacts
+
+    for bli in agreement.budget_line_items:
+        bli.status = BudgetLineItemStatus.DRAFT
 
 
 def update_agreement(data: dict[str, Any], agreement: Agreement):

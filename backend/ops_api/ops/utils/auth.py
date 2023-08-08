@@ -10,7 +10,7 @@ from authlib.integrations.flask_client import OAuth
 from authlib.jose import JsonWebToken
 from authlib.jose import jwt as jose_jwt
 from flask import Response, current_app
-from flask_jwt_extended import JWTManager, get_jwt_identity, jwt_required
+from flask_jwt_extended import JWTManager, get_current_user, get_jwt_identity, jwt_required
 from models.users import User
 from ops_api.ops.utils.authorization import AuthorizationGateway, BasicAuthorizationPrivider
 from ops_api.ops.utils.response import make_response_with_headers
@@ -124,14 +124,29 @@ def decode_user(
     current_app.logger.debug(f"********  claims={claims}")
     return claims
 
+  
+class ExtraCheckError(Exception):
+    """Exception used to handle errors from the extra check function that can be passed
+    into @is_authorized().
+    """
+
+    def __init__(self, response_data):
+        super().__init__()
+        self.response_data = response_data
+
 
 class is_authorized:
     def __init__(
-        self, permission_type: PermissionType, permission: Permission, extra_check: Optional[Callable[..., bool]] = None
+        self,
+        permission_type: PermissionType,
+        permission: Permission,
+        extra_check: Optional[Callable[..., bool]] = None,
+        groups: Optional[list[str]] = None,
     ) -> None:
         self.permission_type = permission_type
         self.permission = permission
         self.extra_check = extra_check
+        self.groups = groups
 
     def __call__(self, func: Callable) -> Callable:
         @wraps(func)
@@ -147,6 +162,33 @@ class is_authorized:
             if is_authorized and extra_valid:
                 response = func(*args, **kwargs)
             else:
+
+              response: Optional[Response] = None
+              if is_authorized:
+                  extra_valid: Optional[bool] = None
+                  auth_group: Optional[bool] = None
+                  if self.extra_check is not None:
+                      try:
+                          extra_valid = self.extra_check(*args, **kwargs)
+                      except ExtraCheckError as e:
+                          return make_response_with_headers(e.response_data, 400)
+
+                  if self.groups is not None:
+                      user = get_current_user()
+                      if set(self.groups) & {g.name for g in user.groups}:
+                          auth_group = True
+                      else:
+                          auth_group = False
+
+                  if (
+                      (extra_valid is None and auth_group is None)
+                      or (extra_valid is None and auth_group)
+                      or (auth_group is None and extra_valid)
+                      or (extra_valid is not None and auth_group is not None and (extra_valid or auth_group))
+                  ):
+                      response = func(*args, **kwargs)
+
+            if response is None:
                 response = make_response_with_headers({}, 401)
             return response
 
