@@ -82,15 +82,20 @@ export const AgreementTableRow = ({ agreement }) => {
         setIsExpanded(!isExpanded);
         setIsRowActive(true);
     };
-
+    // styles for the expanded row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
     const changeBgColorIfExpanded = { backgroundColor: isRowActive ? "#F0F0F0" : undefined };
+
+    // Validations for deleting an agreement
     const isLoggedInUserTheProjectOfficer = loggedInUserId === agreement?.project_officer;
     const isLoggedInUserTheAgreementCreator = loggedInUserId === agreement?.created_by;
     const isLoggedInUserATeamMember = agreement?.team_members?.find((tm) => tm.id === loggedInUserId);
+    const areAllBudgetLinesInDraftStatus = agreement?.budget_line_items?.every((bli) => bli.status === "DRAFT");
+    const areThereAnyBudgetLines = agreement?.budget_line_items?.length > 0;
 
     const canUserDeleteAgreement =
-        isLoggedInUserTheAgreementCreator || isLoggedInUserTheProjectOfficer || isLoggedInUserATeamMember;
+        (isLoggedInUserTheAgreementCreator || isLoggedInUserTheProjectOfficer || isLoggedInUserATeamMember) &&
+        (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
 
     const handleEditAgreement = (event) => {
         navigate(`/agreements/${event}?mode=edit`);
