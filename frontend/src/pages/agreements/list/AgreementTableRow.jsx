@@ -117,7 +117,7 @@ export const AgreementTableRow = ({ agreement }) => {
                         globalDispatch(
                             setAlert({
                                 type: "error",
-                                heading: "Agreement error",
+                                heading: "Error",
                                 message: "An error occurred while deleting the agreement.",
                             })
                         );
