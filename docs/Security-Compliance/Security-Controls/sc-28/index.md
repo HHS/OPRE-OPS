@@ -1,7 +1,7 @@
 # Protection of Information at Rest
 ## SC-28 - Protection of Information at Rest
 
-Protect the [Selection (one or more): confidentiality; integrity] of the following information at rest: [Assignment: organization-defined information at rest].
+Protect the [confidentiality and integrity] of [sensitive information at rest when it is located on a secondary storage device within an information system].
 
 ### OPS Implementation
 
@@ -14,3 +14,4 @@ TODO: Seek inherited text
 Hybrid inheritance with IaaS provider and OPS
 
 ### Related Content
+Information at rest refers to the state of information when it is not in process or in transit and is located on system components. Such components include internal or external hard disk drives, storage area network devices, or databases. However, the focus of protecting information at rest is not on the type of storage device or frequency of access but rather on the state of the information. Information at rest addresses the confidentiality and integrity of information and covers user information and system information. System-related information that requires protection includes configurations or rule sets for firewalls, intrusion detection and prevention systems, filtering routers, and authentication information. Organizations may employ different mechanisms to achieve confidentiality and integrity protections, including the use of cryptographic mechanisms and file share scanning. Integrity protection can be achieved, for example, by implementing write-once-read-many (WORM) technologies. When adequate protection of information at rest cannot otherwise be achieved, organizations may employ other controls, including frequent scanning to identify malicious code at rest and secure offline storage in lieu of online storage.
