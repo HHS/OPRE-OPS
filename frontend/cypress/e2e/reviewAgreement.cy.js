@@ -85,7 +85,7 @@ it("review an agreement", () => {
         // add a CAN and clear it
         cy.get("#selectedCan").type(`${blData[0].can}{enter}`);
         cy.get(".usa-combo-box__clear-input").click();
-        cy.get("#can-select-input-error-message").should("exist");
+        cy.get(".usa-error-message").should("exist");
         cy.get("#selectedCan").type(`${blData[0].can}{enter}`);
         // add entered month and clear it
         cy.get("#enteredMonth").select(blData[0].month);
