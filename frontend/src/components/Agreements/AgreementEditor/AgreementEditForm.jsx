@@ -22,7 +22,7 @@ import {
     useGetProductServiceCodesQuery,
     useUpdateAgreementMutation,
 } from "../../../api/opsAPI";
-import ProjectOfficerReactSelect from "../../UI/Form/ProjectOfficerReactSelect";
+import ProjectOfficerComboBox from "../../UI/Form/ProjectOfficerComboBox";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -322,7 +322,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
             </div>
 
             <div className="display-flex margin-top-3">
-                <ProjectOfficerReactSelect
+                <ProjectOfficerComboBox
                     selectedProjectOfficer={selectedProjectOfficer}
                     setSelectedProjectOfficer={changeSelectedProjectOfficer}
                     legendClassname={`usa-label margin-top-0`}

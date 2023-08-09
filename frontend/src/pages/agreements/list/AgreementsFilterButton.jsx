@@ -7,7 +7,7 @@ import AgreementTypeSelect from "../../../components/UI/Form/AgreementTypeSelect
 import ProcurementShopSelect from "../../../components/UI/Form/ProcurementShopSelect";
 import _ from "lodash";
 import ProjectComboBox from "../../../components/UI/Form/ProjectComboBox";
-import ProjectOfficerReactSelect from "../../../components/UI/Form/ProjectOfficerReactSelect";
+import ProjectOfficerComboBox from "../../../components/UI/Form/ProjectOfficerComboBox";
 
 /**
  * A filter for agreements.
@@ -251,7 +251,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                     </div>
                     <div>
                         <fieldset className="usa-fieldset" style={{ width: "363px" }}>
-                            <ProjectOfficerReactSelect
+                            <ProjectOfficerComboBox
                                 selectedProjectOfficer={po}
                                 setSelectedProjectOfficer={setPO}
                                 legendClassname={`usa-legend font-sans-3xs margin-top-0 ${customStyles.legendColor}`}

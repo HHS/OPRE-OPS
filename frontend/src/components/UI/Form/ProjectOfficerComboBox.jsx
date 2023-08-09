@@ -16,7 +16,7 @@ import cx from "clsx";
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
  * @returns {JSX.Element} - The rendered component.
  */
-export const ProjectOfficerReactSelect = ({
+export const ProjectOfficerComboBox = ({
     selectedProjectOfficer,
     setSelectedProjectOfficer,
     messages = [],
@@ -71,4 +71,4 @@ export const ProjectOfficerReactSelect = ({
     );
 };
 
-export default ProjectOfficerReactSelect;
+export default ProjectOfficerComboBox;
