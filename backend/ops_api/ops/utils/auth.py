@@ -94,6 +94,26 @@ class ExtraCheckError(Exception):
         self.response_data = response_data
 
 
+def _check_role(permission_type: PermissionType, permission: Permission) -> bool:
+    identity = get_jwt_identity()
+    return auth_gateway.is_authorized(identity, f"{permission_type}_{permission}".upper())
+
+
+def _check_groups(groups: Optional[list[str]]) -> bool:
+    auth_group = False
+    if groups is not None:
+        user = get_current_user()
+        auth_group = len(set(groups) & {g.name for g in user.groups}) > 0
+    return auth_group
+
+
+def _check_extra(extra_check: Optional[Callable[..., bool]], args, kwargs) -> bool:
+    valid = False
+    if extra_check is not None:
+        valid = extra_check(*args, **kwargs)
+    return valid
+
+
 class is_authorized:
     def __init__(
         self,
@@ -102,44 +122,44 @@ class is_authorized:
         extra_check: Optional[Callable[..., bool]] = None,
         groups: Optional[list[str]] = None,
     ) -> None:
+        """Checks for if the user is authorized to use this endpoint. The order of authorizations is as follows:
+        Role -> Group -> Extra.
+
+        If the user has the correct role permission, then the user is authorized.
+        Else if the user has the correct group the user is authorized.
+        Else if the user passes the extra validation check that is defined, the user is authorized.
+        Else the user is not authorized.
+
+        Args:
+            permission_type: The permission "verb" (GET, PUT, PATCH, etc)
+            permission: The permission "noun" (USER, AGREEMENT, BUDGET_LINE_ITEM, etc)
+            group: If given, the list of groups authorized to use this endpoint.
+            extra_check: If given, a function that accepts the same parameters as the decorated function/method, and
+                returns a boolean value, which does additional custom checking to see if the user is authorized.
+        """
         self.permission_type = permission_type
         self.permission = permission
         self.extra_check = extra_check
         self.groups = groups
 
+
     def __call__(self, func: Callable) -> Callable:
         @wraps(func)
         @jwt_required()
         def wrapper(*args, **kwargs) -> Response:
-            identity = get_jwt_identity()
-            is_authorized = auth_gateway.is_authorized(identity, f"{self.permission_type}_{self.permission}".upper())
-            response: Optional[Response] = None
-            if is_authorized:
-                extra_valid: Optional[bool] = None
-                auth_group: Optional[bool] = None
-                if self.extra_check is not None:
-                    try:
-                        extra_valid = self.extra_check(*args, **kwargs)
-                    except ExtraCheckError as e:
-                        return make_response_with_headers(e.response_data, 400)
-
-                if self.groups is not None:
-                    user = get_current_user()
-                    if set(self.groups) & {g.name for g in user.groups}:
-                        auth_group = True
-                    else:
-                        auth_group = False
-
+            try:
                 if (
-                    (extra_valid is None and auth_group is None)
-                    or (extra_valid is None and auth_group)
-                    or (auth_group is None and extra_valid)
-                    or (extra_valid is not None and auth_group is not None and (extra_valid or auth_group))
+                    _check_role(self.permission_type, self.permission)
+                    or _check_groups(self.groups)
+                    or _check_extra(self.extra_check, args, kwargs)
                 ):
                     response = func(*args, **kwargs)
 
-            if response is None:
-                response = make_response_with_headers({}, 401)
+                else:
+                    response = make_response_with_headers({}, 401)
+
+            except ExtraCheckError as e:
+                response = make_response_with_headers(e.response_data, 400)
 
             return response
 
