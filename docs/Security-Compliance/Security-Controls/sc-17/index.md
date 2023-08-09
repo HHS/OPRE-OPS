@@ -1,8 +1,7 @@
 # Public Key Infrastructure Certificates
 ## SC-17 - Public Key Infrastructure Certificates
 
-a. Issue public key certificates under an [Assignment: organization-defined certificate policy] or obtain public key certificates from an approved service provider; and
-
+a. Issue public key certificates under an [certification authority cross-certified with the Federal Bridge Certification Authority] or obtain public key certificates from an approved service provider; and
 b. Include only approved trust anchors in trust stores or certificate stores managed by the organization.
 
 ## OPS Implementation
@@ -16,3 +15,4 @@ TODO: Seek inherited text
 Inherited from IaaS provider
 
 ### Related Content
+Public key infrastructure (PKI) certificates are certificates with visibility external to organizational systems and certificates related to the internal operations of systems, such as application-specific time services. In cryptographic systems with a hierarchical structure, a trust anchor is an authoritative source (i.e., a certificate authority) for which trust is assumed and not derived. A root certificate for a PKI system is an example of a trust anchor. A trust store or certificate store maintains a list of trusted root certificates.
