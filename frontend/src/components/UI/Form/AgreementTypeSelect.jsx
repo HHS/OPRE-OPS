@@ -53,7 +53,7 @@ export const AgreementTypeSelect = ({
                 {label}
             </label>
             {messages.length ? (
-                <span className="usa-error-message" id="agreement-type-select-input-error-message" role="alert">
+                <span className="usa-error-message" role="alert">
                     {messages[0]}
                 </span>
             ) : null}
