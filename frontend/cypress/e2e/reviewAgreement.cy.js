@@ -80,7 +80,7 @@ it("review an agreement", () => {
         cy.get("#add-budget-line").should("be.disabled");
         cy.get("#enteredDescription").type(`${blData[0].descr}`);
         cy.get("#enteredDescription").clear();
-        cy.get("#default-input-error-message").should("exist");
+        cy.get(".usa-error-message").should("exist");
         cy.get("#enteredDescription").type(`${blData[0].descr}`);
         // add a CAN and clear it
         cy.get("#selectedCan").type(`${blData[0].can}{enter}`);
