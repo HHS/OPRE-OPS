@@ -140,7 +140,7 @@ it("review an agreement", () => {
         // add entered amount and clear it
         cy.get("#enteredAmount").type(`${blData[0].amount}`);
         cy.get("#enteredAmount").clear();
-        cy.get("#currency-input-error-message").should("exist");
+        cy.get(".usa-error-message").should("exist");
         cy.get("#enteredAmount").type(`${blData[0].amount}`);
         cy.get("#add-budget-line").should("not.be.disabled");
         // add comment and clear it
