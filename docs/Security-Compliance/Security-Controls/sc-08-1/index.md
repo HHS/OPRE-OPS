@@ -7,11 +7,14 @@ Implement cryptographic mechanisms to [prevent unauthorized disclosure of inform
 
 TODO: Seek inherited text
 
-OPS utilizes TLS connections for traffic passing between components and end user traffic and any interconnecting systems TODO: Check for standardized text
+OPS utilizes TLS connections for traffic passing between components and end user traffic and any interconnecting systems
+
+TODO: Check for standardized text
 
 ### Control Origination
 
-Hybrid inheritance with IaaS provider and OPS
+Hybrid inheritance with IaaS provider, OPS, and ACF/OCIO
 
 ### Related Content
+
 Reference: HHS Standard for Encryption of Computing Devices and Information
