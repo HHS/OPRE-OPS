@@ -14,3 +14,4 @@ TODO: Review HHS-issued ZTA language and requirements
 Hybrid with IaaS provider and ACF/OCIO enterprise architecture
 
 ### Related Content
+Denying by default and allowing by exception applies to inbound and outbound network communications traffic. A deny-all, permit-by-exception network communications traffic policy ensures that only those system connections that are essential and approved are allowed. Deny by default, allow by exception also applies to a system that is connected to an external system.
