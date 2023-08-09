@@ -1,7 +1,7 @@
 # Transmission Confidentiality and Integrity
 ## SC-08 (1) - Transmission Confidentiality and Integrity | Cryptographic Protection
 
-Implement cryptographic mechanisms to [Selection (one or more): prevent unauthorized disclosure of information; detect changes to information] during transmission.
+Implement cryptographic mechanisms to [prevent unauthorized disclosure of information and detect changes to information] during transmission.
 
 ## OPS Implementation
 
@@ -14,3 +14,4 @@ OPS utilizes TLS connections for traffic passing between components and end user
 Hybrid inheritance with IaaS provider and OPS
 
 ### Related Content
+Reference: HHS Standard for Encryption of Computing Devices and Information
