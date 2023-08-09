@@ -1,7 +1,7 @@
 # Protection of Information at Rest
-## SC-28 - Protection of Information at Rest | Cryptographic Protection
+## SC-28 (1) - Protection of Information at Rest | Cryptographic Protection
 
-Implement cryptographic mechanisms to prevent unauthorized disclosure and modification of the following information at rest on [Assignment: organization-defined system components or media]: [Assignment: organization-defined information].
+Implement cryptographic mechanisms to prevent unauthorized disclosure and modification of the following information at rest on [ACF-defined system components or media/information].
 
 ### OPS Implementation
 
@@ -14,3 +14,4 @@ TODO: Seek inherited text
 Inherited from IaaS Provider
 
 ### Related Content
+The selection of cryptographic mechanisms is based on the need to protect the confidentiality and integrity of organizational information. The strength of mechanism is commensurate with the security category or classification of the information. Organizations have the flexibility to encrypt information on system components or media or encrypt data structures, including files, records, or fields
