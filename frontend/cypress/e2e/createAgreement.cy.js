@@ -41,11 +41,11 @@ it("can create an agreement", () => {
     cy.get("#name").type("Test Agreement Title");
     cy.get("#name").clear();
     cy.get("#name").blur();
-    cy.get("#input-error-message").should("contain", "This is required information");
+    cy.get(".usa-error-message").should("contain", "This is required information");
     cy.get("[data-cy='continue-btn']").should("be.disabled");
     cy.get("[data-cy='save-draft-btn']").should("be.disabled");
     cy.get("#name").type("Test Agreement Title");
-    cy.get("#input-error-message").should("not.exist");
+    cy.get(".usa-error-message").should("not.exist");
     cy.get("[data-cy='continue-btn']").should("not.be.disabled");
     cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");
 
@@ -56,10 +56,7 @@ it("can create an agreement", () => {
     cy.get("#agreement_reason").select("NEW_REQ");
 
     // Select Project Officer
-    cy.get("#project-officer-select-toggle-list").click();
-    cy.get("#project-officer-select-input").invoke("show");
-    cy.get("#users--list").invoke("show");
-    cy.get("li").contains("Chris Fortunato").click();
+    cy.get("#project-officer-react-select-input").type("Chris Fortunato{enter}");
 
     // Skip Select Team Members for now - something is wrong with the select
     cy.get("#agreementNotes").type("This is a note.");

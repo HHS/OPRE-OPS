@@ -239,7 +239,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                         </div>
                     </fieldset>
                     <div>
-                        <fieldset className="usa-fieldset margin-bottom-205" style={{ width: "363px" }}>
+                        <fieldset className="usa-fieldset" style={{ width: "363px" }}>
                             <ProjectComboBox
                                 researchProjects={projectData}
                                 selectedResearchProject={project}

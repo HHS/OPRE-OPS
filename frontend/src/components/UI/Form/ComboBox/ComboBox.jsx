@@ -11,6 +11,8 @@ import { useEffect, useState } from "react";
  * @param {Function} props.setSelectedData - A function to call when the selected item changes.
  * @param {Function} [props.optionText] - A function to call that returns a string that provides the option text.
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
+ * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
+ * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
  * @returns {JSX.Element} - The rendered component.
  */
 export const ComboBox = ({
@@ -20,6 +22,8 @@ export const ComboBox = ({
     setSelectedData,
     optionText = (data) => data.title,
     defaultString = "",
+    messages = [],
+    overrideStyles = {},
 }) => {
     const [selectedOption, setSelectedOption] = useState(null);
 
@@ -37,6 +41,7 @@ export const ComboBox = ({
             boxShadow: state.isFocused ? null : null,
             outline: state.isFocused ? "0.25rem solid #2491ff" : null,
             borderRadius: 0,
+            ...overrideStyles,
         }),
 
         placeholder: (provided) => ({
@@ -89,7 +94,7 @@ export const ComboBox = ({
         <div className="" data-enhanced="true">
             <Select
                 inputId={`${namespace}-input`}
-                className="margin-0"
+                className={`padding-0 ${messages.length ? "usa-input--error" : null}`}
                 classNamePrefix={namespace}
                 name={namespace}
                 tabIndex="0"
@@ -115,4 +120,6 @@ ComboBox.propTypes = {
     optionText: PropTypes.func,
     legendClassname: PropTypes.string,
     defaultString: PropTypes.string,
+    messages: PropTypes.array,
+    overrideStyles: PropTypes.object,
 };

@@ -7,7 +7,6 @@ import ProcurementShopSelectWithFee from "../../UI/Form/ProcurementShopSelectWit
 import AgreementReasonSelect from "../../UI/Form/AgreementReasonSelect";
 import AgreementTypeSelect from "../../UI/Form/AgreementTypeSelect";
 import ProductServiceCodeSelect from "../../UI/Form/ProductServiceCodeSelect";
-import ProjectOfficerSelect from "../../UI/Form/ProjectOfficerSelect";
 import TeamMemberSelect from "../../UI/Form/TeamMemberSelect";
 import TeamMemberList from "../../UI/Form/TeamMemberList";
 import Modal from "../../UI/Modal";
@@ -23,6 +22,7 @@ import {
     useGetProductServiceCodesQuery,
     useUpdateAgreementMutation,
 } from "../../../api/opsAPI";
+import ProjectOfficerReactSelect from "../../UI/Form/ProjectOfficerReactSelect";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -322,18 +322,17 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
             </div>
 
             <div className="display-flex margin-top-3">
-                <ProjectOfficerSelect
-                    name="project_officer"
-                    label="Project Officer"
-                    messages={res.getErrors("project_officer")}
-                    className={cn("project_officer")}
+                <ProjectOfficerReactSelect
                     selectedProjectOfficer={selectedProjectOfficer}
                     setSelectedProjectOfficer={changeSelectedProjectOfficer}
+                    legendClassname={`usa-label margin-top-0`}
+                    messages={res.getErrors("project_officer")}
                     onChange={(name, value) => {
                         if (isReviewMode) {
                             runValidate(name, value);
                         }
                     }}
+                    overrideStyles={{ width: "261px" }}
                 />
                 <TeamMemberSelect
                     className="margin-left-4"
