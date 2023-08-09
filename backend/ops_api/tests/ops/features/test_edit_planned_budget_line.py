@@ -11,6 +11,7 @@ from models import (
     ContractType,
     Group,
     User,
+    Role,
 )
 from ops_api.ops.resources.budget_line_item_schemas import RequestBody
 from pytest_bdd import given, scenario, then, when
@@ -48,18 +49,34 @@ def not_budget_team(loaded_db):
     loaded_db.commit()
 
 
-@pytest.fixture
-def in_budget_team(loaded_db):
+@pytest.fixture()
+def not_admin_user(loaded_db):
     user = loaded_db.get(User, 4)
-    budget_team = loaded_db.get(Group, 1)
-    groups = user.groups
-    user.groups = [budget_team]
+    old_roles = user.roles
+    user_role = loaded_db.get(Role, 2)
+    user.roles = [user_role]
     loaded_db.add(user)
     loaded_db.commit()
+
     yield user
 
-    user.groups = groups
+    user.roles = old_roles
     loaded_db.add(user)
+    loaded_db.commit()
+
+
+@pytest.fixture
+def in_budget_team(loaded_db, not_admin_user):
+    budget_team = loaded_db.get(Group, 1)
+    groups = not_admin_user.groups
+    not_admin_user.groups = [budget_team]
+    loaded_db.add(not_admin_user)
+    loaded_db.commit()
+
+    yield not_admin_user
+
+    not_admin_user.groups = groups
+    loaded_db.add(not_admin_user)
     loaded_db.commit()
 
 
@@ -89,8 +106,8 @@ def test_edit_planned_budget_line_unauthorized():
 
 
 @given("I am logged in as an OPS user")
-def client(auth_client):
-    return auth_client
+def client(auth_client, not_admin_user):
+    yield auth_client
 
 
 @given("I have a Contract Agreement as the original Agreement owner", target_fixture="agreement")
@@ -182,7 +199,7 @@ def planned_bli(loaded_db, agreement):
 @given("I edit the budget line item to change a value", target_fixture="edited_bli")
 def edit_bli(bli):
     bli.line_description = "Updated Description"
-    return bli
+    yield bli
 
 
 @when("I submit the budget line item", target_fixture="submit_response")

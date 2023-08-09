@@ -10,6 +10,7 @@ from models import (
     ContractType,
     DirectAgreement,
     User,
+    Role,
 )
 from pytest_bdd import given, scenario, then, when
 from sqlalchemy.orm.exc import StaleDataError
@@ -146,6 +147,22 @@ def contract_with_planned_bli(loaded_db, contract_agreement):
 
 
 @pytest.fixture()
+def not_admin_user(loaded_db):
+    user = loaded_db.get(User, 4)
+    old_roles = user.roles
+    user_role = loaded_db.get(Role, 2)
+    user.roles = [user_role]
+    loaded_db.add(user)
+    loaded_db.commit()
+
+    yield user
+
+    user.roles = old_roles
+    loaded_db.add(user)
+    loaded_db.commit()
+
+
+@pytest.fixture()
 def direct_agreement(loaded_db):
     direct_agreement = DirectAgreement(
         name="Feature Test Direct",
@@ -180,9 +197,9 @@ def test_non_contract():
 
 
 @given("I am logged in as an OPS user with the correct authorization", target_fixture="client")
-def client(auth_client):
+def client(auth_client, not_admin_user):
     # TODO: Authorization stuff
-    return auth_client
+    yield auth_client
 
 
 @scenario("delete_agreement.feature", "Contract Agreement as Project Officer")
@@ -202,32 +219,32 @@ def test_contract_not_associated():
 
 @given("I have a contract agreement with only draft BLIs", target_fixture="agreement")
 def contract_draft_bli(contract_with_draft_bli):
-    return contract_with_draft_bli
+    yield contract_with_draft_bli
 
 
 @given("I have a contract agreement with non-draft BLIs", target_fixture="agreement")
 def contract_non_draft_bli(contract_with_planned_bli):
-    return contract_with_planned_bli
+    yield contract_with_planned_bli
 
 
 @given("I have a non-contract agreement", target_fixture="agreement")
 def non_contract(direct_agreement):
-    return direct_agreement
+    yield direct_agreement
 
 
 @given("I have a contract agreement as the project officer", target_fixture="agreement")
 def project_officer(contract_agreement_project_officer):
-    return contract_agreement_project_officer
+    yield contract_agreement_project_officer
 
 
 @given("I have a contract agreement as a team member", target_fixture="agreement")
 def team_member(contract_agreement_team_member):
-    return contract_agreement_team_member
+    yield contract_agreement_team_member
 
 
 @given("I have a contract agreement I am not allowed to delete", target_fixture="agreement")
 def not_associated(contract_agreement_not_associated):
-    return contract_agreement_not_associated
+    yield contract_agreement_not_associated
 
 
 @when("I delete the agreement", target_fixture="submit_response")
