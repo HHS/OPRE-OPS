@@ -11,7 +11,7 @@ import ComboBox from "../ComboBox";
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @returns {JSX.Element} - The rendered component.
  */
-export const ProjectReactSelect = ({
+export const ProjectComboBox = ({
     researchProjects,
     selectedResearchProject,
     setSelectedProject,
@@ -21,12 +21,12 @@ export const ProjectReactSelect = ({
     return (
         <div className="display-flex flex-justify">
             <div className="left-half width-full">
-                <label className={legendClassname} htmlFor="project" id="project-label">
+                <label className={legendClassname} htmlFor="project-combobox-input">
                     Project
                 </label>
                 <div>
                     <ComboBox
-                        namespace="project-react-select"
+                        namespace="project-combobox"
                         data={researchProjects}
                         selectedData={selectedResearchProject}
                         setSelectedData={setSelectedProject}
@@ -38,9 +38,9 @@ export const ProjectReactSelect = ({
     );
 };
 
-export default ProjectReactSelect;
+export default ProjectComboBox;
 
-ProjectReactSelect.propTypes = {
+ProjectComboBox.propTypes = {
     researchProjects: PropTypes.array.isRequired,
     selectedResearchProject: PropTypes.object,
     setSelectedProject: PropTypes.func.isRequired,

@@ -6,7 +6,7 @@ import { useGetResearchProjectsQuery } from "../../../api/opsAPI";
 import AgreementTypeSelect from "../../../components/UI/Form/AgreementTypeSelect";
 import ProcurementShopSelect from "../../../components/UI/Form/ProcurementShopSelect";
 import _ from "lodash";
-import ProjectReactSelect from "../../../components/UI/Form/ProjectReactSelect";
+import ProjectComboBox from "../../../components/UI/Form/ProjectComboBox";
 import ProjectOfficerReactSelect from "../../../components/UI/Form/ProjectOfficerReactSelect";
 
 /**
@@ -240,7 +240,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                     </fieldset>
                     <div>
                         <fieldset className="usa-fieldset margin-bottom-205" style={{ width: "363px" }}>
-                            <ProjectReactSelect
+                            <ProjectComboBox
                                 researchProjects={projectData}
                                 selectedResearchProject={project}
                                 setSelectedProject={setProject}

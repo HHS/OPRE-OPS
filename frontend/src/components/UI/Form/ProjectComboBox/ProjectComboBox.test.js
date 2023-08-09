@@ -1,5 +1,5 @@
 import { render, fireEvent, screen } from "@testing-library/react";
-import ProjectReactSelect from "./ProjectReactSelect";
+import ProjectComboBox from "./ProjectComboBox";
 
 describe("ProjectReactSelect", () => {
     const researchProjects = [
@@ -12,7 +12,7 @@ describe("ProjectReactSelect", () => {
 
     it("renders the component with the correct label", () => {
         render(
-            <ProjectReactSelect
+            <ProjectComboBox
                 researchProjects={researchProjects}
                 selectedResearchProject={researchProjects[0]}
                 setSelectedProject={mockSetSelectedProject}
@@ -24,7 +24,7 @@ describe("ProjectReactSelect", () => {
 
     it("renders the component with the correct options", () => {
         render(
-            <ProjectReactSelect
+            <ProjectComboBox
                 researchProjects={researchProjects}
                 selectedResearchProject={researchProjects[0]}
                 setSelectedProject={mockSetSelectedProject}
@@ -38,7 +38,7 @@ describe("ProjectReactSelect", () => {
     it("updates the selected project when an option is selected", () => {
         const setSelectedProject = jest.fn();
         const { getByText, container } = render(
-            <ProjectReactSelect
+            <ProjectComboBox
                 researchProjects={researchProjects}
                 selectedResearchProject={researchProjects[0]}
                 setSelectedProject={setSelectedProject}
@@ -56,7 +56,7 @@ describe("ProjectReactSelect", () => {
 
     it("updates the input value when the user types in the input field", () => {
         render(
-            <ProjectReactSelect
+            <ProjectComboBox
                 researchProjects={researchProjects}
                 selectedResearchProject={researchProjects[0]}
                 setSelectedProject={mockSetSelectedProject}

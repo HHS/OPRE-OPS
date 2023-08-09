@@ -41,10 +41,10 @@ it("clicking the filter button opens the filter", () => {
 
     // get select element by name "project-react-select"
     // eslint-disable-next-line cypress/unsafe-to-chain-command
-    cy.get(".project-react-select__control")
+    cy.get(".project-combobox__control")
         .click()
-        .get(".project-react-select__menu")
-        .find(".project-react-select__option")
+        .get(".project-combobox__menu")
+        .find(".project-combobox__option")
         .first()
         .click();
     // eslint-disable-next-line cypress/unsafe-to-chain-command

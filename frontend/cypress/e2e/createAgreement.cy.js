@@ -17,18 +17,19 @@ it("loads", () => {
 });
 
 it("project type select has some projects", () => {
-    cy.get("#project--list").children().should("contain", "Human Services Interoperability Support");
-    cy.get("#project--list").children().should("contain", "Youth Demonstration Development Project");
-    cy.get("#project--list").children().should("contain", "Annual Performance Plans and Reports");
+    cy.get("#project-combobox-input").type("{downarrow}");
+    // .project-combobox__menu-list
+    cy.get(".project-combobox__option").should("contain", "Human Services Interoperability Support");
+    cy.get(".project-combobox__option").should("contain", "Youth Demonstration Development Project");
+    cy.get(".project-combobox__option").should("contain", "Annual Performance Plans and Reports");
+    cy.get("#project-combobox-input").type("{esc}");
 });
 
 it("can create an agreement", () => {
     cy.intercept("POST", "**/agreements").as("postAgreement");
 
     // Step One - Select a Project
-    cy.get("#project--list--toggle").click();
-    cy.get("#project--list").invoke("show");
-    cy.get("li").contains("Human Services Interoperability Support").click();
+    cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
     cy.get("#continue").click();
 
     // Step Two - Create an Agreement
@@ -105,9 +106,7 @@ it("can create an agreement", () => {
 });
 
 it("should handle cancelling out of workflow on step 1", () => {
-    cy.get("#project--list--toggle").click();
-    cy.get("#project--list").invoke("show");
-    cy.get("li").contains("Human Services Interoperability Support").click();
+    cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
     // cancel out of workflow
     cy.get('[data-cy="cancel-button"]').click();
     cy.get('[data-cy="confirm-action"]').click();
@@ -118,9 +117,7 @@ it("should handle cancelling out of workflow on step 1", () => {
 
 it("should handle cancelling out of workflow on step 2", () => {
     // Step One - Select a Project
-    cy.get("#project--list--toggle").click();
-    cy.get("#project--list").invoke("show");
-    cy.get("li").contains("Human Services Interoperability Support").click();
+    cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
     cy.get("#continue").click();
     // Step Two - Create an Agreement
     cy.get("dt").should("contain", "Project");

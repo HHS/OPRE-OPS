@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import ProjectReactSelect from "../ProjectReactSelect";
+import ProjectComboBox from "../ProjectComboBox";
 import { useEffect } from "react";
 
 export const ProjectSelectWithSummaryCard = ({
@@ -45,7 +45,7 @@ export const ProjectSelectWithSummaryCard = ({
         <div className="display-flex flex-justify padding-top-105">
             {/* NOTE: Left side */}
             <div className="" style={{ width: "382px" }}>
-                <ProjectReactSelect
+                <ProjectComboBox
                     researchProjects={researchProjects}
                     selectedResearchProject={selectedResearchProject}
                     setSelectedProject={setSelectedProject}

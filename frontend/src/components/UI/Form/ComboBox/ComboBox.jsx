@@ -54,9 +54,11 @@ export const ComboBox = ({
             ...provided,
             margin: "0px",
         }),
+
         indicatorSeparator: () => ({
             display: "none",
         }),
+
         indicatorsContainer: (provided) => ({
             ...provided,
             height: "40px",
@@ -86,10 +88,9 @@ export const ComboBox = ({
     return (
         <div className="" data-enhanced="true">
             <Select
+                inputId={`${namespace}-input`}
                 className="margin-0"
                 classNamePrefix={namespace}
-                data-cy={namespace}
-                data-testid={namespace}
                 name={namespace}
                 tabIndex="0"
                 value={defaultOption ?? selectedOption}
