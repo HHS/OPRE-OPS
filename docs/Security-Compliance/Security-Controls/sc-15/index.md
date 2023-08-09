@@ -9,7 +9,7 @@ b. Provide an explicit indication of use to users physically present at the devi
 
 OPS does not utilize Collaborative Computing Devices and Applications
 
-TODO: Revisit if we should say not applicable or something like that instead
+TODO: ??? Revisit if we should say not applicable or something like that instead
 
 ### Control Origination
 

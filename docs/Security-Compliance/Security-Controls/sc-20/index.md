@@ -9,10 +9,12 @@ b. Provide the means to indicate the security status of child zones and (if the 
 
 OPS does not provide domain name resolution services.
 
-TODO: Seek any inherited text from IaaS provider.
+TODO: Seek any inherited text from IaaS provider/ACF Tech
 
 ### Control Origination
 
-Inherited from IaaS provider
+Inherited from IaaS provider / ACF Tech
 
 ### Related Content
+
+Providing authoritative source information enables external clients, including remote Internet clients, to obtain origin authentication and integrity verification assurances for the host/service name to network address resolution information obtained through the service. Systems that provide name and address resolution services include domain name system (DNS) servers. Additional artifacts include DNS Security Extensions (DNSSEC) digital signatures and cryptographic keys. Authoritative data includes DNS resource records. The means for indicating the security status of child zones include the use of delegation signer resource records in the DNS. Systems that use technologies other than the DNS to map between host and service names and network addresses provide other means to assure the authenticity and integrity of response data.

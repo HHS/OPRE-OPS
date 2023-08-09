@@ -5,11 +5,12 @@ Maintain a separate execution domain for each [thread in ACF-defined multi-threa
 
 ### OPS Implementation
 
-TODO: Seek inherited text
+TODO: Seek inherited text or add any about containerization
 
 ### Control Origination
 
 Inherited from IaaS Provider
 
 ### Related Content
+
 Systems can maintain separate execution domains for each executing process by assigning each process a separate address space. Each system process has a distinct address space so that communication between processes is performed in a manner controlled through the security functions, and one process cannot modify the executing code of another process. Maintaining separate execution domains for executing processes can be achieved, for example, by implementing separate address spaces. Process isolation technologies, including sandboxing or virtualization, logically separate software and firmware from other software, firmware, and data. Process isolation helps limit the access of potentially untrusted software to other system resources. The capability to maintain separate execution domains is available in commercial operating systems that employ multi-state processor technologies.

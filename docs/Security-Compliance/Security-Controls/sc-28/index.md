@@ -7,12 +7,16 @@ Protect the [confidentiality and integrity] of [sensitive information at rest wh
 
 Databases as well as file and object-based storage used by OPS are configured to utilize encryption as defined and managed by the IaaS provider.
 
-TODO: Seek inherited text
+TODO: Seek inherited text from all
 
 ### Control Origination
 
-Hybrid inheritance with IaaS provider and OPS
+Hybrid inheritance with IaaS provider, ACF Tech, and OPS
 
 ### Related Content
+
 Information at rest refers to the state of information when it is not in process or in transit and is located on system components. Such components include internal or external hard disk drives, storage area network devices, or databases. However, the focus of protecting information at rest is not on the type of storage device or frequency of access but rather on the state of the information. Information at rest addresses the confidentiality and integrity of information and covers user information and system information. System-related information that requires protection includes configurations or rule sets for firewalls, intrusion detection and prevention systems, filtering routers, and authentication information. Organizations may employ different mechanisms to achieve confidentiality and integrity protections, including the use of cryptographic mechanisms and file share scanning. Integrity protection can be achieved, for example, by implementing write-once-read-many (WORM) technologies. When adequate protection of information at rest cannot otherwise be achieved, organizations may employ other controls, including frequent scanning to identify malicious code at rest and secure offline storage in lieu of online storage.
-### Additional Reference: HHS Standard for Encryption of Computing Devices and Information
+
+### Additional Reference:
+
+HHS Standard for Encryption of Computing Devices and Information

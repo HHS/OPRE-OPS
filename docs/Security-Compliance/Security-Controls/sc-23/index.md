@@ -1,7 +1,7 @@
 # Session Authenticity
 ## SC-23 - Session Authenticity
 
-Protect the authenticity of communications sessions.
+Protect the authenticity of communications sessions
 
 ## OPS Implementation
 
@@ -11,5 +11,8 @@ OPS itself utilizes secure and well-established session management mechanisms wi
 
 ### Control Origination
 
+OPS-specific
+
 ### Related Content
+
 Protecting session authenticity addresses communications protection at the session level, not at the packet level. Such protection establishes grounds for confidence at both ends of communications sessions in the ongoing identities of other parties and the validity of transmitted information. Authenticity protection includes protecting against man-in-the-middle attacks, session hijacking, and the insertion of false information into sessions.

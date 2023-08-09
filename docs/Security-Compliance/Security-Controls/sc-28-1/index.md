@@ -11,7 +11,8 @@ TODO: Seek inherited text
 
 ### Control Origination
 
-Inherited from IaaS Provider
+Hybrid inheritance with IaaS provider and ACF Tech
 
 ### Related Content
+
 The selection of cryptographic mechanisms is based on the need to protect the confidentiality and integrity of organizational information. The strength of mechanism is commensurate with the security category or classification of the information. Organizations have the flexibility to encrypt information on system components or media or encrypt data structures, including files, records, or fields
