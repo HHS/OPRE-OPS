@@ -48,10 +48,10 @@ it("clicking the filter button opens the filter", () => {
         .first()
         .click();
     // eslint-disable-next-line cypress/unsafe-to-chain-command
-    cy.get(".project-officer-react-select__control")
+    cy.get(".project-officer-combobox__control")
         .click()
-        .get(".project-officer-react-select__menu")
-        .find(".project-officer-react-select__option")
+        .get(".project-officer-combobox__menu")
+        .find(".project-officer-combobox__option")
         .first()
         .click();
     cy.get("#agreement_type").select("CONTRACT");

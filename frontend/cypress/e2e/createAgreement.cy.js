@@ -56,7 +56,7 @@ it("can create an agreement", () => {
     cy.get("#agreement_reason").select("NEW_REQ");
 
     // Select Project Officer
-    cy.get("#project-officer-react-select-input").type("Chris Fortunato{enter}");
+    cy.get("#project-officer-combobox-input").type("Chris Fortunato{enter}");
 
     // Skip Select Team Members for now - something is wrong with the select
     cy.get("#agreementNotes").type("This is a note.");

@@ -45,19 +45,19 @@ export const ProjectOfficerComboBox = ({
         <div className={cx("usa-form-group", messages && "usa-form-group--error", pending && "pending", className)}>
             <label
                 className={` ${legendClassname} ${messages.length ? "usa-label--error" : null}`}
-                htmlFor="project-officer-react-select-input"
+                htmlFor="project-officer-combobox-input"
                 id="project-officer-label"
             >
                 Project Officer
             </label>
             {messages.length ? (
-                <span className="usa-error-message" id="project-officer-react-select-input-error-message" role="alert">
+                <span className="usa-error-message" id="project-officer-combobox-input-error-message" role="alert">
                     {messages[0]}
                 </span>
             ) : null}
             <div>
                 <ComboBox
-                    namespace="project-officer-react-select"
+                    namespace="project-officer-combobox"
                     data={users}
                     selectedData={selectedProjectOfficer}
                     setSelectedData={handleChange}

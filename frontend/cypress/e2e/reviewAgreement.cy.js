@@ -73,7 +73,7 @@ it("review an agreement", () => {
         cy.get("#description").type("Test Description");
         cy.get("#product_service_code_id").select(1);
         cy.get("#agreement_reason").select("NEW_REQ");
-        cy.get("#project-officer-react-select-input").type("Chris Fortunato{enter}");
+        cy.get("#project-officer-combobox-input").type("Chris Fortunato{enter}");
         cy.get("#agreementNotes").type("This is a note.");
         cy.get("[data-cy='continue-btn']").click();
         //create a budget line with errors
