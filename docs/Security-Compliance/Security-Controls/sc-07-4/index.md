@@ -1,4 +1,3 @@
-# Boundary Protection
 ## SC-07 (4) - Boundary Protection | External Telecommunications Services
 
 (a) Implement a managed interface for each external telecommunication service;<br />
@@ -19,3 +18,4 @@ TODO: Seek inherited text
 inherited from IaaS provider and ACF/OCIO enterprise architecture for AMS and Splunk
 
 ### Related Content
+External telecommunications services can provide data and/or voice communications services. Examples of control plane traffic include Border Gateway Protocol (BGP) routing, Domain Name System (DNS), and management protocols. See SP 800-189 for additional information on the use of the resource public key infrastructure (RPKI) to protect BGP routes and detect unauthorized BGP announcements.
