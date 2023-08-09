@@ -325,14 +325,14 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                 <ProjectOfficerComboBox
                     selectedProjectOfficer={selectedProjectOfficer}
                     setSelectedProjectOfficer={changeSelectedProjectOfficer}
-                    legendClassname={`usa-label margin-top-0`}
+                    legendClassname="usa-label margin-top-0 margin-bottom-1"
                     messages={res.getErrors("project_officer")}
                     onChange={(name, value) => {
                         if (isReviewMode) {
                             runValidate(name, value);
                         }
                     }}
-                    overrideStyles={{ width: "261px" }}
+                    overrideStyles={{ width: "240px" }}
                 />
                 <TeamMemberSelect
                     className="margin-left-4"

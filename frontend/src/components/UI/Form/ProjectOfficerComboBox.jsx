@@ -42,7 +42,14 @@ export const ProjectOfficerComboBox = ({
     };
 
     return (
-        <div className={cx("usa-form-group", messages && "usa-form-group--error", pending && "pending", className)}>
+        <div
+            className={cx(
+                "usa-form-group margin-top-0",
+                messages.length && "usa-form-group--error",
+                pending && "pending",
+                className
+            )}
+        >
             <label
                 className={` ${legendClassname} ${messages.length ? "usa-label--error" : null}`}
                 htmlFor="project-officer-combobox-input"
