@@ -9,6 +9,7 @@ import ComboBox from "../ComboBox";
  * @param {Function} props.setSelectedProject - A function to call when the selected project changes.
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
+ * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
  * @returns {JSX.Element} - The rendered component.
  */
 export const ProjectComboBox = ({
@@ -17,6 +18,7 @@ export const ProjectComboBox = ({
     setSelectedProject,
     legendClassname = "usa-label margin-top-0",
     defaultString = "",
+    overrideStyles = {},
 }) => {
     return (
         <div className="display-flex flex-justify">
@@ -31,6 +33,7 @@ export const ProjectComboBox = ({
                         selectedData={selectedResearchProject}
                         setSelectedData={setSelectedProject}
                         defaultString={defaultString}
+                        overrideStyles={overrideStyles}
                     />
                 </div>
             </div>
@@ -46,4 +49,5 @@ ProjectComboBox.propTypes = {
     setSelectedProject: PropTypes.func.isRequired,
     legendClassname: PropTypes.string,
     defaultString: PropTypes.string,
+    overrideStyles: PropTypes.object,
 };

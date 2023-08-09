@@ -44,14 +44,13 @@ export const ProjectSelectWithSummaryCard = ({
     return (
         <div className="display-flex flex-justify padding-top-105">
             {/* NOTE: Left side */}
-            <div className="" style={{ width: "382px" }}>
-                <ProjectComboBox
-                    researchProjects={researchProjects}
-                    selectedResearchProject={selectedResearchProject}
-                    setSelectedProject={setSelectedProject}
-                    legendClassname="usa-label margin-top-0 padding-bottom-1"
-                />
-            </div>
+            <ProjectComboBox
+                researchProjects={researchProjects}
+                selectedResearchProject={selectedResearchProject}
+                setSelectedProject={setSelectedProject}
+                legendClassname="usa-label margin-top-0 padding-bottom-1"
+                overrideStyles={{ width: "382px" }}
+            />
             {/* NOTE: Right side */}
             <div className="right-half">
                 {selectedResearchProject?.id && (
