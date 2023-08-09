@@ -1,19 +1,19 @@
 import { Fragment, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
-import "./AgreementsList.scss";
 import { getUser } from "../../../api/getUser";
-import icons from "../../../uswds/img/sprite.svg";
 import { convertCodeForDisplay, formatDate } from "../../../helpers/utils";
 import TableTag from "../../../components/UI/PreviewTable/TableTag";
 import { useDeleteAgreementMutation } from "../../../api/opsAPI";
 import Modal from "../../../components/UI/Modal";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
+import icons from "../../../uswds/img/sprite.svg";
+import "./AgreementsList.scss";
 
 /**
  * Renders a row in the agreements table.
@@ -25,6 +25,7 @@ import { setAlert } from "../../../components/UI/Alert/alertSlice";
 export const AgreementTableRow = ({ agreement }) => {
     const navigate = useNavigate();
     const globalDispatch = useDispatch();
+    const loggedInUserId = useSelector((state) => state.auth.activeUser.id);
     const [deleteAgreement] = useDeleteAgreementMutation();
     const [user, setUser] = useState({});
     const [isExpanded, setIsExpanded] = useState(false);
@@ -81,9 +82,20 @@ export const AgreementTableRow = ({ agreement }) => {
         setIsExpanded(!isExpanded);
         setIsRowActive(true);
     };
-
+    // styles for the expanded row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
     const changeBgColorIfExpanded = { backgroundColor: isRowActive ? "#F0F0F0" : undefined };
+
+    // Validations for deleting an agreement
+    const isLoggedInUserTheProjectOfficer = loggedInUserId === agreement?.project_officer;
+    const isLoggedInUserTheAgreementCreator = loggedInUserId === agreement?.created_by;
+    const isLoggedInUserATeamMember = agreement?.team_members?.find((tm) => tm.id === loggedInUserId);
+    const areAllBudgetLinesInDraftStatus = agreement?.budget_line_items?.every((bli) => bli.status === "DRAFT");
+    const areThereAnyBudgetLines = agreement?.budget_line_items?.length > 0;
+
+    const canUserDeleteAgreement =
+        (isLoggedInUserTheAgreementCreator || isLoggedInUserTheProjectOfficer || isLoggedInUserATeamMember) &&
+        (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
 
     const handleEditAgreement = (event) => {
         navigate(`/agreements/${event}?mode=edit`);
@@ -148,7 +160,7 @@ export const AgreementTableRow = ({ agreement }) => {
                     <div className="display-flex flex-align-center">
                         <FontAwesomeIcon
                             icon={faPen}
-                            className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                            className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
                             title="edit"
                             data-position="top"
                             onClick={() => handleEditAgreement(agreement.id)}
@@ -156,14 +168,16 @@ export const AgreementTableRow = ({ agreement }) => {
 
                         <FontAwesomeIcon
                             icon={faTrash}
-                            title="delete"
+                            title={`${canUserDeleteAgreement ? "delete" : "user does not have permissions to delete"}`}
                             data-position="top"
-                            className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
-                            onClick={() => handleDeleteAgreement(agreement.id)}
+                            className={`text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip ${
+                                !canUserDeleteAgreement ? "opacity-30 cursor-not-allowed" : null
+                            }`}
+                            onClick={() => canUserDeleteAgreement && handleDeleteAgreement(agreement.id)}
                         />
 
                         <svg
-                            className="usa-icon text-primary height-205 width-205 hover: cursor-pointer usa-tooltip"
+                            className="usa-icon text-primary height-205 width-205 cursor-pointer usa-tooltip"
                             onClick={() => handleSubmitAgreementForApproval(agreement.id)}
                             id={`submit-for-approval-${agreement.id}`}
                         >
@@ -247,7 +261,7 @@ export const AgreementTableRow = ({ agreement }) => {
                                 </dd>
                             </dl>
                             <div className="flex-align-self-end margin-left-auto margin-bottom-1">
-                                <ChangeIcons agreement={agreement} />
+                                <ChangeIcons agreement={agreement} status={agreementStatus} />
                             </div>
                         </div>
                     </td>
@@ -278,5 +292,11 @@ AgreementTableRow.propTypes = {
         created_by: PropTypes.number.isRequired,
         notes: PropTypes.string,
         created_on: PropTypes.string,
+        project_officer: PropTypes.number.isRequired,
+        team_members: PropTypes.arrayOf(
+            PropTypes.shape({
+                id: PropTypes.number.isRequired,
+            })
+        ).isRequired,
     }).isRequired,
 };
