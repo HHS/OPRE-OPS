@@ -157,7 +157,7 @@ export const AgreementTableRow = ({ agreement }) => {
         return (
             <>
                 {(status === "Draft" || status === "In Review") && (
-                    <div className="display-flex flex-align-center ">
+                    <div className="display-flex flex-align-center">
                         <FontAwesomeIcon
                             icon={faPen}
                             className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
@@ -171,7 +171,7 @@ export const AgreementTableRow = ({ agreement }) => {
                             title={`${canUserDeleteAgreement ? "delete" : "user does not have permissions to delete"}`}
                             data-position="top"
                             className={`text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip ${
-                                !canUserDeleteAgreement ? "opacity-30 text-ink cursor-not-allowed" : null
+                                !canUserDeleteAgreement ? "opacity-30 cursor-not-allowed" : null
                             }`}
                             onClick={() => canUserDeleteAgreement && handleDeleteAgreement(agreement.id)}
                             data-cy="delete-agreement"
