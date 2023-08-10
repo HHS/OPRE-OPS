@@ -7,7 +7,7 @@ import ProcurementShopSelectWithFee from "../../UI/Form/ProcurementShopSelectWit
 import AgreementReasonSelect from "../../UI/Form/AgreementReasonSelect";
 import AgreementTypeSelect from "../../UI/Form/AgreementTypeSelect";
 import ProductServiceCodeSelect from "../../UI/Form/ProductServiceCodeSelect";
-import TeamMemberSelect from "../../UI/Form/TeamMemberSelect";
+import TeamMemberComboBox from "../../UI/Form/TeamMemberComboBox";
 import TeamMemberList from "../../UI/Form/TeamMemberList";
 import Modal from "../../UI/Modal";
 import { formatTeamMember } from "../../../api/postAgreements";
@@ -367,7 +367,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                     }}
                     overrideStyles={{ width: "240px" }}
                 />
-                <TeamMemberSelect
+                <TeamMemberComboBox
                     className="margin-left-4"
                     legendClassname="usa-label margin-top-0 margin-bottom-1"
                     selectedTeamMembers={selectedTeamMembers}

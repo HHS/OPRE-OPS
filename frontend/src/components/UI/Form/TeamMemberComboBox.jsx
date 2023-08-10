@@ -14,7 +14,7 @@ import _ from "lodash";
  * @param {Function} props.setSelectedTeamMembers - A function to set the selected team members.
  * @returns {React.JSX.Element} - The rendered component.
  */
-export const TeamMemberSelect = ({
+export const TeamMemberComboBox = ({
     className,
     selectedProjectOfficer,
     selectedTeamMembers,
@@ -67,7 +67,7 @@ export const TeamMemberSelect = ({
     );
 };
 
-TeamMemberSelect.propTypes = {
+TeamMemberComboBox.propTypes = {
     className: PropTypes.string,
     selectedProjectOfficer: PropTypes.object,
     selectedTeamMembers: PropTypes.array,
@@ -77,4 +77,4 @@ TeamMemberSelect.propTypes = {
     overrideStyles: PropTypes.object,
 };
 
-export default TeamMemberSelect;
+export default TeamMemberComboBox;
