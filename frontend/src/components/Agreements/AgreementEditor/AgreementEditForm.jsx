@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -12,7 +12,7 @@ import TeamMemberList from "../../UI/Form/TeamMemberList";
 import Modal from "../../UI/Modal";
 import { formatTeamMember } from "../../../api/postAgreements";
 import ProductServiceCodeSummaryBox from "../../UI/Form/ProductServiceCodeSummaryBox";
-import { useEditAgreement, useSetState, useUpdateAgreement, useEditAgreementDispatch } from "./AgreementEditorContext";
+import { useEditAgreement, useEditAgreementDispatch, useSetState, useUpdateAgreement } from "./AgreementEditorContext";
 import { setAlert } from "../../UI/Alert/alertSlice";
 import suite from "./AgreementEditFormSuite";
 import Input from "../../UI/Form/Input";
@@ -23,6 +23,8 @@ import {
     useUpdateAgreementMutation,
 } from "../../../api/opsAPI";
 import ProjectOfficerComboBox from "../../UI/Form/ProjectOfficerComboBox";
+import { getUser } from "../../../api/getUser";
+import _ from "lodash";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -78,6 +80,24 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         agreement_reason: agreementReason,
         team_members: selectedTeamMembers,
     } = agreement;
+
+    // This is needed due to a caching issue with the React Context - for some reason selected_project_officer
+    // is not updated in the parent context/props.
+    useEffect(() => {
+        const getProjectOfficerSetState = async (id) => {
+            const results = await getUser(id);
+            setSelectedProjectOfficer(results);
+        };
+
+        if (_.isEmpty(selectedProjectOfficer) && agreement?.project_officer) {
+            getProjectOfficerSetState(agreement?.project_officer).catch(console.error);
+        }
+
+        return () => {
+            setSelectedProjectOfficer({});
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const {
         data: productServiceCodes,
