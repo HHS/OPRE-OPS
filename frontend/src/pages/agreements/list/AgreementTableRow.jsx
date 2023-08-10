@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from "react";
-import { Link, redirect, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useDispatch, useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
