@@ -153,23 +153,55 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         };
         const { id, cleanData } = cleanAgreementForApi(data);
         if (id) {
-            // TODO: handle failures
             updateAgreement({ id: id, data: cleanData })
                 .unwrap()
-                .then((payload) => {
-                    console.log("Agreement Updated", payload);
+                .then((fulfilled) => {
+                    console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
+                    globalDispatch(
+                        setAlert({
+                            type: "success",
+                            heading: "Agreement Draft Saved",
+                            message: "The agreement has been successfully saved.",
+                        })
+                    );
                 })
-                .catch((error) => console.error("Agreement Updated Failed", error));
+                .catch((rejected) => {
+                    console.error(`UPDATE: agreement updated failed: ${JSON.stringify(rejected, null, 2)}`);
+                    globalDispatch(
+                        setAlert({
+                            type: "error",
+                            heading: "Error",
+                            message: "An error occurred while saving the agreement.",
+                        })
+                    );
+                });
         } else {
-            // TODO: handle failures
             addAgreement(cleanData)
                 .unwrap()
                 .then((payload) => {
-                    console.log("Agreement Created", payload);
                     const newAgreementId = payload.id;
                     setAgreementId(newAgreementId);
                 })
-                .catch((error) => console.error("Agreement Failed", error));
+                .then((fulfilled) => {
+                    console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+                    globalDispatch(
+                        setAlert({
+                            type: "success",
+                            heading: "Agreement Draft Saved",
+                            message: "The agreement has been successfully created.",
+                        })
+                    );
+                })
+                .catch((rejected) => {
+                    console.error(`CREATE: agreement failed: ${JSON.stringify(rejected, null, 2)}`);
+                    globalDispatch(
+                        setAlert({
+                            type: "error",
+                            heading: "Error",
+                            message: "An error occurred while creating the agreement.",
+                        })
+                    );
+                });
         }
     };
 
@@ -181,14 +213,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
 
     const handleDraft = async () => {
         saveAgreement();
-        await globalDispatch(
-            setAlert({
-                type: "success",
-                heading: "Agreement Draft Saved",
-                message: "The agreement has been successfully saved.",
-                redirectUrl: "/agreements",
-            })
-        );
+        await navigate("/agreements");
     };
 
     const handleCancel = () => {
