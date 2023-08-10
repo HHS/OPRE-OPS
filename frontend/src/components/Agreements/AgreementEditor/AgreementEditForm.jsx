@@ -369,6 +369,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                 />
                 <TeamMemberSelect
                     className="margin-left-4"
+                    legendClassname="usa-label margin-top-0 margin-bottom-1"
                     selectedTeamMembers={selectedTeamMembers}
                     selectedProjectOfficer={selectedProjectOfficer}
                     setSelectedTeamMembers={setSelectedTeamMembers}

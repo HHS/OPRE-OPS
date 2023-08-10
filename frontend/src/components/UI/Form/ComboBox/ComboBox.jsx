@@ -13,6 +13,8 @@ import { useEffect, useState } from "react";
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
+ * @param {boolean} [props.clearWhenSet] - Whether to clear the box when an option is selected.
+ * Used for TeamMemberComboBox. (optional).
  * @returns {JSX.Element} - The rendered component.
  */
 export const ComboBox = ({
@@ -24,6 +26,7 @@ export const ComboBox = ({
     defaultString = "",
     messages = [],
     overrideStyles = {},
+    clearWhenSet = false,
 }) => {
     const [selectedOption, setSelectedOption] = useState(null);
 
@@ -74,17 +77,32 @@ export const ComboBox = ({
         selectedData === undefined && setSelectedOption(null);
     }, [selectedData]);
 
+    const clear = () => {
+        setSelectedData({});
+        setSelectedOption(null);
+    };
+
+    const clearWhenSetFunc = (optionId) => {
+        const optionObj = data.find((item) => item.id === Number(optionId));
+        setSelectedData(optionObj);
+        setSelectedOption(null);
+    };
+
+    const handleChangeDefault = (optionId) => {
+        const optionObj = data.find((item) => item.id === Number(optionId));
+        setSelectedData(optionObj);
+
+        const option = options.find((option) => option.value === Number(optionId));
+        setSelectedOption(option);
+    };
+
     const handleChange = (e, actionObj) => {
         if (actionObj.action === "clear") {
-            setSelectedData({});
-            setSelectedOption(null);
+            clear();
+        } else if (clearWhenSet) {
+            clearWhenSetFunc(e.value);
         } else {
-            const optionId = e.value;
-            const optionObj = data.find((item) => item.id === Number(optionId));
-            setSelectedData(optionObj);
-
-            const option = options.find((option) => option.value === Number(optionId));
-            setSelectedOption(option);
+            handleChangeDefault(e.value);
         }
     };
 
@@ -122,4 +140,5 @@ ComboBox.propTypes = {
     defaultString: PropTypes.string,
     messages: PropTypes.array,
     overrideStyles: PropTypes.object,
+    clearWhenSet: PropTypes.bool,
 };
