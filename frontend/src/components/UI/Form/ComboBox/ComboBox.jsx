@@ -91,22 +91,20 @@ export const ComboBox = ({
     const defaultOption = selectedData ? options.find((option) => option.value === Number(selectedData?.id)) : null;
 
     return (
-        <div className="" data-enhanced="true">
-            <Select
-                inputId={`${namespace}-input`}
-                className={`padding-0 ${messages.length ? "usa-input--error" : null}`}
-                classNamePrefix={namespace}
-                name={namespace}
-                tabIndex="0"
-                value={defaultOption ?? selectedOption}
-                onChange={handleChange}
-                options={options}
-                placeholder={defaultString}
-                styles={customStyles}
-                isSearchable={true}
-                isClearable={true}
-            />
-        </div>
+        <Select
+            inputId={`${namespace}-input`}
+            className={`padding-0 ${messages.length ? "usa-input--error" : null}`}
+            classNamePrefix={namespace}
+            name={namespace}
+            tabIndex="0"
+            value={defaultOption ?? selectedOption}
+            onChange={handleChange}
+            options={options}
+            placeholder={defaultString}
+            styles={customStyles}
+            isSearchable={true}
+            isClearable={true}
+        />
     );
 };
 
