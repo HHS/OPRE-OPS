@@ -220,3 +220,13 @@ it("review an agreement", () => {
         });
     });
 });
+
+it("submit agreement for review", () => {
+    cy.visit(`/agreements/approve/1?mode=review`);
+    cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
+    cy.get('[data-cy="error-list"]').should("not.exist");
+    cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
+    cy.get('[data-cy="send-to-approval-btn"]').click();
+    cy.url().should("include", "/agreements");
+    cy.get("tbody tr").contains("In Review");
+});
