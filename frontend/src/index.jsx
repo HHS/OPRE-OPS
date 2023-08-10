@@ -146,6 +146,7 @@ const router = createBrowserRouter(
                 <Route path="/agreements/approve/:id/*" element={<ApproveAgreement />} />
             </Route>
             <Route path="/error" element={<ErrorPage />} />
+            <Route path="*" element={<Navigate to="/error" />} />
         </>
     )
 );
