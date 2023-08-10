@@ -22,7 +22,7 @@ export const ProjectComboBox = ({
 }) => {
     return (
         <div className="display-flex flex-justify">
-            <div className="left-half width-full">
+            <div>
                 <label className={legendClassname} htmlFor="project-combobox-input">
                     Project
                 </label>

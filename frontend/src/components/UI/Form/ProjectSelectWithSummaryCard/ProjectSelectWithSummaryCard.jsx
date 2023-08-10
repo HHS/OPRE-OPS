@@ -49,7 +49,7 @@ export const ProjectSelectWithSummaryCard = ({
                 selectedResearchProject={selectedResearchProject}
                 setSelectedProject={setSelectedProject}
                 legendClassname="usa-label margin-top-0 padding-bottom-1"
-                overrideStyles={{ width: "382px" }}
+                overrideStyles={{ width: "23.9rem" }}
             />
             {/* NOTE: Right side */}
             <div className="right-half">
