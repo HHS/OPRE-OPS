@@ -174,6 +174,7 @@ export const AgreementTableRow = ({ agreement }) => {
                                 !canUserDeleteAgreement ? "opacity-30 cursor-not-allowed" : null
                             }`}
                             onClick={() => canUserDeleteAgreement && handleDeleteAgreement(agreement.id)}
+                            data-cy="delete-agreement"
                         />
 
                         <svg
@@ -238,6 +239,7 @@ export const AgreementTableRow = ({ agreement }) => {
                         icon={isExpanded ? faChevronUp : faChevronDown}
                         className="height-2 width-2 padding-right-1 hover: cursor-pointer"
                         onClick={() => handleExpandRow()}
+                        data-cy="expand-row"
                     />
                 </td>
             </tr>
