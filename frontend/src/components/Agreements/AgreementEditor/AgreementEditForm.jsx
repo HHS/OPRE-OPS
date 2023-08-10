@@ -33,6 +33,7 @@ import {
  * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
  * @param {boolean} props.isEditMode - Whether the edit mode is on (in the Agreement details page) - optional.
  * @param {function} props.setIsEditMode - The function to set the edit mode (in the Agreement details page) - optional.
+ * @returns {React.JSX.Element} - The component JSX.
  */
 export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, setIsEditMode }) => {
     const isWizardMode = location.pathname === "/agreements/create" || location.pathname.startsWith("/agreements/edit");
