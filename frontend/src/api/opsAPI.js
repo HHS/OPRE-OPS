@@ -20,7 +20,7 @@ export const opsApi = createApi({
     endpoints: (builder) => ({
         getAgreements: builder.query({
             query: () => `/agreements/`,
-            providesTags: ["Agreements"],
+            providesTags: ["Agreements", "BudgetLineItems"],
         }),
         getAgreementById: builder.query({
             query: (id) => `/agreements/${id}`,
