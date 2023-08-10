@@ -4,7 +4,15 @@ const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
 
 export const opsApi = createApi({
     reducerPath: "opsApi",
-    tagTypes: ["Agreements", "ResearchProjects", "Users", "AgreementTypes", "AgreementReasons", "ProcurementShops"],
+    tagTypes: [
+        "Agreements",
+        "ResearchProjects",
+        "Users",
+        "AgreementTypes",
+        "AgreementReasons",
+        "ProcurementShops",
+        "BudgetLineItems",
+    ],
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
         prepareHeaders: (headers) => {
