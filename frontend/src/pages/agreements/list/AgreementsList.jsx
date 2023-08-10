@@ -3,7 +3,7 @@ import { useGetAgreementsQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import sortAgreements from "./utils";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Alert from "../../../components/UI/Alert";
 import "./AgreementsList.scss";
 import AgreementsTable from "./AgreementsTable";
