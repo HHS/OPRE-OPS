@@ -1,19 +1,14 @@
 /// <reference types="cypress" />
+import { testLogin } from "./utils";
+
 beforeEach(() => {
+    testLogin("admin");
     cy.visit("/");
 });
 
 afterEach(() => {
     cy.injectAxe();
     cy.checkA11y();
-});
-
-it("has expected state on initial load", () => {
-    cy.fixture("initial-state").then((initState) => {
-        cy.window()
-            .then((win) => win.store.getState())
-            .should("deep.include", initState);
-    });
 });
 
 it("loads", () => {

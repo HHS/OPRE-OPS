@@ -12,19 +12,6 @@ it("redirect to /login when ther is no jwt", () => {
     });
 });
 
-it.skip("***** WIP ***** FakeAuth: Admin user can login", () => {
-    cy.session("FakeAuth-Admin", () => {
-        cy.visit("/login");
-        cy.contains("Sign in with FakeAuth").click();
-        cy.contains("Admin User").click();
-        cy.url().should("include", "/");
-        cy.getLocalStorage("access_token").should("exist");
-        cy.window()
-            .then((win) => win.store.getState().auth)
-            .should("deep.include", { isLoggedIn: false });
-    });
-});
-
 it("access_token is present within localstorage after login", () => {
     testLogin("admin");
     cy.getLocalStorage("access_token").should("exist");

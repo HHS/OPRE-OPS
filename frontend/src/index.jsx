@@ -11,6 +11,7 @@ import "./uswds/js/uswds.min.js";
 import Home from "./pages/Home";
 import PortfolioList from "./pages/portfolios/list/PortfolioList";
 import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
+import CanList from "./pages/cans/list/CanList";
 import CanDetail from "./pages/cans/detail/CanDetail";
 import UserDetail from "./pages/users/detail/UserDetail";
 import EditUser from "./pages/users/edit/EditUser";
@@ -134,13 +135,17 @@ const router = createBrowserRouter(
                             </Link>
                         ),
                     }}
-                >
-                    {/*/!* Default to BudgetAndFunding *!/*/}
-                    {/*<Route exact path="" element={<Navigate to={"budget-and-funding"} />} />*/}
-                    <Route path="budget-lines" element={<Agreement />} />
-                </Route>
-            </Route>
-            <Route element={<ProtectedRoute redirectPath="/cans" />}>
+                />
+                {/*/!* Default to BudgetAndFunding *!/*/}
+                {/*<Route exact path="" element={<Navigate to={"budget-and-funding"} />} />*/}
+                <Route path="budget-lines" element={<Agreement />} />
+                <Route path="/budget-lines/create" element={<CreateBudgetLines />} />
+                <Route path="/agreements/create" element={<CreateAgreements />} />
+                <Route path="/projects/create" element={<CreateProject />} />
+                <Route path="/agreements" element={<AgreementsList />} />
+                <Route path="/agreements/edit/:id/*" element={<EditAgreement />} />
+                <Route path="/agreements/approve/:id/*" element={<ApproveAgreement />} />
+                <Route path="/cans" element={<CanList />} />
                 <Route
                     path="/cans/:id/*"
                     element={<CanDetail />}
@@ -152,12 +157,6 @@ const router = createBrowserRouter(
                         ),
                     }}
                 />
-                <Route path="/budget-lines/create" element={<CreateBudgetLines />} />
-                <Route path="/agreements/create" element={<CreateAgreements />} />
-                <Route path="/projects/create" element={<CreateProject />} />
-                <Route path="/agreements" element={<AgreementsList />} />
-                <Route path="/agreements/edit/:id/*" element={<EditAgreement />} />
-                <Route path="/agreements/approve/:id/*" element={<ApproveAgreement />} />
             </Route>
         </>
     )

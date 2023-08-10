@@ -79,6 +79,23 @@ Cypress.Commands.add("login", () => {
     window.localStorage.setItem("access_token", "123");
 });
 
+Cypress.Commands.add("FakeAuth", (user) => {
+    cy.session([user], async () => {
+        cy.visit("/login");
+        cy.contains("Sign in with FakeAuth").click();
+        if (user === "admin") {
+            cy.contains("Admin User").click();
+        } else if (user === "basic") {
+            cy.contains("Basic User").click();
+        }
+        cy.url().should("include", "/");
+        cy.window().its("localStorage").invoke("getItem", "access_token").should("exist");
+        cy.window()
+            .then((win) => win.store.getState().auth)
+            .should("deep.include", { isLoggedIn: true });
+    });
+});
+
 Cypress.Commands.add("fakeLogin", (name) => {
     cy.session([name], async () => {
         cy.visit("/");

@@ -37,6 +37,7 @@ class UsersItemAPI(BaseItemAPI):
         else:
             response = self._get_item_with_try(id)
 
+        # current_app.logger.debug(f"GET User response: {response}")
         # Users can only see their own user details
         # Update this authZ checks once we determine additional
         # roles that can view other users details.
@@ -109,7 +110,7 @@ class UsersListAPI(BaseListAPI):
         else:
             items = self.model.query.all()
             response = make_response_with_headers([item.to_dict() for item in items])
-
+        # current_app.logger.debug(f"GET Users response: {response}")
         return response
 
     @override

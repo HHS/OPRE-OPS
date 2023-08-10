@@ -141,7 +141,7 @@
       email: "kschulke@flexion.us",
       oidc_id: "b5f7598b-e5e6-4b11-8321-b3acabc780f7",
     },
-    { // 21
+    { // 21 User is used in E2E tests
       first_name: "Admin",
       last_name: "Demo",
       division: 3,

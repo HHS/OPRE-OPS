@@ -226,7 +226,7 @@ class NotificationListAPI(BaseListAPI):
             query_helper.add_column_equals(cast(InstrumentedAttribute, Notification.is_read), is_read)
 
         stmt = query_helper.get_stmt()
-        current_app.logger.debug(f"SQL: {stmt}")
+        # current_app.logger.debug(f"SQL: {stmt}")
 
         return stmt
 

@@ -75,7 +75,6 @@ def create_oauth_jwt(
 
     expire = current_app.config["JWT_ACCESS_TOKEN_EXPIRES"]
     current_app.logger.debug(f"expire={expire}")
-    # client_id = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"]["client_id"]
     _payload = payload or {
         "iss": current_app.config["AUTHLIB_OAUTH_CLIENTS"][provider]["client_id"],
         "sub": current_app.config["AUTHLIB_OAUTH_CLIENTS"][provider]["client_id"],
@@ -97,11 +96,8 @@ def get_jwks(provider_metadata_url: str):
             headers={"Accept": "application/json"},
         ).content.decode("utf-8")
     )
-    # current_app.logger.debug(f"********  provider_uris={provider_uris}")
     jwks_uri = provider_uris["jwks_uri"]
-    # current_app.logger.debug(f"********  jwks_uri={jwks_uri}")
     jwks = requests.get(jwks_uri).content.decode("utf-8")
-    # current_app.logger.debug(f"********  jwks={jwks}")
     return jwks
 
 
@@ -109,6 +105,9 @@ def decode_user(
     payload: Optional[str] = None,
     provider: Optional[str] = None,
 ) -> dict[str, str]:
+    # TODO: Determine which claims we want to validate when decoding a user from the provider
+    #       beyond just the signature. Should these be universal for any claims (global)?
+    # ex: validate the JTI, validate the expiration, validate the si
     # claims_options = {
     #     "iss": {
     #         "essential": True,
@@ -124,7 +123,7 @@ def decode_user(
     current_app.logger.debug(f"********  claims={claims}")
     return claims
 
-  
+
 class ExtraCheckError(Exception):
     """Exception used to handle errors from the extra check function that can be passed
     into @is_authorized().
@@ -148,7 +147,7 @@ class is_authorized:
         self.extra_check = extra_check
         self.groups = groups
 
-    def __call__(self, func: Callable) -> Callable:
+    def __call__(self, func: Callable) -> Callable:  # noqa: C901 Being refactored in
         @wraps(func)
         @jwt_required()
         def wrapper(*args, **kwargs) -> Response:
@@ -162,31 +161,27 @@ class is_authorized:
             if is_authorized and extra_valid:
                 response = func(*args, **kwargs)
             else:
+                response: Optional[Response] = None
+                if is_authorized:
+                    extra_valid: Optional[bool] = None
+                    auth_group: Optional[bool] = None
+                    if self.extra_check is not None:
+                        try:
+                            extra_valid = self.extra_check(*args, **kwargs)
+                        except ExtraCheckError as e:
+                            return make_response_with_headers(e.response_data, 400)
 
-              response: Optional[Response] = None
-              if is_authorized:
-                  extra_valid: Optional[bool] = None
-                  auth_group: Optional[bool] = None
-                  if self.extra_check is not None:
-                      try:
-                          extra_valid = self.extra_check(*args, **kwargs)
-                      except ExtraCheckError as e:
-                          return make_response_with_headers(e.response_data, 400)
+            if self.groups is not None:
+                user = get_current_user()
+                auth_group = set(self.groups) & {g.name for g in user.groups}
 
-                  if self.groups is not None:
-                      user = get_current_user()
-                      if set(self.groups) & {g.name for g in user.groups}:
-                          auth_group = True
-                      else:
-                          auth_group = False
-
-                  if (
-                      (extra_valid is None and auth_group is None)
-                      or (extra_valid is None and auth_group)
-                      or (auth_group is None and extra_valid)
-                      or (extra_valid is not None and auth_group is not None and (extra_valid or auth_group))
-                  ):
-                      response = func(*args, **kwargs)
+            if (
+                (extra_valid is None and auth_group is None)
+                or (extra_valid is None and auth_group)
+                or (auth_group is None and extra_valid)
+                or (extra_valid is not None and auth_group is not None and (extra_valid or auth_group))
+            ):
+                response = func(*args, **kwargs)
 
             if response is None:
                 response = make_response_with_headers({}, 401)

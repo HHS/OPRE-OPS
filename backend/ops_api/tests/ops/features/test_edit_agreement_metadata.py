@@ -1,7 +1,7 @@
 import datetime
+
 import pytest
 from models import AgreementType, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ContractType
-
 from ops_api.ops.resources.agreements import AgreementData
 from pytest_bdd import given, scenario, then, when
 

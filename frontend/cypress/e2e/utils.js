@@ -20,9 +20,10 @@ export const terminalLog = (violations) => {
     cy.task("table", violationData);
 };
 
-export const testLogin = (name, win) => {
+export const testLogin = (name) => {
     cy.visit("/");
-    cy.fakeLogin(name);
+    // cy.fakeLogin(name);
+    cy.FakeAuth(name);
     cy.visit("/"); // This is mostly to "touch" the page, and ensure the window is active.
     cy.window().its("store").should("exist");
     cy.window().its("store").invoke("dispatch", login());

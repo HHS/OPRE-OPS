@@ -9,27 +9,15 @@ import { apiLogin } from "../../api/apiLogin";
 import ContainerModal from "../UI/Modals/ContainerModal";
 import { setActiveUser } from "./auth";
 
-// async function setActiveUser(token, dispatch) {
-//     // TODO: Vefiry the Token!
-//     //const isValidToken = validateToken(token);
-//     const decodedJwt = jwt_decode(token);
-//     const userId = decodedJwt["sub"];
-//     // eslint-disable-next-line react-hooks/rules-of-hooks
-//     const { data: user } = useGetUserByOIDCIdQuery(userId);
-
-//     dispatch(setUserDetails(user));
-// }
-
 const MultiAuthSection = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
-    const activeProvider = sessionStorage.getItem("activeProvider") || null;
 
     const callBackend = React.useCallback(
         async (authCode) => {
             console.log(`Received Authentication Code = ${authCode}`);
-            const activeProvider = sessionStorage.getItem("activeProvider");
+            const activeProvider = localStorage.getItem("activeProvider");
             if (activeProvider === null || activeProvider === undefined) {
                 console.error("API Login Failed! No Active Provider");
                 navigate("/login");
@@ -54,7 +42,7 @@ const MultiAuthSection = () => {
                 navigate("/");
             }
         },
-        [activeProvider, dispatch, navigate]
+        [dispatch, navigate]
     );
 
     React.useEffect(() => {
@@ -96,22 +84,15 @@ const MultiAuthSection = () => {
     //       So that we don't actually store anything in code.
     const handleFakeAuthLogin = (user_type) => {
         console.debug(`Logging in with FakeAuth: ${user_type}`);
-        sessionStorage.setItem("activeProvider", "fakeauth");
+        localStorage.setItem("activeProvider", "fakeauth");
         callBackend(user_type).catch(console.error);
-        //console.log(`API Login Response = ${JSON.stringify(fakeUsers[user].access_token)}`);
-        //localStorage.setItem("access_token", fakeUsers[user_type].access_token);
-        //console.log(`localStorage.getItem("access_token") = ${localStorage.getItem("access_token")}`);
-        //dispatch(login());
-        //setActiveUser(fakeUsers[user_type].access_token, dispatch);
-        //console.debug("FakeUser Logged In!");
+
         navigate("/");
     };
 
     const handleSSOLogin = (provider) => {
-        // console.debug(`Logging in with SSO: ${provider}`);
-        sessionStorage.setItem("activeProvider", provider);
+        localStorage.setItem("activeProvider", provider);
         window.location.href = getAuthorizationCode(provider, localStorage.getItem("ops-state-key"));
-        // console.debug(`Setting Provider State: ${sessionStorage.getItem("activeProvider")}`);
     };
 
     return (

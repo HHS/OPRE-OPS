@@ -40,7 +40,7 @@ class OPSMethodView(MethodView):
         self.auth_gateway = auth_gateway
 
     def _get_item_by_oidc(self, oidc: str):
-        current_app.logger.info(f"get User by_oidc: {id}")
+        # current_app.logger.info(f"get User by_oidc: {id}")
         stmt = select(self.model).where(self.model.oidc_id == oidc).order_by(self.model.id)
         return current_app.db_session.scalar(stmt)
 

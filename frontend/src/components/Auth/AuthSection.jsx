@@ -11,16 +11,6 @@ import { apiLogin } from "../../api/apiLogin";
 import NotificationCenter from "../UI/NotificationCenter/NotificationCenter";
 import { setActiveUser } from "./auth";
 
-// async function setActiveUser(token, dispatch) {
-//     // TODO: Vefiry the Token!
-//     //const isValidToken = validateTooken(token);
-//     const decodedJwt = jwt_decode(token);
-//     const userId = decodedJwt["sub"];
-//     const userDetails = await getUserByOidc(userId);
-
-//     dispatch(setUserDetails(userDetails));
-// }
-
 const AuthSection = () => {
     const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
     const activeUser = useSelector((state) => state.auth.activeUser);
@@ -41,7 +31,7 @@ const AuthSection = () => {
             }
             navigate("/");
         },
-        [dispatch, navigate]
+        [activeUser, dispatch, navigate]
     );
 
     useEffect(() => {
@@ -81,12 +71,12 @@ const AuthSection = () => {
             // first page load - generate state token and set on localStorage
             localStorage.setItem("ops-state-key", cryptoRandomString({ length: 64 }));
         }
-    }, [callBackend, dispatch, navigate]);
+    }, [activeUser, callBackend, dispatch, navigate]);
 
     const logoutHandler = async () => {
         dispatch(logout());
         localStorage.removeItem("access_token");
-        sessionStorage.removeItem("activeProvider");
+        localStorage.removeItem("activeProvider");
         //await apiLogout();
         navigate("/login");
         // TODO: ⬇ Logout from Auth Provider ⬇
