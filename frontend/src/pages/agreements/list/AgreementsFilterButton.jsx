@@ -6,8 +6,8 @@ import { useGetResearchProjectsQuery } from "../../../api/opsAPI";
 import AgreementTypeSelect from "../../../components/UI/Form/AgreementTypeSelect";
 import ProcurementShopSelect from "../../../components/UI/Form/ProcurementShopSelect";
 import _ from "lodash";
-import ProjectReactSelect from "../../../components/UI/Form/ProjectReactSelect";
-import ProjectOfficerReactSelect from "../../../components/UI/Form/ProjectOfficerReactSelect";
+import ProjectComboBox from "../../../components/UI/Form/ProjectComboBox";
+import ProjectOfficerComboBox from "../../../components/UI/Form/ProjectOfficerComboBox";
 
 /**
  * A filter for agreements.
@@ -239,28 +239,30 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                         </div>
                     </fieldset>
                     <div>
-                        <fieldset className="usa-fieldset margin-bottom-205" style={{ width: "363px" }}>
-                            <ProjectReactSelect
+                        <fieldset className="usa-fieldset margin-bottom-205">
+                            <ProjectComboBox
                                 researchProjects={projectData}
                                 selectedResearchProject={project}
                                 setSelectedProject={setProject}
                                 legendClassname={`usa-legend font-sans-3xs margin-top-0 ${customStyles.legendColor}`}
                                 defaultString={"All Projects"}
+                                overrideStyles={{ width: "22.7rem" }}
                             />
                         </fieldset>
                     </div>
                     <div>
-                        <fieldset className="usa-fieldset" style={{ width: "363px" }}>
-                            <ProjectOfficerReactSelect
+                        <fieldset className="usa-fieldset">
+                            <ProjectOfficerComboBox
                                 selectedProjectOfficer={po}
                                 setSelectedProjectOfficer={setPO}
                                 legendClassname={`usa-legend font-sans-3xs margin-top-0 ${customStyles.legendColor}`}
                                 defaultString={"All Users"}
+                                overrideStyles={{ width: "22.7rem" }}
                             />
                         </fieldset>
                     </div>
                     <div>
-                        <fieldset className="usa-fieldset margin-bottom-205" style={{ width: "363px" }}>
+                        <fieldset className="usa-fieldset margin-bottom-205" style={{ width: "22.7rem" }}>
                             <AgreementTypeSelect
                                 name="agreement_type"
                                 label="Type"
