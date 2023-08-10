@@ -25,6 +25,8 @@ class OpsDBHistory(BaseModel):
     row_key = sa.Column(sa.String)
     original = sa.Column(JSONB)
     diff = sa.Column(JSONB)
+    hist_changes = sa.Column(JSONB)
+    agreement_id = sa.Column(sa.Integer)
 
     @override
     def to_dict(self) -> dict[str, Any]:

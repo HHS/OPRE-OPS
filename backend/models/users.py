@@ -58,6 +58,7 @@ class User(BaseModel):
         "Agreement",
         back_populates="team_members",
         secondary="agreement_team_members",
+        viewonly=True
     )
 
     contracts = relationship(
