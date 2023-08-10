@@ -135,6 +135,15 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         });
     };
 
+    const cleanAgreementForApi = (data) => {
+        // eslint-disable-next-line no-unused-vars
+        const { id, budget_line_items, created_by, created_on, updated_on, ...cleanData } = data;
+        if (!("number" in cleanData)) {
+            cleanData["number"] = "";
+        }
+        return { id: id, cleanData: cleanData };
+    };
+
     const saveAgreement = async () => {
         const data = {
             ...agreement,
@@ -142,14 +151,18 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                 return formatTeamMember(team_member);
             }),
         };
-        if (agreement.id) {
+        const { id, cleanData } = cleanAgreementForApi(data);
+        if (id) {
             // TODO: handle failures
-            updateAgreement({ id: agreement.id, data: data }).unwrap();
-            console.log("Agreement Updated");
+            updateAgreement({ id: id, data: cleanData })
+                .unwrap()
+                .then((payload) => {
+                    console.log("Agreement Updated", payload);
+                })
+                .catch((error) => console.error("Agreement Updated Failed", error));
         } else {
             // TODO: handle failures
-            // Example: `updatePost().unwrap().then(fulfilled => console.log(fulfilled)).catch(rejected => console.error(rejected))
-            addAgreement(data)
+            addAgreement(cleanData)
                 .unwrap()
                 .then((payload) => {
                     console.log("Agreement Created", payload);
