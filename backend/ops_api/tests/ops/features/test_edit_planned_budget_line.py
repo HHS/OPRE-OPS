@@ -49,34 +49,19 @@ def not_budget_team(loaded_db):
     loaded_db.commit()
 
 
-@pytest.fixture()
-def not_admin_user(loaded_db):
+@pytest.fixture
+def in_budget_team(loaded_db):
     user = loaded_db.get(User, 4)
-    old_roles = user.roles
-    user_role = loaded_db.get(Role, 2)
-    user.roles = [user_role]
+    budget_team = loaded_db.get(Group, 1)
+    groups = user.groups
+    user.groups = [budget_team]
     loaded_db.add(user)
     loaded_db.commit()
 
     yield user
 
-    user.roles = old_roles
+    user.groups = groups
     loaded_db.add(user)
-    loaded_db.commit()
-
-
-@pytest.fixture
-def in_budget_team(loaded_db, not_admin_user):
-    budget_team = loaded_db.get(Group, 1)
-    groups = not_admin_user.groups
-    not_admin_user.groups = [budget_team]
-    loaded_db.add(not_admin_user)
-    loaded_db.commit()
-
-    yield not_admin_user
-
-    not_admin_user.groups = groups
-    loaded_db.add(not_admin_user)
     loaded_db.commit()
 
 
@@ -106,7 +91,7 @@ def test_edit_planned_budget_line_unauthorized():
 
 
 @given("I am logged in as an OPS user")
-def client(auth_client, not_admin_user):
+def client(auth_client):
     yield auth_client
 
 
@@ -212,17 +197,17 @@ def submit(client, edited_bli):
 
 @then("I should get an error that I am not authorized")
 def invalid(submit_response):
-    assert submit_response.status_code == 401
     if submit_response.status_code != 401:
         print("-" * 20)
         print(submit_response.data)
         print("-" * 20)
+    assert submit_response.status_code == 401
 
 
 @then("I should get a message that it was successful")
 def success(submit_response):
-    assert submit_response.status_code == 200
-    if submit_response.status_code != 401:
+    if submit_response.status_code != 200:
         print("-" * 20)
         print(submit_response.data)
         print("-" * 20)
+    assert submit_response.status_code == 200

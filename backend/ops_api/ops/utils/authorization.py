@@ -7,7 +7,7 @@ from sqlalchemy import select
 
 class AuthorizationProvider(ABC):
     @abstractmethod
-    def is_authorized(self, user_id: str, permission: list[str]):
+    def is_authorized(self, user_id: str, permission: str):
         pass
 
 
@@ -15,16 +15,15 @@ class BasicAuthorizationPrivider(AuthorizationProvider):
     def __init__(self, authirized_users: list[str] = []):
         self.authorized_users = authirized_users
 
-    def is_authorized(self, oidc_id: str, permissions: list[str]) -> bool:
+    def is_authorized(self, oidc_id: str, permission: str) -> bool:
         stmt = select(User).where(User.oidc_id == oidc_id)
         users = current_app.db_session.execute(stmt).all()
         if users and len(users) == 1:
             user = users[0][0]
 
-            for role in user.roles:
-                for permission in permissions:
-                    if permission in role.permissions:
-                        return True
+            user_permissions = set(p for role in user.roles for p in role.permissions[1:-1].split(","))
+            if permission in user_permissions:
+                return True
 
         return False
 
@@ -34,7 +33,7 @@ class OAuthAuthorizationProvider(AuthorizationProvider):
         self.oauth_client_id = oauth_client_id
         self.oauth_client_secret = oauth_client_secret
 
-    def is_authorized(self, oidc_id: str, permission: list[str]) -> bool:
+    def is_authorized(self, oidc_id: str, permission: str) -> bool:
         # This could be used if we end up rolling our own OAuth Provider
         # Use the OAuth client ID and secret to check if the user is authorized
         # using the appropriate API calls.
@@ -46,7 +45,7 @@ class OpaAuthorizationProvider(AuthorizationProvider):
         self.policy = policy
         self.opa_url = opa_url
 
-    def is_authorized(self, oidc_id: str, permission: list[str]) -> bool:
+    def is_authorized(self, oidc_id: str, permission: str) -> bool:
         # Make a call to the OPA API, passing along the policy you want to
         # check against
         # TODO: implement me
@@ -79,7 +78,7 @@ class AuthorizationGateway:
     def is_authorized(self, oidc_id, permission):
         return self.authorization_provider.is_authorized(oidc_id, permission)
 
-    def authorize(self, oidc_id: str, permission: list[str]) -> bool:
+    def authorize(self, oidc_id: str, permission: str) -> bool:
         """
         Will do a lookup based on the provided oidc_id, and check whether that
         user's role contains those permissions.

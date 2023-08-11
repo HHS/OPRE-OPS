@@ -10,7 +10,6 @@ from models import (
     ContractType,
     DirectAgreement,
     User,
-    Role,
 )
 from pytest_bdd import given, scenario, then, when
 from sqlalchemy.orm.exc import StaleDataError
@@ -147,22 +146,6 @@ def contract_with_planned_bli(loaded_db, contract_agreement):
 
 
 @pytest.fixture()
-def not_admin_user(loaded_db):
-    user = loaded_db.get(User, 4)
-    old_roles = user.roles
-    user_role = loaded_db.get(Role, 2)
-    user.roles = [user_role]
-    loaded_db.add(user)
-    loaded_db.commit()
-
-    yield user
-
-    user.roles = old_roles
-    loaded_db.add(user)
-    loaded_db.commit()
-
-
-@pytest.fixture()
 def direct_agreement(loaded_db):
     direct_agreement = DirectAgreement(
         name="Feature Test Direct",
@@ -197,7 +180,7 @@ def test_non_contract():
 
 
 @given("I am logged in as an OPS user with the correct authorization", target_fixture="client")
-def client(auth_client, not_admin_user):
+def client(auth_client):
     # TODO: Authorization stuff
     yield auth_client
 
@@ -255,14 +238,26 @@ def delete_agreement(client, agreement):
 
 @then("I should get a message that it was successful")
 def delete_success(submit_response):
+    if submit_response.status_code != 200:
+        print("-" * 20)
+        print(submit_response.data)
+        print("-" * 20)
     assert submit_response.status_code == 200
 
 
 @then("I should get an error message that it's invalid")
 def delete_failure(submit_response):
+    if submit_response.status_code != 400:
+        print("-" * 20)
+        print(submit_response.data)
+        print("-" * 20)
     assert submit_response.status_code == 400
 
 
 @then("I should get an error message that I'm not authorized")
 def delete_failure_not_authorized(submit_response):
+    if submit_response.status_code != 401:
+        print("-" * 20)
+        print(submit_response.data)
+        print("-" * 20)
     assert submit_response.status_code == 401

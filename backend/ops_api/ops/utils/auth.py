@@ -95,8 +95,13 @@ class ExtraCheckError(Exception):
 
 
 def _check_role(permission_type: PermissionType, permission: Permission) -> bool:
+    # user = get_current_user()
+    # user_permissions = set(p for role in user.roles for p in role.permissions[1:-1].split(","))
+    # needed_permission = f"{permission_type.name}_{permission.name}".upper()
+    # raise RuntimeError(f"User role authorized: Roles: {[r.name for r in user.roles]}, Permission: {needed_permission}, Role has permission: {needed_permission in user_permissions}")
+
     identity = get_jwt_identity()
-    return auth_gateway.is_authorized(identity, f"{permission_type}_{permission}".upper())
+    return auth_gateway.is_authorized(identity, f"{permission_type.name}_{permission.name}".upper())
 
 
 def _check_groups(groups: Optional[list[str]]) -> bool:

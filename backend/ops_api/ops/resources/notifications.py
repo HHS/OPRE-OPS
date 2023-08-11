@@ -87,12 +87,7 @@ class NotificationItemAPI(BaseItemAPI):
     @is_authorized(PermissionType.GET, Permission.NOTIFICATION)
     def get(self, id: int) -> Response:
         identity = get_jwt_identity()
-        is_authorized = self.auth_gateway.is_authorized(identity, ["GET_NOTIFICATION"])
-
-        if is_authorized:
-            response = self._get_item_with_try(id)
-        else:
-            response = make_response_with_headers({}, 401)
+        response = self._get_item_with_try(id)
 
         return response
 
