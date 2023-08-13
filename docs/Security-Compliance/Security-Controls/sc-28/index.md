@@ -19,4 +19,4 @@ Information at rest refers to the state of information when it is not in process
 
 ### Additional Reference:
 
-HHS Standard for Encryption of Computing Devices and Information
+HHS Standard for Encryption of Computing Devices and Information (HHS-OCIO-OIS-2022-12-001)

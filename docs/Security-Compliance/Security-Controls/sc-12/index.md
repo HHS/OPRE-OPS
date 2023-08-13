@@ -15,4 +15,4 @@ Inherited from IaaS provider
 
 ### Related Content
 
-Reference:HHS Standard for Encryption of Computing Devices and Information
+Reference:HHS Standard for Encryption of Computing Devices and Information (HHS-OCIO-OIS-2022-12-001)
