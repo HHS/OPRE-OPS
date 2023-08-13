@@ -28,7 +28,7 @@
         "react-router-dom": "6.14.2",
         "react-scripts": "5.0.1",
         "react-select": "5.7.4",
-        "sass": "1.64.2",
+        "sass": "1.65.1",
         "sass-loader": "13.3.2",
         "vest": "4.6.11"
     },
