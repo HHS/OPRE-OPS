@@ -10,9 +10,25 @@ from models import (
     ContractType,
     DirectAgreement,
     User,
+    Role,
 )
 from pytest_bdd import given, scenario, then, when
 from sqlalchemy.orm.exc import StaleDataError
+
+
+@pytest.fixture
+def not_admin_user(loaded_db):
+    user = loaded_db.get(User, 4)
+    user_role = loaded_db.get(Role, 2)
+    roles = user.roles
+    user.roles = [user_role]
+    loaded_db.add(user)
+    loaded_db.commit()
+    yield user
+
+    user.roles = roles
+    loaded_db.add(user)
+    loaded_db.commit()
 
 
 @pytest.fixture()
@@ -231,7 +247,7 @@ def not_associated(contract_agreement_not_associated):
 
 
 @when("I delete the agreement", target_fixture="submit_response")
-def delete_agreement(client, agreement):
+def delete_agreement(client, agreement, not_admin_user):
     resp = client.delete(f"/api/v1/agreements/{agreement.id}")
     return resp
 

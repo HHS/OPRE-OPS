@@ -36,8 +36,23 @@ def original_agreement():
 
 
 @pytest.fixture
-def not_budget_team(loaded_db):
+def not_admin_user(loaded_db):
     user = loaded_db.get(User, 4)
+    user_role = loaded_db.get(Role, 2)
+    roles = user.roles
+    user.roles = [user_role]
+    loaded_db.add(user)
+    loaded_db.commit()
+    yield user
+
+    user.roles = roles
+    loaded_db.add(user)
+    loaded_db.commit()
+
+
+@pytest.fixture
+def not_budget_team(loaded_db, not_admin_user):
+    user = not_admin_user
     groups = user.groups
     user.groups = []
     loaded_db.add(user)
@@ -50,8 +65,8 @@ def not_budget_team(loaded_db):
 
 
 @pytest.fixture
-def in_budget_team(loaded_db):
-    user = loaded_db.get(User, 4)
+def in_budget_team(loaded_db, not_admin_user):
+    user = not_admin_user
     budget_team = loaded_db.get(Group, 1)
     groups = user.groups
     user.groups = [budget_team]
