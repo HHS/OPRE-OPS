@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
-import ProjectSelect from "../ProjectSelect";
+import ProjectComboBox from "../ProjectComboBox";
+import { useEffect } from "react";
 
 export const ProjectSelectWithSummaryCard = ({
     researchProjects,
@@ -7,6 +8,13 @@ export const ProjectSelectWithSummaryCard = ({
     setSelectedProject,
     setAgreementProjectId,
 }) => {
+    useEffect(() => {
+        if (setAgreementProjectId) {
+            setAgreementProjectId(selectedResearchProject?.id);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedResearchProject]);
+
     const ProjectSummaryCard = ({ selectedResearchProject }) => {
         const { title, description } = selectedResearchProject;
         return (
@@ -36,11 +44,12 @@ export const ProjectSelectWithSummaryCard = ({
     return (
         <div className="display-flex flex-justify padding-top-105">
             {/* NOTE: Left side */}
-            <ProjectSelect
-                setSelectedProject={setSelectedProject}
-                setAgreementProjectId={setAgreementProjectId}
+            <ProjectComboBox
                 researchProjects={researchProjects}
                 selectedResearchProject={selectedResearchProject}
+                setSelectedProject={setSelectedProject}
+                legendClassname="usa-label margin-top-0 padding-bottom-1"
+                overrideStyles={{ width: "23.9rem" }}
             />
             {/* NOTE: Right side */}
             <div className="right-half">

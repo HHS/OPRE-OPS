@@ -28,6 +28,7 @@ import Agreement from "./pages/agreements/details/Agreement";
 import EditAgreement from "./pages/agreements/EditAgreement";
 import { ApproveAgreement } from "./pages/agreements/approve/ApproveAgreement";
 import Login from "./pages/Login";
+import ErrorPage from "./pages/ErrorPage";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -158,6 +159,9 @@ const router = createBrowserRouter(
                     }}
                 />
             </Route>
+            {/* END PROTECTED ROUTES */}
+            <Route path="/error" element={<ErrorPage />} />
+            <Route path="*" element={<Navigate to="/error" />} />
         </>
     )
 );

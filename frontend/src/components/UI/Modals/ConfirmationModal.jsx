@@ -120,6 +120,7 @@ export const ConfirmationModal = ({
                                         <li className="usa-button-group__item">
                                             <button
                                                 type="button"
+                                                data-cy="cancel-action"
                                                 className="usa-button usa-button--unstyled padding-105 text-center"
                                                 onClick={() => setShowModal(false)}
                                             >
