@@ -36,19 +36,30 @@ it("can create an agreement", () => {
     // test for rendered ProjectSummaryCard
     cy.get("dt").should("contain", "Project");
     cy.get("dd").should("contain", "Human Services Interoperability Support");
-    // TODO: test validation without type selection
+    // test validation for Agreement Type
     cy.get("#agreement_type").select("CONTRACT");
+    cy.get("#agreement_type").select(0);
+    cy.get(".usa-error-message").should("exist");
+    cy.get("[data-cy='continue-btn']").should("be.disabled");
+    cy.get("[data-cy='save-draft-btn']").should("be.disabled");
+    // fix Agreement Type
+    cy.get("#agreement_type").select("CONTRACT");
+    cy.get(".usa-error-message").should("not.exist");
+    cy.get("[data-cy='continue-btn']").should("be.disabled");
+    cy.get("[data-cy='save-draft-btn']").should("be.disabled");
+    // Test validation for Agreement Title
     cy.get("#name").type("Test Agreement Title");
     cy.get("#name").clear();
     cy.get("#name").blur();
     cy.get(".usa-error-message").should("contain", "This is required information");
     cy.get("[data-cy='continue-btn']").should("be.disabled");
     cy.get("[data-cy='save-draft-btn']").should("be.disabled");
+    // fix Agreement Title
     cy.get("#name").type("Test Agreement Title");
     cy.get(".usa-error-message").should("not.exist");
     cy.get("[data-cy='continue-btn']").should("not.be.disabled");
     cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");
-
+    // complete the rest of the form
     cy.get("#description").type("Test Agreement Description");
     cy.get("#product_service_code_id").select("Other Scientific and Technical Consulting Services");
     cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
@@ -58,7 +69,10 @@ it("can create an agreement", () => {
     // Select Project Officer
     cy.get("#project-officer-combobox-input").type("Chris Fortunato{enter}");
 
-    // Skip Select Team Members for now - something is wrong with the select
+    // Add Team Members
+    cy.get(".team-member-combobox__input").type("Amy Madigan{enter}");
+    cy.get(".team-member-combobox__input").type("Tia Brown{enter}");
+
     cy.get("#agreementNotes").type("This is a note.");
     cy.get("[data-cy='continue-btn']").click();
 
