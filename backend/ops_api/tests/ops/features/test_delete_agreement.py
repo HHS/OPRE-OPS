@@ -9,8 +9,8 @@ from models import (
     ContractAgreement,
     ContractType,
     DirectAgreement,
-    User,
     Role,
+    User,
 )
 from pytest_bdd import given, scenario, then, when
 from sqlalchemy.orm.exc import StaleDataError

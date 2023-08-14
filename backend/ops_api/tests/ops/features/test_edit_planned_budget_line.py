@@ -10,8 +10,8 @@ from models import (
     ContractAgreement,
     ContractType,
     Group,
-    User,
     Role,
+    User,
 )
 from ops_api.ops.resources.budget_line_item_schemas import RequestBody
 from pytest_bdd import given, scenario, then, when

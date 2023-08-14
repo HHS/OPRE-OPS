@@ -147,7 +147,6 @@ class is_authorized:
         self.extra_check = extra_check
         self.groups = groups
 
-
     def __call__(self, func: Callable) -> Callable:
         @wraps(func)
         @jwt_required()

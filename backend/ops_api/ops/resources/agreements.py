@@ -5,7 +5,7 @@ from typing import ClassVar, Optional
 import desert
 from flask import Response, current_app, request
 from flask.views import MethodView
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request, get_current_user
+from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from marshmallow import Schema, ValidationError, fields
 from models import ContractType, OpsEventType, User
 from models.base import BaseModel

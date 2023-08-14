@@ -7,7 +7,7 @@ from typing import Optional, cast
 import desert
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended import verify_jwt_in_request
 from marshmallow import ValidationError
 from models import Notification, OpsEventType, User
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -86,7 +86,6 @@ class NotificationItemAPI(BaseItemAPI):
     @override
     @is_authorized(PermissionType.GET, Permission.NOTIFICATION)
     def get(self, id: int) -> Response:
-        identity = get_jwt_identity()
         response = self._get_item_with_try(id)
 
         return response
