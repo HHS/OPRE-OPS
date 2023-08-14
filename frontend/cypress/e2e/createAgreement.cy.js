@@ -36,7 +36,7 @@ it("can create an agreement", () => {
     // test for rendered ProjectSummaryCard
     cy.get("dt").should("contain", "Project");
     cy.get("dd").should("contain", "Human Services Interoperability Support");
-    // test validation
+    // TODO: test validation without type selection
     cy.get("#agreement_type").select("CONTRACT");
     cy.get("#name").type("Test Agreement Title");
     cy.get("#name").clear();
@@ -91,15 +91,26 @@ it("can create an agreement", () => {
                 });
         }
     });
+    const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+    cy.wait("@postAgreement").then((interception) => {
+        const { statusCode, body } = interception.response;
+        expect(statusCode).to.equal(201);
+        expect(body.message).to.equal("Agreement created");
+        const agreementId = body.id;
 
-    cy.wait("@postAgreement")
-        .then((interception) => {
-            const { statusCode, body } = interception.response;
-            expect(statusCode).to.equal(201);
-            expect(body.message).to.equal("Agreement created");
-        })
-        .then(cy.log);
-    cy.get("h1").should("exist");
+        cy.get("h1").should("exist");
+        // delete test agreement
+        cy.request({
+            method: "DELETE",
+            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+            headers: {
+                Authorization: bearer_token,
+                Accept: "application/json",
+            },
+        }).then((response) => {
+            expect(response.status).to.eq(200);
+        });
+    });
 });
 
 it("should handle cancelling out of workflow on step 1", () => {
