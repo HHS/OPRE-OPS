@@ -24,7 +24,7 @@ const MultiAuthSection = () => {
             }
 
             const response = await apiLogin(activeProvider, authCode);
-            console.debug(`API Login Response = ${JSON.stringify(response)}`);
+            // console.debug(`API Login Response = ${JSON.stringify(response)}`);
             if (response.access_token === null || response.access_token === undefined) {
                 console.error("API Login Failed!");
                 navigate("/login");
@@ -83,7 +83,7 @@ const MultiAuthSection = () => {
     // TODO: Replace these tokens with config variables, that can be passed in at deploy-time,
     //       So that we don't actually store anything in code.
     const handleFakeAuthLogin = (user_type) => {
-        console.debug(`Logging in with FakeAuth: ${user_type}`);
+        // console.debug(`Logging in with FakeAuth: ${user_type}`);
         localStorage.setItem("activeProvider", "fakeauth");
         callBackend(user_type).catch(console.error);
 
