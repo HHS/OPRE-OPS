@@ -177,7 +177,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                         </legend>
                         <div className="display-flex">
                             <div className={`usa-radio padding-right-5 ${customStyles.modalBackgroundColor}`}>
-                                <div className="display-flex flex-align-center padding-bottom-1">
+                                <div className="display-flex flex-align-center padding-top-05 padding-bottom-105">
                                     <input
                                         className="usa-radio__input height-3 width-3"
                                         id="next-30-days"
@@ -207,7 +207,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                 </div>
                             </div>
                             <div className="">
-                                <div className="display-flex flex-align-center padding-bottom-1">
+                                <div className="display-flex flex-align-center padding-top-05 padding-bottom-105">
                                     <input
                                         className="usa-radio__input height-3 width-3"
                                         id="next-6-months"
@@ -295,7 +295,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                             <div className="display-flex">
                                 <div className="padding-right-9">
                                     <div
-                                        className={`usa-checkbox display-flex flex-align-center padding-bottom-1 ${customStyles.modalBackgroundColor}`}
+                                        className={`usa-checkbox display-flex flex-align-center padding-top-05 padding-bottom-105 ${customStyles.modalBackgroundColor}`}
                                     >
                                         <input
                                             className="usa-checkbox__input height-3 width-3"
@@ -325,9 +325,9 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                                         </label>
                                     </div>
                                 </div>
-                                <div className="">
+                                <div>
                                     <div
-                                        className={`usa-checkbox display-flex flex-align-center padding-bottom-1 ${customStyles.modalBackgroundColor}`}
+                                        className={`usa-checkbox display-flex flex-align-center padding-top-05 padding-bottom-105 ${customStyles.modalBackgroundColor}`}
                                     >
                                         <input
                                             className="usa-checkbox__input height-3 width-3"
