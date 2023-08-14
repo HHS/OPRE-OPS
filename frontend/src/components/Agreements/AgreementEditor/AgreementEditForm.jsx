@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -7,13 +7,12 @@ import ProcurementShopSelectWithFee from "../../UI/Form/ProcurementShopSelectWit
 import AgreementReasonSelect from "../../UI/Form/AgreementReasonSelect";
 import AgreementTypeSelect from "../../UI/Form/AgreementTypeSelect";
 import ProductServiceCodeSelect from "../../UI/Form/ProductServiceCodeSelect";
-import ProjectOfficerSelect from "../../UI/Form/ProjectOfficerSelect";
 import TeamMemberSelect from "../../UI/Form/TeamMemberSelect";
 import TeamMemberList from "../../UI/Form/TeamMemberList";
 import Modal from "../../UI/Modal";
 import { formatTeamMember } from "../../../api/postAgreements";
 import ProductServiceCodeSummaryBox from "../../UI/Form/ProductServiceCodeSummaryBox";
-import { useEditAgreement, useSetState, useUpdateAgreement, useEditAgreementDispatch } from "./AgreementEditorContext";
+import { useEditAgreement, useEditAgreementDispatch, useSetState, useUpdateAgreement } from "./AgreementEditorContext";
 import { setAlert } from "../../UI/Alert/alertSlice";
 import suite from "./AgreementEditFormSuite";
 import Input from "../../UI/Form/Input";
@@ -23,6 +22,9 @@ import {
     useGetProductServiceCodesQuery,
     useUpdateAgreementMutation,
 } from "../../../api/opsAPI";
+import ProjectOfficerComboBox from "../../UI/Form/ProjectOfficerComboBox";
+import { getUser } from "../../../api/getUser";
+import _ from "lodash";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -79,6 +81,24 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         agreement_reason: agreementReason,
         team_members: selectedTeamMembers,
     } = agreement;
+
+    // This is needed due to a caching issue with the React Context - for some reason selected_project_officer
+    // is not updated in the parent context/props.
+    useEffect(() => {
+        const getProjectOfficerSetState = async (id) => {
+            const results = await getUser(id);
+            setSelectedProjectOfficer(results);
+        };
+
+        if (_.isEmpty(selectedProjectOfficer) && agreement?.project_officer) {
+            getProjectOfficerSetState(agreement?.project_officer).catch(console.error);
+        }
+
+        return () => {
+            setSelectedProjectOfficer({});
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const {
         data: productServiceCodes,
@@ -363,18 +383,17 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
             </div>
 
             <div className="display-flex margin-top-3">
-                <ProjectOfficerSelect
-                    name="project_officer"
-                    label="Project Officer"
-                    messages={res.getErrors("project_officer")}
-                    className={cn("project_officer")}
+                <ProjectOfficerComboBox
                     selectedProjectOfficer={selectedProjectOfficer}
                     setSelectedProjectOfficer={changeSelectedProjectOfficer}
+                    legendClassname="usa-label margin-top-0 margin-bottom-1"
+                    messages={res.getErrors("project_officer")}
                     onChange={(name, value) => {
                         if (isReviewMode) {
                             runValidate(name, value);
                         }
                     }}
+                    overrideStyles={{ width: "240px" }}
                 />
                 <TeamMemberSelect
                     className="margin-left-4"

@@ -17,18 +17,19 @@ it("loads", () => {
 });
 
 it("project type select has some projects", () => {
-    cy.get("#project--list").children().should("contain", "Human Services Interoperability Support");
-    cy.get("#project--list").children().should("contain", "Youth Demonstration Development Project");
-    cy.get("#project--list").children().should("contain", "Annual Performance Plans and Reports");
+    cy.get("#project-combobox-input").type("{downarrow}");
+    // .project-combobox__menu-list
+    cy.get(".project-combobox__option").should("contain", "Human Services Interoperability Support");
+    cy.get(".project-combobox__option").should("contain", "Youth Demonstration Development Project");
+    cy.get(".project-combobox__option").should("contain", "Annual Performance Plans and Reports");
+    cy.get("#project-combobox-input").type("{esc}");
 });
 
 it("can create an agreement", () => {
     cy.intercept("POST", "**/agreements").as("postAgreement");
 
     // Step One - Select a Project
-    cy.get("#project--list--toggle").click();
-    cy.get("#project--list").invoke("show");
-    cy.get("li").contains("Human Services Interoperability Support").click();
+    cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
     cy.get("#continue").click();
 
     // Step Two - Create an Agreement
@@ -40,11 +41,11 @@ it("can create an agreement", () => {
     cy.get("#name").type("Test Agreement Title");
     cy.get("#name").clear();
     cy.get("#name").blur();
-    cy.get("#input-error-message").should("contain", "This is required information");
+    cy.get(".usa-error-message").should("contain", "This is required information");
     cy.get("[data-cy='continue-btn']").should("be.disabled");
     cy.get("[data-cy='save-draft-btn']").should("be.disabled");
     cy.get("#name").type("Test Agreement Title");
-    cy.get("#input-error-message").should("not.exist");
+    cy.get(".usa-error-message").should("not.exist");
     cy.get("[data-cy='continue-btn']").should("not.be.disabled");
     cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");
 
@@ -55,10 +56,7 @@ it("can create an agreement", () => {
     cy.get("#agreement_reason").select("NEW_REQ");
 
     // Select Project Officer
-    cy.get("#project-officer-select-toggle-list").click();
-    cy.get("#project-officer-select-input").invoke("show");
-    cy.get("#users--list").invoke("show");
-    cy.get("li").contains("Chris Fortunato").click();
+    cy.get("#project-officer-combobox-input").type("Chris Fortunato{enter}");
 
     // Skip Select Team Members for now - something is wrong with the select
     cy.get("#agreementNotes").type("This is a note.");
@@ -105,9 +103,7 @@ it("can create an agreement", () => {
 });
 
 it("should handle cancelling out of workflow on step 1", () => {
-    cy.get("#project--list--toggle").click();
-    cy.get("#project--list").invoke("show");
-    cy.get("li").contains("Human Services Interoperability Support").click();
+    cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
     // cancel out of workflow
     cy.get('[data-cy="cancel-button"]').click();
     cy.get('[data-cy="confirm-action"]').click();
@@ -118,9 +114,7 @@ it("should handle cancelling out of workflow on step 1", () => {
 
 it("should handle cancelling out of workflow on step 2", () => {
     // Step One - Select a Project
-    cy.get("#project--list--toggle").click();
-    cy.get("#project--list").invoke("show");
-    cy.get("li").contains("Human Services Interoperability Support").click();
+    cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
     cy.get("#continue").click();
     // Step Two - Create an Agreement
     cy.get("dt").should("contain", "Project");

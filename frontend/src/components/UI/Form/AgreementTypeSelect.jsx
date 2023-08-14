@@ -53,11 +53,11 @@ export const AgreementTypeSelect = ({
                 {label}
             </label>
             {messages.length ? (
-                <span className="usa-error-message" id="input-error-message" role="alert">
+                <span className="usa-error-message" role="alert">
                     {messages[0]}
                 </span>
             ) : null}
-            <div className="display-flex flex-align-center margin-top-1">
+            <div className="display-flex flex-align-center">
                 <select
                     className={`usa-select margin-top-0 width-card-lg ${messages.length ? "usa-input--error" : null}`}
                     name={name}
