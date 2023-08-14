@@ -28,7 +28,7 @@ it("can create a project", () => {
     cy.get('[data-cy="project-type-select"]').select("Research");
     // only allow 3 characters so this should fail
     cy.get("#short_title").as("nickname").type("Test Project Abbreviation");
-    cy.get("#input-error-message").as("err-msg").should("exist");
+    cy.get(".usa-error-message").as("err-msg").should("exist");
     // clear the input and try again
     cy.get("@nickname").clear();
     cy.get("@nickname").type("TPN");

@@ -109,7 +109,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         PermissionType.PUT,
         Permission.BUDGET_LINE_ITEM,
         extra_check=partial(bli_associated_with_agreement, permission_type=PermissionType.PUT),
-        groups=["Budget Team"],
+        groups=["Budget Team", "Admins"],
     )
     def put(self, id: int) -> Response:
         message_prefix = f"PUT to {ENDPOINT_STRING}"
@@ -153,7 +153,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         PermissionType.PATCH,
         Permission.BUDGET_LINE_ITEM,
         extra_check=partial(bli_associated_with_agreement, permission_type=PermissionType.PATCH),
-        groups=["Budget Team"],
+        groups=["Budget Team", "Admins"],
     )
     def patch(self, id: int) -> Response:
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
