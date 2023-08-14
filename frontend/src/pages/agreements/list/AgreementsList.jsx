@@ -3,7 +3,7 @@ import { useGetAgreementsQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import sortAgreements from "./utils";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Alert from "../../../components/UI/Alert";
 import "./AgreementsList.scss";
 import AgreementsTable from "./AgreementsTable";
@@ -14,7 +14,7 @@ import { getCurrentFiscalYear } from "../../../helpers/utils";
 
 /**
  * Page for the Agreements List.
- * @returns {ReactNode} The rendered component.
+ * @returns {React.JSX.Element} - The component JSX.
  */
 export const AgreementsList = () => {
     const [searchParams] = useSearchParams();
@@ -37,16 +37,9 @@ export const AgreementsList = () => {
         data: agreements,
         error: errorAgreement,
         isLoading: isLoadingAgreement,
-        refetch, // is this needed?
     } = useGetAgreementsQuery({ refetchOnMountOrArgChange: true });
 
     const activeUser = useSelector((state) => state.auth.activeUser);
-
-    // FSP@Flexion: Not sure if this is needed since we have the refetchOnMountOrArgChange: true
-    useEffect(() => {
-        refetch();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     if (isLoadingAgreement) {
         return (
@@ -144,7 +137,7 @@ export const AgreementsList = () => {
             (filters.budgetLineStatus.draft === true && agreement.budget_line_items.length === 0) ||
             (filters.budgetLineStatus.draft === true &&
                 agreement.budget_line_items.some((bli) => {
-                    return bli.status === "DRAFT";
+                    return bli.status === "DRAFT" || bli.status === "UNDER_REVIEW";
                 })) ||
             (filters.budgetLineStatus.planned === true &&
                 agreement.budget_line_items.some((bli) => {
