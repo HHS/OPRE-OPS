@@ -137,7 +137,7 @@ export const AgreementsList = () => {
             (filters.budgetLineStatus.draft === true && agreement.budget_line_items.length === 0) ||
             (filters.budgetLineStatus.draft === true &&
                 agreement.budget_line_items.some((bli) => {
-                    return bli.status === "DRAFT";
+                    return bli.status === "DRAFT" || bli.status === "UNDER_REVIEW";
                 })) ||
             (filters.budgetLineStatus.planned === true &&
                 agreement.budget_line_items.some((bli) => {
