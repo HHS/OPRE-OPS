@@ -195,8 +195,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                             message: "An error occurred while saving the agreement.",
                         })
                     );
-                    // TODO: replace with a redirect to Error page
-                    navigate("/agreements");
+                    navigate("/error");
                 });
         } else {
             addAgreement(cleanData)
@@ -224,8 +223,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                             message: "An error occurred while creating the agreement.",
                         })
                     );
-                    // TODO: replace with a redirect to Error page
-                    navigate("/agreements");
+                    navigate("/error");
                 });
         }
     };
