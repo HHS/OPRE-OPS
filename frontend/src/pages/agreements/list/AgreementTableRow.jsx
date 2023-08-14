@@ -10,10 +10,10 @@ import { getUser } from "../../../api/getUser";
 import { convertCodeForDisplay, formatDate } from "../../../helpers/utils";
 import TableTag from "../../../components/UI/PreviewTable/TableTag";
 import { useDeleteAgreementMutation } from "../../../api/opsAPI";
-import Modal from "../../../components/UI/Modal";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import icons from "../../../uswds/img/sprite.svg";
 import "./AgreementsList.scss";
+import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 
 /**
  * Renders a row in the agreements table.
@@ -193,7 +193,7 @@ export const AgreementTableRow = ({ agreement }) => {
     return (
         <Fragment key={agreement?.id}>
             {showModal && (
-                <Modal
+                <ConfirmationModal
                     heading={modalProps.heading}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
