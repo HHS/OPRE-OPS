@@ -68,7 +68,7 @@ class AuthenticationProvider(ABC):
         return jws
 
 
-class FakeAuthPrivider(AuthenticationProvider):
+class FakeAuthProvider(AuthenticationProvider):
     def __init__(self, config_name, key) -> None:
         self.fakeUsers = {
             "admin_user": {
@@ -246,7 +246,7 @@ class HhsAmsProvider(AuthenticationProvider):
 class AuthenticationGateway:
     def __init__(self, key) -> None:
         self.providers = {
-            "fakeauth": FakeAuthPrivider("fakeauth", "devkey"),
+            "fakeauth": FakeAuthProvider("fakeauth", "devkey"),
             "logingov": LoginGovProvider("logingov", key),
             "hhsams": HhsAmsProvider("hhsams", key),
         }
