@@ -365,7 +365,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                             runValidate(name, value);
                         }
                     }}
-                    overrideStyles={{ width: "240px" }}
+                    overrideStyles={{ width: "15em" }}
                 />
                 <TeamMemberComboBox
                     className="margin-left-4"
@@ -373,6 +373,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                     selectedTeamMembers={selectedTeamMembers}
                     selectedProjectOfficer={selectedProjectOfficer}
                     setSelectedTeamMembers={setSelectedTeamMembers}
+                    overrideStyles={{ width: "12.8em" }}
                 />
             </div>
 
