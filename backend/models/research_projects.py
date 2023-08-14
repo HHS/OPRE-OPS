@@ -48,6 +48,7 @@ research_project_team_leaders = Table(
 
 
 class ResearchProject(BaseModel):
+    __versioned__ = {}
     __tablename__ = "research_project"
     id = Column(Integer, Identity(), primary_key=True)
     title = Column(String, nullable=False)
