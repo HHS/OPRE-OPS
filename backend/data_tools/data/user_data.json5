@@ -474,6 +474,20 @@
       is_read: false,
       recipient_id: 20,
       expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 21,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: true,
+      recipient_id: 22,
+      expires: "2031-12-31"
     }
   ],
 }
