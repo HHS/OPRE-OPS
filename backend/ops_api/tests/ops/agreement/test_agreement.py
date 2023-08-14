@@ -45,7 +45,7 @@ def test_agreements_serialization(auth_client, loaded_db):
     response = auth_client.get("/api/v1/agreements/1")
     assert response.status_code == 200
 
-    # Remove extra keys that make test flaky or noisy
+    # Remove extra keys that make test flaky or noisy (like datetimes)
     json_to_compare = response.json  # response.json seems to be immutable
     del json_to_compare["created_on"]
     del json_to_compare["updated_on"]
@@ -59,6 +59,10 @@ def test_agreements_serialization(auth_client, loaded_db):
     del json_to_compare["team_members"][1]["created_on"]
     del json_to_compare["team_members"][1]["date_joined"]
     del json_to_compare["team_members"][1]["updated_on"]
+    del json_to_compare["team_members"][2]["created_on"]
+    del json_to_compare["team_members"][2]["date_joined"]
+    del json_to_compare["team_members"][2]["updated_on"]
+    print(f"json_to_compare: {json_to_compare}")
 
     assert json_to_compare == {
         "agreement_reason": "NEW_REQ",
@@ -101,6 +105,18 @@ def test_agreements_serialization(auth_client, loaded_db):
                 "id": 4,
                 "last_name": "Popham",
                 "oidc_id": "00000000-0000-1111-a111-000000000004",
+                "updated": None,
+            },
+            {
+                "created_by": None,
+                "division": 3,
+                "email": "admin.demo@email.com",
+                "first_name": "Admin",
+                "full_name": "Admin Demo",
+                "hhs_id": None,
+                "id": 21,
+                "last_name": "Demo",
+                "oidc_id": "00000000-0000-1111-a111-000000000018",
                 "updated": None,
             },
         ],
