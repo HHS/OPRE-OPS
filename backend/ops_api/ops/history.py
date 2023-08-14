@@ -55,41 +55,18 @@ def build_audit(obj) -> DbRecordAudit:
 
     mapper = obj.__mapper__
 
-    for rel in mapper.relationships:
-        key = rel.key
-        print('relationship', key, 'to', getattr(obj, key))
-        for lcl in rel.local_columns:
-            local_key = mapper.get_property_by_column(lcl).key
-        print(local_key, getattr(obj, local_key))
-
     for col in mapper.columns:
-    # for key in obj.columns:
         key = col.key
-        # this assumes columns are primitives
         if key in obj.__dict__:
-            rel = find_relationship_by_fk(obj, key)
-            if rel:
-                print(f"{key=}, {rel=}, {rel.key=}")
-                rel_hist = get_history(obj, rel.key)
-                print(f"{rel_hist=}")
             hist = get_history(obj, key)
-
             if hist.has_changes():
+                # print(f">>> changes: {key=}")
                 hist_changes[key] = {
                     "added": convert_for_jsonb(hist.added),
                     "deleted": convert_for_jsonb(hist.deleted),
                     "unchanged": convert_for_jsonb(hist.unchanged),
                 }
-                if rel:
-                    print(f"{key=}, {rel=}, {rel.key=}")
-                    rel_hist = get_history(obj, rel.key)
-                    print(rel_hist)
-                    if rel_hist:
-                        hist_changes[rel.key] = {
-                            "added": convert_for_jsonb(rel_hist.added),
-                            "deleted": convert_for_jsonb(rel_hist.deleted),
-                            "unchanged": convert_for_jsonb(rel_hist.unchanged),
-                        }
+                # this assumes columns are primitives, not lists
                 old_val = convert_for_jsonb(hist.deleted[0]) if hist.deleted else None
                 new_val = convert_for_jsonb(hist.added[0]) if hist.added else None
                 if old_val:
@@ -101,22 +78,24 @@ def build_audit(obj) -> DbRecordAudit:
 
     # -------------------
     for relationship in obj.__mapper__.relationships:
-        # print(f"relationship.key: {relationship.key}, in_dict: {relationship in obj.__dict__}, in_dict2: {relationship.key in obj.__dict__}")
+        print(f"relationship.key: {relationship.key}, in_dict: {relationship in obj.__dict__}, in_dict2: {relationship.key in obj.__dict__}, {relationship.secondary=}")
         key = relationship.key
-        if key in obj.__dict__:
+        # if key in obj.__dict__ and relationship.secondary is not None:
+        if relationship.secondary is not None and not relationship.viewonly:
             hist = get_history(obj, key)
             if hist.has_changes():
+                print(f"rel changes: {key=}")
                 hist_changes[key] = {
                     "added": convert_for_jsonb(hist.added),
                     "deleted": convert_for_jsonb(hist.deleted),
                     "unchanged": convert_for_jsonb(hist.unchanged),
                 }
-                old_val = convert_for_jsonb(hist.deleted) if hist.deleted else None
-                new_val = convert_for_jsonb(hist.added) if hist.added else None
-                if old_val:
-                    original[key] = old_val
+                old_val = convert_for_jsonb(hist.unchanged + hist.deleted) if hist.unchanged or hist.deleted else None
+                new_val = convert_for_jsonb(hist.unchanged + hist.added) if hist.unchanged or hist.added else None
+                original[key] = old_val
                 diff[key] = new_val
             else:
+                print(f"rel NO changes: {key=}")
                 old_val = convert_for_jsonb(hist.unchanged) if hist.unchanged else None
                 original[key] = old_val
         else:
