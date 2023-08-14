@@ -60,11 +60,11 @@ it("edit an agreement", () => {
         // test validation
         cy.get("#name").clear();
         cy.get("#name").blur();
-        cy.get("#input-error-message").should("contain", "This is required information");
+        cy.get(".usa-error-message").should("contain", "This is required information");
         cy.get("[data-cy='continue-btn']").should("be.disabled");
         cy.get("[data-cy='save-draft-btn']").should("be.disabled");
         cy.get("#name").type("Test Edit Title");
-        cy.get("#input-error-message").should("not.exist");
+        cy.get(".usa-error-message").should("not.exist");
         cy.get("[data-cy='continue-btn']").should("not.be.disabled");
         cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");
         cy.get("#description").type(" more text");

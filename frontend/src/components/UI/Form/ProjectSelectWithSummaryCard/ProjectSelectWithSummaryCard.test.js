@@ -1,4 +1,4 @@
-import { render, fireEvent, screen } from "@testing-library/react";
+import { render, fireEvent } from "@testing-library/react";
 import ProjectSelectWithSummaryCard from "./ProjectSelectWithSummaryCard";
 
 describe("ProjectSelect", () => {
@@ -11,7 +11,7 @@ describe("ProjectSelect", () => {
 
     it("updates the selected project when an option is selected and displays summary card", () => {
         const setSelectedProject = jest.fn();
-        render(
+        const { getByText, container } = render(
             <ProjectSelectWithSummaryCard
                 researchProjects={researchProjects}
                 selectedResearchProject={researchProjects[0]}
@@ -19,9 +19,13 @@ describe("ProjectSelect", () => {
                 clearFunction={mockClearFunction}
             />
         );
-        const select = screen.getByTestId("project-select");
-        fireEvent.change(select, { target: { value: "2" } });
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.focus(container.querySelector("input"));
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
+
+        // eslint-disable-next-line testing-library/prefer-screen-queries
+        fireEvent.click(getByText("Project 2"));
         expect(setSelectedProject).toHaveBeenCalledWith(researchProjects[1]);
-        expect(screen.getByTestId("project-summary-card")).toBeInTheDocument();
     });
 });

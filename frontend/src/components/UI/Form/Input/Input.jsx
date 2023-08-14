@@ -20,7 +20,7 @@ const Input = ({ name, label = name, onChange, pending = false, messages = [], v
                 {label}
             </label>
             {messages.length ? (
-                <span className="usa-error-message" id="input-error-message" role="alert">
+                <span className="usa-error-message" role="alert">
                     {messages[0]}
                 </span>
             ) : null}
