@@ -133,6 +133,7 @@ export const AgreementTableRow = ({ agreement }) => {
                                 message: "An error occurred while deleting the agreement.",
                             })
                         );
+                        navigate("/error");
                     });
             },
         });

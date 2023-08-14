@@ -122,7 +122,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
     let res = suite.get();
 
     const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
-    const shouldDisableBtn = !agreementTitle || res.hasErrors();
+    const shouldDisableBtn = !agreementTitle || !agreementType || res.hasErrors();
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -195,8 +195,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                             message: "An error occurred while saving the agreement.",
                         })
                     );
-                    // TODO: replace with a redirect to Error page
-                    navigate("/agreements");
+                    navigate("/error");
                 });
         } else {
             addAgreement(cleanData)
@@ -224,8 +223,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                             message: "An error occurred while creating the agreement.",
                         })
                     );
-                    // TODO: replace with a redirect to Error page
-                    navigate("/agreements");
+                    navigate("/error");
                 });
         }
     };

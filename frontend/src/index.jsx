@@ -26,6 +26,7 @@ import { AgreementsList } from "./pages/agreements/list/AgreementsList";
 import Agreement from "./pages/agreements/details/Agreement";
 import EditAgreement from "./pages/agreements/EditAgreement";
 import { ApproveAgreement } from "./pages/agreements/approve/ApproveAgreement";
+import ErrorPage from "./pages/ErrorPage";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -144,6 +145,8 @@ const router = createBrowserRouter(
                 <Route path="/agreements/edit/:id/*" element={<EditAgreement />} />
                 <Route path="/agreements/approve/:id/*" element={<ApproveAgreement />} />
             </Route>
+            <Route path="/error" element={<ErrorPage />} />
+            <Route path="*" element={<Navigate to="/error" />} />
         </>
     )
 );
