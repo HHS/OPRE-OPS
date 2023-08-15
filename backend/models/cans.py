@@ -123,7 +123,6 @@ class ProductServiceCode(BaseModel):
 
 class Agreement(BaseModel):
     """Base Agreement Model"""
-    __versioned__ = {}
 
     _subclasses: ClassVar[dict[Optional[AgreementType], type["Agreement"]]] = {}
 
