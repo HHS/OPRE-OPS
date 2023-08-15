@@ -128,8 +128,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                                 setAlert({
                                     type: "error",
                                     heading: "Error",
-                                    message:
-                                        "An error occurred while sending the agreement for review. Please try again.",
+                                    message: "An error occurred. Please try again.",
                                 })
                             );
                             navigate("/error");
