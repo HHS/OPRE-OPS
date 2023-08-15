@@ -36,19 +36,30 @@ it("can create an agreement", () => {
     // test for rendered ProjectSummaryCard
     cy.get("dt").should("contain", "Project");
     cy.get("dd").should("contain", "Human Services Interoperability Support");
-    // test validation
+    // test validation for Agreement Type
     cy.get("#agreement_type").select("CONTRACT");
+    cy.get("#agreement_type").select(0);
+    cy.get(".usa-error-message").should("exist");
+    cy.get("[data-cy='continue-btn']").should("be.disabled");
+    cy.get("[data-cy='save-draft-btn']").should("be.disabled");
+    // fix Agreement Type
+    cy.get("#agreement_type").select("CONTRACT");
+    cy.get(".usa-error-message").should("not.exist");
+    cy.get("[data-cy='continue-btn']").should("be.disabled");
+    cy.get("[data-cy='save-draft-btn']").should("be.disabled");
+    // Test validation for Agreement Title
     cy.get("#name").type("Test Agreement Title");
     cy.get("#name").clear();
     cy.get("#name").blur();
     cy.get(".usa-error-message").should("contain", "This is required information");
     cy.get("[data-cy='continue-btn']").should("be.disabled");
     cy.get("[data-cy='save-draft-btn']").should("be.disabled");
+    // fix Agreement Title
     cy.get("#name").type("Test Agreement Title");
     cy.get(".usa-error-message").should("not.exist");
     cy.get("[data-cy='continue-btn']").should("not.be.disabled");
     cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");
-
+    // complete the rest of the form
     cy.get("#description").type("Test Agreement Description");
     cy.get("#product_service_code_id").select("Other Scientific and Technical Consulting Services");
     cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
@@ -58,7 +69,10 @@ it("can create an agreement", () => {
     // Select Project Officer
     cy.get("#project-officer-combobox-input").type("Chris Fortunato{enter}");
 
-    // Skip Select Team Members for now - something is wrong with the select
+    // Add Team Members
+    cy.get(".team-member-combobox__input").type("Amy Madigan{enter}");
+    cy.get(".team-member-combobox__input").type("Tia Brown{enter}");
+
     cy.get("#agreementNotes").type("This is a note.");
     cy.get("[data-cy='continue-btn']").click();
 
@@ -91,15 +105,26 @@ it("can create an agreement", () => {
                 });
         }
     });
+    const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+    cy.wait("@postAgreement").then((interception) => {
+        const { statusCode, body } = interception.response;
+        expect(statusCode).to.equal(201);
+        expect(body.message).to.equal("Agreement created");
+        const agreementId = body.id;
 
-    cy.wait("@postAgreement")
-        .then((interception) => {
-            const { statusCode, body } = interception.response;
-            expect(statusCode).to.equal(201);
-            expect(body.message).to.equal("Agreement created");
-        })
-        .then(cy.log);
-    cy.get("h1").should("exist");
+        cy.get("h1").should("exist");
+        // delete test agreement
+        cy.request({
+            method: "DELETE",
+            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+            headers: {
+                Authorization: bearer_token,
+                Accept: "application/json",
+            },
+        }).then((response) => {
+            expect(response.status).to.eq(200);
+        });
+    });
 });
 
 it("should handle cancelling out of workflow on step 1", () => {
