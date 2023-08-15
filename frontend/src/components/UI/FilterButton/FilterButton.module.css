@@ -3,7 +3,7 @@
   color: #FFFFFF;
 }
 
-.agreementsFilterModal {
+.filterModal {
   position: absolute;
   height: 650px;
   width: 460px;
@@ -12,7 +12,6 @@
   z-index: 10;
   border-radius: 4px;
   border: 1px solid #A9AEB1;
-  /*background: #F0F0F0;*/
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15);
 }
 
@@ -20,7 +19,7 @@
   background: #F0F0F0;
 }
 
-.agreementsFilterOverlay {
+.filterOverlay {
   background-color: #A9AEB1;
 }
 
