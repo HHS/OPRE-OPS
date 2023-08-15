@@ -120,7 +120,7 @@ export const AgreementTableRow = ({ agreement }) => {
                             setAlert({
                                 type: "success",
                                 heading: "Agreement deleted",
-                                message: `${agreementName} has been successfully deleted.`,
+                                message: `Agreement ${agreementName} has been successfully deleted.`,
                             })
                         );
                     })
