@@ -60,11 +60,9 @@ def build_audit(obj) -> DbRecordAudit:
         if key in obj.__dict__:
             hist = get_history(obj, key)
             if hist.has_changes():
-                # print(f">>> changes: {key=}")
                 hist_changes[key] = {
                     "added": convert_for_jsonb(hist.added),
                     "deleted": convert_for_jsonb(hist.deleted),
-                    "unchanged": convert_for_jsonb(hist.unchanged),
                 }
                 # this assumes columns are primitives, not lists
                 old_val = convert_for_jsonb(hist.deleted[0]) if hist.deleted else None
@@ -76,10 +74,12 @@ def build_audit(obj) -> DbRecordAudit:
                 old_val = convert_for_jsonb(hist.unchanged[0]) if hist.unchanged[0] else None
                 original[key] = old_val
 
-    # -------------------
+    # need to include some relationships, such as agreement.team_members, which won't be logged as separate objects
     for relationship in obj.__mapper__.relationships:
-        print(f"relationship.key: {relationship.key}, in_dict: {relationship in obj.__dict__}, in_dict2: {relationship.key in obj.__dict__}, {relationship.secondary=}")
+        # print(f"relationship.key: {relationship.key}, in_dict: {relationship in obj.__dict__}, in_dict2: {relationship.key in obj.__dict__}, {relationship.secondary=}")
         key = relationship.key
+        # limit this to relationships that aren't being logged as their own Classes
+        # and only include them on the editable side
         # if key in obj.__dict__ and relationship.secondary is not None:
         if relationship.secondary is not None and not relationship.viewonly:
             hist = get_history(obj, key)
@@ -88,7 +88,6 @@ def build_audit(obj) -> DbRecordAudit:
                 hist_changes[key] = {
                     "added": convert_for_jsonb(hist.added),
                     "deleted": convert_for_jsonb(hist.deleted),
-                    "unchanged": convert_for_jsonb(hist.unchanged),
                 }
                 old_val = convert_for_jsonb(hist.unchanged + hist.deleted) if hist.unchanged or hist.deleted else None
                 new_val = convert_for_jsonb(hist.unchanged + hist.added) if hist.unchanged or hist.added else None
