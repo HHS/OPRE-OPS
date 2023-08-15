@@ -198,7 +198,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                 researchProjects={projectData}
                 selectedResearchProject={project}
                 setSelectedProject={setProject}
-                legendClassname={`usa-legend font-sans-3xs margin-top-0 ${customStyles.legendColor}`}
+                legendClassname={`usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`}
                 defaultString={"All Projects"}
                 overrideStyles={{ width: "22.7rem" }}
             />
@@ -207,7 +207,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
             <ProjectOfficerComboBox
                 selectedProjectOfficer={po}
                 setSelectedProjectOfficer={setPO}
-                legendClassname={`usa-legend font-sans-3xs margin-top-0 ${customStyles.legendColor}`}
+                legendClassname={`usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`}
                 defaultString={"All Users"}
                 overrideStyles={{ width: "22.7rem" }}
             />
@@ -221,7 +221,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                 onChange={(name, value) => {
                     setAgreementType(value);
                 }}
-                legendClassname={`usa-legend font-sans-3xs margin-top-0 ${customStyles.legendColor}`}
+                legendClassname={`usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`}
                 defaultString={"All Types"}
             />
         </fieldset>,
@@ -229,7 +229,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
             <ProcurementShopSelect
                 selectedProcurementShop={procurementShop}
                 onChangeSelectedProcurementShop={setProcurementShop}
-                legendClassname={`usa-legend font-sans-3xs margin-top-0 ${customStyles.legendColor}`}
+                legendClassname={`usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`}
                 defaultString={"All Shops"}
                 defaultToGCS={false}
             />

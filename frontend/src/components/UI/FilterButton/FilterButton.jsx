@@ -51,7 +51,7 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList }) => {
                     <h1 className="text-bold font-sans-lg margin-bottom-205 margin-top-205">Filters</h1>
                     {fieldsetList?.map((formField) => formField)}
                 </div>
-                <div className="display-flex flex-justify-end padding-right-1 padding-top-1">
+                <div className="display-flex flex-justify-end padding-right-1 padding-top-1 padding-bottom-1">
                     <button className="usa-button usa-button--outline" onClick={handleResetFilter}>
                         <span className="">Reset</span>
                     </button>
