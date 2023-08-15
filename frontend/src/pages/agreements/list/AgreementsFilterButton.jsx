@@ -125,16 +125,22 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         return <div>Oops, an error occurred</div>;
     }
 
+    const fieldStyles = "usa-fieldset margin-bottom-205";
+    const legendStyles = `usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`;
+    const checkboxStyles = `usa-checkbox display-flex flex-align-center ${customStyles.modalBackgroundColor}`;
+    const checkboxInputStyles = "usa-checkbox__input height-3 width-3";
+    const checkboxLabelStyles = "usa-checkbox__label margin-top-0";
+    const radioInputStyles = "usa-radio__input height-3 width-3";
+    const radioLabelStyles = "usa-radio__label margin-top-0";
+
     const fieldsetList = [
-        <fieldset key="field1" className="usa-fieldset margin-bottom-205">
-            <legend className={`usa-legend font-sans-3xs padding-bottom-1 ${customStyles.legendColor}`}>
-                Upcoming Need By Date
-            </legend>
+        <fieldset key="field1" className={fieldStyles}>
+            <legend className={legendStyles}>Upcoming Need By Date</legend>
             <div className="display-flex">
                 <div className={`usa-radio padding-right-5 ${customStyles.modalBackgroundColor}`}>
                     <div className="display-flex flex-align-center padding-bottom-1">
                         <input
-                            className="usa-radio__input height-3 width-3"
+                            className={radioInputStyles}
                             id="next-30-days"
                             type="radio"
                             name="upcoming-need-by-date"
@@ -142,13 +148,13 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                             onChange={() => setNeedBy("next-30-days")}
                             checked={needBy === "next-30-days"}
                         />
-                        <label className="usa-radio__label margin-top-0" htmlFor="next-30-days">
+                        <label className={radioLabelStyles} htmlFor="next-30-days">
                             Next 30 days
                         </label>
                     </div>
                     <div className="display-flex flex-align-center">
                         <input
-                            className="usa-radio__input height-3 width-3"
+                            className={radioInputStyles}
                             id="current-fy"
                             type="radio"
                             name="upcoming-need-by-date"
@@ -156,7 +162,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                             onChange={() => setNeedBy("current-fy")}
                             checked={needBy === "current-fy"}
                         />
-                        <label className="usa-radio__label margin-top-0" htmlFor="current-fy">
+                        <label className={radioLabelStyles} htmlFor="current-fy">
                             Current FY
                         </label>
                     </div>
@@ -164,7 +170,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                 <div className="">
                     <div className="display-flex flex-align-center padding-bottom-1">
                         <input
-                            className="usa-radio__input height-3 width-3"
+                            className={radioInputStyles}
                             id="next-6-months"
                             type="radio"
                             name="upcoming-need-by-date"
@@ -172,13 +178,13 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                             onChange={() => setNeedBy("next-6-months")}
                             checked={needBy === "next-6-months"}
                         />
-                        <label className="usa-radio__label margin-top-0" htmlFor="next-6-months">
+                        <label className={radioLabelStyles} htmlFor="next-6-months">
                             Next 6 months
                         </label>
                     </div>
                     <div className="display-flex flex-align-center">
                         <input
-                            className="usa-radio__input height-3 width-3"
+                            className={radioInputStyles}
                             id="all-time"
                             type="radio"
                             name="upcoming-need-by-date"
@@ -186,19 +192,19 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                             onChange={() => setNeedBy("all-time")}
                             checked={needBy === "all-time"}
                         />
-                        <label className="usa-radio__label margin-top-0" htmlFor="all-time">
+                        <label className={radioLabelStyles} htmlFor="all-time">
                             All time
                         </label>
                     </div>
                 </div>
             </div>
         </fieldset>,
-        <fieldset key="field2" className="usa-fieldset margin-bottom-205">
+        <fieldset key="field2" className={fieldStyles}>
             <ProjectComboBox
                 researchProjects={projectData}
                 selectedResearchProject={project}
                 setSelectedProject={setProject}
-                legendClassname={`usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`}
+                legendClassname={legendStyles}
                 defaultString={"All Projects"}
                 overrideStyles={{ width: "22.7rem" }}
             />
@@ -207,12 +213,12 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
             <ProjectOfficerComboBox
                 selectedProjectOfficer={po}
                 setSelectedProjectOfficer={setPO}
-                legendClassname={`usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`}
+                legendClassname={legendStyles}
                 defaultString={"All Users"}
                 overrideStyles={{ width: "22.7rem" }}
             />
         </fieldset>,
-        <fieldset key="field4" className="usa-fieldset margin-bottom-205" style={{ width: "22.7rem" }}>
+        <fieldset key="field4" className={fieldStyles} style={{ width: "22.7rem" }}>
             <AgreementTypeSelect
                 name="agreement_type"
                 label="Type"
@@ -221,80 +227,74 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                 onChange={(name, value) => {
                     setAgreementType(value);
                 }}
-                legendClassname={`usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`}
+                legendClassname={legendStyles}
                 defaultString={"All Types"}
             />
         </fieldset>,
-        <fieldset key="field5" className="usa-fieldset margin-bottom-205" style={{ width: "363px" }}>
+        <fieldset key="field5" className={fieldStyles} style={{ width: "22.7rem" }}>
             <ProcurementShopSelect
                 selectedProcurementShop={procurementShop}
                 onChangeSelectedProcurementShop={setProcurementShop}
-                legendClassname={`usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`}
+                legendClassname={legendStyles}
                 defaultString={"All Shops"}
                 defaultToGCS={false}
             />
         </fieldset>,
-        <fieldset key="field6" className="usa-fieldset margin-bottom-205">
-            <legend className={`usa-legend font-sans-3xs padding-bottom-1 ${customStyles.legendColor}`}>
-                Budget Line Status
-            </legend>
+        <fieldset key="field6" className={fieldStyles}>
+            <legend className={legendStyles}>Budget Line Status</legend>
             <div className="display-flex">
                 <div className="padding-right-9">
-                    <div
-                        className={`usa-checkbox display-flex flex-align-center padding-bottom-1 ${customStyles.modalBackgroundColor}`}
-                    >
+                    <div className={`padding-bottom-1 ${checkboxStyles}`}>
                         <input
-                            className="usa-checkbox__input height-3 width-3"
+                            className={checkboxInputStyles}
                             id="draft"
                             type="checkbox"
                             name="budget-line-status"
                             onChange={handleBudgetLineStatus}
                             checked={bliStatus.draft === true}
                         />
-                        <label className="usa-checkbox__label margin-top-0" htmlFor="draft">
+                        <label className={checkboxLabelStyles} htmlFor="draft">
                             Draft
                         </label>
                     </div>
-                    <div className={`usa-checkbox display-flex flex-align-center ${customStyles.modalBackgroundColor}`}>
+                    <div className={checkboxStyles}>
                         <input
-                            className="usa-checkbox__input height-3 width-3"
+                            className={checkboxInputStyles}
                             id="planned"
                             type="checkbox"
                             name="budget-line-status"
                             onChange={handleBudgetLineStatus}
                             checked={bliStatus.planned === true}
                         />
-                        <label className="usa-checkbox__label margin-top-0" htmlFor="planned">
+                        <label className={checkboxLabelStyles} htmlFor="planned">
                             Planned
                         </label>
                     </div>
                 </div>
                 <div>
-                    <div
-                        className={`usa-checkbox display-flex flex-align-center padding-bottom-1 ${customStyles.modalBackgroundColor}`}
-                    >
+                    <div className={`padding-bottom-1 ${checkboxStyles}`}>
                         <input
-                            className="usa-checkbox__input height-3 width-3"
+                            className={checkboxInputStyles}
                             id="executing"
                             type="checkbox"
                             name="budget-line-status"
                             onChange={handleBudgetLineStatus}
                             checked={bliStatus.executing === true}
                         />
-                        <label className="usa-checkbox__label margin-top-0" htmlFor="executing">
+                        <label className={checkboxLabelStyles} htmlFor="executing">
                             Executing
                         </label>
                     </div>
-                    <div className={`usa-checkbox display-flex flex-align-center ${customStyles.modalBackgroundColor}`}>
+                    <div className={checkboxStyles}>
                         <input
-                            className="usa-checkbox__input height-3 width-3"
+                            className={checkboxInputStyles}
                             id="obligated"
                             type="checkbox"
                             name="budget-line-status"
                             onChange={handleBudgetLineStatus}
                             checked={bliStatus.obligated === true}
                         />
-                        <label className="usa-checkbox__label margin-top-0" htmlFor="obligated">
+                        <label className={checkboxLabelStyles} htmlFor="obligated">
                             Obligated
                         </label>
                     </div>
