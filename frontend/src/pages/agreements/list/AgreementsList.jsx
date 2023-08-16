@@ -1,18 +1,18 @@
-import { useSelector } from "react-redux";
-import { useGetAgreementsQuery } from "../../../api/opsAPI";
-import App from "../../../App";
-import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
-import sortAgreements from "./utils";
 import { useState } from "react";
-import Alert from "../../../components/UI/Alert";
-import "./AgreementsList.scss";
-import AgreementsTable from "./AgreementsTable";
-import AgreementsFilterHeaderSection from "./AgreementsFilterHeaderSection";
+import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import _ from "lodash";
+import App from "../../../App";
+import { useGetAgreementsQuery } from "../../../api/opsAPI";
+import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
+import sortAgreements from "./utils";
+import Alert from "../../../components/UI/Alert";
+import AgreementsTable from "./AgreementsTable";
+import AgreementsFilterHeaderSection from "./AgreementsTabs";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 import TablePageLayout from "../../../components/UI/Layouts/TablePageLayout";
 import AgreementsFilterSection from "./AgreementsFilterSection";
+import "./AgreementsList.scss";
 
 /**
  * Page for the Agreements List.
@@ -59,6 +59,7 @@ export const AgreementsList = () => {
         );
     }
 
+    // FILTERS
     let filteredAgreements = _.cloneDeep(agreements);
 
     switch (filters.upcomingNeedByDate) {
@@ -176,14 +177,15 @@ export const AgreementsList = () => {
             {isAlertActive && <Alert />}
             <TablePageLayout
                 title="Agreements"
-                subtitle={
+                subtitle={myAgreementsUrl ? "My Agreements" : "All Agreements"}
+                details={
                     myAgreementsUrl
                         ? "This is a list of the agreements you are listed as a Team Member on."
                         : "This is a list of all agreements across OPRE."
                 }
                 buttonText="Add Agreement"
                 buttonLink="/agreements/create"
-                TabsSection={<AgreementsFilterHeaderSection filters={filters} setFilters={setFilters} />}
+                TabsSection={<AgreementsFilterHeaderSection />}
                 FilterSection={<AgreementsFilterSection filters={filters} setFilters={setFilters} />}
                 TableSection={<AgreementsTable agreements={sortedAgreements} />}
             />
