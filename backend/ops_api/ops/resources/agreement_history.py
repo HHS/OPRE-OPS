@@ -10,7 +10,8 @@ from typing_extensions import override
 
 
 def build_change_summary(ops_db_hist: OpsDBHistory, user: User):
-    return f"{ops_db_hist.class_name} {ops_db_hist.event_type.name} by {user.full_name}"
+    user_full_name = user.full_name if user else "Unknown"
+    return f"{ops_db_hist.class_name} {ops_db_hist.event_type.name} by {user_full_name}"
 
 
 def build_change_messages(ops_db_hist: OpsDBHistory):
@@ -18,14 +19,14 @@ def build_change_messages(ops_db_hist: OpsDBHistory):
     changes = ops_db_hist.changes
     if changes:
         for key, hist in changes.items():
-            hist_added = hist['added']
-            hist_deleted = hist['deleted']
+            hist_added = hist['added'] if 'added' in hist else None
+            hist_deleted = hist['deleted'] if 'deleted' in hist else None
             print(f"{key=}, {hist_added=}, {hist_deleted=}")
             if not hist_added and not hist_deleted:
                 continue
             if key in ["team_members", "support_contacts"]:
-                users_added = [u["full_name"] for u in hist_added]
-                users_deleted = [u["full_name"] for u in hist_deleted]
+                users_added = [u["full_name"] for u in hist_added] if hist_added else None
+                users_deleted = [u["full_name"] for u in hist_deleted] if hist_deleted else None
                 msg = f"{key} changed"
                 if users_added:
                     msg += f", added {users_added}"
@@ -42,7 +43,7 @@ def build_change_messages(ops_db_hist: OpsDBHistory):
 
 def build_agreement_history_dict(ops_db_hist: OpsDBHistory, user: User):
     d = ops_db_hist.to_dict()
-    d["created_by_user_full_name"] = user.full_name
+    d["created_by_user_full_name"] = user.full_name if user else None
     d["change_summary"] = build_change_summary(ops_db_hist, user)
     d["change_messages"] = build_change_messages(ops_db_hist)
     return d
@@ -55,12 +56,13 @@ class AgreementHistoryListAPI(BaseListAPI):
     @override
     @is_authorized(PermissionType.GET, Permission.HISTORY)
     def get(self, id: int) -> Response:
+        print(f"agreement_history.get:{id}")
         class_name = request.args.get("class_name", None)
         row_key = request.args.get("row_key", None)
         limit = request.args.get("limit", 10, type=int)
         offset = request.args.get("offset", 0, type=int)
         with handle_sql_error():
-            stmt = select(OpsDBHistory).join(OpsDBHistory.created_by_user).add_columns(User)
+            stmt = select(OpsDBHistory).join(OpsDBHistory.created_by_user, isouter=True).add_columns(User)
             # stmt = stmt.where(OpsDBHistory.class_name == "ContractAgreement")
             stmt = stmt.where(OpsDBHistory.agreement_id == id)
 

@@ -47,7 +47,7 @@ def find_relationship_by_fk(obj, col_key):
 
 def build_audit(obj, event_type: OpsDBHistoryType) -> DbRecordAudit:
     row_key = "|".join([str(getattr(obj, pk)) for pk in obj.primary_keys])
-    print(f"\n~~~~~~{obj.__class__.__name__}: {row_key}~~~~~~")
+    print(f"\n~~~~~~{obj.__class__.__name__}: {row_key} ({event_type})~~~~~~")
 
     original = {}
     diff = {}
@@ -136,8 +136,7 @@ def track_db_history_catch_errors(exception_context):
         },
     )
     with Session(current_app.engine) as session:
-        session.add(ops_db)
-        session.commit()
+        session.deleted(ops_db)
         current_app.logger.error(f"SQLAlchemy error added to {OpsDBHistory.__tablename__} with id {ops_db.id}")
 
 
@@ -167,6 +166,7 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
             if isinstance(obj, Agreement):
                 agreement_id = obj.id
 
+            print(f"{obj.__class__.__name__}:{db_audit.row_key}, {event_type=}, {agreement_id=}")
             ops_db = OpsDBHistory(
                 event_type=event_type,
                 event_details=obj.to_dict(),
