@@ -9,6 +9,7 @@ import icons from "../../../../uswds/img/sprite.svg";
  * @param {React.ReactNode} [props.children] - The children to render - optional.
  * @param {string} props.title - The title to display.
  * @param {string} props.subtitle - The subtitle to display.
+ * @param {string} props.details - The details to display.
  * @param {React.ReactNode} props.TabsSection - The tabs to display.
  * @param {React.ReactNode} props.FilterSection - The filter to display.
  * @param {React.ReactNode} props.TableSection - The table to display.
@@ -20,6 +21,7 @@ export const TablePageLayout = ({
     children,
     title,
     subtitle,
+    details,
     TabsSection,
     FilterSection,
     TableSection,
@@ -28,10 +30,8 @@ export const TablePageLayout = ({
 }) => {
     return (
         <>
-            <h1 className="font-sans-lg">{title}</h1>
-            <p>{subtitle}</p>
-            <div className="padding-top-05 padding-bottom-05 display-flex flex-align-center flex-justify">
-                {TabsSection}
+            <div className="padding-y-05 display-flex flex-align-center flex-justify">
+                <h1 className="margin-0 text-brand-primary font-sans-2xl">{title}</h1>
                 <Link
                     to={buttonLink}
                     className="usa-button usa-button--outline display-flex flex-align-center margin-0 padding-105"
@@ -45,7 +45,14 @@ export const TablePageLayout = ({
                     <span className="">{buttonText}</span>
                 </Link>
             </div>
-            {FilterSection}
+            {TabsSection}
+            <div className="padding-top-05 padding-bottom-05 display-flex flex-align-center flex-justify">
+                <div>
+                    <h2>{subtitle}</h2>
+                    <p>{details}</p>
+                </div>
+                {FilterSection}
+            </div>
             {TableSection}
             {children}
         </>
@@ -58,6 +65,7 @@ TablePageLayout.propTypes = {
     children: PropTypes.node,
     title: PropTypes.string.isRequired,
     subtitle: PropTypes.string.isRequired,
+    details: PropTypes.string.isRequired,
     TabsSection: PropTypes.node.isRequired,
     FilterSection: PropTypes.node.isRequired,
     TableSection: PropTypes.node.isRequired,
