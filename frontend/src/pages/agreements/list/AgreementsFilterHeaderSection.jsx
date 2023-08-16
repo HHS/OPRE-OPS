@@ -2,8 +2,6 @@ import "./AgreementsList.scss";
 import { Link, useLocation } from "react-router-dom";
 import styles from "../../../components/Portfolios/PortfolioTabsSection/PortfolioTabsSection.module.scss";
 import TabsSection from "../../../components/UI/TabsSection";
-import icons from "../../../uswds/img/sprite.svg";
-import AgreementsFilterSection from "./AgreementsFilterSection";
 
 /**
  * A header section of the agreements page that contains the filters.
@@ -44,26 +42,7 @@ export const AgreementsFilterHeaderSection = ({ filters, setFilters }) => {
         );
     });
 
-    return (
-        <div>
-            <div className="padding-top-05 padding-bottom-05 display-flex flex-align-center flex-justify">
-                <TabsSection links={links} label="Agreements Tabs Section" />
-                <Link
-                    to="/agreements/create"
-                    className="usa-button usa-button--outline display-flex flex-align-center margin-0 padding-105"
-                >
-                    <svg
-                        className="height-2 width-2 margin-right-05 hover: cursor-pointer usa-tooltip "
-                        style={{ fill: "#005ea2" }}
-                    >
-                        <use xlinkHref={`${icons}#add`}></use>
-                    </svg>
-                    <span className="">Add Agreement</span>
-                </Link>
-            </div>
-            <AgreementsFilterSection filters={filters} setFilters={setFilters} />
-        </div>
-    );
+    return <TabsSection links={links} label="Agreements Tabs Section" />;
 };
 
 export default AgreementsFilterHeaderSection;

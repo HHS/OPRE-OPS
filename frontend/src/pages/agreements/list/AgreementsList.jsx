@@ -12,6 +12,7 @@ import { useSearchParams } from "react-router-dom";
 import _ from "lodash";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 import TablePageLayout from "../../../components/UI/Layouts/TablePageLayout";
+import AgreementsFilterSection from "./AgreementsFilterSection";
 
 /**
  * Page for the Agreements List.
@@ -180,10 +181,12 @@ export const AgreementsList = () => {
                         ? "This is a list of the agreements you are listed as a Team Member on."
                         : "This is a list of all agreements across OPRE."
                 }
-            >
-                <AgreementsFilterHeaderSection filters={filters} setFilters={setFilters} />
-                <AgreementsTable agreements={sortedAgreements} />
-            </TablePageLayout>
+                buttonText="Add Agreement"
+                buttonLink="/agreements/create"
+                TabsSection={<AgreementsFilterHeaderSection filters={filters} setFilters={setFilters} />}
+                FilterSection={<AgreementsFilterSection filters={filters} setFilters={setFilters} />}
+                TableSection={<AgreementsTable agreements={sortedAgreements} />}
+            />
         </App>
     );
 };
