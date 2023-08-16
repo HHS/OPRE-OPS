@@ -15,7 +15,7 @@ def build_change_summary(ops_db_hist: OpsDBHistory, user: User):
 
 def build_change_messages(ops_db_hist: OpsDBHistory):
     change_messages = []
-    changes = ops_db_hist.hist_changes
+    changes = ops_db_hist.changes
     if changes:
         for key, hist in changes.items():
             hist_added = hist['added']
@@ -33,7 +33,9 @@ def build_change_messages(ops_db_hist: OpsDBHistory):
                     msg += f", removed {users_deleted}"
                 change_messages.append(msg)
             else:
-                msg = f"{key} changed from \"{hist['deleted'][0]}\" to \"{hist['added'][0]}\""
+                old_val = hist_deleted[0] if hist_deleted else None
+                new_val = hist_added[0] if hist_added else None
+                msg = f"{key} changed from \"{old_val}\" to \"{new_val}\""
                 change_messages.append(msg)
     return change_messages
 
