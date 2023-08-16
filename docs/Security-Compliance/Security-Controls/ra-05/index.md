@@ -1,20 +1,21 @@
 # Risk Assessment
 ## RA-05 - Vulnerability Scannings
 
-The organization:
+a. Monitor and scan for vulnerabilities in the system and hosted applications [per the frequency defined in the HHS Policy for Vulnerability Management or ACF policy] and when new vulnerabilities potentially affecting the system are identified and reported;
 
-a. Scans for vulnerabilities in the information system and hosted applications (Assignment: organization-defined frequency and/or randomly in accordance with organization-defined process) and when new vulnerabilities potentially affecting the system/applications are identified and reported;
+b. Employ vulnerability monitoring tools and techniques that facilitate interoperability among tools and automate parts of the vulnerability management process by using standards for:
 
-b. Employs vulnerability scanning tools and techniques that facilitate interoperability among tools and automate parts of the vulnerability management process by using standards for:
-   1. Enumerating platforms, software flaws, and improper configurations;
-   2. Formatting checklists and test procedures; and
-   3. Measuring vulnerability impact;
+1. Enumerating platforms, software flaws, and improper configurations;
+2. Formatting checklists and test procedures; and
+3. Measuring vulnerability impact;
 
-c. Analyzes vulnerability scan reports and results from security control assessments;
+c. Analyze vulnerability scan reports and results from vulnerability monitoring;
 
-d. Remediates legitimate vulnerabilities (Assignment: organization-defined response times) in accordance with an organizational assessment of risk; and
+d. Remediate legitimate vulnerabilities [per HHS Standard for Plan of Action and Milestones (POAM) Management and Reporting or ACF policies] in accordance with an organizational assessment of risk;
 
-e. Shares information obtained from the vulnerability scanning process and security control assessments with (Assignment: organization-defined personnel or roles) to help eliminate similar vulnerabilities in other information systems (i.e., systemic weaknesses or deficiencies).
+e. Share information obtained from the vulnerability monitoring process and control assessments with [ACF-defined personnel or roles] to help eliminate similar vulnerabilities in other systems; and
+
+f. Employ vulnerability monitoring tools that include the capability to readily update the vulnerabilities to be scanned.
 
 ### OPS Implementation
 
@@ -30,4 +31,10 @@ d. Summaries of the security scan reports are available in GitHub.  If there are
 
 e. Information from the scan reports and control assessments are shared with the appropriate security stakeholders and are available for review in GitHub (TODO - ADD LINK).
 
-#### Related Files
+### Control Orgination:
+
+Hybrid with IaaS provider, ACF Tech, and OPS
+
+### Related Content
+
+HHS/ACF needs to have a documented process for vulnerability scanning with identified roles and responsibilities, incorporating appropriate federal oversight and separation of duties.

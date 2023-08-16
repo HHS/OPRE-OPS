@@ -74,7 +74,25 @@
 
 ### Risk Assessment
 
-1. [ra-5](ra-05/index.md)
+1. [ra-2](ra-02/index.md)
+2. [ra-3](ra-03/index.md)
+3. [ra-3-1](ra-03-1/index.md)
+4. [ra-5](ra-05/index.md)
+5. [ra-5-2](ra-05-2/index.md)
+6. [ra-5-5](ra-05-5/index.md)
+7. [ra-5-11](ra-05-11/index.md)
+8. [ra-7](ra-07/index.md)
+9. [ra-9](ra-09/index.md)
+
+### System and Services Acquisition
+
+1. [sa-2](sa-02/index.md)
+2. [sa-3](sa-03/index.md)
+3. [sa-4](sa-04/index.md)
+4. [sa-4-1](sa-04-1/index.md)
+5. [sa-4-2](sa-04-2/index.md)
+6. [sa-4-9](sa-04-9/index.md)
+7. [sa-4-10](sa-04-10/index.md)
 
 ### System and Communications Protection
 

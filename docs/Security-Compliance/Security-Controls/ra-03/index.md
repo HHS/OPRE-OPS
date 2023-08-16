@@ -1,0 +1,28 @@
+# Risk Assessment
+## RA-03 - Risk Assessment
+
+a. Conduct a risk assessment, including:
+
+1. Identifying threats to and vulnerabilities in the system;
+2. Determining the likelihood and magnitude of harm from unauthorized access, use, disclosure, disruption, modification, or destruction of the system, the information it processes, stores, or transmits, and any related information; and
+3. Determining the likelihood and impact of adverse effects on individuals arising from the processing of personally identifiable information;
+
+b. Integrate risk assessment results and risk management decisions from the organization and mission or business process perspectives with system-level risk assessments;
+
+c. Document risk assessment results in the [Security and/or Privacy Assessment report];
+
+d. Review risk assessment results [within every 365 days];
+
+e. Disseminate risk assessment results to [the SO and CISO (and other appropriate personnel as designated by the SO)]; and
+
+f. Update the risk assessment [before issuing a new Authority to Operate/authorization] or when there are significant changes to the system, its environment of operation, or other conditions that may impact the security or privacy state of the system. Or if none of these events occur, every three (3) years.
+
+## OPS Implementation
+
+### Control Orgination:
+
+Hybrid with IaaS provider, ACF Tech, and OPS
+
+### Related Content
+
+The annual review of the risk assessment results should be documented and acknowledged by the System Owner.
