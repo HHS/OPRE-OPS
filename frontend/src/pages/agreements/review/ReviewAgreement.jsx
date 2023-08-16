@@ -115,10 +115,11 @@ export const ReviewAgreement = ({ agreement_id }) => {
                             globalDispatch(
                                 setAlert({
                                     type: "success",
-                                    heading: "Agreement deleted",
-                                    message: "The agreement has been successfully deleted.",
+                                    heading: "Agreement sent to approval",
+                                    message: "The agreement has been successfully sent to approval for Planned Status.",
                                 })
                             );
+                            navigate("/agreements");
                         })
                         .catch((rejected) => {
                             console.log("Error Updating Budget Line Status");
@@ -127,7 +128,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                                 setAlert({
                                     type: "error",
                                     heading: "Error",
-                                    message: "An error occurred while deleting the agreement.",
+                                    message: "An error occurred. Please try again.",
                                 })
                             );
                             navigate("/error");
@@ -135,14 +136,6 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 }
             });
         }
-        globalDispatch(
-            setAlert({
-                type: "success",
-                heading: "Agreement sent to approval",
-                message: "The agreement has been successfully sent to approval for Planned Status.",
-                redirectUrl: "/agreements",
-            })
-        );
     };
 
     return (
