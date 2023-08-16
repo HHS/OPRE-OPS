@@ -15,7 +15,7 @@ i. Acceptance criteria.
 
 ## OPS Implementation
 
-TODO: refercence and link attachment 5
+The afore-mentioned requirements, descriptions, and criteria are referenced in [Attachment 5](https://github.com/HHS/OPRE-OPS/wiki/files/Attachment%205%20-%20ACF%20Security%20Privacy%20and%20Task%20Standard%20Language%20for%20Acquisitions%20(03_25_2022)%20(1).pdf) of the OPS contract documentation
 
 ### Control Orgination:
 

@@ -9,9 +9,11 @@ Require the developer of the system, system component, or system service to prov
 
 ## OPS Implementation
 
-TODO: find template
+TODO: find template on the source code aspect particularly
 
-TODO: link to boundary and data flow diagram
+Boundry and dataflow diagrams can be found [here](../../)
+
+TODO: Update with specific links when ready
 
 ### Control Orgination:
 
