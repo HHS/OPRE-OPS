@@ -1,20 +1,37 @@
 import { Fragment, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import PropTypes from "prop-types";
+import { useDispatch, useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
-import "./AgreementsList.scss";
 import { getUser } from "../../../api/getUser";
-import icons from "../../../uswds/img/sprite.svg";
 import { convertCodeForDisplay, formatDate } from "../../../helpers/utils";
 import TableTag from "../../../components/UI/PreviewTable/TableTag";
+import { useDeleteAgreementMutation } from "../../../api/opsAPI";
+import Modal from "../../../components/UI/Modal";
+import { setAlert } from "../../../components/UI/Alert/alertSlice";
+import icons from "../../../uswds/img/sprite.svg";
+import "./AgreementsList.scss";
 
+/**
+ * Renders a row in the agreements table.
+ *
+ * @param {Object} props - The component props.
+ * @param {Object} props.agreement - The agreement object to display.
+ * @returns {React.JSX.Element} - The rendered component.
+ */
 export const AgreementTableRow = ({ agreement }) => {
-    const [user, setUser] = useState({});
     const navigate = useNavigate();
+    const globalDispatch = useDispatch();
+    const loggedInUserId = useSelector((state) => state.auth.activeUser.id);
+    const [deleteAgreement] = useDeleteAgreementMutation();
+    const [user, setUser] = useState({});
     const [isExpanded, setIsExpanded] = useState(false);
     const [isRowActive, setIsRowActive] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [modalProps, setModalProps] = useState({});
 
     const agreementName = agreement?.name;
     const researchProjectName = agreement?.research_project?.title;
@@ -65,16 +82,61 @@ export const AgreementTableRow = ({ agreement }) => {
         setIsExpanded(!isExpanded);
         setIsRowActive(true);
     };
-
+    // styles for the expanded row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
-    const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
+    const changeBgColorIfExpanded = { backgroundColor: isRowActive ? "#F0F0F0" : undefined };
+
+    // Validations for deleting an agreement
+    const isLoggedInUserTheProjectOfficer = loggedInUserId === agreement?.project_officer;
+    const isLoggedInUserTheAgreementCreator = loggedInUserId === agreement?.created_by;
+    const isLoggedInUserATeamMember = agreement?.team_members?.find((tm) => tm.id === loggedInUserId);
+    const areAllBudgetLinesInDraftStatus = agreement?.budget_line_items?.every((bli) => bli.status === "DRAFT");
+    const areThereAnyBudgetLines = agreement?.budget_line_items?.length > 0;
+
+    const canUserDeleteAgreement =
+        (isLoggedInUserTheAgreementCreator || isLoggedInUserTheProjectOfficer || isLoggedInUserATeamMember) &&
+        (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
 
     const handleEditAgreement = (event) => {
-        navigate(`/agreements/edit/${event}?mode=edit`);
+        navigate(`/agreements/${event}?mode=edit`);
     };
-    const handleDeleteAgreement = () => {
-        // TODO: implement delete agreement
-        alert("not implemented yet");
+
+    /**
+     * Deletes an agreement.
+     * @param {number} id - The id of the agreement to delete.
+     * @returns {void}
+     */
+    const handleDeleteAgreement = (id) => {
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to delete this agreement?",
+            actionButtonText: "Delete",
+            handleConfirm: () => {
+                deleteAgreement(id)
+                    .unwrap()
+                    .then((fulfilled) => {
+                        console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+                        globalDispatch(
+                            setAlert({
+                                type: "success",
+                                heading: "Agreement deleted",
+                                message: `Agreement ${agreementName} has been successfully deleted.`,
+                            })
+                        );
+                    })
+                    .catch((rejected) => {
+                        console.error(`DELETE agreement rejected: ${JSON.stringify(rejected, null, 2)}`);
+                        globalDispatch(
+                            setAlert({
+                                type: "error",
+                                heading: "Error",
+                                message: "An error occurred while deleting the agreement.",
+                            })
+                        );
+                        navigate("/error");
+                    });
+            },
+        });
     };
     const handleSubmitAgreementForApproval = (event) => {
         navigate(`/agreements/approve/${event}`);
@@ -84,6 +146,14 @@ export const AgreementTableRow = ({ agreement }) => {
         ? "In Review"
         : "Draft";
 
+    /**
+     * Renders the edit, delete, and submit for approval icons.
+     *
+     * @param {Object} props - The component props.
+     * @param {Object} props.agreement - The agreement object to display.
+     * @param {string} props.status - The status of the agreement.
+     * @returns {React.JSX.Element} - The rendered component.
+     */
     const ChangeIcons = ({ agreement, status }) => {
         return (
             <>
@@ -91,7 +161,7 @@ export const AgreementTableRow = ({ agreement }) => {
                     <div className="display-flex flex-align-center">
                         <FontAwesomeIcon
                             icon={faPen}
-                            className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                            className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
                             title="edit"
                             data-position="top"
                             onClick={() => handleEditAgreement(agreement.id)}
@@ -99,14 +169,17 @@ export const AgreementTableRow = ({ agreement }) => {
 
                         <FontAwesomeIcon
                             icon={faTrash}
-                            title="delete"
+                            title={`${canUserDeleteAgreement ? "delete" : "user does not have permissions to delete"}`}
                             data-position="top"
-                            className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
-                            onClick={() => handleDeleteAgreement(agreement.id)}
+                            className={`text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip ${
+                                !canUserDeleteAgreement ? "opacity-30 cursor-not-allowed" : null
+                            }`}
+                            onClick={() => canUserDeleteAgreement && handleDeleteAgreement(agreement.id)}
+                            data-cy="delete-agreement"
                         />
 
                         <svg
-                            className="usa-icon text-primary height-205 width-205 hover: cursor-pointer usa-tooltip"
+                            className="usa-icon text-primary height-205 width-205 cursor-pointer usa-tooltip"
                             onClick={() => handleSubmitAgreementForApproval(agreement.id)}
                             id={`submit-for-approval-${agreement.id}`}
                         >
@@ -119,9 +192,19 @@ export const AgreementTableRow = ({ agreement }) => {
     };
     return (
         <Fragment key={agreement?.id}>
+            {showModal && (
+                <Modal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
             <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
                 <th scope="row" className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
-                    {agreementName}
+                    <Link className="text-ink text-no-underline" to={"/agreements/" + agreement.id}>
+                        {agreementName}
+                    </Link>
                 </th>
                 <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     {researchProjectName}
@@ -157,6 +240,7 @@ export const AgreementTableRow = ({ agreement }) => {
                         icon={isExpanded ? faChevronUp : faChevronDown}
                         className="height-2 width-2 padding-right-1 hover: cursor-pointer"
                         onClick={() => handleExpandRow()}
+                        data-cy="expand-row"
                     />
                 </td>
             </tr>
@@ -180,7 +264,7 @@ export const AgreementTableRow = ({ agreement }) => {
                                 </dd>
                             </dl>
                             <div className="flex-align-self-end margin-left-auto margin-bottom-1">
-                                <ChangeIcons agreement={agreement} />
+                                <ChangeIcons agreement={agreement} status={agreementStatus} />
                             </div>
                         </div>
                     </td>
@@ -188,4 +272,34 @@ export const AgreementTableRow = ({ agreement }) => {
             )}
         </Fragment>
     );
+};
+
+AgreementTableRow.propTypes = {
+    agreement: PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired,
+        research_project: PropTypes.shape({
+            title: PropTypes.string.isRequired,
+        }),
+        agreement_type: PropTypes.string.isRequired,
+        budget_line_items: PropTypes.arrayOf(
+            PropTypes.shape({
+                amount: PropTypes.number.isRequired,
+                date_needed: PropTypes.string.isRequired,
+                status: PropTypes.string.isRequired,
+            })
+        ).isRequired,
+        procurement_shop: PropTypes.shape({
+            fee: PropTypes.number.isRequired,
+        }),
+        created_by: PropTypes.number.isRequired,
+        notes: PropTypes.string,
+        created_on: PropTypes.string,
+        project_officer: PropTypes.number.isRequired,
+        team_members: PropTypes.arrayOf(
+            PropTypes.shape({
+                id: PropTypes.number.isRequired,
+            })
+        ).isRequired,
+    }).isRequired,
 };

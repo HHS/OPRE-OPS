@@ -1,6 +1,6 @@
 /// <reference types="jest" />
 
-import { getCurrentFiscalYear, calculatePercent, convertCodeForDisplay } from "./utils";
+import { getCurrentFiscalYear, calculatePercent, convertCodeForDisplay, fiscalYearFromDate } from "./utils";
 
 test("current federal fiscal year is calculated correctly", async () => {
     const lastDay = new Date("September 30, 2022");
@@ -22,4 +22,12 @@ test("codes are converted for display correctly", async () => {
     expect(convertCodeForDisplay("agreementType", "__foo__")).toEqual("__foo__");
     expect(convertCodeForDisplay("agreementType", "GRANT")).toEqual("Grant");
     expect(convertCodeForDisplay("agreementReason", "NEW_REQ")).toEqual("New Requirement");
+});
+
+test("fiscal year are calculated correctly", async () => {
+    expect(fiscalYearFromDate(null)).toEqual(null);
+    expect(fiscalYearFromDate("--")).toEqual(null);
+    expect(fiscalYearFromDate("2033-01-01")).toEqual(2033);
+    expect(fiscalYearFromDate("2033-09-30")).toEqual(2033);
+    expect(fiscalYearFromDate("2033-10-01")).toEqual(2034);
 });

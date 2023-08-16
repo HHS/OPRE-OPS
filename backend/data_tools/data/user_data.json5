@@ -132,6 +132,13 @@
       division: 3,
       email: "acurvelodasilva@flexion.us",
       oidc_id: "6e672c19-15bc-4901-8cee-b57cd8c6d0c1",
+    },
+    { // 20
+      first_name: "Kim",
+      last_name: "Schulke",
+      division: 3,
+      email: "kschulke@flexion.us",
+      oidc_id: "b5f7598b-e5e6-4b11-8321-b3acabc780f7",
     }
   ],
   roles: [
@@ -142,60 +149,43 @@
         "PUT_AGREEMENT",
         "PATCH_AGREEMENT",
         "DELETE_AGREEMENT",
-
-        "GET_AGREEMENTS",
-        "POST_AGREEMENTS",
+        "POST_AGREEMENT",
 
         "GET_BUDGET_LINE_ITEM",
         "PUT_BUDGET_LINE_ITEM",
         "PATCH_BUDGET_LINE_ITEM",
-
-        "GET_BUDGET_LINE_ITEMS",
-        "POST_BUDGET_LINE_ITEMS",
+        "POST_BUDGET_LINE_ITEM",
 
         "GET_CAN",
-        "GET_CANS",
 
         "GET_DIVISION",
-        "GET_DIVISIONS",
 
         "GET_NOTIFICATION",
         "PUT_NOTIFICATION",
         "PATCH_NOTIFICATION",
 
-        "GET_NOTIFICATIONS",
-
         "GET_PORTFOLIO",
-        "GET_PORTFOLIOS",
 
         "GET_RESEARCH_PROJECT",
-
-        "GET_RESEARCH_PROJECTS",
-        "POST_RESEARCH_PROJECTS",
+        "POST_RESEARCH_PROJECT",
 
         "GET_USER",
-        "GET_USERS",
+
+        "GET_HISTORY",
       ],
     },
     {
       name: "user",
       permissions: [
         "GET_AGREEMENT",
-        "GET_AGREEMENTS",
         "GET_BUDGET_LINE_ITEM",
-        "GET_BUDGET_LINE_ITEMS",
         "GET_CAN",
-        "GET_CANS",
         "GET_DIVISION",
-        "GET_DIVISIONS",
         "GET_NOTIFICATION",
-        "GET_NOTIFICATIONS",
         "GET_PORTFOLIO",
-        "GET_PORTFOLIOS",
         "GET_RESEARCH_PROJECT",
-        "GET_RESEARCH_PROJECTS",
         "GET_USER",
-        "GET_USERS",
+        "GET_HISTORY",
       ],
     },
   ],
@@ -256,6 +246,56 @@
       user_id: 19,
       role_id: 1,
     },
+    {
+      user_id: 20,
+      role_id: 1,
+    },
+  ],
+  groups: [
+    {
+      name: "Budget Team",
+    },
+    {
+      name: "Admins",
+    }
+  ],
+  user_group: [
+    {
+      user_id: 4,
+      group_id: 1,
+    },
+    {
+      user_id: 13,
+      group_id: 2,
+    },
+    {
+      user_id: 14,
+      group_id: 2,
+    },
+    {
+      user_id: 15,
+      group_id: 2,
+    },
+    {
+      user_id: 16,
+      group_id: 2,
+    },
+    {
+      user_id: 17,
+      group_id: 2,
+    },
+    {
+      user_id: 18,
+      group_id: 2,
+    },
+    {
+      user_id: 19,
+      group_id: 2,
+    },
+    {
+      user_id: 20,
+      group_id: 2,
+    }
   ],
   notification: [
     {
@@ -389,6 +429,13 @@
       message: "This is a system notification",
       is_read: false,
       recipient_id: 19,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 20,
       expires: "2031-12-31"
     }
   ],

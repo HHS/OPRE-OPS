@@ -4,10 +4,10 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-SQLAlchemy = "==2.0.19"
+SQLAlchemy = "==2.0.20"
 pandas = "==1.5.3"
 json5 = "==0.9.14"
-psycopg2-binary = "==2.9.6"
+psycopg2-binary = "==2.9.7"
 cfenv = "==0.5.3"
 sqlalchemy-mixins = "==1.5.3"
 typing-extensions = "==4.7.1"
@@ -16,7 +16,7 @@ sqlalchemy-continuum = "==1.4.0"
 
 [dev-packages]
 nox = "==2023.4.22"
-flake8 = "==6.0.0"
+flake8 = "==6.1.0"
 flake8-black = "==0.3.6"
 flake8-import-order = "==0.18.2"
 flake8-bugbear = "==23.7.10"

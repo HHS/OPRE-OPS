@@ -1,6 +1,6 @@
+from contextlib import contextmanager
 from enum import Enum
 from typing import Optional
-from typing_extensions import override
 
 from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
@@ -11,6 +11,7 @@ from ops_api.ops.utils.auth import auth_gateway
 from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
+from typing_extensions import override
 
 
 def generate_validator(model: BaseModel) -> BaseModel.Validator:
@@ -18,6 +19,16 @@ def generate_validator(model: BaseModel) -> BaseModel.Validator:
         return model.Validator()
     except AttributeError:
         return None
+
+
+@contextmanager
+def handle_sql_error():
+    try:
+        yield
+    except SQLAlchemyError as se:
+        current_app.logger.error(se)
+        response = make_response_with_headers({}, 500)
+        return response
 
 
 class OPSMethodView(MethodView):
@@ -43,44 +54,35 @@ class OPSMethodView(MethodView):
         return [row[0] for row in current_app.db_session.execute(stmt).all()]
 
     def _get_item_by_oidc_with_try(self, oidc: str):
-        try:
+        with handle_sql_error():
             item = self._get_item_by_oidc(oidc)
 
             if item:
                 response = make_response_with_headers(item.to_dict())
             else:
                 response = make_response_with_headers({}, 404)
-        except SQLAlchemyError as se:
-            current_app.logger.error(se)
-            response = make_response_with_headers({}, 500)
 
-        return response
+            return response
 
     def _get_item_with_try(self, id: int) -> Response:
-        try:
+        with handle_sql_error():
             item = self._get_item(id)
 
             if item:
                 response = make_response_with_headers(item.to_dict())
             else:
                 response = make_response_with_headers({}, 404)
-        except SQLAlchemyError as se:
-            current_app.logger.error(se)
-            response = make_response_with_headers({}, 500)
 
         return response
 
     def _get_all_items_with_try(self) -> Response:
-        try:
+        with handle_sql_error():
             item_list = self._get_all_items()
 
             if item_list:
                 response = make_response_with_headers([item.to_dict() for item in item_list])
             else:
                 response = make_response_with_headers({}, 404)
-        except SQLAlchemyError as se:
-            current_app.logger.error(se)
-            response = make_response_with_headers({}, 500)
 
         return response
 

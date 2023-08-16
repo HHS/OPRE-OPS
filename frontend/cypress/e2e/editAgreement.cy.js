@@ -60,11 +60,11 @@ it("edit an agreement", () => {
         // test validation
         cy.get("#name").clear();
         cy.get("#name").blur();
-        cy.get("#input-error-message").should("contain", "This is required information");
+        cy.get(".usa-error-message").should("contain", "This is required information");
         cy.get("[data-cy='continue-btn']").should("be.disabled");
         cy.get("[data-cy='save-draft-btn']").should("be.disabled");
         cy.get("#name").type("Test Edit Title");
-        cy.get("#input-error-message").should("not.exist");
+        cy.get(".usa-error-message").should("not.exist");
         cy.get("[data-cy='continue-btn']").should("not.be.disabled");
         cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");
         cy.get("#description").type(" more text");
@@ -88,7 +88,6 @@ it("edit an agreement", () => {
         cy.get("[data-cy='alert']").find("h1").should("have.text", "Agreement draft saved");
         cy.get("h1").should("exist");
 
-        // TODO: DELETE test agreement (after API implemented)
         cy.request({
             method: "DELETE",
             url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
