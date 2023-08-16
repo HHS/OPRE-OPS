@@ -44,7 +44,7 @@ const styles = {
     },
 };
 
-const PortfolioFundingByCAN = (props) => {
+const PortfolioFundingByCAN = () => {
     const portfolioFunding = useSelector((state) => state.portfolioBudgetSummary.portfolioBudget);
     const portfolioCansFundingDetails = useSelector((state) => state.portfolio.portfolioCansFundingDetails);
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);

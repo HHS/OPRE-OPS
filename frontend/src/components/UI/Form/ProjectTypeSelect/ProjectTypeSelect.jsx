@@ -17,7 +17,7 @@ export const ProjectTypeSelect = ({
                 {label}
             </label>
             {messages.length ? (
-                <span className="usa-error-message" id="input-error-message" role="alert">
+                <span className="usa-error-message" id="project-type-select-input-error-message" role="alert">
                     {messages[0]}
                 </span>
             ) : null}

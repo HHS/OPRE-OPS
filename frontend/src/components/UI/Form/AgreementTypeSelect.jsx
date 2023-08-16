@@ -12,6 +12,8 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
  * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
+ * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
+ * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementTypeSelect = ({
@@ -22,6 +24,8 @@ export const AgreementTypeSelect = ({
     pending = false,
     messages = [],
     className,
+    legendClassname = "margin-top-205",
+    defaultString = "- Select Agreement Type -",
 }) => {
     const {
         data: agreementTypes,
@@ -43,17 +47,17 @@ export const AgreementTypeSelect = ({
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>
             <label
-                className={`usa-label margin-top-205 ${messages.length ? "usa-label--error" : null} `}
+                className={`usa-label ${messages.length ? "usa-label--error" : null} ${legendClassname}`}
                 htmlFor={name}
             >
                 {label}
             </label>
             {messages.length ? (
-                <span className="usa-error-message" id="input-error-message" role="alert">
+                <span className="usa-error-message" role="alert">
                     {messages[0]}
                 </span>
             ) : null}
-            <div className="display-flex flex-align-center margin-top-1">
+            <div className="display-flex flex-align-center">
                 <select
                     className={`usa-select margin-top-0 width-card-lg ${messages.length ? "usa-input--error" : null}`}
                     name={name}
@@ -61,7 +65,7 @@ export const AgreementTypeSelect = ({
                     onChange={handleChange}
                     value={selectedAgreementType}
                 >
-                    <option value={0}>- Select Agreement Type -</option>
+                    <option value={0}>{defaultString}</option>
                     {agreementTypes.map((type, index) => (
                         <option key={index + 1} value={type}>
                             {convertCodeForDisplay("agreementType", type)}

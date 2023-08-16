@@ -37,10 +37,7 @@ describe("modal management", () => {
 
 const getToProcurementShopSelect = () => {
     cy.visit("/agreements/create");
-    // Step One - Select a Project
-    cy.get("#project--list--toggle").click();
-    cy.get("#project--list").invoke("show");
-    cy.get("li").contains("Human Services Interoperability Support").click();
+    cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
     cy.get("#continue").click();
 };
 
@@ -48,7 +45,7 @@ describe("procurement shop select", () => {
     it("should display all shops in the dropdown", () => {
         getToProcurementShopSelect();
         // Step Two - Select Procurement Shop
-        cy.get("#procurement-shop-select option").should("have.length", 4);
+        cy.get("#procurement-shop-select option").should("have.length", 5);
     });
     it("should default to GCS", () => {
         getToProcurementShopSelect();

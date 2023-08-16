@@ -106,7 +106,7 @@ const AuthSection = () => {
             {isLoggedIn && (
                 <div>
                     <div className="display-flex flex-align-center">
-                        <div className="padding-right-205">
+                        <div className="padding-right-1">
                             <User />
                         </div>
                         <div className="padding-right-205">

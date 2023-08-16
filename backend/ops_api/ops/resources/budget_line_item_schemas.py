@@ -135,13 +135,6 @@ class RequestBody:
                 raise ValidationError("BLI's Agreement must have a ProjectOfficer when status is not DRAFT")
 
     @validates_schema(skip_on_field_errors=False)
-    def validate_team_members(self, data, **kwargs):
-        if is_changing_status(data):
-            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
-            if bli and bli.agreement_id and not bli.agreement.team_members:
-                raise ValidationError("BLI's Agreement must have at least one Team Member when status is not DRAFT")
-
-    @validates_schema(skip_on_field_errors=False)
     def validate_description(self, data: dict, **kwargs):
         if is_changing_status(data):
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))

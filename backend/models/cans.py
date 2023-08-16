@@ -143,6 +143,7 @@ class Agreement(BaseModel):
     project_officer = Column(
         Integer, ForeignKey("users.id", name="fk_user_project_officer"), nullable=True
     )
+    project_officer_user = relationship(User, foreign_keys=[project_officer])
     team_members = relationship(
         User,
         secondary=agreement_team_members,
@@ -154,7 +155,10 @@ class Agreement(BaseModel):
     research_project = relationship("ResearchProject", back_populates="agreements")
 
     budget_line_items = relationship(
-        "BudgetLineItem", back_populates="agreement", lazy=True
+        "BudgetLineItem",
+        back_populates="agreement",
+        lazy=True,
+        cascade="all, delete",
     )
     procurement_shop_id = Column(Integer, ForeignKey("procurement_shop.id"))
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")

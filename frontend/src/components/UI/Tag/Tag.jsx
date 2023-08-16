@@ -12,6 +12,8 @@ const Tag = ({ tagStyle = "", text = "", active = false, label = "", className =
         tagClasses += " bg-white text-brand-neutral-dark";
     } else if (tagStyle === "darkTextGreenBackground") {
         tagClasses += " bg-brand-data-viz-primary-10 text-brand-neutral-dark";
+    } else if (tagStyle === "primaryDarkTextLightBackground") {
+        tagClasses += " bg-brand-primary-light text-brand-primary-dark";
     }
     // ACTIVE CLASSES FOR GRAPH LEGEND
     if (active && label === "Available") {

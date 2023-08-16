@@ -2,7 +2,6 @@ import asyncio
 
 from flask import Response, jsonify
 from flask.views import MethodView
-
 from ops_api.ops.utils.health_check import check_all
 from ops_api.ops.utils.response import make_response_with_headers
 

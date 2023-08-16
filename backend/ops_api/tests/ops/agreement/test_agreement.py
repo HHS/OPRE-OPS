@@ -65,7 +65,7 @@ def test_agreements_serialization(auth_client, loaded_db):
         "agreement_type": "CONTRACT",
         "contract_number": "CT00XX1",
         "contract_type": "RESEARCH",
-        "created_by": None,
+        "created_by": 4,
         "delivered_status": False,
         "description": "Test description",
         "id": 1,
@@ -247,6 +247,7 @@ def test_contract(loaded_db):
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
         research_project_id=1,
+        created_by=4,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
