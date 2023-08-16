@@ -10,6 +10,7 @@ from models import (
     ContractAgreement,
     ContractType,
     Group,
+    Role,
     User,
 )
 from ops_api.ops.resources.budget_line_item_schemas import RequestBody
@@ -35,8 +36,23 @@ def original_agreement():
 
 
 @pytest.fixture
-def not_budget_team(loaded_db):
+def not_admin_user(loaded_db):
     user = loaded_db.get(User, 4)
+    user_role = loaded_db.get(Role, 2)
+    roles = user.roles
+    user.roles = [user_role]
+    loaded_db.add(user)
+    loaded_db.commit()
+    yield user
+
+    user.roles = roles
+    loaded_db.add(user)
+    loaded_db.commit()
+
+
+@pytest.fixture
+def not_budget_team(loaded_db, not_admin_user):
+    user = not_admin_user
     groups = user.groups
     user.groups = []
     loaded_db.add(user)
@@ -49,13 +65,14 @@ def not_budget_team(loaded_db):
 
 
 @pytest.fixture
-def in_budget_team(loaded_db):
-    user = loaded_db.get(User, 4)
+def in_budget_team(loaded_db, not_admin_user):
+    user = not_admin_user
     budget_team = loaded_db.get(Group, 1)
     groups = user.groups
     user.groups = [budget_team]
     loaded_db.add(user)
     loaded_db.commit()
+
     yield user
 
     user.groups = groups
@@ -90,7 +107,7 @@ def test_edit_planned_budget_line_unauthorized():
 
 @given("I am logged in as an OPS user")
 def client(auth_client):
-    return auth_client
+    yield auth_client
 
 
 @given("I have a Contract Agreement as the original Agreement owner", target_fixture="agreement")
@@ -182,7 +199,7 @@ def planned_bli(loaded_db, agreement):
 @given("I edit the budget line item to change a value", target_fixture="edited_bli")
 def edit_bli(bli):
     bli.line_description = "Updated Description"
-    return bli
+    yield bli
 
 
 @when("I submit the budget line item", target_fixture="submit_response")
@@ -195,17 +212,17 @@ def submit(client, edited_bli):
 
 @then("I should get an error that I am not authorized")
 def invalid(submit_response):
-    assert submit_response.status_code == 401
     if submit_response.status_code != 401:
         print("-" * 20)
         print(submit_response.data)
         print("-" * 20)
+    assert submit_response.status_code == 401
 
 
 @then("I should get a message that it was successful")
 def success(submit_response):
-    assert submit_response.status_code == 200
-    if submit_response.status_code != 401:
+    if submit_response.status_code != 200:
         print("-" * 20)
         print(submit_response.data)
         print("-" * 20)
+    assert submit_response.status_code == 200

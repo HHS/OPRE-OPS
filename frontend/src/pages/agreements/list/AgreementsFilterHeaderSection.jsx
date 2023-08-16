@@ -2,9 +2,8 @@ import "./AgreementsList.scss";
 import { Link, useLocation } from "react-router-dom";
 import styles from "../../../components/Portfolios/PortfolioTabsSection/PortfolioTabsSection.module.scss";
 import TabsSection from "../../../components/UI/TabsSection";
-import AgreementsFilterButton from "./AgreementsFilterButton";
-import AgreementsFilterTags from "./AgreementsFilterTags";
 import icons from "../../../uswds/img/sprite.svg";
+import AgreementsFilterSection from "./AgreementsFilterSection";
 
 /**
  * A header section of the agreements page that contains the filters.
@@ -62,14 +61,7 @@ export const AgreementsFilterHeaderSection = ({ filters, setFilters }) => {
                     <span className="">Add Agreement</span>
                 </Link>
             </div>
-            <div className="padding-top-05 padding-bottom-05 display-flex" style={{ justifyContent: "space-between" }}>
-                <span>
-                    <AgreementsFilterTags filters={filters} setFilters={setFilters} />
-                </span>
-                <span>
-                    <AgreementsFilterButton filters={filters} setFilters={setFilters} />
-                </span>
-            </div>
+            <AgreementsFilterSection filters={filters} setFilters={setFilters} />
         </div>
     );
 };

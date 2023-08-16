@@ -1,31 +1,5 @@
-.filterButton {
-  background-color: #162E51;
-  color: #FFFFFF;
-}
-
-.agreementsFilterModal {
-  position: absolute;
-  height: 650px;
-  width: 460px;
-  right: 0;
-  top: 3em;
-  z-index: 10;
-  border-radius: 4px;
-  border: 1px solid #A9AEB1;
-  /*background: #F0F0F0;*/
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15);
-}
-
 .modalBackgroundColor {
   background: #F0F0F0;
-}
-
-.agreementsFilterOverlay {
-  background-color: #A9AEB1;
-}
-
-.container {
-  position: relative;
 }
 
 .legendColor {

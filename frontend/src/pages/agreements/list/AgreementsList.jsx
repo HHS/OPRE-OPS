@@ -40,6 +40,7 @@ export const AgreementsList = () => {
     } = useGetAgreementsQuery({ refetchOnMountOrArgChange: true });
 
     const activeUser = useSelector((state) => state.auth.activeUser);
+    const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
 
     if (isLoadingAgreement) {
         return (
@@ -155,7 +156,7 @@ export const AgreementsList = () => {
     });
 
     let sortedAgreements;
-    if (searchParams.get("filter") === "my-agreements") {
+    if (myAgreementsUrl) {
         const myAgreements = filteredAgreements.filter((agreement) => {
             return agreement.team_members?.some((teamMember) => {
                 return teamMember.id === activeUser.id;
@@ -173,7 +174,11 @@ export const AgreementsList = () => {
             {isAlertActive && <Alert />}
 
             <h1 className="font-sans-lg">Agreements</h1>
-            <p>This is a list of the agreements you are listed as a Team Member on.</p>
+            <p>
+                {myAgreementsUrl
+                    ? "This is a list of the agreements you are listed as a Team Member on."
+                    : "This is a list of all agreements across OPRE."}
+            </p>
             <AgreementsFilterHeaderSection filters={filters} setFilters={setFilters} />
             <AgreementsTable agreements={sortedAgreements} />
         </App>

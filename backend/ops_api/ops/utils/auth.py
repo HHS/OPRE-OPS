@@ -136,7 +136,7 @@ class ExtraCheckError(Exception):
 
 def _check_role(permission_type: PermissionType, permission: Permission) -> bool:
     identity = get_jwt_identity()
-    return auth_gateway.is_authorized(identity, f"{permission_type}_{permission}".upper())
+    return auth_gateway.is_authorized(identity, f"{permission_type.name}_{permission.name}".upper())
 
 
 def _check_groups(groups: Optional[list[str]]) -> bool:
