@@ -10,7 +10,7 @@ import TabsSection from "../../../components/UI/TabsSection";
  * @param {Function} props.setFilters - A function to call to set the filters.
  * @returns {JSX.Element} - The procurement shop select element.
  */
-export const AgreementsFilterHeaderSection = ({ filters, setFilters }) => {
+export const AgreementsFilterHeaderSection = () => {
     const location = useLocation();
 
     const selected = `font-sans-2xs text-bold ${styles.listItemSelected}`;
