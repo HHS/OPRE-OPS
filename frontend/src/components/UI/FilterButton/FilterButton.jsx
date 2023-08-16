@@ -21,7 +21,6 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList }) => {
 
     const handleResetFilter = () => {
         resetFilter();
-        // setShowModal(false);
     };
 
     Modal.setAppElement("#root");
@@ -29,7 +28,7 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList }) => {
     return (
         <div className={customStyles.container} id="filter-container">
             <button
-                className={`usa-button display-flex flex-align-center ${customStyles.filterButton} margin-right-0`}
+                className={`usa-button display-flex flex-align-center margin-right-0 ${customStyles.filterButton}`}
                 onClick={() => (showModal ? setShowModal(false) : setShowModal(true))}
             >
                 <svg

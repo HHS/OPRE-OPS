@@ -11,7 +11,7 @@ import AgreementsFilterTags from "./AgreementsFilterTags";
  */
 export const AgreementsFilterSection = ({ filters, setFilters }) => {
     return (
-        <div className="padding-top-05 padding-bottom-05 display-flex" style={{ justifyContent: "space-between" }}>
+        <div className="padding-top-05 padding-bottom-05 display-flex flex-justify-space-between">
             <span>
                 <AgreementsFilterTags filters={filters} setFilters={setFilters} />
             </span>

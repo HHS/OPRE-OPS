@@ -9,10 +9,7 @@ import icons from "../../../uswds/img/sprite.svg";
  */
 export const FilterTags = ({ removeFilter, tagsList }) => {
     const FilterTag = ({ tag }) => (
-        <div
-            className="font-12px height-205 radius-md bg-brand-primary-light display-flex flex-align-center"
-            style={{ width: "fit-content", padding: "5px" }}
-        >
+        <div className="font-12px height-205 radius-md bg-brand-primary-light display-flex flex-align-center width-fit-content padding-05">
             {tag.tagText}
             <svg
                 className="height-2 width-2 text-primary-dark margin-left-05 hover: cursor-pointer usa-tooltip"
