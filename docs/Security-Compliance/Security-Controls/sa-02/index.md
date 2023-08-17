@@ -9,7 +9,11 @@ c. Establish a discrete line item for information security and privacy in organi
 
 ## OPS Implementation
 
-TODO: find template(s) or documents we can inherit and link to from HHS/ACF
+TODO: find template(s) or documents we can inherit and link to from HHS/ACF. This seems more OPRE policy/documentation focused ?
+
+TODO: ACF Privacy Policy should dicated the privacy requirements?
+
+[ACF Privacy Policy](https://www.acf.hhs.gov/privacy-policy)
 
 ### Control Orgination:
 

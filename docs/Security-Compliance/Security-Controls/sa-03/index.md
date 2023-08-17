@@ -11,7 +11,28 @@ d. Integrate the organizational information security and privacy risk management
 
 ## OPS Implementation
 
-TODO: look into agile-appropirate text
+a. OPS is developed using Agile software development principles. As part of this, security and privacy is factored into each phase of the development lifecycle. Specifically, the following methodologies are implemented:
+
+- Threat models that are updated at defined intervals and documented centrally
+- Automated security testing using both static and dynamic application security testing
+- As part of reviews of OPS source code in pull requests, security and privacy is included as part of the review.
+- Documentation of security-related decisions in [Architecture Decision Records](../../../adr/), threat models, and code reviews are all centrally codified within our GitHub repository. Content stored within the repository is inherently accessible, version-controlled, retained, and searchable. Security testing results are also accessible within the repository as well.
+
+b.
+
+ISSO
+System Owner
+OPRE Tech Lead
+Vendor Tech Lead
+
+c. The following individuals
+
+- ISSO is Ashley Montgomery
+- System Owner is
+- OPRE Tech Lead
+- Vendor Tech Lead is
+
+d. TODO: seek some text or templates from ACF Tech
 
 ### Control Orgination:
 
