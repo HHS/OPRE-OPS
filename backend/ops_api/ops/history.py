@@ -49,7 +49,6 @@ def find_relationship_by_fk(obj, col_key):
 
 def build_audit(obj, event_type: OpsDBHistoryType) -> DbRecordAudit:
     row_key = "|".join([str(getattr(obj, pk)) for pk in obj.primary_keys])
-    print(f"\n~~~~~~{obj.__class__.__name__}: {row_key} ({event_type})~~~~~~")
 
     original = {}
     diff = {}
@@ -57,69 +56,57 @@ def build_audit(obj, event_type: OpsDBHistoryType) -> DbRecordAudit:
 
     mapper = obj.__mapper__
 
-    for col in mapper.columns:
+    # collect changes in column values
+    auditable_columns = list(filter(lambda c: c.key in obj.__dict__, mapper.columns))
+    for col in auditable_columns:
         key = col.key
-        if key in obj.__dict__:
-            hist = get_history(obj, key)
-            if hist.has_changes():
-                # this assumes columns are primitives, not lists
-                old_val = convert_for_jsonb(hist.deleted[0]) if hist.deleted else None
-                new_val = convert_for_jsonb(hist.added[0]) if hist.added else None
-                if old_val:
-                    original[key] = old_val
-                diff[key] = new_val
-                if event_type == OpsDBHistoryType.NEW:
-                    if new_val:
-                        changes[key] = {
-                            "new": new_val,
-                        }
-                else:
+        hist = get_history(obj, key)
+        if hist.has_changes():
+            # this assumes columns are primitives, not lists
+            old_val = convert_for_jsonb(hist.deleted[0]) if hist.deleted else None
+            new_val = convert_for_jsonb(hist.added[0]) if hist.added else None
+            if old_val:
+                original[key] = old_val
+            diff[key] = new_val
+            if event_type == OpsDBHistoryType.NEW and new_val:
+                if new_val:
                     changes[key] = {
                         "new": new_val,
-                        "old": old_val,
                     }
             else:
-                old_val = convert_for_jsonb(hist.unchanged[0]) if hist.unchanged[0] else None
-                original[key] = old_val
+                changes[key] = {
+                    "new": new_val,
+                    "old": old_val,
+                }
+        elif hist.unchanged[0]:
+            original[key] = convert_for_jsonb(hist.unchanged[0])
 
-    # need to include some relationships, such as agreement.team_members, which won't be logged as separate objects
-    for relationship in obj.__mapper__.relationships:
-        # print(f"relationship.key: {relationship.key}, in_dict: {relationship in obj.__dict__}, in_dict2: {relationship.key in obj.__dict__}, {relationship.secondary=}")
+    # collect changes in relationships, such as agreement.team_members
+    # limit this to relationships that aren't being logged as their own Classes
+    # and only include them on the editable side
+    auditable_relationships = list(
+        filter(lambda rel: rel.secondary is not None and not rel.viewonly, mapper.relationships)
+    )
+
+    for relationship in auditable_relationships:
         key = relationship.key
-        # limit this to relationships that aren't being logged as their own Classes
-        # and only include them on the editable side
-        # if key in obj.__dict__ and relationship.secondary is not None:
-        if relationship.secondary is not None and not relationship.viewonly:
-            hist = get_history(obj, key)
-            if hist.has_changes():
-                print(f"rel changes: {key=}, {type(relationship.argument)}")
-                # related_class_name = relationship.target.__name__
-                related_class_name = relationship.argument if isinstance(relationship.argument,
-                                                                         str) else relationship.argument.__name__
-                print(f"Relationship '{relationship.key}' points to class '{related_class_name}'")
-
-                if event_type == OpsDBHistoryType.NEW:
-                    changes[key] = {
-                        "related_class_name": related_class_name,
-                        "added": convert_for_jsonb(hist.added),
-                    }
-                else:
-                    changes[key] = {
-                        "related_class_name": related_class_name,
-                        "added": convert_for_jsonb(hist.added),
-                        "deleted": convert_for_jsonb(hist.deleted),
-                    }
-                old_val = convert_for_jsonb(hist.unchanged + hist.deleted) if hist.unchanged or hist.deleted else None
-                new_val = convert_for_jsonb(hist.unchanged + hist.added) if hist.unchanged or hist.added else None
-                original[key] = old_val
-                diff[key] = new_val
-            else:
-                old_val = convert_for_jsonb(hist.unchanged) if hist.unchanged else None
-                original[key] = old_val
-        else:
-            hist = get_history(obj, key)
-            if hist.has_changes():
-                print(f"!!!!Untracked changes to {relationship.key=}")
+        hist = get_history(obj, key)
+        if hist.has_changes():
+            related_class_name = (
+                relationship.argument if isinstance(relationship.argument, str) else relationship.argument.__name__
+            )
+            changes[key] = {
+                "related_class_name": related_class_name,
+                "added": convert_for_jsonb(hist.added),
+            }
+            if event_type != OpsDBHistoryType.NEW:
+                changes[key]["deleted"] = convert_for_jsonb(hist.deleted)
+            old_val = convert_for_jsonb(hist.unchanged + hist.deleted) if hist.unchanged or hist.deleted else None
+            new_val = convert_for_jsonb(hist.unchanged + hist.added) if hist.unchanged or hist.added else None
+            original[key] = old_val
+            diff[key] = new_val
+        elif hist.unchanged:
+            original[key] = convert_for_jsonb(hist.unchanged)
     return DbRecordAudit(row_key, original, diff, changes)
 
 
@@ -167,14 +154,15 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
         if not isinstance(obj, OpsEvent) and not isinstance(obj, OpsDBHistory):  # not interested in tracking these
             db_audit = build_audit(obj, event_type)
             if event_type == OpsDBHistoryType.UPDATED and not db_audit.changes:
-                logging.info(f"No changes found for {obj.__class__.__name__} with row_key={db_audit.row_key}, "
-                             f"an OpsDBHistory record will not be created for this UPDATED event.")
+                logging.info(
+                    f"No changes found for {obj.__class__.__name__} with row_key={db_audit.row_key}, "
+                    f"an OpsDBHistory record will not be created for this UPDATED event."
+                )
                 continue
-            agreement_id = getattr(obj, 'agreement_id', None)
+            agreement_id = getattr(obj, "agreement_id", None)
             if isinstance(obj, Agreement):
                 agreement_id = obj.id
 
-            print(f"{obj.__class__.__name__}:{db_audit.row_key}, {event_type=}, {agreement_id=}")
             ops_db = OpsDBHistory(
                 event_type=event_type,
                 event_details=obj.to_dict(),
@@ -187,5 +175,4 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
                 agreement_id=agreement_id,
             )
             result.append(ops_db)
-            print("~~~~~~~~~~~~~~~~~~\n")
     return result
