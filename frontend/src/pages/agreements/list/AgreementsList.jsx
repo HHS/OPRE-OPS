@@ -11,8 +11,8 @@ import AgreementsTable from "./AgreementsTable";
 import AgreementsFilterHeaderSection from "./AgreementsTabs";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 import TablePageLayout from "../../../components/UI/Layouts/TablePageLayout";
-import AgreementsFilterSection from "./AgreementsFilterSection";
-import "./AgreementsList.scss";
+import AgreementsFilterButton from "./AgreementsFilterButton";
+import AgreementsFilterTags from "./AgreementsFilterTags";
 
 /**
  * Page for the Agreements List.
@@ -186,7 +186,8 @@ export const AgreementsList = () => {
                 buttonText="Add Agreement"
                 buttonLink="/agreements/create"
                 TabsSection={<AgreementsFilterHeaderSection />}
-                FilterSection={<AgreementsFilterSection filters={filters} setFilters={setFilters} />}
+                FilterTags={<AgreementsFilterTags filters={filters} setFilters={setFilters} />}
+                FilterButton={<AgreementsFilterButton filters={filters} setFilters={setFilters} />}
                 TableSection={<AgreementsTable agreements={sortedAgreements} />}
             />
         </App>

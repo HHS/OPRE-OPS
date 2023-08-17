@@ -11,7 +11,8 @@ import icons from "../../../../uswds/img/sprite.svg";
  * @param {string} props.subtitle - The subtitle to display.
  * @param {string} props.details - The details to display.
  * @param {React.ReactNode} props.TabsSection - The tabs to display.
- * @param {React.ReactNode} props.FilterSection - The filter to display.
+ * @param {React.ReactNode} props.FilterTags - The filter tags to display.
+ *  @param {React.ReactNode} props.FilterButton - The filter button to display.
  * @param {React.ReactNode} props.TableSection - The table to display.
  * @param {string} props.buttonText - The text to display on the button.
  * @param {string} props.buttonLink - The link to navigate to when the button is clicked.
@@ -23,7 +24,8 @@ export const TablePageLayout = ({
     subtitle,
     details,
     TabsSection,
-    FilterSection,
+    FilterTags,
+    FilterButton,
     TableSection,
     buttonText,
     buttonLink,
@@ -51,8 +53,9 @@ export const TablePageLayout = ({
                     <h2>{subtitle}</h2>
                     <p>{details}</p>
                 </div>
-                {FilterSection}
+                {FilterButton}
             </div>
+            {FilterTags}
             {TableSection}
             {children}
         </>
@@ -67,7 +70,8 @@ TablePageLayout.propTypes = {
     subtitle: PropTypes.string.isRequired,
     details: PropTypes.string.isRequired,
     TabsSection: PropTypes.node.isRequired,
-    FilterSection: PropTypes.node.isRequired,
+    FilterTags: PropTypes.node.isRequired,
+    FilterButton: PropTypes.node.isRequired,
     TableSection: PropTypes.node.isRequired,
     buttonText: PropTypes.string.isRequired,
     buttonLink: PropTypes.string.isRequired,
