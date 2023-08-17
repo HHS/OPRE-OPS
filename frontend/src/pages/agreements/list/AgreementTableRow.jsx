@@ -13,7 +13,6 @@ import { useDeleteAgreementMutation } from "../../../api/opsAPI";
 import Modal from "../../../components/UI/Modal";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import icons from "../../../uswds/img/sprite.svg";
-import "./AgreementsList.scss";
 
 /**
  * Renders a row in the agreements table.
