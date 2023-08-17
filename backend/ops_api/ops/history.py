@@ -136,7 +136,8 @@ def track_db_history_catch_errors(exception_context):
         },
     )
     with Session(current_app.engine) as session:
-        session.deleted(ops_db)
+        session.add(ops_db)
+        session.commit()
         current_app.logger.error(f"SQLAlchemy error added to {OpsDBHistory.__tablename__} with id {ops_db.id}")
 
 
