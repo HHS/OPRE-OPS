@@ -158,7 +158,7 @@ export const AgreementsList = () => {
         );
     });
 
-    let sortedAgreements;
+    let sortedAgreements = [];
     if (myAgreementsUrl) {
         const myAgreements = filteredAgreements.filter((agreement) => {
             return agreement.team_members?.some((teamMember) => {
