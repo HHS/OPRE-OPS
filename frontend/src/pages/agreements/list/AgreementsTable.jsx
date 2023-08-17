@@ -9,7 +9,7 @@ import { AgreementTableRow } from "./AgreementTableRow";
  */
 export const AgreementsTable = ({ agreements = [] }) => {
     return (
-        <div>
+        <>
             <table className="usa-table usa-table--borderless width-full ">
                 <thead>
                     <tr>
@@ -33,7 +33,7 @@ export const AgreementsTable = ({ agreements = [] }) => {
                     There are 0 results based on your filter selections.
                 </div>
             )}
-        </div>
+        </>
     );
 };
 
