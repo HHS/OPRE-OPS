@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -7,13 +7,12 @@ import ProcurementShopSelectWithFee from "../../UI/Form/ProcurementShopSelectWit
 import AgreementReasonSelect from "../../UI/Form/AgreementReasonSelect";
 import AgreementTypeSelect from "../../UI/Form/AgreementTypeSelect";
 import ProductServiceCodeSelect from "../../UI/Form/ProductServiceCodeSelect";
-import ProjectOfficerSelect from "../../UI/Form/ProjectOfficerSelect";
-import TeamMemberSelect from "../../UI/Form/TeamMemberSelect";
+import TeamMemberComboBox from "../../UI/Form/TeamMemberComboBox";
 import TeamMemberList from "../../UI/Form/TeamMemberList";
 import Modal from "../../UI/Modal";
 import { formatTeamMember } from "../../../api/postAgreements";
 import ProductServiceCodeSummaryBox from "../../UI/Form/ProductServiceCodeSummaryBox";
-import { useEditAgreement, useSetState, useUpdateAgreement, useEditAgreementDispatch } from "./AgreementEditorContext";
+import { useEditAgreement, useEditAgreementDispatch, useSetState, useUpdateAgreement } from "./AgreementEditorContext";
 import { setAlert } from "../../UI/Alert/alertSlice";
 import suite from "./AgreementEditFormSuite";
 import Input from "../../UI/Form/Input";
@@ -23,6 +22,9 @@ import {
     useGetProductServiceCodesQuery,
     useUpdateAgreementMutation,
 } from "../../../api/opsAPI";
+import ProjectOfficerComboBox from "../../UI/Form/ProjectOfficerComboBox";
+import { getUser } from "../../../api/getUser";
+import _ from "lodash";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -33,6 +35,7 @@ import {
  * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
  * @param {boolean} props.isEditMode - Whether the edit mode is on (in the Agreement details page) - optional.
  * @param {function} props.setIsEditMode - The function to set the edit mode (in the Agreement details page) - optional.
+ * @returns {React.JSX.Element} - The component JSX.
  */
 export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, setIsEditMode }) => {
     const isWizardMode = location.pathname === "/agreements/create" || location.pathname.startsWith("/agreements/edit");
@@ -79,6 +82,24 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         team_members: selectedTeamMembers,
     } = agreement;
 
+    // This is needed due to a caching issue with the React Context - for some reason selected_project_officer
+    // is not updated in the parent context/props.
+    useEffect(() => {
+        const getProjectOfficerSetState = async (id) => {
+            const results = await getUser(id);
+            setSelectedProjectOfficer(results);
+        };
+
+        if (_.isEmpty(selectedProjectOfficer) && agreement?.project_officer) {
+            getProjectOfficerSetState(agreement?.project_officer).catch(console.error);
+        }
+
+        return () => {
+            setSelectedProjectOfficer({});
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const {
         data: productServiceCodes,
         error: errorProductServiceCodes,
@@ -101,7 +122,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
     let res = suite.get();
 
     const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
-    const shouldDisableBtn = !agreementTitle || res.hasErrors();
+    const shouldDisableBtn = !agreementTitle || !agreementType || res.hasErrors();
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -153,23 +174,57 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         };
         const { id, cleanData } = cleanAgreementForApi(data);
         if (id) {
-            // TODO: handle failures
             updateAgreement({ id: id, data: cleanData })
                 .unwrap()
-                .then((payload) => {
-                    console.log("Agreement Updated", payload);
+                .then((fulfilled) => {
+                    console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
+                    globalDispatch(
+                        setAlert({
+                            type: "success",
+                            heading: "Agreement Draft Saved",
+                            message: "The agreement has been successfully saved.",
+                        })
+                    );
                 })
-                .catch((error) => console.error("Agreement Updated Failed", error));
+                .catch((rejected) => {
+                    console.error(`UPDATE: agreement updated failed: ${JSON.stringify(rejected, null, 2)}`);
+                    globalDispatch(
+                        setAlert({
+                            type: "error",
+                            heading: "Error",
+                            message: "An error occurred while saving the agreement.",
+                        })
+                    );
+                    navigate("/error");
+                });
         } else {
-            // TODO: handle failures
             addAgreement(cleanData)
                 .unwrap()
                 .then((payload) => {
-                    console.log("Agreement Created", payload);
                     const newAgreementId = payload.id;
                     setAgreementId(newAgreementId);
                 })
-                .catch((error) => console.error("Agreement Failed", error));
+                .then((fulfilled) => {
+                    console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+                    globalDispatch(
+                        setAlert({
+                            type: "success",
+                            heading: "Agreement Draft Saved",
+                            message: "The agreement has been successfully created.",
+                        })
+                    );
+                })
+                .catch((rejected) => {
+                    console.error(`CREATE: agreement failed: ${JSON.stringify(rejected, null, 2)}`);
+                    globalDispatch(
+                        setAlert({
+                            type: "error",
+                            heading: "Error",
+                            message: "An error occurred while creating the agreement.",
+                        })
+                    );
+                    navigate("/error");
+                });
         }
     };
 
@@ -181,14 +236,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
 
     const handleDraft = async () => {
         saveAgreement();
-        await globalDispatch(
-            setAlert({
-                type: "success",
-                heading: "Agreement Draft Saved",
-                message: "The agreement has been successfully saved.",
-                redirectUrl: "/agreements",
-            })
-        );
+        await navigate("/agreements");
     };
 
     const handleCancel = () => {
@@ -335,24 +383,25 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
             </div>
 
             <div className="display-flex margin-top-3">
-                <ProjectOfficerSelect
-                    name="project_officer"
-                    label="Project Officer"
-                    messages={res.getErrors("project_officer")}
-                    className={cn("project_officer")}
+                <ProjectOfficerComboBox
                     selectedProjectOfficer={selectedProjectOfficer}
                     setSelectedProjectOfficer={changeSelectedProjectOfficer}
+                    legendClassname="usa-label margin-top-0 margin-bottom-1"
+                    messages={res.getErrors("project_officer")}
                     onChange={(name, value) => {
                         if (isReviewMode) {
                             runValidate(name, value);
                         }
                     }}
+                    overrideStyles={{ width: "15em" }}
                 />
-                <TeamMemberSelect
+                <TeamMemberComboBox
                     className="margin-left-4"
+                    legendClassname="usa-label margin-top-0 margin-bottom-1"
                     selectedTeamMembers={selectedTeamMembers}
                     selectedProjectOfficer={selectedProjectOfficer}
                     setSelectedTeamMembers={setSelectedTeamMembers}
+                    overrideStyles={{ width: "12.8em" }}
                 />
             </div>
 

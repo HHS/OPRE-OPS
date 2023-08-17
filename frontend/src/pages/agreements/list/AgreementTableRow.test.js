@@ -4,9 +4,10 @@ import { AgreementTableRow } from "./AgreementTableRow";
 import { Router } from "react-router-dom";
 import { createMemoryHistory } from "history";
 import { Provider } from "react-redux";
-import store from "../../../store";
+import configureStore from "redux-mock-store";
 
 const history = createMemoryHistory();
+const mockStore = configureStore([]);
 
 jest.mock("react", () => ({
     ...jest.requireActual("react"),
@@ -29,16 +30,27 @@ describe("AgreementTableRow", () => {
         name: "Test Agreement",
         research_project: { title: "Test Project" },
         agreement_type: "GRANT",
+        project_officer: 1,
+        team_members: [{ id: 1 }],
         procurement_shop: { fee: 0.05 },
         budget_line_items: [
             { amount: 100, date_needed: "2024-05-02T11:00:00", status: "DRAFT" },
             { amount: 200, date_needed: "2023-03-02T11:00:00", status: "UNDER_REVIEW" },
         ],
-        created_by: "user1",
+        created_by: 1,
         notes: "Test notes",
         created_on: "2021-10-21T03:24:00",
         status: "In Review",
     };
+    const initialState = {
+        auth: {
+            activeUser: {
+                id: 1,
+                name: "Test User",
+            },
+        },
+    };
+    const store = mockStore(initialState);
 
     test("renders correctly", () => {
         render(

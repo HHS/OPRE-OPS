@@ -20,7 +20,7 @@ import { setAlert } from "../../../components/UI/Alert/alertSlice";
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const ReviewAgreement = ({ agreement_id }) => {
-    const dispatch = useDispatch();
+    const globalDispatch = useDispatch();
     const navigate = useNavigate();
     const {
         isSuccess,
@@ -108,24 +108,34 @@ export const ReviewAgreement = ({ agreement_id }) => {
             agreement?.budget_line_items.forEach((bli) => {
                 if (bli.status === "DRAFT") {
                     console.log(bli.id);
-                    try {
-                        updateBudgetLineItemStatus({ id: bli.id, status: "UNDER_REVIEW" }).unwrap();
-                        console.log("BLI Status Updated");
-                    } catch (error) {
-                        console.log("Error Updating Budget Line Status");
-                        console.dir(error);
-                    }
+                    updateBudgetLineItemStatus({ id: bli.id, status: "UNDER_REVIEW" })
+                        .unwrap()
+                        .then((fulfilled) => {
+                            console.log("BLI Status Updated:", fulfilled);
+                            globalDispatch(
+                                setAlert({
+                                    type: "success",
+                                    heading: "Agreement sent to approval",
+                                    message: "The agreement has been successfully sent to approval for Planned Status.",
+                                })
+                            );
+                            navigate("/agreements");
+                        })
+                        .catch((rejected) => {
+                            console.log("Error Updating Budget Line Status");
+                            console.dir(rejected);
+                            globalDispatch(
+                                setAlert({
+                                    type: "error",
+                                    heading: "Error",
+                                    message: "An error occurred. Please try again.",
+                                })
+                            );
+                            navigate("/error");
+                        });
                 }
             });
         }
-        dispatch(
-            setAlert({
-                type: "success",
-                heading: "Agreement sent to approval",
-                message: "The agreement has been successfully sent to approval for Planned Status.",
-                redirectUrl: "/agreements",
-            })
-        );
     };
 
     return (
