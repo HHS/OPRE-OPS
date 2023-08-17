@@ -32,7 +32,7 @@ export const TablePageLayout = ({
 }) => {
     return (
         <>
-            <div className="padding-y-05 display-flex flex-align-center flex-justify">
+            <div className="display-flex flex-align-center flex-justify margin-bottom-3">
                 <h1 className="margin-0 text-brand-primary font-sans-2xl">{title}</h1>
                 <Link
                     to={buttonLink}
@@ -48,9 +48,9 @@ export const TablePageLayout = ({
                 </Link>
             </div>
             {TabsSection}
-            <div className="padding-top-05 padding-bottom-05 display-flex flex-align-center flex-justify">
+            <div className="display-flex flex-align-center flex-justify margin-bottom-1">
                 <div>
-                    <h2>{subtitle}</h2>
+                    <h2 className="margin-0">{subtitle}</h2>
                     <p>{details}</p>
                 </div>
                 {FilterButton}
