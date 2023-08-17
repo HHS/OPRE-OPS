@@ -1,11 +1,11 @@
 from flask import Response, current_app, request
 
-from models import OpsDBHistory, User
+from models import OpsDBHistory, OpsDBHistoryType, User
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseListAPI, handle_sql_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from typing_extensions import override
 
 
@@ -25,8 +25,8 @@ def build_change_messages(ops_db_hist: OpsDBHistory):
             if not hist_added and not hist_deleted:
                 continue
             if key in ["team_members", "support_contacts"]:
-                users_added = [u["full_name"] for u in hist_added] if hist_added else None
-                users_deleted = [u["full_name"] for u in hist_deleted] if hist_deleted else None
+                users_added = [u.get("full_name", "Unknown") for u in hist_added] if hist_added else None
+                users_deleted = [u.get("full_name", "Unknown") for u in hist_deleted] if hist_deleted else None
                 msg = f"{key} changed"
                 if users_added:
                     msg += f", added {users_added}"
@@ -63,8 +63,10 @@ class AgreementHistoryListAPI(BaseListAPI):
         offset = request.args.get("offset", 0, type=int)
         with handle_sql_error():
             stmt = select(OpsDBHistory).join(OpsDBHistory.created_by_user, isouter=True).add_columns(User)
-            # stmt = stmt.where(OpsDBHistory.class_name == "ContractAgreement")
-            stmt = stmt.where(OpsDBHistory.agreement_id == id)
+            stmt = stmt.where(and_(
+                OpsDBHistory.agreement_id == id,
+                OpsDBHistory.event_type.in_([OpsDBHistoryType.NEW, OpsDBHistoryType.UPDATED, OpsDBHistoryType.DELETED])
+            ))
 
             stmt = stmt.limit(limit)
             if offset:

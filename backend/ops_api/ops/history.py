@@ -29,6 +29,8 @@ def convert_for_jsonb(value):
     if isinstance(value, date):
         return value.isoformat()
     if isinstance(value, BaseModel):
+        if callable(getattr(value, "to_slim_dict", None)):
+            return value.to_slim_dict()
         return value.to_dict()
     if isinstance(value, (list, tuple)):
         return [convert_for_jsonb(item) for item in value]
@@ -69,14 +71,13 @@ def build_audit(obj, event_type: OpsDBHistoryType) -> DbRecordAudit:
                 if event_type == OpsDBHistoryType.NEW:
                     if new_val:
                         changes[key] = {
-                            "added": convert_for_jsonb(hist.added),
+                            "new": new_val,
                         }
                 else:
                     changes[key] = {
-                        "added": convert_for_jsonb(hist.added),
-                        "deleted": convert_for_jsonb(hist.deleted),
+                        "new": new_val,
+                        "old": old_val,
                     }
-
             else:
                 old_val = convert_for_jsonb(hist.unchanged[0]) if hist.unchanged[0] else None
                 original[key] = old_val
@@ -91,13 +92,20 @@ def build_audit(obj, event_type: OpsDBHistoryType) -> DbRecordAudit:
         if relationship.secondary is not None and not relationship.viewonly:
             hist = get_history(obj, key)
             if hist.has_changes():
-                print(f"rel changes: {key=}")
+                print(f"rel changes: {key=}, {type(relationship.argument)}")
+                # related_class_name = relationship.target.__name__
+                related_class_name = relationship.argument if isinstance(relationship.argument,
+                                                                         str) else relationship.argument.__name__
+                print(f"Relationship '{relationship.key}' points to class '{related_class_name}'")
+
                 if event_type == OpsDBHistoryType.NEW:
                     changes[key] = {
+                        "related_class_name": related_class_name,
                         "added": convert_for_jsonb(hist.added),
                     }
                 else:
                     changes[key] = {
+                        "related_class_name": related_class_name,
                         "added": convert_for_jsonb(hist.added),
                         "deleted": convert_for_jsonb(hist.deleted),
                     }
@@ -106,7 +114,6 @@ def build_audit(obj, event_type: OpsDBHistoryType) -> DbRecordAudit:
                 original[key] = old_val
                 diff[key] = new_val
             else:
-                print(f"rel NO changes: {key=}")
                 old_val = convert_for_jsonb(hist.unchanged) if hist.unchanged else None
                 original[key] = old_val
         else:

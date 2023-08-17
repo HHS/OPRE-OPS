@@ -86,6 +86,13 @@ class User(BaseModel):
 
         return cast(dict[str, Any], d)
 
+    def to_slim_dict(self) -> dict[str, Any]:
+        d = {
+            "id": self.id,
+            "full_name": self.full_name,
+        }
+        return cast(dict[str, Any], d)
+
 
 class Role(BaseModel):
     """Main Role model."""
