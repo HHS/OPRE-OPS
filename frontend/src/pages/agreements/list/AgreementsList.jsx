@@ -8,7 +8,7 @@ import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import sortAgreements from "./utils";
 import Alert from "../../../components/UI/Alert";
 import AgreementsTable from "./AgreementsTable";
-import AgreementsFilterHeaderSection from "./AgreementsTabs";
+import AgreementTabs from "./AgreementsTabs";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 import TablePageLayout from "../../../components/UI/Layouts/TablePageLayout";
 import AgreementsFilterButton from "./AgreementsFilterButton";
@@ -185,7 +185,7 @@ export const AgreementsList = () => {
                 }
                 buttonText="Add Agreement"
                 buttonLink="/agreements/create"
-                TabsSection={<AgreementsFilterHeaderSection />}
+                TabsSection={<AgreementTabs />}
                 FilterTags={<AgreementsFilterTags filters={filters} setFilters={setFilters} />}
                 FilterButton={<AgreementsFilterButton filters={filters} setFilters={setFilters} />}
                 TableSection={<AgreementsTable agreements={sortedAgreements} />}

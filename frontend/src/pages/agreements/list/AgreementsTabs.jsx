@@ -6,7 +6,7 @@ import TabsSection from "../../../components/UI/TabsSection";
  * A header section of the agreements page that contains the filters.
  * @returns {JSX.Element} - The procurement shop select element.
  */
-export const AgreementsFilterHeaderSection = () => {
+export const AgreementTabs = () => {
     const location = useLocation();
 
     const selected = `font-sans-2xs text-bold ${styles.listItemSelected}`;
@@ -41,4 +41,4 @@ export const AgreementsFilterHeaderSection = () => {
     return <TabsSection links={links} label="Agreements Tabs Section" />;
 };
 
-export default AgreementsFilterHeaderSection;
+export default AgreementTabs;
