@@ -9,3 +9,17 @@ runs:
         set -x
         docker compose -f docker-compose.yml down -v
         docker compose -f docker-compose.yml up --build -d
+
+    - name: Capture logs
+      shell: bash
+      run: |
+        # Capture logs from all services
+        docker compose -f docker-compose.yml logs --no-color > full-stack-logs.log
+
+    - name: Upload logs as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        # Set the path to the log file
+        path: full-stack-logs.log
+        # Optionally, set a name for the artifact
+        name: full-stack-logs

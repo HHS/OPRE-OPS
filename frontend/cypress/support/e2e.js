@@ -89,7 +89,7 @@ Cypress.Commands.add("FakeAuth", (user) => {
             cy.contains("Basic User").click();
         }
         // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(1000);
+        cy.wait(100);
         cy.logLocalStorage();
         // TODO: Figure out why the below tests are required for this to complete.\
         // We presume it has something to do with "touching" the local storage, to ensure
