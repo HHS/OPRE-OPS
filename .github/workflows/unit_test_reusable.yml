@@ -58,6 +58,11 @@ jobs:
           # Capture logs from all services
           docker compose -f docker-compose.yml logs --no-color > full-stack-logs.log
 
+      # Run the Cypress E2E Tests
+      - name: E2E Test
+        working-directory: frontend
+        run: yarn test:e2e --spec ./cypress/e2e/loginPage.cy.js
+
       - name: Upload logs as artifact
         uses: actions/upload-artifact@v2
         with:
@@ -65,8 +70,3 @@ jobs:
           path: full-stack-logs.log
           # Optionally, set a name for the artifact
           name: full-stack-logs
-
-      # Run the Cypress E2E Tests
-      - name: E2E Test
-        working-directory: frontend
-        run: yarn test:e2e --spec ./cypress/e2e/loginPage.cy.js
