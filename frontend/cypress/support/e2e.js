@@ -88,7 +88,9 @@ Cypress.Commands.add("FakeAuth", (user) => {
         } else if (user === "basic") {
             cy.contains("Basic User").click();
         }
-
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(1000);
+        cy.logLocalStorage();
         // TODO: Figure out why the below tests are required for this to complete.\
         // We presume it has something to do with "touching" the local storage, to ensure
         // the value is there <shrug>
@@ -104,7 +106,10 @@ Cypress.Commands.add("FakeAuth", (user) => {
             })
             .then((tokenValue) => {
                 cy.log(`E2E USER TOKEN::: ${tokenValue}`);
+                cy.window().invoke("console.log", `E2E::ACCESS_TOKEN:${tokenValue}`);
             });
+
+        cy.logLocalStorage();
     });
 });
 
@@ -119,4 +124,10 @@ Cypress.Commands.add("fakeLogin", (name) => {
 
 Cypress.Commands.add("setIsLoggedIn", (win) => {
     win.store.dispatch(login());
+});
+
+Cypress.Commands.add("logLocalStorage", () => {
+    cy.window().then((window) => {
+        console.log("localStorage contents:", window.localStorage);
+    });
 });
