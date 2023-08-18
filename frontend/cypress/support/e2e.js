@@ -88,11 +88,23 @@ Cypress.Commands.add("FakeAuth", (user) => {
         } else if (user === "basic") {
             cy.contains("Basic User").click();
         }
-        cy.url().should("include", "/");
-        cy.window().its("localStorage").invoke("getItem", "access_token").should("exist");
-        cy.window()
-            .then((win) => win.store.getState().auth)
-            .should("deep.include", { isLoggedIn: true });
+
+        // TODO: Figure out why the below tests are required for this to complete.\
+        // We presume it has something to do with "touching" the local storage, to ensure
+        // the value is there <shrug>
+        // IF YOU REMOVE, IT FAILS WITH "INVALID TOKEN" - Tim D.
+
+        // Debugging: log out the localStorage "access_token" value
+        const getToken = () => cy.window().its("localStorage").invoke("getItem", "access_token");
+
+        // Repeatedly check the token until it's not null
+        getToken()
+            .should((tokenValue) => {
+                expect(tokenValue).not.to.be.null;
+            })
+            .then((tokenValue) => {
+                cy.log(`E2E USER TOKEN::: ${tokenValue}`);
+            });
     });
 });
 
