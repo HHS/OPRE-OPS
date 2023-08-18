@@ -24,6 +24,7 @@ export const testLogin = (name) => {
     cy.visit("/");
     // cy.fakeLogin(name);
     cy.FakeAuth(name);
+    cy.log("xxxxxxx Completed FakeAuth ****** ");
     cy.visit("/"); // This is mostly to "touch" the page, and ensure the window is active.
     cy.window().its("store").should("exist");
     cy.window().its("store").invoke("dispatch", login());
