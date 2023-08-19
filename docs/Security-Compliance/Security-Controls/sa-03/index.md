@@ -21,6 +21,7 @@ a. OPS is developed using Agile software development principles. As part of this
 b.
 
 ISSO
+ACF Security Engineer
 System Owner
 OPRE Tech Lead
 Vendor Tech Lead
@@ -28,6 +29,7 @@ Vendor Tech Lead
 c. The following individuals
 
 - ISSO is Ashley Montgomery
+- ACF Security Engineer is Clinton Jackson
 - System Owner is
 - OPRE Tech Lead
 - Vendor Tech Lead is
