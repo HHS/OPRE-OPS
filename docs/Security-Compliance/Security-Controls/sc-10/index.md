@@ -9,7 +9,7 @@ TODO: Seek inherited text
 
 ### Control Origination
 
-Inherited from IaaS provider
+Hybrid with IaaS provider and OPS
 
 ### Related Content
 
