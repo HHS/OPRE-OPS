@@ -67,6 +67,6 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           # Set the path to the log file
-          path: full-stack-logs.log
+          path: backend-logs.log
           # Optionally, set a name for the artifact
-          name: full-stack-logs
+          name: backend-logs
