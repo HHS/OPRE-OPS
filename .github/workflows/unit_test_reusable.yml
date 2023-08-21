@@ -64,6 +64,7 @@ jobs:
         run: yarn test:e2e --spec ./cypress/e2e/loginPage.cy.js
 
       - name: Upload logs as artifact
+        if: always() # Ensure this runs, even if E2E fails
         uses: actions/upload-artifact@v2
         with:
           # Set the path to the log file
