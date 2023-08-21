@@ -120,7 +120,12 @@ def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
         current_app.logger.debug("######### KEY ###########")
-        current_app.logger.debug(current_app.config["JWT_PRIVATE_KEY"])
+        current_app.logger.debug(f'JWT_PRIVATE_KEY: {current_app.config["JWT_PRIVATE_KEY"][0:10]}')
+        current_app.logger.debug(f'JWT_ALGORITHM: {current_app.config["JWT_ALGORITHM"]}')
+        current_app.logger.debug(f'JWT_DECODE_ALGORITHMS: {current_app.config["JWT_DECODE_ALGORITHMS"]}')
+        current_app.logger.debug(f'JWT_TOKEN_LOCATION: {current_app.config["JWT_TOKEN_LOCATION"]}')
+        current_app.logger.debug(f'JWT_REFRESH_TOKEN_EXPIRES: {current_app.config["JWT_REFRESH_TOKEN_EXPIRES"]}')
+        current_app.logger.debug(f'JWT_ACCESS_TOKEN_EXPIRES: {current_app.config["JWT_ACCESS_TOKEN_EXPIRES"]}')
         access_token = create_access_token(identity=user, expires_delta=False, additional_claims=additional_claims)
         refresh_token = create_refresh_token(identity=user, expires_delta=False, additional_claims=additional_claims)
     except Exception as e:
