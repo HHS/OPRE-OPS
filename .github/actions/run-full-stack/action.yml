@@ -7,6 +7,6 @@ runs:
       shell: bash
       run: |
         set -x
-        echo $JWT_PRIVATE_KEY
         docker compose -f docker-compose.e2e.yml down -v
-        docker compose -f docker-compose.e2e.yml up --build -d
+        docker compose -f docker-compose.e2e.yml up --build -d \
+          -e JWT_PRIVATE_KEY=${{ env.JWT_PRIVATE_KEY }}
