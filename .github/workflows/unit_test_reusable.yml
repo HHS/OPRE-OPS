@@ -55,11 +55,6 @@ jobs:
       # Stand up the system stack, to have something to poke
       - uses: ./.github/actions/run-full-stack
 
-      - name: Capture logs
-        shell: bash
-        run: | # Capture logs from all services
-          docker compose -f docker-compose.yml logs --no-color > full-stack-logs.log
-
       # Run the Cypress E2E Tests
       - name: E2E Test
         working-directory: frontend
