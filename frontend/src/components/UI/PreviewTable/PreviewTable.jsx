@@ -53,6 +53,9 @@ export const PreviewTable = ({
         }
         let feeTotal = bl?.amount * bl?.psc_fee_amount;
         let total = bl?.amount + feeTotal;
+        const isBudgetLineDraft = bl?.status === "DRAFT";
+        const isBudgetLineInReview = bl?.status === "UNDER_REVIEW";
+        const isBudgetLineEditable = isBudgetLineDraft || isBudgetLineInReview;
 
         const handleExpandRow = () => {
             setIsExpanded(!isExpanded);
@@ -85,13 +88,13 @@ export const PreviewTable = ({
         const ChangeIcons = ({ budgetLine }) => {
             return (
                 <>
-                    {budgetLine.status === "DRAFT" && (
+                    {isBudgetLineEditable && (
                         <>
                             <FontAwesomeIcon
                                 id={`edit-${bl?.id}`}
                                 data-cy="edit-row"
                                 icon={faPen}
-                                className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                                className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
                                 title="edit"
                                 data-position="top"
                                 onClick={() => handleSetBudgetLineForEditing(budgetLine)}
@@ -103,7 +106,7 @@ export const PreviewTable = ({
                                 icon={faTrash}
                                 title="delete"
                                 data-position="top"
-                                className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                                className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
                                 onClick={() => handleDeleteBudgetLine(budgetLine.id)}
                             />
                         </>
@@ -114,8 +117,8 @@ export const PreviewTable = ({
                         icon={faClone}
                         title="duplicate"
                         data-position="top"
-                        className={`text-primary height-2 width-2 hover: cursor-pointer usa-tooltip ${
-                            budgetLine.status !== "DRAFT" ? "margin-left-6" : ""
+                        className={`text-primary height-2 width-2 cursor-pointer usa-tooltip ${
+                            isBudgetLineEditable ? "margin-left-0" : "margin-left-6"
                         }`}
                         onClick={() => handleDuplicateBudgetLine(budgetLine)}
                     />
