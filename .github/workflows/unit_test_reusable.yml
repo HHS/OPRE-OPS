@@ -55,7 +55,7 @@ jobs:
       - name: Capture logs
         shell: bash
         run: | # Capture logs from all services
-          docker compose -f docker-compose.yml logs --no-color backend > backend-logs.log
+          docker compose -f docker-compose.yml logs --no-color > full-stack-logs.log
 
       # Run the Cypress E2E Tests
       - name: E2E Test
@@ -67,6 +67,6 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           # Set the path to the log file
-          path: backend-logs.log
+          path: full-stack-logs.log
           # Optionally, set a name for the artifact
-          name: backend-logs
+          name: full-stack-logs
