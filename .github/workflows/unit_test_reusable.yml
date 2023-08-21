@@ -64,6 +64,7 @@ jobs:
 
       - name: Capture logs
         shell: bash
+        if: always()
         run: | # Capture logs from all services
           docker compose -f docker-compose.yml logs --no-color > full-stack-logs.log
 
