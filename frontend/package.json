@@ -28,7 +28,7 @@
         "react-router-dom": "6.15.0",
         "react-scripts": "5.0.1",
         "react-select": "5.7.4",
-        "sass": "1.65.1",
+        "sass": "1.66.1",
         "sass-loader": "13.3.2",
         "vest": "4.6.11"
     },
@@ -47,7 +47,7 @@
         "cypress-localstorage-commands": "2.2.4",
         "eslint-config-prettier": "9.0.0",
         "eslint-plugin-cypress": "2.14.0",
-        "eslint-plugin-import": "2.28.0",
+        "eslint-plugin-import": "2.28.1",
         "eslint-plugin-prettier": "4.2.1",
         "eslint-plugin-react": "7.33.2",
         "eslint-plugin-react-hooks": "4.6.0",
