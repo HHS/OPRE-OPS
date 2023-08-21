@@ -100,3 +100,27 @@ it("edit an agreement", () => {
         });
     });
 });
+
+it("cannot edit an agreement with budget line items obligated", () => {
+    cy.visit(`/agreements/7`);
+    cy.get("h1").should("have.text", "MIHOPE Check-In");
+    cy.get("#edit").should("not.exist");
+});
+
+it("cannot navigate to edit an agreement with budget line items obligated from review page", () => {
+    cy.visit(`/agreements/approve/7`);
+    cy.get("dd").first().should("have.text", "MIHOPE Check-In");
+    cy.get('[data-cy="edit-agreement-btn"]').should("be.disabled");
+});
+
+it("cannot edit an agreement with budget line items in executing", () => {
+    cy.visit(`/agreements/2`);
+    cy.get("h1").should("have.text", "DIRECT ALLOCATION #2: African American Child and Family Research Center");
+    cy.get("#edit").should("not.exist");
+});
+
+it("cannot navigate to edit an agreement with budget line items in executing from review page", () => {
+    cy.visit(`/agreements/approve/2`);
+    cy.get("dd").first().should("have.text", "DIRECT ALLOCATION #2: African American Child and Family Research Center");
+    cy.get('[data-cy="edit-agreement-btn"]').should("be.disabled");
+});
