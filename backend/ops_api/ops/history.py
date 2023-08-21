@@ -68,7 +68,7 @@ def build_audit(obj, event_type: OpsDBHistoryType) -> DbRecordAudit:
             if old_val:
                 original[key] = old_val
             diff[key] = new_val
-            if event_type == OpsDBHistoryType.NEW and new_val:
+            if event_type == OpsDBHistoryType.NEW:
                 if new_val:
                     changes[key] = {
                         "new": new_val,
