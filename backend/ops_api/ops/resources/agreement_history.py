@@ -1,11 +1,11 @@
 from flask import Response, current_app, request
 
-from models import OpsDBHistory, OpsDBHistoryType, User
+from models import OpsDBHistory, OpsDBHistoryType, User, Agreement
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseListAPI, handle_sql_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, or_, Integer
 from typing_extensions import override
 
 
@@ -25,11 +25,18 @@ class AgreementHistoryListAPI(BaseListAPI):
         print(f"agreement_history.get:{id}")
         limit = request.args.get("limit", 10, type=int)
         offset = request.args.get("offset", 0, type=int)
+        class_names = [cls.__name__ for cls in Agreement.__subclasses__()] + [Agreement.__class__.__name__]
         with handle_sql_error():
             stmt = select(OpsDBHistory).join(OpsDBHistory.created_by_user, isouter=True).add_columns(User)
             stmt = stmt.where(
                 and_(
-                    OpsDBHistory.agreement_id == id,
+                    or_(
+                        and_(
+                            OpsDBHistory.event_details['id'].astext.cast(Integer) == id,
+                            OpsDBHistory.class_name.in_(class_names),
+                        ),
+                        OpsDBHistory.event_details['agreement_id'].astext.cast(Integer) == id
+                    ),
                     OpsDBHistory.event_type.in_(
                         [
                             OpsDBHistoryType.NEW,
@@ -39,7 +46,6 @@ class AgreementHistoryListAPI(BaseListAPI):
                     ),
                 )
             )
-
             stmt = stmt.limit(limit)
             if offset:
                 stmt = stmt.offset(int(limit))

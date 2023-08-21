@@ -159,9 +159,6 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
                     f"an OpsDBHistory record will not be created for this UPDATED event."
                 )
                 continue
-            agreement_id = getattr(obj, "agreement_id", None)
-            if isinstance(obj, Agreement):
-                agreement_id = obj.id
 
             ops_db = OpsDBHistory(
                 event_type=event_type,
@@ -171,8 +168,7 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
                 row_key=db_audit.row_key,
                 original=db_audit.original,
                 diff=db_audit.diff,
-                changes=db_audit.changes,
-                agreement_id=agreement_id,
+                changes=db_audit.changes
             )
             result.append(ops_db)
     return result
