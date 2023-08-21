@@ -52,8 +52,12 @@ jobs:
       # Install NPM dependencies, cache them correctly
       # and run all Cypress tests
       - uses: ./.github/actions/setup-javascript
+
       # Stand up the system stack, to have something to poke
-      - uses: ./.github/actions/run-full-stack
+      - name: Launch Stack
+        uses: ./.github/actions/run-full-stack
+        with:
+          JWT_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
 
       # Run the Cypress E2E Tests
       - name: E2E Test
