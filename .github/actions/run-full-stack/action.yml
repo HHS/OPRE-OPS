@@ -4,6 +4,8 @@ runs:
   using: composite
   steps:
     - name: Start Stack
+      env:
+        JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
       shell: bash
       run: |
         set -x

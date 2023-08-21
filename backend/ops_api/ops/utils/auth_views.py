@@ -119,7 +119,8 @@ def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
         additional_claims = {}
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
-
+        current_app.logger.debug("######### KEY ###########")
+        current_app.logger.debug(current_app.config["JWT_PRIVATE_KEY"])
         access_token = create_access_token(identity=user, expires_delta=False, additional_claims=additional_claims)
         refresh_token = create_refresh_token(identity=user, expires_delta=False, additional_claims=additional_claims)
     except Exception as e:

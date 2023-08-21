@@ -11,7 +11,6 @@ SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:local_password@db:5432
 SQLALCHEMY_ECHO = False
 
 JWT_PRIVATE_KEY = os.getenv("JWT_PRIVATE_KEY")
-JWT_PUBLIC_KEY_PATH = "./static/public.pem"
 JWT_ALGORITHM = "RS256"
 JWT_DECODE_ALGORITHMS = "RS256"
 JWT_TOKEN_LOCATION = "headers"  # noqa: S105 "Not a secret"
