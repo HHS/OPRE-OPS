@@ -105,6 +105,7 @@ export const StepCreateBudgetLines = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [existingBudgetLines]);
 
+    // Validation
     let res = suite.get();
     const pageErrors = res.getErrors();
 
@@ -113,7 +114,6 @@ export const StepCreateBudgetLines = ({
             new_budget_lines: newBudgetLines,
         });
     }
-
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
 
@@ -429,7 +429,7 @@ StepCreateBudgetLines.propTypes = {
     setIsEditMode: PropTypes.func,
     isReviewMode: PropTypes.bool,
     continueOverRide: PropTypes.func,
-    workflow: PropTypes.oneOf(["agreement", "budgetLines"]).isRequired,
+    workflow: PropTypes.oneOf(["agreement", "budgetLines", "none"]).isRequired,
 };
 
 export default StepCreateBudgetLines;

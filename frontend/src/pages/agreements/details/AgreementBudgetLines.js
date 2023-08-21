@@ -15,10 +15,10 @@ import StepCreateBudgetLines from "../../../components/UI/WizardSteps/StepCreate
  */
 export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
     const navigate = useNavigate();
-    const areAnyBudgetLinesDraft = agreement?.budget_line_items.some((bli) => bli.status === "DRAFT");
-    const areAnyBudgetLinesInReview = agreement?.budget_line_items.some((bli) => bli.status === "IN_REVIEW");
-    const areThereAnyBudgetLines = agreement?.budget_line_items.length > 0;
-    const isEditable = areAnyBudgetLinesDraft || areAnyBudgetLinesInReview || !areThereAnyBudgetLines;
+    // const areAnyBudgetLinesDraft = agreement?.budget_line_items.some((bli) => bli.status === "DRAFT");
+    // const areAnyBudgetLinesInReview = agreement?.budget_line_items.some((bli) => bli.status === "IN_REVIEW");
+    // const areThereAnyBudgetLines = agreement?.budget_line_items.length > 0;
+    // const isEditable = areAnyBudgetLinesDraft || areAnyBudgetLinesInReview || !areThereAnyBudgetLines;
     return (
         <CreateBudgetLinesProvider>
             <AgreementDetailHeader
@@ -26,7 +26,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                 details="This is a list of all budget lines within this agreement."
                 isEditMode={isEditMode}
                 setIsEditMode={setIsEditMode}
-                isEditable={isEditable}
+                isEditable={true}
             />
             {isEditMode ? (
                 <StepCreateBudgetLines
