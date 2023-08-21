@@ -54,9 +54,8 @@ jobs:
 
       - name: Capture logs
         shell: bash
-        run: |
-          # Capture logs from all services
-          docker compose -f docker-compose.yml logs --no-color > full-stack-logs.log
+        run: | # Capture logs from all services
+          docker compose -f docker-compose.yml logs --no-color backend > backend-logs.log
 
       # Run the Cypress E2E Tests
       - name: E2E Test
