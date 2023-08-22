@@ -7,7 +7,7 @@ from typing import Optional
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
-from marshmallow import Schema, ValidationError
+from marshmallow import EXCLUDE, Schema, ValidationError
 from models import Agreement, BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import AgreementType, BudgetLineItem
@@ -323,7 +323,7 @@ def validate_and_normalize_request_data_for_patch(schema: Schema) -> dict[str, A
 
 
 def validate_and_normalize_request_data_for_put(schema: Schema) -> dict[str, Any]:
-    data = schema.dump(schema.load(request.json))
+    data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
     data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
     data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
     return data

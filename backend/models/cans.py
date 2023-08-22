@@ -18,8 +18,9 @@ from sqlalchemy import (
     String,
     Table,
     Text,
+    select,
 )
-from sqlalchemy.orm import InstrumentedAttribute, column_property, relationship, with_polymorphic
+from sqlalchemy.orm import InstrumentedAttribute, column_property, object_session, relationship, with_polymorphic
 from typing_extensions import override
 
 
@@ -439,6 +440,15 @@ class BudgetLineItem(BaseModel):
     psc_fee_amount = Column(
         Numeric(12, 2)
     )  # may need to be a different object, i.e. flat rate or percentage
+
+    @property
+    def portfolio_id(self):
+        return object_session(self).scalar(
+            select(Portfolio.id)
+            .join(CAN, Portfolio.id == CAN.managing_portfolio_id)
+            .join(self.__class__, self.can_id == CAN.id)
+            .where(self.__class__.id == self.id)
+        )
 
     @override
     def to_dict(self):

@@ -1,6 +1,7 @@
 import datetime
 
 import pytest
+from models import CAN
 from models.cans import BudgetLineItem, BudgetLineItemStatus
 from ops_api.ops.resources.budget_line_items import PATCHRequestBody, POSTRequestBody
 from sqlalchemy_continuum import parent_class, version_class
@@ -603,3 +604,27 @@ def test_patch_budget_line_items_history(loaded_db):
     # cleanup
     loaded_db.delete(bli)
     loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_item_portfolio_id(loaded_db, test_bli):
+    can = loaded_db.get(CAN, test_bli.can_id)
+    assert test_bli.portfolio_id == can.managing_portfolio_id
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_put_budget_line_item_portfolio_id_ignored(auth_client, loaded_db, test_bli):
+    data = POSTRequestBody(
+        line_description="Updated LI 1",
+        comments="hah hah",
+        agreement_id=2,
+        can_id=2,
+        amount=200.24,
+        status="PLANNED",
+        date_needed="2044-01-01",
+        psc_fee_amount=2.34,
+    )
+    request_data = data.__dict__ | {"portfolio_id": 10000}
+    response = auth_client.put(f"/api/v1/budget-line-items/{test_bli.id}", json=request_data)
+    assert response.status_code == 200, "portfolio_id should be ignored"
