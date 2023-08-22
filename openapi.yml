@@ -1281,6 +1281,9 @@ components:
         status:
           type: string
           example: 'PLANNED'
+        portfolio_id:
+          type: integer
+          example: 1
 
     BudgetLineItemRequest:
       type: object
