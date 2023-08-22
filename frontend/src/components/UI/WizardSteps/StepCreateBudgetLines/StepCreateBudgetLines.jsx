@@ -224,7 +224,7 @@ export const StepCreateBudgetLines = ({
                         addBudgetLineItem(data)
                             .unwrap()
                             .then((fulfilled) => {
-                                console.log("Created New BLIs.");
+                                console.log("Created New BLIs:", fulfilled);
                             })
                             .catch((rejected) => {
                                 console.error("Error Creating Budget Lines");
@@ -248,7 +248,7 @@ export const StepCreateBudgetLines = ({
                         updateBudgetLineItem({ id, data })
                             .unwrap()
                             .then((fulfilled) => {
-                                console.log("Updated BLIs.");
+                                console.log("Updated BLIs:", fulfilled);
                             })
                             .catch((rejected) => {
                                 console.error("Error Updating Budget Lines");
