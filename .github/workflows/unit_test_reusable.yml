@@ -28,7 +28,6 @@ jobs:
         working-directory: ./backend/data_tools/
         run: pipenv install --dev && pipenv run pytest
 
-
   frontend:
     name: Frontend Unit Tests
     runs-on: ubuntu-latest
@@ -53,11 +52,29 @@ jobs:
       # and run all Cypress tests
       - uses: ./.github/actions/setup-javascript
 
+      ### DEBUGGING
+      - name: Check if secrets.JWT_PRIVATE_KEY is set
+        run: |
+          if [[ -z "${{ secrets.JWT_PRIVATE_KEY }}" ]]; then
+            echo "secrets.JWT_PRIVATE_KEY is empty or not set!"
+            exit 1
+          else
+            echo "secrets.JWT_PRIVATE_KEY is set."
+          fi
+      - name: Check if env.JWT_PRIVATE_KEY is set
+        run: |
+          if [[ -z "${{ env.JWT_PRIVATE_KEY }}" ]]; then
+            echo "env.JWT_PRIVATE_KEY is empty or not set!"
+            exit 1
+          else
+            echo "env.JWT_PRIVATE_KEY is set."
+          fi
+
       # Stand up the system stack, to have something to poke
       - name: Launch Stack
         uses: ./.github/actions/run-full-stack
         with:
-          JWT_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+          JWT_KEY: ${{ env.JWT_PRIVATE_KEY }}
 
       # Run the Cypress E2E Tests
       - name: E2E Test
