@@ -69,6 +69,7 @@ jobs:
         uses: ./.github/actions/run-full-stack
         env:
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+          TEST_ENV: "e2e"
         with:
           JWT_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
 

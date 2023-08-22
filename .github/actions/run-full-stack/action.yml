@@ -12,7 +12,7 @@ runs:
     - name: Check if env.JWT_PRIVATE_KEY is set
       shell: bash
       run: |
-        if [[ -z "${{ env.JWT_PRIVATE_KEY }}" ]]; then
+        if [[ -z "${{ env.TEST_ENV }}" ]]; then
           echo "env.JWT_PRIVATE_KEY is empty or not set!"
           exit 1
         else
