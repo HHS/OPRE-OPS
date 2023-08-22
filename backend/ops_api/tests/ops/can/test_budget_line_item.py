@@ -342,7 +342,7 @@ def test_put_budget_line_items(auth_client, test_bli):
     assert response.json["agreement_id"] == 2
     assert response.json["can_id"] == 2
     assert response.json["amount"] == 200.24
-    assert response.json["status"] == "PLANNED"
+    assert response.json["status"] == "DRAFT"
     assert response.json["date_needed"] == "2044-01-01"
     assert response.json["psc_fee_amount"] == 2.34
     assert response.json["created_on"] != response.json["updated_on"]
@@ -375,7 +375,7 @@ def test_put_budget_line_items_minimum(auth_client, loaded_db):
     assert response.json["agreement_id"] == 1
     assert response.json["can_id"] is None
     assert response.json["amount"] is None
-    assert response.json["status"] is None
+    assert response.json["status"] == "DRAFT"
     assert response.json["date_needed"] is None
     assert response.json["psc_fee_amount"] is None
     assert response.json["created_on"] != response.json["updated_on"]
@@ -514,7 +514,7 @@ def test_patch_budget_line_items(auth_client, loaded_db):
     assert response.json["agreement_id"] == 2
     assert response.json["can_id"] == 2
     assert response.json["amount"] == 200.24
-    assert response.json["status"] == "PLANNED"
+    assert response.json["status"] == "DRAFT"
     assert response.json["date_needed"] == "2044-01-01"
     assert response.json["psc_fee_amount"] == 2.34
     assert response.json["created_on"] != response.json["updated_on"]
@@ -611,6 +611,8 @@ def test_patch_budget_line_items_invalid_can(auth_client):
     assert response.status_code == 400
 
 
+# Skipped because in Issue/Task 1379, a change to the BLI changes the status to be "DRAFT".
+@pytest.mark.skip()
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_budget_line_items_update_status(auth_client, loaded_db):
