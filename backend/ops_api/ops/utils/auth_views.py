@@ -31,7 +31,7 @@ def login() -> Union[Response, tuple[str, int]]:
                 return "Invalid provider name", 400
 
             token = auth_gateway.authenticate(provider, auth_code)
-            # current_app.logger.debug(f"auth_gateway.authenticate() - token: {token['access_token'].strip()}")
+
             if not token:
                 current_app.logger.error(f"Failed to authenticate with provider {provider} using auth code {auth_code}")
                 return "Invalid Provider Auth Token", 400
@@ -42,12 +42,6 @@ def login() -> Union[Response, tuple[str, int]]:
                 user_data = json.loads(user_data)
             else:
                 user_data = user_data
-
-            # current_app.logger.debug(f"Got an OIDC request with the code of {auth_code}")
-            # current_app.logger.debug(f"Login for SSO: {provider}")
-
-            # ### token, user_data = _get_token_and_user_data_from_oauth_provider(provider, auth_code)
-            # current_app.logger.debug(f"provider_access_token: {token}")
             current_app.logger.debug(f"Provider Returned user_data: {user_data}")
 
             (
@@ -56,9 +50,6 @@ def login() -> Union[Response, tuple[str, int]]:
                 user,
                 is_new_user,
             ) = _get_token_and_user_data_from_internal_auth(user_data)
-            current_app.logger.debug(
-                f"api_access_token={access_token};   api_refresh_token={refresh_token};    user={user};    is_new_user={is_new_user}"
-            )
 
         la.metadata.update(
             {
@@ -119,13 +110,7 @@ def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
         additional_claims = {}
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
-        current_app.logger.debug("######### KEY ###########")
-        current_app.logger.debug(f'JWT_PRIVATE_KEY: {current_app.config["JWT_PRIVATE_KEY"][0:10]}')
-        current_app.logger.debug(f'JWT_ALGORITHM: {current_app.config["JWT_ALGORITHM"]}')
-        current_app.logger.debug(f'JWT_DECODE_ALGORITHMS: {current_app.config["JWT_DECODE_ALGORITHMS"]}')
-        current_app.logger.debug(f'JWT_TOKEN_LOCATION: {current_app.config["JWT_TOKEN_LOCATION"]}')
-        current_app.logger.debug(f'JWT_REFRESH_TOKEN_EXPIRES: {current_app.config["JWT_REFRESH_TOKEN_EXPIRES"]}')
-        current_app.logger.debug(f'JWT_ACCESS_TOKEN_EXPIRES: {current_app.config["JWT_ACCESS_TOKEN_EXPIRES"]}')
+
         access_token = create_access_token(identity=user, expires_delta=False, additional_claims=additional_claims)
         refresh_token = create_refresh_token(identity=user, expires_delta=False, additional_claims=additional_claims)
     except Exception as e:

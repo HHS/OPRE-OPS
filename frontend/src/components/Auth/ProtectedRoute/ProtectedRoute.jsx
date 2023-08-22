@@ -8,6 +8,5 @@ export const ProtectedRoute = ({ redirectPath = "/login", children }) => {
         console.log("User is not authenticated, redirecting...");
         return <Navigate to={redirectPath} />;
     }
-    //console.log("Authorized!!!");
     return children ? children : <Outlet />;
 };

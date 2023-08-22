@@ -84,17 +84,6 @@ def test_put_user_unauthorized(client):
     assert response.status_code == 401
 
 
-# @pytest.mark.usefixtures("app_ctx")
-# def test_put_user_missing_data(auth_client):
-#     # Send a PUT request with missing data
-#     response = auth_client.put(
-#         f"/api/v1/users/4",
-#         json={"invalid_field": "Invalid Value"},
-#     )
-#     # Check that the response status code is 400 Bad Request
-#     assert response.status_code == 400
-
-
 @pytest.mark.usefixtures("app_ctx")
 def test_put_user(auth_client):
     # Send a PUT request to update the user

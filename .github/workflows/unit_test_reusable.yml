@@ -52,8 +52,6 @@ jobs:
 
       # Stand up the system stack, to have something to poke
       - name: Launch Stack
-        # env:
-        #   JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
         uses: ./.github/actions/run-full-stack
         env:
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}

@@ -14,7 +14,6 @@ class UserInfoDict(TypedDict):
 
 def register_user(userinfo: UserInfoDict) -> User:
     user = get_user_from_token(userinfo)
-    current_app.logger.debug(f"User Lookup Response: {user}")
     if user:
         return user, False
     else:

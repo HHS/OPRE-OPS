@@ -1,6 +1,3 @@
-import os
-from datetime import timedelta
-
 from ops_api.ops.environment.default_settings import *  # noqa: F403, F401
 
 DEBUG = True  # make sure DEBUG is off unless enabled explicitly otherwise
@@ -9,13 +6,6 @@ DEBUG = True  # make sure DEBUG is off unless enabled explicitly otherwise
 SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:local_password@db:5432/postgres"  # pragma: allowlist secret
 # SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:local_password@localhost:5432/postgres"  # pragma: allowlist secret
 SQLALCHEMY_ECHO = False
-
-JWT_PRIVATE_KEY = os.getenv("JWT_PRIVATE_KEY")
-JWT_ALGORITHM = "RS256"
-JWT_DECODE_ALGORITHMS = "RS256"
-JWT_TOKEN_LOCATION = "headers"  # noqa: S105 "Not a secret"
-JWT_REFRESH_TOKEN_EXPIRES = timedelta(hours=12)
-JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=600)  # Extend for Development
 
 AUTHLIB_OAUTH_CLIENTS = {
     "logingov": {

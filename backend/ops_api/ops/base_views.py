@@ -40,7 +40,6 @@ class OPSMethodView(MethodView):
         self.auth_gateway = auth_gateway
 
     def _get_item_by_oidc(self, oidc: str):
-        # current_app.logger.info(f"get User by_oidc: {id}")
         stmt = select(self.model).where(self.model.oidc_id == oidc).order_by(self.model.id)
         return current_app.db_session.scalar(stmt)
 
@@ -62,7 +61,6 @@ class OPSMethodView(MethodView):
             else:
                 response = make_response_with_headers({}, 404)
 
-            current_app.logger.debug(f"###### GET User response: {response}")
             return response
 
     def _get_item_with_try(self, id: int) -> Response:

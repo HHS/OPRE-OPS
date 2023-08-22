@@ -125,7 +125,6 @@ class LoginGovProvider(AuthenticationProvider):
             "sso": "logingov",
         }
         provider_jwt = super().create_oauth_jwt(payload=payload)
-        current_app.logger.debug(f"provider_jwt={provider_jwt}")
 
         token = client.fetch_token(
             self.config["token_endpoint"],
@@ -142,13 +141,10 @@ class LoginGovProvider(AuthenticationProvider):
             "Accept": "application/json",
         }
         try:
-            current_app.logger.debug(f"header={header}")
-            current_app.logger.debug(f"user_info_url={self.config['user_info_url']}")
             user_jwt = requests.get(
                 self.config["user_info_url"],
                 headers=header,
             ).content.decode("utf-8")
-            current_app.logger.debug(f"user_jwt_response={user_jwt}")
             return user_jwt
         except Exception as e:
             current_app.logger.exception(e)

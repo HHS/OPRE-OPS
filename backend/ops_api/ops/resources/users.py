@@ -92,7 +92,6 @@ class UsersListAPI(BaseListAPI):
         else:
             items = self.model.query.all()
             response = make_response_with_headers([item.to_dict() for item in items])
-        # current_app.logger.debug(f"GET Users response: {response}")
         return response
 
     @override
