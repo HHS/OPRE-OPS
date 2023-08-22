@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from models import BudgetLineItem, BudgetLineItemStatus, OpsDBHistory, OpsDBHistoryType, User
 from sqlalchemy import and_, select
@@ -161,6 +163,17 @@ def test_history_expanded_with_web_client(auth_client, loaded_db):
     result = loaded_db.scalars(stmt).first()
     assert result.created_by == user_id
     assert result.event_details["description"] == post_data["description"]
+    assert "description" in result.changes
+    assert "new" in result.changes["description"]
+    assert result.changes["description"]["new"] == post_data["description"]
+    assert "old" not in result.changes["description"]
+    assert "notes" not in result.changes
+    assert "team_members" in result.changes
+    assert len(result.changes["team_members"]["added"]) == 2
+    assert "deleted" not in result.changes["team_members"]
+    assert "support_contacts" not in result.changes
+    assert "incumbent" not in result.changes
+
     assert "description" not in result.original
     assert result.diff["description"] == post_data["description"]
     assert "notes" not in result.original
@@ -169,6 +182,17 @@ def test_history_expanded_with_web_client(auth_client, loaded_db):
     patch_data = {
         "description": "Updated Test Description",
         "notes": "Test Notes",
+        "team_members": [
+            {
+                "id": 2,
+            },
+            {
+                "id": 3,
+            },
+            {
+                "id": 4,
+            },
+        ],
     }
     resp = auth_client.patch(f"/api/v1/agreements/{agreement_id}", json=patch_data)
     assert resp.status_code == 200
@@ -184,6 +208,22 @@ def test_history_expanded_with_web_client(auth_client, loaded_db):
     assert result.created_by == user_id
     assert result.event_details["description"] == patch_data["description"]
     assert result.event_details["notes"] == patch_data["notes"]
+    assert "description" in result.changes
+    assert "new" in result.changes["description"]
+    assert result.changes["description"]["new"] == patch_data["description"]
+    assert "old" in result.changes["description"]
+    assert result.changes["description"]["old"] == post_data["description"]
+    assert "notes" in result.changes
+    assert "new" in result.changes["notes"]
+    assert result.changes["notes"]["new"] == patch_data["notes"]
+    assert "old" in result.changes["notes"]
+    assert result.changes["notes"]["old"] is None
+    assert "team_members" in result.changes
+    assert len(result.changes["team_members"]["added"]) == 2
+    assert len(result.changes["team_members"]["deleted"]) == 1
+    assert "support_contacts" not in result.changes
+    assert "incumbent" not in result.changes
+
     assert result.original["description"] == post_data["description"]
     assert "notes" not in result.original
     assert result.diff["description"] == patch_data["description"]
@@ -203,6 +243,9 @@ def test_history_expanded_with_web_client(auth_client, loaded_db):
     )
     result = loaded_db.scalars(stmt).first()
     assert result.created_by == user_id
+
+    assert not result.changes
+
     assert result.original["id"] == agreement_id
     assert result.original["name"] == post_data["name"]
     assert result.original["description"] == patch_data["description"]

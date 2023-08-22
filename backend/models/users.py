@@ -58,6 +58,7 @@ class User(BaseModel):
         "Agreement",
         back_populates="team_members",
         secondary="agreement_team_members",
+        viewonly=True
     )
 
     contracts = relationship(
@@ -83,6 +84,13 @@ class User(BaseModel):
             }
         )
 
+        return cast(dict[str, Any], d)
+
+    def to_slim_dict(self) -> dict[str, Any]:
+        d = {
+            "id": self.id,
+            "full_name": self.full_name,
+        }
         return cast(dict[str, Any], d)
 
 
