@@ -96,7 +96,7 @@ def build_audit(obj, event_type: OpsDBHistoryType) -> DbRecordAudit:
                 relationship.argument if isinstance(relationship.argument, str) else relationship.argument.__name__
             )
             changes[key] = {
-                "related_class_name": related_class_name,
+                "collection_of": related_class_name,
                 "added": convert_for_jsonb(hist.added),
             }
             if event_type != OpsDBHistoryType.NEW:
