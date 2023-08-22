@@ -27,9 +27,6 @@ def register_user(userinfo: UserInfoDict) -> User:
             user = User(
                 email=userinfo["email"],
                 oidc_id=userinfo["sub"],
-                # hhs_id=(userinfo["hhsid"] if userinfo["hhsid"] is not None else None),
-                # first_name=userinfo["given_name"],
-                # last_name=userinfo["family_name"],
                 roles=[role],
             )
 

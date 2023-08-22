@@ -33,9 +33,6 @@ def test_auth_post_fails_creates_event(client, loaded_db, mocker):
     print(f"response: {res.json}")
     assert res.status_code == 400
 
-    # event = mock_session.add.call_args[0][0]
-    # assert event.event_status == OpsEventStatus.FAILED
-
 
 def test_auth_post_succeeds_creates_event(client, loaded_db, mocker):
     # setup mocks

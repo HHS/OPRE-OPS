@@ -30,18 +30,8 @@ const EditUserForm = ({ user }) => {
         try {
             console.log(`Initial Form Data: ${JSON.stringify(formData)}`);
             // Future refactor to RTK Query
-            // updateBudgetLineItemStatus({ id: bli.id, status: "UNDER_REVIEW" }).unwrap();
-            // const updatedUser = await updateUser({
-            //     id: formData.id,
-            //     first_name: formData.first_name,
-            //     last_name: formData.last_name,
-            //     email: formData.email,
-            //     division: formData.division,
-            //     oidc_id: formData.oidc_id,
-            //     hhs_id: formData.hhs_id,
-            // }).unwrap();
+
             const updatedUser = await callBackend(`/api/v1/users/${formData.id}`, "PUT", formData);
-            // console.log(`Update Response Data: ${JSON.stringify(response)}`);
             navigate(`/users/${updatedUser.id}`);
             // handle success
         } catch (error) {

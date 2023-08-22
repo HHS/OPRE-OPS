@@ -168,8 +168,6 @@ def _get_token_and_user_data_from_oauth_provider(provider: str, auth_code: str):
             headers=header,
         ).content.decode("utf-8")
 
-        current_app.logger.debug(f"user_jwt={user_jwt}")
-        # user_data = decode_jwt(payload=user_jwt)
         # HHSAMS returns a JWT, for user data, which needs decoded,
         # Login.gov returns a JSON object for user data,
         # so we need to handle both cases.

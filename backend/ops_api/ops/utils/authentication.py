@@ -178,7 +178,6 @@ class HhsAmsProvider(AuthenticationProvider):
             }
             jwt = JsonWebToken(["RS256"])
             jwks = get_jwks(self.config["server_metadata_url"])
-            # current_app.logger.debug(f"jwks={jwks}")
             claims = jwt.decode(payload, jwks, claims_options=claims_options)
             return claims
         except Exception as e:
@@ -227,12 +226,10 @@ class HhsAmsProvider(AuthenticationProvider):
             "Accept": "application/json",
         }
         try:
-            # current_app.logger.debug(f"get_user_info: header={header}")
             user_jwt = requests.get(
                 self.user_info_url,
                 headers=header,
             ).content.decode("utf-8")
-            # current_app.logger.debug(f"get_user_info: user_jwt_response={user_jwt}")
             user_data = self.decode_user(payload=user_jwt)
             return user_data
         except Exception as e:

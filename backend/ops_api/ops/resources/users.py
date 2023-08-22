@@ -1,8 +1,6 @@
 from typing import Any
 
 import marshmallow_dataclass as mmdc
-
-# from desert import schema
 from flask import Response, current_app, request
 from marshmallow import Schema, ValidationError
 from models.base import BaseModel
