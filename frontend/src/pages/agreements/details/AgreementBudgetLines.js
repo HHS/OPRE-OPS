@@ -19,16 +19,32 @@ import Alert from "../../../components/UI/Alert";
 export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
     const navigate = useNavigate();
     const isGlobalAlertActive = useSelector((state) => state.alert.isActive);
+    // Checks for who can edit budget lines
+    const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
+    const isUserAgreementCreator = agreement?.created_by === loggedInUserId;
+    const isUserTheProjectOfficer = agreement?.project_officer === loggedInUserId;
+    const isUserOnAgreementTeam = agreement?.team_members?.some((member) => member.id === loggedInUserId);
+    const isUserCreatorOfAnyBudgetLines = agreement?.budget_line_items?.some(
+        (bli) => bli.created_by === loggedInUserId
+    );
 
+    console.log({ loggedInUserId });
+    console.log({ isUserAgreementCreator });
+    console.log({ isUserTheProjectOfficer });
+    console.log({ isUserOnAgreementTeam });
+    console.log({ isUserCreatorOfAnyBudgetLines });
+    // TODO: add check if user is on the Budget Team
+    const canUserEditBudgetLines =
+        isUserAgreementCreator || isUserTheProjectOfficer || isUserOnAgreementTeam || isUserCreatorOfAnyBudgetLines;
+    console.log({ canUserEditBudgetLines });
     return (
         <CreateBudgetLinesProvider>
-            {!isEditMode && isGlobalAlertActive && <Alert />}
             <AgreementDetailHeader
                 heading="Budget Lines"
                 details="This is a list of all budget lines within this agreement."
                 isEditMode={isEditMode}
                 setIsEditMode={setIsEditMode}
-                isEditable={true}
+                isEditable={canUserEditBudgetLines}
             />
             {isEditMode ? (
                 <StepCreateBudgetLines
@@ -39,6 +55,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                     isReviewMode={false}
                     selectedProcurementShop={agreement?.procurement_shop}
                     selectedResearchProject={agreement?.research_project}
+                    canUserEditBudgetLines={canUserEditBudgetLines}
                     wizardSteps={[]}
                     continueBtnText="Save Changes"
                     currentStep={0}
