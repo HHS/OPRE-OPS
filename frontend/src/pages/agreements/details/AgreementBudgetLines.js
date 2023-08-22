@@ -29,7 +29,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
     // TODO: add check if user is on the Budget Team
     const canUserEditBudgetLines =
         isUserAgreementCreator || isUserTheProjectOfficer || isUserOnAgreementTeam || isUserCreatorOfAnyBudgetLines;
-    console.log({ canUserEditBudgetLines });
+
     return (
         <CreateBudgetLinesProvider>
             <AgreementDetailHeader
