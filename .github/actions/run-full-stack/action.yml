@@ -12,6 +12,6 @@ runs:
       shell: bash
       run: |
         set -x
-        export JWT_PRIVATE_KEY=${{ inputs.JWT_PRIVATE_KEY }}
+        export JWT_PRIVATE_KEY=${{ inputs.JWT_KEY }}
         docker compose -f docker-compose.e2e.yml down -v
         docker compose -f docker-compose.e2e.yml up --build -d
