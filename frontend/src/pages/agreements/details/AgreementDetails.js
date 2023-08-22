@@ -30,7 +30,8 @@ const AgreementDetails = ({ agreement, projectOfficer, isEditMode, setIsEditMode
     }, {});
     const areAnyBudgetLinesInExecuting = blis.some((bli) => bli.status === "IN_EXECUTION");
     const areAnyBudgetLinesObligated = blis.some((bli) => bli.status === "OBLIGATED");
-    const isEditable = !areAnyBudgetLinesInExecuting || !areAnyBudgetLinesObligated;
+
+    const isEditable = !(areAnyBudgetLinesInExecuting || areAnyBudgetLinesObligated);
 
     return (
         <div>
