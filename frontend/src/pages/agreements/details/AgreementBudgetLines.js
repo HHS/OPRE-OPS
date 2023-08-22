@@ -30,6 +30,11 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
     const canUserEditBudgetLines =
         isUserAgreementCreator || isUserTheProjectOfficer || isUserOnAgreementTeam || isUserCreatorOfAnyBudgetLines;
 
+    // if there are no BLIS than the user can edit
+    if (agreement?.budget_line_items?.length === 0) {
+        setIsEditMode(true);
+    }
+
     return (
         <CreateBudgetLinesProvider>
             <AgreementDetailHeader
