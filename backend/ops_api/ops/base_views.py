@@ -62,6 +62,7 @@ class OPSMethodView(MethodView):
             else:
                 response = make_response_with_headers({}, 404)
 
+            current_app.logger.debug(f"###### GET User response: {response}")
             return response
 
     def _get_item_with_try(self, id: int) -> Response:
