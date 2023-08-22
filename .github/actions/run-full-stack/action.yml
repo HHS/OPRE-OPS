@@ -7,18 +7,17 @@ runs:
     - name: Check if env.TEST_ENV is set
       shell: bash
       run: |
-        export TEST_KEY=$(grep TEST_KEY testing.bak | cut -d'=' -f2)
-        if [[ -z "${{ env.TEST_KEY }}" ]]; then
-          echo "env.TEST_ENV is empty or not set!"
+        if [[ -z "${{ env.JWT_PRIVATE_KEY }}" ]]; then
+          echo "secrets.JWT_PRIVATE_KEY is empty or not set!"
           exit 1
         else
-          echo "env.TEST_ENV is set."
+          echo "secrets.JWT_PRIVATE_KEY is set."
         fi
 
     - name: Start Stack
       shell: bash
       run: |
         set -x
-        export JWT_PRIVATE_KEY=${{ env.TEST_KEY }}
+        export JWT_PRIVATE_KEY=${{ env.JWT_PRIVATE_KEY }}
         docker compose -f docker-compose.e2e.yml down -v
         docker compose -f docker-compose.e2e.yml up --build -d

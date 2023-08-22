@@ -11,13 +11,11 @@ on:
       - 'docs/**' # We don't want to trigger when we update the docs.
       - '*.md'
 
-env:
-  JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
-
 jobs:
 
   unit-tests:
     name: Unit Tests
+    secrets: inherit # https://docs.github.com/en/actions/using-workflows/reusing-workflows#passing-inputs-and-secrets-to-a-reusable-workflow
     uses: ./.github/workflows/unit_test_reusable.yml
 
   codeql-analysis:

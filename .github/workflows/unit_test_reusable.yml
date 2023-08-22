@@ -2,7 +2,6 @@ on:
   workflow_call:
 
 jobs:
-
   backend-api:
     name: Backend API Unit Tests
     runs-on: ubuntu-latest
@@ -52,13 +51,13 @@ jobs:
       - uses: ./.github/actions/setup-javascript
 
       ## DEBUGGING
-      - name: Check if env.JWT_PRIVATE_KEY is set
+      - name: Check if secrets.JWT_PRIVATE_KEY is set
         run: |
-          if [[ -z "${{ env.JWT_PRIVATE_KEY }}" ]]; then
-            echo "env.JWT_PRIVATE_KEY is empty or not set!"
+          if [[ -z "${{ secrets.JWT_PRIVATE_KEY }}" ]]; then
+            echo "secrets.JWT_PRIVATE_KEY is empty or not set!"
             exit 1
           else
-            echo "env.JWT_PRIVATE_KEY is set."
+            echo "secrets.JWT_PRIVATE_KEY is set."
           fi
 
 
@@ -68,10 +67,7 @@ jobs:
         #   JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
         uses: ./.github/actions/run-full-stack
         env:
-          JWT_PRIVATE_KEY: ${{ env.JWT_PRIVATE_KEY }}
-          TEST_ENV: "e2e"
-        with:
-          JWT_KEY: ${{ env.JWT_PRIVATE_KEY }}
+          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
 
       # Run the Cypress E2E Tests
       - name: E2E Test
