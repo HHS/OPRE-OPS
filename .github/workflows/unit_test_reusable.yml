@@ -55,7 +55,7 @@ jobs:
       ### DEBUGGING
       - name: Check if secrets.JWT_PRIVATE_KEY is set
         run: |
-          if [[ -z "${{ secrets.JWT_PRIVATE_KEY }}" ]]; then
+          if [[ -z ${{ secrets.JWT_PRIVATE_KEY }} ]]; then
             echo "secrets.JWT_PRIVATE_KEY is empty or not set!"
             exit 1
           else
