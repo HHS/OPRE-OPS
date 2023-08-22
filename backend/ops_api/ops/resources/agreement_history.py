@@ -32,10 +32,10 @@ class AgreementHistoryListAPI(BaseListAPI):
                 and_(
                     or_(
                         and_(
-                            OpsDBHistory.event_details['id'].astext.cast(Integer) == id,
+                            OpsDBHistory.event_details["id"].astext.cast(Integer) == id,
                             OpsDBHistory.class_name.in_(class_names),
                         ),
-                        OpsDBHistory.event_details['agreement_id'].astext.cast(Integer) == id
+                        OpsDBHistory.event_details["agreement_id"].astext.cast(Integer) == id,
                     ),
                     OpsDBHistory.event_type.in_(
                         [

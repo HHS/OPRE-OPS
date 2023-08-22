@@ -8,7 +8,7 @@ from types import NoneType
 from flask import current_app
 from flask_jwt_extended import verify_jwt_in_request
 from flask_jwt_extended.exceptions import NoAuthorizationError
-from models import OpsDBHistory, OpsDBHistoryType, OpsEvent, User, Agreement, BaseModel
+from models import OpsDBHistory, OpsDBHistoryType, OpsEvent, User, BaseModel
 from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy.cyextension.collections import IdentitySet
 from sqlalchemy.orm import Session
@@ -47,7 +47,7 @@ def find_relationship_by_fk(obj, col_key):
     return None
 
 
-def build_audit(obj, event_type: OpsDBHistoryType) -> DbRecordAudit:
+def build_audit(obj, event_type: OpsDBHistoryType) -> DbRecordAudit:  # noqa: C901
     row_key = "|".join([str(getattr(obj, pk)) for pk in obj.primary_keys])
 
     original = {}
@@ -168,7 +168,7 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
                 row_key=db_audit.row_key,
                 original=db_audit.original,
                 diff=db_audit.diff,
-                changes=db_audit.changes
+                changes=db_audit.changes,
             )
             result.append(ops_db)
     return result
