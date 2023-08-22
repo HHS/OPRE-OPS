@@ -42,12 +42,11 @@ jobs:
   e2e:
     name: End-to-End Testing
     runs-on: ubuntu-latest
-    env:
-      JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
-      JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
+
       # Install NPM dependencies, cache them correctly
       # and run all Cypress tests
       - uses: ./.github/actions/setup-javascript
@@ -61,20 +60,15 @@ jobs:
       #     else
       #       echo "secrets.JWT_PRIVATE_KEY is set."
       #     fi
-      - name: Check if env.JWT_PRIVATE_KEY is set
-        run: |
-          if [[ -z "${{ env.JWT_PRIVATE_KEY }}" ]]; then
-            echo "env.JWT_PRIVATE_KEY is empty or not set!"
-            exit 1
-          else
-            echo "env.JWT_PRIVATE_KEY is set."
-          fi
+
 
       # Stand up the system stack, to have something to poke
       - name: Launch Stack
+        # env:
+        #   JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
         uses: ./.github/actions/run-full-stack
         with:
-          JWT_KEY: ${{ env.JWT_PRIVATE_KEY }}
+          JWT_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
 
       # Run the Cypress E2E Tests
       - name: E2E Test

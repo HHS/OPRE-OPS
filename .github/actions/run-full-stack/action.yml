@@ -8,6 +8,17 @@ inputs:
 runs:
   using: composite
   steps:
+
+    - name: Check if inputs.JWT_PRIVATE_KEY is set
+      shell: bash
+      run: |
+        if [[ -z "${{ inputs.JWT_PRIVATE_KEY }}" ]]; then
+          echo "inputs.JWT_PRIVATE_KEY is empty or not set!"
+          exit 1
+        else
+          echo "inputs.JWT_PRIVATE_KEY is set."
+        fi
+
     - name: Start Stack
       shell: bash
       run: |
