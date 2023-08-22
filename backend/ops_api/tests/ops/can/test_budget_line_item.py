@@ -232,6 +232,52 @@ def test_bli(loaded_db):
     loaded_db.commit()
 
 
+@pytest.fixture()
+def test_bli_previous_year(loaded_db):
+    bli = BudgetLineItem(
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=1,
+        can_id=1,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2042, 10, 1),
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    yield bli
+
+    loaded_db.rollback()
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def test_bli_previous_fiscal_year(loaded_db):
+    bli = BudgetLineItem(
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=1,
+        can_id=1,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2042, 9, 1),
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    yield bli
+
+    loaded_db.rollback()
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
 @pytest.mark.usefixtures("app_ctx")
 def test_put_budget_line_items(auth_client, test_bli):
     data = POSTRequestBody(
@@ -610,3 +656,14 @@ def test_put_budget_line_item_portfolio_id_ignored(auth_client, loaded_db, test_
     request_data = data.__dict__ | {"portfolio_id": 10000}
     response = auth_client.put(f"/api/v1/budget-line-items/{test_bli.id}", json=request_data)
     assert response.status_code == 200, "portfolio_id should be ignored"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_item_fiscal_year(loaded_db, test_bli, test_bli_previous_year, test_bli_previous_fiscal_year):
+    assert test_bli.fiscal_year == test_bli.date_needed.year, "test_bli.date_needed == 2043-01-01"
+    assert (
+        test_bli_previous_year.fiscal_year == test_bli_previous_year.date_needed.year + 1
+    ), "test_bli_previous_year.date_needed == 2042-10-01"
+    assert (
+        test_bli_previous_fiscal_year.fiscal_year == test_bli_previous_fiscal_year.date_needed.year
+    ), "test_bli_previous_fiscal_year.date_needed == 2042-09-01"

@@ -18,6 +18,7 @@ from sqlalchemy import (
     String,
     Table,
     Text,
+    case,
     select,
 )
 from sqlalchemy.orm import InstrumentedAttribute, column_property, object_session, relationship, with_polymorphic
@@ -448,6 +449,17 @@ class BudgetLineItem(BaseModel):
             .join(CAN, Portfolio.id == CAN.managing_portfolio_id)
             .join(self.__class__, self.can_id == CAN.id)
             .where(self.__class__.id == self.id)
+        )
+
+    @property
+    def fiscal_year(self):
+        return object_session(self).scalar(
+            select(
+                case(
+                    (self.date_needed.month >= 10, self.date_needed.year + 1),
+                    else_=(self.date_needed.year),
+                )
+            )
         )
 
     @override
