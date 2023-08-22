@@ -405,6 +405,7 @@ def test_agreements_patch_by_id_contract(auth_client, loaded_db, test_contract):
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test_contract):
     """Patch CONTRACT with setting fields to null/empty"""
+    # set fields to non-null/non-empty
     response = auth_client.patch(
         f"/api/v1/agreements/{test_contract.id}",
         json={
@@ -412,6 +413,26 @@ def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test
             "name": "Updated Contract Name",
             "description": "Updated Contract Description",
             "number": "AGR0001",
+            "team_members": [{"id": 1}],
+            "support_contacts": [{"id": 2}, {"id": 3}],
+            "notes": "Test Note",
+        },
+    )
+    assert response.status_code == 200
+
+    stmt = select(Agreement).where(Agreement.id == test_contract.id)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement.name == "Updated Contract Name"
+    assert agreement.description == "Updated Contract Description"
+    assert agreement.notes == "Test Note"
+    assert [m.id for m in agreement.team_members] == [1]
+    assert [m.id for m in agreement.support_contacts] == [2, 3]
+
+    # path with null/empty
+    response = auth_client.patch(
+        f"/api/v1/agreements/{test_contract.id}",
+        json={
             "team_members": None,
             "support_contacts": [],
             "notes": None,

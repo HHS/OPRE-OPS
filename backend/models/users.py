@@ -46,28 +46,32 @@ class User(BaseModel):
         "Portfolio",
         back_populates="team_leaders",
         secondary="portfolio_team_leaders",
+        viewonly=True
     )
 
     research_projects = relationship(
         "ResearchProject",
         back_populates="team_leaders",
         secondary="research_project_team_leaders",
+        viewonly=True
     )
 
     agreements = relationship(
         "Agreement",
         back_populates="team_members",
         secondary="agreement_team_members",
+        viewonly=True
     )
 
     contracts = relationship(
         "ContractAgreement",
         back_populates="support_contacts",
         secondary="contract_support_contacts",
+        viewonly=True
     )
 
     notifications = relationship(
-        "Notification", foreign_keys="Notification.recipient_id"
+        "Notification", foreign_keys="Notification.recipient_id",
     )
 
     @override
@@ -83,6 +87,13 @@ class User(BaseModel):
             }
         )
 
+        return cast(dict[str, Any], d)
+
+    def to_slim_dict(self) -> dict[str, Any]:
+        d = {
+            "id": self.id,
+            "full_name": self.full_name,
+        }
         return cast(dict[str, Any], d)
 
 

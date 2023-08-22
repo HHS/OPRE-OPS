@@ -28,12 +28,14 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList }) => {
     return (
         <div className={customStyles.container} id="filter-container">
             <button
-                className={`usa-button display-flex flex-align-center margin-right-0 ${customStyles.filterButton}`}
+                className={`usa-button ${
+                    !showModal ? "usa-button--outline text-primary" : "bg-primary-darker"
+                } display-flex flex-align-center margin-right-0 ${customStyles.filterButton}`}
                 onClick={() => (showModal ? setShowModal(false) : setShowModal(true))}
             >
                 <svg
                     className="height-2 width-2 margin-right-05 hover: cursor-pointer usa-tooltip"
-                    style={{ fill: "white" }}
+                    style={!showModal ? { fill: "#005EA2" } : { fill: "white" }}
                 >
                     <use xlinkHref={`${icons}#filter_list`}></use>
                 </svg>
