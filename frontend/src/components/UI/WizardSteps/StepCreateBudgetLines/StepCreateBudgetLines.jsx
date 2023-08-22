@@ -221,7 +221,23 @@ export const StepCreateBudgetLines = ({
                     items.map((item) => {
                         // eslint-disable-next-line no-unused-vars
                         const { id, data } = cleanBudgetLineItemForApi(item);
-                        addBudgetLineItem(data);
+                        addBudgetLineItem(data)
+                            .unwrap()
+                            .then((fulfilled) => {
+                                console.log("Created New BLIs.");
+                            })
+                            .catch((rejected) => {
+                                console.error("Error Creating Budget Lines");
+                                console.error({ rejected });
+                                globalDispatch(
+                                    setAlert({
+                                        type: "error",
+                                        heading: "Error",
+                                        message: "An error occurred. Please try again.",
+                                    })
+                                );
+                                navigate("/error");
+                            });
                     })
                 );
             }
@@ -229,7 +245,23 @@ export const StepCreateBudgetLines = ({
                 return Promise.all(
                     items.map((item) => {
                         const { id, data } = cleanBudgetLineItemForApi(item);
-                        updateBudgetLineItem({ id, data });
+                        updateBudgetLineItem({ id, data })
+                            .unwrap()
+                            .then((fulfilled) => {
+                                console.log("Updated BLIs.");
+                            })
+                            .catch((rejected) => {
+                                console.error("Error Updating Budget Lines");
+                                console.error({ rejected });
+                                globalDispatch(
+                                    setAlert({
+                                        type: "error",
+                                        heading: "Error",
+                                        message: "An error occurred. Please try again.",
+                                    })
+                                );
+                                navigate("/error");
+                            });
                     })
                 );
             }
@@ -238,10 +270,10 @@ export const StepCreateBudgetLines = ({
         const existingBudgetLineItems = newBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
 
         if (newBudgetLineItems.length > 0) {
-            mutateBudgetLineItems("POST", newBudgetLineItems).then(() => console.log("Created New BLIs."));
+            mutateBudgetLineItems("POST", newBudgetLineItems);
         }
         if (existingBudgetLineItems.length > 0) {
-            mutateBudgetLineItems("PATCH", existingBudgetLineItems).then(() => console.log("Updated BLIs."));
+            mutateBudgetLineItems("PATCH", existingBudgetLineItems);
         }
         // cleanup
         dispatch({ type: "RESET_FORM" });
