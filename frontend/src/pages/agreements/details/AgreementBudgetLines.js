@@ -1,13 +1,12 @@
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import AgreementDetailHeader from "./AgreementDetailHeader";
 import { CreateBudgetLinesProvider } from "../../../components/UI/WizardSteps/StepCreateBudgetLines/context";
 import PreviewTable from "../../../components/UI/PreviewTable/PreviewTable";
 import StepCreateBudgetLines from "../../../components/UI/WizardSteps/StepCreateBudgetLines/StepCreateBudgetLines";
 import Alert from "../../../components/UI/Alert";
-import { setAlert } from "../../../components/UI/Alert/alertSlice";
 
 /**
  * Renders Agreement budget lines view
@@ -19,7 +18,6 @@ import { setAlert } from "../../../components/UI/Alert/alertSlice";
  */
 export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
     const navigate = useNavigate();
-    const globalDispatch = useDispatch();
     const isGlobalAlertActive = useSelector((state) => state.alert.isActive);
 
     return (
@@ -51,13 +49,6 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                     }}
                     continueOverRide={() => {
                         navigate(`/agreements/${agreement.id}/budget-lines`);
-                        globalDispatch(
-                            setAlert({
-                                type: "success",
-                                heading: "Budget Lines updated",
-                                message: "The budget lines have been successfully updated.",
-                            })
-                        );
                     }}
                 />
             ) : agreement?.budget_line_items.length > 0 ? (
