@@ -1,8 +1,6 @@
-import "./AgreementsList.scss";
 import { useEffect, useState } from "react";
-import { convertCodeForDisplay } from "../../../helpers/utils";
-
 import _ from "lodash";
+import { convertCodeForDisplay } from "../../../helpers/utils";
 import FilterTags from "../../../components/UI/FilterTags/FilterTags";
 import createTagString from "../../../components/UI/FilterTags/utils";
 

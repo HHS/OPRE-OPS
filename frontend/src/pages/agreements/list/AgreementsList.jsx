@@ -1,16 +1,18 @@
-import { useSelector } from "react-redux";
-import { useGetAgreementsQuery } from "../../../api/opsAPI";
-import App from "../../../App";
-import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
-import sortAgreements from "./utils";
 import { useState } from "react";
-import Alert from "../../../components/UI/Alert";
-import "./AgreementsList.scss";
-import AgreementsTable from "./AgreementsTable";
-import AgreementsFilterHeaderSection from "./AgreementsFilterHeaderSection";
+import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import _ from "lodash";
+import App from "../../../App";
+import { useGetAgreementsQuery } from "../../../api/opsAPI";
+import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
+import sortAgreements from "./utils";
+import Alert from "../../../components/UI/Alert";
+import AgreementsTable from "./AgreementsTable";
+import AgreementTabs from "./AgreementsTabs";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
+import TablePageLayout from "../../../components/UI/Layouts/TablePageLayout";
+import AgreementsFilterButton from "./AgreementsFilterButton";
+import AgreementsFilterTags from "./AgreementsFilterTags";
 
 /**
  * Page for the Agreements List.
@@ -57,6 +59,7 @@ export const AgreementsList = () => {
         );
     }
 
+    // FILTERS
     let filteredAgreements = _.cloneDeep(agreements);
 
     switch (filters.upcomingNeedByDate) {
@@ -155,7 +158,7 @@ export const AgreementsList = () => {
         );
     });
 
-    let sortedAgreements;
+    let sortedAgreements = [];
     if (myAgreementsUrl) {
         const myAgreements = filteredAgreements.filter((agreement) => {
             return agreement.team_members?.some((teamMember) => {
@@ -172,15 +175,21 @@ export const AgreementsList = () => {
         <App>
             <Breadcrumb currentName={"Agreements"} />
             {isAlertActive && <Alert />}
-
-            <h1 className="font-sans-lg">Agreements</h1>
-            <p>
-                {myAgreementsUrl
-                    ? "This is a list of the agreements you are listed as a Team Member on."
-                    : "This is a list of all agreements across OPRE."}
-            </p>
-            <AgreementsFilterHeaderSection filters={filters} setFilters={setFilters} />
-            <AgreementsTable agreements={sortedAgreements} />
+            <TablePageLayout
+                title="Agreements"
+                subtitle={myAgreementsUrl ? "My Agreements" : "All Agreements"}
+                details={
+                    myAgreementsUrl
+                        ? "This is a list of the agreements you are listed as a Team Member on."
+                        : "This is a list of all agreements across OPRE."
+                }
+                buttonText="Add Agreement"
+                buttonLink="/agreements/create"
+                TabsSection={<AgreementTabs />}
+                FilterTags={<AgreementsFilterTags filters={filters} setFilters={setFilters} />}
+                FilterButton={<AgreementsFilterButton filters={filters} setFilters={setFilters} />}
+                TableSection={<AgreementsTable agreements={sortedAgreements} />}
+            />
         </App>
     );
 };

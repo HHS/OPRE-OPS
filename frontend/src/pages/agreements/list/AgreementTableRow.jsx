@@ -15,6 +15,7 @@ import icons from "../../../uswds/img/sprite.svg";
 import "./AgreementsList.scss";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 
+
 /**
  * Renders a row in the agreements table.
  *
