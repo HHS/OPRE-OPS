@@ -51,15 +51,15 @@ jobs:
       # and run all Cypress tests
       - uses: ./.github/actions/setup-javascript
 
-      ### DEBUGGING
-      # - name: Check if secrets.JWT_PRIVATE_KEY is set
-      #   run: |
-      #     if [[ -z "${{ secrets.JWT_PRIVATE_KEY }}" ]]; then
-      #       echo "secrets.JWT_PRIVATE_KEY is empty or not set!"
-      #       exit 1
-      #     else
-      #       echo "secrets.JWT_PRIVATE_KEY is set."
-      #     fi
+      ## DEBUGGING
+      - name: Check if env.JWT_PRIVATE_KEY is set
+        run: |
+          if [[ -z "${{ env.JWT_PRIVATE_KEY }}" ]]; then
+            echo "env.JWT_PRIVATE_KEY is empty or not set!"
+            exit 1
+          else
+            echo "env.JWT_PRIVATE_KEY is set."
+          fi
 
 
       # Stand up the system stack, to have something to poke
@@ -68,10 +68,10 @@ jobs:
         #   JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
         uses: ./.github/actions/run-full-stack
         env:
-          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+          JWT_PRIVATE_KEY: ${{ env.JWT_PRIVATE_KEY }}
           TEST_ENV: "e2e"
         with:
-          JWT_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+          JWT_KEY: ${{ env.JWT_PRIVATE_KEY }}
 
       # Run the Cypress E2E Tests
       - name: E2E Test

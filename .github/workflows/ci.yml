@@ -11,6 +11,9 @@ on:
       - 'docs/**' # We don't want to trigger when we update the docs.
       - '*.md'
 
+env:
+  JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+
 jobs:
 
   unit-tests:
