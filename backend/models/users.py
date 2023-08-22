@@ -46,12 +46,14 @@ class User(BaseModel):
         "Portfolio",
         back_populates="team_leaders",
         secondary="portfolio_team_leaders",
+        viewonly=True
     )
 
     research_projects = relationship(
         "ResearchProject",
         back_populates="team_leaders",
         secondary="research_project_team_leaders",
+        viewonly=True
     )
 
     agreements = relationship(
@@ -65,10 +67,11 @@ class User(BaseModel):
         "ContractAgreement",
         back_populates="support_contacts",
         secondary="contract_support_contacts",
+        viewonly=True
     )
 
     notifications = relationship(
-        "Notification", foreign_keys="Notification.recipient_id"
+        "Notification", foreign_keys="Notification.recipient_id",
     )
 
     @override
