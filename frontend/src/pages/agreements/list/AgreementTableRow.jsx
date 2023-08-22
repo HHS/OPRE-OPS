@@ -12,9 +12,7 @@ import TableTag from "../../../components/UI/PreviewTable/TableTag";
 import { useDeleteAgreementMutation } from "../../../api/opsAPI";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import icons from "../../../uswds/img/sprite.svg";
-import "./AgreementsList.scss";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
-
 
 /**
  * Renders a row in the agreements table.
