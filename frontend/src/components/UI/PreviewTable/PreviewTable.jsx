@@ -55,7 +55,8 @@ export const PreviewTable = ({
         let total = bl?.amount + feeTotal;
         const isBudgetLineDraft = bl?.status === "DRAFT";
         const isBudgetLineInReview = bl?.status === "UNDER_REVIEW";
-        const isBudgetLineEditable = isBudgetLineDraft || isBudgetLineInReview;
+        const isBudgetLinePlanned = bl?.status === "PLANNED";
+        const isBudgetLineEditable = isBudgetLineDraft || isBudgetLineInReview || isBudgetLinePlanned;
 
         const handleExpandRow = () => {
             setIsExpanded(!isExpanded);
