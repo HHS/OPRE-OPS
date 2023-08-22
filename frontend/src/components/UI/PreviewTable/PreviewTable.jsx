@@ -14,7 +14,7 @@ import "./PreviewTable.scss";
  * A table component that displays budget lines.
  * @param {Object} props - The component props.
  * @param {Array<any>} [props.budgetLinesAdded] - An array of budget lines to display. - optional
- * @param {Boolean} [props.canUserEditBudgetLines] - A flag to indicate if the user can edit budget lines. - optional
+ * @param {Boolean} [props.canUserEditBudgetLines] - A flag to indicate if the user is agreement owner, project officer, on the agreement team, or creator of any of the BLIs on the agreement. - optional
  * @param {Function} [props.handleSetBudgetLineForEditing ]- A function to handle editing a budget line. - optional
  * @param {Function} [props.handleDeleteBudgetLine] - A function to handle deleting a budget line. - optional
  * @param {Function} [props.handleDuplicateBudgetLine] - A function to handle duplicating a budget line. - optional
@@ -59,8 +59,12 @@ export const PreviewTable = ({
         const isBudgetLineDraft = bl?.status === "DRAFT";
         const isBudgetLineInReview = bl?.status === "UNDER_REVIEW";
         const isBudgetLinePlanned = bl?.status === "PLANNED";
+        // checks for who can edit the budget line
+        const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
+        const isBudgetLineOwner = bl?.created_by === loggedInUserId;
         const isBudgetLineEditable =
-            canUserEditBudgetLines && (isBudgetLineDraft || isBudgetLineInReview || isBudgetLinePlanned);
+            (canUserEditBudgetLines || isBudgetLineOwner) &&
+            (isBudgetLineDraft || isBudgetLineInReview || isBudgetLinePlanned);
 
         const handleExpandRow = () => {
             setIsExpanded(!isExpanded);
