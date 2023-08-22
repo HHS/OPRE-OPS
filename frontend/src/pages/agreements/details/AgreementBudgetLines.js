@@ -26,12 +26,6 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
     const isUserCreatorOfAnyBudgetLines = agreement?.budget_line_items?.some(
         (bli) => bli.created_by === loggedInUserId
     );
-
-    console.log({ loggedInUserId });
-    console.log({ isUserAgreementCreator });
-    console.log({ isUserTheProjectOfficer });
-    console.log({ isUserOnAgreementTeam });
-    console.log({ isUserCreatorOfAnyBudgetLines });
     // TODO: add check if user is on the Budget Team
     const canUserEditBudgetLines =
         isUserAgreementCreator || isUserTheProjectOfficer || isUserOnAgreementTeam || isUserCreatorOfAnyBudgetLines;
