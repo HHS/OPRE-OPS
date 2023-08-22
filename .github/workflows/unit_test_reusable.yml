@@ -67,6 +67,8 @@ jobs:
         # env:
         #   JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
         uses: ./.github/actions/run-full-stack
+        env:
+          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
         with:
           JWT_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
 

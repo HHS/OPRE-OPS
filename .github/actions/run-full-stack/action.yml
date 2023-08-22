@@ -9,20 +9,20 @@ runs:
   using: composite
   steps:
 
-    - name: Check if secrets.JWT_PRIVATE_KEY is set
+    - name: Check if env.JWT_PRIVATE_KEY is set
       shell: bash
       run: |
-        if [[ -z "${{ secrets.JWT_PRIVATE_KEY }}" ]]; then
-          echo "secrets.JWT_PRIVATE_KEY is empty or not set!"
+        if [[ -z "${{ env.JWT_PRIVATE_KEY }}" ]]; then
+          echo "env.JWT_PRIVATE_KEY is empty or not set!"
           exit 1
         else
-          echo "secrets.JWT_PRIVATE_KEY is set."
+          echo "env.JWT_PRIVATE_KEY is set."
         fi
 
     - name: Start Stack
       shell: bash
       run: |
         set -x
-        export JWT_PRIVATE_KEY=${{ secrets.JWT_PRIVATE_KEY }}
+        export JWT_PRIVATE_KEY=${{ env.JWT_PRIVATE_KEY }}
         docker compose -f docker-compose.e2e.yml down -v
         docker compose -f docker-compose.e2e.yml up --build -d
