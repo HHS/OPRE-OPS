@@ -313,7 +313,7 @@ def update_budget_line_item(data: dict[str, Any], id: int):
 
 
 def validate_and_normalize_request_data_for_patch(schema: Schema) -> dict[str, Any]:
-    data = schema.dump(schema.load(request.json))
+    data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
     data = {k: v for (k, v) in data.items() if k in request.json}  # only keep the attributes from the request body
     if "status" in data:
         data["status"] = BudgetLineItemStatus[data["status"]]

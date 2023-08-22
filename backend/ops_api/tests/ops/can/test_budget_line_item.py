@@ -227,6 +227,7 @@ def test_bli(loaded_db):
 
     yield bli
 
+    loaded_db.rollback()
     loaded_db.delete(bli)
     loaded_db.commit()
 
@@ -350,29 +351,10 @@ def test_put_budget_line_items_bad_date(auth_client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_put_budget_line_items_bad_can(auth_client, loaded_db):
-    bli = BudgetLineItem(
-        id=1000,
-        line_description="LI 1",
-        comments="blah blah",
-        agreement_id=1,
-        can_id=1,
-        amount=100.12,
-        status=BudgetLineItemStatus.DRAFT,
-        date_needed=datetime.date(2043, 1, 1),
-        psc_fee_amount=1.23,
-        created_by=1,
-    )
-    loaded_db.add(bli)
-    loaded_db.commit()
-
-    data = {"can": 1000000, "agreement_id": 1}
+def test_put_budget_line_items_bad_can(auth_client, test_bli):
+    data = {"can_id": 1000000, "agreement_id": 1}
     response = auth_client.put("/api/v1/budget-line-items/1000", json=data)
     assert response.status_code == 400
-
-    # cleanup
-    loaded_db.delete(bli)
-    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
