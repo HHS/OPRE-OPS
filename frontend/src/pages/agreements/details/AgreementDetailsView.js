@@ -3,6 +3,7 @@ import { historyData, notesData } from "./data";
 import LogItem from "../../../components/UI/LogItem";
 import Tag from "../../../components/UI/Tag/Tag";
 import { convertCodeForDisplay } from "../../../helpers/utils";
+import AgreementHistoryPanel from "../../../components/Agreements/AgreementDetails/AgreementHistoryPanel";
 
 /**
  * Renders the details of an agreement
@@ -65,6 +66,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                     ) : (
                         <p>Sorry no history</p>
                     )}
+                    <AgreementHistoryPanel agreementId={agreement.id} />
                 </div>
                 <div className="grid-col-6 padding-left-2" data-cy="details-right-col">
                     {/* // NOTE: Right Column */}
