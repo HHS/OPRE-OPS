@@ -6,7 +6,6 @@ import AgreementDetailHeader from "./AgreementDetailHeader";
 import { CreateBudgetLinesProvider } from "../../../components/UI/WizardSteps/StepCreateBudgetLines/context";
 import PreviewTable from "../../../components/UI/PreviewTable/PreviewTable";
 import StepCreateBudgetLines from "../../../components/UI/WizardSteps/StepCreateBudgetLines/StepCreateBudgetLines";
-import Alert from "../../../components/UI/Alert";
 
 /**
  * Renders Agreement budget lines view
@@ -18,7 +17,7 @@ import Alert from "../../../components/UI/Alert";
  */
 export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
     const navigate = useNavigate();
-    const isGlobalAlertActive = useSelector((state) => state.alert.isActive);
+
     // Checks for who can edit budget lines
     const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
     const isUserAgreementCreator = agreement?.created_by === loggedInUserId;
@@ -94,6 +93,9 @@ AgreementBudgetLines.propTypes = {
         budget_line_items: PropTypes.arrayOf(PropTypes.object),
         procurement_shop: PropTypes.object,
         research_project: PropTypes.object,
+        team_members: PropTypes.arrayOf(PropTypes.object),
+        created_by: PropTypes.number,
+        project_officer: PropTypes.number,
     }),
     isEditMode: PropTypes.bool,
     setIsEditMode: PropTypes.func,

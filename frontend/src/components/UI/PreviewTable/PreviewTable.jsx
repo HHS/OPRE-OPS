@@ -37,7 +37,6 @@ export const PreviewTable = ({
         .reverse();
 
     let loggedInUser = useSelector((state) => loggedInName(state.auth?.activeUser));
-    
 
     const TableRow = ({ bl }) => {
         const [isExpanded, setIsExpanded] = useState(false);
