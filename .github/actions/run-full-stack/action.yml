@@ -3,20 +3,20 @@ description: Runs the full stack from the docker-compose.yml
 inputs:
   JWT_KEY:
     description: Key used for generating the JWTs in the backend-api. These should be dev/testing keys only.
-    required: false
+    required: true
     default: ''
 runs:
   using: composite
   steps:
 
-    - name: Check if inputs.JWT_PRIVATE_KEY is set
+    - name: Check if inputs.JWT_KEY is set
       shell: bash
       run: |
-        if [[ -z "${{ inputs.JWT_PRIVATE_KEY }}" ]]; then
-          echo "inputs.JWT_PRIVATE_KEY is empty or not set!"
+        if [[ -z "${{ inputs.JWT_KEY }}" ]]; then
+          echo "inputs.JWT_KEY is empty or not set!"
           exit 1
         else
-          echo "inputs.JWT_PRIVATE_KEY is set."
+          echo "inputs.JWT_KEY is set."
         fi
 
     - name: Start Stack
