@@ -4,16 +4,6 @@ runs:
   using: composite
   steps:
 
-    - name: Check if env.TEST_ENV is set
-      shell: bash
-      run: |
-        if [[ -z "${{ env.JWT_PRIVATE_KEY }}" ]]; then
-          echo "secrets.JWT_PRIVATE_KEY is empty or not set!"
-          exit 1
-        else
-          echo "secrets.JWT_PRIVATE_KEY is set."
-        fi
-
     - name: Start Stack
       shell: bash
       run: |
