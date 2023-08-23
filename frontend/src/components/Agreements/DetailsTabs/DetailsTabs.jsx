@@ -1,7 +1,7 @@
 import styles from "./DetailsTabs.module.scss";
 import { useLocation, useNavigate } from "react-router-dom";
 import React from "react";
-import Modal from "../../UI/Modal";
+import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 
 const DetailsTabs = ({ agreementId, isEditMode, setIsEditMode }) => {
     const location = useLocation();
@@ -58,7 +58,7 @@ const DetailsTabs = ({ agreementId, isEditMode, setIsEditMode }) => {
     return (
         <>
             {showModal && (
-                <Modal
+                <ConfirmationModal
                     heading={modalProps.heading}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}

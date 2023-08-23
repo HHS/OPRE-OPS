@@ -1,5 +1,4 @@
 import pytest
-
 from models.cans import BudgetLineItem
 
 
