@@ -55,16 +55,10 @@ export const PreviewTable = ({
         }
         let feeTotal = bl?.amount * bl?.psc_fee_amount;
         let total = bl?.amount + feeTotal;
-        // Checks for what budget lines can be edited
         const isBudgetLineDraft = bl?.status === "DRAFT";
         const isBudgetLineInReview = bl?.status === "UNDER_REVIEW";
         const isBudgetLinePlanned = bl?.status === "PLANNED";
-        // checks for who can edit the budget line
-        const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
-        const isBudgetLineOwner = bl?.created_by === loggedInUserId;
-        const isBudgetLineEditable =
-            (canUserEditBudgetLines || isBudgetLineOwner) &&
-            (isBudgetLineDraft || isBudgetLineInReview || isBudgetLinePlanned);
+        const isBudgetLineEditable = isBudgetLineDraft || isBudgetLineInReview || isBudgetLinePlanned;
 
         const handleExpandRow = () => {
             setIsExpanded(!isExpanded);
