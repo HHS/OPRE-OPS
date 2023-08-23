@@ -45,7 +45,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                 details="This is a list of all budget lines within this agreement."
                 isEditMode={isEditMode}
                 setIsEditMode={setIsEditMode}
-                isEditable={true}
+                isEditable={canUserEditBudgetLines}
             />
             {isEditMode ? (
                 <StepCreateBudgetLines

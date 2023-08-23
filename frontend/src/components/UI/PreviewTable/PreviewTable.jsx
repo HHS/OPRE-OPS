@@ -37,6 +37,7 @@ export const PreviewTable = ({
         .reverse();
 
     let loggedInUser = useSelector((state) => loggedInName(state.auth?.activeUser));
+    const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
 
     const TableRow = ({ bl }) => {
         const [isExpanded, setIsExpanded] = useState(false);
@@ -58,8 +59,13 @@ export const PreviewTable = ({
         const isBudgetLineDraft = bl?.status === "DRAFT";
         const isBudgetLineInReview = bl?.status === "UNDER_REVIEW";
         const isBudgetLinePlanned = bl?.status === "PLANNED";
-        const isBudgetLineEditable = isBudgetLineDraft || isBudgetLineInReview || isBudgetLinePlanned;
-
+        const isUserBudgetLineCreator = bl?.created_by === loggedInUserId;
+        const isBudgetLineEditable =
+            (canUserEditBudgetLines || isUserBudgetLineCreator) &&
+            (isBudgetLineDraft || isBudgetLineInReview || isBudgetLinePlanned);
+        console.log({ canUserEditBudgetLines });
+        console.log({ isUserBudgetLineCreator });
+        console.log({ isBudgetLineEditable });
         const handleExpandRow = () => {
             setIsExpanded(!isExpanded);
             setIsRowActive(true);
