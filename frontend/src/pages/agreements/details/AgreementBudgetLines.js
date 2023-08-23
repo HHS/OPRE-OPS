@@ -20,6 +20,23 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
     const navigate = useNavigate();
     const isGlobalAlertActive = useSelector((state) => state.alert.isActive);
 
+    // Checks for who can edit budget lines
+    const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
+    const isUserAgreementCreator = agreement?.created_by === loggedInUserId;
+    const isUserTheProjectOfficer = agreement?.project_officer === loggedInUserId;
+    const isUserOnAgreementTeam = agreement?.team_members?.some((member) => member.id === loggedInUserId);
+    const isUserCreatorOfAnyBudgetLines = agreement?.budget_line_items?.some(
+        (bli) => bli.created_by === loggedInUserId
+    );
+    // TODO: add check if user is on the Budget Team
+    const canUserEditBudgetLines =
+        isUserAgreementCreator || isUserTheProjectOfficer || isUserOnAgreementTeam || isUserCreatorOfAnyBudgetLines;
+
+    // if there are no BLIS than the user can edit
+    if (agreement?.budget_line_items?.length === 0) {
+        setIsEditMode(true);
+    }
+
     return (
         <CreateBudgetLinesProvider>
             {!isEditMode && isGlobalAlertActive && <Alert />}
@@ -28,7 +45,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                 details="This is a list of all budget lines within this agreement."
                 isEditMode={isEditMode}
                 setIsEditMode={setIsEditMode}
-                isEditable={true}
+                isEditable={canUserEditBudgetLines}
             />
             {isEditMode ? (
                 <StepCreateBudgetLines
@@ -39,6 +56,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                     isReviewMode={false}
                     selectedProcurementShop={agreement?.procurement_shop}
                     selectedResearchProject={agreement?.research_project}
+                    canUserEditBudgetLines={canUserEditBudgetLines}
                     wizardSteps={[]}
                     continueBtnText="Save Changes"
                     currentStep={0}
@@ -77,6 +95,9 @@ AgreementBudgetLines.propTypes = {
         budget_line_items: PropTypes.arrayOf(PropTypes.object),
         procurement_shop: PropTypes.object,
         research_project: PropTypes.object,
+        team_members: PropTypes.arrayOf(PropTypes.object),
+        created_by: PropTypes.number,
+        project_officer: PropTypes.number,
     }),
     isEditMode: PropTypes.bool,
     setIsEditMode: PropTypes.func,
