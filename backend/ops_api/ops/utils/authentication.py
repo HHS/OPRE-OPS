@@ -194,7 +194,7 @@ class HhsAmsProvider(AuthenticationProvider):
     def authenticate(self, auth_code):
         client = OAuth2Session(
             client_id=self.config["client_id"],
-            scope=self.config["scope"],
+            scope=self.config["client_kwargs"]["scope"],
             redirect_uri=self.config["redirect_uri"],
         )
         expires = current_app.config["JWT_ACCESS_TOKEN_EXPIRES"]
