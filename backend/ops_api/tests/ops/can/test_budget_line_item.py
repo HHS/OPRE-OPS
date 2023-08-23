@@ -278,6 +278,50 @@ def test_bli_previous_fiscal_year(loaded_db):
     loaded_db.commit()
 
 
+@pytest.fixture()
+def test_bli_no_can(loaded_db):
+    bli = BudgetLineItem(
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=1,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2043, 1, 1),
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    yield bli
+
+    loaded_db.rollback()
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def test_bli_no_need_by_date(loaded_db):
+    bli = BudgetLineItem(
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=1,
+        can_id=1,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    yield bli
+
+    loaded_db.rollback()
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
 @pytest.mark.usefixtures("app_ctx")
 def test_put_budget_line_items(auth_client, test_bli):
     data = POSTRequestBody(
@@ -667,3 +711,19 @@ def test_budget_line_item_fiscal_year(loaded_db, test_bli, test_bli_previous_yea
     assert (
         test_bli_previous_fiscal_year.fiscal_year == test_bli_previous_fiscal_year.date_needed.year
     ), "test_bli_previous_fiscal_year.date_needed == 2042-09-01"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_item_portfolio_id_null(auth_client, loaded_db, test_bli_no_can):
+    assert test_bli_no_can.portfolio_id is None
+    response = auth_client.get(f"/api/v1/budget-line-items/{test_bli_no_can.id}")
+    assert response.status_code == 200
+    assert response.json["portfolio_id"] is None
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_item_fiscal_year_null(auth_client, loaded_db, test_bli_no_need_by_date):
+    assert test_bli_no_need_by_date.fiscal_year is None
+    response = auth_client.get(f"/api/v1/budget-line-items/{test_bli_no_need_by_date.id}")
+    assert response.status_code == 200
+    assert response.json["fiscal_year"] is None
