@@ -414,7 +414,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                 hintMsg="Maximum 150 characters"
                 messages={res.getErrors("agreementNotes")}
                 className={cn("agreementNotes")}
-                value={agreementNotes}
+                value={agreementNotes || ""}
                 onChange={(name, value) => setAgreementNotes(value)}
             />
             <div className="grid-row flex-justify margin-top-8">

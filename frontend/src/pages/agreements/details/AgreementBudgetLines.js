@@ -1,10 +1,13 @@
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import AgreementDetailHeader from "./AgreementDetailHeader";
 import { CreateBudgetLinesProvider } from "../../../components/UI/WizardSteps/StepCreateBudgetLines/context";
 import PreviewTable from "../../../components/UI/PreviewTable/PreviewTable";
 import StepCreateBudgetLines from "../../../components/UI/WizardSteps/StepCreateBudgetLines/StepCreateBudgetLines";
+import Alert from "../../../components/UI/Alert";
+
 /**
  * Renders Agreement budget lines view
  * @param {Object} props - The component props.
@@ -15,16 +18,17 @@ import StepCreateBudgetLines from "../../../components/UI/WizardSteps/StepCreate
  */
 export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
     const navigate = useNavigate();
+    const isGlobalAlertActive = useSelector((state) => state.alert.isActive);
 
     return (
         <CreateBudgetLinesProvider>
+            {!isEditMode && isGlobalAlertActive && <Alert />}
             <AgreementDetailHeader
                 heading="Budget Lines"
                 details="This is a list of all budget lines within this agreement."
                 isEditMode={isEditMode}
                 setIsEditMode={setIsEditMode}
-                // TODO: this is not correct, but could be a good starting point for 1001
-                isAgreementEditable={true}
+                isEditable={true}
             />
             {isEditMode ? (
                 <StepCreateBudgetLines
