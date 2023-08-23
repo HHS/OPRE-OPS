@@ -63,9 +63,7 @@ export const PreviewTable = ({
         const isBudgetLineEditable =
             (canUserEditBudgetLines || isUserBudgetLineCreator) &&
             (isBudgetLineDraft || isBudgetLineInReview || isBudgetLinePlanned);
-        console.log({ canUserEditBudgetLines });
-        console.log({ isUserBudgetLineCreator });
-        console.log({ isBudgetLineEditable });
+
         const handleExpandRow = () => {
             setIsExpanded(!isExpanded);
             setIsRowActive(true);
