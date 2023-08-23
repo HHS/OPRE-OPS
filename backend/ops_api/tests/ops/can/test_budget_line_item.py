@@ -363,26 +363,28 @@ def test_put_budget_line_items_minimum(auth_client, loaded_db):
         psc_fee_amount=1.23,
         created_by=1,
     )
-    loaded_db.add(bli)
-    loaded_db.commit()
+    try:
+        loaded_db.add(bli)
+        loaded_db.commit()
 
-    data = {"line_description": "Updated LI 1", "agreement_id": 1}
-    response = auth_client.put("/api/v1/budget-line-items/1000", json=data)
-    assert response.status_code == 200
-    assert response.json["line_description"] == "Updated LI 1"
-    assert response.json["id"] == 1000
-    assert response.json["comments"] is None
-    assert response.json["agreement_id"] == 1
-    assert response.json["can_id"] is None
-    assert response.json["amount"] is None
-    assert response.json["status"] == "DRAFT"
-    assert response.json["date_needed"] is None
-    assert response.json["psc_fee_amount"] is None
-    assert response.json["created_on"] != response.json["updated_on"]
+        data = {"line_description": "Updated LI 1", "agreement_id": 1}
+        response = auth_client.put("/api/v1/budget-line-items/1000", json=data)
+        assert response.status_code == 200
+        assert response.json["line_description"] == "Updated LI 1"
+        assert response.json["id"] == 1000
+        assert response.json["comments"] is None
+        assert response.json["agreement_id"] == 1
+        assert response.json["can_id"] is None
+        assert response.json["amount"] is None
+        assert response.json["status"] is None
+        assert response.json["date_needed"] is None
+        assert response.json["psc_fee_amount"] is None
+        assert response.json["created_on"] != response.json["updated_on"]
 
-    # cleanup
-    loaded_db.delete(bli)
-    loaded_db.commit()
+    finally:
+        # cleanup
+        loaded_db.delete(bli)
+        loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -400,16 +402,18 @@ def test_put_budget_line_items_bad_status(auth_client, loaded_db):
         psc_fee_amount=1.23,
         created_by=1,
     )
-    loaded_db.add(bli)
-    loaded_db.commit()
+    try:
+        loaded_db.add(bli)
+        loaded_db.commit()
 
-    data = {"status": "blah blah", "agreement_id": 1}
-    response = auth_client.put("/api/v1/budget-line-items/1000", json=data)
-    assert response.status_code == 400
+        data = {"status": "blah blah", "agreement_id": 1}
+        response = auth_client.put("/api/v1/budget-line-items/1000", json=data)
+        assert response.status_code == 400
 
-    # cleanup
-    loaded_db.delete(bli)
-    loaded_db.commit()
+    finally:
+        # cleanup
+        loaded_db.delete(bli)
+        loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -427,16 +431,18 @@ def test_put_budget_line_items_bad_date(auth_client, loaded_db):
         psc_fee_amount=1.23,
         created_by=1,
     )
-    loaded_db.add(bli)
-    loaded_db.commit()
+    try:
+        loaded_db.add(bli)
+        loaded_db.commit()
 
-    data = {"date_needed": "blah blah", "agreement_id": 1}
-    response = auth_client.put("/api/v1/budget-line-items/1000", json=data)
-    assert response.status_code == 400
+        data = {"date_needed": "blah blah", "agreement_id": 1}
+        response = auth_client.put("/api/v1/budget-line-items/1000", json=data)
+        assert response.status_code == 400
 
-    # cleanup
-    loaded_db.delete(bli)
-    loaded_db.commit()
+    finally:
+        # cleanup
+        loaded_db.delete(bli)
+        loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -493,35 +499,37 @@ def test_patch_budget_line_items(auth_client, loaded_db):
         psc_fee_amount=1.23,
         created_by=1,
     )
-    loaded_db.add(bli)
-    loaded_db.commit()
+    try:
+        loaded_db.add(bli)
+        loaded_db.commit()
 
-    data = PATCHRequestBody(
-        line_description="Updated LI 1",
-        comments="hah hah",
-        agreement_id=2,
-        can_id=2,
-        amount=200.24,
-        status="PLANNED",
-        date_needed="2044-01-01",
-        psc_fee_amount=2.34,
-    )
-    response = auth_client.patch("/api/v1/budget-line-items/1000", json=data.__dict__)
-    assert response.status_code == 200
-    assert response.json["line_description"] == "Updated LI 1"
-    assert response.json["id"] == 1000
-    assert response.json["comments"] == "hah hah"
-    assert response.json["agreement_id"] == 2
-    assert response.json["can_id"] == 2
-    assert response.json["amount"] == 200.24
-    assert response.json["status"] == "DRAFT"
-    assert response.json["date_needed"] == "2044-01-01"
-    assert response.json["psc_fee_amount"] == 2.34
-    assert response.json["created_on"] != response.json["updated_on"]
+        data = PATCHRequestBody(
+            line_description="Updated LI 1",
+            comments="hah hah",
+            agreement_id=2,
+            can_id=2,
+            amount=200.24,
+            status="PLANNED",
+            date_needed="2044-01-01",
+            psc_fee_amount=2.34,
+        )
+        response = auth_client.patch("/api/v1/budget-line-items/1000", json=data.__dict__)
+        assert response.status_code == 200
+        assert response.json["line_description"] == "Updated LI 1"
+        assert response.json["id"] == 1000
+        assert response.json["comments"] == "hah hah"
+        assert response.json["agreement_id"] == 2
+        assert response.json["can_id"] == 2
+        assert response.json["amount"] == 200.24
+        assert response.json["status"] == "DRAFT"
+        assert response.json["date_needed"] == "2044-01-01"
+        assert response.json["psc_fee_amount"] == 2.34
+        assert response.json["created_on"] != response.json["updated_on"]
 
-    # cleanup
-    loaded_db.delete(bli)
-    loaded_db.commit()
+    finally:
+        # cleanup
+        loaded_db.delete(bli)
+        loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -539,29 +547,31 @@ def test_patch_budget_line_items_update_two_attributes(auth_client, loaded_db):
         psc_fee_amount=1.23,
         created_by=1,
     )
-    loaded_db.add(bli)
-    loaded_db.commit()
+    try:
+        loaded_db.add(bli)
+        loaded_db.commit()
 
-    data = {
-        "line_description": "Updated LI 1",
-        "comments": "hah hah",
-    }
-    response = auth_client.patch("/api/v1/budget-line-items/1000", json=data)
-    assert response.status_code == 200
-    assert response.json["line_description"] == "Updated LI 1"
-    assert response.json["id"] == 1000
-    assert response.json["comments"] == "hah hah"
-    assert response.json["agreement_id"] == 1
-    assert response.json["can_id"] == 1
-    assert response.json["amount"] == 100.12
-    assert response.json["status"] == "DRAFT"
-    assert response.json["date_needed"] == "2043-01-01"
-    assert response.json["psc_fee_amount"] == 1.23
-    assert response.json["created_on"] != response.json["updated_on"]
+        data = {
+            "line_description": "Updated LI 1",
+            "comments": "hah hah",
+        }
+        response = auth_client.patch("/api/v1/budget-line-items/1000", json=data)
+        assert response.status_code == 200
+        assert response.json["line_description"] == "Updated LI 1"
+        assert response.json["id"] == 1000
+        assert response.json["comments"] == "hah hah"
+        assert response.json["agreement_id"] == 1
+        assert response.json["can_id"] == 1
+        assert response.json["amount"] == 100.12
+        assert response.json["status"] == "DRAFT"
+        assert response.json["date_needed"] == "2043-01-01"
+        assert response.json["psc_fee_amount"] == 1.23
+        assert response.json["created_on"] != response.json["updated_on"]
 
-    # cleanup
-    loaded_db.delete(bli)
-    loaded_db.commit()
+    finally:
+        # cleanup
+        loaded_db.delete(bli)
+        loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -611,8 +621,6 @@ def test_patch_budget_line_items_invalid_can(auth_client):
     assert response.status_code == 400
 
 
-# Skipped because in Issue/Task 1379, a change to the BLI changes the status to be "DRAFT".
-@pytest.mark.skip()
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_budget_line_items_update_status(auth_client, loaded_db):
@@ -628,17 +636,19 @@ def test_patch_budget_line_items_update_status(auth_client, loaded_db):
         psc_fee_amount=1.23,
         created_by=1,
     )
-    loaded_db.add(bli)
-    loaded_db.commit()
+    try:
+        loaded_db.add(bli)
+        loaded_db.commit()
 
-    data = {"status": "UNDER_REVIEW"}
-    response = auth_client.patch("/api/v1/budget-line-items/1000", json=data)
-    assert response.status_code == 200
-    assert response.json["status"] == "UNDER_REVIEW"
+        data = {"status": "UNDER_REVIEW"}
+        response = auth_client.patch("/api/v1/budget-line-items/1000", json=data)
+        assert response.status_code == 200
+        assert response.json["status"] == "UNDER_REVIEW"
 
-    # cleanup
-    loaded_db.delete(bli)
-    loaded_db.commit()
+    finally:
+        # cleanup
+        loaded_db.delete(bli)
+        loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -654,30 +664,32 @@ def test_patch_budget_line_items_history(loaded_db):
         psc_fee_amount=1.23,
         created_by=1,
     )
-    loaded_db.add(bli)
-    loaded_db.commit()
+    try:
+        loaded_db.add(bli)
+        loaded_db.commit()
 
-    # these will throw if the history tables don't exist
-    version_class(BudgetLineItem)
-    parent_class(version_class(BudgetLineItem))
+        # these will throw if the history tables don't exist
+        version_class(BudgetLineItem)
+        parent_class(version_class(BudgetLineItem))
 
-    # initial version is 0
-    assert bli.versions[0].line_description == "LI 1"
+        # initial version is 0
+        assert bli.versions[0].line_description == "LI 1"
 
-    # update the line description
-    bli.line_description = "Updated LI 1"
-    loaded_db.commit()
+        # update the line description
+        bli.line_description = "Updated LI 1"
+        loaded_db.commit()
 
-    # new version is 1
-    assert bli.versions[1].line_description == "Updated LI 1"
+        # new version is 1
+        assert bli.versions[1].line_description == "Updated LI 1"
 
-    # SQL pulls back latest version (1 in this case)
-    updated_bli = loaded_db.get(BudgetLineItem, bli.id)
-    assert updated_bli.line_description == "Updated LI 1"
+        # SQL pulls back latest version (1 in this case)
+        updated_bli = loaded_db.get(BudgetLineItem, bli.id)
+        assert updated_bli.line_description == "Updated LI 1"
 
-    # cleanup
-    loaded_db.delete(bli)
-    loaded_db.commit()
+    finally:
+        # cleanup
+        loaded_db.delete(bli)
+        loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
