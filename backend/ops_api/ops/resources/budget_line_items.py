@@ -346,7 +346,6 @@ def validate_and_normalize_request_data_for_put(schema: Schema) -> dict[str, Any
     else:
         data["status"] = None
 
-
     data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
 
     return data
