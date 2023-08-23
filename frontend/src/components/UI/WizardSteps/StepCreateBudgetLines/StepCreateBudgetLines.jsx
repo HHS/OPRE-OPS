@@ -105,6 +105,7 @@ export const StepCreateBudgetLines = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [existingBudgetLines]);
 
+    // Validation
     let res = suite.get();
     const pageErrors = res.getErrors();
 
@@ -113,7 +114,6 @@ export const StepCreateBudgetLines = ({
             new_budget_lines: newBudgetLines,
         });
     }
-
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
 
@@ -221,7 +221,23 @@ export const StepCreateBudgetLines = ({
                     items.map((item) => {
                         // eslint-disable-next-line no-unused-vars
                         const { id, data } = cleanBudgetLineItemForApi(item);
-                        addBudgetLineItem(data);
+                        addBudgetLineItem(data)
+                            .unwrap()
+                            .then((fulfilled) => {
+                                console.log("Created New BLIs:", fulfilled);
+                            })
+                            .catch((rejected) => {
+                                console.error("Error Creating Budget Lines");
+                                console.error({ rejected });
+                                globalDispatch(
+                                    setAlert({
+                                        type: "error",
+                                        heading: "Error",
+                                        message: "An error occurred. Please try again.",
+                                    })
+                                );
+                                navigate("/error");
+                            });
                     })
                 );
             }
@@ -229,7 +245,23 @@ export const StepCreateBudgetLines = ({
                 return Promise.all(
                     items.map((item) => {
                         const { id, data } = cleanBudgetLineItemForApi(item);
-                        updateBudgetLineItem({ id, data });
+                        updateBudgetLineItem({ id, data })
+                            .unwrap()
+                            .then((fulfilled) => {
+                                console.log("Updated BLIs:", fulfilled);
+                            })
+                            .catch((rejected) => {
+                                console.error("Error Updating Budget Lines");
+                                console.error({ rejected });
+                                globalDispatch(
+                                    setAlert({
+                                        type: "error",
+                                        heading: "Error",
+                                        message: "An error occurred. Please try again.",
+                                    })
+                                );
+                                navigate("/error");
+                            });
                     })
                 );
             }
@@ -238,10 +270,10 @@ export const StepCreateBudgetLines = ({
         const existingBudgetLineItems = newBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
 
         if (newBudgetLineItems.length > 0) {
-            mutateBudgetLineItems("POST", newBudgetLineItems).then(() => console.log("Created New BLIs."));
+            mutateBudgetLineItems("POST", newBudgetLineItems);
         }
         if (existingBudgetLineItems.length > 0) {
-            mutateBudgetLineItems("PATCH", existingBudgetLineItems).then(() => console.log("Updated BLIs."));
+            mutateBudgetLineItems("PATCH", existingBudgetLineItems);
         }
         // cleanup
         dispatch({ type: "RESET_FORM" });
@@ -429,7 +461,7 @@ StepCreateBudgetLines.propTypes = {
     setIsEditMode: PropTypes.func,
     isReviewMode: PropTypes.bool,
     continueOverRide: PropTypes.func,
-    workflow: PropTypes.oneOf(["agreement", "budgetLines"]).isRequired,
+    workflow: PropTypes.oneOf(["agreement", "budgetLines", "none"]).isRequired,
 };
 
 export default StepCreateBudgetLines;
