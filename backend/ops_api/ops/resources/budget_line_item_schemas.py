@@ -242,3 +242,4 @@ class BudgetLineItemResponse:
     updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     date_needed: date = field(default=None, metadata={"format": "%Y-%m-%d"})
     portfolio_id: Optional[int] = None
+    fiscal_year: Optional[int] = None

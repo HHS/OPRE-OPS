@@ -453,11 +453,15 @@ class BudgetLineItem(BaseModel):
 
     @property
     def fiscal_year(self):
+        date_needed = self.date_needed or None
+        month = date_needed.month if date_needed else -1
+        year = date_needed.year if date_needed else -1
         return object_session(self).scalar(
             select(
                 case(
-                    (self.date_needed.month >= 10, self.date_needed.year + 1),
-                    else_=(self.date_needed.year),
+                    (month >= 10, year + 1),
+                    (month >= 0 and month < 10, year),
+                    else_=None,
                 )
             )
         )
