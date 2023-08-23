@@ -425,6 +425,9 @@ def _get_user_list(data: Any):
 
 def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
     for item in data:
+        # subclass attributes won't have the old (deleted) value in get_history
+        # unless they were loaded before setting
+        _hack_to_fix_get_history = getattr(agreement, item)
         if item in {"agreement_type"}:
             pass
         elif item not in {"team_members", "support_contacts"}:
