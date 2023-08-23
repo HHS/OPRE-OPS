@@ -1284,6 +1284,9 @@ components:
         portfolio_id:
           type: integer
           example: 1
+        fiscal_year:
+          type: integer
+          example: 1
 
     BudgetLineItemRequest:
       type: object
