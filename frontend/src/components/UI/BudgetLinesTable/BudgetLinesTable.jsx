@@ -22,7 +22,7 @@ import "./BudgetLinesTable.scss";
  * @param {Boolean} [props.isReviewMode] - A flag to indicate if the table is in review mode.
  * @returns {JSX.Element} - The rendered table component.
  */
-export const PreviewTable = ({
+const BudgetLinesTable = ({
     budgetLinesAdded = [],
     canUserEditBudgetLines = false,
     handleSetBudgetLineForEditing = () => {},
@@ -285,7 +285,7 @@ export const PreviewTable = ({
     );
 };
 
-PreviewTable.propTypes = {
+BudgetLinesTable.propTypes = {
     budgetLinesAdded: PropTypes.arrayOf(PropTypes.object),
     canUserEditBudgetLines: PropTypes.bool,
     handleSetBudgetLineForEditing: PropTypes.func,
@@ -296,4 +296,4 @@ PreviewTable.propTypes = {
     isReviewMode: PropTypes.bool,
 };
 
-export default PreviewTable;
+export default BudgetLinesTable;
