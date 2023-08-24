@@ -54,13 +54,13 @@ class AuthenticationProvider(ABC):
         if not jwt_private_key:
             raise NotImplementedError
 
-        expire = current_app.config["JWT_ACCESS_TOKEN_EXPIRES"]
+        expires = current_app.config["JWT_ACCESS_TOKEN_EXPIRES"]
         _payload = payload or {
             "iss": self.client_id,
             "sub": self.client_id,
             "aud": self.aud,
             "jti": str(uuid.uuid4()),
-            "exp": int(time.time()) + expire.seconds,
+            "exp": int(time.time()) + expires.seconds,
             "sso": "hhsams",
         }
         _header = header or {"alg": "RS256"}
