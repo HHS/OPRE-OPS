@@ -45,9 +45,7 @@ export const BudgetLineItemList = () => {
     let sortedBLIs = [];
     if (myBudgetLineItemsUrl) {
         const myBLIs = filteredBudgetLineItems.filter(() => {
-            // return agreement.team_members?.some((teamMember) => {
-            //     return teamMember.id === activeUser.id;
-            // });
+            return true;
         });
         sortedBLIs = sortBLIs(myBLIs);
     } else {
