@@ -1,10 +1,13 @@
+import json
 import time
 import uuid
 from enum import Enum, auto
 from functools import wraps
 from typing import Callable, Optional
 
+import requests
 from authlib.integrations.flask_client import OAuth
+from authlib.jose import JsonWebToken
 from authlib.jose import jwt as jose_jwt
 from flask import Response, current_app
 from flask_jwt_extended import JWTManager, get_current_user, get_jwt_identity, jwt_required
@@ -54,6 +57,7 @@ def user_lookup_callback(_jwt_header: dict, jwt_data: dict) -> Optional[User]:
 
 
 def create_oauth_jwt(
+    provider: str,
     key: Optional[str] = None,
     header: Optional[str] = None,
     payload: Optional[str] = None,
@@ -70,18 +74,54 @@ def create_oauth_jwt(
         raise NotImplementedError
 
     expire = current_app.config["JWT_ACCESS_TOKEN_EXPIRES"]
+    current_app.logger.debug(f"expire={expire}")
 
-    # client_id = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"]["client_id"]
     _payload = payload or {
-        "iss": current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"]["client_id"],
-        "sub": current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"]["client_id"],
-        "aud": "https://idp.int.identitysandbox.gov/api/openid_connect/token",
+        "iss": current_app.config["AUTHLIB_OAUTH_CLIENTS"][provider]["client_id"],
+        "sub": current_app.config["AUTHLIB_OAUTH_CLIENTS"][provider]["client_id"],
+        "aud": current_app.config["AUTHLIB_OAUTH_CLIENTS"][provider]["aud"],
         "jti": str(uuid.uuid4()),
         "exp": int(time.time()) + expire.seconds,
+        "sso": provider,
     }
+    current_app.logger.debug(f"_payload={_payload}")
     _header = header or {"alg": "RS256"}
     jws = jose_jwt.encode(header=_header, payload=_payload, key=jwt_private_key)
     return jws
+
+
+def get_jwks(provider_metadata_url: str):
+    provider_uris = json.loads(
+        requests.get(
+            provider_metadata_url,
+            headers={"Accept": "application/json"},
+        ).content.decode("utf-8")
+    )
+
+    jwks_uri = provider_uris["jwks_uri"]
+    jwks = requests.get(jwks_uri).content.decode("utf-8")
+    return jwks
+
+
+def decode_user(
+    payload: Optional[str] = None,
+    provider: Optional[str] = None,
+) -> dict[str, str]:
+    # TODO: Determine which claims we want to validate when decoding a user from the provider
+    #       beyond just the signature. Should these be universal for any claims (global)?
+    # ex: validate the JTI, validate the expiration, validate the si
+    # claims_options = {
+    #     "iss": {
+    #         "essential": True,
+    #         "values": current_app.config["AUTHLIB_OAUTH_CLIENTS"][provider]["client_id"],
+    #     },
+    #     "jti": {"validate": JWTClaims.validate_jti},
+    #     "exp": {"validate": JWTClaims.validate_exp},
+    # }
+    jwt = JsonWebToken(["RS256"])
+    # claims = jwt.decode(payload, get_jwks(provider), claims_options=claims_options)
+    claims = jwt.decode(payload, get_jwks(provider))
+    return claims
 
 
 class ExtraCheckError(Exception):

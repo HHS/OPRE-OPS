@@ -2,7 +2,6 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import ProjectSelectWithSummaryCard from "../../components/UI/Form/ProjectSelectWithSummaryCard";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-import Modal from "../../components/UI/Modal";
 import { useGetResearchProjectsQuery } from "../../api/opsAPI";
 import {
     useEditAgreement,
@@ -10,6 +9,7 @@ import {
     useUpdateAgreement,
 } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import EditModeTitle from "./EditModeTitle";
+import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
 
 /**
  * Renders a step in the Create Agreement wizard for selecting a research project.
@@ -63,7 +63,7 @@ export const StepSelectProject = ({ goToNext, isEditMode, isReviewMode, wizardSt
     return (
         <>
             {showModal && (
-                <Modal
+                <ConfirmationModal
                     heading={modalProps.heading}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
