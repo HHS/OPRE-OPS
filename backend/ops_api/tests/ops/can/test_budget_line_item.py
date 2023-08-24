@@ -734,3 +734,10 @@ def test_budget_line_item_team_members(loaded_db, test_bli):
     team_members = test_bli.agreement.team_members
     assert len(team_members) > 0
     assert test_bli.team_members == team_members
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_item_team_members_response(auth_client, loaded_db, test_bli):
+    response = auth_client.get(f"/api/v1/budget-line-items/{test_bli.id}")
+    assert response.status_code == 200
+    assert len(response.json["team_members"]) > 0
