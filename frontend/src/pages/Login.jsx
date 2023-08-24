@@ -32,13 +32,13 @@ function Login() {
                         <div className="grid-row margin-x-neg-205 margin-bottom-7 flex-justify-center">
                             <div className="grid-col-12 mobile-lg:grid-col-10 tablet:grid-col-8 desktop:grid-col-6 padding-x-205 margin-bottom-7">
                                 <h1 className="desktop:display-none font-sans-lg margin-bottom-4 tablet:margin-top-neg-3">
-                                    Access to OPRE&apos;s OPS System requires proper authentication.
+                                    Access to OPS requires proper authentication.
                                 </h1>
                                 <MultiAuthSection />
                             </div>
                             <div className="grid-col-12 mobile-lg:grid-col-10 tablet:grid-col-8 desktop:grid-col-6 padding-x-205">
                                 <h2 className="display-none desktop:display-block">
-                                    Access to OPRE&apos;s OPS System requires proper authentication.
+                                    Access to OPS requires proper authentication.
                                 </h2>
                                 <div className="border-top border-base-lighter margin-top-3 padding-top-1">
                                     <h2>Are you a federal employee?</h2>
