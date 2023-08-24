@@ -104,11 +104,20 @@ export const timeAgo = (dateParam) => {
     if (!dateParam) {
         return null;
     }
+    // if there's no timezone info, assume it UTC and missing the "Z"
+    if (typeof dateParam === "string" || dateParam instanceof String) {
+        if (!dateParam.endsWith("Z") && !dateParam.includes("+")) {
+            dateParam = dateParam + "Z";
+        }
+    }
+    console.log("dateParam:", dateParam);
 
     const date = typeof dateParam === "object" ? dateParam : new Date(dateParam);
     const today = new Date();
     const seconds = Math.round((today - date) / 1000);
     const minutes = Math.round(seconds / 60);
+
+    console.log(`seconds: ${seconds}`);
 
     if (seconds < 5) {
         return "now";

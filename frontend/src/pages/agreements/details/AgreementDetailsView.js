@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { historyData, notesData } from "./data";
+import { notesData } from "./data";
 import LogItem from "../../../components/UI/LogItem";
 import Tag from "../../../components/UI/Tag/Tag";
 import { convertCodeForDisplay } from "../../../helpers/utils";
@@ -47,25 +47,6 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                         <p>Sorry no notes</p>
                     )}
                     <h3 className="text-base-dark margin-top-3 text-normal font-12px">History</h3>
-                    {historyData.length > 0 ? (
-                        <ul
-                            className="usa-list--unstyled overflow-y-scroll"
-                            style={{ height: "7.3125rem" }}
-                            tabIndex={0}
-                        >
-                            {/* // TODO: Replace with real data */}
-                            {historyData.map((note) => (
-                                <LogItem
-                                    key={note.id}
-                                    title={note.created_by}
-                                    createdOn={note.created_on}
-                                    message={note.message}
-                                />
-                            ))}
-                        </ul>
-                    ) : (
-                        <p>Sorry no history</p>
-                    )}
                     <AgreementHistoryPanel agreementId={agreement.id} />
                 </div>
                 <div className="grid-col-6 padding-left-2" data-cy="details-right-col">
