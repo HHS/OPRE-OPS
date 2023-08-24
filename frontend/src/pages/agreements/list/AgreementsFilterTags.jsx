@@ -1,9 +1,8 @@
-import "./AgreementsList.scss";
-import icons from "../../../uswds/img/sprite.svg";
 import { useEffect, useState } from "react";
-import { convertCodeForDisplay } from "../../../helpers/utils";
-
 import _ from "lodash";
+import { convertCodeForDisplay } from "../../../helpers/utils";
+import FilterTags from "../../../components/UI/FilterTags/FilterTags";
+import createTagString from "../../../components/UI/FilterTags/utils";
 
 /**
  * A filter tags.
@@ -88,22 +87,6 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
         }
     };
 
-    const FilterTag = ({ tag }) => (
-        <div
-            className="font-12px height-205 radius-md bg-brand-primary-light display-flex flex-align-center"
-            style={{ width: "fit-content", padding: "5px" }}
-        >
-            {tag.tagText}
-            <svg
-                className="height-2 width-2 text-primary-dark margin-left-05 hover: cursor-pointer usa-tooltip"
-                onClick={() => removeFilter(tag)}
-                id={`filter-tag-${tag.filter}`}
-            >
-                <use xlinkHref={`${icons}#cancel`}></use>
-            </svg>
-        </div>
-    );
-
     useEffect(() => {
         setTagsList((prevState) => prevState.filter((tag) => tag.filter !== "upcomingNeedByDate"));
         switch (filters.upcomingNeedByDate) {
@@ -154,27 +137,12 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
         }
     }, [filters.upcomingNeedByDate]);
 
-    const createTagString = (selectedList, filterType, filterText) => {
-        setTagsList((prevState) => prevState.filter((tag) => tag.filter !== filterType));
-        if (selectedList.length > 0) {
-            setTagsList((prevState) => {
-                return [
-                    ...prevState,
-                    {
-                        tagText: `${filterText} ${selectedList.join(", ")}`,
-                        filter: filterType,
-                    },
-                ];
-            });
-        }
-    };
-
     useEffect(() => {
         const selectedProjects = [];
         filters.projects.forEach((project) => {
             selectedProjects.push(project.title);
         });
-        createTagString(selectedProjects, "projects", "Project:");
+        createTagString(selectedProjects, "projects", "Project:", setTagsList);
     }, [filters.projects]);
 
     useEffect(() => {
@@ -182,7 +150,7 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
         filters.projectOfficers.forEach((po) => {
             selectedProjectOfficers.push(po.full_name);
         });
-        createTagString(selectedProjectOfficers, "projectOfficers", "Project Officer:");
+        createTagString(selectedProjectOfficers, "projectOfficers", "Project Officer:", setTagsList);
     }, [filters.projectOfficers]);
 
     useEffect(() => {
@@ -190,7 +158,7 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
         filters.types.forEach((agreementType) => {
             selectedAgreementTypes.push(convertCodeForDisplay("agreementType", agreementType));
         });
-        createTagString(selectedAgreementTypes, "types", "Type:");
+        createTagString(selectedAgreementTypes, "types", "Type:", setTagsList);
     }, [filters.types]);
 
     useEffect(() => {
@@ -198,7 +166,7 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
         filters.procurementShops.forEach((shop) => {
             selectedProcurementShops.push(shop.name);
         });
-        createTagString(selectedProcurementShops, "procurementShops", "Procurement Shop:");
+        createTagString(selectedProcurementShops, "procurementShops", "Procurement Shop:", setTagsList);
     }, [filters.procurementShops]);
 
     useEffect(() => {
@@ -209,7 +177,7 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
         filters.budgetLineStatus.executing && selectedBudgetLineStatus.push("Executing");
         filters.budgetLineStatus.obligated && selectedBudgetLineStatus.push("Obligated");
 
-        createTagString(selectedBudgetLineStatus, "budgetLineStatus", "Budget Line Status:");
+        createTagString(selectedBudgetLineStatus, "budgetLineStatus", "Budget Line Status:", setTagsList);
     }, [filters.budgetLineStatus]);
 
     const ignoredTags = (tag) => {
@@ -231,13 +199,7 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
 
     return (
         <div className="display-flex flex-wrap">
-            {tagsList.filter(ignoredTags).map((tag, index) => {
-                return (
-                    <span key={index} className="padding-right-205 padding-bottom-05">
-                        <FilterTag tag={tag} />
-                    </span>
-                );
-            })}
+            <FilterTags removeFilter={removeFilter} tagsList={tagsList.filter(ignoredTags)} />
         </div>
     );
 };

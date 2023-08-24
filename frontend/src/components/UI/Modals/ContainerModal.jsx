@@ -1,26 +1,12 @@
 import { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import LogItem from "../LogItem";
 
-/**
- * A modal component that can be used to display a message or prompt the user for confirmation.
- *
- * @param {Object} props - The component props.
- * @param {string} props.heading - The heading text to display in the modal.
- * @param {string|Array<any>} [props.description=""] - The description text to display in the modal.
- * @param {function} [props.setShowModal=() => {}] - A function to set the visibility of the modal.
- * @param {string} props.actionButtonText - The text to display on the primary action button.
- * @param {string} [props.secondaryButtonText="Cancel"] - The text to display on the secondary action button.
- * @param {function} [props.handleConfirm=() => {}] - A function to handle the primary action button click.
- * @returns {React.JSX.Element} - The modal component JSX.
- */
-export const Modal = ({
+export const ContainerModal = ({
     heading,
     description = "",
     setShowModal = () => {},
-    actionButtonText,
-    secondaryButtonText = "Cancel",
-    handleConfirm = () => {},
+    cancelButtonText = "Cancel",
+    children,
 }) => {
     const modalRef = useRef(null);
 
@@ -83,48 +69,19 @@ export const Modal = ({
                                 >
                                     {heading}
                                 </h2>
-                                {description && description instanceof Array && description.length > 0 && (
-                                    <ul>
-                                        {description.map((item) => (
-                                            <LogItem
-                                                key={item.id}
-                                                title={item.title}
-                                                createdOn={item.created_on}
-                                                message={item.message}
-                                                variant="large"
-                                                withSeparator={true}
-                                            />
-                                        ))}
-                                    </ul>
-                                )}
-                                {description && description instanceof String && (
-                                    <div className="usa-prose">
-                                        <p id="ops-modal-description">{description}</p>
-                                    </div>
-                                )}
+                                <div className="usa-prose">
+                                    <p id="ops-modal-description">{description}</p>
+                                    {children}
+                                </div>
                                 <div className="usa-modal__footer">
                                     <ul className="usa-button-group">
                                         <li className="usa-button-group__item">
                                             <button
                                                 type="button"
-                                                className="usa-button"
-                                                data-cy="confirm-action"
-                                                onClick={() => {
-                                                    setShowModal(false);
-                                                    handleConfirm();
-                                                }}
-                                            >
-                                                {actionButtonText}
-                                            </button>
-                                        </li>
-                                        <li className="usa-button-group__item">
-                                            <button
-                                                type="button"
-                                                data-cy="cancel-action"
                                                 className="usa-button usa-button--unstyled padding-105 text-center"
                                                 onClick={() => setShowModal(false)}
                                             >
-                                                {secondaryButtonText}
+                                                {cancelButtonText}
                                             </button>
                                         </li>
                                     </ul>
@@ -138,13 +95,11 @@ export const Modal = ({
     );
 };
 
-export default Modal;
+export default ContainerModal;
 
-Modal.propTypes = {
+ContainerModal.propTypes = {
     heading: PropTypes.string.isRequired,
     description: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
     setShowModal: PropTypes.func.isRequired,
-    actionButtonText: PropTypes.string.isRequired,
-    secondaryButtonText: PropTypes.string,
-    handleConfirm: PropTypes.func.isRequired,
+    cancelButtonText: PropTypes.string,
 };

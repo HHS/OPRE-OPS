@@ -1,15 +1,14 @@
 /// <reference types="cypress" />
-import { logout } from "../../src/components/Auth/authSlice";
-import { terminalLog, testLogin } from "./utils";
+import { testLogin } from "./utils";
 
 beforeEach(() => {
     cy.visit("/");
 });
 
-it("sign in button visible at page load when there is no jwt", () => {
+it("redirect to /login when ther is no jwt", () => {
     cy.session("anonymous", () => {
         cy.visit("/");
-        cy.contains("Sign-in");
+        cy.url().should("include", "/login");
     });
 });
 
@@ -18,7 +17,7 @@ it("access_token is present within localstorage after login", () => {
     cy.getLocalStorage("access_token").should("exist");
 });
 
-it.skip("********* DEBUGGING clicking logout removes the jwt and displays sign-in", () => {
+it("clicking logout removes the jwt and displays redirects to /login", () => {
     cy.visit("/");
     testLogin("admin");
     cy.contains("Sign-out").click();
@@ -26,8 +25,7 @@ it.skip("********* DEBUGGING clicking logout removes the jwt and displays sign-i
     cy.window()
         .then((win) => win.store.getState().auth)
         .should("deep.include", { isLoggedIn: false });
-    cy.contains("Sign-in");
-    cy.url("/");
+    cy.url().should("include", "/login");
 });
 
 it("isLoggedIn state is false when there is no jwt", () => {

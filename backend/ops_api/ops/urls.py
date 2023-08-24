@@ -1,5 +1,6 @@
 from flask import Blueprint
 from ops_api.ops.views import (
+    AGREEMENT_HISTORY_LIST_API_VIEW_FUNC,
     AGREEMENT_ITEM_API_VIEW_FUNC,
     AGREEMENT_LIST_API_VIEW_FUNC,
     AGREEMENT_REASON_LIST_API_VIEW_FUNC,
@@ -184,6 +185,10 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/agreements/",
         view_func=AGREEMENT_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/agreements/<int:id>/history/",
+        view_func=AGREEMENT_HISTORY_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/agreement-reasons/",

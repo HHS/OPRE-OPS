@@ -103,6 +103,10 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist;
 
     const anyBudgetLinesAreDraft = agreement.budget_line_items.some((item) => item.status === "DRAFT");
+    const anyBudgetLinesInExecuting = agreement.budget_line_items.some((item) => item.status === "IN_EXECUTING");
+    const anyBudgetLinesObligated = agreement.budget_line_items.some((item) => item.status === "OBLIGATED");
+    const isAgreementEditable = !anyBudgetLinesInExecuting && !anyBudgetLinesObligated;
+
     const handleSendToApproval = () => {
         if (anyBudgetLinesAreDraft) {
             agreement?.budget_line_items.forEach((bli) => {
@@ -301,17 +305,22 @@ export const ReviewAgreement = ({ agreement_id }) => {
             <PreviewTable readOnly={true} budgetLinesAdded={agreement?.budget_line_items} isReviewMode={true} />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
-                    className="usa-button usa-button--outline margin-right-2"
+                    className={`usa-button usa-button--outline margin-right-2 ${
+                        !isAgreementEditable ? "usa-tooltip" : ""
+                    }`}
                     data-cy="edit-agreement-btn"
+                    title={!isAgreementEditable ? "Agreement is not editable" : ""}
                     onClick={() => {
                         navigate(`/agreements/edit/${agreement?.id}?mode=review`);
                     }}
+                    disabled={!isAgreementEditable}
                 >
                     Edit
                 </button>
                 <button
-                    className="usa-button"
+                    className={`usa-button ${!anyBudgetLinesAreDraft ? "usa-tooltip" : ""}`}
                     data-cy="send-to-approval-btn"
+                    title={!anyBudgetLinesAreDraft ? "Agreement is not able to be reviewed" : ""}
                     onClick={handleSendToApproval}
                     disabled={!anyBudgetLinesAreDraft || !res.isValid()}
                 >

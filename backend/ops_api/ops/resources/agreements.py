@@ -434,11 +434,15 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
             tmp_team_members = _get_user_list(data[item])
             if tmp_team_members:
                 agreement.team_members = tmp_team_members
+            else:
+                agreement.team_members = []
 
         elif item == "support_contacts":
             tmp_support_contacts = _get_user_list(data[item])
             if tmp_support_contacts:
                 agreement.support_contacts = tmp_support_contacts
+            else:
+                agreement.support_contacts = []
 
     for bli in agreement.budget_line_items:
         bli.status = BudgetLineItemStatus.DRAFT

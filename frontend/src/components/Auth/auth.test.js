@@ -2,11 +2,11 @@ import { getAuthorizationCode } from "./auth";
 
 test("construct the URL to get the authentication code to send to the backend", async () => {
     // the nonce is generated at runtime so do not test here
-    const stateToken = "8966a2f4-4aed-4f6a-a5c7-82032f7fed5d";
+    const stateToken = "admin_user";
 
-    const actualProviderUrl = getAuthorizationCode(stateToken);
-
-    expect(actualProviderUrl.href.split("?")[0]).toEqual("https://dummy/123");
+    const actualProviderUrl = getAuthorizationCode("fakeauth", stateToken);
+    const base_url = actualProviderUrl.href.split("?")[0];
+    expect(base_url).toEqual("https://dummy/123");
     expect(actualProviderUrl.searchParams.get("acr_values")).toEqual("http://acr/values");
     expect(actualProviderUrl.searchParams.get("client_id")).toEqual("blah:blah");
     expect(actualProviderUrl.searchParams.get("response_type")).toEqual("blah");

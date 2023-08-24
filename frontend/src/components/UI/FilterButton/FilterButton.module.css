@@ -1,0 +1,26 @@
+.filterModal {
+    position: absolute;
+    width: 28.8rem;
+    right: 0;
+    top: 3em;
+    z-index: 10;
+    border-radius: 4px;
+    border: 1px solid #a9aeb1;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15);
+}
+
+.modalBackgroundColor {
+    background: #f0f0f0;
+}
+
+.filterOverlay {
+    background-color: #a9aeb1;
+}
+
+.container {
+    position: relative;
+}
+
+.legendColor {
+    color: #565c65;
+}

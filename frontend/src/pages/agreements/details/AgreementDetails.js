@@ -28,6 +28,10 @@ const AgreementDetails = ({ agreement, projectOfficer, isEditMode, setIsEditMode
         p[status]++;
         return p;
     }, {});
+    const areAnyBudgetLinesInExecuting = blis.some((bli) => bli.status === "IN_EXECUTION");
+    const areAnyBudgetLinesObligated = blis.some((bli) => bli.status === "OBLIGATED");
+
+    const isEditable = !(areAnyBudgetLinesInExecuting || areAnyBudgetLinesObligated);
 
     return (
         <div>
@@ -36,6 +40,7 @@ const AgreementDetails = ({ agreement, projectOfficer, isEditMode, setIsEditMode
                 details="The summary below shows the budget lines and spending for this agreement."
                 isEditMode={isEditMode}
                 setIsEditMode={setIsEditMode}
+                isEditable={isEditable}
             />
             <div className="display-flex flex-justify">
                 <AgreementTotalBudgetLinesCard
