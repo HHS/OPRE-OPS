@@ -141,7 +141,6 @@ const router = createBrowserRouter(
                 {/*/!* Default to BudgetAndFunding *!/*/}
                 {/*<Route exact path="" element={<Navigate to={"budget-and-funding"} />} />*/}
                 <Route path="/budget-lines" element={<BudgetLineItemList />} />
-                <Route path="budget-lines" element={<Agreement />} />
                 <Route path="/budget-lines/create" element={<CreateBudgetLines />} />
                 <Route path="/agreements/create" element={<CreateAgreements />} />
                 <Route path="/projects/create" element={<CreateProject />} />
