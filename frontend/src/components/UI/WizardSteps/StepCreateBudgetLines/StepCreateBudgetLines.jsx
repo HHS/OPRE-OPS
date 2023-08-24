@@ -6,7 +6,6 @@ import StepIndicator from "../../StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
 import PreviewTable from "../../PreviewTable";
 import Alert from "../../Alert";
-import Modal from "../../Modal";
 import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
 import { setAlert } from "../../Alert/alertSlice";
@@ -14,6 +13,7 @@ import EditModeTitle from "../../../../pages/agreements/EditModeTitle";
 import { loggedInName } from "../../../../helpers/utils";
 import suite from "./suite";
 import { convertCodeForDisplay } from "../../../../helpers/utils";
+import ConfirmationModal from "../../Modals/ConfirmationModal";
 import { useUpdateBudgetLineItemMutation, useAddBudgetLineItemMutation } from "../../../../api/opsAPI";
 
 /**
@@ -30,6 +30,7 @@ import { useUpdateBudgetLineItemMutation, useAddBudgetLineItemMutation } from ".
  * @param {Array<any>} props.existingBudgetLines - An array of existing budget lines.
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.
+ * @param {boolean} [props.canUserEditBudgetLines] - Whether the user can edit budget lines.
  * @param {Function} props.setIsEditMode - A function to set the edit mode state.
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {Function} [props.continueOverRide] - A function to override the default "Continue" button behavior. - optional
@@ -48,6 +49,7 @@ export const StepCreateBudgetLines = ({
     continueBtnText,
     continueOverRide,
     isEditMode,
+    canUserEditBudgetLines = false,
     setIsEditMode = () => {},
     isReviewMode,
     workflow,
@@ -304,7 +306,7 @@ export const StepCreateBudgetLines = ({
     return (
         <>
             {showModal && (
-                <Modal
+                <ConfirmationModal
                     heading={modalProps.heading}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
@@ -402,6 +404,7 @@ export const StepCreateBudgetLines = ({
                 handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                 handleDeleteBudgetLine={handleDeleteBudgetLine}
                 handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                canUserEditBudgetLines={canUserEditBudgetLines}
                 isReviewMode={isReviewMode}
             />
             <div className="grid-row flex-justify-end margin-top-1">
@@ -459,6 +462,7 @@ StepCreateBudgetLines.propTypes = {
     continueBtnText: PropTypes.string.isRequired,
     isEditMode: PropTypes.bool,
     setIsEditMode: PropTypes.func,
+    canUserEditBudgetLines: PropTypes.bool,
     isReviewMode: PropTypes.bool,
     continueOverRide: PropTypes.func,
     workflow: PropTypes.oneOf(["agreement", "budgetLines", "none"]).isRequired,

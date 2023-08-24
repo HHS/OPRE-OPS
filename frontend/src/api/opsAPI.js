@@ -142,6 +142,32 @@ export const opsApi = createApi({
             query: () => `/users/`,
             providesTags: ["Users"],
         }),
+        getUser: builder.query({
+            query: (id) => `/users/${id}`,
+            providesTags: ["User"],
+        }),
+        getUserByOidc: builder.query({
+            query: (oidc_id) => `/users/?oidc_id=${oidc_id}`,
+            providesTags: ["User"],
+        }),
+        addUser: builder.mutation({
+            query: (body) => ({
+                url: `/users/`,
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body,
+            }),
+            invalidatesTags: ["User"],
+        }),
+        updateUser: builder.mutation({
+            query: ({ id, body }) => ({
+                url: `/users/${id}`,
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body,
+            }),
+            invalidatesTags: ["User"],
+        }),
         getCans: builder.query({
             query: () => `/cans/`,
             providesTags: ["Cans"],
@@ -182,6 +208,10 @@ export const {
     useGetProcurementShopsQuery,
     useGetAgreementReasonsQuery,
     useGetUsersQuery,
+    useGetUserQuery,
+    useGetUserByOidcQuery,
+    useAddUserMutation,
+    useUpdateUserMutation,
     useGetCansQuery,
     useGetNotificationsByUserIdQuery,
     useDismissNotificationMutation,
