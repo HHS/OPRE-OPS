@@ -1,6 +1,7 @@
 import datetime
 
 import pytest
+from models import CAN
 from models.cans import BudgetLineItem, BudgetLineItemStatus
 from ops_api.ops.resources.budget_line_items import PATCHRequestBody, POSTRequestBody
 from sqlalchemy_continuum import parent_class, version_class
@@ -226,6 +227,97 @@ def test_bli(loaded_db):
 
     yield bli
 
+    loaded_db.rollback()
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def test_bli_previous_year(loaded_db):
+    bli = BudgetLineItem(
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=1,
+        can_id=1,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2042, 10, 1),
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    yield bli
+
+    loaded_db.rollback()
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def test_bli_previous_fiscal_year(loaded_db):
+    bli = BudgetLineItem(
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=1,
+        can_id=1,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2042, 9, 1),
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    yield bli
+
+    loaded_db.rollback()
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def test_bli_no_can(loaded_db):
+    bli = BudgetLineItem(
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=1,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2043, 1, 1),
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    yield bli
+
+    loaded_db.rollback()
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def test_bli_no_need_by_date(loaded_db):
+    bli = BudgetLineItem(
+        line_description="LI 1",
+        comments="blah blah",
+        agreement_id=1,
+        can_id=1,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        psc_fee_amount=1.23,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    yield bli
+
+    loaded_db.rollback()
     loaded_db.delete(bli)
     loaded_db.commit()
 
@@ -349,29 +441,10 @@ def test_put_budget_line_items_bad_date(auth_client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_put_budget_line_items_bad_can(auth_client, loaded_db):
-    bli = BudgetLineItem(
-        id=1000,
-        line_description="LI 1",
-        comments="blah blah",
-        agreement_id=1,
-        can_id=1,
-        amount=100.12,
-        status=BudgetLineItemStatus.DRAFT,
-        date_needed=datetime.date(2043, 1, 1),
-        psc_fee_amount=1.23,
-        created_by=1,
-    )
-    loaded_db.add(bli)
-    loaded_db.commit()
-
-    data = {"can": 1000000, "agreement_id": 1}
+def test_put_budget_line_items_bad_can(auth_client, test_bli):
+    data = {"can_id": 1000000, "agreement_id": 1}
     response = auth_client.put("/api/v1/budget-line-items/1000", json=data)
     assert response.status_code == 400
-
-    # cleanup
-    loaded_db.delete(bli)
-    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -603,3 +676,54 @@ def test_patch_budget_line_items_history(loaded_db):
     # cleanup
     loaded_db.delete(bli)
     loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_item_portfolio_id(loaded_db, test_bli):
+    can = loaded_db.get(CAN, test_bli.can_id)
+    assert test_bli.portfolio_id == can.managing_portfolio_id
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_put_budget_line_item_portfolio_id_ignored(auth_client, loaded_db, test_bli):
+    data = POSTRequestBody(
+        line_description="Updated LI 1",
+        comments="hah hah",
+        agreement_id=2,
+        can_id=2,
+        amount=200.24,
+        status="PLANNED",
+        date_needed="2044-01-01",
+        psc_fee_amount=2.34,
+    )
+    request_data = data.__dict__ | {"portfolio_id": 10000}
+    response = auth_client.put(f"/api/v1/budget-line-items/{test_bli.id}", json=request_data)
+    assert response.status_code == 200, "portfolio_id should be ignored"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_item_fiscal_year(loaded_db, test_bli, test_bli_previous_year, test_bli_previous_fiscal_year):
+    assert test_bli.fiscal_year == test_bli.date_needed.year, "test_bli.date_needed == 2043-01-01"
+    assert (
+        test_bli_previous_year.fiscal_year == test_bli_previous_year.date_needed.year + 1
+    ), "test_bli_previous_year.date_needed == 2042-10-01"
+    assert (
+        test_bli_previous_fiscal_year.fiscal_year == test_bli_previous_fiscal_year.date_needed.year
+    ), "test_bli_previous_fiscal_year.date_needed == 2042-09-01"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_item_portfolio_id_null(auth_client, loaded_db, test_bli_no_can):
+    assert test_bli_no_can.portfolio_id is None
+    response = auth_client.get(f"/api/v1/budget-line-items/{test_bli_no_can.id}")
+    assert response.status_code == 200
+    assert response.json["portfolio_id"] is None
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_item_fiscal_year_null(auth_client, loaded_db, test_bli_no_need_by_date):
+    assert test_bli_no_need_by_date.fiscal_year is None
+    response = auth_client.get(f"/api/v1/budget-line-items/{test_bli_no_need_by_date.id}")
+    assert response.status_code == 200
+    assert response.json["fiscal_year"] is None

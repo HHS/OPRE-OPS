@@ -14,6 +14,7 @@ import "./PreviewTable.scss";
  * A table component that displays budget lines.
  * @param {Object} props - The component props.
  * @param {Array<any>} [props.budgetLinesAdded] - An array of budget lines to display. - optional
+ * @param {Boolean} [props.canUserEditBudgetLines] - A flag to indicate if the user is agreement owner, project officer, on the agreement team, or creator of any of the BLIs on the agreement. - optional
  * @param {Function} [props.handleSetBudgetLineForEditing ]- A function to handle editing a budget line. - optional
  * @param {Function} [props.handleDeleteBudgetLine] - A function to handle deleting a budget line. - optional
  * @param {Function} [props.handleDuplicateBudgetLine] - A function to handle duplicating a budget line. - optional
@@ -23,6 +24,7 @@ import "./PreviewTable.scss";
  */
 export const PreviewTable = ({
     budgetLinesAdded = [],
+    canUserEditBudgetLines = false,
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
@@ -35,6 +37,7 @@ export const PreviewTable = ({
         .reverse();
 
     let loggedInUser = useSelector((state) => loggedInName(state.auth?.activeUser));
+    const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
 
     const TableRow = ({ bl }) => {
         const [isExpanded, setIsExpanded] = useState(false);
@@ -53,6 +56,13 @@ export const PreviewTable = ({
         }
         let feeTotal = bl?.amount * bl?.psc_fee_amount;
         let total = bl?.amount + feeTotal;
+        const isBudgetLineDraft = bl?.status === "DRAFT";
+        const isBudgetLineInReview = bl?.status === "UNDER_REVIEW";
+        const isBudgetLinePlanned = bl?.status === "PLANNED";
+        const isUserBudgetLineCreator = bl?.created_by === loggedInUserId;
+        const isBudgetLineEditable =
+            (canUserEditBudgetLines || isUserBudgetLineCreator) &&
+            (isBudgetLineDraft || isBudgetLineInReview || isBudgetLinePlanned);
 
         const handleExpandRow = () => {
             setIsExpanded(!isExpanded);
@@ -85,13 +95,13 @@ export const PreviewTable = ({
         const ChangeIcons = ({ budgetLine }) => {
             return (
                 <>
-                    {budgetLine.status === "DRAFT" && (
+                    {isBudgetLineEditable && (
                         <>
                             <FontAwesomeIcon
                                 id={`edit-${bl?.id}`}
                                 data-cy="edit-row"
                                 icon={faPen}
-                                className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                                className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
                                 title="edit"
                                 data-position="top"
                                 onClick={() => handleSetBudgetLineForEditing(budgetLine)}
@@ -103,7 +113,7 @@ export const PreviewTable = ({
                                 icon={faTrash}
                                 title="delete"
                                 data-position="top"
-                                className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                                className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
                                 onClick={() => handleDeleteBudgetLine(budgetLine.id)}
                             />
                         </>
@@ -114,8 +124,8 @@ export const PreviewTable = ({
                         icon={faClone}
                         title="duplicate"
                         data-position="top"
-                        className={`text-primary height-2 width-2 hover: cursor-pointer usa-tooltip ${
-                            budgetLine.status !== "DRAFT" ? "margin-left-6" : ""
+                        className={`text-primary height-2 width-2 cursor-pointer usa-tooltip ${
+                            isBudgetLineEditable ? "margin-left-0" : "margin-left-6"
                         }`}
                         onClick={() => handleDuplicateBudgetLine(budgetLine)}
                     />
@@ -277,6 +287,7 @@ export const PreviewTable = ({
 
 PreviewTable.propTypes = {
     budgetLinesAdded: PropTypes.arrayOf(PropTypes.object),
+    canUserEditBudgetLines: PropTypes.bool,
     handleSetBudgetLineForEditing: PropTypes.func,
     handleDeleteBudgetLine: PropTypes.func,
     handleDuplicateBudgetLine: PropTypes.func,

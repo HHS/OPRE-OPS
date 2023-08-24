@@ -1,11 +1,10 @@
 from flask import Response, current_app, request
-
-from models import OpsDBHistory, OpsDBHistoryType, User, Agreement
+from models import Agreement, OpsDBHistory, OpsDBHistoryType, User
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseListAPI, handle_sql_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
-from sqlalchemy import select, and_, or_, Integer
+from sqlalchemy import Integer, and_, or_, select
 from typing_extensions import override
 
 
