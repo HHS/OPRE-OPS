@@ -27,6 +27,7 @@ import Agreement from "./pages/agreements/details/Agreement";
 import EditAgreement from "./pages/agreements/EditAgreement";
 import { ApproveAgreement } from "./pages/agreements/approve/ApproveAgreement";
 import ErrorPage from "./pages/ErrorPage";
+import { BudgetLineItemList } from "./pages/budgetLines/list/BudgetLineItemList";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -138,6 +139,7 @@ const router = createBrowserRouter(
             <Route path="/login" handle={{}} />
 
             <Route element={<ProtectedRoute redirectPath="/" />}>
+                <Route path="/budget-lines" element={<BudgetLineItemList />} />
                 <Route path="/budget-lines/create" element={<CreateBudgetLines />} />
                 <Route path="/agreements/create" element={<CreateAgreements />} />
                 <Route path="/projects/create" element={<CreateProject />} />
