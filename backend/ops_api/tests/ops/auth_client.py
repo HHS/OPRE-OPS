@@ -17,6 +17,10 @@ class AuthClient(FlaskClient):
             updated=datetime.now(),
             division=1,
         )
-        access_token = create_access_token(identity=user)
+        additional_claims = {}
+        if user.roles:
+            additional_claims["roles"] = [role.name for role in user.roles]
+
+        access_token = create_access_token(identity=user, additional_claims=additional_claims)
         kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
         return super().open(*args, **kwargs)
