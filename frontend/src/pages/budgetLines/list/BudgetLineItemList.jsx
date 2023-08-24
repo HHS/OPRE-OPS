@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React from "react";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import _ from "lodash";
@@ -15,7 +15,7 @@ import TablePageLayout from "../../../components/UI/Layouts/TablePageLayout";
 export const BudgetLineItemList = () => {
     const [searchParams] = useSearchParams();
     const isAlertActive = useSelector((state) => state.alert.isActive);
-    const [filters, setFilters] = useState({});
+    const [filters, setFilters] = React.useState({});
 
     const { data, error, isLoading } = useGetBudgetLineItemsQuery();
 

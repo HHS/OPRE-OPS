@@ -8,7 +8,7 @@ import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import TotalSummaryCard from "./TotalSummaryCard";
 import { formatDate, loggedInName, fiscalYearFromDate } from "../../../helpers/utils";
 import TableTag from "./TableTag";
-import "./PreviewTable.scss";
+import "./BudgetLinesTable.scss";
 
 /**
  * A table component that displays budget lines.

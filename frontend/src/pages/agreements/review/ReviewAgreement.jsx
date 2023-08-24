@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 import PropTypes from "prop-types";
-import PreviewTable from "../../../components/UI/PreviewTable";
+import BudgetLinesTable from "../../../components/UI/BudgetLinesTable";
 import Alert from "../../../components/UI/Alert";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../../api/opsAPI";
@@ -302,7 +302,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 )}
             </div>
 
-            <PreviewTable readOnly={true} budgetLinesAdded={agreement?.budget_line_items} isReviewMode={true} />
+            <BudgetLinesTable readOnly={true} budgetLinesAdded={agreement?.budget_line_items} isReviewMode={true} />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className={`usa-button usa-button--outline margin-right-2 ${
