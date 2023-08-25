@@ -98,7 +98,7 @@ class BaseItemAPI(OPSMethodView):
         super().__init__(model)
 
     @override
-    @jwt_required(fresh=True)
+    @jwt_required()
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
 
@@ -108,12 +108,12 @@ class BaseListAPI(OPSMethodView):
         super().__init__(model)
 
     @override
-    @jwt_required(fresh=True)
+    @jwt_required()
     def get(self) -> Response:
         return self._get_all_items_with_try()
 
     @override
-    @jwt_required(fresh=True)
+    @jwt_required()
     def post(self) -> Response:
         raise NotImplementedError
 
@@ -129,7 +129,7 @@ class EnumListAPI(MethodView):
         super().__init__(**kwargs)
 
     @override
-    @jwt_required(fresh=True)
+    @jwt_required()
     def get(self) -> Response:
         enum_items = {e.name: e.value for e in self.enum}  # type: ignore [attr-defined]
         return jsonify(enum_items)

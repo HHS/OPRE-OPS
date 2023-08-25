@@ -186,7 +186,7 @@ class is_authorized:
 
     def __call__(self, func: Callable) -> Callable:
         @wraps(func)
-        @jwt_required(fresh=True)
+        @jwt_required()
         def wrapper(*args, **kwargs) -> Response:
             try:
                 if (
