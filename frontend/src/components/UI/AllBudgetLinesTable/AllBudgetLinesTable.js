@@ -1,4 +1,3 @@
-import React from "react";
 import CurrencyFormat from "react-currency-format";
 import TableTag from "../BudgetLinesTable/TableTag";
 
@@ -8,10 +7,10 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
             <>
                 <tr>
                     <th>{bl.line_description}</th>
-                    <td>{bl.agreement_id}</td>
+                    <td>{bl.agreement_name}</td>
                     <td>{bl.date_needed}</td>
                     <td>{bl.fiscal_year}</td>
-                    <td>{bl.can_id}</td>
+                    <td>{bl.can_number}</td>
                     <td>
                         <CurrencyFormat
                             value={bl?.amount || 0}
