@@ -36,6 +36,17 @@ export const formatDateNeeded = (dateNeeded) => {
 };
 
 /**
+ * Formats a date string into a date string in the format MMM DD, YYYY ie May 19, 2023.
+ * @param {string} date - The date string to format. This parameter is required.
+ * @returns {string} The formatted date string.
+ * @example formatDateToMonthDayYear("2023-05-19")
+ 
+ */
+export const formatDateToMonthDayYear = (date) => {
+    return new Date(date).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
+};
+
+/**
  * Object containing display text for various codes.
  * @typedef {Object} CodesToDisplayText
  * @property {Object.<string, string>} agreementType - Display text for agreement types.
@@ -134,11 +145,7 @@ export const timeAgo = (dateParam) => {
         return `${minutes} minutes ago`;
     }
 
-    return date.toLocaleString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-    });
+    return formatDateToMonthDayYear(date);
 };
 
 /**

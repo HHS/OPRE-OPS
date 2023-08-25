@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import TotalSummaryCard from "./TotalSummaryCard";
-import { loggedInName, fiscalYearFromDate, formatDateNeeded } from "../../../helpers/utils";
+import { loggedInName, fiscalYearFromDate, formatDateNeeded, formatDateToMonthDayYear } from "../../../helpers/utils";
 import TableTag from "./TableTag";
 import "./BudgetLinesTable.scss";
 
@@ -42,11 +42,6 @@ const BudgetLinesTable = ({
     const TableRow = ({ bl }) => {
         const [isExpanded, setIsExpanded] = useState(false);
         const [isRowActive, setIsRowActive] = useState(false);
-
-        const formatted_today = new Date().toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
-        const bl_created_on = bl?.created_on
-            ? new Date(bl.created_on).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" })
-            : formatted_today;
 
         let feeTotal = bl?.amount * bl?.psc_fee_amount;
         let total = bl?.amount + feeTotal;
@@ -235,7 +230,7 @@ const BudgetLinesTable = ({
                                     </dd>
                                     <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                                         <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />
-                                        {bl_created_on}
+                                        {formatDateToMonthDayYear(bl?.created_on)}
                                     </dt>
                                 </dl>
                                 <dl className="font-12px" style={{ marginLeft: "9.0625rem" }}>
