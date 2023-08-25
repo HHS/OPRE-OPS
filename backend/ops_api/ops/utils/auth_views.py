@@ -110,7 +110,8 @@ def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
         additional_claims = {}
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
-        access_token = create_access_token(identity=user, expires_delta=False, additional_claims=additional_claims)
+        fresh = current_app.config["JWT_FRESHNESS"]
+        access_token = create_access_token(identity=user, expires_delta=False, additional_claims=additional_claims, fresh=fresh)
         refresh_token = create_refresh_token(identity=user, expires_delta=False, additional_claims=additional_claims)
     except Exception as e:
         current_app.logger.exception(e)
@@ -169,5 +170,6 @@ def _get_token_and_user_data_from_oauth_provider(provider: str, auth_code: str):
 @jwt_required(refresh=True)
 def refresh() -> Response:
     identity = get_jwt_identity()
-    access_token = create_access_token(identity=identity)
+    fresh = current_app.config["JWT_FRESHNESS"]
+    access_token = create_access_token(identity=identity, fresh=fresh)
     return make_response_with_headers({"access_token": access_token})
