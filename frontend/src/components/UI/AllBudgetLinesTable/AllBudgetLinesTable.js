@@ -1,5 +1,6 @@
 import CurrencyFormat from "react-currency-format";
 import TableTag from "../BudgetLinesTable/TableTag";
+import { formatDateNeeded } from "../../../helpers/utils";
 
 const AllBudgetLinesTable = ({ budgetLines }) => {
     const TableRow = ({ bl }) => {
@@ -8,7 +9,7 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                 <tr>
                     <th>{bl.line_description}</th>
                     <td>{bl.agreement_name}</td>
-                    <td>{bl.date_needed}</td>
+                    <td>{formatDateNeeded(bl.date_needed)}</td>
                     <td>{bl.fiscal_year}</td>
                     <td>{bl.can_number}</td>
                     <td>

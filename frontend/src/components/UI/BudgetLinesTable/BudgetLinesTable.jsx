@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import TotalSummaryCard from "./TotalSummaryCard";
-import { formatDate, loggedInName, fiscalYearFromDate } from "../../../helpers/utils";
+import { loggedInName, fiscalYearFromDate, formatDateNeeded } from "../../../helpers/utils";
 import TableTag from "./TableTag";
 import "./BudgetLinesTable.scss";
 
@@ -47,13 +47,7 @@ const BudgetLinesTable = ({
         const bl_created_on = bl?.created_on
             ? new Date(bl.created_on).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" })
             : formatted_today;
-        let formatted_date_needed;
-        let fiscalYear;
-        if (bl?.date_needed !== "--" && bl?.date_needed !== null) {
-            let date_needed = new Date(bl?.date_needed);
-            formatted_date_needed = formatDate(date_needed);
-            fiscalYear = fiscalYearFromDate(bl?.date_needed);
-        }
+
         let feeTotal = bl?.amount * bl?.psc_fee_amount;
         let total = bl?.amount + feeTotal;
         const isBudgetLineDraft = bl?.status === "DRAFT";
@@ -143,18 +137,22 @@ const BudgetLinesTable = ({
                         {bl?.line_description}
                     </th>
                     <td
-                        className={`${futureDateErrorClass(formatted_date_needed)} ${addErrorClassIfNotFound(
-                            formatted_date_needed
+                        className={`${futureDateErrorClass(
+                            formatDateNeeded(bl?.date_needed)
+                        )} ${addErrorClassIfNotFound(
+                            formatDateNeeded(bl?.date_needed)
                         )} ${removeBorderBottomIfExpanded}`}
                         style={changeBgColorIfExpanded}
                     >
-                        {formatted_date_needed}
+                        {formatDateNeeded(bl?.date_needed)}
                     </td>
                     <td
-                        className={`${addErrorClassIfNotFound(fiscalYear)} ${removeBorderBottomIfExpanded}`}
+                        className={`${addErrorClassIfNotFound(
+                            fiscalYearFromDate(bl?.date_needed)
+                        )} ${removeBorderBottomIfExpanded}`}
                         style={changeBgColorIfExpanded}
                     >
-                        {fiscalYear || ""}
+                        {fiscalYearFromDate(bl?.date_needed)}
                     </td>
                     <td
                         className={`${addErrorClassIfNotFound(bl?.can?.number)} ${removeBorderBottomIfExpanded}`}
