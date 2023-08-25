@@ -111,8 +111,8 @@ def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
         fresh = current_app.config["JWT_FRESHNESS"]
-        access_token = create_access_token(identity=user, expires_delta=False, additional_claims=additional_claims, fresh=fresh)
-        refresh_token = create_refresh_token(identity=user, expires_delta=False, additional_claims=additional_claims)
+        access_token = create_access_token(identity=user, expires_delta=None, additional_claims=additional_claims, fresh=fresh)
+        refresh_token = create_refresh_token(identity=user, expires_delta=None, additional_claims=additional_claims)
     except Exception as e:
         current_app.logger.exception(e)
         return None, None, None, None
@@ -171,5 +171,8 @@ def _get_token_and_user_data_from_oauth_provider(provider: str, auth_code: str):
 def refresh() -> Response:
     identity = get_jwt_identity()
     fresh = current_app.config["JWT_FRESHNESS"]
-    access_token = create_access_token(identity=identity, fresh=fresh)
+    additional_claims = {}
+    if identity.roles:
+        additional_claims["roles"] = [role.name for role in identity.roles]
+    access_token = create_access_token(identity=identity, expires_delta=None, additional_claims=additional_claims, fresh=fresh)
     return make_response_with_headers({"access_token": access_token})
