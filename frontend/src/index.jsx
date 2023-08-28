@@ -29,6 +29,7 @@ import EditAgreement from "./pages/agreements/EditAgreement";
 import { ApproveAgreement } from "./pages/agreements/approve/ApproveAgreement";
 import Login from "./pages/Login";
 import ErrorPage from "./pages/ErrorPage";
+import { BudgetLineItemList } from "./pages/budgetLines/list/BudgetLineItemList";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -139,7 +140,7 @@ const router = createBrowserRouter(
                 />
                 {/*/!* Default to BudgetAndFunding *!/*/}
                 {/*<Route exact path="" element={<Navigate to={"budget-and-funding"} />} />*/}
-                <Route path="budget-lines" element={<Agreement />} />
+                <Route path="/budget-lines" element={<BudgetLineItemList />} />
                 <Route path="/budget-lines/create" element={<CreateBudgetLines />} />
                 <Route path="/agreements/create" element={<CreateAgreements />} />
                 <Route path="/projects/create" element={<CreateProject />} />
