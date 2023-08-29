@@ -1,10 +1,11 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
+import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import { faClock } from "@fortawesome/free-regular-svg-icons";
 import CurrencyFormat from "react-currency-format";
 import TableTag from "../BudgetLinesTable/TableTag";
+import ChangeIcons from "../ChangeIcons";
 import { loggedInName, fiscalYearFromDate, formatDateNeeded, formatDateToMonthDayYear } from "../../../helpers/utils";
 
 const TableRow = ({
@@ -59,46 +60,6 @@ const TableRow = ({
         }
     };
 
-    const ChangeIcons = ({ budgetLine }) => {
-        return (
-            <>
-                {isBudgetLineEditable && (
-                    <>
-                        <FontAwesomeIcon
-                            id={`edit-${bl?.id}`}
-                            data-cy="edit-row"
-                            icon={faPen}
-                            className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
-                            title="edit"
-                            data-position="top"
-                            onClick={() => handleSetBudgetLineForEditing(budgetLine)}
-                        />
-                        <FontAwesomeIcon
-                            id={`delete-${bl?.id}`}
-                            data-cy="delete-row"
-                            data-testid="delete-row"
-                            icon={faTrash}
-                            title="delete"
-                            data-position="top"
-                            className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
-                            onClick={() => handleDeleteBudgetLine(budgetLine.id)}
-                        />
-                    </>
-                )}
-                <FontAwesomeIcon
-                    id={`duplicate-${bl?.id}`}
-                    data-cy="duplicate-row"
-                    icon={faClone}
-                    title="duplicate"
-                    data-position="top"
-                    className={`text-primary height-2 width-2 cursor-pointer usa-tooltip ${
-                        isBudgetLineEditable ? "margin-left-0" : "margin-left-6"
-                    }`}
-                    onClick={() => handleDuplicateBudgetLine(budgetLine)}
-                />
-            </>
-        );
-    };
     return (
         <React.Fragment key={bl?.id}>
             <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
@@ -178,7 +139,13 @@ const TableRow = ({
                 <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     {isRowActive && !isExpanded && !readOnly ? (
                         <div>
-                            <ChangeIcons budgetLine={bl} />
+                            <ChangeIcons
+                                budgetLine={bl}
+                                handleDeleteBudgetLine={handleDeleteBudgetLine}
+                                handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                                handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
+                                isBudgetLineEditable={isBudgetLineEditable}
+                            />
                         </div>
                     ) : (
                         <TableTag status={bl.status} />
@@ -216,7 +183,15 @@ const TableRow = ({
                                 </dd>
                             </dl>
                             <div className="flex-align-self-end margin-left-auto margin-bottom-1">
-                                {!readOnly && <ChangeIcons budgetLine={bl} />}
+                                {!readOnly && (
+                                    <ChangeIcons
+                                        budgetLine={bl}
+                                        handleDeleteBudgetLine={handleDeleteBudgetLine}
+                                        handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                                        handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
+                                        isBudgetLineEditable={isBudgetLineEditable}
+                                    />
+                                )}
                             </div>
                         </div>
                     </td>
