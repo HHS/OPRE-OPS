@@ -80,6 +80,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                     <Link
                         className="usa-button margin-top-4 margin-right-0"
                         to={`/agreements/approve/${agreement?.id}`}
+                        data-cy="bli-tab-continue-btn"
                     >
                         Plan or Execute Budget Lines
                     </Link>
