@@ -36,7 +36,7 @@ export const opsApi = createApi({
             providesTags: ["Agreements"],
         }),
         getAgreementHistoryById: builder.query({
-            query: (id) => `/agreements/${id}/history/`,
+            query: (id) => `/agreements/${id}/history/?limit=20`,
             providesTags: ["AgreementHistory"],
         }),
         addAgreement: builder.mutation({
