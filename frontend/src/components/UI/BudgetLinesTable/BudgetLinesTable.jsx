@@ -1,9 +1,9 @@
 import PropTypes from "prop-types";
 import TotalSummaryCard from "./TotalSummaryCard";
 import Table from "../Table";
-import TableRowExpandable from "../TableRowExpandable";
 import "./BudgetLinesTable.scss";
 import { BUDGET_LINE_TABLE_HEADERS } from "../../../constants";
+import BLIRow from "../BLIRow";
 
 /**
  * A table component that displays budget lines.
@@ -35,7 +35,7 @@ const BudgetLinesTable = ({
         <>
             <Table tableHeadings={BUDGET_LINE_TABLE_HEADERS}>
                 {sortedBudgetLines.map((bl) => (
-                    <TableRowExpandable
+                    <BLIRow
                         key={bl?.id}
                         bl={bl}
                         canUserEditBudgetLines={canUserEditBudgetLines}
