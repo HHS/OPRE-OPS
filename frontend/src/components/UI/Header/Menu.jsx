@@ -26,6 +26,9 @@ export const Menu = () => {
                 <li className="usa-nav__primary-item">
                     <Link to="/agreements?filter=all-agreements">Agreements</Link>
                 </li>
+                <li className="usa-nav__primary-item">
+                    <Link to="/budget-lines?filter=all-budget-line-items">Budget Lines</Link>
+                </li>
                 <li className="usa-nav__primary-item margin-left-auto">
                     <button
                         type="button"
