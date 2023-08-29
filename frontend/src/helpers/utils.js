@@ -68,11 +68,38 @@ const codesToDisplayText = {
         "team-member": "Team Members",
         "budget-line-items": "Budget Line Items",
     },
+    className: {
+        ContractAgreement: "Contract Agreement",
+        BudgetLineItem: "Budget Line",
+    },
+    agreementPropertyLabels: {
+        agreement_reason: "Agreement Reason",
+        agreement_type: "Agreement Type",
+        description: "Description",
+        incumbent: "Incumbent",
+        name: "Title",
+        notes: "Notes",
+        number: "Number",
+        procurement_shop: "Procurement Shop",
+        product_service_code: "Product Service Code",
+        project_officer: "Project Officer",
+        research_project: "Research_Project",
+        team_members: "Team Members",
+    },
+    budgetLineItemPropertyLabels: {
+        amount: "Amount",
+        can: "CAN",
+        comments: "Notes",
+        date_needed: "Date Needed By",
+        line_description: "Description",
+        psc_fee_amount: "Shop Fee",
+        status: "Status",
+    },
 };
 
 /**
  * Converts a code value into a display text value based on a predefined mapping.
- * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
+ * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "className: | "agreementPropertyLabels" | "budgetLineItemPropertyLabels")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
  * @param {string} code - The code value to convert. This parameter is required.
  * @returns {string} The display text value for the code, or the original code value if no mapping is found.
  * @throws {Error} If either the listName or code parameter is not provided.
@@ -110,7 +137,6 @@ export const timeAgo = (dateParam) => {
             dateParam = dateParam + "Z";
         }
     }
-    console.log("dateParam:", dateParam);
 
     const date = typeof dateParam === "object" ? dateParam : new Date(dateParam);
     const today = new Date();
