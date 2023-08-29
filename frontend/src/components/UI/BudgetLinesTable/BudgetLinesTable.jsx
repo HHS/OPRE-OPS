@@ -6,9 +6,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import TotalSummaryCard from "./TotalSummaryCard";
-import { formatDate, loggedInName, fiscalYearFromDate } from "../../../helpers/utils";
+import { loggedInName, fiscalYearFromDate, formatDateNeeded, formatDateToMonthDayYear } from "../../../helpers/utils";
+import Table from "../Table";
 import TableTag from "./TableTag";
-import "./PreviewTable.scss";
+import "./BudgetLinesTable.scss";
+import { BUDGET_LINE_TABLE_HEADERS } from "../../../constants";
 
 /**
  * A table component that displays budget lines.
@@ -22,7 +24,7 @@ import "./PreviewTable.scss";
  * @param {Boolean} [props.isReviewMode] - A flag to indicate if the table is in review mode.
  * @returns {JSX.Element} - The rendered table component.
  */
-export const PreviewTable = ({
+const BudgetLinesTable = ({
     budgetLinesAdded = [],
     canUserEditBudgetLines = false,
     handleSetBudgetLineForEditing = () => {},
@@ -43,17 +45,6 @@ export const PreviewTable = ({
         const [isExpanded, setIsExpanded] = useState(false);
         const [isRowActive, setIsRowActive] = useState(false);
 
-        const formatted_today = new Date().toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
-        const bl_created_on = bl?.created_on
-            ? new Date(bl.created_on).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" })
-            : formatted_today;
-        let formatted_date_needed;
-        let fiscalYear;
-        if (bl?.date_needed !== "--" && bl?.date_needed !== null) {
-            let date_needed = new Date(bl?.date_needed);
-            formatted_date_needed = formatDate(date_needed);
-            fiscalYear = fiscalYearFromDate(bl?.date_needed);
-        }
         let feeTotal = bl?.amount * bl?.psc_fee_amount;
         let total = bl?.amount + feeTotal;
         const isBudgetLineDraft = bl?.status === "DRAFT";
@@ -143,18 +134,22 @@ export const PreviewTable = ({
                         {bl?.line_description}
                     </th>
                     <td
-                        className={`${futureDateErrorClass(formatted_date_needed)} ${addErrorClassIfNotFound(
-                            formatted_date_needed
+                        className={`${futureDateErrorClass(
+                            formatDateNeeded(bl?.date_needed)
+                        )} ${addErrorClassIfNotFound(
+                            formatDateNeeded(bl?.date_needed)
                         )} ${removeBorderBottomIfExpanded}`}
                         style={changeBgColorIfExpanded}
                     >
-                        {formatted_date_needed}
+                        {formatDateNeeded(bl?.date_needed)}
                     </td>
                     <td
-                        className={`${addErrorClassIfNotFound(fiscalYear)} ${removeBorderBottomIfExpanded}`}
+                        className={`${addErrorClassIfNotFound(
+                            fiscalYearFromDate(bl?.date_needed)
+                        )} ${removeBorderBottomIfExpanded}`}
                         style={changeBgColorIfExpanded}
                     >
-                        {fiscalYear || ""}
+                        {fiscalYearFromDate(bl?.date_needed)}
                     </td>
                     <td
                         className={`${addErrorClassIfNotFound(bl?.can?.number)} ${removeBorderBottomIfExpanded}`}
@@ -237,7 +232,7 @@ export const PreviewTable = ({
                                     </dd>
                                     <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                                         <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />
-                                        {bl_created_on}
+                                        {formatDateToMonthDayYear(bl?.created_on)}
                                     </dt>
                                 </dl>
                                 <dl className="font-12px" style={{ marginLeft: "9.0625rem" }}>
@@ -259,33 +254,17 @@ export const PreviewTable = ({
 
     return (
         <>
-            <table className="usa-table usa-table--borderless width-full">
-                <thead>
-                    <tr>
-                        <th scope="col">Description</th>
-                        <th scope="col">Need By</th>
-                        <th scope="col">FY</th>
-                        <th scope="col">CAN</th>
-                        <th scope="col">Amount</th>
-                        <th scope="col">Fee</th>
-                        <th scope="col">Total</th>
-                        <th scope="col" className="padding-0" style={{ width: "6.25rem" }}>
-                            Status
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {sortedBudgetLines.map((bl) => (
-                        <TableRow key={bl?.id} bl={bl} />
-                    ))}
-                </tbody>
-            </table>
+            <Table tableHeadings={BUDGET_LINE_TABLE_HEADERS}>
+                {sortedBudgetLines.map((bl) => (
+                    <TableRow key={bl?.id} bl={bl} />
+                ))}
+            </Table>
             <TotalSummaryCard budgetLines={sortedBudgetLines}></TotalSummaryCard>
         </>
     );
 };
 
-PreviewTable.propTypes = {
+BudgetLinesTable.propTypes = {
     budgetLinesAdded: PropTypes.arrayOf(PropTypes.object),
     canUserEditBudgetLines: PropTypes.bool,
     handleSetBudgetLineForEditing: PropTypes.func,
@@ -296,4 +275,4 @@ PreviewTable.propTypes = {
     isReviewMode: PropTypes.bool,
 };
 
-export default PreviewTable;
+export default BudgetLinesTable;

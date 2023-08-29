@@ -11,7 +11,7 @@ AUTHLIB_OAUTH_CLIENTS = {
         "user_info_url": "https://idp.int.identitysandbox.gov/api/openid_connect/userinfo",
         "client_id": "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops_staging",
         "client_kwargs": {"scope": "openid email"},
-        "redirect_uri": "http://localhost:3000",
+        "redirect_uri": "https://ops-staging.app.cloud.gov/login",
     },
     "hhsams": {
         "server_metadata_url": "https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/.well-known/openid-configuration",
@@ -20,7 +20,7 @@ AUTHLIB_OAUTH_CLIENTS = {
         "client_id": "44fe2c7a-e9c5-43ec-87e9-3de78d2d3a11",
         "client_kwargs": {"scope": "openid profile email"},
         "aud": "https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/token",
-        "redirect_uri": "https://ops-staging.app.cloud.gov",
+        "redirect_uri": "https://ops-staging.app.cloud.gov/login",
     },
 }
 

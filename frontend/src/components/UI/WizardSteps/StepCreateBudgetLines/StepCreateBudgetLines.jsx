@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import StepIndicator from "../../StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
-import PreviewTable from "../../PreviewTable";
+import BudgetLinesTable from "../../BudgetLinesTable";
 import Alert from "../../Alert";
 import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
@@ -399,7 +399,7 @@ export const StepCreateBudgetLines = ({
                     ))}
                 </ul>
             )}
-            <PreviewTable
+            <BudgetLinesTable
                 budgetLinesAdded={newBudgetLines}
                 handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                 handleDeleteBudgetLine={handleDeleteBudgetLine}

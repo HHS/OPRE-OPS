@@ -8,7 +8,7 @@ import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-so
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { getUser } from "../../../api/getUser";
 import { convertCodeForDisplay, formatDate } from "../../../helpers/utils";
-import TableTag from "../../../components/UI/PreviewTable/TableTag";
+import TableTag from "../../../components/UI/BudgetLinesTable/TableTag";
 import { useDeleteAgreementMutation } from "../../../api/opsAPI";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import icons from "../../../uswds/img/sprite.svg";
