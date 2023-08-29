@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import _ from "lodash";
 import App from "../../../App";
 import { useGetBudgetLineItemsQuery } from "../../../api/opsAPI";
@@ -13,7 +13,6 @@ import TablePageLayout from "../../../components/UI/Layouts/TablePageLayout";
  * @returns {React.JSX.Element} - The component JSX.
  */
 export const BudgetLineItemList = () => {
-    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const isAlertActive = useSelector((state) => state.alert.isActive);
     const [filters, setFilters] = useState({});
@@ -22,10 +21,6 @@ export const BudgetLineItemList = () => {
 
     const activeUser = useSelector((state) => state.auth.activeUser);
     const myBudgetLineItemsUrl = searchParams.get("filter") === "my-budget-line-items";
-
-    useEffect(() => {
-        navigate("/budget-lines?filter=all-budget-line-items");
-    }, [navigate]);
 
     if (isLoading) {
         return (

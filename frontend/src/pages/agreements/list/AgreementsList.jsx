@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import _ from "lodash";
 import App from "../../../App";
 import { useGetAgreementsQuery } from "../../../api/opsAPI";
@@ -19,7 +19,6 @@ import AgreementsFilterTags from "./AgreementsFilterTags";
  * @returns {React.JSX.Element} - The component JSX.
  */
 export const AgreementsList = () => {
-    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const isAlertActive = useSelector((state) => state.alert.isActive);
     const [filters, setFilters] = useState({
