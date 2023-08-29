@@ -19,7 +19,7 @@ it("loads", () => {
 it("budget line items link defaults to all-budget-line-items", () => {
     cy.visit("/");
     cy.get("a").contains("Budget Lines");
-    cy.get('a[href="/budget-lines?filter=all-budget-line-items"]').should("exist");
+    cy.get('a[href="/budget-lines"]').should("exist");
 });
 
 it("clicking the add budget lines button takes you to the create budget lines page", () => {
