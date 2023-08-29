@@ -1,9 +1,7 @@
 import PropTypes from "prop-types";
 import { useGetAgreementHistoryByIdQuery } from "../../../api/opsAPI";
-import React from "react";
 import { historyData } from "../../../pages/agreements/details/data";
 import LogItem from "../../UI/LogItem";
-import StatusTag from "../../UI/Tag/StatusTag";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 
 const findObjectTitle = (historyItem) => {
