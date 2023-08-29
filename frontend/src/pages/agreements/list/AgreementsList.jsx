@@ -42,10 +42,6 @@ export const AgreementsList = () => {
         isLoading: isLoadingAgreement,
     } = useGetAgreementsQuery({ refetchOnMountOrArgChange: true });
 
-    useEffect(() => {
-        navigate("/agreements?filter=all-agreements");
-    }, [navigate]);
-
     const activeUser = useSelector((state) => state.auth.activeUser);
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
 

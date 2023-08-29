@@ -15,7 +15,7 @@ export const AgreementTabs = () => {
 
     const paths = [
         {
-            name: "?filter=all-agreements",
+            name: "",
             label: "All Agreements",
         },
         {
