@@ -1,7 +1,17 @@
+import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
 import TableTag from "../BudgetLinesTable/TableTag";
 import { formatDateNeeded } from "../../../helpers/utils";
+import Table from "../Table";
+import { All_BUDGET_LINES_TABLE_HEADINGS } from "../../../constants";
 
+/**
+ * TableRow component that represents a single row in the budget lines table.
+ * @param {Object} props - The props for the TableRow component.
+ * @param {Object[]} props.budgetLines - The budget line data for the row.
+ * } props.budgetLines - The budget line data for the row.
+ * @returns {React.JSX.Element} The TableRow component.
+ */
 const AllBudgetLinesTable = ({ budgetLines }) => {
     const TableRow = ({ bl }) => {
         return (
@@ -33,29 +43,29 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
 
     return (
         <>
-            <table className="usa-table usa-table--borderless width-full">
-                <thead>
-                    <tr>
-                        <th scope="col">Description</th>
-                        <th scope="col">Agreement</th>
-                        <th scope="col">Need By</th>
-                        <th scope="col">FY</th>
-                        <th scope="col">CAN</th>
-                        <th scope="col">Total</th>
-                        <th scope="col" className="padding-0" style={{ width: "6.25rem" }}>
-                            Status
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {budgetLines.map((bl) => (
-                        <TableRow key={bl?.id} bl={bl} />
-                    ))}
-                </tbody>
-            </table>
+            <Table tableHeadings={All_BUDGET_LINES_TABLE_HEADINGS}>
+                {budgetLines.map((bl) => (
+                    <TableRow key={bl?.id} bl={bl} />
+                ))}
+            </Table>
             <pre>{JSON.stringify(budgetLines, null, 2)}</pre>
         </>
     );
+};
+
+AllBudgetLinesTable.propTypes = {
+    budgetLines: PropTypes.arrayOf(
+        PropTypes.shape({
+            id: PropTypes.number.isRequired,
+            line_description: PropTypes.string.isRequired,
+            agreement_name: PropTypes.string.isRequired,
+            date_needed: PropTypes.string,
+            fiscal_year: PropTypes.number,
+            can_number: PropTypes.string,
+            amount: PropTypes.number,
+            status: PropTypes.string.isRequired,
+        })
+    ),
 };
 
 export default AllBudgetLinesTable;
