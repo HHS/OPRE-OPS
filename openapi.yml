@@ -1287,6 +1287,15 @@ components:
         fiscal_year:
           type: integer
           example: 1
+        team_members:
+          type: array
+          items:
+            type: array
+            example: [
+              { 'id': 1, 'full_name': 'Chris Fortunato', 'email': 'chris.fortunato@example.com' },
+              { 'id': 2, 'full_name': 'Amy Madigan', 'email': 'Amy.Madigan@example.com' },
+              { 'id': 3, 'full_name': 'Ivelisse Martinez-Beck', 'email': 'Ivelisse.Martinez-Beck@example.com' },
+            ]
 
     BudgetLineItemRequest:
       type: object
