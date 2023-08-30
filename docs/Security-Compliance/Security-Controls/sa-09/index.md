@@ -1,0 +1,18 @@
+# System and Services Acquisition
+## SA-9 External System Services
+
+a. Require that providers of external system services comply with organizational security and privacy requirements and employ the following controls: [appropriate security controls];
+
+b. Define and document organizational oversight and user roles and responsibilities with regard to external system services; and
+
+c. Employ the following processes, methods, and techniques to monitor control compliance by external service providers on an ongoing basis: [reviews of independent auditor reports (e.g., SAS 70, SSAE 16)]
+
+## OPS Implementation
+
+TODO: provide inherited text
+
+### Control Origination
+
+Hybrid with HHS's AMS, ACF Tech, and OPS
+
+### Related Content

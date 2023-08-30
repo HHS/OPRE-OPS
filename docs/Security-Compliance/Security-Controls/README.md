@@ -159,6 +159,15 @@
 5. [SA-4-2](sa-04-2/index.md)
 6. [SA-4-9](sa-04-9/index.md)
 7. [SA-4-10](sa-04-10/index.md)
+8. [SA-5](sa-05/index.md)
+9. [SA-8](sa-08/index.md)
+10. [SA-9](sa-09/index.md)
+11. [SA-9-2](sa-09-2/index.md)
+12. [SA-10](sa-10/index.md)
+13. [SA-11](sa-11/index.md)
+14. [SA-15](sa-15/index.md)
+15. [SA-15-3](sa-15-3/index.md)
+16. [SA-22](sa-22/index.md)
 
 ### System and Communications Protection
 
@@ -205,3 +214,4 @@
 14. [SI-10](si-10/index.md)
 15. [SI-11](si-11/index.md)
 16. [SI-12](si-12/index.md)
+17. [SI-16](si-16/index.md)
