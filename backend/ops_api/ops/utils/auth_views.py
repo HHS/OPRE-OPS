@@ -110,7 +110,9 @@ def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
         additional_claims = {}
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
-        access_token = create_access_token(identity=user, expires_delta=None, additional_claims=additional_claims, fresh=True)
+        access_token = create_access_token(
+            identity=user, expires_delta=None, additional_claims=additional_claims, fresh=True
+        )
         refresh_token = create_refresh_token(identity=user, expires_delta=None, additional_claims=additional_claims)
     except Exception as e:
         current_app.logger.exception(e)
@@ -172,5 +174,7 @@ def refresh() -> Response:
     additional_claims = {}
     if identity.roles:
         additional_claims["roles"] = [role.name for role in identity.roles]
-    access_token = create_access_token(identity=identity, expires_delta=None, additional_claims=additional_claims, fresh=False)
+    access_token = create_access_token(
+        identity=identity, expires_delta=None, additional_claims=additional_claims, fresh=False
+    )
     return make_response_with_headers({"access_token": access_token})

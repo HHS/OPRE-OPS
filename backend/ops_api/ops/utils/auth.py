@@ -15,7 +15,7 @@ from models.users import User
 from ops_api.ops.utils.authorization import AuthorizationGateway, BasicAuthorizationPrivider
 from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
-from sqlalchemy.exc import NoResultFound, MultipleResultsFound
+from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 
 jwtMgr = JWTManager()
 oauth = OAuth()
