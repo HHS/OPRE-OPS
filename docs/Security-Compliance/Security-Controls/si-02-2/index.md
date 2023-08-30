@@ -1,7 +1,7 @@
 # System and Information Integrity
 ## SI-02 (2) - Flaw Remediation | Automated Flaw Remediation Status
 
-Determine if system components have applicable security-relevant software and firmware updates installed using [Assignment: organization-defined automated mechanisms] [Assignment: organization-defined frequency].
+Determine if system components have applicable security-relevant software and firmware updates installed using [ACF-defined automated mechanisms] [at least quarterly].
 
 ## OPS Implementation
 
@@ -13,3 +13,4 @@ OPS utilizes tooling including but not limited to Dependabot and Renovatebot whi
 Hybrid with IaaS vendor and OPS
 
 ### Related Content
+Automated mechanisms can track and determine the status of known flaws for system components.
