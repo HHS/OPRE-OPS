@@ -16,6 +16,7 @@ import AllBudgetLinesTable from "../../../components/UI/AllBudgetLinesTable";
 export const BudgetLineItemList = () => {
     const [searchParams] = useSearchParams();
     const isAlertActive = useSelector((state) => state.alert.isActive);
+    const loggedInUserId = useSelector((state) => state.auth.activeUser.id);
     const [filters, setFilters] = React.useState({});
 
     const {
@@ -68,10 +69,19 @@ export const BudgetLineItemList = () => {
     const budgetLinesWithCanAndAgreementName = budgetLineItems.map((budgetLine) => {
         const can = cans.find((can) => can.id === budgetLine.can_id);
         const agreement = agreements.find((agreement) => agreement.id === budgetLine.agreement_id);
+        const isLoggedInUserTheProjectOfficer = agreement.project_officer === loggedInUserId;
+        const isLoggedInUserTheAgreementCreator = agreement?.created_by === loggedInUserId;
+        const isLoggedInUserATeamMember = agreement?.team_members?.some(
+            (teamMember) => teamMember.id === loggedInUserId
+        );
+        const isLoggedInUserAllowedToEdit =
+            isLoggedInUserTheProjectOfficer || isLoggedInUserTheAgreementCreator || isLoggedInUserATeamMember;
+
         return {
             ...budgetLine,
             can_number: can?.number,
             agreement_name: agreement?.name,
+            isAllowedToEdit: isLoggedInUserAllowedToEdit,
         };
     });
 

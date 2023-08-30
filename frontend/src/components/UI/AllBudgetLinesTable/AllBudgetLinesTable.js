@@ -22,6 +22,7 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                         handleDuplicateBudgetLine={() => {}}
                         isReviewMode={false}
                         readOnly={false}
+                        canUserEditBudgetLines={bl?.isAllowedToEdit}
                     />
                 ))}
             </Table>
