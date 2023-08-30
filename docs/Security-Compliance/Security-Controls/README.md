@@ -138,6 +138,10 @@
 12. [IR-8](ir-08/index.md)
 13. [IR-9](ir-09/index.md)
 
+### Maintenance
+
+### Personally Identifiable Information Processing and Transparency
+
 ### Risk Assessment
 
 1. [RA-2](ra-02/index.md)
