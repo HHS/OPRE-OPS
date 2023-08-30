@@ -76,12 +76,16 @@ export const BudgetLineItemList = () => {
         );
         const isLoggedInUserAllowedToEdit =
             isLoggedInUserTheProjectOfficer || isLoggedInUserTheAgreementCreator || isLoggedInUserATeamMember;
+        const procurementShopAbbr = agreement?.procurement_shop?.abbr;
+        const procurementShopFee = agreement?.procurement_shop?.fee;
 
         return {
             ...budgetLine,
             can_number: can?.number,
             agreement_name: agreement?.name,
             isAllowedToEdit: isLoggedInUserAllowedToEdit,
+            procShopCode: procurementShopAbbr,
+            procShopFee: procurementShopFee,
         };
     });
 
