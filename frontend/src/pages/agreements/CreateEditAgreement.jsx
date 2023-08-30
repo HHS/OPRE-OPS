@@ -1,10 +1,11 @@
+import React from "react";
 import { useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import CreateAgreementFlow from "./CreateAgreementFlow";
 import StepSelectProject from "./StepSelectProject";
 import StepCreateAgreement from "./StepCreateAgreement";
 import StepCreateBudgetLines from "../../components/UI/WizardSteps/StepCreateBudgetLines";
-import { useCreateAgreement } from "./CreateAgreementContext";
+import { useEditAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import { setAlert } from "../../components/UI/Alert/alertSlice";
 
 /**
@@ -15,15 +16,29 @@ import { setAlert } from "../../components/UI/Alert/alertSlice";
  * @returns {JSX.Element} - The rendered component.
  */
 export const CreateAgreement = ({ existingBudgetLines }) => {
-    const createAgreementContext = useCreateAgreement();
+    const [isEditMode, setIsEditMode] = React.useState(false);
+    const [isReviewMode, setIsReviewMode] = React.useState(false);
+    const createAgreementContext = useEditAgreement();
     const globalDispatch = useDispatch();
 
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
-    const mode = searchParams.get("mode");
+    const mode = searchParams.get("mode") || undefined;
+    // check mode on mount
+    React.useEffect(() => {
+        switch (mode) {
+            case "edit":
+                setIsEditMode(true);
+                break;
+            case "review":
+                setIsReviewMode(true);
+                break;
+            default:
+                return;
+        }
+    }, [mode]);
 
     const {
-        wizardSteps,
         selected_project: selectedResearchProject,
         agreement: selectedAgreement,
         selected_procurement_shop: selectedProcurementShop,
@@ -31,11 +46,9 @@ export const CreateAgreement = ({ existingBudgetLines }) => {
 
     return (
         <CreateAgreementFlow>
-            <StepSelectProject formMode={mode ?? undefined} />
-            <StepCreateAgreement formMode={mode ?? undefined} />
+            <StepSelectProject isEditMode={isEditMode} isReviewMode={isReviewMode} />
+            <StepCreateAgreement isEditMode={isEditMode} isReviewMode={isReviewMode} />
             <StepCreateBudgetLines
-                wizardSteps={wizardSteps}
-                currentStep={3}
                 selectedResearchProject={selectedResearchProject}
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}
@@ -51,7 +64,8 @@ export const CreateAgreement = ({ existingBudgetLines }) => {
                     )
                 }
                 existingBudgetLines={existingBudgetLines}
-                formMode={mode ?? undefined}
+                isEditMode={isEditMode}
+                isReviewMode={isReviewMode}
                 workflow="agreement"
             />
         </CreateAgreementFlow>

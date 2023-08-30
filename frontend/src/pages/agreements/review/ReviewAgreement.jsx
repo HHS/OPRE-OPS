@@ -2,7 +2,8 @@ import { useEffect, useState, Fragment } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
-import PreviewTable from "../../../components/UI/PreviewTable";
+import PropTypes from "prop-types";
+import BudgetLinesTable from "../../../components/UI/BudgetLinesTable";
 import Alert from "../../../components/UI/Alert";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../../api/opsAPI";
@@ -15,11 +16,11 @@ import { setAlert } from "../../../components/UI/Alert/alertSlice";
 /**
  * Renders a page for reviewing and sending an agreement to approval.
  * @param {Object} props - The component props.
- * @param {string} props.agreement_id - The ID of the agreement to review.
- * @returns {JSX.Element} - The rendered component.
+ * @param {number} props.agreement_id - The ID of the agreement to review.
+ * @returns {React.JSX.Element} - The rendered component.
  */
 export const ReviewAgreement = ({ agreement_id }) => {
-    const dispatch = useDispatch();
+    const globalDispatch = useDispatch();
     const navigate = useNavigate();
     const {
         isSuccess,
@@ -91,7 +92,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
         return <h1>Loading...</h1>;
     }
     if (errorAgreement) {
-        return <h1>Oops, an error occured</h1>;
+        return <h1>Oops, an error occurred</h1>;
     }
 
     // convert page errors about budget lines object into an array of objects
@@ -102,29 +103,43 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist;
 
     const anyBudgetLinesAreDraft = agreement.budget_line_items.some((item) => item.status === "DRAFT");
+    const anyBudgetLinesInExecuting = agreement.budget_line_items.some((item) => item.status === "IN_EXECUTING");
+    const anyBudgetLinesObligated = agreement.budget_line_items.some((item) => item.status === "OBLIGATED");
+    const isAgreementEditable = !anyBudgetLinesInExecuting && !anyBudgetLinesObligated;
+
     const handleSendToApproval = () => {
         if (anyBudgetLinesAreDraft) {
             agreement?.budget_line_items.forEach((bli) => {
                 if (bli.status === "DRAFT") {
                     console.log(bli.id);
-                    try {
-                        updateBudgetLineItemStatus({ id: bli.id, status: "UNDER_REVIEW" }).unwrap();
-                        console.log("BLI Status Updated");
-                    } catch (error) {
-                        console.log("Error Updating Budget Line Status");
-                        console.dir(error);
-                    }
+                    updateBudgetLineItemStatus({ id: bli.id, status: "UNDER_REVIEW" })
+                        .unwrap()
+                        .then((fulfilled) => {
+                            console.log("BLI Status Updated:", fulfilled);
+                            globalDispatch(
+                                setAlert({
+                                    type: "success",
+                                    heading: "Agreement sent to approval",
+                                    message: "The agreement has been successfully sent to approval for Planned Status.",
+                                })
+                            );
+                            navigate("/agreements");
+                        })
+                        .catch((rejected) => {
+                            console.log("Error Updating Budget Line Status");
+                            console.dir(rejected);
+                            globalDispatch(
+                                setAlert({
+                                    type: "error",
+                                    heading: "Error",
+                                    message: "An error occurred. Please try again.",
+                                })
+                            );
+                            navigate("/error");
+                        });
                 }
             });
         }
-        dispatch(
-            setAlert({
-                type: "success",
-                heading: "Agreement sent to approval",
-                message: "The agreement has been successfully sent to approval for Planned Status.",
-                redirectUrl: "/agreements",
-            })
-        );
     };
 
     return (
@@ -287,20 +302,25 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 )}
             </div>
 
-            <PreviewTable readOnly={true} budgetLinesAdded={agreement?.budget_line_items} />
+            <BudgetLinesTable readOnly={true} budgetLinesAdded={agreement?.budget_line_items} isReviewMode={true} />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
-                    className="usa-button usa-button--outline margin-right-2"
+                    className={`usa-button usa-button--outline margin-right-2 ${
+                        !isAgreementEditable ? "usa-tooltip" : ""
+                    }`}
                     data-cy="edit-agreement-btn"
+                    title={!isAgreementEditable ? "Agreement is not editable" : ""}
                     onClick={() => {
                         navigate(`/agreements/edit/${agreement?.id}?mode=review`);
                     }}
+                    disabled={!isAgreementEditable}
                 >
                     Edit
                 </button>
                 <button
-                    className="usa-button"
+                    className={`usa-button ${!anyBudgetLinesAreDraft ? "usa-tooltip" : ""}`}
                     data-cy="send-to-approval-btn"
+                    title={!anyBudgetLinesAreDraft ? "Agreement is not able to be reviewed" : ""}
                     onClick={handleSendToApproval}
                     disabled={!anyBudgetLinesAreDraft || !res.isValid()}
                 >
@@ -309,6 +329,10 @@ export const ReviewAgreement = ({ agreement_id }) => {
             </div>
         </>
     );
+};
+
+ReviewAgreement.propTypes = {
+    agreement_id: PropTypes.number.isRequired,
 };
 
 export default ReviewAgreement;

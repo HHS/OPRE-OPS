@@ -60,11 +60,11 @@ it("edit an agreement", () => {
         // test validation
         cy.get("#name").clear();
         cy.get("#name").blur();
-        cy.get("#input-error-message").should("contain", "This is required information");
+        cy.get(".usa-error-message").should("contain", "This is required information");
         cy.get("[data-cy='continue-btn']").should("be.disabled");
         cy.get("[data-cy='save-draft-btn']").should("be.disabled");
         cy.get("#name").type("Test Edit Title");
-        cy.get("#input-error-message").should("not.exist");
+        cy.get(".usa-error-message").should("not.exist");
         cy.get("[data-cy='continue-btn']").should("not.be.disabled");
         cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");
         cy.get("#description").type(" more text");
@@ -88,7 +88,6 @@ it("edit an agreement", () => {
         cy.get("[data-cy='alert']").find("h1").should("have.text", "Agreement draft saved");
         cy.get("h1").should("exist");
 
-        // TODO: DELETE test agreement (after API implemented)
         cy.request({
             method: "DELETE",
             url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
@@ -100,4 +99,99 @@ it("edit an agreement", () => {
             expect(response.status).to.eq(200);
         });
     });
+});
+
+it("cannot edit an agreement with budget line items obligated", () => {
+    cy.visit(`/agreements/7`);
+    cy.get("h1").should("have.text", "MIHOPE Check-In");
+    cy.get("#edit").should("not.exist");
+});
+
+it("cannot navigate to edit an agreement with budget line items obligated from review page", () => {
+    cy.visit(`/agreements/approve/7`);
+    cy.get("dd").first().should("have.text", "MIHOPE Check-In");
+    cy.get('[data-cy="edit-agreement-btn"]').should("be.disabled");
+});
+
+it("cannot edit an agreement with budget line items in executing", () => {
+    cy.visit(`/agreements/2`);
+    cy.get("h1").should("have.text", "DIRECT ALLOCATION #2: African American Child and Family Research Center");
+    cy.get("#edit").should("not.exist");
+});
+
+it("cannot navigate to edit an agreement with budget line items in executing from review page", () => {
+    cy.visit(`/agreements/approve/2`);
+    cy.get("dd").first().should("have.text", "DIRECT ALLOCATION #2: African American Child and Family Research Center");
+    cy.get('[data-cy="edit-agreement-btn"]').should("be.disabled");
+});
+
+it("can edit budget lines if a team member and project officer", () => {
+    cy.visit(`/agreements/1/budget-lines`);
+    cy.get("h1").should("have.text", "Contract #1: African American Child and Family Research Center");
+    cy.get("#edit").should("exist");
+});
+
+it("cannot edit budget lines if a team member and project officer", () => {
+    cy.visit(`/agreements/7/budget-lines`);
+    cy.get("h1").should("have.text", "MIHOPE Check-In");
+    cy.get("#edit").should("not.exist");
+});
+
+it("can edit a budget line if it is in PLANNED", () => {
+    cy.visit(`/agreements/2/budget-lines`);
+    cy.get("h1").should("have.text", "DIRECT ALLOCATION #2: African American Child and Family Research Center");
+    cy.get("#edit").should("exist");
+    cy.get("#edit").click();
+    cy.get("tbody").children().as("table-rows").should("exist");
+    // get the first row which is in PLANNED
+    cy.get("@table-rows").eq(0).find('[data-cy="expand-row"]').click();
+    cy.get(".padding-right-9").find('[data-cy="edit-row"]').should("exist");
+});
+
+it("can not edit a budget line if it is in OBLIGATED", () => {
+    cy.visit(`/agreements/2/budget-lines`);
+    cy.get("h1").should("have.text", "DIRECT ALLOCATION #2: African American Child and Family Research Center");
+    cy.get("#edit").should("exist");
+    cy.get("#edit").click();
+    cy.get("tbody").children().as("table-rows").should("exist");
+    // get the second row which is in OBLIGATED
+    cy.get("@table-rows").eq(1).find('[data-cy="expand-row"]').click();
+    cy.get(".padding-right-9").find('[data-cy="edit-row"]').should("not.exist");
+});
+
+it("can not edit a budget line if it is in EXECUTING", () => {
+    cy.visit(`/agreements/2/budget-lines`);
+    cy.get("h1").should("have.text", "DIRECT ALLOCATION #2: African American Child and Family Research Center");
+    cy.get("#edit").should("exist");
+    cy.get("#edit").click();
+    cy.get("tbody").children().as("table-rows").should("exist");
+    // get the fourth row which is in EXECUTION
+    cy.get("@table-rows").eq(3).find('[data-cy="expand-row"]').click();
+    cy.get(".padding-right-9").find('[data-cy="edit-row"]').should("not.exist");
+});
+
+it("can edit a budget line if it is in DRAFT or in REVIEW", () => {
+    cy.visit(`/agreements/1/budget-lines`);
+    cy.get("h1").should("have.text", "Contract #1: African American Child and Family Research Center");
+    cy.get("#edit").should("exist");
+    cy.get("#edit").click();
+    cy.get("tbody").children().as("table-rows").should("exist");
+    // get the first row which is in DRAFT
+    cy.get("@table-rows").eq(0).find('[data-cy="expand-row"]').click();
+    cy.get(".padding-right-9").find('[data-cy="edit-row"]').should("exist");
+    cy.get('[data-cy="continue-btn"]').click();
+    cy.get('[data-cy="bli-tab-continue-btn"]').click();
+    cy.get('[data-cy="send-to-approval-btn"]').should("exist");
+    cy.get('[data-cy="send-to-approval-btn"]').click();
+    // the BLIS are now in Review
+    cy.visit(`/agreements/1/budget-lines`);
+    cy.get("h1").should("have.text", "Contract #1: African American Child and Family Research Center");
+    cy.get("#edit").should("exist");
+    // revert the BLIS back to DRAFT
+    cy.visit(`/agreements/1`);
+    cy.get("h1").should("have.text", "Contract #1: African American Child and Family Research Center");
+    cy.get("#edit").should("exist");
+    cy.get("#edit").click();
+    cy.get("#agreementNotes").type("test edit notes");
+    cy.get('[data-cy="continue-btn"]').click();
 });

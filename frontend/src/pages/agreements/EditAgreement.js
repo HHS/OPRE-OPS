@@ -1,9 +1,9 @@
-import App from "../../App";
-import { CreateAgreementProvider } from "./CreateAgreementContext";
-import CreateEditAgreement from "./CreateEditAgreement";
-import { useParams } from "react-router-dom";
-import { useGetAgreementByIdQuery } from "../../api/opsAPI";
 import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import App from "../../App";
+import { EditAgreementProvider } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
+import CreateEditAgreement from "./CreateEditAgreement";
+import { useGetAgreementByIdQuery } from "../../api/opsAPI";
 import { getUser } from "../../api/getUser";
 import SimpleAlert from "../../components/UI/Alert/SimpleAlert";
 
@@ -17,15 +17,9 @@ const EditAgreement = () => {
         data: agreement,
         error: errorAgreement,
         isLoading: isLoadingAgreement,
-        refetch,
     } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true,
     });
-
-    useEffect(() => {
-        refetch();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     useEffect(() => {
         const getProjectOfficerSetState = async (id) => {
@@ -48,23 +42,26 @@ const EditAgreement = () => {
     if (errorAgreement) {
         return <div>Oops, an error occurred</div>;
     }
-    if (agreement.status !== "DRAFT" && agreement.status !== "UNDER_REVIEW") {
+
+    const areAnyBudgetLinesInExecuting = agreement?.budget_line_items.some((bli) => bli.status === "IN_EXECUTION");
+    const areAnyBudgetLinesObligated = agreement?.budget_line_items.some((bli) => bli.status === "OBLIGATED");
+    const isAgreementEditable = !areAnyBudgetLinesInExecuting && !areAnyBudgetLinesObligated;
+
+    if (!isAgreementEditable) {
         return (
             <App>
-                <SimpleAlert
-                    type="error"
-                    heading="Error"
-                    message={`This Agreement cannot be edited because its status is ${agreement.status}.`}
-                ></SimpleAlert>
+                <SimpleAlert type="error" heading="Error" message={`This Agreement cannot be edited.`}></SimpleAlert>
+                <Link to="/" className="usa-button margin-top-4">
+                    Go back home
+                </Link>
             </App>
         );
     }
-
     return (
         <App>
-            <CreateAgreementProvider agreement={agreement} projectOfficer={projectOfficer}>
-                <CreateEditAgreement existingBudgetLines={agreement.budget_line_items} isEditMode={true} />
-            </CreateAgreementProvider>
+            <EditAgreementProvider agreement={agreement} projectOfficer={projectOfficer}>
+                <CreateEditAgreement existingBudgetLines={agreement.budget_line_items} />
+            </EditAgreementProvider>
         </App>
     );
 };

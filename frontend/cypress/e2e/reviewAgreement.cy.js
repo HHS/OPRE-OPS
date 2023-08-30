@@ -4,6 +4,8 @@ import { terminalLog, testLogin } from "./utils";
 // get current year
 const today = new Date();
 const year = today.getFullYear();
+const month = today.getMonth() + 1;
+const day = today.getDate();
 
 const blData = [
     {
@@ -11,7 +13,7 @@ const blData = [
         can: "G99HRF2",
         month: "09 - Sep",
         day: "01",
-        year: "2023",
+        year: year,
         amount: "111111",
         note: "note one",
     },
@@ -71,63 +73,74 @@ it("review an agreement", () => {
         cy.get("#description").type("Test Description");
         cy.get("#product_service_code_id").select(1);
         cy.get("#agreement_reason").select("NEW_REQ");
-        cy.get("#project-officer-select-toggle-list").click();
-        cy.get("#project-officer-select-input").invoke("show");
-        cy.get("#users--list").invoke("show");
-        cy.get("li").contains("Chris Fortunato").click();
+        cy.get("#project-officer-combobox-input").type("Chris Fortunato{enter}");
         cy.get("#agreementNotes").type("This is a note.");
         cy.get("[data-cy='continue-btn']").click();
         //create a budget line with errors
         cy.get("#add-budget-line").should("be.disabled");
         cy.get("#enteredDescription").type(`${blData[0].descr}`);
         cy.get("#enteredDescription").clear();
-        cy.get("#input-error-message").should("exist");
+        cy.get(".usa-error-message").should("exist");
         cy.get("#enteredDescription").type(`${blData[0].descr}`);
         // add a CAN and clear it
         cy.get("#selectedCan").type(`${blData[0].can}{enter}`);
         cy.get(".usa-combo-box__clear-input").click();
-        cy.get("#input-error-message").should("exist");
+        cy.get(".usa-error-message").should("exist");
         cy.get("#selectedCan").type(`${blData[0].can}{enter}`);
         // add entered month and clear it
         cy.get("#enteredMonth").select(blData[0].month);
         cy.get("#enteredMonth").select("0");
-        cy.get("#input-error-message").should("exist");
+        cy.get(".usa-error-message").should("exist");
         cy.get("#enteredMonth").select(blData[0].month);
         // add entered day and clear it and tests for invalid days
         cy.get("#enteredDay").type(`${blData[0].day}`);
         cy.get("#enteredDay").clear();
-        cy.get("#input-error-message").should("exist");
+        cy.get(".usa-error-message").should("exist");
         cy.get("#enteredDay").type("0");
-        cy.get("#input-error-message").should("exist");
+        cy.get(".usa-error-message").should("exist");
         cy.get("#enteredDay").clear();
         cy.get("#enteredDay").type("32");
-        cy.get("#input-error-message").should("exist");
+        cy.get(".usa-error-message").should("exist");
         cy.get("#enteredDay").clear();
         cy.get("#enteredDay").type(`${blData[0].day}`);
         // add entered year and clear it and tests for invalid years
         cy.get("#enteredYear").type(`${blData[0].year}`);
         cy.get("#enteredYear").clear();
-        cy.get("#input-error-message").should("exist");
-        // check fpr invalid years
+        cy.get(".usa-error-message").should("exist");
+        // check for invalid years
         cy.get("#enteredYear").type("0");
-        cy.get("#input-error-message").should("exist");
+        cy.get(".usa-error-message").should("exist");
         cy.get("#enteredYear").clear();
         cy.get("#enteredYear").type("12");
-        cy.get("#input-error-message").should("exist");
+        cy.get(".usa-error-message").should("exist");
         cy.get("#enteredYear").clear();
         cy.get("#enteredYear").type("123");
-        cy.get("#input-error-message").should("exist");
+        cy.get(".usa-error-message").should("exist");
         // check to make sure the year is in the future
         cy.get("#enteredYear").clear();
         cy.get("#enteredYear").type(`${year - 1}`);
-        cy.get("#input-error-message").should("exist");
+        cy.get(".usa-error-message").should("exist");
         cy.get("#enteredYear").clear();
         cy.get("#enteredYear").type(`${year}`);
-        cy.get("#input-error-message").should("not.exist");
+
+        // TODO: check to ensure the group date is in the future
+        cy.get("#enteredMonth").select(month);
+        cy.get("#enteredDay").clear();
+        cy.get("#enteredDay").type(blData[0].day);
+        cy.get("#enteredYear").clear();
+        cy.get("#enteredYear").type(`${year - 1}`);
+        // check for date to be in the future  which should error
+        cy.get('[data-cy="date-group-errors"] .usa-error-message').should("exist");
+        // fix by adding a valid date
+        cy.get("#enteredDay").clear();
+        cy.get("#enteredDay").type(blData[0].day + 1);
+        cy.get("#enteredYear").clear();
+        cy.get("#enteredYear").type(`${year + 1}`);
+        cy.get('[data-cy="date-group-errors"] .usa-error-message').should("not.exist");
         // add entered amount and clear it
         cy.get("#enteredAmount").type(`${blData[0].amount}`);
         cy.get("#enteredAmount").clear();
-        cy.get("#input-error-message").should("exist");
+        cy.get(".usa-error-message").should("exist");
         cy.get("#enteredAmount").type(`${blData[0].amount}`);
         cy.get("#add-budget-line").should("not.be.disabled");
         // add comment and clear it
@@ -168,8 +181,10 @@ it("review an agreement", () => {
         cy.get('[data-cy="error-item"]').should("exist");
         cy.get("tbody").children().as("table-rows").should("have.length", 2);
         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
+        cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
+        cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
         cy.get("[data-cy='edit-row']").click();
-        cy.get(".usa-form-group--error").should("have.length", 5);
+        cy.get(".usa-form-group--error").should("have.length", 3);
         cy.get('[data-cy="update-budget-line"]').should("be.disabled");
         // fix errors
         cy.get("#selectedCan").type(`${blData[0].can}{enter}`);
@@ -201,4 +216,14 @@ it("review an agreement", () => {
             expect(response.status).to.eq(200);
         });
     });
+});
+
+it("submit agreement for review", () => {
+    cy.visit(`/agreements/approve/1?mode=review`);
+    cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
+    cy.get('[data-cy="error-list"]').should("not.exist");
+    cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
+    cy.get('[data-cy="send-to-approval-btn"]').click();
+    cy.url().should("include", "/agreements");
+    cy.get("tbody tr").contains("In Review");
 });

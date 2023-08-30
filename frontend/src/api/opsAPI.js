@@ -4,10 +4,18 @@ const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
 
 export const opsApi = createApi({
     reducerPath: "opsApi",
-    tagTypes: ["Agreements", "ResearchProjects"],
+    tagTypes: [
+        "Agreements",
+        "ResearchProjects",
+        "Users",
+        "AgreementTypes",
+        "AgreementReasons",
+        "ProcurementShops",
+        "BudgetLineItems",
+    ],
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
-        prepareHeaders: (headers, { getState }) => {
+        prepareHeaders: (headers) => {
             const access_token = localStorage.getItem("access_token");
 
             if (access_token) {
@@ -20,10 +28,66 @@ export const opsApi = createApi({
     endpoints: (builder) => ({
         getAgreements: builder.query({
             query: () => `/agreements/`,
-            providesTags: ["Agreements"],
+            providesTags: ["Agreements", "BudgetLineItems"],
         }),
         getAgreementById: builder.query({
             query: (id) => `/agreements/${id}`,
+            providesTags: ["Agreements"],
+        }),
+        addAgreement: builder.mutation({
+            query: (data) => {
+                return {
+                    url: `/agreements/`,
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: data,
+                };
+            },
+            invalidatesTags: ["Agreements", "BudgetLineItems"],
+        }),
+        updateAgreement: builder.mutation({
+            query: ({ id, data }) => {
+                return {
+                    url: `/agreements/${id}`,
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: data,
+                };
+            },
+            invalidatesTags: ["Agreements", "BudgetLineItems"],
+        }),
+        deleteAgreement: builder.mutation({
+            query: (id) => ({
+                url: `/agreements/${id}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Agreements", "BudgetLineItems"],
+        }),
+        getBudgetLineItems: builder.query({
+            query: () => `/budget-line-items/`,
+            providesTags: ["BudgetLineItems"],
+        }),
+        addBudgetLineItem: builder.mutation({
+            query: (data) => {
+                return {
+                    url: `/budget-line-items/`,
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: data,
+                };
+            },
+            invalidatesTags: ["Agreements", "BudgetLineItems"],
+        }),
+        updateBudgetLineItem: builder.mutation({
+            query: ({ id, data }) => {
+                return {
+                    url: `/budget-line-items/${id}`,
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: data,
+                };
+            },
+            invalidatesTags: ["Agreements", "BudgetLineItems"],
         }),
         getAgreementsByResearchProjectFilter: builder.query({
             query: (id) => `/agreements/?research_project_id=${id}`,
@@ -78,6 +142,32 @@ export const opsApi = createApi({
             query: () => `/users/`,
             providesTags: ["Users"],
         }),
+        getUser: builder.query({
+            query: (id) => `/users/${id}`,
+            providesTags: ["User"],
+        }),
+        getUserByOidc: builder.query({
+            query: (oidc_id) => `/users/?oidc_id=${oidc_id}`,
+            providesTags: ["User"],
+        }),
+        addUser: builder.mutation({
+            query: (body) => ({
+                url: `/users/`,
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body,
+            }),
+            invalidatesTags: ["User"],
+        }),
+        updateUser: builder.mutation({
+            query: ({ id, body }) => ({
+                url: `/users/${id}`,
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body,
+            }),
+            invalidatesTags: ["User"],
+        }),
         getCans: builder.query({
             query: () => `/cans/`,
             providesTags: ["Cans"],
@@ -101,6 +191,12 @@ export const opsApi = createApi({
 export const {
     useGetAgreementsQuery,
     useGetAgreementByIdQuery,
+    useAddAgreementMutation,
+    useUpdateAgreementMutation,
+    useDeleteAgreementMutation,
+    useAddBudgetLineItemMutation,
+    useGetBudgetLineItemsQuery,
+    useUpdateBudgetLineItemMutation,
     useGetAgreementsByResearchProjectFilterQuery,
     useGetUserByIdQuery,
     useGetUserByOIDCIdQuery,
@@ -112,6 +208,10 @@ export const {
     useGetProcurementShopsQuery,
     useGetAgreementReasonsQuery,
     useGetUsersQuery,
+    useGetUserQuery,
+    useGetUserByOidcQuery,
+    useAddUserMutation,
+    useUpdateUserMutation,
     useGetCansQuery,
     useGetNotificationsByUserIdQuery,
     useDismissNotificationMutation,

@@ -1,4 +1,3 @@
-import React from "react";
 import PropTypes from "prop-types";
 import classnames from "vest/classnames";
 import CanSelect from "../CanSelect";
@@ -29,8 +28,8 @@ import CurrencyInput from "./CurrencyInput";
  * @param {function} props.handleEditForm - A function to handle editing the budget line form.
  * @param {function} props.handleSubmitForm - A function to handle submitting the budget line form.
  * @param {function} props.handleResetForm - A function to handle resetting the budget line form.
- * @param {string} props.formMode - The form mode.
- * @returns {JSX.Element} - The rendered component.
+ * @param {boolean} props.isReviewMode - Whether the form is in review mode.
+ * @returns {React.JSX.Element} - The rendered component.
  */
 export const CreateBudgetLinesForm = ({
     selectedCan,
@@ -51,11 +50,8 @@ export const CreateBudgetLinesForm = ({
     handleEditForm = () => {},
     handleSubmitForm = () => {},
     handleResetForm = () => {},
-    formMode,
+    isReviewMode,
 }) => {
-    const [, setIsEditMode] = React.useState(false);
-    const [isReviewMode, setIsReviewMode] = React.useState(false);
-
     let res = suite.get();
 
     const cn = classnames(suite.get(), {
@@ -65,23 +61,6 @@ export const CreateBudgetLinesForm = ({
     });
     const isFormComplete =
         selectedCan && enteredDescription && enteredAmount && enteredMonth && enteredDay && enteredYear;
-    React.useEffect(() => {
-        switch (formMode) {
-            case "edit":
-                setIsEditMode(true);
-                break;
-            case "review":
-                setIsReviewMode(true);
-                break;
-            default:
-                return;
-        }
-        return () => {
-            setIsReviewMode(false);
-            setIsEditMode(false);
-            suite.reset();
-        };
-    }, [formMode]);
 
     // validate all budgetline fields if in review mode and is editing
     if (isReviewMode && isEditing) {
@@ -198,7 +177,7 @@ export const CreateBudgetLinesForm = ({
                         <button
                             className="usa-button usa-button--outline margin-top-2 margin-right-0"
                             data-cy="update-budget-line"
-                            disabled={res.hasErrors() || !isFormComplete}
+                            disabled={isReviewMode && (res.hasErrors() || !isFormComplete)}
                             onClick={handleEditForm}
                         >
                             Update Budget Line
@@ -222,22 +201,23 @@ export const CreateBudgetLinesForm = ({
 CreateBudgetLinesForm.propTypes = {
     selectedCan: PropTypes.object,
     enteredDescription: PropTypes.string,
-    enteredAmount: PropTypes.number,
+    enteredAmount: PropTypes.string,
     enteredMonth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     enteredDay: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     enteredYear: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     enteredComments: PropTypes.string,
     isEditing: PropTypes.bool,
-    setEnteredDescription: PropTypes.func.isRequired,
-    setSelectedCan: PropTypes.func.isRequired,
-    setEnteredAmount: PropTypes.func.isRequired,
-    setEnteredMonth: PropTypes.func.isRequired,
-    setEnteredDay: PropTypes.func.isRequired,
-    setEnteredYear: PropTypes.func.isRequired,
-    setEnteredComments: PropTypes.func.isRequired,
-    handleEditForm: PropTypes.func.isRequired,
-    handleSubmitForm: PropTypes.func.isRequired,
-    handleResetForm: PropTypes.func.isRequired,
+    setEnteredDescription: PropTypes.func,
+    setSelectedCan: PropTypes.func,
+    setEnteredAmount: PropTypes.func,
+    setEnteredMonth: PropTypes.func,
+    setEnteredDay: PropTypes.func,
+    setEnteredYear: PropTypes.func,
+    setEnteredComments: PropTypes.func,
+    handleEditForm: PropTypes.func,
+    handleSubmitForm: PropTypes.func,
+    handleResetForm: PropTypes.func,
+    isReviewMode: PropTypes.bool,
 };
 
 export default CreateBudgetLinesForm;

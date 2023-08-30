@@ -135,13 +135,6 @@ class RequestBody:
                 raise ValidationError("BLI's Agreement must have a ProjectOfficer when status is not DRAFT")
 
     @validates_schema(skip_on_field_errors=False)
-    def validate_team_members(self, data, **kwargs):
-        if is_changing_status(data):
-            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
-            if bli and bli.agreement_id and not bli.agreement.team_members:
-                raise ValidationError("BLI's Agreement must have at least one Team Member when status is not DRAFT")
-
-    @validates_schema(skip_on_field_errors=False)
     def validate_description(self, data: dict, **kwargs):
         if is_changing_status(data):
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
@@ -235,6 +228,13 @@ class QueryParameters:
 
 
 @dataclass
+class TeamMembers:
+    id: int
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+
+
+@dataclass
 class BudgetLineItemResponse:
     id: int
     agreement_id: int
@@ -248,3 +248,6 @@ class BudgetLineItemResponse:
     created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     date_needed: date = field(default=None, metadata={"format": "%Y-%m-%d"})
+    portfolio_id: Optional[int] = None
+    fiscal_year: Optional[int] = None
+    team_members: Optional[list[TeamMembers]] = field(default_factory=lambda: [])

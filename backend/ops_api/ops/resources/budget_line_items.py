@@ -1,15 +1,17 @@
 from __future__ import annotations
 
+from contextlib import suppress
 from datetime import date
+from functools import partial
 from typing import Optional
 
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
-from flask_jwt_extended import verify_jwt_in_request
-from marshmallow import Schema, ValidationError
-from models import BudgetLineItemStatus, OpsEventType
+from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from marshmallow import EXCLUDE, Schema, ValidationError
+from models import Agreement, BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
-from models.cans import BudgetLineItem
+from models.cans import AgreementType, BudgetLineItem
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.resources.budget_line_item_schemas import (
     BudgetLineItemResponse,
@@ -17,7 +19,7 @@ from ops_api.ops.resources.budget_line_item_schemas import (
     POSTRequestBody,
     QueryParameters,
 )
-from ops_api.ops.utils.auth import is_authorized, Permission, PermissionType
+from ops_api.ops.utils.auth import ExtraCheckError, Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -27,6 +29,52 @@ from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 from typing_extensions import Any, override
 
 ENDPOINT_STRING = "/budget-line-items"
+
+
+def bli_associated_with_agreement(self, id: int, permission_type: PermissionType) -> bool:
+    jwt_identity = get_jwt_identity()
+    try:
+        agreement_id = request.json["agreement_id"]
+        agreement_type = AgreementType[request.json["agreement_type"]]
+        agreement_cls = Agreement.get_class(agreement_type)
+        agreement_id_field = agreement_cls.get_class_field("id")
+        agreement_stmt = select(agreement_cls).where(agreement_id_field == agreement_id)
+        agreement = current_app.db_session.scalar(agreement_stmt)
+
+    except KeyError:
+        budget_line_item_stmt = select(BudgetLineItem).where(BudgetLineItem.id == id)
+        budget_line_item = current_app.db_session.scalar(budget_line_item_stmt)
+        try:
+            agreement = budget_line_item.agreement
+        except AttributeError as e:
+            # No BLI found in the DB. Erroring out.
+            raise ExtraCheckError({}) from e
+
+    if agreement is None:
+        # We are faking a validation check at this point. We know there is no agreement associated with the BLI.
+        # This is made to emulate the validation check from a marshmallow schema.
+        if permission_type == PermissionType.PUT:
+            raise ExtraCheckError(
+                {
+                    "_schema": ["BLI must have an Agreement when status is not DRAFT"],
+                    "agreement_id": ["Missing data for required field."],
+                }
+            )
+        elif permission_type == PermissionType.PATCH:
+            raise ExtraCheckError({"_schema": ["BLI must have an Agreement when status is not DRAFT"]})
+        else:
+            raise ExtraCheckError({})
+
+    oidc_ids = set()
+    if agreement.created_by_user:
+        oidc_ids.add(str(agreement.created_by_user.oidc_id))
+    if agreement.project_officer_user:
+        oidc_ids.add(str(agreement.project_officer_user.oidc_id))
+    oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
+
+    ret = jwt_identity in oidc_ids
+
+    return ret
 
 
 class BudgetLineItemsItemAPI(BaseItemAPI):
@@ -58,7 +106,12 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         return response
 
     @override
-    @is_authorized(PermissionType.PUT, Permission.BUDGET_LINE_ITEM)
+    @is_authorized(
+        PermissionType.PUT,
+        Permission.BUDGET_LINE_ITEM,
+        extra_check=partial(bli_associated_with_agreement, permission_type=PermissionType.PUT),
+        groups=["Budget Team", "Admins"],
+    )
     def put(self, id: int) -> Response:
         message_prefix = f"PUT to {ENDPOINT_STRING}"
         try:
@@ -97,7 +150,12 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             return make_response_with_headers({}, 500)
 
     @override
-    @is_authorized(PermissionType.PATCH, Permission.BUDGET_LINE_ITEM)
+    @is_authorized(
+        PermissionType.PATCH,
+        Permission.BUDGET_LINE_ITEM,
+        extra_check=partial(bli_associated_with_agreement, permission_type=PermissionType.PATCH),
+        groups=["Budget Team", "Admins"],
+    )
     def patch(self, id: int) -> Response:
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
         try:
@@ -256,17 +314,38 @@ def update_budget_line_item(data: dict[str, Any], id: int):
 
 
 def validate_and_normalize_request_data_for_patch(schema: Schema) -> dict[str, Any]:
-    data = schema.dump(schema.load(request.json))
+    data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
     data = {k: v for (k, v) in data.items() if k in request.json}  # only keep the attributes from the request body
-    if "status" in data:
-        data["status"] = BudgetLineItemStatus[data["status"]]
-    if "date_needed" in data:
-        data["date_needed"] = date.fromisoformat(data["date_needed"])
+
+    with suppress(KeyError):
+        if data["status"]:
+            new_status = BudgetLineItemStatus[data["status"]]
+            if new_status == BudgetLineItemStatus.PLANNED:
+                new_status = BudgetLineItemStatus.DRAFT
+            data["status"] = new_status
+        else:
+            data["status"] = None
+
+    with suppress(KeyError):
+        if data["date_needed"]:
+            data["date_needed"] = date.fromisoformat(data["date_needed"])
+        else:
+            data["date_needed"] = None
+
     return data
 
 
 def validate_and_normalize_request_data_for_put(schema: Schema) -> dict[str, Any]:
-    data = schema.dump(schema.load(request.json))
-    data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
+    data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
+
+    if data["status"]:
+        new_status = BudgetLineItemStatus[data["status"]]
+        if new_status == BudgetLineItemStatus.PLANNED:
+            new_status = BudgetLineItemStatus.DRAFT
+        data["status"] = new_status
+    else:
+        data["status"] = None
+
     data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
+
     return data

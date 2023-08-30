@@ -15,8 +15,9 @@ key = rsa.generate_private_key(backend=default_backend(), public_exponent=65537,
 
 
 def test_get_jwt_no_key(app):
-    with app.test_request_context("/auth/login", method="POST", data={"code": ""}):
+    with app.test_request_context("/auth/login", method="POST", data={"provider": "fakeauth", "code": ""}):
         jwt1 = create_oauth_jwt(
+            "fakeauth",
             key,
             {"alg": "RS256"},
             {
@@ -45,7 +46,7 @@ def test_get_jwt_is_valid_jws():
         "jti": str(uuid.uuid4()),
         "exp": int(time.time()) + 300,
     }
-    jws = create_oauth_jwt(key, header, payload)
+    jws = create_oauth_jwt("fakeauth", key, header, payload)
     print(f"jws: {jws}")
     assert jws is not None
 

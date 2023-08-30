@@ -21,7 +21,7 @@
       email: "Ivelisse.Martinez-Beck@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000003",
     },
-    { // 4
+    { // 4 - THIS IS USED IN THE TESTS (AUTH_CLIENT)
       first_name: "Amelia",
       last_name: "Popham",
       division: 2,
@@ -89,6 +89,7 @@
       last_name: "Donaworth",
       division: 3,
       email: "tdonaworth+dev@flexion.us",
+      //oidc_id: "e5711101-bc3e-41e5-a6a2-000000000000",
       oidc_id: "e5711101-bc3e-41e5-a6a2-051874b307ca",
     },
     { // 14
@@ -118,6 +119,41 @@
       division: 3,
       email: "stekell+sandbox@flexion.us",
       oidc_id: "7716138a-dec6-4976-9f31-e30fade3254d",
+    },
+    { // 18
+      first_name: "Jonathan",
+      last_name: "Nalley",
+      division: 3,
+      email: "jnalley+logingovsandbox@flexion.us",
+      oidc_id: "48f7db91-1861-4d4b-813c-a6221cb61b60",
+    },
+    { // 19
+      first_name: "Andressa",
+      last_name: "Silva",
+      division: 3,
+      email: "acurvelodasilva@flexion.us",
+      oidc_id: "6e672c19-15bc-4901-8cee-b57cd8c6d0c1",
+    },
+    { // 20
+      first_name: "Kim",
+      last_name: "Schulke",
+      division: 3,
+      email: "kschulke@flexion.us",
+      oidc_id: "b5f7598b-e5e6-4b11-8321-b3acabc780f7",
+    },
+    { // 21 User is used in E2E tests
+      first_name: "Admin",
+      last_name: "Demo",
+      division: 3,
+      email: "admin.demo@email.com",
+      oidc_id: "00000000-0000-1111-a111-000000000018",
+    },
+    { // 22
+      first_name: "User",
+      last_name: "Demo",
+      division: 3,
+      email: "user.demo@email.com",
+      oidc_id: "00000000-0000-1111-a111-000000000019",
     }
   ],
   roles: [
@@ -128,60 +164,57 @@
         "PUT_AGREEMENT",
         "PATCH_AGREEMENT",
         "DELETE_AGREEMENT",
-
-        "GET_AGREEMENTS",
-        "POST_AGREEMENTS",
+        "POST_AGREEMENT",
 
         "GET_BUDGET_LINE_ITEM",
         "PUT_BUDGET_LINE_ITEM",
         "PATCH_BUDGET_LINE_ITEM",
-
-        "GET_BUDGET_LINE_ITEMS",
-        "POST_BUDGET_LINE_ITEMS",
+        "POST_BUDGET_LINE_ITEM",
 
         "GET_CAN",
-        "GET_CANS",
 
         "GET_DIVISION",
-        "GET_DIVISIONS",
 
         "GET_NOTIFICATION",
         "PUT_NOTIFICATION",
         "PATCH_NOTIFICATION",
 
-        "GET_NOTIFICATIONS",
-
         "GET_PORTFOLIO",
-        "GET_PORTFOLIOS",
 
         "GET_RESEARCH_PROJECT",
-
-        "GET_RESEARCH_PROJECTS",
-        "POST_RESEARCH_PROJECTS",
+        "POST_RESEARCH_PROJECT",
 
         "GET_USER",
+
+        "PUT_USER",
+        "POST_USER",
+        "PATCH_USER",
+
         "GET_USERS",
+        "GET_HISTORY",
       ],
     },
     {
       name: "user",
       permissions: [
         "GET_AGREEMENT",
-        "GET_AGREEMENTS",
         "GET_BUDGET_LINE_ITEM",
-        "GET_BUDGET_LINE_ITEMS",
         "GET_CAN",
-        "GET_CANS",
         "GET_DIVISION",
-        "GET_DIVISIONS",
         "GET_NOTIFICATION",
-        "GET_NOTIFICATIONS",
         "GET_PORTFOLIO",
-        "GET_PORTFOLIOS",
         "GET_RESEARCH_PROJECT",
-        "GET_RESEARCH_PROJECTS",
         "GET_USER",
-        "GET_USERS",
+        "GET_HISTORY",
+      ],
+    },
+        {
+      name: "unassigned",
+      permissions: [
+        "GET_USER",
+        "POST_USER",
+        "PUT_USER",
+        "PATCH_USER",
       ],
     },
   ],
@@ -234,6 +267,72 @@
       user_id: 17,
       role_id: 1,
     },
+    {
+      user_id: 18,
+      role_id: 1,
+    },
+    {
+      user_id: 19,
+      role_id: 1,
+    },
+    {
+      user_id: 20,
+      role_id: 1,
+    },
+    {
+      user_id: 21,
+      role_id: 1,
+    },
+    {
+      user_id: 22,
+      role_id: 2,
+    },
+  ],
+  groups: [
+    {
+      name: "Budget Team",
+    },
+    {
+      name: "Admins",
+    }
+  ],
+  user_group: [
+    {
+      user_id: 4,
+      group_id: 1,
+    },
+    {
+      user_id: 13,
+      group_id: 2,
+    },
+    {
+      user_id: 14,
+      group_id: 2,
+    },
+    {
+      user_id: 15,
+      group_id: 2,
+    },
+    {
+      user_id: 16,
+      group_id: 2,
+    },
+    {
+      user_id: 17,
+      group_id: 2,
+    },
+    {
+      user_id: 18,
+      group_id: 2,
+    },
+    {
+      user_id: 19,
+      group_id: 2,
+    },
+    {
+      user_id: 20,
+      group_id: 2,
+    }
   ],
   notification: [
     {
@@ -353,6 +452,41 @@
       message: "This is a system notification",
       is_read: false,
       recipient_id: 17,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 18,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 19,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 20,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 21,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: true,
+      recipient_id: 22,
       expires: "2031-12-31"
     }
   ],

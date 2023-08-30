@@ -24,32 +24,75 @@ it("navigates to the approveAgreements page when the approve button is clicked",
     cy.get("h1").should("exist");
 });
 
-it("the agreements have the correct status", () => {
-    cy.get("tbody").children().as("table-rows");
+it("Agreements Table is correctly filtered on all-agreements or my-agreements", () => {
+    cy.visit("/agreements?filter=all-agreements");
+    cy.get("tbody").children().should("have.length.at.least", 1);
 
-    cy.get("@table-rows")
-        .should("contain", "Contract #1: African American Child and Family Research Center")
-        .and("contain", "Draft");
+    cy.visit("/agreements?filter=my-agreements");
+    cy.get("tbody").children().should("have.length.at.least", 1);
+});
 
-    cy.get("@table-rows")
-        .should("contain", "DIRECT ALLOCATION #2: African American Child and Family Research Center")
-        .and("contain", "Planned");
+it("clicking the filter button opens the filter", () => {
+    cy.visit("/agreements?filter=all-agreements");
+    cy.get("button").contains("Filter").click();
 
-    cy.get("@table-rows").should("contain", "MIHOPE Check-In").and("contain", "Obligated");
+    // set a number of filters
+    cy.get("input[id='current-fy']").click({ force: true });
 
-    cy.get("@table-rows").should("contain", "MIHOPE Long-Term").and("contain", "Obligated");
+    // get select element by name "project-react-select"
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
+    cy.get(".project-combobox__control")
+        .click()
+        .get(".project-combobox__menu")
+        .find(".project-combobox__option")
+        .first()
+        .click();
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
+    cy.get(".project-officer-combobox__control")
+        .click()
+        .get(".project-officer-combobox__menu")
+        .find(".project-officer-combobox__option")
+        .first()
+        .click();
+    cy.get("#agreement_type").select("CONTRACT");
+    cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
+    cy.get("label").contains("Planned").click({ force: true });
+    cy.get("label").contains("Executing").click({ force: true });
+    cy.get("label").contains("Obligated").click({ force: true });
 
-    cy.get("@table-rows")
-        .should("contain", "Grant #1: Early Care and Education Leadership Study (ExCELS)")
-        .and("contain", "Draft");
+    // click the button that has text Apply
+    cy.get("button").contains("Apply").click();
 
-    cy.get("@table-rows")
-        .should("contain", "IAA #1: Early Care and Education Leadership Study (ExCELS)")
-        .and("contain", "Draft");
+    // check that the correct tags are displayed
+    cy.get("div").contains("Upcoming Need By Date: Current FY").should("exist");
+    cy.get("div").contains("Project: Human Services Interoperability Support").should("exist");
+    cy.get("div").contains("Project Officer: Chris Fortunato").should("exist");
+    cy.get("div").contains("Type: Contract").should("exist");
+    cy.get("div").contains("Procurement Shop: Product Service Center").should("exist");
+    cy.get("div").contains("Budget Line Status: Draft").should("exist");
 
-    cy.get("@table-rows").should("contain", "IAA-AA #1: Fathers and Continuous Learning (FCL)").and("contain", "Draft");
+    // check that the table is filtered correctly
+    cy.get("div[id='agreements-table-zero-results']").should("exist");
 
-    cy.get("@table-rows")
-        .should("contain", "CONTRACT #2: Fathers and Continuous Learning (FCL)")
-        .and("contain", "Draft");
+    // reset
+    cy.get("button").contains("Filter").click();
+    cy.get("button").contains("Reset").click();
+    cy.get("button").contains("Apply").click();
+
+    // check that no tags are displayed
+    cy.get("div").contains("Upcoming Need By Date: Current FY").should("not.exist");
+    cy.get("div").contains("Project: Human Services Interoperability Support").should("not.exist");
+    cy.get("div").contains("Project Officer: Chris Fortunato").should("not.exist");
+    cy.get("div").contains("Type: Contract").should("not.exist");
+    cy.get("div").contains("Procurement Shop: Product Service Center").should("not.exist");
+    cy.get("div").contains("Budget Line Status: Draft").should("not.exist");
+
+    // check that the table is filtered correctly
+    cy.get("div[id='agreements-table-zero-results']").should("not.exist");
+});
+
+it("clicking the add agreement button takes you to the create agreement page", () => {
+    cy.visit("/agreements?filter=all-agreements");
+    cy.get("a").contains("Add Agreement").click();
+    cy.url().should("include", "/agreements/create");
 });

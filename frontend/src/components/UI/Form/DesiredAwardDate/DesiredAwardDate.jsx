@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import MonthSelect from "./MonthSelect";
 import DayInput from "./DayInput";
 import YearInput from "./YearInput";
@@ -5,11 +6,11 @@ import YearInput from "./YearInput";
 /**
  * Renders a form for entering a desired award date.
  * @param {Object} props - The component props.
- * @param {number} props.enteredMonth - The currently entered month.
+ * @param {number | string} props.enteredMonth - The currently entered month.
  * @param {function} props.setEnteredMonth - A function to update the entered month.
- * @param {string} props.enteredDay - The currently entered day.
+ * @param {number | string} props.enteredDay - The currently entered day.
  * @param {function} props.setEnteredDay - A function to update the entered day.
- * @param {string} props.enteredYear - The currently entered year.
+ * @param {number | string} props.enteredYear - The currently entered year.
  * @param {function} props.setEnteredYear - A function to update the entered year.
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {function} props.runValidate - A function to run Vest validation.
@@ -29,10 +30,25 @@ export const DesiredAwardDate = ({
     res,
     cn,
 }) => {
+    const dateGroupErrors = Object.values(res.getErrorsByGroup("allDates"));
+
+    const isThereDateGroupErrors = dateGroupErrors.length > 0;
     return (
-        <div className="usa-form-group">
+        <div
+            className={`usa-form-group ${isThereDateGroupErrors ? "usa-form-group--error" : null}`}
+            data-cy="date-group-errors"
+        >
             <fieldset className="usa-fieldset">
-                <legend className="usa-legend">Need By Date</legend>
+                <legend className={`usa-legend ${isThereDateGroupErrors ? "text-bold" : null}`}>Need By Date</legend>
+                {isThereDateGroupErrors &&
+                    // instead of mapping over the array of errors, we just want the first one
+                    dateGroupErrors[0].map((error, index) => (
+                        <span key={index} className="usa-error-message padding-left-2px">
+                            {error}
+                            <br />
+                        </span>
+                    ))}
+
                 <div className="display-flex">
                     <MonthSelect
                         name="enteredMonth"
@@ -77,6 +93,19 @@ export const DesiredAwardDate = ({
             </fieldset>
         </div>
     );
+};
+
+DesiredAwardDate.propTypes = {
+    enteredMonth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    setEnteredMonth: PropTypes.func.isRequired,
+    enteredDay: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    setEnteredDay: PropTypes.func.isRequired,
+    enteredYear: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    setEnteredYear: PropTypes.func.isRequired,
+    isReviewMode: PropTypes.bool,
+    runValidate: PropTypes.func.isRequired,
+    res: PropTypes.object.isRequired,
+    cn: PropTypes.func.isRequired,
 };
 
 export default DesiredAwardDate;

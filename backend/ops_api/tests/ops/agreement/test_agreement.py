@@ -45,7 +45,7 @@ def test_agreements_serialization(auth_client, loaded_db):
     response = auth_client.get("/api/v1/agreements/1")
     assert response.status_code == 200
 
-    # Remove extra keys that make test flaky or noisy
+    # Remove extra keys that make test flaky or noisy (like datetimes)
     json_to_compare = response.json  # response.json seems to be immutable
     del json_to_compare["created_on"]
     del json_to_compare["updated_on"]
@@ -56,13 +56,20 @@ def test_agreements_serialization(auth_client, loaded_db):
     del json_to_compare["team_members"][0]["created_on"]
     del json_to_compare["team_members"][0]["date_joined"]
     del json_to_compare["team_members"][0]["updated_on"]
+    del json_to_compare["team_members"][1]["created_on"]
+    del json_to_compare["team_members"][1]["date_joined"]
+    del json_to_compare["team_members"][1]["updated_on"]
+    del json_to_compare["team_members"][2]["created_on"]
+    del json_to_compare["team_members"][2]["date_joined"]
+    del json_to_compare["team_members"][2]["updated_on"]
+    print(f"json_to_compare: {json_to_compare}")
 
     assert json_to_compare == {
         "agreement_reason": "NEW_REQ",
         "agreement_type": "CONTRACT",
         "contract_number": "CT00XX1",
         "contract_type": "RESEARCH",
-        "created_by": None,
+        "created_by": 4,
         "delivered_status": False,
         "description": "Test description",
         "id": 1,
@@ -82,14 +89,38 @@ def test_agreements_serialization(auth_client, loaded_db):
                 "email": "chris.fortunato@example.com",
                 "first_name": "Chris",
                 "full_name": "Chris Fortunato",
+                "hhs_id": None,
                 "id": 1,
                 "last_name": "Fortunato",
                 "oidc_id": "00000000-0000-1111-a111-000000000001",
                 "updated": None,
-            }
+            },
+            {
+                "created_by": None,
+                "division": 2,
+                "email": "Amelia.Popham@example.com",
+                "first_name": "Amelia",
+                "full_name": "Amelia Popham",
+                "hhs_id": None,
+                "id": 4,
+                "last_name": "Popham",
+                "oidc_id": "00000000-0000-1111-a111-000000000004",
+                "updated": None,
+            },
+            {
+                "created_by": None,
+                "division": 3,
+                "email": "admin.demo@email.com",
+                "first_name": "Admin",
+                "full_name": "Admin Demo",
+                "hhs_id": None,
+                "id": 21,
+                "last_name": "Demo",
+                "oidc_id": "00000000-0000-1111-a111-000000000018",
+                "updated": None,
+            },
         ],
         "vendor": "Vendor 1",
-        "status": "DRAFT",
     }
 
 
@@ -125,7 +156,6 @@ def test_agreements_with_research_project_found(auth_client, loaded_db):
         ("research_project_id", 1),
         ("foa", "This is an FOA value"),
         ("name", "Contract #1: African American Child and Family Research Center"),
-        ("status", "PLANNED"),
     ),
 )
 @pytest.mark.usefixtures("app_ctx")
@@ -235,6 +265,7 @@ def test_contract(loaded_db):
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
         research_project_id=1,
+        created_by=4,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -392,6 +423,7 @@ def test_agreements_patch_by_id_contract(auth_client, loaded_db, test_contract):
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test_contract):
     """Patch CONTRACT with setting fields to null/empty"""
+    # set fields to non-null/non-empty
     response = auth_client.patch(
         f"/api/v1/agreements/{test_contract.id}",
         json={
@@ -399,6 +431,26 @@ def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test
             "name": "Updated Contract Name",
             "description": "Updated Contract Description",
             "number": "AGR0001",
+            "team_members": [{"id": 1}],
+            "support_contacts": [{"id": 2}, {"id": 3}],
+            "notes": "Test Note",
+        },
+    )
+    assert response.status_code == 200
+
+    stmt = select(Agreement).where(Agreement.id == test_contract.id)
+    agreement = loaded_db.scalar(stmt)
+
+    assert agreement.name == "Updated Contract Name"
+    assert agreement.description == "Updated Contract Description"
+    assert agreement.notes == "Test Note"
+    assert [m.id for m in agreement.team_members] == [1]
+    assert [m.id for m in agreement.support_contacts] == [2, 3]
+
+    # path with null/empty
+    response = auth_client.patch(
+        f"/api/v1/agreements/{test_contract.id}",
+        json={
             "team_members": None,
             "support_contacts": [],
             "notes": None,
@@ -474,21 +526,3 @@ def test_agreements_delete_by_id(auth_client, loaded_db, test_contract):
     agreement = loaded_db.scalar(stmt)
 
     assert agreement is None
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_status(loaded_db):
-    stmt = select(Agreement).where(Agreement.id == 1)
-    agreement = loaded_db.scalar(stmt)
-
-    assert agreement is not None
-    assert agreement.status == "DRAFT"
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_status_no_budget_lines(loaded_db):
-    stmt = select(Agreement).where(Agreement.id == 6)
-    agreement = loaded_db.scalar(stmt)
-
-    assert agreement is not None
-    assert agreement.status == "DRAFT"

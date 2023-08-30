@@ -1,5 +1,6 @@
 from flask import Blueprint
 from ops_api.ops.views import (
+    AGREEMENT_HISTORY_LIST_API_VIEW_FUNC,
     AGREEMENT_ITEM_API_VIEW_FUNC,
     AGREEMENT_LIST_API_VIEW_FUNC,
     AGREEMENT_REASON_LIST_API_VIEW_FUNC,
@@ -22,6 +23,7 @@ from ops_api.ops.views import (
     HEALTH_CHECK_VIEW_FUNC,
     NOTIFICATIONS_ITEM_API_VIEW_FUNC,
     NOTIFICATIONS_LIST_API_VIEW_FUNC,
+    OPS_DB_HISTORY_LIST_API_VIEW_FUNC,
     PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC,
     PORTFOLIO_CANS_API_VIEW_FUNC,
     PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
@@ -86,6 +88,10 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/cans/",
         view_func=CAN_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/ops-db-histories/",
+        view_func=OPS_DB_HISTORY_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/cans/portfolio/<int:id>",
@@ -179,6 +185,10 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/agreements/",
         view_func=AGREEMENT_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/agreements/<int:id>/history/",
+        view_func=AGREEMENT_HISTORY_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/agreement-reasons/",

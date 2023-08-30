@@ -1,20 +1,20 @@
+import logging
 from collections import namedtuple
+from datetime import date, datetime
+from decimal import Decimal
 from enum import Enum
 from types import NoneType
 
 from flask import current_app
 from flask_jwt_extended import verify_jwt_in_request
 from flask_jwt_extended.exceptions import NoAuthorizationError
-from models import OpsDBHistory, OpsDBHistoryType, OpsEvent, User
+from models import BaseModel, OpsDBHistory, OpsDBHistoryType, OpsEvent, User
+from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy.cyextension.collections import IdentitySet
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import get_history
-from decimal import Decimal
-from datetime import datetime, date
-from ops_api.ops.utils.user import get_user_from_token
 
-
-DbRecordAudit = namedtuple("DbRecordDiff", "row_key original diff")
+DbRecordAudit = namedtuple("DbRecordAudit", "row_key original diff changes")
 
 
 def convert_for_jsonb(value):
@@ -28,29 +28,86 @@ def convert_for_jsonb(value):
         return value.isoformat()
     if isinstance(value, date):
         return value.isoformat()
+    if isinstance(value, BaseModel):
+        if callable(getattr(value, "to_slim_dict", None)):
+            return value.to_slim_dict()
+        return value.to_dict()
+    if isinstance(value, (list, tuple)):
+        return [convert_for_jsonb(item) for item in value]
     return str(value)
 
 
-def build_audit(obj) -> DbRecordAudit:
+def find_relationship_by_fk(obj, col_key):
+    for rel in obj.__mapper__.relationships:
+        for lcl in rel.local_columns:
+            local_key = obj.__mapper__.get_property_by_column(lcl).key
+            if local_key == col_key:
+                # rel_obj = getattr(obj, rel.key)
+                return rel
+    return None
+
+
+def build_audit(obj, event_type: OpsDBHistoryType) -> DbRecordAudit:  # noqa: C901
     row_key = "|".join([str(getattr(obj, pk)) for pk in obj.primary_keys])
 
     original = {}
     diff = {}
+    changes = {}
 
-    for key in obj.columns:
-        if key in obj.__dict__:
-            hist = get_history(obj, key)
-            if hist.unchanged:
-                old_val = convert_for_jsonb(hist.unchanged[0])
+    mapper = obj.__mapper__
+
+    # collect changes in column values
+    auditable_columns = list(filter(lambda c: c.key in obj.__dict__, mapper.columns))
+    for col in auditable_columns:
+        key = col.key
+        hist = get_history(obj, key)
+        if hist.has_changes():
+            # this assumes columns are primitives, not lists
+            old_val = convert_for_jsonb(hist.deleted[0]) if hist.deleted else None
+            new_val = convert_for_jsonb(hist.added[0]) if hist.added else None
+            if old_val:
                 original[key] = old_val
+            diff[key] = new_val
+            if event_type == OpsDBHistoryType.NEW:
+                if new_val:
+                    changes[key] = {
+                        "new": new_val,
+                    }
             else:
-                old_val = convert_for_jsonb(hist.deleted[0]) if hist.deleted else None
-                new_val = convert_for_jsonb(hist.added[0]) if hist.added else None
-                if old_val:
-                    original[key] = old_val
-                diff[key] = new_val
+                changes[key] = {
+                    "new": new_val,
+                    "old": old_val,
+                }
+        elif hist.unchanged[0]:
+            original[key] = convert_for_jsonb(hist.unchanged[0])
 
-    return DbRecordAudit(row_key, original, diff)
+    # collect changes in relationships, such as agreement.team_members
+    # limit this to relationships that aren't being logged as their own Classes
+    # and only include them on the editable side
+    auditable_relationships = list(
+        filter(lambda rel: rel.secondary is not None and not rel.viewonly, mapper.relationships)
+    )
+
+    for relationship in auditable_relationships:
+        key = relationship.key
+        hist = get_history(obj, key)
+        if hist.has_changes():
+            related_class_name = (
+                relationship.argument if isinstance(relationship.argument, str) else relationship.argument.__name__
+            )
+            changes[key] = {
+                "collection_of": related_class_name,
+                "added": convert_for_jsonb(hist.added),
+            }
+            if event_type != OpsDBHistoryType.NEW:
+                changes[key]["deleted"] = convert_for_jsonb(hist.deleted)
+            old_val = convert_for_jsonb(hist.unchanged + hist.deleted) if hist.unchanged or hist.deleted else None
+            new_val = convert_for_jsonb(hist.unchanged + hist.added) if hist.unchanged or hist.added else None
+            original[key] = old_val
+            diff[key] = new_val
+        elif hist.unchanged:
+            original[key] = convert_for_jsonb(hist.unchanged)
+    return DbRecordAudit(row_key, original, diff, changes)
 
 
 def track_db_history_before(session: Session):
@@ -95,7 +152,14 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
 
     for obj in objs:
         if not isinstance(obj, OpsEvent) and not isinstance(obj, OpsDBHistory):  # not interested in tracking these
-            db_audit = build_audit(obj)
+            db_audit = build_audit(obj, event_type)
+            if event_type == OpsDBHistoryType.UPDATED and not db_audit.changes:
+                logging.info(
+                    f"No changes found for {obj.__class__.__name__} with row_key={db_audit.row_key}, "
+                    f"an OpsDBHistory record will not be created for this UPDATED event."
+                )
+                continue
+
             ops_db = OpsDBHistory(
                 event_type=event_type,
                 event_details=obj.to_dict(),
@@ -104,6 +168,7 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
                 row_key=db_audit.row_key,
                 original=db_audit.original,
                 diff=db_audit.diff,
+                changes=db_audit.changes,
             )
             result.append(ops_db)
     return result

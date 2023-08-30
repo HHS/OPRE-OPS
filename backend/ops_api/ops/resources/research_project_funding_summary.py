@@ -2,13 +2,13 @@ import desert
 from flask import Response, request
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseListAPI
+from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.research_project_helper import (
     GetResearchProjectFundingSummaryQueryParams,
     ResearchProjectFundingSummary,
     ResearchProjectHelper,
 )
 from ops_api.ops.utils.response import make_response_with_headers
-from ops_api.ops.utils.auth import is_authorized, Permission, PermissionType
 from typing_extensions import override
 
 

@@ -2,7 +2,7 @@ from flask import Response, current_app, request
 from models.base import BaseData
 from models.cans import ContractAgreement
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.utils.auth import is_authorized, PermissionType, Permission
+from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy.future import select

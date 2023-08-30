@@ -3,8 +3,8 @@ import Modal from "react-modal";
 import { useDismissNotificationMutation, useGetNotificationsByUserIdQuery } from "../../../api/opsAPI";
 import jwt_decode from "jwt-decode";
 import icons from "../../../uswds/img/sprite.svg";
-import Notification from "../Notification";
 import customStyles from "./NotificationCenter.module.css";
+import LogItem from "../LogItem";
 
 const NotificationCenter = () => {
     const [showModal, setShowModal] = React.useState(false);
@@ -44,8 +44,11 @@ const NotificationCenter = () => {
                 onClick={() => setShowModal(true)}
                 id="notification-center-bell"
             >
-                {unreadNotifications.length !== 0 && <use xlinkHref={`${icons}#notifications_active`}></use>}
-                {unreadNotifications.length === 0 && <use xlinkHref={`${icons}#notifications_none`}></use>}
+                {unreadNotifications.length > 0 ? (
+                    <use xlinkHref={`${icons}#notifications_active`}></use>
+                ) : (
+                    <use xlinkHref={`${icons}#notifications_none`}></use>
+                )}
             </svg>
 
             <Modal
@@ -73,29 +76,35 @@ const NotificationCenter = () => {
                             <h1 className="font-sans-lg">Notifications</h1>
                             <button
                                 id={"clear-all-button"}
-                                className={customStyles.clearButton}
+                                className="usa-button usa-button--unstyled padding-right-2 text-no-underline display-flex align-items-center flex-align-center"
                                 onClick={() => {
                                     unreadNotifications.map((notification) => dismissNotification(notification.id));
                                 }}
                             >
                                 <svg
-                                    className={`${customStyles.clearButtonIcon} usa-icon text-primary height-205 width-205 hover: cursor-pointer usa-tooltip`}
+                                    className={`${customStyles.clearButtonIcon} usa-icon text-primary height-205 width-205 usa-tooltip`}
                                     id="notification-center-clear-all"
                                 >
                                     <use xlinkHref={`${icons}#close`}></use>
                                 </svg>
-                                Clear
+                                Clear All
                             </button>
                         </div>
-                        {unreadNotifications.length > 0 && (
-                            <ul className={customStyles.listStyle}>
+                        {unreadNotifications.length > 0 ? (
+                            <ul className={customStyles.listStyle} data-cy="notification-center-list">
                                 {unreadNotifications.map((notification) => (
-                                    <Notification key={notification.id} data={notification} />
+                                    <LogItem
+                                        key={notification.id}
+                                        title={notification.title}
+                                        createdOn={notification.created_on}
+                                        message={notification.message}
+                                        variant="large"
+                                        withSeparator={true}
+                                    />
                                 ))}
                             </ul>
-                        )}
-                        {unreadNotifications.length === 0 && (
-                            <div style={{ padding: "20px" }}>There are no notifications.</div>
+                        ) : (
+                            <div className="padding-205">There are no notifications.</div>
                         )}
                     </div>
                 </div>

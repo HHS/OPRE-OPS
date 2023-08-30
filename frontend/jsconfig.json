@@ -5,6 +5,7 @@
         "checkJs": true,
         "strict": true,
         "noEmit": true,
+        "module": "ES2015",
         "typeRoots": ["./node_modules/@types"]
     },
     "$schema": "https://json.schemastore.org/tsconfig",

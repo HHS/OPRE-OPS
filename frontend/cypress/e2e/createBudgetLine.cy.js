@@ -52,7 +52,7 @@ const completeStepOne = () => {
     // agreement should be disabled until project is selected
     cy.get("#agreement").should("be.disabled");
     // select project
-    cy.get("#project").type("Human Services Interoperability Support{enter}");
+    cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
     // summary card should exist after project is selected
     cy.get('[data-cy="project-summary-card"]').should("exist");
     // agreement should be enabled after project is selected

@@ -1,45 +1,35 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import ProjectSelect from "../../components/UI/Form/ProjectSelect";
+import ProjectSelectWithSummaryCard from "../../components/UI/Form/ProjectSelectWithSummaryCard";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-import Modal from "../../components/UI/Modal";
 import { useGetResearchProjectsQuery } from "../../api/opsAPI";
-import { useCreateAgreement, useSetState, useUpdateAgreement } from "./CreateAgreementContext";
+import {
+    useEditAgreement,
+    useSetState,
+    useUpdateAgreement,
+} from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import EditModeTitle from "./EditModeTitle";
+import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
 
 /**
  * Renders a step in the Create Agreement wizard for selecting a research project.
  *
  * @param {Object} props - The component props.
  * @param {Function} [props.goToNext] - A function to go to the next step in the wizard. - optional
- * @param {string} [props.formMode] - The mode of the form (e.g. "create", "edit", "review"). - optional
+ * @param {boolean} [props.isEditMode] - Whether the form is in edit mode. - optional
+ * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
  * @returns {JSX.Element} - The rendered component.
  */
-export const StepSelectProject = ({ goToNext, formMode }) => {
+export const StepSelectProject = ({ goToNext, isEditMode, isReviewMode, wizardSteps, currentStep }) => {
     const navigate = useNavigate();
-    const { wizardSteps, selected_project: selectedResearchProject } = useCreateAgreement();
+    const { selected_project: selectedResearchProject } = useEditAgreement();
     // setters
     const setSelectedProject = useSetState("selected_project");
     const setAgreementProjectId = useUpdateAgreement("research_project_id");
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
-    const [isEditMode, setIsEditMode] = React.useState(false);
-    const [isReviewMode, setIsReviewMode] = React.useState(false);
     const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
-
-    React.useEffect(() => {
-        switch (formMode) {
-            case "edit":
-                setIsEditMode(true);
-                break;
-            case "review":
-                setIsReviewMode(true);
-                break;
-            default:
-                return;
-        }
-    }, [formMode]);
 
     if (isLoadingProjects) {
         return <div>Loading...</div>;
@@ -73,7 +63,7 @@ export const StepSelectProject = ({ goToNext, formMode }) => {
     return (
         <>
             {showModal && (
-                <Modal
+                <ConfirmationModal
                     heading={modalProps.heading}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
@@ -82,13 +72,13 @@ export const StepSelectProject = ({ goToNext, formMode }) => {
                 />
             )}
             <EditModeTitle isEditMode={isEditMode || isReviewMode} />
-            <StepIndicator steps={wizardSteps} currentStep={1} />
+            <StepIndicator steps={wizardSteps} currentStep={currentStep} />
             <h2 className="font-sans-lg">Select a Project</h2>
             <p>
                 Select a project the agreement should be associated with. If you need to create a new project, click Add
                 New Project.
             </p>
-            <ProjectSelect
+            <ProjectSelectWithSummaryCard
                 researchProjects={projects}
                 selectedResearchProject={selectedResearchProject}
                 setSelectedProject={setSelectedProject}

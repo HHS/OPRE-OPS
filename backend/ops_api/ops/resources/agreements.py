@@ -1,23 +1,24 @@
-from dataclasses import dataclass, fields as dc_fields
-from typing import Optional, ClassVar
+from dataclasses import dataclass
+from dataclasses import fields as dc_fields
+from typing import ClassVar, Optional
 
 import desert
 from flask import Response, current_app, request
 from flask.views import MethodView
-from flask_jwt_extended import verify_jwt_in_request
-from marshmallow import ValidationError, fields, Schema
+from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from marshmallow import Schema, ValidationError, fields
 from models import ContractType, OpsEventType, User
 from models.base import BaseModel
 from models.cans import (
     Agreement,
     AgreementReason,
     AgreementType,
+    BudgetLineItemStatus,
     ContractAgreement,
     ProductServiceCode,
-    BudgetLineItemStatus,
 )
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
-from ops_api.ops.utils.auth import is_authorized, Permission, PermissionType
+from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -134,6 +135,23 @@ class QueryParameters:
     research_project_id: Optional[int] = None
 
 
+def associated_with_agreement(self, id: int) -> bool:
+    jwt_identity = get_jwt_identity()
+    agreement_stmt = select(Agreement).where(Agreement.id == id)
+    agreement = current_app.db_session.scalar(agreement_stmt)
+
+    oidc_ids = set()
+    if agreement.created_by_user:
+        oidc_ids.add(str(agreement.created_by_user.oidc_id))
+    if agreement.project_officer_user:
+        oidc_ids.add(str(agreement.project_officer_user.oidc_id))
+    oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
+
+    ret = jwt_identity in oidc_ids
+
+    return ret
+
+
 class AgreementItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel = Agreement):
         super().__init__(model)
@@ -154,6 +172,8 @@ class AgreementItemAPI(BaseItemAPI):
                 old_agreement: Agreement = self._get_item(id)
                 if not old_agreement:
                     raise RuntimeError("Invalid Agreement id.")
+                elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
+                    raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
                 # reject change of agreement_type
                 # for PUT, it must exist in request
                 try:
@@ -199,6 +219,8 @@ class AgreementItemAPI(BaseItemAPI):
                 old_agreement: Agreement = self._get_item(id)
                 if not old_agreement:
                     raise RuntimeError(f"Invalid Agreement id: {id}.")
+                elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
+                    raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
                 # reject change of agreement_type
                 try:
                     req_type = request.json.get("agreement_type", old_agreement.agreement_type.name)
@@ -234,7 +256,7 @@ class AgreementItemAPI(BaseItemAPI):
             return make_response_with_headers({}, 500)
 
     @override
-    @is_authorized(PermissionType.DELETE, Permission.AGREEMENT)
+    @is_authorized(PermissionType.DELETE, Permission.AGREEMENT, extra_check=associated_with_agreement)
     def delete(self, id: int) -> Response:
         message_prefix = f"DELETE from {ENDPOINT_STRING}"
 
@@ -284,27 +306,22 @@ class AgreementListAPI(BaseListAPI):
             case {**filter_args}:
                 pass
 
-        status: str | None = filter_args.pop("status", None)
-
         for key, value in filter_args.items():
             query_helper.add_column_equals(Agreement.get_class_field(key), value)
 
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")
 
-        return stmt, status
+        return stmt
 
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
-        stmt, status = self._get_query(request.args)
+        stmt = self._get_query(request.args)
 
         result = current_app.db_session.execute(stmt).all()
 
         items = (i for item in result for i in item)
-
-        if status:
-            items = (i for i in items if i.status == status)
 
         response = make_response_with_headers([i.to_dict() for i in items])
 
@@ -417,11 +434,18 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
             tmp_team_members = _get_user_list(data[item])
             if tmp_team_members:
                 agreement.team_members = tmp_team_members
+            else:
+                agreement.team_members = []
 
         elif item == "support_contacts":
             tmp_support_contacts = _get_user_list(data[item])
             if tmp_support_contacts:
                 agreement.support_contacts = tmp_support_contacts
+            else:
+                agreement.support_contacts = []
+
+    for bli in agreement.budget_line_items:
+        bli.status = BudgetLineItemStatus.DRAFT
 
 
 def update_agreement(data: dict[str, Any], agreement: Agreement):
