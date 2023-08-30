@@ -1,12 +1,12 @@
 # System and Information Integrity
 ## SI-12 - Information Output Handling and Retention
 
-The organization handles and retains information within the information system and 
-information output from the system in accordance with applicable federal laws, 
-Executive Orders, directives, policies, regulations, standards, and operational 
+The organization handles and retains information within the information system and
+information output from the system in accordance with applicable federal laws,
+Executive Orders, directives, policies, regulations, standards, and operational
 requirements.
 
-### OPS Implementation
+## OPS Implementation
 
 OPS handles and retains information within the information system and information output in accordance with all applicable federal laws, Executive Orders, directives, policies, regulations, standards, and operational requirements including but not limited to:
 
@@ -20,5 +20,6 @@ OPS handles and retains information within the information system and informatio
 - NIST SP 800-30 Revision 1- Risk Management Guide for Information Technology Systems, September 2010
 - NIST SP 800-37 Revision 1, Guide for the Security Certification and Accreditation of Federal Information Systems, February 2010
 
+### Control Origination
 
-#### Related Files
+### Related Content
