@@ -1,7 +1,7 @@
 # System and Information Integrity
 ## SI-07 (1) - Software, Firmware, and Information Integrity | Integrity Checks
 
-Perform an integrity check of [Assignment: organization-defined software, firmware, and information] [Selection (one or more): at startup; at [Assignment: organization-defined transitional states or security-relevant events]; [Assignment: organization-defined frequency]].
+Perform an integrity check of [system software, firmware, and applications deemed to be critical to the integrity or functionality of the system] [at system startup and restart]; [alert from a security related event/tool]; [or at least quarterly].
 
 ## OPS Implementation
 
