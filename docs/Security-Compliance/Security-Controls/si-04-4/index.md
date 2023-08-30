@@ -2,8 +2,7 @@
 ## SI-04 (4) - System Monitoring | Inbound and Outbound Communications Traffic
 
 (a) Determine criteria for unusual or unauthorized activities or conditions for inbound and outbound communications traffic;
-
-(b) Monitor inbound and outbound communications traffic [Assignment: organization-defined frequency] for [Assignment: organization-defined unusual or unauthorized activities or conditions].
+(b) Monitor inbound and outbound communications traffic [in near real-time] for [unusual or unauthorized activities or conditions].
 
 ## OPS Implementation
 
