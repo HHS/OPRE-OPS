@@ -108,7 +108,7 @@ const codesToDisplayText = {
         procurement_shop: "Procurement Shop",
         product_service_code: "Product Service Code",
         project_officer: "Project Officer",
-        research_project: "Research_Project",
+        research_project: "Research Project",
         team_members: "Team Members",
     },
     budgetLineItemPropertyLabels: {

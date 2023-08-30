@@ -67,6 +67,12 @@ const ChangesDetails = ({ historyItem }) => {
             return {
                 propertyLabel: getPropertyLabel(historyItem.class_name, "project_officer"),
             };
+        } else if (key === "research_project_id") {
+            const new_val = historyItem.event_details?.research_project?.title;
+            return {
+                propertyLabel: getPropertyLabel(historyItem.class_name, "research_project"),
+                to: new_val,
+            };
         } else if (key === "can_id") {
             const new_val = historyItem.event_details?.can?.number;
             return {
