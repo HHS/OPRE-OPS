@@ -7,8 +7,10 @@ import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-so
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import TotalSummaryCard from "./TotalSummaryCard";
 import { loggedInName, fiscalYearFromDate, formatDateNeeded, formatDateToMonthDayYear } from "../../../helpers/utils";
+import Table from "../Table";
 import TableTag from "./TableTag";
 import "./BudgetLinesTable.scss";
+import { BUDGET_LINE_TABLE_HEADERS } from "../../../constants";
 
 /**
  * A table component that displays budget lines.
@@ -252,27 +254,11 @@ const BudgetLinesTable = ({
 
     return (
         <>
-            <table className="usa-table usa-table--borderless width-full">
-                <thead>
-                    <tr>
-                        <th scope="col">Description</th>
-                        <th scope="col">Need By</th>
-                        <th scope="col">FY</th>
-                        <th scope="col">CAN</th>
-                        <th scope="col">Amount</th>
-                        <th scope="col">Fee</th>
-                        <th scope="col">Total</th>
-                        <th scope="col" className="padding-0" style={{ width: "6.25rem" }}>
-                            Status
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {sortedBudgetLines.map((bl) => (
-                        <TableRow key={bl?.id} bl={bl} />
-                    ))}
-                </tbody>
-            </table>
+            <Table tableHeadings={BUDGET_LINE_TABLE_HEADERS}>
+                {sortedBudgetLines.map((bl) => (
+                    <TableRow key={bl?.id} bl={bl} />
+                ))}
+            </Table>
             <TotalSummaryCard budgetLines={sortedBudgetLines}></TotalSummaryCard>
         </>
     );
