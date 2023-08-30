@@ -1,7 +1,11 @@
 # System and Information Integrity
 ## SI-04 (5) - System Monitoring | System-generated Alerts
 
-Alert [Assignment: organization-defined personnel or roles] when the following system-generated indications of compromise or potential compromise occur: [Assignment: organization-defined compromise indicators].
+Alert [Approved System Personnel and the ACF Incident Response Team] when the following system-generated indications of compromise or potential compromise occur:
+[i. Audit records
+ii. Input from malicious code protection mechanisms
+iii. Intrusion detection and prevention mechanisms
+iv. Boundary protection devices, such as firewalls, gateways, and routers].
 
 ## OPS Implementation
 
