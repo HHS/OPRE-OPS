@@ -3,7 +3,7 @@
 
 a. Identify, report, and correct system flaws;
 b. Test software and firmware updates related to flaw remediation for effectiveness and potential side effects before installation;
-c. Install security-relevant software and firmware updates within [Assignment: organization-defined time period] of the release of the updates; and
+c. Install security-relevant software and firmware updates within [Vulnerabilities ranked high or critical must be mitigated and reported to CSIRC within two (2) business days after testing is completed. Vulnerabilities ranked moderate/medium must be mitigated and reported to CSIRC within seven (7) business days after testing is completed. Vulnerabilities ranked low must be mitigated within 30 days] of the release of the updates; and
 d. Incorporate flaw remediation into the organizational configuration management process.
 
 ## OPS Implementation
