@@ -11,6 +11,7 @@ import { faClone } from "@fortawesome/free-regular-svg-icons";
  * @param {function} props.handleSetBudgetLineForEditing - The function to set the budget line for editing.
  * @param {function} props.handleDeleteBudgetLine - The function to delete the budget line.
  * @param {function} props.handleDuplicateBudgetLine - The function to duplicate the budget line.
+ * @param {boolean} props.noDuplicateIcon - Whether to show the duplicate icon.
  * @returns {React.JSX.Element} - The rendered component.
  **/
 
@@ -20,6 +21,7 @@ const ChangeIcons = ({
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
+    noDuplicateIcon = false,
 }) => {
     return (
         <>
@@ -46,17 +48,19 @@ const ChangeIcons = ({
                     />
                 </>
             )}
-            <FontAwesomeIcon
-                id={`duplicate-${budgetLine?.id}`}
-                data-cy="duplicate-row"
-                icon={faClone}
-                title="duplicate"
-                data-position="top"
-                className={`text-primary height-2 width-2 cursor-pointer usa-tooltip ${
-                    isBudgetLineEditable ? "margin-left-0" : "margin-left-6"
-                }`}
-                onClick={() => handleDuplicateBudgetLine(budgetLine)}
-            />
+            {!noDuplicateIcon && (
+                <FontAwesomeIcon
+                    id={`duplicate-${budgetLine?.id}`}
+                    data-cy="duplicate-row"
+                    icon={faClone}
+                    title="duplicate"
+                    data-position="top"
+                    className={`text-primary height-2 width-2 cursor-pointer usa-tooltip ${
+                        isBudgetLineEditable ? "margin-left-0" : "margin-left-6"
+                    }`}
+                    onClick={() => handleDuplicateBudgetLine(budgetLine)}
+                />
+            )}
         </>
     );
 };
@@ -67,6 +71,7 @@ ChangeIcons.propTypes = {
     handleSetBudgetLineForEditing: PropTypes.func,
     handleDeleteBudgetLine: PropTypes.func,
     handleDuplicateBudgetLine: PropTypes.func,
+    noDuplicateIcon: PropTypes.bool,
 };
 
 export default ChangeIcons;
