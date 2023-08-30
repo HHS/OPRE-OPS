@@ -33,10 +33,11 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
 
     const pageItems = [];
 
-    for (const pageNumber of pageNumberArray) {
-        if (pageNumber === null) {
+    for (const pagePosition in pageNumberArray) {
+        if (pageNumberArray[pagePosition] === null) {
             pageItems.push(
                 <li
+                    key={`page-item-${pagePosition}`}
                     className="usa-pagination__item usa-pagination__overflow"
                     aria-label="ellipsis indicating non-visible pages"
                 >
@@ -45,14 +46,16 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
             );
         } else {
             pageItems.push(
-                <li key={`page-item-${pageNumber}`} className="usa-pagination__item usa-pagination__page-no">
+                <li key={`page-item-${pagePosition}`} className="usa-pagination__item usa-pagination__page-no">
                     <a
-                        href="javascript:void(0);"
-                        className={cx("usa-pagination__button", currentPage === pageNumber && "usa-current")}
-                        aria-label={`Page ${pageNumber}`}
-                        onClick={() => setCurrentPage(pageNumber)}
+                        className={cx(
+                            "usa-pagination__button",
+                            currentPage === pageNumberArray[pagePosition] && "usa-current"
+                        )}
+                        aria-label={`Page ${pageNumberArray[pagePosition]}`}
+                        onClick={() => setCurrentPage(pageNumberArray[pagePosition])}
                     >
-                        {pageNumber}
+                        {pageNumberArray[pagePosition]}
                     </a>
                 </li>
             );
@@ -63,9 +66,8 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
         <nav aria-label="Pagination" className="usa-pagination">
             <ul className="usa-pagination__list">
                 {currentPage !== 1 && (
-                    <li className="usa-pagination__item usa-pagination__arrow">
+                    <li key="page-item-previous" className="usa-pagination__item usa-pagination__arrow">
                         <a
-                            href="javascript:void(0);"
                             className="usa-pagination__link usa-pagination__previous-page"
                             aria-label="Previous page"
                             onClick={() => setCurrentPage(currentPage - 1)}
@@ -79,9 +81,8 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
                 )}
                 {pageItems}
                 {currentPage !== totalPages && (
-                    <li className="usa-pagination__item usa-pagination__arrow">
+                    <li key="page-item-next" className="usa-pagination__item usa-pagination__arrow">
                         <a
-                            href="javascript:void(0);"
                             className="usa-pagination__link usa-pagination__next-page"
                             aria-label="Next page"
                             onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
