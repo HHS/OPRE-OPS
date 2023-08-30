@@ -24,11 +24,11 @@ e. Protect the incident response plan from unauthorized disclosure and modificat
 
 ## OPS Implementation
 
-TODO: Work in coordination with ACF/OCIO and cloud.gov. ACF/OCIO templates should be available.
+TODO: Work in coordination with ACF Tech and cloud.gov. ACF Tech templates should be available.
 
 ### Control Origination
 
-Hybrid with ACF/OCIO and cloud.gov
+Hybrid with ACF Tech and cloud.gov
 
 ### Related Content
 

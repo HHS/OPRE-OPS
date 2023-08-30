@@ -7,7 +7,9 @@
 
 ## OPS Implementation
 
-TODO: Generate assessment text about our supply chain
+OPS utilizes vulnerability scanning of sotfware dependencies in our supply chain using tools including but not limited to Renovatebot and Dependabot.  Both of these tools will automatically open Pull Requests if there is a dependency to be upgraded as a result of a vulnerability or risk in dependencies in the software supply chain. If there are no findings, no Pull Requests will be opened.  Semgrep and CodeQL scans are the last step for each CI run.  If vulnerabilities are found in the scan results, the code will be prevented from being deployed until the vulnerabilities are remediated.
+
+TODO: Generate any text around supply chain risk assessment. Is the supply chain risk assessment part of the larger RA?
 
 ### Control Orgination:
 

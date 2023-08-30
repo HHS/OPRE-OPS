@@ -7,6 +7,8 @@ Implement privileged access authorization to [ACF-defined lists of information s
 
 TODO: generate text
 
+TODO: What is the defined list of components ?
+
 ### Control Orgination:
 
 Hybrid with IaaS provider, ACF Tech, and OPS

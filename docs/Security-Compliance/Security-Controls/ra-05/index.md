@@ -21,7 +21,7 @@ f. Employ vulnerability monitoring tools that include the capability to readily 
 
 a. As part of the OPS Test Plan, security scans are completed on an ongoing basis, throughout the Continuous Integration (CI).  Automated scans are run on every push, pull request, and merge on GitHub.
 
-b. Security scanning is completed using OWASP ZAP dynamic security scans and Dependabot vulnerability dependency scanning.  Dependabot will automatically open Pull Requests if there is a vulnerability dependency.  If there are no findings, no Pull Requests will be opened.  OWASP Zap scans are the last step for each CI run.  The results for the scans are summarized and accessed through _____ TODO.  If vulnerabilities are found in the scan results, the code will be prevented from being deployed until the vulnerabilities are remediated.
+b. Security scanning is completed using OWASP ZAP dynamic security scans and Dependabot vulnerability dependency scanning.  Dependabot will automatically open Pull Requests if there is a vulnerability dependency.  If there are no findings, no Pull Requests will be opened.  OWASP Zap scans are the last step for each CI run.  The results for the scans are summarized and accessed through [GitHub's Code Scanning features](https://github.com/HHS/OPRE-OPS/security/code-scanning).  If vulnerabilities of a certain threshold are found in the scan results, the code will be prevented from being deployed until the vulnerabilities are remediated.
 
 c. Summaries of the security scan reports are reviewed in GitHub. (see screenshot of summaries of scan reports below)
 

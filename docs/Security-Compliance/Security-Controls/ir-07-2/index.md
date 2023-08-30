@@ -7,7 +7,9 @@
 
 ## OPS Implementation
 
-This control is not an ACF/OCIO requirement. This control is only selected by cloud.gov. OPS will provide appropriate Incident Response contacts to cloud.gov and other relevant stakeholders.
+TODO: Revisit need
+
+This control is not an ACF/OCIO requirement. Is this required by or needed for IaaS provider ?
 
 ### Control Origination
 

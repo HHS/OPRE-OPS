@@ -19,6 +19,8 @@ f. Update the risk assessment [before issuing a new Authority to Operate/authori
 
 ## OPS Implementation
 
+TODO: need the template
+
 ### Control Orgination:
 
 Hybrid with IaaS provider, ACF Tech, and OPS

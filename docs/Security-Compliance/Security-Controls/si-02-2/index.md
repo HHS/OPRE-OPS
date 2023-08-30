@@ -1,0 +1,15 @@
+# System and Information Integrity
+## SI-02 (2) - Flaw Remediation | Automated Flaw Remediation Status
+
+Determine if system components have applicable security-relevant software and firmware updates installed using [Assignment: organization-defined automated mechanisms] [Assignment: organization-defined frequency].
+
+## OPS Implementation
+
+OPS utilizes tooling including but not limited to Dependabot and Renovatebot which will automatically check for and detect security-relevant software updates on a frequent basis. These tools will automatically open pull requests if there is an update to any software or code library in use by OPS. Resulting pull requests are reviewed and remediated in a timely fashion as necessary. As part of the Continuous Integration and Continuous Deployment methodologies used by OPS, when these pull requests have met necessary requirements, the updates are automatically deployed. If there are no findings, no pull requests will be opened.
+
+
+### Control Orgination
+
+Hybrid with IaaS vendor and OPS
+
+### Related Content

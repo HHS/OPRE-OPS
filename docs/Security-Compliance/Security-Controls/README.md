@@ -138,10 +138,6 @@
 11. [IR-7-2](ir-07-2/index.md)
 12. [IR-8](ir-08/index.md)
 13. [IR-9](ir-09/index.md)
-14. [IR-9-1](ir-09-1/index.md)
-15. [IR-9-2](ir-09-2/index.md)
-16. [IR-9-3](ir-09-3/index.md)
-17. [IR-9-4](ir-09-4/index.md)
 
 ### Risk Assessment
 
@@ -194,4 +190,28 @@
 
 ### System and Information Integrity
 
-1. [SI-12](si-12/index.md)
+1. [SI-2](si-02/index.md)
+2. [SI-2-2](si-02-2/index.md)
+3. [SI-2-3](si-02-3/index.md)
+4. [SI-3](si-03/index.md)
+5. [SI-4](si-04/index.md)
+6. [SI-4-1](si-04-1/index.md)
+7. [SI-4-2](si-04-2/index.md)
+8. [SI-4-3](si-04-3/index.md)
+9. [SI-4-4](si-04-4/index.md)
+10. [SI-4-5](si-04-5/index.md)
+11. [SI-4-7](si-04-7/index.md)
+12. [SI-4-14](si-04-14/index.md)
+13. [SI-4-14](si-04-14/index.md)
+14. [SI-4-16](si-04-16/index.md)
+15. [SI-4-23](si-04-23/index.md)
+16. [SI-5](si-05/index.md)
+17. [SI-6](si-06/index.md)
+18. [SI-7](si-07/index.md)
+19. [SI-7-1](si-07-1/index.md)
+20. [SI-7-7](si-07-7/index.md)
+21. [SI-8](si-08/index.md)
+22. [SI-8-2](si-08-2/index.md)
+23. [SI-10](si-10/index.md)
+24. [SI-11](si-11/index.md)
+25. [SI-12](si-12/index.md)

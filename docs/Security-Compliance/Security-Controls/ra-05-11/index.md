@@ -3,7 +3,7 @@
 
 Establish a public reporting channel for receiving reports of vulnerabilities in organizational systems and system components.
 
-### OPS Implementation
+## OPS Implementation
 
 OPS utilizes and defers to the [HHS Vulnerability Disclosure Policy](https://www.hhs.gov/vulnerability-disclosure-policy/index.html)
 
