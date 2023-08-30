@@ -3,6 +3,7 @@ import CurrencyFormat from "react-currency-format";
 import TableTag from "../BudgetLinesTable/TableTag";
 import { formatDateNeeded } from "../../../helpers/utils";
 import Table from "../Table";
+import AllBLIRow from "../AllBLIRow";
 import { All_BUDGET_LINES_TABLE_HEADINGS } from "../../../constants";
 
 /**
@@ -45,7 +46,17 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
         <>
             <Table tableHeadings={All_BUDGET_LINES_TABLE_HEADINGS}>
                 {budgetLines.map((bl) => (
-                    <TableRow key={bl?.id} bl={bl} />
+                    // <TableRow key={bl?.id} bl={bl} />
+                    <AllBLIRow
+                        key={bl?.id}
+                        bl={bl}
+                        canUserEditBudgetLines={false}
+                        handleDeleteBudgetLine={() => {}}
+                        handleDuplicateBudgetLine={() => {}}
+                        handleSetBudgetLineForEditing={() => {}}
+                        isReviewMode={false}
+                        readOnly={true}
+                    />
                 ))}
             </Table>
             <pre>{JSON.stringify(budgetLines, null, 2)}</pre>
