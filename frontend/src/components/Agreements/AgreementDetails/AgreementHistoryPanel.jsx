@@ -95,13 +95,13 @@ const ChangesDetails = ({ historyItem }) => {
                     <dd>
                         {change.isCollection ? (
                             <>
-                                {change.added && <> added: {JSON.stringify(change.added)} </>}
-                                {change.removed && <> removed: {JSON.stringify(change.deleted)} </>}
+                                {change.added && <> added: {JSON.stringify(change.added)}</>}
+                                {change.removed && <> removed: {JSON.stringify(change.deleted)}</>}
                             </>
                         ) : (
                             <>
-                                changed {"from" in change && <> from &ldquo;{change.from}&rdquo; </>}
-                                {"to" in change && <> to &ldquo;{change.to}&rdquo; </>}
+                                changed {"from" in change && <>from &ldquo;{change.from}&rdquo; </>}
+                                {"to" in change && <>to &ldquo;{change.to}&rdquo;</>}
                             </>
                         )}
                     </dd>
@@ -142,7 +142,12 @@ const AgreementHistoryPanel = ({ agreementId }) => {
     return (
         <>
             {historyData.length > 0 ? (
-                <ul className="usa-list--unstyled overflow-y-scroll" style={{ height: "15rem" }} tabIndex={0}>
+                <ul
+                    className="usa-list--unstyled overflow-y-scroll"
+                    style={{ height: "15rem" }}
+                    tabIndex={0}
+                    data-cy="agreement-history-list"
+                >
                     {agreementHistory.map((item) => (
                         <LogItem
                             key={item.id}
@@ -157,11 +162,6 @@ const AgreementHistoryPanel = ({ agreementId }) => {
             ) : (
                 <p>Sorry no history</p>
             )}
-            <div style={{ marginTop: "10em" }}></div>
-            <div style={{ marginTop: "2em", backgroundColor: "#CCCCCC" }}>
-                DEBUG agreementId: {agreementId}
-                <pre>{JSON.stringify(agreementHistory, null, 2)}</pre>
-            </div>
         </>
     );
 };
