@@ -12,7 +12,7 @@ import Tag from "../Tag/Tag";
  * @param {TableTagProps} props - The component props.
  * @returns {JSX.Element} - The rendered component.
  */
-export const TableTag = ({ status }) => {
+const TableTag = ({ status }) => {
     const statusText = convertCodeForDisplay("budgetLineStatus", status);
     let classNames = "padding-x-105 padding-y-1 ";
     switch (statusText) {

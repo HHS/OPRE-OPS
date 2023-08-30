@@ -1,7 +1,4 @@
 import PropTypes from "prop-types";
-import CurrencyFormat from "react-currency-format";
-import TableTag from "../BudgetLinesTable/TableTag";
-import { formatDateNeeded } from "../../../helpers/utils";
 import Table from "../Table";
 import AllBLIRow from "../AllBLIRow";
 import { All_BUDGET_LINES_TABLE_HEADINGS } from "../../../constants";
@@ -14,48 +11,17 @@ import { All_BUDGET_LINES_TABLE_HEADINGS } from "../../../constants";
  * @returns {React.JSX.Element} The TableRow component.
  */
 const AllBudgetLinesTable = ({ budgetLines }) => {
-    const TableRow = ({ bl }) => {
-        return (
-            <>
-                <tr>
-                    <th>{bl.line_description}</th>
-                    <td>{bl.agreement_name}</td>
-                    <td>{formatDateNeeded(bl.date_needed)}</td>
-                    <td>{bl.fiscal_year}</td>
-                    <td>{bl.can_number}</td>
-                    <td>
-                        <CurrencyFormat
-                            value={bl?.amount || 0}
-                            displayType={"text"}
-                            thousandSeparator={true}
-                            prefix={"$"}
-                            decimalScale={2}
-                            fixedDecimalScale={true}
-                            renderText={(value) => value}
-                        />
-                    </td>
-                    <td>
-                        <TableTag status={bl.status} />
-                    </td>
-                </tr>
-            </>
-        );
-    };
-
     return (
         <>
             <Table tableHeadings={All_BUDGET_LINES_TABLE_HEADINGS}>
                 {budgetLines.map((bl) => (
-                    // <TableRow key={bl?.id} bl={bl} />
                     <AllBLIRow
                         key={bl?.id}
                         bl={bl}
-                        canUserEditBudgetLines={false}
                         handleDeleteBudgetLine={() => {}}
                         handleDuplicateBudgetLine={() => {}}
-                        handleSetBudgetLineForEditing={() => {}}
                         isReviewMode={false}
-                        readOnly={true}
+                        readOnly={false}
                     />
                 ))}
             </Table>
