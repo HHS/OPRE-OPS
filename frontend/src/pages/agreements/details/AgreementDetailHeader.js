@@ -9,15 +9,15 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
  * @param {string} props.details - The details to display.
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
  * @param {function} props.setIsEditMode - The function to set the edit mode.
- * @param {boolean} props.isAgreementEditable - Whether the agreement is editable.
+ * @param {boolean} props.isEditable - Whether the agreement is editable.
  * @returns {React.JSX.Element} - The rendered component.
  */
-export const AgreementDetailHeader = ({ heading, details, isEditMode, setIsEditMode, isAgreementEditable }) => {
+export const AgreementDetailHeader = ({ heading, details, isEditMode, setIsEditMode, isEditable }) => {
     return (
         <>
             <div className="display-flex flex-justify flex-align-center">
                 <h2 className="font-sans-lg">{heading}</h2>
-                {!isEditMode && isAgreementEditable && (
+                {!isEditMode && isEditable && (
                     <button
                         id="edit"
                         className="hover:text-underline cursor-pointer"
@@ -43,7 +43,7 @@ AgreementDetailHeader.propTypes = {
     details: PropTypes.string.isRequired,
     isEditMode: PropTypes.bool.isRequired,
     setIsEditMode: PropTypes.func.isRequired,
-    isAgreementEditable: PropTypes.bool.isRequired,
+    isEditable: PropTypes.bool.isRequired,
 };
 
 export default AgreementDetailHeader;

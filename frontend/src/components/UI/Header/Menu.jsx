@@ -24,7 +24,10 @@ export const Menu = () => {
                     <Link to="/cans/">CANs</Link>
                 </li>
                 <li className="usa-nav__primary-item">
-                    <Link to="/agreements?filter=all-agreements">Agreements</Link>
+                    <Link to="/agreements">Agreements</Link>
+                </li>
+                <li className="usa-nav__primary-item">
+                    <Link to="/budget-lines">Budget Lines</Link>
                 </li>
                 <li className="usa-nav__primary-item margin-left-auto">
                     <button

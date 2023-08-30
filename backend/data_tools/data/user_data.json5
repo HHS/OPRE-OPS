@@ -21,7 +21,7 @@
       email: "Ivelisse.Martinez-Beck@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000003",
     },
-    { // 4
+    { // 4 - THIS IS USED IN THE TESTS (AUTH_CLIENT)
       first_name: "Amelia",
       last_name: "Popham",
       division: 2,
@@ -89,6 +89,7 @@
       last_name: "Donaworth",
       division: 3,
       email: "tdonaworth+dev@flexion.us",
+      //oidc_id: "e5711101-bc3e-41e5-a6a2-000000000000",
       oidc_id: "e5711101-bc3e-41e5-a6a2-051874b307ca",
     },
     { // 14
@@ -139,6 +140,20 @@
       division: 3,
       email: "kschulke@flexion.us",
       oidc_id: "b5f7598b-e5e6-4b11-8321-b3acabc780f7",
+    },
+    { // 21 User is used in E2E tests
+      first_name: "Admin",
+      last_name: "Demo",
+      division: 3,
+      email: "admin.demo@email.com",
+      oidc_id: "00000000-0000-1111-a111-000000000018",
+    },
+    { // 22
+      first_name: "User",
+      last_name: "Demo",
+      division: 3,
+      email: "user.demo@email.com",
+      oidc_id: "00000000-0000-1111-a111-000000000019",
     }
   ],
   roles: [
@@ -171,6 +186,11 @@
 
         "GET_USER",
 
+        "PUT_USER",
+        "POST_USER",
+        "PATCH_USER",
+
+        "GET_USERS",
         "GET_HISTORY",
       ],
     },
@@ -186,6 +206,15 @@
         "GET_RESEARCH_PROJECT",
         "GET_USER",
         "GET_HISTORY",
+      ],
+    },
+        {
+      name: "unassigned",
+      permissions: [
+        "GET_USER",
+        "POST_USER",
+        "PUT_USER",
+        "PATCH_USER",
       ],
     },
   ],
@@ -249,6 +278,14 @@
     {
       user_id: 20,
       role_id: 1,
+    },
+    {
+      user_id: 21,
+      role_id: 1,
+    },
+    {
+      user_id: 22,
+      role_id: 2,
     },
   ],
   groups: [
@@ -436,6 +473,20 @@
       message: "This is a system notification",
       is_read: false,
       recipient_id: 20,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: false,
+      recipient_id: 21,
+      expires: "2031-12-31"
+    },
+    {
+      title: "System Notification",
+      message: "This is a system notification",
+      is_read: true,
+      recipient_id: 22,
       expires: "2031-12-31"
     }
   ],

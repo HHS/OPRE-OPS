@@ -64,3 +64,47 @@ def test_user_to_dict():
     )
     assert user.to_dict()["id"] == 1
     assert user.to_dict()["oidc_id"] == "abcd"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_put_user_invalid_id(auth_client):
+    # Send a PUT request with an invalid user ID
+    response = auth_client.put("/api/v1/users/999", json={"first_name": "New First Name"})
+
+    # Check that the response status code is 404 Not Found
+    assert response.status_code == 400
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_put_user_unauthorized(client):
+    # Send a PUT request without authorization
+    response = client.put("/api/v1/users/4", json={"first_name": "New First Name"})
+
+    # Check that the response status code is 401 Unauthorized
+    assert response.status_code == 401
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_put_user(auth_client):
+    # Send a PUT request to update the user
+    response = auth_client.put(
+        "/api/v1/users/4",
+        json={"first_name": "New First Name"},
+    )
+
+    # Check that the response status code is 200 OK
+    assert response.status_code == 200
+
+    # Check that the response data matches the updated user data
+    print(response.json)
+    assert response.json["first_name"] == "New First Name"
+
+    # Check that the user was updated in the database
+    updated_user = User.query.get(4)
+    assert updated_user.first_name == "New First Name"
+
+    # Revert changes back to original values
+    response = auth_client.put(
+        "/api/users/4",
+        json={"first_name": "Amelia"},
+    )

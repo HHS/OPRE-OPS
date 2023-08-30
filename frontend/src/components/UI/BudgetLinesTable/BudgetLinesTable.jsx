@@ -6,14 +6,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock, faClone } from "@fortawesome/free-regular-svg-icons";
 import TotalSummaryCard from "./TotalSummaryCard";
-import { formatDate, loggedInName, fiscalYearFromDate } from "../../../helpers/utils";
+import { loggedInName, fiscalYearFromDate, formatDateNeeded, formatDateToMonthDayYear } from "../../../helpers/utils";
+import Table from "../Table";
 import TableTag from "./TableTag";
-import "./PreviewTable.scss";
+import "./BudgetLinesTable.scss";
+import { BUDGET_LINE_TABLE_HEADERS } from "../../../constants";
 
 /**
  * A table component that displays budget lines.
  * @param {Object} props - The component props.
  * @param {Array<any>} [props.budgetLinesAdded] - An array of budget lines to display. - optional
+ * @param {Boolean} [props.canUserEditBudgetLines] - A flag to indicate if the user is agreement owner, project officer, on the agreement team, or creator of any of the BLIs on the agreement. - optional
  * @param {Function} [props.handleSetBudgetLineForEditing ]- A function to handle editing a budget line. - optional
  * @param {Function} [props.handleDeleteBudgetLine] - A function to handle deleting a budget line. - optional
  * @param {Function} [props.handleDuplicateBudgetLine] - A function to handle duplicating a budget line. - optional
@@ -21,8 +24,9 @@ import "./PreviewTable.scss";
  * @param {Boolean} [props.isReviewMode] - A flag to indicate if the table is in review mode.
  * @returns {JSX.Element} - The rendered table component.
  */
-export const PreviewTable = ({
+const BudgetLinesTable = ({
     budgetLinesAdded = [],
+    canUserEditBudgetLines = false,
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
@@ -35,24 +39,21 @@ export const PreviewTable = ({
         .reverse();
 
     let loggedInUser = useSelector((state) => loggedInName(state.auth?.activeUser));
+    const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
 
     const TableRow = ({ bl }) => {
         const [isExpanded, setIsExpanded] = useState(false);
         const [isRowActive, setIsRowActive] = useState(false);
 
-        const formatted_today = new Date().toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
-        const bl_created_on = bl?.created_on
-            ? new Date(bl.created_on).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" })
-            : formatted_today;
-        let formatted_date_needed;
-        let fiscalYear;
-        if (bl?.date_needed !== "--" && bl?.date_needed !== null) {
-            let date_needed = new Date(bl?.date_needed);
-            formatted_date_needed = formatDate(date_needed);
-            fiscalYear = fiscalYearFromDate(bl?.date_needed);
-        }
         let feeTotal = bl?.amount * bl?.psc_fee_amount;
         let total = bl?.amount + feeTotal;
+        const isBudgetLineDraft = bl?.status === "DRAFT";
+        const isBudgetLineInReview = bl?.status === "UNDER_REVIEW";
+        const isBudgetLinePlanned = bl?.status === "PLANNED";
+        const isUserBudgetLineCreator = bl?.created_by === loggedInUserId;
+        const isBudgetLineEditable =
+            (canUserEditBudgetLines || isUserBudgetLineCreator) &&
+            (isBudgetLineDraft || isBudgetLineInReview || isBudgetLinePlanned);
 
         const handleExpandRow = () => {
             setIsExpanded(!isExpanded);
@@ -85,13 +86,13 @@ export const PreviewTable = ({
         const ChangeIcons = ({ budgetLine }) => {
             return (
                 <>
-                    {budgetLine.status === "DRAFT" && (
+                    {isBudgetLineEditable && (
                         <>
                             <FontAwesomeIcon
                                 id={`edit-${bl?.id}`}
                                 data-cy="edit-row"
                                 icon={faPen}
-                                className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                                className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
                                 title="edit"
                                 data-position="top"
                                 onClick={() => handleSetBudgetLineForEditing(budgetLine)}
@@ -103,7 +104,7 @@ export const PreviewTable = ({
                                 icon={faTrash}
                                 title="delete"
                                 data-position="top"
-                                className="text-primary height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                                className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
                                 onClick={() => handleDeleteBudgetLine(budgetLine.id)}
                             />
                         </>
@@ -114,8 +115,8 @@ export const PreviewTable = ({
                         icon={faClone}
                         title="duplicate"
                         data-position="top"
-                        className={`text-primary height-2 width-2 hover: cursor-pointer usa-tooltip ${
-                            budgetLine.status !== "DRAFT" ? "margin-left-6" : ""
+                        className={`text-primary height-2 width-2 cursor-pointer usa-tooltip ${
+                            isBudgetLineEditable ? "margin-left-0" : "margin-left-6"
                         }`}
                         onClick={() => handleDuplicateBudgetLine(budgetLine)}
                     />
@@ -133,18 +134,22 @@ export const PreviewTable = ({
                         {bl?.line_description}
                     </th>
                     <td
-                        className={`${futureDateErrorClass(formatted_date_needed)} ${addErrorClassIfNotFound(
-                            formatted_date_needed
+                        className={`${futureDateErrorClass(
+                            formatDateNeeded(bl?.date_needed)
+                        )} ${addErrorClassIfNotFound(
+                            formatDateNeeded(bl?.date_needed)
                         )} ${removeBorderBottomIfExpanded}`}
                         style={changeBgColorIfExpanded}
                     >
-                        {formatted_date_needed}
+                        {formatDateNeeded(bl?.date_needed)}
                     </td>
                     <td
-                        className={`${addErrorClassIfNotFound(fiscalYear)} ${removeBorderBottomIfExpanded}`}
+                        className={`${addErrorClassIfNotFound(
+                            fiscalYearFromDate(bl?.date_needed)
+                        )} ${removeBorderBottomIfExpanded}`}
                         style={changeBgColorIfExpanded}
                     >
-                        {fiscalYear || ""}
+                        {fiscalYearFromDate(bl?.date_needed)}
                     </td>
                     <td
                         className={`${addErrorClassIfNotFound(bl?.can?.number)} ${removeBorderBottomIfExpanded}`}
@@ -227,7 +232,7 @@ export const PreviewTable = ({
                                     </dd>
                                     <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                                         <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />
-                                        {bl_created_on}
+                                        {formatDateToMonthDayYear(bl?.created_on)}
                                     </dt>
                                 </dl>
                                 <dl className="font-12px" style={{ marginLeft: "9.0625rem" }}>
@@ -249,34 +254,19 @@ export const PreviewTable = ({
 
     return (
         <>
-            <table className="usa-table usa-table--borderless width-full">
-                <thead>
-                    <tr>
-                        <th scope="col">Description</th>
-                        <th scope="col">Need By</th>
-                        <th scope="col">FY</th>
-                        <th scope="col">CAN</th>
-                        <th scope="col">Amount</th>
-                        <th scope="col">Fee</th>
-                        <th scope="col">Total</th>
-                        <th scope="col" className="padding-0" style={{ width: "6.25rem" }}>
-                            Status
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {sortedBudgetLines.map((bl) => (
-                        <TableRow key={bl?.id} bl={bl} />
-                    ))}
-                </tbody>
-            </table>
+            <Table tableHeadings={BUDGET_LINE_TABLE_HEADERS}>
+                {sortedBudgetLines.map((bl) => (
+                    <TableRow key={bl?.id} bl={bl} />
+                ))}
+            </Table>
             <TotalSummaryCard budgetLines={sortedBudgetLines}></TotalSummaryCard>
         </>
     );
 };
 
-PreviewTable.propTypes = {
+BudgetLinesTable.propTypes = {
     budgetLinesAdded: PropTypes.arrayOf(PropTypes.object),
+    canUserEditBudgetLines: PropTypes.bool,
     handleSetBudgetLineForEditing: PropTypes.func,
     handleDeleteBudgetLine: PropTypes.func,
     handleDuplicateBudgetLine: PropTypes.func,
@@ -285,4 +275,4 @@ PreviewTable.propTypes = {
     isReviewMode: PropTypes.bool,
 };
 
-export default PreviewTable;
+export default BudgetLinesTable;

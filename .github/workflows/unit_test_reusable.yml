@@ -2,7 +2,6 @@ on:
   workflow_call:
 
 jobs:
-
   backend-api:
     name: Backend API Unit Tests
     runs-on: ubuntu-latest
@@ -28,7 +27,6 @@ jobs:
         working-directory: ./backend/data_tools/
         run: pipenv install --dev && pipenv run pytest
 
-
   frontend:
     name: Frontend Unit Tests
     runs-on: ubuntu-latest
@@ -43,15 +41,37 @@ jobs:
   e2e:
     name: End-to-End Testing
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
+
       # Install NPM dependencies, cache them correctly
       # and run all Cypress tests
       - uses: ./.github/actions/setup-javascript
+
       # Stand up the system stack, to have something to poke
-      - uses: ./.github/actions/run-full-stack
+      - name: Launch Stack
+        uses: ./.github/actions/run-full-stack
+        env:
+          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+
       # Run the Cypress E2E Tests
       - name: E2E Test
         working-directory: frontend
         run: yarn test:e2e
+
+      - name: Capture logs
+        shell: bash
+        if: always()
+        run: | # Capture logs from all services
+          docker compose -f docker-compose.yml logs --no-color > full-stack-logs.log
+
+      - name: Upload logs as artifact
+        if: always() # Ensure this runs, even if E2E fails
+        uses: actions/upload-artifact@v2
+        with:
+          # Set the path to the log file
+          path: full-stack-logs.log
+          # Optionally, set a name for the artifact
+          name: full-stack-logs

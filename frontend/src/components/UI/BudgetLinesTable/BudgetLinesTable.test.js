@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { createStore } from "redux";
 import { Provider } from "react-redux";
-import { PreviewTable } from "./PreviewTable";
+import BudgetLinesTable from "./BudgetLinesTable";
 
 const dummyBudgetLines = [
     {
@@ -41,7 +41,7 @@ const store = createStore(() => ({
 describe("PreviewTable", () => {
     test("renders rows for budget lines", () => {
         customRender(
-            <PreviewTable
+            <BudgetLinesTable
                 budgetLinesAdded={dummyBudgetLines}
                 handleSetBudgetLineForEditing={() => {}}
                 handleDeleteBudgetLine={() => {}}
@@ -56,7 +56,7 @@ describe("PreviewTable", () => {
 
     test("status changes based on input", () => {
         customRender(
-            <PreviewTable
+            <BudgetLinesTable
                 budgetLinesAdded={dummyBudgetLines}
                 handleSetBudgetLineForEditing={() => {}}
                 handleDeleteBudgetLine={() => {}}

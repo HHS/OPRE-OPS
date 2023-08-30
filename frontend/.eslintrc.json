@@ -20,7 +20,16 @@
         "react/prop-types": [1, { "ignore": ["children"], "skipUndeclared": true }]
     },
     "plugins": ["react-refresh"],
-    "ignorePatterns": ["**/*.css", "**/*.css.map", "**/*.scss", "**/*.svg", "**/*.png", "**/*.jpg", "**/uswds/**"],
+    "ignorePatterns": [
+        "**/*.md",
+        "**/*.css",
+        "**/*.css.map",
+        "**/*.scss",
+        "**/*.svg",
+        "**/*.png",
+        "**/*.jpg",
+        "**/uswds/**"
+    ],
     "settings": {
         // Tells eslint-plugin-react to automatically detect the version of React to use.
         "react": { "version": "detect" },

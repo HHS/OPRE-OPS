@@ -4,9 +4,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import StepIndicator from "../../StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
-import PreviewTable from "../../PreviewTable";
+import BudgetLinesTable from "../../BudgetLinesTable";
 import Alert from "../../Alert";
-import Modal from "../../Modal";
 import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
 import { setAlert } from "../../Alert/alertSlice";
@@ -14,6 +13,7 @@ import EditModeTitle from "../../../../pages/agreements/EditModeTitle";
 import { loggedInName } from "../../../../helpers/utils";
 import suite from "./suite";
 import { convertCodeForDisplay } from "../../../../helpers/utils";
+import ConfirmationModal from "../../Modals/ConfirmationModal";
 import { useUpdateBudgetLineItemMutation, useAddBudgetLineItemMutation } from "../../../../api/opsAPI";
 
 /**
@@ -30,6 +30,7 @@ import { useUpdateBudgetLineItemMutation, useAddBudgetLineItemMutation } from ".
  * @param {Array<any>} props.existingBudgetLines - An array of existing budget lines.
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.
+ * @param {boolean} [props.canUserEditBudgetLines] - Whether the user can edit budget lines.
  * @param {Function} props.setIsEditMode - A function to set the edit mode state.
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {Function} [props.continueOverRide] - A function to override the default "Continue" button behavior. - optional
@@ -48,6 +49,7 @@ export const StepCreateBudgetLines = ({
     continueBtnText,
     continueOverRide,
     isEditMode,
+    canUserEditBudgetLines = false,
     setIsEditMode = () => {},
     isReviewMode,
     workflow,
@@ -105,6 +107,7 @@ export const StepCreateBudgetLines = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [existingBudgetLines]);
 
+    // Validation
     let res = suite.get();
     const pageErrors = res.getErrors();
 
@@ -113,7 +116,6 @@ export const StepCreateBudgetLines = ({
             new_budget_lines: newBudgetLines,
         });
     }
-
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
 
@@ -221,7 +223,23 @@ export const StepCreateBudgetLines = ({
                     items.map((item) => {
                         // eslint-disable-next-line no-unused-vars
                         const { id, data } = cleanBudgetLineItemForApi(item);
-                        addBudgetLineItem(data);
+                        addBudgetLineItem(data)
+                            .unwrap()
+                            .then((fulfilled) => {
+                                console.log("Created New BLIs:", fulfilled);
+                            })
+                            .catch((rejected) => {
+                                console.error("Error Creating Budget Lines");
+                                console.error({ rejected });
+                                globalDispatch(
+                                    setAlert({
+                                        type: "error",
+                                        heading: "Error",
+                                        message: "An error occurred. Please try again.",
+                                    })
+                                );
+                                navigate("/error");
+                            });
                     })
                 );
             }
@@ -229,7 +247,23 @@ export const StepCreateBudgetLines = ({
                 return Promise.all(
                     items.map((item) => {
                         const { id, data } = cleanBudgetLineItemForApi(item);
-                        updateBudgetLineItem({ id, data });
+                        updateBudgetLineItem({ id, data })
+                            .unwrap()
+                            .then((fulfilled) => {
+                                console.log("Updated BLIs:", fulfilled);
+                            })
+                            .catch((rejected) => {
+                                console.error("Error Updating Budget Lines");
+                                console.error({ rejected });
+                                globalDispatch(
+                                    setAlert({
+                                        type: "error",
+                                        heading: "Error",
+                                        message: "An error occurred. Please try again.",
+                                    })
+                                );
+                                navigate("/error");
+                            });
                     })
                 );
             }
@@ -238,10 +272,10 @@ export const StepCreateBudgetLines = ({
         const existingBudgetLineItems = newBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
 
         if (newBudgetLineItems.length > 0) {
-            mutateBudgetLineItems("POST", newBudgetLineItems).then(() => console.log("Created New BLIs."));
+            mutateBudgetLineItems("POST", newBudgetLineItems);
         }
         if (existingBudgetLineItems.length > 0) {
-            mutateBudgetLineItems("PATCH", existingBudgetLineItems).then(() => console.log("Updated BLIs."));
+            mutateBudgetLineItems("PATCH", existingBudgetLineItems);
         }
         // cleanup
         dispatch({ type: "RESET_FORM" });
@@ -272,7 +306,7 @@ export const StepCreateBudgetLines = ({
     return (
         <>
             {showModal && (
-                <Modal
+                <ConfirmationModal
                     heading={modalProps.heading}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
@@ -365,11 +399,12 @@ export const StepCreateBudgetLines = ({
                     ))}
                 </ul>
             )}
-            <PreviewTable
+            <BudgetLinesTable
                 budgetLinesAdded={newBudgetLines}
                 handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                 handleDeleteBudgetLine={handleDeleteBudgetLine}
                 handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                canUserEditBudgetLines={canUserEditBudgetLines}
                 isReviewMode={isReviewMode}
             />
             <div className="grid-row flex-justify-end margin-top-1">
@@ -427,9 +462,10 @@ StepCreateBudgetLines.propTypes = {
     continueBtnText: PropTypes.string.isRequired,
     isEditMode: PropTypes.bool,
     setIsEditMode: PropTypes.func,
+    canUserEditBudgetLines: PropTypes.bool,
     isReviewMode: PropTypes.bool,
     continueOverRide: PropTypes.func,
-    workflow: PropTypes.oneOf(["agreement", "budgetLines"]).isRequired,
+    workflow: PropTypes.oneOf(["agreement", "budgetLines", "none"]).isRequired,
 };
 
 export default StepCreateBudgetLines;

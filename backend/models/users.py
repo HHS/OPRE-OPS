@@ -31,6 +31,7 @@ class User(BaseModel):
     __tablename__ = "users"
     id = Column(Integer, Identity(always=True, start=1, cycle=True), primary_key=True)
     oidc_id = Column(UUID(as_uuid=True), unique=True, index=True)
+    hhs_id = Column(String)
     email = Column(String, index=True, nullable=False)
     first_name = Column(String)
     last_name = Column(String)
@@ -46,29 +47,38 @@ class User(BaseModel):
         "Portfolio",
         back_populates="team_leaders",
         secondary="portfolio_team_leaders",
+        viewonly=True
     )
 
     research_projects = relationship(
         "ResearchProject",
         back_populates="team_leaders",
         secondary="research_project_team_leaders",
+        viewonly=True
     )
 
     agreements = relationship(
         "Agreement",
         back_populates="team_members",
         secondary="agreement_team_members",
+        viewonly=True
     )
 
     contracts = relationship(
         "ContractAgreement",
         back_populates="support_contacts",
         secondary="contract_support_contacts",
+        viewonly=True
     )
 
     notifications = relationship(
-        "Notification", foreign_keys="Notification.recipient_id"
+        "Notification", foreign_keys="Notification.recipient_id",
     )
+
+
+    def get_user_id(self):
+        return self.id
+
 
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
@@ -83,6 +93,13 @@ class User(BaseModel):
             }
         )
 
+        return cast(dict[str, Any], d)
+
+    def to_slim_dict(self) -> dict[str, Any]:
+        d = {
+            "id": self.id,
+            "full_name": self.full_name,
+        }
         return cast(dict[str, Any], d)
 
 
