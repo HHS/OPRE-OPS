@@ -4,10 +4,10 @@ import { useSelector } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import CurrencyFormat from "react-currency-format";
-import TableTag from "../BudgetLinesTable/TableTag";
+import TableTag from "../TableTag";
 import ChangeIcons from "../ChangeIcons";
 import TableRowExpandable from "../TableRowExpandable";
-import { loggedInName, fiscalYearFromDate, formatDateNeeded, formatDateToMonthDayYear } from "../../../helpers/utils";
+import { loggedInName, formatDateNeeded, formatDateToMonthDayYear } from "../../../helpers/utils";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -23,11 +23,9 @@ import { loggedInName, fiscalYearFromDate, formatDateNeeded, formatDateToMonthDa
  **/
 const AllBLIRow = ({
     bl: budgetLine,
-    canUserEditBudgetLines = false,
-    isReviewMode = false,
+    canUserEditBudgetLines,
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
-    handleDuplicateBudgetLine = () => {},
     readOnly = false,
 }) => {
     const [isExpanded, setIsExpanded] = React.useState(false);
@@ -35,8 +33,6 @@ const AllBLIRow = ({
     let loggedInUser = useSelector((state) => loggedInName(state.auth?.activeUser));
     const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
 
-    let feeTotal = budgetLine?.amount * budgetLine?.psc_fee_amount;
-    let total = budgetLine?.amount + feeTotal;
     const isBudgetLineDraft = budgetLine?.status === "DRAFT";
     const isBudgetLineInReview = budgetLine?.status === "UNDER_REVIEW";
     const isBudgetLinePlanned = budgetLine?.status === "PLANNED";
@@ -49,37 +45,29 @@ const AllBLIRow = ({
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
     const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
 
-    const TableRowData = () => (
+    const TableRowData = ({ bl }) => (
         <>
             <th scope="row" className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
-                {budgetLine?.line_description}
+                {bl.line_description}
             </th>
             <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
-                {formatDateNeeded(budgetLine?.date_needed)}
+                {bl.agreement_name}
             </td>
             <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
-                {fiscalYearFromDate(budgetLine?.date_needed)}
+                {formatDateNeeded(bl.date_needed)}
             </td>
             <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
-                {budgetLine?.can?.number}
+                {bl.fiscal_year}
             </td>
             <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
-                <CurrencyFormat
-                    value={budgetLine?.amount || 0}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={2}
-                    fixedDecimalScale={true}
-                    renderText={(value) => value}
-                />
+                {bl.can_number}
             </td>
             <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
-                {feeTotal === 0 ? (
+                {bl?.amount === 0 ? (
                     0
                 ) : (
                     <CurrencyFormat
-                        value={feeTotal}
+                        value={bl?.amount || 0}
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$"}
@@ -90,29 +78,14 @@ const AllBLIRow = ({
                 )}
             </td>
             <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
-                {total === 0 ? (
-                    0
-                ) : (
-                    <CurrencyFormat
-                        value={total}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        decimalScale={2}
-                        fixedDecimalScale={true}
-                        renderText={(value) => value}
-                    />
-                )}
-            </td>
-            <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
-                {isRowActive && !isExpanded && !readOnly ? (
+                {isRowActive && !isExpanded && !readOnly && isBudgetLineEditable ? (
                     <div>
                         <ChangeIcons
                             budgetLine={budgetLine}
                             handleDeleteBudgetLine={handleDeleteBudgetLine}
-                            handleDuplicateBudgetLine={handleDuplicateBudgetLine}
                             handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                             isBudgetLineEditable={isBudgetLineEditable}
+                            noDuplicateIcon={true}
                         />
                     </div>
                 ) : (
@@ -147,9 +120,9 @@ const AllBLIRow = ({
                             <ChangeIcons
                                 budgetLine={budgetLine}
                                 handleDeleteBudgetLine={handleDeleteBudgetLine}
-                                handleDuplicateBudgetLine={handleDuplicateBudgetLine}
                                 handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                                 isBudgetLineEditable={isBudgetLineEditable}
+                                noDuplicateIcon={true}
                             />
                         )}
                     </div>
@@ -159,7 +132,7 @@ const AllBLIRow = ({
     );
     return (
         <TableRowExpandable
-            tableRowData={<TableRowData />}
+            tableRowData={<TableRowData bl={budgetLine} />}
             expandedData={<ExpandedData />}
             isExpanded={isExpanded}
             isRowActive={isRowActive}
