@@ -466,6 +466,10 @@ class BudgetLineItem(BaseModel):
             )
         )
 
+    @property
+    def team_members(self):
+        return self.agreement.team_members if self.agreement else []
+
     @override
     def to_dict(self):
         d = super().to_dict()

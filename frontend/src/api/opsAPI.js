@@ -63,6 +63,10 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["Agreements", "BudgetLineItems"],
         }),
+        getBudgetLineItems: builder.query({
+            query: () => `/budget-line-items/`,
+            providesTags: ["BudgetLineItems"],
+        }),
         addBudgetLineItem: builder.mutation({
             query: (data) => {
                 return {
@@ -191,6 +195,7 @@ export const {
     useUpdateAgreementMutation,
     useDeleteAgreementMutation,
     useAddBudgetLineItemMutation,
+    useGetBudgetLineItemsQuery,
     useUpdateBudgetLineItemMutation,
     useGetAgreementsByResearchProjectFilterQuery,
     useGetUserByIdQuery,

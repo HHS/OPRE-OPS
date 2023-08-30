@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import AgreementDetailHeader from "./AgreementDetailHeader";
 import { CreateBudgetLinesProvider } from "../../../components/UI/WizardSteps/StepCreateBudgetLines/context";
-import PreviewTable from "../../../components/UI/PreviewTable/PreviewTable";
+import BudgetLinesTable from "../../../components/UI/BudgetLinesTable";
 import StepCreateBudgetLines from "../../../components/UI/WizardSteps/StepCreateBudgetLines/StepCreateBudgetLines";
 import Alert from "../../../components/UI/Alert";
 
@@ -70,7 +70,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                     }}
                 />
             ) : agreement?.budget_line_items.length > 0 ? (
-                <PreviewTable budgetLinesAdded={agreement?.budget_line_items} readOnly={!isEditMode} />
+                <BudgetLinesTable budgetLinesAdded={agreement?.budget_line_items} readOnly={!isEditMode} />
             ) : (
                 <p>No budget lines.</p>
             )}
@@ -80,6 +80,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                     <Link
                         className="usa-button margin-top-4 margin-right-0"
                         to={`/agreements/approve/${agreement?.id}`}
+                        data-cy="bli-tab-continue-btn"
                     >
                         Plan or Execute Budget Lines
                     </Link>
