@@ -162,3 +162,8 @@ export const fiscalYearFromDate = (date) => {
     const year = dt.getUTCFullYear();
     return month > 8 ? year + 1 : year;
 };
+
+export const displayFeePercent = (fee) => {
+    if (fee === 0) return "0";
+    return `${fee * 100}%`;
+};

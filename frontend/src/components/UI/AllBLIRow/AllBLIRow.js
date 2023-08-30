@@ -7,7 +7,7 @@ import CurrencyFormat from "react-currency-format";
 import TableTag from "../TableTag";
 import ChangeIcons from "../ChangeIcons";
 import TableRowExpandable from "../TableRowExpandable";
-import { loggedInName, formatDateNeeded, formatDateToMonthDayYear } from "../../../helpers/utils";
+import { loggedInName, formatDateNeeded, formatDateToMonthDayYear, displayFeePercent } from "../../../helpers/utils";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -111,8 +111,14 @@ const AllBLIRow = ({
                     </dl>
                     <dl className="font-12px" style={{ marginLeft: "9.0625rem" }}>
                         <dt className="margin-0 text-base-dark">Notes</dt>
-                        <dd className="margin-0" style={{ maxWidth: "400px" }}>
+                        <dd className="margin-0" style={{ maxWidth: "25rem" }}>
                             {budgetLine?.comments ? budgetLine.comments : "No notes added."}
+                        </dd>
+                    </dl>
+                    <dl className="font-12px" style={{ marginLeft: "15rem" }}>
+                        <dt className="margin-0 text-base-dark">Procurement Shop</dt>
+                        <dd className="margin-0" style={{ maxWidth: "25rem" }}>
+                            {`${budgetLine?.procShopCode}-Fee Rate: ${displayFeePercent(budgetLine?.procShopFee)}`}
                         </dd>
                     </dl>
                     <div className="flex-align-self-end margin-left-auto margin-bottom-1">
