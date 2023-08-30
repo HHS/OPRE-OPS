@@ -1,7 +1,13 @@
 # System and Information Integrity
 ## SI-10 - Information Input Validation
 
-Check the validity of the following information inputs: [Assignment: organization-defined information inputs to the system].
+Check the validity of the following information inputs: [i. Type checks – Checks to ensure that the input is, in fact, a valid data string and not any other type of object.
+• This includes validating that input strings contain no inserted executable content or active content that can be mistakenly interpreted as instructions to the system, including, but not limited to. Trojan horses, malicious code, metacode, metadata, or metacharacters, Hypertext Markup Language (HTML), Extensible Markup Language (XML), JavaScript, Structured Query Language (SQL) statements, shell script, and streaming media.
+• Inputs passed to interpreters must be prescreened to prevent the content from being unintentionally interpreted as commands.
+ii. Format and syntax checks – Checks to verify that data strings conform to defined formatting and syntax requirements for that type of input.
+iii. Parameter and character validity checks – Checks to verify that any parameters or other characters entered, including format parameters for routines that have formatting capabilities, have recognized valid values.
+• Any parameters that have invalid values must be rejected and discarded.
+• Web server applications must be configured to prohibit invalid data from web clients in order to mitigate web application vulnerabilities including, but not limited to, buffer overflow, cross-site scripting, null byte attacks, SQL injection attacks, and HTTP header manipulation].
 
 ## OPS Implementation
 
