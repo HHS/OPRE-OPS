@@ -34,14 +34,22 @@ it("pagination on the bli table works as expected", () => {
     cy.get("a").should("have.class", "usa-current").contains("1");
     cy.get("li").should("have.class", "usa-pagination__item").contains("2");
     cy.get("li").should("have.class", "usa-pagination__item").contains("Next");
-    cy.get("li").should("not.contain", "Previous");
     cy.get("tbody").find("tr").should("have.length", 10);
+    cy.get("li")
+        .should("have.class", "usa-pagination__item")
+        .contains("Previous")
+        .find("svg")
+        .should("have.attr", "aria-hidden", "true");
 
     // go to the second page
     cy.get("li").should("have.class", "usa-pagination__item").contains("2").click();
     cy.get("a").should("have.class", "usa-current").contains("2");
     cy.get("li").should("have.class", "usa-pagination__item").contains("Previous");
-    cy.get("li").should("not.contain", "Next");
+    cy.get("li")
+        .should("have.class", "usa-pagination__item")
+        .contains("Next")
+        .find("svg")
+        .should("have.attr", "aria-hidden", "true");
 
     // go back to the first page
     cy.get("li").should("have.class", "usa-pagination__item").contains("1").click();
