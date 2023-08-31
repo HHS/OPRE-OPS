@@ -3,7 +3,7 @@ import CurrencyFormat from "react-currency-format";
 import TableTag from "../BudgetLinesTable/TableTag";
 import { formatDateNeeded } from "../../../helpers/utils";
 import Table from "../Table";
-import { All_BUDGET_LINES_TABLE_HEADINGS } from "../../../constants";
+import { All_BUDGET_LINES_TABLE_HEADINGS, BLIS_PER_PAGE } from "../../../constants";
 import { useState } from "react";
 import PaginationNav from "../PaginationNav/PaginationNav";
 import _ from "lodash";
@@ -17,8 +17,6 @@ import _ from "lodash";
  */
 const AllBudgetLinesTable = ({ budgetLines }) => {
     const [currentPage, setCurrentPage] = useState(1);
-
-    const BLIS_PER_PAGE = 10;
 
     let budgetLinesPage = _.cloneDeep(budgetLines);
     budgetLinesPage = budgetLinesPage.slice((currentPage - 1) * BLIS_PER_PAGE, currentPage * BLIS_PER_PAGE);
