@@ -25,31 +25,26 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
     const totalPages = Math.ceil(items.length / itemsPerPage);
 
     useEffect(() => {
-        const tmpPageNumberArray = [];
+        let tmpPageNumberArray = [];
         if (totalPages < 7) {
-            for (let pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
-                tmpPageNumberArray.push(pageNumber);
-            }
+            tmpPageNumberArray = [1, 2, 3, 4, 5, 6, 7];
         } else {
-            tmpPageNumberArray.push(1);
             if (currentPage <= 5) {
-                for (let pageNumber = 2; pageNumber <= 5; pageNumber++) {
-                    tmpPageNumberArray.push(pageNumber);
-                }
-                tmpPageNumberArray.push(null);
+                tmpPageNumberArray = [1, 2, 3, 4, null];
             } else if (currentPage >= totalPages - 4) {
+                tmpPageNumberArray.push(1);
                 tmpPageNumberArray.push(null);
                 for (let pageNumber = totalPages - 4; pageNumber < totalPages; pageNumber++) {
                     tmpPageNumberArray.push(pageNumber);
                 }
             } else {
+                tmpPageNumberArray.push(1);
                 tmpPageNumberArray.push(null);
                 for (let pageNumber = currentPage - 1; pageNumber <= currentPage + 1; pageNumber++) {
                     tmpPageNumberArray.push(pageNumber);
                 }
                 tmpPageNumberArray.push(null);
             }
-
             tmpPageNumberArray.push(totalPages);
         }
         setPageNumberArray(tmpPageNumberArray);
