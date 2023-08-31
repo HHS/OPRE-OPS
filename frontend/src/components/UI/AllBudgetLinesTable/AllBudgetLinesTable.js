@@ -18,8 +18,12 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                     <AllBLIRow
                         key={bl?.id}
                         bl={bl}
-                        handleDeleteBudgetLine={() => {}}
-                        handleDuplicateBudgetLine={() => {}}
+                        handleDeleteBudgetLine={() => {
+                            alert("not implemented");
+                        }}
+                        handleSetBudgetLineForEditing={() => {
+                            alert("not implemented");
+                        }}
                         isReviewMode={false}
                         readOnly={false}
                         canUserEditBudgetLines={bl?.isAllowedToEdit}
