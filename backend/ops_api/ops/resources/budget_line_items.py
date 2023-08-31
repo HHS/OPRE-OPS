@@ -314,30 +314,8 @@ def update_budget_line_item(data: dict[str, Any], id: int):
 
 
 def validate_and_normalize_request_data_for_patch(schema: Schema) -> dict[str, Any]:
-    change_obj = schema.load(request.json, unknown=EXCLIDE)
-    data = schema.dump(change_obj)
+    data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
     data = {k: v for (k, v) in data.items() if k in request.json}  # only keep the attributes from the request body
-
-    id_ = data["id"]
-    budget_line_item_stmt = select(BudgetLineItem).where(BudgetLineItem.id == id_)
-    budget_line_item = current_app.db_session.scalar(budget_line_item_stmt)
-    for key in data:
-        if getattr(budget_line_item, key) != getattr(change_obj, key):
-            changed = True
-            break
-    else:
-        changed = False
-
-    status = budget_line_item.status
-    if data["status"]:
-        new_status = BudgetLineItemStatus[data["status"]]
-        if new_status != status:
-            status = new_status
-
-    if changed and status == BudgetLineItemStatus.PLANNED:
-        status = BudgetLineItemStatus.DRAFT
-
-    data["status"] = status
 
     with suppress(KeyError):
         if data["status"]:
@@ -358,30 +336,45 @@ def validate_and_normalize_request_data_for_patch(schema: Schema) -> dict[str, A
 
 
 def validate_and_normalize_request_data_for_put(schema: Schema) -> dict[str, Any]:
-    change_obj = schema.load(request.json, unknown=EXCLIDE)
-    data = schema.dump(change_obj)
-
-    id_ = data["id"]
-    budget_line_item_stmt = select(BudgetLineItem).where(BudgetLineItem.id == id_)
+    id = schema.context["id"]
+    budget_line_item_stmt = select(BudgetLineItem).where(BudgetLineItem.id == id)
     budget_line_item = current_app.db_session.scalar(budget_line_item_stmt)
-    for key in data:
-        if getattr(budget_line_item, key) != getattr(change_obj, key):
-            changed = True
-            break
-    else:
-        changed = False
+    change_obj = schema.load(request.json, partial=True, unknown=EXCLUDE)
+    change_data = schema.dump(change_obj)
+    change_data = {
+        key: getattr(change_obj, key)
+        for key in change_data
+        if key not in {"status", "id"}
+        and key in request.json
+        and getattr(budget_line_item, key) != getattr(change_obj, key)
+    }
 
-    status = budget_line_item.status
-    if data["status"]:
-        new_status = BudgetLineItemStatus[data["status"]]
-        if new_status != status:
-            status = new_status
-
-    if changed and status == BudgetLineItemStatus.PLANNED:
+    if change_data and budget_line_item.status == BudgetLineItemStatus.PLANNED:
         status = BudgetLineItemStatus.DRAFT
+    else:
+        status = getattr(change_obj, "status", budget_line_item.status)
+        if not isinstance(status, BudgetLineItemStatus):
+            status = budget_line_item.status
+    print(f">>>>>> ID: {id}; orig_status: {budget_line_item.status}; change_status: {change_obj.status}; status: {status}")
 
-    data["status"] = status
+    if status != budget_line_item.status:
+        change_data["status"] = status
 
-    data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
+    change_data["id"] = id
+
+    data = {
+        key: (
+            BudgetLineItemStatus[value] if key == "status"
+            else date.fromisoformat(value) if key == "date_needed"
+            else value
+        )
+        for key, value in budget_line_item.to_dict().items()
+    }
+    data.update(change_data)
+
+    from pprint import pprint
+    print("*"*80)
+    pprint(data)
+    print("^"*80)
 
     return data
