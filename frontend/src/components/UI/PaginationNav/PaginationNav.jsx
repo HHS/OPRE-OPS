@@ -7,7 +7,9 @@ import styles from "./PaginationNav.module.scss";
  * ref: https://designsystem.digital.gov/components/pagination/
  * @param {object} props - The component props.
  * @param {number} [props.currentPage] - The current page number.
- * @param {string[]} props.tableHeadings - The table headings to display.
+ * @param {Function} [props.setCurrentPage] - A function to call to set the current page.
+ * @param {object[]} [props.items] - An array of objects to paginate over.
+ * @param {number} [props.itemsPerPage] - The number of items to show per page.
  * @returns {React.JSX.Element} - The rendered component.
  * General component properties:
  * 1. The component features a maximum of seven slots.
