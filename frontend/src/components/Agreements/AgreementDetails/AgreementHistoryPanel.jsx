@@ -14,17 +14,17 @@ const findObjectTitle = (historyItem) => {
 
 const summaryMessage = (historyItem) => {
     const className = convertCodeForDisplay("className", historyItem.class_name);
-    const user_name = historyItem.created_by_user_full_name;
+    const userFullName = historyItem.created_by_user_full_name;
     const objectTitle = findObjectTitle(historyItem);
     const classAndTitle = `${className}, "${objectTitle}",`;
     if (historyItem.event_type === "NEW") {
-        return `New ${classAndTitle} created by ${user_name}.`;
+        return `New ${classAndTitle} created by ${userFullName}.`;
     } else if (historyItem.event_type === "UPDATED") {
-        return `${classAndTitle} updated by ${user_name}.`;
+        return `${classAndTitle} updated by ${userFullName}.`;
     } else if (historyItem.event_type === "DELETED") {
-        return `${classAndTitle} deleted by ${user_name}.`;
+        return `${classAndTitle} deleted by ${userFullName}.`;
     }
-    return `${className} ${historyItem.event_type} ${user_name}`;
+    return `${className} ${historyItem.event_type} ${userFullName}`;
 };
 
 const getPropertyLabel = (className, fieldName) => {
