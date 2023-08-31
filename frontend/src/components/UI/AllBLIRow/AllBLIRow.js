@@ -21,10 +21,8 @@ import {
  * @param {Object} props - The props for the BLIRow component.
  * @param {Object} props.bl - The budget line object.
  * @param {boolean} [props.canUserEditBudgetLines] - Whether the user can edit budget lines.
- * @param {boolean} [props.isReviewMode] - Whether the user is in review mode.
  * @param {Function} [props.handleSetBudgetLineForEditing] - The function to set the budget line for editing.
  * @param {Function} [props.handleDeleteBudgetLine] - The function to delete the budget line.
- * @param {Function} [props.handleDuplicateBudgetLine] - The function to duplicate the budget line.
  * @param {boolean} [props.readOnly] - Whether the user is in read only mode.
  * @returns {React.JSX.Element} The BLIRow component.
  **/
