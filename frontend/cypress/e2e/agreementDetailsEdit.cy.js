@@ -55,6 +55,10 @@ it("edit an agreement", () => {
 
         cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
         cy.visit(`/agreements/${agreementId}`);
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .margin-0').should(
+            "have.text",
+            'New Contract Agreement, "Test Contract", created by Admin Demo.'
+        );
         cy.get("#edit").click();
         cy.get("#edit").should("not.exist");
         cy.get('[data-cy="continue-btn"]').should("exist");
@@ -82,6 +86,21 @@ it("edit an agreement", () => {
 
         cy.get("h1").should("have.text", "Test Edit Title");
         cy.get("#edit").should("exist");
+
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .margin-0').should(
+            "have.text",
+            'Contract Agreement, "Test Edit Title", updated by Admin Demo.'
+        );
+        // there's currently a false change for agreement_reason, these child indexes will need to changed when that is fixed
+        cy.get(":nth-child(1) > dl > :nth-child(3)").should("have.text", "Description");
+        cy.get(":nth-child(1) > dl > :nth-child(4)").should(
+            "contain.text",
+            "changed from “Test Description” to “Test Description more text”"
+        );
+        cy.get("dl > :nth-child(5)").should("have.text", "Title");
+        cy.get("dl > :nth-child(6)").should("contain.text", "changed from “Test Contract” to “Test Edit Title”");
+        cy.get("dl > :nth-child(7)").should("have.text", "Notes");
+        cy.get("dl > :nth-child(8)").should("contain.text", "changed from “Test Notes” to “Test Notestest edit notes”");
 
         cy.request({
             method: "DELETE",
