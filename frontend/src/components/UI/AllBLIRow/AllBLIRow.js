@@ -122,40 +122,51 @@ const AllBLIRow = ({
                             {budgetLine?.comments ? budgetLine.comments : "No notes added."}
                         </dd>
                     </dl>
-                    <dl className="font-12px" style={{ marginLeft: "15rem" }}>
-                        <dt className="margin-0 text-base-dark">Procurement Shop</dt>
-                        <dd className="margin-0" style={{ maxWidth: "25rem" }}>
-                            {`${budgetLine?.procShopCode}-Fee Rate: ${displayFeePercent(budgetLine?.procShopFee)}`}
-                        </dd>
-                        <dt className="margin-0 text-base-dark">SubTotal</dt>
-                        <dd className="margin-0" style={{ maxWidth: "25rem" }}>
-                            <CurrencyFormat
-                                value={budgetLine?.amount}
-                                displayType={"text"}
-                                thousandSeparator={true}
-                                prefix={"$"}
-                                decimalScale={2}
-                                fixedDecimalScale={true}
-                                renderText={(value) => value}
-                            />
-                        </dd>
-                        <dt className="margin-0 text-base-dark">Fees</dt>
-                        <dd className="margin-0" style={{ maxWidth: "25rem" }}>
-                            {totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.procShopFee) === 0 ? (
-                                0
-                            ) : (
-                                <CurrencyFormat
-                                    value={totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.procShopFee)}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    prefix={"$"}
-                                    decimalScale={2}
-                                    fixedDecimalScale={true}
-                                    renderText={(value) => value}
-                                />
-                            )}
-                        </dd>
-                    </dl>
+                    <div className="font-12px" style={{ marginLeft: "15rem" }}>
+                        <dl className="margin-bottom-0">
+                            <dt className="margin-0 text-base-dark">Procurement Shop</dt>
+                            <dd className="margin-0" style={{ maxWidth: "25rem" }}>
+                                {`${budgetLine?.procShopCode}-Fee Rate: ${displayFeePercent(budgetLine?.procShopFee)}`}
+                            </dd>
+                        </dl>
+                        <div className="font-12px display-flex margin-top-1">
+                            <dl className="margin-0">
+                                <dt className="margin-0 text-base-dark">SubTotal</dt>
+                                <dd className="margin-0">
+                                    <CurrencyFormat
+                                        value={budgetLine?.amount}
+                                        displayType={"text"}
+                                        thousandSeparator={true}
+                                        prefix={"$"}
+                                        decimalScale={2}
+                                        fixedDecimalScale={true}
+                                        renderText={(value) => value}
+                                    />
+                                </dd>
+                            </dl>
+                            <dl className=" margin-0 margin-left-2">
+                                <dt className="margin-0 text-base-dark">Fees</dt>
+                                <dd className="margin-0">
+                                    {totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.procShopFee) === 0 ? (
+                                        0
+                                    ) : (
+                                        <CurrencyFormat
+                                            value={totalBudgetLineFeeAmount(
+                                                budgetLine?.amount,
+                                                budgetLine?.procShopFee
+                                            )}
+                                            displayType={"text"}
+                                            thousandSeparator={true}
+                                            prefix={"$"}
+                                            decimalScale={2}
+                                            fixedDecimalScale={true}
+                                            renderText={(value) => value}
+                                        />
+                                    )}
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
                     <div className="flex-align-self-end margin-left-auto margin-bottom-1">
                         {!readOnly && (
                             <ChangeIcons
