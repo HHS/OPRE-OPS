@@ -7,7 +7,14 @@ import CurrencyFormat from "react-currency-format";
 import TableTag from "../TableTag";
 import ChangeIcons from "../ChangeIcons";
 import TableRowExpandable from "../TableRowExpandable";
-import { loggedInName, formatDateNeeded, formatDateToMonthDayYear, displayFeePercent } from "../../../helpers/utils";
+import {
+    loggedInName,
+    formatDateNeeded,
+    formatDateToMonthDayYear,
+    displayFeePercent,
+    totalBudgetLineFeeAmount,
+    totalBudgetLineAmountPlusFees,
+} from "../../../helpers/utils";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -30,7 +37,7 @@ const AllBLIRow = ({
 }) => {
     const [isExpanded, setIsExpanded] = React.useState(false);
     const [isRowActive, setIsRowActive] = React.useState(false);
-    let loggedInUser = useSelector((state) => loggedInName(state.auth?.activeUser));
+    let loggedInUser = useSelector((state) => loggedInName(state?.auth?.activeUser));
     const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
 
     const isBudgetLineDraft = budgetLine?.status === "DRAFT";
@@ -63,11 +70,11 @@ const AllBLIRow = ({
                 {bl.can_number}
             </td>
             <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
-                {bl?.amount === 0 ? (
+                {totalBudgetLineAmountPlusFees(bl?.amount, bl?.procShopFee) === 0 ? (
                     0
                 ) : (
                     <CurrencyFormat
-                        value={bl?.amount || 0}
+                        value={totalBudgetLineAmountPlusFees(bl?.amount, bl?.procShopFee)}
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$"}
@@ -119,6 +126,34 @@ const AllBLIRow = ({
                         <dt className="margin-0 text-base-dark">Procurement Shop</dt>
                         <dd className="margin-0" style={{ maxWidth: "25rem" }}>
                             {`${budgetLine?.procShopCode}-Fee Rate: ${displayFeePercent(budgetLine?.procShopFee)}`}
+                        </dd>
+                        <dt className="margin-0 text-base-dark">SubTotal</dt>
+                        <dd className="margin-0" style={{ maxWidth: "25rem" }}>
+                            <CurrencyFormat
+                                value={budgetLine?.amount}
+                                displayType={"text"}
+                                thousandSeparator={true}
+                                prefix={"$"}
+                                decimalScale={2}
+                                fixedDecimalScale={true}
+                                renderText={(value) => value}
+                            />
+                        </dd>
+                        <dt className="margin-0 text-base-dark">Fees</dt>
+                        <dd className="margin-0" style={{ maxWidth: "25rem" }}>
+                            {totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.procShopFee) === 0 ? (
+                                0
+                            ) : (
+                                <CurrencyFormat
+                                    value={totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.procShopFee)}
+                                    displayType={"text"}
+                                    thousandSeparator={true}
+                                    prefix={"$"}
+                                    decimalScale={2}
+                                    fixedDecimalScale={true}
+                                    renderText={(value) => value}
+                                />
+                            )}
                         </dd>
                     </dl>
                     <div className="flex-align-self-end margin-left-auto margin-bottom-1">
