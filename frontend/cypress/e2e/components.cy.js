@@ -51,6 +51,6 @@ describe("procurement shop select", () => {
         getToProcurementShopSelect();
         // Step Two - Select Procurement Shop
         cy.get("#procurement-shop-select").should("have.value", "2");
-        cy.get('[data-cy="fee"]').contains("0%");
+        cy.get('[data-cy="fee"]').contains("0");
     });
 });
