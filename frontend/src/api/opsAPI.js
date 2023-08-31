@@ -12,6 +12,7 @@ export const opsApi = createApi({
         "AgreementReasons",
         "ProcurementShops",
         "BudgetLineItems",
+        "AgreementHistory",
     ],
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
@@ -34,6 +35,10 @@ export const opsApi = createApi({
             query: (id) => `/agreements/${id}`,
             providesTags: ["Agreements"],
         }),
+        getAgreementHistoryById: builder.query({
+            query: (id) => `/agreements/${id}/history/?limit=20`,
+            providesTags: ["AgreementHistory"],
+        }),
         addAgreement: builder.mutation({
             query: (data) => {
                 return {
@@ -43,7 +48,7 @@ export const opsApi = createApi({
                     body: data,
                 };
             },
-            invalidatesTags: ["Agreements", "BudgetLineItems"],
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"],
         }),
         updateAgreement: builder.mutation({
             query: ({ id, data }) => {
@@ -54,14 +59,14 @@ export const opsApi = createApi({
                     body: data,
                 };
             },
-            invalidatesTags: ["Agreements", "BudgetLineItems"],
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"],
         }),
         deleteAgreement: builder.mutation({
             query: (id) => ({
                 url: `/agreements/${id}`,
                 method: "DELETE",
             }),
-            invalidatesTags: ["Agreements", "BudgetLineItems"],
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"],
         }),
         getBudgetLineItems: builder.query({
             query: () => `/budget-line-items/`,
@@ -76,7 +81,7 @@ export const opsApi = createApi({
                     body: data,
                 };
             },
-            invalidatesTags: ["Agreements", "BudgetLineItems"],
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"],
         }),
         updateBudgetLineItem: builder.mutation({
             query: ({ id, data }) => {
@@ -87,7 +92,7 @@ export const opsApi = createApi({
                     body: data,
                 };
             },
-            invalidatesTags: ["Agreements", "BudgetLineItems"],
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"],
         }),
         getAgreementsByResearchProjectFilter: builder.query({
             query: (id) => `/agreements/?research_project_id=${id}`,
@@ -191,6 +196,7 @@ export const opsApi = createApi({
 export const {
     useGetAgreementsQuery,
     useGetAgreementByIdQuery,
+    useGetAgreementHistoryByIdQuery,
     useAddAgreementMutation,
     useUpdateAgreementMutation,
     useDeleteAgreementMutation,
