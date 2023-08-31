@@ -424,6 +424,7 @@ def _get_user_list(data: Any):
 
 
 def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
+    changed = False
     for item in data:
         # subclass attributes won't have the old (deleted) value in get_history
         # unless they were loaded before setting
@@ -431,7 +432,9 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
         if item in {"agreement_type"}:
             pass
         elif item not in {"team_members", "support_contacts"}:
-            setattr(agreement, item, data[item])
+            if getattr(agreement, item) != data[item]:
+                setattr(agreement, item, data[item])
+                changed = True
 
         elif item == "team_members":
             tmp_team_members = _get_user_list(data[item])
@@ -447,8 +450,9 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
             else:
                 agreement.support_contacts = []
 
-    for bli in agreement.budget_line_items:
-        bli.status = BudgetLineItemStatus.DRAFT
+    if changed:
+        for bli in agreement.budget_line_items:
+            bli.status = BudgetLineItemStatus.DRAFT
 
 
 def update_agreement(data: dict[str, Any], agreement: Agreement):

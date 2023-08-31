@@ -314,8 +314,30 @@ def update_budget_line_item(data: dict[str, Any], id: int):
 
 
 def validate_and_normalize_request_data_for_patch(schema: Schema) -> dict[str, Any]:
-    data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
+    change_obj = schema.load(request.json, unknown=EXCLIDE)
+    data = schema.dump(change_obj)
     data = {k: v for (k, v) in data.items() if k in request.json}  # only keep the attributes from the request body
+
+    id_ = data["id"]
+    budget_line_item_stmt = select(BudgetLineItem).where(BudgetLineItem.id == id_)
+    budget_line_item = current_app.db_session.scalar(budget_line_item_stmt)
+    for key in data:
+        if getattr(budget_line_item, key) != getattr(change_obj, key):
+            changed = True
+            break
+    else:
+        changed = False
+
+    status = budget_line_item.status
+    if data["status"]:
+        new_status = BudgetLineItemStatus[data["status"]]
+        if new_status != status:
+            status = new_status
+
+    if changed and status == BudgetLineItemStatus.PLANNED:
+        status = BudgetLineItemStatus.DRAFT
+
+    data["status"] = status
 
     with suppress(KeyError):
         if data["status"]:
@@ -336,15 +358,29 @@ def validate_and_normalize_request_data_for_patch(schema: Schema) -> dict[str, A
 
 
 def validate_and_normalize_request_data_for_put(schema: Schema) -> dict[str, Any]:
-    data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
+    change_obj = schema.load(request.json, unknown=EXCLIDE)
+    data = schema.dump(change_obj)
 
+    id_ = data["id"]
+    budget_line_item_stmt = select(BudgetLineItem).where(BudgetLineItem.id == id_)
+    budget_line_item = current_app.db_session.scalar(budget_line_item_stmt)
+    for key in data:
+        if getattr(budget_line_item, key) != getattr(change_obj, key):
+            changed = True
+            break
+    else:
+        changed = False
+
+    status = budget_line_item.status
     if data["status"]:
         new_status = BudgetLineItemStatus[data["status"]]
-        if new_status == BudgetLineItemStatus.PLANNED:
-            new_status = BudgetLineItemStatus.DRAFT
-        data["status"] = new_status
-    else:
-        data["status"] = None
+        if new_status != status:
+            status = new_status
+
+    if changed and status == BudgetLineItemStatus.PLANNED:
+        status = BudgetLineItemStatus.DRAFT
+
+    data["status"] = status
 
     data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
 
