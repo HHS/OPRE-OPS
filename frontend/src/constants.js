@@ -29,4 +29,6 @@ const constants = {
 export const All_BUDGET_LINES_TABLE_HEADINGS = ["Description", "Agreement", "Need By", "FY", "CAN", "Total", "Status"];
 export const BUDGET_LINE_TABLE_HEADERS = ["Description", "Need By", "FY", "CAN", "Amount", "Fee", "Total", "Status"];
 
+export const BLIS_PER_PAGE = 10;
+
 export default constants;

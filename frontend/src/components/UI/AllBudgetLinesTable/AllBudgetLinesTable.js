@@ -1,20 +1,26 @@
+import { useState } from "react";
 import PropTypes from "prop-types";
+import _ from "lodash";
 import Table from "../Table";
 import AllBLIRow from "../AllBLIRow";
-import { All_BUDGET_LINES_TABLE_HEADINGS } from "../../../constants";
+import { All_BUDGET_LINES_TABLE_HEADINGS, BLIS_PER_PAGE } from "../../../constants";
+import PaginationNav from "../PaginationNav/PaginationNav";
 
 /**
  * TableRow component that represents a single row in the budget lines table.
  * @param {Object} props - The props for the TableRow component.
  * @param {Object[]} props.budgetLines - The budget line data for the row.
- * } props.budgetLines - The budget line data for the row.
  * @returns {React.JSX.Element} The TableRow component.
  */
 const AllBudgetLinesTable = ({ budgetLines }) => {
+    const [currentPage, setCurrentPage] = useState(1);
+    let budgetLinesPage = _.cloneDeep(budgetLines);
+    budgetLinesPage = budgetLinesPage.slice((currentPage - 1) * BLIS_PER_PAGE, currentPage * BLIS_PER_PAGE);
+
     return (
         <>
             <Table tableHeadings={All_BUDGET_LINES_TABLE_HEADINGS}>
-                {budgetLines.map((bl) => (
+                {budgetLinesPage.map((bl) => (
                     <AllBLIRow
                         key={bl?.id}
                         bl={bl}
@@ -30,7 +36,7 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                     />
                 ))}
             </Table>
-            <pre>{JSON.stringify(budgetLines, null, 2)}</pre>
+            <PaginationNav currentPage={currentPage} setCurrentPage={setCurrentPage} items={budgetLines} />
         </>
     );
 };
