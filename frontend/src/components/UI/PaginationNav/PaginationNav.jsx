@@ -1,4 +1,5 @@
 import cx from "clsx";
+import { useEffect, useState } from "react";
 // https://designsystem.digital.gov/components/pagination/#using-the-pagination-component-2
 /*
 General component properties:
@@ -11,25 +12,39 @@ General component properties:
 7. Display the same number of slots for each page in the set.
  */
 export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPerPage = 10 }) => {
+    const [pageNumberArray, setPageNumberArray] = useState([]); // 7 element array with either a page number or overflow indicator (null)
     const totalPages = Math.ceil(items.length / itemsPerPage);
 
-    console.log("totalPages", totalPages);
+    useEffect(() => {
+        const tmpPageNumberArray = [];
+        if (totalPages < 7) {
+            for (let pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
+                tmpPageNumberArray.push(pageNumber);
+            }
+        } else {
+            tmpPageNumberArray.push(1);
+            if (currentPage <= 5) {
+                for (let pageNumber = 2; pageNumber <= 5; pageNumber++) {
+                    tmpPageNumberArray.push(pageNumber);
+                }
+                tmpPageNumberArray.push(null);
+            } else if (currentPage >= totalPages - 4) {
+                tmpPageNumberArray.push(null);
+                for (let pageNumber = totalPages - 4; pageNumber < totalPages; pageNumber++) {
+                    tmpPageNumberArray.push(pageNumber);
+                }
+            } else {
+                tmpPageNumberArray.push(null);
+                for (let pageNumber = currentPage - 1; pageNumber <= currentPage + 1; pageNumber++) {
+                    tmpPageNumberArray.push(pageNumber);
+                }
+                tmpPageNumberArray.push(null);
+            }
 
-    const pageNumberArray = []; // 7 element array with either a page number or overflow indicator (null)
-
-    if (totalPages < 7) {
-        for (let pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
-            pageNumberArray.push(pageNumber);
+            tmpPageNumberArray.push(totalPages);
         }
-    } else {
-        pageNumberArray.push(1);
-        pageNumberArray.push(null);
-        pageNumberArray.push(null);
-        pageNumberArray.push(null);
-        pageNumberArray.push(null);
-        pageNumberArray.push(null);
-        pageNumberArray.push(totalPages);
-    }
+        setPageNumberArray(tmpPageNumberArray);
+    }, [currentPage, totalPages]);
 
     const pageItems = [];
 
