@@ -42,3 +42,19 @@ Feature: Edit Planned Budget Line Item
     And I edit the budget line item to change a value
     When I submit the budget line item
     Then I should get an error that I am not authorized
+
+  Scenario: Edit Amount with Note
+    Given I am logged in as an OPS user
+    And I have a Contract Agreement as the original Agreement owner
+    And I have a budget line in Planned status
+    And I edit the budget line to change the Amount with a Note
+    When I submit the budget line item
+    Then I should get a message that it was successful
+
+  Scenario: Edit Amount without Note
+    Given I am logged in as an OPS user
+    And I have a Contract Agreement as the original Agreement owner
+    And I have a budget line in Planned status
+    And I edit the budget line to change the Amount without a Note
+    When I submit the budget line item
+    Then I should get an error that it was not successful
