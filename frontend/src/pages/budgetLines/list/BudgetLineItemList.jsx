@@ -15,10 +15,10 @@ import AllBudgetLinesTable from "../../../components/UI/AllBudgetLinesTable";
  */
 export const BudgetLineItemList = () => {
     const [searchParams] = useSearchParams();
-    const isAlertActive = useSelector((state) => state.alert.isActive);
-    const loggedInUserId = useSelector((state) => state.auth.activeUser.id);
+    const isAlertActive = useSelector((state) => state?.alert?.isActive);
+    const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
+    const activeUser = useSelector((state) => state?.auth?.activeUser);
     const [filters, setFilters] = React.useState({});
-
     const {
         data: budgetLineItems,
         error: budgetLineItemsError,
@@ -27,7 +27,6 @@ export const BudgetLineItemList = () => {
     const { data: cans, error: cansError, isLoading: cansIsLoading } = useGetCansQuery();
     const { data: agreements, error: agreementsError, isLoading: agreementsAreError } = useGetAgreementsQuery();
 
-    const activeUser = useSelector((state) => state.auth.activeUser);
     const myBudgetLineItemsUrl = searchParams.get("filter") === "my-budget-line-items";
 
     if (budgetLineItemsIsLoading || cansIsLoading || agreementsAreError) {
