@@ -151,7 +151,7 @@ export const timeAgo = (dateParam) => {
 /**
  * Find the fiscal year for a date, which is the same as it's year unless it's after
  * September 30th then it rolls over into the next FY.
- * @param date - a date as string such as "2023-02-15" or a Date
+ * @param {string} date - a date as string such as "2023-02-15" or a Date
  * @returns {number|null} the fiscal year
  */
 export const fiscalYearFromDate = (date) => {
@@ -162,8 +162,37 @@ export const fiscalYearFromDate = (date) => {
     const year = dt.getUTCFullYear();
     return month > 8 ? year + 1 : year;
 };
-
+/**
+ * This function takes a fee and formats it as a percent.
+ * @param {number} fee - The fee to format.
+ * @returns {string} The formatted fee.
+ * @example displayFeePercent(0.1)
+ */
 export const displayFeePercent = (fee) => {
     if (fee === 0) return "0";
     return `${fee * 100}%`;
+};
+
+/**
+ * This function takes an amount and fee and returns the total fee amount.
+ * @param {number} amount - The amount to calculate the fee for.
+ * @param {number} fee - The fee to calculate the fee for.
+ * @returns {number} The total fee amount.
+ * @example totalBudgetLineFeeAmount(100, 0.1)
+ */
+export const totalBudgetLineFeeAmount = (amount, fee) => {
+    if (amount === 0) return 0;
+    return amount * fee;
+};
+
+/**
+ * This function takes an amount and fee and returns the total amount plus the fee.
+ * @param {number} amount - The amount to calculate the total amount plus fee for.
+ * @param {number} fee - The fee to calculate the total amount plus fee for.
+ * @returns {number} The total amount plus fee.
+ * @example totalBudgetLineAmountPlusFees(100, 0.1)
+ */
+export const totalBudgetLineAmountPlusFees = (amount, fee) => {
+    if (amount === 0) return 0;
+    return amount + amount * fee;
 };
