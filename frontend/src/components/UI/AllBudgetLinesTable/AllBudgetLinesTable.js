@@ -3,7 +3,10 @@ import CurrencyFormat from "react-currency-format";
 import TableTag from "../BudgetLinesTable/TableTag";
 import { formatDateNeeded } from "../../../helpers/utils";
 import Table from "../Table";
-import { All_BUDGET_LINES_TABLE_HEADINGS } from "../../../constants";
+import { All_BUDGET_LINES_TABLE_HEADINGS, BLIS_PER_PAGE } from "../../../constants";
+import { useState } from "react";
+import PaginationNav from "../PaginationNav/PaginationNav";
+import _ from "lodash";
 
 /**
  * TableRow component that represents a single row in the budget lines table.
@@ -13,6 +16,11 @@ import { All_BUDGET_LINES_TABLE_HEADINGS } from "../../../constants";
  * @returns {React.JSX.Element} The TableRow component.
  */
 const AllBudgetLinesTable = ({ budgetLines }) => {
+    const [currentPage, setCurrentPage] = useState(1);
+
+    let budgetLinesPage = _.cloneDeep(budgetLines);
+    budgetLinesPage = budgetLinesPage.slice((currentPage - 1) * BLIS_PER_PAGE, currentPage * BLIS_PER_PAGE);
+
     const TableRow = ({ bl }) => {
         return (
             <>
@@ -44,11 +52,11 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
     return (
         <>
             <Table tableHeadings={All_BUDGET_LINES_TABLE_HEADINGS}>
-                {budgetLines.map((bl) => (
+                {budgetLinesPage.map((bl) => (
                     <TableRow key={bl?.id} bl={bl} />
                 ))}
             </Table>
-            <pre>{JSON.stringify(budgetLines, null, 2)}</pre>
+            <PaginationNav currentPage={currentPage} setCurrentPage={setCurrentPage} items={budgetLines} />
         </>
     );
 };
