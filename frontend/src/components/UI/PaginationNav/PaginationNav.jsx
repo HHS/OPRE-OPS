@@ -70,7 +70,10 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
             );
         } else {
             pageItems.push(
-                <li key={`page-item-${pagePosition}`} className="usa-pagination__item usa-pagination__page-no">
+                <li
+                    key={`page-item-${pagePosition}`}
+                    className="usa-pagination__item usa-pagination__page-no cursor-pointer"
+                >
                     <a
                         className={cx(
                             "usa-pagination__button",
@@ -92,7 +95,7 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
                 <li
                     key="page-item-previous"
                     className={cx(
-                        "usa-pagination__item usa-pagination__arrow",
+                        "usa-pagination__item usa-pagination__arrow cursor-pointer",
                         currentPage === 1 && styles.hideElement
                     )}
                 >
@@ -108,7 +111,7 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
                     </a>
                 </li>
                 {pageItems}
-                <li key="page-item-next" className="usa-pagination__item usa-pagination__arrow">
+                <li key="page-item-next" className="usa-pagination__item usa-pagination__arrow cursor-pointer">
                     <a
                         className={cx(
                             "usa-pagination__link usa-pagination__next-page",
