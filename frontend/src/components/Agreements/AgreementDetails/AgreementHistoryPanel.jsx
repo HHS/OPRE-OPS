@@ -37,11 +37,10 @@ const usersToNames = (users) => {
 };
 
 const ChangesDetails = ({ historyItem }) => {
-    const changes = historyItem.changes;
+    const rawChanges = historyItem.changes;
     const eventType = historyItem.event_type;
     if (eventType != "UPDATED") return;
-    console.log("ChangesDetails.changes:", changes);
-    const prepChanges = Object.entries(changes).map(([key, change]) => {
+    const preparedChanges = Object.entries(rawChanges).map(([key, change]) => {
         if ("collection_of" in change) {
             const added = change.collection_of == "User" ? usersToNames(change.added) : change.added;
             const deleted = change.collection_of == "User" ? usersToNames(change.deleted) : change.deleted;
@@ -89,7 +88,7 @@ const ChangesDetails = ({ historyItem }) => {
 
     return (
         <dl>
-            {prepChanges.map((change) => (
+            {preparedChanges.map((change) => (
                 <>
                     <dt>{change.propertyLabel}</dt>
                     <dd>
