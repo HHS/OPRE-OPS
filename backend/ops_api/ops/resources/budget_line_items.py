@@ -121,7 +121,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
                 if request.json.get("status") == BudgetLineItemStatus.UNDER_REVIEW.name:
                     with OpsEventHandler(OpsEventType.SEND_BLI_FOR_APPROVAL) as approval_meta:
-                        data = validate_and_normalize_request_data_for_put(self._put_schema)
+                        data = validate_and_normalize_request_data(self._put_schema)
                         budget_line_item = self.update_and_commit_budget_line_item(data, id)
 
                         approval_meta.metadata.update({"bli": budget_line_item.to_dict()})
@@ -130,7 +130,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                             f"{message_prefix}: BLI Sent For Approval: {budget_line_item.to_dict()}"
                         )
                 else:
-                    data = validate_and_normalize_request_data_for_put(self._put_schema)
+                    data = validate_and_normalize_request_data(self._put_schema)
                     budget_line_item = self.update_and_commit_budget_line_item(data, id)
 
                 bli_dict = self._response_schema.dump(budget_line_item)
@@ -165,7 +165,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
                 if request.json.get("status") == BudgetLineItemStatus.UNDER_REVIEW.name:
                     with OpsEventHandler(OpsEventType.SEND_BLI_FOR_APPROVAL) as approval_meta:
-                        data = validate_and_normalize_request_data_for_patch(self._patch_schema)
+                        data = validate_and_normalize_request_data(self._patch_schema)
                         budget_line_item = self.update_and_commit_budget_line_item(data, id)
 
                         approval_meta.metadata.update({"bli": budget_line_item.to_dict()})
@@ -174,7 +174,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                             f"{message_prefix}: BLI Sent For Approval: {budget_line_item.to_dict()}"
                         )
                 else:
-                    data = validate_and_normalize_request_data_for_patch(self._patch_schema)
+                    data = validate_and_normalize_request_data(self._patch_schema)
                     budget_line_item = self.update_and_commit_budget_line_item(data, id)
 
                 bli_dict = self._response_schema.dump(budget_line_item)
@@ -313,68 +313,40 @@ def update_budget_line_item(data: dict[str, Any], id: int):
     return budget_line_item
 
 
-def validate_and_normalize_request_data_for_patch(schema: Schema) -> dict[str, Any]:
-    data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
-    data = {k: v for (k, v) in data.items() if k in request.json}  # only keep the attributes from the request body
-
-    with suppress(KeyError):
-        if data["status"]:
-            new_status = BudgetLineItemStatus[data["status"]]
-            if new_status == BudgetLineItemStatus.PLANNED:
-                new_status = BudgetLineItemStatus.DRAFT
-            data["status"] = new_status
-        else:
-            data["status"] = None
-
-    with suppress(KeyError):
-        if data["date_needed"]:
-            data["date_needed"] = date.fromisoformat(data["date_needed"])
-        else:
-            data["date_needed"] = None
-
-    return data
-
-
-def validate_and_normalize_request_data_for_put(schema: Schema) -> dict[str, Any]:
+def validate_and_normalize_request_data(schema: Schema) -> dict[str, Any]:
     id = schema.context["id"]
-    budget_line_item_stmt = select(BudgetLineItem).where(BudgetLineItem.id == id)
-    budget_line_item = current_app.db_session.scalar(budget_line_item_stmt)
-    change_obj = schema.load(request.json, partial=True, unknown=EXCLUDE)
-    change_data = schema.dump(change_obj)
+    bli_stmt = select(BudgetLineItem).where(BudgetLineItem.id == id)
+    existing_bli = current_app.db_session.scalar(bli_stmt)
+    try:
+        data = {
+            key: value
+            for key, value in existing_bli.to_dict().items()
+            if key in request.json
+        }  # only keep the attributes from the request body
+    except AttributeError:
+        data = {}
+    change_data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
     change_data = {
-        key: getattr(change_obj, key)
-        for key in change_data
+        key: value
+        for key, value in change_data.items()
         if key not in {"status", "id"}
         and key in request.json
-        and getattr(budget_line_item, key) != getattr(change_obj, key)
-    }
+        and value != data.get(key, None)
+    }  # only keep the attributes from the request body
 
-    if change_data and budget_line_item.status == BudgetLineItemStatus.PLANNED:
-        status = BudgetLineItemStatus.DRAFT
-    else:
-        status = getattr(change_obj, "status", budget_line_item.status)
-        if not isinstance(status, BudgetLineItemStatus):
-            status = budget_line_item.status
-    print(f">>>>>> ID: {id}; orig_status: {budget_line_item.status}; change_status: {change_obj.status}; status: {status}")
+    data |= change_data
 
-    if status != budget_line_item.status:
-        change_data["status"] = status
+    with suppress(AttributeError):
+        try:
+            status = BudgetLineItemStatus[request.json["status"]]
+        except KeyError:
+            status = existing_bli.status
 
-    change_data["id"] = id
+        if len(change_data) > 0 and status == BudgetLineItemStatus.PLANNED:
+            status = BudgetLineItemStatus.DRAFT
+        data["status"] = status
 
-    data = {
-        key: (
-            BudgetLineItemStatus[value] if key == "status"
-            else date.fromisoformat(value) if key == "date_needed"
-            else value
-        )
-        for key, value in budget_line_item.to_dict().items()
-    }
-    data.update(change_data)
-
-    from pprint import pprint
-    print("*"*80)
-    pprint(data)
-    print("^"*80)
+    with suppress(KeyError):
+        data["date_needed"] = date.fromisoformat(data["date_needed"])
 
     return data
