@@ -429,26 +429,22 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
         # subclass attributes won't have the old (deleted) value in get_history
         # unless they were loaded before setting
         _hack_to_fix_get_history = getattr(agreement, item)  # noqa: F841
-        if item in {"agreement_type"}:
-            pass
-        elif item not in {"team_members", "support_contacts"}:
-            if getattr(agreement, item) != data[item]:
-                setattr(agreement, item, data[item])
-                changed = True
+        match (item):
+            case "agreement_type":
+                pass
 
-        elif item == "team_members":
-            tmp_team_members = _get_user_list(data[item])
-            if tmp_team_members:
-                agreement.team_members = tmp_team_members
-            else:
-                agreement.team_members = []
+            case "team_members":
+                tmp_team_members = _get_user_list(data[item])
+                agreement.team_members = tmp_team_members if tmp_team_members else []
 
-        elif item == "support_contacts":
-            tmp_support_contacts = _get_user_list(data[item])
-            if tmp_support_contacts:
-                agreement.support_contacts = tmp_support_contacts
-            else:
-                agreement.support_contacts = []
+            case "support_contacts":
+                tmp_support_contacts = _get_user_list(data[item])
+                agreement.support_contacts = tmp_support_contacts if tmp_support_contacts else []
+
+            case _:
+                if getattr(agreement, item) != data[item]:
+                    setattr(agreement, item, data[item])
+                    changed = True
 
     if changed:
         for bli in agreement.budget_line_items:

@@ -319,9 +319,7 @@ def validate_and_normalize_request_data(schema: Schema) -> dict[str, Any]:
     existing_bli = current_app.db_session.scalar(bli_stmt)
     try:
         data = {
-            key: value
-            for key, value in existing_bli.to_dict().items()
-            if key in request.json
+            key: value for key, value in existing_bli.to_dict().items() if key in request.json
         }  # only keep the attributes from the request body
     except AttributeError:
         data = {}
@@ -329,9 +327,7 @@ def validate_and_normalize_request_data(schema: Schema) -> dict[str, Any]:
     change_data = {
         key: value
         for key, value in change_data.items()
-        if key not in {"status", "id"}
-        and key in request.json
-        and value != data.get(key, None)
+        if key not in {"status", "id"} and key in request.json and value != data.get(key, None)
     }  # only keep the attributes from the request body
 
     data |= change_data
