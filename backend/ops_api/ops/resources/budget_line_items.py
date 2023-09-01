@@ -334,6 +334,15 @@ def validate_and_normalize_request_data(schema: Schema) -> dict[str, Any]:
         and value != data.get(key, None)
     }  # only keep the attributes from the request body
 
+    from pprint import pprint
+    print("*"*80)
+    print(f">>> Updating BLI with {schema.context['method']} <<<")
+    print("*"*80)
+    pprint(data)
+    print("-"*80)
+    pprint(change_data)
+    print("^"*80)
+
     data |= change_data
 
     with suppress(AttributeError):
