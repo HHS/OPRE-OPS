@@ -2,22 +2,22 @@
 ## AC-07 - UNSUCCESSFUL LOGIN ATTEMPTS
 
 The information system:
-a. Enforce the following limits of consecutive invalid logon attempts by a user: 
+a. Enforce the following limits of consecutive invalid logon attempts by a user:
 1. For user ID and Password: Enforces a limit of five (5) consecutive invalid logon attempts by a user during a 120-minute time period; and
 
 2. For all two-factor authentications using a PIV card, configure the maximum allowable login attempts as specified by the type of card and trusting certificate. The maximum allowed PIN attempts for each PIV card stock is specified below:
-     • Fifteen (15) attempts – for 64k card stock in either Cybertrust / Verizon Business CA or those converted to Entrust     certificates (64k card stock only); and
+     • Fifteen (15) attempts – for 64k card stock in either Cybertrust / Verizon Business CA or those converted to Entrust certificates (64k card stock only); and
      •Ten (10) attempts – for modern 128k cards issued by the Entrust CA.]; and
 
-b. When the maximum number of unsuccessful attempts is exceeded, automatically enforces the following: 
+b. When the maximum number of unsuccessful attempts is exceeded, automatically enforces the following:
     Moderate - locks the account/node for 15 minutes
  Note: The maximum Personal Identification Number (PIN) attempts allowed for PIV cards is specified by policies implemented within the Smart Card Management System (SCMS) during issuance. These policies vary depending on a combination of card stock (64k, 128k), and certificate issuer for HHS (Cybertrust/Verizon Business CA or Entrust) and type of credential (PIV, RLA, ALT)
 
 ### OPS Implementation
 
-TODO: Is the time period or number of login attemps configurable on login.gov?  HHS may have different prescriptive values?  Is there any inheritence from login.gov ?
+TODO: Is the time period or number of login attemps configurable on AMS?  HHS may have different prescriptive values?  Is there any inheritence from AMS ?
 
-	
+
 
 #### Related Files
 a. Evidence of login attempts (examples - TODO: update these once determined.)

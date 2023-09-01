@@ -7,6 +7,10 @@ Note: Conditions or trigger events requiring automatic session termination can i
 
 ### OPS Implementation
 
-The OPS application will automatically log out users after 15 minutes of inactivity.
+The OPS application will automatically log out users after 30 minutes of inactivity.
 
 HHS/OPRE-OPS#708
+
+### Releated Content
+
+[Relevant source code](https://github.com/HHS/OPRE-OPS/blob/main/backend/ops_api/ops/environment/default_settings.py)
