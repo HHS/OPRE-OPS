@@ -2,11 +2,12 @@
 ## SI-11 - Error Handling
 
 a. Generate error messages that provide information necessary for corrective actions without revealing information that could be exploited; and
+
 b. Reveal error messages only to [Authorized personnel including but not limited to system administrator or personnel/roles as designated by ACF].
 
 ## OPS Implementation
 
-OPS error mesagges renedered to OPS users do not disclose exploitable or vulnerable informtion to OPS users. Additional error messages with more sensitive system details are accessible to the System Admin and OPS developers.
+OPS error messages renedered to OPS users do not disclose exploitable or vulnerable informtion to OPS users. Additional error messages with more sensitive system details are accessible to the System Admin and OPS developers.
 
 
 ### Control Orgination

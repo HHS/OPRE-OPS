@@ -2,10 +2,11 @@
 ## SI-04 (5) - System Monitoring | System-generated Alerts
 
 Alert [Approved System Personnel and the ACF Incident Response Team] when the following system-generated indications of compromise or potential compromise occur:
-[i. Audit records
-ii. Input from malicious code protection mechanisms
-iii. Intrusion detection and prevention mechanisms
-iv. Boundary protection devices, such as firewalls, gateways, and routers].
+
+i. Audit records<br />
+ii. Input from malicious code protection mechanisms<br />
+iii. Intrusion detection and prevention mechanisms<br />
+iv. Boundary protection devices, such as firewalls, gateways, and routers.
 
 ## OPS Implementation
 
