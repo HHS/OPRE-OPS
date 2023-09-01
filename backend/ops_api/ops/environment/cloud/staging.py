@@ -5,6 +5,7 @@ from ops_api.ops.environment.default_settings import *  # noqa: F403, F401
 
 DEBUG = False
 
+
 # Helper function
 def get_json_env_var(variable_name):
     """Retrieve and serialize a JSON environment variable."""
