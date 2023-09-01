@@ -5,7 +5,7 @@ Require users to re-authenticate when [ACF-defined circumstances or situations r
 
 ## OPS Implementation
 
-TODO: Acuire ACF Tech definitions on such circumstances or situations
+TODO: Acquire ACF Tech definitions on such circumstances or situations
 
 The OPS application will automatically log out users after 30 minutes of inactivity.
 
