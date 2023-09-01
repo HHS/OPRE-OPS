@@ -20,6 +20,7 @@ JWT_REFRESH_TOKEN_EXPIRES = timedelta(hours=12)
 AUTHLIB_OAUTH_CLIENTS = {
     "logingov": {
         "server_metadata_url": "https://idp.int.identitysandbox.gov/.well-known/openid-configuration",
+        "token_endpoint": "https://idp.int.identitysandbox.gov/api/openid_connect/token",
         "user_info_url": "https://idp.int.identitysandbox.gov/api/openid_connect/userinfo",
         "client_id": "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
         "client_kwargs": {"scope": "openid email"},
