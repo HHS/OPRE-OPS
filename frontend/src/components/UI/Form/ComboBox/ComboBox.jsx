@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
  * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
  * @param {boolean} [props.clearWhenSet] - Whether to clear the box when an option is selected.
+ * @param {boolean} [props.isMulti] - Whether to allow multiple selections.
  * Used for TeamMemberComboBox. (optional).
  * @returns {JSX.Element} - The rendered component.
  */
@@ -27,7 +28,9 @@ export const ComboBox = ({
     messages = [],
     overrideStyles = {},
     clearWhenSet = false,
+    isMulti = false,
 }) => {
+    console.log("data", data);
     const [selectedOption, setSelectedOption] = useState(null);
 
     const options = data.map((item) => {
@@ -88,12 +91,29 @@ export const ComboBox = ({
         setSelectedOption(null);
     };
 
-    const handleChangeDefault = (optionId) => {
-        const optionObj = data.find((item) => item.id === Number(optionId));
-        setSelectedData(optionObj);
+    const handleChangeDefault = (event) => {
+        if (Array.isArray(event)) {
+            const selectedOptionObjs = [];
+            const selectedOptions = [];
+            for (let e of event) {
+                const optionId = e.value;
+                const optionObj = data.find((item) => item.id === Number(optionId));
+                selectedOptionObjs.push(optionObj);
 
-        const option = options.find((option) => option.value === Number(optionId));
-        setSelectedOption(option);
+                const option = options.find((option) => option.value === Number(optionId));
+                selectedOptions.push(option);
+            }
+            setSelectedData(selectedOptionObjs);
+            setSelectedOption(selectedOptions);
+        } else {
+            console.log("event", event);
+            const optionId = event.value;
+            const optionObj = data.find((item) => item.id === Number(optionId));
+            setSelectedData(optionObj);
+
+            const option = options.find((option) => option.value === Number(optionId));
+            setSelectedOption(option);
+        }
     };
 
     const handleChange = (e, actionObj) => {
@@ -102,7 +122,7 @@ export const ComboBox = ({
         } else if (clearWhenSet) {
             clearWhenSetFunc(e.value);
         } else {
-            handleChangeDefault(e.value);
+            handleChangeDefault(e);
         }
     };
 
@@ -122,6 +142,7 @@ export const ComboBox = ({
             styles={customStyles}
             isSearchable={true}
             isClearable={true}
+            isMulti={isMulti}
         />
     );
 };
@@ -139,4 +160,5 @@ ComboBox.propTypes = {
     messages: PropTypes.array,
     overrideStyles: PropTypes.object,
     clearWhenSet: PropTypes.bool,
+    isMulti: PropTypes.bool,
 };
