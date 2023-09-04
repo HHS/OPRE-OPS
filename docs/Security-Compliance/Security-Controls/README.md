@@ -140,6 +140,12 @@
 
 ### Maintenance
 
+1. [MA-2](ma-02/index.md)
+2. [MA-3](ma-03/index.md)
+3. [MA-3-1](ma-03-1/index.md)
+4. [MA-3-2](ma-03-2/index.md)
+5. [MA-3-3](ma-03-3/index.md)
+
 ### Personally Identifiable Information Processing and Transparency
 
 ### Risk Assessment
