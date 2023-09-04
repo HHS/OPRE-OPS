@@ -13,12 +13,12 @@ const Table = ({ children, tableHeadings }) => {
     /**
      * Adds a width to the Status column
      * @param {string} heading - The heading to check
-     * @returns {string | undefined} - The width to add if the heading is Status
+     * @returns {object | undefined} - The width to add if the heading is Status
      *
      */
     const addWidthIfStatus = (heading) => {
         if (heading === "Status") {
-            return "width-10";
+            return { width: "6.25rem" };
         }
         return undefined;
     };
@@ -27,7 +27,7 @@ const Table = ({ children, tableHeadings }) => {
             <thead>
                 <tr>
                     {tableHeadings.map((heading, index) => (
-                        <th key={index} scope="col" className={addWidthIfStatus(heading)}>
+                        <th key={index} scope="col" style={addWidthIfStatus(heading)}>
                             {heading}
                         </th>
                     ))}

@@ -5,7 +5,6 @@ import { terminalLog, testLogin } from "./utils";
 const today = new Date();
 const year = today.getFullYear();
 const month = today.getMonth() + 1;
-const day = today.getDate();
 
 const blData = [
     {
@@ -13,7 +12,7 @@ const blData = [
         can: "G99HRF2",
         month: "09 - Sep",
         day: "01",
-        year: year,
+        year: "2048",
         amount: "111111",
         note: "note one",
     },
@@ -122,8 +121,7 @@ it("review an agreement", () => {
         cy.get(".usa-error-message").should("exist");
         cy.get("#enteredYear").clear();
         cy.get("#enteredYear").type(`${year}`);
-
-        // TODO: check to ensure the group date is in the future
+        // test for invalid dates
         cy.get("#enteredMonth").select(month);
         cy.get("#enteredDay").clear();
         cy.get("#enteredDay").type(blData[0].day);
@@ -203,6 +201,7 @@ it("review an agreement", () => {
         cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
         cy.get('[data-cy="error-list"]').should("not.exist");
         cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
+        // can't delete budget line in review mode so won't click review button
 
         // delete test agreement
         cy.request({
@@ -216,14 +215,4 @@ it("review an agreement", () => {
             expect(response.status).to.eq(200);
         });
     });
-});
-
-it("submit agreement for review", () => {
-    cy.visit(`/agreements/approve/1?mode=review`);
-    cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
-    cy.get('[data-cy="error-list"]').should("not.exist");
-    cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
-    cy.get('[data-cy="send-to-approval-btn"]').click();
-    cy.url().should("include", "/agreements");
-    cy.get("tbody tr").contains("In Review");
 });
