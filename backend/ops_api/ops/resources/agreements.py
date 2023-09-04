@@ -304,7 +304,7 @@ class AgreementListAPI(BaseListAPI):
                 query_helper.add_search(polymorphic_agreement.name, search)
 
             case {**filter_args}:
-                pass
+                pass  # Do nothing if only filters are provided
 
         for key, value in filter_args.items():
             query_helper.add_column_equals(Agreement.get_class_field(key), value)
