@@ -145,8 +145,24 @@
 3. [MA-3-1](ma-03-1/index.md)
 4. [MA-3-2](ma-03-2/index.md)
 5. [MA-3-3](ma-03-3/index.md)
+6. [MA-4](ma-04/index.md)
+7. [MA-5](ma-05/index.md)
+8. [MA-6](ma-06/index.md)
 
 ### Personally Identifiable Information Processing and Transparency
+
+1. [PT-2](pt-02/index.md)
+2. [PT-3](pt-03/index.md)
+3. [PT-4](pt-04/index.md)
+4. [PT-5](pt-05/index.md)
+5. [PT-5-2](pt-05-2/index.md)
+6. [PT-6](pt-06/index.md)
+7. [PT-6-1](pt-06-1/index.md)
+8. [PT-6-2](pt-06-2/index.md)
+9. [PT-7](pt-07/index.md)
+10. [PT-7-1](pt-07-1/index.md)
+11. [PT-7-2](pt-07-2/index.md)
+12. [PT-8](pt-08/index.md)
 
 ### Risk Assessment
 
