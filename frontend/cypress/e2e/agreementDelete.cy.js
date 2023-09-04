@@ -162,35 +162,35 @@ const addAgreement = (agreement) => {
     });
 };
 
-it("loads with 8 agreements", () => {
-    cy.get("tbody").children().as("table-rows").should("have.length", 8);
+it("loads with 9 agreements", () => {
+    cy.get("tbody").children().as("table-rows").should("have.length", 9);
 });
 
 it("should allow to delete an agreement if user created it", () => {
-    cy.get("tbody").children().as("table-rows").should("have.length", 8);
+    cy.get("tbody").children().as("table-rows").should("have.length", 9);
     addAgreement(testAgreement);
     cy.visit("/agreements/");
     deleteLastAgreement();
-    cy.get("@table-rows").should("have.length", 8);
+    cy.get("@table-rows").should("have.length", 9);
 });
 
 it("should allow to delete an agreement if user is project officer", () => {
-    cy.get("tbody").children().as("table-rows").should("have.length", 8);
+    cy.get("tbody").children().as("table-rows").should("have.length", 9);
     deleteAgreementByRow(0);
-    cy.get("@table-rows").should("have.length", 8);
+    cy.get("@table-rows").should("have.length", 9);
 });
 // TODO: Add this this once we can switch users or create a test agreement with a team member
 // it("should allow to delete an agreement if user is a team member", () => {
 // });
 
 it("should not allow to delete an agreement if user is not project officer or team member or didn't create the agreement", () => {
-    cy.get("tbody").children().as("table-rows").should("have.length", 8);
+    cy.get("tbody").children().as("table-rows").should("have.length", 9);
     deleteAgreementByRowAndFail(3);
-    cy.get("@table-rows").should("have.length", 8);
+    cy.get("@table-rows").should("have.length", 9);
 });
 
 it("should not allow to delete an agreement if its BLIs are not DRAFT", () => {
-    cy.get("tbody").children().as("table-rows").should("have.length", 8);
+    cy.get("tbody").children().as("table-rows").should("have.length", 9);
     deleteAgreementByRowAndFail(1);
-    cy.get("@table-rows").should("have.length", 8);
+    cy.get("@table-rows").should("have.length", 9);
 });
