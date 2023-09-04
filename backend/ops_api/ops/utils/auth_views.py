@@ -39,7 +39,7 @@ def login() -> Union[Response, tuple[str, int]]:
             user_data = auth_gateway.get_user_info(provider, token["access_token"].strip())
             # Issues where user_data is sometimes just a string, and sometimes a dict.
             if isinstance(user_data, str):
-                user_data = json.loads(user_data) # pragma: allowlist
+                user_data = json.loads(user_data)  # pragma: allowlist
             else:
                 user_data = user_data
             current_app.logger.debug(f"Provider Returned user_data: {user_data}")
