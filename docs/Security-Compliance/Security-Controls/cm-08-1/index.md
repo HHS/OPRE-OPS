@@ -7,7 +7,8 @@ Update the inventory of system components as part of component installations, re
 
 TODO:
 
-### Control Orgination:
-Hybrid with cloud.gov and OPS
+### Control Origination:
+
+Hybrid with IaaS vendor and OPS
 
 ### Related Content

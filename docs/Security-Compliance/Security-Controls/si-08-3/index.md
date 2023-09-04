@@ -7,7 +7,7 @@ Implement spam protection mechanisms with a learning capability to more effectiv
 
 N/A. OPS does not receive or process inbound email messages.
 
-### Control Orgination
+### Control Origination
 
 Hybrid with IaaS vendor and OPS
 

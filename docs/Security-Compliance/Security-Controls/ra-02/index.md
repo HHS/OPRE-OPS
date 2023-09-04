@@ -11,7 +11,7 @@ TODO: Acquire templates and current NIST and HHS standard requirements
 
 ## OPS Implementation
 
-### Control Orgination:
+### Control Origination:
 
 Hybrid with IaaS provider and OPS
 

@@ -7,7 +7,7 @@ Update the system vulnerabilities to be scanned [at least every 30 days, immedia
 
 TODO: Text about how GH and renovatebot does checking of vulns
 
-### Control Orgination:
+### Control Origination:
 
 Hybrid with IaaS provider, ACF Tech, and OPS
 

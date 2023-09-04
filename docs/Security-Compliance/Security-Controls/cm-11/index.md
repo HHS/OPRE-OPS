@@ -11,7 +11,8 @@ Note: Policy enforcement methods include procedural methods (e.g., periodic exam
 
 OPS users cannot install software for OPS
 
-### Control Orgination:
-Hybrid with cloud.gov and OPS
+### Control Origination:
+
+Hybrid with IaaS vendor and OPS
 
 ### Related Content

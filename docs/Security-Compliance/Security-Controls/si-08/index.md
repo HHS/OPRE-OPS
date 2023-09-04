@@ -9,7 +9,7 @@ b. Update spam protection mechanisms when new releases are available in accordan
 
 N/A. OPS does not receive or process inbound email messages.
 
-### Control Orgination
+### Control Origination
 
 OPS
 

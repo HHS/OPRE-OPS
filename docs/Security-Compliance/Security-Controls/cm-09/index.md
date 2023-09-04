@@ -11,9 +11,10 @@ e. Protects the configuration management plan from unauthorized disclosure and m
 
 ## OPS Implementation
 
-TODO: seek ACF OCIO template
+TODO: seek ACF Tech template
 
-### Control Orgination:
+### Control Origination:
+
 Hybrid with cloud.gov and OPS
 
 ### Related Content

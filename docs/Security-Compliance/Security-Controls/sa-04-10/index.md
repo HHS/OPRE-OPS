@@ -7,7 +7,7 @@ Employ only information technology products on the FIPS 201-approved products li
 
 TODO: Seek inherited materials
 
-### Control Orgination:
+### Control Origination:
 
 ACF Tech
 

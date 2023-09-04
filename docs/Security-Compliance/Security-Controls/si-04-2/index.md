@@ -7,7 +7,7 @@ Employ automated tools and mechanisms to support near real-time analysis of even
 
 TODO: better language around OPS utilizes WAF, Defender for ____, and alerting around all of the above. Seek inherited text
 
-### Control Orgination
+### Control Origination
 
 Hybrid with IaaS vendor and OPS
 

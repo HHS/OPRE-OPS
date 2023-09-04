@@ -9,7 +9,8 @@
 
 TODO:
 
-### Control Orgination:
-Hybrid with cloud.gov, ACF OCIO, and OPS
+### Control Origination:
+
+Hybrid with IaaS vendor, ACF Tech, and OPS
 
 ### Related Content

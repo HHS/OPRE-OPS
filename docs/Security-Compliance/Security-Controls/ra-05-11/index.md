@@ -7,7 +7,7 @@ Establish a public reporting channel for receiving reports of vulnerabilities in
 
 OPS utilizes and defers to the [HHS Vulnerability Disclosure Policy](https://www.hhs.gov/vulnerability-disclosure-policy/index.html)
 
-### Control Orgination:
+### Control Origination:
 
 Hybrid with IaaS provider and ACF Tech
 

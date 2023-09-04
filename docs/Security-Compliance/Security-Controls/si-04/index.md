@@ -25,7 +25,7 @@ TODO: better language around OPS utilizes WAF, Defender for ____. Seek inherited
 
 TODO: f and g: Seek ACF Tech guidance?   Azure inheritance?
 
-### Control Orgination
+### Control Origination
 
 Hybrid with IaaS vendor and OPS
 

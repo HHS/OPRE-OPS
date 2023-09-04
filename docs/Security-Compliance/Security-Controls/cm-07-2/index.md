@@ -12,8 +12,8 @@ The application runtime for OPS is deployed as container running on and governed
 * A filesystem housing executable files and configuration files
 * A set of running processes based upon items in the container filesystem
 
-### Control Orgination
-Hybrid: ACF OCIO, Cloud.gov and OPS????
+### Control Origination
+Hybrid: ACF Tech, IaaS vendor and OPS????
 
 ### Compensating Controls and Related Content
 

@@ -31,7 +31,7 @@ d. Summaries of the security scan reports are available in GitHub.  If there are
 
 e. Information from the scan reports and control assessments are shared with the appropriate security stakeholders and are available for review in GitHub (TODO - ADD LINK).
 
-### Control Orgination:
+### Control Origination:
 
 Hybrid with IaaS provider, ACF Tech, and OPS
 

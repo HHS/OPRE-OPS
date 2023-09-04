@@ -15,7 +15,7 @@ d. Address the receipt of false positives during malicious code detection and er
 
 TOOD: container signing ? seek inherited text from IaaS provider
 
-### Control Orgination
+### Control Origination
 
 Hybrid with IaaS vendor and OPS
 

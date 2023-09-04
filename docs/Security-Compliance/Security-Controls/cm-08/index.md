@@ -18,7 +18,8 @@ HHS Standard for System Inventory Management
 
 TODO: Review GSA templates for this inventory from the application perspective
 
-### Control Orgination:
-Hybrid with cloud.gov and OPS
+### Control Origination:
+
+Hybrid with IaaS vendor and OPS
 
 ### Related Content

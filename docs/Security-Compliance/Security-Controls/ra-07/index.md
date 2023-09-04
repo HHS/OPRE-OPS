@@ -7,7 +7,7 @@ Respond to findings from security and privacy assessments, monitoring, and audit
 
 OPS follows and abides by HHS and ACF Tech response policy
 
-### Control Orgination:
+### Control Origination:
 
 Hybrid with IaaS provider, ACF Tech, and OPS
 

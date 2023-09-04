@@ -15,7 +15,7 @@ TODO: ACF Privacy Policy should dicated the privacy requirements?
 
 [ACF Privacy Policy](https://www.acf.hhs.gov/privacy-policy)
 
-### Control Orgination:
+### Control Origination:
 
 Hybrid with HHS/ACF/OPRE, ACF Tech, and OPS
 

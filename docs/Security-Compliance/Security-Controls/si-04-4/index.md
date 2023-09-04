@@ -8,7 +8,7 @@
 
 TODO: Discuss and decide path forward
 
-### Control Orgination
+### Control Origination
 
 Hybrid with IaaS vendor and OPS
 

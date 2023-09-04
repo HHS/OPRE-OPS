@@ -21,7 +21,7 @@ f. Update the risk assessment [before issuing a new Authority to Operate/authori
 
 TODO: need the template
 
-### Control Orgination:
+### Control Origination:
 
 Hybrid with IaaS provider, ACF Tech, and OPS
 

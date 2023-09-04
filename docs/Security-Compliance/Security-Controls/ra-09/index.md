@@ -7,7 +7,7 @@ Identify critical system components and functions by performing a criticality an
 
 TODO: Utilize template for OPS
 
-### Control Orgination:
+### Control Origination:
 
 Hybrid with IaaS provider, ACF Tech, and OPS
 

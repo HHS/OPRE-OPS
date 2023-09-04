@@ -9,7 +9,7 @@ TODO: find fedramp template
 
 TODO: Seek inherited materials
 
-### Control Orgination:
+### Control Origination:
 
 Hybrid with IaaS provider, ACF Tech, and OPS
 

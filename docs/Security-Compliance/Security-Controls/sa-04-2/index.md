@@ -15,7 +15,7 @@ Boundry and dataflow diagrams can be found [here](../../)
 
 TODO: Update with specific links when ready
 
-### Control Orgination:
+### Control Origination:
 
 Hybrid with IaaS provider, ACF Tech, and OPS
 

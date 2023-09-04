@@ -13,7 +13,7 @@ TODO: Reference VMP
 
 TODO: Give evidence of the SBOM we produce in pipeline
 
-### Control Orgination:
+### Control Origination:
 
 Hybrid with IaaS provider, ACF Tech, and OPS
 

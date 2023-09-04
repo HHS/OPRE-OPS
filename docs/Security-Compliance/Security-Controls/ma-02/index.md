@@ -1,0 +1,24 @@
+# Maintenance
+## MA-02 - Controlled Maintenance
+
+a. Schedule, document, and review records of maintenance, repair, and replacement on system components in accordance with manufacturer or vendor specifications and/or organizational requirements;
+
+b. Approve and monitor all maintenance activities, whether performed on site or remotely and whether the system or system components are serviced on site or removed to another location;
+
+c. Require that [Assignment: organization-defined personnel or roles] explicitly approve the removal of the system or system components from organizational facilities for off-site maintenance, repair, or replacement;
+
+d. Sanitize equipment to remove the following information from associated media prior to removal from organizational facilities for off-site maintenance, repair, or replacement: [Assignment: organization-defined information];
+
+e. Check all potentially impacted controls to verify that the controls are still functioning properly following maintenance, repair, or replacement actions; and
+
+f. Include the following information in organizational maintenance records: [Assignment: organization-defined information].
+
+## OPS Implementation
+
+TODO: seek inherited text
+
+### Control Origination
+
+IaaS vendor
+
+### Related Content

@@ -36,7 +36,7 @@ c. The following individuals
 
 d. TODO: seek some text or templates from ACF Tech
 
-### Control Orgination:
+### Control Origination:
 
 Hybrid with ACF Tech and OPS
 

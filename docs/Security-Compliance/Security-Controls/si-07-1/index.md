@@ -7,7 +7,7 @@ Perform an integrity check of [system software, firmware, and applications deeme
 
 TODO: ???
 
-### Control Orgination
+### Control Origination
 
 Hybrid with IaaS vendor and OPS
 

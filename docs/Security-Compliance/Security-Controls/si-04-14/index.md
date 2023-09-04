@@ -7,7 +7,7 @@ Employ a wireless intrusion detection system to identify rogue wireless devices 
 
 TODO: Seek inherited text
 
-### Control Orgination
+### Control Origination
 
 Hybrid with ACF Tech and IaaS vendor
 

@@ -9,7 +9,7 @@ As part of the OPS Test Plan, security scans are completed on an ongoing basis, 
 
 Security scanning is completed using OWASP ZAP dynamic security scans, CodeQL semantic code analysis (SCA) scanning, Semgrep static analysis scanning, and Dependabot vulnerability dependency scanning.  Dependabot will automatically open pull requests if there is a vulnerability in a dependency. If there are no findings, no pull requests will be opened.  Semgrep and CodeQL scans are the last step for each CI run.  If vulnerabilities are found in the scan results, the code will be prevented from being deployed until the vulnerabilities are remediated.
 
-### Control Orgination
+### Control Origination
 ACF Tech, Cloud.gov and OPS
 
 ### Related Content

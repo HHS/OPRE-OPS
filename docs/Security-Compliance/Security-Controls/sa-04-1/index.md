@@ -7,7 +7,7 @@ Require the developer of the system, system component, or system service to prov
 
 TODO: find template
 
-### Control Orgination:
+### Control Origination:
 
 Hybrid with ACF Tech and OPS
 

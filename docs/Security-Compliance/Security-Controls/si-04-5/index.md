@@ -14,7 +14,7 @@ TODO: Reference IR plan
 
 TODO: Provide evidence of IaaS alerting settings
 
-### Control Orgination
+### Control Origination
 
 Hybrid with IaaS vendor and OPS
 

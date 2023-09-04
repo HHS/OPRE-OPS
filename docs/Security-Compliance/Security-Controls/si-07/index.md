@@ -9,7 +9,7 @@ b. Take the following actions when unauthorized changes to the software, firmwar
 
 TODO: Seek inherited text
 
-### Control Orgination
+### Control Origination
 
 Hybrid with IaaS vendor and OPS
 

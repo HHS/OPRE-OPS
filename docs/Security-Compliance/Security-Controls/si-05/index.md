@@ -12,7 +12,7 @@ TODO: text around IaaS vendor alerts, dependabot, renovatebot, reference securit
 
 TODO: seek inherited text from IaaS vendor, ACF Tech, generate other text
 
-### Control Orgination
+### Control Origination
 
 Hybrid with IaaS vendor and OPS
 

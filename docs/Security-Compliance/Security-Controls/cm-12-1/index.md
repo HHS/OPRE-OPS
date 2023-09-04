@@ -5,10 +5,11 @@ Use automated tools to identify [ACF-defined information by information type] on
 
 ## OPS Implementation
 
-TODO: does ACF OCIO have anything for this ?
+TODO: does ACF Tech have anything for this ?
 
-### Control Orgination:
-Hybrid with cloud.gov and ACF OCIO
+### Control Origination:
+
+Hybrid with IaaS vendor and ACF Tech
 
 ### Related Content
 

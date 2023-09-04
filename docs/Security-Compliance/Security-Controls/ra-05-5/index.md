@@ -9,7 +9,7 @@ TODO: generate text
 
 TODO: What is the defined list of components ?
 
-### Control Orgination:
+### Control Origination:
 
 Hybrid with IaaS provider, ACF Tech, and OPS
 

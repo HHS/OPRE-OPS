@@ -15,7 +15,7 @@ b. OPS is not utilizing any software protected by quantity licenses or limited b
 
 c. OPS does not utilize peer-to-peer file sharing technology.
 
-### Control Orgination:
+### Control Origination:
 Hybrid with cloud.gov and OPS
 
 ### Related Content

@@ -11,7 +11,7 @@ c. Document changes to the location (i.e., system or system components) where th
 
 TODO: does ACF OCIO have a template for any of these items ?
 
-### Control Orgination:
+### Control Origination:
 Hybrid with cloud.gov and OPS
 
 ### Related Content
