@@ -168,8 +168,6 @@ export const timeAgo = (dateParam) => {
     const seconds = Math.round((today - date) / 1000);
     const minutes = Math.round(seconds / 60);
 
-    console.log(`seconds: ${seconds}`);
-
     if (seconds < 5) {
         return "now";
     } else if (seconds < 60) {
