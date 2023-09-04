@@ -3,7 +3,7 @@
 import { terminalLog, testLogin } from "./utils";
 // get current year
 const today = new Date();
-const year = today.getFullYear();
+const year = today.getFullYear() + 1;
 const month = today.getMonth() + 1;
 
 const blData = [
@@ -164,7 +164,7 @@ it("review an agreement", () => {
         cy.get("#add-budget-line").click();
         // patch agreement
         cy.get('[data-cy="continue-btn"]').click();
-        // check for new budget line errors
+        //check for new budget line errors
         cy.visit(`/agreements/approve/${agreementId}?mode=review`);
         cy.get("h1").should("have.text", "Please resolve the errors outlined below");
         cy.get('[data-cy="error-list"]').should("exist");
@@ -196,7 +196,7 @@ it("review an agreement", () => {
         cy.get('[data-cy="error-item"]').should("not.exist");
         // patch agreement
         cy.get('[data-cy="continue-btn"]').click();
-        // check review page
+        //check review page
         cy.visit(`/agreements/approve/${agreementId}?mode=review`);
         cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
         cy.get('[data-cy="error-list"]').should("not.exist");
