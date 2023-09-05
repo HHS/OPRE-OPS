@@ -3,6 +3,7 @@ import Modal from "react-modal";
 import customStyles from "./BLIFilterButton.module.css";
 import FilterButton from "../../../components/UI/FilterButton/FilterButton";
 import FiscalYearComboBox from "../../../components/UI/Form/FiscalYearComboBox";
+import PortfoliosComboBox from "../../../components/UI/Form/PortfoliosComboBox";
 
 /**
  * A filter for agreements.
@@ -14,6 +15,7 @@ import FiscalYearComboBox from "../../../components/UI/Form/FiscalYearComboBox";
 export const BLIFilterButton = ({ setFilters }) => {
     // const currentFY = new Date(getCurrentFiscalYear()).getFullYear();
     const [fiscalYears, setFiscalYears] = React.useState([]);
+    const [portfolios, setPortfolios] = React.useState([]);
     // const [needBy, setNeedBy] = React.useState("all-time");
     // const [project, setProject] = React.useState({});
     // const [po, setPO] = React.useState({});
@@ -99,6 +101,15 @@ export const BLIFilterButton = ({ setFilters }) => {
                 setSelectedFiscalYears={setFiscalYears}
                 legendClassname={legendStyles}
                 defaultString={"All Fiscal Years"}
+                overrideStyles={{ width: "22.7rem" }}
+            />
+        </fieldset>,
+        <fieldset key="field2" className={fieldStyles}>
+            <PortfoliosComboBox
+                selectedPortfolios={portfolios}
+                setSelectedPortfolios={setPortfolios}
+                legendClassname={legendStyles}
+                defaultString={"All Portfolios"}
                 overrideStyles={{ width: "22.7rem" }}
             />
         </fieldset>,

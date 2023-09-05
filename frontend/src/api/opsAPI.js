@@ -190,6 +190,10 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["Notifications"],
         }),
+        getPortfolios: builder.query({
+            query: () => `/portfolios/`,
+            providesTags: ["Portfolios"],
+        }),
     }),
 });
 
@@ -221,4 +225,5 @@ export const {
     useGetCansQuery,
     useGetNotificationsByUserIdQuery,
     useDismissNotificationMutation,
+    useGetPortfoliosQuery,
 } = opsApi;
