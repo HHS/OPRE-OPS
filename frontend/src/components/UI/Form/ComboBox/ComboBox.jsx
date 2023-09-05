@@ -125,7 +125,14 @@ export const ComboBox = ({
         }
     };
 
-    const defaultOption = selectedData ? options.find((option) => option.value === Number(selectedData?.id)) : null;
+    let defaultOption = [];
+    if (Array.isArray(selectedData)) {
+        for (let item of selectedData) {
+            defaultOption.push(options.find((option) => option.value === Number(item.id)));
+        }
+    } else {
+        defaultOption = selectedData ? options.find((option) => option.value === Number(selectedData?.id)) : null;
+    }
 
     return (
         <Select
