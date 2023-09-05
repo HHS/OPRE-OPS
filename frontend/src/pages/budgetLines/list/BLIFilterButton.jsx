@@ -46,6 +46,12 @@ export const BLIFilterButton = ({ setFilters }) => {
                 fiscalYears: fiscalYears,
             };
         });
+        setFilters((prevState) => {
+            return {
+                ...prevState,
+                portfolios: portfolios,
+            };
+        });
         // setFilters((prevState) => {
         //     return {
         //         ...prevState,
@@ -80,8 +86,10 @@ export const BLIFilterButton = ({ setFilters }) => {
     const resetFilter = () => {
         setFilters({
             fiscalYears: [],
+            portfolios: [],
         });
         setFiscalYears([]);
+        setPortfolios([]);
     };
 
     // if (isLoadingProjectData) {

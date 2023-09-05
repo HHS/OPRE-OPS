@@ -21,6 +21,7 @@ export const BudgetLineItemList = () => {
     const activeUser = useSelector((state) => state?.auth?.activeUser);
     const [filters, setFilters] = useState({
         fiscalYears: [],
+        portfolios: [],
     });
     const {
         data: budgetLineItems,
