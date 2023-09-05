@@ -79,6 +79,7 @@ export const BLIFilterButton = ({ setFilters }) => {
         setFilters({
             fiscalYears: [],
         });
+        setFiscalYears([]);
     };
 
     // if (isLoadingProjectData) {
