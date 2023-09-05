@@ -36,7 +36,14 @@ export const opsApi = createApi({
             providesTags: ["Agreements"],
         }),
         getAgreementHistoryById: builder.query({
-            query: (id) => `/agreements/${id}/history/?limit=20`,
+            // https://stackoverflow.com/a/74844699
+            query: ({ id, page }) => {
+                const pageSize = 3;
+                const limit = pageSize;
+                const offset = pageSize * (page - 1);
+                return `/agreements/${id}/history/?limit=${limit}&offset=${offset}`;
+            },
+            // query: ({ id, page }) => `/agreements/${id}/history/?limit=20`,
             providesTags: ["AgreementHistory"],
         }),
         addAgreement: builder.mutation({
