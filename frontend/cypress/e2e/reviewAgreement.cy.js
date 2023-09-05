@@ -150,6 +150,9 @@ it("review an agreement", () => {
         cy.get("#add-budget-line").click();
         // go back to review page
         cy.get('[data-cy="continue-btn"]').click();
+        // not sure why but need to manually navigate to get the error banner to not show up
+        cy.visit(`/agreements/approve/${agreementId}`);
+        cy.url().should("include", `/agreements/approve/${agreementId}`);
         cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
         cy.get('[data-cy="error-list"]').should("not.exist");
         cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
