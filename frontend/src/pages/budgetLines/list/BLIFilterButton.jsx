@@ -1,8 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Modal from "react-modal";
 import customStyles from "./BLIFilterButton.module.css";
 import FilterButton from "../../../components/UI/FilterButton/FilterButton";
-import setFilterList from "../../../components/UI/FilterButton/utils";
 import FiscalYearComboBox from "../../../components/UI/Form/FiscalYearComboBox";
 
 /**
@@ -12,7 +11,7 @@ import FiscalYearComboBox from "../../../components/UI/Form/FiscalYearComboBox";
  * @param {Function} props.setFilters - A function to call to set the filters.
  * @returns {JSX.Element} - The procurement shop select element.
  */
-export const BLIFilterButton = ({ filters, setFilters }) => {
+export const BLIFilterButton = ({ setFilters }) => {
     // const currentFY = new Date(getCurrentFiscalYear()).getFullYear();
     const [fiscalYears, setFiscalYears] = React.useState([]);
     // const [needBy, setNeedBy] = React.useState("all-time");
@@ -34,13 +33,16 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
     // } = useGetResearchProjectsQuery();
 
     // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
-    useEffect(() => {
-        setFiscalYears(filters.fiscalYears);
-    }, [filters.fiscalYears]);
+    // useEffect(() => {
+    //     setFiscalYears(filters.fiscalYears);
+    // }, [filters.fiscalYears]);
 
     const applyFilter = () => {
         setFilters((prevState) => {
-            return setFilterList(prevState, "fiscalYears", fiscalYears);
+            return {
+                ...prevState,
+                fiscalYears: fiscalYears,
+            };
         });
         // setFilters((prevState) => {
         //     return {

@@ -106,7 +106,6 @@ export const ComboBox = ({
             setSelectedData(selectedOptionObjs);
             setSelectedOption(selectedOptions);
         } else {
-            console.log("event", event);
             const optionId = event.value;
             const optionObj = data.find((item) => item.id === Number(optionId));
             setSelectedData(optionObj);

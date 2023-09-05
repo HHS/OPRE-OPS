@@ -47,28 +47,40 @@ export const BudgetLineItemList = () => {
         );
     }
 
-    const sortBLIs = () => {};
+    // const sortBLIs = () => {};
 
     // FILTERS
     let filteredBudgetLineItems = _.cloneDeep(budgetLineItems);
 
-    let sortedBLIs = [];
-    if (myBudgetLineItemsUrl) {
-        const myBLIs = filteredBudgetLineItems.filter(() => {
-            return true;
-        });
-        sortedBLIs = sortBLIs(myBLIs);
-    } else {
-        // all-budget-line-items
-        sortedBLIs = sortBLIs(filteredBudgetLineItems);
-    }
+    // filter by fiscal year
+    filteredBudgetLineItems = filteredBudgetLineItems.filter((bli) => {
+        return (
+            filters.fiscalYears.length === 0 ||
+            filters.fiscalYears.some((fy) => {
+                return fy.id === bli.fiscal_year;
+            })
+        );
+    });
+
+    // let sortedBLIs = [];
+    // if (myBudgetLineItemsUrl) {
+    //     const myBLIs = filteredBudgetLineItems.filter(() => {
+    //         return true;
+    //     });
+    //     sortedBLIs = sortBLIs(myBLIs);
+    // } else {
+    //     // all-budget-line-items
+    //     sortedBLIs = sortBLIs(filteredBudgetLineItems);
+    // }
 
     console.log("filters", filters);
     console.log("setFilters", setFilters);
     console.log("activeUser", activeUser);
-    console.log("sortedBLIs", sortedBLIs);
+    console.log("budgetLineItems", budgetLineItems);
+    console.log("filteredBudgetLineItems", filteredBudgetLineItems);
+    // console.log("sortedBLIs", sortedBLIs);
 
-    const budgetLinesWithCanAndAgreementName = budgetLineItems.map((budgetLine) => {
+    const budgetLinesWithCanAndAgreementName = filteredBudgetLineItems.map((budgetLine) => {
         const can = cans.find((can) => can.id === budgetLine.can_id);
         const agreement = agreements.find((agreement) => agreement.id === budgetLine.agreement_id);
         const isLoggedInUserTheProjectOfficer = agreement.project_officer === loggedInUserId;
