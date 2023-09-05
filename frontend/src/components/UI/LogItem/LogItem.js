@@ -14,7 +14,7 @@ import styles from "./LogItem.module.css";
  * @param {boolean} [props.withSeparator] - The Log item separator.
  * @returns {JSX.Element} - The rendered component.
  */
-export const LogItem = ({ title, message, createdOn, variant, withSeparator = false }) => {
+export const LogItem = ({ title, message, createdOn, variant, withSeparator = false, children }) => {
     const isLarge = variant === "large";
 
     return (
@@ -29,6 +29,7 @@ export const LogItem = ({ title, message, createdOn, variant, withSeparator = fa
             <p className={`margin-0 margin-y-1 line-height-sans-2 ${isLarge ? "font-body-sm" : undefined}`}>
                 {message}
             </p>
+            {children}
             {withSeparator ? <hr className="height-1px bg-brand-neutral-lighter margin-bottom-1" /> : null}
         </li>
     );
@@ -40,6 +41,7 @@ LogItem.propTypes = {
     createdOn: PropTypes.string.isRequired,
     variant: PropTypes.string,
     withSeparator: PropTypes.bool,
+    children: PropTypes.node,
 };
 
 export default LogItem;

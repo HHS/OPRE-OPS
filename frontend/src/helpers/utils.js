@@ -93,11 +93,38 @@ const codesToDisplayText = {
         "team-member": "Team Members",
         "budget-line-items": "Budget Line Items",
     },
+    className: {
+        ContractAgreement: "Contract Agreement",
+        BudgetLineItem: "Budget Line",
+    },
+    agreementPropertyLabels: {
+        agreement_reason: "Agreement Reason",
+        agreement_type: "Agreement Type",
+        description: "Description",
+        incumbent: "Incumbent",
+        name: "Title",
+        notes: "Notes",
+        number: "Number",
+        procurement_shop: "Procurement Shop",
+        product_service_code: "Product Service Code",
+        project_officer: "Project Officer",
+        research_project: "Research Project",
+        team_members: "Team Members",
+    },
+    budgetLineItemPropertyLabels: {
+        amount: "Amount",
+        can: "CAN",
+        comments: "Notes",
+        date_needed: "Date Needed By",
+        line_description: "Description",
+        psc_fee_amount: "Shop Fee",
+        status: "Status",
+    },
 };
 
 /**
  * Converts a code value into a display text value based on a predefined mapping.
- * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
+ * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "className: | "agreementPropertyLabels" | "budgetLineItemPropertyLabels")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
  * @param {string} code - The code value to convert. This parameter is required.
  * @returns {string} The display text value for the code, or the original code value if no mapping is found.
  * @throws {Error} If either the listName or code parameter is not provided.
@@ -129,11 +156,19 @@ export const timeAgo = (dateParam) => {
     if (!dateParam) {
         return null;
     }
+    // if there's no timezone info, assume it UTC and missing the "Z"
+    if (typeof dateParam === "string" || dateParam instanceof String) {
+        if (!dateParam.endsWith("Z") && !dateParam.includes("+")) {
+            dateParam = dateParam + "Z";
+        }
+    }
 
     const date = typeof dateParam === "object" ? dateParam : new Date(dateParam);
     const today = new Date();
     const seconds = Math.round((today - date) / 1000);
     const minutes = Math.round(seconds / 60);
+
+    console.log(`seconds: ${seconds}`);
 
     if (seconds < 5) {
         return "now";
@@ -151,7 +186,7 @@ export const timeAgo = (dateParam) => {
 /**
  * Find the fiscal year for a date, which is the same as it's year unless it's after
  * September 30th then it rolls over into the next FY.
- * @param date - a date as string such as "2023-02-15" or a Date
+ * @param {string} date - a date as string such as "2023-02-15" or a Date
  * @returns {number|null} the fiscal year
  */
 export const fiscalYearFromDate = (date) => {
@@ -161,4 +196,38 @@ export const fiscalYearFromDate = (date) => {
     const month = dt.getUTCMonth();
     const year = dt.getUTCFullYear();
     return month > 8 ? year + 1 : year;
+};
+/**
+ * This function takes a fee and formats it as a percent.
+ * @param {number} fee - The fee to format.
+ * @returns {string} The formatted fee.
+ * @example displayFeePercent(0.1)
+ */
+export const displayFeePercent = (fee) => {
+    if (fee === 0) return "0";
+    return `${fee * 100}%`;
+};
+
+/**
+ * This function takes an amount and fee and returns the total fee amount.
+ * @param {number} amount - The amount to calculate the fee for.
+ * @param {number} fee - The fee to calculate the fee for.
+ * @returns {number} The total fee amount.
+ * @example totalBudgetLineFeeAmount(100, 0.1)
+ */
+export const totalBudgetLineFeeAmount = (amount, fee) => {
+    if (amount === 0) return 0;
+    return amount * fee;
+};
+
+/**
+ * This function takes an amount and fee and returns the total amount plus the fee.
+ * @param {number} amount - The amount to calculate the total amount plus fee for.
+ * @param {number} fee - The fee to calculate the total amount plus fee for.
+ * @returns {number} The total amount plus fee.
+ * @example totalBudgetLineAmountPlusFees(100, 0.1)
+ */
+export const totalBudgetLineAmountPlusFees = (amount, fee) => {
+    if (amount === 0) return 0;
+    return amount + amount * fee;
 };

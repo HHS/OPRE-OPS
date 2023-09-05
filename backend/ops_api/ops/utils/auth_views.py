@@ -39,7 +39,7 @@ def login() -> Union[Response, tuple[str, int]]:
             user_data = auth_gateway.get_user_info(provider, token["access_token"].strip())
             # Issues where user_data is sometimes just a string, and sometimes a dict.
             if isinstance(user_data, str):
-                user_data = json.loads(user_data)
+                user_data = json.loads(user_data)  # pragma: allowlist
             else:
                 user_data = user_data
             current_app.logger.debug(f"Provider Returned user_data: {user_data}")
@@ -110,9 +110,10 @@ def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
         additional_claims = {}
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
-
-        access_token = create_access_token(identity=user, expires_delta=False, additional_claims=additional_claims)
-        refresh_token = create_refresh_token(identity=user, expires_delta=False, additional_claims=additional_claims)
+        access_token = create_access_token(
+            identity=user, expires_delta=None, additional_claims=additional_claims, fresh=True
+        )
+        refresh_token = create_refresh_token(identity=user, expires_delta=None, additional_claims=additional_claims)
     except Exception as e:
         current_app.logger.exception(e)
         return None, None, None, None
@@ -170,5 +171,10 @@ def _get_token_and_user_data_from_oauth_provider(provider: str, auth_code: str):
 @jwt_required(refresh=True)
 def refresh() -> Response:
     identity = get_jwt_identity()
-    access_token = create_access_token(identity=identity)
+    additional_claims = {}
+    if identity.roles:
+        additional_claims["roles"] = [role.name for role in identity.roles]
+    access_token = create_access_token(
+        identity=identity, expires_delta=None, additional_claims=additional_claims, fresh=False
+    )
     return make_response_with_headers({"access_token": access_token})

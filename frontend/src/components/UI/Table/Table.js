@@ -10,12 +10,24 @@ import PropTypes from "prop-types";
  * <Table tableHeadings={["Heading 1", "Heading 2", "Heading 3"]}>
  **/
 const Table = ({ children, tableHeadings }) => {
+    /**
+     * Adds a width to the Status column
+     * @param {string} heading - The heading to check
+     * @returns {object | undefined} - The width to add if the heading is Status
+     *
+     */
+    const addWidthIfStatus = (heading) => {
+        if (heading === "Status") {
+            return { width: "6.25rem" };
+        }
+        return undefined;
+    };
     return (
         <table className="usa-table usa-table--borderless width-full">
             <thead>
                 <tr>
                     {tableHeadings.map((heading, index) => (
-                        <th key={index} scope="col">
+                        <th key={index} scope="col" style={addWidthIfStatus(heading)}>
                             {heading}
                         </th>
                     ))}
