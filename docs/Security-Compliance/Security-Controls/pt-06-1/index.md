@@ -1,0 +1,13 @@
+# Personally Identifiable Information Processing and Transparency
+## PT-6 (1) - System of Records Notice | Routine Uses
+
+Review all routine uses published in the system of records notice at [Assignment: organization-defined frequency] to ensure continued accuracy, and to ensure that routine uses continue to be compatible with the purpose for which the information was collected.
+
+## OPS Implementation
+
+OPS is not a system of record
+
+### Control Origination
+
+
+### Related Content

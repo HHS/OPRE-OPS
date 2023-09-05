@@ -9,6 +9,4 @@ b. Restrict the [Assignment: organization-defined processing] of personally iden
 
 ### Control Origination
 
-Hybrid with IaaS vendor and OPS
-
 ### Related Content
