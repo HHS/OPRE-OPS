@@ -440,7 +440,16 @@ export const StepCreateBudgetLines = ({
                 <button
                     className="usa-button"
                     data-cy="continue-btn"
-                    onClick={saveBudgetLineItems}
+                    onClick={() => {
+                        saveBudgetLineItems;
+                        globalDispatch(
+                            setAlert({
+                                type: "success",
+                                heading: "Success",
+                                message: "Budget Lines have been saved.",
+                            })
+                        );
+                    }}
                     disabled={isReviewMode && !res.isValid()}
                 >
                     {isReviewMode ? "Review" : continueBtnText}

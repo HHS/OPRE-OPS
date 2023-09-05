@@ -1,17 +1,20 @@
-import App from "../../../App";
 import { useParams, Route, Routes } from "react-router-dom";
-import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
-import React, { useEffect, useState } from "react";
-import { getUser } from "../../../api/getUser";
+import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import App from "../../../App";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs/DetailsTabs";
 import AgreementDetails from "./AgreementDetails";
 import AgreementBudgetLines from "./AgreementBudgetLines";
+import Alert from "../../../components/UI/Alert";
+import { getUser } from "../../../api/getUser";
+import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 
 const Agreement = () => {
+    const isGlobalAlertActive = useSelector((state) => state.alert.isActive);
     const urlPathParams = useParams();
     const agreementId = parseInt(urlPathParams.id);
-    const [isEditMode, setIsEditMode] = React.useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
     const [projectOfficer, setProjectOfficer] = useState({});
 
     const searchParams = new URLSearchParams(location.search);
@@ -53,6 +56,7 @@ const Agreement = () => {
     return (
         <App>
             <Breadcrumb currentName={`${agreement.name}`} />
+            {!isEditMode && isGlobalAlertActive && <Alert />}
             <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement.name}</h1>
             <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
                 {agreement.research_project?.title}
