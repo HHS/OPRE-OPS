@@ -43,7 +43,6 @@ export const ComboBox = ({
             background: "#fff",
             borderColor: "565c65",
             minHeight: "40px",
-            height: "40px",
             boxShadow: state.isFocused ? null : null,
             outline: state.isFocused ? "0.25rem solid #2491ff" : null,
             borderRadius: 0,
@@ -57,7 +56,6 @@ export const ComboBox = ({
 
         valueContainer: (provided) => ({
             ...provided,
-            height: "40px",
             padding: "0 6px",
         }),
 
