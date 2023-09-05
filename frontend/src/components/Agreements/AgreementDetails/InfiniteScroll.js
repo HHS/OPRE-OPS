@@ -1,12 +1,16 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const InfiniteScroll = ({ fetchMoreData, isLoading }) => {
+    const [isFetching, setIsFetching] = useState(false);
     const observerRef = useRef();
 
     const handleIntersection = (entries) => {
         const entry = entries[0];
-        if (entry.isIntersecting && !isLoading) {
-            fetchMoreData();
+        if (entry.isIntersecting && !isLoading && !isFetching) {
+            setIsFetching(true);
+            fetchMoreData().then(() => {
+                setIsFetching(false);
+            });
         }
     };
 
@@ -24,13 +28,9 @@ const InfiniteScroll = ({ fetchMoreData, isLoading }) => {
                 observer.unobserve(observerRef.current);
             }
         };
-    }, [observerRef, isLoading, fetchMoreData]);
+    }, [observerRef, isLoading, fetchMoreData, isFetching]);
 
-    return (
-        <div ref={observerRef} style={{ minHeight: "2em" }}>
-            {isLoading && "Loading ..."}
-        </div>
-    );
+    return <div ref={observerRef} style={{ minHeight: "2em" }} />;
 };
 
 export default InfiniteScroll;
