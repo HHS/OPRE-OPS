@@ -1,9 +1,9 @@
-import React from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import _ from "lodash";
 import App from "../../../App";
-import { useGetBudgetLineItemsQuery, useGetCansQuery, useGetAgreementsQuery } from "../../../api/opsAPI";
+import { useGetAgreementsQuery, useGetBudgetLineItemsQuery, useGetCansQuery } from "../../../api/opsAPI";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import Alert from "../../../components/UI/Alert";
 import TablePageLayout from "../../../components/UI/Layouts/TablePageLayout";
@@ -19,7 +19,9 @@ export const BudgetLineItemList = () => {
     const isAlertActive = useSelector((state) => state?.alert?.isActive);
     const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
     const activeUser = useSelector((state) => state?.auth?.activeUser);
-    const [filters, setFilters] = React.useState({});
+    const [filters, setFilters] = useState({
+        fiscalYears: [],
+    });
     const {
         data: budgetLineItems,
         error: budgetLineItemsError,
