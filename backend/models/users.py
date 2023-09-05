@@ -47,38 +47,37 @@ class User(BaseModel):
         "Portfolio",
         back_populates="team_leaders",
         secondary="portfolio_team_leaders",
-        viewonly=True
+        viewonly=True,
     )
 
     research_projects = relationship(
         "ResearchProject",
         back_populates="team_leaders",
         secondary="research_project_team_leaders",
-        viewonly=True
+        viewonly=True,
     )
 
     agreements = relationship(
         "Agreement",
         back_populates="team_members",
         secondary="agreement_team_members",
-        viewonly=True
+        viewonly=True,
     )
 
     contracts = relationship(
         "ContractAgreement",
         back_populates="support_contacts",
         secondary="contract_support_contacts",
-        viewonly=True
+        viewonly=True,
     )
 
     notifications = relationship(
-        "Notification", foreign_keys="Notification.recipient_id",
+        "Notification",
+        foreign_keys="Notification.recipient_id",
     )
-
 
     def get_user_id(self):
         return self.id
-
 
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
