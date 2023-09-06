@@ -1,5 +1,4 @@
 import PropTypes from "prop-types";
-import { useGetAgreementHistoryByIdQuery } from "../../../api/opsAPI";
 import { historyData } from "../../../pages/agreements/details/data";
 import LogItem from "../../UI/LogItem";
 import { convertCodeForDisplay } from "../../../helpers/utils";
@@ -142,8 +141,8 @@ const AgreementHistoryList = ({ agreementHistory }) => {
     );
 };
 
-// AgreementHistoryList.propTypes = {
-//     agreementId: PropTypes.number.isRequired,
-// };
+AgreementHistoryList.propTypes = {
+    agreementHistory: PropTypes.arrayOf(Object),
+};
 
 export default AgreementHistoryList;

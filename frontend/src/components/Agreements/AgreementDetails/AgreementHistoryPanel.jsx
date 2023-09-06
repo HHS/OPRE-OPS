@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
-import { useEffect, useState } from "react";
-import { useGetAgreementHistoryByIdQuery } from "../../../api/opsAPI";
+import { useState } from "react";
 import AgreementHistoryList from "./AgreementHistoryList";
 import InfiniteScroll from "./InfiniteScroll";
 import { getAgreementHistoryByIdAndPage } from "../../../api/getAgreementHistory";
@@ -12,10 +11,8 @@ const AgreementHistoryPanel = ({ agreementId }) => {
     const [agreementHistory, setAgreementHistory] = useState([]);
 
     const fetchMoreData = async () => {
-        console.log(`fetchMoreData> stopped: ${stopped}, page: ${page}`);
         if (stopped) return;
         setIsLoading(true);
-        // Replace with your data fetching logic
         await getAgreementHistoryByIdAndPage(agreementId, page)
             .then(function (response) {
                 setAgreementHistory([...agreementHistory, ...response]);
@@ -23,7 +20,7 @@ const AgreementHistoryPanel = ({ agreementId }) => {
                 return response;
             })
             .catch(function (error) {
-                // console.log(error);
+                if (error.response.status !== 404) console.log("Error loading history:", error);
                 setStopped(true);
             });
         setIsLoading(false);
