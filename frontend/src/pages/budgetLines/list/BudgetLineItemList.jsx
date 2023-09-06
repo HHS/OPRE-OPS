@@ -63,6 +63,16 @@ export const BudgetLineItemList = () => {
         );
     });
 
+    // filter by portfolio
+    filteredBudgetLineItems = filteredBudgetLineItems.filter((bli) => {
+        return (
+            filters.portfolios.length === 0 ||
+            filters.portfolios.some((portfolio) => {
+                return portfolio.id === bli.portfolio_id;
+            })
+        );
+    });
+
     // let sortedBLIs = [];
     // if (myBudgetLineItemsUrl) {
     //     const myBLIs = filteredBudgetLineItems.filter(() => {
