@@ -7,8 +7,8 @@ import CurrencyFormat from "react-currency-format";
 import TableTag from "../TableTag";
 import ChangeIcons from "../ChangeIcons";
 import TableRowExpandable from "../TableRowExpandable";
-import { loggedInName, fiscalYearFromDate, formatDateNeeded, formatDateToMonthDayYear } from "../../../helpers/utils";
-
+import { fiscalYearFromDate, formatDateNeeded, formatDateToMonthDayYear } from "../../../helpers/utils";
+import getUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId";
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
  * @param {Object} props - The props for the BLIRow component.
@@ -32,9 +32,8 @@ const BLIRow = ({
 }) => {
     const [isExpanded, setIsExpanded] = React.useState(false);
     const [isRowActive, setIsRowActive] = React.useState(false);
-    let loggedInUser = useSelector((state) => loggedInName(state.auth?.activeUser));
     const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
-
+    const budgetLineCreator = getUserFullNameFromId(budgetLine?.created_by);
     let feeTotal = budgetLine?.amount * budgetLine?.psc_fee_amount;
     let total = budgetLine?.amount + feeTotal;
     const isBudgetLineDraft = budgetLine?.status === "DRAFT";
@@ -170,7 +169,7 @@ const BLIRow = ({
                     <dl className="font-12px">
                         <dt className="margin-0 text-base-dark">Created By</dt>
                         <dd id={`created-by-name-${budgetLine?.id}`} className="margin-0">
-                            {loggedInUser}
+                            {budgetLineCreator}
                         </dd>
                         <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                             <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />

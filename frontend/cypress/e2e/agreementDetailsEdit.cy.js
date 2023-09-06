@@ -83,7 +83,9 @@ it("edit an agreement", () => {
                 expect(body.message).to.equal("Agreement updated");
             })
             .then(cy.log);
-
+        cy.get(".usa-alert__body").should("contain", "Agreement Draft Saved");
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(6000);
         cy.get("h1").should("have.text", "Test Edit Title");
         cy.get("#edit").should("exist");
 

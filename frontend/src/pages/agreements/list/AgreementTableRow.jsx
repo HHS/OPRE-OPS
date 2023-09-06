@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useDispatch, useSelector } from "react-redux";
@@ -6,13 +6,13 @@ import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
-import { getUser } from "../../../api/getUser";
 import { convertCodeForDisplay, formatDate } from "../../../helpers/utils";
 import TableTag from "../../../components/UI/TableTag";
 import { useDeleteAgreementMutation } from "../../../api/opsAPI";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import icons from "../../../uswds/img/sprite.svg";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
+import useGetUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId";
 
 /**
  * Renders a row in the agreements table.
@@ -26,7 +26,6 @@ export const AgreementTableRow = ({ agreement }) => {
     const globalDispatch = useDispatch();
     const loggedInUserId = useSelector((state) => state.auth.activeUser.id);
     const [deleteAgreement] = useDeleteAgreementMutation();
-    const [user, setUser] = useState({});
     const [isExpanded, setIsExpanded] = useState(false);
     const [isRowActive, setIsRowActive] = useState(false);
     const [showModal, setShowModal] = useState(false);
@@ -52,25 +51,7 @@ export const AgreementTableRow = ({ agreement }) => {
     );
 
     nextNeedBy = nextNeedBy ? formatDate(new Date(nextNeedBy)) : "";
-
-    useEffect(() => {
-        const getUserAndSetState = async (id) => {
-            const results = await getUser(id);
-            setUser(results);
-        };
-
-        if (agreement?.created_by) {
-            getUserAndSetState(agreement?.created_by).catch(console.error);
-        } else {
-            setUser({ full_name: "Sheila Celentano" });
-        }
-
-        return () => {
-            setUser({});
-        };
-    }, [agreement]);
-
-    const agreementCreatedBy = user?.full_name;
+    const agreementCreatedBy = useGetUserFullNameFromId(agreement?.created_by);
     const agreementNotes = agreement?.notes;
     const formatted_today = new Date().toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
     const agreementCreatedOn = agreement?.created_on

@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
-import { createStore } from "redux";
 import { Provider } from "react-redux";
 import BudgetLinesTable from "./BudgetLinesTable";
+import store from "../../../store";
 
 const dummyBudgetLines = [
     {
@@ -13,7 +13,7 @@ const dummyBudgetLines = [
         amount: 1200,
         psc_fee_amount: 0.05,
         status: "DRAFT",
-        created_by: "John",
+        created_by: "1",
         comments: "Note 1",
     },
     {
@@ -25,7 +25,7 @@ const dummyBudgetLines = [
         amount: 2000,
         psc_fee_amount: 0.07,
         status: "OBLIGATED",
-        created_by: "Jane",
+        created_by: "2",
         comments: "Note 2",
     },
 ];
@@ -34,18 +34,17 @@ function customRender(ui, store) {
     return render(<Provider store={store}>{ui}</Provider>);
 }
 
-const store = createStore(() => ({
-    auth: { activeUser: { full_name: "Active User" } },
-}));
-
 describe("PreviewTable", () => {
     test("renders rows for budget lines", () => {
         customRender(
             <BudgetLinesTable
+                canUserEditBudgetLines={false}
                 budgetLinesAdded={dummyBudgetLines}
                 handleSetBudgetLineForEditing={() => {}}
                 handleDeleteBudgetLine={() => {}}
                 handleDuplicateBudgetLine={() => {}}
+                isReviewMode={true}
+                readOnly={true}
             />,
             store
         );
@@ -57,10 +56,13 @@ describe("PreviewTable", () => {
     test("status changes based on input", () => {
         customRender(
             <BudgetLinesTable
+                canUserEditBudgetLines={false}
                 budgetLinesAdded={dummyBudgetLines}
                 handleSetBudgetLineForEditing={() => {}}
                 handleDeleteBudgetLine={() => {}}
                 handleDuplicateBudgetLine={() => {}}
+                isReviewMode={true}
+                readOnly={true}
             />,
             store
         );
