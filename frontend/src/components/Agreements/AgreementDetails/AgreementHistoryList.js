@@ -125,9 +125,8 @@ const AgreementHistoryList = ({ agreementHistory }) => {
                     {agreementHistory.map((item, index) => (
                         <LogItem
                             key={index}
-                            title={item.id + ": " + item.created_by_user_full_name}
+                            title={item.created_by_user_full_name}
                             createdOn={item.created_on}
-                            // message={summaryMessage(item)}
                             message={summaryMessage(item)}
                         >
                             <ChangesDetails historyItem={item} />
