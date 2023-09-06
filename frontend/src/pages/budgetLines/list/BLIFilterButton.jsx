@@ -4,6 +4,7 @@ import customStyles from "./BLIFilterButton.module.css";
 import FilterButton from "../../../components/UI/FilterButton/FilterButton";
 import FiscalYearComboBox from "../../../components/UI/Form/FiscalYearComboBox";
 import PortfoliosComboBox from "../../../components/UI/Form/PortfoliosComboBox";
+import BLIStatusComboBox from "../../../components/UI/Form/BLIStatusComboBox";
 
 /**
  * A filter for agreements.
@@ -16,6 +17,7 @@ export const BLIFilterButton = ({ setFilters }) => {
     // const currentFY = new Date(getCurrentFiscalYear()).getFullYear();
     const [fiscalYears, setFiscalYears] = React.useState([]);
     const [portfolios, setPortfolios] = React.useState([]);
+    const [bliStatus, setBLIStatus] = React.useState([]);
 
     // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
     // useEffect(() => {
@@ -65,6 +67,15 @@ export const BLIFilterButton = ({ setFilters }) => {
                 setSelectedPortfolios={setPortfolios}
                 legendClassname={legendStyles}
                 defaultString={"All Portfolios"}
+                overrideStyles={{ width: "22.7rem" }}
+            />
+        </fieldset>,
+        <fieldset key="field3" className={fieldStyles}>
+            <BLIStatusComboBox
+                selectedBLIStatus={bliStatus}
+                setSelectedBLIStatus={setBLIStatus}
+                legendClassname={legendStyles}
+                defaultString={"All Budget Line Statuses"}
                 overrideStyles={{ width: "22.7rem" }}
             />
         </fieldset>,
