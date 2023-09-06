@@ -1,5 +1,4 @@
 import PropTypes from "prop-types";
-import { historyData } from "../../../pages/agreements/details/data";
 import LogItem from "../../UI/LogItem";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { Fragment } from "react";
@@ -120,7 +119,7 @@ const ChangesDetails = ({ historyItem }) => {
 const AgreementHistoryList = ({ agreementHistory }) => {
     return (
         <>
-            {historyData.length > 0 ? (
+            {agreementHistory && agreementHistory.length > 0 ? (
                 <ul className="usa-list--unstyled" data-cy="agreement-history-list">
                     {agreementHistory.map((item, index) => (
                         <LogItem
