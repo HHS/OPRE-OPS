@@ -7,11 +7,11 @@ import BudgetLinesTable from "../../../components/UI/BudgetLinesTable";
 import Alert from "../../../components/UI/Alert";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../../api/opsAPI";
-import { getUser } from "../../../api/getUser";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import Terms from "./Terms";
 import suite from "./suite";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
+import useGetUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -33,7 +33,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
 
     const [updateBudgetLineItemStatus] = useUpdateBudgetLineItemStatusMutation();
 
-    const [projectOfficerName, setProjectOfficerName] = useState({ full_name: "" });
+    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer);
     const [pageErrors, setPageErrors] = useState({});
     const [isAlertActive, setIsAlertActive] = useState(false);
     const isGlobalAlertActive = useSelector((state) => state.alert.isActive);
@@ -68,25 +68,6 @@ export const ReviewAgreement = ({ agreement_id }) => {
             setIsAlertActive(false);
         };
     }, [res, isSuccess]);
-
-    useEffect(() => {
-        if (isSuccess) {
-            const getUserAndSetState = async (id) => {
-                const results = await getUser(id);
-                setProjectOfficerName(results);
-            };
-
-            if (agreement?.project_officer) {
-                getUserAndSetState(agreement?.project_officer).catch(console.error);
-            }
-
-            return () => {
-                setProjectOfficerName({
-                    full_name: "",
-                });
-            };
-        }
-    }, [agreement, isSuccess]);
 
     if (isLoadingAgreement) {
         return <h1>Loading...</h1>;
@@ -253,7 +234,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     label="Project Officer"
                     messages={res.getErrors("project-officer")}
                     className={cn("project-officer")}
-                    value={projectOfficerName?.full_name}
+                    value={projectOfficerName}
                 />
 
                 {agreement?.team_members.length > 0 ? (

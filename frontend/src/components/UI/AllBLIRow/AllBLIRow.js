@@ -8,13 +8,13 @@ import TableTag from "../TableTag";
 import ChangeIcons from "../ChangeIcons";
 import TableRowExpandable from "../TableRowExpandable";
 import {
-    loggedInName,
     formatDateNeeded,
     formatDateToMonthDayYear,
     displayFeePercent,
     totalBudgetLineFeeAmount,
     totalBudgetLineAmountPlusFees,
 } from "../../../helpers/utils";
+import useGetUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -35,9 +35,8 @@ const AllBLIRow = ({
 }) => {
     const [isExpanded, setIsExpanded] = React.useState(false);
     const [isRowActive, setIsRowActive] = React.useState(false);
-    let loggedInUser = useSelector((state) => loggedInName(state?.auth?.activeUser));
+    const budgetLineCreator = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
-
     const isBudgetLineDraft = budgetLine?.status === "DRAFT";
     const isBudgetLineInReview = budgetLine?.status === "UNDER_REVIEW";
     const isBudgetLinePlanned = budgetLine?.status === "PLANNED";
@@ -107,7 +106,7 @@ const AllBLIRow = ({
                     <dl className="font-12px">
                         <dt className="margin-0 text-base-dark">Created By</dt>
                         <dd id={`created-by-name-${budgetLine?.id}`} className="margin-0">
-                            {loggedInUser}
+                            {budgetLineCreator}
                         </dd>
                         <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                             <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />
