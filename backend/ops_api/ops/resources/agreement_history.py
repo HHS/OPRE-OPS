@@ -50,16 +50,8 @@ class AgreementHistoryListAPI(BaseListAPI):
             if offset:
                 stmt = stmt.offset(int(offset))
 
-            print(f"\n\n!!!!~~~~~~~~SQL for Agreement History {id=}, {offset=}, {limit=}~~~~~~~~\n")
-            from sqlalchemy.dialects import postgresql
-            print(str(stmt.compile(
-                dialect=postgresql.dialect(),
-                compile_kwargs={"literal_binds": True})))
-
             results = current_app.db_session.execute(stmt).all()
             if results:
-                for row in results:
-                    print(row[0].id)
                 response = make_response_with_headers([build_agreement_history_dict(row[0], row[1]) for row in results])
             else:
                 response = make_response_with_headers({}, 404)
