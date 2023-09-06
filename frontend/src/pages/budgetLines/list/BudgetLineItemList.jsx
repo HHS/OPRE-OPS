@@ -74,6 +74,16 @@ export const BudgetLineItemList = () => {
         );
     });
 
+    // filter by BLI status
+    filteredBudgetLineItems = filteredBudgetLineItems.filter((bli) => {
+        return (
+            filters.bliStatus.length === 0 ||
+            filters.bliStatus.some((bliStatus) => {
+                return bliStatus.status === bli.status;
+            })
+        );
+    });
+
     // let sortedBLIs = [];
     // if (myBudgetLineItemsUrl) {
     //     const myBLIs = filteredBudgetLineItems.filter(() => {

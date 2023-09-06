@@ -22,22 +22,27 @@ export const BLIStatusComboBox = ({
         {
             id: 1,
             title: "Draft",
+            status: "DRAFT",
         },
         {
             id: 2,
             title: "In Review",
+            status: "UNDER_REVIEW",
         },
         {
             id: 3,
             title: "Planned",
+            status: "PLANNED",
         },
         {
             id: 4,
             title: "Executing",
+            status: "IN_EXECUTION",
         },
         {
             id: 5,
             title: "Obligated",
+            status: "OBLIGATED",
         },
     ];
     return (
