@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import _ from "lodash";
 import Table from "../Table";
@@ -13,6 +14,7 @@ import PaginationNav from "../PaginationNav/PaginationNav";
  * @returns {React.JSX.Element} The TableRow component.
  */
 const AllBudgetLinesTable = ({ budgetLines }) => {
+    const navigate = useNavigate();
     const [currentPage, setCurrentPage] = useState(1);
     let budgetLinesPage = _.cloneDeep(budgetLines);
     budgetLinesPage = budgetLinesPage.slice((currentPage - 1) * BLIS_PER_PAGE, currentPage * BLIS_PER_PAGE);
@@ -28,7 +30,7 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                             alert("not implemented");
                         }}
                         handleSetBudgetLineForEditing={() => {
-                            alert("not implemented");
+                            navigate(`/agreements/${bl.agreement_id}/budget-lines?mode=edit`);
                         }}
                         isReviewMode={false}
                         readOnly={false}
@@ -36,6 +38,7 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                     />
                 ))}
             </Table>
+            <pre>{JSON.stringify(budgetLines, null, 2)}</pre>
             <PaginationNav currentPage={currentPage} setCurrentPage={setCurrentPage} items={budgetLines} />
         </>
     );
