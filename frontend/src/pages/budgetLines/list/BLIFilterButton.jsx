@@ -29,12 +29,8 @@ export const BLIFilterButton = ({ setFilters }) => {
             return {
                 ...prevState,
                 fiscalYears: fiscalYears,
-            };
-        });
-        setFilters((prevState) => {
-            return {
-                ...prevState,
                 portfolios: portfolios,
+                bliStatus: bliStatus,
             };
         });
     };
@@ -43,9 +39,11 @@ export const BLIFilterButton = ({ setFilters }) => {
         setFilters({
             fiscalYears: [],
             portfolios: [],
+            bliStatus: [],
         });
         setFiscalYears([]);
         setPortfolios([]);
+        setBLIStatus([]);
     };
 
     const fieldStyles = "usa-fieldset margin-bottom-205";

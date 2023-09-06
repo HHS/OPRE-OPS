@@ -22,6 +22,7 @@ export const BudgetLineItemList = () => {
     const [filters, setFilters] = useState({
         fiscalYears: [],
         portfolios: [],
+        bliStatus: [],
     });
     const {
         data: budgetLineItems,
