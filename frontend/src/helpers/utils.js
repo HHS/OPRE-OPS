@@ -110,6 +110,11 @@ const codesToDisplayText = {
         project_officer: "Project Officer",
         research_project: "Research Project",
         team_members: "Team Members",
+        contract_number: "Contract Number",
+        vendor: "Vendor",
+        delivered_status: "Delivered Status",
+        contract_type: "Contract Type",
+        support_contacts: "Support Contacts",
     },
     budgetLineItemPropertyLabels: {
         amount: "Amount",
