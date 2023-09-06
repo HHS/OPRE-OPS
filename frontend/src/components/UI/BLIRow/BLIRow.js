@@ -1,6 +1,5 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { useSelector } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import CurrencyFormat from "react-currency-format";
@@ -8,7 +7,8 @@ import TableTag from "../TableTag";
 import ChangeIcons from "../ChangeIcons";
 import TableRowExpandable from "../TableRowExpandable";
 import { fiscalYearFromDate, formatDateNeeded, formatDateToMonthDayYear } from "../../../helpers/utils";
-import getUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId";
+import useGetUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId";
+import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../helpers/useBudgetLines";
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
  * @param {Object} props - The props for the BLIRow component.
@@ -32,17 +32,12 @@ const BLIRow = ({
 }) => {
     const [isExpanded, setIsExpanded] = React.useState(false);
     const [isRowActive, setIsRowActive] = React.useState(false);
-    const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
-    const budgetLineCreator = getUserFullNameFromId(budgetLine?.created_by);
+    const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     let feeTotal = budgetLine?.amount * budgetLine?.psc_fee_amount;
     let total = budgetLine?.amount + feeTotal;
-    const isBudgetLineDraft = budgetLine?.status === "DRAFT";
-    const isBudgetLineInReview = budgetLine?.status === "UNDER_REVIEW";
-    const isBudgetLinePlanned = budgetLine?.status === "PLANNED";
-    const isUserBudgetLineCreator = budgetLine?.created_by === loggedInUserId;
-    const isBudgetLineEditable =
-        (canUserEditBudgetLines || isUserBudgetLineCreator) &&
-        (isBudgetLineDraft || isBudgetLineInReview || isBudgetLinePlanned);
+    const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
+    const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
+    const isBudgetLineEditable = (canUserEditBudgetLines || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
 
     // styles for the table row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
@@ -169,7 +164,7 @@ const BLIRow = ({
                     <dl className="font-12px">
                         <dt className="margin-0 text-base-dark">Created By</dt>
                         <dd id={`created-by-name-${budgetLine?.id}`} className="margin-0">
-                            {budgetLineCreator}
+                            {budgetLineCreatorName}
                         </dd>
                         <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                             <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />
