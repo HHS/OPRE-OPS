@@ -24,6 +24,16 @@ afterEach(() => {
     jest.resetAllMocks();
 });
 
+const userData = {
+    id: 1,
+    full_name: "Test User",
+};
+
+jest.mock("../../../api/opsAPI", () => ({
+    ...jest.requireActual("../../../api/opsAPI"),
+    useGetUserByIdQuery: () => jest.fn(() => ({ data: userData })),
+}));
+
 describe("AgreementTableRow", () => {
     const agreement = {
         id: 1,

@@ -146,6 +146,19 @@
       procurement_shop_id: 4,
       created_by: 4,
     },
+    {
+      number: "AGR0009",
+      name: "Interoperability Initiatives",
+      description: "Test description",
+      product_service_code_id: 1,
+      agreement_reason: "NEW_REQ",
+      incumbent: "",
+      project_officer: 4,
+      agreement_type: "CONTRACT",
+      research_project_id: 3,
+      procurement_shop_id: 3,
+      created_by: 4,
+    },
   ],
   contract_agreement: [
     {
@@ -176,6 +189,14 @@
       id: 8,
       contract_number: "CT00XX8",
       vendor: "Vendor 2",
+      delivered_status: false,
+      contract_type: "RESEARCH",
+      support_contacts: [],
+    },
+    {
+      id: 9,
+      contract_number: "CT00XX9",
+      vendor: "Vendor 3",
       delivered_status: false,
       contract_type: "RESEARCH",
       support_contacts: [],
@@ -407,6 +428,26 @@
       date_needed: "2043-06-13T14:03:25.765487",
       psc_fee_amount: 4.8,
     },
+    {
+      line_description: "SC2",
+      comments: "",
+      can_id: 3,
+      agreement_id: 9,
+      amount: 700000.0,
+      status: "PLANNED",
+      date_needed: "2043-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
+    },
+    {
+      line_description: "SC3",
+      comments: "",
+      can_id: 13,
+      agreement_id: 9,
+      amount: 300000.0,
+      status: "PLANNED",
+      date_needed: "2044-06-13T14:03:25.765487",
+      psc_fee_amount: 0.5,
+    },
   ],
   agreement_team_members: [
     {
@@ -432,6 +473,14 @@
     {
       agreement_id: 2,
       users_id: 21,
+    },
+    {
+      agreement_id: 9,
+      users_id: 21,
+    },
+    {
+      agreement_id: 9,
+      users_id: 12,
     }
   ]
 }

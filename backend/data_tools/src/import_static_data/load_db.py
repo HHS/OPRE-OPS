@@ -1,5 +1,5 @@
 import os
-from typing import Tuple
+from typing import Optional
 
 import sqlalchemy.engine
 from data_tools.environment.cloudgov import CloudGovConfig
@@ -8,7 +8,7 @@ from data_tools.environment.dev import DevConfig
 from data_tools.environment.local import LocalConfig
 from data_tools.environment.pytest import PytestConfig
 from data_tools.environment.test import TestConfig
-from models import *
+from models import BaseModel
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import configure_mappers
@@ -18,11 +18,9 @@ configure_mappers()
 
 def init_db(
     config: DataToolsConfig, db: Optional[Engine] = None
-) -> Tuple[sqlalchemy.engine.Engine, sqlalchemy.MetaData]:
+) -> tuple[sqlalchemy.engine.Engine, sqlalchemy.MetaData]:
     if not db:
-        engine = create_engine(
-            config.db_connection_string, echo=config.verbosity, future=True
-        )
+        engine = create_engine(config.db_connection_string, echo=config.verbosity, future=True)
     else:
         engine = db
     return engine, BaseModel.metadata

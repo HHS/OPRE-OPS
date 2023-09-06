@@ -35,7 +35,7 @@ def test_budget_line_item_creation():
 def test_get_budget_line_items_list(auth_client):
     response = auth_client.get("/api/v1/budget-line-items/")
     assert response.status_code == 200
-    assert len(response.json) == 20
+    assert len(response.json) == 22
     assert response.json[0]["id"] == 1
     assert response.json[1]["id"] == 2
 
@@ -372,13 +372,13 @@ def test_put_budget_line_items_minimum(auth_client, loaded_db):
         assert response.status_code == 200
         assert response.json["line_description"] == "Updated LI 1"
         assert response.json["id"] == 1000
-        assert response.json["comments"] is None
+        assert response.json["comments"] == "blah blah"
         assert response.json["agreement_id"] == 1
-        assert response.json["can_id"] is None
-        assert response.json["amount"] is None
-        assert response.json["status"] is None
-        assert response.json["date_needed"] is None
-        assert response.json["psc_fee_amount"] is None
+        assert response.json["can_id"] == 1
+        assert response.json["amount"] == 100.12
+        assert response.json["status"] == "DRAFT"
+        assert response.json["date_needed"] == "2043-01-01"
+        assert response.json["psc_fee_amount"] == 1.23
         assert response.json["created_on"] != response.json["updated_on"]
 
     finally:

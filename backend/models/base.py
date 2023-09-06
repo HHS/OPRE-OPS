@@ -5,7 +5,7 @@ from typing import Annotated, ClassVar, Final, TypeAlias, TypedDict, TypeVar, ca
 from marshmallow import Schema as MMSchema
 from models.mixins.repr import ReprMixin
 from models.mixins.serialize import SerializeMixin
-from sqlalchemy import Column, Integer, DateTime, ForeignKey, Numeric, func
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Numeric, func
 from sqlalchemy.orm import declarative_base, declared_attr, mapped_column, registry, relationship
 from typing_extensions import Any, override
 

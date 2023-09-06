@@ -6,7 +6,6 @@ import AgreementDetailHeader from "./AgreementDetailHeader";
 import { CreateBudgetLinesProvider } from "../../../components/UI/WizardSteps/StepCreateBudgetLines/context";
 import BudgetLinesTable from "../../../components/UI/BudgetLinesTable";
 import StepCreateBudgetLines from "../../../components/UI/WizardSteps/StepCreateBudgetLines/StepCreateBudgetLines";
-import Alert from "../../../components/UI/Alert";
 
 /**
  * Renders Agreement budget lines view
@@ -18,8 +17,6 @@ import Alert from "../../../components/UI/Alert";
  */
 export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
     const navigate = useNavigate();
-    const isGlobalAlertActive = useSelector((state) => state.alert.isActive);
-
     // Checks for who can edit budget lines
     const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
     const isUserAgreementCreator = agreement?.created_by === loggedInUserId;
@@ -39,7 +36,6 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
 
     return (
         <CreateBudgetLinesProvider>
-            {!isEditMode && isGlobalAlertActive && <Alert />}
             <AgreementDetailHeader
                 heading="Budget Lines"
                 details="This is a list of all budget lines within this agreement."
