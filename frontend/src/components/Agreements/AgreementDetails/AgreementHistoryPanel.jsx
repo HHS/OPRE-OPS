@@ -29,7 +29,12 @@ const AgreementHistoryPanel = ({ agreementId }) => {
     const noData = !agreementHistory || agreementHistory.length == 0;
 
     return (
-        <div className="overflow-y-scroll" style={{ height: "15rem" }} tabIndex={0}>
+        <div
+            className="overflow-y-scroll"
+            style={{ height: "15rem" }}
+            tabIndex={0}
+            data-cy="agreement-history-container"
+        >
             {stopped && noData ? (
                 "Sorry, no history."
             ) : (

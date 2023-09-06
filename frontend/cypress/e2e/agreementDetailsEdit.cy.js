@@ -55,6 +55,12 @@ it("edit an agreement", () => {
 
         cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
         cy.visit(`/agreements/${agreementId}`);
+        cy.get("h1").should("have.text", "Test Contract");
+        cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
+        cy.get('[data-cy="agreement-history-container"]').should("exist");
+        cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
+        cy.get('[data-cy="agreement-history-list"]').should("exist");
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .margin-0').should("exist");
         cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .margin-0').should(
             "have.text",
             'New Contract Agreement, "Test Contract", created by Admin Demo.'
