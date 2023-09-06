@@ -1,11 +1,11 @@
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
 import AgreementDetailHeader from "./AgreementDetailHeader";
 import { CreateBudgetLinesProvider } from "../../../components/UI/WizardSteps/StepCreateBudgetLines/context";
 import BudgetLinesTable from "../../../components/UI/BudgetLinesTable";
 import StepCreateBudgetLines from "../../../components/UI/WizardSteps/StepCreateBudgetLines/StepCreateBudgetLines";
+import { useIsUserAllowedToEditAgreement } from "../../../helpers/useAgreements";
 
 /**
  * Renders Agreement budget lines view
@@ -17,17 +17,10 @@ import StepCreateBudgetLines from "../../../components/UI/WizardSteps/StepCreate
  */
 export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
     const navigate = useNavigate();
-    // Checks for who can edit budget lines
-    const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
-    const isUserAgreementCreator = agreement?.created_by === loggedInUserId;
-    const isUserTheProjectOfficer = agreement?.project_officer === loggedInUserId;
-    const isUserOnAgreementTeam = agreement?.team_members?.some((member) => member.id === loggedInUserId);
-    const isUserCreatorOfAnyBudgetLines = agreement?.budget_line_items?.some(
-        (bli) => bli.created_by === loggedInUserId
-    );
+    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
+
     // TODO: add check if user is on the Budget Team
-    const canUserEditBudgetLines =
-        isUserAgreementCreator || isUserTheProjectOfficer || isUserOnAgreementTeam || isUserCreatorOfAnyBudgetLines;
+    const canUserEditBudgetLines = canUserEditAgreement;
 
     // if there are no BLIS than the user can edit
     if (agreement?.budget_line_items?.length === 0) {

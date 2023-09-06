@@ -9,11 +9,12 @@ import TableRowExpandable from "../TableRowExpandable";
 import { fiscalYearFromDate, formatDateNeeded, formatDateToMonthDayYear } from "../../../helpers/utils";
 import useGetUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../helpers/useBudgetLines";
+import { useIsUserAllowedToEditAgreement } from "../../../helpers/useAgreements";
+
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
  * @param {Object} props - The props for the BLIRow component.
  * @param {Object} props.bl - The budget line object.
- * @param {boolean} [props.canUserEditBudgetLines] - Whether the user can edit budget lines.
  * @param {boolean} [props.isReviewMode] - Whether the user is in review mode.
  * @param {Function} [props.handleSetBudgetLineForEditing] - The function to set the budget line for editing.
  * @param {Function} [props.handleDeleteBudgetLine] - The function to delete the budget line.
@@ -23,7 +24,6 @@ import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../.
  **/
 const BLIRow = ({
     bl: budgetLine,
-    canUserEditBudgetLines = false,
     isReviewMode = false,
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
@@ -37,7 +37,8 @@ const BLIRow = ({
     let total = budgetLine?.amount + feeTotal;
     const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
     const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
-    const isBudgetLineEditable = (canUserEditBudgetLines || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
+    const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
+    const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
 
     // styles for the table row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";

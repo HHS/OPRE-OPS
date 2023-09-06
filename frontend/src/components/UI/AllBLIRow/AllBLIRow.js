@@ -15,6 +15,7 @@ import {
 } from "../../../helpers/utils";
 import useGetUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../helpers/useBudgetLines";
+import { useIsUserAllowedToEditAgreement } from "../../../helpers/useAgreements";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -28,7 +29,6 @@ import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../.
  **/
 const AllBLIRow = ({
     bl: budgetLine,
-    canUserEditBudgetLines,
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
     readOnly = false,
@@ -38,7 +38,8 @@ const AllBLIRow = ({
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
     const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
-    const isBudgetLineEditable = (canUserEditBudgetLines || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
+    const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
+    const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
 
     // styles for the table row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";

@@ -34,11 +34,9 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                         }}
                         isReviewMode={false}
                         readOnly={false}
-                        canUserEditBudgetLines={bl?.isAllowedToEdit}
                     />
                 ))}
             </Table>
-            <pre>{JSON.stringify(budgetLines, null, 2)}</pre>
             <PaginationNav currentPage={currentPage} setCurrentPage={setCurrentPage} items={budgetLines} />
         </>
     );
