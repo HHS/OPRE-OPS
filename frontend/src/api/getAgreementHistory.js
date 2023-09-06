@@ -1,7 +1,7 @@
 import ApplicationContext from "../applicationContext/ApplicationContext";
 
 export const getAgreementHistoryByIdAndPage = async (id, page) => {
-    const pageSize = 3;
+    const pageSize = 20;
     const limit = pageSize;
     const offset = pageSize * (page - 1);
     const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;
