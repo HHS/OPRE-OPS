@@ -33,12 +33,11 @@ export const ReviewAgreement = ({ agreement_id }) => {
     });
 
     const [updateBudgetLineItemStatus] = useUpdateBudgetLineItemStatusMutation();
-
-    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer);
     const [pageErrors, setPageErrors] = useState({});
     const [isAlertActive, setIsAlertActive] = useState(false);
     const isGlobalAlertActive = useSelector((state) => state.alert.isActive);
-    const isAgreementEditable = useIsAgreementEditable(agreement.id);
+    const isAgreementEditable = useIsAgreementEditable(agreement?.id);
+    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer);
 
     let res = suite.get();
 
