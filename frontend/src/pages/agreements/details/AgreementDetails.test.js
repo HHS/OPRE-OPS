@@ -356,11 +356,6 @@ const agreementHistoryData = [
     },
 ];
 
-jest.mock("../../../api/opsAPI", () => ({
-    ...jest.requireActual("../../../api/opsAPI"),
-    useGetAgreementHistoryByIdQuery: () => jest.fn(() => ({ data: agreementHistoryData })),
-}));
-
 // This will reset all mocks after each test
 afterEach(() => {
     jest.resetAllMocks();
