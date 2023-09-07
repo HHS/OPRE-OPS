@@ -3,6 +3,7 @@ import "@testing-library/jest-dom";
 import AgreementDetails from "./AgreementDetails";
 import { Router } from "react-router-dom";
 import { createMemoryHistory } from "history";
+import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 
 const history = createMemoryHistory();
 
@@ -355,11 +356,6 @@ const agreementHistoryData = [
     },
 ];
 
-jest.mock("../../../api/opsAPI", () => ({
-    ...jest.requireActual("../../../api/opsAPI"),
-    useGetAgreementHistoryByIdQuery: () => jest.fn(() => ({ data: agreementHistoryData })),
-}));
-
 // This will reset all mocks after each test
 afterEach(() => {
     jest.resetAllMocks();
@@ -410,6 +406,19 @@ describe("AgreementDetails", () => {
     };
 
     test("renders correctly", () => {
+        TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+            return agreementHistoryData;
+        });
+
+        // IntersectionObserver isn't available in test environment
+        const mockIntersectionObserver = jest.fn();
+        mockIntersectionObserver.mockReturnValue({
+            observe: () => null,
+            unobserve: () => null,
+            disconnect: () => null,
+        });
+        window.IntersectionObserver = mockIntersectionObserver;
+
         render(
             <Router location={history.location} navigator={history}>
                 <AgreementDetails
