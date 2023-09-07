@@ -67,6 +67,9 @@ def build_audit(obj, event_type: OpsDBHistoryType) -> DbRecordAudit:  # noqa: C9
             new_val = convert_for_jsonb(hist.added[0]) if hist.added else None
             if old_val:
                 original[key] = old_val
+            # exclude Enums that didn't really change
+            if old_val == new_val and isinstance(hist.deleted[0], Enum):
+                continue
             diff[key] = new_val
             if event_type == OpsDBHistoryType.NEW:
                 if new_val:
