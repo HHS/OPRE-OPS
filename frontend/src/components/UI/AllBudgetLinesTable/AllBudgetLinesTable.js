@@ -36,7 +36,17 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                     />
                 ))}
             </Table>
-            <PaginationNav currentPage={currentPage} setCurrentPage={setCurrentPage} items={budgetLines} />
+            {budgetLines.length > 0 && (
+                <PaginationNav currentPage={currentPage} setCurrentPage={setCurrentPage} items={budgetLines} />
+            )}
+            {budgetLines.length === 0 && (
+                <div
+                    id="budget-line-items-table-zero-results"
+                    className="padding-top-5 display-flex flex-justify-center"
+                >
+                    There are 0 results based on your filter selections.
+                </div>
+            )}
         </>
     );
 };

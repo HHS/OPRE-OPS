@@ -115,7 +115,7 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
                     <a
                         className={cx(
                             "usa-pagination__link usa-pagination__next-page",
-                            currentPage === totalPages && styles.hideElement
+                            (currentPage === totalPages || totalPages === 0) && styles.hideElement
                         )}
                         aria-label="Next page"
                         onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
