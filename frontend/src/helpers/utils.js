@@ -1,4 +1,4 @@
-export const getCurrentFiscalYear = (today) => {
+export const getCurrentFiscalYear = (today = new Date()) => {
     const currentMonth = today.getMonth();
 
     let fiscalYear;
@@ -40,7 +40,7 @@ export const formatDateNeeded = (dateNeeded) => {
  * @param {string} date - The date string to format. This parameter is required.
  * @returns {string} The formatted date string.
  * @example formatDateToMonthDayYear("2023-05-19")
- 
+
  */
 export const formatDateToMonthDayYear = (date) => {
     return new Date(date).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
@@ -110,6 +110,11 @@ const codesToDisplayText = {
         project_officer: "Project Officer",
         research_project: "Research Project",
         team_members: "Team Members",
+        contract_number: "Contract Number",
+        vendor: "Vendor",
+        delivered_status: "Delivered Status",
+        contract_type: "Contract Type",
+        support_contacts: "Support Contacts",
     },
     budgetLineItemPropertyLabels: {
         amount: "Amount",
@@ -167,8 +172,6 @@ export const timeAgo = (dateParam) => {
     const today = new Date();
     const seconds = Math.round((today - date) / 1000);
     const minutes = Math.round(seconds / 60);
-
-    console.log(`seconds: ${seconds}`);
 
     if (seconds < 5) {
         return "now";

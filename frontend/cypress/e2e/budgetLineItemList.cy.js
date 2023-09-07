@@ -55,3 +55,46 @@ it("pagination on the bli table works as expected", () => {
     cy.get("li").should("have.class", "usa-pagination__item").contains("1").click();
     cy.get("a").should("have.class", "usa-current").contains("1");
 });
+
+it("the filter button works as expected", () => {
+    cy.visit("/budget-lines");
+    cy.get("button").contains("Filter").click();
+
+    // set a number of filters
+
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
+    cy.get(".fiscal-year-combobox__control")
+        .click()
+        .get(".fiscal-year-combobox__menu")
+        .find(".fiscal-year-combobox__option")
+        .first()
+        .click();
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
+    cy.get(".portfolios-combobox__control")
+        .click()
+        .get(".portfolios-combobox__menu")
+        .find(".portfolios-combobox__option")
+        .first()
+        .click();
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
+    cy.get(".bli-status-combobox__control")
+        .click()
+        .get(".bli-status-combobox__menu")
+        .find(".bli-status-combobox__option")
+        .first()
+        .click();
+
+    // click the button that has text Apply
+    cy.get("button").contains("Apply").click();
+
+    // check that the table is filtered correctly
+    cy.get("div[id='budget-line-items-table-zero-results']").should("exist");
+
+    // reset
+    cy.get("button").contains("Filter").click();
+    cy.get("button").contains("Reset").click();
+    cy.get("button").contains("Apply").click();
+
+    // check that the table is filtered correctly
+    cy.get("div[id='budget-line-items-table-zero-results']").should("not.exist");
+});

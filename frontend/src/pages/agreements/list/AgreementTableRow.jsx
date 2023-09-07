@@ -1,7 +1,7 @@
 import { Fragment, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -13,6 +13,7 @@ import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import icons from "../../../uswds/img/sprite.svg";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import useGetUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId";
+import { useIsUserAllowedToEditAgreement } from "../../../helpers/useAgreements";
 
 /**
  * Renders a row in the agreements table.
@@ -24,7 +25,6 @@ import useGetUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId"
 export const AgreementTableRow = ({ agreement }) => {
     const navigate = useNavigate();
     const globalDispatch = useDispatch();
-    const loggedInUserId = useSelector((state) => state.auth.activeUser.id);
     const [deleteAgreement] = useDeleteAgreementMutation();
     const [isExpanded, setIsExpanded] = useState(false);
     const [isRowActive, setIsRowActive] = useState(false);
@@ -51,7 +51,7 @@ export const AgreementTableRow = ({ agreement }) => {
     );
 
     nextNeedBy = nextNeedBy ? formatDate(new Date(nextNeedBy)) : "";
-    const agreementCreatedBy = useGetUserFullNameFromId(agreement?.created_by);
+    const agreementCreatedByName = useGetUserFullNameFromId(agreement?.created_by);
     const agreementNotes = agreement?.notes;
     const formatted_today = new Date().toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
     const agreementCreatedOn = agreement?.created_on
@@ -67,15 +67,11 @@ export const AgreementTableRow = ({ agreement }) => {
     const changeBgColorIfExpanded = { backgroundColor: isRowActive ? "var(--neutral-lightest)" : undefined };
 
     // Validations for deleting an agreement
-    const isLoggedInUserTheProjectOfficer = loggedInUserId === agreement?.project_officer;
-    const isLoggedInUserTheAgreementCreator = loggedInUserId === agreement?.created_by;
-    const isLoggedInUserATeamMember = agreement?.team_members?.find((tm) => tm.id === loggedInUserId);
+    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const areAllBudgetLinesInDraftStatus = agreement?.budget_line_items?.every((bli) => bli.status === "DRAFT");
     const areThereAnyBudgetLines = agreement?.budget_line_items?.length > 0;
 
-    const canUserDeleteAgreement =
-        (isLoggedInUserTheAgreementCreator || isLoggedInUserTheProjectOfficer || isLoggedInUserATeamMember) &&
-        (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
+    const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
 
     const handleEditAgreement = (event) => {
         navigate(`/agreements/${event}?mode=edit`);
@@ -231,7 +227,7 @@ export const AgreementTableRow = ({ agreement }) => {
                         <div className="display-flex padding-right-9">
                             <dl className="font-12px">
                                 <dt className="margin-0 text-base-dark">Created By</dt>
-                                <dd className="margin-0">{agreementCreatedBy}</dd>
+                                <dd className="margin-0">{agreementCreatedByName}</dd>
                                 <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                                     <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />
                                     {agreementCreatedOn}

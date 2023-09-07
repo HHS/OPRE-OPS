@@ -35,10 +35,6 @@ export const opsApi = createApi({
             query: (id) => `/agreements/${id}`,
             providesTags: ["Agreements"],
         }),
-        getAgreementHistoryById: builder.query({
-            query: (id) => `/agreements/${id}/history/?limit=20`,
-            providesTags: ["AgreementHistory"],
-        }),
         addAgreement: builder.mutation({
             query: (data) => {
                 return {
@@ -190,13 +186,16 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["Notifications"],
         }),
+        getPortfolios: builder.query({
+            query: () => `/portfolios/`,
+            providesTags: ["Portfolios"],
+        }),
     }),
 });
 
 export const {
     useGetAgreementsQuery,
     useGetAgreementByIdQuery,
-    useGetAgreementHistoryByIdQuery,
     useAddAgreementMutation,
     useUpdateAgreementMutation,
     useDeleteAgreementMutation,
@@ -221,4 +220,5 @@ export const {
     useGetCansQuery,
     useGetNotificationsByUserIdQuery,
     useDismissNotificationMutation,
+    useGetPortfoliosQuery,
 } = opsApi;

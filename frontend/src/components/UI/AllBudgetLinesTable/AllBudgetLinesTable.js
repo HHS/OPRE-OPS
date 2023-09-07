@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import _ from "lodash";
 import Table from "../Table";
@@ -13,6 +14,7 @@ import PaginationNav from "../PaginationNav/PaginationNav";
  * @returns {React.JSX.Element} The TableRow component.
  */
 const AllBudgetLinesTable = ({ budgetLines }) => {
+    const navigate = useNavigate();
     const [currentPage, setCurrentPage] = useState(1);
     let budgetLinesPage = _.cloneDeep(budgetLines);
     budgetLinesPage = budgetLinesPage.slice((currentPage - 1) * BLIS_PER_PAGE, currentPage * BLIS_PER_PAGE);
@@ -28,15 +30,24 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                             alert("not implemented");
                         }}
                         handleSetBudgetLineForEditing={() => {
-                            alert("not implemented");
+                            navigate(`/agreements/${bl.agreement_id}/budget-lines?mode=edit`);
                         }}
                         isReviewMode={false}
                         readOnly={false}
-                        canUserEditBudgetLines={bl?.isAllowedToEdit}
                     />
                 ))}
             </Table>
-            <PaginationNav currentPage={currentPage} setCurrentPage={setCurrentPage} items={budgetLines} />
+            {budgetLines.length > 0 && (
+                <PaginationNav currentPage={currentPage} setCurrentPage={setCurrentPage} items={budgetLines} />
+            )}
+            {budgetLines.length === 0 && (
+                <div
+                    id="budget-line-items-table-zero-results"
+                    className="padding-top-5 display-flex flex-justify-center"
+                >
+                    There are 0 results based on your filter selections.
+                </div>
+            )}
         </>
     );
 };
