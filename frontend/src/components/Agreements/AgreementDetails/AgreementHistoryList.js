@@ -11,17 +11,32 @@ const findObjectTitle = (historyItem) => {
     }
 };
 
+const logItemTitle = (historyItem) => {
+    const className = convertCodeForDisplay("className", historyItem.class_name);
+    const objectTitle = findObjectTitle(historyItem);
+    if (historyItem.event_type === "NEW") {
+        return `New ${className} Created`;
+    } else if (historyItem.event_type === "UPDATED") {
+        return `${className} Updated`;
+    } else if (historyItem.event_type === "DELETED") {
+        return `${className} Deleted`;
+    }
+    return `${className} ${historyItem.event_type} ${userFullName}`;
+};
+
 const summaryMessage = (historyItem) => {
     const className = convertCodeForDisplay("className", historyItem.class_name);
+    const classNameLower = className.toLowerCase();
+    const classNameSentence = classNameLower.charAt(0).toUpperCase() + classNameLower.slice(1);
     const userFullName = historyItem.created_by_user_full_name;
     const objectTitle = findObjectTitle(historyItem);
     const classAndTitle = `${className}, "${objectTitle}",`;
     if (historyItem.event_type === "NEW") {
-        return `New ${classAndTitle} created by ${userFullName}.`;
+        return `New ${classNameLower}, “${objectTitle}”, created by ${userFullName}.`;
     } else if (historyItem.event_type === "UPDATED") {
-        return `${classAndTitle} updated by ${userFullName}.`;
+        return `${classNameSentence}, “${objectTitle}”, updated by ${userFullName}.`;
     } else if (historyItem.event_type === "DELETED") {
-        return `${classAndTitle} deleted by ${userFullName}.`;
+        return `${classNameSentence}, “${objectTitle}”, deleted by ${userFullName}.`;
     }
     return `${className} ${historyItem.event_type} ${userFullName}`;
 };
@@ -100,8 +115,9 @@ const ChangesDetails = ({ historyItem }) => {
                     <dd>
                         {change.isCollection ? (
                             <>
-                                {change.added && <> added: {JSON.stringify(change.added)}</>}
-                                {change.removed && <> removed: {JSON.stringify(change.deleted)}</>}
+                                {change.added?.length > 0 && <> added: {JSON.stringify(change.added)}</>}
+                                {change.added?.length > 0 && change.deleted?.length > 0 && <>, </>}
+                                {change.deleted?.length > 0 && <> removed: {JSON.stringify(change.deleted)}</>}
                             </>
                         ) : (
                             <>
@@ -124,7 +140,7 @@ const AgreementHistoryList = ({ agreementHistory }) => {
                     {agreementHistory.map((item, index) => (
                         <LogItem
                             key={index}
-                            title={item.created_by_user_full_name}
+                            title={logItemTitle(item)}
                             createdOn={item.created_on}
                             message={summaryMessage(item)}
                         >

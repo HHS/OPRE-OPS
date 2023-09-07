@@ -29,7 +29,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                     <h3 className="text-base-dark margin-top-3 text-normal font-12px">Notes</h3>
                     {notesData.length > 0 ? (
                         <ul
-                            className="usa-list--unstyled overflow-y-scroll"
+                            className="usa-list--unstyled overflow-y-scroll force-show-scrollbars"
                             style={{ height: "11.375rem" }}
                             tabIndex={0}
                         >
