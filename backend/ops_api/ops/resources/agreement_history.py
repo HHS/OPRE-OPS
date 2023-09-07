@@ -48,7 +48,7 @@ class AgreementHistoryListAPI(BaseListAPI):
             stmt = stmt.order_by(OpsDBHistory.created_on.desc())
             stmt = stmt.limit(limit)
             if offset:
-                stmt = stmt.offset(int(limit))
+                stmt = stmt.offset(int(offset))
 
             results = current_app.db_session.execute(stmt).all()
             if results:

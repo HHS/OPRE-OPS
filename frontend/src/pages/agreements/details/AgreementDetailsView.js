@@ -170,7 +170,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
 
 AgreementDetailsView.propTypes = {
     agreement: PropTypes.object.isRequired,
-    projectOfficer: PropTypes.object.isRequired,
+    projectOfficer: PropTypes.object,
 };
 
 export default AgreementDetailsView;
