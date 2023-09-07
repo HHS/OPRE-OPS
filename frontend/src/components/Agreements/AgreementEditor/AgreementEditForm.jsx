@@ -175,7 +175,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         };
         const { id, cleanData } = cleanAgreementForApi(data);
         if (id) {
-            updateAgreement({ id: id, data: cleanData })
+            await updateAgreement({ id: id, data: cleanData })
                 .unwrap()
                 .then((fulfilled) => {
                     console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
@@ -199,7 +199,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                     navigate("/error");
                 });
         } else {
-            addAgreement(cleanData)
+            await addAgreement(cleanData)
                 .unwrap()
                 .then((payload) => {
                     const newAgreementId = payload.id;
@@ -230,13 +230,13 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
     };
 
     const handleContinue = async () => {
-        saveAgreement();
+        await saveAgreement();
         if (isEditMode && setIsEditMode) setIsEditMode(false);
         await goToNext();
     };
 
     const handleDraft = async () => {
-        saveAgreement();
+        await saveAgreement();
         await navigate("/agreements");
     };
 
