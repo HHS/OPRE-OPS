@@ -30,7 +30,6 @@ export const ComboBox = ({
     clearWhenSet = false,
     isMulti = false,
 }) => {
-    console.log("data", data);
     const [selectedOption, setSelectedOption] = useState(null);
 
     const options = data.map((item) => {
