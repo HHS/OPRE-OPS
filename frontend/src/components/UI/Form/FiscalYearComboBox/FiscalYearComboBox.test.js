@@ -31,9 +31,9 @@ describe("FiscalYearComboBox", () => {
     });
 
     it("updates the selected item when multiple options are selected", () => {
-        const setSelectedProject = jest.fn();
+        const setSelectedFiscalYears = jest.fn();
         const { getByText, container } = render(
-            <FiscalYearComboBox selectedFiscalYears={null} setSelectedFiscalYears={setSelectedProject} />
+            <FiscalYearComboBox selectedFiscalYears={null} setSelectedFiscalYears={setSelectedFiscalYears} />
         );
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
         fireEvent.focus(container.querySelector("input"));
@@ -47,7 +47,7 @@ describe("FiscalYearComboBox", () => {
 
         // eslint-disable-next-line testing-library/prefer-screen-queries
         fireEvent.click(getByText("2021"));
-        expect(setSelectedProject).toHaveBeenCalledWith([
+        expect(setSelectedFiscalYears).toHaveBeenCalledWith([
             { id: 2020, title: 2020 },
             { id: 2021, title: 2021 },
         ]);
