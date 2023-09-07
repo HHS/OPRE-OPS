@@ -14,7 +14,6 @@ import BLIStatusComboBox from "../../../components/UI/Form/BLIStatusComboBox";
  * @returns {JSX.Element} - The procurement shop select element.
  */
 export const BLIFilterButton = ({ setFilters }) => {
-    // const currentFY = new Date(getCurrentFiscalYear()).getFullYear();
     const [fiscalYears, setFiscalYears] = React.useState([]);
     const [portfolios, setPortfolios] = React.useState([]);
     const [bliStatus, setBLIStatus] = React.useState([]);
