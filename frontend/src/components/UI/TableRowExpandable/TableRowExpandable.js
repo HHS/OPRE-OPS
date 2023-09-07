@@ -20,12 +20,12 @@ const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpan
     const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
     const handleExpandRow = () => {
         setIsExpanded(!isExpanded);
-        setIsRowActive(true);
+        setIsRowActive(!isRowActive);
     };
 
     return (
         <>
-            <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
+            <tr>
                 {tableRowData}
                 <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     <FontAwesomeIcon
