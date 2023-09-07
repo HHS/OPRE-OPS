@@ -42,7 +42,7 @@ const BLIRow = ({
 
     // styles for the table row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
-    const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
+    const changeBgColorIfExpanded = { backgroundColor: isRowActive && "var(--neutral-lightest)" };
 
     const addErrorClassIfNotFound = (item) => {
         if (isReviewMode && !item) {
@@ -160,7 +160,7 @@ const BLIRow = ({
 
     const ExpandedData = () => (
         <>
-            <td colSpan={9} className="border-top-none" style={{ backgroundColor: "#F0F0F0" }}>
+            <td colSpan={9} className="border-top-none" style={{ backgroundColor: "var(--neutral-lightest)" }}>
                 <div className="display-flex padding-right-9">
                     <dl className="font-12px">
                         <dt className="margin-0 text-base-dark">Created By</dt>

@@ -64,7 +64,7 @@ export const AgreementTableRow = ({ agreement }) => {
     };
     // styles for the expanded row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
-    const changeBgColorIfExpanded = { backgroundColor: isRowActive ? "#F0F0F0" : undefined };
+    const changeBgColorIfExpanded = { backgroundColor: isRowActive ? "var(--neutral-lightest)" : undefined };
 
     // Validations for deleting an agreement
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
@@ -223,7 +223,7 @@ export const AgreementTableRow = ({ agreement }) => {
 
             {isExpanded && (
                 <tr>
-                    <td colSpan={9} className="border-top-none" style={{ backgroundColor: "#F0F0F0" }}>
+                    <td colSpan={9} className="border-top-none" style={{ backgroundColor: "var(--neutral-lightest)" }}>
                         <div className="display-flex padding-right-9">
                             <dl className="font-12px">
                                 <dt className="margin-0 text-base-dark">Created By</dt>
