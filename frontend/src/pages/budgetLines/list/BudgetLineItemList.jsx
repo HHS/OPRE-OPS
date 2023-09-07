@@ -49,8 +49,6 @@ export const BudgetLineItemList = () => {
         );
     }
 
-    // const sortBLIs = () => {};
-
     // FILTERS
     let filteredBudgetLineItems = _.cloneDeep(budgetLineItems);
 
@@ -84,25 +82,31 @@ export const BudgetLineItemList = () => {
         );
     });
 
-    // let sortedBLIs = [];
-    // if (myBudgetLineItemsUrl) {
-    //     const myBLIs = filteredBudgetLineItems.filter(() => {
-    //         return true;
-    //     });
-    //     sortedBLIs = sortBLIs(myBLIs);
-    // } else {
-    //     // all-budget-line-items
-    //     sortedBLIs = sortBLIs(filteredBudgetLineItems);
-    // }
+    const sortBLIs = (blis) => {
+        return blis.sort((a, b) => {
+            return new Date(a.date_needed) - new Date(b.date_needed);
+        });
+    };
+
+    let sortedBLIs = [];
+    if (myBudgetLineItemsUrl) {
+        const myBLIs = filteredBudgetLineItems.filter(() => {
+            return true;
+        });
+        sortedBLIs = sortBLIs(myBLIs);
+    } else {
+        // all-budget-line-items
+        sortedBLIs = sortBLIs(filteredBudgetLineItems);
+    }
 
     console.log("filters", filters);
     console.log("setFilters", setFilters);
     console.log("activeUser", activeUser);
     console.log("budgetLineItems", budgetLineItems);
     console.log("filteredBudgetLineItems", filteredBudgetLineItems);
-    // console.log("sortedBLIs", sortedBLIs);
+    console.log("sortedBLIs", sortedBLIs);
 
-    const budgetLinesWithCanAndAgreementName = filteredBudgetLineItems.map((budgetLine) => {
+    const budgetLinesWithCanAndAgreementName = sortedBLIs.map((budgetLine) => {
         const can = cans.find((can) => can.id === budgetLine.can_id);
         const agreement = agreements.find((agreement) => agreement.id === budgetLine.agreement_id);
         const isLoggedInUserTheProjectOfficer = agreement.project_officer === loggedInUserId;
