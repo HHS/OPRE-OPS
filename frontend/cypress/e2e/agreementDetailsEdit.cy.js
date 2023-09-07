@@ -99,16 +99,24 @@ it("edit an agreement", () => {
             "have.text",
             'Contract Agreement, "Test Edit Title", updated by Admin Demo.'
         );
-        // there's currently a false change for agreement_reason, these child indexes will need to changed when that is fixed
-        cy.get(":nth-child(1) > dl > :nth-child(3)").should("have.text", "Description");
-        cy.get(":nth-child(1) > dl > :nth-child(4)").should(
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > dl > :nth-child(1)').should(
+            "have.text",
+            "Description"
+        );
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > dl > :nth-child(2)').should(
             "contain.text",
             "changed from “Test Description” to “Test Description more text”"
         );
-        cy.get("dl > :nth-child(5)").should("have.text", "Title");
-        cy.get("dl > :nth-child(6)").should("contain.text", "changed from “Test Contract” to “Test Edit Title”");
-        cy.get("dl > :nth-child(7)").should("have.text", "Notes");
-        cy.get("dl > :nth-child(8)").should("contain.text", "changed from “Test Notes” to “Test Notestest edit notes”");
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > dl > :nth-child(3)').should("have.text", "Title");
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > dl > :nth-child(4)').should(
+            "contain.text",
+            "changed from “Test Contract” to “Test Edit Title”"
+        );
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > dl > :nth-child(5)').should("have.text", "Notes");
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > dl > :nth-child(6)').should(
+            "contain.text",
+            "changed from “Test Notes” to “Test Notestest edit notes”"
+        );
 
         cy.request({
             method: "DELETE",
