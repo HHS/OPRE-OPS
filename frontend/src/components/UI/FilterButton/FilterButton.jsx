@@ -49,7 +49,18 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList }) => {
                 overlayClassName={customStyles.filterOverlay}
             >
                 <div className="margin-left-2">
-                    <h1 className="text-bold font-sans-lg margin-bottom-205 margin-top-205">Filters</h1>
+                    <div className="display-flex flex-justify-space-between">
+                        <h1 className="text-bold font-sans-lg margin-bottom-205 margin-top-205">Filters</h1>
+                        <div className="margin-top-205 margin-right-205 padding-08">
+                            <svg
+                                className="usa-icon text-ink height-205 width-205 hover: cursor-pointer usa-tooltip"
+                                onClick={() => setShowModal(false)}
+                                id="filter-close"
+                            >
+                                <use xlinkHref={`${icons}#close`}></use>
+                            </svg>
+                        </div>
+                    </div>
                     {fieldsetList?.map((formField) => formField)}
                 </div>
                 <div className="display-flex flex-justify-end padding-right-1 padding-top-1 padding-bottom-1">
