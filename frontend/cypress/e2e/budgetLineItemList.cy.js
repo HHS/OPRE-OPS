@@ -127,7 +127,7 @@ it("click on edit bli and check if its routed to the correct page", () => {
     cy.url().should("include", "/agreements/1/budget-lines");
 });
 
-it.only("click on edit bli and check to see if the form is populated", () => {
+it("click on edit bli and check to see if the form is populated", () => {
     cy.get("tbody").find("tr").first().trigger("mouseover");
     cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').should("exist");
     cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').click();
