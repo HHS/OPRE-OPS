@@ -1,11 +1,12 @@
 import { render, screen } from "@testing-library/react";
+import { Provider } from "react-redux";
 import "@testing-library/jest-dom";
 import AgreementDetails from "./AgreementDetails";
 import { Router } from "react-router-dom";
 import { createMemoryHistory } from "history";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
-
 const history = createMemoryHistory();
+import store from "../../../store";
 
 // mocking ResponsiveBar until there's a solution for TypeError: Cannot read properties of null (reading 'width')
 jest.mock("@nivo/bar", () => ({
@@ -420,14 +421,16 @@ describe("AgreementDetails", () => {
         window.IntersectionObserver = mockIntersectionObserver;
 
         render(
-            <Router location={history.location} navigator={history}>
-                <AgreementDetails
-                    agreement={agreement}
-                    projectOfficer={projectOfficer}
-                    isEditMode={false}
-                    setIsEditMode={jest.fn}
-                />
-            </Router>
+            <Provider store={store}>
+                <Router location={history.location} navigator={history}>
+                    <AgreementDetails
+                        agreement={agreement}
+                        projectOfficer={projectOfficer}
+                        isEditMode={false}
+                        setIsEditMode={jest.fn}
+                    />
+                </Router>
+            </Provider>
         );
 
         expect(screen.getByText("Test Description")).toBeInTheDocument();
