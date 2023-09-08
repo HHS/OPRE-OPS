@@ -98,3 +98,26 @@ it("the filter button works as expected", () => {
     // check that the table is filtered correctly
     cy.get("div[id='budget-line-items-table-zero-results']").should("not.exist");
 });
+
+it("hover on table row displays icons", () => {
+    cy.get("tbody").find("tr").first().trigger("mouseover");
+    cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').should("exist");
+    cy.get("tbody").find("tr").first().find('[data-cy="delete-row"]').should("exist");
+    cy.get("tbody").find("tr").first().find('[data-cy="duplicate-row"]').should("not.exist");
+});
+
+it("click on chevron down should open row and see budgetline data", () => {
+    cy.get("tbody").find('[data-cy="expanded-data"]').should("not.exist");
+    cy.get("tbody").find("tr").first().find('[data-cy="expand-row"]').click();
+    cy.get("tbody").find('[data-cy="expanded-data"]').as("expandedRow").should("exist");
+    cy.get("@expandedRow").contains("Created By");
+    cy.get("@expandedRow").contains("Notes");
+    cy.get("@expandedRow").contains("Procurement Shop");
+    cy.get("@expandedRow").contains("SubTotal");
+    cy.get("@expandedRow").contains("Fees");
+    cy.get("@expandedRow").find('[data-cy="edit-row"]').should("exist");
+    cy.get("@expandedRow").find('[data-cy="delete-row"]').should("exist");
+    cy.get("@expandedRow").find('[data-cy="duplicate-row"]').should("not.exist");
+});
+// TODO: add test to check routing on table row edit
+// TODO: add test to see if form is pre-populated on edit
