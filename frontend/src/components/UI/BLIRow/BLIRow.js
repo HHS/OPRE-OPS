@@ -42,7 +42,7 @@ const BLIRow = ({
 
     // styles for the table row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
-    const changeBgColorIfExpanded = { backgroundColor: isRowActive && "var(--neutral-lightest)" };
+    const changeBgColorIfExpanded = { backgroundColor: isExpanded && "var(--neutral-lightest)" };
 
     const addErrorClassIfNotFound = (item) => {
         if (isReviewMode && !item) {
@@ -140,7 +140,12 @@ const BLIRow = ({
                     />
                 )}
             </td>
-            <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+            <td
+                onMouseEnter={() => setIsRowActive(true)}
+                onMouseLeave={() => !isExpanded && setIsRowActive(false)}
+                className={removeBorderBottomIfExpanded}
+                style={changeBgColorIfExpanded}
+            >
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>
                         <ChangeIcons
