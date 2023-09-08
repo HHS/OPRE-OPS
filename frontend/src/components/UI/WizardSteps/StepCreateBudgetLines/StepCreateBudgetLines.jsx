@@ -57,8 +57,9 @@ export const StepCreateBudgetLines = ({
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const searchParams = new URLSearchParams(location.search);
-    const budgetLineId = searchParams.get("budget-line-id") || null;
-    const [budgetLineIdFromUrl, setBudgetLineIdFromUrl] = React.useState(budgetLineId);
+    const [budgetLineIdFromUrl, setBudgetLineIdFromUrl] = React.useState(
+        () => searchParams.get("budget-line-id") || null
+    );
 
     const {
         selected_can: selectedCan,
