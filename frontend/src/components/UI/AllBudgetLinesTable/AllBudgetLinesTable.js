@@ -30,7 +30,7 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                             alert("not implemented");
                         }}
                         handleSetBudgetLineForEditing={() => {
-                            navigate(`/agreements/${bl.agreement_id}/budget-lines?mode=edit`);
+                            navigate(`/agreements/${bl.agreement_id}/budget-lines?mode=edit&budget-line-id/${bl.id}`);
                         }}
                         isReviewMode={false}
                         readOnly={false}

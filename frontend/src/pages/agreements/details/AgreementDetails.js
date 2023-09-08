@@ -4,6 +4,7 @@ import AgreementValuesCard from "../../../components/Agreements/AgreementDetails
 import AgreementDetailHeader from "./AgreementDetailHeader";
 import AgreementDetailsView from "./AgreementDetailsView";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
+import { useIsAgreementEditable } from "../../../helpers/useAgreements";
 
 /**
  * Renders the details of an agreement, including budget lines, spending, and other information.
@@ -28,10 +29,8 @@ const AgreementDetails = ({ agreement, projectOfficer, isEditMode, setIsEditMode
         p[status]++;
         return p;
     }, {});
-    const areAnyBudgetLinesInExecuting = blis.some((bli) => bli.status === "IN_EXECUTION");
-    const areAnyBudgetLinesObligated = blis.some((bli) => bli.status === "OBLIGATED");
 
-    const isEditable = !(areAnyBudgetLinesInExecuting || areAnyBudgetLinesObligated);
+    const isEditable = useIsAgreementEditable(agreement?.id);
 
     return (
         <div>
