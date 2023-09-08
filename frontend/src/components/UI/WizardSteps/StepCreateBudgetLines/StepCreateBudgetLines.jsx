@@ -15,6 +15,8 @@ import suite from "./suite";
 import { convertCodeForDisplay } from "../../../../helpers/utils";
 import ConfirmationModal from "../../Modals/ConfirmationModal";
 import { useUpdateBudgetLineItemMutation, useAddBudgetLineItemMutation } from "../../../../api/opsAPI";
+import { set } from "lodash";
+import { reset } from "axe-core";
 
 /**
  * Renders the Create Budget Lines component with React context.
@@ -56,6 +58,9 @@ export const StepCreateBudgetLines = ({
 }) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const searchParams = new URLSearchParams(location.search);
+    const budgetLineId = searchParams.get("budget-line-id") || null;
+    const [budgetLineIdFromUrl, setBudgetLineIdFromUrl] = React.useState(budgetLineId);
 
     const {
         selected_can: selectedCan,
@@ -97,15 +102,6 @@ export const StepCreateBudgetLines = ({
     const isAlertActive = useSelector((state) => state.alert.isActive);
 
     let loggedInUserFullName = useSelector((state) => loggedInName(state.auth?.activeUser));
-
-    // combine arrays of new budget lines and existing budget lines added
-    // only run once on page load if there are existing budget lines
-    React.useEffect(() => {
-        if (existingBudgetLines.length > 0) {
-            dispatch({ type: "ADD_EXISTING_BUDGET_LINES", payload: existingBudgetLines });
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [existingBudgetLines]);
 
     // Validation
     let res = suite.get();
@@ -165,6 +161,9 @@ export const StepCreateBudgetLines = ({
         });
 
         dispatch({ type: "RESET_FORM" });
+        if (budgetLineIdFromUrl) {
+            resetQueryParams();
+        }
         globalDispatch(
             setAlert({
                 type: "success",
@@ -302,6 +301,32 @@ export const StepCreateBudgetLines = ({
             payload: { ...budgetLine, created_by: loggedInUserFullName },
         });
     };
+    const resetQueryParams = () => {
+        setBudgetLineIdFromUrl(null);
+        const url = new URL(window.location);
+        url.searchParams.delete("budget-line-id");
+        window.history.replaceState({}, "", url);
+    };
+
+    // combine arrays of new budget lines and existing budget lines added
+    // only run once on page load if there are existing budget lines
+    React.useEffect(() => {
+        if (existingBudgetLines.length > 0) {
+            dispatch({ type: "ADD_EXISTING_BUDGET_LINES", payload: existingBudgetLines });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [existingBudgetLines]);
+
+    // check budget line id from context and if found, set edit mode to true and set budget line for editing
+    React.useEffect(() => {
+        if (budgetLineId) {
+            setIsEditMode(true);
+            const budgetLineFromUrl = newBudgetLines.find((budgetLine) => budgetLine.id === +budgetLineId);
+            if (budgetLineFromUrl) {
+                handleSetBudgetLineForEditing(budgetLineFromUrl);
+            }
+        }
+    }, [budgetLineId, newBudgetLines]);
 
     return (
         <>
