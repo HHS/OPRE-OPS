@@ -140,12 +140,7 @@ const BLIRow = ({
                     />
                 )}
             </td>
-            <td
-                onMouseEnter={() => setIsRowActive(true)}
-                onMouseLeave={() => !isExpanded && setIsRowActive(false)}
-                className={removeBorderBottomIfExpanded}
-                style={changeBgColorIfExpanded}
-            >
+            <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>
                         <ChangeIcons

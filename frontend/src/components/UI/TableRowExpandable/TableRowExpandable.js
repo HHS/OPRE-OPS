@@ -25,7 +25,7 @@ const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpan
 
     return (
         <>
-            <tr>
+            <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
                 {tableRowData}
                 <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     <FontAwesomeIcon
