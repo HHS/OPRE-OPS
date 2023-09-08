@@ -54,3 +54,5 @@ describe("procurement shop select", () => {
         cy.get('[data-cy="fee"]').contains("0");
     });
 });
+
+// TODO: add test to check if icons are displayed on table row hover
