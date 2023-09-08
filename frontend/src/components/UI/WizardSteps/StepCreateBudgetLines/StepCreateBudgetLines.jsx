@@ -300,6 +300,7 @@ export const StepCreateBudgetLines = ({
             payload: { ...budgetLine, created_by: loggedInUserFullName },
         });
     };
+    // TODO: consider moving this to a separate helper function
     const resetQueryParams = () => {
         setBudgetLineIdFromUrl(null);
         const url = new URL(window.location);
