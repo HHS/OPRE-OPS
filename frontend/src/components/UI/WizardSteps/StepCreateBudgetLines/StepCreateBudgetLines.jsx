@@ -15,8 +15,6 @@ import suite from "./suite";
 import { convertCodeForDisplay } from "../../../../helpers/utils";
 import ConfirmationModal from "../../Modals/ConfirmationModal";
 import { useUpdateBudgetLineItemMutation, useAddBudgetLineItemMutation } from "../../../../api/opsAPI";
-import { set } from "lodash";
-import { reset } from "axe-core";
 
 /**
  * Renders the Create Budget Lines component with React context.
@@ -319,14 +317,15 @@ export const StepCreateBudgetLines = ({
 
     // check budget line id from context and if found, set edit mode to true and set budget line for editing
     React.useEffect(() => {
-        if (budgetLineId) {
+        if (budgetLineIdFromUrl) {
             setIsEditMode(true);
-            const budgetLineFromUrl = newBudgetLines.find((budgetLine) => budgetLine.id === +budgetLineId);
+            const budgetLineFromUrl = newBudgetLines.find((budgetLine) => budgetLine.id === +budgetLineIdFromUrl);
             if (budgetLineFromUrl) {
                 handleSetBudgetLineForEditing(budgetLineFromUrl);
             }
         }
-    }, [budgetLineId, newBudgetLines]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [budgetLineIdFromUrl, newBudgetLines]);
 
     return (
         <>
@@ -344,6 +343,7 @@ export const StepCreateBudgetLines = ({
             ) : (
                 <>
                     {
+                        // TODO: consider moving this to a separate component for BudgetLine tab
                         // if workflow is none, skip the title
                         workflow !== "none" ? (
                             workflow === "agreement" ? (
