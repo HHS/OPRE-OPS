@@ -55,4 +55,11 @@ describe("procurement shop select", () => {
     });
 });
 
-// TODO: add test to check if icons are displayed on table row hover
+it("hover on table row displays icons", () => {
+    cy.visit("/agreements/1/budget-lines?mode=edit");
+    cy.get("tbody").find("tr").first().find('[data-cy="expand-row"]').should("exist");
+    cy.get("tbody").find("tr").first().trigger("mouseover");
+    cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').should("exist");
+    cy.get("tbody").find("tr").first().find('[data-cy="delete-row"]').should("exist");
+    cy.get("tbody").find("tr").first().find('[data-cy="duplicate-row"]').should("exist");
+});
