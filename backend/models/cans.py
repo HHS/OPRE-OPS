@@ -72,6 +72,10 @@ class FundingSource(BaseModel):
         back_populates="funding_sources",
     )
 
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.name
+
 
 class FundingPartner(BaseModel):
     """The Funding Partner (Agency) for the CAN.
@@ -83,6 +87,10 @@ class FundingPartner(BaseModel):
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
     nickname = Column(String(100))
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.name
 
 
 class AgreementType(Enum):
@@ -121,6 +129,10 @@ class ProductServiceCode(BaseModel):
     support_code = Column(String, nullable=True)
     description = Column(String)
     agreement = relationship("Agreement")
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.name
 
 
 class Agreement(BaseModel):
@@ -167,6 +179,10 @@ class Agreement(BaseModel):
 
     notes = Column(Text, nullable=True)
 
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.name
+
     __mapper_args__: dict[str, str | AgreementType] = {
         "polymorphic_identity": "agreement",
         "polymorphic_on": "agreement_type",
@@ -197,7 +213,7 @@ class Agreement(BaseModel):
 
     @classmethod
     def get_class(
-        cls, agreement_type: Optional[AgreementType] = None
+            cls, agreement_type: Optional[AgreementType] = None
     ) -> type["Agreement"]:
         try:
             return cls._subclasses[agreement_type]
@@ -213,6 +229,8 @@ class Agreement(BaseModel):
 
         if isinstance(self.agreement_reason, str):
             self.agreement_reason = AgreementReason[self.agreement_reason]
+
+        print("\n\n!!!!!!!!!!!!!!!!!!!!!!!!\n\n")
 
         d.update(
             agreement_type=self.agreement_type.name if self.agreement_type else None,
@@ -278,6 +296,8 @@ class ContractAgreement(Agreement, agreement_type=AgreementType.CONTRACT):
 
         if isinstance(self.contract_type, str):
             self.contract_type = ContractType[self.contract_type]
+
+        print("\n\n~~~~~~~~~~~~~~~~~~~~~~~~\n\n")
 
         d.update(
             {
@@ -442,6 +462,10 @@ class BudgetLineItem(BaseModel):
         Numeric(12, 2)
     )  # may need to be a different object, i.e. flat rate or percentage
 
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.line_description if self.line_description else super().display_name
+
     @property
     def portfolio_id(self):
         return object_session(self).scalar(
@@ -520,6 +544,10 @@ class CAN(BaseModel):
         Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans"
     )
     budget_line_items = relationship("BudgetLineItem", back_populates="can")
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.number
 
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]

@@ -105,6 +105,14 @@ class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc, valid-t
     created_on = Column(DateTime, default=func.now())
     updated_on = Column(DateTime, default=func.now(), onupdate=func.now())
 
+    @property
+    def display_name(self):
+        return f"{self.__class__.__name__}#{self.id}"
+
+    @display_name.setter
+    def display_name(self, value):
+        pass
+
     class Validator:
         @staticmethod
         def validate(item, data):  # type: ignore [no-untyped-def]
@@ -118,6 +126,7 @@ class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc, valid-t
             {
                 "created_on": self.created_on.isoformat() if self.created_on else None,
                 "updated_on": self.updated_on.isoformat() if self.updated_on else None,
+                "display_name": self.display_name,
             }
         )
 

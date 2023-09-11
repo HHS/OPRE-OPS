@@ -44,6 +44,7 @@ class AgreementData:
     name: str
     number: str
     agreement_type: AgreementType = fields.Enum(AgreementType)
+    display_name: Optional[str] = None
     description: Optional[str] = None
     product_service_code_id: Optional[int] = None
     agreement_reason: Optional[AgreementReason] = None
