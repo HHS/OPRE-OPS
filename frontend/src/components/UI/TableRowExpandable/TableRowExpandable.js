@@ -38,7 +38,7 @@ const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpan
                 </td>
             </tr>
 
-            {isExpanded && <tr>{expandedData}</tr>}
+            {isExpanded && <tr data-cy="expanded-data">{expandedData}</tr>}
         </>
     );
 };
