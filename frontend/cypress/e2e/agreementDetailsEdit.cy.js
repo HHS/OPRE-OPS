@@ -63,7 +63,7 @@ it("edit an agreement", () => {
         cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .margin-0').should("exist");
         cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .margin-0').should(
             "have.text",
-            'New Contract Agreement, "Test Contract", created by Admin Demo.'
+            "New contract agreement, “Test Contract”, created by Admin Demo."
         );
         cy.get("#edit").click();
         cy.get("#edit").should("not.exist");
@@ -97,7 +97,7 @@ it("edit an agreement", () => {
 
         cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .margin-0').should(
             "have.text",
-            'Contract Agreement, "Test Edit Title", updated by Admin Demo.'
+            "Contract agreement, “Test Edit Title”, updated by Admin Demo."
         );
         cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > dl > :nth-child(1)').should(
             "have.text",
