@@ -43,7 +43,7 @@ const AllBLIRow = ({
 
     // styles for the table row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
-    const changeBgColorIfExpanded = { backgroundColor: isRowActive && "var(--neutral-lightest)" };
+    const changeBgColorIfExpanded = { backgroundColor: isExpanded && "var(--neutral-lightest)" };
 
     const TableRowData = ({ bl }) => (
         <>
