@@ -19,9 +19,6 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
     const navigate = useNavigate();
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
 
-    // TODO: add check if user is on the Budget Team
-    const canUserEditBudgetLines = canUserEditAgreement;
-
     // if there are no BLIS than the user can edit
     if (agreement?.budget_line_items?.length === 0) {
         setIsEditMode(true);
@@ -34,7 +31,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                 details="This is a list of all budget lines within this agreement."
                 isEditMode={isEditMode}
                 setIsEditMode={setIsEditMode}
-                isEditable={canUserEditBudgetLines}
+                isEditable={canUserEditAgreement}
             />
             {isEditMode ? (
                 <StepCreateBudgetLines
@@ -45,7 +42,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                     isReviewMode={false}
                     selectedProcurementShop={agreement?.procurement_shop}
                     selectedResearchProject={agreement?.research_project}
-                    canUserEditBudgetLines={canUserEditBudgetLines}
+                    canUserEditBudgetLines={canUserEditAgreement}
                     wizardSteps={[]}
                     continueBtnText="Save Changes"
                     currentStep={0}
