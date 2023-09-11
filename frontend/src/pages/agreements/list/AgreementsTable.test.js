@@ -32,6 +32,7 @@ const userData = {
 jest.mock("../../../api/opsAPI", () => ({
     ...jest.requireActual("../../../api/opsAPI"),
     useGetUserByIdQuery: () => jest.fn(() => ({ data: userData })),
+    useGetAgreementByIdQuery: () => jest.fn(() => ({ data: agreements[0] })),
 }));
 
 const initialState = {

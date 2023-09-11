@@ -12,6 +12,7 @@ import Terms from "./Terms";
 import suite from "./suite";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import useGetUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId";
+import { useIsAgreementEditable } from "../../../helpers/useAgreements";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -32,11 +33,11 @@ export const ReviewAgreement = ({ agreement_id }) => {
     });
 
     const [updateBudgetLineItemStatus] = useUpdateBudgetLineItemStatusMutation();
-
-    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer);
     const [pageErrors, setPageErrors] = useState({});
     const [isAlertActive, setIsAlertActive] = useState(false);
     const isGlobalAlertActive = useSelector((state) => state.alert.isActive);
+    const isAgreementEditable = useIsAgreementEditable(agreement?.id);
+    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer);
 
     let res = suite.get();
 
@@ -82,11 +83,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const budgetLineErrors = res.getErrors("budget-line-items");
     const budgetLineErrorsExist = budgetLineErrors.length > 0;
     const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist;
-
     const anyBudgetLinesAreDraft = agreement.budget_line_items.some((item) => item.status === "DRAFT");
-    const anyBudgetLinesInExecuting = agreement.budget_line_items.some((item) => item.status === "IN_EXECUTING");
-    const anyBudgetLinesObligated = agreement.budget_line_items.some((item) => item.status === "OBLIGATED");
-    const isAgreementEditable = !anyBudgetLinesInExecuting && !anyBudgetLinesObligated;
 
     const handleSendToApproval = () => {
         if (anyBudgetLinesAreDraft) {

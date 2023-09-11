@@ -1,6 +1,5 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { useSelector } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import CurrencyFormat from "react-currency-format";
@@ -8,12 +7,14 @@ import TableTag from "../TableTag";
 import ChangeIcons from "../ChangeIcons";
 import TableRowExpandable from "../TableRowExpandable";
 import { fiscalYearFromDate, formatDateNeeded, formatDateToMonthDayYear } from "../../../helpers/utils";
-import getUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId";
+import useGetUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId";
+import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../helpers/useBudgetLines";
+import { useIsUserAllowedToEditAgreement } from "../../../helpers/useAgreements";
+
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
  * @param {Object} props - The props for the BLIRow component.
  * @param {Object} props.bl - The budget line object.
- * @param {boolean} [props.canUserEditBudgetLines] - Whether the user can edit budget lines.
  * @param {boolean} [props.isReviewMode] - Whether the user is in review mode.
  * @param {Function} [props.handleSetBudgetLineForEditing] - The function to set the budget line for editing.
  * @param {Function} [props.handleDeleteBudgetLine] - The function to delete the budget line.
@@ -23,7 +24,6 @@ import getUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId";
  **/
 const BLIRow = ({
     bl: budgetLine,
-    canUserEditBudgetLines = false,
     isReviewMode = false,
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
@@ -32,21 +32,17 @@ const BLIRow = ({
 }) => {
     const [isExpanded, setIsExpanded] = React.useState(false);
     const [isRowActive, setIsRowActive] = React.useState(false);
-    const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
-    const budgetLineCreator = getUserFullNameFromId(budgetLine?.created_by);
+    const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     let feeTotal = budgetLine?.amount * budgetLine?.psc_fee_amount;
     let total = budgetLine?.amount + feeTotal;
-    const isBudgetLineDraft = budgetLine?.status === "DRAFT";
-    const isBudgetLineInReview = budgetLine?.status === "UNDER_REVIEW";
-    const isBudgetLinePlanned = budgetLine?.status === "PLANNED";
-    const isUserBudgetLineCreator = budgetLine?.created_by === loggedInUserId;
-    const isBudgetLineEditable =
-        (canUserEditBudgetLines || isUserBudgetLineCreator) &&
-        (isBudgetLineDraft || isBudgetLineInReview || isBudgetLinePlanned);
+    const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
+    const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
+    const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
+    const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
 
     // styles for the table row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
-    const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
+    const changeBgColorIfExpanded = { backgroundColor: isRowActive && "var(--neutral-lightest)" };
 
     const addErrorClassIfNotFound = (item) => {
         if (isReviewMode && !item) {
@@ -164,12 +160,12 @@ const BLIRow = ({
 
     const ExpandedData = () => (
         <>
-            <td colSpan={9} className="border-top-none" style={{ backgroundColor: "#F0F0F0" }}>
+            <td colSpan={9} className="border-top-none" style={{ backgroundColor: "var(--neutral-lightest)" }}>
                 <div className="display-flex padding-right-9">
                     <dl className="font-12px">
                         <dt className="margin-0 text-base-dark">Created By</dt>
                         <dd id={`created-by-name-${budgetLine?.id}`} className="margin-0">
-                            {budgetLineCreator}
+                            {budgetLineCreatorName}
                         </dd>
                         <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                             <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />

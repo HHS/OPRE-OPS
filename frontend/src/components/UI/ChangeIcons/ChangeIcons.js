@@ -10,7 +10,7 @@ import { faClone } from "@fortawesome/free-regular-svg-icons";
  * @param {boolean} props.isBudgetLineEditable - Whether the budget line is editable.
  * @param {function} props.handleSetBudgetLineForEditing - The function to set the budget line for editing.
  * @param {function} props.handleDeleteBudgetLine - The function to delete the budget line.
- * @param {function} props.handleDuplicateBudgetLine - The function to duplicate the budget line.
+ * @param {function} [props.handleDuplicateBudgetLine] - The function to duplicate the budget line.
  * @param {boolean} [props.noDuplicateIcon] - Whether to show the duplicate icon.
  * @returns {React.JSX.Element} - The rendered component.
  **/
