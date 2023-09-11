@@ -230,8 +230,6 @@ class Agreement(BaseModel):
         if isinstance(self.agreement_reason, str):
             self.agreement_reason = AgreementReason[self.agreement_reason]
 
-        print("\n\n!!!!!!!!!!!!!!!!!!!!!!!!\n\n")
-
         d.update(
             agreement_type=self.agreement_type.name if self.agreement_type else None,
             agreement_reason=self.agreement_reason.name
@@ -296,8 +294,6 @@ class ContractAgreement(Agreement, agreement_type=AgreementType.CONTRACT):
 
         if isinstance(self.contract_type, str):
             self.contract_type = ContractType[self.contract_type]
-
-        print("\n\n~~~~~~~~~~~~~~~~~~~~~~~~\n\n")
 
         d.update(
             {
@@ -384,6 +380,10 @@ class CANFiscalYear(BaseModel):
     can_lead = Column(String)
     notes = Column(String, default="")
     total_funding = column_property(received_funding + expected_funding)
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"{self.can_id}:{self.fiscal_year}"
 
     @override
     def to_dict(self):
