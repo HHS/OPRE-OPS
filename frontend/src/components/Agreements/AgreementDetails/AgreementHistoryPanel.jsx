@@ -30,7 +30,7 @@ const AgreementHistoryPanel = ({ agreementId }) => {
 
     return (
         <div
-            className="overflow-y-scroll"
+            className="overflow-y-scroll force-show-scrollbars"
             style={{ height: "15rem" }}
             tabIndex={0}
             data-cy="agreement-history-container"
