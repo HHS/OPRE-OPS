@@ -1,6 +1,5 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { useSelector } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import CurrencyFormat from "react-currency-format";
@@ -15,6 +14,8 @@ import {
     totalBudgetLineAmountPlusFees,
 } from "../../../helpers/utils";
 import useGetUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId";
+import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../helpers/useBudgetLines";
+import { useIsUserAllowedToEditAgreement } from "../../../helpers/useAgreements";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -28,26 +29,21 @@ import useGetUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId"
  **/
 const AllBLIRow = ({
     bl: budgetLine,
-    canUserEditBudgetLines,
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
     readOnly = false,
 }) => {
     const [isExpanded, setIsExpanded] = React.useState(false);
     const [isRowActive, setIsRowActive] = React.useState(false);
-    const budgetLineCreator = useGetUserFullNameFromId(budgetLine?.created_by);
-    const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
-    const isBudgetLineDraft = budgetLine?.status === "DRAFT";
-    const isBudgetLineInReview = budgetLine?.status === "UNDER_REVIEW";
-    const isBudgetLinePlanned = budgetLine?.status === "PLANNED";
-    const isUserBudgetLineCreator = budgetLine?.created_by === loggedInUserId;
-    const isBudgetLineEditable =
-        (canUserEditBudgetLines || isUserBudgetLineCreator) &&
-        (isBudgetLineDraft || isBudgetLineInReview || isBudgetLinePlanned);
+    const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
+    const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
+    const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
+    const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
+    const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
 
     // styles for the table row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
-    const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
+    const changeBgColorIfExpanded = { backgroundColor: isRowActive && "var(--neutral-lightest)" };
 
     const TableRowData = ({ bl }) => (
         <>
@@ -101,12 +97,12 @@ const AllBLIRow = ({
 
     const ExpandedData = () => (
         <>
-            <td colSpan={9} className="border-top-none" style={{ backgroundColor: "#F0F0F0" }}>
+            <td colSpan={9} className="border-top-none" style={{ backgroundColor: "var(--neutral-lightest)" }}>
                 <div className="display-flex padding-right-9">
                     <dl className="font-12px">
                         <dt className="margin-0 text-base-dark">Created By</dt>
                         <dd id={`created-by-name-${budgetLine?.id}`} className="margin-0">
-                            {budgetLineCreator}
+                            {budgetLineCreatorName}
                         </dd>
                         <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                             <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />

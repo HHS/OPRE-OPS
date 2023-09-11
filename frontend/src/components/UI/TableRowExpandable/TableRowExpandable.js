@@ -17,15 +17,15 @@ import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpanded, isRowActive, setIsRowActive }) => {
     const trId = React.useId();
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
-    const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
+    const changeBgColorIfExpanded = { backgroundColor: isRowActive && "var(--neutral-lightest)" };
     const handleExpandRow = () => {
         setIsExpanded(!isExpanded);
-        setIsRowActive(true);
+        setIsRowActive(!isRowActive);
     };
 
     return (
         <>
-            <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
+            <tr>
                 {tableRowData}
                 <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     <FontAwesomeIcon
