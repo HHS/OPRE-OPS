@@ -13,7 +13,6 @@ const findObjectTitle = (historyItem) => {
 
 const logItemTitle = (historyItem) => {
     const className = convertCodeForDisplay("className", historyItem.class_name);
-    const objectTitle = findObjectTitle(historyItem);
     if (historyItem.event_type === "NEW") {
         return `New ${className} Created`;
     } else if (historyItem.event_type === "UPDATED") {
@@ -21,7 +20,7 @@ const logItemTitle = (historyItem) => {
     } else if (historyItem.event_type === "DELETED") {
         return `${className} Deleted`;
     }
-    return `${className} ${historyItem.event_type} ${userFullName}`;
+    return `${className} ${historyItem.event_type}`;
 };
 
 const summaryMessage = (historyItem) => {
@@ -30,7 +29,6 @@ const summaryMessage = (historyItem) => {
     const classNameSentence = classNameLower.charAt(0).toUpperCase() + classNameLower.slice(1);
     const userFullName = historyItem.created_by_user_full_name;
     const objectTitle = findObjectTitle(historyItem);
-    const classAndTitle = `${className}, "${objectTitle}",`;
     if (historyItem.event_type === "NEW") {
         return `New ${classNameLower}, “${objectTitle}”, created by ${userFullName}.`;
     } else if (historyItem.event_type === "UPDATED") {
