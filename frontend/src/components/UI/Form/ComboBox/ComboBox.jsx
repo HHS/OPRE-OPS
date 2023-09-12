@@ -40,11 +40,14 @@ export const ComboBox = ({
         control: (provided, state) => ({
             ...provided,
             background: "#fff",
-            borderColor: "565c65",
+            borderColor: "#565c65",
             minHeight: "40px",
             boxShadow: state.isFocused ? null : null,
             outline: state.isFocused ? "0.25rem solid #2491ff" : null,
             borderRadius: 0,
+            "&:hover": {
+                borderColor: "#565c65",
+            },
             ...overrideStyles,
         }),
 
