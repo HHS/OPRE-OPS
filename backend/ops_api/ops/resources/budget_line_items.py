@@ -330,16 +330,6 @@ def validate_and_normalize_request_data(schema: Schema) -> dict[str, Any]:
         if key not in {"status", "id"} and key in request.json and value != data.get(key, None)
     }  # only keep the attributes from the request body
 
-    if change_data:
-        from pprint import pprint
-
-        print("*" * 80)
-        print(f">>> {schema.context['method']} <<<")
-        pprint(data)
-        print("~" * 80)
-        pprint(change_data)
-        print("*" * 80)
-
     data |= change_data
 
     with suppress(AttributeError):
