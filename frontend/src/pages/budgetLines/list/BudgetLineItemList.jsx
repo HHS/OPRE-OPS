@@ -54,7 +54,8 @@ export const BudgetLineItemList = () => {
     // filter by fiscal year
     filteredBudgetLineItems = filteredBudgetLineItems.filter((bli) => {
         return (
-            filters.fiscalYears.length === 0 ||
+            _.isNull(filters.fiscalYears) ||
+            _.isEmpty(filters.fiscalYears) ||
             filters.fiscalYears.some((fy) => {
                 return fy.id === bli.fiscal_year;
             })
@@ -64,7 +65,8 @@ export const BudgetLineItemList = () => {
     // filter by portfolio
     filteredBudgetLineItems = filteredBudgetLineItems.filter((bli) => {
         return (
-            filters.portfolios.length === 0 ||
+            _.isNull(filters.portfolios) ||
+            _.isEmpty(filters.portfolios) ||
             filters.portfolios.some((portfolio) => {
                 return portfolio.id === bli.portfolio_id;
             })
@@ -74,7 +76,8 @@ export const BudgetLineItemList = () => {
     // filter by BLI status
     filteredBudgetLineItems = filteredBudgetLineItems.filter((bli) => {
         return (
-            filters.bliStatus.length === 0 ||
+            _.isNull(filters.bliStatus) ||
+            _.isEmpty(filters.bliStatus) ||
             filters.bliStatus.some((bliStatus) => {
                 return bliStatus.status === bli.status;
             })

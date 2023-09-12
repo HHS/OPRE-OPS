@@ -50,7 +50,7 @@ export const ComboBox = ({
 
         placeholder: (provided) => ({
             ...provided,
-            color: "#1b1b1b",
+            color: "#565C65",
         }),
 
         valueContainer: (provided) => ({
@@ -70,6 +70,21 @@ export const ComboBox = ({
         indicatorsContainer: (provided) => ({
             ...provided,
             height: "40px",
+        }),
+
+        clearIndicator: (provided) => ({
+            ...provided,
+            color: "#1b1b1b",
+        }),
+
+        dropdownIndicator: (provided) => ({
+            ...provided,
+            color: "#1b1b1b",
+        }),
+
+        multiValueLabel: (provided) => ({
+            ...provided,
+            color: "#1b1b1b",
         }),
     };
 
