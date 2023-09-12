@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import icons from "../../../../uswds/img/sprite.svg";
+import icons from "../../../uswds/img/sprite.svg";
 
 /**
  * The TablePageLayout component is a layout component that displays a title and subtitle
