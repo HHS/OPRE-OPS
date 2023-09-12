@@ -332,12 +332,13 @@ def validate_and_normalize_request_data(schema: Schema) -> dict[str, Any]:
 
     if change_data:
         from pprint import pprint
-        print("*"*80)
+
+        print("*" * 80)
         print(f">>> {schema.context['method']} <<<")
         pprint(data)
-        print("~"*80)
+        print("~" * 80)
         pprint(change_data)
-        print("*"*80)
+        print("*" * 80)
 
     data |= change_data
 
