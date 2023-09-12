@@ -23,6 +23,10 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
         setFiscalYears(filters.fiscalYears);
     }, [filters.fiscalYears]);
 
+    React.useEffect(() => {
+        setPortfolios(filters.portfolios);
+    }, [filters.portfolios]);
+
     const applyFilter = () => {
         setFilters((prevState) => {
             return {

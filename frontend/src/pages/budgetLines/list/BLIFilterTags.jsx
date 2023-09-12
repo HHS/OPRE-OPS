@@ -53,6 +53,15 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
         createTagString(selectedFiscalYears, "fiscalYears", "FY", setTagsList);
     }, [filters.fiscalYears]);
 
+    useEffect(() => {
+        const selectedPortfolios = [];
+        Array.isArray(filters.portfolios) &&
+            filters.portfolios.forEach((portfolio) => {
+                selectedPortfolios.push(portfolio.name);
+            });
+        createTagString(selectedPortfolios, "portfolios", "", setTagsList);
+    }, [filters.portfolios]);
+
     // useEffect(() => {
     //     const selectedBudgetLineStatus = [];
     //
