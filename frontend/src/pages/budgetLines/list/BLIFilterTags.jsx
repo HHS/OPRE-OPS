@@ -46,9 +46,10 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
 
     useEffect(() => {
         const selectedFiscalYears = [];
-        filters.fiscalYears.forEach((fiscalYear) => {
-            selectedFiscalYears.push(fiscalYear.title);
-        });
+        Array.isArray(filters.fiscalYears) &&
+            filters.fiscalYears.forEach((fiscalYear) => {
+                selectedFiscalYears.push(fiscalYear.title);
+            });
         createTagString(selectedFiscalYears, "fiscalYears", "FY", setTagsList);
     }, [filters.fiscalYears]);
 
