@@ -113,6 +113,7 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
+    # TODO: Add delete endpoint
   /api/v1/cans/:
     get:
       description: Get CANs
@@ -927,6 +928,7 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
+    # TODO: Add delete endpoint
 
   /api/v1/notifications/:
     get:

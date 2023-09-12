@@ -171,7 +171,7 @@ export const StepCreateBudgetLines = ({
             })
         );
     };
-
+    // TODO: consider moving this to a separate helper function
     const handleDeleteBudgetLine = (budgetLineId) => {
         setShowModal(true);
         setModalProps({
