@@ -1,5 +1,5 @@
 import CurrencyWithSmallCents from "../CurrencyWithSmallCents/CurrencyWithSmallCents";
-import RoundedBox from "../RoundedBox/RoundedBox";
+import RoundedBox from "../RoundedBox";
 
 const CurrencySummaryCard = ({ headerText, amount, children }) => {
     return (
