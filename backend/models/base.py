@@ -134,3 +134,10 @@ class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc, valid-t
         )
 
         return cast(dict[str, Any], d)
+
+    def to_slim_dict(self) -> dict[str, Any]:
+        d = {
+            "id": self.id,
+            "display_name": self.display_name,
+        }
+        return cast(dict[str, Any], d)
