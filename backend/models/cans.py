@@ -383,7 +383,9 @@ class CANFiscalYear(BaseModel):
 
     @BaseModel.display_name.getter
     def display_name(self):
-        return f"{self.can_id}:{self.fiscal_year}"
+        if self.can:
+            return f"{self.can.display_name}:{self.fiscal_year}"
+        return f"CAN#{self.can_id}:{self.fiscal_year}"
 
     @override
     def to_dict(self):

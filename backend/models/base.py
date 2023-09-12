@@ -107,10 +107,13 @@ class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc, valid-t
 
     @property
     def display_name(self):
+        """A property that can be used to provide a name for display purposes of any instance
+        (this should be overridden in subclasses for a better name than this default)"""
         return f"{self.__class__.__name__}#{self.id}"
 
     @display_name.setter
     def display_name(self, value):
+        """a no-op setter for display_name, this prevents errors during binding in API, etc"""
         pass
 
     class Validator:

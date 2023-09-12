@@ -14,6 +14,7 @@ def test_research_project_retrieve(loaded_db):
     assert research_project is not None
     assert research_project.title == "African American Child and Family Research Center"
     assert research_project.id == 10
+    assert research_project.display_name == research_project.title
 
 
 @pytest.mark.usefixtures("app_ctx")
