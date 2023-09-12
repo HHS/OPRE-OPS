@@ -6,7 +6,7 @@ import App from "../../../App";
 import { useGetAgreementsQuery, useGetBudgetLineItemsQuery, useGetCansQuery } from "../../../api/opsAPI";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import Alert from "../../../components/UI/Alert";
-import TablePageLayout from "../../../components/UI/Layouts/TablePageLayout";
+import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLinesTable";
 import BLIFilterButton from "./BLIFilterButton";
 import SummaryCardsSection from "../../../components/BudgetLineItems/SummaryCardsSection";
