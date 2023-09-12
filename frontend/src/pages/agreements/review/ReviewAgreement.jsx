@@ -11,8 +11,8 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
 import Terms from "./Terms";
 import suite from "./suite";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
-import useGetUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId";
-import { useIsAgreementEditable } from "../../../helpers/useAgreements";
+import useGetUserFullNameFromId from "../../../helpers/user-hooks";
+import { useIsAgreementEditable } from "../../../helpers/agreement-hooks";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.

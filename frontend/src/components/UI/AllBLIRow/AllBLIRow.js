@@ -13,9 +13,9 @@ import {
     totalBudgetLineFeeAmount,
     totalBudgetLineAmountPlusFees,
 } from "../../../helpers/utils";
-import useGetUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId";
-import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../helpers/useBudgetLines";
-import { useIsUserAllowedToEditAgreement } from "../../../helpers/useAgreements";
+import useGetUserFullNameFromId from "../../../helpers/user-hooks";
+import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../helpers/budget-line-hooks";
+import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
