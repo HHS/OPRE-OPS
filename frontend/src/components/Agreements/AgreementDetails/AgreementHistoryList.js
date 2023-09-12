@@ -44,8 +44,16 @@ const getPropertyLabel = (className, fieldName) => {
     return convertCodeForDisplay("agreementPropertyLabels", fieldName);
 };
 
-const usersToNames = (users) => {
-    return users.map((user) => user.full_name);
+const objectsToJoinedNames = (objects) => {
+    return objects.map((obj) => obj.display_name).join(", ");
+};
+
+const relationsMap = {
+    procurement_shop_id: "procurement_shop",
+    product_service_code_id: "product_service_code",
+    research_project_id: "research_project",
+    can_id: "can",
+    project_officer: null,
 };
 
 const ChangesDetails = ({ historyItem }) => {
@@ -53,56 +61,25 @@ const ChangesDetails = ({ historyItem }) => {
     const eventType = historyItem.event_type;
     if (eventType != "UPDATED") return;
     const preparedChanges = Object.entries(rawChanges).map(([key, change]) => {
+        let preparedChange = {
+            key: key,
+            propertyLabel: getPropertyLabel(historyItem.class_name, key),
+        };
         if ("collection_of" in change) {
-            const added = change.collection_of == "User" ? usersToNames(change.added) : change.added;
-            const deleted = change.collection_of == "User" ? usersToNames(change.deleted) : change.deleted;
-            return {
-                key: key,
-                propertyLabel: getPropertyLabel(historyItem.class_name, key),
-                isCollection: true,
-                added: added,
-                deleted: deleted,
-            };
-        } else if (key === "procurement_shop_id") {
-            const new_val = historyItem.event_details?.procurement_shop?.name;
-            return {
-                key: key,
-                propertyLabel: getPropertyLabel(historyItem.class_name, "procurement_shop"),
-                to: new_val,
-            };
-        } else if (key === "product_service_code_id") {
-            const new_val = historyItem.event_details?.product_service_code?.name;
-            return {
-                key: key,
-                propertyLabel: getPropertyLabel(historyItem.class_name, "product_service_code"),
-                to: new_val,
-            };
-        } else if (key === "project_officer") {
-            return {
-                key: key,
-                propertyLabel: getPropertyLabel(historyItem.class_name, "project_officer"),
-            };
-        } else if (key === "research_project_id") {
-            const new_val = historyItem.event_details?.research_project?.title;
-            return {
-                key: key,
-                propertyLabel: getPropertyLabel(historyItem.class_name, "research_project"),
-                to: new_val,
-            };
-        } else if (key === "can_id") {
-            const new_val = historyItem.event_details?.can?.number;
-            return {
-                key: key,
-                propertyLabel: getPropertyLabel(historyItem.class_name, "can"),
-                to: new_val,
-            };
-        } else
-            return {
-                key: key,
-                propertyLabel: getPropertyLabel(historyItem.class_name, key),
-                from: change.old,
-                to: change.new,
-            };
+            preparedChange["isCollection"] = true;
+            preparedChange["added"] = objectsToJoinedNames(change.added);
+            preparedChange["deleted"] = objectsToJoinedNames(change.deleted);
+        } else if (key in relationsMap) {
+            const rel = relationsMap[key];
+            if (rel) {
+                preparedChange["propertyLabel"] = getPropertyLabel(historyItem.class_name, rel);
+                preparedChange["to"] = historyItem.event_details[rel].display_name;
+            }
+        } else {
+            preparedChange["from"] = change.old;
+            preparedChange["to"] = change.new;
+        }
+        return preparedChange;
     });
 
     return (
