@@ -7,7 +7,7 @@ import { useGetAgreementsQuery, useGetBudgetLineItemsQuery, useGetCansQuery } fr
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import Alert from "../../../components/UI/Alert";
 import TablePageLayout from "../../../components/UI/Layouts/TablePageLayout";
-import AllBudgetLinesTable from "../../../components/UI/AllBudgetLinesTable";
+import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLinesTable";
 import BLIFilterButton from "./BLIFilterButton";
 
 /**

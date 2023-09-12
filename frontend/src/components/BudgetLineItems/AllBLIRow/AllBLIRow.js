@@ -3,9 +3,9 @@ import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import CurrencyFormat from "react-currency-format";
-import TableTag from "../TableTag";
-import ChangeIcons from "../ChangeIcons";
-import TableRowExpandable from "../TableRowExpandable";
+import TableTag from "../../UI/TableTag";
+import ChangeIcons from "../../UI/ChangeIcons";
+import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     formatDateNeeded,
     formatDateToMonthDayYear,
