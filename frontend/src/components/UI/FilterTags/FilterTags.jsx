@@ -9,7 +9,7 @@ import icons from "../../../uswds/img/sprite.svg";
  */
 export const FilterTags = ({ removeFilter, tagsList }) => {
     const FilterTag = ({ tag }) => (
-        <div className="font-12px height-205 radius-md bg-brand-primary-light display-flex flex-align-center width-fit-content padding-05">
+        <div className="font-12px height-205 radius-md bg-brand-primary-light display-flex flex-align-center width-fit-content">
             {tag.tagText}
             <svg
                 className="height-2 width-2 text-primary-dark margin-left-05 hover: cursor-pointer usa-tooltip"
@@ -22,10 +22,10 @@ export const FilterTags = ({ removeFilter, tagsList }) => {
     );
 
     return (
-        <div className="display-flex flex-wrap">
+        <div className="display-flex flex-align-center flex-wrap">
             {tagsList.map((tag, index) => {
                 return (
-                    <span key={index} className="padding-right-205 padding-bottom-05">
+                    <span key={index} className="padding-right-205 padding-top-05">
                         <FilterTag tag={tag} />
                     </span>
                 );
