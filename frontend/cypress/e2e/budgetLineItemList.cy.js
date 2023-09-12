@@ -98,3 +98,45 @@ it("the filter button works as expected", () => {
     // check that the table is filtered correctly
     cy.get("div[id='budget-line-items-table-zero-results']").should("not.exist");
 });
+
+it("hover on table row displays icons", () => {
+    cy.get("tbody").find("tr").first().trigger("mouseover");
+    cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').should("exist");
+    cy.get("tbody").find("tr").first().find('[data-cy="delete-row"]').should("exist");
+    cy.get("tbody").find("tr").first().find('[data-cy="duplicate-row"]').should("not.exist");
+});
+
+it("click on chevron down should open row and see budgetline data", () => {
+    cy.get("tbody").find('[data-cy="expanded-data"]').should("not.exist");
+    cy.get("tbody").find("tr").first().find('[data-cy="expand-row"]').click();
+    cy.get("tbody").find('[data-cy="expanded-data"]').as("expandedRow").should("exist");
+    cy.get("@expandedRow").contains("Created By");
+    cy.get("@expandedRow").contains("Notes");
+    cy.get("@expandedRow").contains("Procurement Shop");
+    cy.get("@expandedRow").contains("SubTotal");
+    cy.get("@expandedRow").contains("Fees");
+    cy.get("@expandedRow").find('[data-cy="edit-row"]').should("exist");
+    cy.get("@expandedRow").find('[data-cy="delete-row"]').should("exist");
+    cy.get("@expandedRow").find('[data-cy="duplicate-row"]').should("not.exist");
+});
+
+it("click on edit bli and check if its routed to the correct page", () => {
+    cy.get("tbody").find("tr").first().trigger("mouseover");
+    cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').should("exist");
+    cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').click();
+    cy.url().should("include", "/agreements/1/budget-lines");
+});
+
+it("click on edit bli and check to see if the form is populated", () => {
+    cy.get("tbody").find("tr").first().trigger("mouseover");
+    cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').should("exist");
+    cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').click();
+    cy.url().should("include", "/agreements/1/budget-lines");
+    cy.get("#enteredDescription").should("have.value", "LI 1");
+    cy.get("#selectedCan").should("have.value", "G994426");
+    cy.get("#enteredMonth").should("have.value", "6");
+    cy.get("#enteredDay").should("have.value", "13");
+    cy.get("#enteredYear").should("have.value", "2043");
+    cy.get("#enteredAmount").should("have.value", "1,000,000");
+    cy.get('[data-cy="update-budget-line"]').should("exist");
+});

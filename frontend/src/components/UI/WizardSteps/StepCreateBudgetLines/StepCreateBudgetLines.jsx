@@ -56,6 +56,10 @@ export const StepCreateBudgetLines = ({
 }) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const searchParams = new URLSearchParams(location.search);
+    const [budgetLineIdFromUrl, setBudgetLineIdFromUrl] = React.useState(
+        () => searchParams.get("budget-line-id") || null
+    );
 
     const {
         selected_can: selectedCan,
@@ -97,15 +101,6 @@ export const StepCreateBudgetLines = ({
     const isAlertActive = useSelector((state) => state.alert.isActive);
 
     let loggedInUserFullName = useSelector((state) => loggedInName(state.auth?.activeUser));
-
-    // combine arrays of new budget lines and existing budget lines added
-    // only run once on page load if there are existing budget lines
-    React.useEffect(() => {
-        if (existingBudgetLines.length > 0) {
-            dispatch({ type: "ADD_EXISTING_BUDGET_LINES", payload: existingBudgetLines });
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [existingBudgetLines]);
 
     // Validation
     let res = suite.get();
@@ -165,6 +160,9 @@ export const StepCreateBudgetLines = ({
         });
 
         dispatch({ type: "RESET_FORM" });
+        if (budgetLineIdFromUrl) {
+            resetQueryParams();
+        }
         globalDispatch(
             setAlert({
                 type: "success",
@@ -302,6 +300,34 @@ export const StepCreateBudgetLines = ({
             payload: { ...budgetLine, created_by: loggedInUserFullName },
         });
     };
+    // TODO: consider moving this to a separate helper function
+    const resetQueryParams = () => {
+        setBudgetLineIdFromUrl(null);
+        const url = new URL(window.location);
+        url.searchParams.delete("budget-line-id");
+        window.history.replaceState({}, "", url);
+    };
+
+    // combine arrays of new budget lines and existing budget lines added
+    // only run once on page load if there are existing budget lines
+    React.useEffect(() => {
+        if (existingBudgetLines.length > 0) {
+            dispatch({ type: "ADD_EXISTING_BUDGET_LINES", payload: existingBudgetLines });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [existingBudgetLines]);
+
+    // check budget line id from context and if found, set edit mode to true and set budget line for editing
+    React.useEffect(() => {
+        if (budgetLineIdFromUrl) {
+            setIsEditMode(true);
+            const budgetLineFromUrl = newBudgetLines.find((budgetLine) => budgetLine.id === +budgetLineIdFromUrl);
+            if (budgetLineFromUrl) {
+                handleSetBudgetLineForEditing(budgetLineFromUrl);
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [budgetLineIdFromUrl, newBudgetLines]);
 
     return (
         <>
@@ -319,6 +345,7 @@ export const StepCreateBudgetLines = ({
             ) : (
                 <>
                     {
+                        // TODO: consider moving this to a separate component for BudgetLine tab
                         // if workflow is none, skip the title
                         workflow !== "none" ? (
                             workflow === "agreement" ? (

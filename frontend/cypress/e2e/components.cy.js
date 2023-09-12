@@ -54,3 +54,12 @@ describe("procurement shop select", () => {
         cy.get('[data-cy="fee"]').contains("0");
     });
 });
+
+it("hover on table row displays icons", () => {
+    cy.visit("/agreements/1/budget-lines?mode=edit");
+    cy.get("tbody").find("tr").first().find('[data-cy="expand-row"]').should("exist");
+    cy.get("tbody").find("tr").first().trigger("mouseover");
+    cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').should("exist");
+    cy.get("tbody").find("tr").first().find('[data-cy="delete-row"]').should("exist");
+    cy.get("tbody").find("tr").first().find('[data-cy="duplicate-row"]').should("exist");
+});

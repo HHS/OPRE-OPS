@@ -17,7 +17,7 @@ import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpanded, isRowActive, setIsRowActive }) => {
     const trId = React.useId();
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
-    const changeBgColorIfExpanded = { backgroundColor: isRowActive && "var(--neutral-lightest)" };
+    const changeBgColorIfExpanded = { backgroundColor: isExpanded && "var(--neutral-lightest)" };
     const handleExpandRow = () => {
         setIsExpanded(!isExpanded);
         setIsRowActive(!isRowActive);
@@ -25,7 +25,7 @@ const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpan
 
     return (
         <>
-            <tr>
+            <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
                 {tableRowData}
                 <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     <FontAwesomeIcon
@@ -38,7 +38,7 @@ const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpan
                 </td>
             </tr>
 
-            {isExpanded && <tr>{expandedData}</tr>}
+            {isExpanded && <tr data-cy="expanded-data">{expandedData}</tr>}
         </>
     );
 };
