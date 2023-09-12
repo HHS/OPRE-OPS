@@ -62,33 +62,14 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
         createTagString(selectedPortfolios, "portfolios", "", setTagsList);
     }, [filters.portfolios]);
 
-    // useEffect(() => {
-    //     const selectedBudgetLineStatus = [];
-    //
-    //     filters.budgetLineStatus.draft && selectedBudgetLineStatus.push("Draft");
-    //     filters.budgetLineStatus.planned && selectedBudgetLineStatus.push("Planned");
-    //     filters.budgetLineStatus.executing && selectedBudgetLineStatus.push("Executing");
-    //     filters.budgetLineStatus.obligated && selectedBudgetLineStatus.push("Obligated");
-    //
-    //     createTagString(selectedBudgetLineStatus, "budgetLineStatus", "Budget Line Status:", setTagsList);
-    // }, [filters.budgetLineStatus]);
-
-    // const ignoredTags = (tag) => {
-    //     const tagsToIgnore = [
-    //         {
-    //             tagText: "Upcoming Need By Date: All Time",
-    //             filter: "upcomingNeedByDate",
-    //         },
-    //         {
-    //             tagText: "Budget Line Status: Draft, Planned, Executing, Obligated",
-    //             filter: "budgetLineStatus",
-    //         },
-    //     ];
-    //
-    //     return !tagsToIgnore.some((ignoredTag) => {
-    //         return _.isEqual(tag, ignoredTag);
-    //     });
-    // };
+    useEffect(() => {
+        const selectedBLIStatus = [];
+        Array.isArray(filters.bliStatus) &&
+            filters.bliStatus.forEach((status) => {
+                selectedBLIStatus.push(status.title);
+            });
+        createTagString(selectedBLIStatus, "bliStatus", "", setTagsList);
+    }, [filters.bliStatus]);
 
     return (
         <div className="display-flex flex-wrap">

@@ -27,6 +27,10 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
         setPortfolios(filters.portfolios);
     }, [filters.portfolios]);
 
+    React.useEffect(() => {
+        setBLIStatus(filters.bliStatus);
+    }, [filters.bliStatus]);
+
     const applyFilter = () => {
         setFilters((prevState) => {
             return {
