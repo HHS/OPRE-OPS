@@ -87,6 +87,12 @@ it("the filter button works as expected", () => {
     // click the button that has text Apply
     cy.get("button").contains("Apply").click();
 
+    // check that the correct tags are displayed
+    cy.get("div").contains("Filters Applied:").should("exist");
+    cy.get("div").contains("FY 2012").should("exist");
+    cy.get("div").contains("Child Welfare Research").should("exist");
+    cy.get("div").contains("Draft").should("exist");
+
     // check that the table is filtered correctly
     cy.get("div[id='budget-line-items-table-zero-results']").should("exist");
 
@@ -94,6 +100,12 @@ it("the filter button works as expected", () => {
     cy.get("button").contains("Filter").click();
     cy.get("button").contains("Reset").click();
     cy.get("button").contains("Apply").click();
+
+    // check that the correct tags are displayed
+    cy.get("div").contains("Filters Applied:").should("not.exist");
+    cy.get("div").contains("FY 2012").should("not.exist");
+    cy.get("div").contains("Child Welfare Research").should("not.exist");
+    cy.get("div").contains("Draft").should("not.exist");
 
     // check that the table is filtered correctly
     cy.get("div[id='budget-line-items-table-zero-results']").should("not.exist");
