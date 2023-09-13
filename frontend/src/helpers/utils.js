@@ -200,16 +200,6 @@ export const fiscalYearFromDate = (date) => {
     const year = dt.getUTCFullYear();
     return month > 8 ? year + 1 : year;
 };
-/**
- * This function takes a fee and formats it as a percent.
- * @param {number} fee - The fee to format.
- * @returns {string} The formatted fee.
- * @example displayFeePercent(0.1)
- */
-export const displayFeePercent = (fee) => {
-    if (fee === 0) return "0";
-    return `${fee}%`;
-};
 
 /**
  * This function takes an amount and fee and returns the total fee amount.
