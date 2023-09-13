@@ -5,7 +5,7 @@ import { getCents } from "./util";
 /**
  * CurrencyWithSmallCents component
  * @param {Object} props - Properties passed to component
- * @param {number} props.amount - The amount to be displayed
+ * @param {number} props.amount - The amount to display
  * @param {string} [props.dollarsClasses] - CSS classes for the dollar value
  * @param {string} [props.centsClasses] - CSS classes for the cents value
  * @param {Object} [props.centsStyles] - CSS styles for the cents value
