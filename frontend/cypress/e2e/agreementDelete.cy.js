@@ -1,6 +1,7 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
+// eslint-disable-next-line no-unused-vars
 const testAgreements = [
     {
         agreement: 1,
