@@ -10,6 +10,7 @@ import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLinesTable";
 import BLIFilterButton from "./BLIFilterButton";
 import SummaryCardsSection from "../../../components/BudgetLineItems/SummaryCardsSection";
+import BLIFilterTags from "./BLIFilterTags";
 
 /**
  * Page for the Budget Line Item List.
@@ -138,6 +139,7 @@ export const BudgetLineItemList = () => {
                 }
                 buttonText="Add Budget Lines"
                 buttonLink="/budget-lines/create"
+                FilterTags={<BLIFilterTags filters={filters} setFilters={setFilters} />}
                 TableSection={<AllBudgetLinesTable budgetLines={budgetLinesWithCanAndAgreementName} />}
                 FilterButton={<BLIFilterButton filters={filters} setFilters={setFilters} />}
                 SummaryCardsSection={<SummaryCardsSection budgetLines={budgetLinesWithCanAndAgreementName} />}

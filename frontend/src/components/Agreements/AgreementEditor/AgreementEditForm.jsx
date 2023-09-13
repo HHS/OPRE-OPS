@@ -182,8 +182,8 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                     globalDispatch(
                         setAlert({
                             type: "success",
-                            heading: "Agreement Draft Saved",
-                            message: "The agreement has been successfully saved.",
+                            heading: "Agreement Edited",
+                            message: `The agreement ${agreement.name} has been successfully updated.`,
                         })
                     );
                 })
@@ -211,7 +211,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                         setAlert({
                             type: "success",
                             heading: "Agreement Draft Saved",
-                            message: "The agreement has been successfully created.",
+                            message: `The agreement ${agreement.name} has been successfully created.`,
                         })
                     );
                 })
