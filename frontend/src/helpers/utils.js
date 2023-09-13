@@ -93,8 +93,12 @@ const codesToDisplayText = {
         "team-member": "Team Members",
         "budget-line-items": "Budget Line Items",
     },
-    className: {
+    classNameLabels: {
         ContractAgreement: "Contract Agreement",
+        BudgetLineItem: "Budget Line",
+    },
+    baseClassNameLabels: {
+        ContractAgreement: "Agreement",
         BudgetLineItem: "Budget Line",
     },
     agreementPropertyLabels: {
@@ -129,7 +133,7 @@ const codesToDisplayText = {
 
 /**
  * Converts a code value into a display text value based on a predefined mapping.
- * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "className: | "agreementPropertyLabels" | "budgetLineItemPropertyLabels")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
+ * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "classNameLabels" | "baseClassNameLabels"| "agreementPropertyLabels" | "budgetLineItemPropertyLabels")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
  * @param {string} code - The code value to convert. This parameter is required.
  * @returns {string} The display text value for the code, or the original code value if no mapping is found.
  * @throws {Error} If either the listName or code parameter is not provided.

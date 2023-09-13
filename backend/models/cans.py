@@ -236,6 +236,7 @@ class Agreement(BaseModel):
             if self.agreement_reason
             else None,
             budget_line_items=[bli.to_dict() for bli in self.budget_line_items],
+            project_officer_user=self.project_officer_user.to_dict() if self.project_officer_user else None,
             team_members=[tm.to_dict() for tm in self.team_members],
             research_project=self.research_project.to_dict()
             if self.research_project
