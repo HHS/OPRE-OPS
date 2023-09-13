@@ -11,7 +11,12 @@ const getCents = (amount) => {
 
     if (!amount.toString().includes(".")) return "00";
 
-    const amount_str = parseFloat(amount.toFixed(2)).toString();
+    const amount_num = Number(amount);
+    if (isNaN(amount_num)) {
+        throw new Error("Invalid amount");
+    }
+
+    const amount_str = parseFloat(amount_num.toFixed(2)).toString();
 
     return getCentsSubstring(amount_str);
 };
