@@ -13,15 +13,23 @@ import BLIStatusComboBox from "../../../components/UI/Form/BLIStatusComboBox";
  * @param {Function} props.setFilters - A function to call to set the filters.
  * @returns {JSX.Element} - The procurement shop select element.
  */
-export const BLIFilterButton = ({ setFilters }) => {
+export const BLIFilterButton = ({ filters, setFilters }) => {
     const [fiscalYears, setFiscalYears] = React.useState([]);
     const [portfolios, setPortfolios] = React.useState([]);
     const [bliStatus, setBLIStatus] = React.useState([]);
 
     // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
-    // useEffect(() => {
-    //     setFiscalYears(filters.fiscalYears);
-    // }, [filters.fiscalYears]);
+    React.useEffect(() => {
+        setFiscalYears(filters.fiscalYears);
+    }, [filters.fiscalYears]);
+
+    React.useEffect(() => {
+        setPortfolios(filters.portfolios);
+    }, [filters.portfolios]);
+
+    React.useEffect(() => {
+        setBLIStatus(filters.bliStatus);
+    }, [filters.bliStatus]);
 
     const applyFilter = () => {
         setFilters((prevState) => {
