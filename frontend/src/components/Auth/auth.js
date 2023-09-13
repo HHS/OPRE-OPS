@@ -4,9 +4,8 @@ import jwt_decode from "jwt-decode";
 import { getUserByOidc } from "../../api/getUser";
 import { setUserDetails } from "../Auth/authSlice";
 
-const authConfig = ApplicationContext.get().helpers().authConfig;
-
 export const getAuthorizationCode = (provider, stateToken) => {
+    const authConfig = ApplicationContext.get().helpers().authConfig;
     const authProvider = authConfig[provider];
     const providerUrl = new URL(authProvider.auth_endpoint);
     providerUrl.searchParams.set("acr_values", authProvider.acr_values);
@@ -27,6 +26,7 @@ export const logoutUser = async (stateToken) => {
     //   client_id=${CLIENT_ID}&
     //   post_logout_redirect_uri=${REDIRECT_URI}&
     //   state=abcdefghijklmnopabcdefghijklmnop
+    const authConfig = ApplicationContext.get().helpers().authConfig;
     const providerLogout = new URL(authConfig.logout_endpoint);
     providerLogout.searchParams.set("client_id", authConfig.client_id);
     providerLogout.searchParams.set("post_logout_redirect_uri", window.location.hostname);
@@ -39,7 +39,7 @@ export const CheckAuth = () => {
     // the user is correctly authenticated and authorized. Hook into the Auth service
     // at some point.
     // const isLoggedIn = useSelector((state) => state.auth.isLoggedIn) || false;
-    const tokenExists = localStorage.getItem("access_token");
+    const tokenExists = getAccessToken() !== null;
     // TODO: Verify access_token's signature
     // TODO: Verify access_token's claims
     // TODO: Verify access_token's expiration - maybe perform a refresh()?
@@ -62,9 +62,9 @@ export async function setActiveUser(token, dispatch) {
  * @returns {string|null} The access token, or null if it is not found.
  *
  * @example
- * const accessToken = GetAccessToken();
+ * const accessToken = getAccessToken();
  */
-export const GetAccessToken = () => {
+export const getAccessToken = () => {
     const token = localStorage.getItem("access_token");
     return token;
 };
@@ -74,9 +74,9 @@ export const GetAccessToken = () => {
  * @returns {string|null} The refresh token, or null if it is not found.
  *
  * @example
- * const refreshToken = GetRefreshToken();
+ * const refreshToken = getRefreshToken();
  */
-export const GetRefreshToken = () => {
+export const getRefreshToken = () => {
     const token = localStorage.getItem("refresh_token");
     return token;
 };
