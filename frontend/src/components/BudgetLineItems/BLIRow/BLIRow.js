@@ -6,7 +6,13 @@ import CurrencyFormat from "react-currency-format";
 import TableTag from "../../UI/TableTag";
 import ChangeIcons from "../ChangeIcons";
 import TableRowExpandable from "../../UI/TableRowExpandable";
-import { fiscalYearFromDate, formatDateNeeded, formatDateToMonthDayYear } from "../../../helpers/utils";
+import {
+    fiscalYearFromDate,
+    formatDateNeeded,
+    formatDateToMonthDayYear,
+    totalBudgetLineFeeAmount,
+    totalBudgetLineAmountPlusFees,
+} from "../../../helpers/utils";
 import useGetUserFullNameFromId from "../../../helpers/user-hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../helpers/budget-line-hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
@@ -33,8 +39,8 @@ const BLIRow = ({
     const [isExpanded, setIsExpanded] = React.useState(false);
     const [isRowActive, setIsRowActive] = React.useState(false);
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
-    let feeTotal = budgetLine?.amount * budgetLine?.psc_fee_amount;
-    let total = budgetLine?.amount + feeTotal;
+    let feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.psc_fee_amount);
+    let budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
     const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
     const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
@@ -126,11 +132,11 @@ const BLIRow = ({
                 )}
             </td>
             <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
-                {total === 0 ? (
+                {budgetLineTotalPlusFees === 0 ? (
                     0
                 ) : (
                     <CurrencyFormat
-                        value={total}
+                        value={budgetLineTotalPlusFees}
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$"}

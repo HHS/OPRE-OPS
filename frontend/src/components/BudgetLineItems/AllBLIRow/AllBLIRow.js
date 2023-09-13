@@ -39,6 +39,8 @@ const AllBLIRow = ({
     const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
+    let feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.psc_fee_amount);
+    let BudgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
 
     // styles for the table row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
@@ -62,17 +64,11 @@ const AllBLIRow = ({
                 {bl.can_number}
             </td>
             <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
-                {totalBudgetLineAmountPlusFees(
-                    bl?.amount,
-                    totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.psc_fee_amount)
-                ) === 0 ? (
+                {BudgetLineTotalPlusFees === 0 ? (
                     0
                 ) : (
                     <CurrencyFormat
-                        value={totalBudgetLineAmountPlusFees(
-                            bl?.amount,
-                            totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.psc_fee_amount)
-                        )}
+                        value={BudgetLineTotalPlusFees}
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$"}
@@ -145,14 +141,11 @@ const AllBLIRow = ({
                             <dl className=" margin-0 margin-left-2">
                                 <dt className="margin-0 text-base-dark">Fees</dt>
                                 <dd className="margin-0">
-                                    {totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.psc_fee_amount) === 0 ? (
+                                    {feeTotal === 0 ? (
                                         0
                                     ) : (
                                         <CurrencyFormat
-                                            value={totalBudgetLineFeeAmount(
-                                                budgetLine?.amount,
-                                                budgetLine?.psc_fee_amount
-                                            )}
+                                            value={feeTotal}
                                             displayType={"text"}
                                             thousandSeparator={true}
                                             prefix={"$"}
