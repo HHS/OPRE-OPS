@@ -24,6 +24,10 @@ class Division(BaseModel):
     abbreviation = Column(String(10), unique=True)
     portfolio = relationship("Portfolio", back_populates="division")
 
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.name
+
 
 class PortfolioUrl(BaseModel):
     """Portfolio URL sub model.
@@ -76,6 +80,10 @@ class Portfolio(BaseModel):
         back_populates="portfolios",
         secondary=portfolio_team_leaders,
     )
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.name
 
     @override
     def to_dict(self) -> dict[str, Any]:

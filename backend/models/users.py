@@ -79,6 +79,10 @@ class User(BaseModel):
     def get_user_id(self):
         return self.id
 
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.full_name if self.full_name else self.email
+
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
         d = super().to_dict()  # type: ignore [no-untyped-call]
@@ -94,13 +98,6 @@ class User(BaseModel):
 
         return cast(dict[str, Any], d)
 
-    def to_slim_dict(self) -> dict[str, Any]:
-        d = {
-            "id": self.id,
-            "full_name": self.full_name,
-        }
-        return cast(dict[str, Any], d)
-
 
 class Role(BaseModel):
     """Main Role model."""
@@ -111,6 +108,10 @@ class Role(BaseModel):
     permissions = Column(String, nullable=False)
     users = relationship("User", secondary=user_role_table, back_populates="roles")
 
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.name
+
 
 class Group(BaseModel):
     """Main Group model."""
@@ -119,3 +120,8 @@ class Group(BaseModel):
     id = Column(Integer, Identity(always=True, start=1, cycle=True), primary_key=True)
     name = Column(String, index=True, nullable=False)
     users = relationship("User", secondary=user_group_table, back_populates="groups")
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.name
+

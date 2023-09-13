@@ -10,6 +10,7 @@ def test_procurement_shop_lookup(loaded_db):
     assert ps.name == "Product Service Center"
     assert ps.abbr == "PSC"
     assert ps.fee == 0
+    assert ps.display_name == ps.name
 
 
 def test_procurement_shop_creation():
