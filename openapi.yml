@@ -113,6 +113,29 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
+  /api/v1/agreements/{agreement_id}/history:
+    get:
+      description: Get Agreement History By Id
+      parameters:
+        - in: path
+          name: agreement_id
+          description: Agreement Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agreement'
+              examples:
+                '0':
+                  $ref: '#/components/examples/Agreement'
   /api/v1/cans/:
     get:
       description: Get CANs
@@ -1237,6 +1260,47 @@ components:
       items:
         anyOf:
           - $ref: "#/components/schemas/Agreement"
+
+    AgreementHistory:
+      description: OPS List of Agreement History records
+      type: array
+      items:
+        anyOf:
+          - $ref: "#/components/schemas/OpsDbHistoryItem"
+
+    OpsDbHistoryItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        class_name:
+          type: string
+          example: "ContractAgreement"
+        row_key:
+          type: string
+          example: "21"
+        created_by:
+          type: integer
+          example: 1
+        created_on:
+          type: string
+          example: "2023-04-06T20:33:38.292475"
+        updated_on:
+          type: string
+          example: "2023-04-06T20:33:38.292475"
+        event_details:
+          description: JSON copy of the relevant object after editing or some JSON message
+          type: object
+        changes:
+          description: JSON for the changeset
+          type: object
+        diff:
+          description: properties which changed
+          type: object
+        original:
+          description: properties with their values before changes
+          type: object
 
     BudgetLineItems:
       description: OPS List of Budget Line Items
