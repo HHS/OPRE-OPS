@@ -56,3 +56,27 @@ export async function setActiveUser(token, dispatch) {
 
     dispatch(setUserDetails(userDetails));
 }
+
+/**
+ * Retrieves the access token.
+ * @returns {string|null} The access token, or null if it is not found.
+ *
+ * @example
+ * const accessToken = GetAccessToken();
+ */
+export const GetAccessToken = () => {
+    const token = localStorage.getItem("access_token");
+    return token;
+};
+
+/**
+ * Retrieves the refresh token.
+ * @returns {string|null} The refresh token, or null if it is not found.
+ *
+ * @example
+ * const refreshToken = GetRefreshToken();
+ */
+export const GetRefreshToken = () => {
+    const token = localStorage.getItem("refresh_token");
+    return token;
+};
