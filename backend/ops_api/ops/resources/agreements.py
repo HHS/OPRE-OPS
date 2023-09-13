@@ -444,7 +444,9 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
                 agreement.support_contacts = tmp_support_contacts if tmp_support_contacts else []
 
             case "procurement_shop_id":
-                if any([bli.status.value >= BudgetLineItemStatus.IN_EXECUTION.value for bli in agreement.budget_line_items]):
+                if any(
+                    [bli.status.value >= BudgetLineItemStatus.IN_EXECUTION.value for bli in agreement.budget_line_items]
+                ):
                     raise ValueError(
                         "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
                     )
