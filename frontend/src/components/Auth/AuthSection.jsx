@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import cryptoRandomString from "crypto-random-string";
-import { getAuthorizationCode } from "./auth";
+import { getAccessToken, getAuthorizationCode } from "./auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { User } from "../UI/Header/User";
@@ -35,7 +35,7 @@ const AuthSection = () => {
     );
 
     useEffect(() => {
-        const currentJWT = localStorage.getItem("access_token");
+        const currentJWT = getAccessToken();
 
         if (currentJWT) {
             // TODO: we should validate the JWT here and set it on state if valid else logout

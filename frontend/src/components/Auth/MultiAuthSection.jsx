@@ -4,7 +4,7 @@ import { login } from "./authSlice";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import cryptoRandomString from "crypto-random-string";
-import { getAuthorizationCode } from "./auth";
+import { getAccessToken, getAuthorizationCode } from "./auth";
 import { apiLogin } from "../../api/apiLogin";
 import ContainerModal from "../UI/Modals/ContainerModal";
 import { setActiveUser } from "./auth";
@@ -47,7 +47,7 @@ const MultiAuthSection = () => {
     );
 
     React.useEffect(() => {
-        const currentJWT = localStorage.getItem("access_token");
+        const currentJWT = getAccessToken();
         if (currentJWT) {
             // TODO: we should validate the JWT here and set it on state if valid else logout
             dispatch(login());
