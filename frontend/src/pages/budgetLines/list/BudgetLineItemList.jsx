@@ -114,14 +114,12 @@ export const BudgetLineItemList = () => {
         const can = cans.find((can) => can.id === budgetLine.can_id);
         const agreement = agreements.find((agreement) => agreement.id === budgetLine.agreement_id);
         const procurementShopAbbr = agreement?.procurement_shop?.abbr;
-        const procurementShopFee = agreement?.procurement_shop?.fee;
 
         return {
             ...budgetLine,
             can_number: can?.number,
             agreement_name: agreement?.name,
             procShopCode: procurementShopAbbr,
-            procShopFee: procurementShopFee,
         };
     });
 

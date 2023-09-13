@@ -9,7 +9,6 @@ import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     formatDateNeeded,
     formatDateToMonthDayYear,
-    displayFeePercent,
     totalBudgetLineFeeAmount,
     totalBudgetLineAmountPlusFees,
 } from "../../../helpers/utils";
@@ -63,11 +62,17 @@ const AllBLIRow = ({
                 {bl.can_number}
             </td>
             <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
-                {totalBudgetLineAmountPlusFees(bl?.amount, bl?.procShopFee) === 0 ? (
+                {totalBudgetLineAmountPlusFees(
+                    bl?.amount,
+                    totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.psc_fee_amount)
+                ) === 0 ? (
                     0
                 ) : (
                     <CurrencyFormat
-                        value={totalBudgetLineAmountPlusFees(bl?.amount, bl?.procShopFee)}
+                        value={totalBudgetLineAmountPlusFees(
+                            bl?.amount,
+                            totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.psc_fee_amount)
+                        )}
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$"}
@@ -119,7 +124,7 @@ const AllBLIRow = ({
                         <dl className="margin-bottom-0">
                             <dt className="margin-0 text-base-dark">Procurement Shop</dt>
                             <dd className="margin-0" style={{ maxWidth: "25rem" }}>
-                                {`${budgetLine?.procShopCode}-Fee Rate: ${displayFeePercent(budgetLine?.procShopFee)}`}
+                                {`${budgetLine?.procShopCode}-Fee Rate: ${budgetLine?.psc_fee_amount}%`}
                             </dd>
                         </dl>
                         <div className="font-12px display-flex margin-top-1">
@@ -140,13 +145,13 @@ const AllBLIRow = ({
                             <dl className=" margin-0 margin-left-2">
                                 <dt className="margin-0 text-base-dark">Fees</dt>
                                 <dd className="margin-0">
-                                    {totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.procShopFee) === 0 ? (
+                                    {totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.psc_fee_amount) === 0 ? (
                                         0
                                     ) : (
                                         <CurrencyFormat
                                             value={totalBudgetLineFeeAmount(
                                                 budgetLine?.amount,
-                                                budgetLine?.procShopFee
+                                                budgetLine?.psc_fee_amount
                                             )}
                                             displayType={"text"}
                                             thousandSeparator={true}

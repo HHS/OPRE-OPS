@@ -208,7 +208,7 @@ export const fiscalYearFromDate = (date) => {
  */
 export const displayFeePercent = (fee) => {
     if (fee === 0) return "0";
-    return `${fee * 100}%`;
+    return `${fee}%`;
 };
 
 /**
@@ -220,7 +220,9 @@ export const displayFeePercent = (fee) => {
  */
 export const totalBudgetLineFeeAmount = (amount, fee) => {
     if (amount === 0) return 0;
-    return amount * fee;
+    // fee is a percent, so divide by 100
+    const calcFee = fee / 100;
+    return amount * calcFee;
 };
 
 /**
@@ -232,5 +234,5 @@ export const totalBudgetLineFeeAmount = (amount, fee) => {
  */
 export const totalBudgetLineAmountPlusFees = (amount, fee) => {
     if (amount === 0) return 0;
-    return amount + amount * fee;
+    return amount + fee;
 };
