@@ -1,6 +1,13 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
+const ALL_BLI_TOTAL = 35_001_019.6;
+const DRAFT_BLI_TOTAL = 2_000_001;
+const IN_REVIEW_BLI_TOTAL = 12343456;
+const EXECUTING_BLI_TOTAL = 16_000_004;
+const PLANNED_BLI_TOTAL = 14_000_004.5;
+const OBLIGATED_BLI_TOTAL = 3_001_010.1;
+
 beforeEach(() => {
     testLogin("admin");
     cy.visit("/budget-lines");
@@ -155,4 +162,9 @@ it("click on edit bli and check to see if the form is populated", () => {
     cy.get("#enteredYear").should("have.value", "2043");
     cy.get("#enteredAmount").should("have.value", "1,000,000");
     cy.get('[data-cy="update-budget-line"]').should("exist");
+});
+
+// test calculation of total amount
+it.only("Total BLI Summary Card should calculate the total amount of the budget line items", () => {
+    cy.get('[data-cy="bl-total-summary-card"]').should("exist");
 });
