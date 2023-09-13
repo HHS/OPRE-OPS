@@ -11,7 +11,7 @@ const getCents = (amount) => {
 
     if (!amount.toString().includes(".")) return "00";
 
-    const amount_str = parseFloat(amount).toString();
+    const amount_str = parseFloat(amount.toFixed(2)).toString();
 
     return getCentsSubstring(amount_str);
 };
