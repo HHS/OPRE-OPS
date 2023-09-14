@@ -113,6 +113,8 @@ const deleteLastAgreement = () => {
     cy.get("@table-rows").last().as("last-row");
     // expand the row
     cy.get("@last-row").find('[data-cy="expand-row"]').click();
+    // adding a little wait, trying to increase odds of success
+    cy.wait(2000);
     // get the first delete button and click
     cy.get(".padding-right-9").find('[data-cy="delete-agreement"]').click();
     // get the modal

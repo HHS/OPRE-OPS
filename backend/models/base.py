@@ -105,6 +105,17 @@ class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc, valid-t
     created_on = Column(DateTime, default=func.now())
     updated_on = Column(DateTime, default=func.now(), onupdate=func.now())
 
+    @property
+    def display_name(self):
+        """A property that can be used to provide a name for display purposes of any instance
+        (this should be overridden in subclasses for a better name than this default)"""
+        return f"{self.__class__.__name__}#{self.id}"
+
+    @display_name.setter
+    def display_name(self, value):
+        """a no-op setter for display_name, this prevents errors during binding in API, etc"""
+        pass
+
     class Validator:
         @staticmethod
         def validate(item, data):  # type: ignore [no-untyped-def]
@@ -118,7 +129,15 @@ class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc, valid-t
             {
                 "created_on": self.created_on.isoformat() if self.created_on else None,
                 "updated_on": self.updated_on.isoformat() if self.updated_on else None,
+                "display_name": self.display_name,
             }
         )
 
+        return cast(dict[str, Any], d)
+
+    def to_slim_dict(self) -> dict[str, Any]:
+        d = {
+            "id": self.id,
+            "display_name": self.display_name,
+        }
         return cast(dict[str, Any], d)
