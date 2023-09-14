@@ -6,11 +6,11 @@ import CreateEditAgreement from "./CreateEditAgreement";
 import { useGetAgreementByIdQuery } from "../../api/opsAPI";
 import { getUser } from "../../api/getUser";
 import SimpleAlert from "../../components/UI/Alert/SimpleAlert";
+import { useIsUserAllowedToEditAgreement, useIsAgreementEditable } from "../../helpers/useAgreements";
 
 const EditAgreement = () => {
     const urlPathParams = useParams();
     const agreementId = parseInt(urlPathParams.id);
-
     const [projectOfficer, setProjectOfficer] = useState({});
 
     const {
@@ -20,6 +20,10 @@ const EditAgreement = () => {
     } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true,
     });
+
+    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
+    const isAgreementEditable = useIsAgreementEditable(agreement?.id);
+    const isEditable = isAgreementEditable && canUserEditAgreement;
 
     useEffect(() => {
         const getProjectOfficerSetState = async (id) => {
@@ -43,14 +47,10 @@ const EditAgreement = () => {
         return <div>Oops, an error occurred</div>;
     }
 
-    const areAnyBudgetLinesInExecuting = agreement?.budget_line_items.some((bli) => bli.status === "IN_EXECUTION");
-    const areAnyBudgetLinesObligated = agreement?.budget_line_items.some((bli) => bli.status === "OBLIGATED");
-    const isAgreementEditable = !areAnyBudgetLinesInExecuting && !areAnyBudgetLinesObligated;
-
-    if (!isAgreementEditable) {
+    if (!isEditable) {
         return (
             <App>
-                <SimpleAlert type="error" heading="Error" message={`This Agreement cannot be edited.`}></SimpleAlert>
+                <SimpleAlert type="error" heading="Error" message="This Agreement cannot be edited."></SimpleAlert>
                 <Link to="/" className="usa-button margin-top-4">
                     Go back home
                 </Link>
