@@ -1,11 +1,12 @@
 name: Deployment DEV
 
 on:
-  workflow_run:
-    workflows: ["Continuous Integration"]
-    types:
-      - completed
-    branches: [main] # extra branch for testing only during dev.
+  # Disable until we have a new cloud environment.
+  # workflow_run:
+  #   workflows: ["Continuous Integration"]
+  #   types:
+  #     - completed
+  #   branches: [main] # extra branch for testing only during dev.
   push:
     branches: [development]
     paths-ignore:
