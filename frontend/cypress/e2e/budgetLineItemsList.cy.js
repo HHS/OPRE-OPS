@@ -1,12 +1,12 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
-const ALL_BLI_TOTAL = 35_001_019.6;
-const DRAFT_BLI_TOTAL = 2_000_001;
-const IN_REVIEW_BLI_TOTAL = 12343456;
-const EXECUTING_BLI_TOTAL = 16_000_004;
-const PLANNED_BLI_TOTAL = 14_000_004.5;
-const OBLIGATED_BLI_TOTAL = 3_001_010.1;
+const ALL_BLI_TOTAL = "35,001,019";
+const DRAFT_BLI_TOTAL = "2,000,001";
+const IN_REVIEW_BLI_TOTAL = "0";
+const EXECUTING_BLI_TOTAL = "16,000,004";
+const PLANNED_BLI_TOTAL = "14,000,004.50";
+const OBLIGATED_BLI_TOTAL = "3,001,010.10";
 
 beforeEach(() => {
     testLogin("admin");
@@ -164,9 +164,51 @@ it("click on edit bli and check to see if the form is populated", () => {
     cy.get('[data-cy="update-budget-line"]').should("exist");
 });
 
-// test calculation of total amount
-it.only("Total BLI Summary Card should calculate the total amount of the budget line items", () => {
+it("Total BLI Summary Card should calculate the total amount of the budget line items", () => {
     cy.get('[data-cy="bl-total-summary-card"]').as("total-bli-card").should("exist");
     cy.get("@total-bli-card").contains("Budget Lines Total");
     cy.get("@total-bli-card").contains(ALL_BLI_TOTAL);
 });
+
+it("Total BLI Summary Card should calculate the total amount of the budget line items in draft status", () => {
+    cy.get('[data-cy="bl-total-summary-card"]').as("total-bli-card").should("exist");
+    filterByStatus("Draft");
+    cy.get("@total-bli-card").contains(DRAFT_BLI_TOTAL);
+});
+
+it("Total BLI Summary Card should calculate the total amount of the budget line items in review status", () => {
+    cy.get('[data-cy="bl-total-summary-card"]').as("total-bli-card").should("exist");
+    filterByStatus("In Review");
+    cy.get("@total-bli-card").contains(IN_REVIEW_BLI_TOTAL);
+});
+
+it("Total BLI Summary Card should calculate the total amount of the budget line items in executing status", () => {
+    cy.get('[data-cy="bl-total-summary-card"]').as("total-bli-card").should("exist");
+    filterByStatus("Executing");
+    cy.get("@total-bli-card").contains(EXECUTING_BLI_TOTAL);
+});
+
+it("Total BLI Summary Card should calculate the total amount of the budget line items in planned status", () => {
+    cy.get('[data-cy="bl-total-summary-card"]').as("total-bli-card").should("exist");
+    filterByStatus("Planned");
+    cy.get("@total-bli-card").contains(PLANNED_BLI_TOTAL);
+});
+
+it("Total BLI Summary Card should calculate the total amount of the budget line items in obligated status", () => {
+    cy.get('[data-cy="bl-total-summary-card"]').as("total-bli-card").should("exist");
+    filterByStatus("Obligated");
+    cy.get("@total-bli-card").contains(OBLIGATED_BLI_TOTAL);
+});
+
+/**
+ * Helper function to filter by status
+ * @param {string} status - The status to filter by
+ */
+const filterByStatus = (status) => {
+    cy.get("button").contains("Filter").click();
+    cy.get(".flex-justify-end > .usa-button--outline").as("reset-btn").should("exist");
+    cy.get("@reset-btn").click();
+    cy.get(".bli-status-combobox__input-container").should("exist");
+    cy.get(".bli-status-combobox__input-container").type(`${status}{enter}`);
+    cy.get(".usa-button--primary").should("exist").click();
+};
