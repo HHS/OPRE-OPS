@@ -12,6 +12,7 @@ def test_agreement_retrieve(loaded_db):
     assert agreement is not None
     assert agreement.number == "AGR0001"
     assert agreement.name == "Contract #1: African American Child and Family Research Center"
+    assert agreement.display_name == agreement.name
     assert agreement.id == 1
     assert agreement.agreement_type.name == "CONTRACT"
 
@@ -72,6 +73,7 @@ def test_agreements_serialization(auth_client, loaded_db):
         "created_by": 4,
         "delivered_status": False,
         "description": "Test description",
+        "display_name": "Contract #1: African American Child and Family Research Center",
         "id": 1,
         "incumbent": "",
         "name": "Contract #1: African American Child and Family Research Center",
@@ -85,6 +87,7 @@ def test_agreements_serialization(auth_client, loaded_db):
         "team_members": [
             {
                 "created_by": None,
+                "display_name": "Chris Fortunato",
                 "division": 1,
                 "email": "chris.fortunato@example.com",
                 "first_name": "Chris",
@@ -98,6 +101,7 @@ def test_agreements_serialization(auth_client, loaded_db):
             {
                 "created_by": None,
                 "division": 2,
+                "display_name": "Amelia Popham",
                 "email": "Amelia.Popham@example.com",
                 "first_name": "Amelia",
                 "full_name": "Amelia Popham",
@@ -109,6 +113,7 @@ def test_agreements_serialization(auth_client, loaded_db):
             },
             {
                 "created_by": None,
+                "display_name": "Admin Demo",
                 "division": 3,
                 "email": "admin.demo@email.com",
                 "first_name": "Admin",
@@ -325,6 +330,7 @@ def test_agreements_put_by_id_contract(auth_client, loaded_db, test_contract):
     agreement = loaded_db.scalar(stmt)
 
     assert agreement.name == "Updated Contract Name"
+    assert agreement.display_name == agreement.name
     assert agreement.description == "Updated Contract Description"
     assert agreement.notes == "Test Note"
     assert [m.id for m in agreement.team_members] == [1]
@@ -349,6 +355,7 @@ def test_agreements_put_by_id_contract_remove_fields(auth_client, loaded_db, tes
     agreement = loaded_db.scalar(stmt)
 
     assert agreement.name == "Updated Contract Name"
+    assert agreement.display_name == agreement.name
     assert agreement.description == "Updated Contract Description"
     assert agreement.notes is None
     assert agreement.team_members == []
@@ -374,6 +381,7 @@ def test_agreements_put_by_id_grant(auth_client, loaded_db):
     agreement = loaded_db.scalar(stmt)
 
     assert agreement.name == "Updated Grant Name"
+    assert agreement.display_name == agreement.name
     assert agreement.description == "Updated Grant Description"
     assert [m.id for m in agreement.team_members] == [1, 2, 3]
 
@@ -414,6 +422,7 @@ def test_agreements_patch_by_id_contract(auth_client, loaded_db, test_contract):
     agreement = loaded_db.scalar(stmt)
 
     assert agreement.name == "Updated Contract Name"
+    assert agreement.display_name == agreement.name
     assert agreement.description == "Updated Contract Description"
     assert agreement.notes == "Test Note"
     assert [m.id for m in agreement.team_members] == [1]
@@ -442,6 +451,7 @@ def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test
     agreement = loaded_db.scalar(stmt)
 
     assert agreement.name == "Updated Contract Name"
+    assert agreement.display_name == agreement.name
     assert agreement.description == "Updated Contract Description"
     assert agreement.notes == "Test Note"
     assert [m.id for m in agreement.team_members] == [1]
@@ -462,6 +472,7 @@ def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test
     agreement = loaded_db.scalar(stmt)
 
     assert agreement.name == "Updated Contract Name"
+    assert agreement.display_name == agreement.name
     assert agreement.description == "Updated Contract Description"
     assert agreement.notes is None
     assert agreement.team_members == []
@@ -488,6 +499,7 @@ def test_agreements_patch_by_id_grant(auth_client, loaded_db):
     agreement = loaded_db.scalar(stmt)
 
     assert agreement.name == "Updated Grant Name"
+    assert agreement.display_name == agreement.name
     assert agreement.description == "Updated Grant Description"
     assert agreement.notes == "Test Note"
     assert [m.id for m in agreement.team_members] == [1]

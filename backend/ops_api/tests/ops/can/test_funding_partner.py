@@ -9,6 +9,7 @@ def test_funding_partner_lookup(loaded_db):
     assert funding_partner.id == 1
     assert funding_partner.name == "Children's Bureau"
     assert funding_partner.nickname == "Children's Bureau"
+    assert funding_partner.display_name == funding_partner.name
 
 
 def test_funding_partner_creation():

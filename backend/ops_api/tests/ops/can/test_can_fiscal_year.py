@@ -11,6 +11,7 @@ def test_can_fiscal_year_lookup(loaded_db):
     assert cfy.potential_additional_funding == 3000000.00
     assert cfy.can_lead is None
     assert cfy.notes == ""
+    assert cfy.display_name == "G99PHS9:2022"
 
 
 def test_can_fiscal_year_create():

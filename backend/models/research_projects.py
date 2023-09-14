@@ -68,6 +68,10 @@ class ResearchProject(BaseModel):
         secondary=research_project_team_leaders,
     )
 
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.title
+
     @override
     def to_dict(self):
         d = super().to_dict()

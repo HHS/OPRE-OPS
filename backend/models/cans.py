@@ -72,6 +72,10 @@ class FundingSource(BaseModel):
         back_populates="funding_sources",
     )
 
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.name
+
 
 class FundingPartner(BaseModel):
     """The Funding Partner (Agency) for the CAN.
@@ -83,6 +87,10 @@ class FundingPartner(BaseModel):
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
     nickname = Column(String(100))
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.name
 
 
 class AgreementType(Enum):
@@ -121,6 +129,10 @@ class ProductServiceCode(BaseModel):
     support_code = Column(String, nullable=True)
     description = Column(String)
     agreement = relationship("Agreement")
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.name
 
 
 class Agreement(BaseModel):
@@ -167,6 +179,10 @@ class Agreement(BaseModel):
 
     notes = Column(Text, nullable=True)
 
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.name
+
     __mapper_args__: dict[str, str | AgreementType] = {
         "polymorphic_identity": "agreement",
         "polymorphic_on": "agreement_type",
@@ -197,7 +213,7 @@ class Agreement(BaseModel):
 
     @classmethod
     def get_class(
-        cls, agreement_type: Optional[AgreementType] = None
+            cls, agreement_type: Optional[AgreementType] = None
     ) -> type["Agreement"]:
         try:
             return cls._subclasses[agreement_type]
@@ -365,6 +381,12 @@ class CANFiscalYear(BaseModel):
     notes = Column(String, default="")
     total_funding = column_property(received_funding + expected_funding)
 
+    @BaseModel.display_name.getter
+    def display_name(self):
+        if self.can:
+            return f"{self.can.display_name}:{self.fiscal_year}"
+        return f"CAN#{self.can_id}:{self.fiscal_year}"
+
     @override
     def to_dict(self):
         d = super().to_dict()
@@ -441,6 +463,10 @@ class BudgetLineItem(BaseModel):
     psc_fee_amount = Column(
         Numeric(12, 2)
     )  # may need to be a different object, i.e. flat rate or percentage
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.line_description if self.line_description else super().display_name
 
     @property
     def portfolio_id(self):
@@ -520,6 +546,10 @@ class CAN(BaseModel):
         Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans"
     )
     budget_line_items = relationship("BudgetLineItem", back_populates="can")
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.number
 
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
