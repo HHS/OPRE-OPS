@@ -166,5 +166,7 @@ it("click on edit bli and check to see if the form is populated", () => {
 
 // test calculation of total amount
 it.only("Total BLI Summary Card should calculate the total amount of the budget line items", () => {
-    cy.get('[data-cy="bl-total-summary-card"]').should("exist");
+    cy.get('[data-cy="bl-total-summary-card"]').as("total-bli-card").should("exist");
+    cy.get("@total-bli-card").contains("Budget Lines Total");
+    cy.get("@total-bli-card").contains(ALL_BLI_TOTAL);
 });
