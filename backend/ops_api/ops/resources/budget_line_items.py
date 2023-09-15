@@ -105,7 +105,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
         return response
 
-
     def _update(self, id, method, schema) -> Response:
         message_prefix = f"{method} to {ENDPOINT_STRING}"
         try:
@@ -142,7 +141,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
-
 
     @override
     @is_authorized(
