@@ -57,7 +57,7 @@ the backend api at `http://localhost:8080`.
 
 #### Backend
 
-The backend api utilizes `pytest`. 
+The backend api utilizes `pytest`.
 
 To run them...
 
@@ -168,19 +168,13 @@ from succeeding.  Fix the problem and try the commit again.
 
 ## Deployment
 
-This application is currently deployed to [Cloud.gov](https://cloud.gov) through [Cloud Foundry](https://www.cloudfoundry.org)
-via a [manifest.yml](manifest.yml) file.
-
-For now, while we are waiting for full Cloud.gov access, we only have access to a non-production environment.
+TBD
 
 ### Development Environment
 
-The development environment is deployed at https://ops-dev.fr.cloud.gov
+TBD
 
-Currently all `push` to `main` will automatically deploy to the `Development` environment. 
-
-This environment can be deployed to manually as well by authorized committers in the repository. You accomplish this by force pushing
-an existing commit to the `development` branch.
+~~This environment can be deployed to manually as well by authorized committers in the repository. You accomplish this by force pushingan existing commit to the `development` branch.~~
 
 ```shell
 git branch -d development  # deletes the development branch if it was already checked out locally
@@ -190,10 +184,9 @@ git push --force --set-upstream origin development
 
 ### Staging Environment
 
-The staging environment is deployed at https://ops-staging.app.cloud.gov
+TBD
 
-This environment can be deployed to by authorized committers in the repository. You accomplish this by force pushing
-an existing commit to the `staging` branch.
+~~This environment can be deployed to by authorized committers in the repository. You accomplish this by force pushing an existing commit to the `staging` branch.~~
 
 ```shell
 git branch -d staging  # deletes the staging branch if it was already checked out locally
@@ -203,7 +196,7 @@ git push --force --set-upstream origin staging
 
 ### Production Environment
 
-TBD.
+TBD
 
 ## Data Model
 
