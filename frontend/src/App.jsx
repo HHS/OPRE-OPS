@@ -1,17 +1,7 @@
-import { Footer } from "./components/UI/Footer/Footer";
-import Header from "./components/UI/Header/Header";
+import DefaultLayout from "./components/UI/Layouts/DefaultLayout";
 
-function App(props) {
-    return (
-        <div className="bg-base-lightest">
-            <div className="usa-overlay"></div>
-            <Header />
-            <main id="main-content" className="grid-container bg-white padding-bottom-6">
-                {props.children}
-            </main>
-            <Footer />
-        </div>
-    );
+function App({ children }) {
+    return <DefaultLayout>{children}</DefaultLayout>;
 }
 
 export default App;
