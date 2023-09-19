@@ -8,7 +8,7 @@ import { setIsActive, clearState } from "./alertSlice";
 /**
  * A component that displays an alert.
  * @param {Object} props - The component props.
- * @param {React.JSX.Element} [props.children] - The JSX children to render. (optional)
+ * @param {React.ReactNode} [props.children] - The children to render.
  * @returns {React.JSX.Element} The JSX element to render.
  * @see {@link https://designsystem.digital.gov/components/alerts/}
  */
@@ -19,7 +19,6 @@ export const Alert = ({ children }) => {
     const message = useSelector((state) => state.alert.message);
     const type = useSelector((state) => state.alert.type);
     const redirectUrl = useSelector((state) => state.alert.redirectUrl);
-    let classNames = "usa-alert margin-left-neg-4 margin-right-neg-4";
 
     React.useEffect(() => {
         if (redirectUrl) {
@@ -30,28 +29,33 @@ export const Alert = ({ children }) => {
             await new Promise((resolve) => setTimeout(resolve, 500));
             window.scrollTo(0, 0);
 
-            await new Promise((resolve) => setTimeout(resolve, 5000));
+            await new Promise((resolve) => setTimeout(resolve, 10000));
             dispatch(clearState());
         };
 
         showAlert();
     }, [navigate, dispatch, redirectUrl]);
 
+    let typeClass = null;
     switch (type) {
         case "success":
-            classNames += " usa-alert--success";
+            typeClass = "usa-alert--success";
             break;
         case "warning":
-            classNames += " usa-alert--warning";
+            typeClass = "usa-alert--warning";
             break;
         case "error":
-            classNames += " usa-alert--error";
+            typeClass = "usa-alert--error";
             break;
         default:
     }
 
     return (
-        <div className={classNames} role="status" data-cy="alert">
+        <div
+            className={`usa-alert margin-left-neg-4 margin-right-neg-4 margin-top-0 pin-x ${typeClass}`}
+            role="status"
+            data-cy="alert"
+        >
             <div className="usa-alert__body display-flex flex-justify">
                 <div>
                     <h1 className="usa-alert__heading">{heading}</h1>
