@@ -97,8 +97,6 @@ export const StepCreateBudgetLines = ({
     const setEnteredYear = useSetState("entered_year");
     const setEnteredComments = useSetState("entered_comments");
 
-    const isAlertActive = useSelector((state) => state.alert.isActive);
-
     let loggedInUserFullName = useSelector((state) => loggedInName(state.auth?.activeUser));
 
     // Validation

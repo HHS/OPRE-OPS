@@ -1,5 +1,5 @@
 import { useEffect, useState, Fragment } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 import PropTypes from "prop-types";
