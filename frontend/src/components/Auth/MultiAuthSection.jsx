@@ -29,8 +29,9 @@ const MultiAuthSection = () => {
                 console.error("API Login Failed!");
                 navigate("/login");
             } else {
-                console.log(`DEBUG:::ACCESS_TOKEN: ${response.access_token}`);
+                // console.log(`DEBUG:::ACCESS_TOKEN: ${response.access_token}`);
                 localStorage.setItem("access_token", response.access_token);
+                localStorage.setItem("refresh_token", response.refresh_token);
                 dispatch(login());
 
                 if (response.is_new_user) {
