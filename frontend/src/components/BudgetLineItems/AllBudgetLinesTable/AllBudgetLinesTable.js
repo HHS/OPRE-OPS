@@ -2,10 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import _ from "lodash";
-import Table from "../Table";
+import Table from "../../UI/Table";
 import AllBLIRow from "../AllBLIRow";
 import { All_BUDGET_LINES_TABLE_HEADINGS, BLIS_PER_PAGE } from "../../../constants";
-import PaginationNav from "../PaginationNav/PaginationNav";
+import PaginationNav from "../../UI/PaginationNav/PaginationNav";
 
 /**
  * TableRow component that represents a single row in the budget lines table.

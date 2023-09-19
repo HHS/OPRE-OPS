@@ -16,3 +16,4 @@ def test_product_service_code_lookup(loaded_db):
     assert psc.id == 2
     assert psc.name == "Convention and Trade Shows"
     assert psc.naics == 561920
+    assert psc.display_name == psc.name

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import FilterTags from "../../../components/UI/FilterTags/FilterTags";
-import createTagString from "../../../components/UI/FilterTags/utils";
 import _ from "lodash";
 
 /**
@@ -14,31 +13,32 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
     const [tagsList, setTagsList] = useState([]);
 
     const removeFilter = (tag) => {
+        const filteredTagsList = tagsList.filter((t) => t.tagText !== tag.tagText);
+        setTagsList(filteredTagsList);
         switch (tag.filter) {
             case "fiscalYears":
-                setTagsList((prevState) => prevState.filter((tag) => tag.filter !== "fiscalYears"));
                 setFilters((prevState) => {
                     return {
                         ...prevState,
-                        fiscalYears: [],
+                        fiscalYears: prevState.fiscalYears.filter(
+                            (fy) => fy.title.toString() !== tag.tagText.replace("FY ", "")
+                        ),
                     };
                 });
                 break;
             case "portfolios":
-                setTagsList((prevState) => prevState.filter((tag) => tag.filter !== "portfolios"));
                 setFilters((prevState) => {
                     return {
                         ...prevState,
-                        portfolios: [],
+                        portfolios: prevState.portfolios.filter((portfolio) => portfolio.name !== tag.tagText),
                     };
                 });
                 break;
             case "bliStatus":
-                setTagsList((prevState) => prevState.filter((tag) => tag.filter !== "bliStatus"));
                 setFilters((prevState) => {
                     return {
                         ...prevState,
-                        bliStatus: [],
+                        bliStatus: prevState.bliStatus.filter((status) => status.title !== tag.tagText),
                     };
                 });
                 break;
@@ -49,28 +49,44 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
         const selectedFiscalYears = [];
         Array.isArray(filters.fiscalYears) &&
             filters.fiscalYears.forEach((fiscalYear) => {
-                selectedFiscalYears.push(fiscalYear.title);
+                const tag = `FY ${fiscalYear.title}`;
+                selectedFiscalYears.push({ tagText: tag, filter: "fiscalYears" });
             });
-        createTagString(selectedFiscalYears, "fiscalYears", "FY", setTagsList);
+        setTagsList((prevState) => prevState.filter((t) => t.filter !== "fiscalYears"));
+        setTagsList((prevState) => {
+            return [...prevState, ...selectedFiscalYears];
+        });
     }, [filters.fiscalYears]);
 
     useEffect(() => {
         const selectedPortfolios = [];
         Array.isArray(filters.portfolios) &&
             filters.portfolios.forEach((portfolio) => {
-                selectedPortfolios.push(portfolio.name);
+                selectedPortfolios.push({ tagText: portfolio.name, filter: "portfolios" });
             });
-        createTagString(selectedPortfolios, "portfolios", "", setTagsList);
+        setTagsList((prevState) => prevState.filter((t) => t.filter !== "portfolios"));
+        setTagsList((prevState) => {
+            return [...prevState, ...selectedPortfolios];
+        });
     }, [filters.portfolios]);
 
     useEffect(() => {
         const selectedBLIStatus = [];
         Array.isArray(filters.bliStatus) &&
             filters.bliStatus.forEach((status) => {
-                selectedBLIStatus.push(status.title);
+                selectedBLIStatus.push({ tagText: status.title, filter: "bliStatus" });
             });
-        createTagString(selectedBLIStatus, "bliStatus", "", setTagsList);
+        setTagsList((prevState) => prevState.filter((t) => t.filter !== "bliStatus"));
+        setTagsList((prevState) => {
+            return [...prevState, ...selectedBLIStatus];
+        });
     }, [filters.bliStatus]);
+
+    const tagsListByFilter = _.groupBy(tagsList, "filter");
+    const tagsListByFilterMerged = [];
+    Array.isArray(tagsListByFilter.fiscalYears) && tagsListByFilterMerged.push(...tagsListByFilter.fiscalYears.sort());
+    Array.isArray(tagsListByFilter.portfolios) && tagsListByFilterMerged.push(...tagsListByFilter.portfolios.sort());
+    Array.isArray(tagsListByFilter.bliStatus) && tagsListByFilterMerged.push(...tagsListByFilter.bliStatus.sort());
 
     return (
         !_.isEmpty(tagsList) && (
@@ -78,7 +94,7 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
                 <span className="padding-right-205 text-base-dark font-serif-3xs line-height-sans-5 padding-top-05">
                     Filters Applied:
                 </span>
-                <FilterTags removeFilter={removeFilter} tagsList={tagsList} />
+                <FilterTags removeFilter={removeFilter} tagsList={tagsListByFilterMerged} />
             </div>
         )
     );

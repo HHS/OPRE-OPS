@@ -6,9 +6,10 @@ import App from "../../../App";
 import { useGetAgreementsQuery, useGetBudgetLineItemsQuery, useGetCansQuery } from "../../../api/opsAPI";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import Alert from "../../../components/UI/Alert";
-import TablePageLayout from "../../../components/UI/Layouts/TablePageLayout";
-import AllBudgetLinesTable from "../../../components/UI/AllBudgetLinesTable";
+import TablePageLayout from "../../../components/Layouts/TablePageLayout";
+import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLinesTable";
 import BLIFilterButton from "./BLIFilterButton";
+import SummaryCardsSection from "../../../components/BudgetLineItems/SummaryCardsSection";
 import BLIFilterTags from "./BLIFilterTags";
 
 /**
@@ -113,14 +114,12 @@ export const BudgetLineItemList = () => {
         const can = cans.find((can) => can.id === budgetLine.can_id);
         const agreement = agreements.find((agreement) => agreement.id === budgetLine.agreement_id);
         const procurementShopAbbr = agreement?.procurement_shop?.abbr;
-        const procurementShopFee = agreement?.procurement_shop?.fee;
 
         return {
             ...budgetLine,
             can_number: can?.number,
             agreement_name: agreement?.name,
             procShopCode: procurementShopAbbr,
-            procShopFee: procurementShopFee,
         };
     });
 
@@ -141,6 +140,7 @@ export const BudgetLineItemList = () => {
                 FilterTags={<BLIFilterTags filters={filters} setFilters={setFilters} />}
                 TableSection={<AllBudgetLinesTable budgetLines={budgetLinesWithCanAndAgreementName} />}
                 FilterButton={<BLIFilterButton filters={filters} setFilters={setFilters} />}
+                SummaryCardsSection={<SummaryCardsSection budgetLines={budgetLinesWithCanAndAgreementName} />}
             />
         </App>
     );

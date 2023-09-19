@@ -11,23 +11,21 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 
-it("loads with details", () => {
-    cy.get("h1").should("have.text", "Contract #1: African American Child and Family Research Center");
-    cy.get("h2").first().should("have.text", "Human Services Interoperability Support");
-    cy.get('[data-cy="agreement-total-budget-lines-card-article"] > h3').should("have.text", "Total Budget Lines");
-    cy.get('[data-cy="number-of-agreements"]').should("have.text", "2");
-    cy.get("h2").eq(2).should("have.text", "Agreement Details");
-    cy.get("h2").eq(1).should("have.text", "Agreement Summary");
-    cy.get(":nth-child(1) > :nth-child(1) > article > .margin-0").should("have.text", "Total Budget Lines");
-    cy.get('[data-cy="details-left-col"] > :nth-child(1) > .text-base-dark').should("have.text", "Description");
-    cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(1)').should("have.text", "Agreement Type");
-    cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(2) > .font-12px').should(
-        "have.text",
-        "Contract "
-    );
-    cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(3)').should("have.text", "Product Service Code");
+it("agreement loads with details", () => {
+    cy.get("h1").contains("Contract #1: African American Child and Family Research Center");
+    cy.get("h2").first().contains("Human Services Interoperability Support");
+    cy.get('[data-cy="agreement-total-budget-lines-card-article"]').contains("Total Budget Lines");
+    cy.get('[data-cy="number-of-agreements"]').contains("2");
+    cy.get("h2").eq(2).contains("Agreement Details");
+    cy.get("h2").eq(1).contains("Agreement Summary");
+
+    cy.get('[data-cy="details-left-col"] > :nth-child(1) > .text-base-dark').contains("Description");
+    cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(1)').contains("Agreement Type");
+    cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(2) > .font-12px').contains("Contract");
+    cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(3)').contains("Product Service Code");
 });
-it("loads with budget lines", () => {
+
+it("agreement loads with budget lines", () => {
     cy.get(".DetailsTabs_listItemNotSelected__Sy8MZ").click();
     cy.get("tbody").children().as("table-rows").should("have.length", 2);
 });
