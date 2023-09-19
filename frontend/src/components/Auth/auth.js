@@ -2,8 +2,21 @@ import ApplicationContext from "../../applicationContext/ApplicationContext";
 import cryptoRandomString from "crypto-random-string";
 import jwt_decode from "jwt-decode";
 import { getUserByOidc } from "../../api/getUser";
-import { setUserDetails } from "../Auth/authSlice";
+import { logout, setUserDetails } from "../Auth/authSlice";
+import { callBackend } from "../../helpers/backend";
 
+/**
+ * Generates the authorization code URL for the specified provider and state token.
+ * @function getAuthorizationCode
+ * @param {string} provider - The name of the provider to generate the authorization code URL for.
+ * @param {string} stateToken - The state token to include in the authorization code URL.
+ * @returns {URL} The authorization code URL for the specified provider and state token.
+ *
+ * @example
+ * const provider = "login.gov";
+ * const stateToken = "12345";
+ * const authUrl = getAuthorizationCode(provider, stateToken);
+ */
 export const getAuthorizationCode = (provider, stateToken) => {
     const authConfig = ApplicationContext.get().helpers().authConfig;
     const authProvider = authConfig[provider];
@@ -18,6 +31,11 @@ export const getAuthorizationCode = (provider, stateToken) => {
     return providerUrl;
 };
 
+/**
+ * Logs out the user and returns the URL to redirect to for logout.
+ * @param {string} stateToken - The state token to include in the logout URL.
+ * @returns {URL} - The URL to redirect to for logout.
+ */
 export const logoutUser = async (stateToken) => {
     // As documented here: https://developers.login.gov/oidc/
     // Example:
@@ -34,6 +52,14 @@ export const logoutUser = async (stateToken) => {
     return providerLogout;
 };
 
+/**
+ * Checks if the user is authenticated and authorized.
+ * @todo Implement token signature validation
+ * @todo Implement token claims validation
+ * @todo Implement token expiration validation
+ * @todo Implement Authorization checks.
+ * @returns {boolean} Returns true if the user is authenticated and authorized, otherwise false.
+ */
 export const CheckAuth = () => {
     // TODO: We'll most likely want to include multiple checks here to determine if
     // the user is correctly authenticated and authorized. Hook into the Auth service
@@ -47,6 +73,19 @@ export const CheckAuth = () => {
     return tokenExists; // && payload;
 };
 
+/**
+ * Sets the active user details in the Redux store by decoding the JWT token and fetching user details from the API.
+ * @async
+ * @function setActiveUser
+ * @param {string} token - The JWT token to decode and fetch user details.
+ * @param {function} dispatch - The Redux dispatch function to set the user details in the store.
+ * @returns {Promise<void>} A Promise that resolves when the user details are set in the store.
+ *
+ * @example
+ * const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+ * const dispatch = useDispatch();
+ * setActiveUser(token, dispatch);
+ */
 export async function setActiveUser(token, dispatch) {
     // TODO: Vefiry the Token!
     //const isValidToken = validateTooken(token);
@@ -66,7 +105,12 @@ export async function setActiveUser(token, dispatch) {
  */
 export const getAccessToken = () => {
     const token = localStorage.getItem("access_token");
-    return token;
+    if (isValidToken(token)) {
+        return token;
+    } else {
+        // TODO: determine proper exception or action to take here
+        return null;
+    }
 };
 
 /**
@@ -79,4 +123,51 @@ export const getAccessToken = () => {
 export const getRefreshToken = () => {
     const token = localStorage.getItem("refresh_token");
     return token;
+};
+
+/**
+ * Checks if the access token is valid by decoding the JWT and comparing the expiration time with the current time.
+ * @returns {boolean} Returns true if the access token is valid, false otherwise.
+ */
+export const isValidToken = (token) => {
+    if (!token) {
+        return false;
+    }
+
+    const decodedJwt = jwt_decode(token);
+
+    // Check expiration time
+    const exp = decodedJwt["exp"];
+    const now = Date.now() / 1000;
+    if (exp < now) {
+        // lets try to get a new token
+        // is the refresh token still valid?
+        callBackend("/api/v1/auth/refresh/", "POST", {}, null, true)
+            .then((response) => {
+                console.log(response);
+                localStorage.setItem("access_token", response.access_token);
+                return true;
+                // localStorage.setItem("refresh_token", response.refresh_token);
+            })
+            .catch((error) => {
+                console.log(error);
+                logout();
+            });
+    }
+
+    // TODO: Check signature
+    // const signature = decodedJwt["signature"];
+    // if (!verifySignature(token, signature)) {
+    //     throw new InvalidSignatureException("Token signature is invalid");
+    // }
+
+    // Check issuer
+    const issuer = decodedJwt["iss"];
+    // TODO: Update this when we have a real issuer value
+    if (issuer !== "https://opre-ops-backend") {
+        console.log("Token issuer is invalid");
+        return false;
+    }
+
+    return true;
 };
