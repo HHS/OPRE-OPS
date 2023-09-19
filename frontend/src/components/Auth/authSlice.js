@@ -13,6 +13,10 @@ export const authSlice = createSlice({
         logout: (state) => {
             state.isLoggedIn = false;
             state.activeUser = null;
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("refresh_token");
+            localStorage.removeItem("ops-state-key");
+            localStorage.removeItem("activeProvider");
         },
         setUserDetails: (state, action) => {
             state.activeUser = action.payload;
