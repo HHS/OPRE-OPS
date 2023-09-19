@@ -5,14 +5,14 @@ describe("BLIStatusComboBox", () => {
     const mockSetSelectedBLIStatus = jest.fn();
 
     it("renders the component with the correct label", () => {
-        render(<BLIStatusComboBox selectedBLIStatus={null} setSelectedBLIStatus={mockSetSelectedBLIStatus} />);
+        render(<BLIStatusComboBox selectedBLIStatus={undefined} setSelectedBLIStatus={mockSetSelectedBLIStatus} />);
         expect(screen.getByRole("combobox")).toBeInTheDocument();
         expect(screen.getByText("Budget Lines Status")).toBeInTheDocument();
     });
 
     it("renders the component with the correct options", () => {
         const { container } = render(
-            <BLIStatusComboBox selectedBLIStatus={null} setSelectedBLIStatus={mockSetSelectedBLIStatus} />
+            <BLIStatusComboBox selectedBLIStatus={undefined} setSelectedBLIStatus={mockSetSelectedBLIStatus} />
         );
 
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
@@ -24,7 +24,7 @@ describe("BLIStatusComboBox", () => {
     });
 
     it("updates the input value when the user types in the input field", () => {
-        render(<BLIStatusComboBox selectedBLIStatus={null} setSelectedBLIStatus={mockSetSelectedBLIStatus} />);
+        render(<BLIStatusComboBox selectedBLIStatus={undefined} setSelectedBLIStatus={mockSetSelectedBLIStatus} />);
         const input = screen.getByRole("combobox");
         fireEvent.change(input, { target: { value: "Draft" } });
         expect(input).toHaveValue("Draft");
@@ -33,7 +33,7 @@ describe("BLIStatusComboBox", () => {
     it("updates the selected item when multiple options are selected", () => {
         const setSelectedBLIStatus = jest.fn();
         const { getByText, container } = render(
-            <BLIStatusComboBox selectedBLIStatus={null} setSelectedBLIStatus={setSelectedBLIStatus} />
+            <BLIStatusComboBox selectedBLIStatus={undefined} setSelectedBLIStatus={setSelectedBLIStatus} />
         );
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
         fireEvent.focus(container.querySelector("input"));
