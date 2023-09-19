@@ -1,14 +1,20 @@
 import axios from "axios";
-import { getAccessToken } from "../components/Auth/auth";
+import { getAccessToken, getRefreshToken } from "../components/Auth/auth";
 
 const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
 
-export const callBackend = async (urlPath, action, requestBody, queryParams) => {
-    console.debug(`Calling backend at ${urlPath} ${queryParams ? "with params:" + JSON.stringify(queryParams) : ""}`);
-    const accessToken = getAccessToken();
+export const callBackend = async (urlPath, action, requestBody, queryParams, useRefresh = false) => {
+    console.debug(
+        `Calling backend at ${BACKEND_DOMAIN}${urlPath} ${
+            queryParams ? "with params:" + JSON.stringify(queryParams) : ""
+        }`
+    );
+
+    const accessToken = useRefresh ? getRefreshToken() : getAccessToken();
     if (accessToken) {
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
     }
+
     // if (localStorage.getItem("access_token")) {
     //     axios.defaults.headers.common["Authorization"] = `Bearer ${localStorage.getItem("access_token")}`;
     // }
