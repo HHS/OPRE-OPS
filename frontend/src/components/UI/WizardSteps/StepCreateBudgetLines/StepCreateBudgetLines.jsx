@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import StepIndicator from "../../StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
-import BudgetLinesTable from "../../BudgetLinesTable";
+import BudgetLinesTable from "../../../BudgetLineItems/BudgetLinesTable";
 import Alert from "../../Alert";
 import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";

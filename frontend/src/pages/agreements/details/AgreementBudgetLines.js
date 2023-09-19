@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import AgreementDetailHeader from "./AgreementDetailHeader";
 import { CreateBudgetLinesProvider } from "../../../components/UI/WizardSteps/StepCreateBudgetLines/context";
-import BudgetLinesTable from "../../../components/UI/BudgetLinesTable";
+import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import StepCreateBudgetLines from "../../../components/UI/WizardSteps/StepCreateBudgetLines/StepCreateBudgetLines";
-import { useIsUserAllowedToEditAgreement } from "../../../helpers/useAgreements";
+import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
 
 /**
  * Renders Agreement budget lines view

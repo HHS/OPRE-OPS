@@ -12,8 +12,8 @@ import { useDeleteAgreementMutation } from "../../../api/opsAPI";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import icons from "../../../uswds/img/sprite.svg";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
-import useGetUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId";
-import { useIsUserAllowedToEditAgreement } from "../../../helpers/useAgreements";
+import useGetUserFullNameFromId from "../../../helpers/user-hooks";
+import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
 import { DISABLED_ICON_CLASSES } from "../../../constants";
 
 /**
