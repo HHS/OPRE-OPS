@@ -6,6 +6,16 @@ import { logout, setUserDetails } from "../Auth/authSlice";
 import { callBackend } from "../../helpers/backend";
 
 /**
+ * Represents the status of a token.
+ */
+class TokenValidationStatus {
+    constructor(isValid, msg) {
+        this.isValid = isValid;
+        this.msg = msg;
+    }
+}
+
+/**
  * Generates the authorization code URL for the specified provider and state token.
  * @function getAuthorizationCode
  * @param {string} provider - The name of the provider to generate the authorization code URL for.
@@ -105,10 +115,24 @@ export async function setActiveUser(token, dispatch) {
  */
 export const getAccessToken = () => {
     const token = localStorage.getItem("access_token");
-    if (isValidToken(token)) {
+    const validToken = isValidToken(token);
+    if (validToken.isValid) {
         return token;
+    } else if (validToken.msg == "EXPIRED") {
+        // lets try to get a new token
+        // is the refresh token still valid?
+        callBackend("/api/v1/auth/refresh/", "POST", {}, null, true)
+            .then((response) => {
+                console.log(response);
+                localStorage.setItem("access_token", response.access_token);
+                return response.access_token;
+                // localStorage.setItem("refresh_token", response.refresh_token);
+            })
+            .catch((error) => {
+                console.log(error);
+                logout();
+            });
     } else {
-        // TODO: determine proper exception or action to take here
         return null;
     }
 };
@@ -127,11 +151,11 @@ export const getRefreshToken = () => {
 
 /**
  * Checks if the access token is valid by decoding the JWT and comparing the expiration time with the current time.
- * @returns {boolean} Returns true if the access token is valid, false otherwise.
+ * @returns {boolean|str} Returns true if the access token is valid, false otherwise.
  */
 export const isValidToken = (token) => {
     if (!token) {
-        return false;
+        return new TokenValidationStatus(false, "NOT_FOUND");
     }
 
     const decodedJwt = jwt_decode(token);
@@ -140,19 +164,7 @@ export const isValidToken = (token) => {
     const exp = decodedJwt["exp"];
     const now = Date.now() / 1000;
     if (exp < now) {
-        // lets try to get a new token
-        // is the refresh token still valid?
-        callBackend("/api/v1/auth/refresh/", "POST", {}, null, true)
-            .then((response) => {
-                console.log(response);
-                localStorage.setItem("access_token", response.access_token);
-                return true;
-                // localStorage.setItem("refresh_token", response.refresh_token);
-            })
-            .catch((error) => {
-                console.log(error);
-                logout();
-            });
+        return new TokenValidationStatus(false, "EXPIRED");
     }
 
     // TODO: Check signature
@@ -163,11 +175,11 @@ export const isValidToken = (token) => {
 
     // Check issuer
     const issuer = decodedJwt["iss"];
+    console.log(`Issuer: ${issuer}`);
     // TODO: Update this when we have a real issuer value
     if (issuer !== "https://opre-ops-backend") {
-        console.log("Token issuer is invalid");
-        return false;
+        return new TokenValidationStatus(false, "ISSUER");
     }
 
-    return true;
+    return new TokenValidationStatus(true, "VALID");
 };
