@@ -3,19 +3,18 @@ import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import CurrencyFormat from "react-currency-format";
-import TableTag from "../TableTag";
+import TableTag from "../../UI/TableTag";
 import ChangeIcons from "../ChangeIcons";
-import TableRowExpandable from "../TableRowExpandable";
+import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     formatDateNeeded,
     formatDateToMonthDayYear,
-    displayFeePercent,
     totalBudgetLineFeeAmount,
     totalBudgetLineAmountPlusFees,
 } from "../../../helpers/utils";
-import useGetUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId";
-import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../helpers/useBudgetLines";
-import { useIsUserAllowedToEditAgreement } from "../../../helpers/useAgreements";
+import useGetUserFullNameFromId from "../../../helpers/user-hooks";
+import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../helpers/budget-line-hooks";
+import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -40,6 +39,8 @@ const AllBLIRow = ({
     const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
+    let feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.psc_fee_amount);
+    let BudgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
 
     // styles for the table row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
@@ -63,11 +64,11 @@ const AllBLIRow = ({
                 {bl.can_number}
             </td>
             <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
-                {totalBudgetLineAmountPlusFees(bl?.amount, bl?.procShopFee) === 0 ? (
+                {BudgetLineTotalPlusFees === 0 ? (
                     0
                 ) : (
                     <CurrencyFormat
-                        value={totalBudgetLineAmountPlusFees(bl?.amount, bl?.procShopFee)}
+                        value={BudgetLineTotalPlusFees}
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$"}
@@ -119,7 +120,7 @@ const AllBLIRow = ({
                         <dl className="margin-bottom-0">
                             <dt className="margin-0 text-base-dark">Procurement Shop</dt>
                             <dd className="margin-0" style={{ maxWidth: "25rem" }}>
-                                {`${budgetLine?.procShopCode}-Fee Rate: ${displayFeePercent(budgetLine?.procShopFee)}`}
+                                {`${budgetLine?.procShopCode}-Fee Rate: ${budgetLine?.psc_fee_amount}%`}
                             </dd>
                         </dl>
                         <div className="font-12px display-flex margin-top-1">
@@ -140,14 +141,11 @@ const AllBLIRow = ({
                             <dl className=" margin-0 margin-left-2">
                                 <dt className="margin-0 text-base-dark">Fees</dt>
                                 <dd className="margin-0">
-                                    {totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.procShopFee) === 0 ? (
+                                    {feeTotal === 0 ? (
                                         0
                                     ) : (
                                         <CurrencyFormat
-                                            value={totalBudgetLineFeeAmount(
-                                                budgetLine?.amount,
-                                                budgetLine?.procShopFee
-                                            )}
+                                            value={feeTotal}
                                             displayType={"text"}
                                             thousandSeparator={true}
                                             prefix={"$"}

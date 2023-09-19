@@ -10,7 +10,7 @@ import Alert from "../../../components/UI/Alert";
 import AgreementsTable from "./AgreementsTable";
 import AgreementTabs from "./AgreementsTabs";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
-import TablePageLayout from "../../../components/UI/Layouts/TablePageLayout";
+import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import AgreementsFilterButton from "./AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags";
 
