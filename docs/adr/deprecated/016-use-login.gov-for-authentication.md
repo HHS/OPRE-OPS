@@ -8,7 +8,7 @@ Login.gov will be used as the central OIDC Provider for user authentication for 
 
 ## Status
 
-Accepted.
+Superseded. See [this one](../024-use-hhs-ams-for-authentication.md)
 
 ## Context
 
