@@ -4,13 +4,19 @@ from typing import Union
 import requests
 from authlib.integrations.requests_client import OAuth2Session
 from flask import Response, current_app, request
-from flask_jwt_extended import create_access_token, create_refresh_token, get_current_user, get_jwt, get_jwt_identity, jwt_required
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    get_current_user,
+    get_jwt_identity,
+    jwt_required,
+)
 from models.events import OpsEventType
 from ops_api.ops.utils.auth import create_oauth_jwt, decode_user
 from ops_api.ops.utils.authentication import AuthenticationGateway
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
-from ops_api.ops.utils.user import register_user, get_user_from_token
+from ops_api.ops.utils.user import register_user
 
 
 def login() -> Union[Response, tuple[str, int]]:
@@ -108,9 +114,9 @@ def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
         # authZ, given a valid login from the prior AuthN steps above.
 
         additional_claims = {}
-        additional_claims["iss"] = "https://opre-ops-backend" # Placeholder
-        additional_claims["aud"] = "https://opre-ops-frontend" # Placeholder
-        
+        additional_claims["iss"] = "https://opre-ops-backend"  # Placeholder
+        additional_claims["aud"] = "https://opre-ops-frontend"  # Placeholder
+
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
         access_token = create_access_token(
@@ -174,10 +180,10 @@ def _get_token_and_user_data_from_oauth_provider(provider: str, auth_code: str):
 @jwt_required(refresh=True, verify_type=True, locations=["headers", "cookies"])
 def refresh() -> Response:
     user = get_current_user()
-    if(user):
-        additional_claims = { "iss": None, "aud": None, "roles": []}
-        additional_claims["iss"] = "https://opre-ops-backend" # Placeholder
-        additional_claims["aud"] = "https://opre-ops-frontend" # Placeholder
+    if user:
+        additional_claims = {"iss": None, "aud": None, "roles": []}
+        additional_claims["iss"] = "https://opre-ops-backend"  # Placeholder
+        additional_claims["aud"] = "https://opre-ops-frontend"  # Placeholder
         current_app.logger.debug(f"user {user}")
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
