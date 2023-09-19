@@ -1,11 +1,12 @@
 import PropTypes from "prop-types";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import AgreementDetailHeader from "./AgreementDetailHeader";
 import { CreateBudgetLinesProvider } from "../../../components/UI/WizardSteps/StepCreateBudgetLines/context";
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import StepCreateBudgetLines from "../../../components/UI/WizardSteps/StepCreateBudgetLines/StepCreateBudgetLines";
 import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
+import { setAlert } from "../../../components/UI/Alert/alertSlice";
 
 /**
  * Renders Agreement budget lines view
@@ -17,6 +18,7 @@ import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hook
  */
 export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
     const navigate = useNavigate();
+    const globalDispatch = useDispatch();
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
 
     // if there are no BLIS than the user can edit
@@ -52,6 +54,13 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                         navigate(`/agreements/${agreement.id}/budget-lines`);
                     }}
                     continueOverRide={() => {
+                        globalDispatch(
+                            setAlert({
+                                type: "success",
+                                heading: "Budget Lines Saved",
+                                message: "The budget lines have been successfully saved.",
+                            })
+                        );
                         navigate(`/agreements/${agreement.id}/budget-lines`);
                     }}
                 />
