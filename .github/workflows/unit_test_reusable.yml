@@ -8,7 +8,7 @@ jobs:
     env:
       JWT_PRIVATE_KEY: "__blank__"
     steps:
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
       - uses: ./.github/actions/setup-python
       # Stand up the system stack, to have something to poke
       - name: Run backend unit tests
@@ -21,7 +21,7 @@ jobs:
     env:
       JWT_PRIVATE_KEY: "__blank__"
     steps:
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
       - uses: ./.github/actions/setup-python
       - name: Run backend unit tests
         working-directory: ./backend/data_tools/
@@ -31,7 +31,7 @@ jobs:
     name: Frontend Unit Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
       - uses: ./.github/actions/setup-javascript
       # Stand up the system stack, to have something to poke
       - name: Run frontend unit tests
@@ -44,7 +44,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
       # Install NPM dependencies, cache them correctly
       # and run all Cypress tests
