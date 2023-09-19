@@ -6,7 +6,7 @@ import CreateEditAgreement from "./CreateEditAgreement";
 import { useGetAgreementByIdQuery } from "../../api/opsAPI";
 import { getUser } from "../../api/getUser";
 import SimpleAlert from "../../components/UI/Alert/SimpleAlert";
-import { useIsUserAllowedToEditAgreement, useIsAgreementEditable } from "../../helpers/useAgreements";
+import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../helpers/agreement-hooks";
 
 const EditAgreement = () => {
     const urlPathParams = useParams();
