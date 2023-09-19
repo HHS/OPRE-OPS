@@ -1,12 +1,12 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
-const ALL_BLI_TOTAL = "35,001,019";
-const DRAFT_BLI_TOTAL = "2,000,001";
+const ALL_BLI_TOTAL = "35,001,000.28";
+const DRAFT_BLI_TOTAL = "2,000,000.00";
 const IN_REVIEW_BLI_TOTAL = "0";
-const EXECUTING_BLI_TOTAL = "16,000,004";
-const PLANNED_BLI_TOTAL = "14,000,004.50";
-const OBLIGATED_BLI_TOTAL = "3,001,010.10";
+const EXECUTING_BLI_TOTAL = "16,000,000.08";
+const PLANNED_BLI_TOTAL = "14,000,000.09";
+const OBLIGATED_BLI_TOTAL = "3,001,000.11";
 
 beforeEach(() => {
     testLogin("admin");
