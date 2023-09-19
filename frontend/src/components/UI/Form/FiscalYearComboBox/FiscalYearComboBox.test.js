@@ -5,7 +5,9 @@ describe("FiscalYearComboBox", () => {
     const mockSetSelectedFiscalYears = jest.fn();
 
     it("renders the component with the correct label", () => {
-        render(<FiscalYearComboBox selectedFiscalYears={undefined} setSelectedFiscalYears={mockSetSelectedFiscalYears} />);
+        render(
+            <FiscalYearComboBox selectedFiscalYears={undefined} setSelectedFiscalYears={mockSetSelectedFiscalYears} />
+        );
         expect(screen.getByRole("combobox")).toBeInTheDocument();
         expect(screen.getByText("Fiscal Year")).toBeInTheDocument();
     });
@@ -24,7 +26,9 @@ describe("FiscalYearComboBox", () => {
     });
 
     it("updates the input value when the user types in the input field", () => {
-        render(<FiscalYearComboBox selectedFiscalYears={undefined} setSelectedFiscalYears={mockSetSelectedFiscalYears} />);
+        render(
+            <FiscalYearComboBox selectedFiscalYears={undefined} setSelectedFiscalYears={mockSetSelectedFiscalYears} />
+        );
         const input = screen.getByRole("combobox");
         fireEvent.change(input, { target: { value: "2020" } });
         expect(input).toHaveValue("2020");
