@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 import PropTypes from "prop-types";
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
-import Alert from "../../../components/UI/Alert";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../../api/opsAPI";
 import { convertCodeForDisplay } from "../../../helpers/utils";
@@ -35,7 +34,6 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const [updateBudgetLineItemStatus] = useUpdateBudgetLineItemStatusMutation();
     const [pageErrors, setPageErrors] = useState({});
     const [isAlertActive, setIsAlertActive] = useState(false);
-    const isGlobalAlertActive = useSelector((state) => state.alert.isActive);
     const isAgreementStateEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
@@ -124,7 +122,6 @@ export const ReviewAgreement = ({ agreement_id }) => {
 
     return (
         <>
-            {isGlobalAlertActive && <Alert />}
             {isAlertActive && Object.entries(pageErrors).length > 0 ? (
                 <SimpleAlert
                     type="error"

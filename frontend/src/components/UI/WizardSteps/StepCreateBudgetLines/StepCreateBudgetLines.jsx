@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import StepIndicator from "../../StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
 import BudgetLinesTable from "../../../BudgetLineItems/BudgetLinesTable";
-import Alert from "../../Alert";
 import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
 import { setAlert } from "../../Alert/alertSlice";
@@ -340,26 +339,21 @@ export const StepCreateBudgetLines = ({
                 />
             )}
 
-            {isAlertActive ? (
-                <Alert />
-            ) : (
-                <>
-                    {
-                        // TODO: consider moving this to a separate component for BudgetLine tab
-                        // if workflow is none, skip the title
-                        workflow !== "none" ? (
-                            workflow === "agreement" ? (
-                                <EditModeTitle isEditMode={isEditMode || isReviewMode} />
-                            ) : (
-                                <>
-                                    <h2 className="font-sans-lg">Create New Budget Line</h2>
-                                    <p>Step Two: Text explaining this page</p>
-                                </>
-                            )
-                        ) : null
-                    }
-                </>
-            )}
+            {
+                // TODO: consider moving this to a separate component for BudgetLine tab
+                // if workflow is none, skip the title
+                workflow !== "none" ? (
+                    workflow === "agreement" ? (
+                        <EditModeTitle isEditMode={isEditMode || isReviewMode} />
+                    ) : (
+                        <>
+                            <h2 className="font-sans-lg">Create New Budget Line</h2>
+                            <p>Step Two: Text explaining this page</p>
+                        </>
+                    )
+                ) : null
+            }
+
             {workflow !== "none" && (
                 <>
                     <StepIndicator steps={wizardSteps} currentStep={currentStep} />

@@ -29,7 +29,7 @@ export const Alert = ({ children }) => {
             await new Promise((resolve) => setTimeout(resolve, 500));
             window.scrollTo(0, 0);
 
-            await new Promise((resolve) => setTimeout(resolve, 10000));
+            await new Promise((resolve) => setTimeout(resolve, 5000));
             dispatch(clearState());
         };
 
@@ -51,11 +51,7 @@ export const Alert = ({ children }) => {
     }
 
     return (
-        <div
-            className={`usa-alert margin-left-neg-4 margin-right-neg-4 margin-top-0 pin-x ${typeClass}`}
-            role="status"
-            data-cy="alert"
-        >
+        <div className={`grid-container usa-alert ${typeClass} margin-top-0 pin-x`} role="status" data-cy="alert">
             <div className="usa-alert__body display-flex flex-justify">
                 <div>
                     <h1 className="usa-alert__heading">{heading}</h1>
@@ -65,7 +61,7 @@ export const Alert = ({ children }) => {
 
                 <FontAwesomeIcon
                     icon={faClose}
-                    className="height-2 width-2 margin-right-1 hover: cursor-pointer usa-tooltip"
+                    className="height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
                     title="close"
                     data-position="top"
                     onClick={() => dispatch(setIsActive(false))}
