@@ -17,6 +17,6 @@ it.skip("renders without crashing", () => {
                 numOfResearchProjects={numOfResearchProjects}
                 numOfAdminAndSupportProjects={numOfAdminAndSupportProjects}
             />
-        </Provider>
+        </Provider>,
     );
 });

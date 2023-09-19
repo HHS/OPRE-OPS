@@ -34,7 +34,7 @@ test("required param missing", () => {
         expect(e).toEqual(
             expect.objectContaining({
                 message: "id is required",
-            })
-        )
+            }),
+        ),
     );
 });

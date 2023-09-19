@@ -78,7 +78,7 @@ export const CreateProject = () => {
                     heading: "New Project Created!",
                     message: "The project has been successfully created.",
                     redirectUrl: `/agreements`,
-                })
+                }),
             );
         }
     }, [isSuccess, rpData, reset, dispatch, navigate]);

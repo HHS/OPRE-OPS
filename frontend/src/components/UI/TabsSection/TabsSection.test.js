@@ -10,6 +10,6 @@ it("renders without crashing", () => {
             <BrowserRouter>
                 <TabsSection />
             </BrowserRouter>
-        </Provider>
+        </Provider>,
     );
 });

@@ -7,6 +7,6 @@ it("renders without crashing", () => {
     render(
         <Provider store={store}>
             <Hero />
-        </Provider>
+        </Provider>,
     );
 });

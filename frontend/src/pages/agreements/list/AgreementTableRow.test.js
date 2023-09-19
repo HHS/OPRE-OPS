@@ -71,7 +71,7 @@ describe("AgreementTableRow", () => {
                         </tbody>
                     </table>
                 </Router>
-            </Provider>
+            </Provider>,
         );
         expect(screen.getByText("Test Agreement")).toBeInTheDocument();
         expect(screen.getByText("Test Project")).toBeInTheDocument();

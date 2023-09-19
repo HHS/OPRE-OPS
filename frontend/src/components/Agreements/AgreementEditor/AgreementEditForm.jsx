@@ -184,7 +184,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                             type: "success",
                             heading: "Agreement Edited",
                             message: `The agreement ${agreement.name} has been successfully updated.`,
-                        })
+                        }),
                     );
                 })
                 .catch((rejected) => {
@@ -194,7 +194,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                             type: "error",
                             heading: "Error",
                             message: "An error occurred while saving the agreement.",
-                        })
+                        }),
                     );
                     navigate("/error");
                 });
@@ -212,7 +212,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                             type: "success",
                             heading: "Agreement Draft Saved",
                             message: `The agreement ${agreement.name} has been successfully created.`,
-                        })
+                        }),
                     );
                 })
                 .catch((rejected) => {
@@ -222,7 +222,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                             type: "error",
                             heading: "Error",
                             message: "An error occurred while creating the agreement.",
-                        })
+                        }),
                     );
                     navigate("/error");
                 });
@@ -268,7 +268,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                 ...agreement,
                 ...{ [name]: value },
             },
-            name
+            name,
         );
     };
 

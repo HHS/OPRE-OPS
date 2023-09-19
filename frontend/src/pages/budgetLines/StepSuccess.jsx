@@ -25,7 +25,7 @@ export const StepSuccess = ({ delay = 6000 }) => {
                 heading: "Budget Lines Created",
                 message:
                     " The budget lines have been successfully created. You will be redirected to the Agreements list page.",
-            })
+            }),
         );
     }, [globalDispatch, navigate, delay]);
 

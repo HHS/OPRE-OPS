@@ -430,7 +430,7 @@ describe("AgreementDetails", () => {
                         setIsEditMode={jest.fn}
                     />
                 </Router>
-            </Provider>
+            </Provider>,
         );
 
         expect(screen.getByText("Test Description")).toBeInTheDocument();

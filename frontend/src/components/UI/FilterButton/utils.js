@@ -12,7 +12,7 @@ const setFilterList = (prevState, filterKeyString, stateObject, onlyAllowOne = f
     _.set(
         updatedFilters,
         filterKeyString,
-        filterList.filter((filter) => !_.isEmpty(filter))
+        filterList.filter((filter) => !_.isEmpty(filter)),
     );
     _.set(updatedFilters, filterKeyString, [...new Set(_.get(updatedFilters, filterKeyString, []))]); // remove dups
 

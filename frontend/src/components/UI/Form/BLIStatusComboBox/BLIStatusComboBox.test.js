@@ -12,7 +12,7 @@ describe("BLIStatusComboBox", () => {
 
     it("renders the component with the correct options", () => {
         const { container } = render(
-            <BLIStatusComboBox selectedBLIStatus={null} setSelectedBLIStatus={mockSetSelectedBLIStatus} />
+            <BLIStatusComboBox selectedBLIStatus={null} setSelectedBLIStatus={mockSetSelectedBLIStatus} />,
         );
 
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
@@ -33,7 +33,7 @@ describe("BLIStatusComboBox", () => {
     it("updates the selected item when multiple options are selected", () => {
         const setSelectedBLIStatus = jest.fn();
         const { getByText, container } = render(
-            <BLIStatusComboBox selectedBLIStatus={null} setSelectedBLIStatus={setSelectedBLIStatus} />
+            <BLIStatusComboBox selectedBLIStatus={null} setSelectedBLIStatus={setSelectedBLIStatus} />,
         );
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
         fireEvent.focus(container.querySelector("input"));

@@ -23,7 +23,7 @@ describe("PortfoliosComboBox", () => {
     it("renders the component with the correct options", () => {
         useGetPortfoliosQuery.mockReturnValue({ data: samplePortfolios });
         const { container } = render(
-            <PortfoliosComboBox selectedPortfolios={null} setSelectedPortfolios={mockSetSelectedPortfolios} />
+            <PortfoliosComboBox selectedPortfolios={null} setSelectedPortfolios={mockSetSelectedPortfolios} />,
         );
 
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
@@ -46,7 +46,7 @@ describe("PortfoliosComboBox", () => {
         const setSelectedPortfolios = jest.fn();
         useGetPortfoliosQuery.mockReturnValue({ data: samplePortfolios });
         const { getByText, container } = render(
-            <PortfoliosComboBox selectedPortfolios={null} setSelectedPortfolios={setSelectedPortfolios} />
+            <PortfoliosComboBox selectedPortfolios={null} setSelectedPortfolios={setSelectedPortfolios} />,
         );
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
         fireEvent.focus(container.querySelector("input"));

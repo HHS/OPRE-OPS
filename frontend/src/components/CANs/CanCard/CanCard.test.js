@@ -16,6 +16,6 @@ it.skip("renders without crashing", () => {
                 }}
                 fiscalYear={2023}
             />
-        </Provider>
+        </Provider>,
     );
 });

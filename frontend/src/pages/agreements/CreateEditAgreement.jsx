@@ -60,7 +60,7 @@ export const CreateAgreement = ({ existingBudgetLines }) => {
                             heading: "Agreement draft saved",
                             message: "The agreement has been successfully saved.",
                             redirectUrl: "/agreements",
-                        })
+                        }),
                     )
                 }
                 existingBudgetLines={existingBudgetLines}

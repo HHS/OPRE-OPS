@@ -101,7 +101,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                                     type: "success",
                                     heading: "Agreement sent to approval",
                                     message: "The agreement has been successfully sent to approval for Planned Status.",
-                                })
+                                }),
                             );
                             navigate("/agreements");
                         })
@@ -113,7 +113,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                                     type: "error",
                                     heading: "Error",
                                     message: "An error occurred. Please try again.",
-                                })
+                                }),
                             );
                             navigate("/error");
                         });

@@ -32,7 +32,7 @@ export const ConfirmationModal = ({
         const handleKeydown = (event) => {
             // get all focusable elements in the modal container
             const focusableElements = currentModalRef.querySelectorAll(
-                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
             );
             const firstElement = focusableElements[0];
             const lastElement = focusableElements[focusableElements.length - 1];
