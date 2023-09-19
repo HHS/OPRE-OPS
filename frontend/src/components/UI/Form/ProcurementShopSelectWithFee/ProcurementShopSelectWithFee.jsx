@@ -1,5 +1,4 @@
 import ProcurementShopSelect from "../ProcurementShopSelect";
-import { displayFeePercent } from "../../../../helpers/utils";
 
 /**
  * Object representing a procurement shop.
@@ -33,7 +32,7 @@ export const ProcurementShopSelectWithFee = ({
         if (selectedProcurementShop?.id) {
             return (
                 <span className="margin-left-1 text-base-dark font-12px" data-cy="fee">
-                    Fee Rate: {displayFeePercent(selectedProcurementShop?.fee)}
+                    Fee Rate: {selectedProcurementShop?.fee}%
                 </span>
             );
         }

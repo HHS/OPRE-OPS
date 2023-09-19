@@ -8,6 +8,7 @@ def test_division_lookup(loaded_db):
     assert division is not None
     assert division.name == "Division of Child and Family Development"
     assert division.abbreviation == "DFCD"
+    assert division.display_name == division.name
 
 
 def test_division_create():

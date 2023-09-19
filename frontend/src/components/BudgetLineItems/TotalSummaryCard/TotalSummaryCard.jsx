@@ -1,5 +1,5 @@
 import CurrencyFormat from "react-currency-format";
-
+// TODO: Check math on totals
 export const TotalSummaryCard = ({ budgetLines }) => {
     let currentDate = new Date();
     let month = currentDate.getMonth();
