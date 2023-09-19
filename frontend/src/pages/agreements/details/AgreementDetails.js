@@ -4,7 +4,7 @@ import AgreementValuesCard from "../../../components/Agreements/AgreementDetails
 import AgreementDetailHeader from "./AgreementDetailHeader";
 import AgreementDetailsView from "./AgreementDetailsView";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
-import { useIsAgreementEditable } from "../../../helpers/useAgreements";
+import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../helpers/useAgreements";
 
 /**
  * Renders the details of an agreement, including budget lines, spending, and other information.
@@ -30,7 +30,9 @@ const AgreementDetails = ({ agreement, projectOfficer, isEditMode, setIsEditMode
         return p;
     }, {});
 
-    const isEditable = useIsAgreementEditable(agreement?.id);
+    const isAgreementEditable = useIsAgreementEditable(agreement?.id);
+    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
+    const isEditable = isAgreementEditable && canUserEditAgreement;
 
     return (
         <div>
