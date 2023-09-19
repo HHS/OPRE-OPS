@@ -5,11 +5,11 @@ Date: 2021-07-14
 
 ## Status
 
-Accepted
+Superseded, see [this](../023-use-azure-blob-for-file-storage.md) instead
 
 ## Context
 
-We need a document storage system for OPS because it needs to store documents and objects such as invoices, and contracts.
+We need a document storage system for OPS because it needs to store documents and objects such as pre and post-award agreement documentation and invoices.
 
 ### Explanation of the tech concept
 Document storage system is a system that stores application content.  The content can be files of different sizes and formats.

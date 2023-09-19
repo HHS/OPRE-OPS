@@ -14,6 +14,7 @@ import icons from "../../../uswds/img/sprite.svg";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import useGetUserFullNameFromId from "../../../helpers/user-hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
+import { DISABLED_ICON_CLASSES } from "../../../constants";
 
 /**
  * Renders a row in the agreements table.
@@ -137,10 +138,12 @@ export const AgreementTableRow = ({ agreement }) => {
                     <div className="display-flex flex-align-center">
                         <FontAwesomeIcon
                             icon={faPen}
-                            className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
-                            title="edit"
+                            title={`${canUserEditAgreement ? "edit" : "user does not have permissions to edit"}`}
+                            className={`text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip ${
+                                !canUserEditAgreement ? DISABLED_ICON_CLASSES : null
+                            }`}
                             data-position="top"
-                            onClick={() => handleEditAgreement(agreement.id)}
+                            onClick={() => canUserEditAgreement && handleEditAgreement(agreement.id)}
                         />
 
                         <FontAwesomeIcon
@@ -148,7 +151,7 @@ export const AgreementTableRow = ({ agreement }) => {
                             title={`${canUserDeleteAgreement ? "delete" : "user does not have permissions to delete"}`}
                             data-position="top"
                             className={`text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip ${
-                                !canUserDeleteAgreement ? "opacity-30 cursor-not-allowed" : null
+                                !canUserDeleteAgreement ? DISABLED_ICON_CLASSES : null
                             }`}
                             onClick={() => canUserDeleteAgreement && handleDeleteAgreement(agreement.id)}
                             data-cy="delete-agreement"
@@ -214,7 +217,7 @@ export const AgreementTableRow = ({ agreement }) => {
                 <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
                     <FontAwesomeIcon
                         icon={isExpanded ? faChevronUp : faChevronDown}
-                        className="height-2 width-2 padding-right-1 hover: cursor-pointer"
+                        className="height-2 width-2 padding-right-1 cursor-pointer"
                         onClick={() => handleExpandRow()}
                         data-cy="expand-row"
                     />

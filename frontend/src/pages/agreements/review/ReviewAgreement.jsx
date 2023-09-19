@@ -12,7 +12,7 @@ import Terms from "./Terms";
 import suite from "./suite";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import useGetUserFullNameFromId from "../../../helpers/user-hooks";
-import { useIsAgreementEditable } from "../../../helpers/agreement-hooks";
+import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -36,7 +36,9 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const [pageErrors, setPageErrors] = useState({});
     const [isAlertActive, setIsAlertActive] = useState(false);
     const isGlobalAlertActive = useSelector((state) => state.alert.isActive);
-    const isAgreementEditable = useIsAgreementEditable(agreement?.id);
+    const isAgreementStateEditable = useIsAgreementEditable(agreement?.id);
+    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
+    const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer);
 
     let res = suite.get();
