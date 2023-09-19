@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import icons from "../../../../uswds/img/sprite.svg";
+import icons from "../../../uswds/img/sprite.svg";
 
 /**
  * The TablePageLayout component is a layout component that displays a title and subtitle
@@ -12,8 +12,9 @@ import icons from "../../../../uswds/img/sprite.svg";
  * @param {string} props.details - The details to display.
  * @param {React.ReactNode} props.TabsSection - The tabs to display.
  * @param {React.ReactNode} props.FilterTags - The filter tags to display.
- *  @param {React.ReactNode} props.FilterButton - The filter button to display.
+ * @param {React.ReactNode} props.FilterButton - The filter button to display.
  * @param {React.ReactNode} props.TableSection - The table to display.
+ * @param {React.ReactNode} [props.SummaryCardsSection] - The summary cards to display.
  * @param {string} props.buttonText - The text to display on the button.
  * @param {string} props.buttonLink - The link to navigate to when the button is clicked.
  * @returns {React.JSX.Element} - The rendered component.
@@ -25,6 +26,7 @@ export const TablePageLayout = ({
     details,
     TabsSection,
     FilterTags,
+    SummaryCardsSection,
     FilterButton,
     TableSection,
     buttonText,
@@ -56,6 +58,7 @@ export const TablePageLayout = ({
                 {FilterButton}
             </div>
             {FilterTags}
+            {SummaryCardsSection && SummaryCardsSection}
             {TableSection}
             {children}
         </>
@@ -73,6 +76,7 @@ TablePageLayout.propTypes = {
     FilterTags: PropTypes.node.isRequired,
     FilterButton: PropTypes.node.isRequired,
     TableSection: PropTypes.node.isRequired,
+    SummaryCardsSection: PropTypes.node,
     buttonText: PropTypes.string.isRequired,
     buttonLink: PropTypes.string.isRequired,
 };

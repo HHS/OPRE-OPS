@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 import PropTypes from "prop-types";
-import BudgetLinesTable from "../../../components/UI/BudgetLinesTable";
+import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import Alert from "../../../components/UI/Alert";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../../api/opsAPI";
@@ -11,8 +11,8 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
 import Terms from "./Terms";
 import suite from "./suite";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
-import useGetUserFullNameFromId from "../../../helpers/useGetUserFullNameFromId";
-import { useIsAgreementEditable } from "../../../helpers/useAgreements";
+import useGetUserFullNameFromId from "../../../helpers/user-hooks";
+import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -36,7 +36,9 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const [pageErrors, setPageErrors] = useState({});
     const [isAlertActive, setIsAlertActive] = useState(false);
     const isGlobalAlertActive = useSelector((state) => state.alert.isActive);
-    const isAgreementEditable = useIsAgreementEditable(agreement?.id);
+    const isAgreementStateEditable = useIsAgreementEditable(agreement?.id);
+    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
+    const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer);
 
     let res = suite.get();

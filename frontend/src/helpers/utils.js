@@ -204,16 +204,6 @@ export const fiscalYearFromDate = (date) => {
     const year = dt.getUTCFullYear();
     return month > 8 ? year + 1 : year;
 };
-/**
- * This function takes a fee and formats it as a percent.
- * @param {number} fee - The fee to format.
- * @returns {string} The formatted fee.
- * @example displayFeePercent(0.1)
- */
-export const displayFeePercent = (fee) => {
-    if (fee === 0) return "0";
-    return `${fee * 100}%`;
-};
 
 /**
  * This function takes an amount and fee and returns the total fee amount.
@@ -224,7 +214,9 @@ export const displayFeePercent = (fee) => {
  */
 export const totalBudgetLineFeeAmount = (amount, fee) => {
     if (amount === 0) return 0;
-    return amount * fee;
+    // fee is a percent, so divide by 100
+    const calcFee = fee / 100;
+    return amount * calcFee;
 };
 
 /**
@@ -236,5 +228,5 @@ export const totalBudgetLineFeeAmount = (amount, fee) => {
  */
 export const totalBudgetLineAmountPlusFees = (amount, fee) => {
     if (amount === 0) return 0;
-    return amount + amount * fee;
+    return amount + fee;
 };

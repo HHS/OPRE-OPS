@@ -4,16 +4,19 @@ Date: 2021-06-22
 
 ## Status
 
-Accepted
+Superseded  [This one](../022-use-azure.md) is newer.
+
+### 2023-09-13 Update
+
+After further time spent using and evaluating Cloud.gov from technical and non-technical aspects, we have decided to cease its use and pursue an alternative at this time
 
 ### 2022-07-18 Update
 
-We re-evaluated Cloud.gov.  We have decided to cautiously proceed forward with Cloud.gov.  We will want to integrate
-with them as fast as possible to discover any showstoppers quickly.
+We re-evaluated Cloud.gov.  We have decided to cautiously proceed forward with Cloud.gov.  We will want to integrate with them as fast as possible to discover any showstoppers quickly.
 
 ## Context
 
-We considered three potential cloud environment options to move MAPS into HHS control:
+We considered three potential cloud environment options:
 
 - Cloud.gov
 - an AWS instance provided by ACF
