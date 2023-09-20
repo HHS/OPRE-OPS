@@ -29,4 +29,4 @@ curl -LfO 'https://airflow.apache.org/docs/apache-airflow/2.7.1/docker-compose.y
 sudo docker compose up airflow-init
 
 # Start Airflow
-sudo docker compose --profile flower up
+sudo docker compose --profile flower up -d
