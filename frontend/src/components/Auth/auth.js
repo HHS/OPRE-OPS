@@ -126,7 +126,6 @@ export const getAccessToken = () => {
                 console.log(response);
                 localStorage.setItem("access_token", response.access_token);
                 return response.access_token;
-                // localStorage.setItem("refresh_token", response.refresh_token);
             })
             .catch((error) => {
                 console.log(error);

@@ -15,9 +15,6 @@ export const callBackend = async (urlPath, action, requestBody, queryParams, use
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
     }
 
-    // if (localStorage.getItem("access_token")) {
-    //     axios.defaults.headers.common["Authorization"] = `Bearer ${localStorage.getItem("access_token")}`;
-    // }
     const response = await axios({
         method: action,
         url: `${BACKEND_DOMAIN}${urlPath}`,
