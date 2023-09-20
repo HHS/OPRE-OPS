@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-sqlalchemy = "==2.0.20"
+sqlalchemy = "==2.0.21"
 flask = "==2.3.3"
 mypy = "==0.991"
 flask-jwt-extended = {extras = ["asymmetric_crypto"], version = "==4.5.2"}
@@ -18,21 +18,21 @@ sqlalchemy-mixins = "==1.5.3"
 flask-marshmallow = "==0.15.0"
 desert = "==2022.9.22"
 marshmallow-enum = "==1.5.1"
-marshmallow-dataclass = "==8.5.14"
+marshmallow-dataclass = "==8.6.0"
 sqlalchemy-continuum = "==1.4.0"
 
 [dev-packages]
 flake8 = "==6.1.0"
 isort = "==5.12.0"
-pytest = "==7.4.0"
+pytest = "==7.4.2"
 nox = "==2023.4.22"
-ipython = "==8.14.0"
+ipython = "==8.15.0"
 types-all = "==1.0.0"
 pytest-flask = "==1.2.0"
-black = {extras = ["d"], version = "==23.7.0"}
+black = {extras = ["d"], version = "==23.9.1"}
 flake8-black = "==0.3.6"
 pytest-cov = "==4.1.0"
-pytest-docker = {extras = ["docker-compose-v2"], version = "==2.0.0"}
+pytest-docker = {extras = ["docker-compose-v2"], version = "==2.0.1"}
 pytest-mock = "==3.11.1"
 pytest-bdd = "==6.1.1"
 
