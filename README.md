@@ -1,6 +1,7 @@
 # OPRE OPS
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
 This is the OPRE's Research Portfolio Management System, or OPS. The finished product will replace OPRE's prior system,
 [MAPS](https://github.com/HHS/MAPS-app). The purpose of OPS can be found on
