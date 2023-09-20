@@ -259,7 +259,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                 ...agreement,
                 ...{ [name]: value },
             },
-            name
+            name,
         );
     };
 

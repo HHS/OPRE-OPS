@@ -40,14 +40,14 @@ export const AgreementTableRow = ({ agreement }) => {
     const agreementSubTotal = agreement?.budget_line_items?.reduce((n, { amount }) => n + amount, 0);
     const procurementShopSubTotal = agreement?.budget_line_items?.reduce(
         (n, { amount }) => n + amount * (agreement.procurement_shop ? agreement.procurement_shop.fee : 0),
-        0
+        0,
     );
     const agreementTotal = agreementSubTotal + procurementShopSubTotal;
 
     // find the min(date_needed) of the BLIs
     let nextNeedBy = agreement?.budget_line_items?.reduce(
         (n, { date_needed }) => (n < date_needed ? n : date_needed),
-        0
+        0,
     );
 
     nextNeedBy = nextNeedBy ? formatDate(new Date(nextNeedBy)) : "";
@@ -261,7 +261,7 @@ AgreementTableRow.propTypes = {
                 amount: PropTypes.number.isRequired,
                 date_needed: PropTypes.string.isRequired,
                 status: PropTypes.string.isRequired,
-            })
+            }),
         ).isRequired,
         procurement_shop: PropTypes.shape({
             fee: PropTypes.number.isRequired,
@@ -273,7 +273,7 @@ AgreementTableRow.propTypes = {
         team_members: PropTypes.arrayOf(
             PropTypes.shape({
                 id: PropTypes.number.isRequired,
-            })
+            }),
         ).isRequired,
     }).isRequired,
 };

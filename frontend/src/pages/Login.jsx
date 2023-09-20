@@ -49,7 +49,8 @@ function Login() {
                                         </p>
                                         <p>
                                             If you are part of the development team, or want to access the system in a
-                                            lower environment for testing purposes only, please use the FakeAuth® login.
+                                            lower environment for testing purposes only, please use the FakeAuth®
+                                            login.
                                         </p>
                                     </div>
                                 </div>

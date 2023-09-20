@@ -12,7 +12,7 @@ describe("Create Project component", () => {
                 <BrowserRouter>
                     <CreateProject />
                 </BrowserRouter>
-            </Provider>
+            </Provider>,
         );
     });
 });

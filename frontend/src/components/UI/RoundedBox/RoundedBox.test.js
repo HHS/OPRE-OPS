@@ -9,6 +9,6 @@ it("renders without crashing", () => {
             <RoundedBox dataCy="test" className="">
                 <p>test</p>
             </RoundedBox>
-        </Provider>
+        </Provider>,
     );
 });

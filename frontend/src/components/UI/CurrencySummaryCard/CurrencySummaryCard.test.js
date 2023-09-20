@@ -7,6 +7,6 @@ it("renders without crashing", () => {
     render(
         <Provider store={store}>
             <CurrencySummaryCard headerText="blah blah" amount="12345.78" />
-        </Provider>
+        </Provider>,
     );
 });

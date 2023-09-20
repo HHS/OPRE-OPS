@@ -46,7 +46,7 @@ describe("PreviewTable", () => {
                 isReviewMode={true}
                 readOnly={true}
             />,
-            store
+            store,
         );
         dummyBudgetLines.forEach((bl) => {
             expect(screen.getByText(bl.line_description)).toBeInTheDocument();
@@ -64,7 +64,7 @@ describe("PreviewTable", () => {
                 isReviewMode={true}
                 readOnly={true}
             />,
-            store
+            store,
         );
         expect(screen.getByText("Draft")).toBeInTheDocument();
         expect(screen.getByText("Obligated")).toBeInTheDocument();

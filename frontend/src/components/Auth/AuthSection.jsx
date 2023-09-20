@@ -31,7 +31,7 @@ const AuthSection = () => {
             }
             navigate("/");
         },
-        [activeUser, dispatch, navigate]
+        [activeUser, dispatch, navigate],
     );
 
     useEffect(() => {

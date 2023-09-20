@@ -27,7 +27,7 @@ describe("Alert component", () => {
                 <MemoryRouter>
                     <Alert />
                 </MemoryRouter>
-            </Provider>
+            </Provider>,
         );
 
         expect(screen.getByRole("status")).toBeInTheDocument();
@@ -39,7 +39,7 @@ describe("Alert component", () => {
                 <MemoryRouter>
                     <Alert />
                 </MemoryRouter>
-            </Provider>
+            </Provider>,
         );
 
         expect(screen.getByText("Test Heading")).toBeInTheDocument();
@@ -52,7 +52,7 @@ describe("Alert component", () => {
                 <MemoryRouter>
                     <Alert />
                 </MemoryRouter>
-            </Provider>
+            </Provider>,
         );
 
         expect(screen.getByRole("status")).toHaveClass("usa-alert--success");

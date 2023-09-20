@@ -9,6 +9,6 @@ it.skip("renders without crashing", () => {
     render(
         <Provider store={store}>
             <UserInfo></UserInfo>
-        </Provider>
+        </Provider>,
     );
 });

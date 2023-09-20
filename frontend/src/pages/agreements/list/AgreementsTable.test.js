@@ -54,7 +54,7 @@ it("renders without crashing", () => {
             <BrowserRouter>
                 <AgreementsTable agreements={agreements} />
             </BrowserRouter>
-        </Provider>
+        </Provider>,
     );
     expect(screen.getByText("Test Agreement")).toBeInTheDocument();
     expect(screen.getByText("Test Project")).toBeInTheDocument();

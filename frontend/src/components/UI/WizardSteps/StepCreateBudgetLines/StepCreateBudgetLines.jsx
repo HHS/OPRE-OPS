@@ -57,7 +57,7 @@ export const StepCreateBudgetLines = ({
     const [modalProps, setModalProps] = React.useState({});
     const searchParams = new URLSearchParams(location.search);
     const [budgetLineIdFromUrl, setBudgetLineIdFromUrl] = React.useState(
-        () => searchParams.get("budget-line-id") || null
+        () => searchParams.get("budget-line-id") || null,
     );
 
     const {
@@ -227,7 +227,7 @@ export const StepCreateBudgetLines = ({
                                     navigateUrl: "/error",
                                 });
                             });
-                    })
+                    }),
                 );
             }
             if (method === "PATCH") {
@@ -249,7 +249,7 @@ export const StepCreateBudgetLines = ({
                                     navigateUrl: "/error",
                                 });
                             });
-                    })
+                    }),
                 );
             }
         };
