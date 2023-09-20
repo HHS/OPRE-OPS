@@ -1,7 +1,6 @@
 import { Fragment, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import { useDispatch } from "react-redux";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -9,12 +8,12 @@ import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { convertCodeForDisplay, formatDate } from "../../../helpers/utils";
 import TableTag from "../../../components/UI/TableTag";
 import { useDeleteAgreementMutation } from "../../../api/opsAPI";
-import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import icons from "../../../uswds/img/sprite.svg";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import useGetUserFullNameFromId from "../../../helpers/user-hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
 import { DISABLED_ICON_CLASSES } from "../../../constants";
+import useAlert from "../../../helpers/use-alert";
 
 /**
  * Renders a row in the agreements table.
@@ -25,12 +24,12 @@ import { DISABLED_ICON_CLASSES } from "../../../constants";
  */
 export const AgreementTableRow = ({ agreement }) => {
     const navigate = useNavigate();
-    const globalDispatch = useDispatch();
     const [deleteAgreement] = useDeleteAgreementMutation();
     const [isExpanded, setIsExpanded] = useState(false);
     const [isRowActive, setIsRowActive] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [modalProps, setModalProps] = useState({});
+    const { setAlert } = useAlert();
 
     const agreementName = agreement?.name;
     const researchProjectName = agreement?.research_project?.title;
@@ -93,24 +92,20 @@ export const AgreementTableRow = ({ agreement }) => {
                     .unwrap()
                     .then((fulfilled) => {
                         console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
-                        globalDispatch(
-                            setAlert({
-                                type: "success",
-                                heading: "Agreement deleted",
-                                message: `Agreement ${agreementName} has been successfully deleted.`,
-                            })
-                        );
+                        setAlert({
+                            type: "success",
+                            heading: "Agreement deleted",
+                            message: `Agreement ${agreementName} has been successfully deleted.`,
+                        });
                     })
                     .catch((rejected) => {
                         console.error(`DELETE agreement rejected: ${JSON.stringify(rejected, null, 2)}`);
-                        globalDispatch(
-                            setAlert({
-                                type: "error",
-                                heading: "Error",
-                                message: "An error occurred while deleting the agreement.",
-                            })
-                        );
-                        navigate("/error");
+                        setAlert({
+                            type: "error",
+                            heading: "Error",
+                            message: "An error occurred while deleting the agreement.",
+                            redirectUrl: "/error",
+                        });
                     });
             },
         });

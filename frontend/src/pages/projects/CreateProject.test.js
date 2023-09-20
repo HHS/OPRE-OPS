@@ -1,5 +1,5 @@
 import { render } from "@testing-library/react";
-import { CreateProject } from "./CreateProject";
+import CreateProject from "./CreateProject";
 
 import store from "../../store";
 import { Provider } from "react-redux";

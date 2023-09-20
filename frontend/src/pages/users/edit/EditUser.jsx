@@ -1,7 +1,5 @@
-import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import App from "../../../App";
-import { Breadcrumb } from "../../../components/UI/Header/Breadcrumb";
 import EditUserForm from "../../../components/Users/UserInfoForm/EditUserForm";
 import { useGetUserByIdQuery } from "../../../api/opsAPI";
 
@@ -13,13 +11,7 @@ const UserDetail = () => {
         data: user,
         error: errorAgreement,
         isLoading: isLoadingAgreement,
-        refetch,
     } = useGetUserByIdQuery(userId, { refetchOnMountOrArgChange: true });
-
-    useEffect(() => {
-        refetch();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     if (isLoadingAgreement) {
         return (
@@ -37,12 +29,9 @@ const UserDetail = () => {
     }
 
     return (
-        <>
-            <App>
-                <Breadcrumb currentName={user?.email} />
-                <EditUserForm user={user} />
-            </App>
-        </>
+        <App breadCrumbName={user?.email}>
+            <EditUserForm user={user} />
+        </App>
     );
 };
 
