@@ -36,7 +36,7 @@ export const TeamMemberComboBox = ({
     const remainingUsers = users.filter(
         (user) =>
             user.id !== selectedProjectOfficer?.id && // Check if the user is not a selected project officer
-            !selectedTeamMembers.some((teamMember) => teamMember.id === user.id), // Check if the user is not already a team member
+            !selectedTeamMembers.some((teamMember) => teamMember.id === user.id) // Check if the user is not already a team member
     );
 
     const handleChange = (user) => {

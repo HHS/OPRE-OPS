@@ -43,7 +43,7 @@ const MultiAuthSection = () => {
                 navigate("/");
             }
         },
-        [dispatch, navigate],
+        [dispatch, navigate]
     );
 
     React.useEffect(() => {

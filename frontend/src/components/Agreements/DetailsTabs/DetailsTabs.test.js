@@ -10,6 +10,6 @@ it("renders without crashing", () => {
             <BrowserRouter>
                 <DetailsTabs />
             </BrowserRouter>
-        </Provider>,
+        </Provider>
     );
 });

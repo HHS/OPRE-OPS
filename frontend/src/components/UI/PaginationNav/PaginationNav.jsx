@@ -66,7 +66,7 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
                     aria-label="ellipsis indicating non-visible pages"
                 >
                     <span>…</span>
-                </li>,
+                </li>
             );
         } else {
             pageItems.push(
@@ -77,14 +77,14 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
                     <a
                         className={cx(
                             "usa-pagination__button",
-                            currentPage === pageNumberArray[pagePosition] && "usa-current",
+                            currentPage === pageNumberArray[pagePosition] && "usa-current"
                         )}
                         aria-label={`Page ${pageNumberArray[pagePosition]}`}
                         onClick={() => setCurrentPage(pageNumberArray[pagePosition])}
                     >
                         {pageNumberArray[pagePosition]}
                     </a>
-                </li>,
+                </li>
             );
         }
     }
@@ -96,7 +96,7 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
                     key="page-item-previous"
                     className={cx(
                         "usa-pagination__item usa-pagination__arrow cursor-pointer",
-                        currentPage === 1 && styles.hideElement,
+                        currentPage === 1 && styles.hideElement
                     )}
                 >
                     <a
@@ -115,7 +115,7 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
                     <a
                         className={cx(
                             "usa-pagination__link usa-pagination__next-page",
-                            (currentPage === totalPages || totalPages === 0) && styles.hideElement,
+                            (currentPage === totalPages || totalPages === 0) && styles.hideElement
                         )}
                         aria-label="Next page"
                         onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}

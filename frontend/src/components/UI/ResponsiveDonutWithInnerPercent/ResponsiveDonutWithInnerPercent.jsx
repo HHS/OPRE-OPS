@@ -18,7 +18,7 @@ export const ResponsiveDonutWithInnerPercent = ({
         if (elem !== null) {
             elem.setAttribute(
                 "aria-label",
-                "This is a Donut Chart that displays the percent by budget line status in the center.",
+                "This is a Donut Chart that displays the percent by budget line status in the center."
             );
         }
     };

@@ -11,7 +11,7 @@ export const handlers = [
                 { id: 1, name: "Agreement 1" },
                 { id: 2, name: "Agreement 2" },
             ]),
-            ctx.delay(150),
+            ctx.delay(150)
         );
     }),
 
@@ -28,7 +28,7 @@ export const handlers = [
                 { id: 1, name: "Research Project 1" },
                 { id: 2, name: "Research Project 2" },
             ]),
-            ctx.delay(150),
+            ctx.delay(150)
         );
     }),
 

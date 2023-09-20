@@ -115,7 +115,7 @@ describe("AgreementDetailsEdit", () => {
                         setIsEditMode={jest.fn()}
                     />
                 </Router>
-            </Provider>,
+            </Provider>
         );
 
         expect(screen.getByText("Agreement Title")).toBeInTheDocument();

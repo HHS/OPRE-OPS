@@ -70,7 +70,7 @@ describe("AgreementSelect", () => {
                 setSelectedAgreement={setSelectedAgreementMock}
                 setSelectedProcurementShop={setSelectedProcurementShopMock}
                 setBudgetLinesAdded={setBudgetLinesAddedMock}
-            />,
+            />
         );
 
         const selectInput = screen.getByTestId("agreement-select");

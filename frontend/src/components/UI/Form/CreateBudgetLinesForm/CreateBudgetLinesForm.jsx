@@ -85,7 +85,7 @@ export const CreateBudgetLinesForm = ({
                 enteredYear,
                 ...{ [name]: value },
             },
-            name,
+            name
         );
     };
 

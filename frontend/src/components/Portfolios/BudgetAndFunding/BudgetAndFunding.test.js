@@ -33,6 +33,6 @@ it.skip("renders without crashing", () => {
                     />,
                 ]}
             />
-        </Provider>,
+        </Provider>
     );
 });

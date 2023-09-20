@@ -47,7 +47,7 @@ export const ProjectOfficerComboBox = ({
                 "usa-form-group margin-top-0",
                 messages.length && "usa-form-group--error",
                 pending && "pending",
-                className,
+                className
             )}
         >
             <label

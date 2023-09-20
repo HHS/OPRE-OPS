@@ -21,7 +21,7 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
                     return {
                         ...prevState,
                         fiscalYears: prevState.fiscalYears.filter(
-                            (fy) => fy.title.toString() !== tag.tagText.replace("FY ", ""),
+                            (fy) => fy.title.toString() !== tag.tagText.replace("FY ", "")
                         ),
                     };
                 });

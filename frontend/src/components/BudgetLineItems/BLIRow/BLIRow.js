@@ -80,9 +80,9 @@ const BLIRow = ({
             </th>
             <td
                 className={`${futureDateErrorClass(
-                    formatDateNeeded(budgetLine?.date_needed),
+                    formatDateNeeded(budgetLine?.date_needed)
                 )} ${addErrorClassIfNotFound(
-                    formatDateNeeded(budgetLine?.date_needed),
+                    formatDateNeeded(budgetLine?.date_needed)
                 )} ${removeBorderBottomIfExpanded}`}
                 style={changeBgColorIfExpanded}
             >
@@ -90,7 +90,7 @@ const BLIRow = ({
             </td>
             <td
                 className={`${addErrorClassIfNotFound(
-                    fiscalYearFromDate(budgetLine?.date_needed),
+                    fiscalYearFromDate(budgetLine?.date_needed)
                 )} ${removeBorderBottomIfExpanded}`}
                 style={changeBgColorIfExpanded}
             >

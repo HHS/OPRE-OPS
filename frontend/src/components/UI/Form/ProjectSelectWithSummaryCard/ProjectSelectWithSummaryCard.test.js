@@ -17,7 +17,7 @@ describe("ProjectSelect", () => {
                 selectedResearchProject={researchProjects[0]}
                 setSelectedProject={setSelectedProject}
                 clearFunction={mockClearFunction}
-            />,
+            />
         );
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
         fireEvent.focus(container.querySelector("input"));

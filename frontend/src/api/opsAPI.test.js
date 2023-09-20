@@ -27,7 +27,7 @@ describe("opsApi", () => {
         server.use(
             rest.get(`*`, (req, res, ctx) => {
                 return res(ctx.status(200), ctx.json(mockData));
-            }),
+            })
         );
 
         // wrap component with custom render function

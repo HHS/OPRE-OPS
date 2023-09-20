@@ -63,7 +63,7 @@ AllBudgetLinesTable.propTypes = {
             can_number: PropTypes.string,
             amount: PropTypes.number,
             status: PropTypes.string.isRequired,
-        }),
+        })
     ),
 };
 

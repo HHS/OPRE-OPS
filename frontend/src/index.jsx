@@ -163,8 +163,8 @@ const router = createBrowserRouter(
             {/* END PROTECTED ROUTES */}
             <Route path="/error" element={<ErrorPage />} />
             <Route path="*" element={<Navigate to="/error" />} />
-        </>,
-    ),
+        </>
+    )
 );
 
 const rootElement = document.getElementById("root");
@@ -175,7 +175,7 @@ if (rootElement) {
             <Provider store={store}>
                 <RouterProvider router={router} />
             </Provider>
-        </React.StrictMode>,
+        </React.StrictMode>
     );
 } else {
     console.error("No root element found");

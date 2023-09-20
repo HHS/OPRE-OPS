@@ -10,7 +10,7 @@ describe("Agreement", () => {
         render(
             <Provider store={store}>
                 <Agreement />
-            </Provider>,
+            </Provider>
         );
 
         expect(screen.getByText("Loading...")).toBeInTheDocument();

@@ -18,7 +18,7 @@ export const useIsUserAllowedToEditAgreement = (/** @type {number} */ agreementI
     const isUserTheAgreementCreator = agreement?.created_by === loggedInUserId;
     const isUserATeamMember = agreement?.team_members?.some((teamMember) => teamMember.id === loggedInUserId);
     const isUserCreatorOfAnyBudgetLines = agreement?.budget_line_items?.some(
-        (bli) => bli.created_by === loggedInUserId,
+        (bli) => bli.created_by === loggedInUserId
     );
     const isUserAllowedToEditAgreement =
         isUserTheProjectOfficer || isUserTheAgreementCreator || isUserATeamMember || isUserCreatorOfAnyBudgetLines;

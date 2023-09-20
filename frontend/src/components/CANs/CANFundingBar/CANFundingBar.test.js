@@ -39,6 +39,6 @@ it("renders without crashing", () => {
     render(
         <Provider store={store}>
             <CANFundingBar setActiveId={setActiveId} data={data} />
-        </Provider>,
+        </Provider>
     );
 });

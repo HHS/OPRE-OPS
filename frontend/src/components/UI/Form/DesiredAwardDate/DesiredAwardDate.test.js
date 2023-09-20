@@ -28,7 +28,7 @@ describe("DesiredAwardDate", () => {
                 runValidate={mockRunValidate}
                 res={mockRes}
                 cn={() => {}}
-            />,
+            />
         );
         const legendElement = screen.getByText(/Need By Date/i);
         expect(legendElement).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe("DesiredAwardDate", () => {
                 runValidate={mockRunValidate}
                 res={mockRes}
                 cn={() => {}}
-            />,
+            />
         );
         const monthInput = screen.getByLabelText(/Month/i);
         const dayInput = screen.getByLabelText(/Day/i);
@@ -72,7 +72,7 @@ describe("DesiredAwardDate", () => {
                 runValidate={mockRunValidate}
                 res={mockRes}
                 cn={() => {}}
-            />,
+            />
         );
         expect(screen.getByText(/01 - Jan/i)).toBeInTheDocument();
         expect(screen.getByText(/12 - Dec/i)).toBeInTheDocument();
@@ -90,7 +90,7 @@ describe("DesiredAwardDate", () => {
                 runValidate={mockRunValidate}
                 res={mockRes}
                 cn={() => {}}
-            />,
+            />
         );
         const monthInput = screen.getByLabelText(/Month/i);
         const dayInput = screen.getByLabelText(/Day/i);

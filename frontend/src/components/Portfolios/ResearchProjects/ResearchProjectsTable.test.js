@@ -10,6 +10,6 @@ it.skip("renders without crashing", () => {
     render(
         <Provider store={store}>
             <ResearchProjectsTable fiscalYear={fiscalYear} data={data} />
-        </Provider>,
+        </Provider>
     );
 });
