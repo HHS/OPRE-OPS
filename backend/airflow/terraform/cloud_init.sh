@@ -17,13 +17,13 @@ sudo apt-get update
 # Install Docker packages
 sudo apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# Install Airflow Docker Compose
-curl -LfO 'https://airflow.apache.org/docs/apache-airflow/2.7.1/docker-compose.yaml'
-
 # Configure Airflow
 mkdir ~/airflow && cd ~/airflow || exit
 mkdir -p ./dags ./logs ./plugins ./config
 echo -e "AIRFLOW_UID=$(id -u)" > .env
+
+# Install Airflow Docker Compose
+curl -LfO 'https://airflow.apache.org/docs/apache-airflow/2.7.1/docker-compose.yaml'
 
 # Initialize Airflow
 sudo docker compose up airflow-init
