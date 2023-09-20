@@ -3,7 +3,7 @@ import _ from "lodash";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import FilterTags from "../../../components/UI/FilterTags/FilterTags";
 import createTagString from "../../../components/UI/FilterTags/utils";
-
+import FilterTagsWrapper from "../../../components/UI/FilterTags/FilterTagsWrapper";
 /**
  * A filter tags.
  * @param {Object} props - The component props.
@@ -199,12 +199,9 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
 
     return (
         !_.isEmpty(tagsList.filter(ignoredTags)) && (
-            <div className="display-flex flex-align-center flex-wrap padding-bottom-05">
-                <span className="padding-right-205 text-base-dark font-serif-3xs line-height-sans-5 padding-top-05">
-                    Filters Applied:
-                </span>
+            <FilterTagsWrapper>
                 <FilterTags removeFilter={removeFilter} tagsList={tagsList.filter(ignoredTags)} />
-            </div>
+            </FilterTagsWrapper>
         )
     );
 };
