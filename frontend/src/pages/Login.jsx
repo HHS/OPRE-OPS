@@ -1,4 +1,4 @@
-import { Footer } from "../components/UI/Footer/Footer";
+import Footer from "../components/UI/Footer";
 import MultiAuthSection from "../components/Auth/MultiAuthSection";
 import logo from "../components/UI/Header/OPRE_Logo.png";
 

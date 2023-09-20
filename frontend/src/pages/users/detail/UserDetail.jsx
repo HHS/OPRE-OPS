@@ -1,11 +1,10 @@
 import { useSelector, useDispatch } from "react-redux";
-import { getUser } from "../../../api/getUser";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import App from "../../../App";
-import { Breadcrumb } from "../../../components/UI/Header/Breadcrumb";
 import { setUser } from "./userSlice";
 import UserInfo from "../../../components/Users/UserInfo/UserInfo";
+import { getUser } from "../../../api/getUser";
 
 const UserDetail = () => {
     const dispatch = useDispatch();
@@ -23,12 +22,9 @@ const UserDetail = () => {
     }, [dispatch, userId]);
 
     return (
-        <>
-            <App>
-                <Breadcrumb currentName={user?.email} />
-                <UserInfo user={user} />
-            </App>
-        </>
+        <App breadCrumbName={user?.email}>
+            <UserInfo user={user} />
+        </App>
     );
 };
 

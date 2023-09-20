@@ -4612,12 +4612,12 @@ content-type@~1.0.4:
   resolved "https://registry.yarnpkg.com/content-type/-/content-type-1.0.5.tgz#8b773162656d1d1086784c8f23a54ce6d73d7918"
   integrity sha512-nTjqfcBFEipKdXCv4YDQWCfmcLZKm81ldF0pAopTvyrFGVbcR6P/VAAd5G7N+0tTr8QqiU0tFadD6FK4NtJwOA==
 
-context@^3.0.7:
-  version "3.0.7"
-  resolved "https://registry.yarnpkg.com/context/-/context-3.0.7.tgz#5b4fbe25173c049dad2f539089c32cd6b965fc83"
-  integrity sha512-ceW8mQwFhOin5ih5Sm6jq9mju7+p/usZFkf+PwNPXcpARplz1eAE4PB0V90Os/STyd1387Gu4C8I5Jmy3wDoIA==
+context@^3.0.12:
+  version "3.0.12"
+  resolved "https://registry.yarnpkg.com/context/-/context-3.0.12.tgz#88ea1a2dd7a68f4a33b51bd471247d786881d2b3"
+  integrity sha512-LYsCOM/kjSw7brAjPZYQJJ0DReW14h1+4IGLiHNzo+M9WUuM9kI2nySI4fRoYmb2RV1dpGEbH1o48PX53l1Dyw==
   dependencies:
-    vest-utils "^0.1.1"
+    vest-utils "^1.0.3"
 
 convert-source-map@^1.0.0, convert-source-map@^1.4.0, convert-source-map@^1.5.0, convert-source-map@^1.6.0, convert-source-map@^1.7.0:
   version "1.9.0"
@@ -9758,13 +9758,13 @@ mz@^2.7.0:
     object-assign "^4.0.1"
     thenify-all "^1.0.0"
 
-n4s@^4.3.7:
-  version "4.3.7"
-  resolved "https://registry.yarnpkg.com/n4s/-/n4s-4.3.7.tgz#28c82f70889d2687d1ad5ffcd59a9f693cfd2f00"
-  integrity sha512-uzm6CL9cBMHaB/YuGBHRDRa6RuvpZ/xXgyoWgVS/+8/E0zQC3IyZVnIOPCOavCs/UOm4zomn99T4ng9HWcL7Cw==
+n4s@^5.0.5:
+  version "5.0.5"
+  resolved "https://registry.yarnpkg.com/n4s/-/n4s-5.0.5.tgz#1724215219299d5f84b3a661e10c85b836b795f0"
+  integrity sha512-7HQmpM7nLCFgW0As6GYo0gR1C+S/Q4nCtyajKOeB/Y553d1RaAmPAkefai3jy6kAj2zHdiDuY2cudRhJF4w3Fg==
   dependencies:
-    context "^3.0.7"
-    vest-utils "^0.1.1"
+    context "^3.0.12"
+    vest-utils "^1.0.3"
 
 nan@^2.12.1:
   version "2.17.0"
@@ -13678,12 +13678,12 @@ vary@~1.1.2:
   resolved "https://registry.yarnpkg.com/vary/-/vary-1.1.2.tgz#2299f02c6ded30d4a5961b0b9f74524a18f634fc"
   integrity sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==
 
-vast@^1.0.17:
-  version "1.0.17"
-  resolved "https://registry.yarnpkg.com/vast/-/vast-1.0.17.tgz#805bef4fe0ada79c7bd48e1cfd3302725a06d04a"
-  integrity sha512-D2fZtQp8RfZ8WMfzC0izcrrmOsZ8Dmc4B57G/J3z4wCAuvAZskyPOXBKLR5QRoQ4nb7doB/ueihEMnpDcXl7JA==
+vast@^1.0.21:
+  version "1.0.21"
+  resolved "https://registry.yarnpkg.com/vast/-/vast-1.0.21.tgz#585a0e6e725c3e8d43d8a78c8ad5bab535a4d08b"
+  integrity sha512-8RJ0N0XfAQWs6aWDxtexUyHnbmVa8pPfwhpaj+5cl5S9tT6lkIlTAzNq02m5cqkn1IjaELfL9wnKn4BCRRV7iQ==
   dependencies:
-    vest-utils "^0.1.1"
+    vest-utils "^1.0.3"
 
 verror@1.10.0:
   version "1.10.0"
@@ -13694,20 +13694,29 @@ verror@1.10.0:
     core-util-is "1.0.2"
     extsprintf "^1.2.0"
 
-vest-utils@^0.1.1:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/vest-utils/-/vest-utils-0.1.1.tgz#a695552df5e437f8cf6656807aa458b11697359a"
-  integrity sha512-dsH4zt4IsBvDY3BhUo6mNgwN9WVIfUP8jwBp2XEZQAq7XYAuVQnGTCrdF8+/OtoP141jCxMppXYpO4xbMWYwhA==
+vest-utils@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/vest-utils/-/vest-utils-1.0.3.tgz#430accf360ea65404616b9814b16ddf6c4928b48"
+  integrity sha512-zswws9QpoO1B0jG8CrnKiwPuEo6TyZNEnqWARmEYaGpNpr8niTHyxY4uvJ6RhPczW0lLy8exlmBtiqq7ArfhHw==
 
-vest@4.6.11:
-  version "4.6.11"
-  resolved "https://registry.yarnpkg.com/vest/-/vest-4.6.11.tgz#aa72463c92f67e53a064d6db98db79552199b0e7"
-  integrity sha512-2C2PfDselDX5cgaxZmp4v1IaAhnGzlSkuQSSYIsOac3TW1+N6QFHoUx2n5qkLpe0thJLZjEWT4fM4anQSSjP2Q==
+vest@5.0.5:
+  version "5.0.5"
+  resolved "https://registry.yarnpkg.com/vest/-/vest-5.0.5.tgz#356da35f09cf0e99d7e81e4cacade7b668105c3e"
+  integrity sha512-2Lc2tKTlh72Qt6zeILws5C+RIXvLAI2bzLNQ2N85Nxrlqp3dpHhAjdB6WpnTQhvZ2EQGoiSsmSs+Weu1mD8Pbw==
   dependencies:
-    context "^3.0.7"
-    n4s "^4.3.7"
-    vast "^1.0.17"
-    vest-utils "^0.1.1"
+    context "^3.0.12"
+    n4s "^5.0.5"
+    vast "^1.0.21"
+    vest-utils "^1.0.3"
+    vestjs-runtime "^1.0.3"
+
+vestjs-runtime@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/vestjs-runtime/-/vestjs-runtime-1.0.3.tgz#69731bea2391dab840172ddba5724ae701697825"
+  integrity sha512-aRiY7eqTIZydTb23EdQteyYcrsTr3E5TIZo3qlg3A7Z+LalljjYFkkbP+jL34ca0iKbkg4NpJT+ogmkkdNIrig==
+  dependencies:
+    context "^3.0.12"
+    vest-utils "^1.0.3"
 
 vfile-message@^3.0.0:
   version "3.1.4"

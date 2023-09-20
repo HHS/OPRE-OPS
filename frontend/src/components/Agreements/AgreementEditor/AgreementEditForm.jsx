@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
 import classnames from "vest/classnames";
+import _ from "lodash";
 
 import ProcurementShopSelectWithFee from "../../UI/Form/ProcurementShopSelectWithFee";
 import AgreementReasonSelect from "../../UI/Form/AgreementReasonSelect";
@@ -14,7 +14,6 @@ import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import { formatTeamMember } from "../../../api/postAgreements";
 import ProductServiceCodeSummaryBox from "../../UI/Form/ProductServiceCodeSummaryBox";
 import { useEditAgreement, useEditAgreementDispatch, useSetState, useUpdateAgreement } from "./AgreementEditorContext";
-import { setAlert } from "../../UI/Alert/alertSlice";
 import suite from "./AgreementEditFormSuite";
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea/TextArea";
@@ -25,7 +24,7 @@ import {
 } from "../../../api/opsAPI";
 import ProjectOfficerComboBox from "../../UI/Form/ProjectOfficerComboBox";
 import { getUser } from "../../../api/getUser";
-import _ from "lodash";
+import useAlert from "../../../helpers/use-alert";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -62,7 +61,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
 
     const navigate = useNavigate();
     const dispatch = useEditAgreementDispatch();
-    const globalDispatch = useDispatch();
+    const { setAlert } = useAlert();
 
     const [updateAgreement] = useUpdateAgreementMutation();
     const [addAgreement] = useAddAgreementMutation();
@@ -179,24 +178,20 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                 .unwrap()
                 .then((fulfilled) => {
                     console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
-                    globalDispatch(
-                        setAlert({
-                            type: "success",
-                            heading: "Agreement Edited",
-                            message: `The agreement ${agreement.name} has been successfully updated.`,
-                        }),
-                    );
+                    setAlert({
+                        type: "success",
+                        heading: "Agreement Edited",
+                        message: `The agreement ${agreement.name} has been successfully updated.`,
+                    });
                 })
                 .catch((rejected) => {
                     console.error(`UPDATE: agreement updated failed: ${JSON.stringify(rejected, null, 2)}`);
-                    globalDispatch(
-                        setAlert({
-                            type: "error",
-                            heading: "Error",
-                            message: "An error occurred while saving the agreement.",
-                        }),
-                    );
-                    navigate("/error");
+                    setAlert({
+                        type: "error",
+                        heading: "Error",
+                        message: "An error occurred while saving the agreement.",
+                        redirectUrl: "/error",
+                    });
                 });
         } else {
             await addAgreement(cleanData)
@@ -207,24 +202,20 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                 })
                 .then((fulfilled) => {
                     console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
-                    globalDispatch(
-                        setAlert({
-                            type: "success",
-                            heading: "Agreement Draft Saved",
-                            message: `The agreement ${agreement.name} has been successfully created.`,
-                        }),
-                    );
+                    setAlert({
+                        type: "success",
+                        heading: "Agreement Draft Saved",
+                        message: `The agreement ${agreement.name} has been successfully created.`,
+                    });
                 })
                 .catch((rejected) => {
                     console.error(`CREATE: agreement failed: ${JSON.stringify(rejected, null, 2)}`);
-                    globalDispatch(
-                        setAlert({
-                            type: "error",
-                            heading: "Error",
-                            message: "An error occurred while creating the agreement.",
-                        }),
-                    );
-                    navigate("/error");
+                    setAlert({
+                        type: "error",
+                        heading: "Error",
+                        message: "An error occurred while creating the agreement.",
+                        redirectUrl: "/error",
+                    });
                 });
         }
     };
@@ -268,7 +259,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                 ...agreement,
                 ...{ [name]: value },
             },
-            name,
+            name
         );
     };
 
