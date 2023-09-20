@@ -1,17 +1,13 @@
 import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
 import App from "../App";
-import Alert from "../components/UI/Alert";
 
 /**
  * Page for displaying an error message.
  * @returns {React.JSX.Element} - The component JSX.
  */
 const ErrorPage = () => {
-    const isAlertActive = useSelector((state) => state.alert.isActive);
     return (
         <App>
-            {isAlertActive && <Alert />}
             <div className="usa-section">
                 <div className="grid-container">
                     <div className="grid-row grid-gap">

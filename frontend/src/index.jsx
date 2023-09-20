@@ -22,7 +22,7 @@ import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProje
 import CreateBudgetLines from "./pages/budgetLines";
 import CreateAgreements from "./pages/agreements";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
-import { CreateProject } from "./pages/projects/CreateProject";
+import CreateProject from "./pages/projects/CreateProject";
 import { AgreementsList } from "./pages/agreements/list/AgreementsList";
 import Agreement from "./pages/agreements/details/Agreement";
 import EditAgreement from "./pages/agreements/EditAgreement";
