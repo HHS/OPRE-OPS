@@ -9,7 +9,7 @@ export const ResponsiveDonutWithInnerPercent = ({
     CustomLayerComponent,
     setPercent = () => {},
     setHoverId = () => {},
-    container_id,
+    container_id
 }) => {
     const setA11y = async () => {
         const container = document.querySelector(`#${container_id}`);
@@ -18,7 +18,7 @@ export const ResponsiveDonutWithInnerPercent = ({
         if (elem !== null) {
             elem.setAttribute(
                 "aria-label",
-                "This is a Donut Chart that displays the percent by budget line status in the center.",
+                "This is a Donut Chart that displays the percent by budget line status in the center."
             );
         }
     };

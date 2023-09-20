@@ -20,7 +20,7 @@ export const ConfirmationModal = ({
     setShowModal = () => {},
     actionButtonText,
     secondaryButtonText = "Cancel",
-    handleConfirm = () => {},
+    handleConfirm = () => {}
 }) => {
     const modalRef = useRef(null);
 
@@ -32,7 +32,7 @@ export const ConfirmationModal = ({
         const handleKeydown = (event) => {
             // get all focusable elements in the modal container
             const focusableElements = currentModalRef.querySelectorAll(
-                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
             );
             const firstElement = focusableElements[0];
             const lastElement = focusableElements[focusableElements.length - 1];
@@ -72,8 +72,16 @@ export const ConfirmationModal = ({
                 aria-describedby="ops-modal-description"
                 onClick={() => setShowModal(false)}
             >
-                <div className="usa-modal-overlay" aria-controls="ops-modal">
-                    <div className="usa-modal" tabIndex="-1" onClick={(e) => e.stopPropagation()} ref={modalRef}>
+                <div
+                    className="usa-modal-overlay"
+                    aria-controls="ops-modal"
+                >
+                    <div
+                        className="usa-modal"
+                        tabIndex="-1"
+                        onClick={(e) => e.stopPropagation()}
+                        ref={modalRef}
+                    >
                         <div className="usa-modal__content">
                             <div className="usa-modal__main">
                                 <h2
@@ -146,5 +154,5 @@ ConfirmationModal.propTypes = {
     setShowModal: PropTypes.func.isRequired,
     actionButtonText: PropTypes.string.isRequired,
     secondaryButtonText: PropTypes.string,
-    handleConfirm: PropTypes.func.isRequired,
+    handleConfirm: PropTypes.func.isRequired
 };

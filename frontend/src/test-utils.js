@@ -10,7 +10,7 @@ export function renderWithProviders(
         // Automatically create a store instance if no store was passed in
         store = setupStore(preloadedState),
         ...renderOptions
-    } = {},
+    } = {}
 ) {
     setupListeners(store.dispatch);
 

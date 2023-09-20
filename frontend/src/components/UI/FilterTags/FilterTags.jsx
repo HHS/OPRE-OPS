@@ -25,7 +25,10 @@ export const FilterTags = ({ removeFilter, tagsList }) => {
         <div className="display-flex flex-align-center flex-wrap">
             {tagsList.map((tag, index) => {
                 return (
-                    <span key={index} className="padding-right-205 padding-top-05">
+                    <span
+                        key={index}
+                        className="padding-right-205 padding-top-05"
+                    >
                         <FilterTag tag={tag} />
                     </span>
                 );

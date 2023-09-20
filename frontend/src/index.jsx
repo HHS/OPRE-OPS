@@ -34,8 +34,14 @@ import { BudgetLineItemList } from "./pages/budgetLines/list/BudgetLineItemList"
 const router = createBrowserRouter(
     createRoutesFromElements(
         <>
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={<Home />} />
+            <Route
+                path="/login"
+                element={<Login />}
+            />
+            <Route
+                path="/"
+                element={<Home />}
+            />
             <Route
                 element={
                     // This demonstrates a Protected Route. All children within this Route
@@ -49,7 +55,10 @@ const router = createBrowserRouter(
                 }
             >
                 {/* BEGIN PROTECTED ROUTES */}
-                <Route path="/portfolios" element={<PortfolioList />} />
+                <Route
+                    path="/portfolios"
+                    element={<PortfolioList />}
+                />
                 <Route
                     path="/portfolios/:id"
                     element={<PortfolioDetail />}
@@ -59,17 +68,33 @@ const router = createBrowserRouter(
                         // this is what we'll render in the breadcrumbs
                         // for this route
                         crumb: () => (
-                            <Link to="/portfolios" className="text-primary">
+                            <Link
+                                to="/portfolios"
+                                className="text-primary"
+                            >
                                 Portfolios
                             </Link>
-                        ),
+                        )
                     }}
                 >
                     {/* Default to BudgetAndFunding */}
-                    <Route exact path="" element={<Navigate to={"budget-and-funding"} />} />
-                    <Route path="budget-and-funding" element={<BudgetAndFunding />} />
-                    <Route path="research-projects" element={<ResearchProjects />} />
-                    <Route path="people-and-teams" element={<PeopleAndTeams />} />
+                    <Route
+                        exact
+                        path=""
+                        element={<Navigate to={"budget-and-funding"} />}
+                    />
+                    <Route
+                        path="budget-and-funding"
+                        element={<BudgetAndFunding />}
+                    />
+                    <Route
+                        path="research-projects"
+                        element={<ResearchProjects />}
+                    />
+                    <Route
+                        path="people-and-teams"
+                        element={<PeopleAndTeams />}
+                    />
                 </Route>
                 <Route
                     path="/research-projects/:id/*"
@@ -77,11 +102,14 @@ const router = createBrowserRouter(
                     handle={{
                         crumb: () => (
                             <div>
-                                <Link to="/" className="text-primary">
+                                <Link
+                                    to="/"
+                                    className="text-primary"
+                                >
                                     Research Projects
                                 </Link>
                             </div>
-                        ),
+                        )
                     }}
                 />
                 <Route
@@ -90,11 +118,14 @@ const router = createBrowserRouter(
                     handle={{
                         crumb: () => (
                             <div>
-                                <Link to="/" className="text-primary">
+                                <Link
+                                    to="/"
+                                    className="text-primary"
+                                >
                                     Users
                                 </Link>
                             </div>
-                        ),
+                        )
                     }}
                 />
                 <Route
@@ -103,11 +134,14 @@ const router = createBrowserRouter(
                     handle={{
                         crumb: () => (
                             <div>
-                                <Link to="/" className="text-primary">
+                                <Link
+                                    to="/"
+                                    className="text-primary"
+                                >
                                     Edit User
                                 </Link>
                             </div>
-                        ),
+                        )
                     }}
                 />
                 <Route
@@ -116,11 +150,14 @@ const router = createBrowserRouter(
                     handle={{
                         crumb: () => (
                             <div>
-                                <Link to="/" className="text-primary">
+                                <Link
+                                    to="/"
+                                    className="text-primary"
+                                >
                                     Edit User
                                 </Link>
                             </div>
-                        ),
+                        )
                     }}
                 />
                 <Route
@@ -132,39 +169,75 @@ const router = createBrowserRouter(
                         // this is what we'll render in the breadcrumbs
                         // for this route
                         crumb: () => (
-                            <Link to="/agreements" className="text-primary">
+                            <Link
+                                to="/agreements"
+                                className="text-primary"
+                            >
                                 Agreements
                             </Link>
-                        ),
+                        )
                     }}
                 />
                 {/*/!* Default to BudgetAndFunding *!/*/}
                 {/*<Route exact path="" element={<Navigate to={"budget-and-funding"} />} />*/}
-                <Route path="/budget-lines" element={<BudgetLineItemList />} />
-                <Route path="/budget-lines/create" element={<CreateBudgetLines />} />
-                <Route path="/agreements/create" element={<CreateAgreements />} />
-                <Route path="/projects/create" element={<CreateProject />} />
-                <Route path="/agreements" element={<AgreementsList />} />
-                <Route path="/agreements/edit/:id/*" element={<EditAgreement />} />
-                <Route path="/agreements/approve/:id/*" element={<ApproveAgreement />} />
-                <Route path="/cans" element={<CanList />} />
+                <Route
+                    path="/budget-lines"
+                    element={<BudgetLineItemList />}
+                />
+                <Route
+                    path="/budget-lines/create"
+                    element={<CreateBudgetLines />}
+                />
+                <Route
+                    path="/agreements/create"
+                    element={<CreateAgreements />}
+                />
+                <Route
+                    path="/projects/create"
+                    element={<CreateProject />}
+                />
+                <Route
+                    path="/agreements"
+                    element={<AgreementsList />}
+                />
+                <Route
+                    path="/agreements/edit/:id/*"
+                    element={<EditAgreement />}
+                />
+                <Route
+                    path="/agreements/approve/:id/*"
+                    element={<ApproveAgreement />}
+                />
+                <Route
+                    path="/cans"
+                    element={<CanList />}
+                />
                 <Route
                     path="/cans/:id/*"
                     element={<CanDetail />}
                     handle={{
                         crumb: () => (
-                            <Link to="/cans" className="text-primary">
+                            <Link
+                                to="/cans"
+                                className="text-primary"
+                            >
                                 Cans
                             </Link>
-                        ),
+                        )
                     }}
                 />
             </Route>
             {/* END PROTECTED ROUTES */}
-            <Route path="/error" element={<ErrorPage />} />
-            <Route path="*" element={<Navigate to="/error" />} />
-        </>,
-    ),
+            <Route
+                path="/error"
+                element={<ErrorPage />}
+            />
+            <Route
+                path="*"
+                element={<Navigate to="/error" />}
+            />
+        </>
+    )
 );
 
 const rootElement = document.getElementById("root");
@@ -175,7 +248,7 @@ if (rootElement) {
             <Provider store={store}>
                 <RouterProvider router={router} />
             </Provider>
-        </React.StrictMode>,
+        </React.StrictMode>
     );
 } else {
     console.error("No root element found");

@@ -5,7 +5,7 @@ describe("ComboBox", () => {
     const researchProjects = [
         { id: 1, title: "Project 1", description: "Description 1" },
         { id: 2, title: "Project 2", description: "Description 2" },
-        { id: 3, title: "Project 3", description: "Description 3" },
+        { id: 3, title: "Project 3", description: "Description 3" }
     ];
     const mockSetSelectedProject = jest.fn();
 
@@ -16,7 +16,7 @@ describe("ComboBox", () => {
                 data={researchProjects}
                 selectedData={researchProjects[0]}
                 setSelectedData={mockSetSelectedProject}
-            />,
+            />
         );
         expect(screen.getByRole("combobox")).toBeInTheDocument();
     });
@@ -28,7 +28,7 @@ describe("ComboBox", () => {
                 data={researchProjects}
                 selectedData={researchProjects[0]}
                 setSelectedData={mockSetSelectedProject}
-            />,
+            />
         );
 
         const select = screen.getByText("Project 1");
@@ -43,7 +43,7 @@ describe("ComboBox", () => {
                 data={researchProjects}
                 selectedData={researchProjects[0]}
                 setSelectedData={setSelectedProject}
-            />,
+            />
         );
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
         fireEvent.focus(container.querySelector("input"));
@@ -62,7 +62,7 @@ describe("ComboBox", () => {
                 data={researchProjects}
                 selectedData={researchProjects[0]}
                 setSelectedData={mockSetSelectedProject}
-            />,
+            />
         );
         const input = screen.getByRole("combobox");
         fireEvent.change(input, { target: { value: "Project 2" } });

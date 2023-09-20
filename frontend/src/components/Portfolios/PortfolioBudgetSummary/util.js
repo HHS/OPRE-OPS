@@ -19,7 +19,7 @@ export const getPortfolioFundingAndSetState = (portfolioId, fiscalYear) => {
                 `/api/${api_version}/portfolios/${portfolioId}/calcFunding/`,
                 "get",
                 {},
-                { fiscal_year: fiscalYear },
+                { fiscal_year: fiscalYear }
             );
 
         dispatch(setPortfolioBudget(data));

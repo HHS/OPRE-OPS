@@ -26,7 +26,10 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList }) => {
     Modal.setAppElement("#root");
 
     return (
-        <div className={customStyles.container} id="filter-container">
+        <div
+            className={customStyles.container}
+            id="filter-container"
+        >
             <button
                 className={`usa-button ${
                     !showModal ? "usa-button--outline text-primary" : "bg-primary-darker"
@@ -64,10 +67,16 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList }) => {
                     {fieldsetList?.map((formField) => formField)}
                 </div>
                 <div className="display-flex flex-justify-end padding-right-1 padding-top-1 padding-bottom-1">
-                    <button className="usa-button usa-button--outline" onClick={handleResetFilter}>
+                    <button
+                        className="usa-button usa-button--outline"
+                        onClick={handleResetFilter}
+                    >
                         <span className="">Reset</span>
                     </button>
-                    <button className="usa-button usa-button--primary" onClick={handleApplyFilter}>
+                    <button
+                        className="usa-button usa-button--primary"
+                        onClick={handleApplyFilter}
+                    >
                         <span>Apply</span>
                     </button>
                 </div>

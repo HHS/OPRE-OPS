@@ -50,14 +50,14 @@ export const CreateBudgetLinesForm = ({
     handleEditForm = () => {},
     handleSubmitForm = () => {},
     handleResetForm = () => {},
-    isReviewMode,
+    isReviewMode
 }) => {
     let res = suite.get();
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
         valid: "success",
-        warning: "warning",
+        warning: "warning"
     });
     const isFormComplete =
         selectedCan && enteredDescription && enteredAmount && enteredMonth && enteredDay && enteredYear;
@@ -70,7 +70,7 @@ export const CreateBudgetLinesForm = ({
             enteredAmount,
             enteredMonth,
             enteredDay,
-            enteredYear,
+            enteredYear
         });
     }
 
@@ -83,9 +83,9 @@ export const CreateBudgetLinesForm = ({
                 enteredMonth,
                 enteredDay,
                 enteredYear,
-                ...{ [name]: value },
+                ...{ [name]: value }
             },
-            name,
+            name
         );
     };
 
@@ -217,7 +217,7 @@ CreateBudgetLinesForm.propTypes = {
     handleEditForm: PropTypes.func,
     handleSubmitForm: PropTypes.func,
     handleResetForm: PropTypes.func,
-    isReviewMode: PropTypes.bool,
+    isReviewMode: PropTypes.bool
 };
 
 export default CreateBudgetLinesForm;

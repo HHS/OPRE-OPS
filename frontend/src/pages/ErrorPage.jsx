@@ -11,7 +11,10 @@ const ErrorPage = () => {
             <div className="usa-section">
                 <div className="grid-container">
                     <div className="grid-row grid-gap">
-                        <main className="" id="main-content">
+                        <main
+                            className=""
+                            id="main-content"
+                        >
                             <div className="usa-prose">
                                 <h1>Something went wrong</h1>
                                 <p className="usa-intro">
@@ -30,7 +33,10 @@ const ErrorPage = () => {
                                 <div className="margin-y-5">
                                     <ul className="usa-button-group">
                                         <li className="usa-button-group__item">
-                                            <Link to="/" className="usa-button">
+                                            <Link
+                                                to="/"
+                                                className="usa-button"
+                                            >
                                                 Visit homepage
                                             </Link>
                                         </li>

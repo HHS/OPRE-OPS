@@ -21,7 +21,7 @@ export const TeamMemberComboBox = ({
     setSelectedTeamMembers,
     legendClassname = "usa-label margin-top-0",
     defaultString = "",
-    overrideStyles = {},
+    overrideStyles = {}
 }) => {
     const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery();
     const [selectedTeamMember, setSelectedTeamMember] = useState({});
@@ -36,7 +36,7 @@ export const TeamMemberComboBox = ({
     const remainingUsers = users.filter(
         (user) =>
             user.id !== selectedProjectOfficer?.id && // Check if the user is not a selected project officer
-            !selectedTeamMembers.some((teamMember) => teamMember.id === user.id), // Check if the user is not already a team member
+            !selectedTeamMembers.some((teamMember) => teamMember.id === user.id) // Check if the user is not already a team member
     );
 
     const handleChange = (user) => {
@@ -48,7 +48,11 @@ export const TeamMemberComboBox = ({
 
     return (
         <div className={cx("usa-form-group margin-top-0", className)}>
-            <label className={legendClassname} htmlFor="team-member-combobox-input" id="team-member-label">
+            <label
+                className={legendClassname}
+                htmlFor="team-member-combobox-input"
+                id="team-member-label"
+            >
                 Team Members
             </label>
             <div>
@@ -74,7 +78,7 @@ TeamMemberComboBox.propTypes = {
     setSelectedTeamMembers: PropTypes.func,
     legendClassname: PropTypes.string,
     defaultString: PropTypes.string,
-    overrideStyles: PropTypes.object,
+    overrideStyles: PropTypes.object
 };
 
 export default TeamMemberComboBox;

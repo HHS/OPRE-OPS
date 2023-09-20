@@ -18,7 +18,11 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
 
     const TableRow = ({ name, link, funding, fundingToDate, firstAwardDate, cans, agreement }) => (
         <tr>
-            <th scope="row" data-sort-value={name} data-sort-active={getClassNamesFor("name")}>
+            <th
+                scope="row"
+                data-sort-value={name}
+                data-sort-active={getClassNamesFor("name")}
+            >
                 <Link
                     to={link}
                     className="text-ink text-no-underline hover:text-underline usa-tooltip"
@@ -30,19 +34,44 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                     {name.length > 30 ? name.substring(0, 30) + "..." : name}
                 </Link>
             </th>
-            <td data-sort-value={funding} data-sort-active={getClassNamesFor("funding")}>
-                <CurrencyFormat value={funding} displayType={"text"} thousandSeparator={true} prefix={"$"} />
+            <td
+                data-sort-value={funding}
+                data-sort-active={getClassNamesFor("funding")}
+            >
+                <CurrencyFormat
+                    value={funding}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"$"}
+                />
             </td>
-            <td data-sort-value={fundingToDate} data-sort-active={getClassNamesFor("fundingToDate")}>
-                <CurrencyFormat value={fundingToDate} displayType={"text"} thousandSeparator={true} prefix={"$"} />
+            <td
+                data-sort-value={fundingToDate}
+                data-sort-active={getClassNamesFor("fundingToDate")}
+            >
+                <CurrencyFormat
+                    value={fundingToDate}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"$"}
+                />
             </td>
-            <td data-sort-value={firstAwardDate} data-sort-active={getClassNamesFor("firstAwardDate")}>
+            <td
+                data-sort-value={firstAwardDate}
+                data-sort-active={getClassNamesFor("firstAwardDate")}
+            >
                 {firstAwardDate}
             </td>
-            <td data-sort-value={cans} data-sort-active={getClassNamesFor("cans")}>
+            <td
+                data-sort-value={cans}
+                data-sort-active={getClassNamesFor("cans")}
+            >
                 {cans}
             </td>
-            <td data-sort-value={agreement} data-sort-active={getClassNamesFor("agreement")}>
+            <td
+                data-sort-value={agreement}
+                data-sort-active={getClassNamesFor("agreement")}
+            >
                 {agreement}
             </td>
         </tr>
@@ -55,7 +84,10 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
     }, []);
 
     return (
-        <div className="usa-table-container--scrollable" tabIndex="0">
+        <div
+            className="usa-table-container--scrollable"
+            tabIndex="0"
+        >
             <table className="usa-table usa-table--borderless width-full">
                 <thead>
                     <tr>
@@ -73,7 +105,7 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                         >
                             <button
                                 className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink hover:text-ink fake-bold ${getClassNamesFor(
-                                    "name",
+                                    "name"
                                 )}`}
                                 type="button"
                                 onClick={() => requestSort("name")}
@@ -87,7 +119,7 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                             aria-label={
                                 getClassNamesFor("funding")
                                     ? `FY ${fiscalYear.value} Funding, sortable column, sorted in ${getClassNamesFor(
-                                          "funding",
+                                          "funding"
                                       )} order`
                                     : `FY ${fiscalYear.value} Funding, sortable column, currently unsorted`
                             }
@@ -95,7 +127,7 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                         >
                             <button
                                 className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink hover:text-ink fake-bold ${getClassNamesFor(
-                                    "funding",
+                                    "funding"
                                 )}`}
                                 type="button"
                                 onClick={() => requestSort("funding")}
@@ -109,7 +141,7 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                             aria-label={
                                 getClassNamesFor("fundingToDate")
                                     ? `Funding to Date, sortable column, sorted in ${getClassNamesFor(
-                                          "fundingToDate",
+                                          "fundingToDate"
                                       )} order`
                                     : `Funding to Date, sortable column, currently unsorted`
                             }
@@ -117,7 +149,7 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                         >
                             <button
                                 className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink hover:text-ink fake-bold ${getClassNamesFor(
-                                    "fundingToDate",
+                                    "fundingToDate"
                                 )}`}
                                 type="button"
                                 onClick={() => requestSort("fundingToDate")}
@@ -131,7 +163,7 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                             aria-label={
                                 getClassNamesFor("firstAwardDate")
                                     ? `First Award, sortable column, sorted in ${getClassNamesFor(
-                                          "firstAwardDate",
+                                          "firstAwardDate"
                                       )} order`
                                     : `First Award, sortable column, currently unsorted`
                             }
@@ -139,7 +171,7 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                         >
                             <button
                                 className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink hover:text-ink fake-bold ${getClassNamesFor(
-                                    "firstAwardDate",
+                                    "firstAwardDate"
                                 )}`}
                                 type="button"
                                 onClick={() => requestSort("firstAwardDate")}
@@ -159,7 +191,7 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                         >
                             <button
                                 className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink hover:text-ink fake-bold ${getClassNamesFor(
-                                    "cans",
+                                    "cans"
                                 )}`}
                                 type="button"
                                 onClick={() => requestSort("cans")}
@@ -179,7 +211,7 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                         >
                             <button
                                 className={`usa-button usa-button--unstyled text-no-underline hover:text-no-underline text-ink hover:text-ink fake-bold ${getClassNamesFor(
-                                    "agreement",
+                                    "agreement"
                                 )}`}
                                 type="button"
                                 onClick={() => requestSort("agreement")}
@@ -191,11 +223,17 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                 </thead>
                 <tbody>
                     {projectTableData.map((tableData) => (
-                        <TableRow key={tableData.id} {...tableData} />
+                        <TableRow
+                            key={tableData.id}
+                            {...tableData}
+                        />
                     ))}
                 </tbody>
             </table>
-            <div className="usa-sr-only usa-table__announcement-region" aria-live="polite">
+            <div
+                className="usa-sr-only usa-table__announcement-region"
+                aria-live="polite"
+            >
                 {srMsg}
             </div>
         </div>

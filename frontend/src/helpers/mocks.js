@@ -9,9 +9,9 @@ export const handlers = [
             ctx.status(200),
             ctx.json([
                 { id: 1, name: "Agreement 1" },
-                { id: 2, name: "Agreement 2" },
+                { id: 2, name: "Agreement 2" }
             ]),
-            ctx.delay(150),
+            ctx.delay(150)
         );
     }),
 
@@ -26,9 +26,9 @@ export const handlers = [
             ctx.status(200),
             ctx.json([
                 { id: 1, name: "Research Project 1" },
-                { id: 2, name: "Research Project 2" },
+                { id: 2, name: "Research Project 2" }
             ]),
-            ctx.delay(150),
+            ctx.delay(150)
         );
     }),
 
@@ -36,7 +36,7 @@ export const handlers = [
         const { body } = req;
 
         return res(ctx.status(201), ctx.json({ id: 3, name: body.name }), ctx.delay(150));
-    }),
+    })
 ];
 
 export const server = setupServer(...handlers);

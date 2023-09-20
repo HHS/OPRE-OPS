@@ -28,7 +28,7 @@ export const DesiredAwardDate = ({
     isReviewMode,
     runValidate,
     res,
-    cn,
+    cn
 }) => {
     const dateGroupErrors = Object.values(res.getErrorsByGroup("allDates"));
 
@@ -43,7 +43,10 @@ export const DesiredAwardDate = ({
                 {isThereDateGroupErrors &&
                     // instead of mapping over the array of errors, we just want the first one
                     dateGroupErrors[0].map((error, index) => (
-                        <span key={index} className="usa-error-message padding-left-2px">
+                        <span
+                            key={index}
+                            className="usa-error-message padding-left-2px"
+                        >
                             {error}
                             <br />
                         </span>
@@ -105,7 +108,7 @@ DesiredAwardDate.propTypes = {
     isReviewMode: PropTypes.bool,
     runValidate: PropTypes.func.isRequired,
     res: PropTypes.object.isRequired,
-    cn: PropTypes.func.isRequired,
+    cn: PropTypes.func.isRequired
 };
 
 export default DesiredAwardDate;

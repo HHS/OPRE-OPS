@@ -16,9 +16,9 @@ const EditAgreement = () => {
     const {
         data: agreement,
         error: errorAgreement,
-        isLoading: isLoadingAgreement,
+        isLoading: isLoadingAgreement
     } = useGetAgreementByIdQuery(agreementId, {
-        refetchOnMountOrArgChange: true,
+        refetchOnMountOrArgChange: true
     });
 
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
@@ -50,8 +50,15 @@ const EditAgreement = () => {
     if (!isEditable) {
         return (
             <App>
-                <SimpleAlert type="error" heading="Error" message="This Agreement cannot be edited."></SimpleAlert>
-                <Link to="/" className="usa-button margin-top-4">
+                <SimpleAlert
+                    type="error"
+                    heading="Error"
+                    message="This Agreement cannot be edited."
+                ></SimpleAlert>
+                <Link
+                    to="/"
+                    className="usa-button margin-top-4"
+                >
                     Go back home
                 </Link>
             </App>
@@ -59,7 +66,10 @@ const EditAgreement = () => {
     }
     return (
         <App>
-            <EditAgreementProvider agreement={agreement} projectOfficer={projectOfficer}>
+            <EditAgreementProvider
+                agreement={agreement}
+                projectOfficer={projectOfficer}
+            >
                 <CreateEditAgreement existingBudgetLines={agreement.budget_line_items} />
             </EditAgreementProvider>
         </App>

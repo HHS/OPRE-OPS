@@ -37,7 +37,10 @@ const Tag = ({ tagStyle = "", text = "", active = false, label = "", className =
     }
 
     return (
-        <span className={`${tagClasses} ${activeClass} ${className}`} style={{ width: "fit-content" }}>
+        <span
+            className={`${tagClasses} ${activeClass} ${className}`}
+            style={{ width: "fit-content" }}
+        >
             {text} {children}
         </span>
     );
@@ -51,5 +54,5 @@ Tag.propTypes = {
     active: PropTypes.bool,
     label: PropTypes.string,
     className: PropTypes.string,
-    children: PropTypes.node,
+    children: PropTypes.node
 };

@@ -17,7 +17,10 @@ import cx from "clsx";
 const DayInput = ({ name, label = name, onChange, pending = false, messages = [], value }) => {
     return (
         <div className={cx("usa-form-group usa-form-group--day margin-top-0", pending && "pending")}>
-            <label className={`usa-label sr-only ${messages.length ? "usa-label--error" : null} `} htmlFor={name}>
+            <label
+                className={`usa-label sr-only ${messages.length ? "usa-label--error" : null} `}
+                htmlFor={name}
+            >
                 {label}
             </label>
             <input
@@ -49,7 +52,7 @@ DayInput.propTypes = {
     pending: PropTypes.bool,
     messages: PropTypes.arrayOf(PropTypes.string),
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    className: PropTypes.string,
+    className: PropTypes.string
 };
 
 export default DayInput;

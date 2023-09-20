@@ -8,18 +8,18 @@ test("successfully gets the CAN list from the backend and directly puts it into 
         {
             id: 1,
             number: "G99HRF2",
-            otherStuff: "Moof",
+            otherStuff: "Moof"
         },
         {
             id: 2,
             number: "G99IA14",
-            otherStuff: "DogCow",
+            otherStuff: "DogCow"
         },
         {
             id: 3,
             number: "G99PHS9",
-            otherStuff: "Clarus",
-        },
+            otherStuff: "Clarus"
+        }
     ];
     TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
         return mockBackendResponse;

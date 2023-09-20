@@ -20,7 +20,10 @@ const DefaultLayout = ({ children, breadCrumbName }) => {
             <Header />
             {breadCrumbName ? <Breadcrumb currentName={breadCrumbName} /> : null}
             {isAlertActive && <Alert />}
-            <main id="main-content" className="grid-container bg-white padding-bottom-6">
+            <main
+                id="main-content"
+                className="grid-container bg-white padding-bottom-6"
+            >
                 {children}
             </main>
             <Footer />
@@ -30,6 +33,6 @@ const DefaultLayout = ({ children, breadCrumbName }) => {
 
 DefaultLayout.propTypes = {
     children: PropTypes.node,
-    breadCrumbName: PropTypes.string,
+    breadCrumbName: PropTypes.string
 };
 export default DefaultLayout;

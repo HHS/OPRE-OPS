@@ -5,7 +5,7 @@ describe("ProjectSelect", () => {
     const researchProjects = [
         { id: 1, title: "Project 1", description: "Description 1" },
         { id: 2, title: "Project 2", description: "Description 2" },
-        { id: 3, title: "Project 3", description: "Description 3" },
+        { id: 3, title: "Project 3", description: "Description 3" }
     ];
     const mockClearFunction = jest.fn();
 
@@ -17,7 +17,7 @@ describe("ProjectSelect", () => {
                 selectedResearchProject={researchProjects[0]}
                 setSelectedProject={setSelectedProject}
                 clearFunction={mockClearFunction}
-            />,
+            />
         );
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
         fireEvent.focus(container.querySelector("input"));

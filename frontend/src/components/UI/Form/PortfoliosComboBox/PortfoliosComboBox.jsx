@@ -17,7 +17,7 @@ export const PortfoliosComboBox = ({
     setSelectedPortfolios,
     legendClassname = "usa-label margin-top-0",
     defaultString = "",
-    overrideStyles = {},
+    overrideStyles = {}
 }) => {
     const { data, error, isLoading } = useGetPortfoliosQuery();
 
@@ -31,7 +31,10 @@ export const PortfoliosComboBox = ({
     return (
         <div className="display-flex flex-justify">
             <div>
-                <label className={legendClassname} htmlFor="project-combobox-input">
+                <label
+                    className={legendClassname}
+                    htmlFor="project-combobox-input"
+                >
                     Portfolio
                 </label>
                 <div>
@@ -58,5 +61,5 @@ PortfoliosComboBox.propTypes = {
     setSelectedPortfolios: PropTypes.func.isRequired,
     legendClassname: PropTypes.string,
     defaultString: PropTypes.string,
-    overrideStyles: PropTypes.object,
+    overrideStyles: PropTypes.object
 };

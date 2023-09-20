@@ -17,7 +17,7 @@ export const CreateAgreementFlow = ({ children, onFinish }) => {
         const nextIndex = currentIndex + 1;
         const updatedData = {
             ...formData,
-            ...stepData,
+            ...stepData
         };
 
         if (nextIndex < children.length) {
@@ -35,7 +35,7 @@ export const CreateAgreementFlow = ({ children, onFinish }) => {
             goToNext,
             goBack,
             wizardSteps,
-            currentStep: currentIndex + 1,
+            currentStep: currentIndex + 1
         });
     }
 

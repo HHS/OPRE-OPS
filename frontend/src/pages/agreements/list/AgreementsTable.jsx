@@ -18,18 +18,30 @@ export const AgreementsTable = ({ agreements = [] }) => {
                         <th scope="col">Type</th>
                         <th scope="col">Total</th>
                         <th scope="col">Need By</th>
-                        <th scope="col" className="padding-0" style={{ width: "6.25rem" }}>
+                        <th
+                            scope="col"
+                            className="padding-0"
+                            style={{ width: "6.25rem" }}
+                        >
                             Status
                         </th>
                     </tr>
                 </thead>
                 <tbody>
                     {agreements.length > 0 &&
-                        agreements?.map((agreement) => <AgreementTableRow key={agreement?.id} agreement={agreement} />)}
+                        agreements?.map((agreement) => (
+                            <AgreementTableRow
+                                key={agreement?.id}
+                                agreement={agreement}
+                            />
+                        ))}
                 </tbody>
             </table>
             {agreements.length === 0 && (
-                <div id="agreements-table-zero-results" className="padding-top-5 display-flex flex-justify-center">
+                <div
+                    id="agreements-table-zero-results"
+                    className="padding-top-5 display-flex flex-justify-center"
+                >
                     There are 0 results based on your filter selections.
                 </div>
             )}
@@ -38,6 +50,6 @@ export const AgreementsTable = ({ agreements = [] }) => {
 };
 
 AgreementsTable.propTypes = {
-    agreements: PropTypes.arrayOf(PropTypes.object),
+    agreements: PropTypes.arrayOf(PropTypes.object)
 };
 export default AgreementsTable;

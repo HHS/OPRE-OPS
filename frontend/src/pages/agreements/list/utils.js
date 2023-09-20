@@ -24,10 +24,10 @@ const sortAgreements = (agreements) => {
 
     const sortedAgreements = agreementsCopy.sort((a, b) => {
         const aMinDateNeeded = Math.min(
-            ...a.budget_line_items.filter((bli) => bli.date_needed).map((bli) => bli.date_needed),
+            ...a.budget_line_items.filter((bli) => bli.date_needed).map((bli) => bli.date_needed)
         );
         const bMinDateNeeded = Math.min(
-            ...b.budget_line_items.filter((bli) => bli.date_needed).map((bli) => bli.date_needed),
+            ...b.budget_line_items.filter((bli) => bli.date_needed).map((bli) => bli.date_needed)
         );
 
         if ((!aMinDateNeeded && bMinDateNeeded) || aMinDateNeeded < bMinDateNeeded) {
@@ -47,9 +47,9 @@ const sortAgreements = (agreements) => {
                 budget_line_items: agreement.budget_line_items.map((bli) => {
                     return {
                         ...bli,
-                        date_needed: bli.date_needed ? bli.date_needed.toISOString().split("T")[0] : null,
+                        date_needed: bli.date_needed ? bli.date_needed.toISOString().split("T")[0] : null
                     };
-                }),
+                })
             };
         });
     }

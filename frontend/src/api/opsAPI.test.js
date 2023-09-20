@@ -19,7 +19,7 @@ describe("opsApi", () => {
         // Mock response for getAgreements endpoint
         const mockData = [
             { id: 1, name: "Agreement 5" },
-            { id: 2, name: "Agreement 6" },
+            { id: 2, name: "Agreement 6" }
         ];
 
         // This will override any API qury performed, for all endpoints,
@@ -27,7 +27,7 @@ describe("opsApi", () => {
         server.use(
             rest.get(`*`, (req, res, ctx) => {
                 return res(ctx.status(200), ctx.json(mockData));
-            }),
+            })
         );
 
         // wrap component with custom render function

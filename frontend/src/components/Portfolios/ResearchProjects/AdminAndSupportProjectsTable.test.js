@@ -9,7 +9,10 @@ const fiscalYear = "2023";
 it.skip("renders without crashing", () => {
     render(
         <Provider store={store}>
-            <AdminAndSupportProjectsTable fiscalYear={fiscalYear} data={data} />
-        </Provider>,
+            <AdminAndSupportProjectsTable
+                fiscalYear={fiscalYear}
+                data={data}
+            />
+        </Provider>
     );
 });

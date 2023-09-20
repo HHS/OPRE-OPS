@@ -5,7 +5,7 @@ test("successfully gets an access_token and refresh_token from the backend", asy
     const auth_code = 99999999;
     const mockBackendResponse = {
         access_token: "super-secure-token",
-        refresh_token: "also-super-secure",
+        refresh_token: "also-super-secure"
     };
     TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
         return [mockBackendResponse];

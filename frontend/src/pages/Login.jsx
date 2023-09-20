@@ -5,11 +5,11 @@ import logo from "../components/UI/Header/OPRE_Logo.png";
 function Login() {
     const styles = {
         logo: {
-            maxWidth: "70%",
+            maxWidth: "70%"
         },
         textlogo: {
-            color: "#336A90",
-        },
+            color: "#336A90"
+        }
     };
 
     return (
@@ -17,9 +17,20 @@ function Login() {
             <div className="usa-overlay"></div>
             <header className="usa-header usa-header--extended bg-brand-primary">
                 <div className="usa-navbar padding-top-105 bg-white">
-                    <div className="usa-logo" style={styles.logo} id="-logo">
-                        <a href="/" style={styles.textlogo} title="Portfolio Management System">
-                            <img src={logo} alt="OPRE Logo" />
+                    <div
+                        className="usa-logo"
+                        style={styles.logo}
+                        id="-logo"
+                    >
+                        <a
+                            href="/"
+                            style={styles.textlogo}
+                            title="Portfolio Management System"
+                        >
+                            <img
+                                src={logo}
+                                alt="OPRE Logo"
+                            />
                             <em className="font-ui-md">&nbsp;Portfolio Management System</em>
                         </a>
                     </div>

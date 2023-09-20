@@ -51,13 +51,13 @@ export const StepCreateBudgetLines = ({
     canUserEditBudgetLines = false,
     setIsEditMode = () => {},
     isReviewMode,
-    workflow,
+    workflow
 }) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const searchParams = new URLSearchParams(location.search);
     const [budgetLineIdFromUrl, setBudgetLineIdFromUrl] = React.useState(
-        () => searchParams.get("budget-line-id") || null,
+        () => searchParams.get("budget-line-id") || null
     );
 
     const {
@@ -70,7 +70,7 @@ export const StepCreateBudgetLines = ({
         entered_comments: enteredComments,
         is_editing_budget_line: isEditing,
         budget_line_being_edited: budgetLineBeingEdited,
-        new_budget_lines: newBudgetLines,
+        new_budget_lines: newBudgetLines
     } = useBudgetLines() || {
         selected_can: null,
         entered_description: null,
@@ -81,7 +81,7 @@ export const StepCreateBudgetLines = ({
         entered_comments: null,
         is_editing_budget_line: null,
         budget_line_being_edited: null,
-        new_budget_lines: [],
+        new_budget_lines: []
     };
     const dispatch = useBudgetLinesDispatch();
     const navigate = useNavigate();
@@ -105,7 +105,7 @@ export const StepCreateBudgetLines = ({
 
     if (isReviewMode) {
         suite({
-            new_budget_lines: newBudgetLines,
+            new_budget_lines: newBudgetLines
         });
     }
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
@@ -125,14 +125,14 @@ export const StepCreateBudgetLines = ({
                 amount: enteredAmount || 0,
                 status: "DRAFT",
                 date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}` || null,
-                psc_fee_amount: selectedProcurementShop?.fee || null,
-            },
+                psc_fee_amount: selectedProcurementShop?.fee || null
+            }
         });
         dispatch({ type: "RESET_FORM" });
         setAlert({
             type: "success",
             heading: "Budget Line Added",
-            message: "The budget line has been successfully added.",
+            message: "The budget line has been successfully added."
         });
     };
 
@@ -150,8 +150,8 @@ export const StepCreateBudgetLines = ({
                 amount: enteredAmount,
                 date_needed:
                     enteredYear && enteredMonth && enteredDay ? `${enteredYear}-${enteredMonth}-${enteredDay}` : null,
-                psc_fee_amount: selectedProcurementShop?.fee,
-            },
+                psc_fee_amount: selectedProcurementShop?.fee
+            }
         });
 
         dispatch({ type: "RESET_FORM" });
@@ -161,7 +161,7 @@ export const StepCreateBudgetLines = ({
         setAlert({
             type: "success",
             heading: "Budget Line Updated",
-            message: "The budget line has been successfully edited.",
+            message: "The budget line has been successfully edited."
         });
     };
 
@@ -173,16 +173,16 @@ export const StepCreateBudgetLines = ({
             handleConfirm: () => {
                 dispatch({
                     type: "DELETE_BUDGET_LINE",
-                    id: budgetLineId,
+                    id: budgetLineId
                 });
                 dispatch({ type: "RESET_FORM" });
                 setAlert({
                     type: "success",
                     heading: "Budget Line Deleted",
-                    message: "The budget line has been successfully deleted.",
+                    message: "The budget line has been successfully deleted."
                 });
                 setModalProps({});
-            },
+            }
         });
     };
 
@@ -224,10 +224,10 @@ export const StepCreateBudgetLines = ({
                                     type: "error",
                                     heading: "Error",
                                     message: "An error occurred. Please try again.",
-                                    navigateUrl: "/error",
+                                    navigateUrl: "/error"
                                 });
                             });
-                    }),
+                    })
                 );
             }
             if (method === "PATCH") {
@@ -246,10 +246,10 @@ export const StepCreateBudgetLines = ({
                                     type: "error",
                                     heading: "Error",
                                     message: "An error occurred. Please try again.",
-                                    navigateUrl: "/error",
+                                    navigateUrl: "/error"
                                 });
                             });
-                    }),
+                    })
                 );
             }
         };
@@ -284,7 +284,7 @@ export const StepCreateBudgetLines = ({
     const handleDuplicateBudgetLine = (budgetLine) => {
         dispatch({
             type: "DUPLICATE_BUDGET_LINE",
-            payload: { ...budgetLine, created_by: loggedInUserFullName },
+            payload: { ...budgetLine, created_by: loggedInUserFullName }
         });
     };
     // TODO: consider moving this to a separate helper function
@@ -344,7 +344,10 @@ export const StepCreateBudgetLines = ({
 
             {workflow !== "none" && (
                 <>
-                    <StepIndicator steps={wizardSteps} currentStep={currentStep} />
+                    <StepIndicator
+                        steps={wizardSteps}
+                        currentStep={currentStep}
+                    />
                     <ProjectAgreementSummaryCard
                         selectedResearchProject={selectedResearchProject}
                         selectedAgreement={selectedAgreement}
@@ -390,9 +393,16 @@ export const StepCreateBudgetLines = ({
                 </>
             )}
             {budgetLinePageErrorsExist && (
-                <ul className="usa-list--unstyled font-12px text-error" data-cy="error-list">
+                <ul
+                    className="usa-list--unstyled font-12px text-error"
+                    data-cy="error-list"
+                >
                     {Object.entries(pageErrors).map(([key, value]) => (
-                        <li key={key} className="border-left-2px padding-left-1" data-cy="error-item">
+                        <li
+                            key={key}
+                            className="border-left-2px padding-left-1"
+                            data-cy="error-item"
+                        >
                             <strong>{convertCodeForDisplay("validation", key)}: </strong>
                             {
                                 <span>
@@ -440,7 +450,7 @@ export const StepCreateBudgetLines = ({
                                 dispatch({ type: "RESET_FORM_AND_BUDGET_LINES" });
                                 setModalProps({});
                                 goBack();
-                            },
+                            }
                         });
                     }}
                 >
@@ -474,7 +484,7 @@ StepCreateBudgetLines.propTypes = {
     canUserEditBudgetLines: PropTypes.bool,
     isReviewMode: PropTypes.bool,
     continueOverRide: PropTypes.func,
-    workflow: PropTypes.oneOf(["agreement", "budgetLines", "none"]).isRequired,
+    workflow: PropTypes.oneOf(["agreement", "budgetLines", "none"]).isRequired
 };
 
 export default StepCreateBudgetLines;
