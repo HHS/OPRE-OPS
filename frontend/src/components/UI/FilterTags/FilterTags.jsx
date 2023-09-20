@@ -5,7 +5,7 @@ import Tag from "../Tag";
  * A filter tags.
  * @param {Object} props - The component props.
  * @param {Function} props.removeFilter - A function to call to remove a filter/tag.
- * @param {array} props.tagsList - An array of tags to display.
+ * @param {Array<string>} props.tagsList - An array of tags to display.
  * @returns {React.JSX.Element} - The procurement shop select element.
  */
 export const FilterTags = ({ removeFilter, tagsList }) => {
