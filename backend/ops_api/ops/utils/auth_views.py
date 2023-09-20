@@ -114,9 +114,6 @@ def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
         # authZ, given a valid login from the prior AuthN steps above.
 
         additional_claims = {}
-        additional_claims["iss"] = "https://opre-ops-backend"  # Placeholder
-        additional_claims["aud"] = "https://opre-ops-frontend"  # Placeholder
-
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
         access_token = create_access_token(
@@ -181,9 +178,7 @@ def _get_token_and_user_data_from_oauth_provider(provider: str, auth_code: str):
 def refresh() -> Response:
     user = get_current_user()
     if user:
-        additional_claims = {"iss": None, "aud": None, "roles": []}
-        additional_claims["iss"] = "https://opre-ops-backend"  # Placeholder
-        additional_claims["aud"] = "https://opre-ops-frontend"  # Placeholder
+        additional_claims = {"roles": []}
         current_app.logger.debug(f"user {user}")
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
