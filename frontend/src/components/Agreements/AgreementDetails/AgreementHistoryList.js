@@ -217,6 +217,9 @@ const propertyLogItems = (historyItem) => {
 };
 
 const AgreementHistoryList = ({ agreementHistory }) => {
+    if (!(agreementHistory && agreementHistory.length > 0)) {
+        return <span className="font-12px">There is currently no history for this agreement.</span>;
+    }
     console.log("agreementHistory:", typeof agreementHistory, agreementHistory);
     let logItems = [];
 
