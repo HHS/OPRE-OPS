@@ -198,9 +198,14 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
     };
 
     return (
-        <div className="display-flex flex-wrap">
-            <FilterTags removeFilter={removeFilter} tagsList={tagsList.filter(ignoredTags)} />
-        </div>
+        !_.isEmpty(tagsList.filter(ignoredTags)) && (
+            <div className="display-flex flex-align-center flex-wrap padding-bottom-05">
+                <span className="padding-right-205 text-base-dark font-serif-3xs line-height-sans-5 padding-top-05">
+                    Filters Applied:
+                </span>
+                <FilterTags removeFilter={removeFilter} tagsList={tagsList.filter(ignoredTags)} />
+            </div>
+        )
     );
 };
 export default AgreementsFilterTags;
