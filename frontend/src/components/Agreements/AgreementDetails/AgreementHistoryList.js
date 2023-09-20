@@ -1,15 +1,13 @@
 import PropTypes from "prop-types";
 import LogItem from "../../UI/LogItem";
 import { convertCodeForDisplay, formatDateNeeded } from "../../../helpers/utils";
-import { Fragment } from "react";
 import useGetUserFullNameFromId from "../../../helpers/user-hooks";
 import {
-    useGetNameForProductServiceCodeId,
-    useGetNameForProcurementShopId,
-    useGetNameForResearchProjectId,
     useGetNameForCanId,
+    useGetNameForProcurementShopId,
+    useGetNameForProductServiceCodeId,
+    useGetNameForResearchProjectId,
 } from "../../../helpers/lookup-hooks";
-import { useGetCansQuery } from "../../../api/opsAPI";
 
 const findObjectTitle = (historyItem) => {
     return historyItem.event_details.display_name;
@@ -52,8 +50,15 @@ const eventLogItem = (historyItem) => {
     };
 };
 
+const eventVerb = {
+    NEW: "Created",
+    UPDATED: "Edited",
+    DELETED: "Deleted",
+};
+
 const propertyLogItemTitle = (historyItem, changedPropertyLabel) => {
     const className = convertCodeForDisplay("baseClassNameLabels", historyItem.class_name);
+
     if (historyItem.event_type === "NEW") {
         return `${changedPropertyLabel} Created`;
     } else if (historyItem.event_type === "UPDATED") {
@@ -65,8 +70,8 @@ const propertyLogItemTitle = (historyItem, changedPropertyLabel) => {
 };
 
 const getPropertyLabel = (className, fieldName) => {
-    if (className === "BudgetLineItem") return convertCodeForDisplay("agreementHistoryBliFieldLogLabels", fieldName);
-    return convertCodeForDisplay("agreementHistoryFieldLogLabels", fieldName);
+    if (className === "BudgetLineItem") return `${convertCodeForDisplay("budgetLineItemPropertyLabels", fieldName)}`;
+    return convertCodeForDisplay("agreementPropertyLabels", fieldName);
 };
 
 const objectsToJoinedNames = (objects) => {
@@ -100,28 +105,34 @@ const relationsMap = {
 };
 
 const renderField = (fieldName, value) => {
-    if (!fieldName || !value) return;
+    if (value == null) return value;
     switch (fieldName) {
         case "date_needed":
             return formatDateNeeded(value);
         case "amount":
-            return "$" + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return "$" + value?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         default:
             return value;
     }
 };
 
 const prepareChanges = (historyItem) => {
+    console.log("prepareChanges>>>");
     const rawChanges = historyItem.changes;
-    const preparedChanges = Object.entries(rawChanges).map(([key, change]) => {
-        // const propertyLabel = getPropertyLabel(historyItem.class_name, key);
+    let preparedChanges = [];
+
+    Object.entries(rawChanges).forEach(([key, change]) => {
         console.log(`~~~key: ${key}, change:`, change);
+        if (["psc_fee_amount"].includes(key)) return;
         let preparedChange = {
             key: key,
             propertyLabel: getPropertyLabel(historyItem.class_name, key),
+            createdOn: historyItem.created_on,
+            createdByName: historyItem.created_by_user_full_name,
         };
         if ("collection_of" in change) {
             preparedChange["isCollection"] = true;
+            preparedChange["propertyLabel"] = getPropertyLabel(historyItem.class_name, key + "_item");
             preparedChange["added"] = objectsToNames(change.added);
             preparedChange["deleted"] = objectsToNames(change.deleted);
         } else if (key in relationsMap) {
@@ -133,18 +144,19 @@ const prepareChanges = (historyItem) => {
             }
             if (lookupQuery) {
                 if (!eventKey) {
-                    const newName = change.new ? lookupQuery(change.new) : null;
-                    preparedChange["to"] = newName;
+                    preparedChange["to"] = change.new ? lookupQuery(change.new) : null;
                 }
-                const oldName = change.old ? lookupQuery(change.old) : null;
-                preparedChange["from"] = oldName;
+                preparedChange["from"] = change.old ? lookupQuery(change.old) : null;
             }
         } else {
-            preparedChange["from"] = change.old;
-            preparedChange["to"] = change.new;
+            if (!["description", "notes"].includes(key)) {
+                preparedChange["from"] = change.old;
+                preparedChange["to"] = change.new;
+            }
         }
-        return preparedChange;
+        preparedChanges.push(preparedChange);
     });
+
     return preparedChanges;
 };
 
@@ -158,16 +170,46 @@ const propertyLogItems = (historyItem) => {
     const preparedChanges = prepareChanges(historyItem);
     console.log("preparedChanges:", preparedChanges);
 
-    const logItems = preparedChanges.map((change) => {
-        let msg = "Changed";
-        if (change.from) msg += ` from ${renderField(change.key, change.from)}`;
-        if (change.to) msg += ` to ${renderField(change.key, change.to)}`;
-        msg += ` by ${historyItem.created_by_user_full_name}`;
-        return {
-            title: propertyLogItemTitle(historyItem, change.propertyLabel),
-            createdOn: historyItem.created_on,
-            message: msg,
-        };
+    let logItems = [];
+
+    preparedChanges.forEach((change) => {
+        if (change.isCollection) {
+            change.added.forEach((member) => {
+                const msg = `Added ${member}`;
+                logItems.push({
+                    title: `${change.propertyLabel} Added`,
+                    createdOn: change.createdOn,
+                    message: `${change.propertyLabel} ${member} added by ${change.createdByName}`,
+                });
+            });
+            change.deleted.forEach((member) => {
+                logItems.push({
+                    title: `${change.propertyLabel} Removed`,
+                    createdOn: change.createdOn,
+                    message: `${change.propertyLabel} ${member} removed by ${change.createdByName}`,
+                });
+            });
+        } else {
+            let title = propertyLogItemTitle(historyItem, change.propertyLabel);
+            let msg = `${change.propertyLabel} changed `;
+            if (historyItem.class_name === "BudgetLineItem") {
+                if (change.key !== "line_description") {
+                    msg = `Budget Line ${findObjectTitle(historyItem)} ${change.propertyLabel} changed `;
+                } else {
+                    msg = `Budget Line ${change.propertyLabel} changed `;
+                }
+                title = "Budget Line " + title;
+            }
+
+            if (change.from != null) msg += ` from ${renderField(change.key, change.from)}`;
+            if (change.to != null) msg += ` to ${renderField(change.key, change.to)}`;
+            msg += ` by ${change.createdByName}`;
+            logItems.push({
+                title: title,
+                createdOn: change.createdOn,
+                message: msg,
+            });
+        }
     });
     console.log("logItems:", logItems);
 
@@ -176,9 +218,6 @@ const propertyLogItems = (historyItem) => {
 
 const AgreementHistoryList = ({ agreementHistory }) => {
     console.log("agreementHistory:", typeof agreementHistory, agreementHistory);
-    if (!(agreementHistory && agreementHistory.length > 0)) {
-        return <p>Sorry no history</p>;
-    }
     let logItems = [];
 
     agreementHistory.forEach(function (historyItem) {
@@ -211,7 +250,7 @@ const AgreementHistoryList = ({ agreementHistory }) => {
                     ))}
                 </ul>
             ) : (
-                <p>Well now</p>
+                <span className="font-12px">There is currently no history for this agreement.</span>
             )}
         </>
     );

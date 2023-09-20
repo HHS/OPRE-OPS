@@ -102,34 +102,6 @@ const codesToDisplayText = {
         BudgetLineItem: "Budget Line",
     },
     agreementPropertyLabels: {
-        agreement_reason: "Agreement Reason",
-        agreement_type: "Agreement Type",
-        description: "Description",
-        incumbent: "Incumbent",
-        name: "Title",
-        notes: "Notes",
-        number: "Number",
-        procurement_shop: "Procurement Shop",
-        product_service_code: "Product Service Code",
-        project_officer: "Project Officer",
-        research_project: "Research Project",
-        team_members: "Team Members",
-        contract_number: "Contract Number",
-        vendor: "Vendor",
-        delivered_status: "Delivered Status",
-        contract_type: "Contract Type",
-        support_contacts: "Support Contacts",
-    },
-    budgetLineItemPropertyLabels: {
-        amount: "Amount",
-        can: "CAN",
-        comments: "Notes",
-        date_needed: "Date Needed By",
-        line_description: "Description",
-        psc_fee_amount: "Shop Fee",
-        status: "Status",
-    },
-    agreementHistoryFieldLogLabels: {
         agreement_reason: "Reason for Agreement",
         agreement_type: "Agreement Type",
         description: "Agreement Description",
@@ -141,21 +113,23 @@ const codesToDisplayText = {
         product_service_code: "Product Service Code",
         project_officer: "Project Officer",
         research_project: "Research Project",
-        team_members: "Team Member",
+        team_members: "Team Members",
+        team_members_item: "Team Member",
         contract_number: "Contract Number",
         vendor: "Vendor",
         delivered_status: "Delivered Status",
         contract_type: "Contract Type",
-        support_contacts: "Support Contact",
+        support_contacts: "Support Contacts",
+        support_contacts_item: "Support Contact",
     },
-    agreementHistoryBliFieldLogLabels: {
-        amount: "Budget Line Amount",
-        can: "Budget Line CAN",
-        comments: "Budget Line Notes",
-        date_needed: "Budget Line Need By Date",
-        line_description: "Budget Line Description",
+    budgetLineItemPropertyLabels: {
+        amount: "Amount",
+        can: "CAN",
+        comments: "Notes",
+        date_needed: "Need By Date",
+        line_description: "Description",
         psc_fee_amount: "Shop Fee",
-        status: "Budget Line Status",
+        status: "Status",
     },
 };
 
@@ -216,6 +190,25 @@ export const timeAgo = (dateParam) => {
     }
 
     return formatDateToMonthDayYear(date);
+};
+
+export const formatLogTimeStamp = (dateParam) => {
+    if (!dateParam) {
+        return null;
+    }
+    // if there's no timezone info, assume it UTC and missing the "Z"
+    if (typeof dateParam === "string" || dateParam instanceof String) {
+        if (!dateParam.endsWith("Z") && !dateParam.includes("+")) {
+            dateParam = dateParam + "Z";
+        }
+    }
+
+    const date = typeof dateParam === "object" ? dateParam : new Date(dateParam);
+
+    return new Date(date).toLocaleString("en-US", {
+        dateStyle: "long",
+        timeStyle: "short",
+    });
 };
 
 /**

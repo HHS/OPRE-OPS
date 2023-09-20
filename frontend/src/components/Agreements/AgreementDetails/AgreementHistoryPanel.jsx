@@ -36,7 +36,7 @@ const AgreementHistoryPanel = ({ agreementId }) => {
             data-cy="agreement-history-container"
         >
             {stopped && noData ? (
-                "Sorry, no history."
+                <span className="font-12px">There is currently no history for this agreement.</span>
             ) : (
                 <>
                     <AgreementHistoryList agreementHistory={agreementHistory} />
