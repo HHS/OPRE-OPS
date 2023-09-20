@@ -1,9 +1,9 @@
 import PropTypes from "prop-types";
-import { useSelector } from "react-redux";
 import Header from "../../Header";
 import Footer from "../../Footer";
 import Alert from "../../Alert";
 import Breadcrumb from "../../Header/Breadcrumb";
+import useAlert from "../../../../helpers/use-alert";
 
 /**
  * DefaultLayout component
@@ -12,7 +12,8 @@ import Breadcrumb from "../../Header/Breadcrumb";
  * @param {React.ReactNode} props.children - The child nodes to be rendered within the layout
  */
 const DefaultLayout = ({ children, breadCrumbName }) => {
-    const isAlertActive = useSelector((state) => state.alert.isActive);
+    const { isAlertActive } = useAlert();
+
     return (
         <div className="bg-base-lightest">
             <div className="usa-overlay"></div>

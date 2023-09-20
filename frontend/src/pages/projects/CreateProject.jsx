@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
 import App from "../../App";
 import ProjectTypeSelect from "../../components/UI/Form/ProjectTypeSelect/ProjectTypeSelect";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
@@ -8,8 +7,8 @@ import Input from "../../components/UI/Form/Input";
 import TextArea from "../../components/UI/Form/TextArea";
 import suite from "./suite";
 import classnames from "vest/classnames";
-import { setAlert } from "../../components/UI/Alert/alertSlice";
 import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
+import useAlert from "../../helpers/use-alert";
 
 const CreateProject = () => {
     const [showModal, setShowModal] = useState(false);
@@ -27,10 +26,10 @@ const CreateProject = () => {
     });
 
     const [addResearchProject, { isSuccess, isError, error, reset, data: rpData }] = useAddResearchProjectsMutation();
+    const { setAlert } = useAlert();
 
     let res = suite.get();
     const navigate = useNavigate();
-    const dispatch = useDispatch();
 
     const handleClearingForm = () => {
         setProject({
@@ -69,14 +68,12 @@ const CreateProject = () => {
         console.log(`New Project Created: ${rpData.id}`);
         reset();
         handleClearingForm();
-        dispatch(
-            setAlert({
-                type: "success",
-                heading: "New Project Created!",
-                message: "The project has been successfully created.",
-                redirectUrl: `/agreements`,
-            })
-        );
+        setAlert({
+            type: "success",
+            heading: "New Project Created!",
+            message: "The project has been successfully created.",
+            redirectUrl: `/agreements`,
+        });
     }
 
     const handleCancel = () => {
