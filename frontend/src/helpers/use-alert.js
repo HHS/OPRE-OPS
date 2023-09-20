@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
-import { setAlert as SetAlertAction } from "../components/UI/Alert/alertSlice";
 import PropTypes from "prop-types";
+import { setAlert as SetAlertAction } from "../components/UI/Alert/alertSlice";
 
 /**
  * The shape of the object that represents alert data.

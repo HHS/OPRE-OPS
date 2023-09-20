@@ -1,19 +1,19 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import StepIndicator from "../../StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
 import BudgetLinesTable from "../../../BudgetLineItems/BudgetLinesTable";
 import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
-import { setAlert } from "../../Alert/alertSlice";
 import EditModeTitle from "../../../../pages/agreements/EditModeTitle";
 import { loggedInName } from "../../../../helpers/utils";
 import suite from "./suite";
 import { convertCodeForDisplay } from "../../../../helpers/utils";
 import ConfirmationModal from "../../Modals/ConfirmationModal";
 import { useUpdateBudgetLineItemMutation, useAddBudgetLineItemMutation } from "../../../../api/opsAPI";
+import useAlert from "../../../../helpers/use-alert";
 
 /**
  * Renders the Create Budget Lines component with React context.
@@ -84,10 +84,10 @@ export const StepCreateBudgetLines = ({
         new_budget_lines: [],
     };
     const dispatch = useBudgetLinesDispatch();
-    const globalDispatch = useDispatch();
     const navigate = useNavigate();
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
+    const { setAlert } = useAlert();
     // setters
     const setEnteredDescription = useSetState("entered_description");
     const setSelectedCan = useSetState("selected_can");
@@ -129,13 +129,11 @@ export const StepCreateBudgetLines = ({
             },
         });
         dispatch({ type: "RESET_FORM" });
-        globalDispatch(
-            setAlert({
-                type: "success",
-                heading: "Budget Line Added",
-                message: "The budget line has been successfully added.",
-            })
-        );
+        setAlert({
+            type: "success",
+            heading: "Budget Line Added",
+            message: "The budget line has been successfully added.",
+        });
     };
 
     const handleEditForm = (e) => {
@@ -160,13 +158,11 @@ export const StepCreateBudgetLines = ({
         if (budgetLineIdFromUrl) {
             resetQueryParams();
         }
-        globalDispatch(
-            setAlert({
-                type: "success",
-                heading: "Budget Line Updated",
-                message: "The budget line has been successfully edited.",
-            })
-        );
+        setAlert({
+            type: "success",
+            heading: "Budget Line Updated",
+            message: "The budget line has been successfully edited.",
+        });
     };
 
     const handleDeleteBudgetLine = (budgetLineId) => {
@@ -180,13 +176,11 @@ export const StepCreateBudgetLines = ({
                     id: budgetLineId,
                 });
                 dispatch({ type: "RESET_FORM" });
-                globalDispatch(
-                    setAlert({
-                        type: "success",
-                        heading: "Budget Line Deleted",
-                        message: "The budget line has been successfully deleted.",
-                    })
-                );
+                setAlert({
+                    type: "success",
+                    heading: "Budget Line Deleted",
+                    message: "The budget line has been successfully deleted.",
+                });
                 setModalProps({});
             },
         });
@@ -226,14 +220,12 @@ export const StepCreateBudgetLines = ({
                             .catch((rejected) => {
                                 console.error("Error Creating Budget Lines");
                                 console.error({ rejected });
-                                globalDispatch(
-                                    setAlert({
-                                        type: "error",
-                                        heading: "Error",
-                                        message: "An error occurred. Please try again.",
-                                    })
-                                );
-                                navigate("/error");
+                                setAlert({
+                                    type: "error",
+                                    heading: "Error",
+                                    message: "An error occurred. Please try again.",
+                                    navigateUrl: "/error",
+                                });
                             });
                     })
                 );
@@ -250,14 +242,12 @@ export const StepCreateBudgetLines = ({
                             .catch((rejected) => {
                                 console.error("Error Updating Budget Lines");
                                 console.error({ rejected });
-                                globalDispatch(
-                                    setAlert({
-                                        type: "error",
-                                        heading: "Error",
-                                        message: "An error occurred. Please try again.",
-                                    })
-                                );
-                                navigate("/error");
+                                setAlert({
+                                    type: "error",
+                                    heading: "Error",
+                                    message: "An error occurred. Please try again.",
+                                    navigateUrl: "/error",
+                                });
                             });
                     })
                 );

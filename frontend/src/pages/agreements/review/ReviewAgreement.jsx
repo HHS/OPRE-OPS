@@ -1,5 +1,4 @@
 import { useEffect, useState, Fragment } from "react";
-import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 import PropTypes from "prop-types";
@@ -9,9 +8,9 @@ import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from 
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import Terms from "./Terms";
 import suite from "./suite";
-import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import useGetUserFullNameFromId from "../../../helpers/user-hooks";
 import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
+import useAlert from "../../../helpers/use-alert";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -20,7 +19,6 @@ import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../.
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const ReviewAgreement = ({ agreement_id }) => {
-    const globalDispatch = useDispatch();
     const navigate = useNavigate();
     const {
         isSuccess,
@@ -38,6 +36,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer);
+    const { setAlert } = useAlert();
 
     let res = suite.get();
 
@@ -94,26 +93,22 @@ export const ReviewAgreement = ({ agreement_id }) => {
                         .unwrap()
                         .then((fulfilled) => {
                             console.log("BLI Status Updated:", fulfilled);
-                            globalDispatch(
-                                setAlert({
-                                    type: "success",
-                                    heading: "Agreement sent to approval",
-                                    message: "The agreement has been successfully sent to approval for Planned Status.",
-                                })
-                            );
-                            navigate("/agreements");
+                            setAlert({
+                                type: "success",
+                                heading: "Agreement sent to approval",
+                                message: "The agreement has been successfully sent to approval for Planned Status.",
+                                redirectUrl: "/agreements",
+                            });
                         })
                         .catch((rejected) => {
                             console.log("Error Updating Budget Line Status");
                             console.dir(rejected);
-                            globalDispatch(
-                                setAlert({
-                                    type: "error",
-                                    heading: "Error",
-                                    message: "An error occurred. Please try again.",
-                                })
-                            );
-                            navigate("/error");
+                            setAlert({
+                                type: "error",
+                                heading: "Error",
+                                message: "An error occurred. Please try again.",
+                                redirectUrl: "/error",
+                            });
                         });
                 }
             });

@@ -58,6 +58,9 @@ const initialState = {
             name: "Test User",
         },
     },
+    alert: {
+        isActive: false,
+    },
 };
 const store = mockStore(initialState);
 describe("AgreementTableRow", () => {
