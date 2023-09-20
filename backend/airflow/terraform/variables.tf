@@ -15,3 +15,9 @@ variable "username" {
   description = "The username for the local account that will be created on the new VM."
   default     = "azureadmin"
 }
+
+variable "vm_prefix" {
+  type        = string
+  description = "The prefix of the name that will be created on the new VM."
+  default     = "ops_airflow"
+}
