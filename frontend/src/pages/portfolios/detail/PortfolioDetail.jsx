@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
-import { getPortfolio, getPortfolioCans } from "./getPortfolio";
 import { useEffect } from "react";
 import { Outlet, useParams } from "react-router-dom";
+import { getPortfolio, getPortfolioCans } from "./getPortfolio";
 import {
     setPortfolio,
     setPortfolioCans,
@@ -9,9 +9,7 @@ import {
     setSelectedFiscalYear,
 } from "./portfolioSlice";
 import App from "../../../App";
-import { Breadcrumb } from "../../../components/UI/Header/Breadcrumb";
 import CanCard from "../../../components/CANs/CanCard/CanCard";
-
 import { getPortfolioCansFundingDetails } from "../../../api/getCanFundingSummary";
 import PortfolioTabsSection from "../../../components/Portfolios/PortfolioTabsSection";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
@@ -75,30 +73,27 @@ const PortfolioDetail = () => {
         : "";
 
     return (
-        <>
-            <App>
-                <Breadcrumb currentName={portfolio?.name} />
-                <div>
-                    <Hero
-                        entityName={portfolio?.name}
-                        divisionName={portfolio.division?.name}
-                        description={portfolio?.description}
-                        teamLeaders={portfolio?.team_leaders}
-                        urls={portfolio?.urls}
-                        backgroundColor={"bg-brand-neutral-lightest"}
+        <App breadCrumbName={portfolio?.name}>
+            <div>
+                <Hero
+                    entityName={portfolio?.name}
+                    divisionName={portfolio.division?.name}
+                    description={portfolio?.description}
+                    teamLeaders={portfolio?.team_leaders}
+                    urls={portfolio?.urls}
+                    backgroundColor={"bg-brand-neutral-lightest"}
+                />
+                <section className="display-flex flex-justify margin-top-3">
+                    <PortfolioTabsSection portfolioId={portfolioId} />
+                    <FiscalYear
+                        className="margin-left-auto"
+                        fiscalYear={fiscalYear}
+                        handleChangeFiscalYear={setSelectedFiscalYear}
                     />
-                    <section className="display-flex flex-justify margin-top-3">
-                        <PortfolioTabsSection portfolioId={portfolioId} />
-                        <FiscalYear
-                            className="margin-left-auto"
-                            fiscalYear={fiscalYear}
-                            handleChangeFiscalYear={setSelectedFiscalYear}
-                        />
-                    </section>
-                    <Outlet context={[portfolioId, canCards]} />
-                </div>
-            </App>
-        </>
+                </section>
+                <Outlet context={[portfolioId, canCards]} />
+            </div>
+        </App>
     );
 };
 

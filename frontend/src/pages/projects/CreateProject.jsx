@@ -1,19 +1,16 @@
-import React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
 import App from "../../App";
 import ProjectTypeSelect from "../../components/UI/Form/ProjectTypeSelect/ProjectTypeSelect";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
-import Alert from "../../components/UI/Alert";
 import Input from "../../components/UI/Form/Input";
 import TextArea from "../../components/UI/Form/TextArea";
 import suite from "./suite";
 import classnames from "vest/classnames";
-import { setAlert } from "../../components/UI/Alert/alertSlice";
 import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
+import useAlert from "../../helpers/use-alert";
 
-export const CreateProject = () => {
+const CreateProject = () => {
     const [showModal, setShowModal] = useState(false);
     const [modalProps, setModalProps] = useState({
         heading: "",
@@ -27,12 +24,12 @@ export const CreateProject = () => {
         title: "",
         description: "",
     });
-    const isAlertActive = useSelector((state) => state.alert.isActive);
+
     const [addResearchProject, { isSuccess, isError, error, reset, data: rpData }] = useAddResearchProjectsMutation();
+    const { setAlert } = useAlert();
 
     let res = suite.get();
     const navigate = useNavigate();
-    const dispatch = useDispatch();
 
     const handleClearingForm = () => {
         setProject({
@@ -67,21 +64,17 @@ export const CreateProject = () => {
         console.dir(error);
     }
 
-    React.useEffect(() => {
-        if (isSuccess) {
-            console.log(`New Project Created: ${rpData.id}`);
-            reset();
-            handleClearingForm();
-            dispatch(
-                setAlert({
-                    type: "success",
-                    heading: "New Project Created!",
-                    message: "The project has been successfully created.",
-                    redirectUrl: `/agreements`,
-                })
-            );
-        }
-    }, [isSuccess, rpData, reset, dispatch, navigate]);
+    if (isSuccess) {
+        console.log(`New Project Created: ${rpData.id}`);
+        reset();
+        handleClearingForm();
+        setAlert({
+            type: "success",
+            heading: "New Project Created!",
+            message: "The project has been successfully created.",
+            redirectUrl: `/agreements`,
+        });
+    }
 
     const handleCancel = () => {
         setShowModal(true);
@@ -98,15 +91,6 @@ export const CreateProject = () => {
 
     return (
         <App>
-            {isAlertActive ? (
-                <Alert />
-            ) : (
-                <>
-                    <h1 className="font-sans-lg">Create New Project</h1>
-                    <p>Fill out this form to create a new project.</p>
-                </>
-            )}
-
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}
@@ -116,6 +100,9 @@ export const CreateProject = () => {
                     secondaryButtonText={modalProps.secondaryButtonText}
                 />
             )}
+            <h1 className="font-sans-lg">Create New Project</h1>
+            <p>Fill out this form to create a new project.</p>
+
             <h2 className="font-sans-lg margin-top-7">Select the Project Type</h2>
             <p>Select the type of project you’d like to create.</p>
             <ProjectTypeSelect
@@ -173,3 +160,5 @@ export const CreateProject = () => {
         </App>
     );
 };
+
+export default CreateProject;
