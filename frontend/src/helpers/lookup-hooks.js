@@ -1,0 +1,74 @@
+import React from "react";
+import {
+    useGetCansQuery,
+    useGetProcurementShopsQuery,
+    useGetProductServiceCodesQuery,
+    useGetResearchProjectsQuery,
+} from "../api/opsAPI";
+
+/**
+ * This hook returns the display name given the id.
+ * @param {number} id - The id.
+ * @returns {string} - The display name of the related object.
+ * @example
+ * const displayName = useGetDisplayNameForProductServiceCodeId("can_id", 1);
+ */
+export const useGetNameForProductServiceCodeId = (id) => {
+    const [displayName, setDisplayName] = React.useState("unknown");
+
+    const { data, isSuccess } = useGetProductServiceCodesQuery();
+
+    React.useEffect(() => {
+        if (isSuccess) {
+            const item = data.find((element) => element.id === id);
+            if (item) setDisplayName(`${item.display_name}`);
+        }
+    }, [data, isSuccess]);
+
+    return displayName;
+};
+
+export const useGetNameForProcurementShopId = (id) => {
+    const [displayName, setDisplayName] = React.useState("unknown");
+
+    const { data, isSuccess } = useGetProcurementShopsQuery();
+
+    React.useEffect(() => {
+        if (isSuccess) {
+            const item = data.find((element) => element.id === id);
+            if (item) setDisplayName(`${item.display_name}`);
+        }
+    }, [data, isSuccess]);
+
+    return displayName;
+};
+
+export const useGetNameForResearchProjectId = (id) => {
+    const [displayName, setDisplayName] = React.useState("unknown");
+
+    const { data, isSuccess } = useGetResearchProjectsQuery();
+
+    React.useEffect(() => {
+        if (isSuccess) {
+            const item = data.find((element) => element.id === id);
+            if (item) setDisplayName(`${item.display_name}`);
+        }
+    }, [data, isSuccess]);
+
+    return displayName;
+};
+
+export const useGetNameForCanId = (id) => {
+    const [displayName, setDisplayName] = React.useState("unknown");
+
+    const { data, isSuccess } = useGetCansQuery();
+
+    React.useEffect(() => {
+        if (isSuccess) {
+            const item = data.find((element) => element.id === id);
+            if (item) setDisplayName(`${item.display_name}`);
+        }
+    }, [data, isSuccess]);
+
+    return displayName;
+};
