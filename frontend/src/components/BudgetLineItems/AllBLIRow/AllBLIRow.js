@@ -164,7 +164,7 @@ const AllBLIRow = ({
                                 className="margin-0"
                                 style={{ maxWidth: "25rem" }}
                             >
-                                {`${budgetLine?.procShopCode}-Fee Rate: ${budgetLine?.psc_fee_amount}%`}
+                                {`${budgetLine?.procShopCode}-Fee Rate: ${budgetLine?.psc_fee_amount * 100}%`}
                             </dd>
                         </dl>
                         <div className="font-12px display-flex margin-top-1">

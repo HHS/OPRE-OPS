@@ -461,7 +461,7 @@ class BudgetLineItem(BaseModel):
 
     date_needed = Column(Date)
     psc_fee_amount = Column(
-        Numeric(12, 2)
+        Numeric(12, 5)
     )  # may need to be a different object, i.e. flat rate or percentage
 
     @BaseModel.display_name.getter

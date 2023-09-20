@@ -210,9 +210,7 @@ export const fiscalYearFromDate = (date) => {
  */
 export const totalBudgetLineFeeAmount = (amount, fee) => {
     if (amount === 0) return 0;
-    // fee is a percent, so divide by 100
-    const calcFee = fee / 100;
-    return amount * calcFee;
+    return amount * fee;
 };
 
 /**
