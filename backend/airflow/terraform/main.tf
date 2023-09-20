@@ -50,7 +50,7 @@ resource "azurerm_network_security_group" "my_terraform_nsg" {
   }
 
   security_rule {
-    name                       = "Airflow Web UI"
+    name                       = "Airflow_Web_UI"
     priority                   = 1002
     direction                  = "Inbound"
     access                     = "Allow"
@@ -62,7 +62,7 @@ resource "azurerm_network_security_group" "my_terraform_nsg" {
   }
 
   security_rule {
-    name                       = "Airflow Flower"
+    name                       = "Airflow_Flower"
     priority                   = 1003
     direction                  = "Inbound"
     access                     = "Allow"
