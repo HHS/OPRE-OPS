@@ -21,3 +21,9 @@ variable "vm_prefix" {
   description = "The prefix of the name that will be created on the new VM."
   default     = "ops_airflow"
 }
+
+variable "cloud_init" {
+  type        = string
+  description = "The prefix of the name that will be created on the new VM."
+  default     = "cloud_init.sh"
+}
