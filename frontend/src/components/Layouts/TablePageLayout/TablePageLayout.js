@@ -30,7 +30,7 @@ export const TablePageLayout = ({
     FilterButton,
     TableSection,
     buttonText,
-    buttonLink,
+    buttonLink
 }) => {
     return (
         <>
@@ -78,5 +78,5 @@ TablePageLayout.propTypes = {
     TableSection: PropTypes.node.isRequired,
     SummaryCardsSection: PropTypes.node,
     buttonText: PropTypes.string.isRequired,
-    buttonLink: PropTypes.string.isRequired,
+    buttonLink: PropTypes.string.isRequired
 };

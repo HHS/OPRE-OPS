@@ -6,7 +6,7 @@ export const ContainerModal = ({
     description = "",
     setShowModal = () => {},
     cancelButtonText = "Cancel",
-    children,
+    children
 }) => {
     const modalRef = useRef(null);
 
@@ -58,8 +58,16 @@ export const ContainerModal = ({
                 aria-describedby="ops-modal-description"
                 onClick={() => setShowModal(false)}
             >
-                <div className="usa-modal-overlay" aria-controls="ops-modal">
-                    <div className="usa-modal" tabIndex="-1" onClick={(e) => e.stopPropagation()} ref={modalRef}>
+                <div
+                    className="usa-modal-overlay"
+                    aria-controls="ops-modal"
+                >
+                    <div
+                        className="usa-modal"
+                        tabIndex="-1"
+                        onClick={(e) => e.stopPropagation()}
+                        ref={modalRef}
+                    >
                         <div className="usa-modal__content">
                             <div className="usa-modal__main">
                                 <h2
@@ -101,5 +109,5 @@ ContainerModal.propTypes = {
     heading: PropTypes.string.isRequired,
     description: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
     setShowModal: PropTypes.func.isRequired,
-    cancelButtonText: PropTypes.string,
+    cancelButtonText: PropTypes.string
 };

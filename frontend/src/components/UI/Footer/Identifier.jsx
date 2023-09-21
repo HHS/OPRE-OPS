@@ -9,11 +9,21 @@ export const Identifier = () => {
             >
                 <div className="usa-identifier__container">
                     <div className="usa-identifier__logos">
-                        <a href="https://www.hhs.gov/" className="usa-identifier__logo">
-                            <img className="usa-identifier__logo-img radius-pill" src={Logo} alt="HHS Logo" />
+                        <a
+                            href="https://www.hhs.gov/"
+                            className="usa-identifier__logo"
+                        >
+                            <img
+                                className="usa-identifier__logo-img radius-pill"
+                                src={Logo}
+                                alt="HHS Logo"
+                            />
                         </a>
                     </div>
-                    <section className="usa-identifier__identity" aria-label="Agency description">
+                    <section
+                        className="usa-identifier__identity"
+                        aria-label="Agency description"
+                    >
                         <p className="usa-identifier__identity-domain">hhs.gov</p>
                         <p className="usa-identifier__identity-disclaimer">
                             An official website of the{" "}
@@ -37,32 +47,50 @@ export const Identifier = () => {
                             </a>
                         </li>
                         <li className="usa-identifier__required-links-item">
-                            <a href="src/components/UI/Footer#top" className="usa-identifier__required-link usa-link">
+                            <a
+                                href="src/components/UI/Footer#top"
+                                className="usa-identifier__required-link usa-link"
+                            >
                                 Accessibility support
                             </a>
                         </li>
                         <li className="usa-identifier__required-links-item">
-                            <a href="src/components/UI/Footer#top" className="usa-identifier__required-link usa-link">
+                            <a
+                                href="src/components/UI/Footer#top"
+                                className="usa-identifier__required-link usa-link"
+                            >
                                 FOIA requests
                             </a>
                         </li>
                         <li className="usa-identifier__required-links-item">
-                            <a href="src/components/UI/Footer#top" className="usa-identifier__required-link usa-link">
+                            <a
+                                href="src/components/UI/Footer#top"
+                                className="usa-identifier__required-link usa-link"
+                            >
                                 No FEAR Act data
                             </a>
                         </li>
                         <li className="usa-identifier__required-links-item">
-                            <a href="src/components/UI/Footer#top" className="usa-identifier__required-link usa-link">
+                            <a
+                                href="src/components/UI/Footer#top"
+                                className="usa-identifier__required-link usa-link"
+                            >
                                 Office of the Inspector General
                             </a>
                         </li>
                         <li className="usa-identifier__required-links-item">
-                            <a href="src/components/UI/Footer#top" className="usa-identifier__required-link usa-link">
+                            <a
+                                href="src/components/UI/Footer#top"
+                                className="usa-identifier__required-link usa-link"
+                            >
                                 Performance reports
                             </a>
                         </li>
                         <li className="usa-identifier__required-links-item">
-                            <a href="src/components/UI/Footer#top" className="usa-identifier__required-link usa-link">
+                            <a
+                                href="src/components/UI/Footer#top"
+                                className="usa-identifier__required-link usa-link"
+                            >
                                 Privacy policy
                             </a>
                         </li>
@@ -76,7 +104,10 @@ export const Identifier = () => {
                 <div className="usa-identifier__container">
                     <div className="usa-identifier__usagov-description">
                         Looking for U.S. government information and services?
-                        <a href="https://www.usa.gov/" className="usa-link margin-left-1">
+                        <a
+                            href="https://www.usa.gov/"
+                            className="usa-link margin-left-1"
+                        >
                             Visit USA.gov
                         </a>
                     </div>

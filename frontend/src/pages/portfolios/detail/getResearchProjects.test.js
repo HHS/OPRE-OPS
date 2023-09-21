@@ -16,8 +16,8 @@ test("successfully gets the ResearchProject data with all query params", async (
             portfolio_id: 1,
             short_title: "",
             title: "African American Child and Family Research Center",
-            url: "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center",
-        },
+            url: "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center"
+        }
     ];
 
     TestApplicationContext.helpers().callBackend.mockImplementation(async () => {

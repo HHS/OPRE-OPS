@@ -8,7 +8,7 @@ export const data = [
         fundingToDate: "1900000.00",
         firstAwardDate: "01/01/2018",
         cans: "3",
-        agreement: "Grant",
+        agreement: "Grant"
     },
     {
         id: 2,
@@ -19,7 +19,7 @@ export const data = [
         fundingToDate: "1000000.00",
         firstAwardDate: "01/01/2021",
         cans: "2",
-        agreement: "Mixed",
+        agreement: "Mixed"
     },
     {
         id: 3,
@@ -30,7 +30,7 @@ export const data = [
         fundingToDate: "0",
         firstAwardDate: "01/01/2022",
         cans: "1",
-        agreement: "Contract",
+        agreement: "Contract"
     },
     {
         id: 4,
@@ -41,7 +41,7 @@ export const data = [
         fundingToDate: "0",
         firstAwardDate: "01/01/2022",
         cans: "4",
-        agreement: "Contract",
+        agreement: "Contract"
     },
     {
         id: 5,
@@ -52,6 +52,6 @@ export const data = [
         fundingToDate: "1000000.00",
         firstAwardDate: "01/01/2022",
         cans: "5",
-        agreement: "Contract",
-    },
+        agreement: "Contract"
+    }
 ];

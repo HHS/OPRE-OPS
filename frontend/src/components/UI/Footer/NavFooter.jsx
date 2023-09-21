@@ -1,6 +1,9 @@
 export const NavFooter = () => {
     return (
-        <nav className="usa-footer__nav" aria-label="Footer navigation">
+        <nav
+            className="usa-footer__nav"
+            aria-label="Footer navigation"
+        >
             <ul className="grid-row grid-gap">
                 <li
                     className="
@@ -9,7 +12,10 @@ export const NavFooter = () => {
               usa-footer__primary-content
             "
                 >
-                    <a className="usa-footer__primary-link" href="src/components/UI/Footer#top">
+                    <a
+                        className="usa-footer__primary-link"
+                        href="src/components/UI/Footer#top"
+                    >
                         Documentation
                     </a>
                 </li>
@@ -20,7 +26,10 @@ export const NavFooter = () => {
               usa-footer__primary-content
             "
                 >
-                    <a className="usa-footer__primary-link" href="src/components/UI/Footer#top">
+                    <a
+                        className="usa-footer__primary-link"
+                        href="src/components/UI/Footer#top"
+                    >
                         Features
                     </a>
                 </li>
@@ -31,7 +40,10 @@ export const NavFooter = () => {
               usa-footer__primary-content
             "
                 >
-                    <a className="usa-footer__primary-link" href="src/components/UI/Footer#top">
+                    <a
+                        className="usa-footer__primary-link"
+                        href="src/components/UI/Footer#top"
+                    >
                         Getting Started
                     </a>
                 </li>
@@ -42,7 +54,10 @@ export const NavFooter = () => {
               usa-footer__primary-content
             "
                 >
-                    <a className="usa-footer__primary-link" href="src/components/UI/Footer#top">
+                    <a
+                        className="usa-footer__primary-link"
+                        href="src/components/UI/Footer#top"
+                    >
                         About
                     </a>
                 </li>

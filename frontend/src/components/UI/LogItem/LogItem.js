@@ -22,7 +22,10 @@ export const LogItem = ({ title, message, createdOn, variant, withSeparator = fa
             <div className="display-flex flex-justify">
                 <span className={`text-bold ${isLarge ? "font-body-sm" : undefined}`}>{title}</span>
                 <span className="display-flex flex-align-center">
-                    <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1 text-base-dark" />
+                    <FontAwesomeIcon
+                        icon={faClock}
+                        className="height-2 width-2 margin-right-1 text-base-dark"
+                    />
                     <span className="text-base-dark">{timeAgo(createdOn)}</span>
                 </span>
             </div>
@@ -41,7 +44,7 @@ LogItem.propTypes = {
     createdOn: PropTypes.string.isRequired,
     variant: PropTypes.string,
     withSeparator: PropTypes.bool,
-    children: PropTypes.node,
+    children: PropTypes.node
 };
 
 export default LogItem;

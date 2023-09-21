@@ -61,47 +61,47 @@ const ChangesDetails = ({ historyItem }) => {
                 propertyLabel: getPropertyLabel(historyItem.class_name, key),
                 isCollection: true,
                 added: added,
-                deleted: deleted,
+                deleted: deleted
             };
         } else if (key === "procurement_shop_id") {
             const new_val = historyItem.event_details?.procurement_shop?.name;
             return {
                 key: key,
                 propertyLabel: getPropertyLabel(historyItem.class_name, "procurement_shop"),
-                to: new_val,
+                to: new_val
             };
         } else if (key === "product_service_code_id") {
             const new_val = historyItem.event_details?.product_service_code?.name;
             return {
                 key: key,
                 propertyLabel: getPropertyLabel(historyItem.class_name, "product_service_code"),
-                to: new_val,
+                to: new_val
             };
         } else if (key === "project_officer") {
             return {
                 key: key,
-                propertyLabel: getPropertyLabel(historyItem.class_name, "project_officer"),
+                propertyLabel: getPropertyLabel(historyItem.class_name, "project_officer")
             };
         } else if (key === "research_project_id") {
             const new_val = historyItem.event_details?.research_project?.title;
             return {
                 key: key,
                 propertyLabel: getPropertyLabel(historyItem.class_name, "research_project"),
-                to: new_val,
+                to: new_val
             };
         } else if (key === "can_id") {
             const new_val = historyItem.event_details?.can?.number;
             return {
                 key: key,
                 propertyLabel: getPropertyLabel(historyItem.class_name, "can"),
-                to: new_val,
+                to: new_val
             };
         } else
             return {
                 key: key,
                 propertyLabel: getPropertyLabel(historyItem.class_name, key),
                 from: change.old,
-                to: change.new,
+                to: change.new
             };
     });
 
@@ -134,7 +134,10 @@ const AgreementHistoryList = ({ agreementHistory }) => {
     return (
         <>
             {agreementHistory && agreementHistory.length > 0 ? (
-                <ul className="usa-list--unstyled" data-cy="agreement-history-list">
+                <ul
+                    className="usa-list--unstyled"
+                    data-cy="agreement-history-list"
+                >
                     {agreementHistory.map((item, index) => (
                         <LogItem
                             key={index}
@@ -154,7 +157,7 @@ const AgreementHistoryList = ({ agreementHistory }) => {
 };
 
 AgreementHistoryList.propTypes = {
-    agreementHistory: PropTypes.arrayOf(Object),
+    agreementHistory: PropTypes.arrayOf(Object)
 };
 
 export default AgreementHistoryList;
