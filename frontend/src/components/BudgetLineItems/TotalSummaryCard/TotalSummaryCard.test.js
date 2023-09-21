@@ -10,7 +10,7 @@ describe("<TotalSummaryCard />", () => {
             date_needed: "2021-01-01",
             psc_fee_amount: 0,
             amt: 100,
-            status: "DRAFT",
+            status: "DRAFT"
         },
         {
             id: "2",
@@ -19,8 +19,8 @@ describe("<TotalSummaryCard />", () => {
             date_needed: "2021-01-01",
             psc_fee_amount: 0,
             amt: 200,
-            status: "DRAFT",
-        },
+            status: "DRAFT"
+        }
     ];
 
     it("renders without crashing", () => {

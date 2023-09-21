@@ -6,7 +6,7 @@ const initialState = {
     can: {},
     canFiscalYearObj: {},
     pendingFunds: constants.notFilledInText,
-    selectedFiscalYear: { value: getCurrentFiscalYear(new Date()) },
+    selectedFiscalYear: { value: getCurrentFiscalYear(new Date()) }
 };
 
 const canDetailSlice = createSlice({
@@ -24,8 +24,8 @@ const canDetailSlice = createSlice({
         },
         setSelectedFiscalYear: (state, action) => {
             state.selectedFiscalYear = action.payload;
-        },
-    },
+        }
+    }
 });
 
 export const { setCan, setCanFiscalYear, setPendingFunds, setSelectedFiscalYear } = canDetailSlice.actions;

@@ -13,7 +13,7 @@ const EditUserForm = ({ user }) => {
         email: user?.email || "",
         division: user?.division || "",
         oidc_id: user?.oidc_id || "",
-        hhs_id: user?.hhs_id || "",
+        hhs_id: user?.hhs_id || ""
     });
 
     // const [updateUser] = useUpdateUserMutation();
@@ -21,7 +21,7 @@ const EditUserForm = ({ user }) => {
     function handleChange(event) {
         setFormData((prevFormData) => ({
             ...prevFormData,
-            [event.target.name]: event.target.value,
+            [event.target.name]: event.target.value
         }));
     }
 
@@ -48,12 +48,41 @@ const EditUserForm = ({ user }) => {
                 defaultValue={formData?.first_name}
                 onChange={handleChange}
             />
-            <Input name="last_name" label="Last or Family Name" value={formData?.last_name} onChange={handleChange} />
-            <Input name="email" label="Email Address" value={formData?.email} onChange={handleChange} />
-            <Input name="division" label="Division" value={formData?.division} onChange={handleChange} />
-            <Input name="oidcId" label="OIDC ID" value={formData?.oidc_id} onChange={handleChange} />
-            <Input name="hhsId" label="HHS ID" value={formData?.hhs_id} onChange={handleChange} />
-            <button className="usa-button" type="submit" onSubmit={handleSubmit}>
+            <Input
+                name="last_name"
+                label="Last or Family Name"
+                value={formData?.last_name}
+                onChange={handleChange}
+            />
+            <Input
+                name="email"
+                label="Email Address"
+                value={formData?.email}
+                onChange={handleChange}
+            />
+            <Input
+                name="division"
+                label="Division"
+                value={formData?.division}
+                onChange={handleChange}
+            />
+            <Input
+                name="oidcId"
+                label="OIDC ID"
+                value={formData?.oidc_id}
+                onChange={handleChange}
+            />
+            <Input
+                name="hhsId"
+                label="HHS ID"
+                value={formData?.hhs_id}
+                onChange={handleChange}
+            />
+            <button
+                className="usa-button"
+                type="submit"
+                onSubmit={handleSubmit}
+            >
                 Save Changes
             </button>
         </form>

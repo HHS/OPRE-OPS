@@ -11,7 +11,7 @@ import {
     formatDateNeeded,
     formatDateToMonthDayYear,
     totalBudgetLineFeeAmount,
-    totalBudgetLineAmountPlusFees,
+    totalBudgetLineAmountPlusFees
 } from "../../../helpers/utils";
 import useGetUserFullNameFromId from "../../../helpers/user-hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../helpers/budget-line-hooks";
@@ -34,7 +34,7 @@ const BLIRow = ({
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
-    readOnly = false,
+    readOnly = false
 }) => {
     const [isExpanded, setIsExpanded] = React.useState(false);
     const [isRowActive, setIsRowActive] = React.useState(false);
@@ -116,7 +116,10 @@ const BLIRow = ({
                     renderText={(value) => value}
                 />
             </td>
-            <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+            <td
+                className={removeBorderBottomIfExpanded}
+                style={changeBgColorIfExpanded}
+            >
                 {feeTotal === 0 ? (
                     0
                 ) : (
@@ -131,7 +134,10 @@ const BLIRow = ({
                     />
                 )}
             </td>
-            <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+            <td
+                className={removeBorderBottomIfExpanded}
+                style={changeBgColorIfExpanded}
+            >
                 {budgetLineTotalPlusFees === 0 ? (
                     0
                 ) : (
@@ -146,7 +152,10 @@ const BLIRow = ({
                     />
                 )}
             </td>
-            <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+            <td
+                className={removeBorderBottomIfExpanded}
+                style={changeBgColorIfExpanded}
+            >
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>
                         <ChangeIcons
@@ -167,21 +176,37 @@ const BLIRow = ({
 
     const ExpandedData = () => (
         <>
-            <td colSpan={9} className="border-top-none" style={{ backgroundColor: "var(--neutral-lightest)" }}>
+            <td
+                colSpan={9}
+                className="border-top-none"
+                style={{ backgroundColor: "var(--neutral-lightest)" }}
+            >
                 <div className="display-flex padding-right-9">
                     <dl className="font-12px">
                         <dt className="margin-0 text-base-dark">Created By</dt>
-                        <dd id={`created-by-name-${budgetLine?.id}`} className="margin-0">
+                        <dd
+                            id={`created-by-name-${budgetLine?.id}`}
+                            className="margin-0"
+                        >
                             {budgetLineCreatorName}
                         </dd>
                         <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
-                            <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />
+                            <FontAwesomeIcon
+                                icon={faClock}
+                                className="height-2 width-2 margin-right-1"
+                            />
                             {formatDateToMonthDayYear(budgetLine?.created_on)}
                         </dt>
                     </dl>
-                    <dl className="font-12px" style={{ marginLeft: "9.0625rem" }}>
+                    <dl
+                        className="font-12px"
+                        style={{ marginLeft: "9.0625rem" }}
+                    >
                         <dt className="margin-0 text-base-dark">Notes</dt>
-                        <dd className="margin-0" style={{ maxWidth: "400px" }}>
+                        <dd
+                            className="margin-0"
+                            style={{ maxWidth: "400px" }}
+                        >
                             {budgetLine?.comments ? budgetLine.comments : "No notes added."}
                         </dd>
                     </dl>
@@ -219,7 +244,7 @@ BLIRow.propTypes = {
     handleSetBudgetLineForEditing: PropTypes.func,
     handleDeleteBudgetLine: PropTypes.func,
     handleDuplicateBudgetLine: PropTypes.func,
-    readOnly: PropTypes.bool,
+    readOnly: PropTypes.bool
 };
 
 export default BLIRow;

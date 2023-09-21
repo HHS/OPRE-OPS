@@ -13,17 +13,17 @@ jest.mock("@nivo/bar", () => ({
     __esModule: true,
     ResponsiveBar: () => {
         return <div />;
-    },
+    }
 }));
 
 jest.mock("react-router-dom", () => ({
     ...jest.requireActual("react-router-dom"),
-    useNavigate: () => jest.fn(),
+    useNavigate: () => jest.fn()
 }));
 
 jest.mock("react", () => ({
     ...jest.requireActual("react"),
-    useState: () => [null, jest.fn()],
+    useState: () => [null, jest.fn()]
 }));
 
 // jest.mock("../../../../components/Agreements", () => () => <div />);
@@ -32,22 +32,22 @@ const agreementHistoryData = [
         changes: {
             product_service_code_id: {
                 new: 1,
-                old: null,
+                old: null
             },
             project_officer: {
                 new: 1,
-                old: null,
+                old: null
             },
             team_members: {
                 added: [
                     {
                         full_name: "Amy Madigan",
-                        id: 2,
-                    },
+                        id: 2
+                    }
                 ],
                 collection_of: "User",
-                deleted: [],
-            },
+                deleted: []
+            }
         },
         class_name: "ContractAgreement",
         created_by: 17,
@@ -74,7 +74,7 @@ const agreementHistoryData = [
                 fee: 0.0,
                 id: 2,
                 name: "Government Contracting Services",
-                updated_on: "2023-08-24T16:19:01.268399",
+                updated_on: "2023-08-24T16:19:01.268399"
             },
             procurement_shop_id: 2,
             product_service_code: {
@@ -85,7 +85,7 @@ const agreementHistoryData = [
                 naics: 541690,
                 name: "Other Scientific and Technical Consulting Services",
                 support_code: "R410 - Research",
-                updated_on: "2023-08-24T16:19:01.268399",
+                updated_on: "2023-08-24T16:19:01.268399"
             },
             product_service_code_id: 1,
             project_officer: 1,
@@ -102,7 +102,7 @@ const agreementHistoryData = [
                     "ETHNOGRAPHY",
                     "EXPERIMENT",
                     "SECONDARY_DATA_ANALYSIS",
-                    "CASE_STUDY",
+                    "CASE_STUDY"
                 ],
                 origination_date: "2000-01-01",
                 populations: ["POPULATION_1"],
@@ -110,7 +110,7 @@ const agreementHistoryData = [
                 team_leaders: [],
                 title: "Annual Performance Plans and Reports",
                 updated_on: "2023-08-24T16:18:48.654514",
-                url: "https://www.acf.hhs.gov/opre/project/acf-annual-performance-plans-and-reports-2000-2012",
+                url: "https://www.acf.hhs.gov/opre/project/acf-annual-performance-plans-and-reports-2000-2012"
             },
             research_project_id: 3,
             support_contacts: [],
@@ -128,31 +128,31 @@ const agreementHistoryData = [
                     last_name: "Madigan",
                     oidc_id: "00000000-0000-1111-a111-000000000002",
                     updated: null,
-                    updated_on: "2023-08-24T16:18:57.391020",
-                },
+                    updated_on: "2023-08-24T16:18:57.391020"
+                }
             ],
             updated_on: "2023-08-29T21:37:20.045738",
-            vendor: null,
+            vendor: null
         },
         event_type: "UPDATED",
         id: 58,
         row_key: "11",
-        updated_on: "2023-08-30T14:05:59.958722",
+        updated_on: "2023-08-30T14:05:59.958722"
     },
     {
         changes: {
             amount: {
                 new: 200000.0,
-                old: 100000.0,
+                old: 100000.0
             },
             date_needed: {
                 new: "2023-02-02",
-                old: "2023-01-01",
+                old: "2023-01-01"
             },
             psc_fee_amount: {
                 new: 0.0,
-                old: null,
-            },
+                old: null
+            }
         },
         class_name: "BudgetLineItem",
         created_by: 17,
@@ -164,7 +164,7 @@ const agreementHistoryData = [
             can: {
                 id: 1,
                 nickname: "HMRF-OPRE",
-                number: "G99HRF2",
+                number: "G99HRF2"
             },
             can_id: 1,
             comments: "",
@@ -175,7 +175,7 @@ const agreementHistoryData = [
             line_description: "My Budget Line",
             psc_fee_amount: null,
             status: "DRAFT",
-            updated_on: "2023-08-29T21:36:51.385646",
+            updated_on: "2023-08-29T21:36:51.385646"
         },
         event_type: "UPDATED",
         id: 56,
@@ -189,21 +189,21 @@ const agreementHistoryData = [
             id: 25,
             line_description: "My Budget Line",
             status: "DRAFT",
-            updated_on: "2023-08-29T21:36:51.385646",
+            updated_on: "2023-08-29T21:36:51.385646"
         },
         row_key: "25",
-        updated_on: "2023-08-29T21:37:56.300512",
+        updated_on: "2023-08-29T21:37:56.300512"
     },
     {
         changes: {
             description: {
                 new: "blah blah blah",
-                old: "yadda yadda yadda",
+                old: "yadda yadda yadda"
             },
             name: {
                 new: "Demo Contract Title Edited",
-                old: "Demo Contract Title",
-            },
+                old: "Demo Contract Title"
+            }
         },
         class_name: "ContractAgreement",
         created_by: 17,
@@ -230,7 +230,7 @@ const agreementHistoryData = [
                 fee: 0.0,
                 id: 2,
                 name: "Government Contracting Services",
-                updated_on: "2023-08-24T16:19:01.268399",
+                updated_on: "2023-08-24T16:19:01.268399"
             },
             procurement_shop_id: 2,
             product_service_code: null,
@@ -238,42 +238,42 @@ const agreementHistoryData = [
             project_officer: null,
             research_project: {
                 id: 3,
-                title: "Annual Performance Plans and Reports",
+                title: "Annual Performance Plans and Reports"
             },
             research_project_id: 3,
             support_contacts: [],
             team_members: [],
             updated_on: "2023-08-29T21:36:25.183870",
-            vendor: null,
+            vendor: null
         },
         event_type: "UPDATED",
         id: 55,
         row_key: "11",
-        updated_on: "2023-08-29T21:37:20.045738",
+        updated_on: "2023-08-29T21:37:20.045738"
     },
     {
         changes: {
             agreement_id: {
-                new: 11,
+                new: 11
             },
             amount: {
-                new: 100000.0,
+                new: 100000.0
             },
             can_id: {
-                new: 1,
+                new: 1
             },
             created_by: {
-                new: 17,
+                new: 17
             },
             date_needed: {
-                new: "2023-01-01",
+                new: "2023-01-01"
             },
             line_description: {
-                new: "My Budget Line",
+                new: "My Budget Line"
             },
             status: {
-                new: "DRAFT",
-            },
+                new: "DRAFT"
+            }
         },
         class_name: "BudgetLineItem",
         created_by: 17,
@@ -292,33 +292,33 @@ const agreementHistoryData = [
             line_description: "My Budget Line",
             psc_fee_amount: null,
             status: "DRAFT",
-            updated_on: "2023-08-29T21:36:51.385646",
+            updated_on: "2023-08-29T21:36:51.385646"
         },
         event_type: "NEW",
         id: 54,
         row_key: "25",
-        updated_on: "2023-08-29T21:36:51.385646",
+        updated_on: "2023-08-29T21:36:51.385646"
     },
     {
         changes: {
             agreement_type: {
-                new: "CONTRACT",
+                new: "CONTRACT"
             },
             created_by: {
-                new: 17,
+                new: 17
             },
             description: {
-                new: "yadda yadda yadda",
+                new: "yadda yadda yadda"
             },
             name: {
-                new: "Demo Contract Title",
+                new: "Demo Contract Title"
             },
             procurement_shop_id: {
-                new: 2,
+                new: 2
             },
             research_project_id: {
-                new: 3,
-            },
+                new: 3
+            }
         },
         class_name: "ContractAgreement",
         created_by: 17,
@@ -348,13 +348,13 @@ const agreementHistoryData = [
             support_contacts: [],
             team_members: [],
             updated_on: "2023-08-29T21:36:25.183870",
-            vendor: null,
+            vendor: null
         },
         event_type: "NEW",
         id: 53,
         row_key: "11",
-        updated_on: "2023-08-29T21:36:25.183870",
-    },
+        updated_on: "2023-08-29T21:36:25.183870"
+    }
 ];
 
 // This will reset all mocks after each test
@@ -371,13 +371,13 @@ describe("AgreementDetails", () => {
         agreement_type: "CONTRACT",
         product_service_code: {
             name: "Test PSC",
-            naics: "Test NAICS",
+            naics: "Test NAICS"
         },
 
         procurement_shop: {
             abbr: "NIH",
             fee: 0.005,
-            name: "National Institute of Health",
+            name: "National Institute of Health"
         },
         agreement_reason: "RECOMPETE",
         incumbent: "Test Incumbent",
@@ -385,25 +385,25 @@ describe("AgreementDetails", () => {
         team_members: [
             {
                 full_name: "Amy Madigan",
-                id: 2,
+                id: 2
             },
             {
                 full_name: "Ivelisse Martinez-Beck",
-                id: 3,
-            },
+                id: 3
+            }
         ],
         budget_line_items: [
             { amount: 100, date_needed: "2024-05-02T11:00:00", status: "DRAFT" },
-            { amount: 200, date_needed: "2023-03-02T11:00:00", status: "UNDER_REVIEW" },
+            { amount: 200, date_needed: "2023-03-02T11:00:00", status: "UNDER_REVIEW" }
         ],
         created_by: "user1",
         notes: "Test notes",
-        created_on: "2021-10-21T03:24:00",
+        created_on: "2021-10-21T03:24:00"
     };
 
     const projectOfficer = {
         full_name: "Chris Fortunato",
-        id: 1,
+        id: 1
     };
 
     test("renders correctly", () => {
@@ -416,13 +416,16 @@ describe("AgreementDetails", () => {
         mockIntersectionObserver.mockReturnValue({
             observe: () => null,
             unobserve: () => null,
-            disconnect: () => null,
+            disconnect: () => null
         });
         window.IntersectionObserver = mockIntersectionObserver;
 
         render(
             <Provider store={store}>
-                <Router location={history.location} navigator={history}>
+                <Router
+                    location={history.location}
+                    navigator={history}
+                >
                     <AgreementDetails
                         agreement={agreement}
                         projectOfficer={projectOfficer}

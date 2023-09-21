@@ -122,7 +122,10 @@ const MultiAuthSection = () => {
                     </button>
                 </p>
                 <p>
-                    <button className="usa-button usa-button--outline width-full" onClick={() => setShowModal(true)}>
+                    <button
+                        className="usa-button usa-button--outline width-full"
+                        onClick={() => setShowModal(true)}
+                    >
                         Sign in with FakeAuth®
                     </button>
                 </p>

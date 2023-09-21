@@ -16,39 +16,42 @@ export const BLIStatusComboBox = ({
     setSelectedBLIStatus,
     legendClassname = "usa-label margin-top-0",
     defaultString = "",
-    overrideStyles = {},
+    overrideStyles = {}
 }) => {
     const data = [
         {
             id: 1,
             title: "Draft",
-            status: "DRAFT",
+            status: "DRAFT"
         },
         {
             id: 2,
             title: "In Review",
-            status: "UNDER_REVIEW",
+            status: "UNDER_REVIEW"
         },
         {
             id: 3,
             title: "Planned",
-            status: "PLANNED",
+            status: "PLANNED"
         },
         {
             id: 4,
             title: "Executing",
-            status: "IN_EXECUTION",
+            status: "IN_EXECUTION"
         },
         {
             id: 5,
             title: "Obligated",
-            status: "OBLIGATED",
-        },
+            status: "OBLIGATED"
+        }
     ];
     return (
         <div className="display-flex flex-justify">
             <div>
-                <label className={legendClassname} htmlFor="project-combobox-input">
+                <label
+                    className={legendClassname}
+                    htmlFor="project-combobox-input"
+                >
                     Budget Lines Status
                 </label>
                 <div>
@@ -74,5 +77,5 @@ BLIStatusComboBox.propTypes = {
     setSelectedBLIStatus: PropTypes.func.isRequired,
     legendClassname: PropTypes.string,
     defaultString: PropTypes.string,
-    overrideStyles: PropTypes.object,
+    overrideStyles: PropTypes.object
 };

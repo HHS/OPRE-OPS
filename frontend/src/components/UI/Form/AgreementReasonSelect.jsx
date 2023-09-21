@@ -21,12 +21,12 @@ export const AgreementReasonSelect = ({
     onChange,
     pending = false,
     messages = [],
-    className,
+    className
 }) => {
     const {
         data: agreementReasons,
         error: errorAgreementReasons,
-        isLoading: isLoadingAgreementReasons,
+        isLoading: isLoadingAgreementReasons
     } = useGetAgreementReasonsQuery();
 
     if (isLoadingAgreementReasons) {
@@ -42,11 +42,17 @@ export const AgreementReasonSelect = ({
 
     return (
         <fieldset className={cx("usa-fieldset", pending && "pending", className)}>
-            <label className={`usa-label margin-top-0 ${messages.length ? "usa-label--error" : null} `} htmlFor={name}>
+            <label
+                className={`usa-label margin-top-0 ${messages.length ? "usa-label--error" : null} `}
+                htmlFor={name}
+            >
                 {label}
             </label>
             {messages.length ? (
-                <span className="usa-error-message" role="alert">
+                <span
+                    className="usa-error-message"
+                    role="alert"
+                >
                     {messages[0]}
                 </span>
             ) : null}
@@ -60,7 +66,10 @@ export const AgreementReasonSelect = ({
                 >
                     <option value={0}>- Select Agreement Reason -</option>
                     {agreementReasons.map((reason, index) => (
-                        <option key={index + 1} value={reason}>
+                        <option
+                            key={index + 1}
+                            value={reason}
+                        >
                             {convertCodeForDisplay("agreementReason", reason)}
                         </option>
                     ))}

@@ -6,7 +6,7 @@ const statusClasses = {
     UNDER_REVIEW: "bg-brand-data-viz-secondary-23 text-white",
     PLANNED: "bg-brand-data-viz-primary-11 text-white",
     IN_EXECUTION: "bg-brand-data-viz-primary-8",
-    OBLIGATED: "bg-brand-data-viz-primary-6 text-white",
+    OBLIGATED: "bg-brand-data-viz-primary-6 text-white"
 };
 
 export const statuses = Object.keys(statusClasses);
@@ -30,7 +30,12 @@ export const StatusTag = ({ status, count = -1 }) => {
         classNames += statusClasses[status];
     }
     const tagText = count >= 0 ? `${count} ${statusText}` : statusText;
-    return <Tag className={classNames} text={tagText} />;
+    return (
+        <Tag
+            className={classNames}
+            text={tagText}
+        />
+    );
 };
 
 export const StatusTagList = ({ countsByStatus }) => {
@@ -43,7 +48,11 @@ export const StatusTagList = ({ countsByStatus }) => {
     return (
         <>
             {Object.entries(countsByStatusWithZeros).map(([key, value]) => (
-                <StatusTag status={key} count={value} key={key} />
+                <StatusTag
+                    status={key}
+                    count={value}
+                    key={key}
+                />
             ))}
         </>
     );

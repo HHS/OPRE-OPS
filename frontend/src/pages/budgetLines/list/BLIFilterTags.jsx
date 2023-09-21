@@ -22,7 +22,7 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
                         ...prevState,
                         fiscalYears: prevState.fiscalYears.filter(
                             (fy) => fy.title.toString() !== tag.tagText.replace("FY ", "")
-                        ),
+                        )
                     };
                 });
                 break;
@@ -30,7 +30,7 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
                 setFilters((prevState) => {
                     return {
                         ...prevState,
-                        portfolios: prevState.portfolios.filter((portfolio) => portfolio.name !== tag.tagText),
+                        portfolios: prevState.portfolios.filter((portfolio) => portfolio.name !== tag.tagText)
                     };
                 });
                 break;
@@ -38,7 +38,7 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
                 setFilters((prevState) => {
                     return {
                         ...prevState,
-                        bliStatus: prevState.bliStatus.filter((status) => status.title !== tag.tagText),
+                        bliStatus: prevState.bliStatus.filter((status) => status.title !== tag.tagText)
                     };
                 });
                 break;
@@ -94,7 +94,10 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
                 <span className="padding-right-205 text-base-dark font-serif-3xs line-height-sans-5 padding-top-05">
                     Filters Applied:
                 </span>
-                <FilterTags removeFilter={removeFilter} tagsList={tagsListByFilterMerged} />
+                <FilterTags
+                    removeFilter={removeFilter}
+                    tagsList={tagsListByFilterMerged}
+                />
             </div>
         )
     );

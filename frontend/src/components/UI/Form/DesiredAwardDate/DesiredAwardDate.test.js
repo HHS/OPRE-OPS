@@ -11,7 +11,7 @@ describe("DesiredAwardDate", () => {
         mockRunValidate = jest.fn();
         mockRes = {
             getErrorsByGroup: jest.fn().mockReturnValue([]),
-            getErrors: jest.fn(),
+            getErrors: jest.fn()
         };
     });
 
