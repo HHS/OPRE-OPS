@@ -200,7 +200,10 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
     return (
         !_.isEmpty(tagsList.filter(ignoredTags)) && (
             <FilterTagsWrapper>
-                <FilterTags removeFilter={removeFilter} tagsList={tagsList.filter(ignoredTags)} />
+                <FilterTags
+                    removeFilter={removeFilter}
+                    tagsList={tagsList.filter(ignoredTags)}
+                />
             </FilterTagsWrapper>
         )
     );
