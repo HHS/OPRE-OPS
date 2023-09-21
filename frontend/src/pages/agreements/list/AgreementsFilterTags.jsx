@@ -3,7 +3,7 @@ import _ from "lodash";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import FilterTags from "../../../components/UI/FilterTags/FilterTags";
 import createTagString from "../../../components/UI/FilterTags/utils";
-
+import FilterTagsWrapper from "../../../components/UI/FilterTags/FilterTagsWrapper";
 /**
  * A filter tags.
  * @param {Object} props - The component props.
@@ -198,12 +198,14 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
     };
 
     return (
-        <div className="display-flex flex-wrap">
-            <FilterTags
-                removeFilter={removeFilter}
-                tagsList={tagsList.filter(ignoredTags)}
-            />
-        </div>
+        !_.isEmpty(tagsList.filter(ignoredTags)) && (
+            <FilterTagsWrapper>
+                <FilterTags
+                    removeFilter={removeFilter}
+                    tagsList={tagsList.filter(ignoredTags)}
+                />
+            </FilterTagsWrapper>
+        )
     );
 };
 export default AgreementsFilterTags;
