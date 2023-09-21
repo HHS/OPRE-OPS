@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import PropTypes from "prop-types";
-import { formatLogTimeStamp, timeAgo } from "../../../helpers/utils.js";
+import { formatLogTimeStamp } from "../../../helpers/utils.js";
 import styles from "./LogItem.module.css";
 
 /**

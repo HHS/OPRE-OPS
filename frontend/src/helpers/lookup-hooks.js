@@ -23,7 +23,7 @@ export const useGetNameForProductServiceCodeId = (id) => {
             const item = data.find((element) => element.id === id);
             if (item) setDisplayName(`${item.display_name}`);
         }
-    }, [data, isSuccess]);
+    }, [id, data, isSuccess]);
 
     return displayName;
 };
@@ -38,7 +38,7 @@ export const useGetNameForProcurementShopId = (id) => {
             const item = data.find((element) => element.id === id);
             if (item) setDisplayName(`${item.display_name}`);
         }
-    }, [data, isSuccess]);
+    }, [id, data, isSuccess]);
 
     return displayName;
 };
@@ -53,7 +53,7 @@ export const useGetNameForResearchProjectId = (id) => {
             const item = data.find((element) => element.id === id);
             if (item) setDisplayName(`${item.display_name}`);
         }
-    }, [data, isSuccess]);
+    }, [id, data, isSuccess]);
 
     return displayName;
 };
@@ -68,7 +68,7 @@ export const useGetNameForCanId = (id) => {
             const item = data.find((element) => element.id === id);
             if (item) setDisplayName(`${item.display_name}`);
         }
-    }, [data, isSuccess]);
+    }, [id, data, isSuccess]);
 
     return displayName;
 };

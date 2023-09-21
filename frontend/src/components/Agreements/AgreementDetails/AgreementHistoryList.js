@@ -9,6 +9,8 @@ import {
     useGetNameForResearchProjectId,
 } from "../../../helpers/lookup-hooks";
 
+const noDataMessage = "There is currently no history for this agreement.";
+
 const findObjectTitle = (historyItem) => {
     return historyItem.event_details.display_name;
 };
@@ -16,7 +18,7 @@ const findObjectTitle = (historyItem) => {
 const eventLogItemTitle = (historyItem) => {
     const className = convertCodeForDisplay("baseClassNameLabels", historyItem.class_name);
     if (historyItem.event_type === "NEW") {
-        return `New ${className} Created`;
+        return `${className} Created`;
     } else if (historyItem.event_type === "UPDATED") {
         return `${className} Updated`;
     } else if (historyItem.event_type === "DELETED") {
@@ -27,55 +29,22 @@ const eventLogItemTitle = (historyItem) => {
 
 const eventMessage = (historyItem) => {
     const className = convertCodeForDisplay("baseClassNameLabels", historyItem.class_name);
-    const classNameLower = className.toLowerCase();
-    const classNameSentence = classNameLower.charAt(0).toUpperCase() + classNameLower.slice(1);
-    const userFullName = historyItem.created_by_user_full_name;
-    const objectTitle = findObjectTitle(historyItem);
+    const createdByName = historyItem.created_by_user_full_name;
+    let titleName = className;
+    if (historyItem.class_name === "BudgetLineItem") titleName += ` ${findObjectTitle(historyItem)}`;
     if (historyItem.event_type === "NEW") {
-        return `New ${classNameLower}, “${objectTitle}”, created by ${userFullName}.`;
+        return `${titleName} created by ${createdByName}`;
     } else if (historyItem.event_type === "UPDATED") {
-        return `${classNameSentence}, “${objectTitle}”, updated by ${userFullName}.`;
+        return `${titleName} updated by ${createdByName}`;
     } else if (historyItem.event_type === "DELETED") {
-        return `${classNameSentence}, “${objectTitle}”, deleted by ${userFullName}.`;
+        return `${titleName} deleted by ${createdByName}`;
     }
-    return `${className} ${historyItem.event_type} ${userFullName}`;
-};
-
-const eventLogItem = (historyItem) => {
-    if (!["NEW", "DELETED"].includes(eventType)) return;
-    return {
-        title: eventLogItemTitle(historyItem),
-        createdOn: historyItem.created_on,
-        message: eventMessage(historyItem),
-    };
-};
-
-const eventVerb = {
-    NEW: "Created",
-    UPDATED: "Edited",
-    DELETED: "Deleted",
-};
-
-const propertyLogItemTitle = (historyItem, changedPropertyLabel) => {
-    const className = convertCodeForDisplay("baseClassNameLabels", historyItem.class_name);
-
-    if (historyItem.event_type === "NEW") {
-        return `${changedPropertyLabel} Created`;
-    } else if (historyItem.event_type === "UPDATED") {
-        return `${changedPropertyLabel} Edited`;
-    } else if (historyItem.event_type === "DELETED") {
-        return `Deleted`;
-    }
-    return `${changedPropertyLabel} ${historyItem.event_type}`;
+    return `${className} ${historyItem.event_type} by ${createdByName}`;
 };
 
 const getPropertyLabel = (className, fieldName) => {
     if (className === "BudgetLineItem") return `${convertCodeForDisplay("budgetLineItemPropertyLabels", fieldName)}`;
     return convertCodeForDisplay("agreementPropertyLabels", fieldName);
-};
-
-const objectsToJoinedNames = (objects) => {
-    return objects.map((obj) => obj.display_name).join(", ");
 };
 
 const objectsToNames = (objects) => {
@@ -117,12 +86,10 @@ const renderField = (fieldName, value) => {
 };
 
 const prepareChanges = (historyItem) => {
-    console.log("prepareChanges>>>");
     const rawChanges = historyItem.changes;
     let preparedChanges = [];
 
     Object.entries(rawChanges).forEach(([key, change]) => {
-        console.log(`~~~key: ${key}, change:`, change);
         if (["psc_fee_amount"].includes(key)) return;
         let preparedChange = {
             key: key,
@@ -161,21 +128,15 @@ const prepareChanges = (historyItem) => {
 };
 
 const propertyLogItems = (historyItem) => {
-    console.log("propertyLogItems");
-    console.log("historyItem>>>", historyItem);
     const eventType = historyItem.event_type;
-    console.log(eventType);
-    // if (!["UPDATED", "NEW"].includes(eventType)) return;
     if (eventType !== "UPDATED") return;
     const preparedChanges = prepareChanges(historyItem);
-    console.log("preparedChanges:", preparedChanges);
 
     let logItems = [];
 
     preparedChanges.forEach((change) => {
         if (change.isCollection) {
             change.added.forEach((member) => {
-                const msg = `Added ${member}`;
                 logItems.push({
                     title: `${change.propertyLabel} Added`,
                     createdOn: change.createdOn,
@@ -190,8 +151,8 @@ const propertyLogItems = (historyItem) => {
                 });
             });
         } else {
-            let title = propertyLogItemTitle(historyItem, change.propertyLabel);
-            let msg = `${change.propertyLabel} changed `;
+            let title = `${change.propertyLabel} Edited`;
+            let msg = `${change.propertyLabel} changed`;
             if (historyItem.class_name === "BudgetLineItem") {
                 if (change.key !== "line_description") {
                     msg = `Budget Line ${findObjectTitle(historyItem)} ${change.propertyLabel} changed `;
@@ -211,20 +172,17 @@ const propertyLogItems = (historyItem) => {
             });
         }
     });
-    console.log("logItems:", logItems);
 
     return logItems;
 };
 
 const AgreementHistoryList = ({ agreementHistory }) => {
     if (!(agreementHistory && agreementHistory.length > 0)) {
-        return <span className="font-12px">There is currently no history for this agreement.</span>;
+        return <span className="font-12px">111 {noDataMessage}</span>;
     }
-    console.log("agreementHistory:", typeof agreementHistory, agreementHistory);
     let logItems = [];
 
     agreementHistory.forEach(function (historyItem) {
-        console.log("historyItem:", historyItem);
         const eventType = historyItem["event_type"];
 
         if (["NEW", "DELETED"].includes(eventType)) {
@@ -253,7 +211,7 @@ const AgreementHistoryList = ({ agreementHistory }) => {
                     ))}
                 </ul>
             ) : (
-                <span className="font-12px">There is currently no history for this agreement.</span>
+                <span className="font-12px">333 {noDataMessage}</span>
             )}
         </>
     );
