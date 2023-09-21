@@ -21,7 +21,7 @@ sudo apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plug
 mkdir ~/airflow-vm && cd ~/airflow-vm || exit
 mkdir -p ./dags ./logs ./plugins ./config
 echo -e "AIRFLOW_UID=$(id -u)" > .env
-echo -e "AIRFLOW__CORE__LOAD_EXAMPLES=false" >> .env
+echo -e "AIRFLOW__CORE__LOAD_EXAMPLES=False" >> .env
 
 # Install Airflow Docker Compose
 curl -LfO 'https://airflow.apache.org/docs/apache-airflow/2.7.1/docker-compose.yaml'
