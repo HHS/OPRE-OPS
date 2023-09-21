@@ -19,7 +19,7 @@ variable "username" {
 variable "vm_prefix" {
   type        = string
   description = "The prefix of the name that will be created on the new VM."
-  default     = "ops_airflow"
+  default     = "ops-airflow"
 }
 
 variable "cloud_init" {
