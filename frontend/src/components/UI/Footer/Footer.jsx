@@ -1,8 +1,8 @@
 import { AgencyInfo } from "./AgencyInfo";
-import { Identifier } from "./Idnetifier";
+import { Identifier } from "./Identifier";
 import { NavFooter } from "./NavFooter";
 
-export const Footer = () => {
+const Footer = () => {
     const scrollToTop = () => {
         window.scrollTo({
             top: 0,
@@ -26,3 +26,5 @@ export const Footer = () => {
         </footer>
     );
 };
+
+export default Footer;

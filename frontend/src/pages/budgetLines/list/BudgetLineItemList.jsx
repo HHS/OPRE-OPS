@@ -5,7 +5,6 @@ import _ from "lodash";
 import App from "../../../App";
 import { useGetAgreementsQuery, useGetBudgetLineItemsQuery, useGetCansQuery } from "../../../api/opsAPI";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
-import Alert from "../../../components/UI/Alert";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLinesTable";
 import BLIFilterButton from "./BLIFilterButton";
@@ -18,7 +17,6 @@ import BLIFilterTags from "./BLIFilterTags";
  */
 export const BudgetLineItemList = () => {
     const [searchParams] = useSearchParams();
-    const isAlertActive = useSelector((state) => state?.alert?.isActive);
     const activeUser = useSelector((state) => state?.auth?.activeUser);
     const [filters, setFilters] = useState({
         fiscalYears: [],
@@ -126,7 +124,6 @@ export const BudgetLineItemList = () => {
     return (
         <App>
             <Breadcrumb currentName={"Budget Lines"} />
-            {isAlertActive && <Alert />}
             <TablePageLayout
                 title="Budget Lines"
                 subtitle={myBudgetLineItemsUrl ? "My Budget Lines" : "All Budget Lines"}
