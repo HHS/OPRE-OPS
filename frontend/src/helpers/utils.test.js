@@ -1,6 +1,12 @@
 /// <reference types="jest" />
 
-import { getCurrentFiscalYear, calculatePercent, convertCodeForDisplay, fiscalYearFromDate } from "./utils";
+import {
+    getCurrentFiscalYear,
+    calculatePercent,
+    convertCodeForDisplay,
+    fiscalYearFromDate,
+    renderField,
+} from "./utils";
 
 test("current federal fiscal year is calculated correctly", async () => {
     const lastDay = new Date("September 30, 2022");
@@ -30,4 +36,14 @@ test("fiscal year are calculated correctly", async () => {
     expect(fiscalYearFromDate("2033-01-01")).toEqual(2033);
     expect(fiscalYearFromDate("2033-09-30")).toEqual(2033);
     expect(fiscalYearFromDate("2033-10-01")).toEqual(2034);
+});
+
+test("renderField converts values correctly for display", async () => {
+    expect(renderField("No Matching Class", "No Matching Field", "anything")).toEqual("anything");
+    expect(renderField(null, "date_needed", null)).toEqual(null);
+    expect(renderField(null, "amount", 1222333)).toEqual("$1,222,333");
+    expect(renderField(null, "agreement_reason", null)).toEqual(null);
+    expect(renderField(null, "agreement_reason", "RECOMPETE")).toEqual("Recompete");
+    expect(renderField(null, "agreement_type", "CONTRACT")).toEqual("Contract");
+    expect(renderField(null, "status", "UNDER_REVIEW")).toEqual("In Review");
 });

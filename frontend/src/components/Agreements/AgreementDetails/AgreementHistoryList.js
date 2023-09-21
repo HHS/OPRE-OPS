@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import LogItem from "../../UI/LogItem";
-import { convertCodeForDisplay, formatDateNeeded } from "../../../helpers/utils";
+import { convertCodeForDisplay, renderField } from "../../../helpers/utils";
 import useGetUserFullNameFromId from "../../../helpers/user-hooks";
 import {
     useGetNameForCanId,
@@ -51,7 +51,7 @@ const objectsToNames = (objects) => {
     return objects.map((obj) => obj.display_name);
 };
 
-const relationsMap = {
+const relations = {
     procurement_shop_id: {
         eventKey: "procurement_shop",
         lookupQuery: useGetNameForProcurementShopId,
@@ -73,18 +73,12 @@ const relationsMap = {
     },
 };
 
-const renderField = (fieldName, value) => {
-    if (value == null) return value;
-    switch (fieldName) {
-        case "date_needed":
-            return formatDateNeeded(value);
-        case "amount":
-            return "$" + value?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        default:
-            return value;
-    }
-};
-
+/**
+ * For a single history record process the changes field and convert the object
+ * into array of changes with values of foreign keys resolved to display names
+ * @returns {*[]} - array of changes
+ * @param historyItem - a record from ops_db_history
+ */
 const prepareChanges = (historyItem) => {
     const rawChanges = historyItem.changes;
     let preparedChanges = [];
@@ -102,9 +96,9 @@ const prepareChanges = (historyItem) => {
             preparedChange["propertyLabel"] = getPropertyLabel(historyItem.class_name, key + "_item");
             preparedChange["added"] = objectsToNames(change.added);
             preparedChange["deleted"] = objectsToNames(change.deleted);
-        } else if (key in relationsMap) {
-            const eventKey = relationsMap[key]["eventKey"];
-            const lookupQuery = relationsMap[key]["lookupQuery"];
+        } else if (key in relations) {
+            const eventKey = relations[key]["eventKey"];
+            const lookupQuery = relations[key]["lookupQuery"];
             if (eventKey) {
                 preparedChange["propertyLabel"] = getPropertyLabel(historyItem.class_name, eventKey);
                 preparedChange["to"] = historyItem.event_details[eventKey]?.display_name;
@@ -127,6 +121,13 @@ const prepareChanges = (historyItem) => {
     return preparedChanges;
 };
 
+/**
+ * For a single history record create data for LogItems.  Convert the history record's changes object
+ * into array of log items with an item for each field level change and for collection fields,
+ * such as team_members, create an item for each added/removed member.
+ * @param historyItem - a record from ops_db_history
+ * @returns {*[]} - array of log items with title, createdOn, message fields
+ */
 const propertyLogItems = (historyItem) => {
     const eventType = historyItem.event_type;
     if (eventType !== "UPDATED") return;
@@ -162,8 +163,8 @@ const propertyLogItems = (historyItem) => {
                 title = "Budget Line " + title;
             }
 
-            if (change.from != null) msg += ` from ${renderField(change.key, change.from)}`;
-            if (change.to != null) msg += ` to ${renderField(change.key, change.to)}`;
+            if (change.from != null) msg += ` from ${renderField(historyItem.class_name, change.key, change.from)}`;
+            if (change.to != null) msg += ` to ${renderField(historyItem.class_name, change.key, change.to)}`;
             msg += ` by ${change.createdByName}`;
             logItems.push({
                 title: title,
@@ -178,13 +179,15 @@ const propertyLogItems = (historyItem) => {
 
 const AgreementHistoryList = ({ agreementHistory }) => {
     if (!(agreementHistory && agreementHistory.length > 0)) {
-        return <span className="font-12px">111 {noDataMessage}</span>;
+        return <span className="font-12px">{noDataMessage}</span>;
     }
     let logItems = [];
 
     agreementHistory.forEach(function (historyItem) {
         const eventType = historyItem["event_type"];
 
+        // for creates, deletes just display one LogItem
+        // and for updates convert change details into many LogItems
         if (["NEW", "DELETED"].includes(eventType)) {
             logItems.push({
                 title: eventLogItemTitle(historyItem),
@@ -211,7 +214,7 @@ const AgreementHistoryList = ({ agreementHistory }) => {
                     ))}
                 </ul>
             ) : (
-                <span className="font-12px">333 {noDataMessage}</span>
+                <span className="font-12px">{noDataMessage}</span>
             )}
         </>
     );

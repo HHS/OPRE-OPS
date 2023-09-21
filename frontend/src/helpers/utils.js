@@ -251,3 +251,25 @@ export const totalBudgetLineAmountPlusFees = (amount, fee) => {
     if (amount === 0) return 0;
     return amount + fee;
 };
+
+export const renderField = (className, fieldName, value) => {
+    if (value == null) return value;
+    switch (className) {
+        // so far, this doesn't depend on className and the same field names are the same types for every class
+        default:
+            switch (fieldName) {
+                case "date_needed":
+                    return formatDateNeeded(value);
+                case "amount":
+                    return "$" + value?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                case "agreement_reason":
+                    return convertCodeForDisplay("agreementReason", value);
+                case "agreement_type":
+                    return convertCodeForDisplay("agreementType", value);
+                case "status":
+                    return convertCodeForDisplay("budgetLineStatus", value);
+                default:
+                    return value;
+            }
+    }
+};
