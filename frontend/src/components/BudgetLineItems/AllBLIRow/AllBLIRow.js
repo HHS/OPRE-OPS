@@ -5,7 +5,6 @@ import { faClock } from "@fortawesome/free-regular-svg-icons";
 import CurrencyFormat from "react-currency-format";
 import TableTag from "../../UI/TableTag";
 import ChangeIcons from "../ChangeIcons";
-import DisabledChangeIcons from "../ChangeIcons/DisabledChangeIcons";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     formatDateNeeded,
