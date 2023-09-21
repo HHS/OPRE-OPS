@@ -22,7 +22,7 @@ const ChangeIcons = ({
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
-    duplicateIcon = true,
+    duplicateIcon = true
 }) => {
     return (
         <>
@@ -76,7 +76,7 @@ ChangeIcons.propTypes = {
     handleSetBudgetLineForEditing: PropTypes.func,
     handleDeleteBudgetLine: PropTypes.func,
     handleDuplicateBudgetLine: PropTypes.func,
-    duplicateIcon: PropTypes.bool,
+    duplicateIcon: PropTypes.bool
 };
 
 export default ChangeIcons;

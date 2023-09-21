@@ -16,7 +16,7 @@ const DisabledChangeIcons = ({
     duplicateIcon = true,
     handleDuplicateBudgetLine = () => {
         alert("not implemented");
-    },
+    }
 }) => {
     const classes = `text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip ${DISABLED_ICON_CLASSES}`;
     const rowId = React.useId();
@@ -58,7 +58,7 @@ const DisabledChangeIcons = ({
 
 DisabledChangeIcons.propTypes = {
     duplicateIcon: PropTypes.bool,
-    handleDuplicateBudgetLine: PropTypes.func,
+    handleDuplicateBudgetLine: PropTypes.func
 };
 
 export default DisabledChangeIcons;
