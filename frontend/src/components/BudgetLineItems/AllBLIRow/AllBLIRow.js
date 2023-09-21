@@ -5,6 +5,7 @@ import { faClock } from "@fortawesome/free-regular-svg-icons";
 import CurrencyFormat from "react-currency-format";
 import TableTag from "../../UI/TableTag";
 import ChangeIcons from "../ChangeIcons";
+import DisabledChangeIcons from "../ChangeIcons/DisabledChangeIcons";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     formatDateNeeded,
@@ -79,14 +80,14 @@ const AllBLIRow = ({
                 )}
             </td>
             <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
-                {isRowActive && !isExpanded && !readOnly && isBudgetLineEditable ? (
+                {isRowActive && !isExpanded && !readOnly ? (
                     <div>
                         <ChangeIcons
                             budgetLine={budgetLine}
                             handleDeleteBudgetLine={handleDeleteBudgetLine}
                             handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                             isBudgetLineEditable={isBudgetLineEditable}
-                            noDuplicateIcon={true}
+                            duplicateIcon={false}
                         />
                     </div>
                 ) : (
@@ -165,7 +166,7 @@ const AllBLIRow = ({
                                 handleDeleteBudgetLine={handleDeleteBudgetLine}
                                 handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                                 isBudgetLineEditable={isBudgetLineEditable}
-                                noDuplicateIcon={true}
+                                duplicateIcon={false}
                             />
                         )}
                     </div>
