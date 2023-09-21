@@ -9,9 +9,15 @@ import { DISABLED_ICON_CLASSES } from "../../../constants";
  * This component displays the disabled change icons for a table row.
  * @param {object} props - The component props.
  * @param {boolean} [props.duplicateIcon] - Whether to show the duplicate icon.
+ * @param {function} [props.handleDuplicateBudgetLine] - The function to duplicate the budget line.
  * @returns {React.JSX.Element} - The rendered component.
  **/
-const DisabledChangeIcons = ({ duplicateIcon = true }) => {
+const DisabledChangeIcons = ({
+    duplicateIcon = true,
+    handleDuplicateBudgetLine = () => {
+        alert("not implemented");
+    },
+}) => {
     const classes = `text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip ${DISABLED_ICON_CLASSES}`;
     const rowId = React.useId();
     return (
@@ -40,9 +46,10 @@ const DisabledChangeIcons = ({ duplicateIcon = true }) => {
                     id={`duplicate-${rowId}`}
                     data-cy="duplicate-row"
                     icon={faClone}
-                    title="cannot duplicate"
+                    title="duplicate"
                     data-position="top"
-                    className={`${classes} margin-right-0`}
+                    className="text-primary height-2 width-2 cursor-pointer usa-tooltip margin-left-0"
+                    onClick={handleDuplicateBudgetLine}
                 />
             )}
         </>
@@ -51,6 +58,7 @@ const DisabledChangeIcons = ({ duplicateIcon = true }) => {
 
 DisabledChangeIcons.propTypes = {
     duplicateIcon: PropTypes.bool,
+    handleDuplicateBudgetLine: PropTypes.func,
 };
 
 export default DisabledChangeIcons;

@@ -26,7 +26,12 @@ const ChangeIcons = ({
 }) => {
     return (
         <>
-            {!isBudgetLineEditable && <DisabledChangeIcons duplicateIcon={duplicateIcon} />}
+            {!isBudgetLineEditable && (
+                <DisabledChangeIcons
+                    duplicateIcon={duplicateIcon}
+                    handleDuplicateBudgetLine={() => handleDuplicateBudgetLine(budgetLine)}
+                />
+            )}
             {isBudgetLineEditable && (
                 <>
                     <FontAwesomeIcon
@@ -55,9 +60,7 @@ const ChangeIcons = ({
                             icon={faClone}
                             title="duplicate"
                             data-position="top"
-                            className={`text-primary height-2 width-2 cursor-pointer usa-tooltip ${
-                                isBudgetLineEditable ? "margin-left-0" : "margin-left-6"
-                            }`}
+                            className="text-primary height-2 width-2 cursor-pointer usa-tooltip margin-left-0"
                             onClick={() => handleDuplicateBudgetLine(budgetLine)}
                         />
                     )}
