@@ -22,7 +22,7 @@ const BudgetLinesTable = ({
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
-    isReviewMode = false,
+    isReviewMode = false
 }) => {
     const sortedBudgetLines = budgetLinesAdded
         .slice()
@@ -57,7 +57,7 @@ BudgetLinesTable.propTypes = {
     handleDuplicateBudgetLine: PropTypes.func,
     readOnly: PropTypes.bool,
     errors: PropTypes.arrayOf(PropTypes.array),
-    isReviewMode: PropTypes.bool,
+    isReviewMode: PropTypes.bool
 };
 
 export default BudgetLinesTable;

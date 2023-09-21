@@ -14,7 +14,7 @@ const dummyBudgetLines = [
         psc_fee_amount: 0.05,
         status: "DRAFT",
         created_by: "1",
-        comments: "Note 1",
+        comments: "Note 1"
     },
     {
         id: 2,
@@ -26,8 +26,8 @@ const dummyBudgetLines = [
         psc_fee_amount: 0.07,
         status: "OBLIGATED",
         created_by: "2",
-        comments: "Note 2",
-    },
+        comments: "Note 2"
+    }
 ];
 
 function customRender(ui, store) {

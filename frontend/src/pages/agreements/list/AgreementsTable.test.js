@@ -16,35 +16,35 @@ const agreements = [
         procurement_shop: { fee: 0.05 },
         budget_line_items: [
             { amount: 100, date_needed: "2024-05-02T11:00:00", status: "DRAFT" },
-            { amount: 200, date_needed: "2023-03-02T11:00:00", status: "UNDER_REVIEW" },
+            { amount: 200, date_needed: "2023-03-02T11:00:00", status: "UNDER_REVIEW" }
         ],
         created_by: 1,
         notes: "Test notes",
         created_on: "2021-10-21T03:24:00",
-        status: "In Review",
-    },
+        status: "In Review"
+    }
 ];
 const userData = {
     id: 1,
-    full_name: "Test User",
+    full_name: "Test User"
 };
 
 jest.mock("../../../api/opsAPI", () => ({
     ...jest.requireActual("../../../api/opsAPI"),
     useGetUserByIdQuery: () => jest.fn(() => ({ data: userData })),
-    useGetAgreementByIdQuery: () => jest.fn(() => ({ data: agreements[0] })),
+    useGetAgreementByIdQuery: () => jest.fn(() => ({ data: agreements[0] }))
 }));
 
 const initialState = {
     auth: {
         activeUser: {
             id: 1,
-            name: "Test User",
-        },
+            name: "Test User"
+        }
     },
     alert: {
-        isActive: false,
-    },
+        isActive: false
+    }
 };
 const store = mockStore(initialState);
 

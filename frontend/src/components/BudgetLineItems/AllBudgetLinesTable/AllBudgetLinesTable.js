@@ -38,7 +38,11 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                 ))}
             </Table>
             {budgetLines.length > 0 && (
-                <PaginationNav currentPage={currentPage} setCurrentPage={setCurrentPage} items={budgetLines} />
+                <PaginationNav
+                    currentPage={currentPage}
+                    setCurrentPage={setCurrentPage}
+                    items={budgetLines}
+                />
             )}
             {budgetLines.length === 0 && (
                 <div
@@ -62,9 +66,9 @@ AllBudgetLinesTable.propTypes = {
             fiscal_year: PropTypes.number,
             can_number: PropTypes.string,
             amount: PropTypes.number,
-            status: PropTypes.string.isRequired,
+            status: PropTypes.string.isRequired
         })
-    ),
+    )
 };
 
 export default AllBudgetLinesTable;

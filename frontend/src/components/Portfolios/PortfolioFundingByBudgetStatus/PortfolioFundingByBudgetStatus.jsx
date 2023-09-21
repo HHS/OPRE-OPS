@@ -21,29 +21,29 @@ const PortfolioFundingByBudgetStatus = () => {
             label: "Available",
             value: portfolioFunding.available_funding.amount || 0,
             color: "#C07B96",
-            percent: Math.round(portfolioFunding.available_funding.percent) + "%",
+            percent: Math.round(portfolioFunding.available_funding.percent) + "%"
         },
         {
             id: 2,
             label: "Planned",
             value: portfolioFunding.planned_funding.amount || 0,
             color: "#336A90",
-            percent: Math.round(portfolioFunding.planned_funding.percent) + "%",
+            percent: Math.round(portfolioFunding.planned_funding.percent) + "%"
         },
         {
             id: 3,
             label: "Executing",
             value: portfolioFunding.in_execution_funding.amount || 0,
             color: "#E5A000",
-            percent: Math.round(portfolioFunding.in_execution_funding.percent) + "%",
+            percent: Math.round(portfolioFunding.in_execution_funding.percent) + "%"
         },
         {
             id: 4,
             label: "Obligated",
             value: portfolioFunding.obligated_funding.amount || 0,
             color: "#3A835B",
-            percent: Math.round(portfolioFunding.obligated_funding.percent) + "%",
-        },
+            percent: Math.round(portfolioFunding.obligated_funding.percent) + "%"
+        }
     ];
 
     const LegendItem = ({ id, label, value, color, percent }) => {
@@ -70,7 +70,12 @@ const PortfolioFundingByBudgetStatus = () => {
                     />
                 </div>
                 <div className="grid-col-1">
-                    <Tag tagStyle="darkTextWhiteBackground" text={percent} label={label} active={isGraphActive} />
+                    <Tag
+                        tagStyle="darkTextWhiteBackground"
+                        text={percent}
+                        label={label}
+                        active={isGraphActive}
+                    />
                 </div>
             </div>
         );

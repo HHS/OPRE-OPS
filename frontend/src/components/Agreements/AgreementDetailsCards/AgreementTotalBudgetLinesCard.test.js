@@ -4,7 +4,7 @@ import AgreementTotalBudgetLinesCard from "./AgreementTotalBudgetLinesCard";
 
 jest.mock("react", () => ({
     ...jest.requireActual("react"),
-    useState: () => [null, jest.fn()],
+    useState: () => [null, jest.fn()]
 }));
 
 // This will reset all mocks after each test
@@ -17,9 +17,14 @@ describe("AgreementTotalBudgetLinesCard", () => {
         const countsByStatus = {
             IN_EXECUTION: 8,
             OBLIGATED: 1,
-            PLANNED: 7,
+            PLANNED: 7
         };
-        render(<AgreementTotalBudgetLinesCard numberOfAgreements={16} countsByStatus={countsByStatus} />);
+        render(
+            <AgreementTotalBudgetLinesCard
+                numberOfAgreements={16}
+                countsByStatus={countsByStatus}
+            />
+        );
 
         expect(screen.getByText("0 Draft")).toBeInTheDocument();
         expect(screen.getByText("0 In Review")).toBeInTheDocument();

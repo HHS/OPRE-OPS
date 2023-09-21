@@ -13,7 +13,10 @@ const FiscalYear = ({ fiscalYear, handleChangeFiscalYear }) => {
 
     return (
         <div className={styles.container}>
-            <label className="font-sans-xs text-bold" htmlFor="fiscal-year-select">
+            <label
+                className="font-sans-xs text-bold"
+                htmlFor="fiscal-year-select"
+            >
                 Fiscal Year
             </label>
             <select
@@ -24,7 +27,10 @@ const FiscalYear = ({ fiscalYear, handleChangeFiscalYear }) => {
             >
                 {constants.fiscalYears.map((year) => {
                     return (
-                        <option key={year} value={year}>
+                        <option
+                            key={year}
+                            value={year}
+                        >
                             {year}
                         </option>
                     );

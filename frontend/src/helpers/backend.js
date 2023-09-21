@@ -19,7 +19,7 @@ export const callBackend = async (urlPath, action, requestBody, queryParams, use
         method: action,
         url: `${BACKEND_DOMAIN}${urlPath}`,
         data: requestBody,
-        params: queryParams,
+        params: queryParams
     });
 
     return response.data;
@@ -33,7 +33,7 @@ export const authConfig = {
         scope: "openid profile email",
         redirect_uri: `${window.location.origin}/login`,
         acr_values: 1,
-        logout_endpoint: "https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/logout",
+        logout_endpoint: "https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/logout"
     },
     logingov: {
         auth_endpoint: "https://idp.int.identitysandbox.gov/openid_connect/authorize",
@@ -42,11 +42,11 @@ export const authConfig = {
         scope: "openid email",
         redirect_uri: `${window.location.origin}/login`,
         acr_values: "http://idmanagement.gov/ns/assurance/ial/1",
-        logout_endpoint: "https://idp.int.identitysandbox.gov/openid_connect/logout",
-    },
+        logout_endpoint: "https://idp.int.identitysandbox.gov/openid_connect/logout"
+    }
 };
 
 export const backEndConfig = {
     apiVersion: "v1",
-    publicKey: "",
+    publicKey: ""
 };

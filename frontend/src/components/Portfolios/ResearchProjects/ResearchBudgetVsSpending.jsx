@@ -37,15 +37,15 @@ const ResearchBudgetVsSpending = ({ portfolioId = 0 }) => {
             label: `FY ${fiscalYear.value} Total Spending`,
             value: "8000000.00",
             color: "#B6406C",
-            percent: `${calculatePercent("8000000.00", totalFunding)}%`,
+            percent: `${calculatePercent("8000000.00", totalFunding)}%`
         },
         {
             id: 2,
             label: `FY ${fiscalYear.value} Remaining Budget`,
             value: "2000000.00",
             color: "#A9AEB1 ",
-            percent: `${calculatePercent("2000000.00", totalFunding)}%`,
-        },
+            percent: `${calculatePercent("2000000.00", totalFunding)}%`
+        }
     ];
     const [activeId, setActiveId] = React.useState(0);
 
@@ -74,16 +74,30 @@ const ResearchBudgetVsSpending = ({ portfolioId = 0 }) => {
                     />
                 </div>
                 <div className="grid-col-1">
-                    <Tag tagStyle="darkTextWhiteBackground" text={percent} label={label} active={isGraphActive} />
+                    <Tag
+                        tagStyle="darkTextWhiteBackground"
+                        text={percent}
+                        label={label}
+                        active={isGraphActive}
+                    />
                 </div>
             </div>
         );
     };
 
     return (
-        <CurrencySummaryCard headerText={headerText} amount={totalFunding}>
-            <div id="currency-summary-card" className="margin-top-2">
-                <CANFundingBar setActiveId={setActiveId} data={data} />
+        <CurrencySummaryCard
+            headerText={headerText}
+            amount={totalFunding}
+        >
+            <div
+                id="currency-summary-card"
+                className="margin-top-2"
+            >
+                <CANFundingBar
+                    setActiveId={setActiveId}
+                    data={data}
+                />
             </div>
 
             {data.map((item) => (

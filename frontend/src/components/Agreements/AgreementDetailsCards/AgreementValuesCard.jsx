@@ -37,14 +37,17 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
             return {
                 FY: fyVal.fiscalYear,
                 budget: fyVal.amount,
-                color: barChartColors[index].color,
+                color: barChartColors[index].color
             };
         })
         // sort by year descending
         .sort((a, b) => b.FY - a.FY);
 
     return (
-        <CurrencySummaryCard headerText={headerText} amount={totalValue}>
+        <CurrencySummaryCard
+            headerText={headerText}
+            amount={totalValue}
+        >
             <h4 className="margin-0 margin-top-2 margin-bottom-1 font-12px text-base-dark text-normal">
                 Budget Lines Over Next 3 FYs
             </h4>
@@ -60,7 +63,7 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
                         colors={{ datum: "data.color" }}
                         borderColor={{
                             from: "color",
-                            modifiers: [["darker", 1.6]],
+                            modifiers: [["darker", 1.6]]
                         }}
                         axisTop={null}
                         axisRight={null}
@@ -83,7 +86,7 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
 };
 
 AgreementTotalBudgetLinesCard.propTypes = {
-    budgetLineItems: PropTypes.array.isRequired,
+    budgetLineItems: PropTypes.array.isRequired
 };
 
 export default AgreementTotalBudgetLinesCard;

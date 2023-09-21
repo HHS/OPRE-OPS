@@ -7,7 +7,10 @@ const TeamLeaders = ({ teamLeaders }) => {
     const LeaderName = (props) => (
         <li className={`margin-0 padding-0 display-inline-block`}>
             <span className={`padding-right-205 display-flex flex-align-center`}>
-                <FontAwesomeIcon icon={faCircleUser} className={`height-3 width-3 padding-right-1`} />
+                <FontAwesomeIcon
+                    icon={faCircleUser}
+                    className={`height-3 width-3 padding-right-1`}
+                />
                 <span>
                     <a href=".">{props.value}</a>
                 </span>

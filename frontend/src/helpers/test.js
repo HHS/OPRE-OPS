@@ -14,10 +14,10 @@ export const authConfig = {
         client_id: "blah:blah",
         response_type: "blah",
         scope: "blah blah",
-        redirect_uri: "http://uri/login",
-    },
+        redirect_uri: "http://uri/login"
+    }
 };
 
 export const backEndConfig = {
-    apiVersion: "v1",
+    apiVersion: "v1"
 };

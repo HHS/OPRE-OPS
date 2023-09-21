@@ -22,7 +22,7 @@ export const StepSuccess = ({ delay = 6000 }) => {
             type: "success",
             heading: "Budget Lines Created",
             message:
-                " The budget lines have been successfully created. You will be redirected to the Agreements list page.",
+                " The budget lines have been successfully created. You will be redirected to the Agreements list page."
         });
     }, [setAlert, navigate, delay]);
 

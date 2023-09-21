@@ -21,8 +21,8 @@ describe("AgreementSelect", () => {
                     can: {
                         id: 1,
                         code: "CAN 1",
-                        name: "CAN 1",
-                    },
+                        name: "CAN 1"
+                    }
                 },
                 {
                     id: 2,
@@ -31,11 +31,11 @@ describe("AgreementSelect", () => {
                     can: {
                         id: 2,
                         code: "CAN 2",
-                        name: "CAN 2",
-                    },
-                },
+                        name: "CAN 2"
+                    }
+                }
             ],
-            procurement_shop: null,
+            procurement_shop: null
         },
         {
             id: 2,
@@ -45,8 +45,8 @@ describe("AgreementSelect", () => {
             period_of_performance_start: "2022-01-01",
             period_of_performance_end: "2022-12-31",
             budget_line_items: [],
-            procurement_shop: null,
-        },
+            procurement_shop: null
+        }
     ];
 
     it("renders without crashing", () => {
@@ -84,7 +84,12 @@ describe("AgreementSelect", () => {
     it("displays the correct agreement information in the summary card", () => {
         const selectedAgreementMock = agreementsMock[0];
         useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
-        render(<AgreementSelect selectedAgreement={selectedAgreementMock} agreements={agreementsMock} />);
+        render(
+            <AgreementSelect
+                selectedAgreement={selectedAgreementMock}
+                agreements={agreementsMock}
+            />
+        );
 
         const summaryCard = screen.getByTestId("agreement-summary-card");
         expect(summaryCard).toBeInTheDocument();

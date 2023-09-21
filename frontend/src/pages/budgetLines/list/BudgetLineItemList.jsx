@@ -21,12 +21,12 @@ export const BudgetLineItemList = () => {
     const [filters, setFilters] = useState({
         fiscalYears: [],
         portfolios: [],
-        bliStatus: [],
+        bliStatus: []
     });
     const {
         data: budgetLineItems,
         error: budgetLineItemsError,
-        isLoading: budgetLineItemsIsLoading,
+        isLoading: budgetLineItemsIsLoading
     } = useGetBudgetLineItemsQuery();
     const { data: cans, error: cansError, isLoading: cansIsLoading } = useGetCansQuery();
     const { data: agreements, error: agreementsError, isLoading: agreementsAreError } = useGetAgreementsQuery();
@@ -117,7 +117,7 @@ export const BudgetLineItemList = () => {
             ...budgetLine,
             can_number: can?.number,
             agreement_name: agreement?.name,
-            procShopCode: procurementShopAbbr,
+            procShopCode: procurementShopAbbr
         };
     });
 
@@ -134,9 +134,19 @@ export const BudgetLineItemList = () => {
                 }
                 buttonText="Add Budget Lines"
                 buttonLink="/budget-lines/create"
-                FilterTags={<BLIFilterTags filters={filters} setFilters={setFilters} />}
+                FilterTags={
+                    <BLIFilterTags
+                        filters={filters}
+                        setFilters={setFilters}
+                    />
+                }
                 TableSection={<AllBudgetLinesTable budgetLines={budgetLinesWithCanAndAgreementName} />}
-                FilterButton={<BLIFilterButton filters={filters} setFilters={setFilters} />}
+                FilterButton={
+                    <BLIFilterButton
+                        filters={filters}
+                        setFilters={setFilters}
+                    />
+                }
                 SummaryCardsSection={<SummaryCardsSection budgetLines={budgetLinesWithCanAndAgreementName} />}
             />
         </App>

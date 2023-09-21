@@ -7,7 +7,7 @@ test("successfully gets a User from the backend by user_id", async () => {
         id: userId,
         oidc_id: "00000000-0000-1111-a111-000000000004",
         email: "username@domain.com",
-        first_name: "User",
+        first_name: "User"
     };
     TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
         return [mockBackendResponse];
@@ -23,7 +23,7 @@ test("successfully gets a User from the backend by user_oidc_id", async () => {
         id: oidcId,
         oidc_id: "00000000-0000-1111-a111-000000000004",
         email: "username@domain.com",
-        first_name: "User",
+        first_name: "User"
     };
     TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
         return [mockBackendResponse];

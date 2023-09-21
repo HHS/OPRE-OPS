@@ -15,7 +15,10 @@ const BudgetLineTotalSummaryCard = ({ title, budgetLines }) => {
         return total + totalBudgetLineAmountPlusFees(budgetLine.amount, budgetLine.psc_fee_amount);
     }, 0);
     return (
-        <SummaryCard title={title} dataCy="bl-total-summary-card">
+        <SummaryCard
+            title={title}
+            dataCy="bl-total-summary-card"
+        >
             <CurrencyWithSmallCents
                 amount={totalAmountWithFees}
                 dollarsClasses="font-sans-xl text-bold margin-bottom-0"
@@ -26,7 +29,7 @@ const BudgetLineTotalSummaryCard = ({ title, budgetLines }) => {
 };
 BudgetLineTotalSummaryCard.propTypes = {
     title: PropTypes.string.isRequired,
-    budgetLines: PropTypes.arrayOf(PropTypes.object).isRequired,
+    budgetLines: PropTypes.arrayOf(PropTypes.object).isRequired
 };
 
 export default BudgetLineTotalSummaryCard;

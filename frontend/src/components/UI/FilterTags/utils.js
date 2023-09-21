@@ -6,8 +6,8 @@ const createTagString = (selectedList, filterType, filterText, setTagsList) => {
                 ...prevState,
                 {
                     tagText: `${filterText} ${selectedList.join(", ")}`,
-                    filter: filterType,
-                },
+                    filter: filterType
+                }
             ];
         });
     }
