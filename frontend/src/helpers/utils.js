@@ -10,7 +10,7 @@ export const getCurrentFiscalYear = (today = new Date()) => {
 };
 
 export const calculatePercent = (numerator, denominator) => {
-    if (denominator === "0" || denominator === 0) return "0";
+    if (denominator === "0" || denominator === 0 || numerator === "0" || numerator === 0) return "0";
 
     return Math.round((numerator / denominator) * 100);
 };

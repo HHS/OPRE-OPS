@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React from "react";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
@@ -6,42 +6,63 @@ import { ResponsiveDonutWithInnerPercent } from "../../UI/ResponsiveDonutWithInn
 import CustomLayerComponent from "../../UI/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
 import Tag from "../../UI/Tag/Tag";
 import RoundedBox from "../../UI/RoundedBox";
+import { calculatePercent, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import styles from "./styles.module.css";
 
+// TODO: Replace with real colors
 const BLIStatusSummaryCard = ({ budgetLines }) => {
-    const [percent, setPercent] = useState("");
-    const [hoverId, setHoverId] = useState(-1);
+    const [percent, setPercent] = React.useState("");
+    const [hoverId, setHoverId] = React.useState(-1);
 
-    // TODO: Replace with real data and colors
-    const totalFunding = 357_123_000;
+    const budgetLinesTotalsByStatus = budgetLines.reduce((acc, budgetLine) => {
+        const { status } = budgetLine;
+        if (!acc[status]) {
+            acc[status] = {
+                total: 0,
+                count: 0 // not used but handy for debugging
+            };
+        }
+        acc[status].total += budgetLine.amount + totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.psc_fee_amount);
+        acc[status].count += 1;
+        return acc;
+    }, {});
+
+    console.log(budgetLinesTotalsByStatus);
+
+    const totalFunding = Object.values(budgetLinesTotalsByStatus).reduce((acc, status) => {
+        return acc + status.total;
+    }, 0);
+
+    console.log({ totalFunding });
+
     const data = [
         {
             id: 1,
             label: "Draft",
-            value: 1_572_000 || 0,
+            value: budgetLinesTotalsByStatus.DRAFT?.total ?? 0,
             color: "#C07B96",
-            percent: Math.round(60) + "%"
+            percent: `${calculatePercent(budgetLinesTotalsByStatus.DRAFT?.total ?? 0, totalFunding)}%`
         },
         {
             id: 2,
             label: "Planned",
-            value: 524_000 || 0,
+            value: budgetLinesTotalsByStatus.PLANNED?.total ?? 0,
             color: "#336A90",
-            percent: Math.round(10) + "%"
+            percent: `${calculatePercent(budgetLinesTotalsByStatus.PLANNED?.total ?? 0, totalFunding)}%`
         },
         {
             id: 3,
             label: "Executing",
-            value: 0 || 0,
+            value: budgetLinesTotalsByStatus.IN_EXECUTION?.total ?? 0,
             color: "#E5A000",
-            percent: Math.round(0) + "%"
+            percent: `${calculatePercent(budgetLinesTotalsByStatus.IN_EXECUTION?.total ?? 0, totalFunding)}%`
         },
         {
             id: 4,
             label: "Obligated",
-            value: 1_048_000 || 0,
+            value: budgetLinesTotalsByStatus.OBLIGATED?.total ?? 0,
             color: "#3A835B",
-            percent: Math.round(30) + "%"
+            percent: `${calculatePercent(budgetLinesTotalsByStatus.OBLIGATED?.total ?? 0, totalFunding)}%`
         }
     ];
 
