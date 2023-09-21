@@ -65,19 +65,19 @@ const codesToDisplayText = {
         GRANT: "Grant",
         DIRECT_ALLOCATION: "Direct Allocation",
         IAA: "IAA",
-        MISCELLANEOUS: "Misc",
+        MISCELLANEOUS: "Misc"
     },
     agreementReason: {
         NEW_REQ: "New Requirement",
         RECOMPETE: "Recompete",
-        LOGICAL_FOLLOW_ON: "Logical Follow On",
+        LOGICAL_FOLLOW_ON: "Logical Follow On"
     },
     budgetLineStatus: {
         DRAFT: "Draft",
         UNDER_REVIEW: "In Review",
         PLANNED: "Planned",
         IN_EXECUTION: "Executing",
-        OBLIGATED: "Obligated",
+        OBLIGATED: "Obligated"
     },
     validation: {
         name: "Name",
@@ -91,11 +91,11 @@ const codesToDisplayText = {
         incumbent: "Incumbent",
         "project-officer": "Project Officer",
         "team-member": "Team Members",
-        "budget-line-items": "Budget Line Items",
+        "budget-line-items": "Budget Line Items"
     },
     className: {
         ContractAgreement: "Contract Agreement",
-        BudgetLineItem: "Budget Line",
+        BudgetLineItem: "Budget Line"
     },
     agreementPropertyLabels: {
         agreement_reason: "Agreement Reason",
@@ -114,7 +114,7 @@ const codesToDisplayText = {
         vendor: "Vendor",
         delivered_status: "Delivered Status",
         contract_type: "Contract Type",
-        support_contacts: "Support Contacts",
+        support_contacts: "Support Contacts"
     },
     budgetLineItemPropertyLabels: {
         amount: "Amount",
@@ -123,8 +123,8 @@ const codesToDisplayText = {
         date_needed: "Date Needed By",
         line_description: "Description",
         psc_fee_amount: "Shop Fee",
-        status: "Status",
-    },
+        status: "Status"
+    }
 };
 
 /**

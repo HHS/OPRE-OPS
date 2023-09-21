@@ -18,15 +18,24 @@ const Breadcrumb = ({ currentName }) => {
 
     return (
         <section className="grid-container bg-white">
-            <nav className="usa-breadcrumb margin-right-2 padding-top-3 padding-bottom-4" aria-label="Breadcrumbs">
+            <nav
+                className="usa-breadcrumb margin-right-2 padding-top-3 padding-bottom-4"
+                aria-label="Breadcrumbs"
+            >
                 <ol className="usa-breadcrumb__list">
                     <li className="usa-breadcrumb__list-item">
-                        <Link to="/" className="usa-breadbrumb__link text-primary">
+                        <Link
+                            to="/"
+                            className="usa-breadbrumb__link text-primary"
+                        >
                             Home
                         </Link>
                     </li>
                     {crumbs.map((crumb, index) => (
-                        <li key={index} className="usa-breadcrumb__list-item">
+                        <li
+                            key={index}
+                            className="usa-breadcrumb__list-item"
+                        >
                             {crumb}
                         </li>
                     ))}
@@ -38,7 +47,7 @@ const Breadcrumb = ({ currentName }) => {
 };
 
 Breadcrumb.propTypes = {
-    currentName: PropTypes.string.isRequired,
+    currentName: PropTypes.string.isRequired
 };
 
 export default Breadcrumb;

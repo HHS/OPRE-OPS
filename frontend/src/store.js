@@ -24,18 +24,18 @@ const rootReducer = combineReducers({
     userDetailEdit: userEditSlice,
     researchProject: researchProjectSlice,
     researchProjectFunding: ResearchProjectFundingSlice,
-    alert: alertSlice,
+    alert: alertSlice
 });
 
 export const setupStore = (preloadedState = {}) => {
     return configureStore({
         reducer: rootReducer,
         middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(opsApi.middleware),
-        preloadedState,
+        preloadedState
     });
 };
 
 export default configureStore({
     reducer: rootReducer,
-    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(opsApi.middleware),
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(opsApi.middleware)
 });

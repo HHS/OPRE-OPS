@@ -19,7 +19,10 @@ const Terms = ({ name, label = name, pending = false, messages = [], value, clas
             <dd className="text-semibold margin-0 margin-top-05">
                 {value || "TBD"}
                 {messages.length ? (
-                    <span className="usa-error-message" role="alert">
+                    <span
+                        className="usa-error-message"
+                        role="alert"
+                    >
                         {messages[0]}
                     </span>
                 ) : null}

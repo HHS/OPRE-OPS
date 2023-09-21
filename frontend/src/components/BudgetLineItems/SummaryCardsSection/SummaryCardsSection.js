@@ -12,13 +12,16 @@ const SummaryCardsSection = ({ budgetLines }) => {
     return (
         <div className="display-flex flex-justify">
             <SummaryCard title="TODO: Replace me">{null}</SummaryCard>
-            <BudgetLinesTotalSummaryCard title="Budget Lines Total" budgetLines={budgetLines} />
+            <BudgetLinesTotalSummaryCard
+                title="Budget Lines Total"
+                budgetLines={budgetLines}
+            />
         </div>
     );
 };
 
 SummaryCardsSection.propTypes = {
-    budgetLines: PropTypes.arrayOf(PropTypes.object).isRequired,
+    budgetLines: PropTypes.arrayOf(PropTypes.object).isRequired
 };
 
 export default SummaryCardsSection;

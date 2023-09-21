@@ -24,7 +24,7 @@ const SummaryCard = ({ title, children, dataCy }) => {
 SummaryCard.propTypes = {
     title: PropTypes.string,
     dataCy: PropTypes.string,
-    children: PropTypes.node.isRequired,
+    children: PropTypes.node.isRequired
 };
 
 export default SummaryCard;

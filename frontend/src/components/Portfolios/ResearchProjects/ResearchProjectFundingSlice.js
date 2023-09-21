@@ -3,7 +3,7 @@ import { getCurrentFiscalYear } from "../../../helpers/utils";
 
 const initialState = {
     researchProjectFundingDetails: {},
-    selectedFiscalYear: { value: getCurrentFiscalYear(new Date()) },
+    selectedFiscalYear: { value: getCurrentFiscalYear(new Date()) }
 };
 
 const ResearchProjectFundingSlice = createSlice({
@@ -15,8 +15,8 @@ const ResearchProjectFundingSlice = createSlice({
         },
         setSelectedFiscalYear: (state, action) => {
             state.selectedFiscalYear = action.payload;
-        },
-    },
+        }
+    }
 });
 
 export const { setSelectedFiscalYear, setResearchProjectFundingDetails } = ResearchProjectFundingSlice.actions;

@@ -29,14 +29,14 @@ export const AgreementsList = () => {
             draft: true,
             planned: true,
             executing: true,
-            obligated: true,
-        },
+            obligated: true
+        }
     });
 
     const {
         data: agreements,
         error: errorAgreement,
-        isLoading: isLoadingAgreement,
+        isLoading: isLoadingAgreement
     } = useGetAgreementsQuery({ refetchOnMountOrArgChange: true });
 
     const activeUser = useSelector((state) => state.auth.activeUser);
@@ -183,8 +183,18 @@ export const AgreementsList = () => {
                 buttonText="Add Agreement"
                 buttonLink="/agreements/create"
                 TabsSection={<AgreementTabs />}
-                FilterTags={<AgreementsFilterTags filters={filters} setFilters={setFilters} />}
-                FilterButton={<AgreementsFilterButton filters={filters} setFilters={setFilters} />}
+                FilterTags={
+                    <AgreementsFilterTags
+                        filters={filters}
+                        setFilters={setFilters}
+                    />
+                }
+                FilterButton={
+                    <AgreementsFilterButton
+                        filters={filters}
+                        setFilters={setFilters}
+                    />
+                }
                 TableSection={<AgreementsTable agreements={sortedAgreements} />}
             />
         </App>

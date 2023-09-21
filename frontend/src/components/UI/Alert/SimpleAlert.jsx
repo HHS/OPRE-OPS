@@ -24,7 +24,11 @@ export const SimpleAlert = ({ children, heading, message, type }) => {
     }
 
     return (
-        <div className={classNames} role="status" data-cy="alert">
+        <div
+            className={classNames}
+            role="status"
+            data-cy="alert"
+        >
             <div className="usa-alert__body display-flex flex-justify">
                 <div>
                     <h1 className="usa-alert__heading">{heading}</h1>

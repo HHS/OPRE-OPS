@@ -20,7 +20,7 @@ export const ConfirmationModal = ({
     setShowModal = () => {},
     actionButtonText,
     secondaryButtonText = "Cancel",
-    handleConfirm = () => {},
+    handleConfirm = () => {}
 }) => {
     const modalRef = useRef(null);
 
@@ -72,8 +72,16 @@ export const ConfirmationModal = ({
                 aria-describedby="ops-modal-description"
                 onClick={() => setShowModal(false)}
             >
-                <div className="usa-modal-overlay" aria-controls="ops-modal">
-                    <div className="usa-modal" tabIndex="-1" onClick={(e) => e.stopPropagation()} ref={modalRef}>
+                <div
+                    className="usa-modal-overlay"
+                    aria-controls="ops-modal"
+                >
+                    <div
+                        className="usa-modal"
+                        tabIndex="-1"
+                        onClick={(e) => e.stopPropagation()}
+                        ref={modalRef}
+                    >
                         <div className="usa-modal__content">
                             <div className="usa-modal__main">
                                 <h2
@@ -146,5 +154,5 @@ ConfirmationModal.propTypes = {
     setShowModal: PropTypes.func.isRequired,
     actionButtonText: PropTypes.string.isRequired,
     secondaryButtonText: PropTypes.string,
-    handleConfirm: PropTypes.func.isRequired,
+    handleConfirm: PropTypes.func.isRequired
 };

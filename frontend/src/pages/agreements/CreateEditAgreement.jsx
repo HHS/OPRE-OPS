@@ -39,13 +39,19 @@ export const CreateAgreement = ({ existingBudgetLines }) => {
     const {
         selected_project: selectedResearchProject,
         agreement: selectedAgreement,
-        selected_procurement_shop: selectedProcurementShop,
+        selected_procurement_shop: selectedProcurementShop
     } = createAgreementContext;
 
     return (
         <CreateAgreementFlow>
-            <StepSelectProject isEditMode={isEditMode} isReviewMode={isReviewMode} />
-            <StepCreateAgreement isEditMode={isEditMode} isReviewMode={isReviewMode} />
+            <StepSelectProject
+                isEditMode={isEditMode}
+                isReviewMode={isReviewMode}
+            />
+            <StepCreateAgreement
+                isEditMode={isEditMode}
+                isReviewMode={isReviewMode}
+            />
             <StepCreateBudgetLines
                 selectedResearchProject={selectedResearchProject}
                 selectedAgreement={selectedAgreement}
@@ -56,7 +62,7 @@ export const CreateAgreement = ({ existingBudgetLines }) => {
                         type: "success",
                         heading: "Agreement draft saved",
                         message: "The agreement has been successfully saved.",
-                        redirectUrl: "/agreements",
+                        redirectUrl: "/agreements"
                     })
                 }
                 existingBudgetLines={existingBudgetLines}

@@ -16,7 +16,7 @@ const InfiniteScroll = ({ fetchMoreData, isLoading }) => {
 
     useEffect(() => {
         const observer = new IntersectionObserver(handleIntersection, {
-            threshold: 0.1,
+            threshold: 0.1
         });
 
         if (observerRef.current) {
@@ -31,7 +31,12 @@ const InfiniteScroll = ({ fetchMoreData, isLoading }) => {
         };
     }, [observerRef, isLoading, fetchMoreData, isFetching]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    return <div ref={observerRef} style={{ minHeight: "2em" }} />;
+    return (
+        <div
+            ref={observerRef}
+            style={{ minHeight: "2em" }}
+        />
+    );
 };
 
 export default InfiniteScroll;

@@ -9,7 +9,7 @@ export const ResponsiveDonutWithInnerPercent = ({
     CustomLayerComponent,
     setPercent = () => {},
     setHoverId = () => {},
-    container_id,
+    container_id
 }) => {
     const setA11y = async () => {
         const container = document.querySelector(`#${container_id}`);

@@ -31,7 +31,10 @@ const CurrencyWithSmallCents = ({ amount, dollarsClasses, centsClasses, centsSty
                     value={centsValue}
                     displayType={"text"}
                     renderText={(value) => (
-                        <span className={`${centsClasses} text-bold margin-bottom-0`} style={centsStyles}>
+                        <span
+                            className={`${centsClasses} text-bold margin-bottom-0`}
+                            style={centsStyles}
+                        >
                             .{value}
                         </span>
                     )}
@@ -45,6 +48,6 @@ CurrencyWithSmallCents.propTypes = {
     amount: PropTypes.number.isRequired,
     dollarsClasses: PropTypes.string,
     centsClasses: PropTypes.string,
-    centsStyles: PropTypes.object,
+    centsStyles: PropTypes.object
 };
 export default CurrencyWithSmallCents;

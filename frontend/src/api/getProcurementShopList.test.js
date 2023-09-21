@@ -7,12 +7,12 @@ describe("getProcurementShopList", () => {
         const mockProcurementShopList = [
             {
                 id: 1,
-                name: "Procurement Shop 1",
+                name: "Procurement Shop 1"
             },
             {
                 id: 2,
-                name: "Procurement Shop 2",
-            },
+                name: "Procurement Shop 2"
+            }
         ];
         TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
             return mockProcurementShopList;

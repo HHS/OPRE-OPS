@@ -24,9 +24,9 @@ export const ReviewAgreement = ({ agreement_id }) => {
         isSuccess,
         data: agreement,
         error: errorAgreement,
-        isLoading: isLoadingAgreement,
+        isLoading: isLoadingAgreement
     } = useGetAgreementByIdQuery(agreement_id, {
-        refetchOnMountOrArgChange: true,
+        refetchOnMountOrArgChange: true
     });
 
     const [updateBudgetLineItemStatus] = useUpdateBudgetLineItemStatusMutation();
@@ -43,13 +43,13 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
         valid: "success",
-        warning: "warning",
+        warning: "warning"
     });
     // pass in the agreement object to the suite
     useEffect(() => {
         if (isSuccess) {
             suite({
-                ...agreement,
+                ...agreement
             });
         }
         return () => {
@@ -97,7 +97,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                                 type: "success",
                                 heading: "Agreement sent to approval",
                                 message: "The agreement has been successfully sent to approval for Planned Status.",
-                                redirectUrl: "/agreements",
+                                redirectUrl: "/agreements"
                             });
                         })
                         .catch((rejected) => {
@@ -107,7 +107,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                                 type: "error",
                                 heading: "Error",
                                 message: "An error occurred. Please try again.",
-                                redirectUrl: "/error",
+                                redirectUrl: "/error"
                             });
                         });
                 }
@@ -125,7 +125,10 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 >
                     <ul data-cy="error-list">
                         {Object.entries(pageErrors).map(([key, value]) => (
-                            <li key={key} data-cy="error-item">
+                            <li
+                                key={key}
+                                data-cy="error-item"
+                            >
                                 <strong>{convertCodeForDisplay("validation", key)}: </strong>
                                 {
                                     <span>
@@ -142,7 +145,10 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     </ul>
                 </SimpleAlert>
             ) : (
-                <h1 className="text-bold margin-top-0" style={{ fontSize: "1.375rem" }}>
+                <h1
+                    className="text-bold margin-top-0"
+                    style={{ fontSize: "1.375rem" }}
+                >
                     Review and Send Agreement to Approval
                 </h1>
             )}
@@ -232,7 +238,10 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     <>
                         <dt className="margin-0 text-base-dark margin-top-3">Team Members</dt>
                         {agreement?.team_members.map((member) => (
-                            <dd key={member.id} className="text-semibold margin-0 margin-top-05">
+                            <dd
+                                key={member.id}
+                                className="text-semibold margin-0 margin-top-05"
+                            >
                                 {member.full_name}
                             </dd>
                         ))}
@@ -248,7 +257,10 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 )}
             </dl>
             <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : null}`}>
-                <h2 className="text-bold" style={{ fontSize: "1.375rem" }}>
+                <h2
+                    className="text-bold"
+                    style={{ fontSize: "1.375rem" }}
+                >
                     Budget Lines
                 </h2>
                 <p>This is a list of all budget lines within this agreement.</p>
@@ -274,7 +286,11 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 )}
             </div>
 
-            <BudgetLinesTable readOnly={true} budgetLinesAdded={agreement?.budget_line_items} isReviewMode={true} />
+            <BudgetLinesTable
+                readOnly={true}
+                budgetLinesAdded={agreement?.budget_line_items}
+                isReviewMode={true}
+            />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className={`usa-button usa-button--outline margin-right-2 ${
@@ -304,7 +320,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
 };
 
 ReviewAgreement.propTypes = {
-    agreement_id: PropTypes.number.isRequired,
+    agreement_id: PropTypes.number.isRequired
 };
 
 export default ReviewAgreement;

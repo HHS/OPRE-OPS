@@ -15,13 +15,13 @@ const defaultState = {
         team_members: [],
         notes: "",
         research_project_id: null,
-        procurement_shop_id: null,
+        procurement_shop_id: null
     },
     selected_project: {},
     selected_product_service_code: {},
     selected_procurement_shop: {},
     selected_project_officer: {},
-    wizardSteps: ["Project", "Agreement", "Budget Lines"],
+    wizardSteps: ["Project", "Agreement", "Budget Lines"]
 };
 let initialState = { ...defaultState };
 
@@ -94,7 +94,7 @@ function editAgreementReducer(state, action) {
         case "UPDATE_AGREEMENT": {
             return {
                 ...state,
-                agreement: { ...state.agreement, [action.key]: action.value },
+                agreement: { ...state.agreement, [action.key]: action.value }
             };
         }
         case "ADD_TEAM_MEMBER": {
@@ -102,8 +102,8 @@ function editAgreementReducer(state, action) {
                 ...state,
                 agreement: {
                     ...state.agreement,
-                    team_members: [...state.agreement.team_members, action.payload],
-                },
+                    team_members: [...state.agreement.team_members, action.payload]
+                }
             };
         }
         case "REMOVE_TEAM_MEMBER": {
@@ -111,8 +111,8 @@ function editAgreementReducer(state, action) {
                 ...state,
                 agreement: {
                     ...state.agreement,
-                    team_members: state.agreement.team_members.filter((member) => member.id !== action.payload.id),
-                },
+                    team_members: state.agreement.team_members.filter((member) => member.id !== action.payload.id)
+                }
             };
         }
         case "RESET_TO_INITIAL_STATE": {
