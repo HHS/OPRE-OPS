@@ -40,7 +40,7 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
             id: 1,
             label: "Draft",
             value: budgetLinesTotalsByStatus.DRAFT?.total ?? 0,
-            color: "#C07B96",
+            color: "#A9AEB1",
             percent: `${calculatePercent(budgetLinesTotalsByStatus.DRAFT?.total ?? 0, totalFunding)}%`
         },
         {

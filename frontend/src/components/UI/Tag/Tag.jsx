@@ -50,12 +50,12 @@ const Tag = ({ tagStyle, text, active = false, label, className, children }) => 
                 activeClass += " bg-brand-data-viz-primary-6 text-white fake-bold";
                 break;
             case "Draft":
-                activeClass += " bg-brand-data-viz-primary-5 text-white fake-bold";
+                activeClass += " bg-brand-neutral-lighter fake-bold";
                 break;
             case label.includes("Funding Received"):
                 activeClass += " bg-brand-data-viz-primary-3 text-white fake-bold";
                 break;
-            case label.includes("Funding Expected") || label.includes("Remaining Budget"):
+            case label.includes("Funding Expected") ?? label.includes("Remaining Budget"):
                 activeClass += " bg-brand-neutral-lighter fake-bold";
                 break;
             case label.includes("Carry-Forward"):
