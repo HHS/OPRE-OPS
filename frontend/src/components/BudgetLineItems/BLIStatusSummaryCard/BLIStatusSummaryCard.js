@@ -21,7 +21,8 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
                 count: 0 // not used but handy for debugging
             };
         }
-        acc[status].total += budgetLine.amount + totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.psc_fee_amount);
+        acc[status].total +=
+            budgetLine.amount + totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.proc_shop_fee_percentage);
         acc[status].count += 1;
         return acc;
     }, {});
