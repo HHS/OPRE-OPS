@@ -127,7 +127,7 @@ def contract_with_draft_bli(loaded_db, contract_agreement):
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     loaded_db.add(draft_bli)
@@ -149,7 +149,7 @@ def contract_with_planned_bli(loaded_db, contract_agreement):
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.PLANNED,
-        psc_fee_amount=2.34,
+        proc_shop_fee_percentage=2.34,
         created_by=1,
     )
     loaded_db.add(planned_bli)
@@ -195,7 +195,10 @@ def test_non_contract():
     pass
 
 
-@given("I am logged in as an OPS user with the correct authorization", target_fixture="client")
+@given(
+    "I am logged in as an OPS user with the correct authorization",
+    target_fixture="client",
+)
 def client(auth_client):
     # TODO: Authorization stuff
     yield auth_client
@@ -211,7 +214,9 @@ def test_contract_team_member():
     pass
 
 
-@scenario("delete_agreement.feature", "Contract Agreement I am not an authorized user for")
+@scenario(
+    "delete_agreement.feature", "Contract Agreement I am not an authorized user for"
+)
 def test_contract_not_associated():
     pass
 
@@ -241,7 +246,9 @@ def team_member(contract_agreement_team_member):
     yield contract_agreement_team_member
 
 
-@given("I have a contract agreement I am not allowed to delete", target_fixture="agreement")
+@given(
+    "I have a contract agreement I am not allowed to delete", target_fixture="agreement"
+)
 def not_associated(contract_agreement_not_associated):
     yield contract_agreement_not_associated
 

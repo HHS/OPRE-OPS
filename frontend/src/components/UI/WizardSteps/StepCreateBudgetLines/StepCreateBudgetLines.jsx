@@ -125,7 +125,7 @@ export const StepCreateBudgetLines = ({
                 amount: enteredAmount || 0,
                 status: "DRAFT",
                 date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}` || null,
-                psc_fee_amount: selectedProcurementShop?.fee || null
+                proc_shop_fee_percentage: selectedProcurementShop?.fee || null
             }
         });
         dispatch({ type: "RESET_FORM" });
@@ -150,8 +150,8 @@ export const StepCreateBudgetLines = ({
                 amount: enteredAmount,
                 date_needed:
                     enteredYear && enteredMonth && enteredDay ? `${enteredYear}-${enteredMonth}-${enteredDay}` : null,
-                psc_fee_amount: selectedProcurementShop?.fee
-            }
+                proc_shop_fee_percentage: selectedProcurementShop?.fee,
+            },
         });
 
         dispatch({ type: "RESET_FORM" });

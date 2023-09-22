@@ -235,7 +235,7 @@
       amount: 1000000.0,
       status: "DRAFT",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0,
+      proc_shop_fee_percentage: 0,
     },
     {
       line_description: "LI 2",
@@ -245,7 +245,7 @@
       amount: 1000000.0,
       status: "DRAFT",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0,
+      proc_shop_fee_percentage: 0,
     },
     {
       line_description: "Line Item 1",
@@ -255,7 +255,7 @@
       amount: 1000000.0,
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0.005,
+      proc_shop_fee_percentage: 0.005,
     },
     {
       line_description: "Line Item 2",
@@ -265,7 +265,7 @@
       amount: 1000000.0,
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0.005,
+      proc_shop_fee_percentage: 0.005,
     },
     {
       line_description: "Line Item 1",
@@ -275,7 +275,7 @@
       amount: 1000000.0,
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0.005,
+      proc_shop_fee_percentage: 0.005,
     },
     {
       line_description: "Line Item 2",
@@ -285,7 +285,7 @@
       amount: 1000000.0,
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0.005,
+      proc_shop_fee_percentage: 0.005,
     },
     {
       line_description: "Line Item 1",
@@ -295,7 +295,7 @@
       amount: 1000000.0,
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0.005,
+      proc_shop_fee_percentage: 0.005,
     },
     {
       line_description: "Line Item 2",
@@ -305,7 +305,7 @@
       amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0.005,
+      proc_shop_fee_percentage: 0.005,
     },
     {
       line_description: "Line Item 2",
@@ -315,7 +315,7 @@
       amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0.005,
+      proc_shop_fee_percentage: 0.005,
     },
     {
       line_description: "Line Item 2",
@@ -326,7 +326,7 @@
       amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0.005,
+      proc_shop_fee_percentage: 0.005,
     },
     {
       line_description: "Line Item 2",
@@ -336,7 +336,7 @@
       amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0.005,
+      proc_shop_fee_percentage: 0.005,
     },
     {
       line_description: "Line Item 2",
@@ -346,7 +346,7 @@
       amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0.005,
+      proc_shop_fee_percentage: 0.005,
     },
     {
       line_description: "Line Item 2",
@@ -356,7 +356,7 @@
       amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0.005,
+      proc_shop_fee_percentage: 0.005,
     },
     {
       line_description: "Line Item 2",
@@ -366,7 +366,7 @@
       amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0.005,
+      proc_shop_fee_percentage: 0.005,
     },
     {
       line_description: "Line Item 2",
@@ -376,7 +376,7 @@
       amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0.005,
+      proc_shop_fee_percentage: 0.005,
     },
     {
       line_description: "Line Item 2",
@@ -386,7 +386,7 @@
       amount: 1000000.0,
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0.005,
+      proc_shop_fee_percentage: 0.005,
     },
     {
       line_description: "Line Item 2",
@@ -396,7 +396,7 @@
       amount: 3000000.0,
       status: "OBLIGATED",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0.005,
+      proc_shop_fee_percentage: 0.005,
     },
     {
       line_description: "Line Item 2",
@@ -406,7 +406,7 @@
       amount: 7000000.0,
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0.005,
+      proc_shop_fee_percentage: 0.005,
     },
     {
       line_description: "Yet Another Line Item",
@@ -416,7 +416,7 @@
       amount: 500.0,
       status: "OBLIGATED",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0.048,
+      proc_shop_fee_percentage: 0.048,
     },
     {
     line_description: "Yet Another Line Item",
@@ -426,7 +426,7 @@
       amount: 500.0,
       status: "OBLIGATED",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0.048,
+      proc_shop_fee_percentage: 0.048,
     },
     {
       line_description: "SC2",
@@ -436,7 +436,7 @@
       amount: 700000.0,
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
-      psc_fee_amount: 0.005,
+      proc_shop_fee_percentage: 0.005,
     },
     {
       line_description: "SC3",
@@ -446,7 +446,7 @@
       amount: 300000.0,
       status: "PLANNED",
       date_needed: "2044-06-13T14:03:25.765487",
-      psc_fee_amount: 0.005,
+      proc_shop_fee_percentage: 0.005,
     },
   ],
   agreement_team_members: [

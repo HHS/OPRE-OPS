@@ -68,11 +68,15 @@ class AgreementData:
         try:
             return cls._schemas[agreement_type]
         except KeyError:
-            cls._schemas[agreement_type] = desert.schema(cls._subclasses.get(agreement_type, AgreementData))
+            cls._schemas[agreement_type] = desert.schema(
+                cls._subclasses.get(agreement_type, AgreementData)
+            )
             return cls._schemas[agreement_type]
 
     @classmethod
-    def get_class(cls, agreement_type: Optional[AgreementType] = None) -> type["AgreementData"]:
+    def get_class(
+        cls, agreement_type: Optional[AgreementType] = None
+    ) -> type["AgreementData"]:
         try:
             return cls._subclasses[agreement_type]
         except KeyError:
@@ -97,7 +101,9 @@ class GrantAgreementData(AgreementData, agreement_type=AgreementType.GRANT):
 
 
 @dataclass
-class DirectAgreementData(AgreementData, agreement_type=AgreementType.DIRECT_ALLOCATION):
+class DirectAgreementData(
+    AgreementData, agreement_type=AgreementType.DIRECT_ALLOCATION
+):
     pass
 
 
@@ -174,16 +180,25 @@ class AgreementItemAPI(BaseItemAPI):
                 old_agreement: Agreement = self._get_item(id)
                 if not old_agreement:
                     raise RuntimeError("Invalid Agreement id.")
-                elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
-                    raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
+                elif any(
+                    bli.status == BudgetLineItemStatus.IN_EXECUTION
+                    for bli in old_agreement.budget_line_items
+                ):
+                    raise RuntimeError(
+                        f"Agreement {id} has budget line items in executing status."
+                    )
                 # reject change of agreement_type
                 # for PUT, it must exist in request
                 try:
                     req_type = request.json["agreement_type"]
                     if req_type != old_agreement.agreement_type.name:
-                        raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
+                        raise ValueError(
+                            f"{req_type} != {old_agreement.agreement_type.name}"
+                        )
                 except (KeyError, ValueError) as e:
-                    raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
+                    raise RuntimeError(
+                        "Invalid agreement_type, agreement_type must not change"
+                    ) from e
                 schema = AgreementData.get_schema(old_agreement.agreement_type)
 
                 OPSMethodView._validate_request(
@@ -196,9 +211,13 @@ class AgreementItemAPI(BaseItemAPI):
                 agreement = update_agreement(data, old_agreement)
                 agreement_dict = agreement.to_dict()
                 meta.metadata.update({"updated_agreement": agreement_dict})
-                current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
+                current_app.logger.info(
+                    f"{message_prefix}: Updated Agreement: {agreement_dict}"
+                )
 
-                return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
+                return make_response_with_headers(
+                    {"message": "Agreement updated", "id": agreement.id}, 200
+                )
 
         except (KeyError, RuntimeError, PendingRollbackError) as re:
             current_app.logger.error(f"{message_prefix}: {re}")
@@ -221,15 +240,26 @@ class AgreementItemAPI(BaseItemAPI):
                 old_agreement: Agreement = self._get_item(id)
                 if not old_agreement:
                     raise RuntimeError(f"Invalid Agreement id: {id}.")
-                elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
-                    raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
+                elif any(
+                    bli.status == BudgetLineItemStatus.IN_EXECUTION
+                    for bli in old_agreement.budget_line_items
+                ):
+                    raise RuntimeError(
+                        f"Agreement {id} has budget line items in executing status."
+                    )
                 # reject change of agreement_type
                 try:
-                    req_type = request.json.get("agreement_type", old_agreement.agreement_type.name)
+                    req_type = request.json.get(
+                        "agreement_type", old_agreement.agreement_type.name
+                    )
                     if req_type != old_agreement.agreement_type.name:
-                        raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
+                        raise ValueError(
+                            f"{req_type} != {old_agreement.agreement_type.name}"
+                        )
                 except (KeyError, ValueError) as e:
-                    raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
+                    raise RuntimeError(
+                        "Invalid agreement_type, agreement_type must not change"
+                    ) from e
                 schema = AgreementData.get_schema(old_agreement.agreement_type)
 
                 OPSMethodView._validate_request(
@@ -238,14 +268,23 @@ class AgreementItemAPI(BaseItemAPI):
                     partial=True,
                 )
 
-                agreement_fields = set(f.name for f in dc_fields(AgreementData.get_class(old_agreement.agreement_type)))
+                agreement_fields = set(
+                    f.name
+                    for f in dc_fields(
+                        AgreementData.get_class(old_agreement.agreement_type)
+                    )
+                )
                 data = {k: v for k, v in request.json.items() if k in agreement_fields}
                 agreement = update_agreement(data, old_agreement)
                 agreement_dict = agreement.to_dict()
                 meta.metadata.update({"updated_agreement": agreement_dict})
-                current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
+                current_app.logger.info(
+                    f"{message_prefix}: Updated Agreement: {agreement_dict}"
+                )
 
-                return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
+                return make_response_with_headers(
+                    {"message": "Agreement updated", "id": agreement.id}, 200
+                )
         except (KeyError, RuntimeError, PendingRollbackError) as re:
             current_app.logger.error(f"{message_prefix}: {re}")
             return make_response_with_headers({}, 400)
@@ -258,7 +297,11 @@ class AgreementItemAPI(BaseItemAPI):
             return make_response_with_headers({}, 500)
 
     @override
-    @is_authorized(PermissionType.DELETE, Permission.AGREEMENT, extra_check=associated_with_agreement)
+    @is_authorized(
+        PermissionType.DELETE,
+        Permission.AGREEMENT,
+        extra_check=associated_with_agreement,
+    )
     def delete(self, id: int) -> Response:
         message_prefix = f"DELETE from {ENDPOINT_STRING}"
 
@@ -269,19 +312,30 @@ class AgreementItemAPI(BaseItemAPI):
                 if not agreement:
                     raise RuntimeError(f"Invalid Agreement id: {id}.")
                 elif agreement.agreement_type != AgreementType.CONTRACT:
-                    raise RuntimeError(f"Invalid Agreement type: {agreement.agreement_type}.")
-                elif any(bli.status != BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items):
-                    raise RuntimeError(f"Agreement {id} has budget line items not in draft status.")
+                    raise RuntimeError(
+                        f"Invalid Agreement type: {agreement.agreement_type}."
+                    )
+                elif any(
+                    bli.status != BudgetLineItemStatus.DRAFT
+                    for bli in agreement.budget_line_items
+                ):
+                    raise RuntimeError(
+                        f"Agreement {id} has budget line items not in draft status."
+                    )
 
                 current_app.db_session.delete(agreement)
                 current_app.db_session.commit()
 
                 meta.metadata.update({"Deleted Agreement": id})
 
-                return make_response_with_headers({"message": "Agreement deleted", "id": agreement.id}, 200)
+                return make_response_with_headers(
+                    {"message": "Agreement deleted", "id": agreement.id}, 200
+                )
 
         except RuntimeError as e:
-            return make_response_with_headers({"message": f"{type(e)}: {e!s}", "id": agreement.id}, 400)
+            return make_response_with_headers(
+                {"message": f"{type(e)}: {e!s}", "id": agreement.id}, 400
+            )
 
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
@@ -348,7 +402,9 @@ class AgreementListAPI(BaseListAPI):
                 self.check_errors(errors)
 
                 data = AgreementData.get_schema(agreement_type).load(request.json)
-                new_agreement = self._create_agreement(data, Agreement.get_class(agreement_type))
+                new_agreement = self._create_agreement(
+                    data, Agreement.get_class(agreement_type)
+                )
 
                 token = verify_jwt_in_request()
                 user = get_user_from_token(token[1])
@@ -359,9 +415,13 @@ class AgreementListAPI(BaseListAPI):
 
                 new_agreement_dict = new_agreement.to_dict()
                 meta.metadata.update({"New Agreement": new_agreement_dict})
-                current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Agreement created: {new_agreement_dict}")
+                current_app.logger.info(
+                    f"POST to {ENDPOINT_STRING}: New Agreement created: {new_agreement_dict}"
+                )
 
-                return make_response_with_headers({"message": "Agreement created", "id": new_agreement.id}, 201)
+                return make_response_with_headers(
+                    {"message": "Agreement created", "id": new_agreement.id}, 201
+                )
         except (KeyError, RuntimeError, PendingRollbackError) as re:
             current_app.logger.error(f"{message_prefix}: {re}")
             return make_response_with_headers({}, 400)
@@ -378,24 +438,35 @@ class AgreementListAPI(BaseListAPI):
         data.team_members = []
 
         if agreement_cls == ContractAgreement:
-            tmp_support_contacts = data.support_contacts if data.support_contacts else []
+            tmp_support_contacts = (
+                data.support_contacts if data.support_contacts else []
+            )
             data.support_contacts = []
 
         new_agreement = agreement_cls(**data.__dict__)
 
-        new_agreement.team_members.extend([current_app.db_session.get(User, tm_id.id) for tm_id in tmp_team_members])
+        new_agreement.team_members.extend(
+            [current_app.db_session.get(User, tm_id.id) for tm_id in tmp_team_members]
+        )
 
         if agreement_cls == ContractAgreement:
             new_agreement.support_contacts.extend(
-                [current_app.db_session.get(User, tm_id.id) for tm_id in tmp_support_contacts]
+                [
+                    current_app.db_session.get(User, tm_id.id)
+                    for tm_id in tmp_support_contacts
+                ]
             )
 
         return new_agreement
 
     def check_errors(self, errors):
         if errors:
-            current_app.logger.error(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
-            raise RuntimeError(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
+            current_app.logger.error(
+                f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}"
+            )
+            raise RuntimeError(
+                f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}"
+            )
 
 
 class AgreementReasonListAPI(MethodView):
@@ -441,11 +512,16 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
 
             case "support_contacts":
                 tmp_support_contacts = _get_user_list(data[item])
-                agreement.support_contacts = tmp_support_contacts if tmp_support_contacts else []
+                agreement.support_contacts = (
+                    tmp_support_contacts if tmp_support_contacts else []
+                )
 
             case "procurement_shop_id":
                 if any(
-                    [bli.status.value >= BudgetLineItemStatus.IN_EXECUTION.value for bli in agreement.budget_line_items]
+                    [
+                        bli.status.value >= BudgetLineItemStatus.IN_EXECUTION.value
+                        for bli in agreement.budget_line_items
+                    ]
                 ):
                     raise ValueError(
                         "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
@@ -454,7 +530,9 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
                     setattr(agreement, item, data[item])
                     for bli in agreement.budget_line_items:
                         if bli.status.value <= BudgetLineItemStatus.PLANNED.value:
-                            bli.psc_fee_amount = agreement.procurement_shop.fee
+                            bli.proc_shop_fee_percentage = (
+                                agreement.procurement_shop.fee
+                            )
                     changed = True
 
             case _:

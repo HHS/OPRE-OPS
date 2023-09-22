@@ -95,7 +95,9 @@ def test_edit_planned_budget_line_team_member():
     ...
 
 
-@scenario("edit_planned_budget_line.feature", "Successful Edit as a member of the Budget Team")
+@scenario(
+    "edit_planned_budget_line.feature", "Successful Edit as a member of the Budget Team"
+)
 def test_edit_planned_budget_line_budget_team():
     ...
 
@@ -110,7 +112,10 @@ def client(auth_client):
     yield auth_client
 
 
-@given("I have a Contract Agreement as the original Agreement owner", target_fixture="agreement")
+@given(
+    "I have a Contract Agreement as the original Agreement owner",
+    target_fixture="agreement",
+)
 def agreement_owner(loaded_db, original_agreement, not_budget_team):
     original_agreement["created_by"] = 4
     contract_agreement = ContractAgreement(**original_agreement)
@@ -150,7 +155,10 @@ def agreement_team_member(loaded_db, original_agreement, not_budget_team):
     loaded_db.commit()
 
 
-@given("I have a Contract Agreement as a member of the Budget Team", target_fixture="agreement")
+@given(
+    "I have a Contract Agreement as a member of the Budget Team",
+    target_fixture="agreement",
+)
 def agreement_budget_team(loaded_db, original_agreement, in_budget_team):
     contract_agreement = ContractAgreement(**original_agreement)
     loaded_db.add(contract_agreement)
@@ -162,7 +170,9 @@ def agreement_budget_team(loaded_db, original_agreement, in_budget_team):
     loaded_db.commit()
 
 
-@given("I have a Contract Agreement as an unauthorized user", target_fixture="agreement")
+@given(
+    "I have a Contract Agreement as an unauthorized user", target_fixture="agreement"
+)
 def agreement_unauthorized(loaded_db, original_agreement, not_budget_team):
     contract_agreement = ContractAgreement(**original_agreement)
     loaded_db.add(contract_agreement)
@@ -184,7 +194,7 @@ def planned_bli(loaded_db, agreement):
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.PLANNED,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     loaded_db.add(planned_bli)

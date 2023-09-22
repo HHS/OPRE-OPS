@@ -1,7 +1,13 @@
 import datetime
 
 import pytest
-from models import AgreementType, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ContractType
+from models import (
+    AgreementType,
+    BudgetLineItem,
+    BudgetLineItemStatus,
+    ContractAgreement,
+    ContractType,
+)
 from ops_api.ops.resources.agreements import AgreementData
 from pytest_bdd import given, scenario, then, when
 
@@ -47,7 +53,7 @@ def contract_with_executing_bli(loaded_db, test_contract):
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.IN_EXECUTION,
-        psc_fee_amount=2.34,
+        proc_shop_fee_percentage=2.34,
         created_by=1,
     )
     loaded_db.add(executing_bli)
@@ -69,7 +75,7 @@ def contract_with_planned_bli(loaded_db, test_contract):
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.PLANNED,
-        psc_fee_amount=2.34,
+        proc_shop_fee_percentage=2.34,
         created_by=1,
     )
     loaded_db.add(planned_bli)
@@ -119,7 +125,10 @@ def contract_agreement(client, app, test_contract):
     return data
 
 
-@given("I have a Contract Agreement with a BLI in execution", target_fixture="contract_agreement")
+@given(
+    "I have a Contract Agreement with a BLI in execution",
+    target_fixture="contract_agreement",
+)
 def contract_agreement_execution(client, app, contract_with_executing_bli):
     get_resp = client.get(f"/api/v1/agreements/{contract_with_executing_bli.id}")
     data = get_resp.json
@@ -127,7 +136,10 @@ def contract_agreement_execution(client, app, contract_with_executing_bli):
     return data
 
 
-@given("I have a Contract Agreement with a BLI in planned", target_fixture="contract_agreement")
+@given(
+    "I have a Contract Agreement with a BLI in planned",
+    target_fixture="contract_agreement",
+)
 def contract_agreement_planned(client, app, contract_with_planned_bli):
     get_resp = client.get(f"/api/v1/agreements/{contract_with_planned_bli.id}")
     data = get_resp.json
@@ -135,7 +147,9 @@ def contract_agreement_planned(client, app, contract_with_planned_bli):
     return data
 
 
-@given("I edit the agreement to remove a required field", target_fixture="edited_agreement")
+@given(
+    "I edit the agreement to remove a required field", target_fixture="edited_agreement"
+)
 def remove_required_field(contract_agreement):
     # contract_agreement["name"] = None
     contract_agreement.pop("name")
@@ -185,4 +199,7 @@ def success(submit_response):
 def draft_check(client, contract_agreement):
     get_resp = client.get(f"/api/v1/agreements/{contract_agreement['id']}")
     data = get_resp.json
-    assert all(bli["status"] == BudgetLineItemStatus.DRAFT.name for bli in data["budget_line_items"])
+    assert all(
+        bli["status"] == BudgetLineItemStatus.DRAFT.name
+        for bli in data["budget_line_items"]
+    )

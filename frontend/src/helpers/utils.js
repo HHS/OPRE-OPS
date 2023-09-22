@@ -122,7 +122,7 @@ const codesToDisplayText = {
         comments: "Notes",
         date_needed: "Date Needed By",
         line_description: "Description",
-        psc_fee_amount: "Shop Fee",
+        proc_shop_fee_percentage: "Shop Fee",
         status: "Status"
     }
 };
