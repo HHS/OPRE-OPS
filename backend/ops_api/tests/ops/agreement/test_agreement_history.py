@@ -84,9 +84,7 @@ def test_agreement_history(auth_client, loaded_db):
     resp = auth_client.delete(f"/api/v1/agreements/{agreement_id}")
     assert resp.status_code == 200
 
-    resp = auth_client.get(
-        f"/api/v1/agreements/{agreement_id}/history/?offset=0&limit=20"
-    )
+    resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?offset=0&limit=20")
     assert resp.status_code == 200
     data = resp.json
     assert len(data) == 6

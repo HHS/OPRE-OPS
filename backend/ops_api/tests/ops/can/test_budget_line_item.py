@@ -335,9 +335,7 @@ def test_put_budget_line_items(auth_client, test_bli):
         date_needed="2044-01-01",
         proc_shop_fee_percentage=2.34,
     )
-    response = auth_client.put(
-        f"/api/v1/budget-line-items/{test_bli.id}", json=data.__dict__
-    )
+    response = auth_client.put(f"/api/v1/budget-line-items/{test_bli.id}", json=data.__dict__)
     assert response.status_code == 200
     assert response.json["line_description"] == "Updated LI 1"
     assert response.json["id"] == test_bli.id
@@ -516,9 +514,7 @@ def test_patch_budget_line_items(auth_client, loaded_db):
             date_needed="2044-01-01",
             proc_shop_fee_percentage=2.34,
         )
-        response = auth_client.patch(
-            "/api/v1/budget-line-items/1000", json=data.__dict__
-        )
+        response = auth_client.patch("/api/v1/budget-line-items/1000", json=data.__dict__)
         assert response.status_code == 200
         assert response.json["line_description"] == "Updated LI 1"
         assert response.json["id"] == 1000
@@ -718,26 +714,18 @@ def test_put_budget_line_item_portfolio_id_ignored(auth_client, loaded_db, test_
         proc_shop_fee_percentage=2.34,
     )
     request_data = data.__dict__ | {"portfolio_id": 10000}
-    response = auth_client.put(
-        f"/api/v1/budget-line-items/{test_bli.id}", json=request_data
-    )
+    response = auth_client.put(f"/api/v1/budget-line-items/{test_bli.id}", json=request_data)
     assert response.status_code == 200, "portfolio_id should be ignored"
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_fiscal_year(
-    loaded_db, test_bli, test_bli_previous_year, test_bli_previous_fiscal_year
-):
+def test_budget_line_item_fiscal_year(loaded_db, test_bli, test_bli_previous_year, test_bli_previous_fiscal_year):
+    assert test_bli.fiscal_year == test_bli.date_needed.year, "test_bli.date_needed == 2043-01-01"
     assert (
-        test_bli.fiscal_year == test_bli.date_needed.year
-    ), "test_bli.date_needed == 2043-01-01"
-    assert (
-        test_bli_previous_year.fiscal_year
-        == test_bli_previous_year.date_needed.year + 1
+        test_bli_previous_year.fiscal_year == test_bli_previous_year.date_needed.year + 1
     ), "test_bli_previous_year.date_needed == 2042-10-01"
     assert (
-        test_bli_previous_fiscal_year.fiscal_year
-        == test_bli_previous_fiscal_year.date_needed.year
+        test_bli_previous_fiscal_year.fiscal_year == test_bli_previous_fiscal_year.date_needed.year
     ), "test_bli_previous_fiscal_year.date_needed == 2042-09-01"
 
 
@@ -750,13 +738,9 @@ def test_budget_line_item_portfolio_id_null(auth_client, loaded_db, test_bli_no_
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_fiscal_year_null(
-    auth_client, loaded_db, test_bli_no_need_by_date
-):
+def test_budget_line_item_fiscal_year_null(auth_client, loaded_db, test_bli_no_need_by_date):
     assert test_bli_no_need_by_date.fiscal_year is None
-    response = auth_client.get(
-        f"/api/v1/budget-line-items/{test_bli_no_need_by_date.id}"
-    )
+    response = auth_client.get(f"/api/v1/budget-line-items/{test_bli_no_need_by_date.id}")
     assert response.status_code == 200
     assert response.json["fiscal_year"] is None
 

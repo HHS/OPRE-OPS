@@ -1,13 +1,7 @@
 import datetime
 
 import pytest
-from models import (
-    AgreementType,
-    BudgetLineItem,
-    BudgetLineItemStatus,
-    ContractAgreement,
-    ContractType,
-)
+from models import AgreementType, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ContractType
 from ops_api.ops.resources.agreements import AgreementData
 from pytest_bdd import given, scenario, then, when
 
@@ -147,9 +141,7 @@ def contract_agreement_planned(client, app, contract_with_planned_bli):
     return data
 
 
-@given(
-    "I edit the agreement to remove a required field", target_fixture="edited_agreement"
-)
+@given("I edit the agreement to remove a required field", target_fixture="edited_agreement")
 def remove_required_field(contract_agreement):
     # contract_agreement["name"] = None
     contract_agreement.pop("name")
@@ -199,7 +191,4 @@ def success(submit_response):
 def draft_check(client, contract_agreement):
     get_resp = client.get(f"/api/v1/agreements/{contract_agreement['id']}")
     data = get_resp.json
-    assert all(
-        bli["status"] == BudgetLineItemStatus.DRAFT.name
-        for bli in data["budget_line_items"]
-    )
+    assert all(bli["status"] == BudgetLineItemStatus.DRAFT.name for bli in data["budget_line_items"])
