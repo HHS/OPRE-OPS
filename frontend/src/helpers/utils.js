@@ -17,8 +17,9 @@ export const getCurrentFiscalYear = (today = new Date()) => {
  */
 export const calculatePercent = (numerator, denominator) => {
     if (typeof numerator !== "number" || typeof denominator !== "number") {
-        console.error("calculatePercent: numerator and denominator must be numbers");
-        return 0;
+        numerator = +numerator;
+        denominator = +denominator;
+        console.warn("calculatePercent: numerator and denominator must be numbers");
     }
 
     if (denominator === 0 || numerator === 0) return 0;
