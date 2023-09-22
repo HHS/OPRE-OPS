@@ -10,8 +10,8 @@ import SummaryCard from "../../UI/SummaryCard";
  * @param {Object[]} props.budgetLines - The budget lines to render
  * @returns {React.JSX.Element} - The rendered component
  */
-const BudgetLineTotalSummaryCard = ({ title, budgetLines }) => {
-    const totalAmountWithFees = budgetLines.reduce((total, budgetLine) => {
+const calculateTotalAmountWithFees = (budgetLines) => {
+    return budgetLines.reduce((total, budgetLine) => {
         return (
             total +
             totalBudgetLineAmountPlusFees(
@@ -20,6 +20,10 @@ const BudgetLineTotalSummaryCard = ({ title, budgetLines }) => {
             )
         );
     }, 0);
+};
+
+export const BudgetLineTotalSummaryCard = ({ title, budgetLines }) => {
+    const totalAmountWithFees = calculateTotalAmountWithFees(budgetLines);
     return (
         <SummaryCard
             title={title}
@@ -37,5 +41,4 @@ BudgetLineTotalSummaryCard.propTypes = {
     title: PropTypes.string.isRequired,
     budgetLines: PropTypes.arrayOf(PropTypes.object).isRequired
 };
-
 export default BudgetLineTotalSummaryCard;
