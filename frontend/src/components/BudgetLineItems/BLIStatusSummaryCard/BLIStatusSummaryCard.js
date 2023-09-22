@@ -9,7 +9,6 @@ import RoundedBox from "../../UI/RoundedBox";
 import { calculatePercent, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import styles from "./styles.module.css";
 
-// TODO: Replace with real colors
 const BLIStatusSummaryCard = ({ budgetLines }) => {
     const [percent, setPercent] = React.useState("");
     const [hoverId, setHoverId] = React.useState(-1);
