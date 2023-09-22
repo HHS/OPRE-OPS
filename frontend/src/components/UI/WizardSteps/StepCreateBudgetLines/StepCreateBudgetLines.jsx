@@ -150,8 +150,8 @@ export const StepCreateBudgetLines = ({
                 amount: enteredAmount,
                 date_needed:
                     enteredYear && enteredMonth && enteredDay ? `${enteredYear}-${enteredMonth}-${enteredDay}` : null,
-                proc_shop_fee_percentage: selectedProcurementShop?.fee,
-            },
+                proc_shop_fee_percentage: selectedProcurementShop?.fee
+            }
         });
 
         dispatch({ type: "RESET_FORM" });
