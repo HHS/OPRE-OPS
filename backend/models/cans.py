@@ -21,7 +21,13 @@ from sqlalchemy import (
     case,
     select,
 )
-from sqlalchemy.orm import InstrumentedAttribute, column_property, object_session, relationship, with_polymorphic
+from sqlalchemy.orm import (
+    InstrumentedAttribute,
+    column_property,
+    object_session,
+    relationship,
+    with_polymorphic,
+)
 from typing_extensions import override
 
 
@@ -213,7 +219,7 @@ class Agreement(BaseModel):
 
     @classmethod
     def get_class(
-            cls, agreement_type: Optional[AgreementType] = None
+        cls, agreement_type: Optional[AgreementType] = None
     ) -> type["Agreement"]:
         try:
             return cls._subclasses[agreement_type]
@@ -460,8 +466,8 @@ class BudgetLineItem(BaseModel):
     status = Column(sa.Enum(BudgetLineItemStatus))
 
     date_needed = Column(Date)
-    psc_fee_amount = Column(
-        Numeric(12, 2)
+    proc_shop_fee_percentage = Column(
+        Numeric(12, 5)
     )  # may need to be a different object, i.e. flat rate or percentage
 
     @BaseModel.display_name.getter
@@ -506,7 +512,9 @@ class BudgetLineItem(BaseModel):
         d.update(
             status=self.status.name if self.status else None,
             amount=float(self.amount) if self.amount else None,
-            psc_fee_amount=float(self.psc_fee_amount) if self.psc_fee_amount else None,
+            proc_shop_fee_percentage=float(self.proc_shop_fee_percentage)
+            if self.proc_shop_fee_percentage
+            else None,
             date_needed=self.date_needed.isoformat() if self.date_needed else None,
             can=self.can.to_dict() if self.can else None,
         )

@@ -1275,7 +1275,7 @@ components:
           example: '2023-05-06'
         line_description:
           type: string
-        psc_fee_amount:
+        proc_shop_fee_percentage:
           type: number
           example: 100.2
         status:
@@ -1316,7 +1316,7 @@ components:
           example: '2023-05-06'
         line_description:
           type: string
-        psc_fee_amount:
+        proc_shop_fee_percentage:
           type: number
           example: 100.2
         status:
@@ -1590,7 +1590,7 @@ components:
                        amount: 1000000.0,
                        status: "EXECUTING",
                        date_needed: "2111-1-11",
-                       psc_fee_amount: 0,
+                       proc_shop_fee_percentage: 0,
                        created_by: "Carolyn Hsu",
                        created_on: "2023-4-5",
                        updated_on: "2023-4-15",
@@ -1605,7 +1605,7 @@ components:
                        amount: 1000000.0,
                        status: "OBLIGATED",
                        date_needed: "2222-2-22",
-                       psc_fee_amount: 0,
+                       proc_shop_fee_percentage: 0,
                        created_by: "Carolyn Hsu",
                        created_on: "2023-4-1",
                        updated_on: "2023-4-15",
@@ -1620,7 +1620,7 @@ components:
                        amount: 1000000.0,
                        status: "PLANNED",
                        date_needed: "2333-3-13",
-                       psc_fee_amount: 0,
+                       proc_shop_fee_percentage: 0,
                        created_by: "Carolyn Hsu",
                        created_on: "2023-3-11",
                        updated_on: "2023-4-15",
@@ -1649,7 +1649,7 @@ components:
                 amount: 1000000.0,
                 status: "EXECUTING",
                 date_needed: "2111-1-11",
-                psc_fee_amount: 0.5,
+                proc_shop_fee_percentage: 0.5,
             },
             {
                 line_description: "LI 2",
@@ -1659,7 +1659,7 @@ components:
                 amount: 1000000.0,
                 status: "OBLIGATED",
                 date_needed: "2222-2-22",
-                psc_fee_amount: 0.5,
+                proc_shop_fee_percentage: 0.5,
             },
             {
                 line_description: "LI 3",
@@ -1669,7 +1669,7 @@ components:
                 amount: 1000000.0,
                 status: "PLANNED",
                 date_needed: "2333-3-13",
-                psc_fee_amount: 0.5,
+                proc_shop_fee_percentage: 0.5,
             },
         ],
         }]
@@ -1694,7 +1694,7 @@ components:
                 amount: 1000000.0,
                 status: "EXECUTING",
                 date_needed: "2111-1-11",
-                psc_fee_amount: 0.5,
+                proc_shop_fee_percentage: 0.5,
             },
             {
                 line_description: "LI 2",
@@ -1704,7 +1704,7 @@ components:
                 amount: 1000000.0,
                 status: "OBLIGATED",
                 date_needed: "2222-2-22",
-                psc_fee_amount: 0.5,
+                proc_shop_fee_percentage: 0.5,
             },
             {
                 line_description: "LI 3",
@@ -1714,7 +1714,7 @@ components:
                 amount: 1000000.0,
                 status: "PLANNED",
                 date_needed: "2333-3-13",
-                psc_fee_amount: 0.5,
+                proc_shop_fee_percentage: 0.5,
             },
         ],
         }
@@ -1732,7 +1732,7 @@ components:
               "date_needed": "2023-05-06",
               "id": 1,
               "line_description": "LI 1",
-              "psc_fee_amount": null,
+              "proc_shop_fee_percentage": null,
               "status": "PLANNED",
               "updated_on": "2023-04-06T19:02:38.409254"
           },
@@ -1746,7 +1746,7 @@ components:
               "date_needed": "2023-05-06",
               "id": 2,
               "line_description": "LI 2",
-              "psc_fee_amount": null,
+              "proc_shop_fee_percentage": null,
               "status": "PLANNED",
               "updated_on": "2023-04-06T19:02:38.409254"
           },
@@ -1760,7 +1760,7 @@ components:
               "date_needed": "2023-05-06",
               "id": 3,
               "line_description": "Line Item 1",
-              "psc_fee_amount": null,
+              "proc_shop_fee_percentage": null,
               "status": "PLANNED",
               "updated_on": "2023-04-06T19:02:38.409254"
           }

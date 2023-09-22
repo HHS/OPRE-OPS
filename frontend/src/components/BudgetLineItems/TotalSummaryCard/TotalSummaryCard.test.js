@@ -8,7 +8,7 @@ describe("<TotalSummaryCard />", () => {
             name: "Budget Line 1",
             amount: 100,
             date_needed: "2021-01-01",
-            psc_fee_amount: 0,
+            proc_shop_fee_percentage: 0,
             amt: 100,
             status: "DRAFT"
         },
@@ -17,7 +17,7 @@ describe("<TotalSummaryCard />", () => {
             name: "Budget Line 2",
             amount: 200,
             date_needed: "2021-01-01",
-            psc_fee_amount: 0,
+            proc_shop_fee_percentage: 0,
             amt: 200,
             status: "DRAFT"
         }

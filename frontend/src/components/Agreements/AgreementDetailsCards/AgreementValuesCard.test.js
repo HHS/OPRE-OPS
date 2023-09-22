@@ -32,7 +32,7 @@ describe("AgreementValuesCard", () => {
                 date_needed: "2043-06-13",
                 id: 3,
                 line_description: "Line Item 1",
-                psc_fee_amount: 0.5,
+                proc_shop_fee_percentage: 0.5,
                 status: "PLANNED",
                 updated_on: "2023-07-26T16:22:35.470618"
             },
@@ -46,7 +46,7 @@ describe("AgreementValuesCard", () => {
                 date_needed: "2043-06-13",
                 id: 4,
                 line_description: "Line Item 2",
-                psc_fee_amount: 0.5,
+                proc_shop_fee_percentage: 0.5,
                 status: "PLANNED",
                 updated_on: "2023-07-26T16:22:35.470618"
             },
@@ -60,7 +60,7 @@ describe("AgreementValuesCard", () => {
                 date_needed: "2043-06-13",
                 id: 5,
                 line_description: "Line Item 1",
-                psc_fee_amount: 0.5,
+                proc_shop_fee_percentage: 0.5,
                 status: "PLANNED",
                 updated_on: "2023-07-26T16:22:35.470618"
             },
@@ -74,7 +74,7 @@ describe("AgreementValuesCard", () => {
                 date_needed: "2043-06-13",
                 id: 6,
                 line_description: "Line Item 2",
-                psc_fee_amount: 0.5,
+                proc_shop_fee_percentage: 0.5,
                 status: "PLANNED",
                 updated_on: "2023-07-26T16:22:35.470618"
             },
@@ -88,7 +88,7 @@ describe("AgreementValuesCard", () => {
                 date_needed: "2043-06-13",
                 id: 8,
                 line_description: "Line Item 2",
-                psc_fee_amount: 0.5,
+                proc_shop_fee_percentage: 0.5,
                 status: "IN_EXECUTION",
                 updated_on: "2023-07-26T16:22:35.470618"
             },
@@ -102,7 +102,7 @@ describe("AgreementValuesCard", () => {
                 date_needed: "2043-06-13",
                 id: 9,
                 line_description: "Line Item 2",
-                psc_fee_amount: 0.5,
+                proc_shop_fee_percentage: 0.5,
                 status: "IN_EXECUTION",
                 updated_on: "2023-07-26T16:22:35.470618"
             }
