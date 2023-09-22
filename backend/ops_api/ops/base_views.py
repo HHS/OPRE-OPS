@@ -8,6 +8,7 @@ from flask_jwt_extended import jwt_required
 from marshmallow import Schema, ValidationError
 from models.base import BaseModel
 from ops_api.ops.utils.auth import auth_gateway
+from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
@@ -40,7 +41,9 @@ class OPSMethodView(MethodView):
         self.auth_gateway = auth_gateway
 
     def _get_item_by_oidc(self, oidc: str):
-        stmt = select(self.model).where(self.model.oidc_id == oidc).order_by(self.model.id)
+        stmt = (
+            select(self.model).where(self.model.oidc_id == oidc).order_by(self.model.id)
+        )
         return current_app.db_session.scalar(stmt)
 
     def _get_item(self, id: int) -> BaseModel:
@@ -79,7 +82,9 @@ class OPSMethodView(MethodView):
             item_list = self._get_all_items()
 
             if item_list:
-                response = make_response_with_headers([item.to_dict() for item in item_list])
+                response = make_response_with_headers(
+                    [item.to_dict() for item in item_list]
+                )
             else:
                 response = make_response_with_headers({}, 404)
 
@@ -99,6 +104,7 @@ class BaseItemAPI(OPSMethodView):
 
     @override
     @jwt_required()
+    @error_simulator
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
 
@@ -109,11 +115,13 @@ class BaseListAPI(OPSMethodView):
 
     @override
     @jwt_required()
+    @error_simulator
     def get(self) -> Response:
         return self._get_all_items_with_try()
 
     @override
     @jwt_required()
+    @error_simulator
     def post(self) -> Response:
         raise NotImplementedError
 
@@ -130,6 +138,7 @@ class EnumListAPI(MethodView):
 
     @override
     @jwt_required()
+    @error_simulator
     def get(self) -> Response:
         enum_items = {e.name: e.value for e in self.enum}  # type: ignore [attr-defined]
         return jsonify(enum_items)
