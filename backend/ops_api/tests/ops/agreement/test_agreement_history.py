@@ -56,7 +56,7 @@ def test_agreement_history(auth_client, loaded_db):
         "amount": 1000000,
         "status": "DRAFT",
         "date_needed": "2022-3-3",
-        "psc_fee_amount": None,
+        "proc_shop_fee_percentage": None,
     }
 
     resp = auth_client.post("/api/v1/budget-line-items/", json=data)

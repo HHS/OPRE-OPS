@@ -149,7 +149,7 @@ const agreementHistoryData = [
                 new: "2023-02-02",
                 old: "2023-01-01"
             },
-            psc_fee_amount: {
+            proc_shop_fee_percentage: {
                 new: 0.0,
                 old: null
             }
@@ -173,7 +173,7 @@ const agreementHistoryData = [
             date_needed: "2023-02-02",
             id: 25,
             line_description: "My Budget Line",
-            psc_fee_amount: null,
+            proc_shop_fee_percentage: null,
             status: "DRAFT",
             updated_on: "2023-08-29T21:36:51.385646"
         },
@@ -290,7 +290,7 @@ const agreementHistoryData = [
             date_needed: "2023-01-01",
             id: 25,
             line_description: "My Budget Line",
-            psc_fee_amount: null,
+            proc_shop_fee_percentage: null,
             status: "DRAFT",
             updated_on: "2023-08-29T21:36:51.385646"
         },
