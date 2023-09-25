@@ -6,7 +6,12 @@ const PortfolioCarryForwardFunding = () => {
 
     const carryForwardFunding = portfolioBudget.carry_forward_funding?.amount || 0;
 
-    return <CurrencySummaryCard headerText="Previous FYs Carry-Forward" amount={carryForwardFunding} />;
+    return (
+        <CurrencySummaryCard
+            headerText="Previous FYs Carry-Forward"
+            amount={carryForwardFunding}
+        />
+    );
 };
 
 export default PortfolioCarryForwardFunding;

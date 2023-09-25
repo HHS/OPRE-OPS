@@ -11,6 +11,6 @@ const App = ({ children, breadCrumbName }) => <DefaultLayout breadCrumbName={bre
 
 App.propTypes = {
     children: PropTypes.element.isRequired,
-    breadCrumbName: PropTypes.string,
+    breadCrumbName: PropTypes.string
 };
 export default App;

@@ -6,18 +6,18 @@ const mockBackendResponse = [
     {
         id: 1,
         name: "Test Research Project 1",
-        description: "A test research project 1.",
+        description: "A test research project 1."
     },
     {
         id: 2,
         name: "Test Research Project 2",
-        description: "A test research project 2.",
+        description: "A test research project 2."
     },
     {
         id: 3,
         name: "Test Research Project 3",
-        description: "A test research project 3.",
-    },
+        description: "A test research project 3."
+    }
 ];
 
 test("successfully gets a research project by ID", async () => {

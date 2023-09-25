@@ -26,13 +26,13 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         draft: true,
         planned: true,
         executing: true,
-        obligated: true,
+        obligated: true
     });
 
     const {
         data: projectData,
         error: errorProjectData,
-        isLoading: isLoadingProjectData,
+        isLoading: isLoadingProjectData
     } = useGetResearchProjectsQuery();
 
     // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
@@ -64,7 +64,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         setFilters((prevState) => {
             return {
                 ...prevState,
-                upcomingNeedByDate: needBy,
+                upcomingNeedByDate: needBy
             };
         });
         setFilters((prevState) => {
@@ -86,8 +86,8 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                     draft: bliStatus.draft,
                     planned: bliStatus.planned,
                     executing: bliStatus.executing,
-                    obligated: bliStatus.obligated,
-                },
+                    obligated: bliStatus.obligated
+                }
             };
         });
     };
@@ -103,8 +103,8 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                 draft: true,
                 planned: true,
                 executing: true,
-                obligated: true,
-            },
+                obligated: true
+            }
         });
         setNeedBy("all-time");
     };
@@ -113,7 +113,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         setBliStatus((prevState) => {
             return {
                 ...prevState,
-                [event.target.id]: event.target.checked,
+                [event.target.id]: event.target.checked
             };
         });
     };
@@ -134,7 +134,10 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
     const radioLabelStyles = "usa-radio__label margin-top-0";
 
     const fieldsetList = [
-        <fieldset key="field1" className={fieldStyles}>
+        <fieldset
+            key="field1"
+            className={fieldStyles}
+        >
             <legend className={legendStyles}>Upcoming Need By Date</legend>
             <div className="display-flex">
                 <div className={`usa-radio padding-right-5 ${customStyles.modalBackgroundColor}`}>
@@ -148,7 +151,10 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                             onChange={() => setNeedBy("next-30-days")}
                             checked={needBy === "next-30-days"}
                         />
-                        <label className={radioLabelStyles} htmlFor="next-30-days">
+                        <label
+                            className={radioLabelStyles}
+                            htmlFor="next-30-days"
+                        >
                             Next 30 days
                         </label>
                     </div>
@@ -162,7 +168,10 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                             onChange={() => setNeedBy("current-fy")}
                             checked={needBy === "current-fy"}
                         />
-                        <label className={radioLabelStyles} htmlFor="current-fy">
+                        <label
+                            className={radioLabelStyles}
+                            htmlFor="current-fy"
+                        >
                             Current FY
                         </label>
                     </div>
@@ -178,7 +187,10 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                             onChange={() => setNeedBy("next-6-months")}
                             checked={needBy === "next-6-months"}
                         />
-                        <label className={radioLabelStyles} htmlFor="next-6-months">
+                        <label
+                            className={radioLabelStyles}
+                            htmlFor="next-6-months"
+                        >
                             Next 6 months
                         </label>
                     </div>
@@ -192,14 +204,20 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                             onChange={() => setNeedBy("all-time")}
                             checked={needBy === "all-time"}
                         />
-                        <label className={radioLabelStyles} htmlFor="all-time">
+                        <label
+                            className={radioLabelStyles}
+                            htmlFor="all-time"
+                        >
                             All time
                         </label>
                     </div>
                 </div>
             </div>
         </fieldset>,
-        <fieldset key="field2" className={fieldStyles}>
+        <fieldset
+            key="field2"
+            className={fieldStyles}
+        >
             <ProjectComboBox
                 researchProjects={projectData}
                 selectedResearchProject={project}
@@ -209,7 +227,10 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                 overrideStyles={{ width: "22.7rem" }}
             />
         </fieldset>,
-        <fieldset key="field3" className="usa-fieldset">
+        <fieldset
+            key="field3"
+            className="usa-fieldset"
+        >
             <ProjectOfficerComboBox
                 selectedProjectOfficer={po}
                 setSelectedProjectOfficer={setPO}
@@ -218,7 +239,11 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                 overrideStyles={{ width: "22.7rem" }}
             />
         </fieldset>,
-        <fieldset key="field4" className={fieldStyles} style={{ width: "22.7rem" }}>
+        <fieldset
+            key="field4"
+            className={fieldStyles}
+            style={{ width: "22.7rem" }}
+        >
             <AgreementTypeSelect
                 name="agreement_type"
                 label="Type"
@@ -231,7 +256,11 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                 defaultString={"All Types"}
             />
         </fieldset>,
-        <fieldset key="field5" className={fieldStyles} style={{ width: "22.7rem" }}>
+        <fieldset
+            key="field5"
+            className={fieldStyles}
+            style={{ width: "22.7rem" }}
+        >
             <ProcurementShopSelect
                 selectedProcurementShop={procurementShop}
                 onChangeSelectedProcurementShop={setProcurementShop}
@@ -240,7 +269,10 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                 defaultToGCS={false}
             />
         </fieldset>,
-        <fieldset key="field6" className={fieldStyles}>
+        <fieldset
+            key="field6"
+            className={fieldStyles}
+        >
             <legend className={legendStyles}>Budget Line Status</legend>
             <div className="display-flex">
                 <div className="padding-right-9">
@@ -253,7 +285,10 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                             onChange={handleBudgetLineStatus}
                             checked={bliStatus.draft === true}
                         />
-                        <label className={checkboxLabelStyles} htmlFor="draft">
+                        <label
+                            className={checkboxLabelStyles}
+                            htmlFor="draft"
+                        >
                             Draft
                         </label>
                     </div>
@@ -266,7 +301,10 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                             onChange={handleBudgetLineStatus}
                             checked={bliStatus.planned === true}
                         />
-                        <label className={checkboxLabelStyles} htmlFor="planned">
+                        <label
+                            className={checkboxLabelStyles}
+                            htmlFor="planned"
+                        >
                             Planned
                         </label>
                     </div>
@@ -281,7 +319,10 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                             onChange={handleBudgetLineStatus}
                             checked={bliStatus.executing === true}
                         />
-                        <label className={checkboxLabelStyles} htmlFor="executing">
+                        <label
+                            className={checkboxLabelStyles}
+                            htmlFor="executing"
+                        >
                             Executing
                         </label>
                     </div>
@@ -294,18 +335,27 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                             onChange={handleBudgetLineStatus}
                             checked={bliStatus.obligated === true}
                         />
-                        <label className={checkboxLabelStyles} htmlFor="obligated">
+                        <label
+                            className={checkboxLabelStyles}
+                            htmlFor="obligated"
+                        >
                             Obligated
                         </label>
                     </div>
                 </div>
             </div>
-        </fieldset>,
+        </fieldset>
     ];
 
     Modal.setAppElement("#root");
 
-    return <FilterButton applyFilter={applyFilter} resetFilter={resetFilter} fieldsetList={fieldsetList} />;
+    return (
+        <FilterButton
+            applyFilter={applyFilter}
+            resetFilter={resetFilter}
+            fieldsetList={fieldsetList}
+        />
+    );
 };
 
 export default AgreementsFilterButton;

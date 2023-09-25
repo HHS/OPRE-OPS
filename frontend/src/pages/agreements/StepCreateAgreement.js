@@ -11,10 +11,17 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode
     return (
         <>
             <EditModeTitle isEditMode={isEditMode || isReviewMode} />
-            <StepIndicator steps={wizardSteps} currentStep={2} />
+            <StepIndicator
+                steps={wizardSteps}
+                currentStep={2}
+            />
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
-            <AgreementEditForm goBack={goBack} goToNext={goToNext} isReviewMode={isReviewMode} />
+            <AgreementEditForm
+                goBack={goBack}
+                goToNext={goToNext}
+                isReviewMode={isReviewMode}
+            />
         </>
     );
 };
@@ -25,7 +32,7 @@ StepCreateAgreement.propTypes = {
     isEditMode: PropTypes.bool,
     isReviewMode: PropTypes.bool,
     wizardSteps: PropTypes.arrayOf(PropTypes.string),
-    currentStep: PropTypes.number,
+    currentStep: PropTypes.number
 };
 
 export default StepCreateAgreement;

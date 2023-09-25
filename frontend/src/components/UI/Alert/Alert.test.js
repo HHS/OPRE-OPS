@@ -16,8 +16,8 @@ describe("Alert component", () => {
                 heading: "Test Heading",
                 message: "Test Message",
                 type: "success",
-                redirectUrl: null,
-            },
+                redirectUrl: null
+            }
         });
     });
 

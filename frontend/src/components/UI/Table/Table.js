@@ -28,7 +28,11 @@ const Table = ({ children, tableHeadings }) => {
             <thead>
                 <tr>
                     {tableHeadings.map((heading, index) => (
-                        <th key={index} scope="col" style={addWidthIfStatus(heading)}>
+                        <th
+                            key={index}
+                            scope="col"
+                            style={addWidthIfStatus(heading)}
+                        >
                             {heading}
                         </th>
                     ))}
@@ -41,7 +45,7 @@ const Table = ({ children, tableHeadings }) => {
 
 Table.propTypes = {
     children: PropTypes.node.isRequired,
-    tableHeadings: PropTypes.arrayOf(PropTypes.string).isRequired,
+    tableHeadings: PropTypes.arrayOf(PropTypes.string).isRequired
 };
 
 export default Table;

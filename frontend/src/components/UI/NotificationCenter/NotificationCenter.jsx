@@ -21,7 +21,7 @@ const NotificationCenter = () => {
     const {
         data: notifications,
         error,
-        isLoading,
+        isLoading
     } = useGetNotificationsByUserIdQuery(userId, { pollingInterval: 5000 });
 
     if (isLoading) {
@@ -91,7 +91,10 @@ const NotificationCenter = () => {
                             </button>
                         </div>
                         {unreadNotifications.length > 0 ? (
-                            <ul className={customStyles.listStyle} data-cy="notification-center-list">
+                            <ul
+                                className={customStyles.listStyle}
+                                data-cy="notification-center-list"
+                            >
                                 {unreadNotifications.map((notification) => (
                                     <LogItem
                                         key={notification.id}

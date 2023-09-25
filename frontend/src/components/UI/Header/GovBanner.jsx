@@ -1,6 +1,9 @@
 export const GovBanner = () => {
     return (
-        <section className="usa-banner" aria-label="Official website of the United States government">
+        <section
+            className="usa-banner"
+            aria-label="Official website of the United States government"
+        >
             <div className="usa-accordion">
                 <header className="usa-banner__header">
                     <div className="usa-banner__inner">
@@ -12,7 +15,10 @@ export const GovBanner = () => {
                                 alt="us flag"
                             />
                         </div>
-                        <div className="grid-col-fill tablet:grid-col-auto" aria-hidden="true">
+                        <div
+                            className="grid-col-fill tablet:grid-col-auto"
+                            aria-hidden="true"
+                        >
                             <p className="usa-banner__header-text">
                                 An official website of the United States government
                             </p>
@@ -28,7 +34,10 @@ export const GovBanner = () => {
                         </button>
                     </div>
                 </header>
-                <div className="usa-banner__content usa-accordion__content" id="gov-banner-default">
+                <div
+                    className="usa-banner__content usa-accordion__content"
+                    id="gov-banner-default"
+                >
                     <div className="grid-row grid-gap-lg">
                         <div className="usa-banner__guidance tablet:grid-col-6">
                             <img

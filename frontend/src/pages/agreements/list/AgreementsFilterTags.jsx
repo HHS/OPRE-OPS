@@ -3,7 +3,7 @@ import _ from "lodash";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import FilterTags from "../../../components/UI/FilterTags/FilterTags";
 import createTagString from "../../../components/UI/FilterTags/utils";
-
+import FilterTagsWrapper from "../../../components/UI/FilterTags/FilterTagsWrapper";
 /**
  * A filter tags.
  * @param {Object} props - The component props.
@@ -23,14 +23,14 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
                         ...prevState,
                         {
                             tagText: "Upcoming Need By Date: All Time",
-                            filter: "upcomingNeedByDate",
-                        },
+                            filter: "upcomingNeedByDate"
+                        }
                     ];
                 });
                 setFilters((prevState) => {
                     return {
                         ...prevState,
-                        upcomingNeedByDate: "all-time",
+                        upcomingNeedByDate: "all-time"
                     };
                 });
                 break;
@@ -39,7 +39,7 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
                 setFilters((prevState) => {
                     return {
                         ...prevState,
-                        projects: [],
+                        projects: []
                     };
                 });
                 break;
@@ -48,7 +48,7 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
                 setFilters((prevState) => {
                     return {
                         ...prevState,
-                        projectOfficers: [],
+                        projectOfficers: []
                     };
                 });
                 break;
@@ -57,7 +57,7 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
                 setFilters((prevState) => {
                     return {
                         ...prevState,
-                        types: [],
+                        types: []
                     };
                 });
                 break;
@@ -66,7 +66,7 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
                 setFilters((prevState) => {
                     return {
                         ...prevState,
-                        procurementShops: [],
+                        procurementShops: []
                     };
                 });
                 break;
@@ -79,8 +79,8 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
                             draft: true,
                             planned: true,
                             executing: true,
-                            obligated: true,
-                        },
+                            obligated: true
+                        }
                     };
                 });
                 break;
@@ -96,8 +96,8 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
                         ...prevState,
                         {
                             tagText: "Upcoming Need By Date: Next 30 Days",
-                            filter: "upcomingNeedByDate",
-                        },
+                            filter: "upcomingNeedByDate"
+                        }
                     ];
                 });
                 break;
@@ -107,8 +107,8 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
                         ...prevState,
                         {
                             tagText: "Upcoming Need By Date: Current FY",
-                            filter: "upcomingNeedByDate",
-                        },
+                            filter: "upcomingNeedByDate"
+                        }
                     ];
                 });
                 break;
@@ -118,8 +118,8 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
                         ...prevState,
                         {
                             tagText: "Upcoming Need By Date: Next 6 Months",
-                            filter: "upcomingNeedByDate",
-                        },
+                            filter: "upcomingNeedByDate"
+                        }
                     ];
                 });
                 break;
@@ -129,8 +129,8 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
                         ...prevState,
                         {
                             tagText: "Upcoming Need By Date: All Time",
-                            filter: "upcomingNeedByDate",
-                        },
+                            filter: "upcomingNeedByDate"
+                        }
                     ];
                 });
                 break;
@@ -184,12 +184,12 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
         const tagsToIgnore = [
             {
                 tagText: "Upcoming Need By Date: All Time",
-                filter: "upcomingNeedByDate",
+                filter: "upcomingNeedByDate"
             },
             {
                 tagText: "Budget Line Status: Draft, Planned, Executing, Obligated",
-                filter: "budgetLineStatus",
-            },
+                filter: "budgetLineStatus"
+            }
         ];
 
         return !tagsToIgnore.some((ignoredTag) => {
@@ -198,9 +198,14 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
     };
 
     return (
-        <div className="display-flex flex-wrap">
-            <FilterTags removeFilter={removeFilter} tagsList={tagsList.filter(ignoredTags)} />
-        </div>
+        !_.isEmpty(tagsList.filter(ignoredTags)) && (
+            <FilterTagsWrapper>
+                <FilterTags
+                    removeFilter={removeFilter}
+                    tagsList={tagsList.filter(ignoredTags)}
+                />
+            </FilterTagsWrapper>
+        )
     );
 };
 export default AgreementsFilterTags;

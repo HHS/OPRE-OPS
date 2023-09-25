@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    portfolios: [],
+    portfolios: []
 };
 
 const portfolioListSlice = createSlice({
@@ -10,8 +10,8 @@ const portfolioListSlice = createSlice({
     reducers: {
         setPortfolioList: (state, action) => {
             state.portfolios = action.payload;
-        },
-    },
+        }
+    }
 });
 
 export const { setPortfolioList } = portfolioListSlice.actions;

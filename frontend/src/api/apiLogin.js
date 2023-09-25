@@ -8,7 +8,7 @@ export const apiLogin = async (provider, authCode) => {
         .callBackend(`/api/${api_version}/auth/login/`, "post", {
             callbackUrl: window.location.href,
             code: authCode,
-            provider: provider,
+            provider: provider
         });
     return responseData;
 };

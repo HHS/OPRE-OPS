@@ -17,7 +17,10 @@ const RoundedBox = ({ children, className = "", dataCy }) => {
     const cardContainer = `bg-base-lightest font-family-sans display-flex ${cssClasses.container} ${className}`;
 
     return (
-        <div className={cardContainer} data-cy={dataCy ?? dataCy}>
+        <div
+            className={cardContainer}
+            data-cy={dataCy ?? dataCy}
+        >
             {children}
         </div>
     );
@@ -25,7 +28,7 @@ const RoundedBox = ({ children, className = "", dataCy }) => {
 RoundedBox.propTypes = {
     children: PropTypes.node.isRequired,
     className: PropTypes.string,
-    dataCy: PropTypes.string,
+    dataCy: PropTypes.string
 };
 
 export default RoundedBox;

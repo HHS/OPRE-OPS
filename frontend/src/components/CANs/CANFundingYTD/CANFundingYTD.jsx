@@ -13,7 +13,7 @@ const CANFundingYTD = ({
     expected_funding = "0",
     carry_forward_funding = "0",
     carry_forward_label = "",
-    className = "",
+    className = ""
 }) => {
     const data = [
         {
@@ -21,21 +21,27 @@ const CANFundingYTD = ({
             label: "Funding Received YTD",
             value: received_funding,
             color: "#D47D2D",
-            percent: `${calculatePercent(received_funding, total_funding)}%`,
+            percent: `${calculatePercent(received_funding, total_funding)}%`
         },
         {
             id: 2,
             label: "Funding Expected",
             value: expected_funding,
             color: "#A9AEB1",
-            percent: `${calculatePercent(expected_funding, total_funding)}%`,
-        },
+            percent: `${calculatePercent(expected_funding, total_funding)}%`
+        }
     ];
     const [activeId, setActiveId] = React.useState(0);
 
     const CarryForwardTag = ({ funding, label }) => {
         if (funding > 0) {
-            return <Tag tagStyle="darkTextGreenBackground" text={label} label={label} />;
+            return (
+                <Tag
+                    tagStyle="darkTextGreenBackground"
+                    text={label}
+                    label={label}
+                />
+            );
         } else {
             return "";
         }
@@ -66,7 +72,12 @@ const CANFundingYTD = ({
                     />
                 </div>
                 <div className="grid-col-1">
-                    <Tag tagStyle="darkTextLightBackground" text={percent} label={label} active={isGraphActive} />
+                    <Tag
+                        tagStyle="darkTextLightBackground"
+                        text={percent}
+                        label={label}
+                        active={isGraphActive}
+                    />
                 </div>
             </div>
         );
@@ -82,10 +93,16 @@ const CANFundingYTD = ({
                     prefix={"$ "}
                     renderText={(value) => <span className="text-semibold font-sans-lg">{value}</span>}
                 />
-                <CarryForwardTag funding={carry_forward_funding} label={carry_forward_label} />
+                <CarryForwardTag
+                    funding={carry_forward_funding}
+                    label={carry_forward_label}
+                />
             </div>
             <div className={`margin-top-2 ${styles.barBox}`}>
-                <CANFundingBar setActiveId={setActiveId} data={data} />
+                <CANFundingBar
+                    setActiveId={setActiveId}
+                    data={data}
+                />
             </div>
 
             <div className="font-12px margin-top-2">

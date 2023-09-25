@@ -16,13 +16,13 @@ const CreateProject = () => {
         heading: "",
         actionButtonText: "",
         secondaryButtonText: "",
-        handleConfirm: () => {},
+        handleConfirm: () => {}
     });
     const [project, setProject] = useState({
         type: "",
         short_title: "",
         title: "",
-        description: "",
+        description: ""
     });
 
     const [addResearchProject, { isSuccess, isError, error, reset, data: rpData }] = useAddResearchProjectsMutation();
@@ -36,7 +36,7 @@ const CreateProject = () => {
             type: "",
             short_title: "",
             title: "",
-            description: "",
+            description: ""
         });
     };
 
@@ -49,12 +49,12 @@ const CreateProject = () => {
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
         valid: "success",
-        warning: "warning",
+        warning: "warning"
     });
 
     // prepare data for submission by removing the type field
     const editedProject = {
-        ...project,
+        ...project
     };
     delete editedProject.type;
 
@@ -72,7 +72,7 @@ const CreateProject = () => {
             type: "success",
             heading: "New Project Created!",
             message: "The project has been successfully created.",
-            redirectUrl: `/agreements`,
+            redirectUrl: `/agreements`
         });
     }
 
@@ -85,7 +85,7 @@ const CreateProject = () => {
             handleConfirm: () => {
                 handleClearingForm();
                 navigate("/");
-            },
+            }
         });
     };
 
@@ -145,7 +145,11 @@ const CreateProject = () => {
             />
 
             <div className="grid-row flex-justify-end margin-top-8">
-                <button id="cancel" className="usa-button usa-button--unstyled margin-right-2" onClick={handleCancel}>
+                <button
+                    id="cancel"
+                    className="usa-button usa-button--unstyled margin-right-2"
+                    onClick={handleCancel}
+                >
                     Cancel
                 </button>
                 <button

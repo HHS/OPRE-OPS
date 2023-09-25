@@ -33,7 +33,7 @@ const CreateBudgetLines = ({
     continueOverRide,
     isEditMode,
     isReviewMode,
-    workflow,
+    workflow
 }) => {
     return (
         <CreateBudgetLinesProvider>

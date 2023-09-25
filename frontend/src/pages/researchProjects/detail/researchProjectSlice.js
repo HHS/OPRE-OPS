@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    researchProject: {},
+    researchProject: {}
 };
 
 const researchProjectSlice = createSlice({
@@ -10,8 +10,8 @@ const researchProjectSlice = createSlice({
     reducers: {
         setResearchProject: (state, action) => {
             state.researchProject = action.payload;
-        },
-    },
+        }
+    }
 });
 
 export const { setResearchProject } = researchProjectSlice.actions;

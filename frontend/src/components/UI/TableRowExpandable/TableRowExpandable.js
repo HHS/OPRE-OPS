@@ -25,9 +25,15 @@ const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpan
 
     return (
         <>
-            <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
+            <tr
+                onMouseEnter={() => setIsRowActive(true)}
+                onMouseLeave={() => !isExpanded && setIsRowActive(false)}
+            >
                 {tableRowData}
-                <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                <td
+                    className={removeBorderBottomIfExpanded}
+                    style={changeBgColorIfExpanded}
+                >
                     <FontAwesomeIcon
                         id={`expand-${trId}`}
                         data-cy="expand-row"
@@ -49,6 +55,6 @@ TableRowExpandable.propTypes = {
     isExpanded: PropTypes.bool.isRequired,
     setIsExpanded: PropTypes.func.isRequired,
     isRowActive: PropTypes.bool.isRequired,
-    setIsRowActive: PropTypes.func.isRequired,
+    setIsRowActive: PropTypes.func.isRequired
 };
 export default TableRowExpandable;

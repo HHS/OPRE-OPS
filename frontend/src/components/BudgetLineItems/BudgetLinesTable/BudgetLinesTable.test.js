@@ -11,10 +11,10 @@ const dummyBudgetLines = [
         date_needed: "2021-09-15",
         can: { number: "001" },
         amount: 1200,
-        psc_fee_amount: 0.05,
+        proc_shop_fee_percentage: 0.05,
         status: "DRAFT",
         created_by: "1",
-        comments: "Note 1",
+        comments: "Note 1"
     },
     {
         id: 2,
@@ -23,11 +23,11 @@ const dummyBudgetLines = [
         date_needed: "2021-10-30",
         can: { number: "002" },
         amount: 2000,
-        psc_fee_amount: 0.07,
+        proc_shop_fee_percentage: 0.07,
         status: "OBLIGATED",
         created_by: "2",
-        comments: "Note 2",
-    },
+        comments: "Note 2"
+    }
 ];
 
 function customRender(ui, store) {

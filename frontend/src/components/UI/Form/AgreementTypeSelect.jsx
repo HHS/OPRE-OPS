@@ -25,12 +25,12 @@ export const AgreementTypeSelect = ({
     messages = [],
     className,
     legendClassname = "margin-top-205",
-    defaultString = "- Select Agreement Type -",
+    defaultString = "- Select Agreement Type -"
 }) => {
     const {
         data: agreementTypes,
         error: errorAgreementTypes,
-        isLoading: isLoadingAgreementTypes,
+        isLoading: isLoadingAgreementTypes
     } = useGetAgreementTypesQuery();
 
     if (isLoadingAgreementTypes) {
@@ -53,7 +53,10 @@ export const AgreementTypeSelect = ({
                 {label}
             </label>
             {messages.length ? (
-                <span className="usa-error-message" role="alert">
+                <span
+                    className="usa-error-message"
+                    role="alert"
+                >
                     {messages[0]}
                 </span>
             ) : null}
@@ -67,7 +70,10 @@ export const AgreementTypeSelect = ({
                 >
                     <option value={0}>{defaultString}</option>
                     {agreementTypes.map((type, index) => (
-                        <option key={index + 1} value={type}>
+                        <option
+                            key={index + 1}
+                            value={type}
+                        >
                             {convertCodeForDisplay("agreementType", type)}
                         </option>
                     ))}

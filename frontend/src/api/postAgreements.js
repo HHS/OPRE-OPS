@@ -6,7 +6,7 @@ export const postAgreement = async (item) => {
     const data = { ...item };
     const newAgreement = {
         ...data,
-        number: "",
+        number: ""
     };
 
     delete newAgreement.id;
@@ -43,6 +43,6 @@ export const formatTeamMember = (team_member) => {
     return {
         id: team_member.id,
         full_name: team_member.full_name,
-        email: team_member.email,
+        email: team_member.email
     };
 };

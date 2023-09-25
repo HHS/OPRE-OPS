@@ -51,7 +51,11 @@ export const Alert = ({ children }) => {
     }
 
     return (
-        <div className={`grid-container usa-alert ${typeClass} margin-top-0 pin-x`} role="status" data-cy="alert">
+        <div
+            className={`grid-container usa-alert ${typeClass} margin-top-0 pin-x`}
+            role="status"
+            data-cy="alert"
+        >
             <div className="usa-alert__body display-flex flex-justify">
                 <div>
                     <h1 className="usa-alert__heading">{heading}</h1>

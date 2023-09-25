@@ -9,7 +9,7 @@ export const TotalSummaryCard = ({ budgetLines }) => {
     const totals = {
         Draft: { subtotal: 0, fees: 0, total: 0 },
         FY: { subtotal: 0, fees: 0, total: 0 },
-        Agreement: { subtotal: 0, fees: 0, total: 0 },
+        Agreement: { subtotal: 0, fees: 0, total: 0 }
     };
 
     budgetLines.forEach((bl) => {
@@ -18,7 +18,7 @@ export const TotalSummaryCard = ({ budgetLines }) => {
         let year = date_needed.getFullYear();
         let fiscalYear = month > 8 ? year + 1 : year;
         let amount = bl?.amount;
-        let fee = amount * bl?.psc_fee_amount;
+        let fee = amount * bl?.proc_shop_fee_percentage;
         let total = amount + fee;
         let status = bl?.status.charAt(0).toUpperCase() + bl?.status.slice(1).toLowerCase();
 
@@ -93,9 +93,18 @@ export const TotalSummaryCard = ({ budgetLines }) => {
 
     return (
         <summary className="display-flex flex-justify-end margin-y-4">
-            <TotalBlock title="Draft" data={totals["Draft"]}></TotalBlock>
-            <TotalBlock title="FY" data={totals["FY"]}></TotalBlock>
-            <TotalBlock title="Agreement" data={totals["Agreement"]}></TotalBlock>
+            <TotalBlock
+                title="Draft"
+                data={totals["Draft"]}
+            ></TotalBlock>
+            <TotalBlock
+                title="FY"
+                data={totals["FY"]}
+            ></TotalBlock>
+            <TotalBlock
+                title="Agreement"
+                data={totals["Agreement"]}
+            ></TotalBlock>
         </summary>
     );
 };

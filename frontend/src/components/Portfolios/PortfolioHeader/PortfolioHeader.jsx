@@ -13,7 +13,10 @@ const PortfolioHeader = () => {
             <h1 className={`font-sans-2xl margin-0 text-brand-primary ${style.heading}`}>{portfolio.name}</h1>
             <h2 className={divisionClasses}>{portfolio.division?.name}</h2>
             <TeamLeaders teamLeaders={portfolio.team_leaders} />
-            <HeroDescription description={portfolio.description} urls={portfolio.urls} />
+            <HeroDescription
+                description={portfolio.description}
+                urls={portfolio.urls}
+            />
         </section>
     );
 };
