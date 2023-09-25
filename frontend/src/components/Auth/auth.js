@@ -174,7 +174,6 @@ export const isValidToken = (token) => {
 
     // Check issuer
     const issuer = decodedJwt["iss"];
-    console.log(`Issuer: ${issuer}`);
     // TODO: Update this when we have a real issuer value
     if (issuer !== "https://opre-ops-backend-dev") {
         return new TokenValidationStatus(false, "ISSUER");
