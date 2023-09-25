@@ -14,6 +14,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+    cy.wait(1000);
     cy.injectAxe();
     cy.checkA11y(null, null, terminalLog);
 });
