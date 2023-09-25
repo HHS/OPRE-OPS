@@ -11,7 +11,7 @@ import {
  * @param {number} id - The id.
  * @returns {string} - The display name of the related object.
  * @example
- * const displayName = useGetDisplayNameForProductServiceCodeId("can_id", 1);
+ * const displayName = useGetDisplayNameForProductServiceCodeId(1);
  */
 export const useGetNameForProductServiceCodeId = (id) => {
     const [displayName, setDisplayName] = React.useState("unknown");

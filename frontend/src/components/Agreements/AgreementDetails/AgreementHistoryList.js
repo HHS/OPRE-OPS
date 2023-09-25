@@ -15,6 +15,8 @@ const findObjectTitle = (historyItem) => {
     return historyItem.event_details.display_name;
 };
 
+const omitChangeDetailsFor = ["description", "notes"];
+
 const eventLogItemTitle = (historyItem) => {
     const className = convertCodeForDisplay("baseClassNameLabels", historyItem.class_name);
     if (historyItem.event_type === "NEW") {
@@ -25,6 +27,26 @@ const eventLogItemTitle = (historyItem) => {
         return `${className} Deleted`;
     }
     return `${className} ${historyItem.event_type}`;
+};
+
+const propertyLogItemTitle = (historyItem, change) => {
+    let title = `${change.propertyLabel} Edited`;
+    if (historyItem.class_name === "BudgetLineItem") {
+        title = "Budget Line " + title;
+    }
+    return title;
+};
+
+const changeMessageBeginning = (historyItem, change) => {
+    let msg = `${change.propertyLabel} changed`;
+    if (historyItem.class_name === "BudgetLineItem") {
+        if (change.key !== "line_description") {
+            msg = `Budget Line ${findObjectTitle(historyItem)} ${change.propertyLabel} changed`;
+        } else {
+            msg = `Budget Line ${change.propertyLabel} changed`;
+        }
+    }
+    return msg;
 };
 
 const eventMessage = (historyItem) => {
@@ -97,20 +119,18 @@ const prepareChanges = (historyItem) => {
             preparedChange["added"] = objectsToNames(change.added);
             preparedChange["deleted"] = objectsToNames(change.deleted);
         } else if (key in relations) {
+            preparedChange["isRelation"] = true;
             const eventKey = relations[key]["eventKey"];
             const lookupQuery = relations[key]["lookupQuery"];
             if (eventKey) {
                 preparedChange["propertyLabel"] = getPropertyLabel(historyItem.class_name, eventKey);
                 preparedChange["to"] = historyItem.event_details[eventKey]?.display_name;
+            } else {
+                preparedChange["toId"] = change.new;
             }
-            if (lookupQuery) {
-                if (!eventKey) {
-                    preparedChange["to"] = change.new ? lookupQuery(change.new) : null;
-                }
-                preparedChange["from"] = change.old ? lookupQuery(change.old) : null;
-            }
+            preparedChange["fromId"] = change.old;
         } else {
-            if (!["description", "notes"].includes(key)) {
+            if (!omitChangeDetailsFor.includes(key)) {
                 preparedChange["from"] = change.old;
                 preparedChange["to"] = change.new;
             }
@@ -172,6 +192,7 @@ const propertyLogItems = (historyItem) => {
                 title: title,
                 createdOn: change.createdOn,
                 message: msg,
+                change: change,
             });
         }
     });
@@ -179,46 +200,162 @@ const propertyLogItems = (historyItem) => {
     return logItems;
 };
 
-const AgreementHistoryList = ({ agreementHistory }) => {
-    if (!(agreementHistory && agreementHistory.length > 0)) {
-        return <span className="font-12px">{noDataMessage}</span>;
+const UserName = ({ id }) => {
+    const name = id ? useGetUserFullNameFromId(id) : "nobody";
+    return <>{name}</>;
+};
+
+const ProcurementShopName = ({ id }) => {
+    const name = id ? useGetNameForProcurementShopId(id) : "none";
+    return <>{name}</>;
+};
+
+const ProductServiceCodeName = ({ id }) => {
+    const name = id ? useGetNameForProductServiceCodeId(id) : "none";
+    return <>{name}</>;
+};
+
+const ResearchProjectName = ({ id }) => {
+    const name = id ? useGetNameForResearchProjectId(id) : "none";
+    return <>{name}</>;
+};
+
+const CanName = ({ id }) => {
+    const name = id ? useGetNameForCanId(id) : "none";
+    return <>{name}</>;
+};
+
+const RenderProperty = ({ className, propertyKey, value, id: lookupId }) => {
+    if (typeof value !== "undefined") {
+        if (value === null) return <>no value</>;
+        return <>{renderField(className, propertyKey, value)}</>;
     }
+    if (propertyKey === "project_officer") {
+        return <UserName id={lookupId} />;
+    }
+    if (propertyKey === "procurement_shop_id") {
+        return <ProcurementShopName id={lookupId} />;
+    }
+    if (propertyKey === "product_service_code_id") {
+        return <ProductServiceCodeName id={lookupId} />;
+    }
+    if (propertyKey === "research_project_id") {
+        return <ResearchProjectName id={lookupId} />;
+    }
+    if (propertyKey === "can_id") {
+        return <CanName id={lookupId} />;
+    }
+
+    return <>(unable to render value for {propertyKey})</>;
+};
+
+const CollectionLogItems = ({ historyItem, change, baseKey }) => {
+    const eventType = historyItem.event_type;
+    if (eventType !== "UPDATED") return;
+
     let logItems = [];
 
-    agreementHistory.forEach(function (historyItem) {
-        const eventType = historyItem["event_type"];
-
-        // for creates, deletes just display one LogItem
-        // and for updates convert change details into many LogItems
-        if (["NEW", "DELETED"].includes(eventType)) {
-            logItems.push({
-                title: eventLogItemTitle(historyItem),
-                createdOn: historyItem.created_on,
-                message: eventMessage(historyItem),
-            });
-        } else if (eventType === "UPDATED") {
-            const propLogItems = propertyLogItems(historyItem);
-            logItems = logItems.concat(propLogItems);
-        }
+    change.added.forEach((member, index) => {
+        logItems.push({
+            title: `${change.propertyLabel} Added`,
+            createdOn: change.createdOn,
+            message: `${change.propertyLabel} ${member} added by ${change.createdByName}`,
+        });
+    });
+    change.deleted.forEach((member, index) => {
+        logItems.push({
+            title: `${change.propertyLabel} Removed`,
+            createdOn: change.createdOn,
+            message: `${change.propertyLabel} ${member} removed by ${change.createdByName}`,
+        });
     });
 
     return (
         <>
-            {logItems.length > 0 ? (
-                <ul className="usa-list--unstyled" data-cy="agreement-history-list">
-                    {logItems.map((item, index) => (
+            {logItems.map((logItem, index) => (
+                <LogItem
+                    key={`${baseKey}_${index}`}
+                    title={logItem.title}
+                    message={logItem.message}
+                    createdOn={logItem.createdOn}
+                />
+            ))}
+        </>
+    );
+};
+
+const PropertyLogItems = ({ historyItem, baseKey }) => {
+    const eventType = historyItem.event_type;
+    if (eventType !== "UPDATED") return;
+    const preparedChanges = prepareChanges(historyItem);
+
+    return (
+        <>
+            {preparedChanges.map((change, index) => (
+                <>
+                    {change.isCollection ? (
+                        <CollectionLogItems
+                            key={`${baseKey}_${index}`}
+                            historyItem={historyItem}
+                            change={change}
+                            baseKey={`${baseKey}_${index}`}
+                        />
+                    ) : (
+                        <LogItem
+                            key={`${baseKey}_${index}`}
+                            title={propertyLogItemTitle(historyItem, change)}
+                            createdOn={historyItem.created_on}
+                        >
+                            {changeMessageBeginning(historyItem, change)}
+                            {!omitChangeDetailsFor.includes(change.key) && (
+                                <>
+                                    &nbsp;from&nbsp;
+                                    <RenderProperty
+                                        className={historyItem.class_name}
+                                        propertyKey={change.key}
+                                        value={change.from}
+                                        id={change.fromId}
+                                    />
+                                    &nbsp;to&nbsp;
+                                    <RenderProperty
+                                        className={historyItem.class_name}
+                                        propertyKey={change.key}
+                                        value={change.to}
+                                        id={change.toId}
+                                    />
+                                </>
+                            )}
+                            &nbsp;by {change.createdByName}
+                        </LogItem>
+                    )}
+                </>
+            ))}
+        </>
+    );
+};
+
+const AgreementHistoryList = ({ agreementHistory }) => {
+    if (!(agreementHistory && agreementHistory.length > 0)) {
+        return <span className="font-12px">{noDataMessage}</span>;
+    }
+
+    return (
+        <ul className="usa-list--unstyled" data-cy="agreement-history-list">
+            {agreementHistory.map((historyItem, index) => (
+                <>
+                    {["NEW", "DELETED"].includes(historyItem["event_type"]) ? (
                         <LogItem
                             key={index}
-                            title={item.title}
-                            createdOn={item.createdOn}
-                            message={item.message}
-                        ></LogItem>
-                    ))}
-                </ul>
-            ) : (
-                <span className="font-12px">{noDataMessage}</span>
-            )}
-        </>
+                            title={eventLogItemTitle(historyItem)}
+                            message={eventMessage(historyItem)}
+                            createdOn={historyItem.created_on}
+                        />
+                    ) : (
+                        <PropertyLogItems key={index} historyItem={historyItem} baseKey={index} />
+                    )}
+                </>
+            ))}
+        </ul>
     );
 };
 

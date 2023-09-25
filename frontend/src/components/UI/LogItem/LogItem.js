@@ -19,17 +19,20 @@ export const LogItem = ({ title, message, createdOn, variant, withSeparator = fa
 
     return (
         <li className={`${isLarge ? "font-body-sm" : "font-12px"} ${styles.notificationListItem}`}>
-            <div className="display-flex flex-justify">
+            <div className="display-flex flex-justify margin-bottom-1">
                 <span className={`text-bold ${isLarge ? "font-body-sm" : undefined}`}>{title}</span>
                 <span className="display-flex flex-align-center">
                     <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1 text-base-dark" />
                     <span className="text-base-dark">{formatLogTimeStamp(createdOn)}</span>
                 </span>
             </div>
-            <p className={`margin-0 margin-y-1 line-height-sans-2 ${isLarge ? "font-body-sm" : undefined}`}>
-                {message}
-            </p>
-            {children}
+            {message ?? (
+                <p className={`margin-0 line-height-sans-2 margin-y-1 ${isLarge ? "font-body-sm" : undefined}`}>
+                    {message}
+                </p>
+            )}
+            <div className="margin-bottom-1">{children}</div>
+
             {withSeparator ? <hr className="height-1px bg-brand-neutral-lighter margin-bottom-1" /> : null}
         </li>
     );
@@ -37,7 +40,7 @@ export const LogItem = ({ title, message, createdOn, variant, withSeparator = fa
 
 LogItem.propTypes = {
     title: PropTypes.string.isRequired,
-    message: PropTypes.string.isRequired,
+    message: PropTypes.string,
     createdOn: PropTypes.string.isRequired,
     variant: PropTypes.string,
     withSeparator: PropTypes.bool,
