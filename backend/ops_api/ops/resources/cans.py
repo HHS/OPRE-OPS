@@ -46,9 +46,7 @@ class CANListAPI(BaseListAPI):
 
         return stmt
 
-    @jwt_required(
-        True
-    )  # For an example case, we're allowing CANs to be queried unauthed
+    @jwt_required(True)  # For an example case, we're allowing CANs to be queried unauthed
     @error_simulator
     def get(self) -> Response:
         errors = self._get_input_schema.validate(request.args)
@@ -59,9 +57,7 @@ class CANListAPI(BaseListAPI):
         request_data: ListAPIRequest = self._get_input_schema.load(request.args)
         stmt = self._get_query(request_data.search)
         result = current_app.db_session.execute(stmt).all()
-        return make_response_with_headers(
-            [i.to_dict() for item in result for i in item]
-        )
+        return make_response_with_headers([i.to_dict() for item in result for i in item])
 
 
 class CANsByPortfolioAPI(BaseItemAPI):

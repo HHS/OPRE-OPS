@@ -27,7 +27,7 @@ def error_simulator(func: Callable[..., Response]) -> Callable[..., Response]:
                     pass
                 case "false":
                     raise KeyError  # break out of this and ignore it.
-                case "_":
+                case _:
                     try:
                         status_code = int(error_param)
                     except ValueError:
