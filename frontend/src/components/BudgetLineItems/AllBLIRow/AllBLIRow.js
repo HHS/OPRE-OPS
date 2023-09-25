@@ -39,7 +39,7 @@ const AllBLIRow = ({
     const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
-    let feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.psc_fee_amount);
+    let feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     let BudgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
 
     // styles for the table row
@@ -164,7 +164,7 @@ const AllBLIRow = ({
                                 className="margin-0"
                                 style={{ maxWidth: "25rem" }}
                             >
-                                {`${budgetLine?.procShopCode}-Fee Rate: ${budgetLine?.psc_fee_amount}%`}
+                                {`${budgetLine?.procShopCode}-Fee Rate: ${budgetLine?.proc_shop_fee_percentage * 100}%`}
                             </dd>
                         </dl>
                         <div className="font-12px display-flex margin-top-1">
