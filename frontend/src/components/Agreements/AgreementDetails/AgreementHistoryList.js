@@ -163,8 +163,10 @@ const propertyLogItems = (historyItem) => {
                 title = "Budget Line " + title;
             }
 
-            if (change.from != null) msg += ` from ${renderField(historyItem.class_name, change.key, change.from)}`;
-            if (change.to != null) msg += ` to ${renderField(historyItem.class_name, change.key, change.to)}`;
+            if (typeof change.from != "undefined")
+                msg += ` from ${renderField(historyItem.class_name, change.key, change.from)}`;
+            if (typeof change.to != "undefined")
+                msg += ` to ${renderField(historyItem.class_name, change.key, change.to)}`;
             msg += ` by ${change.createdByName}`;
             logItems.push({
                 title: title,
