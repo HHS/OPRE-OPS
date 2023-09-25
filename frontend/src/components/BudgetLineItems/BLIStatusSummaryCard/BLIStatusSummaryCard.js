@@ -126,12 +126,10 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
                     ))}
                 </div>
                 <div
-                    id="BudgetLineStatusChart"
+                    id="budget-line-status-chart"
                     className="width-card height-card margin-top-neg-2"
                     aria-label="This is a Donut Chart that displays the percent by budget line status in the center."
                     role="img"
-                    alt="Budget Line Status Chart"
-                    title="Budget Line Status Chart"
                 >
                     <ResponsiveDonutWithInnerPercent
                         data={data}
@@ -141,7 +139,7 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
                         setPercent={setPercent}
                         setHoverId={setHoverId}
                         CustomLayerComponent={CustomLayerComponent(percent)}
-                        container_id="BudgetLineStatusChart"
+                        container_id="budget-line-status-chart"
                     />
                 </div>
             </div>
