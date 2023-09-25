@@ -45,7 +45,7 @@ class RequestBody:
     amount: Optional[float] = None
     date_needed: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
     comments: Optional[str] = None
-    psc_fee_amount: Optional[float] = None
+    proc_shop_fee_percentage: Optional[float] = None
 
     @validates_schema(skip_on_field_errors=False)
     def validate_agreement_id(self, data, **kwargs):
@@ -244,7 +244,7 @@ class BudgetLineItemResponse:
     line_description: str
     status: BudgetLineItemStatus = EnumField(BudgetLineItemStatus)
     comments: Optional[str] = None
-    psc_fee_amount: Optional[float] = None
+    proc_shop_fee_percentage: Optional[float] = None
     created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     date_needed: date = field(default=None, metadata={"format": "%Y-%m-%d"})
