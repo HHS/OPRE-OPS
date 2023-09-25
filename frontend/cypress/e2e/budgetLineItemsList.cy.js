@@ -19,8 +19,10 @@ afterEach(() => {
 });
 
 it("loads", () => {
+    cy.visit("/budget-lines");
     cy.get("h1").should("have.text", "Budget Lines");
     cy.get("h2").should("have.text", "All Budget Lines");
+    cy.get("#budget-line-status-chart").should("be.visible");
 });
 
 it("budget line items link defaults to all-budget-line-items", () => {
