@@ -30,24 +30,16 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                         </dd>
                     </dl>
                     <h3 className="text-base-dark margin-top-3 text-normal font-12px">Notes</h3>
-                    {notesData.length > 0 ? (
-                        <ul
-                            className="usa-list--unstyled overflow-y-scroll force-show-scrollbars"
+                    {agreement.notes ? (
+                        <div
+                            className="font-12px overflow-y-scroll force-show-scrollbars"
                             style={{ height: "11.375rem" }}
                             tabIndex={0}
                         >
-                            {/* // TODO: Replace with real data */}
-                            {notesData.map((note) => (
-                                <LogItem
-                                    key={note.id}
-                                    title={note.created_by}
-                                    createdOn={note.created_on}
-                                    message={note.message}
-                                />
-                            ))}
-                        </ul>
+                            {agreement.notes}
+                        </div>
                     ) : (
-                        <p>Sorry no notes</p>
+                        <p>There are currently no notes for this agreement.</p>
                     )}
                     <h3 className="text-base-dark margin-top-3 text-normal font-12px">History</h3>
                     <AgreementHistoryPanel agreementId={agreement.id} />
