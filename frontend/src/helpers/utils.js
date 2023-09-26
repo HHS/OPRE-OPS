@@ -9,8 +9,20 @@ export const getCurrentFiscalYear = (today = new Date()) => {
     return fiscalYear;
 };
 
+/**
+ * This function calculate a percent based on a numerator and denominator.
+ * @param {number} numerator - The numerator. This parameter is required.
+ * @param {number} denominator - The denominator. This parameter is required.
+ * @returns {number} The calculated percent.
+ */
 export const calculatePercent = (numerator, denominator) => {
-    if (denominator === "0" || denominator === 0) return "0";
+    if (typeof numerator !== "number" || typeof denominator !== "number") {
+        numerator = +numerator;
+        denominator = +denominator;
+        console.warn("calculatePercent: numerator and denominator must be numbers");
+    }
+
+    if (denominator === 0 || numerator === 0) return 0;
 
     return Math.round((numerator / denominator) * 100);
 };

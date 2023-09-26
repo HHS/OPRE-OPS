@@ -3,15 +3,8 @@ import CurrencyWithSmallCents from "../../UI/CurrencyWithSmallCents/CurrencyWith
 import { totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import SummaryCard from "../../UI/SummaryCard";
 
-/**
- * BudgetLineTotalSummaryCard component
- * @param {Object} props - Properties passed to component
- * @param {string} props.title - The title of the card
- * @param {Object[]} props.budgetLines - The budget lines to render
- * @returns {React.JSX.Element} - The rendered component
- */
-const BudgetLineTotalSummaryCard = ({ title, budgetLines }) => {
-    const totalAmountWithFees = budgetLines.reduce((total, budgetLine) => {
+const calculateTotalAmountWithFees = (budgetLines) => {
+    return budgetLines.reduce((total, budgetLine) => {
         return (
             total +
             totalBudgetLineAmountPlusFees(
@@ -20,6 +13,17 @@ const BudgetLineTotalSummaryCard = ({ title, budgetLines }) => {
             )
         );
     }, 0);
+};
+
+/**
+ * BudgetLineTotalSummaryCard component
+ * @param {Object} props - Properties passed to component
+ * @param {string} props.title - The title of the card
+ * @param {Object[]} props.budgetLines - The budget lines to render
+ * @returns {React.JSX.Element} - The rendered component
+ */
+const BudgetLineTotalSummaryCard = ({ title, budgetLines }) => {
+    const totalAmountWithFees = calculateTotalAmountWithFees(budgetLines);
     return (
         <SummaryCard
             title={title}
@@ -33,6 +37,7 @@ const BudgetLineTotalSummaryCard = ({ title, budgetLines }) => {
         </SummaryCard>
     );
 };
+
 BudgetLineTotalSummaryCard.propTypes = {
     title: PropTypes.string.isRequired,
     budgetLines: PropTypes.arrayOf(PropTypes.object).isRequired

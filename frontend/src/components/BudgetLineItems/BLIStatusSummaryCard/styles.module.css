@@ -1,0 +1,13 @@
+.cardBody {
+    flex: 3;
+}
+
+.chartArea {
+    align-items: center;
+    justify-content: center;
+    flex: 2;
+}
+
+.widthLegend {
+    width: 12.5rem;
+}
