@@ -19,7 +19,7 @@ def error_simulator(func: Callable[..., Response]) -> Callable[..., Response]:
     """
 
     @wraps(func)
-    def wrapper(*args, **kwargs) -> Response:
+    def wrapper(*args, **kwargs) ->  Response:
         with suppress(KeyError):
             error_param = request.args["simulatedError"].casefold()
             status_code = 500
@@ -29,10 +29,8 @@ def error_simulator(func: Callable[..., Response]) -> Callable[..., Response]:
                 case "false" | "" | "none" | "null" | "0":
                     raise KeyError  # break out of this and ignore it.
                 case _:
-                    try:
+                    with suppress(ValueError):
                         status_code = int(error_param)
-                    except ValueError:
-                        pass
             return make_response_with_headers({}, status_code)
 
         return func(*args, **kwargs)
