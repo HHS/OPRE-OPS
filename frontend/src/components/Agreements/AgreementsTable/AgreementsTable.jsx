@@ -1,5 +1,7 @@
 import PropTypes from "prop-types";
 import AgreementTableRow from "./AgreementTableRow";
+import Table from "../../UI/Table";
+import { TABLE_HEADINGS } from "./AgreementsTable.constants";
 
 /**
  * Agreement table.
@@ -10,33 +12,15 @@ import AgreementTableRow from "./AgreementTableRow";
 export const AgreementsTable = ({ agreements = [] }) => {
     return (
         <>
-            <table className="usa-table usa-table--borderless width-full ">
-                <thead>
-                    <tr>
-                        <th scope="col">Agreement</th>
-                        <th scope="col">Project</th>
-                        <th scope="col">Type</th>
-                        <th scope="col">Total</th>
-                        <th scope="col">Need By</th>
-                        <th
-                            scope="col"
-                            className="padding-0"
-                            style={{ width: "6.25rem" }}
-                        >
-                            Status
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {agreements.length > 0 &&
-                        agreements?.map((agreement) => (
-                            <AgreementTableRow
-                                key={agreement?.id}
-                                agreement={agreement}
-                            />
-                        ))}
-                </tbody>
-            </table>
+            <Table tableHeadings={TABLE_HEADINGS}>
+                {agreements.length > 0 &&
+                    agreements?.map((agreement) => (
+                        <AgreementTableRow
+                            key={agreement?.id}
+                            agreement={agreement}
+                        />
+                    ))}
+            </Table>
             {agreements.length === 0 && (
                 <div
                     id="agreements-table-zero-results"
