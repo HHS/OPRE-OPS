@@ -164,6 +164,7 @@ const BLIRow = ({
                             handleDuplicateBudgetLine={handleDuplicateBudgetLine}
                             handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                             isBudgetLineEditable={isBudgetLineEditable}
+                            duplicateIcon={true}
                         />
                     </div>
                 ) : (

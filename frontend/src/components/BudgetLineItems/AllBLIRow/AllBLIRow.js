@@ -101,14 +101,14 @@ const AllBLIRow = ({
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {isRowActive && !isExpanded && !readOnly && isBudgetLineEditable ? (
+                {isRowActive && !isExpanded && !readOnly ? (
                     <div>
                         <ChangeIcons
                             budgetLine={budgetLine}
                             handleDeleteBudgetLine={handleDeleteBudgetLine}
                             handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                             isBudgetLineEditable={isBudgetLineEditable}
-                            noDuplicateIcon={true}
+                            duplicateIcon={false}
                         />
                     </div>
                 ) : (
@@ -209,7 +209,7 @@ const AllBLIRow = ({
                                 handleDeleteBudgetLine={handleDeleteBudgetLine}
                                 handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                                 isBudgetLineEditable={isBudgetLineEditable}
-                                noDuplicateIcon={true}
+                                duplicateIcon={false}
                             />
                         )}
                     </div>
