@@ -22,9 +22,9 @@ const Agreement = () => {
     const {
         data: agreement,
         error: errorAgreement,
-        isLoading: isLoadingAgreement
+        isLoading: isLoadingAgreement,
     } = useGetAgreementByIdQuery(agreementId, {
-        refetchOnMountOrArgChange: true
+        refetchOnMountOrArgChange: true,
     });
 
     useEffect(() => {
@@ -51,44 +51,42 @@ const Agreement = () => {
 
     return (
         <App breadCrumbName={agreement?.name}>
-            <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement.name}</h1>
-            <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
-                {agreement.research_project?.title}
-            </h2>
+            <>
+                <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement.name}</h1>
+                <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
+                    {agreement.research_project?.title}
+                </h2>
 
-            <div>
-                <section className="display-flex flex-justify margin-top-3">
-                    <DetailsTabs
-                        agreementId={agreement.id}
-                        isEditMode={isEditMode}
-                        setIsEditMode={setIsEditMode}
-                    />
-                </section>
+                <div>
+                    <section className="display-flex flex-justify margin-top-3">
+                        <DetailsTabs agreementId={agreement.id} isEditMode={isEditMode} setIsEditMode={setIsEditMode} />
+                    </section>
 
-                <Routes>
-                    <Route
-                        path=""
-                        element={
-                            <AgreementDetails
-                                agreement={agreement}
-                                projectOfficer={projectOfficer}
-                                isEditMode={isEditMode}
-                                setIsEditMode={setIsEditMode}
-                            />
-                        }
-                    />
-                    <Route
-                        path="budget-lines"
-                        element={
-                            <AgreementBudgetLines
-                                agreement={agreement}
-                                isEditMode={isEditMode}
-                                setIsEditMode={setIsEditMode}
-                            />
-                        }
-                    />
-                </Routes>
-            </div>
+                    <Routes>
+                        <Route
+                            path=""
+                            element={
+                                <AgreementDetails
+                                    agreement={agreement}
+                                    projectOfficer={projectOfficer}
+                                    isEditMode={isEditMode}
+                                    setIsEditMode={setIsEditMode}
+                                />
+                            }
+                        />
+                        <Route
+                            path="budget-lines"
+                            element={
+                                <AgreementBudgetLines
+                                    agreement={agreement}
+                                    isEditMode={isEditMode}
+                                    setIsEditMode={setIsEditMode}
+                                />
+                            }
+                        />
+                    </Routes>
+                </div>
+            </>
         </App>
     );
 };

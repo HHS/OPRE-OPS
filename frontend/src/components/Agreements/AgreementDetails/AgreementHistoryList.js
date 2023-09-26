@@ -106,7 +106,8 @@ const prepareChanges = (historyItem) => {
     let preparedChanges = [];
 
     Object.entries(rawChanges).forEach(([key, change]) => {
-        if (["psc_fee_amount"].includes(key)) return;
+        // hiding changes with proc_shop_fee_percentage which seem confusing
+        if (["proc_shop_fee_percentage"].includes(key)) return;
         let preparedChange = {
             key: key,
             propertyLabel: getPropertyLabel(historyItem.class_name, key),
@@ -289,72 +290,72 @@ const PropertyLogItems = ({ historyItem, baseKey }) => {
     if (eventType !== "UPDATED") return;
     const preparedChanges = prepareChanges(historyItem);
 
-    return (
-        <>
-            {preparedChanges.map((change, index) => (
-                <>
-                    {change.isCollection ? (
-                        <CollectionLogItems
-                            key={`${baseKey}_${index}`}
-                            historyItem={historyItem}
-                            change={change}
-                            baseKey={`${baseKey}_${index}`}
-                        />
-                    ) : (
-                        <LogItem
-                            key={`${baseKey}_${index}`}
-                            title={propertyLogItemTitle(historyItem, change)}
-                            createdOn={historyItem.created_on}
-                        >
-                            {changeMessageBeginning(historyItem, change)}
-                            {!omitChangeDetailsFor.includes(change.key) && (
-                                <>
-                                    &nbsp;from&nbsp;
-                                    <RenderProperty
-                                        className={historyItem.class_name}
-                                        propertyKey={change.key}
-                                        value={change.from}
-                                        id={change.fromId}
-                                    />
-                                    &nbsp;to&nbsp;
-                                    <RenderProperty
-                                        className={historyItem.class_name}
-                                        propertyKey={change.key}
-                                        value={change.to}
-                                        id={change.toId}
-                                    />
-                                </>
-                            )}
-                            &nbsp;by {change.createdByName}
-                        </LogItem>
-                    )}
-                </>
-            ))}
-        </>
-    );
+    return preparedChanges.map((change, index) => {
+        const key = `${baseKey}_${index}`;
+
+        if (change.isCollection) {
+            return <CollectionLogItems key={key} historyItem={historyItem} change={change} baseKey={key} />;
+        }
+
+        const title = propertyLogItemTitle(historyItem, change);
+        const createdOn = historyItem.created_on;
+        const messageBeginning = changeMessageBeginning(historyItem, change);
+        const shouldRenderDetails = !omitChangeDetailsFor.includes(change.key);
+        const from = (
+            <RenderProperty
+                className={historyItem.class_name}
+                propertyKey={change.key}
+                value={change.from}
+                id={change.fromId}
+            />
+        );
+        const to = (
+            <RenderProperty
+                className={historyItem.class_name}
+                propertyKey={change.key}
+                value={change.to}
+                id={change.toId}
+            />
+        );
+        const createdBy = change.createdByName;
+
+        return (
+            <LogItem key={key} title={title} createdOn={createdOn}>
+                {messageBeginning} {change.key}
+                {shouldRenderDetails && (
+                    <>
+                        &nbsp;from&nbsp;{from}&nbsp;to&nbsp;{to}
+                    </>
+                )}
+                &nbsp;by {createdBy}
+            </LogItem>
+        );
+    });
 };
 
 const AgreementHistoryList = ({ agreementHistory }) => {
-    if (!(agreementHistory && agreementHistory.length > 0)) {
+    if (!agreementHistory || agreementHistory.length === 0) {
         return <span className="font-12px">{noDataMessage}</span>;
     }
 
+    const renderHistoryItem = (historyItem, index) => {
+        if (["NEW", "DELETED"].includes(historyItem.event_type)) {
+            return (
+                <LogItem
+                    key={index}
+                    title={eventLogItemTitle(historyItem)}
+                    message={eventMessage(historyItem)}
+                    createdOn={historyItem.created_on}
+                />
+            );
+        }
+
+        return <PropertyLogItems key={index} historyItem={historyItem} baseKey={index} />;
+    };
+
     return (
         <ul className="usa-list--unstyled" data-cy="agreement-history-list">
-            {agreementHistory.map((historyItem, index) => (
-                <>
-                    {["NEW", "DELETED"].includes(historyItem["event_type"]) ? (
-                        <LogItem
-                            key={index}
-                            title={eventLogItemTitle(historyItem)}
-                            message={eventMessage(historyItem)}
-                            createdOn={historyItem.created_on}
-                        />
-                    ) : (
-                        <PropertyLogItems key={index} historyItem={historyItem} baseKey={index} />
-                    )}
-                </>
-            ))}
+            {agreementHistory.map(renderHistoryItem)}
         </ul>
     );
 };
