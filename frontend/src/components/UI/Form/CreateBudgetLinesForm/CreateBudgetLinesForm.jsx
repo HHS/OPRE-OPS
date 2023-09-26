@@ -155,7 +155,7 @@ export const CreateBudgetLinesForm = ({
                     name="enteredComments"
                     label="Notes (optional)"
                     value={enteredComments || ""}
-                    hintMsg="Maximum 150 characters"
+                    maxLength={150}
                     onChange={(name, value) => {
                         setEnteredComments(value);
                     }}

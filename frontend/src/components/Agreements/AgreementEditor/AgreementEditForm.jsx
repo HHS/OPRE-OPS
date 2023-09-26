@@ -305,6 +305,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                 messages={res.getErrors("description")}
                 className={cn("description")}
                 value={agreementDescription}
+                maxLength={500}
                 onChange={(name, value) => {
                     setAgreementDescription(value);
                     if (isReviewMode) {
@@ -405,7 +406,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
             <TextArea
                 name="agreementNotes"
                 label="Notes (optional)"
-                hintMsg="Maximum 150 characters"
+                maxLength={1000}
                 messages={res.getErrors("agreementNotes")}
                 className={cn("agreementNotes")}
                 value={agreementNotes || ""}
