@@ -10,7 +10,7 @@ const UserDetail = () => {
     const {
         data: user,
         error: errorAgreement,
-        isLoading: isLoadingAgreement,
+        isLoading: isLoadingAgreement
     } = useGetUserByIdQuery(userId, { refetchOnMountOrArgChange: true });
 
     if (isLoadingAgreement) {

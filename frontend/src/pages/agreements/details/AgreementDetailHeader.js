@@ -43,7 +43,7 @@ AgreementDetailHeader.propTypes = {
     details: PropTypes.string.isRequired,
     isEditMode: PropTypes.bool.isRequired,
     setIsEditMode: PropTypes.func.isRequired,
-    isEditable: PropTypes.bool.isRequired,
+    isEditable: PropTypes.bool.isRequired
 };
 
 export default AgreementDetailHeader;

@@ -28,7 +28,7 @@ export const ComboBox = ({
     messages = [],
     overrideStyles = {},
     clearWhenSet = false,
-    isMulti = false,
+    isMulti = false
 }) => {
     const [selectedOption, setSelectedOption] = useState(null);
 
@@ -46,49 +46,49 @@ export const ComboBox = ({
             outline: state.isFocused ? "0.25rem solid #2491ff" : null,
             borderRadius: 0,
             "&:hover": {
-                borderColor: "#565c65",
+                borderColor: "#565c65"
             },
-            ...overrideStyles,
+            ...overrideStyles
         }),
 
         placeholder: (provided) => ({
             ...provided,
-            color: "#565C65",
+            color: "#565C65"
         }),
 
         valueContainer: (provided) => ({
             ...provided,
-            padding: "0 6px",
+            padding: "0 6px"
         }),
 
         input: (provided) => ({
             ...provided,
-            margin: "0px",
+            margin: "0px"
         }),
 
         indicatorSeparator: () => ({
-            display: "none",
+            display: "none"
         }),
 
         indicatorsContainer: (provided) => ({
             ...provided,
-            height: "40px",
+            height: "40px"
         }),
 
         clearIndicator: (provided) => ({
             ...provided,
-            color: "#1b1b1b",
+            color: "#1b1b1b"
         }),
 
         dropdownIndicator: (provided) => ({
             ...provided,
-            color: "#1b1b1b",
+            color: "#1b1b1b"
         }),
 
         multiValueLabel: (provided) => ({
             ...provided,
-            color: "#1b1b1b",
-        }),
+            color: "#1b1b1b"
+        })
     };
 
     useEffect(() => {
@@ -181,5 +181,5 @@ ComboBox.propTypes = {
     messages: PropTypes.array,
     overrideStyles: PropTypes.object,
     clearWhenSet: PropTypes.bool,
-    isMulti: PropTypes.bool,
+    isMulti: PropTypes.bool
 };

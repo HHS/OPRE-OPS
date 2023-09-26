@@ -59,7 +59,10 @@ const AgreementDetails = ({ agreement, projectOfficer, isEditMode, setIsEditMode
                     setIsEditMode={setIsEditMode}
                 />
             ) : (
-                <AgreementDetailsView agreement={agreement} projectOfficer={projectOfficer} />
+                <AgreementDetailsView
+                    agreement={agreement}
+                    projectOfficer={projectOfficer}
+                />
             )}
         </div>
     );
@@ -69,7 +72,7 @@ AgreementDetails.propTypes = {
     agreement: PropTypes.object.isRequired,
     projectOfficer: PropTypes.object.isRequired,
     isEditMode: PropTypes.bool.isRequired,
-    setIsEditMode: PropTypes.func.isRequired,
+    setIsEditMode: PropTypes.func.isRequired
 };
 
 export default AgreementDetails;

@@ -26,29 +26,29 @@ const CanCard = ({ can, fiscalYear }) => {
             label: "Available",
             value: canFundingData.available_funding || 0,
             color: "#C07B96",
-            percent: `${calculatePercent(canFundingData.available_funding, canFundingData?.total_funding)}%`,
+            percent: `${calculatePercent(canFundingData.available_funding, canFundingData?.total_funding)}%`
         },
         {
             id: 2,
             label: "Planned",
             value: canFundingData.planned_funding || 0,
             color: "#336A90",
-            percent: `${calculatePercent(canFundingData.planned_funding, canFundingData?.total_funding)}%`,
+            percent: `${calculatePercent(canFundingData.planned_funding, canFundingData?.total_funding)}%`
         },
         {
             id: 3,
             label: "Executing",
             value: canFundingData.in_execution_funding || 0,
             color: "#E5A000",
-            percent: `${calculatePercent(canFundingData.in_execution_funding, canFundingData?.total_funding)}%`,
+            percent: `${calculatePercent(canFundingData.in_execution_funding, canFundingData?.total_funding)}%`
         },
         {
             id: 4,
             label: "Obligated",
             value: canFundingData.obligated_funding || 0,
             color: "#3A835B",
-            percent: `${calculatePercent(canFundingData.obligated_funding, canFundingData?.total_funding)}%`,
-        },
+            percent: `${calculatePercent(canFundingData.obligated_funding, canFundingData?.total_funding)}%`
+        }
     ];
     useEffect(() => {
         const getCanTotalFundingandSetState = async () => {
@@ -87,7 +87,12 @@ const CanCard = ({ can, fiscalYear }) => {
                     />
                 </div>
                 <div className="grid-col-1">
-                    <Tag tagStyle="darkTextLightBackground" text={percent} label={label} active={isGraphActive} />
+                    <Tag
+                        tagStyle="darkTextLightBackground"
+                        text={percent}
+                        label={label}
+                        active={isGraphActive}
+                    />
                 </div>
             </div>
         );

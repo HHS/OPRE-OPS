@@ -24,6 +24,11 @@ export const LogItem = ({ title, message, createdOn, variant, withSeparator = fa
                 <span className="display-flex flex-align-center">
                     <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1 text-base-dark" />
                     <span className="text-base-dark">{formatLogTimeStamp(createdOn)}</span>
+                    <FontAwesomeIcon
+                        icon={faClock}
+                        className="height-2 width-2 margin-right-1 text-base-dark"
+                    />
+                    <span className="text-base-dark">{timeAgo(createdOn)}</span>
                 </span>
             </div>
             {message ?? (
@@ -44,7 +49,7 @@ LogItem.propTypes = {
     createdOn: PropTypes.string.isRequired,
     variant: PropTypes.string,
     withSeparator: PropTypes.bool,
-    children: PropTypes.node,
+    children: PropTypes.node
 };
 
 export default LogItem;

@@ -16,7 +16,10 @@ import cx from "clsx";
 const YearInput = ({ name, label = name, onChange, pending = false, messages = [], value }) => {
     return (
         <div className={cx("usa-form-group usa-form-group--year margin-top-0", pending && "pending")}>
-            <label className={`usa-label sr-only ${messages.length ? "usa-label--error" : null} `} htmlFor={name}>
+            <label
+                className={`usa-label sr-only ${messages.length ? "usa-label--error" : null} `}
+                htmlFor={name}
+            >
                 {label}
             </label>
             <input
@@ -48,7 +51,7 @@ YearInput.propTypes = {
     onChange: PropTypes.func.isRequired,
     pending: PropTypes.bool,
     messages: PropTypes.arrayOf(PropTypes.string),
-    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 };
 
 export default YearInput;

@@ -57,12 +57,15 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                             type: "success",
                             heading: "Budget Lines Saved",
                             message: "The budget lines have been successfully saved.",
-                            navigateUrl: `/agreements/${agreement.id}/budget-lines`,
+                            navigateUrl: `/agreements/${agreement.id}/budget-lines`
                         });
                     }}
                 />
             ) : agreement?.budget_line_items.length > 0 ? (
-                <BudgetLinesTable budgetLinesAdded={agreement?.budget_line_items} readOnly={!isEditMode} />
+                <BudgetLinesTable
+                    budgetLinesAdded={agreement?.budget_line_items}
+                    readOnly={!isEditMode}
+                />
             ) : (
                 <p>No budget lines.</p>
             )}
@@ -90,10 +93,10 @@ AgreementBudgetLines.propTypes = {
         research_project: PropTypes.object,
         team_members: PropTypes.arrayOf(PropTypes.object),
         created_by: PropTypes.number,
-        project_officer: PropTypes.number,
+        project_officer: PropTypes.number
     }),
     isEditMode: PropTypes.bool,
-    setIsEditMode: PropTypes.func,
+    setIsEditMode: PropTypes.func
 };
 
 export default AgreementBudgetLines;

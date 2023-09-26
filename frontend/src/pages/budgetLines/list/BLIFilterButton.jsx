@@ -37,7 +37,7 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
                 ...prevState,
                 fiscalYears: fiscalYears,
                 portfolios: portfolios,
-                bliStatus: bliStatus,
+                bliStatus: bliStatus
             };
         });
     };
@@ -46,7 +46,7 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
         setFilters({
             fiscalYears: [],
             portfolios: [],
-            bliStatus: [],
+            bliStatus: []
         });
         setFiscalYears([]);
         setPortfolios([]);
@@ -57,7 +57,10 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
     const legendStyles = `usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`;
 
     const fieldsetList = [
-        <fieldset key="field1" className={fieldStyles}>
+        <fieldset
+            key="field1"
+            className={fieldStyles}
+        >
             <FiscalYearComboBox
                 selectedFiscalYears={fiscalYears}
                 setSelectedFiscalYears={setFiscalYears}
@@ -66,7 +69,10 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
                 overrideStyles={{ width: "22.7rem" }}
             />
         </fieldset>,
-        <fieldset key="field2" className={fieldStyles}>
+        <fieldset
+            key="field2"
+            className={fieldStyles}
+        >
             <PortfoliosComboBox
                 selectedPortfolios={portfolios}
                 setSelectedPortfolios={setPortfolios}
@@ -75,7 +81,10 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
                 overrideStyles={{ width: "22.7rem" }}
             />
         </fieldset>,
-        <fieldset key="field3" className={fieldStyles}>
+        <fieldset
+            key="field3"
+            className={fieldStyles}
+        >
             <BLIStatusComboBox
                 selectedBLIStatus={bliStatus}
                 setSelectedBLIStatus={setBLIStatus}
@@ -83,12 +92,18 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
                 defaultString={"All Budget Line Statuses"}
                 overrideStyles={{ width: "22.7rem" }}
             />
-        </fieldset>,
+        </fieldset>
     ];
 
     Modal.setAppElement("#root");
 
-    return <FilterButton applyFilter={applyFilter} resetFilter={resetFilter} fieldsetList={fieldsetList} />;
+    return (
+        <FilterButton
+            applyFilter={applyFilter}
+            resetFilter={resetFilter}
+            fieldsetList={fieldsetList}
+        />
+    );
 };
 
 export default BLIFilterButton;

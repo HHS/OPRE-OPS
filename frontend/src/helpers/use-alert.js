@@ -33,6 +33,6 @@ const useAlert = () => {
 
 useAlert.propTypes = {
     setAlert: PropTypes.func.isRequired,
-    isAlertActive: PropTypes.bool.isRequired,
+    isAlertActive: PropTypes.bool.isRequired
 };
 export default useAlert;

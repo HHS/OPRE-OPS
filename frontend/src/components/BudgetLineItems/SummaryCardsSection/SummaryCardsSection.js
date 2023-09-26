@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
-import SummaryCard from "../../UI/SummaryCard";
 import BudgetLinesTotalSummaryCard from "../BudgetLinesTotalSummaryCard";
+import BLIStatusSummaryCard from "../BLIStatusSummaryCard";
 
 /**
  * SummaryCardsSection component
@@ -11,14 +11,17 @@ import BudgetLinesTotalSummaryCard from "../BudgetLinesTotalSummaryCard";
 const SummaryCardsSection = ({ budgetLines }) => {
     return (
         <div className="display-flex flex-justify">
-            <SummaryCard title="TODO: Replace me">{null}</SummaryCard>
-            <BudgetLinesTotalSummaryCard title="Budget Lines Total" budgetLines={budgetLines} />
+            <BLIStatusSummaryCard budgetLines={budgetLines} />
+            <BudgetLinesTotalSummaryCard
+                title="Budget Lines Total"
+                budgetLines={budgetLines}
+            />
         </div>
     );
 };
 
 SummaryCardsSection.propTypes = {
-    budgetLines: PropTypes.arrayOf(PropTypes.object).isRequired,
+    budgetLines: PropTypes.arrayOf(PropTypes.object).isRequired
 };
 
 export default SummaryCardsSection;

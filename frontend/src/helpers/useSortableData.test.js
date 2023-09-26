@@ -8,14 +8,20 @@ const TestComponent = ({ items, config, onHookResult }) => {
 };
 
 const renderTestComponent = (items, config, onHookResult) => {
-    render(<TestComponent items={items} config={config} onHookResult={onHookResult} />);
+    render(
+        <TestComponent
+            items={items}
+            config={config}
+            onHookResult={onHookResult}
+        />
+    );
 };
 
 describe("useSortableData", () => {
     const items = [
         { id: 1, name: "John", age: 28 },
         { id: 2, name: "Jane", age: 30 },
-        { id: 3, name: "Bob", age: 20 },
+        { id: 3, name: "Bob", age: 20 }
     ];
 
     test("should return unsorted items when config is null", () => {
@@ -59,7 +65,7 @@ describe("useSortableData", () => {
         expect(hookResult.items).toEqual([
             { id: 3, name: "Bob", age: 20 },
             { id: 2, name: "Jane", age: 30 },
-            { id: 1, name: "John", age: 28 },
+            { id: 1, name: "John", age: 28 }
         ]);
     });
 
@@ -80,7 +86,7 @@ describe("useSortableData", () => {
         expect(hookResult.items).toEqual([
             { id: 1, name: "John", age: 28 },
             { id: 2, name: "Jane", age: 30 },
-            { id: 3, name: "Bob", age: 20 },
+            { id: 3, name: "Bob", age: 20 }
         ]);
     });
 });

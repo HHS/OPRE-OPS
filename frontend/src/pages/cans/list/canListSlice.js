@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    cans: [],
+    cans: []
 };
 
 const canListSlice = createSlice({
@@ -10,8 +10,8 @@ const canListSlice = createSlice({
     reducers: {
         setCanList: (state, action) => {
             state.cans = action.payload;
-        },
-    },
+        }
+    }
 });
 
 export const { setCanList } = canListSlice.actions;

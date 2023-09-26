@@ -6,7 +6,7 @@ export const ProjectSelectWithSummaryCard = ({
     researchProjects,
     selectedResearchProject,
     setSelectedProject,
-    setAgreementProjectId,
+    setAgreementProjectId
 }) => {
     useEffect(() => {
         if (setAgreementProjectId) {
@@ -28,7 +28,10 @@ export const ProjectSelectWithSummaryCard = ({
                     <dt className="margin-0 text-base-dark">Project</dt>
                     <dd className="text-semibold margin-0">{title}</dd>
                     {description && <dt className="margin-0 text-base-dark margin-top-205">Description</dt>}
-                    <dd className="text-semibold margin-0" style={{ maxWidth: "15.625rem" }}>
+                    <dd
+                        className="text-semibold margin-0"
+                        style={{ maxWidth: "15.625rem" }}
+                    >
                         {description}
                     </dd>
                 </dl>
@@ -38,8 +41,8 @@ export const ProjectSelectWithSummaryCard = ({
     ProjectSummaryCard.propTypes = {
         selectedResearchProject: PropTypes.shape({
             title: PropTypes.string.isRequired,
-            description: PropTypes.string,
-        }).isRequired,
+            description: PropTypes.string
+        }).isRequired
     };
     return (
         <div className="display-flex flex-justify padding-top-105">
@@ -67,5 +70,5 @@ ProjectSelectWithSummaryCard.propTypes = {
     researchProjects: PropTypes.array.isRequired,
     selectedResearchProject: PropTypes.object.isRequired,
     setSelectedProject: PropTypes.func.isRequired,
-    setAgreementProjectId: PropTypes.func,
+    setAgreementProjectId: PropTypes.func
 };

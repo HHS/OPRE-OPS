@@ -6,7 +6,7 @@ const initialState = {
     portfolioCans: [],
     portfolioCansFundingDetails: [],
     selectedFiscalYear: { value: getCurrentFiscalYear(new Date()) },
-    researchProjects: [],
+    researchProjects: []
 };
 
 const portfolioSlice = createSlice({
@@ -27,8 +27,8 @@ const portfolioSlice = createSlice({
         },
         setResearchProjects: (state, action) => {
             state.researchProjects = action.payload;
-        },
-    },
+        }
+    }
 });
 
 export const {
@@ -36,7 +36,7 @@ export const {
     setPortfolio,
     setPortfolioCans,
     setPortfolioCansFundingDetails,
-    setResearchProjects,
+    setResearchProjects
 } = portfolioSlice.actions;
 
 export default portfolioSlice.reducer;

@@ -6,7 +6,7 @@ import {
     setPortfolio,
     setPortfolioCans,
     setPortfolioCansFundingDetails,
-    setSelectedFiscalYear,
+    setSelectedFiscalYear
 } from "./portfolioSlice";
 import App from "../../../App";
 import CanCard from "../../../components/CANs/CanCard/CanCard";
@@ -69,7 +69,13 @@ const PortfolioDetail = () => {
     }, [dispatch, fiscalYear, portfolioCans]);
 
     const canCards = portfolioCans.length
-        ? portfolioCans.map((can, i) => <CanCard can={can} fiscalYear={fiscalYear.value} key={i} />)
+        ? portfolioCans.map((can, i) => (
+              <CanCard
+                  can={can}
+                  fiscalYear={fiscalYear.value}
+                  key={i}
+              />
+          ))
         : "";
 
     return (

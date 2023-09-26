@@ -4,7 +4,7 @@ import { login } from "./authSlice";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import cryptoRandomString from "crypto-random-string";
-import { getAuthorizationCode } from "./auth";
+import { getAccessToken, getAuthorizationCode } from "./auth";
 import { apiLogin } from "../../api/apiLogin";
 import ContainerModal from "../UI/Modals/ContainerModal";
 import { setActiveUser } from "./auth";
@@ -24,13 +24,12 @@ const MultiAuthSection = () => {
             }
 
             const response = await apiLogin(activeProvider, authCode);
-            // console.debug(`API Login Response = ${JSON.stringify(response)}`);
             if (response.access_token === null || response.access_token === undefined) {
                 console.error("API Login Failed!");
                 navigate("/login");
             } else {
-                console.log(`DEBUG:::ACCESS_TOKEN: ${response.access_token}`);
                 localStorage.setItem("access_token", response.access_token);
+                localStorage.setItem("refresh_token", response.refresh_token);
                 dispatch(login());
 
                 if (response.is_new_user) {
@@ -47,7 +46,7 @@ const MultiAuthSection = () => {
     );
 
     React.useEffect(() => {
-        const currentJWT = localStorage.getItem("access_token");
+        const currentJWT = getAccessToken();
         if (currentJWT) {
             // TODO: we should validate the JWT here and set it on state if valid else logout
             dispatch(login());
@@ -71,7 +70,6 @@ const MultiAuthSection = () => {
                     throw new Error("Response from OIDC provider is invalid.");
                 } else {
                     const authCode = queryParams.get("code");
-                    console.log(`Received Authentication Code = ${authCode}`);
                     callBackend(authCode).catch(console.error);
                 }
             }
@@ -84,7 +82,6 @@ const MultiAuthSection = () => {
     // TODO: Replace these tokens with config variables, that can be passed in at deploy-time,
     //       So that we don't actually store anything in code.
     const handleFakeAuthLogin = (user_type) => {
-        // console.debug(`Logging in with FakeAuth: ${user_type}`);
         localStorage.setItem("activeProvider", "fakeauth");
         callBackend(user_type).catch(console.error);
 
@@ -122,7 +119,10 @@ const MultiAuthSection = () => {
                     </button>
                 </p>
                 <p>
-                    <button className="usa-button usa-button--outline width-full" onClick={() => setShowModal(true)}>
+                    <button
+                        className="usa-button usa-button--outline width-full"
+                        onClick={() => setShowModal(true)}
+                    >
                         Sign in with FakeAuth®
                     </button>
                 </p>

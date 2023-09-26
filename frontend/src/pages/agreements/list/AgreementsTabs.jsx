@@ -16,12 +16,12 @@ export const AgreementTabs = () => {
     const paths = [
         {
             name: "",
-            label: "All Agreements",
+            label: "All Agreements"
         },
         {
             name: "?filter=my-agreements",
-            label: "My Agreements",
-        },
+            label: "My Agreements"
+        }
     ];
 
     const links = paths.map((path) => {
@@ -38,7 +38,12 @@ export const AgreementTabs = () => {
         );
     });
 
-    return <TabsSection links={links} label="Agreements Tabs Section" />;
+    return (
+        <TabsSection
+            links={links}
+            label="Agreements Tabs Section"
+        />
+    );
 };
 
 export default AgreementTabs;

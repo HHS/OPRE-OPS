@@ -9,8 +9,20 @@ export const getCurrentFiscalYear = (today = new Date()) => {
     return fiscalYear;
 };
 
+/**
+ * This function calculate a percent based on a numerator and denominator.
+ * @param {number} numerator - The numerator. This parameter is required.
+ * @param {number} denominator - The denominator. This parameter is required.
+ * @returns {number} The calculated percent.
+ */
 export const calculatePercent = (numerator, denominator) => {
-    if (denominator === "0" || denominator === 0) return "0";
+    if (typeof numerator !== "number" || typeof denominator !== "number") {
+        numerator = +numerator;
+        denominator = +denominator;
+        console.warn("calculatePercent: numerator and denominator must be numbers");
+    }
+
+    if (denominator === 0 || numerator === 0) return 0;
 
     return Math.round((numerator / denominator) * 100);
 };
@@ -65,19 +77,19 @@ const codesToDisplayText = {
         GRANT: "Grant",
         DIRECT_ALLOCATION: "Direct Allocation",
         IAA: "IAA",
-        MISCELLANEOUS: "Misc",
+        MISCELLANEOUS: "Misc"
     },
     agreementReason: {
         NEW_REQ: "New Requirement",
         RECOMPETE: "Recompete",
-        LOGICAL_FOLLOW_ON: "Logical Follow On",
+        LOGICAL_FOLLOW_ON: "Logical Follow On"
     },
     budgetLineStatus: {
         DRAFT: "Draft",
         UNDER_REVIEW: "In Review",
         PLANNED: "Planned",
         IN_EXECUTION: "Executing",
-        OBLIGATED: "Obligated",
+        OBLIGATED: "Obligated"
     },
     validation: {
         name: "Name",
@@ -91,11 +103,11 @@ const codesToDisplayText = {
         incumbent: "Incumbent",
         "project-officer": "Project Officer",
         "team-member": "Team Members",
-        "budget-line-items": "Budget Line Items",
+        "budget-line-items": "Budget Line Items"
     },
     classNameLabels: {
         ContractAgreement: "Contract Agreement",
-        BudgetLineItem: "Budget Line",
+        BudgetLineItem: "Budget Line"
     },
     baseClassNameLabels: {
         ContractAgreement: "Agreement",
@@ -120,7 +132,7 @@ const codesToDisplayText = {
         delivered_status: "Delivered Status",
         contract_type: "Contract Type",
         support_contacts: "Support Contacts",
-        support_contacts_item: "Support Contact",
+        support_contacts_item: "Support Contact"
     },
     budgetLineItemPropertyLabels: {
         amount: "Amount",
@@ -128,9 +140,9 @@ const codesToDisplayText = {
         comments: "Notes",
         date_needed: "Need By Date",
         line_description: "Description",
-        psc_fee_amount: "Shop Fee",
-        status: "Status",
-    },
+        proc_shop_fee_percentage: "Shop Fee",
+        status: "Status"
+    }
 };
 
 /**
@@ -235,9 +247,7 @@ export const fiscalYearFromDate = (date) => {
  */
 export const totalBudgetLineFeeAmount = (amount, fee) => {
     if (amount === 0) return 0;
-    // fee is a percent, so divide by 100
-    const calcFee = fee / 100;
-    return amount * calcFee;
+    return amount * fee;
 };
 
 /**

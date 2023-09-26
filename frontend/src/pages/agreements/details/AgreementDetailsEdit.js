@@ -24,7 +24,10 @@ const AgreementDetailsEdit = ({ agreement, projectOfficer, isEditMode, setIsEdit
 
     return (
         <div>
-            <EditAgreementProvider agreement={agreement} projectOfficer={projectOfficer}>
+            <EditAgreementProvider
+                agreement={agreement}
+                projectOfficer={projectOfficer}
+            >
                 <AgreementEditForm
                     goBack={goBack}
                     goToNext={goToNext}
@@ -41,6 +44,6 @@ AgreementDetailsEdit.propTypes = {
     agreement: PropTypes.object.isRequired,
     projectOfficer: PropTypes.object.isRequired,
     isEditMode: PropTypes.bool.isRequired,
-    setIsEditMode: PropTypes.func.isRequired,
+    setIsEditMode: PropTypes.func.isRequired
 };
 export default AgreementDetailsEdit;

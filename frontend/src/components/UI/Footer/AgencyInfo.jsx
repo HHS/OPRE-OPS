@@ -10,7 +10,11 @@ export const AgencyInfo = () => {
             "
                 >
                     <div className="mobile-lg:grid-col-auto">
-                        <img className="usa-footer__logo-img" src="/assets/img/logo-img.png" alt="" />
+                        <img
+                            className="usa-footer__logo-img"
+                            src="/assets/img/logo-img.png"
+                            alt=""
+                        />
                     </div>
                     <div className="mobile-lg:grid-col-auto">
                         <p className="usa-footer__logo-heading">OPRE Portfolio Management System</p>

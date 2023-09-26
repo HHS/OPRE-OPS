@@ -5,7 +5,7 @@ class DeployedApplicationContext {
         return {
             callBackend,
             authConfig,
-            backEndConfig,
+            backEndConfig
         };
     }
 }
