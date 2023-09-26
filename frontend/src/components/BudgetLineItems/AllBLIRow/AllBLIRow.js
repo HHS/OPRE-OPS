@@ -10,7 +10,7 @@ import {
     formatDateNeeded,
     formatDateToMonthDayYear,
     totalBudgetLineFeeAmount,
-    totalBudgetLineAmountPlusFees,
+    totalBudgetLineAmountPlusFees
 } from "../../../helpers/utils";
 import useGetUserFullNameFromId from "../../../helpers/user-hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../helpers/budget-line-hooks";
@@ -30,7 +30,7 @@ const AllBLIRow = ({
     bl: budgetLine,
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
-    readOnly = false,
+    readOnly = false
 }) => {
     const [isExpanded, setIsExpanded] = React.useState(false);
     const [isRowActive, setIsRowActive] = React.useState(false);
@@ -39,7 +39,7 @@ const AllBLIRow = ({
     const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
-    let feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.psc_fee_amount);
+    let feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     let BudgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
 
     // styles for the table row
@@ -48,22 +48,41 @@ const AllBLIRow = ({
 
     const TableRowData = ({ bl }) => (
         <>
-            <th scope="row" className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+            <th
+                scope="row"
+                className={removeBorderBottomIfExpanded}
+                style={changeBgColorIfExpanded}
+            >
                 {bl.line_description}
             </th>
-            <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+            <td
+                className={removeBorderBottomIfExpanded}
+                style={changeBgColorIfExpanded}
+            >
                 {bl.agreement_name}
             </td>
-            <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+            <td
+                className={removeBorderBottomIfExpanded}
+                style={changeBgColorIfExpanded}
+            >
                 {formatDateNeeded(bl.date_needed)}
             </td>
-            <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+            <td
+                className={removeBorderBottomIfExpanded}
+                style={changeBgColorIfExpanded}
+            >
                 {bl.fiscal_year}
             </td>
-            <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+            <td
+                className={removeBorderBottomIfExpanded}
+                style={changeBgColorIfExpanded}
+            >
                 {bl.can_number}
             </td>
-            <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+            <td
+                className={removeBorderBottomIfExpanded}
+                style={changeBgColorIfExpanded}
+            >
                 {BudgetLineTotalPlusFees === 0 ? (
                     0
                 ) : (
@@ -78,7 +97,10 @@ const AllBLIRow = ({
                     />
                 )}
             </td>
-            <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+            <td
+                className={removeBorderBottomIfExpanded}
+                style={changeBgColorIfExpanded}
+            >
                 {isRowActive && !isExpanded && !readOnly && isBudgetLineEditable ? (
                     <div>
                         <ChangeIcons
@@ -98,29 +120,51 @@ const AllBLIRow = ({
 
     const ExpandedData = () => (
         <>
-            <td colSpan={9} className="border-top-none" style={{ backgroundColor: "var(--neutral-lightest)" }}>
+            <td
+                colSpan={9}
+                className="border-top-none"
+                style={{ backgroundColor: "var(--neutral-lightest)" }}
+            >
                 <div className="display-flex padding-right-9">
                     <dl className="font-12px">
                         <dt className="margin-0 text-base-dark">Created By</dt>
-                        <dd id={`created-by-name-${budgetLine?.id}`} className="margin-0">
+                        <dd
+                            id={`created-by-name-${budgetLine?.id}`}
+                            className="margin-0"
+                        >
                             {budgetLineCreatorName}
                         </dd>
                         <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
-                            <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />
+                            <FontAwesomeIcon
+                                icon={faClock}
+                                className="height-2 width-2 margin-right-1"
+                            />
                             {formatDateToMonthDayYear(budgetLine?.created_on)}
                         </dt>
                     </dl>
-                    <dl className="font-12px" style={{ marginLeft: "9.0625rem" }}>
+                    <dl
+                        className="font-12px"
+                        style={{ marginLeft: "9.0625rem" }}
+                    >
                         <dt className="margin-0 text-base-dark">Notes</dt>
-                        <dd className="margin-0" style={{ maxWidth: "25rem" }}>
+                        <dd
+                            className="margin-0"
+                            style={{ maxWidth: "25rem" }}
+                        >
                             {budgetLine?.comments ? budgetLine.comments : "No notes added."}
                         </dd>
                     </dl>
-                    <div className="font-12px" style={{ marginLeft: "15rem" }}>
+                    <div
+                        className="font-12px"
+                        style={{ marginLeft: "15rem" }}
+                    >
                         <dl className="margin-bottom-0">
                             <dt className="margin-0 text-base-dark">Procurement Shop</dt>
-                            <dd className="margin-0" style={{ maxWidth: "25rem" }}>
-                                {`${budgetLine?.procShopCode}-Fee Rate: ${budgetLine?.psc_fee_amount}%`}
+                            <dd
+                                className="margin-0"
+                                style={{ maxWidth: "25rem" }}
+                            >
+                                {`${budgetLine?.procShopCode}-Fee Rate: ${budgetLine?.proc_shop_fee_percentage * 100}%`}
                             </dd>
                         </dl>
                         <div className="font-12px display-flex margin-top-1">
@@ -192,7 +236,7 @@ AllBLIRow.propTypes = {
     handleSetBudgetLineForEditing: PropTypes.func,
     handleDeleteBudgetLine: PropTypes.func,
     handleDuplicateBudgetLine: PropTypes.func,
-    readOnly: PropTypes.bool,
+    readOnly: PropTypes.bool
 };
 
 export default AllBLIRow;

@@ -1,18 +1,21 @@
 import { AgencyInfo } from "./AgencyInfo";
-import { Identifier } from "./Idnetifier";
+import { Identifier } from "./Identifier";
 import { NavFooter } from "./NavFooter";
 
-export const Footer = () => {
+const Footer = () => {
     const scrollToTop = () => {
         window.scrollTo({
             top: 0,
-            behavior: "smooth",
+            behavior: "smooth"
         });
     };
     return (
         <footer className="usa-footer">
             <div className="grid-container usa-footer__return-to-top bg-white">
-                <button className="text-underline text-primary cursor-pointer" onClick={scrollToTop}>
+                <button
+                    className="text-underline text-primary cursor-pointer"
+                    onClick={scrollToTop}
+                >
                     Return to top
                 </button>
             </div>
@@ -26,3 +29,5 @@ export const Footer = () => {
         </footer>
     );
 };
+
+export default Footer;

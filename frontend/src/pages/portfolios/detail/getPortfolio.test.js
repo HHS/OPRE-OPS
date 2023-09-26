@@ -6,7 +6,7 @@ test("successfully gets the Portfolio from the backend", async () => {
     const mockBackendResponse = {
         id: mockPortfolioId,
         name: "OPS-Portfolio-1",
-        otherStuff: "DogCow",
+        otherStuff: "DogCow"
     };
     TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
         return mockBackendResponse;
@@ -23,8 +23,8 @@ test("successfully gets the Portfolio CAN from the backend and directly puts it 
         {
             id: 2,
             number: mockCanId,
-            otherStuff: "DogCow",
-        },
+            otherStuff: "DogCow"
+        }
     ];
     TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
         return mockBackendResponse;

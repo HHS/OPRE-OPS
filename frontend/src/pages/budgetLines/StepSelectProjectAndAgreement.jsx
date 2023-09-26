@@ -18,7 +18,7 @@ export const StepSelectProjectAndAgreement = ({ goToNext }) => {
     const {
         data: agreements,
         error: errorAgreements,
-        isLoading: isLoadingAgreements,
+        isLoading: isLoadingAgreements
     } = useGetAgreementsByResearchProjectFilterQuery(selectedProject?.id, { skip: !selectedProject?.id });
 
     if (isLoadingProjects) {
@@ -45,7 +45,10 @@ export const StepSelectProjectAndAgreement = ({ goToNext }) => {
         <>
             <h1 className="font-sans-lg">Create New Budget Line</h1>
             <p>Step One: Text explaining this page</p>
-            <StepIndicator steps={wizardSteps} currentStep={1} />
+            <StepIndicator
+                steps={wizardSteps}
+                currentStep={1}
+            />
             <h2 className="font-sans-lg">Select a Project</h2>
             <p>
                 Select the project this budget line should be associated with. If you need to create a new project,
@@ -84,10 +87,16 @@ export const StepSelectProjectAndAgreement = ({ goToNext }) => {
                 <div className="border-bottom-1px border-base-light width-full" />
             </div>
             <div className="grid-row flex-justify-center">
-                <Link to="/projects/create" className="usa-button usa-button--outline margin-top-6 margin-bottom-6">
+                <Link
+                    to="/projects/create"
+                    className="usa-button usa-button--outline margin-top-6 margin-bottom-6"
+                >
                     Add New Project
                 </Link>
-                <Link to="/agreements/create" className="usa-button usa-button--outline margin-top-6 margin-bottom-6">
+                <Link
+                    to="/agreements/create"
+                    className="usa-button usa-button--outline margin-top-6 margin-bottom-6"
+                >
                     Add New Agreement
                 </Link>
             </div>

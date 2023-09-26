@@ -15,7 +15,7 @@ export const CreateBudgetLineFlow = ({ children, onFinish }) => {
         const nextIndex = currentIndex + 1;
         const updatedData = {
             ...formData,
-            ...stepData,
+            ...stepData
         };
         console.log(updatedData);
 
@@ -32,7 +32,7 @@ export const CreateBudgetLineFlow = ({ children, onFinish }) => {
     if (React.isValidElement(currentChild)) {
         return React.cloneElement(currentChild, {
             goToNext,
-            goBack,
+            goBack
         });
     }
 

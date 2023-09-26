@@ -1,17 +1,13 @@
 import { useParams, Route, Routes } from "react-router-dom";
-import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import App from "../../../App";
-import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs/DetailsTabs";
 import AgreementDetails from "./AgreementDetails";
 import AgreementBudgetLines from "./AgreementBudgetLines";
-import Alert from "../../../components/UI/Alert";
 import { getUser } from "../../../api/getUser";
 import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 
 const Agreement = () => {
-    const isGlobalAlertActive = useSelector((state) => state.alert.isActive);
     const urlPathParams = useParams();
     const agreementId = parseInt(urlPathParams.id);
     const [isEditMode, setIsEditMode] = useState(false);
@@ -26,9 +22,9 @@ const Agreement = () => {
     const {
         data: agreement,
         error: errorAgreement,
-        isLoading: isLoadingAgreement,
+        isLoading: isLoadingAgreement
     } = useGetAgreementByIdQuery(agreementId, {
-        refetchOnMountOrArgChange: true,
+        refetchOnMountOrArgChange: true
     });
 
     useEffect(() => {
@@ -54,9 +50,7 @@ const Agreement = () => {
     }
 
     return (
-        <App>
-            <Breadcrumb currentName={`${agreement.name}`} />
-            {!isEditMode && isGlobalAlertActive && <Alert />}
+        <App breadCrumbName={agreement?.name}>
             <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement.name}</h1>
             <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
                 {agreement.research_project?.title}
@@ -64,7 +58,11 @@ const Agreement = () => {
 
             <div>
                 <section className="display-flex flex-justify margin-top-3">
-                    <DetailsTabs agreementId={agreement.id} isEditMode={isEditMode} setIsEditMode={setIsEditMode} />
+                    <DetailsTabs
+                        agreementId={agreement.id}
+                        isEditMode={isEditMode}
+                        setIsEditMode={setIsEditMode}
+                    />
                 </section>
 
                 <Routes>

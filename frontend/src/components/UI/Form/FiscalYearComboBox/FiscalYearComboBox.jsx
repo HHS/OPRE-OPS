@@ -17,7 +17,7 @@ export const FiscalYearComboBox = ({
     setSelectedFiscalYears,
     legendClassname = "usa-label margin-top-0",
     defaultString = "",
-    overrideStyles = {},
+    overrideStyles = {}
 }) => {
     const fiscalYears = constants.fiscalYears.map((fiscalYear) => {
         return { id: fiscalYear, title: fiscalYear };
@@ -26,7 +26,10 @@ export const FiscalYearComboBox = ({
     return (
         <div className="display-flex flex-justify">
             <div>
-                <label className={legendClassname} htmlFor="project-combobox-input">
+                <label
+                    className={legendClassname}
+                    htmlFor="project-combobox-input"
+                >
                     Fiscal Year
                 </label>
                 <div>
@@ -52,5 +55,5 @@ FiscalYearComboBox.propTypes = {
     setSelectedFiscalYears: PropTypes.func.isRequired,
     legendClassname: PropTypes.string,
     defaultString: PropTypes.string,
-    overrideStyles: PropTypes.object,
+    overrideStyles: PropTypes.object
 };

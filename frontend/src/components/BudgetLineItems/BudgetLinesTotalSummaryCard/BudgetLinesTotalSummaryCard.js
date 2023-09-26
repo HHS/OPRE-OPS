@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import CurrencyWithSmallCents from "../../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
-import { totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
+import { totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import SummaryCard from "../../UI/SummaryCard";
 
 /**
@@ -12,10 +12,19 @@ import SummaryCard from "../../UI/SummaryCard";
  */
 const BudgetLineTotalSummaryCard = ({ title, budgetLines }) => {
     const totalAmountWithFees = budgetLines.reduce((total, budgetLine) => {
-        return total + totalBudgetLineAmountPlusFees(budgetLine.amount, budgetLine.psc_fee_amount);
+        return (
+            total +
+            totalBudgetLineAmountPlusFees(
+                budgetLine.amount,
+                totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.proc_shop_fee_percentage)
+            )
+        );
     }, 0);
     return (
-        <SummaryCard title={title} dataCy="bl-total-summary-card">
+        <SummaryCard
+            title={title}
+            dataCy="bl-total-summary-card"
+        >
             <CurrencyWithSmallCents
                 amount={totalAmountWithFees}
                 dollarsClasses="font-sans-xl text-bold margin-bottom-0"
@@ -26,7 +35,7 @@ const BudgetLineTotalSummaryCard = ({ title, budgetLines }) => {
 };
 BudgetLineTotalSummaryCard.propTypes = {
     title: PropTypes.string.isRequired,
-    budgetLines: PropTypes.arrayOf(PropTypes.object).isRequired,
+    budgetLines: PropTypes.arrayOf(PropTypes.object).isRequired
 };
 
 export default BudgetLineTotalSummaryCard;

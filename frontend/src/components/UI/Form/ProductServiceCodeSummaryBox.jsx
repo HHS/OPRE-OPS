@@ -25,6 +25,6 @@ export default ProductServiceCodeSummaryBox;
 ProductServiceCodeSummaryBox.propTypes = {
     selectedProductServiceCode: PropTypes.shape({
         naics: PropTypes.number.isRequired,
-        support_code: PropTypes.string.isRequired,
-    }).isRequired,
+        support_code: PropTypes.string.isRequired
+    }).isRequired
 };

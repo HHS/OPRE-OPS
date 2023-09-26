@@ -5,7 +5,7 @@ describe("patchAgreement function", () => {
     const agreementId = 1;
     const mockAgreement = {
         description: "PATCH Description",
-        notes: "PATCH Notes",
+        notes: "PATCH Notes"
     };
 
     const mockApiResponse = { id: 1, message: "Agreement Updated" };

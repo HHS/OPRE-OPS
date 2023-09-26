@@ -3,7 +3,7 @@ import ApplicationContext from "../../../applicationContext/ApplicationContext";
 export const getResearchProjects = async (portfolioId, fiscalYear) => {
     const queryParams = {
         portfolio_id: portfolioId,
-        fiscal_year: fiscalYear,
+        fiscal_year: fiscalYear
     };
 
     const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;

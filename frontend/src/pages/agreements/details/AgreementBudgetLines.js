@@ -1,11 +1,11 @@
 import PropTypes from "prop-types";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AgreementDetailHeader from "./AgreementDetailHeader";
 import { CreateBudgetLinesProvider } from "../../../components/UI/WizardSteps/StepCreateBudgetLines/context";
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import StepCreateBudgetLines from "../../../components/UI/WizardSteps/StepCreateBudgetLines/StepCreateBudgetLines";
 import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
+import useAlert from "../../../helpers/use-alert";
 
 /**
  * Renders Agreement budget lines view
@@ -18,6 +18,7 @@ import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hook
 export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
     const navigate = useNavigate();
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
+    const { setAlert } = useAlert();
 
     // if there are no BLIS than the user can edit
     if (agreement?.budget_line_items?.length === 0) {
@@ -52,11 +53,19 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                         navigate(`/agreements/${agreement.id}/budget-lines`);
                     }}
                     continueOverRide={() => {
-                        navigate(`/agreements/${agreement.id}/budget-lines`);
+                        setAlert({
+                            type: "success",
+                            heading: "Budget Lines Saved",
+                            message: "The budget lines have been successfully saved.",
+                            navigateUrl: `/agreements/${agreement.id}/budget-lines`
+                        });
                     }}
                 />
             ) : agreement?.budget_line_items.length > 0 ? (
-                <BudgetLinesTable budgetLinesAdded={agreement?.budget_line_items} readOnly={!isEditMode} />
+                <BudgetLinesTable
+                    budgetLinesAdded={agreement?.budget_line_items}
+                    readOnly={!isEditMode}
+                />
             ) : (
                 <p>No budget lines.</p>
             )}
@@ -84,10 +93,10 @@ AgreementBudgetLines.propTypes = {
         research_project: PropTypes.object,
         team_members: PropTypes.arrayOf(PropTypes.object),
         created_by: PropTypes.number,
-        project_officer: PropTypes.number,
+        project_officer: PropTypes.number
     }),
     isEditMode: PropTypes.bool,
-    setIsEditMode: PropTypes.func,
+    setIsEditMode: PropTypes.func
 };
 
 export default AgreementBudgetLines;

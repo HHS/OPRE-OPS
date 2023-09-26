@@ -10,22 +10,22 @@ test("successfully gets the portfolio list from the backend and directly puts it
             name: "Children",
             status: "Not-Started",
             description: "Portfolio on children",
-            otherStuff: "Moof",
+            otherStuff: "Moof"
         },
         {
             id: 2,
             name: "Families",
             status: "In-Process",
             description: "Portfolio on families",
-            otherStuff: "DogCow",
+            otherStuff: "DogCow"
         },
         {
             id: 3,
             name: "Other stuff",
             status: "Sandbox",
             description: "The best portfolio",
-            otherStuff: "Clarus",
-        },
+            otherStuff: "Clarus"
+        }
     ];
     TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
         return mockBackendResponse;

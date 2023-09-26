@@ -19,7 +19,7 @@ const UserInfoForm = () => {
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
         valid: "success",
-        warning: "warning",
+        warning: "warning"
     });
 
     return (

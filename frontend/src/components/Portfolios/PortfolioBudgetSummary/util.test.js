@@ -8,7 +8,7 @@ test("successfully gets the Portfolio from the backend and directly puts it into
     const mockBackendResponse = {
         id: mockPortfolioId,
         name: "OPS-Portfolio-1",
-        otherStuff: "DogCow",
+        otherStuff: "DogCow"
     };
     TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
         return mockBackendResponse;
@@ -25,24 +25,24 @@ test("successfully gets the Portfolio budget details directly puts it into state
     const mockBackendResponse = {
         total_funding: {
             amount: 1000000.12,
-            percent: "Total",
+            percent: "Total"
         },
         planned_funding: {
             amount: 200.23,
-            percent: "10",
+            percent: "10"
         },
         obligated_funding: {
             amount: 1.1,
-            percent: "3",
+            percent: "3"
         },
         in_execution_funding: {
             amount: 30000000000,
-            percent: "99",
+            percent: "99"
         },
         available_funding: {
             amount: 0,
-            percent: "0",
-        },
+            percent: "0"
+        }
     };
     TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
         return mockBackendResponse;

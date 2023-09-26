@@ -18,7 +18,10 @@ const AgreementTotalBudgetLinesCard = ({ numberOfAgreements = 0, countsByStatus 
             <article data-cy="agreement-total-budget-lines-card-article">
                 <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">{headerText}</h3>
                 <div className="display-flex flex-justify width-fit-content">
-                    <span className="font-sans-xl text-bold line-height-sans-1" data-cy="number-of-agreements">
+                    <span
+                        className="font-sans-xl text-bold line-height-sans-1"
+                        data-cy="number-of-agreements"
+                    >
                         {numberOfAgreements}
                     </span>
                     <div className="display-flex flex-column margin-left-105 grid-gap">
@@ -32,7 +35,7 @@ const AgreementTotalBudgetLinesCard = ({ numberOfAgreements = 0, countsByStatus 
 
 AgreementTotalBudgetLinesCard.propTypes = {
     numberOfAgreements: PropTypes.number.isRequired,
-    countsByStatus: PropTypes.object.isRequired,
+    countsByStatus: PropTypes.object.isRequired
 };
 
 export default AgreementTotalBudgetLinesCard;
