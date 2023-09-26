@@ -9,11 +9,11 @@ library.add(faSquare);
  * RoundedBox component.
  * @param {Object} props - Component props.
  * @param {React.ReactNode} props.children - Child elements.
- * @param {string} props.className - Additional CSS classes.
- * @param {string} props.dataCy - Data attribute for Cypress tests.
+ * @param {string} [props.className] - Additional CSS classes.
+ * @param {string} [props.dataCy] - Data attribute for Cypress tests.
  * @returns {React.JSX.Element} Rendered component.
  */
-const RoundedBox = ({ children, className = "", dataCy }) => {
+const RoundedBox = ({ children, className, dataCy }) => {
     const cardContainer = `bg-base-lightest font-family-sans display-flex ${cssClasses.container} ${className}`;
 
     return (
