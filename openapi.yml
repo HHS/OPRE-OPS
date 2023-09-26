@@ -1065,7 +1065,7 @@ components:
       in: query
       schema:
         type: integer
-      example: true
+      example: ""
       default: ""
       description: "Simulate an error response, set the value to either `true` to get a 500 status code, or to a specific status code number (e.g.: `400`)."
   securitySchemes:
