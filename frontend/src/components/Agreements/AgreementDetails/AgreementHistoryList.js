@@ -160,32 +160,24 @@ const CanName = ({ id }) => {
     return <>{name}</>;
 };
 
+const components = {
+    project_officer: UserName,
+    procurement_shop_id: ProcurementShopName,
+    product_service_code_id: ProductServiceCodeName,
+    research_project_id: ResearchProjectName,
+    can_id: CanName
+};
+
 const RenderProperty = ({ className, propertyKey, value, id: lookupId }) => {
     if (typeof value !== "undefined") {
         if (value === null) return <>none</>;
         return <>{renderField(className, propertyKey, value)}</>;
     }
-    if (propertyKey === "project_officer") {
+    if (components[propertyKey]) {
         if (!lookupId) return "none";
-        return <UserName id={lookupId} />;
+        const Component = components[propertyKey];
+        return <Component id={lookupId} />;
     }
-    if (propertyKey === "procurement_shop_id") {
-        if (!lookupId) return "none";
-        return <ProcurementShopName id={lookupId} />;
-    }
-    if (propertyKey === "product_service_code_id") {
-        if (!lookupId) return "none";
-        return <ProductServiceCodeName id={lookupId} />;
-    }
-    if (propertyKey === "research_project_id") {
-        if (!lookupId) return "none";
-        return <ResearchProjectName id={lookupId} />;
-    }
-    if (propertyKey === "can_id") {
-        if (!lookupId) return "none";
-        return <CanName id={lookupId} />;
-    }
-
     return <>(unable to render value for {propertyKey})</>;
 };
 
