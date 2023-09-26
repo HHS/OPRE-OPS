@@ -32,7 +32,7 @@ const DefaultLayout = ({ children, breadCrumbName }) => {
 };
 
 DefaultLayout.propTypes = {
-    children: PropTypes.node,
+    children: PropTypes.node.isRequired,
     breadCrumbName: PropTypes.string
 };
 export default DefaultLayout;
