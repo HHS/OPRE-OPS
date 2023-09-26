@@ -15,13 +15,13 @@ const testAgreement = {
     project_officer: 1,
     team_members: [
         {
-            id: 3,
+            id: 3
         },
         {
-            id: 5,
-        },
+            id: 5
+        }
     ],
-    notes: "Test Notes",
+    notes: "Test Notes"
 };
 
 beforeEach(() => {
@@ -46,8 +46,8 @@ it("edit an agreement", () => {
         headers: {
             Authorization: bearer_token,
             "Content-Type": "application/json",
-            Accept: "application/json",
-        },
+            Accept: "application/json"
+        }
     }).then((response) => {
         expect(response.status).to.eq(201);
         expect(response.body.id).to.exist;
@@ -93,8 +93,8 @@ it("edit an agreement", () => {
             url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
             headers: {
                 Authorization: bearer_token,
-                Accept: "application/json",
-            },
+                Accept: "application/json"
+            }
         }).then((response) => {
             expect(response.status).to.eq(200);
         });
@@ -181,7 +181,9 @@ it("can edit a budget line if it is in DRAFT or in REVIEW", () => {
     // get the first row which is in DRAFT
     cy.get("@table-rows").eq(0).find('[data-cy="expand-row"]').click();
     cy.get(".padding-right-9").find('[data-cy="edit-row"]').should("exist");
+    cy.get('[data-cy="continue-btn"]').should("exist");
     cy.get('[data-cy="continue-btn"]').click();
+    cy.visit(`/agreements/1/budget-lines`);
     cy.get('[data-cy="bli-tab-continue-btn"]').click();
     cy.get('[data-cy="send-to-approval-btn"]').should("exist");
     cy.get('[data-cy="send-to-approval-btn"]').click();
