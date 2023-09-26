@@ -1054,12 +1054,13 @@ paths:
 
 components:
   parameters:
-    - name: simulatedError
-      in: query
-      schema:
-        type: integer
-      example: 500
-      default: false
+    simulatedError:
+      - name: simulatedError
+        in: query
+        schema:
+          type: integer
+        example: 500
+        default: false
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
       type: http
