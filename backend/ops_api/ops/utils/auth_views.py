@@ -4,7 +4,13 @@ from typing import Union
 import requests
 from authlib.integrations.requests_client import OAuth2Session
 from flask import Response, current_app, request
-from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    get_current_user,
+    get_jwt_identity,
+    jwt_required,
+)
 from models.events import OpsEventType
 from ops_api.ops.utils.auth import create_oauth_jwt, decode_user
 from ops_api.ops.utils.authentication import AuthenticationGateway
@@ -168,13 +174,17 @@ def _get_token_and_user_data_from_oauth_provider(provider: str, auth_code: str):
 
 # We are using the `refresh=True` options in jwt_required to only allow
 # refresh tokens to access this route.
-@jwt_required(refresh=True)
+@jwt_required(refresh=True, verify_type=True, locations=["headers", "cookies"])
 def refresh() -> Response:
-    identity = get_jwt_identity()
-    additional_claims = {}
-    if identity.roles:
-        additional_claims["roles"] = [role.name for role in identity.roles]
-    access_token = create_access_token(
-        identity=identity, expires_delta=None, additional_claims=additional_claims, fresh=False
-    )
-    return make_response_with_headers({"access_token": access_token})
+    user = get_current_user()
+    if user:
+        additional_claims = {"roles": []}
+        current_app.logger.debug(f"user {user}")
+        if user.roles:
+            additional_claims["roles"] = [role.name for role in user.roles]
+        access_token = create_access_token(
+            identity=user, expires_delta=None, additional_claims=additional_claims, fresh=False
+        )
+        return make_response_with_headers({"access_token": access_token})
+    else:
+        return make_response_with_headers({"message": "Invalid User"}, 401)
