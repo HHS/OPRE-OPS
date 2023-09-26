@@ -17,6 +17,7 @@ def error_simulator(func: Callable[..., Response]) -> Callable[..., Response]:
     * `/some/endpoint/?simulatedError=false` - ignores this and endpoint works as normal.
     * set to any other value returns an error with status of 500.
     """
+
     @wraps(func)
     def wrapper(*args, **kwargs) -> Response:
         with suppress(KeyError):

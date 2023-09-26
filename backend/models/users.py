@@ -124,4 +124,3 @@ class Group(BaseModel):
     @BaseModel.display_name.getter
     def display_name(self):
         return self.name
-
