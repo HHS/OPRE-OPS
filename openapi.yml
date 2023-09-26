@@ -1061,12 +1061,13 @@ paths:
 components:
   parameters:
     simulatedError:
-      - name: simulatedError
-        in: query
-        schema:
-          type: integer
-        example: 500
-        description: Simulate an error response, set the value to either `true` to get a 500 status code, or to a specific status code number.
+      name: simulatedError
+      in: query
+      schema:
+        type: integer
+      example: true
+      default: ""
+      description: "Simulate an error response, set the value to either `true` to get a 500 status code, or to a specific status code number (e.g.: `400`)."
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
       type: http
