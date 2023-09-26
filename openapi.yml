@@ -44,6 +44,8 @@ paths:
                   $ref: '#/components/examples/Agreements'
     post:
       summary: Create a new Agreement
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
       requestBody:
         required: true
         content:
@@ -83,6 +85,8 @@ paths:
                   $ref: '#/components/examples/Agreement'
     put:
       summary: Update an Agreement (Over-write)
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
       requestBody:
         required: true
         content:
@@ -100,6 +104,8 @@ paths:
           description: Internal Server Error
     patch:
       summary: Update an Agreement (Merge)
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
       requestBody:
         required: true
         content:
@@ -1060,7 +1066,7 @@ components:
         schema:
           type: integer
         example: 500
-        default: false
+        description: Simulate an error response, set the value to either `true` to get a 500 status code, or to a specific status code number.
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
       type: http
