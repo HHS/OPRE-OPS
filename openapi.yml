@@ -1059,6 +1059,7 @@ components:
       schema:
         type: integer
       example: 500
+      default: false
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
       type: http
