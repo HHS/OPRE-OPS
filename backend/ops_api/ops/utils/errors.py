@@ -19,7 +19,7 @@ def error_simulator(func: Callable[..., Response]) -> Callable[..., Response]:
     """
 
     @wraps(func)
-    def wrapper(*args, **kwargs) ->  Response:
+    def wrapper(*args, **kwargs) -> Response:
         with suppress(KeyError):
             error_param = request.args["simulatedError"].casefold()
             status_code = 500
