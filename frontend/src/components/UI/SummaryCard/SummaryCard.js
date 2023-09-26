@@ -9,8 +9,7 @@ import RoundedBox from "../RoundedBox";
  * @param {React.ReactNode} props.children - The children to render
  * @returns {React.JSX.Element} - The rendered component
  */
-const SummaryCard = ({ title, children, dataCy }) => {
-    console.log({ dataCy });
+const SummaryCard = ({ title, children, dataCy = "" }) => {
     return (
         <RoundedBox
             className="padding-y-205 padding-x-4 padding-right-9 display-inline-block"
