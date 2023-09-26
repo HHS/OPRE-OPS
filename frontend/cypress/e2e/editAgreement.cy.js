@@ -156,7 +156,8 @@ it("can not edit a budget line if it is in OBLIGATED", () => {
     cy.get("tbody").children().as("table-rows").should("exist");
     // get the second row which is in OBLIGATED
     cy.get("@table-rows").eq(1).find('[data-cy="expand-row"]').click();
-    cy.get(".padding-right-9").find('[data-cy="edit-row"]').should("not.exist");
+    cy.get(".padding-right-9").find('[data-cy="edit-row"]').should("exist");
+    cy.get('[data-icon="clone"]').should("exist");
 });
 
 it("can not edit a budget line if it is in EXECUTING", () => {
@@ -167,7 +168,8 @@ it("can not edit a budget line if it is in EXECUTING", () => {
     cy.get("tbody").children().as("table-rows").should("exist");
     // get the fourth row which is in EXECUTION
     cy.get("@table-rows").eq(3).find('[data-cy="expand-row"]').click();
-    cy.get(".padding-right-9").find('[data-cy="edit-row"]').should("not.exist");
+    cy.get(".padding-right-9").find('[data-cy="edit-row"]').should("exist");
+    cy.get('[data-icon="clone"]').should("exist");
 });
 
 it("can edit a budget line if it is in DRAFT or in REVIEW", () => {
