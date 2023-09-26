@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { AgreementTableRow } from "./AgreementTableRow";
+import AgreementTableRow from "../AgreementTableRow";
 
 /**
  * Agreement table.
