@@ -324,3 +324,5 @@ AgreementTableRow.propTypes = {
         ).isRequired
     }).isRequired
 };
+
+export default AgreementTableRow;
