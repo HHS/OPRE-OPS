@@ -111,7 +111,7 @@ const codesToDisplayText = {
     },
     baseClassNameLabels: {
         ContractAgreement: "Agreement",
-        BudgetLineItem: "Budget Line",
+        BudgetLineItem: "Budget Line"
     },
     agreementPropertyLabels: {
         agreement_reason: "Reason for Agreement",
@@ -201,25 +201,9 @@ export const timeAgo = (dateParam) => {
         return `${minutes} minutes ago`;
     }
 
-    return formatDateToMonthDayYear(date);
-};
-
-export const formatLogTimeStamp = (dateParam) => {
-    if (!dateParam) {
-        return null;
-    }
-    // if there's no timezone info, assume it UTC and missing the "Z"
-    if (typeof dateParam === "string" || dateParam instanceof String) {
-        if (!dateParam.endsWith("Z") && !dateParam.includes("+")) {
-            dateParam = dateParam + "Z";
-        }
-    }
-
-    const date = typeof dateParam === "object" ? dateParam : new Date(dateParam);
-
     return new Date(date).toLocaleString("en-US", {
         dateStyle: "long",
-        timeStyle: "short",
+        timeStyle: "short"
     });
 };
 

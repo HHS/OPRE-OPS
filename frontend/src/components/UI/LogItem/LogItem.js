@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import PropTypes from "prop-types";
-import { formatLogTimeStamp } from "../../../helpers/utils.js";
+import { timeAgo } from "../../../helpers/utils.js";
 import styles from "./LogItem.module.css";
 
 /**
@@ -20,12 +20,18 @@ export const LogItem = ({ title, message, createdOn, variant, withSeparator = fa
     return (
         <li className={`${isLarge ? "font-body-sm" : "font-12px"} ${styles.notificationListItem}`}>
             <div className="display-flex flex-justify margin-bottom-1">
-                <span className={`text-bold ${isLarge ? "font-body-sm" : undefined}`} data-cy="log-item-title">
+                <span
+                    className={`text-bold ${isLarge ? "font-body-sm" : undefined}`}
+                    data-cy="log-item-title"
+                >
                     {title}
                 </span>
                 <span className="display-flex flex-align-center">
-                    <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1 text-base-dark" />
-                    <span className="text-base-dark">{formatLogTimeStamp(createdOn)}</span>
+                    <FontAwesomeIcon
+                        icon={faClock}
+                        className="height-2 width-2 margin-right-1 text-base-dark"
+                    />
+                    <span className="text-base-dark">{timeAgo(createdOn)}</span>
                 </span>
             </div>
             {message && (
@@ -36,7 +42,10 @@ export const LogItem = ({ title, message, createdOn, variant, withSeparator = fa
                     {message}
                 </p>
             )}
-            <div className="margin-bottom-1" data-cy="log-item-children">
+            <div
+                className="margin-bottom-1"
+                data-cy="log-item-children"
+            >
                 {children}
             </div>
 
@@ -51,7 +60,7 @@ LogItem.propTypes = {
     createdOn: PropTypes.string.isRequired,
     variant: PropTypes.string,
     withSeparator: PropTypes.bool,
-    children: PropTypes.node,
+    children: PropTypes.node
 };
 
 export default LogItem;

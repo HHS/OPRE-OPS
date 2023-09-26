@@ -35,14 +35,19 @@ const AgreementHistoryPanel = ({ agreementId }) => {
         >
             <>
                 <AgreementHistoryList agreementHistory={agreementHistory} />
-                {!stopped && <InfiniteScroll fetchMoreData={fetchMoreData} isLoading={isLoading} />}
+                {!stopped && (
+                    <InfiniteScroll
+                        fetchMoreData={fetchMoreData}
+                        isLoading={isLoading}
+                    />
+                )}
             </>
         </div>
     );
 };
 
 AgreementHistoryPanel.propTypes = {
-    agreementId: PropTypes.number.isRequired,
+    agreementId: PropTypes.number.isRequired
 };
 
 export default AgreementHistoryPanel;

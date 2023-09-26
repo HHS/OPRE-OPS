@@ -3,7 +3,7 @@ import {
     useGetCansQuery,
     useGetProcurementShopsQuery,
     useGetProductServiceCodesQuery,
-    useGetResearchProjectsQuery,
+    useGetResearchProjectsQuery
 } from "../api/opsAPI";
 
 /**

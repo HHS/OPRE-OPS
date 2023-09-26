@@ -5,7 +5,7 @@ import {
     calculatePercent,
     convertCodeForDisplay,
     fiscalYearFromDate,
-    renderField,
+    renderField
 } from "./utils";
 
 test("current federal fiscal year is calculated correctly", async () => {

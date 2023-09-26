@@ -22,9 +22,9 @@ const Agreement = () => {
     const {
         data: agreement,
         error: errorAgreement,
-        isLoading: isLoadingAgreement,
+        isLoading: isLoadingAgreement
     } = useGetAgreementByIdQuery(agreementId, {
-        refetchOnMountOrArgChange: true,
+        refetchOnMountOrArgChange: true
     });
 
     useEffect(() => {
@@ -59,7 +59,11 @@ const Agreement = () => {
 
                 <div>
                     <section className="display-flex flex-justify margin-top-3">
-                        <DetailsTabs agreementId={agreement.id} isEditMode={isEditMode} setIsEditMode={setIsEditMode} />
+                        <DetailsTabs
+                            agreementId={agreement.id}
+                            isEditMode={isEditMode}
+                            setIsEditMode={setIsEditMode}
+                        />
                     </section>
 
                     <Routes>
