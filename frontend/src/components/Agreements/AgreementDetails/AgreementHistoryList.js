@@ -15,7 +15,7 @@ const findObjectTitle = (historyItem) => {
     return historyItem.event_details.display_name;
 };
 
-const omitChangeDetailsFor = ["description", "notes"];
+const omitChangeDetailsFor = ["description", "notes", "comments"];
 
 const eventLogItemTitle = (historyItem) => {
     const className = convertCodeForDisplay("baseClassNameLabels", historyItem.class_name);
@@ -106,7 +106,7 @@ const prepareChanges = (historyItem) => {
     let preparedChanges = [];
 
     Object.entries(rawChanges).forEach(([key, change]) => {
-        // hiding changes with proc_shop_fee_percentage which seem confusing
+        // hiding changes with proc_shop_fee_percentage which seem confusing since it's changed by system
         if (["proc_shop_fee_percentage"].includes(key)) return;
         let preparedChange = {
             key: key,
@@ -321,13 +321,14 @@ const PropertyLogItems = ({ historyItem, baseKey }) => {
 
         return (
             <LogItem key={key} title={title} createdOn={createdOn}>
-                {messageBeginning} {change.key}
+                {messageBeginning}
                 {shouldRenderDetails && (
                     <>
-                        &nbsp;from&nbsp;{from}&nbsp;to&nbsp;{to}
+                        {" "}
+                        from {from} to {to}
                     </>
-                )}
-                &nbsp;by {createdBy}
+                )}{" "}
+                by {createdBy}
             </LogItem>
         );
     });

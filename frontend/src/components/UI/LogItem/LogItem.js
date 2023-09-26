@@ -20,18 +20,25 @@ export const LogItem = ({ title, message, createdOn, variant, withSeparator = fa
     return (
         <li className={`${isLarge ? "font-body-sm" : "font-12px"} ${styles.notificationListItem}`}>
             <div className="display-flex flex-justify margin-bottom-1">
-                <span className={`text-bold ${isLarge ? "font-body-sm" : undefined}`}>{title}</span>
+                <span className={`text-bold ${isLarge ? "font-body-sm" : undefined}`} data-cy="log-item-title">
+                    {title}
+                </span>
                 <span className="display-flex flex-align-center">
                     <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1 text-base-dark" />
                     <span className="text-base-dark">{formatLogTimeStamp(createdOn)}</span>
                 </span>
             </div>
-            {message ?? (
-                <p className={`margin-0 line-height-sans-2 margin-y-1 ${isLarge ? "font-body-sm" : undefined}`}>
+            {message && (
+                <p
+                    className={`margin-0 line-height-sans-2 margin-y-1 ${isLarge ? "font-body-sm" : undefined}`}
+                    data-cy="log-item-message"
+                >
                     {message}
                 </p>
             )}
-            <div className="margin-bottom-1">{children}</div>
+            <div className="margin-bottom-1" data-cy="log-item-children">
+                {children}
+            </div>
 
             {withSeparator ? <hr className="height-1px bg-brand-neutral-lighter margin-bottom-1" /> : null}
         </li>
