@@ -14,6 +14,7 @@ import useGetUserFullNameFromId from "../../../helpers/user-hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
 import { DISABLED_ICON_CLASSES } from "../../../constants";
 import useAlert from "../../../helpers/use-alert";
+import { useAgreementApproval } from "./agreements-table.hooks";
 
 /**
  * Renders a row in the agreements table.
@@ -73,6 +74,8 @@ export const AgreementTableRow = ({ agreement }) => {
 
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
 
+    const handleSubmitAgreementForApproval = useAgreementApproval();
+
     const handleEditAgreement = (event) => {
         navigate(`/agreements/${event}?mode=edit`);
     };
@@ -109,9 +112,6 @@ export const AgreementTableRow = ({ agreement }) => {
                     });
             }
         });
-    };
-    const handleSubmitAgreementForApproval = (event) => {
-        navigate(`/agreements/approve/${event}`);
     };
 
     const agreementStatus = agreement?.budget_line_items?.find((bli) => bli.status === "UNDER_REVIEW")
