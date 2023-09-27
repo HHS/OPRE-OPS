@@ -20,7 +20,10 @@ import {
     getProcurementShopSubTotal,
     findMinDateNeeded,
     getAgreementNotes,
-    getAgreementCreatedDate
+    getAgreementCreatedDate,
+    getAgreementStatus,
+    areAllBudgetLinesInStatus,
+    isThereAnyBudgetLines
 } from "./AgreementsTable.helpers";
 
 /**
@@ -44,27 +47,25 @@ export const AgreementTableRow = ({ agreement }) => {
     const agreementCreatedByName = useGetUserFullNameFromId(agreement?.created_by);
     const agreementNotes = getAgreementNotes(agreement);
     const agreementCreatedOn = getAgreementCreatedDate(agreement);
+    const agreementStatus = getAgreementStatus(agreement);
+
+    // row stuff
     const handleExpandRow = () => {
         setIsExpanded(!isExpanded);
         setIsRowActive(true);
     };
     // styles for the expanded row
-    const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
-    const changeBgColorIfExpanded = { backgroundColor: isRowActive ? "var(--neutral-lightest)" : undefined };
-
+    const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
+    const changeBgColorIfExpanded = { backgroundColor: isRowActive ? "var(--neutral-lightest)" : "" };
     // Validations for deleting an agreement
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
-    const areAllBudgetLinesInDraftStatus = agreement?.budget_line_items?.every((bli) => bli.status === "DRAFT");
-    const areThereAnyBudgetLines = agreement?.budget_line_items?.length > 0;
+    const areAllBudgetLinesInDraftStatus = areAllBudgetLinesInStatus(agreement, "DRAFT");
+    const areThereAnyBudgetLines = isThereAnyBudgetLines(agreement);
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
     // hooks
     const handleSubmitAgreementForApproval = useAgreementApproval();
     const handleEditAgreement = useHandleEditAgreement();
     const { handleDeleteAgreement, modalProps, setShowModal, showModal } = useHandleDeleteAgreement();
-
-    const agreementStatus = agreement?.budget_line_items?.find((bli) => bli.status === "UNDER_REVIEW")
-        ? "In Review"
-        : "Draft";
 
     /**
      * Renders the edit, delete, and submit for approval icons.

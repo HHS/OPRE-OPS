@@ -53,3 +53,21 @@ export const getAgreementCreatedDate = (agreement) => {
         ? new Date(agreement.created_on).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" })
         : formattedToday;
 };
+
+export const getAgreementStatus = (agreement) => {
+    handleAgreementProp(agreement);
+
+    return agreement.budget_line_items?.find((bli) => bli.status === "UNDER_REVIEW") ? "In Review" : "Draft";
+};
+
+export const areAllBudgetLinesInStatus = (agreement, status) => {
+    handleAgreementProp(agreement);
+
+    return agreement.budget_line_items?.every((bli) => bli.status === status);
+};
+
+export const isThereAnyBudgetLines = (agreement) => {
+    handleAgreementProp(agreement);
+
+    return agreement?.budget_line_items?.length > 0;
+};
