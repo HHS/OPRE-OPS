@@ -265,13 +265,16 @@ export const StepCreateBudgetLines = ({
         // cleanup
         dispatch({ type: "RESET_FORM" });
         setIsEditMode(false);
+
         // handle next step
         if (isReviewMode) {
             navigate(`/agreements/approve/${selectedAgreement.id}`);
         } else if (continueOverRide) {
             continueOverRide();
-        } else {
+        } else if (goToNext) {
             goToNext();
+        } else {
+            navigate(-1); // go back
         }
     };
 
