@@ -46,38 +46,38 @@ const AllBLIRow = ({
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
     const changeBgColorIfExpanded = { backgroundColor: isExpanded && "var(--neutral-lightest)" };
 
-    const TableRowData = ({ bl }) => (
+    const TableRowData = (
         <>
             <th
                 scope="row"
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {bl.line_description}
+                {budgetLine.line_description}
             </th>
             <td
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {bl.agreement_name}
+                {budgetLine.agreement_name}
             </td>
             <td
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {formatDateNeeded(bl.date_needed)}
+                {formatDateNeeded(budgetLine.date_needed)}
             </td>
             <td
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {bl.fiscal_year}
+                {budgetLine.fiscal_year}
             </td>
             <td
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {bl.can_number}
+                {budgetLine.can_number}
             </td>
             <td
                 className={removeBorderBottomIfExpanded}
@@ -118,7 +118,7 @@ const AllBLIRow = ({
         </>
     );
 
-    const ExpandedData = () => (
+    const ExpandedData = (
         <td
             colSpan={9}
             className="border-top-none"
@@ -217,8 +217,8 @@ const AllBLIRow = ({
     );
     return (
         <TableRowExpandable
-            tableRowData={<TableRowData bl={budgetLine} />}
-            expandedData={<ExpandedData />}
+            tableRowData={TableRowData}
+            expandedData={ExpandedData}
             isExpanded={isExpanded}
             isRowActive={isRowActive}
             setIsExpanded={setIsExpanded}
