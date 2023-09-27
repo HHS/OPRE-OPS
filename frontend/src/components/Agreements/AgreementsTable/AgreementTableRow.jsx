@@ -5,7 +5,7 @@ import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
-import { convertCodeForDisplay, formatDate } from "../../../helpers/utils";
+import { convertCodeForDisplay } from "../../../helpers/utils";
 import TableTag from "../../UI/TableTag";
 import icons from "../../../uswds/img/sprite.svg";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";

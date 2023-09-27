@@ -1,4 +1,4 @@
-import { convertCodeForDisplay, formatDate } from "../../../helpers/utils";
+import { formatDate } from "../../../helpers/utils";
 
 const handleAgreementProp = (agreement) => {
     if (typeof agreement !== "object") {
