@@ -57,7 +57,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                             type: "success",
                             heading: "Budget Lines Saved",
                             message: "The budget lines have been successfully saved.",
-                            navigateUrl: `/agreements/${agreement.id}/budget-lines`
+                            navigateUrl: navigate(-1)
                         });
                     }}
                 />

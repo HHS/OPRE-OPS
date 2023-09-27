@@ -26,8 +26,6 @@ const AgreementHistoryPanel = ({ agreementId }) => {
         setIsLoading(false);
     };
 
-    const noData = !agreementHistory || agreementHistory.length == 0;
-
     return (
         <div
             className="overflow-y-scroll force-show-scrollbars"
@@ -35,19 +33,15 @@ const AgreementHistoryPanel = ({ agreementId }) => {
             tabIndex={0}
             data-cy="agreement-history-container"
         >
-            {stopped && noData ? (
-                "Sorry, no history."
-            ) : (
-                <>
-                    <AgreementHistoryList agreementHistory={agreementHistory} />
-                    {!stopped && (
-                        <InfiniteScroll
-                            fetchMoreData={fetchMoreData}
-                            isLoading={isLoading}
-                        />
-                    )}
-                </>
-            )}
+            <>
+                <AgreementHistoryList agreementHistory={agreementHistory} />
+                {!stopped && (
+                    <InfiniteScroll
+                        fetchMoreData={fetchMoreData}
+                        isLoading={isLoading}
+                    />
+                )}
+            </>
         </div>
     );
 };
