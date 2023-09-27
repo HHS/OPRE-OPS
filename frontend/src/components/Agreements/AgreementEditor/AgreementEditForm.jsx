@@ -305,7 +305,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                 messages={res.getErrors("description")}
                 className={cn("description")}
                 value={agreementDescription}
-                maxLength={500}
+                maxLength={1000}
                 onChange={(name, value) => {
                     setAgreementDescription(value);
                     if (isReviewMode) {
