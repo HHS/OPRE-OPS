@@ -1,4 +1,5 @@
 import PropTypes from "prop-types";
+import "./table.css";
 
 /**
  * The Table component is a layout component that displays a table
@@ -23,11 +24,15 @@ const Table = ({ children, tableHeadings }) => {
         return undefined;
     };
     return (
-        <table className="usa-table usa-table--borderless width-full">
+        <table className="usa-table usa-table--borderless width-full table-hover">
             <thead>
                 <tr>
                     {tableHeadings.map((heading, index) => (
-                        <th key={index} scope="col" style={addWidthIfStatus(heading)}>
+                        <th
+                            key={index}
+                            scope="col"
+                            style={addWidthIfStatus(heading)}
+                        >
                             {heading}
                         </th>
                     ))}
@@ -40,7 +45,7 @@ const Table = ({ children, tableHeadings }) => {
 
 Table.propTypes = {
     children: PropTypes.node.isRequired,
-    tableHeadings: PropTypes.arrayOf(PropTypes.string).isRequired,
+    tableHeadings: PropTypes.arrayOf(PropTypes.string).isRequired
 };
 
 export default Table;

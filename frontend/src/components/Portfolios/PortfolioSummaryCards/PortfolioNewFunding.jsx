@@ -9,7 +9,12 @@ const PortfolioNewFunding = () => {
 
     const headerText = `FY ${fiscalYear.value} New Funding`;
 
-    return <CurrencySummaryCard headerText={headerText} amount={newFunding} />;
+    return (
+        <CurrencySummaryCard
+            headerText={headerText}
+            amount={newFunding}
+        />
+    );
 };
 
 export default PortfolioNewFunding;

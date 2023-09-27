@@ -17,17 +17,23 @@ import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpanded, isRowActive, setIsRowActive }) => {
     const trId = React.useId();
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
-    const changeBgColorIfExpanded = { backgroundColor: isRowActive && "#F0F0F0" };
+    const changeBgColorIfExpanded = { backgroundColor: isExpanded && "var(--neutral-lightest)" };
     const handleExpandRow = () => {
         setIsExpanded(!isExpanded);
-        setIsRowActive(true);
+        setIsRowActive(!isRowActive);
     };
 
     return (
         <>
-            <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
+            <tr
+                onMouseEnter={() => setIsRowActive(true)}
+                onMouseLeave={() => !isExpanded && setIsRowActive(false)}
+            >
                 {tableRowData}
-                <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                <td
+                    className={removeBorderBottomIfExpanded}
+                    style={changeBgColorIfExpanded}
+                >
                     <FontAwesomeIcon
                         id={`expand-${trId}`}
                         data-cy="expand-row"
@@ -38,7 +44,7 @@ const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpan
                 </td>
             </tr>
 
-            {isExpanded && <tr>{expandedData}</tr>}
+            {isExpanded && <tr data-cy="expanded-data">{expandedData}</tr>}
         </>
     );
 };
@@ -49,6 +55,6 @@ TableRowExpandable.propTypes = {
     isExpanded: PropTypes.bool.isRequired,
     setIsExpanded: PropTypes.func.isRequired,
     isRowActive: PropTypes.bool.isRequired,
-    setIsRowActive: PropTypes.func.isRequired,
+    setIsRowActive: PropTypes.func.isRequired
 };
 export default TableRowExpandable;

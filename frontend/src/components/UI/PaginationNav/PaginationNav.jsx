@@ -90,7 +90,10 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
     }
 
     return (
-        <nav aria-label="Pagination" className="usa-pagination">
+        <nav
+            aria-label="Pagination"
+            className="usa-pagination"
+        >
             <ul className="usa-pagination__list">
                 <li
                     key="page-item-previous"
@@ -104,24 +107,35 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
                         aria-label="Previous page"
                         onClick={() => setCurrentPage(currentPage - 1)}
                     >
-                        <svg className="usa-icon" aria-hidden="true" role="img">
+                        <svg
+                            className="usa-icon"
+                            aria-hidden="true"
+                            role="img"
+                        >
                             <use xlinkHref="/assets/img/sprite.svg#navigate_before"></use>
                         </svg>
                         <span className="usa-pagination__link-text">Previous</span>
                     </a>
                 </li>
                 {pageItems}
-                <li key="page-item-next" className="usa-pagination__item usa-pagination__arrow cursor-pointer">
+                <li
+                    key="page-item-next"
+                    className="usa-pagination__item usa-pagination__arrow cursor-pointer"
+                >
                     <a
                         className={cx(
                             "usa-pagination__link usa-pagination__next-page",
-                            currentPage === totalPages && styles.hideElement
+                            (currentPage === totalPages || totalPages === 0) && styles.hideElement
                         )}
                         aria-label="Next page"
                         onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
                     >
                         <span className="usa-pagination__link-text">Next </span>
-                        <svg className="usa-icon" aria-hidden="true" role="img">
+                        <svg
+                            className="usa-icon"
+                            aria-hidden="true"
+                            role="img"
+                        >
                             <use xlinkHref="/assets/img/sprite.svg#navigate_next"></use>
                         </svg>
                     </a>

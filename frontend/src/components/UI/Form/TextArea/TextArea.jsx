@@ -21,21 +21,31 @@ export const TextArea = ({
     pending = false,
     messages = [],
     value,
-    className,
+    className
 }) => {
     return (
         <div className="usa-character-count margin-top-3">
             <div className={cx("usa-form-group", pending && "pending", className)}>
-                <label className={`usa-label ${messages.length ? "usa-label--error" : null} `} htmlFor={name}>
+                <label
+                    className={`usa-label ${messages.length ? "usa-label--error" : null} `}
+                    htmlFor={name}
+                >
                     {label}
                 </label>
 
                 {messages.length ? (
-                    <span className="usa-error-message" id="text-area-input-error-message" role="alert">
+                    <span
+                        className="usa-error-message"
+                        id="text-area-input-error-message"
+                        role="alert"
+                    >
                         {messages[0]}
                     </span>
                 ) : (
-                    <span id={`${name}-with-hint-textarea-hint`} className="usa-hint">
+                    <span
+                        id={`${name}-with-hint-textarea-hint`}
+                        className="usa-hint"
+                    >
                         {hintMsg}
                     </span>
                 )}
@@ -50,7 +60,10 @@ export const TextArea = ({
                     aria-describedby={`${name}-with-hint-textarea-info ${name}-with-hint-textarea-hint`}
                 />
             </div>
-            <span id={`${name}-with-hint-textarea-info`} className="usa-character-count__message sr-only">
+            <span
+                id={`${name}-with-hint-textarea-info`}
+                className="usa-character-count__message sr-only"
+            >
                 You can enter up to 150 characters
             </span>
         </div>

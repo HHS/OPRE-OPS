@@ -8,7 +8,7 @@ test("successfully gets the CFY from the backend by can_id and fiscal_year", asy
         fiscal_year: 2022,
         otherStuff: "DogCow",
         total_fiscal_year_funding: 10,
-        amount_available: 5,
+        amount_available: 5
     };
     TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
         return [mockBackendResponse];

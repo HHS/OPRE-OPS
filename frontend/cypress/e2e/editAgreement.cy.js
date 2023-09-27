@@ -15,13 +15,13 @@ const testAgreement = {
     project_officer: 1,
     team_members: [
         {
-            id: 3,
+            id: 3
         },
         {
-            id: 5,
-        },
+            id: 5
+        }
     ],
-    notes: "Test Notes",
+    notes: "Test Notes"
 };
 
 beforeEach(() => {
@@ -46,8 +46,8 @@ it("edit an agreement", () => {
         headers: {
             Authorization: bearer_token,
             "Content-Type": "application/json",
-            Accept: "application/json",
-        },
+            Accept: "application/json"
+        }
     }).then((response) => {
         expect(response.status).to.eq(201);
         expect(response.body.id).to.exist;
@@ -55,7 +55,7 @@ it("edit an agreement", () => {
 
         cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
         cy.visit(`/agreements/edit/${agreementId}?mode=edit`);
-        cy.get("h1").should("have.text", "Edit Agreement");
+        cy.get("[data-cy='page-heading']").should("have.text", "Edit Agreement");
         cy.get("#continue").click();
         // test validation
         cy.get("#name").clear();
@@ -80,7 +80,7 @@ it("edit an agreement", () => {
             })
             .then(cy.log);
 
-        cy.get("h1").should("have.text", "Edit Agreement");
+        cy.get("[data-cy='page-heading']").should("have.text", "Edit Agreement");
         cy.get("h2").first().should("have.text", "Budget Line Details");
 
         cy.get('[data-cy="continue-btn"]').click();
@@ -93,8 +93,8 @@ it("edit an agreement", () => {
             url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
             headers: {
                 Authorization: bearer_token,
-                Accept: "application/json",
-            },
+                Accept: "application/json"
+            }
         }).then((response) => {
             expect(response.status).to.eq(200);
         });
@@ -156,7 +156,8 @@ it("can not edit a budget line if it is in OBLIGATED", () => {
     cy.get("tbody").children().as("table-rows").should("exist");
     // get the second row which is in OBLIGATED
     cy.get("@table-rows").eq(1).find('[data-cy="expand-row"]').click();
-    cy.get(".padding-right-9").find('[data-cy="edit-row"]').should("not.exist");
+    cy.get(".padding-right-9").find('[data-cy="edit-row"]').should("exist");
+    cy.get('[data-icon="clone"]').should("exist");
 });
 
 it("can not edit a budget line if it is in EXECUTING", () => {
@@ -167,7 +168,8 @@ it("can not edit a budget line if it is in EXECUTING", () => {
     cy.get("tbody").children().as("table-rows").should("exist");
     // get the fourth row which is in EXECUTION
     cy.get("@table-rows").eq(3).find('[data-cy="expand-row"]').click();
-    cy.get(".padding-right-9").find('[data-cy="edit-row"]').should("not.exist");
+    cy.get(".padding-right-9").find('[data-cy="edit-row"]').should("exist");
+    cy.get('[data-icon="clone"]').should("exist");
 });
 
 it("can edit a budget line if it is in DRAFT or in REVIEW", () => {

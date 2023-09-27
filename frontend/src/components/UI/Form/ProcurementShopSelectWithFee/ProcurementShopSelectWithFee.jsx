@@ -1,5 +1,4 @@
 import ProcurementShopSelect from "../ProcurementShopSelect";
-import { displayFeePercent } from "../../../../helpers/utils";
 
 /**
  * Object representing a procurement shop.
@@ -21,7 +20,7 @@ import { displayFeePercent } from "../../../../helpers/utils";
 export const ProcurementShopSelectWithFee = ({
     selectedProcurementShop,
     onChangeSelectedProcurementShop,
-    legendClassname = "",
+    legendClassname = ""
 }) => {
     /**
      * Displays the fee rate for a selected procurement shop.
@@ -32,8 +31,11 @@ export const ProcurementShopSelectWithFee = ({
     const FeeRate = ({ selectedProcurementShop }) => {
         if (selectedProcurementShop?.id) {
             return (
-                <span className="margin-left-1 text-base-dark font-12px" data-cy="fee">
-                    Fee Rate: {displayFeePercent(selectedProcurementShop?.fee)}
+                <span
+                    className="margin-left-1 text-base-dark font-12px"
+                    data-cy="fee"
+                >
+                    Fee Rate: {selectedProcurementShop?.fee}%
                 </span>
             );
         }

@@ -1,18 +1,19 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import { useDispatch, useSelector } from "react-redux";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
-import { getUser } from "../../../api/getUser";
 import { convertCodeForDisplay, formatDate } from "../../../helpers/utils";
 import TableTag from "../../../components/UI/TableTag";
 import { useDeleteAgreementMutation } from "../../../api/opsAPI";
-import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import icons from "../../../uswds/img/sprite.svg";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
+import useGetUserFullNameFromId from "../../../helpers/user-hooks";
+import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
+import { DISABLED_ICON_CLASSES } from "../../../constants";
+import useAlert from "../../../helpers/use-alert";
 
 /**
  * Renders a row in the agreements table.
@@ -23,14 +24,12 @@ import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
  */
 export const AgreementTableRow = ({ agreement }) => {
     const navigate = useNavigate();
-    const globalDispatch = useDispatch();
-    const loggedInUserId = useSelector((state) => state.auth.activeUser.id);
     const [deleteAgreement] = useDeleteAgreementMutation();
-    const [user, setUser] = useState({});
     const [isExpanded, setIsExpanded] = useState(false);
     const [isRowActive, setIsRowActive] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [modalProps, setModalProps] = useState({});
+    const { setAlert } = useAlert();
 
     const agreementName = agreement?.name;
     const researchProjectName = agreement?.research_project?.title;
@@ -52,25 +51,7 @@ export const AgreementTableRow = ({ agreement }) => {
     );
 
     nextNeedBy = nextNeedBy ? formatDate(new Date(nextNeedBy)) : "";
-
-    useEffect(() => {
-        const getUserAndSetState = async (id) => {
-            const results = await getUser(id);
-            setUser(results);
-        };
-
-        if (agreement?.created_by) {
-            getUserAndSetState(agreement?.created_by).catch(console.error);
-        } else {
-            setUser({ full_name: "Sheila Celentano" });
-        }
-
-        return () => {
-            setUser({});
-        };
-    }, [agreement]);
-
-    const agreementCreatedBy = user?.full_name;
+    const agreementCreatedByName = useGetUserFullNameFromId(agreement?.created_by);
     const agreementNotes = agreement?.notes;
     const formatted_today = new Date().toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
     const agreementCreatedOn = agreement?.created_on
@@ -83,18 +64,14 @@ export const AgreementTableRow = ({ agreement }) => {
     };
     // styles for the expanded row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
-    const changeBgColorIfExpanded = { backgroundColor: isRowActive ? "#F0F0F0" : undefined };
+    const changeBgColorIfExpanded = { backgroundColor: isRowActive ? "var(--neutral-lightest)" : undefined };
 
     // Validations for deleting an agreement
-    const isLoggedInUserTheProjectOfficer = loggedInUserId === agreement?.project_officer;
-    const isLoggedInUserTheAgreementCreator = loggedInUserId === agreement?.created_by;
-    const isLoggedInUserATeamMember = agreement?.team_members?.find((tm) => tm.id === loggedInUserId);
+    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const areAllBudgetLinesInDraftStatus = agreement?.budget_line_items?.every((bli) => bli.status === "DRAFT");
     const areThereAnyBudgetLines = agreement?.budget_line_items?.length > 0;
 
-    const canUserDeleteAgreement =
-        (isLoggedInUserTheAgreementCreator || isLoggedInUserTheProjectOfficer || isLoggedInUserATeamMember) &&
-        (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
+    const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
 
     const handleEditAgreement = (event) => {
         navigate(`/agreements/${event}?mode=edit`);
@@ -115,26 +92,22 @@ export const AgreementTableRow = ({ agreement }) => {
                     .unwrap()
                     .then((fulfilled) => {
                         console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
-                        globalDispatch(
-                            setAlert({
-                                type: "success",
-                                heading: "Agreement deleted",
-                                message: `Agreement ${agreementName} has been successfully deleted.`,
-                            })
-                        );
+                        setAlert({
+                            type: "success",
+                            heading: "Agreement deleted",
+                            message: `Agreement ${agreementName} has been successfully deleted.`
+                        });
                     })
                     .catch((rejected) => {
                         console.error(`DELETE agreement rejected: ${JSON.stringify(rejected, null, 2)}`);
-                        globalDispatch(
-                            setAlert({
-                                type: "error",
-                                heading: "Error",
-                                message: "An error occurred while deleting the agreement.",
-                            })
-                        );
-                        navigate("/error");
+                        setAlert({
+                            type: "error",
+                            heading: "Error",
+                            message: "An error occurred while deleting the agreement.",
+                            redirectUrl: "/error"
+                        });
                     });
-            },
+            }
         });
     };
     const handleSubmitAgreementForApproval = (event) => {
@@ -160,10 +133,12 @@ export const AgreementTableRow = ({ agreement }) => {
                     <div className="display-flex flex-align-center">
                         <FontAwesomeIcon
                             icon={faPen}
-                            className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
-                            title="edit"
+                            title={`${canUserEditAgreement ? "edit" : "user does not have permissions to edit"}`}
+                            className={`text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip ${
+                                !canUserEditAgreement ? DISABLED_ICON_CLASSES : null
+                            }`}
                             data-position="top"
-                            onClick={() => handleEditAgreement(agreement.id)}
+                            onClick={() => canUserEditAgreement && handleEditAgreement(agreement.id)}
                         />
 
                         <FontAwesomeIcon
@@ -171,7 +146,7 @@ export const AgreementTableRow = ({ agreement }) => {
                             title={`${canUserDeleteAgreement ? "delete" : "user does not have permissions to delete"}`}
                             data-position="top"
                             className={`text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip ${
-                                !canUserDeleteAgreement ? "opacity-30 cursor-not-allowed" : null
+                                !canUserDeleteAgreement ? DISABLED_ICON_CLASSES : null
                             }`}
                             onClick={() => canUserDeleteAgreement && handleDeleteAgreement(agreement.id)}
                             data-cy="delete-agreement"
@@ -199,19 +174,38 @@ export const AgreementTableRow = ({ agreement }) => {
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            <tr onMouseEnter={() => setIsRowActive(true)} onMouseLeave={() => !isExpanded && setIsRowActive(false)}>
-                <th scope="row" className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
-                    <Link className="text-ink text-no-underline" to={"/agreements/" + agreement.id}>
+            <tr
+                onMouseEnter={() => setIsRowActive(true)}
+                onMouseLeave={() => !isExpanded && setIsRowActive(false)}
+            >
+                <th
+                    scope="row"
+                    className={removeBorderBottomIfExpanded}
+                    style={changeBgColorIfExpanded}
+                >
+                    <Link
+                        className="text-ink text-no-underline"
+                        to={"/agreements/" + agreement.id}
+                    >
                         {agreementName}
                     </Link>
                 </th>
-                <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                <td
+                    className={removeBorderBottomIfExpanded}
+                    style={changeBgColorIfExpanded}
+                >
                     {researchProjectName}
                 </td>
-                <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                <td
+                    className={removeBorderBottomIfExpanded}
+                    style={changeBgColorIfExpanded}
+                >
                     {agreementType || ""}
                 </td>
-                <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                <td
+                    className={removeBorderBottomIfExpanded}
+                    style={changeBgColorIfExpanded}
+                >
                     <CurrencyFormat
                         value={agreementTotal}
                         displayType={"text"}
@@ -222,22 +216,34 @@ export const AgreementTableRow = ({ agreement }) => {
                         renderText={(value) => value}
                     />
                 </td>
-                <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                <td
+                    className={removeBorderBottomIfExpanded}
+                    style={changeBgColorIfExpanded}
+                >
                     {nextNeedBy}
                 </td>
-                <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                <td
+                    className={removeBorderBottomIfExpanded}
+                    style={changeBgColorIfExpanded}
+                >
                     {isRowActive && !isExpanded ? (
                         <div>
-                            <ChangeIcons agreement={agreement} status={agreementStatus} />
+                            <ChangeIcons
+                                agreement={agreement}
+                                status={agreementStatus}
+                            />
                         </div>
                     ) : (
                         <TableTag status={agreementStatus} />
                     )}
                 </td>
-                <td className={removeBorderBottomIfExpanded} style={changeBgColorIfExpanded}>
+                <td
+                    className={removeBorderBottomIfExpanded}
+                    style={changeBgColorIfExpanded}
+                >
                     <FontAwesomeIcon
                         icon={isExpanded ? faChevronUp : faChevronDown}
-                        className="height-2 width-2 padding-right-1 hover: cursor-pointer"
+                        className="height-2 width-2 padding-right-1 cursor-pointer"
                         onClick={() => handleExpandRow()}
                         data-cy="expand-row"
                     />
@@ -246,24 +252,40 @@ export const AgreementTableRow = ({ agreement }) => {
 
             {isExpanded && (
                 <tr>
-                    <td colSpan={9} className="border-top-none" style={{ backgroundColor: "#F0F0F0" }}>
+                    <td
+                        colSpan={9}
+                        className="border-top-none"
+                        style={{ backgroundColor: "var(--neutral-lightest)" }}
+                    >
                         <div className="display-flex padding-right-9">
                             <dl className="font-12px">
                                 <dt className="margin-0 text-base-dark">Created By</dt>
-                                <dd className="margin-0">{agreementCreatedBy}</dd>
+                                <dd className="margin-0">{agreementCreatedByName}</dd>
                                 <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
-                                    <FontAwesomeIcon icon={faClock} className="height-2 width-2 margin-right-1" />
+                                    <FontAwesomeIcon
+                                        icon={faClock}
+                                        className="height-2 width-2 margin-right-1"
+                                    />
                                     {agreementCreatedOn}
                                 </dt>
                             </dl>
-                            <dl className="font-12px" style={{ marginLeft: "9.0625rem" }}>
+                            <dl
+                                className="font-12px"
+                                style={{ marginLeft: "9.0625rem" }}
+                            >
                                 <dt className="margin-0 text-base-dark">Notes</dt>
-                                <dd className="margin-0" style={{ maxWidth: "400px" }}>
+                                <dd
+                                    className="margin-0"
+                                    style={{ maxWidth: "400px" }}
+                                >
                                     {agreementNotes ? agreementNotes : "No notes added."}
                                 </dd>
                             </dl>
                             <div className="flex-align-self-end margin-left-auto margin-bottom-1">
-                                <ChangeIcons agreement={agreement} status={agreementStatus} />
+                                <ChangeIcons
+                                    agreement={agreement}
+                                    status={agreementStatus}
+                                />
                             </div>
                         </div>
                     </td>
@@ -278,18 +300,18 @@ AgreementTableRow.propTypes = {
         id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
         research_project: PropTypes.shape({
-            title: PropTypes.string.isRequired,
+            title: PropTypes.string.isRequired
         }),
         agreement_type: PropTypes.string.isRequired,
         budget_line_items: PropTypes.arrayOf(
             PropTypes.shape({
                 amount: PropTypes.number.isRequired,
                 date_needed: PropTypes.string.isRequired,
-                status: PropTypes.string.isRequired,
+                status: PropTypes.string.isRequired
             })
         ).isRequired,
         procurement_shop: PropTypes.shape({
-            fee: PropTypes.number.isRequired,
+            fee: PropTypes.number.isRequired
         }),
         created_by: PropTypes.number.isRequired,
         notes: PropTypes.string,
@@ -297,8 +319,8 @@ AgreementTableRow.propTypes = {
         project_officer: PropTypes.number.isRequired,
         team_members: PropTypes.arrayOf(
             PropTypes.shape({
-                id: PropTypes.number.isRequired,
+                id: PropTypes.number.isRequired
             })
-        ).isRequired,
-    }).isRequired,
+        ).isRequired
+    }).isRequired
 };

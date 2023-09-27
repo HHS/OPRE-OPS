@@ -18,12 +18,15 @@ export const ProjectComboBox = ({
     setSelectedProject,
     legendClassname = "usa-label margin-top-0",
     defaultString = "",
-    overrideStyles = {},
+    overrideStyles = {}
 }) => {
     return (
         <div className="display-flex flex-justify">
             <div>
-                <label className={legendClassname} htmlFor="project-combobox-input">
+                <label
+                    className={legendClassname}
+                    htmlFor="project-combobox-input"
+                >
                     Project
                 </label>
                 <div>
@@ -49,5 +52,5 @@ ProjectComboBox.propTypes = {
     setSelectedProject: PropTypes.func.isRequired,
     legendClassname: PropTypes.string,
     defaultString: PropTypes.string,
-    overrideStyles: PropTypes.object,
+    overrideStyles: PropTypes.object
 };

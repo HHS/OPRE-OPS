@@ -6,7 +6,12 @@ import RoundedBox from "./RoundedBox";
 it("renders without crashing", () => {
     render(
         <Provider store={store}>
-            <RoundedBox />
+            <RoundedBox
+                dataCy="test"
+                className=""
+            >
+                <p>test</p>
+            </RoundedBox>
         </Provider>
     );
 });

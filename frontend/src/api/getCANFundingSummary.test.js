@@ -13,7 +13,7 @@ test("successfully gets the can funding details from the backend", async () => {
         obligated_funding: 6,
         in_execution_funding: 7,
         available_funding: 8,
-        expiration_date: "01/01/2023",
+        expiration_date: "01/01/2023"
     };
 
     TestApplicationContext.helpers().callBackend.mockImplementation(async () => {

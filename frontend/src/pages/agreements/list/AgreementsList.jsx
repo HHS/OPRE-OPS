@@ -6,11 +6,10 @@ import App from "../../../App";
 import { useGetAgreementsQuery } from "../../../api/opsAPI";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import sortAgreements from "./utils";
-import Alert from "../../../components/UI/Alert";
 import AgreementsTable from "./AgreementsTable";
 import AgreementTabs from "./AgreementsTabs";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
-import TablePageLayout from "../../../components/UI/Layouts/TablePageLayout";
+import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import AgreementsFilterButton from "./AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags";
 
@@ -20,7 +19,6 @@ import AgreementsFilterTags from "./AgreementsFilterTags";
  */
 export const AgreementsList = () => {
     const [searchParams] = useSearchParams();
-    const isAlertActive = useSelector((state) => state.alert.isActive);
     const [filters, setFilters] = useState({
         upcomingNeedByDate: "all-time",
         projects: [],
@@ -31,14 +29,14 @@ export const AgreementsList = () => {
             draft: true,
             planned: true,
             executing: true,
-            obligated: true,
-        },
+            obligated: true
+        }
     });
 
     const {
         data: agreements,
         error: errorAgreement,
-        isLoading: isLoadingAgreement,
+        isLoading: isLoadingAgreement
     } = useGetAgreementsQuery({ refetchOnMountOrArgChange: true });
 
     const activeUser = useSelector((state) => state.auth.activeUser);
@@ -174,7 +172,6 @@ export const AgreementsList = () => {
     return (
         <App>
             <Breadcrumb currentName={"Agreements"} />
-            {isAlertActive && <Alert />}
             <TablePageLayout
                 title="Agreements"
                 subtitle={myAgreementsUrl ? "My Agreements" : "All Agreements"}
@@ -186,8 +183,18 @@ export const AgreementsList = () => {
                 buttonText="Add Agreement"
                 buttonLink="/agreements/create"
                 TabsSection={<AgreementTabs />}
-                FilterTags={<AgreementsFilterTags filters={filters} setFilters={setFilters} />}
-                FilterButton={<AgreementsFilterButton filters={filters} setFilters={setFilters} />}
+                FilterTags={
+                    <AgreementsFilterTags
+                        filters={filters}
+                        setFilters={setFilters}
+                    />
+                }
+                FilterButton={
+                    <AgreementsFilterButton
+                        filters={filters}
+                        setFilters={setFilters}
+                    />
+                }
                 TableSection={<AgreementsTable agreements={sortedAgreements} />}
             />
         </App>

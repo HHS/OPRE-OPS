@@ -12,12 +12,12 @@ const DetailsTabs = ({ agreementId, isEditMode, setIsEditMode }) => {
     const paths = [
         {
             name: "",
-            label: "Agreement Details",
+            label: "Agreement Details"
         },
         {
             name: "/budget-lines",
-            label: "Budget Lines",
-        },
+            label: "Budget Lines"
+        }
     ];
 
     const [showModal, setShowModal] = React.useState(false);
@@ -34,7 +34,7 @@ const DetailsTabs = ({ agreementId, isEditMode, setIsEditMode }) => {
                 handleConfirm: () => {
                     setIsEditMode(false);
                     navigate(pathName);
-                },
+                }
             });
         }
     };

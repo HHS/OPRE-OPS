@@ -15,8 +15,8 @@ test("successfully gets the Research Project from the backend", async () => {
             portfolio_id: 1,
             short_title: "",
             title: "African American Child and Family Research Center",
-            url: "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center",
-        },
+            url: "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center"
+        }
     ];
 
     TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
@@ -33,7 +33,7 @@ test("required param missing", () => {
         // eslint-disable-next-line jest/no-conditional-expect
         expect(e).toEqual(
             expect.objectContaining({
-                message: "id is required",
+                message: "id is required"
             })
         )
     );

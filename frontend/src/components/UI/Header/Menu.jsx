@@ -7,8 +7,14 @@ export const Menu = () => {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
     return (
         <div id="nav-menu">
-            <button type="button" className="usa-nav__close">
-                <img src="/assets/img/usa-icons/close.svg" alt="Close" />
+            <button
+                type="button"
+                className="usa-nav__close"
+            >
+                <img
+                    src="/assets/img/usa-icons/close.svg"
+                    alt="Close"
+                />
             </button>
             <ul className="usa-nav__primary usa-accordion">
                 {isAuthorized ? (

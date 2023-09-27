@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
 import classnames from "vest/classnames";
+import _ from "lodash";
 
 import ProcurementShopSelectWithFee from "../../UI/Form/ProcurementShopSelectWithFee";
 import AgreementReasonSelect from "../../UI/Form/AgreementReasonSelect";
@@ -14,18 +14,17 @@ import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import { formatTeamMember } from "../../../api/postAgreements";
 import ProductServiceCodeSummaryBox from "../../UI/Form/ProductServiceCodeSummaryBox";
 import { useEditAgreement, useEditAgreementDispatch, useSetState, useUpdateAgreement } from "./AgreementEditorContext";
-import { setAlert } from "../../UI/Alert/alertSlice";
 import suite from "./AgreementEditFormSuite";
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import {
     useAddAgreementMutation,
     useGetProductServiceCodesQuery,
-    useUpdateAgreementMutation,
+    useUpdateAgreementMutation
 } from "../../../api/opsAPI";
 import ProjectOfficerComboBox from "../../UI/Form/ProjectOfficerComboBox";
 import { getUser } from "../../../api/getUser";
-import _ from "lodash";
+import useAlert from "../../../helpers/use-alert";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -62,7 +61,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
 
     const navigate = useNavigate();
     const dispatch = useEditAgreementDispatch();
-    const globalDispatch = useDispatch();
+    const { setAlert } = useAlert();
 
     const [updateAgreement] = useUpdateAgreementMutation();
     const [addAgreement] = useAddAgreementMutation();
@@ -71,7 +70,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         agreement,
         selected_procurement_shop: selectedProcurementShop,
         selected_product_service_code: selectedProductServiceCode,
-        selected_project_officer: selectedProjectOfficer,
+        selected_project_officer: selectedProjectOfficer
     } = useEditAgreement();
     const {
         notes: agreementNotes,
@@ -80,7 +79,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         name: agreementTitle,
         description: agreementDescription,
         agreement_reason: agreementReason,
-        team_members: selectedTeamMembers,
+        team_members: selectedTeamMembers
     } = agreement;
 
     // This is needed due to a caching issue with the React Context - for some reason selected_project_officer
@@ -104,12 +103,12 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
     const {
         data: productServiceCodes,
         error: errorProductServiceCodes,
-        isLoading: isLoadingProductServiceCodes,
+        isLoading: isLoadingProductServiceCodes
     } = useGetProductServiceCodesQuery();
 
     if (isReviewMode) {
         suite({
-            ...agreement,
+            ...agreement
         });
     }
 
@@ -128,7 +127,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
         valid: "success",
-        warning: "warning",
+        warning: "warning"
     });
 
     const changeSelectedProductServiceCode = (selectedProductServiceCode) => {
@@ -146,14 +145,14 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
     const setSelectedTeamMembers = (teamMember) => {
         dispatch({
             type: "ADD_TEAM_MEMBER",
-            payload: teamMember,
+            payload: teamMember
         });
     };
 
     const removeTeamMember = (teamMember) => {
         dispatch({
             type: "REMOVE_TEAM_MEMBER",
-            payload: teamMember,
+            payload: teamMember
         });
     };
 
@@ -171,35 +170,31 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
             ...agreement,
             team_members: selectedTeamMembers.map((team_member) => {
                 return formatTeamMember(team_member);
-            }),
+            })
         };
         const { id, cleanData } = cleanAgreementForApi(data);
         if (id) {
-            updateAgreement({ id: id, data: cleanData })
+            await updateAgreement({ id: id, data: cleanData })
                 .unwrap()
                 .then((fulfilled) => {
                     console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
-                    globalDispatch(
-                        setAlert({
-                            type: "success",
-                            heading: "Agreement Draft Saved",
-                            message: "The agreement has been successfully saved.",
-                        })
-                    );
+                    setAlert({
+                        type: "success",
+                        heading: "Agreement Edited",
+                        message: `The agreement ${agreement.name} has been successfully updated.`
+                    });
                 })
                 .catch((rejected) => {
                     console.error(`UPDATE: agreement updated failed: ${JSON.stringify(rejected, null, 2)}`);
-                    globalDispatch(
-                        setAlert({
-                            type: "error",
-                            heading: "Error",
-                            message: "An error occurred while saving the agreement.",
-                        })
-                    );
-                    navigate("/error");
+                    setAlert({
+                        type: "error",
+                        heading: "Error",
+                        message: "An error occurred while saving the agreement.",
+                        redirectUrl: "/error"
+                    });
                 });
         } else {
-            addAgreement(cleanData)
+            await addAgreement(cleanData)
                 .unwrap()
                 .then((payload) => {
                     const newAgreementId = payload.id;
@@ -207,36 +202,32 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                 })
                 .then((fulfilled) => {
                     console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
-                    globalDispatch(
-                        setAlert({
-                            type: "success",
-                            heading: "Agreement Draft Saved",
-                            message: "The agreement has been successfully created.",
-                        })
-                    );
+                    setAlert({
+                        type: "success",
+                        heading: "Agreement Draft Saved",
+                        message: `The agreement ${agreement.name} has been successfully created.`
+                    });
                 })
                 .catch((rejected) => {
                     console.error(`CREATE: agreement failed: ${JSON.stringify(rejected, null, 2)}`);
-                    globalDispatch(
-                        setAlert({
-                            type: "error",
-                            heading: "Error",
-                            message: "An error occurred while creating the agreement.",
-                        })
-                    );
-                    navigate("/error");
+                    setAlert({
+                        type: "error",
+                        heading: "Error",
+                        message: "An error occurred while creating the agreement.",
+                        redirectUrl: "/error"
+                    });
                 });
         }
     };
 
     const handleContinue = async () => {
-        saveAgreement();
+        await saveAgreement();
         if (isEditMode && setIsEditMode) setIsEditMode(false);
         await goToNext();
     };
 
     const handleDraft = async () => {
-        saveAgreement();
+        await saveAgreement();
         await navigate("/agreements");
     };
 
@@ -253,7 +244,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                     if (isEditMode && setIsEditMode) setIsEditMode(false);
                     navigate(`/agreements/${agreement.id}`);
                 }
-            },
+            }
         });
     };
 
@@ -266,7 +257,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         suite(
             {
                 ...agreement,
-                ...{ [name]: value },
+                ...{ [name]: value }
             },
             name
         );
@@ -407,7 +398,10 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
             </div>
 
             <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
-            <TeamMemberList selectedTeamMembers={selectedTeamMembers} removeTeamMember={removeTeamMember} />
+            <TeamMemberList
+                selectedTeamMembers={selectedTeamMembers}
+                removeTeamMember={removeTeamMember}
+            />
             <TextArea
                 name="agreementNotes"
                 label="Notes (optional)"
@@ -419,7 +413,10 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
             />
             <div className="grid-row flex-justify margin-top-8">
                 {isWizardMode ? (
-                    <button className="usa-button usa-button--unstyled margin-right-2" onClick={() => goBack()}>
+                    <button
+                        className="usa-button usa-button--unstyled margin-right-2"
+                        onClick={() => goBack()}
+                    >
                         Go Back
                     </button>
                 ) : (
@@ -463,7 +460,7 @@ AgreementEditForm.propTypes = {
     goToNext: PropTypes.func,
     isReviewMode: PropTypes.bool,
     isEditMode: PropTypes.bool,
-    setIsEditMode: PropTypes.func,
+    setIsEditMode: PropTypes.func
 };
 
 export default AgreementEditForm;

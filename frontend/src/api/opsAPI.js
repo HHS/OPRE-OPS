@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { getAccessToken } from "../components/Auth/auth";
 
 const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
 
@@ -12,32 +13,28 @@ export const opsApi = createApi({
         "AgreementReasons",
         "ProcurementShops",
         "BudgetLineItems",
-        "AgreementHistory",
+        "AgreementHistory"
     ],
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
         prepareHeaders: (headers) => {
-            const access_token = localStorage.getItem("access_token");
+            const access_token = getAccessToken();
 
             if (access_token) {
                 headers.set("Authorization", `Bearer ${access_token}`);
             }
 
             return headers;
-        },
+        }
     }),
     endpoints: (builder) => ({
         getAgreements: builder.query({
             query: () => `/agreements/`,
-            providesTags: ["Agreements", "BudgetLineItems"],
+            providesTags: ["Agreements", "BudgetLineItems"]
         }),
         getAgreementById: builder.query({
             query: (id) => `/agreements/${id}`,
-            providesTags: ["Agreements"],
-        }),
-        getAgreementHistoryById: builder.query({
-            query: (id) => `/agreements/${id}/history/?limit=20`,
-            providesTags: ["AgreementHistory"],
+            providesTags: ["Agreements"]
         }),
         addAgreement: builder.mutation({
             query: (data) => {
@@ -45,10 +42,10 @@ export const opsApi = createApi({
                     url: `/agreements/`,
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: data,
+                    body: data
                 };
             },
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"],
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
         }),
         updateAgreement: builder.mutation({
             query: ({ id, data }) => {
@@ -56,21 +53,21 @@ export const opsApi = createApi({
                     url: `/agreements/${id}`,
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
-                    body: data,
+                    body: data
                 };
             },
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"],
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
         }),
         deleteAgreement: builder.mutation({
             query: (id) => ({
                 url: `/agreements/${id}`,
-                method: "DELETE",
+                method: "DELETE"
             }),
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"],
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
         }),
         getBudgetLineItems: builder.query({
             query: () => `/budget-line-items/`,
-            providesTags: ["BudgetLineItems"],
+            providesTags: ["BudgetLineItems"]
         }),
         addBudgetLineItem: builder.mutation({
             query: (data) => {
@@ -78,10 +75,10 @@ export const opsApi = createApi({
                     url: `/budget-line-items/`,
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: data,
+                    body: data
                 };
             },
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"],
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
         }),
         updateBudgetLineItem: builder.mutation({
             query: ({ id, data }) => {
@@ -89,114 +86,117 @@ export const opsApi = createApi({
                     url: `/budget-line-items/${id}`,
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
-                    body: data,
+                    body: data
                 };
             },
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"],
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
         }),
         getAgreementsByResearchProjectFilter: builder.query({
             query: (id) => `/agreements/?research_project_id=${id}`,
-            providesTags: ["Agreements", "FilterAgreements"],
+            providesTags: ["Agreements", "FilterAgreements"]
         }),
         getUserById: builder.query({
             query: (id) => `/users/${id}`,
-            providesTags: ["Users"],
+            providesTags: ["Users"]
         }),
         getUserByOIDCId: builder.query({
             query: (id) => `/users/?oidc_id=${id}`,
-            providesTags: ["Users"],
+            providesTags: ["Users"]
         }),
         getResearchProjects: builder.query({
             query: () => `/research-projects/`,
-            providesTags: ["ResearchProjects"],
+            providesTags: ["ResearchProjects"]
         }),
         addResearchProjects: builder.mutation({
             query: (body) => ({
                 url: `/research-projects/`,
                 method: "POST",
-                body,
+                body
             }),
-            invalidatesTags: ["ResearchProjects"],
+            invalidatesTags: ["ResearchProjects"]
         }),
         updateBudgetLineItemStatus: builder.mutation({
             query: ({ id, status }) => ({
                 url: `/budget-line-items/${id}`,
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: { status },
+                body: { status }
             }),
-            invalidatesTags: ["Agreements", "BudgetLineItems"],
+            invalidatesTags: ["Agreements", "BudgetLineItems"]
         }),
         getAgreementTypes: builder.query({
             query: () => `/agreement-types/`,
-            providesTags: ["AgreementTypes"],
+            providesTags: ["AgreementTypes"]
         }),
         getProductServiceCodes: builder.query({
             query: () => `/product-service-codes/`,
-            providesTags: ["ProductServiceCodes"],
+            providesTags: ["ProductServiceCodes"]
         }),
         getProcurementShops: builder.query({
             query: () => `/procurement-shops/`,
-            providesTags: ["ProcurementShops"],
+            providesTags: ["ProcurementShops"]
         }),
         getAgreementReasons: builder.query({
             query: () => `/agreement-reasons/`,
-            providesTags: ["AgreementReasons"],
+            providesTags: ["AgreementReasons"]
         }),
         getUsers: builder.query({
             query: () => `/users/`,
-            providesTags: ["Users"],
+            providesTags: ["Users"]
         }),
         getUser: builder.query({
             query: (id) => `/users/${id}`,
-            providesTags: ["User"],
+            providesTags: ["User"]
         }),
         getUserByOidc: builder.query({
             query: (oidc_id) => `/users/?oidc_id=${oidc_id}`,
-            providesTags: ["User"],
+            providesTags: ["User"]
         }),
         addUser: builder.mutation({
             query: (body) => ({
                 url: `/users/`,
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body,
+                body
             }),
-            invalidatesTags: ["User"],
+            invalidatesTags: ["User"]
         }),
         updateUser: builder.mutation({
             query: ({ id, body }) => ({
                 url: `/users/${id}`,
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body,
+                body
             }),
-            invalidatesTags: ["User"],
+            invalidatesTags: ["User"]
         }),
         getCans: builder.query({
             query: () => `/cans/`,
-            providesTags: ["Cans"],
+            providesTags: ["Cans"]
         }),
         getNotificationsByUserId: builder.query({
             query: (id) => `/notifications/?oidc_id=${id}`,
-            providesTags: ["Notifications"],
+            providesTags: ["Notifications"]
         }),
         dismissNotification: builder.mutation({
             query: (id) => ({
                 url: `/notifications/${id}`,
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: { is_read: true },
+                body: { is_read: true }
             }),
-            invalidatesTags: ["Notifications"],
+            invalidatesTags: ["Notifications"]
         }),
-    }),
+        getPortfolios: builder.query({
+            query: () => `/portfolios/`,
+            providesTags: ["Portfolios"]
+        })
+    })
 });
 
 export const {
     useGetAgreementsQuery,
     useGetAgreementByIdQuery,
-    useGetAgreementHistoryByIdQuery,
     useAddAgreementMutation,
     useUpdateAgreementMutation,
     useDeleteAgreementMutation,
@@ -221,4 +221,5 @@ export const {
     useGetCansQuery,
     useGetNotificationsByUserIdQuery,
     useDismissNotificationMutation,
+    useGetPortfoliosQuery
 } = opsApi;

@@ -11,12 +11,12 @@ const mockStore = configureStore([]);
 
 jest.mock("react", () => ({
     ...jest.requireActual("react"),
-    useState: () => [null, jest.fn()],
+    useState: () => [null, jest.fn()]
 }));
 
 jest.mock("react-router-dom", () => ({
     ...jest.requireActual("react-router-dom"),
-    useNavigate: () => jest.fn(),
+    useNavigate: () => jest.fn()
 }));
 
 // This will reset all mocks after each test
@@ -24,38 +24,53 @@ afterEach(() => {
     jest.resetAllMocks();
 });
 
-describe("AgreementTableRow", () => {
-    const agreement = {
-        id: 1,
-        name: "Test Agreement",
-        research_project: { title: "Test Project" },
-        agreement_type: "GRANT",
-        project_officer: 1,
-        team_members: [{ id: 1 }],
-        procurement_shop: { fee: 0.05 },
-        budget_line_items: [
-            { amount: 100, date_needed: "2024-05-02T11:00:00", status: "DRAFT" },
-            { amount: 200, date_needed: "2023-03-02T11:00:00", status: "UNDER_REVIEW" },
-        ],
-        created_by: 1,
-        notes: "Test notes",
-        created_on: "2021-10-21T03:24:00",
-        status: "In Review",
-    };
-    const initialState = {
-        auth: {
-            activeUser: {
-                id: 1,
-                name: "Test User",
-            },
-        },
-    };
-    const store = mockStore(initialState);
+const userData = {
+    id: 1,
+    full_name: "Test User"
+};
 
+jest.mock("../../../api/opsAPI", () => ({
+    ...jest.requireActual("../../../api/opsAPI"),
+    useGetUserByIdQuery: () => jest.fn(() => ({ data: userData })),
+    useGetAgreementByIdQuery: () => jest.fn(() => ({ data: agreement }))
+}));
+const agreement = {
+    id: 1,
+    name: "Test Agreement",
+    research_project: { title: "Test Project" },
+    agreement_type: "GRANT",
+    project_officer: 1,
+    team_members: [{ id: 1 }],
+    procurement_shop: { fee: 0.05 },
+    budget_line_items: [
+        { amount: 100, date_needed: "2024-05-02T11:00:00", status: "DRAFT" },
+        { amount: 200, date_needed: "2023-03-02T11:00:00", status: "UNDER_REVIEW" }
+    ],
+    created_by: 1,
+    notes: "Test notes",
+    created_on: "2021-10-21T03:24:00",
+    status: "In Review"
+};
+const initialState = {
+    auth: {
+        activeUser: {
+            id: 1,
+            name: "Test User"
+        }
+    },
+    alert: {
+        isActive: false
+    }
+};
+const store = mockStore(initialState);
+describe("AgreementTableRow", () => {
     test("renders correctly", () => {
         render(
             <Provider store={store}>
-                <Router location={history.location} navigator={history}>
+                <Router
+                    location={history.location}
+                    navigator={history}
+                >
                     <table>
                         <tbody>
                             <AgreementTableRow agreement={agreement} />

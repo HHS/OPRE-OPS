@@ -34,7 +34,12 @@ const TableTag = ({ status }) => {
         default:
     }
 
-    return <Tag className={classNames} text={statusText} />;
+    return (
+        <Tag
+            className={classNames}
+            text={statusText}
+        />
+    );
 };
 
 export default TableTag;

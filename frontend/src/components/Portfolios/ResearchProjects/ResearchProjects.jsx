@@ -64,7 +64,10 @@ const ResearchProjects = () => {
                     This is a list of all active research projects that this portfolio contributes to for the selected
                     fiscal year.
                 </p>
-                <ResearchProjectsTable fiscalYear={fiscalYear} data={filteredResearchProjects} />
+                <ResearchProjectsTable
+                    fiscalYear={fiscalYear}
+                    data={filteredResearchProjects}
+                />
             </article>
 
             <article className="margin-top-4">
@@ -73,7 +76,10 @@ const ResearchProjects = () => {
                     This is a list of all active administrative & support projects that this portfolio contributes to
                     for the selected fiscal year.
                 </p>
-                <AdminAndSupportProjectsTable fiscalYear={fiscalYear} data={filteredAdminAndSupportProjects} />
+                <AdminAndSupportProjectsTable
+                    fiscalYear={fiscalYear}
+                    data={filteredAdminAndSupportProjects}
+                />
             </article>
             {/* NOTE: Not sure what to do with this */}
             {researchProjects.length > 0 && <ul>{researchProjectData}</ul>}

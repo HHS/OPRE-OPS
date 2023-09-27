@@ -55,9 +55,21 @@ it("edit an agreement", () => {
 
         cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
         cy.visit(`/agreements/${agreementId}`);
-        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .margin-0').should(
+        cy.get("h1").should("have.text", "Test Contract");
+        cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
+        cy.get('[data-cy="agreement-history-container"]').should("exist");
+        cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
+        cy.get('[data-cy="agreement-history-list"]').should("exist");
+        cy.get(
+            '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+        ).should("exist");
+        cy.get(
+            '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+        ).should("have.text", "Agreement Created");
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should("exist");
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
             "have.text",
-            'New Contract Agreement, "Test Contract", created by Admin Demo.'
+            "Agreement created by Admin Demo"
         );
         cy.get("#edit").click();
         cy.get("#edit").should("not.exist");
@@ -83,24 +95,34 @@ it("edit an agreement", () => {
                 expect(body.message).to.equal("Agreement updated");
             })
             .then(cy.log);
-
+        cy.get(".usa-alert__body").should("contain", "The agreement Test Edit Title has been successfully updated");
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(6000);
         cy.get("h1").should("have.text", "Test Edit Title");
         cy.get("#edit").should("exist");
 
-        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .margin-0').should(
+        cy.get(
+            '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+        ).should("have.text", "Agreement Description Edited");
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
             "have.text",
-            'Contract Agreement, "Test Edit Title", updated by Admin Demo.'
+            "Agreement Description changed by Admin Demo"
         );
-        // there's currently a false change for agreement_reason, these child indexes will need to changed when that is fixed
-        cy.get(":nth-child(1) > dl > :nth-child(3)").should("have.text", "Description");
-        cy.get(":nth-child(1) > dl > :nth-child(4)").should(
-            "contain.text",
-            "changed from “Test Description” to “Test Description more text”"
+        cy.get(
+            '[data-cy="agreement-history-list"] > :nth-child(2) > .flex-justify > [data-cy="log-item-title"]'
+        ).should("have.text", "Agreement Title Edited");
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > [data-cy="log-item-children"]').should(
+            "have.text",
+            "Agreement Title changed from Test Contract to Test Edit Title by Admin Demo"
         );
-        cy.get("dl > :nth-child(5)").should("have.text", "Title");
-        cy.get("dl > :nth-child(6)").should("contain.text", "changed from “Test Contract” to “Test Edit Title”");
-        cy.get("dl > :nth-child(7)").should("have.text", "Notes");
-        cy.get("dl > :nth-child(8)").should("contain.text", "changed from “Test Notes” to “Test Notestest edit notes”");
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > .flex-justify > .text-bold').should(
+            "have.text",
+            "Agreement Notes Edited"
+        );
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > [data-cy="log-item-children"]').should(
+            "have.text",
+            "Agreement Notes changed by Admin Demo"
+        );
 
         cy.request({
             method: "DELETE",

@@ -1,21 +1,20 @@
 import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
 import App from "../App";
-import Alert from "../components/UI/Alert";
 
 /**
  * Page for displaying an error message.
  * @returns {React.JSX.Element} - The component JSX.
  */
 const ErrorPage = () => {
-    const isAlertActive = useSelector((state) => state.alert.isActive);
     return (
         <App>
-            {isAlertActive && <Alert />}
             <div className="usa-section">
                 <div className="grid-container">
                     <div className="grid-row grid-gap">
-                        <main className="" id="main-content">
+                        <main
+                            className=""
+                            id="main-content"
+                        >
                             <div className="usa-prose">
                                 <h1>Something went wrong</h1>
                                 <p className="usa-intro">
@@ -34,7 +33,10 @@ const ErrorPage = () => {
                                 <div className="margin-y-5">
                                     <ul className="usa-button-group">
                                         <li className="usa-button-group__item">
-                                            <Link to="/" className="usa-button">
+                                            <Link
+                                                to="/"
+                                                className="usa-button"
+                                            >
                                                 Visit homepage
                                             </Link>
                                         </li>
