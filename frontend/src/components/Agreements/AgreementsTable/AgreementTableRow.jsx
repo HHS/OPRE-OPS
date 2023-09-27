@@ -114,11 +114,12 @@ export const AgreementTableRow = ({ agreement }) => {
                 {isRowActive && !isExpanded ? (
                     <div>
                         <ChangeIcons
-                            budgetLine={agreement}
-                            isBudgetLineEditable={canUserDeleteAgreement}
-                            handleDeleteBudgetLine={handleDeleteAgreement}
-                            handleSetBudgetLineForEditing={handleEditAgreement}
+                            item={agreement}
+                            isItemEditable={canUserDeleteAgreement}
+                            handleDeleteItem={handleDeleteAgreement}
+                            handleSetItemForEditing={handleEditAgreement}
                             duplicateIcon={false}
+                            sendToReviewIcon={true}
                         />
                     </div>
                 ) : (
