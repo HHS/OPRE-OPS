@@ -55,7 +55,7 @@ it("edit an agreement", () => {
 
         cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
         cy.visit(`/agreements/edit/${agreementId}?mode=edit`);
-        cy.get("h1").should("have.text", "Edit Agreement");
+        cy.get("[data-cy='page-heading']").should("have.text", "Edit Agreement");
         cy.get("#continue").click();
         // test validation
         cy.get("#name").clear();
@@ -80,7 +80,7 @@ it("edit an agreement", () => {
             })
             .then(cy.log);
 
-        cy.get("h1").should("have.text", "Edit Agreement");
+        cy.get("[data-cy='page-heading']").should("have.text", "Edit Agreement");
         cy.get("h2").first().should("have.text", "Budget Line Details");
 
         cy.get('[data-cy="continue-btn"]').click();
