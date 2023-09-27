@@ -1,5 +1,5 @@
 import { Fragment, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -7,14 +7,21 @@ import { faChevronDown, faChevronUp, faPen, faTrash } from "@fortawesome/free-so
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { convertCodeForDisplay, formatDate } from "../../../helpers/utils";
 import TableTag from "../../UI/TableTag";
-import { useDeleteAgreementMutation } from "../../../api/opsAPI";
 import icons from "../../../uswds/img/sprite.svg";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import useGetUserFullNameFromId from "../../../helpers/user-hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
 import { DISABLED_ICON_CLASSES } from "../../../constants";
-import useAlert from "../../../helpers/use-alert";
-import { useAgreementApproval } from "./agreements-table.hooks";
+import { useAgreementApproval, useHandleEditAgreement, useHandleDeleteAgreement } from "./agreements-table.hooks";
+import {
+    getAgreementName,
+    getResearchProjectName,
+    getAgreementSubTotal,
+    getProcurementShopSubTotal,
+    findMinDateNeeded,
+    getAgreementNotes,
+    getAgreementCreatedDate
+} from "./AgreementsTable.helpers";
 
 /**
  * Renders a row in the agreements table.
@@ -24,41 +31,19 @@ import { useAgreementApproval } from "./agreements-table.hooks";
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const AgreementTableRow = ({ agreement }) => {
-    const navigate = useNavigate();
-    const [deleteAgreement] = useDeleteAgreementMutation();
     const [isExpanded, setIsExpanded] = useState(false);
     const [isRowActive, setIsRowActive] = useState(false);
-    const [showModal, setShowModal] = useState(false);
-    const [modalProps, setModalProps] = useState({});
-    const { setAlert } = useAlert();
 
-    const agreementName = agreement?.name;
-    const researchProjectName = agreement?.research_project?.title;
-
-    let agreementType;
-    agreementType = convertCodeForDisplay("agreementType", agreement?.agreement_type);
-
-    const agreementSubTotal = agreement?.budget_line_items?.reduce((n, { amount }) => n + amount, 0);
-    const procurementShopSubTotal = agreement?.budget_line_items?.reduce(
-        (n, { amount }) => n + amount * (agreement.procurement_shop ? agreement.procurement_shop.fee : 0),
-        0
-    );
+    const agreementName = getAgreementName(agreement);
+    const researchProjectName = getResearchProjectName(agreement);
+    const agreementType = convertCodeForDisplay("agreementType", agreement?.agreement_type);
+    const agreementSubTotal = getAgreementSubTotal(agreement);
+    const procurementShopSubTotal = getProcurementShopSubTotal(agreement);
     const agreementTotal = agreementSubTotal + procurementShopSubTotal;
-
-    // find the min(date_needed) of the BLIs
-    let nextNeedBy = agreement?.budget_line_items?.reduce(
-        (n, { date_needed }) => (n < date_needed ? n : date_needed),
-        0
-    );
-
-    nextNeedBy = nextNeedBy ? formatDate(new Date(nextNeedBy)) : "";
+    const nextNeedBy = findMinDateNeeded(agreement);
     const agreementCreatedByName = useGetUserFullNameFromId(agreement?.created_by);
-    const agreementNotes = agreement?.notes;
-    const formatted_today = new Date().toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
-    const agreementCreatedOn = agreement?.created_on
-        ? new Date(agreement.created_on).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" })
-        : formatted_today;
-
+    const agreementNotes = getAgreementNotes(agreement);
+    const agreementCreatedOn = getAgreementCreatedDate(agreement);
     const handleExpandRow = () => {
         setIsExpanded(!isExpanded);
         setIsRowActive(true);
@@ -71,48 +56,11 @@ export const AgreementTableRow = ({ agreement }) => {
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const areAllBudgetLinesInDraftStatus = agreement?.budget_line_items?.every((bli) => bli.status === "DRAFT");
     const areThereAnyBudgetLines = agreement?.budget_line_items?.length > 0;
-
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
-
+    // hooks
     const handleSubmitAgreementForApproval = useAgreementApproval();
-
-    const handleEditAgreement = (event) => {
-        navigate(`/agreements/${event}?mode=edit`);
-    };
-
-    /**
-     * Deletes an agreement.
-     * @param {number} id - The id of the agreement to delete.
-     * @returns {void}
-     */
-    const handleDeleteAgreement = (id) => {
-        setShowModal(true);
-        setModalProps({
-            heading: "Are you sure you want to delete this agreement?",
-            actionButtonText: "Delete",
-            handleConfirm: () => {
-                deleteAgreement(id)
-                    .unwrap()
-                    .then((fulfilled) => {
-                        console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
-                        setAlert({
-                            type: "success",
-                            heading: "Agreement deleted",
-                            message: `Agreement ${agreementName} has been successfully deleted.`
-                        });
-                    })
-                    .catch((rejected) => {
-                        console.error(`DELETE agreement rejected: ${JSON.stringify(rejected, null, 2)}`);
-                        setAlert({
-                            type: "error",
-                            heading: "Error",
-                            message: "An error occurred while deleting the agreement.",
-                            redirectUrl: "/error"
-                        });
-                    });
-            }
-        });
-    };
+    const handleEditAgreement = useHandleEditAgreement();
+    const { handleDeleteAgreement, modalProps, setShowModal, showModal } = useHandleDeleteAgreement();
 
     const agreementStatus = agreement?.budget_line_items?.find((bli) => bli.status === "UNDER_REVIEW")
         ? "In Review"
@@ -148,7 +96,7 @@ export const AgreementTableRow = ({ agreement }) => {
                             className={`text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip ${
                                 !canUserDeleteAgreement ? DISABLED_ICON_CLASSES : null
                             }`}
-                            onClick={() => canUserDeleteAgreement && handleDeleteAgreement(agreement.id)}
+                            onClick={() => canUserDeleteAgreement && handleDeleteAgreement(agreement.id, agreementName)}
                             data-cy="delete-agreement"
                         />
 
