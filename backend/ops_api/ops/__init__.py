@@ -39,7 +39,7 @@ def create_app(config_overrides: Optional[dict[str, Any]] = {}) -> Flask:
     log_level = "INFO" if not is_unit_test else "DEBUG"
     configure_logging(log_level)  # should be configured before any access to app.logger
     app = Flask(__name__)
-    CORS(app)
+    
     app.config.from_object("ops_api.ops.environment.default_settings")
     if os.getenv("OPS_CONFIG"):
         app.config.from_envvar("OPS_CONFIG")
@@ -59,6 +59,14 @@ def create_app(config_overrides: Optional[dict[str, Any]] = {}) -> Flask:
     if config_overrides is not None:
         app.config.from_mapping(config_overrides)
 
+    cors_resources = {
+        r"/api/*": {
+            "origins": app.config.get("OPS_FRONTEND_URL"),
+            "supports_credentials": True,
+        }
+    }
+    CORS(app, resources=cors_resources)
+    
     app.register_blueprint(home)
 
     api_bp = Blueprint("api", __name__, url_prefix=f"/api/{app.config.get('API_VERSION', 'v1')}")
