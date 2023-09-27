@@ -1,6 +1,4 @@
 import PropTypes from "prop-types";
-import { notesData } from "./data";
-import LogItem from "../../../components/UI/LogItem";
 import Tag from "../../../components/UI/Tag/Tag";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import AgreementHistoryPanel from "../../../components/Agreements/AgreementDetails/AgreementHistoryPanel";
