@@ -10,7 +10,12 @@ export const EditModeTitle = ({ isEditMode }) => {
         <>
             {isEditMode ? (
                 <>
-                    <h1 className="font-sans-lg">Edit Agreement</h1>
+                    <h1
+                        className="font-sans-lg"
+                        data-cy="page-heading"
+                    >
+                        Edit Agreement
+                    </h1>
                     <p>Follow the steps to edit an agreement</p>
                 </>
             ) : (
