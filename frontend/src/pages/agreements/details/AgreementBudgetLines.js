@@ -4,8 +4,8 @@ import AgreementDetailHeader from "./AgreementDetailHeader";
 import { CreateBudgetLinesProvider } from "../../../components/UI/WizardSteps/StepCreateBudgetLines/context";
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import StepCreateBudgetLines from "../../../components/UI/WizardSteps/StepCreateBudgetLines/StepCreateBudgetLines";
-import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
-import useAlert from "../../../helpers/use-alert";
+import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import useAlert from "../../../hooks/use-alert.hooks";
 
 /**
  * Renders Agreement budget lines view

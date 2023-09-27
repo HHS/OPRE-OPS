@@ -8,9 +8,9 @@ import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from 
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import Terms from "./Terms";
 import suite from "./suite";
-import useGetUserFullNameFromId from "../../../helpers/user-hooks";
-import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
-import useAlert from "../../../helpers/use-alert";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import useAlert from "../../../hooks/use-alert.hooks";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.

@@ -5,7 +5,7 @@ import StepSelectProject from "./StepSelectProject";
 import StepCreateAgreement from "./StepCreateAgreement";
 import StepCreateBudgetLines from "../../components/UI/WizardSteps/StepCreateBudgetLines";
 import { useEditAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
-import useAlert from "../../helpers/use-alert";
+import useAlert from "../../hooks/use-alert.hooks";
 
 /**
  * Renders the Create Agreement flow, which consists of several steps.

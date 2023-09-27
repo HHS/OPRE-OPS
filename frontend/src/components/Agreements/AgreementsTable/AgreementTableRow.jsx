@@ -9,8 +9,8 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
 import TableTag from "../../UI/TableTag";
 import icons from "../../../uswds/img/sprite.svg";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
-import useGetUserFullNameFromId from "../../../helpers/user-hooks";
-import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import { DISABLED_ICON_CLASSES } from "../../../constants";
 import { useAgreementApproval, useHandleEditAgreement, useHandleDeleteAgreement } from "./agreements-table.hooks";
 import {
@@ -57,7 +57,7 @@ export const AgreementTableRow = ({ agreement }) => {
     // styles for the expanded row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
     const changeBgColorIfExpanded = { backgroundColor: isRowActive ? "var(--neutral-lightest)" : "" };
-    // Validations for deleting an agreement
+    // Validations for editing/deleting an agreement
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const areAllBudgetLinesInDraftStatus = areAllBudgetLinesInStatus(agreement, "DRAFT");
     const areThereAnyBudgetLines = isThereAnyBudgetLines(agreement);

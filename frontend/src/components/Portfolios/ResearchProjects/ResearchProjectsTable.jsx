@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import useSortableData from "../../../helpers/useSortableData";
+import useSortableData from "../../../hooks/use-sortable-data.hooks";
 import CurrencyFormat from "react-currency-format";
 import "./tables.scss";
 

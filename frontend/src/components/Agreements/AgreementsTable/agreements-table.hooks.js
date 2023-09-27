@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import useAlert from "../../../helpers/use-alert";
+import useAlert from "../../../hooks/use-alert.hooks";
 import { useDeleteAgreementMutation } from "../../../api/opsAPI";
 
 export const useAgreementApproval = () => {

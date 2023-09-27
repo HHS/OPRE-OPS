@@ -24,7 +24,7 @@ import {
 } from "../../../api/opsAPI";
 import ProjectOfficerComboBox from "../../UI/Form/ProjectOfficerComboBox";
 import { getUser } from "../../../api/getUser";
-import useAlert from "../../../helpers/use-alert";
+import useAlert from "../../../hooks/use-alert.hooks";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
