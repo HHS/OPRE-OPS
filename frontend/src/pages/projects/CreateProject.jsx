@@ -59,9 +59,14 @@ const CreateProject = () => {
     delete editedProject.type;
 
     if (isError) {
-        // TODO: Add error handling
         console.log("Error Submitting Project");
         console.dir(error);
+        setAlert({
+            type: "error",
+            heading: "Error Creating Project",
+            message: "There was an error creating the project. Please try again.",
+            redirectUrl: `/error`
+        });
     }
 
     if (isSuccess) {
