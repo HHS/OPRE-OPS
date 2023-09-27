@@ -5,7 +5,7 @@ const initialState = {
     heading: "",
     message: "",
     isActive: false,
-    redirectUrl: "",
+    redirectUrl: ""
 };
 
 const alertSlice = createSlice({
@@ -24,8 +24,8 @@ const alertSlice = createSlice({
         },
         clearState: () => {
             return initialState;
-        },
-    },
+        }
+    }
 });
 
 export const { setAlert, setIsActive, clearState } = alertSlice.actions;

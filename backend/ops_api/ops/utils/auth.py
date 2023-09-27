@@ -13,8 +13,10 @@ from flask import Response, current_app
 from flask_jwt_extended import JWTManager, get_current_user, get_jwt_identity, jwt_required
 from models.users import User
 from ops_api.ops.utils.authorization import AuthorizationGateway, BasicAuthorizationPrivider
+from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
+from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 
 jwtMgr = JWTManager()
 oauth = OAuth()
@@ -50,10 +52,11 @@ def user_identity_lookup(user: User) -> str:
 def user_lookup_callback(_jwt_header: dict, jwt_data: dict) -> Optional[User]:
     identity = jwt_data["sub"]
     stmt = select(User).where(User.oidc_id == identity)
-    users = current_app.db_session.execute(stmt).all()
-    if users and len(users) == 1:
-        return users[0][0]
-    return None
+    try:
+        return current_app.db_session.scalars(stmt).one()
+
+    except (NoResultFound, MultipleResultsFound):
+        return None
 
 
 def create_oauth_jwt(
@@ -185,6 +188,7 @@ class is_authorized:
     def __call__(self, func: Callable) -> Callable:
         @wraps(func)
         @jwt_required()
+        @error_simulator
         def wrapper(*args, **kwargs) -> Response:
             try:
                 if (

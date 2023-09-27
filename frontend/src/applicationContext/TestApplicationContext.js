@@ -5,7 +5,7 @@ class TestApplicationContext {
     static #helpers = {
         callBackend: jest.fn(),
         authConfig,
-        backEndConfig,
+        backEndConfig
     };
 
     static helpers() {

@@ -1,8 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
 import Alert from "../../components/UI/Alert";
-import { setAlert } from "../../components/UI/Alert/alertSlice";
+import useAlert from "../../helpers/use-alert";
 
 /**
  * Renders a success message and redirects the user to the Agreements list page after a delay.
@@ -11,23 +10,21 @@ import { setAlert } from "../../components/UI/Alert/alertSlice";
  * @returns {React.JSX.Element} - The success message element.
  */
 export const StepSuccess = ({ delay = 6000 }) => {
-    const globalDispatch = useDispatch();
     const navigate = useNavigate();
+    const { setAlert } = useAlert();
 
     React.useEffect(() => {
         setTimeout(() => {
             navigate("/agreements");
         }, delay);
 
-        globalDispatch(
-            setAlert({
-                type: "success",
-                heading: "Budget Lines Created",
-                message:
-                    " The budget lines have been successfully created. You will be redirected to the Agreements list page.",
-            })
-        );
-    }, [globalDispatch, navigate, delay]);
+        setAlert({
+            type: "success",
+            heading: "Budget Lines Created",
+            message:
+                " The budget lines have been successfully created. You will be redirected to the Agreements list page."
+        });
+    }, [setAlert, navigate, delay]);
 
     return <Alert />;
 };

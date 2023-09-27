@@ -1,6 +1,7 @@
 # OPRE OPS
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
 This is the OPRE's Research Portfolio Management System, or OPS. The finished product will replace OPRE's prior system,
 [MAPS](https://github.com/HHS/MAPS-app). The purpose of OPS can be found on
@@ -57,7 +58,7 @@ the backend api at `http://localhost:8080`.
 
 #### Backend
 
-The backend api utilizes `pytest`. 
+The backend api utilizes `pytest`.
 
 To run them...
 
@@ -65,6 +66,10 @@ To run them...
 cd ./backend/ops_api
 pytest
 ```
+
+Note: All backend API endpoints have the abililty to simulate an error response, for testing purposes for the frontend. This is accomplished
+through passing the `simulatedError=true` query parameter. It will automatically return a status code of 500 whenever this is done. It can
+be customized further by choosing the status code and passing that, so `simulatedError=400` sends back a 400 code rather than a 500 code. This will override any other processing the endpoint would normally do and just return the response, giving a simple mechanism for frontend development and/or testing to validate it works with error conditions from the backend.
 
 #### Frontend
 
@@ -168,19 +173,13 @@ from succeeding.  Fix the problem and try the commit again.
 
 ## Deployment
 
-This application is currently deployed to [Cloud.gov](https://cloud.gov) through [Cloud Foundry](https://www.cloudfoundry.org)
-via a [manifest.yml](manifest.yml) file.
-
-For now, while we are waiting for full Cloud.gov access, we only have access to a non-production environment.
+TBD
 
 ### Development Environment
 
-The development environment is deployed at https://ops-dev.fr.cloud.gov
+TBD
 
-Currently all `push` to `main` will automatically deploy to the `Development` environment. 
-
-This environment can be deployed to manually as well by authorized committers in the repository. You accomplish this by force pushing
-an existing commit to the `development` branch.
+~~This environment can be deployed to manually as well by authorized committers in the repository. You accomplish this by force pushingan existing commit to the `development` branch.~~
 
 ```shell
 git branch -d development  # deletes the development branch if it was already checked out locally
@@ -190,10 +189,9 @@ git push --force --set-upstream origin development
 
 ### Staging Environment
 
-The staging environment is deployed at https://ops-staging.app.cloud.gov
+TBD
 
-This environment can be deployed to by authorized committers in the repository. You accomplish this by force pushing
-an existing commit to the `staging` branch.
+~~This environment can be deployed to by authorized committers in the repository. You accomplish this by force pushing an existing commit to the `staging` branch.~~
 
 ```shell
 git branch -d staging  # deletes the staging branch if it was already checked out locally
@@ -203,7 +201,7 @@ git push --force --set-upstream origin staging
 
 ### Production Environment
 
-TBD.
+TBD
 
 ## Data Model
 

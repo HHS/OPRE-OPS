@@ -17,6 +17,7 @@ def test_portfolio_retrieve(loaded_db):
     assert portfolio is not None
     assert portfolio.name == "Child Care"
     assert portfolio.status == PortfolioStatus.IN_PROCESS
+    assert portfolio.display_name == portfolio.name
 
 
 @pytest.mark.usefixtures("app_ctx")

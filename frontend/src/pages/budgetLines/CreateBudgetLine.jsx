@@ -10,7 +10,7 @@ export const CreateBudgetLine = () => {
         selected_project: selectedProject,
         selected_agreement: selectedAgreement,
         selected_procurement_shop: selectedProcurementShop,
-        existing_budget_lines: existingBudgetLines,
+        existing_budget_lines: existingBudgetLines
     } = useBudgetLines();
 
     return (

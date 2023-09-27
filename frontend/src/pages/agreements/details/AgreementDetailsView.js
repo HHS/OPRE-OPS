@@ -1,8 +1,9 @@
 import PropTypes from "prop-types";
-import { historyData, notesData } from "./data";
+import { notesData } from "./data";
 import LogItem from "../../../components/UI/LogItem";
 import Tag from "../../../components/UI/Tag/Tag";
 import { convertCodeForDisplay } from "../../../helpers/utils";
+import AgreementHistoryPanel from "../../../components/Agreements/AgreementDetails/AgreementHistoryPanel";
 
 /**
  * Renders the details of an agreement
@@ -17,7 +18,10 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
     return (
         <section>
             <div className="grid-row margin-top-2">
-                <div className="grid-col-6 padding-right-1" data-cy="details-left-col">
+                <div
+                    className="grid-col-6 padding-right-1"
+                    data-cy="details-left-col"
+                >
                     {/* // NOTE: Left Column */}
                     <dl className="margin-0 font-12px">
                         <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
@@ -28,7 +32,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                     <h3 className="text-base-dark margin-top-3 text-normal font-12px">Notes</h3>
                     {notesData.length > 0 ? (
                         <ul
-                            className="usa-list--unstyled overflow-y-scroll"
+                            className="usa-list--unstyled overflow-y-scroll force-show-scrollbars"
                             style={{ height: "11.375rem" }}
                             tabIndex={0}
                         >
@@ -46,27 +50,12 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                         <p>Sorry no notes</p>
                     )}
                     <h3 className="text-base-dark margin-top-3 text-normal font-12px">History</h3>
-                    {historyData.length > 0 ? (
-                        <ul
-                            className="usa-list--unstyled overflow-y-scroll"
-                            style={{ height: "7.3125rem" }}
-                            tabIndex={0}
-                        >
-                            {/* // TODO: Replace with real data */}
-                            {historyData.map((note) => (
-                                <LogItem
-                                    key={note.id}
-                                    title={note.created_by}
-                                    createdOn={note.created_on}
-                                    message={note.message}
-                                />
-                            ))}
-                        </ul>
-                    ) : (
-                        <p>Sorry no history</p>
-                    )}
+                    <AgreementHistoryPanel agreementId={agreement.id} />
                 </div>
-                <div className="grid-col-6 padding-left-2" data-cy="details-right-col">
+                <div
+                    className="grid-col-6 padding-left-2"
+                    data-cy="details-right-col"
+                >
                     {/* // NOTE: Right Column */}
                     <dl className="margin-0 font-12px">
                         <dt className="margin-0 text-base-dark margin-top-3">Agreement Type</dt>
@@ -145,7 +134,10 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                             <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
                                 <dt className="margin-0 text-base-dark margin-top-3">Incumbent</dt>
                                 <dd className="margin-0 margin-top-1">
-                                    <Tag tagStyle="primaryDarkTextLightBackground" text={agreement?.incumbent} />
+                                    <Tag
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={agreement?.incumbent}
+                                    />
                                 </dd>
                             </dl>
                         )}
@@ -168,14 +160,23 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                         {agreement?.team_members?.length > 0 ? (
                             <>
                                 {agreement?.team_members.map((member) => (
-                                    <dd key={member.id} className="margin-0 margin-top-1 margin-bottom-2">
-                                        <Tag tagStyle="primaryDarkTextLightBackground" text={member.full_name} />
+                                    <dd
+                                        key={member.id}
+                                        className="margin-0 margin-top-1 margin-bottom-2"
+                                    >
+                                        <Tag
+                                            tagStyle="primaryDarkTextLightBackground"
+                                            text={member.full_name}
+                                        />
                                     </dd>
                                 ))}
                             </>
                         ) : (
                             <dd className="margin-0 margin-top-1 margin-bottom-2">
-                                <Tag tagStyle="primaryDarkTextLightBackground" text={missingValueText} />
+                                <Tag
+                                    tagStyle="primaryDarkTextLightBackground"
+                                    text={missingValueText}
+                                />
                             </dd>
                         )}
                     </dl>
@@ -187,7 +188,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
 
 AgreementDetailsView.propTypes = {
     agreement: PropTypes.object.isRequired,
-    projectOfficer: PropTypes.object.isRequired,
+    projectOfficer: PropTypes.object
 };
 
 export default AgreementDetailsView;

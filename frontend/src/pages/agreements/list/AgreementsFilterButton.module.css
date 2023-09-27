@@ -1,7 +1,7 @@
 .modalBackgroundColor {
-  background: #F0F0F0;
+    background: var(--neutral-lightest);
 }
 
 .legendColor {
-  color: #565C65;
+    color: #565c65;
 }

@@ -13,6 +13,7 @@ def test_budget_line_item_lookup(loaded_db):
     assert bli is not None
     assert bli.id == 1
     assert bli.line_description == "LI 1"
+    assert bli.display_name == bli.line_description
     assert bli.agreement_id == 1
     assert bli.can_id == 5
     assert bli.amount == 1000000.00
@@ -35,7 +36,7 @@ def test_budget_line_item_creation():
 def test_get_budget_line_items_list(auth_client):
     response = auth_client.get("/api/v1/budget-line-items/")
     assert response.status_code == 200
-    assert len(response.json) == 20
+    assert len(response.json) == 22
     assert response.json[0]["id"] == 1
     assert response.json[1]["id"] == 2
 
@@ -106,7 +107,7 @@ def test_post_budget_line_items(auth_client):
         amount=100.12,
         status="DRAFT",
         date_needed="2043-01-01",
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
     )
     response = auth_client.post("/api/v1/budget-line-items/", json=data.__dict__)
     assert response.status_code == 201
@@ -126,7 +127,7 @@ def test_post_budget_line_items_bad_status(auth_client):
         amount=100.12,
         status="blah blah",
         date_needed="2043-01-01",
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
     )
     response = auth_client.post("/api/v1/budget-line-items/", json=data.__dict__)
     assert response.status_code == 400
@@ -143,7 +144,7 @@ def test_post_budget_line_items_missing_agreement(auth_client):
         "amount": 100.12,
         "status": "DRAFT",
         "date_needed": "2043-01-01",
-        "psc_fee_amount": 1.23,
+        "proc_shop_fee_percentage": 1.23,
     }
     response = auth_client.post("/api/v1/budget-line-items/", json=data)
     assert response.status_code == 400
@@ -159,7 +160,7 @@ def test_post_budget_line_items_missing_optional_comments(auth_client):
         amount=100.12,
         status="DRAFT",
         date_needed="2043-01-01",
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
     )
     response = auth_client.post("/api/v1/budget-line-items/", json=data.__dict__)
     assert response.status_code == 201
@@ -176,7 +177,7 @@ def test_post_budget_line_items_invalid_can(auth_client):
         amount=100.12,
         status="DRAFT",
         date_needed="2043-01-01",
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
     )
     response = auth_client.post("/api/v1/budget-line-items/", json=data.__dict__)
     assert response.status_code == 400
@@ -193,7 +194,7 @@ def test_post_budget_line_items_auth_required(client):
         amount=100.12,
         status="DRAFT",
         date_needed="2043-01-01",
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
     )
     response = client.post("/api/v1/budget-line-items/", json=data.__dict__)
     assert response.status_code == 401
@@ -219,7 +220,7 @@ def test_bli(loaded_db):
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
         date_needed=datetime.date(2043, 1, 1),
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     loaded_db.add(bli)
@@ -242,7 +243,7 @@ def test_bli_previous_year(loaded_db):
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
         date_needed=datetime.date(2042, 10, 1),
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     loaded_db.add(bli)
@@ -265,7 +266,7 @@ def test_bli_previous_fiscal_year(loaded_db):
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
         date_needed=datetime.date(2042, 9, 1),
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     loaded_db.add(bli)
@@ -287,7 +288,7 @@ def test_bli_no_can(loaded_db):
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
         date_needed=datetime.date(2043, 1, 1),
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     loaded_db.add(bli)
@@ -309,7 +310,7 @@ def test_bli_no_need_by_date(loaded_db):
         can_id=1,
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     loaded_db.add(bli)
@@ -332,7 +333,7 @@ def test_put_budget_line_items(auth_client, test_bli):
         amount=200.24,
         status="PLANNED",
         date_needed="2044-01-01",
-        psc_fee_amount=2.34,
+        proc_shop_fee_percentage=2.34,
     )
     response = auth_client.put(f"/api/v1/budget-line-items/{test_bli.id}", json=data.__dict__)
     assert response.status_code == 200
@@ -344,7 +345,7 @@ def test_put_budget_line_items(auth_client, test_bli):
     assert response.json["amount"] == 200.24
     assert response.json["status"] == "DRAFT"
     assert response.json["date_needed"] == "2044-01-01"
-    assert response.json["psc_fee_amount"] == 2.34
+    assert response.json["proc_shop_fee_percentage"] == 2.34
     assert response.json["created_on"] != response.json["updated_on"]
 
 
@@ -360,7 +361,7 @@ def test_put_budget_line_items_minimum(auth_client, loaded_db):
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
         date_needed=datetime.date(2043, 1, 1),
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     try:
@@ -372,13 +373,13 @@ def test_put_budget_line_items_minimum(auth_client, loaded_db):
         assert response.status_code == 200
         assert response.json["line_description"] == "Updated LI 1"
         assert response.json["id"] == 1000
-        assert response.json["comments"] is None
+        assert response.json["comments"] == "blah blah"
         assert response.json["agreement_id"] == 1
-        assert response.json["can_id"] is None
-        assert response.json["amount"] is None
-        assert response.json["status"] is None
-        assert response.json["date_needed"] is None
-        assert response.json["psc_fee_amount"] is None
+        assert response.json["can_id"] == 1
+        assert response.json["amount"] == 100.12
+        assert response.json["status"] == "DRAFT"
+        assert response.json["date_needed"] == "2043-01-01"
+        assert response.json["proc_shop_fee_percentage"] == 1.23
         assert response.json["created_on"] != response.json["updated_on"]
 
     finally:
@@ -399,7 +400,7 @@ def test_put_budget_line_items_bad_status(auth_client, loaded_db):
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
         date_needed=datetime.date(2043, 1, 1),
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     try:
@@ -428,7 +429,7 @@ def test_put_budget_line_items_bad_date(auth_client, loaded_db):
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
         date_needed=datetime.date(2043, 1, 1),
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     try:
@@ -478,7 +479,7 @@ def test_put_budget_line_items_non_existent_bli(auth_client, loaded_db):
         amount=200.24,
         status="PLANNED",
         date_needed="2044-01-01",
-        psc_fee_amount=2.34,
+        proc_shop_fee_percentage=2.34,
     )
     response = auth_client.put("/api/v1/budget-line-items/1000", json=data.__dict__)
     assert response.status_code == 400
@@ -496,7 +497,7 @@ def test_patch_budget_line_items(auth_client, loaded_db):
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
         date_needed=datetime.date(2043, 1, 1),
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     try:
@@ -511,7 +512,7 @@ def test_patch_budget_line_items(auth_client, loaded_db):
             amount=200.24,
             status="PLANNED",
             date_needed="2044-01-01",
-            psc_fee_amount=2.34,
+            proc_shop_fee_percentage=2.34,
         )
         response = auth_client.patch("/api/v1/budget-line-items/1000", json=data.__dict__)
         assert response.status_code == 200
@@ -523,7 +524,7 @@ def test_patch_budget_line_items(auth_client, loaded_db):
         assert response.json["amount"] == 200.24
         assert response.json["status"] == "DRAFT"
         assert response.json["date_needed"] == "2044-01-01"
-        assert response.json["psc_fee_amount"] == 2.34
+        assert response.json["proc_shop_fee_percentage"] == 2.34
         assert response.json["created_on"] != response.json["updated_on"]
 
     finally:
@@ -544,7 +545,7 @@ def test_patch_budget_line_items_update_two_attributes(auth_client, loaded_db):
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
         date_needed=datetime.date(2043, 1, 1),
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     try:
@@ -565,7 +566,7 @@ def test_patch_budget_line_items_update_two_attributes(auth_client, loaded_db):
         assert response.json["amount"] == 100.12
         assert response.json["status"] == "DRAFT"
         assert response.json["date_needed"] == "2043-01-01"
-        assert response.json["psc_fee_amount"] == 1.23
+        assert response.json["proc_shop_fee_percentage"] == 1.23
         assert response.json["created_on"] != response.json["updated_on"]
 
     finally:
@@ -591,7 +592,7 @@ def test_patch_budget_line_items_bad_status(auth_client, loaded_db):
         amount=100.12,
         status="blah blah",
         date_needed="2043-01-01",
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
     )
     response = auth_client.patch("/api/v1/budget-line-items/1", json=data.__dict__)
     assert response.status_code == 400
@@ -615,7 +616,7 @@ def test_patch_budget_line_items_invalid_can(auth_client):
         amount=100.12,
         status="DRAFT",
         date_needed="2043-01-01",
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
     )
     response = auth_client.patch("/api/v1/budget-line-items/1", json=data.__dict__)
     assert response.status_code == 400
@@ -633,7 +634,7 @@ def test_patch_budget_line_items_update_status(auth_client, loaded_db):
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
         date_needed=datetime.date(2043, 1, 1),
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     try:
@@ -661,7 +662,7 @@ def test_patch_budget_line_items_history(loaded_db):
         amount=100.12,
         status=BudgetLineItemStatus.DRAFT,
         date_needed=datetime.date(2043, 1, 1),
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     try:
@@ -685,6 +686,7 @@ def test_patch_budget_line_items_history(loaded_db):
         # SQL pulls back latest version (1 in this case)
         updated_bli = loaded_db.get(BudgetLineItem, bli.id)
         assert updated_bli.line_description == "Updated LI 1"
+        assert updated_bli.display_name == updated_bli.line_description
 
     finally:
         # cleanup
@@ -709,7 +711,7 @@ def test_put_budget_line_item_portfolio_id_ignored(auth_client, loaded_db, test_
         amount=200.24,
         status="PLANNED",
         date_needed="2044-01-01",
-        psc_fee_amount=2.34,
+        proc_shop_fee_percentage=2.34,
     )
     request_data = data.__dict__ | {"portfolio_id": 10000}
     response = auth_client.put(f"/api/v1/budget-line-items/{test_bli.id}", json=request_data)

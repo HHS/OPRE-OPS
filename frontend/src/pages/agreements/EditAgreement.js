@@ -6,20 +6,24 @@ import CreateEditAgreement from "./CreateEditAgreement";
 import { useGetAgreementByIdQuery } from "../../api/opsAPI";
 import { getUser } from "../../api/getUser";
 import SimpleAlert from "../../components/UI/Alert/SimpleAlert";
+import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../helpers/agreement-hooks";
 
 const EditAgreement = () => {
     const urlPathParams = useParams();
     const agreementId = parseInt(urlPathParams.id);
-
     const [projectOfficer, setProjectOfficer] = useState({});
 
     const {
         data: agreement,
         error: errorAgreement,
-        isLoading: isLoadingAgreement,
+        isLoading: isLoadingAgreement
     } = useGetAgreementByIdQuery(agreementId, {
-        refetchOnMountOrArgChange: true,
+        refetchOnMountOrArgChange: true
     });
+
+    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
+    const isAgreementEditable = useIsAgreementEditable(agreement?.id);
+    const isEditable = isAgreementEditable && canUserEditAgreement;
 
     useEffect(() => {
         const getProjectOfficerSetState = async (id) => {
@@ -43,15 +47,18 @@ const EditAgreement = () => {
         return <div>Oops, an error occurred</div>;
     }
 
-    const areAnyBudgetLinesInExecuting = agreement?.budget_line_items.some((bli) => bli.status === "IN_EXECUTION");
-    const areAnyBudgetLinesObligated = agreement?.budget_line_items.some((bli) => bli.status === "OBLIGATED");
-    const isAgreementEditable = !areAnyBudgetLinesInExecuting && !areAnyBudgetLinesObligated;
-
-    if (!isAgreementEditable) {
+    if (!isEditable) {
         return (
             <App>
-                <SimpleAlert type="error" heading="Error" message={`This Agreement cannot be edited.`}></SimpleAlert>
-                <Link to="/" className="usa-button margin-top-4">
+                <SimpleAlert
+                    type="error"
+                    heading="Error"
+                    message="This Agreement cannot be edited."
+                ></SimpleAlert>
+                <Link
+                    to="/"
+                    className="usa-button margin-top-4"
+                >
                     Go back home
                 </Link>
             </App>
@@ -59,7 +66,10 @@ const EditAgreement = () => {
     }
     return (
         <App>
-            <EditAgreementProvider agreement={agreement} projectOfficer={projectOfficer}>
+            <EditAgreementProvider
+                agreement={agreement}
+                projectOfficer={projectOfficer}
+            >
                 <CreateEditAgreement existingBudgetLines={agreement.budget_line_items} />
             </EditAgreementProvider>
         </App>

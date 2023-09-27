@@ -7,6 +7,7 @@ from flask_jwt_extended import jwt_required
 from models.base import BaseModel
 from models.cans import CAN
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
@@ -46,6 +47,7 @@ class CANListAPI(BaseListAPI):
         return stmt
 
     @jwt_required(True)  # For an example case, we're allowing CANs to be queried unauthed
+    @error_simulator
     def get(self) -> Response:
         errors = self._get_input_schema.validate(request.args)
 

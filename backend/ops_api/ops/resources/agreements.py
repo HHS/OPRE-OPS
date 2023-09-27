@@ -1,3 +1,4 @@
+from contextlib import suppress
 from dataclasses import dataclass
 from dataclasses import fields as dc_fields
 from typing import ClassVar, Optional
@@ -44,6 +45,7 @@ class AgreementData:
     name: str
     number: str
     agreement_type: AgreementType = fields.Enum(AgreementType)
+    display_name: Optional[str] = None
     description: Optional[str] = None
     product_service_code_id: Optional[int] = None
     agreement_reason: Optional[AgreementReason] = None
@@ -256,7 +258,11 @@ class AgreementItemAPI(BaseItemAPI):
             return make_response_with_headers({}, 500)
 
     @override
-    @is_authorized(PermissionType.DELETE, Permission.AGREEMENT, extra_check=associated_with_agreement)
+    @is_authorized(
+        PermissionType.DELETE,
+        Permission.AGREEMENT,
+        extra_check=associated_with_agreement,
+    )
     def delete(self, id: int) -> Response:
         message_prefix = f"DELETE from {ENDPOINT_STRING}"
 
@@ -304,10 +310,11 @@ class AgreementListAPI(BaseListAPI):
                 query_helper.add_search(polymorphic_agreement.name, search)
 
             case {**filter_args}:
-                pass
+                pass  # Do nothing if only filters are provided
 
         for key, value in filter_args.items():
-            query_helper.add_column_equals(Agreement.get_class_field(key), value)
+            with suppress(ValueError):
+                query_helper.add_column_equals(Agreement.get_class_field(key), value)
 
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")
@@ -424,28 +431,48 @@ def _get_user_list(data: Any):
 
 
 def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
+    changed = False
     for item in data:
-        if item in {"agreement_type"}:
-            pass
-        elif item not in {"team_members", "support_contacts"}:
-            setattr(agreement, item, data[item])
+        # subclass attributes won't have the old (deleted) value in get_history
+        # unless they were loaded before setting
+        _hack_to_fix_get_history = getattr(agreement, item)  # noqa: F841
+        match (item):
+            case "agreement_type":
+                continue
 
-        elif item == "team_members":
-            tmp_team_members = _get_user_list(data[item])
-            if tmp_team_members:
-                agreement.team_members = tmp_team_members
-            else:
-                agreement.team_members = []
+            case "team_members":
+                tmp_team_members = _get_user_list(data[item])
+                agreement.team_members = tmp_team_members if tmp_team_members else []
 
-        elif item == "support_contacts":
-            tmp_support_contacts = _get_user_list(data[item])
-            if tmp_support_contacts:
-                agreement.support_contacts = tmp_support_contacts
-            else:
-                agreement.support_contacts = []
+            case "support_contacts":
+                tmp_support_contacts = _get_user_list(data[item])
+                agreement.support_contacts = tmp_support_contacts if tmp_support_contacts else []
 
-    for bli in agreement.budget_line_items:
-        bli.status = BudgetLineItemStatus.DRAFT
+            case "procurement_shop_id":
+                if any(
+                    [bli.status.value >= BudgetLineItemStatus.IN_EXECUTION.value for bli in agreement.budget_line_items]
+                ):
+                    raise ValueError(
+                        "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
+                    )
+                elif getattr(agreement, item) != data[item]:
+                    setattr(agreement, item, data[item])
+                    for bli in agreement.budget_line_items:
+                        if bli.status.value <= BudgetLineItemStatus.PLANNED.value:
+                            bli.proc_shop_fee_percentage = agreement.procurement_shop.fee
+                    changed = True
+
+            case _:
+                if getattr(agreement, item) != data[item]:
+                    setattr(agreement, item, data[item])
+                    changed = True
+
+    if changed:
+        agreement.budget_line_items
+        for bli in agreement.budget_line_items:
+            with suppress(AttributeError):
+                if bli.status.value <= BudgetLineItemStatus.PLANNED.value:
+                    bli.status = BudgetLineItemStatus.DRAFT
 
 
 def update_agreement(data: dict[str, Any], agreement: Agreement):

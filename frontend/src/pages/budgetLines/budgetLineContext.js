@@ -14,7 +14,7 @@ const initialState = {
     selected_agreement: {},
     selected_can: {},
     selected_procurement_shop: {},
-    wizardSteps: ["Project & Agreement", "Budget Lines", "Review"],
+    wizardSteps: ["Project & Agreement", "Budget Lines", "Review"]
 };
 
 export function BudgetLinesProvider({ children }) {

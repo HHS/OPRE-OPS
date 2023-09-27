@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 export const ProjectAgreementSummaryCard = ({
     selectedResearchProject = {},
     selectedAgreement = {},
-    selectedProcurementShop = {},
+    selectedProcurementShop = {}
 }) => {
     const { title } = selectedResearchProject;
     const { name: agreementName } = selectedAgreement;
@@ -16,13 +16,19 @@ export const ProjectAgreementSummaryCard = ({
         >
             <dl className="margin-0 padding-y-2 padding-x-3">
                 <dt className="margin-0">Project</dt>
-                <dd className="margin-0 text-bold margin-top-1" style={{ fontSize: "1.375rem" }}>
+                <dd
+                    className="margin-0 text-bold margin-top-1"
+                    style={{ fontSize: "1.375rem" }}
+                >
                     {title}
                 </dd>
                 {selectedAgreement?.name && (
                     <>
                         <dt className="margin-0 margin-top-205">Agreement</dt>
-                        <dd className="margin-0 text-bold margin-top-1" style={{ fontSize: "1.375rem" }}>
+                        <dd
+                            className="margin-0 text-bold margin-top-1"
+                            style={{ fontSize: "1.375rem" }}
+                        >
                             {agreementName}
                         </dd>
                     </>
@@ -44,19 +50,19 @@ export const ProjectAgreementSummaryCard = ({
 
 ProjectAgreementSummaryCard.propTypes = {
     selectedResearchProject: PropTypes.shape({
-        title: PropTypes.string,
+        title: PropTypes.string
     }),
     selectedAgreement: PropTypes.oneOfType([
         PropTypes.shape({
-            name: PropTypes.string,
+            name: PropTypes.string
         }),
-        PropTypes.number,
+        PropTypes.number
     ]),
 
     selectedProcurementShop: PropTypes.shape({
         name: PropTypes.string,
-        fee: PropTypes.number,
-    }),
+        fee: PropTypes.number
+    })
 };
 
 export default ProjectAgreementSummaryCard;

@@ -1,13 +1,15 @@
-import React from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import _ from "lodash";
 import App from "../../../App";
-import { useGetBudgetLineItemsQuery, useGetCansQuery, useGetAgreementsQuery } from "../../../api/opsAPI";
+import { useGetAgreementsQuery, useGetBudgetLineItemsQuery, useGetCansQuery } from "../../../api/opsAPI";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
-import Alert from "../../../components/UI/Alert";
-import TablePageLayout from "../../../components/UI/Layouts/TablePageLayout";
-import AllBudgetLinesTable from "../../../components/UI/AllBudgetLinesTable";
+import TablePageLayout from "../../../components/Layouts/TablePageLayout";
+import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLinesTable";
+import BLIFilterButton from "./BLIFilterButton";
+import SummaryCardsSection from "../../../components/BudgetLineItems/SummaryCardsSection";
+import BLIFilterTags from "./BLIFilterTags";
 
 /**
  * Page for the Budget Line Item List.
@@ -15,18 +17,20 @@ import AllBudgetLinesTable from "../../../components/UI/AllBudgetLinesTable";
  */
 export const BudgetLineItemList = () => {
     const [searchParams] = useSearchParams();
-    const isAlertActive = useSelector((state) => state.alert.isActive);
-    const [filters, setFilters] = React.useState({});
-
+    const activeUser = useSelector((state) => state?.auth?.activeUser);
+    const [filters, setFilters] = useState({
+        fiscalYears: [],
+        portfolios: [],
+        bliStatus: []
+    });
     const {
         data: budgetLineItems,
         error: budgetLineItemsError,
-        isLoading: budgetLineItemsIsLoading,
+        isLoading: budgetLineItemsIsLoading
     } = useGetBudgetLineItemsQuery();
     const { data: cans, error: cansError, isLoading: cansIsLoading } = useGetCansQuery();
     const { data: agreements, error: agreementsError, isLoading: agreementsAreError } = useGetAgreementsQuery();
 
-    const activeUser = useSelector((state) => state.auth.activeUser);
     const myBudgetLineItemsUrl = searchParams.get("filter") === "my-budget-line-items";
 
     if (budgetLineItemsIsLoading || cansIsLoading || agreementsAreError) {
@@ -44,10 +48,47 @@ export const BudgetLineItemList = () => {
         );
     }
 
-    const sortBLIs = () => {};
-
     // FILTERS
     let filteredBudgetLineItems = _.cloneDeep(budgetLineItems);
+
+    // filter by fiscal year
+    filteredBudgetLineItems = filteredBudgetLineItems.filter((bli) => {
+        return (
+            _.isNull(filters.fiscalYears) ||
+            _.isEmpty(filters.fiscalYears) ||
+            filters.fiscalYears.some((fy) => {
+                return fy.id === bli.fiscal_year;
+            })
+        );
+    });
+
+    // filter by portfolio
+    filteredBudgetLineItems = filteredBudgetLineItems.filter((bli) => {
+        return (
+            _.isNull(filters.portfolios) ||
+            _.isEmpty(filters.portfolios) ||
+            filters.portfolios.some((portfolio) => {
+                return portfolio.id === bli.portfolio_id;
+            })
+        );
+    });
+
+    // filter by BLI status
+    filteredBudgetLineItems = filteredBudgetLineItems.filter((bli) => {
+        return (
+            _.isNull(filters.bliStatus) ||
+            _.isEmpty(filters.bliStatus) ||
+            filters.bliStatus.some((bliStatus) => {
+                return bliStatus.status === bli.status;
+            })
+        );
+    });
+
+    const sortBLIs = (blis) => {
+        return blis.sort((a, b) => {
+            return new Date(a.date_needed) - new Date(b.date_needed);
+        });
+    };
 
     let sortedBLIs = [];
     if (myBudgetLineItemsUrl) {
@@ -63,22 +104,26 @@ export const BudgetLineItemList = () => {
     console.log("filters", filters);
     console.log("setFilters", setFilters);
     console.log("activeUser", activeUser);
+    console.log("budgetLineItems", budgetLineItems);
+    console.log("filteredBudgetLineItems", filteredBudgetLineItems);
     console.log("sortedBLIs", sortedBLIs);
 
-    const budgetLinesWithCanAndAgreementName = budgetLineItems.map((budgetLine) => {
+    const budgetLinesWithCanAndAgreementName = sortedBLIs.map((budgetLine) => {
         const can = cans.find((can) => can.id === budgetLine.can_id);
         const agreement = agreements.find((agreement) => agreement.id === budgetLine.agreement_id);
+        const procurementShopAbbr = agreement?.procurement_shop?.abbr;
+
         return {
             ...budgetLine,
             can_number: can?.number,
             agreement_name: agreement?.name,
+            procShopCode: procurementShopAbbr
         };
     });
 
     return (
         <App>
             <Breadcrumb currentName={"Budget Lines"} />
-            {isAlertActive && <Alert />}
             <TablePageLayout
                 title="Budget Lines"
                 subtitle={myBudgetLineItemsUrl ? "My Budget Lines" : "All Budget Lines"}
@@ -89,7 +134,20 @@ export const BudgetLineItemList = () => {
                 }
                 buttonText="Add Budget Lines"
                 buttonLink="/budget-lines/create"
+                FilterTags={
+                    <BLIFilterTags
+                        filters={filters}
+                        setFilters={setFilters}
+                    />
+                }
                 TableSection={<AllBudgetLinesTable budgetLines={budgetLinesWithCanAndAgreementName} />}
+                FilterButton={
+                    <BLIFilterButton
+                        filters={filters}
+                        setFilters={setFilters}
+                    />
+                }
+                SummaryCardsSection={<SummaryCardsSection budgetLines={budgetLinesWithCanAndAgreementName} />}
             />
         </App>
     );

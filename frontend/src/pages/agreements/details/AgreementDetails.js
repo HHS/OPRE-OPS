@@ -4,6 +4,7 @@ import AgreementValuesCard from "../../../components/Agreements/AgreementDetails
 import AgreementDetailHeader from "./AgreementDetailHeader";
 import AgreementDetailsView from "./AgreementDetailsView";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
+import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
 
 /**
  * Renders the details of an agreement, including budget lines, spending, and other information.
@@ -28,10 +29,10 @@ const AgreementDetails = ({ agreement, projectOfficer, isEditMode, setIsEditMode
         p[status]++;
         return p;
     }, {});
-    const areAnyBudgetLinesInExecuting = blis.some((bli) => bli.status === "IN_EXECUTION");
-    const areAnyBudgetLinesObligated = blis.some((bli) => bli.status === "OBLIGATED");
 
-    const isEditable = !(areAnyBudgetLinesInExecuting || areAnyBudgetLinesObligated);
+    const isAgreementEditable = useIsAgreementEditable(agreement?.id);
+    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
+    const isEditable = isAgreementEditable && canUserEditAgreement;
 
     return (
         <div>
@@ -58,7 +59,10 @@ const AgreementDetails = ({ agreement, projectOfficer, isEditMode, setIsEditMode
                     setIsEditMode={setIsEditMode}
                 />
             ) : (
-                <AgreementDetailsView agreement={agreement} projectOfficer={projectOfficer} />
+                <AgreementDetailsView
+                    agreement={agreement}
+                    projectOfficer={projectOfficer}
+                />
             )}
         </div>
     );
@@ -68,7 +72,7 @@ AgreementDetails.propTypes = {
     agreement: PropTypes.object.isRequired,
     projectOfficer: PropTypes.object.isRequired,
     isEditMode: PropTypes.bool.isRequired,
-    setIsEditMode: PropTypes.func.isRequired,
+    setIsEditMode: PropTypes.func.isRequired
 };
 
 export default AgreementDetails;

@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
  * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
  * @param {boolean} [props.clearWhenSet] - Whether to clear the box when an option is selected.
+ * @param {boolean} [props.isMulti] - Whether to allow multiple selections.
  * Used for TeamMemberComboBox. (optional).
  * @returns {JSX.Element} - The rendered component.
  */
@@ -27,6 +28,7 @@ export const ComboBox = ({
     messages = [],
     overrideStyles = {},
     clearWhenSet = false,
+    isMulti = false
 }) => {
     const [selectedOption, setSelectedOption] = useState(null);
 
@@ -38,39 +40,55 @@ export const ComboBox = ({
         control: (provided, state) => ({
             ...provided,
             background: "#fff",
-            borderColor: "565c65",
+            borderColor: "#565c65",
             minHeight: "40px",
-            height: "40px",
             boxShadow: state.isFocused ? null : null,
             outline: state.isFocused ? "0.25rem solid #2491ff" : null,
             borderRadius: 0,
-            ...overrideStyles,
+            "&:hover": {
+                borderColor: "#565c65"
+            },
+            ...overrideStyles
         }),
 
         placeholder: (provided) => ({
             ...provided,
-            color: "#1b1b1b",
+            color: "#565C65"
         }),
 
         valueContainer: (provided) => ({
             ...provided,
-            height: "40px",
-            padding: "0 6px",
+            padding: "0 6px"
         }),
 
         input: (provided) => ({
             ...provided,
-            margin: "0px",
+            margin: "0px"
         }),
 
         indicatorSeparator: () => ({
-            display: "none",
+            display: "none"
         }),
 
         indicatorsContainer: (provided) => ({
             ...provided,
-            height: "40px",
+            height: "40px"
         }),
+
+        clearIndicator: (provided) => ({
+            ...provided,
+            color: "#1b1b1b"
+        }),
+
+        dropdownIndicator: (provided) => ({
+            ...provided,
+            color: "#1b1b1b"
+        }),
+
+        multiValueLabel: (provided) => ({
+            ...provided,
+            color: "#1b1b1b"
+        })
     };
 
     useEffect(() => {
@@ -88,12 +106,28 @@ export const ComboBox = ({
         setSelectedOption(null);
     };
 
-    const handleChangeDefault = (optionId) => {
-        const optionObj = data.find((item) => item.id === Number(optionId));
-        setSelectedData(optionObj);
+    const handleChangeDefault = (event) => {
+        if (Array.isArray(event)) {
+            const selectedOptionObjs = [];
+            const selectedOptions = [];
+            for (let e of event) {
+                const optionId = e.value;
+                const optionObj = data.find((item) => item.id === Number(optionId));
+                selectedOptionObjs.push(optionObj);
 
-        const option = options.find((option) => option.value === Number(optionId));
-        setSelectedOption(option);
+                const option = options.find((option) => option.value === Number(optionId));
+                selectedOptions.push(option);
+            }
+            setSelectedData(selectedOptionObjs);
+            setSelectedOption(selectedOptions);
+        } else {
+            const optionId = event.value;
+            const optionObj = data.find((item) => item.id === Number(optionId));
+            setSelectedData(optionObj);
+
+            const option = options.find((option) => option.value === Number(optionId));
+            setSelectedOption(option);
+        }
     };
 
     const handleChange = (e, actionObj) => {
@@ -102,11 +136,18 @@ export const ComboBox = ({
         } else if (clearWhenSet) {
             clearWhenSetFunc(e.value);
         } else {
-            handleChangeDefault(e.value);
+            handleChangeDefault(e);
         }
     };
 
-    const defaultOption = selectedData ? options.find((option) => option.value === Number(selectedData?.id)) : null;
+    let defaultOption = [];
+    if (Array.isArray(selectedData)) {
+        for (let item of selectedData) {
+            defaultOption.push(options.find((option) => option.value === Number(item.id)));
+        }
+    } else {
+        defaultOption = selectedData ? options.find((option) => option.value === Number(selectedData?.id)) : null;
+    }
 
     return (
         <Select
@@ -122,6 +163,7 @@ export const ComboBox = ({
             styles={customStyles}
             isSearchable={true}
             isClearable={true}
+            isMulti={isMulti}
         />
     );
 };
@@ -139,4 +181,5 @@ ComboBox.propTypes = {
     messages: PropTypes.array,
     overrideStyles: PropTypes.object,
     clearWhenSet: PropTypes.bool,
+    isMulti: PropTypes.bool
 };

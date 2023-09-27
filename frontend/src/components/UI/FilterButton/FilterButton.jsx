@@ -26,7 +26,10 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList }) => {
     Modal.setAppElement("#root");
 
     return (
-        <div className={customStyles.container} id="filter-container">
+        <div
+            className={customStyles.container}
+            id="filter-container"
+        >
             <button
                 className={`usa-button ${
                     !showModal ? "usa-button--outline text-primary" : "bg-primary-darker"
@@ -49,14 +52,31 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList }) => {
                 overlayClassName={customStyles.filterOverlay}
             >
                 <div className="margin-left-2">
-                    <h1 className="text-bold font-sans-lg margin-bottom-205 margin-top-205">Filters</h1>
+                    <div className="display-flex flex-justify-space-between">
+                        <h1 className="text-bold font-sans-lg margin-bottom-205 margin-top-205">Filters</h1>
+                        <div className="margin-top-205 margin-right-205 padding-08">
+                            <svg
+                                className="usa-icon text-ink height-205 width-205 hover: cursor-pointer usa-tooltip"
+                                onClick={() => setShowModal(false)}
+                                id="filter-close"
+                            >
+                                <use xlinkHref={`${icons}#close`}></use>
+                            </svg>
+                        </div>
+                    </div>
                     {fieldsetList?.map((formField) => formField)}
                 </div>
                 <div className="display-flex flex-justify-end padding-right-1 padding-top-1 padding-bottom-1">
-                    <button className="usa-button usa-button--outline" onClick={handleResetFilter}>
+                    <button
+                        className="usa-button usa-button--outline"
+                        onClick={handleResetFilter}
+                    >
                         <span className="">Reset</span>
                     </button>
-                    <button className="usa-button usa-button--primary" onClick={handleApplyFilter}>
+                    <button
+                        className="usa-button usa-button--primary"
+                        onClick={handleApplyFilter}
+                    >
                         <span>Apply</span>
                     </button>
                 </div>

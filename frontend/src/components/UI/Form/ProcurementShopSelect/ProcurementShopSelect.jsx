@@ -25,12 +25,12 @@ export const ProcurementShopSelect = ({
     onChangeSelectedProcurementShop,
     legendClassname = "",
     defaultString = "-Select Procurement Shop-",
-    defaultToGCS = true,
+    defaultToGCS = true
 }) => {
     const {
         data: procurementShops,
         error: errorProcurementShops,
-        isLoading: isLoadingProcurementShops,
+        isLoading: isLoadingProcurementShops
     } = useGetProcurementShopsQuery();
 
     useEffect(() => {
@@ -52,14 +52,17 @@ export const ProcurementShopSelect = ({
         const procurementShop = {
             id: procurementShops[procurementShopId - 1].id,
             name: procurementShops[procurementShopId - 1].name,
-            fee: procurementShops[procurementShopId - 1].fee,
+            fee: procurementShops[procurementShopId - 1].fee
         };
         onChangeSelectedProcurementShop(procurementShop);
     };
 
     return (
         <fieldset className="usa-fieldset">
-            <label className={`usa-label margin-top-0 ${legendClassname}`} htmlFor="procurement-shop-select">
+            <label
+                className={`usa-label margin-top-0 ${legendClassname}`}
+                htmlFor="procurement-shop-select"
+            >
                 Procurement Shop
             </label>
             <div className="display-flex flex-align-center">
@@ -73,7 +76,10 @@ export const ProcurementShopSelect = ({
                 >
                     <option value="0">{defaultString}</option>
                     {procurementShops.map((shop) => (
-                        <option key={shop?.id} value={shop?.id}>
+                        <option
+                            key={shop?.id}
+                            value={shop?.id}
+                        >
                             {shop?.name} ({shop?.abbr})
                         </option>
                     ))}

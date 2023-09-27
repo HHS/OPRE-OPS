@@ -5,10 +5,11 @@ import jwt_decode from "jwt-decode";
 import icons from "../../../uswds/img/sprite.svg";
 import customStyles from "./NotificationCenter.module.css";
 import LogItem from "../LogItem";
+import { getAccessToken } from "../../Auth/auth";
 
 const NotificationCenter = () => {
     const [showModal, setShowModal] = React.useState(false);
-    const currentJWT = localStorage.getItem("access_token");
+    const currentJWT = getAccessToken();
     let userId = "";
 
     if (currentJWT) {
@@ -21,7 +22,7 @@ const NotificationCenter = () => {
     const {
         data: notifications,
         error,
-        isLoading,
+        isLoading
     } = useGetNotificationsByUserIdQuery(userId, { pollingInterval: 5000 });
 
     if (isLoading) {
@@ -91,7 +92,10 @@ const NotificationCenter = () => {
                             </button>
                         </div>
                         {unreadNotifications.length > 0 ? (
-                            <ul className={customStyles.listStyle} data-cy="notification-center-list">
+                            <ul
+                                className={customStyles.listStyle}
+                                data-cy="notification-center-list"
+                            >
                                 {unreadNotifications.map((notification) => (
                                     <LogItem
                                         key={notification.id}

@@ -6,7 +6,7 @@ import { useGetResearchProjectsQuery } from "../../api/opsAPI";
 import {
     useEditAgreement,
     useSetState,
-    useUpdateAgreement,
+    useUpdateAgreement
 } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import EditModeTitle from "./EditModeTitle";
 import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
@@ -52,7 +52,7 @@ export const StepSelectProject = ({ goToNext, isEditMode, isReviewMode, wizardSt
             handleConfirm: () => {
                 setModalProps({});
                 navigate("/");
-            },
+            }
         });
     };
 
@@ -72,7 +72,10 @@ export const StepSelectProject = ({ goToNext, isEditMode, isReviewMode, wizardSt
                 />
             )}
             <EditModeTitle isEditMode={isEditMode || isReviewMode} />
-            <StepIndicator steps={wizardSteps} currentStep={currentStep} />
+            <StepIndicator
+                steps={wizardSteps}
+                currentStep={currentStep}
+            />
             <h2 className="font-sans-lg">Select a Project</h2>
             <p>
                 Select a project the agreement should be associated with. If you need to create a new project, click Add

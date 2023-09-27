@@ -13,19 +13,19 @@ const productServiceCodesData = [
         id: 1,
         naics: 541690,
         name: "Other Scientific and Technical Consulting Services",
-        support_code: "R410 - Research",
+        support_code: "R410 - Research"
     },
     {
         id: 2,
         naics: 561920,
         name: "Convention and Trade Shows",
-        support_code: "R706 - Support",
-    },
+        support_code: "R706 - Support"
+    }
 ];
 
 jest.mock("../../../api/opsAPI", () => ({
     ...jest.requireActual("../../../api/opsAPI"),
-    useGetProductServiceCodesQuery: () => jest.fn(() => ({ data: productServiceCodesData })),
+    useGetProductServiceCodesQuery: () => jest.fn(() => ({ data: productServiceCodesData }))
 }));
 
 // eslint-disable-next-line react/display-name
@@ -38,17 +38,17 @@ jest.mock("@nivo/bar", () => ({
     __esModule: true,
     ResponsiveBar: () => {
         return <div />;
-    },
+    }
 }));
 
 jest.mock("react-router-dom", () => ({
     ...jest.requireActual("react-router-dom"),
-    useNavigate: () => jest.fn(),
+    useNavigate: () => jest.fn()
 }));
 
 jest.mock("react", () => ({
     ...jest.requireActual("react"),
-    useState: () => [null, jest.fn()],
+    useState: () => [null, jest.fn()]
 }));
 
 // This will reset all mocks after each test
@@ -67,13 +67,13 @@ describe("AgreementDetailsEdit", () => {
         agreement_type: "CONTRACT",
         product_service_code: {
             name: "Test PSC",
-            naics: "Test NAICS",
+            naics: "Test NAICS"
         },
 
         procurement_shop: {
             abbr: "NIH",
             fee: 0.005,
-            name: "National Institute of Health",
+            name: "National Institute of Health"
         },
         agreement_reason: "RECOMPETE",
         incumbent: "Test Incumbent",
@@ -81,25 +81,25 @@ describe("AgreementDetailsEdit", () => {
         team_members: [
             {
                 full_name: "Amy Madigan",
-                id: 2,
+                id: 2
             },
             {
                 full_name: "Ivelisse Martinez-Beck",
-                id: 3,
-            },
+                id: 3
+            }
         ],
         budget_line_items: [
             { amount: 100, date_needed: "2024-05-02T11:00:00", status: "DRAFT" },
-            { amount: 200, date_needed: "2023-03-02T11:00:00", status: "UNDER_REVIEW" },
+            { amount: 200, date_needed: "2023-03-02T11:00:00", status: "UNDER_REVIEW" }
         ],
         created_by: "user1",
         notes: "Test notes",
-        created_on: "2021-10-21T03:24:00",
+        created_on: "2021-10-21T03:24:00"
     };
 
     const projectOfficer = {
         full_name: "Chris Fortunato",
-        id: 1,
+        id: 1
     };
 
     test("renders correctly", () => {
@@ -107,7 +107,10 @@ describe("AgreementDetailsEdit", () => {
 
         render(
             <Provider store={store}>
-                <Router location={history.location} navigator={history}>
+                <Router
+                    location={history.location}
+                    navigator={history}
+                >
                     <AgreementDetailsEdit
                         agreement={agreement}
                         projectOfficer={projectOfficer}
