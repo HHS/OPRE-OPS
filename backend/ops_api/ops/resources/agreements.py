@@ -313,7 +313,8 @@ class AgreementListAPI(BaseListAPI):
                 pass  # Do nothing if only filters are provided
 
         for key, value in filter_args.items():
-            query_helper.add_column_equals(Agreement.get_class_field(key), value)
+            with suppress(ValueError):
+                query_helper.add_column_equals(Agreement.get_class_field(key), value)
 
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")

@@ -14,11 +14,13 @@ from flask_jwt_extended import (
 from models.events import OpsEventType
 from ops_api.ops.utils.auth import create_oauth_jwt, decode_user
 from ops_api.ops.utils.authentication import AuthenticationGateway
+from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import register_user
 
 
+@error_simulator
 def login() -> Union[Response, tuple[str, int]]:
     try:
         auth_code = request.json.get("code")
@@ -85,6 +87,7 @@ def login() -> Union[Response, tuple[str, int]]:
 
 
 @jwt_required(True)
+@error_simulator
 def logout() -> Union[Response, tuple[str, int]]:
     with OpsEventHandler(OpsEventType.LOGOUT) as la:
         try:
@@ -175,6 +178,7 @@ def _get_token_and_user_data_from_oauth_provider(provider: str, auth_code: str):
 # We are using the `refresh=True` options in jwt_required to only allow
 # refresh tokens to access this route.
 @jwt_required(refresh=True, verify_type=True, locations=["headers", "cookies"])
+@error_simulator
 def refresh() -> Response:
     user = get_current_user()
     if user:

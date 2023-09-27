@@ -67,6 +67,10 @@ cd ./backend/ops_api
 pytest
 ```
 
+Note: All backend API endpoints have the abililty to simulate an error response, for testing purposes for the frontend. This is accomplished
+through passing the `simulatedError=true` query parameter. It will automatically return a status code of 500 whenever this is done. It can
+be customized further by choosing the status code and passing that, so `simulatedError=400` sends back a 400 code rather than a 500 code. This will override any other processing the endpoint would normally do and just return the response, giving a simple mechanism for frontend development and/or testing to validate it works with error conditions from the backend.
+
 #### Frontend
 
 The frontend tests are implemented through [Jest](https://jestjs.io).

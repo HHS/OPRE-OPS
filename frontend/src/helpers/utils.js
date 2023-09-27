@@ -105,34 +105,40 @@ const codesToDisplayText = {
         "team-member": "Team Members",
         "budget-line-items": "Budget Line Items"
     },
-    className: {
+    classNameLabels: {
         ContractAgreement: "Contract Agreement",
         BudgetLineItem: "Budget Line"
     },
+    baseClassNameLabels: {
+        ContractAgreement: "Agreement",
+        BudgetLineItem: "Budget Line"
+    },
     agreementPropertyLabels: {
-        agreement_reason: "Agreement Reason",
+        agreement_reason: "Reason for Agreement",
         agreement_type: "Agreement Type",
-        description: "Description",
+        description: "Agreement Description",
         incumbent: "Incumbent",
-        name: "Title",
-        notes: "Notes",
+        name: "Agreement Title",
+        notes: "Agreement Notes",
         number: "Number",
         procurement_shop: "Procurement Shop",
         product_service_code: "Product Service Code",
         project_officer: "Project Officer",
         research_project: "Research Project",
         team_members: "Team Members",
+        team_members_item: "Team Member",
         contract_number: "Contract Number",
         vendor: "Vendor",
         delivered_status: "Delivered Status",
         contract_type: "Contract Type",
-        support_contacts: "Support Contacts"
+        support_contacts: "Support Contacts",
+        support_contacts_item: "Support Contact"
     },
     budgetLineItemPropertyLabels: {
         amount: "Amount",
         can: "CAN",
         comments: "Notes",
-        date_needed: "Date Needed By",
+        date_needed: "Need By Date",
         line_description: "Description",
         proc_shop_fee_percentage: "Shop Fee",
         status: "Status"
@@ -141,7 +147,7 @@ const codesToDisplayText = {
 
 /**
  * Converts a code value into a display text value based on a predefined mapping.
- * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "className: | "agreementPropertyLabels" | "budgetLineItemPropertyLabels")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
+ * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "classNameLabels" | "baseClassNameLabels"| "agreementPropertyLabels" | "budgetLineItemPropertyLabels")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
  * @param {string} code - The code value to convert. This parameter is required.
  * @returns {string} The display text value for the code, or the original code value if no mapping is found.
  * @throws {Error} If either the listName or code parameter is not provided.
@@ -195,7 +201,10 @@ export const timeAgo = (dateParam) => {
         return `${minutes} minutes ago`;
     }
 
-    return formatDateToMonthDayYear(date);
+    return new Date(date).toLocaleString("en-US", {
+        dateStyle: "long",
+        timeStyle: "short"
+    });
 };
 
 /**
@@ -235,4 +244,26 @@ export const totalBudgetLineFeeAmount = (amount, fee) => {
 export const totalBudgetLineAmountPlusFees = (amount, fee) => {
     if (amount === 0) return 0;
     return amount + fee;
+};
+
+export const renderField = (className, fieldName, value) => {
+    if (value == null) return value;
+    switch (className) {
+        // so far, this doesn't depend on className and the same field names are the same types for every class
+        default:
+            switch (fieldName) {
+                case "date_needed":
+                    return formatDateNeeded(value);
+                case "amount":
+                    return "$" + value?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                case "agreement_reason":
+                    return convertCodeForDisplay("agreementReason", value);
+                case "agreement_type":
+                    return convertCodeForDisplay("agreementType", value);
+                case "status":
+                    return convertCodeForDisplay("budgetLineStatus", value);
+                default:
+                    return value;
+            }
+    }
 };

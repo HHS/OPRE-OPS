@@ -15,13 +15,13 @@ const testAgreement = {
     project_officer: 1,
     team_members: [
         {
-            id: 3,
+            id: 3
         },
         {
-            id: 5,
-        },
+            id: 5
+        }
     ],
-    notes: "Test Notes",
+    notes: "Test Notes"
 };
 
 beforeEach(() => {
@@ -46,8 +46,8 @@ it("edit an agreement", () => {
         headers: {
             Authorization: bearer_token,
             "Content-Type": "application/json",
-            Accept: "application/json",
-        },
+            Accept: "application/json"
+        }
     }).then((response) => {
         expect(response.status).to.eq(201);
         expect(response.body.id).to.exist;
@@ -55,7 +55,7 @@ it("edit an agreement", () => {
 
         cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
         cy.visit(`/agreements/edit/${agreementId}?mode=edit`);
-        cy.get("h1").should("have.text", "Edit Agreement");
+        cy.get("[data-cy='page-heading']").should("have.text", "Edit Agreement");
         cy.get("#continue").click();
         // test validation
         cy.get("#name").clear();
@@ -80,7 +80,7 @@ it("edit an agreement", () => {
             })
             .then(cy.log);
 
-        cy.get("h1").should("have.text", "Edit Agreement");
+        cy.get("[data-cy='page-heading']").should("have.text", "Edit Agreement");
         cy.get("h2").first().should("have.text", "Budget Line Details");
 
         cy.get('[data-cy="continue-btn"]').click();
@@ -93,8 +93,8 @@ it("edit an agreement", () => {
             url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
             headers: {
                 Authorization: bearer_token,
-                Accept: "application/json",
-            },
+                Accept: "application/json"
+            }
         }).then((response) => {
             expect(response.status).to.eq(200);
         });
