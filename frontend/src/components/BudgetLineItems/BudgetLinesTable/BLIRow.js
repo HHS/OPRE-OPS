@@ -16,6 +16,7 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import { removeBorderBottomIfExpanded, changeBgColorIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
+import { futureDateErrorClass, addErrorClassIfNotFound } from "./BLIRow.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
 
 /**
@@ -59,58 +60,46 @@ const BLIRow = ({
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
 
-    const addErrorClassIfNotFound = (item) => {
-        if (isReviewMode && !item) {
-            return "table-item-error";
-        } else {
-            return "";
-        }
-    };
-    // error class for need_by_date to be in the future
-    const futureDateErrorClass = (item) => {
-        const today = new Date().valueOf();
-        const dateNeeded = new Date(item).valueOf();
-
-        if (isReviewMode && dateNeeded < today) {
-            return "table-item-error";
-        } else {
-            return "";
-        }
-    };
-
     const TableRowData = (
         <>
             <th
                 scope="row"
-                className={`${addErrorClassIfNotFound(budgetLine?.line_description)} ${borderExpandedStyles}`}
+                className={`${addErrorClassIfNotFound(
+                    budgetLine?.line_description,
+                    isReviewMode
+                )} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 {budgetLine?.line_description}
             </th>
             <td
                 className={`${futureDateErrorClass(
-                    formatDateNeeded(budgetLine?.date_needed)
-                )} ${addErrorClassIfNotFound(formatDateNeeded(budgetLine?.date_needed))} ${borderExpandedStyles}`}
+                    formatDateNeeded(budgetLine?.date_needed),
+                    isReviewMode
+                )} ${addErrorClassIfNotFound(
+                    formatDateNeeded(budgetLine?.date_needed),
+                    isReviewMode
+                )} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 {formatDateNeeded(budgetLine?.date_needed)}
             </td>
             <td
-                className={`${addErrorClassIfNotFound(
-                    fiscalYearFromDate(budgetLine?.date_needed)
-                )} ${borderExpandedStyles}`}
+                className={`${
+                    (addErrorClassIfNotFound(fiscalYearFromDate(budgetLine?.date_needed)), isReviewMode)
+                } ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 {fiscalYearFromDate(budgetLine?.date_needed)}
             </td>
             <td
-                className={`${addErrorClassIfNotFound(budgetLine?.can?.number)} ${borderExpandedStyles}`}
+                className={`${addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 {budgetLine?.can?.number}
             </td>
             <td
-                className={`${addErrorClassIfNotFound(budgetLine?.amount)} ${borderExpandedStyles}`}
+                className={`${addErrorClassIfNotFound(budgetLine?.amount, isReviewMode)} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 <CurrencyFormat

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
+// import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import _ from "lodash";
 import App from "../../../App";
@@ -17,7 +17,7 @@ import BLIFilterTags from "./BLIFilterTags";
  */
 export const BudgetLineItemList = () => {
     const [searchParams] = useSearchParams();
-    const activeUser = useSelector((state) => state?.auth?.activeUser);
+    // const activeUser = useSelector((state) => state?.auth?.activeUser);
     const [filters, setFilters] = useState({
         fiscalYears: [],
         portfolios: [],
