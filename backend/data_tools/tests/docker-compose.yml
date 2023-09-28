@@ -12,5 +12,7 @@ services:
       - POSTGRES_PASSWORD=local_password  # pragma: allowlist secret
     read_only: true  # Resolve semgrep https://sg.run/e4JE
     tmpfs: /var/run/postgresql/
+    volumes:
+      - ../ops_db_sql_init:/docker-entrypoint-initdb.d
     ports:
       - "54321:5432"
