@@ -6,6 +6,11 @@ import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTab
 import StepCreateBudgetLines from "../../../components/UI/WizardSteps/StepCreateBudgetLines/StepCreateBudgetLines";
 import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
 import useAlert from "../../../helpers/use-alert";
+import AgreementTotalBudgetLinesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalBudgetLinesCard";
+import AgreementValuesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementValuesCard";
+import { useState } from "react";
+import AgreementBudgetLinesHeader from "./AgreementBudgetLinesHeader";
+import { draftBudgetLineStatuses } from "../../../helpers/utils";
 
 /**
  * Renders Agreement budget lines view
@@ -17,8 +22,24 @@ import useAlert from "../../../helpers/use-alert";
  */
 export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
     const navigate = useNavigate();
+    const [includeDrafts, setIncludeDrafts] = useState(false);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const { setAlert } = useAlert();
+
+    // eslint-disable-next-line no-unused-vars
+    let { budget_line_items: _, ...agreement_details } = agreement;
+    // details for AgreementTotalBudgetLinesCard
+    const blis = agreement.budget_line_items ? agreement.budget_line_items : [];
+    const filteredBlis = includeDrafts ? blis : blis.filter((bli) => !draftBudgetLineStatuses.includes(bli.status));
+    const numberOfAgreements = filteredBlis.length;
+    const countsByStatus = filteredBlis.reduce((p, c) => {
+        const status = c.status;
+        if (!(status in p)) {
+            p[status] = 0;
+        }
+        p[status]++;
+        return p;
+    }, {});
 
     // if there are no BLIS than the user can edit
     if (agreement?.budget_line_items?.length === 0) {
@@ -27,6 +48,20 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
 
     return (
         <CreateBudgetLinesProvider>
+            <AgreementBudgetLinesHeader
+                heading="Budget Lines Summary"
+                details="The summary below shows a breakdown of all budget lines within this agreement."
+                includeDrafts={includeDrafts}
+                setIncludeDrafts={setIncludeDrafts}
+            />
+            <div className="display-flex flex-justify">
+                <AgreementTotalBudgetLinesCard
+                    numberOfAgreements={numberOfAgreements}
+                    countsByStatus={countsByStatus}
+                    includeDrafts={includeDrafts}
+                />
+                <AgreementValuesCard budgetLineItems={filteredBlis} />
+            </div>
             <AgreementDetailHeader
                 heading="Budget Lines"
                 details="This is a list of all budget lines within this agreement."

@@ -1,6 +1,4 @@
 import PropTypes from "prop-types";
-import AgreementTotalBudgetLinesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalBudgetLinesCard";
-import AgreementValuesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementValuesCard";
 import AgreementDetailHeader from "./AgreementDetailHeader";
 import AgreementDetailsView from "./AgreementDetailsView";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
@@ -18,18 +16,6 @@ import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../.
 const AgreementDetails = ({ agreement, projectOfficer, isEditMode, setIsEditMode }) => {
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
-    // details for AgreementTotalBudgetLinesCard
-    const blis = agreement.budget_line_items ? agreement.budget_line_items : [];
-    const numberOfAgreements = blis.length;
-    const countsByStatus = blis.reduce((p, c) => {
-        const status = c.status;
-        if (!(status in p)) {
-            p[status] = 0;
-        }
-        p[status]++;
-        return p;
-    }, {});
-
     const isAgreementEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const isEditable = isAgreementEditable && canUserEditAgreement;
@@ -37,20 +23,12 @@ const AgreementDetails = ({ agreement, projectOfficer, isEditMode, setIsEditMode
     return (
         <div>
             <AgreementDetailHeader
-                heading="Agreement Summary"
-                details="The summary below shows the budget lines and spending for this agreement."
+                heading="Agreement Details"
+                details=""
                 isEditMode={isEditMode}
                 setIsEditMode={setIsEditMode}
                 isEditable={isEditable}
             />
-            <div className="display-flex flex-justify">
-                <AgreementTotalBudgetLinesCard
-                    numberOfAgreements={numberOfAgreements}
-                    countsByStatus={countsByStatus}
-                />
-                <AgreementValuesCard budgetLineItems={blis} />
-            </div>
-            <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
             {isEditMode ? (
                 <AgreementDetailsEdit
                     agreement={agreement}
