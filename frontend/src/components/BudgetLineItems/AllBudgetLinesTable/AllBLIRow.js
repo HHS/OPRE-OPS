@@ -12,9 +12,9 @@ import {
     totalBudgetLineFeeAmount,
     totalBudgetLineAmountPlusFees
 } from "../../../helpers/utils";
-import useGetUserFullNameFromId from "../../../helpers/user-hooks";
-import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../helpers/budget-line-hooks";
-import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
+import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -45,6 +45,16 @@ const AllBLIRow = ({
     // styles for the table row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
     const changeBgColorIfExpanded = { backgroundColor: isExpanded && "var(--neutral-lightest)" };
+
+    const changeIcons = (
+        <ChangeIcons
+            item={budgetLine}
+            handleDeleteItem={handleDeleteBudgetLine}
+            handleSetItemForEditing={handleSetBudgetLineForEditing}
+            isItemEditable={isBudgetLineEditable}
+            duplicateIcon={false}
+        />
+    );
 
     const TableRowData = (
         <>
@@ -102,15 +112,7 @@ const AllBLIRow = ({
                 style={changeBgColorIfExpanded}
             >
                 {isRowActive && !isExpanded && !readOnly ? (
-                    <div>
-                        <ChangeIcons
-                            budgetLine={budgetLine}
-                            handleDeleteBudgetLine={handleDeleteBudgetLine}
-                            handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
-                            isBudgetLineEditable={isBudgetLineEditable}
-                            duplicateIcon={false}
-                        />
-                    </div>
+                    <div>{changeIcons}</div>
                 ) : (
                     <TableTag status={budgetLine.status} />
                 )}
@@ -201,17 +203,7 @@ const AllBLIRow = ({
                         </dl>
                     </div>
                 </div>
-                <div className="flex-align-self-end margin-left-auto margin-bottom-1">
-                    {!readOnly && (
-                        <ChangeIcons
-                            budgetLine={budgetLine}
-                            handleDeleteBudgetLine={handleDeleteBudgetLine}
-                            handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
-                            isBudgetLineEditable={isBudgetLineEditable}
-                            duplicateIcon={false}
-                        />
-                    )}
-                </div>
+                <div className="flex-align-self-end margin-left-auto margin-bottom-1">{!readOnly && changeIcons}</div>
             </div>
         </td>
     );

@@ -13,7 +13,7 @@ import suite from "./suite";
 import { convertCodeForDisplay } from "../../../../helpers/utils";
 import ConfirmationModal from "../../Modals/ConfirmationModal";
 import { useUpdateBudgetLineItemMutation, useAddBudgetLineItemMutation } from "../../../../api/opsAPI";
-import useAlert from "../../../../helpers/use-alert";
+import useAlert from "../../../../hooks/use-alert.hooks";
 
 /**
  * Renders the Create Budget Lines component with React context.
@@ -111,6 +111,7 @@ export const StepCreateBudgetLines = ({
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
 
+    // TODO: Refactor to use custom hooks
     const handleSubmitForm = (e) => {
         e.preventDefault();
         dispatch({

@@ -8,7 +8,7 @@ import TextArea from "../../components/UI/Form/TextArea";
 import suite from "./suite";
 import classnames from "vest/classnames";
 import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
-import useAlert from "../../helpers/use-alert";
+import useAlert from "../../hooks/use-alert.hooks";
 
 const CreateProject = () => {
     const [showModal, setShowModal] = useState(false);
