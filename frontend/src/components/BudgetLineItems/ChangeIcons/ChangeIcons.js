@@ -11,6 +11,7 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {Object} props.item - The item or data for the row.
  * @param {boolean} props.isItemEditable - Whether the item is editable.
  * @param {function} props.handleSetItemForEditing - The function to set the row item for editing.
+ * @param {boolean} props.isItemDeletable - Whether the item is deletable.
  * @param {function} props.handleDeleteItem - The function to delete the row.
  * @param {function} [props.handleDuplicateItem] - The function to duplicate the row.
  * @param {boolean} [props.duplicateIcon] - Whether to show the duplicate icon.
@@ -23,22 +24,27 @@ const ChangeIcons = ({
     item,
     isItemEditable = false,
     handleSetItemForEditing = () => {},
+    isItemDeletable = false,
     handleDeleteItem = () => {},
     handleDuplicateItem = () => {},
     duplicateIcon = true,
     sendToReviewIcon = false,
     handleSubmitItemForApproval = () => {}
 }) => {
+    if (!isItemEditable) {
+        return (
+            <DisabledChangeIcons
+                duplicateIcon={duplicateIcon}
+                sendToReviewIcon={sendToReviewIcon}
+                handleDuplicateItem={() => handleDuplicateItem(item)}
+            />
+        );
+    }
+
     return (
         <>
-            {!isItemEditable && (
-                <DisabledChangeIcons
-                    duplicateIcon={duplicateIcon}
-                    handleDuplicateBudgetLine={() => handleDuplicateItem(item)}
-                />
-            )}
-            {isItemEditable && (
-                <div className="display-flex flex-align-center">
+            <div className="display-flex flex-align-center">
+                {isItemEditable && (
                     <FontAwesomeIcon
                         id={`edit-${item?.id}`}
                         data-cy="edit-row"
@@ -48,39 +54,40 @@ const ChangeIcons = ({
                         data-position="top"
                         onClick={() => handleSetItemForEditing(item)}
                     />
+                )}
+                <FontAwesomeIcon
+                    id={`delete-${item?.id}`}
+                    data-cy="delete-row"
+                    data-testid="delete-row"
+                    icon={faTrash}
+                    title="delete"
+                    data-position="top"
+                    className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
+                    onClick={() => isItemDeletable && handleDeleteItem(item.id)}
+                />
+
+                {duplicateIcon && (
                     <FontAwesomeIcon
-                        id={`delete-${item?.id}`}
-                        data-cy="delete-row"
-                        data-testid="delete-row"
-                        icon={faTrash}
-                        title="delete"
+                        id={`duplicate-${item?.id}`}
+                        data-cy="duplicate-row"
+                        icon={faClone}
+                        title="duplicate"
                         data-position="top"
-                        className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
-                        onClick={() => handleDeleteItem(item.id)}
+                        className="text-primary height-2 width-2 cursor-pointer usa-tooltip margin-left-0"
+                        onClick={() => handleDuplicateItem(item)}
                     />
-                    {duplicateIcon && (
-                        <FontAwesomeIcon
-                            id={`duplicate-${item?.id}`}
-                            data-cy="duplicate-row"
-                            icon={faClone}
-                            title="duplicate"
-                            data-position="top"
-                            className="text-primary height-2 width-2 cursor-pointer usa-tooltip margin-left-0"
-                            onClick={() => handleDuplicateItem(item)}
-                        />
-                    )}
-                    {sendToReviewIcon && (
-                        <svg
-                            id={`submit-for-approval-${item.id}`}
-                            data-cy="submit-row"
-                            className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0"
-                            onClick={() => handleSubmitItemForApproval(item.id)}
-                        >
-                            <use xlinkHref={`${icons}#send`}></use>
-                        </svg>
-                    )}
-                </div>
-            )}
+                )}
+                {sendToReviewIcon && (
+                    <svg
+                        id={`submit-for-approval-${item.id}`}
+                        data-cy="submit-row"
+                        className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0"
+                        onClick={() => handleSubmitItemForApproval(item.id)}
+                    >
+                        <use xlinkHref={`${icons}#send`}></use>
+                    </svg>
+                )}
+            </div>
         </>
     );
 };
@@ -89,6 +96,7 @@ ChangeIcons.propTypes = {
     item: PropTypes.object.isRequired,
     isItemEditable: PropTypes.bool,
     handleSetItemForEditing: PropTypes.func,
+    isItemDeletable: PropTypes.bool,
     handleDeleteItem: PropTypes.func,
     handleDuplicateItem: PropTypes.func,
     duplicateIcon: PropTypes.bool,

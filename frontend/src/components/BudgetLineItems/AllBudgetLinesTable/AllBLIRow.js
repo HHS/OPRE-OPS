@@ -104,10 +104,11 @@ const AllBLIRow = ({
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>
                         <ChangeIcons
-                            budgetLine={budgetLine}
-                            handleDeleteBudgetLine={handleDeleteBudgetLine}
-                            handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
-                            isBudgetLineEditable={isBudgetLineEditable}
+                            item={budgetLine}
+                            handleDeleteItem={handleDeleteBudgetLine}
+                            handleSetItemForEditing={handleSetBudgetLineForEditing}
+                            isItemEditable={isBudgetLineEditable}
+                            isItemDeletable={isBudgetLineEditable}
                             duplicateIcon={false}
                         />
                     </div>
@@ -204,10 +205,11 @@ const AllBLIRow = ({
                 <div className="flex-align-self-end margin-left-auto margin-bottom-1">
                     {!readOnly && (
                         <ChangeIcons
-                            budgetLine={budgetLine}
-                            handleDeleteBudgetLine={handleDeleteBudgetLine}
-                            handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
-                            isBudgetLineEditable={isBudgetLineEditable}
+                            item={budgetLine}
+                            handleDeleteItem={handleDeleteBudgetLine}
+                            handleSetItemForEditing={handleSetBudgetLineForEditing}
+                            isItemEditable={isBudgetLineEditable}
+                            isItemDeletable={isBudgetLineEditable}
                             duplicateIcon={false}
                         />
                     )}

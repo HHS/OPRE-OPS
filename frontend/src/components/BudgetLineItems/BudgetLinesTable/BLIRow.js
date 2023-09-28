@@ -159,11 +159,12 @@ const BLIRow = ({
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>
                         <ChangeIcons
-                            budgetLine={budgetLine}
-                            handleDeleteBudgetLine={handleDeleteBudgetLine}
-                            handleDuplicateBudgetLine={handleDuplicateBudgetLine}
-                            handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
-                            isBudgetLineEditable={isBudgetLineEditable}
+                            item={budgetLine}
+                            handleDeleteItem={handleDeleteBudgetLine}
+                            handleDuplicateItem={handleDuplicateBudgetLine}
+                            handleSetItemForEditing={handleSetBudgetLineForEditing}
+                            isItemEditable={isBudgetLineEditable}
+                            isItemDeletable={isBudgetLineEditable}
                             duplicateIcon={true}
                         />
                     </div>
@@ -213,11 +214,13 @@ const BLIRow = ({
                     <div className="flex-align-self-end margin-left-auto margin-bottom-1">
                         {!readOnly && (
                             <ChangeIcons
-                                budgetLine={budgetLine}
-                                handleDeleteBudgetLine={handleDeleteBudgetLine}
-                                handleDuplicateBudgetLine={handleDuplicateBudgetLine}
-                                handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
-                                isBudgetLineEditable={isBudgetLineEditable}
+                                item={budgetLine}
+                                handleDeleteItem={handleDeleteBudgetLine}
+                                handleDuplicateItem={handleDuplicateBudgetLine}
+                                handleSetItemForEditing={handleSetBudgetLineForEditing}
+                                isItemEditable={isBudgetLineEditable}
+                                isItemDeletable={isBudgetLineEditable}
+                                duplicateIcon={true}
                             />
                         )}
                     </div>

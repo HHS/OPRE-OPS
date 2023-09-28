@@ -115,11 +115,13 @@ export const AgreementTableRow = ({ agreement }) => {
                     <div>
                         <ChangeIcons
                             item={agreement}
-                            isItemEditable={canUserDeleteAgreement}
+                            isItemEditable={canUserEditAgreement}
+                            isItemDeletable={canUserDeleteAgreement}
                             handleDeleteItem={handleDeleteAgreement}
                             handleSetItemForEditing={handleEditAgreement}
                             duplicateIcon={false}
                             sendToReviewIcon={true}
+                            handleSubmitItemForApproval={handleSubmitAgreementForApproval}
                         />
                     </div>
                 ) : (
@@ -161,8 +163,14 @@ export const AgreementTableRow = ({ agreement }) => {
                 </dl>
                 <div className="flex-align-self-end margin-left-auto margin-bottom-1">
                     <ChangeIcons
-                        agreement={agreement}
-                        status={agreementStatus}
+                        item={agreement}
+                        isItemEditable={canUserEditAgreement}
+                        isItemDeletable={canUserDeleteAgreement}
+                        handleDeleteItem={handleDeleteAgreement}
+                        handleSetItemForEditing={handleEditAgreement}
+                        duplicateIcon={false}
+                        sendToReviewIcon={true}
+                        handleSubmitItemForApproval={handleSubmitAgreementForApproval}
                     />
                 </div>
             </div>
