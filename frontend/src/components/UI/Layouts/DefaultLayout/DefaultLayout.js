@@ -3,7 +3,7 @@ import Header from "../../Header";
 import Footer from "../../Footer";
 import Alert from "../../Alert";
 import Breadcrumb from "../../Header/Breadcrumb";
-import useAlert from "../../../../helpers/use-alert";
+import useAlert from "../../../../hooks/use-alert.hooks";
 
 /**
  * DefaultLayout component

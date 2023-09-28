@@ -10,6 +10,7 @@ import cx from "clsx";
  * @param {boolean} [props.pending=false] - Whether the input field is pending.
  * @param {string[]} [props.messages=[]] - The error messages for the input field.
  * @param {string} props.value - The value of the input field.
+ * @param {int} props.maxLength - The maximum number of characters allow.
  * @param {string} [props.className] - The CSS class for the input field.
  * @returns {JSX.Element} - The textarea input component.
  */
@@ -21,8 +22,10 @@ export const TextArea = ({
     pending = false,
     messages = [],
     value,
+    maxLength,
     className
 }) => {
+    if (!hintMsg && maxLength) hintMsg = `Maximum ${maxLength} characters`;
     return (
         <div className="usa-character-count margin-top-3">
             <div className={cx("usa-form-group", pending && "pending", className)}>
@@ -55,6 +58,7 @@ export const TextArea = ({
                     name={name}
                     rows={5}
                     style={{ height: "7rem" }}
+                    maxLength={maxLength}
                     onChange={handleChange}
                     value={value}
                     aria-describedby={`${name}-with-hint-textarea-info ${name}-with-hint-textarea-hint`}
@@ -64,7 +68,7 @@ export const TextArea = ({
                 id={`${name}-with-hint-textarea-info`}
                 className="usa-character-count__message sr-only"
             >
-                You can enter up to 150 characters
+                You can enter up to {maxLength} characters
             </span>
         </div>
     );

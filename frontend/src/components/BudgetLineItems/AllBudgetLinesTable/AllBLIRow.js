@@ -12,9 +12,9 @@ import {
     totalBudgetLineFeeAmount,
     totalBudgetLineAmountPlusFees
 } from "../../../helpers/utils";
-import useGetUserFullNameFromId from "../../../helpers/user-hooks";
-import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../helpers/budget-line-hooks";
-import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
+import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -46,38 +46,48 @@ const AllBLIRow = ({
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
     const changeBgColorIfExpanded = { backgroundColor: isExpanded && "var(--neutral-lightest)" };
 
-    const TableRowData = ({ bl }) => (
+    const changeIcons = (
+        <ChangeIcons
+            item={budgetLine}
+            handleDeleteItem={handleDeleteBudgetLine}
+            handleSetItemForEditing={handleSetBudgetLineForEditing}
+            isItemEditable={isBudgetLineEditable}
+            duplicateIcon={false}
+        />
+    );
+
+    const TableRowData = (
         <>
             <th
                 scope="row"
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {bl.line_description}
+                {budgetLine.line_description}
             </th>
             <td
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {bl.agreement_name}
+                {budgetLine.agreement_name}
             </td>
             <td
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {formatDateNeeded(bl.date_needed)}
+                {formatDateNeeded(budgetLine.date_needed)}
             </td>
             <td
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {bl.fiscal_year}
+                {budgetLine.fiscal_year}
             </td>
             <td
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {bl.can_number}
+                {budgetLine.can_number}
             </td>
             <td
                 className={removeBorderBottomIfExpanded}
@@ -102,15 +112,7 @@ const AllBLIRow = ({
                 style={changeBgColorIfExpanded}
             >
                 {isRowActive && !isExpanded && !readOnly ? (
-                    <div>
-                        <ChangeIcons
-                            budgetLine={budgetLine}
-                            handleDeleteBudgetLine={handleDeleteBudgetLine}
-                            handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
-                            isBudgetLineEditable={isBudgetLineEditable}
-                            duplicateIcon={false}
-                        />
-                    </div>
+                    <div>{changeIcons}</div>
                 ) : (
                     <TableTag status={budgetLine.status} />
                 )}
@@ -118,7 +120,7 @@ const AllBLIRow = ({
         </>
     );
 
-    const ExpandedData = () => (
+    const ExpandedData = (
         <td
             colSpan={9}
             className="border-top-none"
@@ -201,24 +203,14 @@ const AllBLIRow = ({
                         </dl>
                     </div>
                 </div>
-                <div className="flex-align-self-end margin-left-auto margin-bottom-1">
-                    {!readOnly && (
-                        <ChangeIcons
-                            budgetLine={budgetLine}
-                            handleDeleteBudgetLine={handleDeleteBudgetLine}
-                            handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
-                            isBudgetLineEditable={isBudgetLineEditable}
-                            duplicateIcon={false}
-                        />
-                    )}
-                </div>
+                <div className="flex-align-self-end margin-left-auto margin-bottom-1">{!readOnly && changeIcons}</div>
             </div>
         </td>
     );
     return (
         <TableRowExpandable
-            tableRowData={<TableRowData bl={budgetLine} />}
-            expandedData={<ExpandedData />}
+            tableRowData={TableRowData}
+            expandedData={ExpandedData}
             isExpanded={isExpanded}
             isRowActive={isRowActive}
             setIsExpanded={setIsExpanded}
