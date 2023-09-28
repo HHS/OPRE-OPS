@@ -211,7 +211,7 @@ const BLIRow = ({
                         </dd>
                     </dl>
                     <div className="flex-align-self-end margin-left-auto margin-bottom-1">
-                        {!readOnly && changeIcons }
+                        {!readOnly && changeIcons}
                     </div>
                 </div>
             </td>

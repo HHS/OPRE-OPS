@@ -8,7 +8,7 @@ const handleAgreementProp = (agreement) => {
 
 export const getAgreementName = (agreement) => {
     handleAgreementProp(agreement);
-    return agreement.name;
+    return agreement.display_name;
 };
 
 export const getResearchProjectName = (agreement) => {

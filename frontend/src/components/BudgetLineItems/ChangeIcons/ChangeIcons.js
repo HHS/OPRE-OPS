@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClone } from "@fortawesome/free-regular-svg-icons";
 import DisabledChangeIcons from "./DisabledChangeIcons";
+import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
 import icons from "../../../uswds/img/sprite.svg";
 
 /**
@@ -60,10 +61,12 @@ const ChangeIcons = ({
                     data-cy="delete-row"
                     data-testid="delete-row"
                     icon={faTrash}
-                    title="delete"
+                    title={`${isItemDeletable ? "delete" : "cannot delete"}`}
                     data-position="top"
-                    className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
-                    onClick={() => isItemDeletable && handleDeleteItem(item.id)}
+                    className={`text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip ${
+                        !isItemDeletable ? DISABLED_ICON_CLASSES : ""
+                    }`}
+                    onClick={() => isItemDeletable && handleDeleteItem(item.id, item.display_name)}
                 />
 
                 {duplicateIcon && (

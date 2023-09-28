@@ -61,6 +61,19 @@ export const AgreementTableRow = ({ agreement }) => {
     const handleEditAgreement = useHandleEditAgreement();
     const { handleDeleteAgreement, modalProps, setShowModal, showModal } = useHandleDeleteAgreement();
 
+    const changeIcons = (
+        <ChangeIcons
+            item={agreement}
+            isItemEditable={canUserEditAgreement}
+            isItemDeletable={canUserDeleteAgreement}
+            handleDeleteItem={handleDeleteAgreement}
+            handleSetItemForEditing={handleEditAgreement}
+            duplicateIcon={false}
+            sendToReviewIcon={true}
+            handleSubmitItemForApproval={handleSubmitAgreementForApproval}
+        />
+    );
+
     const TableRowData = (
         <>
             <th
@@ -111,22 +124,7 @@ export const AgreementTableRow = ({ agreement }) => {
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {isRowActive && !isExpanded ? (
-                    <div>
-                        <ChangeIcons
-                            item={agreement}
-                            isItemEditable={canUserEditAgreement}
-                            isItemDeletable={canUserDeleteAgreement}
-                            handleDeleteItem={handleDeleteAgreement}
-                            handleSetItemForEditing={handleEditAgreement}
-                            duplicateIcon={false}
-                            sendToReviewIcon={true}
-                            handleSubmitItemForApproval={handleSubmitAgreementForApproval}
-                        />
-                    </div>
-                ) : (
-                    <TableTag status={agreementStatus} />
-                )}
+                {isRowActive && !isExpanded ? <div>{changeIcons}</div> : <TableTag status={agreementStatus} />}
             </td>
         </>
     );
@@ -161,18 +159,7 @@ export const AgreementTableRow = ({ agreement }) => {
                         {agreementNotes ? agreementNotes : "No notes added."}
                     </dd>
                 </dl>
-                <div className="flex-align-self-end margin-left-auto margin-bottom-1">
-                    <ChangeIcons
-                        item={agreement}
-                        isItemEditable={canUserEditAgreement}
-                        isItemDeletable={canUserDeleteAgreement}
-                        handleDeleteItem={handleDeleteAgreement}
-                        handleSetItemForEditing={handleEditAgreement}
-                        duplicateIcon={false}
-                        sendToReviewIcon={true}
-                        handleSubmitItemForApproval={handleSubmitAgreementForApproval}
-                    />
-                </div>
+                <div className="flex-align-self-end margin-left-auto margin-bottom-1">{changeIcons}</div>
             </div>
         </td>
     );
