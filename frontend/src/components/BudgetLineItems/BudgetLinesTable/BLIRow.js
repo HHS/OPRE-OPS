@@ -78,7 +78,7 @@ const BLIRow = ({
         }
     };
 
-    const TableRowData = () => (
+    const TableRowData = (
         <>
             <th
                 scope="row"
@@ -174,7 +174,7 @@ const BLIRow = ({
         </>
     );
 
-    const ExpandedData = () => (
+    const ExpandedData = (
         <>
             <td
                 colSpan={9}
@@ -219,8 +219,8 @@ const BLIRow = ({
     );
     return (
         <TableRowExpandable
-            tableRowData={<TableRowData />}
-            expandedData={<ExpandedData />}
+            tableRowData={TableRowData}
+            expandedData={ExpandedData}
             isExpanded={isExpanded}
             isRowActive={isRowActive}
             setIsExpanded={setIsExpanded}
