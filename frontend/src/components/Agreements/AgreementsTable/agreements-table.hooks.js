@@ -16,8 +16,8 @@ export const useAgreementApproval = () => {
 export const useHandleEditAgreement = () => {
     const navigate = useNavigate();
 
-    const handleEditAgreement = (id) => {
-        navigate(`/agreements/${id}?mode=edit`);
+    const handleEditAgreement = (agreement) => {
+        navigate(`/agreements/${agreement.id}?mode=edit`);
     };
 
     return handleEditAgreement;

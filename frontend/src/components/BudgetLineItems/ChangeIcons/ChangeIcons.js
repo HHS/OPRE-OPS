@@ -53,7 +53,7 @@ const ChangeIcons = ({
                         className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
                         title="edit"
                         data-position="top"
-                        onClick={() => handleSetItemForEditing(item.id)}
+                        onClick={() => handleSetItemForEditing(item)}
                     />
                 )}
                 <FontAwesomeIcon
