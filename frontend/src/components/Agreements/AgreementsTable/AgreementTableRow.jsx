@@ -10,7 +10,7 @@ import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
-import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import { useIsUserAllowedToEditAgreement, useIsAgreementEditable } from "../../../hooks/agreement.hooks";
 import { useAgreementApproval, useHandleEditAgreement, useHandleDeleteAgreement } from "./agreements-table.hooks";
 import {
     getAgreementName,
@@ -52,7 +52,9 @@ export const AgreementTableRow = ({ agreement }) => {
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
     const changeBgColorIfExpanded = { backgroundColor: isExpanded && "var(--neutral-lightest)" };
     // Validations for editing/deleting an agreement
+    const isAgreementEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
+    const isEditable = isAgreementEditable && canUserEditAgreement;
     const areAllBudgetLinesInDraftStatus = areAllBudgetLinesInStatus(agreement, "DRAFT");
     const areThereAnyBudgetLines = isThereAnyBudgetLines(agreement);
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
@@ -64,7 +66,7 @@ export const AgreementTableRow = ({ agreement }) => {
     const changeIcons = (
         <ChangeIcons
             item={agreement}
-            isItemEditable={canUserEditAgreement}
+            isItemEditable={isEditable}
             isItemDeletable={canUserDeleteAgreement}
             handleDeleteItem={handleDeleteAgreement}
             handleSetItemForEditing={handleEditAgreement}
