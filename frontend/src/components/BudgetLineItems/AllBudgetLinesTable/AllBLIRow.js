@@ -46,6 +46,16 @@ const AllBLIRow = ({
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
     const changeBgColorIfExpanded = { backgroundColor: isExpanded && "var(--neutral-lightest)" };
 
+    const changeIcons = (
+        <ChangeIcons
+            item={budgetLine}
+            handleDeleteItem={handleDeleteBudgetLine}
+            handleSetItemForEditing={handleSetBudgetLineForEditing}
+            isItemEditable={isBudgetLineEditable}
+            duplicateIcon={false}
+        />
+    );
+
     const TableRowData = ({ bl }) => (
         <>
             <th
@@ -102,16 +112,7 @@ const AllBLIRow = ({
                 style={changeBgColorIfExpanded}
             >
                 {isRowActive && !isExpanded && !readOnly ? (
-                    <div>
-                        <ChangeIcons
-                            item={budgetLine}
-                            handleDeleteItem={handleDeleteBudgetLine}
-                            handleSetItemForEditing={handleSetBudgetLineForEditing}
-                            isItemEditable={isBudgetLineEditable}
-                            isItemDeletable={isBudgetLineEditable}
-                            duplicateIcon={false}
-                        />
-                    </div>
+                    <div>{changeIcons}</div>
                 ) : (
                     <TableTag status={budgetLine.status} />
                 )}
@@ -202,18 +203,7 @@ const AllBLIRow = ({
                         </dl>
                     </div>
                 </div>
-                <div className="flex-align-self-end margin-left-auto margin-bottom-1">
-                    {!readOnly && (
-                        <ChangeIcons
-                            item={budgetLine}
-                            handleDeleteItem={handleDeleteBudgetLine}
-                            handleSetItemForEditing={handleSetBudgetLineForEditing}
-                            isItemEditable={isBudgetLineEditable}
-                            isItemDeletable={isBudgetLineEditable}
-                            duplicateIcon={false}
-                        />
-                    )}
-                </div>
+                <div className="flex-align-self-end margin-left-auto margin-bottom-1">{!readOnly && changeIcons}</div>
             </div>
         </td>
     );

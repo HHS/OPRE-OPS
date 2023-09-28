@@ -45,7 +45,16 @@ const BLIRow = ({
     const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
-
+    const changeIcons = (
+        <ChangeIcons
+            item={budgetLine}
+            handleDeleteItem={handleDeleteBudgetLine}
+            handleDuplicateItem={handleDuplicateBudgetLine}
+            handleSetItemForEditing={handleSetBudgetLineForEditing}
+            isItemEditable={isBudgetLineEditable}
+            duplicateIcon={true}
+        />
+    );
     // styles for the table row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
     const changeBgColorIfExpanded = { backgroundColor: isExpanded && "var(--neutral-lightest)" };
@@ -157,17 +166,7 @@ const BLIRow = ({
                 style={changeBgColorIfExpanded}
             >
                 {isRowActive && !isExpanded && !readOnly ? (
-                    <div>
-                        <ChangeIcons
-                            item={budgetLine}
-                            handleDeleteItem={handleDeleteBudgetLine}
-                            handleDuplicateItem={handleDuplicateBudgetLine}
-                            handleSetItemForEditing={handleSetBudgetLineForEditing}
-                            isItemEditable={isBudgetLineEditable}
-                            isItemDeletable={isBudgetLineEditable}
-                            duplicateIcon={true}
-                        />
-                    </div>
+                    <div>{changeIcons}</div>
                 ) : (
                     <TableTag status={budgetLine.status} />
                 )}
@@ -212,17 +211,7 @@ const BLIRow = ({
                         </dd>
                     </dl>
                     <div className="flex-align-self-end margin-left-auto margin-bottom-1">
-                        {!readOnly && (
-                            <ChangeIcons
-                                item={budgetLine}
-                                handleDeleteItem={handleDeleteBudgetLine}
-                                handleDuplicateItem={handleDuplicateBudgetLine}
-                                handleSetItemForEditing={handleSetBudgetLineForEditing}
-                                isItemEditable={isBudgetLineEditable}
-                                isItemDeletable={isBudgetLineEditable}
-                                duplicateIcon={true}
-                            />
-                        )}
+                        {!readOnly && changeIcons }
                     </div>
                 </div>
             </td>

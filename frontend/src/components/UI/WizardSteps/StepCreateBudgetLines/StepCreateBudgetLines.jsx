@@ -111,6 +111,7 @@ export const StepCreateBudgetLines = ({
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
 
+    // TODO: Refactor to use custom hooks
     const handleSubmitForm = (e) => {
         e.preventDefault();
         dispatch({

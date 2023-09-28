@@ -1,15 +1,15 @@
 import { useSelector } from "react-redux";
 import { useGetAgreementByIdQuery } from "../api/opsAPI";
 
-/*
- * Returns true if the user is allowed to edit the agreement.
+/**
+ * Custom hook that returns whether the user is allowed to edit the agreement.
  * @param {number} agreementId - The id of the agreement.
  * @returns {boolean} Whether the user is allowed to edit the agreement.
  *
  * @example
  * const isUserAllowedToEditAgreement = useIsUserAllowedToEditAgreement(1);
  */
-export const useIsUserAllowedToEditAgreement = (/** @type {number} */ agreementId) => {
+export const useIsUserAllowedToEditAgreement = (agreementId) => {
     // TODO: add check if user is on the Budget Team
     const { data: agreement } = useGetAgreementByIdQuery(agreementId);
     const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
@@ -26,15 +26,15 @@ export const useIsUserAllowedToEditAgreement = (/** @type {number} */ agreementI
     return isUserAllowedToEditAgreement;
 };
 
-/*
- * Returns true if the agreement is editable.
+/**
+ * Custom hook that returns whether the agreement is editable.
  * @param {number} agreementId - The id of the agreement.
  * @returns {boolean} Whether the agreement is editable.
  *
  * @example
  * const isAgreementEditable = useIsAgreementEditable(1);
  */
-export const useIsAgreementEditable = (/** @type {number} */ agreementId) => {
+export const useIsAgreementEditable = (agreementId) => {
     const { data: agreement } = useGetAgreementByIdQuery(agreementId);
 
     const anyBudgetLinesInExecuting = agreement?.budget_line_items.some((item) => item.status === "IN_EXECUTING");

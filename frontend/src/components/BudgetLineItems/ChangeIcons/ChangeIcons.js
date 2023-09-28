@@ -11,7 +11,7 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {Object} props.item - The item or data for the row.
  * @param {boolean} props.isItemEditable - Whether the item is editable.
  * @param {function} props.handleSetItemForEditing - The function to set the row item for editing.
- * @param {boolean} props.isItemDeletable - Whether the item is deletable.
+ * @param {boolean} [props.isItemDeletable] - Whether the item is deletable.
  * @param {function} props.handleDeleteItem - The function to delete the row.
  * @param {function} [props.handleDuplicateItem] - The function to duplicate the row.
  * @param {boolean} [props.duplicateIcon] - Whether to show the duplicate icon.
@@ -24,7 +24,7 @@ const ChangeIcons = ({
     item,
     isItemEditable = false,
     handleSetItemForEditing = () => {},
-    isItemDeletable = false,
+    isItemDeletable = isItemEditable,
     handleDeleteItem = () => {},
     handleDuplicateItem = () => {},
     duplicateIcon = true,
