@@ -8,6 +8,7 @@ from data_tools.environment.cloudgov import CloudGovConfig
 from data_tools.environment.common import DataToolsConfig
 from data_tools.environment.dev import DevConfig
 from data_tools.environment.local import LocalConfig
+from data_tools.environment.local_migration import LocalMigrationConfig
 from data_tools.environment.pytest import PytestConfig
 from data_tools.environment.test import TestConfig
 from models.base import BaseModel
@@ -82,6 +83,8 @@ def get_config(environment_name: Optional[str] = None) -> DataToolsConfig:
             config = CloudGovConfig()
         case "local":
             config = LocalConfig()
+        case "local-migration":
+            config = LocalMigrationConfig()
         case "test":
             config = TestConfig()
         case "pytest":

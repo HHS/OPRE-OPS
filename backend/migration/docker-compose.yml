@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+
+  maps-db:
+    image: "gvenzl/oracle-free:latest"
+    container_name: maps-db
+    environment:
+      - ORACLE_PASSWORD=secret
+    ports:
+      - "1521:1521"
+    volumes:
+      - ./maps_ddl/MAPS:/container-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  ops-db:
+    image: "postgres:16"
+    platform: linux/amd64
+    container_name: ops-db
+    security_opt:
+      - no-new-privileges:true  # Resolve semgrep https://sg.run/0n8q
+    environment:
+      - POSTGRES_PASSWORD=local_password
+    read_only: true  # Resolve semgrep https://sg.run/e4JE
+    tmpfs: /var/run/postgresql/
+    volumes:
+      - ../data_tools/ops_db_sql_init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  data-import:
+    build:
+      context: ../
+      dockerfile: Dockerfile.data-tools
+    platform: linux/amd64
+    container_name: ops-data-import
+    environment:
+      - ENV=local-migration
+    command: >
+      bash -c "python ./data_tools/src/import_static_data/load_db.py"
+    volumes:
+      - ../backend/ops_api:/home/app/ops_api
+    depends_on:
+      ops-db:
+        condition: service_healthy
