@@ -14,7 +14,7 @@ from sqlalchemy.cyextension.collections import IdentitySet
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import get_history
 
-DbRecordAudit = namedtuple("DbRecordAudit", "row_key original diff changes")
+DbRecordAudit = namedtuple("DbRecordAudit", "row_key changes")
 
 
 def convert_for_jsonb(value):
@@ -50,8 +50,6 @@ def find_relationship_by_fk(obj, col_key):
 def build_audit(obj, event_type: OpsDBHistoryType) -> DbRecordAudit:  # noqa: C901
     row_key = "|".join([str(getattr(obj, pk)) for pk in obj.primary_keys])
 
-    original = {}
-    diff = {}
     changes = {}
 
     mapper = obj.__mapper__
@@ -65,12 +63,9 @@ def build_audit(obj, event_type: OpsDBHistoryType) -> DbRecordAudit:  # noqa: C9
             # this assumes columns are primitives, not lists
             old_val = convert_for_jsonb(hist.deleted[0]) if hist.deleted else None
             new_val = convert_for_jsonb(hist.added[0]) if hist.added else None
-            if old_val:
-                original[key] = old_val
             # exclude Enums that didn't really change
             if hist.deleted and isinstance(hist.deleted[0], Enum) and old_val == new_val:
                 continue
-            diff[key] = new_val
             if event_type == OpsDBHistoryType.NEW:
                 if new_val:
                     changes[key] = {
@@ -81,8 +76,6 @@ def build_audit(obj, event_type: OpsDBHistoryType) -> DbRecordAudit:  # noqa: C9
                     "new": new_val,
                     "old": old_val,
                 }
-        elif hist.unchanged[0]:
-            original[key] = convert_for_jsonb(hist.unchanged[0])
 
     # collect changes in relationships, such as agreement.team_members
     # limit this to relationships that aren't being logged as their own Classes
@@ -104,13 +97,7 @@ def build_audit(obj, event_type: OpsDBHistoryType) -> DbRecordAudit:  # noqa: C9
             }
             if event_type != OpsDBHistoryType.NEW:
                 changes[key]["deleted"] = convert_for_jsonb(hist.deleted)
-            old_val = convert_for_jsonb(hist.unchanged + hist.deleted) if hist.unchanged or hist.deleted else None
-            new_val = convert_for_jsonb(hist.unchanged + hist.added) if hist.unchanged or hist.added else None
-            original[key] = old_val
-            diff[key] = new_val
-        elif hist.unchanged:
-            original[key] = convert_for_jsonb(hist.unchanged)
-    return DbRecordAudit(row_key, original, diff, changes)
+    return DbRecordAudit(row_key, changes)
 
 
 def track_db_history_before(session: Session):
@@ -169,8 +156,6 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
                 created_by=user.id if user else None,
                 class_name=obj.__class__.__name__,
                 row_key=db_audit.row_key,
-                original=db_audit.original,
-                diff=db_audit.diff,
                 changes=db_audit.changes,
             )
             result.append(ops_db)
