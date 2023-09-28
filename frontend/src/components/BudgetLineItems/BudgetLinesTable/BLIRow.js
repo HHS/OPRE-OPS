@@ -1,4 +1,3 @@
-import React from "react";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
@@ -16,11 +15,13 @@ import {
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import { removeBorderBottomIfExpanded, changeBgColorIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
+import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
  * @param {Object} props - The props for the BLIRow component.
- * @param {Object} props.bl - The budget line object.
+ * @param {Object} props.budgetLine - The budget line object.
  * @param {boolean} [props.isReviewMode] - Whether the user is in review mode.
  * @param {Function} [props.handleSetBudgetLineForEditing] - The function to set the budget line for editing.
  * @param {Function} [props.handleDeleteBudgetLine] - The function to delete the budget line.
@@ -29,15 +30,14 @@ import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks"
  * @returns {React.JSX.Element} The BLIRow component.
  **/
 const BLIRow = ({
-    bl: budgetLine,
+    budgetLine,
     isReviewMode = false,
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
     readOnly = false
 }) => {
-    const [isExpanded, setIsExpanded] = React.useState(false);
-    const [isRowActive, setIsRowActive] = React.useState(false);
+    const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     let feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     let budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
@@ -56,8 +56,8 @@ const BLIRow = ({
         />
     );
     // styles for the table row
-    const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
-    const changeBgColorIfExpanded = { backgroundColor: isExpanded && "var(--neutral-lightest)" };
+    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
+    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
 
     const addErrorClassIfNotFound = (item) => {
         if (isReviewMode && !item) {
@@ -82,38 +82,36 @@ const BLIRow = ({
         <>
             <th
                 scope="row"
-                className={`${addErrorClassIfNotFound(budgetLine?.line_description)} ${removeBorderBottomIfExpanded}`}
-                style={changeBgColorIfExpanded}
+                className={`${addErrorClassIfNotFound(budgetLine?.line_description)} ${borderExpandedStyles}`}
+                style={bgExpandedStyles}
             >
                 {budgetLine?.line_description}
             </th>
             <td
                 className={`${futureDateErrorClass(
                     formatDateNeeded(budgetLine?.date_needed)
-                )} ${addErrorClassIfNotFound(
-                    formatDateNeeded(budgetLine?.date_needed)
-                )} ${removeBorderBottomIfExpanded}`}
-                style={changeBgColorIfExpanded}
+                )} ${addErrorClassIfNotFound(formatDateNeeded(budgetLine?.date_needed))} ${borderExpandedStyles}`}
+                style={bgExpandedStyles}
             >
                 {formatDateNeeded(budgetLine?.date_needed)}
             </td>
             <td
                 className={`${addErrorClassIfNotFound(
                     fiscalYearFromDate(budgetLine?.date_needed)
-                )} ${removeBorderBottomIfExpanded}`}
-                style={changeBgColorIfExpanded}
+                )} ${borderExpandedStyles}`}
+                style={bgExpandedStyles}
             >
                 {fiscalYearFromDate(budgetLine?.date_needed)}
             </td>
             <td
-                className={`${addErrorClassIfNotFound(budgetLine?.can?.number)} ${removeBorderBottomIfExpanded}`}
-                style={changeBgColorIfExpanded}
+                className={`${addErrorClassIfNotFound(budgetLine?.can?.number)} ${borderExpandedStyles}`}
+                style={bgExpandedStyles}
             >
                 {budgetLine?.can?.number}
             </td>
             <td
-                className={`${addErrorClassIfNotFound(budgetLine?.amount)} ${removeBorderBottomIfExpanded}`}
-                style={changeBgColorIfExpanded}
+                className={`${addErrorClassIfNotFound(budgetLine?.amount)} ${borderExpandedStyles}`}
+                style={bgExpandedStyles}
             >
                 <CurrencyFormat
                     value={budgetLine?.amount || 0}
@@ -126,8 +124,8 @@ const BLIRow = ({
                 />
             </td>
             <td
-                className={removeBorderBottomIfExpanded}
-                style={changeBgColorIfExpanded}
+                className={borderExpandedStyles}
+                style={bgExpandedStyles}
             >
                 {feeTotal === 0 ? (
                     0
@@ -144,8 +142,8 @@ const BLIRow = ({
                 )}
             </td>
             <td
-                className={removeBorderBottomIfExpanded}
-                style={changeBgColorIfExpanded}
+                className={borderExpandedStyles}
+                style={bgExpandedStyles}
             >
                 {budgetLineTotalPlusFees === 0 ? (
                     0
@@ -162,8 +160,8 @@ const BLIRow = ({
                 )}
             </td>
             <td
-                className={removeBorderBottomIfExpanded}
-                style={changeBgColorIfExpanded}
+                className={borderExpandedStyles}
+                style={bgExpandedStyles}
             >
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>{changeIcons}</div>
@@ -222,7 +220,6 @@ const BLIRow = ({
             tableRowData={TableRowData}
             expandedData={ExpandedData}
             isExpanded={isExpanded}
-            isRowActive={isRowActive}
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
         />
@@ -230,7 +227,7 @@ const BLIRow = ({
 };
 
 BLIRow.propTypes = {
-    bl: PropTypes.object.isRequired,
+    budgetLine: PropTypes.object.isRequired,
     canUserEditBudgetLines: PropTypes.bool,
     isReviewMode: PropTypes.bool,
     handleSetBudgetLineForEditing: PropTypes.func,

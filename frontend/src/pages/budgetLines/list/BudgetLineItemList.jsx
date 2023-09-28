@@ -101,12 +101,13 @@ export const BudgetLineItemList = () => {
         sortedBLIs = sortBLIs(filteredBudgetLineItems);
     }
 
-    console.log("filters", filters);
-    console.log("setFilters", setFilters);
-    console.log("activeUser", activeUser);
-    console.log("budgetLineItems", budgetLineItems);
-    console.log("filteredBudgetLineItems", filteredBudgetLineItems);
-    console.log("sortedBLIs", sortedBLIs);
+    // handy for debugging
+    // console.log("filters", filters);
+    // console.log("setFilters", setFilters);
+    // console.log("activeUser", activeUser);
+    // console.log("budgetLineItems", budgetLineItems);
+    // console.log("filteredBudgetLineItems", filteredBudgetLineItems);
+    // console.log("sortedBLIs", sortedBLIs);
 
     const budgetLinesWithCanAndAgreementName = sortedBLIs.map((budgetLine) => {
         const can = cans.find((can) => can.id === budgetLine.can_id);
