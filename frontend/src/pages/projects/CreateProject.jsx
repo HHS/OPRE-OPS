@@ -8,7 +8,7 @@ import TextArea from "../../components/UI/Form/TextArea";
 import suite from "./suite";
 import classnames from "vest/classnames";
 import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
-import useAlert from "../../helpers/use-alert";
+import useAlert from "../../hooks/use-alert.hooks";
 
 const CreateProject = () => {
     const [showModal, setShowModal] = useState(false);
@@ -59,9 +59,14 @@ const CreateProject = () => {
     delete editedProject.type;
 
     if (isError) {
-        // TODO: Add error handling
         console.log("Error Submitting Project");
         console.dir(error);
+        setAlert({
+            type: "error",
+            heading: "Error Creating Project",
+            message: "There was an error creating the project. Please try again.",
+            redirectUrl: `/error`
+        });
     }
 
     if (isSuccess) {

@@ -147,6 +147,13 @@ def test_agreements_with_research_project_found(auth_client, loaded_db):
     assert response.json[1]["id"] == 2
 
 
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.parametrize(["simulated_error", "expected"], [["true", 500], ["400", 400], ["false", 200]])
+def test_agreements_with_simulated_error(auth_client, loaded_db, simulated_error, expected):
+    response = auth_client.get(f"/api/v1/agreements/?simulatedError={simulated_error}&research_project_id=1")
+    assert response.status_code == expected
+
+
 @pytest.mark.parametrize(
     "key,value",
     (

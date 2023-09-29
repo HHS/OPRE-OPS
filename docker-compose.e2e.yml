@@ -3,7 +3,7 @@ version: "3.8"
 services:
 
   db:
-    image: "postgres:12"
+    image: "postgres:16"
     platform: linux/amd64
     container_name: ops-db
     security_opt:
@@ -12,6 +12,8 @@ services:
       - POSTGRES_PASSWORD=local_password
     read_only: true  # Resolve semgrep https://sg.run/e4JE
     tmpfs: /var/run/postgresql/
+    volumes:
+      - ./backend/data_tools/ops_db_sql_init:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
     healthcheck:

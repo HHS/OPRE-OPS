@@ -34,7 +34,7 @@ it("loads", () => {
     cy.get("span").should("contain", "Carry-Forward");
 });
 
-it("loads the Poftfolio Budget Details component", () => {
+it("loads the Portfolio Budget Details component", () => {
     cy.get("h2").should("contain", "Portfolio Budget Details by CAN");
     cy.get("section").should("contain", "G99IA14");
 });
@@ -44,7 +44,7 @@ it("expands the description when one clicks read more", () => {
     cy.get("a").should("contain", "See more on the website");
 });
 
-it("loads the Poftfolio Budget Details component", () => {
+it("loads the Portfolio Budget Details component", () => {
     cy.get("h2").should("contain", "Portfolio Budget Details by CAN");
     cy.get("section").should("contain", "G99IA14");
 });

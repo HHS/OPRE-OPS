@@ -13,9 +13,9 @@ import {
     totalBudgetLineFeeAmount,
     totalBudgetLineAmountPlusFees
 } from "../../../helpers/utils";
-import useGetUserFullNameFromId from "../../../helpers/user-hooks";
-import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../helpers/budget-line-hooks";
-import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
+import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -39,13 +39,22 @@ const BLIRow = ({
     const [isExpanded, setIsExpanded] = React.useState(false);
     const [isRowActive, setIsRowActive] = React.useState(false);
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
-    let feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.psc_fee_amount);
+    let feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     let budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
     const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
     const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
-
+    const changeIcons = (
+        <ChangeIcons
+            item={budgetLine}
+            handleDeleteItem={handleDeleteBudgetLine}
+            handleDuplicateItem={handleDuplicateBudgetLine}
+            handleSetItemForEditing={handleSetBudgetLineForEditing}
+            isItemEditable={isBudgetLineEditable}
+            duplicateIcon={true}
+        />
+    );
     // styles for the table row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
     const changeBgColorIfExpanded = { backgroundColor: isExpanded && "var(--neutral-lightest)" };
@@ -69,7 +78,7 @@ const BLIRow = ({
         }
     };
 
-    const TableRowData = () => (
+    const TableRowData = (
         <>
             <th
                 scope="row"
@@ -157,15 +166,7 @@ const BLIRow = ({
                 style={changeBgColorIfExpanded}
             >
                 {isRowActive && !isExpanded && !readOnly ? (
-                    <div>
-                        <ChangeIcons
-                            budgetLine={budgetLine}
-                            handleDeleteBudgetLine={handleDeleteBudgetLine}
-                            handleDuplicateBudgetLine={handleDuplicateBudgetLine}
-                            handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
-                            isBudgetLineEditable={isBudgetLineEditable}
-                        />
-                    </div>
+                    <div>{changeIcons}</div>
                 ) : (
                     <TableTag status={budgetLine.status} />
                 )}
@@ -173,7 +174,7 @@ const BLIRow = ({
         </>
     );
 
-    const ExpandedData = () => (
+    const ExpandedData = (
         <>
             <td
                 colSpan={9}
@@ -210,15 +211,7 @@ const BLIRow = ({
                         </dd>
                     </dl>
                     <div className="flex-align-self-end margin-left-auto margin-bottom-1">
-                        {!readOnly && (
-                            <ChangeIcons
-                                budgetLine={budgetLine}
-                                handleDeleteBudgetLine={handleDeleteBudgetLine}
-                                handleDuplicateBudgetLine={handleDuplicateBudgetLine}
-                                handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
-                                isBudgetLineEditable={isBudgetLineEditable}
-                            />
-                        )}
+                        {!readOnly && changeIcons}
                     </div>
                 </div>
             </td>
@@ -226,8 +219,8 @@ const BLIRow = ({
     );
     return (
         <TableRowExpandable
-            tableRowData={<TableRowData />}
-            expandedData={<ExpandedData />}
+            tableRowData={TableRowData}
+            expandedData={ExpandedData}
             isExpanded={isExpanded}
             isRowActive={isRowActive}
             setIsExpanded={setIsExpanded}

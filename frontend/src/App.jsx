@@ -10,7 +10,7 @@ import DefaultLayout from "./components/UI/Layouts/DefaultLayout";
 const App = ({ children, breadCrumbName }) => <DefaultLayout breadCrumbName={breadCrumbName}>{children}</DefaultLayout>;
 
 App.propTypes = {
-    children: PropTypes.element.isRequired,
+    children: PropTypes.node.isRequired,
     breadCrumbName: PropTypes.string
 };
 export default App;

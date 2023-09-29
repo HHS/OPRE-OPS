@@ -37,6 +37,7 @@ jest.mock("../../../api/opsAPI", () => ({
 const agreement = {
     id: 1,
     name: "Test Agreement",
+    display_name: "Test Agreement",
     research_project: { title: "Test Project" },
     agreement_type: "GRANT",
     project_officer: 1,

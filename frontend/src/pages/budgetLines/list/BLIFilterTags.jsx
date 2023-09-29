@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import FilterTags from "../../../components/UI/FilterTags/FilterTags";
 import _ from "lodash";
+import FilterTags from "../../../components/UI/FilterTags/FilterTags";
+import FilterTagsWrapper from "../../../components/UI/FilterTags/FilterTagsWrapper";
 
 /**
  * A filter tags.
@@ -90,15 +91,12 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
 
     return (
         !_.isEmpty(tagsList) && (
-            <div className="display-flex flex-align-center flex-wrap padding-bottom-05">
-                <span className="padding-right-205 text-base-dark font-serif-3xs line-height-sans-5 padding-top-05">
-                    Filters Applied:
-                </span>
+            <FilterTagsWrapper>
                 <FilterTags
                     removeFilter={removeFilter}
                     tagsList={tagsListByFilterMerged}
                 />
-            </div>
+            </FilterTagsWrapper>
         )
     );
 };

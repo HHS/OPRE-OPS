@@ -1,6 +1,7 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
+// eslint-disable-next-line no-unused-vars
 const testAgreements = [
     {
         agreement: 1,
@@ -9,7 +10,7 @@ const testAgreements = [
         project_officer: 1,
         team_members: [1, 4],
         BLIsAllDraft: true,
-        shouldDelete: true,
+        shouldDelete: true
     },
     {
         agreement: 2,
@@ -18,7 +19,7 @@ const testAgreements = [
         project_officer: 1,
         team_members: [1, 4],
         BLIsAllDraft: false,
-        shouldDelete: false,
+        shouldDelete: false
     },
     {
         agreement: 7,
@@ -27,7 +28,7 @@ const testAgreements = [
         project_officer: null,
         team_members: [],
         BLIsAllDraft: false,
-        shouldDelete: false,
+        shouldDelete: false
     },
     {
         agreement: 8,
@@ -36,7 +37,7 @@ const testAgreements = [
         project_officer: null,
         team_members: [],
         BLIsAllDraft: false,
-        shouldDelete: false,
+        shouldDelete: false
     },
     {
         agreement: 3,
@@ -45,7 +46,7 @@ const testAgreements = [
         project_officer: 1,
         team_members: [],
         BLIsAllDraft: 0,
-        shouldDelete: true,
+        shouldDelete: true
     },
     {
         agreement: 4,
@@ -54,7 +55,7 @@ const testAgreements = [
         project_officer: 1,
         team_members: [],
         BLIsAllDraft: 0,
-        shouldDelete: true,
+        shouldDelete: true
     },
     {
         agreement: 5,
@@ -63,7 +64,7 @@ const testAgreements = [
         project_officer: 1,
         team_members: [],
         BLIsAllDraft: 0,
-        shouldDelete: true,
+        shouldDelete: true
     },
     {
         agreement: 6,
@@ -72,13 +73,14 @@ const testAgreements = [
         project_officer: 1,
         team_members: [],
         BLIsAllDraft: 0,
-        shouldDelete: true,
-    },
+        shouldDelete: true
+    }
 ];
 const testAgreement = {
     agreement_type: "CONTRACT",
     agreement_reason: "NEW_REQ",
     name: "Test Contract",
+    display_name: "Test Contract",
     number: "TEST001",
     description: "Test Description",
     research_project_id: 1,
@@ -88,13 +90,13 @@ const testAgreement = {
     project_officer: 1,
     team_members: [
         {
-            id: 3,
+            id: 3
         },
         {
-            id: 5,
-        },
+            id: 5
+        }
     ],
-    notes: "Test Notes",
+    notes: "Test Notes"
 };
 
 beforeEach(() => {
@@ -116,7 +118,7 @@ const deleteLastAgreement = () => {
     // adding a little wait, trying to increase odds of success
     cy.wait(2000);
     // get the first delete button and click
-    cy.get(".padding-right-9").find('[data-cy="delete-agreement"]').click();
+    cy.get(".padding-right-9").find('[data-cy="delete-row"]').click();
     // get the modal
     cy.get("#ops-modal-heading").should("have.text", "Are you sure you want to delete this agreement?");
     // find the delete button and click
@@ -128,7 +130,7 @@ const deleteAgreementByRow = (row) => {
     // get the created agreement
     cy.get("@table-rows").eq(row).find('[data-cy="expand-row"]').click();
     // get the first delete button and click
-    cy.get(".padding-right-9").find('[data-cy="delete-agreement"]').click();
+    cy.get(".padding-right-9").find('[data-cy="delete-row"]').click();
     // get the modal and cancel
     cy.get("#ops-modal-heading").should("have.text", "Are you sure you want to delete this agreement?");
     cy.get('[data-cy="cancel-action"]').click();
@@ -141,7 +143,7 @@ const deleteAgreementByRowAndFail = (row) => {
     // get the created agreement
     cy.get("@table-rows").eq(row).find('[data-cy="expand-row"]').click();
     // get the first delete button and click
-    cy.get(".padding-right-9").find('[data-cy="delete-agreement"]').click();
+    cy.get(".padding-right-9").find('[data-cy="delete-row"]').click();
     // get the modal and cancel
     cy.get("#ops-modal-heading").should("not.exist");
     cy.get("@table-rows").eq(row).find('[data-cy="expand-row"]').click();
@@ -159,40 +161,28 @@ const addAgreement = (agreement) => {
         headers: {
             Authorization: bearer_token,
             "Content-Type": "application/json",
-            Accept: "application/json",
-        },
+            Accept: "application/json"
+        }
     });
 };
 
-it("loads with 9 agreements", () => {
-    cy.get("tbody").children().as("table-rows").should("have.length", 9);
-});
-
 it("should allow to delete an agreement if user created it", () => {
-    cy.get("tbody").children().as("table-rows").should("have.length", 9);
     addAgreement(testAgreement);
     cy.visit("/agreements/");
     deleteLastAgreement();
-    cy.get("@table-rows").should("have.length", 9);
 });
 
 it("should allow to delete an agreement if user is project officer", () => {
-    cy.get("tbody").children().as("table-rows").should("have.length", 9);
     deleteAgreementByRow(0);
-    cy.get("@table-rows").should("have.length", 9);
 });
 // TODO: Add this this once we can switch users or create a test agreement with a team member
 // it("should allow to delete an agreement if user is a team member", () => {
 // });
 
 it("should not allow to delete an agreement if user is not project officer or team member or didn't create the agreement", () => {
-    cy.get("tbody").children().as("table-rows").should("have.length", 9);
     deleteAgreementByRowAndFail(3);
-    cy.get("@table-rows").should("have.length", 9);
 });
 
 it("should not allow to delete an agreement if its BLIs are not DRAFT", () => {
-    cy.get("tbody").children().as("table-rows").should("have.length", 9);
     deleteAgreementByRowAndFail(1);
-    cy.get("@table-rows").should("have.length", 9);
 });

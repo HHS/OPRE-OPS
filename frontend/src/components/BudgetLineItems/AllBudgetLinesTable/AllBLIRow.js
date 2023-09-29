@@ -12,9 +12,9 @@ import {
     totalBudgetLineFeeAmount,
     totalBudgetLineAmountPlusFees
 } from "../../../helpers/utils";
-import useGetUserFullNameFromId from "../../../helpers/user-hooks";
-import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../helpers/budget-line-hooks";
-import { useIsUserAllowedToEditAgreement } from "../../../helpers/agreement-hooks";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
+import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -39,45 +39,55 @@ const AllBLIRow = ({
     const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
-    let feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.psc_fee_amount);
+    let feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     let BudgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
 
     // styles for the table row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
     const changeBgColorIfExpanded = { backgroundColor: isExpanded && "var(--neutral-lightest)" };
 
-    const TableRowData = ({ bl }) => (
+    const changeIcons = (
+        <ChangeIcons
+            item={budgetLine}
+            handleDeleteItem={handleDeleteBudgetLine}
+            handleSetItemForEditing={handleSetBudgetLineForEditing}
+            isItemEditable={isBudgetLineEditable}
+            duplicateIcon={false}
+        />
+    );
+
+    const TableRowData = (
         <>
             <th
                 scope="row"
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {bl.line_description}
+                {budgetLine.line_description}
             </th>
             <td
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {bl.agreement_name}
+                {budgetLine.agreement_name}
             </td>
             <td
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {formatDateNeeded(bl.date_needed)}
+                {formatDateNeeded(budgetLine.date_needed)}
             </td>
             <td
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {bl.fiscal_year}
+                {budgetLine.fiscal_year}
             </td>
             <td
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {bl.can_number}
+                {budgetLine.can_number}
             </td>
             <td
                 className={removeBorderBottomIfExpanded}
@@ -101,16 +111,8 @@ const AllBLIRow = ({
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {isRowActive && !isExpanded && !readOnly && isBudgetLineEditable ? (
-                    <div>
-                        <ChangeIcons
-                            budgetLine={budgetLine}
-                            handleDeleteBudgetLine={handleDeleteBudgetLine}
-                            handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
-                            isBudgetLineEditable={isBudgetLineEditable}
-                            noDuplicateIcon={true}
-                        />
-                    </div>
+                {isRowActive && !isExpanded && !readOnly ? (
+                    <div>{changeIcons}</div>
                 ) : (
                     <TableTag status={budgetLine.status} />
                 )}
@@ -118,61 +120,77 @@ const AllBLIRow = ({
         </>
     );
 
-    const ExpandedData = () => (
-        <>
-            <td
-                colSpan={9}
-                className="border-top-none"
-                style={{ backgroundColor: "var(--neutral-lightest)" }}
-            >
-                <div className="display-flex padding-right-9">
-                    <dl className="font-12px">
-                        <dt className="margin-0 text-base-dark">Created By</dt>
-                        <dd
-                            id={`created-by-name-${budgetLine?.id}`}
-                            className="margin-0"
-                        >
-                            {budgetLineCreatorName}
-                        </dd>
-                        <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
-                            <FontAwesomeIcon
-                                icon={faClock}
-                                className="height-2 width-2 margin-right-1"
-                            />
-                            {formatDateToMonthDayYear(budgetLine?.created_on)}
-                        </dt>
-                    </dl>
-                    <dl
-                        className="font-12px"
-                        style={{ marginLeft: "9.0625rem" }}
+    const ExpandedData = (
+        <td
+            colSpan={9}
+            className="border-top-none"
+            style={{ backgroundColor: "var(--neutral-lightest)" }}
+        >
+            <div className="display-flex padding-right-9">
+                <dl className="font-12px">
+                    <dt className="margin-0 text-base-dark">Created By</dt>
+                    <dd
+                        id={`created-by-name-${budgetLine?.id}`}
+                        className="margin-0"
                     >
-                        <dt className="margin-0 text-base-dark">Notes</dt>
+                        {budgetLineCreatorName}
+                    </dd>
+                    <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
+                        <FontAwesomeIcon
+                            icon={faClock}
+                            className="height-2 width-2 margin-right-1"
+                        />
+                        {formatDateToMonthDayYear(budgetLine?.created_on)}
+                    </dt>
+                </dl>
+                <dl
+                    className="font-12px"
+                    style={{ marginLeft: "9.0625rem" }}
+                >
+                    <dt className="margin-0 text-base-dark">Notes</dt>
+                    <dd
+                        className="margin-0"
+                        style={{ maxWidth: "25rem" }}
+                    >
+                        {budgetLine?.comments ? budgetLine.comments : "No notes added."}
+                    </dd>
+                </dl>
+                <div
+                    className="font-12px"
+                    style={{ marginLeft: "15rem" }}
+                >
+                    <dl className="margin-bottom-0">
+                        <dt className="margin-0 text-base-dark">Procurement Shop</dt>
                         <dd
                             className="margin-0"
                             style={{ maxWidth: "25rem" }}
                         >
-                            {budgetLine?.comments ? budgetLine.comments : "No notes added."}
+                            {`${budgetLine?.procShopCode}-Fee Rate: ${budgetLine?.proc_shop_fee_percentage * 100}%`}
                         </dd>
                     </dl>
-                    <div
-                        className="font-12px"
-                        style={{ marginLeft: "15rem" }}
-                    >
-                        <dl className="margin-bottom-0">
-                            <dt className="margin-0 text-base-dark">Procurement Shop</dt>
-                            <dd
-                                className="margin-0"
-                                style={{ maxWidth: "25rem" }}
-                            >
-                                {`${budgetLine?.procShopCode}-Fee Rate: ${budgetLine?.psc_fee_amount}%`}
+                    <div className="font-12px display-flex margin-top-1">
+                        <dl className="margin-0">
+                            <dt className="margin-0 text-base-dark">SubTotal</dt>
+                            <dd className="margin-0">
+                                <CurrencyFormat
+                                    value={budgetLine?.amount}
+                                    displayType={"text"}
+                                    thousandSeparator={true}
+                                    prefix={"$"}
+                                    decimalScale={2}
+                                    fixedDecimalScale={true}
+                                    renderText={(value) => value}
+                                />
                             </dd>
                         </dl>
-                        <div className="font-12px display-flex margin-top-1">
-                            <dl className="margin-0">
-                                <dt className="margin-0 text-base-dark">SubTotal</dt>
-                                <dd className="margin-0">
+                        <dl className=" margin-0 margin-left-2">
+                            <dt className="margin-0 text-base-dark">Fees</dt>
+                            <dd className="margin-0">
+                                {feeTotal === 0 ? (
+                                    0
+                                ) : (
                                     <CurrencyFormat
-                                        value={budgetLine?.amount}
+                                        value={feeTotal}
                                         displayType={"text"}
                                         thousandSeparator={true}
                                         prefix={"$"}
@@ -180,47 +198,19 @@ const AllBLIRow = ({
                                         fixedDecimalScale={true}
                                         renderText={(value) => value}
                                     />
-                                </dd>
-                            </dl>
-                            <dl className=" margin-0 margin-left-2">
-                                <dt className="margin-0 text-base-dark">Fees</dt>
-                                <dd className="margin-0">
-                                    {feeTotal === 0 ? (
-                                        0
-                                    ) : (
-                                        <CurrencyFormat
-                                            value={feeTotal}
-                                            displayType={"text"}
-                                            thousandSeparator={true}
-                                            prefix={"$"}
-                                            decimalScale={2}
-                                            fixedDecimalScale={true}
-                                            renderText={(value) => value}
-                                        />
-                                    )}
-                                </dd>
-                            </dl>
-                        </div>
-                    </div>
-                    <div className="flex-align-self-end margin-left-auto margin-bottom-1">
-                        {!readOnly && (
-                            <ChangeIcons
-                                budgetLine={budgetLine}
-                                handleDeleteBudgetLine={handleDeleteBudgetLine}
-                                handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
-                                isBudgetLineEditable={isBudgetLineEditable}
-                                noDuplicateIcon={true}
-                            />
-                        )}
+                                )}
+                            </dd>
+                        </dl>
                     </div>
                 </div>
-            </td>
-        </>
+                <div className="flex-align-self-end margin-left-auto margin-bottom-1">{!readOnly && changeIcons}</div>
+            </div>
+        </td>
     );
     return (
         <TableRowExpandable
-            tableRowData={<TableRowData bl={budgetLine} />}
-            expandedData={<ExpandedData />}
+            tableRowData={TableRowData}
+            expandedData={ExpandedData}
             isExpanded={isExpanded}
             isRowActive={isRowActive}
             setIsExpanded={setIsExpanded}

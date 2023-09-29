@@ -8,6 +8,7 @@ from flask_jwt_extended import jwt_required
 from marshmallow import Schema, ValidationError
 from models.base import BaseModel
 from ops_api.ops.utils.auth import auth_gateway
+from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
@@ -99,6 +100,7 @@ class BaseItemAPI(OPSMethodView):
 
     @override
     @jwt_required()
+    @error_simulator
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
 
@@ -109,11 +111,13 @@ class BaseListAPI(OPSMethodView):
 
     @override
     @jwt_required()
+    @error_simulator
     def get(self) -> Response:
         return self._get_all_items_with_try()
 
     @override
     @jwt_required()
+    @error_simulator
     def post(self) -> Response:
         raise NotImplementedError
 
@@ -130,6 +134,7 @@ class EnumListAPI(MethodView):
 
     @override
     @jwt_required()
+    @error_simulator
     def get(self) -> Response:
         enum_items = {e.name: e.value for e in self.enum}  # type: ignore [attr-defined]
         return jsonify(enum_items)

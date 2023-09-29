@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 sqlalchemy = "==2.0.21"
 flask = "==2.3.3"
-mypy = "==0.991"
+mypy = "==1.4.0"
 flask-jwt-extended = {extras = ["asymmetric_crypto"], version = "==4.5.2"}
 authlib = "==1.2.1"
 requests = "==2.31.0"
