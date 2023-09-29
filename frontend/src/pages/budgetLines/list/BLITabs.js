@@ -30,6 +30,7 @@ const BLITags = () => {
                 to={queryString}
                 className={location.search === queryString ? selected : notSelected}
                 key={queryString}
+                data-cy={location.search === queryString ? "tab-selected" : "tab-not-selected"}
             >
                 {path.label}
             </Link>
