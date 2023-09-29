@@ -21,13 +21,7 @@ from sqlalchemy import (
     case,
     select,
 )
-from sqlalchemy.orm import (
-    InstrumentedAttribute,
-    column_property,
-    object_session,
-    relationship,
-    with_polymorphic,
-)
+from sqlalchemy.orm import InstrumentedAttribute, column_property, object_session, relationship, with_polymorphic
 from typing_extensions import override
 
 

@@ -34,7 +34,7 @@ def configure_logging(log_level: str = "INFO") -> None:
     )
 
 
-def create_app(config_overrides: Optional[dict[str, Any]] = {}) -> Flask:
+def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
     is_unit_test = False if config_overrides is None else config_overrides.get("TESTING") is True
     log_level = "INFO" if not is_unit_test else "DEBUG"
     configure_logging(log_level)  # should be configured before any access to app.logger
@@ -53,7 +53,7 @@ def create_app(config_overrides: Optional[dict[str, Any]] = {}) -> Flask:
     # fall back for pytest to use
     app.config.setdefault(
         "SQLALCHEMY_DATABASE_URI",
-        "postgresql+psycopg2://postgres:local_password@localhost:5432/postgres",
+        "postgresql+psycopg2://ops:ops@localhost:5432/postgres",
     )
 
     if config_overrides is not None:

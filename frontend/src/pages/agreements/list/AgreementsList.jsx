@@ -6,7 +6,7 @@ import App from "../../../App";
 import { useGetAgreementsQuery } from "../../../api/opsAPI";
 import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import sortAgreements from "./utils";
-import AgreementsTable from "./AgreementsTable";
+import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import AgreementTabs from "./AgreementsTabs";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
@@ -171,7 +171,7 @@ export const AgreementsList = () => {
 
     return (
         <App>
-            <Breadcrumb currentName={"Agreements"} />
+            <Breadcrumb currentName="Agreements" />
             <TablePageLayout
                 title="Agreements"
                 subtitle={myAgreementsUrl ? "My Agreements" : "All Agreements"}
