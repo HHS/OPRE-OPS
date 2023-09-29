@@ -10,6 +10,7 @@ import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLi
 import BLIFilterButton from "./BLIFilterButton";
 import SummaryCardsSection from "../../../components/BudgetLineItems/SummaryCardsSection";
 import BLIFilterTags from "./BLIFilterTags";
+import BLITags from "./BLITabs";
 
 /**
  * Page for the Budget Line Item List.
@@ -31,7 +32,7 @@ export const BudgetLineItemList = () => {
     const { data: cans, error: cansError, isLoading: cansIsLoading } = useGetCansQuery();
     const { data: agreements, error: agreementsError, isLoading: agreementsAreError } = useGetAgreementsQuery();
 
-    const myBudgetLineItemsUrl = searchParams.get("filter") === "my-budget-line-items";
+    const myBudgetLineItemsUrl = searchParams.get("filter") === "my-budget-lines";
 
     if (budgetLineItemsIsLoading || cansIsLoading || agreementsAreError) {
         return (
@@ -92,21 +93,20 @@ export const BudgetLineItemList = () => {
 
     let sortedBLIs = [];
     if (myBudgetLineItemsUrl) {
-        const myBLIs = filteredBudgetLineItems.filter(() => {
-            return true;
+        const myBLIs = filteredBudgetLineItems.filter((budgetLine) => {
+            const teamMembers = budgetLine.team_members;
+            const agreement = agreements.find((agreement) => agreement.id === budgetLine.agreement_id);
+            const projectOfficerId = agreement?.project_officer;
+
+            return teamMembers?.some((teamMember) => {
+                return teamMember.id === activeUser.id || projectOfficerId === activeUser.id;
+            });
         });
         sortedBLIs = sortBLIs(myBLIs);
     } else {
         // all-budget-line-items
         sortedBLIs = sortBLIs(filteredBudgetLineItems);
     }
-
-    console.log("filters", filters);
-    console.log("setFilters", setFilters);
-    console.log("activeUser", activeUser);
-    console.log("budgetLineItems", budgetLineItems);
-    console.log("filteredBudgetLineItems", filteredBudgetLineItems);
-    console.log("sortedBLIs", sortedBLIs);
 
     const budgetLinesWithCanAndAgreementName = sortedBLIs.map((budgetLine) => {
         const can = cans.find((can) => can.id === budgetLine.can_id);
@@ -134,6 +134,7 @@ export const BudgetLineItemList = () => {
                 }
                 buttonText="Add Budget Lines"
                 buttonLink="/budget-lines/create"
+                TabsSection={<BLITags />}
                 FilterTags={
                     <BLIFilterTags
                         filters={filters}
