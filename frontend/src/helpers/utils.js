@@ -58,7 +58,6 @@ export const formatDateToMonthDayYear = (date) => {
     return new Date(date).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
 };
 
-// Is there a better place for this?
 // List of BLI statuses which are considered Draft
 export const draftBudgetLineStatuses = ["DRAFT", "UNDER_REVIEW"];
 

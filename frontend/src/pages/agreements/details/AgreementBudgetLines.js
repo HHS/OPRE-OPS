@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
-import AgreementDetailHeader from "./AgreementDetailHeader";
+import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
 import { CreateBudgetLinesProvider } from "../../../components/UI/WizardSteps/StepCreateBudgetLines/context";
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import StepCreateBudgetLines from "../../../components/UI/WizardSteps/StepCreateBudgetLines/StepCreateBudgetLines";
@@ -9,7 +9,7 @@ import useAlert from "../../../hooks/use-alert.hooks";
 import AgreementTotalBudgetLinesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalBudgetLinesCard";
 import AgreementValuesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementValuesCard";
 import { useState } from "react";
-import AgreementBudgetLinesHeader from "./AgreementBudgetLinesHeader";
+import AgreementBudgetLinesHeader from "../../../components/Agreements/AgreementBudgetLinesHeader";
 import { draftBudgetLineStatuses } from "../../../helpers/utils";
 
 /**

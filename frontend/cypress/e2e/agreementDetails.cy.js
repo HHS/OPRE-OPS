@@ -7,8 +7,8 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-    // cy.injectAxe();
-    // cy.checkA11y(null, null, terminalLog);
+    cy.injectAxe();
+    cy.checkA11y(null, null, terminalLog);
 });
 
 it("agreement loads with details", () => {
