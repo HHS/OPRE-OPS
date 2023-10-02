@@ -13,7 +13,7 @@ import {
     totalBudgetLineFeeAmount,
     totalBudgetLineAmountPlusFees
 } from "../../../helpers/utils";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 
@@ -39,8 +39,9 @@ const BLIRow = ({
     const [isExpanded, setIsExpanded] = React.useState(false);
     const [isRowActive, setIsRowActive] = React.useState(false);
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
-    let feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
-    let budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
+    const loggedInUserFullName = useGetLoggedInUserFullName();
+    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
+    const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
     const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
     const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
@@ -188,7 +189,7 @@ const BLIRow = ({
                             id={`created-by-name-${budgetLine?.id}`}
                             className="margin-0"
                         >
-                            {budgetLineCreatorName}
+                            {budgetLine?.created_by ? budgetLineCreatorName : loggedInUserFullName}
                         </dd>
                         <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                             <FontAwesomeIcon

@@ -14,6 +14,7 @@ import { convertCodeForDisplay } from "../../../../helpers/utils";
 import ConfirmationModal from "../../Modals/ConfirmationModal";
 import { useUpdateBudgetLineItemMutation, useAddBudgetLineItemMutation } from "../../../../api/opsAPI";
 import useAlert from "../../../../hooks/use-alert.hooks";
+import { useGetLoggedInUserFullName } from "../../../../hooks/user.hooks";
 
 /**
  * Renders the Create Budget Lines component with React context.
@@ -97,7 +98,7 @@ export const StepCreateBudgetLines = ({
     const setEnteredYear = useSetState("entered_year");
     const setEnteredComments = useSetState("entered_comments");
 
-    let loggedInUserFullName = useSelector((state) => loggedInName(state.auth?.activeUser));
+    let loggedInUserFullName = useGetLoggedInUserFullName();
 
     // Validation
     let res = suite.get();
