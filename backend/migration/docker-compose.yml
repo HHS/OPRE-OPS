@@ -11,6 +11,9 @@ services:
       - "1521:1521"
     volumes:
       - ./maps_ddl/MAPS:/container-entrypoint-initdb.d
+    security_opt:
+      - no-new-privileges:true  # Resolve semgrep https://sg.run/0n8q
+    read_only: true  # Resolve semgrep https://sg.run/e4JE
     healthcheck:
       test: ["CMD-SHELL", "healthcheck.sh"]
       interval: 10s
