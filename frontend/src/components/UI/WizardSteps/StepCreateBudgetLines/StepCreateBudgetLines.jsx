@@ -86,6 +86,7 @@ export const StepCreateBudgetLines = ({
     const navigate = useNavigate();
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
+    const loggedInUserFullName = useGetLoggedInUserFullName();
     const { setAlert } = useAlert();
     // setters
     const setEnteredDescription = useSetState("entered_description");
@@ -95,8 +96,6 @@ export const StepCreateBudgetLines = ({
     const setEnteredDay = useSetState("entered_day");
     const setEnteredYear = useSetState("entered_year");
     const setEnteredComments = useSetState("entered_comments");
-
-    let loggedInUserFullName = useGetLoggedInUserFullName();
 
     // Validation
     let res = suite.get();

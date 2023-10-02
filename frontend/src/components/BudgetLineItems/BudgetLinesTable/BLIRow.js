@@ -9,13 +9,13 @@ import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     fiscalYearFromDate,
     formatDateNeeded,
-    formatDateToMonthDayYear,
     totalBudgetLineFeeAmount,
     totalBudgetLineAmountPlusFees
 } from "../../../helpers/utils";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helper";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -196,7 +196,7 @@ const BLIRow = ({
                                 icon={faClock}
                                 className="height-2 width-2 margin-right-1"
                             />
-                            {formatDateToMonthDayYear(budgetLine?.created_on)}
+                            {getBudgetLineCreatedDate(budgetLine)}
                         </dt>
                     </dl>
                     <dl

@@ -6,15 +6,11 @@ import CurrencyFormat from "react-currency-format";
 import TableTag from "../../UI/TableTag";
 import ChangeIcons from "../ChangeIcons";
 import TableRowExpandable from "../../UI/TableRowExpandable";
-import {
-    formatDateNeeded,
-    formatDateToMonthDayYear,
-    totalBudgetLineFeeAmount,
-    totalBudgetLineAmountPlusFees
-} from "../../../helpers/utils";
+import { formatDateNeeded, totalBudgetLineFeeAmount, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helper";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -140,7 +136,7 @@ const AllBLIRow = ({
                             icon={faClock}
                             className="height-2 width-2 margin-right-1"
                         />
-                        {formatDateToMonthDayYear(budgetLine?.created_on)}
+                        {getBudgetLineCreatedDate(budgetLine)}
                     </dt>
                 </dl>
                 <dl
