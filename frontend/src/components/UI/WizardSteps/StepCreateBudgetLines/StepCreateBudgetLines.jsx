@@ -358,10 +358,7 @@ export const StepCreateBudgetLines = ({
                         selectedProcurementShop={selectedProcurementShop}
                     />
                     <h2 className="font-sans-lg margin-top-3">Budget Line Details</h2>
-                    <p>
-                        Complete the information below to create new budget lines. Select Add Budget Line to create
-                        multiple budget lines.
-                    </p>
+                    <p>Complete the information below to create new budget lines.</p>
                 </>
             )}
             <CreateBudgetLinesForm

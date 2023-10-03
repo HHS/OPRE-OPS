@@ -17,7 +17,7 @@ const Breadcrumb = ({ currentName }) => {
         .map((match) => match.handle.crumb(match.data));
 
     return (
-        <section className="grid-container bg-white">
+        <section className="bg-white">
             <nav
                 className="usa-breadcrumb margin-right-2 padding-top-3 padding-bottom-4"
                 aria-label="Breadcrumbs"

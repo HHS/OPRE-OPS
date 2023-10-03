@@ -31,8 +31,7 @@ const ResearchProjectDetail = () => {
     }, [dispatch, researchProjectId]);
 
     return (
-        <App>
-            <Breadcrumb currentName={researchProject.title} />
+        <App breadCrumbName={researchProject.title}>
             <Hero
                 entityName={researchProject.title}
                 // TODO: Set this to "Division" for now because ResearchProject can belong to multiple Portfolio/Divisions,

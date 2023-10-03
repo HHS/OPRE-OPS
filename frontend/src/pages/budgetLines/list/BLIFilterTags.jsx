@@ -8,7 +8,7 @@ import FilterTagsWrapper from "../../../components/UI/FilterTags/FilterTagsWrapp
  * @param {Object} props - The component props.
  * @param {Object} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
- * @returns {JSX.Element} - The procurement shop select element.
+ * @returns {React.JSX.Element} - The procurement shop select element.
  */
 export const BLIFilterTags = ({ filters, setFilters }) => {
     const [tagsList, setTagsList] = useState([]);

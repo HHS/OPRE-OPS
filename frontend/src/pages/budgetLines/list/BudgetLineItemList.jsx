@@ -122,8 +122,7 @@ export const BudgetLineItemList = () => {
     });
 
     return (
-        <App>
-            <Breadcrumb currentName={"Budget Lines"} />
+        <App breadCrumbName="Budget Lines">
             <TablePageLayout
                 title="Budget Lines"
                 subtitle={myBudgetLineItemsUrl ? "My Budget Lines" : "All Budget Lines"}
