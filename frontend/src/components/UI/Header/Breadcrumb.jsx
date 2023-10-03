@@ -19,7 +19,7 @@ const Breadcrumb = ({ currentName }) => {
     return (
         <section className="bg-white">
             <nav
-                className="usa-breadcrumb margin-right-2 padding-top-3 padding-bottom-4"
+                className="usa-breadcrumb margin-right-2 padding-y-3"
                 aria-label="Breadcrumbs"
             >
                 <ol className="usa-breadcrumb__list">
