@@ -4,7 +4,6 @@ import { useSearchParams } from "react-router-dom";
 import _ from "lodash";
 import App from "../../../App";
 import { useGetAgreementsQuery } from "../../../api/opsAPI";
-import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import sortAgreements from "./utils";
 import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import AgreementTabs from "./AgreementsTabs";

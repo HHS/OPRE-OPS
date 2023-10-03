@@ -4,8 +4,6 @@ import { useEffect } from "react";
 import App from "../../../App";
 import { getResearchProject } from "./getResearchProject";
 import { setResearchProject } from "./researchProjectSlice";
-
-import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import Hero from "../../../components/UI/Hero/Hero";
 import HeroFooter from "../../../components/ResearchProjects/HeroFooter/HeroFooter";
 

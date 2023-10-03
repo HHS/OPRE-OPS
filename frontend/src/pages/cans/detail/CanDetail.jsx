@@ -6,7 +6,6 @@ import CANBudgetSummary from "../../../components/CANs/CANBudgetSummary/CANBudge
 import constants from "../../../constants";
 import App from "../../../App";
 import { setCan } from "./canDetailSlice";
-import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 
 const CanDetail = () => {
     const dispatch = useDispatch();
