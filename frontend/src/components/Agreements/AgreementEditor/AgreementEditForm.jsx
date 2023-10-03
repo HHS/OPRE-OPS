@@ -82,24 +82,6 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         team_members: selectedTeamMembers
     } = agreement;
 
-    // This is needed due to a caching issue with the React Context - for some reason selected_project_officer
-    // is not updated in the parent context/props.
-    useEffect(() => {
-        const getProjectOfficerSetState = async (id) => {
-            const results = await getUser(id);
-            setSelectedProjectOfficer(results);
-        };
-
-        if (_.isEmpty(selectedProjectOfficer) && agreement?.project_officer) {
-            getProjectOfficerSetState(agreement?.project_officer).catch(console.error);
-        }
-
-        return () => {
-            setSelectedProjectOfficer({});
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
     const {
         data: productServiceCodes,
         error: errorProductServiceCodes,
