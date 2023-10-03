@@ -170,8 +170,7 @@ export const AgreementsList = () => {
     }
 
     return (
-        <App>
-            <Breadcrumb currentName="Agreements" />
+        <App breadCrumbName="Agreements">
             <TablePageLayout
                 title="Agreements"
                 subtitle={myAgreementsUrl ? "My Agreements" : "All Agreements"}
