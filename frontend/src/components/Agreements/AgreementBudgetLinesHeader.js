@@ -23,10 +23,9 @@ export const AgreementDetailHeader = ({ heading, details, includeDrafts, setIncl
                 >
                     <FontAwesomeIcon
                         icon={includeDrafts ? faToggleOn : faToggleOff}
-                        size="xl"
-                        className="margin-right-1 cursor-pointer usa-tooltip"
+                        size="2xl"
+                        className={`margin-right-1 cursor-pointer ${includeDrafts ? "text-primary" : "text-base"}`}
                         title={includeDrafts ? "On (Drafts included)" : "Off (Drafts excluded)"}
-                        // data-position="top"
                     />
                     <span className="text-primary">Include Drafts</span>
                 </button>

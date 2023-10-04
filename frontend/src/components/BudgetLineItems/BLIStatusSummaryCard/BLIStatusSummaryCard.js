@@ -27,13 +27,9 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
         return acc;
     }, {});
 
-    console.log(budgetLinesTotalsByStatus);
-
     const totalFunding = Object.values(budgetLinesTotalsByStatus).reduce((acc, status) => {
         return acc + status.total;
     }, 0);
-
-    console.log({ totalFunding });
 
     const data = [
         {

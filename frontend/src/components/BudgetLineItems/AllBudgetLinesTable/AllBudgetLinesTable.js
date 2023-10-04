@@ -22,15 +22,17 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
     return (
         <>
             <Table tableHeadings={All_BUDGET_LINES_TABLE_HEADINGS}>
-                {budgetLinesPage.map((bl) => (
+                {budgetLinesPage.map((budgetLine) => (
                     <AllBLIRow
-                        key={bl?.id}
-                        bl={bl}
+                        key={budgetLine?.id}
+                        budgetLine={budgetLine}
                         handleDeleteBudgetLine={() => {
                             alert("not implemented");
                         }}
                         handleSetBudgetLineForEditing={() => {
-                            navigate(`/agreements/${bl.agreement_id}/budget-lines?mode=edit&budget-line-id=${bl.id}`);
+                            navigate(
+                                `/agreements/${budgetLine.agreement_id}/budget-lines?mode=edit&budget-line-id=${budgetLine.id}`
+                            );
                         }}
                         isReviewMode={false}
                         readOnly={false}

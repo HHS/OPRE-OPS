@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import AgreementDetailHeader from "./AgreementDetailHeader";
+import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
 import AgreementDetailsView from "./AgreementDetailsView";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
 import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";

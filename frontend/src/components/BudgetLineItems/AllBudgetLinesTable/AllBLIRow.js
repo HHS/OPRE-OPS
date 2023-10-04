@@ -1,4 +1,3 @@
-import React from "react";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
@@ -15,11 +14,13 @@ import {
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
+import { changeBgColorIfExpanded, removeBorderBottomIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
  * @param {Object} props - The props for the BLIRow component.
- * @param {Object} props.bl - The budget line object.
+ * @param {Object} props.budgetLine - The budget line object.
  * @param {boolean} [props.canUserEditBudgetLines] - Whether the user can edit budget lines.
  * @param {Function} [props.handleSetBudgetLineForEditing] - The function to set the budget line for editing.
  * @param {Function} [props.handleDeleteBudgetLine] - The function to delete the budget line.
@@ -27,24 +28,21 @@ import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks"
  * @returns {React.JSX.Element} The BLIRow component.
  **/
 const AllBLIRow = ({
-    bl: budgetLine,
+    budgetLine,
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
     readOnly = false
 }) => {
-    const [isExpanded, setIsExpanded] = React.useState(false);
-    const [isRowActive, setIsRowActive] = React.useState(false);
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
     const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
-    let feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
-    let BudgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
-
-    // styles for the table row
-    const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
-    const changeBgColorIfExpanded = { backgroundColor: isExpanded && "var(--neutral-lightest)" };
+    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
+    const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
+    const { isExpanded, setIsRowActive, isRowActive, setIsExpanded } = useTableRow();
+    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
+    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
 
     const changeIcons = (
         <ChangeIcons
@@ -60,44 +58,44 @@ const AllBLIRow = ({
         <>
             <th
                 scope="row"
-                className={removeBorderBottomIfExpanded}
-                style={changeBgColorIfExpanded}
+                className={borderExpandedStyles}
+                style={bgExpandedStyles}
             >
                 {budgetLine.line_description}
             </th>
             <td
-                className={removeBorderBottomIfExpanded}
-                style={changeBgColorIfExpanded}
+                className={borderExpandedStyles}
+                style={bgExpandedStyles}
             >
                 {budgetLine.agreement_name}
             </td>
             <td
-                className={removeBorderBottomIfExpanded}
-                style={changeBgColorIfExpanded}
+                className={borderExpandedStyles}
+                style={bgExpandedStyles}
             >
                 {formatDateNeeded(budgetLine.date_needed)}
             </td>
             <td
-                className={removeBorderBottomIfExpanded}
-                style={changeBgColorIfExpanded}
+                className={borderExpandedStyles}
+                style={bgExpandedStyles}
             >
                 {budgetLine.fiscal_year}
             </td>
             <td
-                className={removeBorderBottomIfExpanded}
-                style={changeBgColorIfExpanded}
+                className={borderExpandedStyles}
+                style={bgExpandedStyles}
             >
                 {budgetLine.can_number}
             </td>
             <td
-                className={removeBorderBottomIfExpanded}
-                style={changeBgColorIfExpanded}
+                className={borderExpandedStyles}
+                style={bgExpandedStyles}
             >
-                {BudgetLineTotalPlusFees === 0 ? (
+                {budgetLineTotalPlusFees === 0 ? (
                     0
                 ) : (
                     <CurrencyFormat
-                        value={BudgetLineTotalPlusFees}
+                        value={budgetLineTotalPlusFees}
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$"}
@@ -108,8 +106,8 @@ const AllBLIRow = ({
                 )}
             </td>
             <td
-                className={removeBorderBottomIfExpanded}
-                style={changeBgColorIfExpanded}
+                className={borderExpandedStyles}
+                style={bgExpandedStyles}
             >
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>{changeIcons}</div>
@@ -212,7 +210,6 @@ const AllBLIRow = ({
             tableRowData={TableRowData}
             expandedData={ExpandedData}
             isExpanded={isExpanded}
-            isRowActive={isRowActive}
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
         />
@@ -220,7 +217,7 @@ const AllBLIRow = ({
 };
 
 AllBLIRow.propTypes = {
-    bl: PropTypes.object.isRequired,
+    budgetLine: PropTypes.object.isRequired,
     canUserEditBudgetLines: PropTypes.bool,
     isReviewMode: PropTypes.bool,
     handleSetBudgetLineForEditing: PropTypes.func,
