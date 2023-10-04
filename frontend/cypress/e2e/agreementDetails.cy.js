@@ -27,12 +27,11 @@ it("agreement loads with budget lines", () => {
     cy.get(".DetailsTabs_listItemNotSelected__Sy8MZ").click();
     cy.get('[data-cy="agreement-total-budget-lines-card-article"]').contains("Total Budget Lines");
     cy.get('[data-cy="number-of-agreements"]').contains("0");
-    cy.get(":nth-child(3) > :nth-child(4) > :nth-child(2) > div").contains("$ 0");
-    // cy.get('[data-cy="number-of-agreements"]').contains("2");
+    cy.get('[data-cy="currency-summary-card"]').contains("$ 0");
     cy.get("tbody").children().as("table-rows").should("have.length", 2);
     // toggle on Draft BLIs
     cy.get("#toggleDraftBLIs").should("exist");
     cy.get("#toggleDraftBLIs").click();
     cy.get('[data-cy="number-of-agreements"]').contains("2");
-    cy.get(":nth-child(3) > :nth-child(4) > :nth-child(2) > div").contains("$ 2,000,000.00");
+    cy.get('[data-cy="currency-summary-card"]').contains("$ 2,000,000.00");
 });

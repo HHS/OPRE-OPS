@@ -18,12 +18,12 @@ const DefaultLayout = ({ children, breadCrumbName }) => {
         <div className="bg-base-lightest">
             <div className="usa-overlay"></div>
             <Header />
-            {breadCrumbName ? <Breadcrumb currentName={breadCrumbName} /> : null}
-            {isAlertActive && <Alert />}
             <main
                 id="main-content"
                 className="grid-container bg-white padding-bottom-6"
             >
+                {breadCrumbName ? <Breadcrumb currentName={breadCrumbName} /> : null}
+                {isAlertActive && <Alert />}
                 {children}
             </main>
             <Footer />

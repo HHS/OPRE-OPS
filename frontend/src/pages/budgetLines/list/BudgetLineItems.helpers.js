@@ -9,6 +9,12 @@ import _ from "lodash";
  * @param {Array<any>} filters.bliStatus - An array of BLI statuses to filter by.
  * @returns {Array<any>} - The filtered array of budget line items.
  */
+
+export const uniqueBudgetLinesFiscalYears = (budgetLineItems) => {
+    const fiscalYears = budgetLineItems.map((bli) => bli.fiscal_year);
+    return _.uniq(fiscalYears);
+};
+
 export const filterBudgetLineItems = (budgetLineItems, filters) => {
     let filteredBudgetLineItems = _.cloneDeep(budgetLineItems);
 
