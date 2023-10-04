@@ -59,7 +59,7 @@ const HeroDescription = ({ label, description, urls }) => {
                     <a
                         key={url.id}
                         href={url.url}
-                        className="display-block margin-top-2 width-fit-content"
+                        className="display-block margin-top-2 width-fit-content text-primary"
                     >
                         See more on the website
                         <FontAwesomeIcon
