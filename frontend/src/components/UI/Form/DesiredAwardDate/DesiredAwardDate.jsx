@@ -16,7 +16,7 @@ import YearInput from "./YearInput";
  * @param {function} props.runValidate - A function to run Vest validation.
  * @param {Object} props.res - The Vest validation result object.
  * @param {function} props.cn - The className to apply to the component.
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.JSX.Element} - The rendered component.
  */
 export const DesiredAwardDate = ({
     enteredMonth,
