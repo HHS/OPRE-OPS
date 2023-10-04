@@ -170,14 +170,6 @@ export const convertCodeForDisplay = (listName, code) => {
     return codeMap[code] ? codeMap[code] : code;
 };
 
-export const loggedInName = (activeUser) => {
-    let loggedInUser = "Unknown User";
-    if (activeUser) {
-        loggedInUser = activeUser.full_name ? activeUser.full_name : activeUser.email;
-    }
-    return loggedInUser;
-};
-
 export const timeAgo = (dateParam) => {
     if (!dateParam) {
         return null;

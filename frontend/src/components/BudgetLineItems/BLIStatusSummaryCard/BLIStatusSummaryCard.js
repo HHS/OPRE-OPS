@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
@@ -9,6 +10,12 @@ import RoundedBox from "../../UI/RoundedBox";
 import { calculatePercent, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import styles from "./styles.module.css";
 
+/**
+ * Renders a summary card that displays the total amount and percentage of budget lines by status.
+ * @param {Object} props - The props that were defined by the caller of this component.
+ * @param {Object[]} props.budgetLines - An array of budget line objects.
+ * @returns {React.JSX.Element} - A React component that displays the budget line summary card.
+ */
 const BLIStatusSummaryCard = ({ budgetLines }) => {
     const [percent, setPercent] = React.useState("");
     const [hoverId, setHoverId] = React.useState(-1);
@@ -62,6 +69,16 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
         }
     ];
 
+    /**
+     * Renders a legend item for a budget line item status summary card.
+     * @param {Object} props - The props object.
+     * @param {number} props.id - The ID of the legend item.
+     * @param {string} props.label - The label of the legend item.
+     * @param {number} props.value - The value of the legend item.
+     * @param {string} props.color - The color of the legend item.
+     * @param {string} props.percent - The percentage of the legend item.
+     * @returns {React.JSX.Element} - The legend item component.
+     */
     const LegendItem = ({ id, label, value, color, percent }) => {
         const isGraphActive = hoverId === id;
         return (
@@ -95,6 +112,13 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
                 </div>
             </div>
         );
+    };
+    LegendItem.propTypes = {
+        id: PropTypes.number.isRequired,
+        label: PropTypes.string.isRequired,
+        value: PropTypes.number.isRequired,
+        color: PropTypes.string.isRequired,
+        percent: PropTypes.string.isRequired
     };
 
     return (
@@ -141,6 +165,10 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
             </div>
         </RoundedBox>
     );
+};
+
+BLIStatusSummaryCard.propTypes = {
+    budgetLines: PropTypes.array.isRequired
 };
 
 export default BLIStatusSummaryCard;
