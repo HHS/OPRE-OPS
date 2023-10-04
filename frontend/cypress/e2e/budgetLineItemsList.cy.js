@@ -2,6 +2,7 @@
 import { terminalLog, testLogin } from "./utils";
 
 const ALL_BLI_TOTAL = "35,166,048.00";
+const ADMIN_BLI_TOTAL = "35,165,000.00";
 const DRAFT_BLI_TOTAL = "2,000,000.00";
 const IN_REVIEW_BLI_TOTAL = "0";
 const EXECUTING_BLI_TOTAL = "16,080,000.00";
@@ -19,7 +20,7 @@ beforeEach(() => {
 //     cy.checkA11y(null, null, terminalLog);
 // });
 
-it.only("loads", () => {
+it("loads", () => {
     cy.visit("/budget-lines");
     cy.get("h1").should("have.text", "Budget Lines");
     cy.get("h2").should("have.text", "All Budget Lines");
@@ -203,6 +204,21 @@ it("Total BLI Summary Card should calculate the total amount of the budget line 
     cy.get("@total-bli-card").contains(OBLIGATED_BLI_TOTAL);
 });
 
+it("Should filter all budgetlines vs my budget lines", () => {
+    cy.get('[data-cy="bl-total-summary-card"]').as("total-bli-card").should("exist");
+    cy.get("@total-bli-card").contains(ALL_BLI_TOTAL);
+    cy.get('[data-cy="tab-selected"]').as("tab-selected").should("exist");
+    cy.get('[data-cy="tab-not-selected"]').as("tab-selected").should("exist");
+    cy.get('[data-cy="tab-not-selected"]').click();
+    cy.get("@total-bli-card").contains(ADMIN_BLI_TOTAL);
+    cy.visit("/");
+    cy.contains("Sign-out").click();
+    testLogin("basic");
+    cy.visit("/budget-lines");
+    cy.get("@total-bli-card").contains(ALL_BLI_TOTAL);
+    cy.get('[data-cy="tab-not-selected"]').click();
+    cy.get("@total-bli-card").contains(0);
+});
 /**
  * Helper function to filter by status
  * @param {string} status - The status to filter by
