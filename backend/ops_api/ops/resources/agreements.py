@@ -4,7 +4,7 @@ from dataclasses import fields as dc_fields
 from typing import ClassVar, Optional
 
 import desert
-from flask import Response, current_app, request
+from flask import Response, current_app, redirect, request, url_for
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from marshmallow import Schema, ValidationError, fields
@@ -21,7 +21,6 @@ from models.cans import (
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
-from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
@@ -294,43 +293,14 @@ class AgreementListAPI(BaseListAPI):
     def __init__(self, model: BaseModel = Agreement):
         super().__init__(model)
 
-    @staticmethod
-    def _get_query(args):
-        polymorphic_agreement = Agreement.get_polymorphic()
-        stmt = select(polymorphic_agreement).order_by(Agreement.id)
-        query_helper = QueryHelper(stmt)
-
-        match args:
-            case {"search": search, **filter_args} if not search:
-                query_helper.return_none()
-
-            case {"search": search, **filter_args}:
-                query_helper.add_search(polymorphic_agreement.name, search)
-
-            case {**filter_args}:
-                pass  # Do nothing if only filters are provided
-
-        for key, value in filter_args.items():
-            with suppress(ValueError):
-                query_helper.add_column_equals(Agreement.get_class_field(key), value)
-
-        stmt = query_helper.get_stmt()
-        current_app.logger.debug(f"SQL: {stmt}")
-
-        return stmt
-
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
-        stmt = self._get_query(request.args)
-
-        result = current_app.db_session.execute(stmt).all()
-
-        items = (i for item in result for i in item)
-
-        response = make_response_with_headers([i.to_dict() for i in items])
-
-        return response
+        url = (
+            f"{url_for('api.contract-list')}"
+            + f"{'?' if request.query_string else ''}{request.query_string.decode('utf-8')}"
+        )
+        return redirect(url, code=307)
 
     @override
     @is_authorized(PermissionType.POST, Permission.AGREEMENT)

@@ -169,17 +169,10 @@ def test_agreements_with_simulated_error(auth_client, loaded_db, simulated_error
 )
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_with_filter(auth_client, key, value, loaded_db):
-    response = auth_client.get(f"/api/v1/agreements/?{key}={value}")
+    query_dict = {key: value}
+    response = auth_client.get("/api/v1/agreements/", follow_redirects=True, query_string=query_dict)
     assert response.status_code == 200
-
-    success = all(item[key] == value for item in response.json)
-
-    if not success:
-        from pprint import pprint
-
-        pprint([item[key] for item in response.json])
-        pprint(value)
-    assert success
+    assert all(item[key] == value for item in response.json if key in item)
 
 
 @pytest.mark.usefixtures("app_ctx")

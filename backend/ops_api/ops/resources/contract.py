@@ -1,3 +1,5 @@
+from contextlib import suppress
+
 from flask import Response, current_app, request
 from models.base import BaseData
 from models.cans import ContractAgreement
@@ -25,14 +27,18 @@ class ContractListAPI(BaseListAPI):
         super().__init__(model)
 
     @staticmethod
-    def _get_query(search=None):
+    def _get_query(search=None, **kwargs):
         stmt = select(ContractAgreement).order_by(ContractAgreement.id)
         query_helper = QueryHelper(stmt)
 
         if search is not None and len(search) == 0:
             query_helper.return_none()
         elif search:
-            query_helper.add_search(ContractAgreement.contract_number, search)
+            query_helper.add_search(ContractAgreement.name, search)
+
+        for key, value in kwargs.items():
+            with suppress(AttributeError):
+                query_helper.add_column_equals(getattr(ContractAgreement, key), value)
 
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")
@@ -42,9 +48,7 @@ class ContractListAPI(BaseListAPI):
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
-        search = request.args.get("search")
-
-        stmt = self._get_query(search)
+        stmt = self._get_query(**request.args)
 
         result = current_app.db_session.execute(stmt).all()
         return make_response_with_headers([i.to_dict() for item in result for i in item])
