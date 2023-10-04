@@ -11,6 +11,8 @@ import AgreementValuesCard from "../../../components/Agreements/AgreementDetails
 import { useState } from "react";
 import AgreementBudgetLinesHeader from "../../../components/Agreements/AgreementBudgetLinesHeader";
 import { draftBudgetLineStatuses } from "../../../helpers/utils";
+import BudgetLinesByFiscalYear from "../../../components/Agreements/AgreementDetailsCards/BudgetLinesByFiscalYear";
+import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard";
 
 /**
  * Renders Agreement budget lines view
@@ -55,12 +57,8 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                 setIncludeDrafts={setIncludeDrafts}
             />
             <div className="display-flex flex-justify">
-                <AgreementTotalBudgetLinesCard
-                    numberOfAgreements={numberOfAgreements}
-                    countsByStatus={countsByStatus}
-                    includeDrafts={includeDrafts}
-                />
-                <AgreementValuesCard budgetLineItems={filteredBlis} />
+                <BudgetLinesByFiscalYear budgetLineItems={filteredBlis} />
+                <AgreementTotalCard budgetLineItems={filteredBlis} />
             </div>
             <AgreementDetailHeader
                 heading="Budget Lines"
