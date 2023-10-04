@@ -39,6 +39,7 @@ const ResearchProjectDetail = () => {
                 // TODO: i.e. the page design needs to be updated
                 divisionName="Division"
                 teamLeaders={researchProject.team_leaders}
+                label="Project Description"
                 description={researchProject.description}
                 urls={Array.of({ id: 1, url: researchProject.url })}
             >

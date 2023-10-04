@@ -18,6 +18,7 @@ const Hero = (props) => {
             <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>{props.divisionName}</h2>
             <TeamLeaders teamLeaders={props.teamLeaders} />
             <HeroDescription
+                label={props.label}
                 description={props.description}
                 urls={props.urls}
             />
