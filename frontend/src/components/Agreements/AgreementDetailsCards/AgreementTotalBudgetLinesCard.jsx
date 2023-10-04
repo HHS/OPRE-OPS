@@ -8,9 +8,10 @@ import SummaryCard from "../../UI/SummaryCard";
  * @param {Object} props - The component props.
  * @param {number} props.numberOfAgreements - The number of agreements.
  * @param {Object} props.countsByStatus - The counts of agreements by status.
+ * @param {boolean} props.includeDrafts - Include draft BLIs
  * @returns {React.JSX.Element} - The agreement total budget lines card component JSX.
  */
-const AgreementTotalBudgetLinesCard = ({ numberOfAgreements = 0, countsByStatus = {} }) => {
+const AgreementTotalBudgetLinesCard = ({ numberOfAgreements = 0, countsByStatus = {}, includeDrafts }) => {
     const headerText = "Total Budget Lines";
 
     return (
@@ -25,7 +26,10 @@ const AgreementTotalBudgetLinesCard = ({ numberOfAgreements = 0, countsByStatus 
                         {numberOfAgreements}
                     </span>
                     <div className="display-flex flex-column margin-left-105 grid-gap">
-                        <StatusTagList countsByStatus={countsByStatus} />
+                        <StatusTagList
+                            countsByStatus={countsByStatus}
+                            includeDrafts={includeDrafts}
+                        />
                     </div>
                 </div>
             </article>
@@ -35,7 +39,8 @@ const AgreementTotalBudgetLinesCard = ({ numberOfAgreements = 0, countsByStatus 
 
 AgreementTotalBudgetLinesCard.propTypes = {
     numberOfAgreements: PropTypes.number.isRequired,
-    countsByStatus: PropTypes.object.isRequired
+    countsByStatus: PropTypes.object.isRequired,
+    includeDrafts: PropTypes.bool.isRequired
 };
 
 export default AgreementTotalBudgetLinesCard;
