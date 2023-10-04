@@ -11,7 +11,6 @@ TEST_CONTRACT_DATA = {
     "agreement_type": "CONTRACT",
     "name": "Feature Test Contract",
     "description": "Contract Description",
-    "number": "BDD0001",
     "team_members": [{"id": 1}],
     "support_contacts": [{"id": 2}, {"id": 3}],
     "notes": "Test Note",
@@ -22,7 +21,6 @@ TEST_CONTRACT_DATA = {
 def test_contract(loaded_db):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
-        number="BDD0999",
         contract_number="CT0999",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,

@@ -43,7 +43,6 @@
   ],
   agreement: [
     {
-      number: "AGR0001",
       name: "Contract #1: African American Child and Family Research Center",
       description: "Test description",
       product_service_code_id: 1,
@@ -56,7 +55,6 @@
       created_by: 4,
     },
     {
-      number: "AGR0002",
       name: "DIRECT ALLOCATION #2: African American Child and Family Research Center",
       description: "Test description",
       product_service_code_id: 1,
@@ -69,7 +67,6 @@
       created_by: 4,
     },
     {
-      number: "AGR0003",
       name: "Grant #1: Early Care and Education Leadership Study (ExCELS)",
       description: "Test description",
       product_service_code_id: 1,
@@ -82,7 +79,6 @@
       created_by: 4,
     },
     {
-      number: "AGR0004",
       name: "IAA #1: Early Care and Education Leadership Study (ExCELS)",
       description: "Test description",
       product_service_code_id: 1,
@@ -95,7 +91,6 @@
       created_by: 4,
     },
     {
-      number: "AGR0005",
       name: "IAA-AA #1: Fathers and Continuous Learning (FCL)",
       description: "Test description",
       product_service_code_id: 1,
@@ -108,7 +103,6 @@
       created_by: 4,
     },
     {
-      number: "AGR0006",
       name: "CONTRACT #2: Fathers and Continuous Learning (FCL)",
       description: "Test description",
       product_service_code_id: 1,
@@ -121,7 +115,6 @@
       created_by: 4,
     },
     {
-      number: "AGR0007",
       name: "MIHOPE Check-In",
       description: "Test description",
       product_service_code_id: 1,
@@ -134,7 +127,6 @@
       created_by: 4,
     },
     {
-      number: "AGR0008",
       name: "MIHOPE Long-Term",
       description: "Test description",
       product_service_code_id: 1,
@@ -147,7 +139,6 @@
       created_by: 4,
     },
     {
-      number: "AGR0009",
       name: "Interoperability Initiatives",
       description: "Test description",
       product_service_code_id: 1,
@@ -163,7 +154,7 @@
   contract_agreement: [
     {
       id: 1,
-      contract_number: "CT00XX1",
+      contract_number: "XXXX000000001",
       vendor: "Vendor 1",
       delivered_status: false,
       contract_type: "RESEARCH",
@@ -171,7 +162,7 @@
     },
     {
       id: 6,
-      contract_number: "CT00XX6",
+      contract_number: "XXXX000000006",
       vendor: "Vendor 1",
       delivered_status: false,
       contract_type: "RESEARCH",
@@ -179,7 +170,7 @@
     },
     {
       id: 7,
-      contract_number: "CT00XX7",
+      contract_number: "XXXX000000007",
       vendor: "Vendor 2",
       delivered_status: false,
       contract_type: "RESEARCH",
@@ -187,7 +178,7 @@
     },
     {
       id: 8,
-      contract_number: "CT00XX8",
+      contract_number: "XXXX000000008",
       vendor: "Vendor 2",
       delivered_status: false,
       contract_type: "RESEARCH",
@@ -195,7 +186,7 @@
     },
     {
       id: 9,
-      contract_number: "CT00XX9",
+      contract_number: "XXXX000000009",
       vendor: "Vendor 3",
       delivered_status: false,
       contract_type: "RESEARCH",
