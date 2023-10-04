@@ -6,8 +6,8 @@ import { useEffect, useState } from "react";
  *  A comboBox.
  * @param {Object} props - The component props.
  * @param {string} props.namespace - A unique name to use as a prefix for id, name, class, etc.
- * @param {array} props.data - The data to choose from.
- * @param {Object} props.selectedData - The currently selected data item.
+ * @param {Array<any>} props.data - The data to choose from.
+ * @param {Object | Array<any>} props.selectedData - The currently selected data item.
  * @param {Function} props.setSelectedData - A function to call when the selected item changes.
  * @param {Function} [props.optionText] - A function to call that returns a string that provides the option text.
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
  * @param {boolean} [props.clearWhenSet] - Whether to clear the box when an option is selected.
  * @param {boolean} [props.isMulti] - Whether to allow multiple selections.
  * Used for TeamMemberComboBox. (optional).
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.JSX.Element} - The rendered component.
  */
 export const ComboBox = ({
     namespace,
@@ -155,7 +155,7 @@ export const ComboBox = ({
             className={`padding-0 ${messages.length ? "usa-input--error" : null}`}
             classNamePrefix={namespace}
             name={namespace}
-            tabIndex="0"
+            tabIndex={0}
             value={defaultOption ?? selectedOption}
             onChange={handleChange}
             options={options}
@@ -173,7 +173,7 @@ export default ComboBox;
 ComboBox.propTypes = {
     namespace: PropTypes.string.isRequired,
     data: PropTypes.array.isRequired,
-    selectedData: PropTypes.object,
+    selectedData: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
     setSelectedData: PropTypes.func.isRequired,
     optionText: PropTypes.func,
     legendClassname: PropTypes.string,

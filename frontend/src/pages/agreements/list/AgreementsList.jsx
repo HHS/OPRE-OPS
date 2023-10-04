@@ -159,7 +159,7 @@ export const AgreementsList = () => {
     if (myAgreementsUrl) {
         const myAgreements = filteredAgreements.filter((agreement) => {
             return agreement.team_members?.some((teamMember) => {
-                return teamMember.id === activeUser.id;
+                return teamMember.id === activeUser.id || agreement.project_officer === activeUser.id;
             });
         });
         sortedAgreements = sortAgreements(myAgreements);

@@ -1,6 +1,5 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import StepIndicator from "../../StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
@@ -8,12 +7,12 @@ import BudgetLinesTable from "../../../BudgetLineItems/BudgetLinesTable";
 import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
 import EditModeTitle from "../../../../pages/agreements/EditModeTitle";
-import { loggedInName } from "../../../../helpers/utils";
 import suite from "./suite";
 import { convertCodeForDisplay } from "../../../../helpers/utils";
 import ConfirmationModal from "../../Modals/ConfirmationModal";
 import { useUpdateBudgetLineItemMutation, useAddBudgetLineItemMutation } from "../../../../api/opsAPI";
 import useAlert from "../../../../hooks/use-alert.hooks";
+import { useGetLoggedInUserFullName } from "../../../../hooks/user.hooks";
 
 /**
  * Renders the Create Budget Lines component with React context.
@@ -87,6 +86,7 @@ export const StepCreateBudgetLines = ({
     const navigate = useNavigate();
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
+    const loggedInUserFullName = useGetLoggedInUserFullName();
     const { setAlert } = useAlert();
     // setters
     const setEnteredDescription = useSetState("entered_description");
@@ -96,8 +96,6 @@ export const StepCreateBudgetLines = ({
     const setEnteredDay = useSetState("entered_day");
     const setEnteredYear = useSetState("entered_year");
     const setEnteredComments = useSetState("entered_comments");
-
-    let loggedInUserFullName = useSelector((state) => loggedInName(state.auth?.activeUser));
 
     // Validation
     let res = suite.get();
