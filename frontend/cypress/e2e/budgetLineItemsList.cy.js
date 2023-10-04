@@ -104,7 +104,7 @@ it("the filter button works as expected", () => {
     cy.get("svg[id='filter-tag-portfolios']").should("exist");
     cy.get("svg[id='filter-tag-bliStatus']").should("exist");
 
-    cy.get("div").contains("FY 2012").should("exist");
+    cy.get("div").contains("FY 2043").should("exist");
     cy.get("div").contains("Child Welfare Research").should("exist");
     cy.get("div").contains("Draft").should("exist");
 
