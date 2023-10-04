@@ -1,4 +1,4 @@
-import { convertCodeForDisplay } from "../../../helpers/utils";
+import { convertCodeForDisplay, draftBudgetLineStatuses } from "../../../helpers/utils";
 import Tag from "../Tag/Tag";
 
 const statusClasses = {
@@ -38,8 +38,11 @@ export const StatusTag = ({ status, count = -1 }) => {
     );
 };
 
-export const StatusTagList = ({ countsByStatus }) => {
-    const zerosForAllStatuses = statuses.reduce((obj, status) => {
+export const StatusTagList = ({ countsByStatus, includeDrafts }) => {
+    const filteredStatues = includeDrafts
+        ? statuses
+        : statuses.filter((status) => !draftBudgetLineStatuses.includes(status));
+    const zerosForAllStatuses = filteredStatues.reduce((obj, status) => {
         obj[status] = 0;
         return obj;
     }, {});

@@ -4,7 +4,7 @@ import SummaryCard from "../SummaryCard";
 const CurrencySummaryCard = ({ headerText, amount, children }) => {
     return (
         <SummaryCard title={headerText}>
-            {amount && (
+            {(amount || amount === 0) && (
                 <CurrencyWithSmallCents
                     dollarsClasses="font-sans-xl"
                     centsClasses="font-sans-3xs"

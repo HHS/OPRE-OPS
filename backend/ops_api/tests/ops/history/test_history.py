@@ -128,7 +128,6 @@ def test_history_expanded_with_web_client(auth_client, loaded_db):
         "agreement_type": "CONTRACT",
         "agreement_reason": "NEW_REQ",
         "name": "Contract123",
-        "number": "123",
         "description": "History Test Description",
         "product_service_code_id": 1,
         "project_officer": 1,
