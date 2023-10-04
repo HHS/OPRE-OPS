@@ -29,6 +29,7 @@ const HeroDescription = ({ description, urls }) => {
 
     return (
         <div className="margin-top-1">
+            <div className="text-base-dark margin-top-3 font-12px">!Description</div>
             <div style={buttonStyle}>
                 <ReactMarkdown>{description?.trimStart().substring(0, 255) + "..."}</ReactMarkdown>
                 <button

@@ -1,9 +1,14 @@
 import TeamLeaders from "../../UI/TeamLeaders/TeamLeaders";
 import HeroDescription from "../../UI/HeroDescription/HeroDescription";
+import cssClasses from "./styles.module.css";
 
 const Hero = (props) => {
     return (
-        <section className={`${props.backgroundColor && "padding-4"} radius-md ${props.backgroundColor}`}>
+        <section
+            className={`${props.backgroundColor && "padding-4"} radius-md ${cssClasses.cardBorder} ${
+                props.backgroundColor
+            }`}
+        >
             <h1
                 className={`font-sans-2xl margin-0 text-brand-primary`}
                 style={{ maxWidth: "70%" }}
