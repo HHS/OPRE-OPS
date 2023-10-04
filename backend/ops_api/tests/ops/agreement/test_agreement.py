@@ -6,11 +6,10 @@ from sqlalchemy import func, select, update
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreement_retrieve(loaded_db):
-    stmt = select(Agreement).where(Agreement.id == 1)
-    agreement = loaded_db.scalar(stmt)
+    agreement = loaded_db.get(Agreement, 1)
 
     assert agreement is not None
-    assert agreement.number == "AGR0001"
+    assert agreement.contract_number == "XXXX000000001"
     assert agreement.name == "Contract #1: African American Child and Family Research Center"
     assert agreement.display_name == agreement.name
     assert agreement.id == 1
@@ -68,7 +67,7 @@ def test_agreements_serialization(auth_client, loaded_db):
     assert json_to_compare == {
         "agreement_reason": "NEW_REQ",
         "agreement_type": "CONTRACT",
-        "contract_number": "CT00XX1",
+        "contract_number": "XXXX000000001",
         "contract_type": "RESEARCH",
         "created_by": 4,
         "delivered_status": False,
@@ -78,7 +77,6 @@ def test_agreements_serialization(auth_client, loaded_db):
         "incumbent": "",
         "name": "Contract #1: African American Child and Family Research Center",
         "notes": None,
-        "number": "AGR0001",
         "procurement_shop_id": 1,
         "product_service_code_id": 1,
         "project_officer": 1,
@@ -158,11 +156,10 @@ def test_agreements_with_simulated_error(auth_client, loaded_db, simulated_error
     "key,value",
     (
         ("agreement_reason", "NEW_REQ"),
-        ("contract_number", "CT00XX1"),
+        ("contract_number", "XXXX000000001"),
         ("contract_type", "RESEARCH"),
         ("agreement_type", "CONTRACT"),
         ("delivered_status", False),
-        ("number", "AGR0001"),
         ("procurement_shop_id", 1),
         ("project_officer", 1),
         ("research_project_id", 1),
@@ -226,15 +223,14 @@ def test_agreement_as_contract_has_contract_fields(loaded_db):
     agreement = loaded_db.scalar(stmt)
 
     assert agreement.agreement_type.name == "CONTRACT"
-    assert agreement.contract_number == "CT00XX1"
+    assert agreement.contract_number == "XXXX000000001"
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreement_create_contract_agreement(loaded_db):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
-        contract_number="CT0002",
+        contract_number="XXXX000000002",
         contract_type=ContractType.RESEARCH,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
@@ -245,7 +241,7 @@ def test_agreement_create_contract_agreement(loaded_db):
     stmt = select(Agreement).where(Agreement.id == contract_agreement.id)
     agreement = loaded_db.scalar(stmt)
 
-    assert agreement.contract_number == "CT0002"
+    assert agreement.contract_number == "XXXX000000002"
     assert agreement.contract_type == ContractType.RESEARCH
 
 
@@ -253,7 +249,6 @@ def test_agreement_create_contract_agreement(loaded_db):
 def test_agreement_create_grant_agreement(loaded_db):
     grant_agreement = GrantAgreement(
         name="GNTXX12399",
-        number="AGRXX003459217-A",
         foa="NIH",
         agreement_type=AgreementType.GRANT,
     )
@@ -271,8 +266,7 @@ def test_agreement_create_grant_agreement(loaded_db):
 def test_contract(loaded_db):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
-        contract_number="CT0002",
+        contract_number="XXXX000000002",
         contract_type=ContractType.RESEARCH,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
@@ -297,7 +291,6 @@ def test_agreements_put_by_id_400_for_type_change(auth_client, test_contract):
         json={
             "name": "Updated Contract Name",
             "description": "Updated Contract Description",
-            "number": "AGR0001",
         },
     )
     print(f"{response.status_code=}")
@@ -325,7 +318,6 @@ def test_agreements_put_by_id_contract(auth_client, loaded_db, test_contract):
             "agreement_type": "CONTRACT",
             "name": "Updated Contract Name",
             "description": "Updated Contract Description",
-            "number": "AGR0001",
             "team_members": [{"id": 1}],
             "support_contacts": [{"id": 2}, {"id": 3}],
             "notes": "Test Note",
@@ -353,7 +345,6 @@ def test_agreements_put_by_id_contract_remove_fields(auth_client, loaded_db, tes
             "agreement_type": "CONTRACT",
             "name": "Updated Contract Name",
             "description": "Updated Contract Description",
-            "number": "AGR0001",
         },
     )
     assert response.status_code == 200
@@ -378,7 +369,6 @@ def test_agreements_put_by_id_grant(auth_client, loaded_db):
             "agreement_type": "GRANT",
             "name": "Updated Grant Name",
             "description": "Updated Grant Description",
-            "number": "AGR0003",
             "team_members": [{"id": 1}, {"id": 2}, {"id": 3}],
         },
     )
@@ -402,7 +392,6 @@ def test_agreements_patch_by_id_400_for_type_change(auth_client, loaded_db, test
             "agreement_type": "GRANT",
             "name": "Updated Contract Name",
             "description": "Updated Contract Description",
-            "number": "AGR0001",
         },
     )
     assert response.status_code == 400
@@ -417,7 +406,6 @@ def test_agreements_patch_by_id_contract(auth_client, loaded_db, test_contract):
             "agreement_type": "CONTRACT",
             "name": "Updated Contract Name",
             "description": "Updated Contract Description",
-            "number": "AGR0001",
             "team_members": [{"id": 1}],
             "support_contacts": [{"id": 2}, {"id": 3}],
             "notes": "Test Note",
@@ -446,7 +434,6 @@ def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test
             "agreement_type": "CONTRACT",
             "name": "Updated Contract Name",
             "description": "Updated Contract Description",
-            "number": "AGR0001",
             "team_members": [{"id": 1}],
             "support_contacts": [{"id": 2}, {"id": 3}],
             "notes": "Test Note",
@@ -495,7 +482,6 @@ def test_agreements_patch_by_id_grant(auth_client, loaded_db):
             "agreement_type": "GRANT",
             "name": "Updated Grant Name",
             "description": "Updated Grant Description",
-            "number": "AGR0001",
             "team_members": [{"id": 1}],
             "notes": "Test Note",
         },
