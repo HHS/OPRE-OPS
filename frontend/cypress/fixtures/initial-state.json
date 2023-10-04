@@ -7,7 +7,7 @@
         "canFiscalYearObj": {},
         "pendingFunds": "--",
         "selectedFiscalYear": {
-            "value": "2023"
+            "value": null
         }
     },
     "portfolioList": {
@@ -73,7 +73,7 @@
         "portfolioCans": [],
         "portfolioCansFundingDetails": [],
         "selectedFiscalYear": {
-            "value": "2023"
+            "value": null
         },
         "researchProjects": []
     },
