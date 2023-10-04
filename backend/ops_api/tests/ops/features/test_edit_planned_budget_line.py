@@ -21,7 +21,6 @@ from pytest_bdd import given, scenario, then, when
 def original_agreement():
     return {
         "name": "CTXX12399",
-        "number": "AGRXX003459217-B",
         "contract_number": "CT0002",
         "contract_type": ContractType.RESEARCH,
         "agreement_type": AgreementType.CONTRACT,

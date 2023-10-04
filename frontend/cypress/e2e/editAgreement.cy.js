@@ -6,7 +6,6 @@ const testAgreement = {
     agreement_type: "CONTRACT",
     agreement_reason: "NEW_REQ",
     name: "Test Contract",
-    number: "TEST001",
     description: "Test Description",
     research_project_id: 1,
     product_service_code_id: 1,
