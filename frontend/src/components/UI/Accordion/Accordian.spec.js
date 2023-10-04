@@ -39,7 +39,7 @@ describe("Accordion", () => {
         ).toThrowError("Unrecognized heading level: 7");
     });
 
-    it("throws an error if the heading level is invalid", () => {
+    it("throws an error if the heading level is invalid as button", () => {
         expect(() =>
             render(
                 <Accordion
