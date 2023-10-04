@@ -10,7 +10,8 @@ import { useBudgetLinesList } from "./budget-lines-list.hooks";
 import {
     filterBudgetLineItems,
     handleFilterByUrl,
-    addCanAndAgreementNameToBudgetLines
+    addCanAndAgreementNameToBudgetLines,
+    uniqueBudgetLinesFiscalYears
 } from "./BudgetLineItems.helpers";
 
 /**
@@ -45,6 +46,7 @@ export const BudgetLineItemList = () => {
     const filteredBudgetLineItems = filterBudgetLineItems(budgetLineItems, filters);
     const sortedBLIs = handleFilterByUrl(myBudgetLineItemsUrl, filteredBudgetLineItems, agreements, activeUser);
     const budgetLinesWithCanAndAgreementName = addCanAndAgreementNameToBudgetLines(sortedBLIs, cans, agreements);
+    const budgetLinesFiscalYears = uniqueBudgetLinesFiscalYears(budgetLineItems);
 
     return (
         <App breadCrumbName="Budget Lines">
@@ -70,6 +72,7 @@ export const BudgetLineItemList = () => {
                     <BLIFilterButton
                         filters={filters}
                         setFilters={setFilters}
+                        budgetLinesFiscalYears={budgetLinesFiscalYears}
                     />
                 }
                 SummaryCardsSection={<SummaryCardsSection budgetLines={budgetLinesWithCanAndAgreementName} />}
