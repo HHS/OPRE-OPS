@@ -43,7 +43,6 @@ class AgreementData:
     _subclasses: ClassVar[dict[Optional[AgreementType], type["AgreementData"]]] = {}
     _schemas: ClassVar[dict[Optional[AgreementType], Schema]] = {}
     name: str
-    number: str
     agreement_type: AgreementType = fields.Enum(AgreementType)
     display_name: Optional[str] = None
     description: Optional[str] = None
@@ -117,7 +116,6 @@ class AgreementResponse:
     type: str
     name: str
     created_by: int
-    number: str
     description: str
     product_service_code: Optional[ProductServiceCode]
     incumbent: str
