@@ -7,7 +7,7 @@ import { useGetAgreementsQuery } from "../../../api/opsAPI";
 import sortAgreements from "./utils";
 import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import AgreementTabs from "./AgreementsTabs";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
+import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import AgreementsFilterButton from "./AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags";
@@ -138,7 +138,7 @@ export const AgreementsList = () => {
             (filters.budgetLineStatus.draft === true && agreement.budget_line_items.length === 0) ||
             (filters.budgetLineStatus.draft === true &&
                 agreement.budget_line_items.some((bli) => {
-                    return bli.status === "DRAFT" || bli.status === "UNDER_REVIEW";
+                    return draftBudgetLineStatuses.includes(bli.status);
                 })) ||
             (filters.budgetLineStatus.planned === true &&
                 agreement.budget_line_items.some((bli) => {
