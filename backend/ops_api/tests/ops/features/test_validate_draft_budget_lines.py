@@ -210,7 +210,6 @@ def client(auth_client):
 def agreement_null_project(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         product_service_code_id=2,
@@ -231,7 +230,6 @@ def agreement_null_project(loaded_db, context):
 def agreement_null_agreement_type(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         product_service_code_id=2,
@@ -253,7 +251,6 @@ def agreement_null_agreement_type(loaded_db, context):
 def agreement_empty_description(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         product_service_code_id=2,
@@ -275,7 +272,6 @@ def agreement_empty_description(loaded_db, context):
 def agreement_null_product_service_code(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -296,7 +292,6 @@ def agreement_null_product_service_code(loaded_db, context):
 def agreement_null_procurement_shop(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -317,7 +312,6 @@ def agreement_null_procurement_shop(loaded_db, context):
 def agreement_null_agreement_reason(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -338,7 +332,6 @@ def agreement_null_agreement_reason(loaded_db, context):
 def agreement_reason_with_incumbent(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -363,7 +356,6 @@ def agreement_reason_with_incumbent(loaded_db, context):
 def agreement_reason_with_incumbent_required(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -385,7 +377,6 @@ def agreement_reason_with_incumbent_required(loaded_db, context):
 def agreement_null_project_officer(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -406,7 +397,6 @@ def agreement_null_project_officer(loaded_db, context):
 def agreement_null_team_members(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -427,7 +417,6 @@ def agreement_null_team_members(loaded_db, context):
 def valid_agreement(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,

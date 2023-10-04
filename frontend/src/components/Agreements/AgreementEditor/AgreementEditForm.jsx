@@ -141,9 +141,6 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
     const cleanAgreementForApi = (data) => {
         // eslint-disable-next-line no-unused-vars
         const { id, budget_line_items, created_by, created_on, updated_on, ...cleanData } = data;
-        if (!("number" in cleanData)) {
-            cleanData["number"] = "";
-        }
         return { id: id, cleanData: cleanData };
     };
 
