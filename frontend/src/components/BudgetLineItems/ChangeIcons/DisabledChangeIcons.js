@@ -15,29 +15,29 @@ import icons from "../../../uswds/img/sprite.svg";
  * @returns {React.JSX.Element} - The rendered component.
  **/
 const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () => {}, sendToReviewIcon = false }) => {
-    const classes = `text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip ${DISABLED_ICON_CLASSES}`;
+    const classes = `text-primary height-2 width-2 margin-right-1 cursor-pointer ${DISABLED_ICON_CLASSES}`;
     const rowId = React.useId();
     return (
         <div className="display-flex flex-align-center">
-            <>
+            <div
+                className="usa-tooltip"
+                title="Only team members listed on this agreement can edit or delete"
+                data-position="left"
+            >
                 <FontAwesomeIcon
                     id={`edit-${rowId}`}
                     data-cy="edit-row"
                     icon={faPen}
                     className={classes}
-                    title="cannot edit"
-                    data-position="top"
                 />
                 <FontAwesomeIcon
                     id={`delete-${rowId}`}
                     data-cy="delete-row"
                     data-testid="delete-row"
                     icon={faTrash}
-                    title="cannot delete"
-                    data-position="top"
                     className={classes}
                 />
-            </>
+            </div>
             {duplicateIcon && (
                 <FontAwesomeIcon
                     id={`duplicate-${rowId}`}

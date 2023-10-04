@@ -1,8 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
-import _ from "lodash";
 
 import ProcurementShopSelectWithFee from "../../UI/Form/ProcurementShopSelectWithFee";
 import AgreementReasonSelect from "../../UI/Form/AgreementReasonSelect";
@@ -23,7 +22,6 @@ import {
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
 import ProjectOfficerComboBox from "../../UI/Form/ProjectOfficerComboBox";
-import { getUser } from "../../../api/getUser";
 import useAlert from "../../../hooks/use-alert.hooks";
 
 /**
@@ -81,24 +79,6 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         agreement_reason: agreementReason,
         team_members: selectedTeamMembers
     } = agreement;
-
-    // This is needed due to a caching issue with the React Context - for some reason selected_project_officer
-    // is not updated in the parent context/props.
-    useEffect(() => {
-        const getProjectOfficerSetState = async (id) => {
-            const results = await getUser(id);
-            setSelectedProjectOfficer(results);
-        };
-
-        if (_.isEmpty(selectedProjectOfficer) && agreement?.project_officer) {
-            getProjectOfficerSetState(agreement?.project_officer).catch(console.error);
-        }
-
-        return () => {
-            setSelectedProjectOfficer({});
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     const {
         data: productServiceCodes,

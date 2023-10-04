@@ -11,9 +11,10 @@ import BLIStatusComboBox from "../../../components/UI/Form/BLIStatusComboBox";
  * @param {Object} props - The component props.
  * @param {Object} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
+ * @param {Array<Number>} props.budgetLinesFiscalYears - The fiscal years for which there are budget lines.
  * @returns {JSX.Element} - The procurement shop select element.
  */
-export const BLIFilterButton = ({ filters, setFilters }) => {
+export const BLIFilterButton = ({ filters, setFilters, budgetLinesFiscalYears }) => {
     const [fiscalYears, setFiscalYears] = React.useState([]);
     const [portfolios, setPortfolios] = React.useState([]);
     const [bliStatus, setBLIStatus] = React.useState([]);
@@ -67,6 +68,7 @@ export const BLIFilterButton = ({ filters, setFilters }) => {
                 legendClassname={legendStyles}
                 defaultString={"All Fiscal Years"}
                 overrideStyles={{ width: "22.7rem" }}
+                budgetLinesFiscalYears={budgetLinesFiscalYears}
             />
         </fieldset>,
         <fieldset

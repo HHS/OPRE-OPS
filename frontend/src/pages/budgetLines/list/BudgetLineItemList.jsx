@@ -1,6 +1,5 @@
 import App from "../../../App";
 import { useGetAgreementsQuery, useGetBudgetLineItemsQuery, useGetCansQuery } from "../../../api/opsAPI";
-import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLinesTable";
 import BLIFilterButton from "./BLIFilterButton";
@@ -11,7 +10,8 @@ import { useBudgetLinesList } from "./budget-lines-list.hooks";
 import {
     filterBudgetLineItems,
     handleFilterByUrl,
-    addCanAndAgreementNameToBudgetLines
+    addCanAndAgreementNameToBudgetLines,
+    uniqueBudgetLinesFiscalYears
 } from "./BudgetLineItems.helpers";
 
 /**
@@ -46,10 +46,10 @@ export const BudgetLineItemList = () => {
     const filteredBudgetLineItems = filterBudgetLineItems(budgetLineItems, filters);
     const sortedBLIs = handleFilterByUrl(myBudgetLineItemsUrl, filteredBudgetLineItems, agreements, activeUser);
     const budgetLinesWithCanAndAgreementName = addCanAndAgreementNameToBudgetLines(sortedBLIs, cans, agreements);
+    const budgetLinesFiscalYears = uniqueBudgetLinesFiscalYears(budgetLineItems);
 
     return (
-        <App>
-            <Breadcrumb currentName={"Budget Lines"} />
+        <App breadCrumbName="Budget Lines">
             <TablePageLayout
                 title="Budget Lines"
                 subtitle={myBudgetLineItemsUrl ? "My Budget Lines" : "All Budget Lines"}
@@ -72,6 +72,7 @@ export const BudgetLineItemList = () => {
                     <BLIFilterButton
                         filters={filters}
                         setFilters={setFilters}
+                        budgetLinesFiscalYears={budgetLinesFiscalYears}
                     />
                 }
                 SummaryCardsSection={<SummaryCardsSection budgetLines={budgetLinesWithCanAndAgreementName} />}
