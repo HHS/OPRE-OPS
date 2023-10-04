@@ -32,10 +32,10 @@ const BudgetLinesTable = ({
     return (
         <>
             <Table tableHeadings={BUDGET_LINE_TABLE_HEADERS}>
-                {sortedBudgetLines.map((bl) => (
+                {sortedBudgetLines.map((budgetLine) => (
                     <BLIRow
-                        key={bl?.id}
-                        bl={bl}
+                        key={budgetLine.id}
+                        budgetLine={budgetLine}
                         handleDeleteBudgetLine={handleDeleteBudgetLine}
                         handleDuplicateBudgetLine={handleDuplicateBudgetLine}
                         handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
