@@ -23,5 +23,5 @@ export const getBudgetLineCreatedDate = (budgetLine) => {
     const today = new Date();
     const formattedToday = formatDateToMonthDayYear(today);
 
-    return budgetLine?.created_on ? formatDateToMonthDayYear(budgetLine.created_on) : formattedToday; 
+    return budgetLine?.created_on ? formatDateToMonthDayYear(budgetLine.created_on) : formattedToday;
 };
