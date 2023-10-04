@@ -14,16 +14,15 @@ const blData = [
         day: "01",
         year: "2048",
         amount: "111111",
-        note: "note one",
-    },
+        note: "note one"
+    }
 ];
 
 const minAgreement = {
     agreement_type: "CONTRACT",
     name: "Test Contract",
-    number: "TEST001",
     research_project_id: 1,
-    procurement_shop_id: 1,
+    procurement_shop_id: 1
 };
 
 beforeEach(() => {
@@ -48,8 +47,8 @@ it("review an agreement", () => {
         headers: {
             Authorization: bearer_token,
             "Content-Type": "application/json",
-            Accept: "application/json",
-        },
+            Accept: "application/json"
+        }
     }).then((response) => {
         expect(response.status).to.eq(201);
         expect(response.body.id).to.exist;
@@ -212,8 +211,8 @@ it("review an agreement", () => {
             url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
             headers: {
                 Authorization: bearer_token,
-                Accept: "application/json",
-            },
+                Accept: "application/json"
+            }
         }).then((response) => {
             expect(response.status).to.eq(200);
         });
