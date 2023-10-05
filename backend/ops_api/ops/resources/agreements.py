@@ -20,7 +20,6 @@ from models.cans import (
 )
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
 from ops_api.ops.dataclass_schemas.agreements import (
-    AgreementData,
     ContractAgreementData,
     DirectAgreementData,
     GrantAgreementData,
@@ -37,6 +36,34 @@ from sqlalchemy.future import select
 from typing_extensions import Any, override
 
 ENDPOINT_STRING = "/agreements"
+
+
+AGREEMENT_TYPE_TO_CLASS_MAPPING = {
+    AgreementType.CONTRACT: ContractAgreement,
+    AgreementType.GRANT: GrantAgreement,
+    AgreementType.IAA: IaaAgreement,
+    AgreementType.DIRECT_ALLOCATION: DirectAgreement,
+    AgreementType.IAA_AA: IaaAaAgreement,
+}
+
+
+AGREEMENT_TYPE_TO_DATACLASS_MAPPING = {
+    AgreementType.CONTRACT: ContractAgreementData,
+    AgreementType.GRANT: GrantAgreementData,
+    AgreementType.IAA: IaaAgreementData,
+    AgreementType.DIRECT_ALLOCATION: DirectAgreementData,
+    AgreementType.IAA_AA: IaaAaAgreementData,
+}
+
+AGREEMENTS_REQUEST_SCHEMAS = {
+    AgreementType.CONTRACT: mmdc.class_schema(AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(AgreementType.CONTRACT))(),
+    AgreementType.GRANT: mmdc.class_schema(AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(AgreementType.GRANT))(),
+    AgreementType.IAA: mmdc.class_schema(AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(AgreementType.IAA))(),
+    AgreementType.DIRECT_ALLOCATION: mmdc.class_schema(
+        AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(AgreementType.DIRECT_ALLOCATION)
+    )(),
+    AgreementType.IAA_AA: mmdc.class_schema(AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(AgreementType.IAA_AA))(),
+}
 
 
 @dataclass
@@ -84,26 +111,6 @@ def associated_with_agreement(self, id: int) -> bool:
 class AgreementItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel = Agreement):
         super().__init__(model)
-        self.agreement_type_to_dataclass_mapping = {
-            AgreementType.CONTRACT: ContractAgreementData,
-            AgreementType.GRANT: GrantAgreementData,
-            AgreementType.IAA: IaaAgreementData,
-            AgreementType.DIRECT_ALLOCATION: DirectAgreementData,
-            AgreementType.IAA_AA: IaaAaAgreementData,
-        }
-        self._request_schema = {
-            AgreementType.CONTRACT: mmdc.class_schema(
-                self.agreement_type_to_dataclass_mapping.get(AgreementType.CONTRACT)
-            )(),
-            AgreementType.GRANT: mmdc.class_schema(self.agreement_type_to_dataclass_mapping.get(AgreementType.GRANT))(),
-            AgreementType.IAA: mmdc.class_schema(self.agreement_type_to_dataclass_mapping.get(AgreementType.IAA))(),
-            AgreementType.DIRECT_ALLOCATION: mmdc.class_schema(
-                self.agreement_type_to_dataclass_mapping.get(AgreementType.DIRECT_ALLOCATION)
-            )(),
-            AgreementType.IAA_AA: mmdc.class_schema(
-                self.agreement_type_to_dataclass_mapping.get(AgreementType.IAA_AA)
-            )(),
-        }
 
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
@@ -132,7 +139,7 @@ class AgreementItemAPI(BaseItemAPI):
                 except (KeyError, ValueError) as e:
                     raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
 
-                schema = self._request_schema.get(old_agreement.agreement_type)
+                schema = AGREEMENTS_REQUEST_SCHEMAS.get(old_agreement.agreement_type)
 
                 OPSMethodView._validate_request(
                     schema=schema,
@@ -178,9 +185,7 @@ class AgreementItemAPI(BaseItemAPI):
                 except (KeyError, ValueError) as e:
                     raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
 
-                schema = self._request_schema.get(old_agreement.agreement_type)
-
-                # data = schema.dump(schema.load(request.json))
+                schema = AGREEMENTS_REQUEST_SCHEMAS.get(old_agreement.agreement_type)
 
                 OPSMethodView._validate_request(
                     schema=schema,
@@ -189,8 +194,7 @@ class AgreementItemAPI(BaseItemAPI):
                 )
 
                 agreement_fields = set(
-                    f.name
-                    for f in dc_fields(self.agreement_type_to_dataclass_mapping.get(old_agreement.agreement_type))
+                    f.name for f in dc_fields(AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(old_agreement.agreement_type))
                 )
 
                 data = {k: v for k, v in request.json.items() if k in agreement_fields}
@@ -281,11 +285,15 @@ class AgreementListAPI(BaseListAPI):
                     raise ValueError("Invalid agreement_type")
 
                 current_app.logger.info(agreement_type.name)
-                errors = AgreementData.get_schema(agreement_type).validate(request.json)
+
+                schema = AGREEMENTS_REQUEST_SCHEMAS.get(agreement_type)
+
+                errors = schema.validate(request.json)
                 self.check_errors(errors)
 
-                data = AgreementData.get_schema(agreement_type).load(request.json)
-                new_agreement = self._create_agreement(data, Agreement.get_class(agreement_type))
+                data = schema.dump(schema.load(request.json))
+
+                new_agreement = self._create_agreement(data, AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement_type))
 
                 token = verify_jwt_in_request()
                 user = get_user_from_token(token[1])
@@ -311,16 +319,18 @@ class AgreementListAPI(BaseListAPI):
             return make_response_with_headers({}, 500)
 
     def _create_agreement(self, data, agreement_cls):
-        tmp_team_members = data.team_members if data.team_members else []
-        data.team_members = []
+        tmp_team_members = data.get("team_members") if data.get("team_members") else []
+        data["team_members"] = []
 
         if agreement_cls == ContractAgreement:
-            tmp_support_contacts = data.support_contacts if data.support_contacts else []
-            data.support_contacts = []
+            tmp_support_contacts = data.get("support_contacts") if data.get("support_contacts") else []
+            data["support_contacts"] = []
 
-        new_agreement = agreement_cls(**data.__dict__)
+        new_agreement = agreement_cls(**data)
 
-        new_agreement.team_members.extend([current_app.db_session.get(User, tm_id.id) for tm_id in tmp_team_members])
+        new_agreement.team_members.extend(
+            [current_app.db_session.get(User, tm_id.get("id")) for tm_id in tmp_team_members]
+        )
 
         if agreement_cls == ContractAgreement:
             new_agreement.support_contacts.extend(
