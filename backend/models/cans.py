@@ -288,6 +288,11 @@ class GrantAgreement(Agreement):
         "polymorphic_identity": AgreementType.GRANT,
     }
 
+    @override
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = super().to_dict()
+        return d
+
 
 # TODO: Skeleton, will need flushed out more when we know what all an IAA is.
 ### Inter-Agency-Agreement
@@ -302,6 +307,11 @@ class IaaAgreement(Agreement):
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.IAA,
     }
+
+    @override
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = super().to_dict()
+        return d
 
 
 # TODO: Skeleton, will need flushed out more when we know what all an IAA-AA is. Inter-Agency-Agreement-Assisted-Aquisition
@@ -318,6 +328,11 @@ class IaaAaAgreement(Agreement):
         "polymorphic_identity": AgreementType.MISCELLANEOUS,
     }
 
+    @override
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = super().to_dict()
+        return d
+
 
 class DirectAgreement(Agreement):
     """Direct Obligation Agreement Model"""
@@ -330,6 +345,11 @@ class DirectAgreement(Agreement):
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.DIRECT_ALLOCATION,
     }
+
+    @override
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = super().to_dict()
+        return d
 
 
 class CANFiscalYear(BaseModel):

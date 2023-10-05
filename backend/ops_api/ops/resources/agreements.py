@@ -3,11 +3,12 @@ from dataclasses import dataclass
 from dataclasses import fields as dc_fields
 from typing import Optional
 
+import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from marshmallow import ValidationError, fields
-from models import OpsEventType, User
+from models import DirectAgreement, GrantAgreement, IaaAaAgreement, IaaAgreement, OpsEventType, User
 from models.base import BaseModel
 from models.cans import (
     Agreement,
@@ -18,8 +19,15 @@ from models.cans import (
     ProductServiceCode,
 )
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
-from ops_api.ops.dataclass_schemas.agreements import AgreementData
-from ops_api.ops.resources.contract import ContractListAPI
+from ops_api.ops.dataclass_schemas.agreements import (
+    AgreementData,
+    ContractAgreementData,
+    DirectAgreementData,
+    GrantAgreementData,
+    IaaAaAgreementData,
+    IaaAgreementData,
+)
+from ops_api.ops.dataclass_schemas.team_members import TeamMembers
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -29,33 +37,6 @@ from sqlalchemy.future import select
 from typing_extensions import Any, override
 
 ENDPOINT_STRING = "/agreements"
-
-
-@dataclass
-class TeamMembers:
-    id: int
-    full_name: Optional[str] = None
-    email: Optional[str] = None
-
-
-@dataclass
-class GrantAgreementData(AgreementData):
-    foa: Optional[str] = None
-
-
-@dataclass
-class DirectAgreementData(AgreementData):
-    pass
-
-
-@dataclass
-class IaaAgreementData(AgreementData):
-    pass
-
-
-@dataclass
-class IaaAaAgreementData(AgreementData):
-    pass
 
 
 @dataclass
@@ -103,6 +84,13 @@ def associated_with_agreement(self, id: int) -> bool:
 class AgreementItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel = Agreement):
         super().__init__(model)
+        self._request_schema = {
+            AgreementType.CONTRACT: mmdc.class_schema(ContractAgreementData)(),
+            AgreementType.GRANT: mmdc.class_schema(GrantAgreementData)(),
+            AgreementType.IAA: mmdc.class_schema(IaaAgreementData)(),
+            AgreementType.DIRECT_ALLOCATION: mmdc.class_schema(DirectAgreementData)(),
+            AgreementType.IAA_AA: mmdc.class_schema(IaaAaAgreementData)(),
+        }
 
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
@@ -130,15 +118,15 @@ class AgreementItemAPI(BaseItemAPI):
                         raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
                 except (KeyError, ValueError) as e:
                     raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
-                schema = AgreementData.get_schema(old_agreement.agreement_type)
+
+                schema = self._request_schema.get(old_agreement.agreement_type)
 
                 OPSMethodView._validate_request(
                     schema=schema,
                     message=f"{message_prefix}: Params failed validation:",
                 )
 
-                data = schema.load(request.json)
-                data = data.__dict__
+                data = schema.dump(schema.load(request.json))
                 agreement = update_agreement(data, old_agreement)
                 agreement_dict = agreement.to_dict()
                 meta.metadata.update({"updated_agreement": agreement_dict})
@@ -245,9 +233,17 @@ class AgreementListAPI(BaseListAPI):
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
-        stmt = ContractListAPI.get_query(**request.args)
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            IaaAaAgreement,
+            DirectAgreement,
+        ]
+        result = []
+        for agreement_cls in agreement_classes:
+            result.extend(current_app.db_session.execute(self._get_query(agreement_cls, **request.args)).all())
 
-        result = current_app.db_session.execute(stmt).all()
         return make_response_with_headers([i.to_dict() for item in result for i in item])
 
     @override

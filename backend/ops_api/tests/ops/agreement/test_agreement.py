@@ -1,4 +1,5 @@
 import pytest
+from flask import url_for
 from models import ContractAgreement, GrantAgreement
 from models.cans import Agreement, AgreementType, ContractType
 from sqlalchemy import func, select, update
@@ -22,14 +23,14 @@ def test_agreements_get_all(auth_client, loaded_db):
     count = loaded_db.scalar(stmt)
     assert count == 9
 
-    response = auth_client.get("/api/v1/agreements/")
+    response = auth_client.get(url_for("api.agreements-group"))
     assert response.status_code == 200
     assert len(response.json) == count
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_get_by_id(auth_client, loaded_db):
-    response = auth_client.get("/api/v1/agreements/1")
+    response = auth_client.get(url_for("api.agreements-item", id=1))
     assert response.status_code == 200
     assert response.json["name"] == "Contract #1: African American Child and Family Research Center"
 

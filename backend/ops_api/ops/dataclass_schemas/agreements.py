@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import ClassVar, Optional
 
 from marshmallow import Schema, fields
+from models import ContractType
 from models.cans import AgreementReason, AgreementType
 from ops_api.ops.dataclass_schemas.team_members import TeamMembers
 
@@ -25,3 +26,35 @@ class AgreementData:
     research_project_id: Optional[int] = None
     procurement_shop_id: Optional[int] = None
     notes: Optional[str] = None
+
+
+@dataclass
+class ContractAgreementData(AgreementData):
+    contract_number: Optional[str] = None
+    vendor: Optional[str] = None
+    delivered_status: Optional[bool] = fields.Boolean(default=False)
+    contract_type: Optional[ContractType] = fields.Enum(ContractType)
+    support_contacts: Optional[list[TeamMembers]] = fields.List(
+        fields.Nested(TeamMembers),
+        default=[],
+    )
+
+
+@dataclass
+class GrantAgreementData(AgreementData):
+    foa: Optional[str] = None
+
+
+@dataclass
+class DirectAgreementData(AgreementData):
+    pass
+
+
+@dataclass
+class IaaAgreementData(AgreementData):
+    pass
+
+
+@dataclass
+class IaaAaAgreementData(AgreementData):
+    pass
