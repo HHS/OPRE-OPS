@@ -6,7 +6,7 @@ import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTab
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../../api/opsAPI";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import Terms from "./Terms";
+import Term from "../../../components/UI/Term";
 import suite from "./suite";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
@@ -158,49 +158,49 @@ export const ReviewAgreement = ({ agreement_id }) => {
             </p>
 
             <dl className="margin-0 font-12px">
-                <Terms
+                <Term
                     name="name"
                     label="Project"
                     messages={res.getErrors("name")}
                     className={cn("name")}
                     value={agreement?.name}
                 />
-                <Terms
+                <Term
                     name="type"
                     label="Agreement Type"
                     messages={res.getErrors("type")}
                     className={cn("type")}
                     value={convertCodeForDisplay("agreementType", agreement?.agreement_type)}
                 />
-                <Terms
+                <Term
                     name="description"
                     label="Description"
                     messages={res.getErrors("description")}
                     className={cn("description")}
                     value={agreement?.description}
                 />
-                <Terms
+                <Term
                     name="psc"
                     label="Product Service Code"
                     messages={res.getErrors("psc")}
                     className={cn("psc")}
                     value={agreement?.product_service_code?.name}
                 />
-                <Terms
+                <Term
                     name="naics"
                     label="NAICS Code"
                     messages={res.getErrors("naics")}
                     className={cn("naics")}
                     value={agreement?.product_service_code?.naics}
                 />
-                <Terms
+                <Term
                     name="program-support-code"
                     label="Program Support Code"
                     messages={res.getErrors("program-support-code")}
                     className={cn("program-support-code")}
                     value={agreement?.product_service_code?.support_code}
                 />
-                <Terms
+                <Term
                     name="procurement-shop"
                     label="Procurement Shop"
                     messages={res.getErrors("procurement-shop")}
@@ -209,7 +209,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                         agreement?.procurement_shop?.fee * 100
                     }%`}
                 />
-                <Terms
+                <Term
                     name="reason"
                     label="Reason for creating the agreement"
                     messages={res.getErrors("reason")}
@@ -218,7 +218,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 />
 
                 {agreement?.incumbent && (
-                    <Terms
+                    <Term
                         name="incumbent"
                         label="Incumbent"
                         messages={res.getErrors("incumbent")}
@@ -226,7 +226,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                         value={agreement?.incumbent}
                     />
                 )}
-                <Terms
+                <Term
                     name="project-officer"
                     label="Project Officer"
                     messages={res.getErrors("project-officer")}
@@ -247,7 +247,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                         ))}
                     </>
                 ) : (
-                    <Terms
+                    <Term
                         name="team-member"
                         label="Team Members"
                         messages={res.getErrors("team-member")}

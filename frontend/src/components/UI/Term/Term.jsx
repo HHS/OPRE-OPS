@@ -1,4 +1,5 @@
 import cx from "clsx";
+import PropType from "prop-types";
 
 /**
  * A form input component.
@@ -12,7 +13,7 @@ import cx from "clsx";
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @returns {JSX.Element} - The rendered input component.
  */
-const Terms = ({ name, label = name, pending = false, messages = [], value, className }) => {
+const Term = ({ name, label = name, pending = false, messages = [], value, className }) => {
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>
             <dt className="margin-0 text-base-dark margin-top-3">{label}</dt>
@@ -31,4 +32,12 @@ const Terms = ({ name, label = name, pending = false, messages = [], value, clas
     );
 };
 
-export default Terms;
+Term.propTypes = {
+    name: PropType.string.isRequired,
+    label: PropType.string,
+    pending: PropType.bool,
+    messages: PropType.arrayOf(PropType.string),
+    value: PropType.string,
+    className: PropType.string
+};
+export default Term;
