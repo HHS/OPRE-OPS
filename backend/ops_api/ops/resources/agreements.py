@@ -84,12 +84,25 @@ def associated_with_agreement(self, id: int) -> bool:
 class AgreementItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel = Agreement):
         super().__init__(model)
+        self.agreement_type_to_dataclass_mapping = {
+            AgreementType.CONTRACT: ContractAgreementData,
+            AgreementType.GRANT: GrantAgreementData,
+            AgreementType.IAA: IaaAgreementData,
+            AgreementType.DIRECT_ALLOCATION: DirectAgreementData,
+            AgreementType.IAA_AA: IaaAaAgreementData,
+        }
         self._request_schema = {
-            AgreementType.CONTRACT: mmdc.class_schema(ContractAgreementData)(),
-            AgreementType.GRANT: mmdc.class_schema(GrantAgreementData)(),
-            AgreementType.IAA: mmdc.class_schema(IaaAgreementData)(),
-            AgreementType.DIRECT_ALLOCATION: mmdc.class_schema(DirectAgreementData)(),
-            AgreementType.IAA_AA: mmdc.class_schema(IaaAaAgreementData)(),
+            AgreementType.CONTRACT: mmdc.class_schema(
+                self.agreement_type_to_dataclass_mapping.get(AgreementType.CONTRACT)
+            )(),
+            AgreementType.GRANT: mmdc.class_schema(self.agreement_type_to_dataclass_mapping.get(AgreementType.GRANT))(),
+            AgreementType.IAA: mmdc.class_schema(self.agreement_type_to_dataclass_mapping.get(AgreementType.IAA))(),
+            AgreementType.DIRECT_ALLOCATION: mmdc.class_schema(
+                self.agreement_type_to_dataclass_mapping.get(AgreementType.DIRECT_ALLOCATION)
+            )(),
+            AgreementType.IAA_AA: mmdc.class_schema(
+                self.agreement_type_to_dataclass_mapping.get(AgreementType.IAA_AA)
+            )(),
         }
 
     @override
@@ -164,7 +177,10 @@ class AgreementItemAPI(BaseItemAPI):
                         raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
                 except (KeyError, ValueError) as e:
                     raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
-                schema = AgreementData.get_schema(old_agreement.agreement_type)
+
+                schema = self._request_schema.get(old_agreement.agreement_type)
+
+                # data = schema.dump(schema.load(request.json))
 
                 OPSMethodView._validate_request(
                     schema=schema,
@@ -172,7 +188,11 @@ class AgreementItemAPI(BaseItemAPI):
                     partial=True,
                 )
 
-                agreement_fields = set(f.name for f in dc_fields(AgreementData.get_class(old_agreement.agreement_type)))
+                agreement_fields = set(
+                    f.name
+                    for f in dc_fields(self.agreement_type_to_dataclass_mapping.get(old_agreement.agreement_type))
+                )
+
                 data = {k: v for k, v in request.json.items() if k in agreement_fields}
                 agreement = update_agreement(data, old_agreement)
                 agreement_dict = agreement.to_dict()
