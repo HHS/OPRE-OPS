@@ -1,18 +1,19 @@
-import json, datetime
+import datetime
+import json
 from typing import Union
 
 import requests
-
 from authlib.integrations.requests_client import OAuth2Session
 from flask import Response, current_app, request
-from flask_jwt_extended import create_access_token
-from flask_jwt_extended import create_refresh_token
-from flask_jwt_extended import get_current_user
-from flask_jwt_extended import get_jwt_identity
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    get_current_user,
+    get_jwt_identity,
+    jwt_required,
+)
 from models.events import OpsEventType
-from ops_api.ops.utils.auth import create_oauth_jwt
-from ops_api.ops.utils.auth import decode_user
+from ops_api.ops.utils.auth import create_oauth_jwt, decode_user
 from ops_api.ops.utils.authentication import AuthenticationGateway
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
