@@ -1341,12 +1341,6 @@ components:
         changes:
           description: JSON for the changeset
           type: object
-        diff:
-          description: properties which changed
-          type: object
-        original:
-          description: properties with their values before changes
-          type: object
 
     BudgetLineItems:
       description: OPS List of Budget Line Items
