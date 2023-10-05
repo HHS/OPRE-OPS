@@ -1,7 +1,8 @@
-import json
+import json, datetime
 from typing import Union
 
 import requests
+
 from authlib.integrations.requests_client import OAuth2Session
 from flask import Response, current_app, request
 from flask_jwt_extended import (
@@ -60,13 +61,13 @@ def login() -> Union[Response, tuple[str, int]]:
         la.metadata.update(
             {
                 "user": user.to_dict(),
-                "api_access_token": access_token,
-                "api_refresh_token": refresh_token,
+                "access_token": access_token,
+                "refresh_token": refresh_token,
                 "oidc_access_token": token,
             }
         )
 
-        return make_response_with_headers(
+        response = make_response_with_headers(
             {
                 "access_token": access_token,
                 "refresh_token": refresh_token,
@@ -74,6 +75,29 @@ def login() -> Union[Response, tuple[str, int]]:
                 "user": user.to_dict(),
             }
         )
+        # TODO: For now, setting the cookie 'secure' flag based on our DEBUG,
+        # but should create a dedicated setting.
+        secure = not current_app.config["DEBUG"]
+        
+        expires = current_app.config.get("JWT_ACCESS_TOKEN_EXPIRES").total_seconds()
+        expiration_time = datetime.datetime.utcnow() + datetime.timedelta(seconds=expires)
+        
+        response.set_cookie("access_token", 
+                            access_token, 
+                            httponly=False,
+                            secure=secure, 
+                            samesite='Strict',
+                            expires=expiration_time
+        )
+        response.set_cookie("refresh_token",
+                            refresh_token, 
+                            httponly=True, 
+                            secure=secure, 
+                            samesite='Strict',
+                            expires=expiration_time
+        )
+        return response
+
     except Exception as e:
         current_app.logger.exception(e)
         la.metadata.update(
@@ -174,7 +198,7 @@ def _get_token_and_user_data_from_oauth_provider(provider: str, auth_code: str):
 
 # We are using the `refresh=True` options in jwt_required to only allow
 # refresh tokens to access this route.
-@jwt_required(refresh=True, verify_type=True, locations=["headers", "cookies"])
+@jwt_required(refresh=True, verify_type=True, locations=["cookies"])
 def refresh() -> Response:
     user = get_current_user()
     if user:
