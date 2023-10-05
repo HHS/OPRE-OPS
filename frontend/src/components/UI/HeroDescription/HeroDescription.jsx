@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import ReactMarkdown from "react-markdown";
 
-const HeroDescription = ({ description, urls }) => {
+const HeroDescription = ({ label, description, urls }) => {
     const styles = {
         hidden: {
             display: "none"
@@ -29,7 +29,11 @@ const HeroDescription = ({ description, urls }) => {
 
     return (
         <div className="margin-top-1">
-            <div style={buttonStyle}>
+            <div className="text-base-dark margin-top-3 font-12px">{label}</div>
+            <div
+                style={buttonStyle}
+                className="margin-top-neg-105"
+            >
                 <ReactMarkdown>{description?.trimStart().substring(0, 255) + "..."}</ReactMarkdown>
                 <button
                     className="usa-button usa-button--unstyled"
@@ -39,7 +43,10 @@ const HeroDescription = ({ description, urls }) => {
                     read more
                 </button>
             </div>
-            <div style={textStyle}>
+            <div
+                style={textStyle}
+                className="margin-top-neg-105"
+            >
                 <ReactMarkdown>{description?.trimStart()}</ReactMarkdown>
                 <button
                     className="usa-button usa-button--unstyled"
@@ -52,7 +59,7 @@ const HeroDescription = ({ description, urls }) => {
                     <a
                         key={url.id}
                         href={url.url}
-                        className="display-block margin-top-2 width-fit-content"
+                        className="display-block margin-top-2 width-fit-content text-primary"
                     >
                         See more on the website
                         <FontAwesomeIcon
