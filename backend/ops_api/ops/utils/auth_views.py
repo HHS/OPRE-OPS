@@ -5,15 +5,14 @@ import requests
 
 from authlib.integrations.requests_client import OAuth2Session
 from flask import Response, current_app, request
-from flask_jwt_extended import (
-    create_access_token,
-    create_refresh_token,
-    get_current_user,
-    get_jwt_identity,
-    jwt_required,
-)
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_refresh_token
+from flask_jwt_extended import get_current_user
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
 from models.events import OpsEventType
-from ops_api.ops.utils.auth import create_oauth_jwt, decode_user
+from ops_api.ops.utils.auth import create_oauth_jwt
+from ops_api.ops.utils.auth import decode_user
 from ops_api.ops.utils.authentication import AuthenticationGateway
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
@@ -80,23 +79,25 @@ def login() -> Union[Response, tuple[str, int]]:
         # TODO: For now, setting the cookie 'secure' flag based on our DEBUG,
         # but should create a dedicated setting.
         secure = not current_app.config["DEBUG"]
-        
+
         expires = current_app.config.get("JWT_ACCESS_TOKEN_EXPIRES").total_seconds()
         expiration_time = datetime.datetime.utcnow() + datetime.timedelta(seconds=expires)
-        
-        response.set_cookie("access_token", 
-                            access_token, 
-                            httponly=False,
-                            secure=secure, 
-                            samesite='Strict',
-                            expires=expiration_time
+
+        response.set_cookie(
+            "access_token",
+            access_token,
+            httponly=False,
+            secure=secure,
+            samesite="Strict",
+            expires=expiration_time,
         )
-        response.set_cookie("refresh_token",
-                            refresh_token, 
-                            httponly=True, 
-                            secure=secure, 
-                            samesite='Strict',
-                            expires=expiration_time
+        response.set_cookie(
+            "refresh_token",
+            refresh_token,
+            httponly=True,
+            secure=secure,
+            samesite="Strict",
+            expires=expiration_time,
         )
         return response
 
@@ -144,7 +145,10 @@ def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
         access_token = create_access_token(
-            identity=user, expires_delta=None, additional_claims=additional_claims, fresh=True
+            identity=user,
+            expires_delta=None,
+            additional_claims=additional_claims,
+            fresh=True,
         )
         refresh_token = create_refresh_token(identity=user, expires_delta=None, additional_claims=additional_claims)
     except Exception as e:
@@ -211,7 +215,10 @@ def refresh() -> Response:
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
         access_token = create_access_token(
-            identity=user, expires_delta=None, additional_claims=additional_claims, fresh=False
+            identity=user,
+            expires_delta=None,
+            additional_claims=additional_claims,
+            fresh=False,
         )
         return make_response_with_headers({"access_token": access_token})
     else:
