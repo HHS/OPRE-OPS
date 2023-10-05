@@ -8,7 +8,7 @@ import PropTypes from "prop-types";
  * @param {React.ReactNode} props.children - The content to display in the accordion.
  * @returns {React.JSX.Element} - The rendered accordion component.
  */
-function Accordion({ heading, level = 4, children }) {
+const Accordion = ({ heading, level = 4, children }) => {
     const accordionId = React.useId();
     const AccordionHeading = `h${level}`;
 
@@ -22,7 +22,7 @@ function Accordion({ heading, level = 4, children }) {
                 <button
                     type="button"
                     className="usa-accordion__button"
-                    aria-expanded="true"
+                    aria-expanded={true}
                     aria-controls={accordionId}
                 >
                     {heading}
@@ -30,13 +30,13 @@ function Accordion({ heading, level = 4, children }) {
             </AccordionHeading>
             <div
                 id={accordionId}
-                className="usa-accordion__content usa-prose"
+                className="usa-accordion__content padding-x-0 overflow-hidden"
             >
                 {children}
             </div>
         </div>
     );
-}
+};
 
 Accordion.propTypes = {
     heading: PropTypes.string.isRequired,
