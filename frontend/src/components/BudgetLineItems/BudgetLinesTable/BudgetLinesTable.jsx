@@ -1,5 +1,4 @@
 import PropTypes from "prop-types";
-import TotalSummaryCard from "../TotalSummaryCard/TotalSummaryCard";
 import Table from "../../UI/Table";
 import "./BudgetLinesTable.scss";
 import { BUDGET_LINE_TABLE_HEADERS } from "./BudgetLinesTable.constants";
@@ -44,7 +43,6 @@ const BudgetLinesTable = ({
                     />
                 ))}
             </Table>
-            <TotalSummaryCard budgetLines={sortedBudgetLines}></TotalSummaryCard>
         </>
     );
 };
