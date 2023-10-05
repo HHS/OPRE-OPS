@@ -29,15 +29,6 @@ const TeamLeaders = ({ teamLeaders }) => {
                         </dd>
                     )}
                 </dl>
-                {/*<h3 className={`font-sans-2xs padding-right-2`}>Team Leaders </h3>*/}
-                {/*<ul className={`display-inline-block padding-0 ${cssClasses.leaderList}`}>*/}
-                {/*    {teamLeaders.map((item) => (*/}
-                {/*        <LeaderName*/}
-                {/*            key={`${item.first_name} ${item.last_name}`}*/}
-                {/*            value={`${item.first_name} ${item.last_name}`}*/}
-                {/*        />*/}
-                {/*    ))}*/}
-                {/*</ul>*/}
             </div>
         );
     }
