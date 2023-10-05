@@ -1,14 +1,13 @@
 from contextlib import suppress
 from dataclasses import dataclass
 from dataclasses import fields as dc_fields
-from typing import ClassVar, Optional
+from typing import Optional
 
-import desert
-from flask import Response, current_app, redirect, request, url_for
+from flask import Response, current_app, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
-from marshmallow import Schema, ValidationError, fields
-from models import ContractType, OpsEventType, User
+from marshmallow import ValidationError, fields
+from models import OpsEventType, User
 from models.base import BaseModel
 from models.cans import (
     Agreement,
@@ -19,6 +18,8 @@ from models.cans import (
     ProductServiceCode,
 )
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
+from ops_api.ops.dataclass_schemas.agreements import AgreementData
+from ops_api.ops.resources.contract import ContractListAPI
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -38,74 +39,22 @@ class TeamMembers:
 
 
 @dataclass
-class AgreementData:
-    _subclasses: ClassVar[dict[Optional[AgreementType], type["AgreementData"]]] = {}
-    _schemas: ClassVar[dict[Optional[AgreementType], Schema]] = {}
-    name: str
-    agreement_type: AgreementType = fields.Enum(AgreementType)
-    display_name: Optional[str] = None
-    description: Optional[str] = None
-    product_service_code_id: Optional[int] = None
-    agreement_reason: Optional[AgreementReason] = None
-    incumbent: Optional[str] = None
-    project_officer: Optional[int] = None
-    team_members: Optional[list[TeamMembers]] = fields.List(
-        fields.Nested(TeamMembers),
-        default=[],
-    )
-    research_project_id: Optional[int] = None
-    procurement_shop_id: Optional[int] = None
-    notes: Optional[str] = None
-
-    def __init_subclass__(cls, agreement_type: AgreementType, **kwargs):
-        cls._subclasses[agreement_type] = cls  # type: ignore [assignment]
-        super().__init_subclass__(**kwargs)
-
-    @classmethod
-    def get_schema(cls, agreement_type: Optional[AgreementType] = None) -> Schema:
-        try:
-            return cls._schemas[agreement_type]
-        except KeyError:
-            cls._schemas[agreement_type] = desert.schema(cls._subclasses.get(agreement_type, AgreementData))
-            return cls._schemas[agreement_type]
-
-    @classmethod
-    def get_class(cls, agreement_type: Optional[AgreementType] = None) -> type["AgreementData"]:
-        try:
-            return cls._subclasses[agreement_type]
-        except KeyError:
-            return AgreementData
-
-
-@dataclass
-class ContractAgreementData(AgreementData, agreement_type=AgreementType.CONTRACT):
-    contract_number: Optional[str] = None
-    vendor: Optional[str] = None
-    delivered_status: Optional[bool] = fields.Boolean(default=False)
-    contract_type: Optional[ContractType] = fields.Enum(ContractType)
-    support_contacts: Optional[list[TeamMembers]] = fields.List(
-        fields.Nested(TeamMembers),
-        default=[],
-    )
-
-
-@dataclass
-class GrantAgreementData(AgreementData, agreement_type=AgreementType.GRANT):
+class GrantAgreementData(AgreementData):
     foa: Optional[str] = None
 
 
 @dataclass
-class DirectAgreementData(AgreementData, agreement_type=AgreementType.DIRECT_ALLOCATION):
+class DirectAgreementData(AgreementData):
     pass
 
 
 @dataclass
-class IaaAgreementData(AgreementData, agreement_type=AgreementType.IAA):
+class IaaAgreementData(AgreementData):
     pass
 
 
 @dataclass
-class IaaAaAgreementData(AgreementData, agreement_type=AgreementType.IAA_AA):
+class IaaAaAgreementData(AgreementData):
     pass
 
 
@@ -296,11 +245,10 @@ class AgreementListAPI(BaseListAPI):
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
-        url = (
-            f"{url_for('api.contract-list')}"
-            + f"{'?' if request.query_string else ''}{request.query_string.decode('utf-8')}"
-        )
-        return redirect(url, code=307)
+        stmt = ContractListAPI.get_query(**request.args)
+
+        result = current_app.db_session.execute(stmt).all()
+        return make_response_with_headers([i.to_dict() for item in result for i in item])
 
     @override
     @is_authorized(PermissionType.POST, Permission.AGREEMENT)
