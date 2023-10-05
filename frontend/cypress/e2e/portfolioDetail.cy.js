@@ -16,8 +16,9 @@ it("loads", () => {
     cy.visit("/portfolios/1");
     cy.get("h1").should("contain", "Child Welfare Research");
     cy.get("h2").should("contain", "Division of Child and Family Development");
-    cy.get("h3").should("contain", "Team Leaders");
-    cy.get("a").should("contain", "Chris Fortunato");
+    cy.get("dt").should("contain", "Team Leader");
+    cy.get("dd").should("contain", "Chris Fortunato");
+    cy.get("div.margin-top-1 > .text-base-dark").should("contain", "Portfolio Description");
     cy.get("p").should("contain", "The promotion of children’s safety, permanence, and well-being");
     cy.get("a").should("contain", "Budget and Funding");
     cy.get("a").should("contain", "Projects and Spending");

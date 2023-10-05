@@ -84,6 +84,7 @@ const PortfolioDetail = () => {
                 <Hero
                     entityName={portfolio?.name}
                     divisionName={portfolio.division?.name}
+                    label="Portfolio Description"
                     description={portfolio?.description}
                     teamLeaders={portfolio?.team_leaders}
                     urls={portfolio?.urls}
