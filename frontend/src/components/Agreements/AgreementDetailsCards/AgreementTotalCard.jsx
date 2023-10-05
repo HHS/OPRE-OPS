@@ -17,7 +17,6 @@ const { barChartColors } = constants;
  */
 const AgreementTotalCard = ({ total, subtotal, fees, procurementShop }) => {
     const headerText = "Agreement Total";
-    console.log("procurementShop", procurementShop);
     return (
         <CurrencySummaryCard
             headerText={headerText}
