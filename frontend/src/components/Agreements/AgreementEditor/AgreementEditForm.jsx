@@ -1,8 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
-import _ from "lodash";
 
 import ProcurementShopSelectWithFee from "../../UI/Form/ProcurementShopSelectWithFee";
 import AgreementReasonSelect from "../../UI/Form/AgreementReasonSelect";
@@ -23,8 +22,7 @@ import {
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
 import ProjectOfficerComboBox from "../../UI/Form/ProjectOfficerComboBox";
-import { getUser } from "../../../api/getUser";
-import useAlert from "../../../helpers/use-alert";
+import useAlert from "../../../hooks/use-alert.hooks";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -81,24 +79,6 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         agreement_reason: agreementReason,
         team_members: selectedTeamMembers
     } = agreement;
-
-    // This is needed due to a caching issue with the React Context - for some reason selected_project_officer
-    // is not updated in the parent context/props.
-    useEffect(() => {
-        const getProjectOfficerSetState = async (id) => {
-            const results = await getUser(id);
-            setSelectedProjectOfficer(results);
-        };
-
-        if (_.isEmpty(selectedProjectOfficer) && agreement?.project_officer) {
-            getProjectOfficerSetState(agreement?.project_officer).catch(console.error);
-        }
-
-        return () => {
-            setSelectedProjectOfficer({});
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     const {
         data: productServiceCodes,
@@ -159,9 +139,6 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
     const cleanAgreementForApi = (data) => {
         // eslint-disable-next-line no-unused-vars
         const { id, budget_line_items, created_by, created_on, updated_on, ...cleanData } = data;
-        if (!("number" in cleanData)) {
-            cleanData["number"] = "";
-        }
         return { id: id, cleanData: cleanData };
     };
 
@@ -305,6 +282,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                 messages={res.getErrors("description")}
                 className={cn("description")}
                 value={agreementDescription}
+                maxLength={1000}
                 onChange={(name, value) => {
                     setAgreementDescription(value);
                     if (isReviewMode) {
@@ -405,7 +383,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
             <TextArea
                 name="agreementNotes"
                 label="Notes (optional)"
-                hintMsg="Maximum 150 characters"
+                maxLength={1000}
                 messages={res.getErrors("agreementNotes")}
                 className={cn("agreementNotes")}
                 value={agreementNotes || ""}

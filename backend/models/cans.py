@@ -21,13 +21,7 @@ from sqlalchemy import (
     case,
     select,
 )
-from sqlalchemy.orm import (
-    InstrumentedAttribute,
-    column_property,
-    object_session,
-    relationship,
-    with_polymorphic,
-)
+from sqlalchemy.orm import InstrumentedAttribute, column_property, object_session, relationship, with_polymorphic
 from typing_extensions import override
 
 
@@ -150,7 +144,6 @@ class Agreement(BaseModel):
 
     id = Column(Integer, Identity(), primary_key=True)
     name = Column(String, nullable=False)
-    number = Column(String, nullable=False)
     description = Column(String, nullable=True)
 
     product_service_code_id = Column(Integer, ForeignKey("product_service_code.id"))

@@ -141,7 +141,7 @@ export const CreateBudgetLinesForm = ({
                     label="Amount"
                     messages={res.getErrors("enteredAmount")}
                     className={cn("enteredAmount")}
-                    value={enteredAmount || ""}
+                    value={enteredAmount ?? ""}
                     setEnteredAmount={setEnteredAmount}
                     onChange={(name, value) => {
                         if (isReviewMode) {
@@ -155,7 +155,7 @@ export const CreateBudgetLinesForm = ({
                     name="enteredComments"
                     label="Notes (optional)"
                     value={enteredComments || ""}
-                    hintMsg="Maximum 150 characters"
+                    maxLength={150}
                     onChange={(name, value) => {
                         setEnteredComments(value);
                     }}
@@ -201,7 +201,7 @@ export const CreateBudgetLinesForm = ({
 CreateBudgetLinesForm.propTypes = {
     selectedCan: PropTypes.object,
     enteredDescription: PropTypes.string,
-    enteredAmount: PropTypes.string,
+    enteredAmount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     enteredMonth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     enteredDay: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     enteredYear: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),

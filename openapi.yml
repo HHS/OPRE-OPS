@@ -15,6 +15,7 @@ paths:
     get:
       description: Get Agreements
       parameters:
+        - $ref: '#/components/parameters/simulatedError'
         - name: research_project_id
           in: query
           schema:
@@ -43,6 +44,8 @@ paths:
                   $ref: '#/components/examples/Agreements'
     post:
       summary: Create a new Agreement
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
       requestBody:
         required: true
         content:
@@ -60,6 +63,7 @@ paths:
     get:
       description: Get Agreement By Id
       parameters:
+        - $ref: '#/components/parameters/simulatedError'
         - in: path
           name: agreement_id
           description: Agreement Id
@@ -81,6 +85,8 @@ paths:
                   $ref: '#/components/examples/Agreement'
     put:
       summary: Update an Agreement (Over-write)
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
       requestBody:
         required: true
         content:
@@ -98,6 +104,8 @@ paths:
           description: Internal Server Error
     patch:
       summary: Update an Agreement (Merge)
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
       requestBody:
         required: true
         content:
@@ -113,8 +121,33 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
+  /api/v1/agreements/{agreement_id}/history:
+    get:
+      description: Get Agreement History By Id
+      parameters:
+        - in: path
+          name: agreement_id
+          description: Agreement Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agreement'
+              examples:
+                '0':
+                  $ref: '#/components/examples/Agreement'
   /api/v1/cans/:
     get:
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
       description: Get CANs
       responses:
         '200':
@@ -123,6 +156,7 @@ paths:
     get:
       description: Get CAN by Id
       parameters:
+        - $ref: '#/components/parameters/simulatedError'
         - in: path
           name: can_id
           description: CAN Id
@@ -144,6 +178,8 @@ paths:
                   $ref: '#/components/examples/CAN'
   /api/v1/portfolios:
     get:
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
       description: Get Portfolios
       responses:
         '200':
@@ -152,6 +188,7 @@ paths:
     get:
       description: Get Portfolio by Id
       parameters:
+        - $ref: '#/components/parameters/simulatedError'
         - in: path
           name: portfolio_id
           description: portfolio Id
@@ -175,6 +212,7 @@ paths:
     get:
       description: Get Total Funding by Id
       parameters:
+        - $ref: '#/components/parameters/simulatedError'
         - in: path
           name: portfolio_id
           description: portfolio Id
@@ -272,6 +310,7 @@ paths:
     get:
       description: Get CANs associated with a Portfolio
       parameters:
+        - $ref: '#/components/parameters/simulatedError'
         - name: year
           in: query
           schema:
@@ -333,6 +372,7 @@ paths:
     get:
       description: Get Funding Totals by CAN Id
       parameters:
+        - $ref: '#/components/parameters/simulatedError'
         - name: fiscal_year
           in: query
           schema:
@@ -435,6 +475,7 @@ paths:
     get:
       description: Get all Users
       parameters:
+        - $ref: '#/components/parameters/simulatedError'
         - name: oidc_id
           in: query
           schema:
@@ -550,6 +591,7 @@ paths:
     get:
       description: Get User by Id
       parameters:
+        - $ref: '#/components/parameters/simulatedError'
         - in: path
           name: user_id
           description: User Id
@@ -571,6 +613,8 @@ paths:
                   $ref: '#/components/examples/User'
   /api/v1/auth/login/:
     post:
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
       description: API Authentication
       requestBody:
         content:
@@ -595,6 +639,7 @@ paths:
     get:
       description: Get ResearchProjects
       parameters:
+        - $ref: '#/components/parameters/simulatedError'
         - name: fiscal_year
           in: query
           schema:
@@ -627,7 +672,8 @@ paths:
 
     post:
       summary: Create a new Research Project
-
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
       requestBody:
         required: true
         content:
@@ -649,6 +695,7 @@ paths:
     get:
       description: Get Research Projects by id
       parameters:
+        - $ref: '#/components/parameters/simulatedError'
         - in: path
           name: id
           description: Id
@@ -674,6 +721,7 @@ paths:
     get:
       description: ''
       parameters:
+        - $ref: '#/components/parameters/simulatedError'
         - name: portfolioId
           in: query
           schema:
@@ -711,6 +759,8 @@ paths:
                       example: 'Must be greater than or equal to 1900.'
   /api/v1/procurement-shops/:
     get:
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
       description: Get all Procurement Shops
       responses:
         '200':
@@ -761,6 +811,7 @@ paths:
     get:
       description: Get Procurement Shop by id
       parameters:
+        - $ref: '#/components/parameters/simulatedError'
         - in: path
           name: id
           description: Id
@@ -824,6 +875,7 @@ paths:
     get:
       description: Get Budget Line Items
       parameters:
+        - $ref: '#/components/parameters/simulatedError'
         - name: can_id
           in: query
           schema:
@@ -851,7 +903,8 @@ paths:
                   $ref: '#/components/examples/BudgetLineItems'
     post:
       summary: Create a new Budget Line Item
-
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
       requestBody:
         required: true
         content:
@@ -871,6 +924,7 @@ paths:
     get:
       description: Get Budget Line Items by id
       parameters:
+        - $ref: '#/components/parameters/simulatedError'
         - in: path
           name: id
           description: Id
@@ -890,7 +944,8 @@ paths:
 
     put:
       summary: Update a new Budget Line Item (Over-write)
-
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
       requestBody:
         required: true
         content:
@@ -910,7 +965,8 @@ paths:
 
     patch:
       summary: Update a new Budget Line Item (Merge)
-
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
       requestBody:
         required: true
         content:
@@ -932,6 +988,7 @@ paths:
     get:
       description: Get Notifications
       parameters:
+        - $ref: '#/components/parameters/simulatedError'
         - name: user_id
           in: query
           schema:
@@ -963,6 +1020,7 @@ paths:
     get:
       description: Get Notifications By Id
       parameters:
+        - $ref: '#/components/parameters/simulatedError'
         - in: path
           name: id
           description: Id
@@ -982,7 +1040,8 @@ paths:
 
     put:
       summary: Update a Notification (Over-write)
-
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
       requestBody:
         required: true
         content:
@@ -1002,7 +1061,8 @@ paths:
 
     patch:
       summary: Update a Notification (Merge)
-
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
       requestBody:
         required: true
         content:
@@ -1022,6 +1082,15 @@ paths:
 
 
 components:
+  parameters:
+    simulatedError:
+      name: simulatedError
+      in: query
+      schema:
+        type: integer
+      example: ""
+      default: ""
+      description: "Simulate an error response, set the value to either `true` to get a 500 status code, or to a specific status code number (e.g.: `400`)."
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
       type: http
@@ -1237,6 +1306,41 @@ components:
       items:
         anyOf:
           - $ref: "#/components/schemas/Agreement"
+
+    AgreementHistory:
+      description: OPS List of Agreement History records
+      type: array
+      items:
+        anyOf:
+          - $ref: "#/components/schemas/OpsDbHistoryItem"
+
+    OpsDbHistoryItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        class_name:
+          type: string
+          example: "ContractAgreement"
+        row_key:
+          type: string
+          example: "21"
+        created_by:
+          type: integer
+          example: 1
+        created_on:
+          type: string
+          example: "2023-04-06T20:33:38.292475"
+        updated_on:
+          type: string
+          example: "2023-04-06T20:33:38.292475"
+        event_details:
+          description: JSON copy of the relevant object after editing or some JSON message
+          type: object
+        changes:
+          description: JSON for the changeset
+          type: object
 
     BudgetLineItems:
       description: OPS List of Budget Line Items

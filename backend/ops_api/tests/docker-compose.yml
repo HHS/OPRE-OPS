@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   unittest_db:
-    image: "postgres:12"
+    image: "postgres:16"
     platform: linux/amd64
     container_name: unit-test-db
     security_opt:
@@ -11,6 +11,8 @@ services:
       - POSTGRES_PASSWORD=local_password  # pragma: allowlist secret
     read_only: true  # Resolve semgrep https://sg.run/e4JE
     tmpfs: /var/run/postgresql/
+    volumes:
+      - ../../data_tools/ops_db_sql_init:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
     healthcheck:

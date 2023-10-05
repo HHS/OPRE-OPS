@@ -4,6 +4,7 @@ import { terminalLog, testLogin } from "./utils";
 beforeEach(() => {
     testLogin("admin");
     cy.visit("/portfolios/1");
+    cy.get("#fiscal-year-select").select("2023");
 });
 
 afterEach(() => {
@@ -34,7 +35,7 @@ it("loads", () => {
     cy.get("span").should("contain", "Carry-Forward");
 });
 
-it("loads the Poftfolio Budget Details component", () => {
+it("loads the Portfolio Budget Details component", () => {
     cy.get("h2").should("contain", "Portfolio Budget Details by CAN");
     cy.get("section").should("contain", "G99IA14");
 });
@@ -44,13 +45,9 @@ it("expands the description when one clicks read more", () => {
     cy.get("a").should("contain", "See more on the website");
 });
 
-it("loads the Poftfolio Budget Details component", () => {
-    cy.get("h2").should("contain", "Portfolio Budget Details by CAN");
-    cy.get("section").should("contain", "G99IA14");
-});
-
 it("shows the Portfolio Projects and Spending tab", () => {
     cy.visit("/portfolios/1/research-projects/");
+    cy.get("#fiscal-year-select").select("2023");
     // summary cards
     cy.get("h2").should("contain", "Projects & Spending Summary");
     cy.get("h3").should("contain", "FY 2023 Budget vs Spending");

@@ -1,5 +1,5 @@
 import { render, act } from "@testing-library/react";
-import useSortableData from "./useSortableData";
+import useSortableData from "./use-sortable-data.hooks";
 
 const TestComponent = ({ items, config, onHookResult }) => {
     const hookResult = useSortableData(items, config);

@@ -43,7 +43,6 @@ class AgreementData:
     _subclasses: ClassVar[dict[Optional[AgreementType], type["AgreementData"]]] = {}
     _schemas: ClassVar[dict[Optional[AgreementType], Schema]] = {}
     name: str
-    number: str
     agreement_type: AgreementType = fields.Enum(AgreementType)
     display_name: Optional[str] = None
     description: Optional[str] = None
@@ -117,7 +116,6 @@ class AgreementResponse:
     type: str
     name: str
     created_by: int
-    number: str
     description: str
     product_service_code: Optional[ProductServiceCode]
     incumbent: str
@@ -313,7 +311,8 @@ class AgreementListAPI(BaseListAPI):
                 pass  # Do nothing if only filters are provided
 
         for key, value in filter_args.items():
-            query_helper.add_column_equals(Agreement.get_class_field(key), value)
+            with suppress(ValueError):
+                query_helper.add_column_equals(Agreement.get_class_field(key), value)
 
         stmt = query_helper.get_stmt()
         current_app.logger.debug(f"SQL: {stmt}")

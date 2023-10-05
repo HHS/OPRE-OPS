@@ -59,7 +59,7 @@ def test_bli_history_force_an_error(loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_history_expanded(loaded_db: Session):
     """test the new columns for class_name, row_key to query for history of specific record
-    and verify the new original and diff columns contain the values before and the changes
+    and verify the new changes column contains the changes
     """
     bli = BudgetLineItem(
         line_description="Grant Expenditure GA999",
@@ -83,8 +83,6 @@ def test_history_expanded(loaded_db: Session):
     )
     result = loaded_db.scalars(stmt).all()
     assert result[0].event_details["line_description"] == "Grant Expenditure GA999"
-    assert "line_description" not in result[0].original
-    assert result[0].diff["line_description"] == "Grant Expenditure GA999"
 
     bli.line_description = "(UPDATED) Grant Expenditure GA999"
     loaded_db.add(bli)
@@ -99,10 +97,6 @@ def test_history_expanded(loaded_db: Session):
     )
     result = loaded_db.scalars(stmt).all()
     assert result[0].event_details["line_description"] == "(UPDATED) Grant Expenditure GA999"
-    assert result[0].original["line_description"] == "Grant Expenditure GA999"
-    assert result[0].diff["line_description"] == "(UPDATED) Grant Expenditure GA999"
-    assert "status" in result[0].original
-    assert "status" not in result[0].diff
 
     loaded_db.delete(bli)
     loaded_db.commit()
@@ -116,8 +110,6 @@ def test_history_expanded(loaded_db: Session):
     )
     result = loaded_db.scalars(stmt).all()
     assert result[0].event_details["line_description"] == "(UPDATED) Grant Expenditure GA999"
-    assert result[0].original["line_description"] == "(UPDATED) Grant Expenditure GA999"
-    assert len(result[0].diff) == 0
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -128,7 +120,6 @@ def test_history_expanded_with_web_client(auth_client, loaded_db):
         "agreement_type": "CONTRACT",
         "agreement_reason": "NEW_REQ",
         "name": "Contract123",
-        "number": "123",
         "description": "History Test Description",
         "product_service_code_id": 1,
         "project_officer": 1,
@@ -171,10 +162,6 @@ def test_history_expanded_with_web_client(auth_client, loaded_db):
     assert "deleted" not in result.changes["team_members"]
     assert "support_contacts" not in result.changes
     assert "incumbent" not in result.changes
-
-    assert "description" not in result.original
-    assert result.diff["description"] == post_data["description"]
-    assert "notes" not in result.original
 
     # PATCH: edit agreement
     patch_data = {
@@ -222,12 +209,6 @@ def test_history_expanded_with_web_client(auth_client, loaded_db):
     assert "support_contacts" not in result.changes
     assert "incumbent" not in result.changes
 
-    assert result.original["description"] == post_data["description"]
-    assert "notes" not in result.original
-    assert result.diff["description"] == patch_data["description"]
-    assert "notes" in result.diff
-    assert result.diff["notes"] == patch_data["notes"]
-
     # DELETE: delete agreement
     resp = auth_client.delete(f"/api/v1/agreements/{agreement_id}")
     assert resp.status_code == 200
@@ -243,12 +224,6 @@ def test_history_expanded_with_web_client(auth_client, loaded_db):
     assert result.created_by == user_id
 
     assert not result.changes
-
-    assert result.original["id"] == agreement_id
-    assert result.original["name"] == post_data["name"]
-    assert result.original["description"] == patch_data["description"]
-    assert result.original["notes"] == patch_data["notes"]
-    assert len(result.diff) == 0
 
 
 @pytest.mark.parametrize(
