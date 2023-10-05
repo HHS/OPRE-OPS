@@ -13,27 +13,25 @@ const { blisByFYChartColors } = constants;
  * @param {Array<any>} props.budgetLineItems - The budget line items for the agreement.
  * @returns {React.JSX.Element} - The agreement total budget lines card component JSX.
  */
-const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
+const BudgetLinesByFiscalYear = ({ budgetLineItems }) => {
     const headerText = "Budget Lines by Fiscal Year";
-    const valuedBlisFy = budgetLineItems.map((bli) => ({ ...bli, fiscalYear: fiscalYearFromDate(bli.date_needed) }));
-    const fyValuesMap = valuedBlisFy.reduce((acc, cur) => {
+    const blisFy = budgetLineItems.map((bli) => ({ ...bli, fiscalYear: fiscalYearFromDate(bli.date_needed) }));
+    const fyTotalsMaps = blisFy.reduce((acc, cur) => {
         if (!cur.fiscalYear || cur.amount == null) return acc;
+        // TODO: create BLI total function somewhere to use here and in AgreementBudgetLines, TotalSummaryCard, etc
+        let fee = cur.amount * cur?.proc_shop_fee_percentage;
+        let total = cur.amount + fee;
         if (!(cur.fiscalYear in acc)) {
-            acc[cur.fiscalYear] = cur.amount;
+            acc[cur.fiscalYear] = total;
         } else {
-            acc[cur.fiscalYear] = acc[cur.fiscalYear] + cur.amount;
+            acc[cur.fiscalYear] = acc[cur.fiscalYear] + total;
         }
         return acc;
     }, {});
-    const fyValues = Object.keys(fyValuesMap).map((fy) => ({ fiscalYear: fy, amount: fyValuesMap[fy] }));
-    const totalValue = fyValues.reduce((acc, cur) => acc + cur.amount, 0);
-    // const currentFiscalYear = fiscalYearFromDate(new Date());
-    // const nextThreeFyValues = fyValues.filter((fyVal) => {
-    //     return fyVal.fiscalYear >= currentFiscalYear && fyVal.fiscalYear < currentFiscalYear + 3;
-    // });
+    const fyTotals = Object.keys(fyTotalsMaps).map((fy) => ({ fiscalYear: fy, amount: fyTotalsMaps[fy] }));
 
-    // combine the fyValues and blisByFYChartColors
-    const chartData = fyValues
+    // combine the fyTotals and blisByFYChartColors
+    const chartData = fyTotals
         .map((fyVal, index) => {
             return {
                 FY: fyVal.fiscalYear,
@@ -47,7 +45,10 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
     return (
         <SummaryCard title={headerText}>
             {chartData.length > 0 ? (
-                <div className="width-full height-10">
+                <div
+                    className="width-full"
+                    style={{ height: "140px" }}
+                >
                     <ResponsiveBar
                         data={chartData}
                         keys={["budget"]}
@@ -68,7 +69,7 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
                         enableLabel={true}
                         isInteractive={false}
                         role="application"
-                        ariaLabel="Total Agreement Value by Fiscal Year"
+                        ariaLabel="Totals by Fiscal Year"
                         borderRadius={2}
                         valueFormat=">-$,.2f"
                     />
@@ -80,8 +81,8 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
     );
 };
 
-AgreementTotalBudgetLinesCard.propTypes = {
+BudgetLinesByFiscalYear.propTypes = {
     budgetLineItems: PropTypes.array.isRequired
 };
 
-export default AgreementTotalBudgetLinesCard;
+export default BudgetLinesByFiscalYear;

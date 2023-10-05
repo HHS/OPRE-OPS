@@ -10,7 +10,7 @@ import AgreementTotalBudgetLinesCard from "../../../components/Agreements/Agreem
 import AgreementValuesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementValuesCard";
 import { useState } from "react";
 import AgreementBudgetLinesHeader from "../../../components/Agreements/AgreementBudgetLinesHeader";
-import { draftBudgetLineStatuses } from "../../../helpers/utils";
+import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import BudgetLinesByFiscalYear from "../../../components/Agreements/AgreementDetailsCards/BudgetLinesByFiscalYear";
 import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard";
 
@@ -33,6 +33,41 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
     // details for AgreementTotalBudgetLinesCard
     const blis = agreement.budget_line_items ? agreement.budget_line_items : [];
     const filteredBlis = includeDrafts ? blis : blis.filter((bli) => !draftBudgetLineStatuses.includes(bli.status));
+    const currentFiscalYear = getCurrentFiscalYear();
+
+    const totals = {
+        Draft: { subtotal: 0, fees: 0, total: 0 },
+        FY: { subtotal: 0, fees: 0, total: 0 },
+        Agreement: { subtotal: 0, fees: 0, total: 0 }
+    };
+
+    filteredBlis.forEach((bl) => {
+        let date_needed = new Date(bl?.date_needed);
+        let month = date_needed.getMonth();
+        let year = date_needed.getFullYear();
+        let fiscalYear = month > 8 ? year + 1 : year;
+        let amount = bl?.amount;
+        let fee = amount * bl?.proc_shop_fee_percentage;
+        let total = amount + fee;
+        let status = bl?.status.charAt(0).toUpperCase() + bl?.status.slice(1).toLowerCase();
+
+        if (status === "Draft") {
+            totals["Draft"]["subtotal"] += amount;
+            totals["Draft"]["fees"] += fee;
+            totals["Draft"]["total"] += total;
+        }
+
+        if (fiscalYear === currentFiscalYear) {
+            totals["FY"]["subtotal"] += amount;
+            totals["FY"]["fees"] += fee;
+            totals["FY"]["total"] += total;
+        }
+
+        totals["Agreement"]["subtotal"] += amount;
+        totals["Agreement"]["fees"] += fee;
+        totals["Agreement"]["total"] += total;
+    });
+
     const numberOfAgreements = filteredBlis.length;
     const countsByStatus = filteredBlis.reduce((p, c) => {
         const status = c.status;
@@ -58,7 +93,12 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
             />
             <div className="display-flex flex-justify">
                 <BudgetLinesByFiscalYear budgetLineItems={filteredBlis} />
-                <AgreementTotalCard budgetLineItems={filteredBlis} />
+                <AgreementTotalCard
+                    total={totals["Agreement"]["total"]}
+                    subtotal={totals["Agreement"]["subtotal"]}
+                    fees={totals["Agreement"]["fees"]}
+                    procurementShop={agreement.procurement_shop}
+                />
             </div>
             <AgreementDetailHeader
                 heading="Budget Lines"
