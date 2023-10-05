@@ -28,20 +28,9 @@ const BudgetLinesByFiscalYear = ({ budgetLineItems }) => {
         }
         return acc;
     }, {});
-    const fyTotals = Object.keys(fyTotalsMap).map((fy) => ({ fiscalYear: fy, total: fyTotalsMap[fy] }));
+    const fyTotalsAll = Object.keys(fyTotalsMap).map((fy) => ({ fiscalYear: fy, total: fyTotalsMap[fy] }));
+    const fyTotals = fyTotalsAll.slice(0, 5);
     const maxFyTotal = Math.max(...fyTotals.map((o) => o.total));
-
-    // combine the fyTotals and blisByFYChartColors
-    // const chartData = fyTotals
-    //     .map((fyVal, index) => {
-    //         return {
-    //             FY: fyVal.fiscalYear,
-    //             budget: fyVal.amount,
-    //             color: blisByFYChartColors[index].color
-    //         };
-    //     })
-    //     // sort by year descending
-    //     .sort((a, b) => b.FY - a.FY);
 
     const chartData = fyTotals.map((fyVal, index) => {
         return {
@@ -51,8 +40,6 @@ const BudgetLinesByFiscalYear = ({ budgetLineItems }) => {
             color: blisByFYChartColors[index].color
         };
     });
-    // sort by year descending
-    //.sort((a, b) => b.FY - a.FY)
     console.log(chartData);
 
     const ratio = 0.5;
