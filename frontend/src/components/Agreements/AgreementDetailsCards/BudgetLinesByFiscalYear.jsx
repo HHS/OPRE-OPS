@@ -75,7 +75,7 @@ const BudgetLinesByFiscalYear = ({ budgetLineItems }) => {
                     />
                 </div>
             ) : (
-                <p>No budget lines in the next 3 FYs</p>
+                <p>No budget lines</p>
             )}
         </SummaryCard>
     );
