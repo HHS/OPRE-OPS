@@ -81,24 +81,24 @@ def login() -> Union[Response, tuple[str, int]]:
         # but should create a dedicated setting.
         secure = not current_app.config["DEBUG"]
 
-        expires = current_app.config.get("JWT_ACCESS_TOKEN_EXPIRES").total_seconds()
-        expiration_time = datetime.datetime.utcnow() + datetime.timedelta(seconds=expires)
+        access_expires = current_app.config.get("JWT_ACCESS_TOKEN_EXPIRES").total_seconds()
+        refresh_expires = current_app.config.get("JWT_REFRESH_TOKEN_EXPIRES").total_seconds()
 
         response.set_cookie(
-            "access_token",
+            "access_token_cookie",
             access_token,
-            httponly=False,
+            httponly=False,  # TODO: Update this once refactored
             secure=secure,
             samesite="Strict",
-            expires=expiration_time,
+            expires=datetime.datetime.utcnow() + datetime.timedelta(seconds=access_expires),
         )
         response.set_cookie(
-            "refresh_token",
+            "refresh_token_cookie",
             refresh_token,
             httponly=True,
             secure=secure,
             samesite="Strict",
-            expires=expiration_time,
+            expires=datetime.datetime.utcnow() + datetime.timedelta(seconds=refresh_expires),
         )
         return response
 
@@ -206,9 +206,11 @@ def _get_token_and_user_data_from_oauth_provider(provider: str, auth_code: str):
 
 # We are using the `refresh=True` options in jwt_required to only allow
 # refresh tokens to access this route.
-@jwt_required(refresh=True, verify_type=True, locations=["headers", "cookies"])
+@jwt_required(refresh=True, verify_type=True, locations="cookies")
 @error_simulator
 def refresh() -> Response:
+    refresh_token = request.cookies.get("refresh_token_cookie")
+    current_app.logger.debug(f"refresh_token={refresh_token}")
     user = get_current_user()
     if user:
         additional_claims = {"roles": []}
