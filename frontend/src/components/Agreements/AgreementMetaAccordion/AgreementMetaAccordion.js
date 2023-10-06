@@ -44,21 +44,23 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
                     />
                 </dl>
 
-                <dl className="margin-0 font-12px grid-col">
-                    <Term
-                        name="type"
-                        label="Agreement Type"
-                        messages={res.getErrors("type")}
-                        className={cn("type")}
-                        value={convertCodeForDisplay("agreementType", agreement?.agreement_type)}
-                    />
-                    <Term
-                        name="psc"
-                        label="Product Service Code"
-                        messages={res.getErrors("psc")}
-                        className={cn("psc")}
-                        value={agreement?.product_service_code?.name}
-                    />
+                <div className="margin-0 font-12px grid-col">
+                    <dl>
+                        <Term
+                            name="type"
+                            label="Agreement Type"
+                            messages={res.getErrors("type")}
+                            className={cn("type")}
+                            value={convertCodeForDisplay("agreementType", agreement?.agreement_type)}
+                        />
+                        <Term
+                            name="psc"
+                            label="Product Service Code"
+                            messages={res.getErrors("psc")}
+                            className={cn("psc")}
+                            value={agreement?.product_service_code?.name}
+                        />
+                    </dl>
                     <dl className="grid-row">
                         <Term
                             name="naics"
@@ -75,39 +77,41 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
                             value={agreement?.product_service_code?.support_code}
                         />
                     </dl>
-                    <Term
-                        name="procurement-shop"
-                        label="Procurement Shop"
-                        messages={res.getErrors("procurement-shop")}
-                        className={cn("procurement-shop")}
-                        value={`${agreement?.procurement_shop?.abbr} - Fee Rate: ${
-                            agreement?.procurement_shop?.fee * 100
-                        }%`}
-                    />
-                    <Term
-                        name="reason"
-                        label="Reason for creating the agreement"
-                        messages={res.getErrors("reason")}
-                        className={cn("reason")}
-                        value={convertCodeForDisplay("agreementReason", agreement?.agreement_reason)}
-                    />
-
-                    {agreement?.incumbent && (
+                    <dl>
                         <Term
-                            name="incumbent"
-                            label="Incumbent"
-                            messages={res.getErrors("incumbent")}
-                            className={cn("incumbent")}
-                            value={agreement?.incumbent}
+                            name="procurement-shop"
+                            label="Procurement Shop"
+                            messages={res.getErrors("procurement-shop")}
+                            className={cn("procurement-shop")}
+                            value={`${agreement?.procurement_shop?.abbr} - Fee Rate: ${
+                                agreement?.procurement_shop?.fee * 100
+                            }%`}
                         />
-                    )}
-                    <Term
-                        name="project-officer"
-                        label="Project Officer"
-                        messages={res.getErrors("project-officer")}
-                        className={cn("project-officer")}
-                        value={projectOfficerName}
-                    />
+                        <Term
+                            name="reason"
+                            label="Reason for creating the agreement"
+                            messages={res.getErrors("reason")}
+                            className={cn("reason")}
+                            value={convertCodeForDisplay("agreementReason", agreement?.agreement_reason)}
+                        />
+
+                        {agreement?.incumbent && (
+                            <Term
+                                name="incumbent"
+                                label="Incumbent"
+                                messages={res.getErrors("incumbent")}
+                                className={cn("incumbent")}
+                                value={agreement?.incumbent}
+                            />
+                        )}
+                        <Term
+                            name="project-officer"
+                            label="Project Officer"
+                            messages={res.getErrors("project-officer")}
+                            className={cn("project-officer")}
+                            value={projectOfficerName}
+                        />
+                    </dl>
 
                     {agreement?.team_members.length > 0 ? (
                         <dl className="grid-row grid-gap-sm">
@@ -126,15 +130,17 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
                             ))}
                         </dl>
                     ) : (
-                        <Term
-                            name="team-member"
-                            label="Team Members"
-                            messages={res.getErrors("team-member")}
-                            className={cn("team-member")}
-                            value={agreement?.team_members[0]}
-                        />
+                        <dl>
+                            <Term
+                                name="team-member"
+                                label="Team Members"
+                                messages={res.getErrors("team-member")}
+                                className={cn("team-member")}
+                                value={agreement?.team_members[0]}
+                            />
+                        </dl>
                     )}
-                </dl>
+                </div>
             </div>
         </Accordion>
     );
