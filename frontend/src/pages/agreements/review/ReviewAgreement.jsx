@@ -10,6 +10,7 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
 import suite from "./suite";
 import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import useAlert from "../../../hooks/use-alert.hooks";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -34,6 +35,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const isAgreementStateEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
+    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer);
     const { setAlert } = useAlert();
 
     let res = suite.get();
@@ -152,6 +154,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
             )}
             <AgreementMetaAccordion
                 agreement={agreement}
+                projectOfficerName={projectOfficerName}
                 res={res}
                 cn={cn}
                 convertCodeForDisplay={convertCodeForDisplay}

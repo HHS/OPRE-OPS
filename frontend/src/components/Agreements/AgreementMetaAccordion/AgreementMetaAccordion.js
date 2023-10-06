@@ -1,19 +1,19 @@
+import PropTypes from "prop-types";
 import Accordion from "../../UI/Accordion";
 import Term from "../../UI/Term";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 
 /**
  * Renders an accordion component that displays the details of an agreement.
  * @param {Object} props - The component props.
  * @param {Object} props.agreement - The agreement object to display.
+ * @param {string} props.projectOfficerName - The name of the project officer.
  * @param {Object} props.res - The response object.
  * @param {Object} props.cn - The classnames object.
  * @param {Function} props.convertCodeForDisplay - The function to convert codes for display.
  * @returns {React.JSX.Element} - The rendered component.
  */
-const AgreementMetaAccordion = ({ agreement, res, cn, convertCodeForDisplay }) => {
+const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, convertCodeForDisplay }) => {
     const MORE_THAN_THREE_TEAM_MEMBERS = agreement?.team_members.length > 3;
-    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer);
 
     return (
         <Accordion
@@ -140,4 +140,11 @@ const AgreementMetaAccordion = ({ agreement, res, cn, convertCodeForDisplay }) =
     );
 };
 
+AgreementMetaAccordion.propTypes = {
+    agreement: PropTypes.object.isRequired,
+    projectOfficerName: PropTypes.string,
+    res: PropTypes.object.isRequired,
+    cn: PropTypes.func.isRequired,
+    convertCodeForDisplay: PropTypes.func.isRequired
+};
 export default AgreementMetaAccordion;

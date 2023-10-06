@@ -9,7 +9,7 @@ import PropType from "prop-types";
  * @param {string} [props.label] - The label to display for the input field (optional).
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
  * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
- * @param {string} [props.value] - The value of the input field.(optional)
+ * @param {string|number} [props.value] - The value of the input field (optional).
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @returns {JSX.Element} - The rendered input component.
  */
@@ -37,7 +37,7 @@ Term.propTypes = {
     label: PropType.string,
     pending: PropType.bool,
     messages: PropType.arrayOf(PropType.string),
-    value: PropType.string,
+    value: PropType.oneOfType([PropType.string, PropType.number]),
     className: PropType.string
 };
 export default Term;
