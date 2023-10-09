@@ -20,6 +20,9 @@ JWT_REFRESH_TOKEN_EXPIRES = timedelta(hours=12)
 JWT_ENCODE_ISSUER = "https://opre-ops-backend-dev"
 JWT_ENCODE_AUDIENCE = "https://opre-ops-frontend-dev"
 
+# OPS-FRONTEND
+OPS_FRONTEND_URL = "http://localhost:3000"
+
 AUTHLIB_OAUTH_CLIENTS = {
     "logingov": {
         "server_metadata_url": "https://idp.int.identitysandbox.gov/.well-known/openid-configuration",
