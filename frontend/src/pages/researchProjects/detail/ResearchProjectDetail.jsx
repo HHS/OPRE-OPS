@@ -4,8 +4,6 @@ import { useEffect } from "react";
 import App from "../../../App";
 import { getResearchProject } from "./getResearchProject";
 import { setResearchProject } from "./researchProjectSlice";
-
-import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import Hero from "../../../components/UI/Hero/Hero";
 import HeroFooter from "../../../components/ResearchProjects/HeroFooter/HeroFooter";
 
@@ -31,14 +29,14 @@ const ResearchProjectDetail = () => {
     }, [dispatch, researchProjectId]);
 
     return (
-        <App>
-            <Breadcrumb currentName={researchProject.title} />
+        <App breadCrumbName={researchProject.title}>
             <Hero
                 entityName={researchProject.title}
                 // TODO: Set this to "Division" for now because ResearchProject can belong to multiple Portfolio/Divisions,
                 // TODO: i.e. the page design needs to be updated
                 divisionName="Division"
                 teamLeaders={researchProject.team_leaders}
+                label="Project Description"
                 description={researchProject.description}
                 urls={Array.of({ id: 1, url: researchProject.url })}
             >

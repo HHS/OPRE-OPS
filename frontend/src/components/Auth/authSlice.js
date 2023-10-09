@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import Cookies from "js-cookie";
 
 export const authSlice = createSlice({
     name: "auth",
@@ -13,6 +14,11 @@ export const authSlice = createSlice({
         logout: (state) => {
             state.isLoggedIn = false;
             state.activeUser = null;
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("refresh_token");
+            localStorage.removeItem("ops-state-key");
+            localStorage.removeItem("activeProvider");
+            Cookies.remove("access_token", { path: "/" });
         },
         setUserDetails: (state, action) => {
             state.activeUser = action.payload;

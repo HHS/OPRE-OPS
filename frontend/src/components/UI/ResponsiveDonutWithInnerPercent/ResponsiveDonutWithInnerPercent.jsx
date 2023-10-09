@@ -2,7 +2,7 @@ import { ResponsivePie } from "@nivo/pie";
 import { useEffect } from "react";
 
 export const ResponsiveDonutWithInnerPercent = ({
-    data = [{ id: "", label: "", value: "", color: "", percent: "" }],
+    data = [{ id: -1, label: "", value: "", color: "", percent: "" }],
     width = 175,
     height = 175,
     margin,
@@ -49,7 +49,7 @@ export const ResponsiveDonutWithInnerPercent = ({
             }}
             onMouseLeave={() => {
                 setPercent("");
-                setHoverId("");
+                setHoverId(-1);
             }}
         />
     );

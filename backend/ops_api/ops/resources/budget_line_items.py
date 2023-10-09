@@ -105,23 +105,16 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
         return response
 
-    @override
-    @is_authorized(
-        PermissionType.PUT,
-        Permission.BUDGET_LINE_ITEM,
-        extra_check=partial(bli_associated_with_agreement, permission_type=PermissionType.PUT),
-        groups=["Budget Team", "Admins"],
-    )
-    def put(self, id: int) -> Response:
-        message_prefix = f"PUT to {ENDPOINT_STRING}"
+    def _update(self, id, method, schema) -> Response:
+        message_prefix = f"{method} to {ENDPOINT_STRING}"
         try:
             with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
-                self._put_schema.context["id"] = id
-                self._put_schema.context["method"] = "PUT"
+                schema.context["id"] = id
+                schema.context["method"] = method
 
                 if request.json.get("status") == BudgetLineItemStatus.UNDER_REVIEW.name:
                     with OpsEventHandler(OpsEventType.SEND_BLI_FOR_APPROVAL) as approval_meta:
-                        data = validate_and_normalize_request_data(self._put_schema)
+                        data = validate_and_normalize_request_data(schema)
                         budget_line_item = self.update_and_commit_budget_line_item(data, id)
 
                         approval_meta.metadata.update({"bli": budget_line_item.to_dict()})
@@ -130,7 +123,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                             f"{message_prefix}: BLI Sent For Approval: {budget_line_item.to_dict()}"
                         )
                 else:
-                    data = validate_and_normalize_request_data(self._put_schema)
+                    data = validate_and_normalize_request_data(schema)
                     budget_line_item = self.update_and_commit_budget_line_item(data, id)
 
                 bli_dict = self._response_schema.dump(budget_line_item)
@@ -148,6 +141,16 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         except SQLAlchemyError as se:
             current_app.logger.error(f"{message_prefix}: {se}")
             return make_response_with_headers({}, 500)
+
+    @override
+    @is_authorized(
+        PermissionType.PUT,
+        Permission.BUDGET_LINE_ITEM,
+        extra_check=partial(bli_associated_with_agreement, permission_type=PermissionType.PUT),
+        groups=["Budget Team", "Admins"],
+    )
+    def put(self, id: int) -> Response:
+        return self._update(id, "PUT", self._put_schema)
 
     @override
     @is_authorized(
@@ -157,41 +160,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         groups=["Budget Team", "Admins"],
     )
     def patch(self, id: int) -> Response:
-        message_prefix = f"PATCH to {ENDPOINT_STRING}"
-        try:
-            with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
-                self._patch_schema.context["id"] = id
-                self._patch_schema.context["method"] = "PATCH"
-
-                if request.json.get("status") == BudgetLineItemStatus.UNDER_REVIEW.name:
-                    with OpsEventHandler(OpsEventType.SEND_BLI_FOR_APPROVAL) as approval_meta:
-                        data = validate_and_normalize_request_data(self._patch_schema)
-                        budget_line_item = self.update_and_commit_budget_line_item(data, id)
-
-                        approval_meta.metadata.update({"bli": budget_line_item.to_dict()})
-                        approval_meta.metadata.update({"agreement": budget_line_item.agreement.to_dict()})
-                        current_app.logger.info(
-                            f"{message_prefix}: BLI Sent For Approval: {budget_line_item.to_dict()}"
-                        )
-                else:
-                    data = validate_and_normalize_request_data(self._patch_schema)
-                    budget_line_item = self.update_and_commit_budget_line_item(data, id)
-
-                bli_dict = self._response_schema.dump(budget_line_item)
-                meta.metadata.update({"bli": bli_dict})
-                current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
-
-                return make_response_with_headers(bli_dict, 200)
-        except (KeyError, RuntimeError, PendingRollbackError) as re:
-            current_app.logger.error(f"{message_prefix}: {re}")
-            return make_response_with_headers({}, 400)
-        except ValidationError as ve:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
-            current_app.logger.error(f"{message_prefix}: {ve}")
-            return make_response_with_headers(ve.normalized_messages(), 400)
-        except SQLAlchemyError as se:
-            current_app.logger.error(f"{message_prefix}: {se}")
-            return make_response_with_headers({}, 500)
+        return self._update(id, "PATCH", self._patch_schema)
 
     def update_and_commit_budget_line_item(self, data, id):
         budget_line_item = update_budget_line_item(data, id)

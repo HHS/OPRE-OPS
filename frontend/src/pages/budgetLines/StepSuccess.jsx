@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import Alert from "../../components/UI/Alert";
-import useAlert from "../../helpers/use-alert";
+import useAlert from "../../hooks/use-alert.hooks";
 
 /**
  * Renders a success message and redirects the user to the Agreements list page after a delay.

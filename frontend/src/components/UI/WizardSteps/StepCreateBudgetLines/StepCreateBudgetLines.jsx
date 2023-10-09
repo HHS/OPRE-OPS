@@ -1,6 +1,5 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import StepIndicator from "../../StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
@@ -8,12 +7,12 @@ import BudgetLinesTable from "../../../BudgetLineItems/BudgetLinesTable";
 import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
 import EditModeTitle from "../../../../pages/agreements/EditModeTitle";
-import { loggedInName } from "../../../../helpers/utils";
 import suite from "./suite";
 import { convertCodeForDisplay } from "../../../../helpers/utils";
 import ConfirmationModal from "../../Modals/ConfirmationModal";
 import { useUpdateBudgetLineItemMutation, useAddBudgetLineItemMutation } from "../../../../api/opsAPI";
-import useAlert from "../../../../helpers/use-alert";
+import useAlert from "../../../../hooks/use-alert.hooks";
+import { useGetLoggedInUserFullName } from "../../../../hooks/user.hooks";
 
 /**
  * Renders the Create Budget Lines component with React context.
@@ -87,6 +86,7 @@ export const StepCreateBudgetLines = ({
     const navigate = useNavigate();
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
+    const loggedInUserFullName = useGetLoggedInUserFullName();
     const { setAlert } = useAlert();
     // setters
     const setEnteredDescription = useSetState("entered_description");
@@ -96,8 +96,6 @@ export const StepCreateBudgetLines = ({
     const setEnteredDay = useSetState("entered_day");
     const setEnteredYear = useSetState("entered_year");
     const setEnteredComments = useSetState("entered_comments");
-
-    let loggedInUserFullName = useSelector((state) => loggedInName(state.auth?.activeUser));
 
     // Validation
     let res = suite.get();
@@ -111,6 +109,7 @@ export const StepCreateBudgetLines = ({
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
 
+    // TODO: Refactor to use custom hooks
     const handleSubmitForm = (e) => {
         e.preventDefault();
         dispatch({
@@ -125,7 +124,7 @@ export const StepCreateBudgetLines = ({
                 amount: enteredAmount || 0,
                 status: "DRAFT",
                 date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}` || null,
-                psc_fee_amount: selectedProcurementShop?.fee || null
+                proc_shop_fee_percentage: selectedProcurementShop?.fee || null
             }
         });
         dispatch({ type: "RESET_FORM" });
@@ -150,7 +149,7 @@ export const StepCreateBudgetLines = ({
                 amount: enteredAmount,
                 date_needed:
                     enteredYear && enteredMonth && enteredDay ? `${enteredYear}-${enteredMonth}-${enteredDay}` : null,
-                psc_fee_amount: selectedProcurementShop?.fee
+                proc_shop_fee_percentage: selectedProcurementShop?.fee
             }
         });
 
@@ -265,13 +264,16 @@ export const StepCreateBudgetLines = ({
         // cleanup
         dispatch({ type: "RESET_FORM" });
         setIsEditMode(false);
+
         // handle next step
         if (isReviewMode) {
             navigate(`/agreements/approve/${selectedAgreement.id}`);
         } else if (continueOverRide) {
             continueOverRide();
-        } else {
+        } else if (goToNext) {
             goToNext();
+        } else {
+            navigate(-1); // go back
         }
     };
 
@@ -354,10 +356,7 @@ export const StepCreateBudgetLines = ({
                         selectedProcurementShop={selectedProcurementShop}
                     />
                     <h2 className="font-sans-lg margin-top-3">Budget Line Details</h2>
-                    <p>
-                        Complete the information below to create new budget lines. Select Add Budget Line to create
-                        multiple budget lines.
-                    </p>
+                    <p>Complete the information below to create new budget lines.</p>
                 </>
             )}
             <CreateBudgetLinesForm

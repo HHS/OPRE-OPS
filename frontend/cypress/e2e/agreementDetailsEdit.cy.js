@@ -6,7 +6,6 @@ const testAgreement = {
     agreement_type: "CONTRACT",
     agreement_reason: "NEW_REQ",
     name: "Test Contract",
-    number: "TEST001",
     description: "Test Description",
     research_project_id: 1,
     product_service_code_id: 1,
@@ -15,13 +14,13 @@ const testAgreement = {
     project_officer: 1,
     team_members: [
         {
-            id: 3,
+            id: 3
         },
         {
-            id: 5,
-        },
+            id: 5
+        }
     ],
-    notes: "Test Notes",
+    notes: "Test Notes"
 };
 
 beforeEach(() => {
@@ -46,8 +45,8 @@ it("edit an agreement", () => {
         headers: {
             Authorization: bearer_token,
             "Content-Type": "application/json",
-            Accept: "application/json",
-        },
+            Accept: "application/json"
+        }
     }).then((response) => {
         expect(response.status).to.eq(201);
         expect(response.body.id).to.exist;
@@ -60,10 +59,16 @@ it("edit an agreement", () => {
         cy.get('[data-cy="agreement-history-container"]').should("exist");
         cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
         cy.get('[data-cy="agreement-history-list"]').should("exist");
-        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .margin-0').should("exist");
-        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .margin-0').should(
+        cy.get(
+            '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+        ).should("exist");
+        cy.get(
+            '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+        ).should("have.text", "Agreement Created");
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should("exist");
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
             "have.text",
-            "New contract agreement, “Test Contract”, created by Admin Demo."
+            "Agreement created by Admin Demo"
         );
         cy.get("#edit").click();
         cy.get("#edit").should("not.exist");
@@ -78,7 +83,7 @@ it("edit an agreement", () => {
         cy.get(".usa-error-message").should("not.exist");
         cy.get("[data-cy='continue-btn']").should("not.be.disabled");
         cy.get("#description").type(" more text");
-        cy.get("#agreementNotes").type("test edit notes");
+        cy.get("#agreementNotes").type(" test edit notes");
 
         cy.get("[data-cy='continue-btn']").click();
 
@@ -93,29 +98,31 @@ it("edit an agreement", () => {
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(6000);
         cy.get("h1").should("have.text", "Test Edit Title");
+        cy.get("[data-cy='details-notes']").should("exist");
+        cy.get("[data-cy='details-notes']").should("have.text", "Test Notes test edit notes");
         cy.get("#edit").should("exist");
 
-        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .margin-0').should(
+        cy.get(
+            '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+        ).should("have.text", "Agreement Description Edited");
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
             "have.text",
-            "Contract agreement, “Test Edit Title”, updated by Admin Demo."
+            "Agreement Description changed by Admin Demo"
         );
-        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > dl > :nth-child(1)').should(
+        cy.get(
+            '[data-cy="agreement-history-list"] > :nth-child(2) > .flex-justify > [data-cy="log-item-title"]'
+        ).should("have.text", "Agreement Title Edited");
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > [data-cy="log-item-children"]').should(
             "have.text",
-            "Description"
+            "Agreement Title changed from Test Contract to Test Edit Title by Admin Demo"
         );
-        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > dl > :nth-child(2)').should(
-            "contain.text",
-            "changed from “Test Description” to “Test Description more text”"
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > .flex-justify > .text-bold').should(
+            "have.text",
+            "Agreement Notes Edited"
         );
-        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > dl > :nth-child(3)').should("have.text", "Title");
-        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > dl > :nth-child(4)').should(
-            "contain.text",
-            "changed from “Test Contract” to “Test Edit Title”"
-        );
-        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > dl > :nth-child(5)').should("have.text", "Notes");
-        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > dl > :nth-child(6)').should(
-            "contain.text",
-            "changed from “Test Notes” to “Test Notestest edit notes”"
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > [data-cy="log-item-children"]').should(
+            "have.text",
+            "Agreement Notes changed by Admin Demo"
         );
 
         cy.request({
@@ -123,8 +130,8 @@ it("edit an agreement", () => {
             url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
             headers: {
                 Authorization: bearer_token,
-                Accept: "application/json",
-            },
+                Accept: "application/json"
+            }
         }).then((response) => {
             expect(response.status).to.eq(200);
         });

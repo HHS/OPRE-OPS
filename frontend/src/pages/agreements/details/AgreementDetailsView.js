@@ -1,6 +1,4 @@
 import PropTypes from "prop-types";
-import { notesData } from "./data";
-import LogItem from "../../../components/UI/LogItem";
 import Tag from "../../../components/UI/Tag/Tag";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import AgreementHistoryPanel from "../../../components/Agreements/AgreementDetails/AgreementHistoryPanel";
@@ -30,24 +28,17 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                         </dd>
                     </dl>
                     <h3 className="text-base-dark margin-top-3 text-normal font-12px">Notes</h3>
-                    {notesData.length > 0 ? (
-                        <ul
-                            className="usa-list--unstyled overflow-y-scroll force-show-scrollbars"
+                    {agreement.notes ? (
+                        <div
+                            className="font-12px overflow-y-scroll force-show-scrollbars"
                             style={{ height: "11.375rem" }}
                             tabIndex={0}
+                            data-cy="details-notes"
                         >
-                            {/* // TODO: Replace with real data */}
-                            {notesData.map((note) => (
-                                <LogItem
-                                    key={note.id}
-                                    title={note.created_by}
-                                    createdOn={note.created_on}
-                                    message={note.message}
-                                />
-                            ))}
-                        </ul>
+                            {agreement.notes}
+                        </div>
                     ) : (
-                        <p>Sorry no notes</p>
+                        <p className="font-12px">There are currently no notes for this agreement.</p>
                     )}
                     <h3 className="text-base-dark margin-top-3 text-normal font-12px">History</h3>
                     <AgreementHistoryPanel agreementId={agreement.id} />

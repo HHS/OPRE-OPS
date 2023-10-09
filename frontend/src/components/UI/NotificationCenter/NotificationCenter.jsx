@@ -5,10 +5,11 @@ import jwt_decode from "jwt-decode";
 import icons from "../../../uswds/img/sprite.svg";
 import customStyles from "./NotificationCenter.module.css";
 import LogItem from "../LogItem";
+import { getAccessToken } from "../../Auth/auth";
 
 const NotificationCenter = () => {
     const [showModal, setShowModal] = React.useState(false);
-    const currentJWT = localStorage.getItem("access_token");
+    const currentJWT = getAccessToken();
     let userId = "";
 
     if (currentJWT) {
@@ -22,7 +23,7 @@ const NotificationCenter = () => {
         data: notifications,
         error,
         isLoading
-    } = useGetNotificationsByUserIdQuery(userId, { pollingInterval: 5000 });
+    } = useGetNotificationsByUserIdQuery(userId, { pollingInterval: 60000 });
 
     if (isLoading) {
         return <div>Loading...</div>;

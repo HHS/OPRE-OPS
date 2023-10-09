@@ -4,11 +4,10 @@ import { useSearchParams } from "react-router-dom";
 import _ from "lodash";
 import App from "../../../App";
 import { useGetAgreementsQuery } from "../../../api/opsAPI";
-import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
 import sortAgreements from "./utils";
-import AgreementsTable from "./AgreementsTable";
+import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import AgreementTabs from "./AgreementsTabs";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
+import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import AgreementsFilterButton from "./AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags";
@@ -139,7 +138,7 @@ export const AgreementsList = () => {
             (filters.budgetLineStatus.draft === true && agreement.budget_line_items.length === 0) ||
             (filters.budgetLineStatus.draft === true &&
                 agreement.budget_line_items.some((bli) => {
-                    return bli.status === "DRAFT" || bli.status === "UNDER_REVIEW";
+                    return draftBudgetLineStatuses.includes(bli.status);
                 })) ||
             (filters.budgetLineStatus.planned === true &&
                 agreement.budget_line_items.some((bli) => {
@@ -160,7 +159,7 @@ export const AgreementsList = () => {
     if (myAgreementsUrl) {
         const myAgreements = filteredAgreements.filter((agreement) => {
             return agreement.team_members?.some((teamMember) => {
-                return teamMember.id === activeUser.id;
+                return teamMember.id === activeUser.id || agreement.project_officer === activeUser.id;
             });
         });
         sortedAgreements = sortAgreements(myAgreements);
@@ -170,8 +169,7 @@ export const AgreementsList = () => {
     }
 
     return (
-        <App>
-            <Breadcrumb currentName={"Agreements"} />
+        <App breadCrumbName="Agreements">
             <TablePageLayout
                 title="Agreements"
                 subtitle={myAgreementsUrl ? "My Agreements" : "All Agreements"}

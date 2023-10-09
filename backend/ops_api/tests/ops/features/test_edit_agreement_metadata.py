@@ -11,7 +11,6 @@ TEST_CONTRACT_DATA = {
     "agreement_type": "CONTRACT",
     "name": "Feature Test Contract",
     "description": "Contract Description",
-    "number": "BDD0001",
     "team_members": [{"id": 1}],
     "support_contacts": [{"id": 2}, {"id": 3}],
     "notes": "Test Note",
@@ -22,7 +21,6 @@ TEST_CONTRACT_DATA = {
 def test_contract(loaded_db):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
-        number="BDD0999",
         contract_number="CT0999",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -47,7 +45,7 @@ def contract_with_executing_bli(loaded_db, test_contract):
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.IN_EXECUTION,
-        psc_fee_amount=2.34,
+        proc_shop_fee_percentage=2.34,
         created_by=1,
     )
     loaded_db.add(executing_bli)
@@ -69,7 +67,7 @@ def contract_with_planned_bli(loaded_db, test_contract):
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.PLANNED,
-        psc_fee_amount=2.34,
+        proc_shop_fee_percentage=2.34,
         created_by=1,
     )
     loaded_db.add(planned_bli)
@@ -119,7 +117,10 @@ def contract_agreement(client, app, test_contract):
     return data
 
 
-@given("I have a Contract Agreement with a BLI in execution", target_fixture="contract_agreement")
+@given(
+    "I have a Contract Agreement with a BLI in execution",
+    target_fixture="contract_agreement",
+)
 def contract_agreement_execution(client, app, contract_with_executing_bli):
     get_resp = client.get(f"/api/v1/agreements/{contract_with_executing_bli.id}")
     data = get_resp.json
@@ -127,7 +128,10 @@ def contract_agreement_execution(client, app, contract_with_executing_bli):
     return data
 
 
-@given("I have a Contract Agreement with a BLI in planned", target_fixture="contract_agreement")
+@given(
+    "I have a Contract Agreement with a BLI in planned",
+    target_fixture="contract_agreement",
+)
 def contract_agreement_planned(client, app, contract_with_planned_bli):
     get_resp = client.get(f"/api/v1/agreements/{contract_with_planned_bli.id}")
     data = get_resp.json

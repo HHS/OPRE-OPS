@@ -54,4 +54,4 @@ def test_auth_post_succeeds_creates_event(client, loaded_db, mocker):
     event = mock_session.add.call_args[0][0]
     assert event.event_type == OpsEventType.LOGIN_ATTEMPT
     assert event.event_status == OpsEventStatus.SUCCESS
-    assert event.event_details["api_access_token"] == "blah"
+    assert event.event_details["access_token"] == "blah"

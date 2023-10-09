@@ -21,7 +21,6 @@ from pytest_bdd import given, scenario, then, when
 def original_agreement():
     return {
         "name": "CTXX12399",
-        "number": "AGRXX003459217-B",
         "contract_number": "CT0002",
         "contract_type": ContractType.RESEARCH,
         "agreement_type": AgreementType.CONTRACT,
@@ -110,7 +109,10 @@ def client(auth_client):
     yield auth_client
 
 
-@given("I have a Contract Agreement as the original Agreement owner", target_fixture="agreement")
+@given(
+    "I have a Contract Agreement as the original Agreement owner",
+    target_fixture="agreement",
+)
 def agreement_owner(loaded_db, original_agreement, not_budget_team):
     original_agreement["created_by"] = 4
     contract_agreement = ContractAgreement(**original_agreement)
@@ -150,7 +152,10 @@ def agreement_team_member(loaded_db, original_agreement, not_budget_team):
     loaded_db.commit()
 
 
-@given("I have a Contract Agreement as a member of the Budget Team", target_fixture="agreement")
+@given(
+    "I have a Contract Agreement as a member of the Budget Team",
+    target_fixture="agreement",
+)
 def agreement_budget_team(loaded_db, original_agreement, in_budget_team):
     contract_agreement = ContractAgreement(**original_agreement)
     loaded_db.add(contract_agreement)
@@ -184,7 +189,7 @@ def planned_bli(loaded_db, agreement):
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.PLANNED,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     loaded_db.add(planned_bli)

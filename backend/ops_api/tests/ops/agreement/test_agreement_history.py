@@ -9,7 +9,6 @@ def test_agreement_history(auth_client, loaded_db):
         "agreement_type": "CONTRACT",
         "agreement_reason": "NEW_REQ",
         "name": "Agreement144",
-        "number": "811",
         "description": "Description",
         "product_service_code_id": 1,
         "incumbent": "Vendor A",
@@ -32,7 +31,6 @@ def test_agreement_history(auth_client, loaded_db):
     # PATCH: edit agreement
     data = {
         "agreement_type": "CONTRACT",
-        "number": "811",
         "description": "Test Description Updated",
         "notes": "Test Notes Updated",
     }
@@ -56,7 +54,7 @@ def test_agreement_history(auth_client, loaded_db):
         "amount": 1000000,
         "status": "DRAFT",
         "date_needed": "2022-3-3",
-        "psc_fee_amount": None,
+        "proc_shop_fee_percentage": None,
     }
 
     resp = auth_client.post("/api/v1/budget-line-items/", json=data)
@@ -105,4 +103,4 @@ def test_agreement_history(auth_client, loaded_db):
     assert len(data[4]["changes"]) == 2
     assert data[5]["class_name"] == "ContractAgreement"
     assert data[5]["event_type"] == "NEW"
-    assert len(data[5]["changes"]) == 11
+    assert len(data[5]["changes"]) == 10

@@ -35,7 +35,6 @@ def not_admin_user(loaded_db):
 def contract_agreement(loaded_db):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
-        number="BDD0999",
         contract_number="CT0999",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -55,7 +54,6 @@ def contract_agreement(loaded_db):
 def contract_agreement_project_officer(loaded_db):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
-        number="BDD0999",
         contract_number="CT0999",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -77,7 +75,6 @@ def contract_agreement_team_member(loaded_db):
     user = loaded_db.get(User, 4)
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
-        number="BDD0999",
         contract_number="CT0999",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -101,7 +98,6 @@ def contract_agreement_team_member(loaded_db):
 def contract_agreement_not_associated(loaded_db):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
-        number="BDD0999",
         contract_number="CT0999",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -127,7 +123,7 @@ def contract_with_draft_bli(loaded_db, contract_agreement):
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     loaded_db.add(draft_bli)
@@ -149,7 +145,7 @@ def contract_with_planned_bli(loaded_db, contract_agreement):
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.PLANNED,
-        psc_fee_amount=2.34,
+        proc_shop_fee_percentage=2.34,
         created_by=1,
     )
     loaded_db.add(planned_bli)
@@ -165,7 +161,6 @@ def contract_with_planned_bli(loaded_db, contract_agreement):
 def direct_agreement(loaded_db):
     direct_agreement = DirectAgreement(
         name="Feature Test Direct",
-        number="BDD0969",
         payee="Somebody who needs money",
         agreement_type=AgreementType.DIRECT_ALLOCATION,
         research_project_id=1,
@@ -195,7 +190,10 @@ def test_non_contract():
     pass
 
 
-@given("I am logged in as an OPS user with the correct authorization", target_fixture="client")
+@given(
+    "I am logged in as an OPS user with the correct authorization",
+    target_fixture="client",
+)
 def client(auth_client):
     # TODO: Authorization stuff
     yield auth_client

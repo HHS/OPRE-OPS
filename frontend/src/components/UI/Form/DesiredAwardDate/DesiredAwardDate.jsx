@@ -16,7 +16,7 @@ import YearInput from "./YearInput";
  * @param {function} props.runValidate - A function to run Vest validation.
  * @param {Object} props.res - The Vest validation result object.
  * @param {function} props.cn - The className to apply to the component.
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.JSX.Element} - The rendered component.
  */
 export const DesiredAwardDate = ({
     enteredMonth,
@@ -35,11 +35,13 @@ export const DesiredAwardDate = ({
     const isThereDateGroupErrors = dateGroupErrors.length > 0;
     return (
         <div
-            className={`usa-form-group ${isThereDateGroupErrors ? "usa-form-group--error" : null}`}
+            className={`usa-form-group ${isThereDateGroupErrors ? "usa-form-group--error" : ""}`}
             data-cy="date-group-errors"
         >
             <fieldset className="usa-fieldset">
-                <legend className={`usa-legend ${isThereDateGroupErrors ? "text-bold" : null}`}>Need By Date</legend>
+                <legend className={`usa-legend margin-top-0 ${isThereDateGroupErrors ? "text-bold" : ""}`}>
+                    Need By Date
+                </legend>
                 {isThereDateGroupErrors &&
                     // instead of mapping over the array of errors, we just want the first one
                     dateGroupErrors[0].map((error, index) => (

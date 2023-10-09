@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
-import { CheckAuth } from "../../Auth/auth";
+import { CheckAuth, getAccessToken } from "../../Auth/auth";
 import { useGetUserByOIDCIdQuery } from "../../../api/opsAPI";
 import jwt_decode from "jwt-decode";
 
 export const User = () => {
-    const currentJWT = localStorage.getItem("access_token");
+    const currentJWT = getAccessToken();
     const decodedJwt = jwt_decode(currentJWT);
     const userId = decodedJwt["sub"];
     const { data: user } = useGetUserByOIDCIdQuery(userId);

@@ -2,8 +2,8 @@ import PropTypes from "prop-types";
 import TotalSummaryCard from "../TotalSummaryCard/TotalSummaryCard";
 import Table from "../../UI/Table";
 import "./BudgetLinesTable.scss";
-import { BUDGET_LINE_TABLE_HEADERS } from "../../../constants";
-import BLIRow from "../BLIRow";
+import { BUDGET_LINE_TABLE_HEADERS } from "./BudgetLinesTable.constants";
+import BLIRow from "./BLIRow";
 
 /**
  * A table component that displays budget lines.
@@ -32,10 +32,10 @@ const BudgetLinesTable = ({
     return (
         <>
             <Table tableHeadings={BUDGET_LINE_TABLE_HEADERS}>
-                {sortedBudgetLines.map((bl) => (
+                {sortedBudgetLines.map((budgetLine) => (
                     <BLIRow
-                        key={bl?.id}
-                        bl={bl}
+                        key={budgetLine.id}
+                        budgetLine={budgetLine}
                         handleDeleteBudgetLine={handleDeleteBudgetLine}
                         handleDuplicateBudgetLine={handleDuplicateBudgetLine}
                         handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}

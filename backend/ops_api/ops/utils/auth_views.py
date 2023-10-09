@@ -1,18 +1,27 @@
+import datetime
 import json
 from typing import Union
 
 import requests
 from authlib.integrations.requests_client import OAuth2Session
 from flask import Response, current_app, request
-from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    get_current_user,
+    get_jwt_identity,
+    jwt_required,
+)
 from models.events import OpsEventType
 from ops_api.ops.utils.auth import create_oauth_jwt, decode_user
 from ops_api.ops.utils.authentication import AuthenticationGateway
+from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import register_user
 
 
+@error_simulator
 def login() -> Union[Response, tuple[str, int]]:
     try:
         auth_code = request.json.get("code")
@@ -54,13 +63,13 @@ def login() -> Union[Response, tuple[str, int]]:
         la.metadata.update(
             {
                 "user": user.to_dict(),
-                "api_access_token": access_token,
-                "api_refresh_token": refresh_token,
+                "access_token": access_token,
+                "refresh_token": refresh_token,
                 "oidc_access_token": token,
             }
         )
 
-        return make_response_with_headers(
+        response = make_response_with_headers(
             {
                 "access_token": access_token,
                 "refresh_token": refresh_token,
@@ -68,6 +77,31 @@ def login() -> Union[Response, tuple[str, int]]:
                 "user": user.to_dict(),
             }
         )
+        # TODO: For now, setting the cookie 'secure' flag based on our DEBUG,
+        # but should create a dedicated setting.
+        secure = not current_app.config["DEBUG"]
+
+        access_expires = current_app.config.get("JWT_ACCESS_TOKEN_EXPIRES").total_seconds()
+        refresh_expires = current_app.config.get("JWT_REFRESH_TOKEN_EXPIRES").total_seconds()
+
+        response.set_cookie(
+            "access_token_cookie",
+            access_token,
+            httponly=False,  # TODO: Update this once refactored
+            secure=secure,
+            samesite="Strict",
+            expires=datetime.datetime.utcnow() + datetime.timedelta(seconds=access_expires),
+        )
+        response.set_cookie(
+            "refresh_token_cookie",
+            refresh_token,
+            httponly=True,
+            secure=secure,
+            samesite="Strict",
+            expires=datetime.datetime.utcnow() + datetime.timedelta(seconds=refresh_expires),
+        )
+        return response
+
     except Exception as e:
         current_app.logger.exception(e)
         la.metadata.update(
@@ -79,6 +113,7 @@ def login() -> Union[Response, tuple[str, int]]:
 
 
 @jwt_required(True)
+@error_simulator
 def logout() -> Union[Response, tuple[str, int]]:
     with OpsEventHandler(OpsEventType.LOGOUT) as la:
         try:
@@ -111,7 +146,10 @@ def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
         if user.roles:
             additional_claims["roles"] = [role.name for role in user.roles]
         access_token = create_access_token(
-            identity=user, expires_delta=None, additional_claims=additional_claims, fresh=True
+            identity=user,
+            expires_delta=None,
+            additional_claims=additional_claims,
+            fresh=True,
         )
         refresh_token = create_refresh_token(identity=user, expires_delta=None, additional_claims=additional_claims)
     except Exception as e:
@@ -168,13 +206,23 @@ def _get_token_and_user_data_from_oauth_provider(provider: str, auth_code: str):
 
 # We are using the `refresh=True` options in jwt_required to only allow
 # refresh tokens to access this route.
-@jwt_required(refresh=True)
+@jwt_required(refresh=True, verify_type=True, locations="cookies")
+@error_simulator
 def refresh() -> Response:
-    identity = get_jwt_identity()
-    additional_claims = {}
-    if identity.roles:
-        additional_claims["roles"] = [role.name for role in identity.roles]
-    access_token = create_access_token(
-        identity=identity, expires_delta=None, additional_claims=additional_claims, fresh=False
-    )
-    return make_response_with_headers({"access_token": access_token})
+    refresh_token = request.cookies.get("refresh_token_cookie")
+    current_app.logger.debug(f"refresh_token={refresh_token}")
+    user = get_current_user()
+    if user:
+        additional_claims = {"roles": []}
+        current_app.logger.debug(f"user {user}")
+        if user.roles:
+            additional_claims["roles"] = [role.name for role in user.roles]
+        access_token = create_access_token(
+            identity=user,
+            expires_delta=None,
+            additional_claims=additional_claims,
+            fresh=False,
+        )
+        return make_response_with_headers({"access_token": access_token})
+    else:
+        return make_response_with_headers({"message": "Invalid User"}, 401)

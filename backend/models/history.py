@@ -23,8 +23,6 @@ class OpsDBHistory(BaseModel):
     event_details = sa.Column(JSONB)
     class_name = sa.Column(sa.String)
     row_key = sa.Column(sa.String)
-    original = sa.Column(JSONB)
-    diff = sa.Column(JSONB)
     changes = sa.Column(JSONB)
 
     @override

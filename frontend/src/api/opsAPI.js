@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { getAccessToken } from "../components/Auth/auth";
 
 const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
 
@@ -17,11 +18,13 @@ export const opsApi = createApi({
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
         prepareHeaders: (headers) => {
-            const access_token = localStorage.getItem("access_token");
+            const access_token = getAccessToken();
 
             if (access_token) {
                 headers.set("Authorization", `Bearer ${access_token}`);
             }
+            // Include this line to enable credentials (cookies)
+            headers.set("withCredentials", "true");
 
             return headers;
         }
