@@ -276,10 +276,7 @@ class AgreementListAPI(BaseListAPI):
 
                 schema = AGREEMENTS_REQUEST_SCHEMAS.get(agreement_type)
 
-                errors = schema.validate(request.json)
-                self.check_errors(errors)
-
-                data = schema.dump(schema.load(request.json))
+                data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
 
                 new_agreement = self._create_agreement(data, AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement_type))
 
