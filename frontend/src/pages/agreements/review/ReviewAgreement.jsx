@@ -11,7 +11,7 @@ import suite from "./suite";
 import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
-import RadioButtonTile from "../../../components/UI/RadioButtonTile";
+import AgreementActionAccordion from "../../../components/Agreements/AgreementActionAccordion";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -160,19 +160,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 cn={cn}
                 convertCodeForDisplay={convertCodeForDisplay}
             />
-            <fieldset className="usa-fieldset">
-                <RadioButtonTile
-                    label="hi mom"
-                    description="love you"
-                    checked={true}
-                />
-                <RadioButtonTile
-                    label="hi dad"
-                    description="love you too"
-                    // @ts-ignore
-                    disabled={true}
-                />
-            </fieldset>
+            <AgreementActionAccordion />
             <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : null}`}>
                 <h2
                     className="text-bold"

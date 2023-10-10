@@ -7,6 +7,7 @@ describe("RadioButtonTile", () => {
             <RadioButtonTile
                 label="Test Label"
                 description="Test Description"
+                setValue={() => {}}
             />
         );
         expect(screen.getByText("Test Label")).toBeInTheDocument();
@@ -18,6 +19,7 @@ describe("RadioButtonTile", () => {
             <RadioButtonTile
                 label="Test Label"
                 description="Test Description"
+                setValue={() => {}}
             />
         );
         const input = screen.getByRole("radio");

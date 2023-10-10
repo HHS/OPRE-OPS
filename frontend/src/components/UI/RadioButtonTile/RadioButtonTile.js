@@ -7,11 +7,11 @@ import PropTypes from "prop-types";
  * @param {string} props.label - The label to display for the radio button.
  * @param {string} [props.description] - An optional description to display below the label.
  * @param {boolean} [props.checked=false] - Whether the radio button should be checked by default.
+ * @param {function} props.setValue - A function to call when the radio button is selected.
  * @param {Object} [props.rest] - Any other props to pass to the radio button.
  * @returns {React.JSX.Element} - The radio button tile component.
  */
-const RadioButtonTile = ({ label, description, checked = false, ...rest }) => {
-    const [value, setValue] = React.useState("");
+const RadioButtonTile = ({ label, description, checked = false, setValue = () => {}, ...rest }) => {
     const uniqueId = React.useId();
     return (
         <div
@@ -20,11 +20,11 @@ const RadioButtonTile = ({ label, description, checked = false, ...rest }) => {
         >
             <input
                 {...rest}
-                className="usa-radio__input usa-radio__input--tile"
-                id={label}
                 type="radio"
                 name="option"
-                value={value}
+                className="usa-radio__input usa-radio__input--tile"
+                id={label}
+                value={label}
                 onChange={(e) => setValue(e.target.value)}
                 defaultChecked={checked}
             />
@@ -42,6 +42,7 @@ RadioButtonTile.propTypes = {
     label: PropTypes.string.isRequired,
     description: PropTypes.string,
     checked: PropTypes.bool,
+    setValue: PropTypes.func.isRequired,
     rest: PropTypes.object
 };
 
