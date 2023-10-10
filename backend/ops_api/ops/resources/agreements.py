@@ -5,19 +5,11 @@ from typing import Optional
 from flask import Response, current_app, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
-from marshmallow import EXCLUDE, Schema, ValidationError, fields
+from marshmallow import EXCLUDE, Schema, ValidationError
 from models import DirectAgreement, GrantAgreement, IaaAaAgreement, IaaAgreement, OpsEventType, User
 from models.base import BaseModel
-from models.cans import (
-    Agreement,
-    AgreementReason,
-    AgreementType,
-    BudgetLineItemStatus,
-    ContractAgreement,
-    ProductServiceCode,
-)
+from models.cans import Agreement, AgreementReason, AgreementType, BudgetLineItemStatus, ContractAgreement
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
-from ops_api.ops.dataclass_schemas.team_members import TeamMembers
 from ops_api.ops.schemas.agreements import (
     ContractAgreementData,
     DirectAgreementData,
@@ -60,25 +52,6 @@ AGREEMENTS_REQUEST_SCHEMAS = {
     AgreementType.DIRECT_ALLOCATION: AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(AgreementType.DIRECT_ALLOCATION)(),
     AgreementType.IAA_AA: AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(AgreementType.IAA_AA)(),
 }
-
-
-@dataclass
-class AgreementResponse:
-    id: int
-    type: str
-    name: str
-    created_by: int
-    description: str
-    product_service_code: Optional[ProductServiceCode]
-    incumbent: str
-    project_officer: TeamMembers
-    research_project: int
-    agreement_type: AgreementType = fields.Enum(AgreementType)
-    agreement_reason: AgreementReason = fields.Enum(AgreementReason)
-    team_members: Optional[list[TeamMembers]] = None
-    budget_line_items: Optional[list[int]] = None
-    procurement_shop: Optional[int] = None
-    notes: Optional[str] = None
 
 
 @dataclass
