@@ -137,6 +137,19 @@ const deleteAgreementByRow = (row) => {
     cy.get("@table-rows").eq(row).find('[data-cy="expand-row"]').click();
 };
 
+const deleteAgreementByName = (name) => {
+    // get the created agreement
+    cy.contains("tbody tr", name).as("agreement-row");
+    cy.get("@agreement-row").find('[data-cy="expand-row"]').click();
+    // get the first delete button and click
+    cy.get(".padding-right-9").find('[data-cy="delete-row"]').click();
+    // get the modal and cancel
+    cy.get("#ops-modal-heading").should("have.text", "Are you sure you want to delete this agreement?");
+    cy.get('[data-cy="cancel-action"]').click();
+    // close the row
+    cy.get("@agreement-row").find('[data-cy="expand-row"]').click();
+};
+
 const deleteAgreementByRowAndFail = (row) => {
     cy.get("tbody").children().as("table-rows").should("exist");
     // get the created agreement
@@ -168,7 +181,7 @@ const addAgreement = (agreement) => {
 it("should allow to delete an agreement if user created it", () => {
     addAgreement(testAgreement);
     cy.visit("/agreements/");
-    deleteLastAgreement();
+    deleteAgreementByName(testAgreement.name);
 });
 
 it("should allow to delete an agreement if user is project officer", () => {
