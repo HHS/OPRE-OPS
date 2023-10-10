@@ -117,16 +117,14 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
                         <dl className="grid-row grid-gap-sm">
                             <dt className="margin-0 text-base-dark margin-top-3 grid-col-12">Team Members</dt>
                             {agreement?.team_members.map((member) => (
-                                <>
-                                    <dd
-                                        key={member.id}
-                                        className={`text-semibold margin-0 margin-top-05 ${
-                                            MORE_THAN_THREE_TEAM_MEMBERS ? "grid-col-6" : "grid-col-12"
-                                        }`}
-                                    >
-                                        {member.full_name}
-                                    </dd>
-                                </>
+                                <dd
+                                    key={member.id}
+                                    className={`text-semibold margin-0 margin-top-05 ${
+                                        MORE_THAN_THREE_TEAM_MEMBERS ? "grid-col-6" : "grid-col-12"
+                                    }`}
+                                >
+                                    {member.full_name}
+                                </dd>
                             ))}
                         </dl>
                     ) : (
