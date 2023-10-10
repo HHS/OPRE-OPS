@@ -11,12 +11,6 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 
-const fireModal = () => {
-    cy.visit("/projects/create");
-    cy.get("#cancel").click(); // open modal
-    cy.get(".usa-modal").should("exist");
-};
-
 describe("modal management", () => {
     it("should open and close modal with cancel button", () => {
         fireModal();
@@ -35,12 +29,6 @@ describe("modal management", () => {
     });
 });
 
-const getToProcurementShopSelect = () => {
-    cy.visit("/agreements/create");
-    cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
-    cy.get("#continue").click();
-};
-
 describe("procurement shop select", () => {
     it("should display all shops in the dropdown", () => {
         getToProcurementShopSelect();
@@ -55,11 +43,43 @@ describe("procurement shop select", () => {
     });
 });
 
-it("hover on table row displays icons", () => {
-    cy.visit("/agreements/1/budget-lines?mode=edit");
-    cy.get("tbody").find("tr").first().find('[data-cy="expand-row"]').should("exist");
-    cy.get("tbody").find("tr").first().trigger("mouseover");
-    cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').should("exist");
-    cy.get("tbody").find("tr").first().find('[data-cy="delete-row"]').should("exist");
-    cy.get("tbody").find("tr").first().find('[data-cy="duplicate-row"]').should("exist");
+describe("table row", () => {
+    it("hover on table row displays icons", () => {
+        cy.visit("/agreements/1/budget-lines?mode=edit");
+        cy.get("tbody").find("tr").first().find('[data-cy="expand-row"]').should("exist");
+        cy.get("tbody").find("tr").first().trigger("mouseover");
+        cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').should("exist");
+        cy.get("tbody").find("tr").first().find('[data-cy="delete-row"]').should("exist");
+        cy.get("tbody").find("tr").first().find('[data-cy="duplicate-row"]').should("exist");
+    });
 });
+
+describe("accordion", () => {
+    it("accordion should open when clicked", () => {
+        cy.visit("/agreements/approve/1");
+        cy.get(".usa-accordion__heading > .usa-accordion__button").as("acc-btn").should("exist");
+        cy.get(".usa-accordion__content").should("not.be.hidden");
+        cy.get("@acc-btn").click();
+        cy.get(".usa-accordion__content").should("be.hidden");
+    });
+
+    it('accordion should open when "enter" is pressed', () => {
+        cy.visit("/agreements/approve/1");
+        cy.get(".usa-accordion__heading > .usa-accordion__button").as("acc-btn").should("exist");
+        cy.get(".usa-accordion__content").should("not.be.hidden");
+        cy.get("@acc-btn").type("{enter}");
+        cy.get(".usa-accordion__content").should("be.hidden");
+    });
+});
+
+const fireModal = () => {
+    cy.visit("/projects/create");
+    cy.get("#cancel").click(); // open modal
+    cy.get(".usa-modal").should("exist");
+};
+
+const getToProcurementShopSelect = () => {
+    cy.visit("/agreements/create");
+    cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
+    cy.get("#continue").click();
+};
