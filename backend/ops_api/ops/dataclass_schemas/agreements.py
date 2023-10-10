@@ -49,3 +49,47 @@ class IaaAgreementData(AgreementData):
 @dataclass
 class IaaAaAgreementData(AgreementData):
     pass
+
+
+@dataclass
+class AgreementDataForPatch:
+    name: Optional[str] = None
+    agreement_type: Optional[AgreementType] = EnumField(AgreementType)
+    description: Optional[str] = None
+    product_service_code_id: Optional[int] = None
+    agreement_reason: Optional[AgreementReason] = None
+    incumbent: Optional[str] = None
+    project_officer: Optional[int] = None
+    team_members: Optional[list[TeamMembers]] = field(default_factory=lambda: [])
+    research_project_id: Optional[int] = None
+    procurement_shop_id: Optional[int] = None
+    notes: Optional[str] = None
+
+
+@dataclass
+class ContractAgreementDataForPatch(AgreementDataForPatch):
+    contract_number: Optional[str] = None
+    vendor: Optional[str] = None
+    delivered_status: Optional[bool] = field(default=False)
+    contract_type: Optional[ContractType] = EnumField(ContractType)
+    support_contacts: Optional[list[TeamMembers]] = field(default_factory=lambda: [])
+
+
+@dataclass
+class GrantAgreementDataForPatch(AgreementDataForPatch):
+    foa: Optional[str] = None
+
+
+@dataclass
+class DirectAgreementDataForPatch(AgreementDataForPatch):
+    pass
+
+
+@dataclass
+class IaaAgreementDataForPatch(AgreementDataForPatch):
+    pass
+
+
+@dataclass
+class IaaAaAgreementDataForPatch(AgreementDataForPatch):
+    pass

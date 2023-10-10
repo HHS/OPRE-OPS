@@ -1,7 +1,7 @@
 import pytest
 from flask import url_for
-from models import ContractAgreement, GrantAgreement
-from models.cans import Agreement, AgreementType, ContractType
+from models import AgreementType, ContractAgreement, ContractType, GrantAgreement
+from models.cans import Agreement
 from sqlalchemy import func, select, update
 
 
@@ -525,3 +525,9 @@ def test_agreements_delete_by_id(auth_client, loaded_db, test_contract):
     agreement = loaded_db.scalar(stmt)
 
     assert agreement is None
+
+
+# def test_marshmallow_3():
+#     schema = mdc.class_schema(ContractAgreementDataForPatch)()
+#     data = schema.load({"contract_number": "Test Contract Number"})
+#     print(f"data={data}")
