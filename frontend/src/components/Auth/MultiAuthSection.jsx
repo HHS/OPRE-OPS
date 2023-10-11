@@ -24,12 +24,17 @@ const MultiAuthSection = () => {
             }
 
             const response = await apiLogin(activeProvider, authCode);
-            if (response.access_token === null || response.access_token === undefined) {
+            const access_token = response.access_token;
+
+            if (access_token === null || access_token === undefined) {
                 console.error("API Login Failed!");
                 navigate("/login");
             } else {
-                localStorage.setItem("access_token", response.access_token);
-                localStorage.setItem("refresh_token", response.refresh_token);
+                // TODO: We should try to move the access_token to a secure cookie,
+                // which will require a bit of re-work, since we won't have access to
+                // the data within the cookie; instead will need to do additional API calls
+                // to get the data we need.
+                localStorage.setItem("access_token", access_token);
                 dispatch(login());
 
                 if (response.is_new_user) {
@@ -37,7 +42,7 @@ const MultiAuthSection = () => {
                     return;
                 }
 
-                await setActiveUser(response.access_token, dispatch);
+                await setActiveUser(access_token, dispatch);
 
                 navigate("/");
             }
