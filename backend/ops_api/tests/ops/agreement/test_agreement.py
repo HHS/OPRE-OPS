@@ -37,13 +37,13 @@ def test_agreements_get_by_id(auth_client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_get_by_id_404(auth_client, loaded_db):
-    response = auth_client.get("/api/v1/agreements/1000")
+    response = auth_client.get(url_for("api.agreements-item", id=1000))
     assert response.status_code == 404
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_serialization(auth_client, loaded_db):
-    response = auth_client.get("/api/v1/agreements/1")
+    response = auth_client.get(url_for("api.agreements-item", id=1))
     assert response.status_code == 200
 
     # Remove extra keys that make test flaky or noisy (like datetimes)
@@ -131,14 +131,14 @@ def test_agreements_serialization(auth_client, loaded_db):
 @pytest.mark.skip("Need to consult whether this should return ALL or NONE if the value is empty")
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_with_research_project_empty(auth_client, loaded_db):
-    response = auth_client.get("/api/v1/agreements/?research_project_id=")
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"research_project_id": ""})
     assert response.status_code == 200
     assert len(response.json) == 6
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_with_research_project_found(auth_client, loaded_db):
-    response = auth_client.get("/api/v1/agreements/?research_project_id=1")
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"research_project_id": "1"})
     assert response.status_code == 200
     assert len(response.json) == 2
 
@@ -149,7 +149,10 @@ def test_agreements_with_research_project_found(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.parametrize(["simulated_error", "expected"], [["true", 500], ["400", 400], ["false", 200]])
 def test_agreements_with_simulated_error(auth_client, loaded_db, simulated_error, expected):
-    response = auth_client.get(f"/api/v1/agreements/?simulatedError={simulated_error}&research_project_id=1")
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"simulatedError": simulated_error, "research_project_id": "1"},
+    )
     assert response.status_code == expected
 
 
@@ -171,29 +174,41 @@ def test_agreements_with_simulated_error(auth_client, loaded_db, simulated_error
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_with_filter(auth_client, key, value, loaded_db):
     query_dict = {key: value}
-    response = auth_client.get("/api/v1/agreements/", query_string=query_dict)
+    response = auth_client.get(url_for("api.agreements-group"), query_string=query_dict)
     assert response.status_code == 200
     assert all(item[key] == value for item in response.json if key in item)
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_with_research_project_not_found(auth_client, loaded_db):
-    response = auth_client.get("/api/v1/agreements/?research_project_id=1000")
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"research_project_id": "1000"},
+    )
     assert response.status_code == 200
     assert len(response.json) == 0
 
 
 def test_agreement_search(auth_client, loaded_db):
-    response = auth_client.get("/api/v1/agreements/?search=")
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"search": ""},
+    )
 
     assert response.status_code == 200
     assert len(response.json) == 0
 
-    response = auth_client.get("/api/v1/agreements/?search=contract")
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"search": "contract"},
+    )
     assert response.status_code == 200
     assert len(response.json) == 2
 
-    response = auth_client.get("/api/v1/agreements/?search=fcl")
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"search": "fcl"},
+    )
 
     assert response.status_code == 200
     assert len(response.json) == 2
@@ -201,13 +216,13 @@ def test_agreement_search(auth_client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_get_by_id_auth(client, loaded_db):
-    response = client.get("/api/v1/agreements/1")
+    response = client.get(url_for("api.agreements-item", id=1))
     assert response.status_code == 401
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_auth(client, loaded_db):
-    response = client.get("/api/v1/agreements/")
+    response = client.get(url_for("api.agreements-group"))
     assert response.status_code == 401
 
 
@@ -252,7 +267,6 @@ def test_agreement_create_grant_agreement(loaded_db):
     stmt = select(Agreement).where(Agreement.id == grant_agreement.id)
     agreement = loaded_db.scalar(stmt)
 
-    # assert agreement.grant_agreement. == "GR0002"
     assert agreement.foa == "NIH"
 
 
@@ -295,7 +309,7 @@ def test_agreements_put_by_id_400_for_type_change(auth_client, test_contract):
 def test_agreements_put_by_id_400_for_missing_required(auth_client, test_contract):
     """400 is returned required fields are missing"""
     response = auth_client.put(
-        f"/api/v1/agreements/{test_contract.id}",
+        url_for("api.agreements-item", id=test_contract.id),
         json={
             "agreement_type": "CONTRACT",
         },
@@ -307,7 +321,7 @@ def test_agreements_put_by_id_400_for_missing_required(auth_client, test_contrac
 def test_agreements_put_by_id_contract(auth_client, loaded_db, test_contract):
     """PUT CONTRACT Agreement"""
     response = auth_client.put(
-        f"/api/v1/agreements/{test_contract.id}",
+        url_for("api.agreements-item", id=test_contract.id),
         json={
             "agreement_type": "CONTRACT",
             "name": "Updated Contract Name",
@@ -334,7 +348,7 @@ def test_agreements_put_by_id_contract(auth_client, loaded_db, test_contract):
 def test_agreements_put_by_id_contract_remove_fields(auth_client, loaded_db, test_contract):
     """PUT CONTRACT Agreement and verify missing fields are removed (for PUT)"""
     response = auth_client.put(
-        f"/api/v1/agreements/{test_contract.id}",
+        url_for("api.agreements-item", id=test_contract.id),
         json={
             "agreement_type": "CONTRACT",
             "name": "Updated Contract Name",
@@ -358,7 +372,7 @@ def test_agreements_put_by_id_contract_remove_fields(auth_client, loaded_db, tes
 def test_agreements_put_by_id_grant(auth_client, loaded_db):
     """PUT GRANT Agreement"""
     response = auth_client.put(
-        "/api/v1/agreements/3",
+        url_for("api.agreements-item", id=3),
         json={
             "agreement_type": "GRANT",
             "name": "Updated Grant Name",
@@ -381,7 +395,7 @@ def test_agreements_put_by_id_grant(auth_client, loaded_db):
 def test_agreements_patch_by_id_400_for_type_change(auth_client, loaded_db, test_contract):
     """400 for invalid type change"""
     response = auth_client.patch(
-        f"/api/v1/agreements/{test_contract.id}",
+        url_for("api.agreements-item", id=test_contract.id),
         json={
             "agreement_type": "GRANT",
             "name": "Updated Contract Name",
@@ -395,7 +409,7 @@ def test_agreements_patch_by_id_400_for_type_change(auth_client, loaded_db, test
 def test_agreements_patch_by_id_contract(auth_client, loaded_db, test_contract):
     """PATCH CONTRACT"""
     response = auth_client.patch(
-        f"/api/v1/agreements/{test_contract.id}",
+        url_for("api.agreements-item", id=test_contract.id),
         json={
             "agreement_type": "CONTRACT",
             "name": "Updated Contract Name",
@@ -423,7 +437,7 @@ def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test
     """Patch CONTRACT with setting fields to null/empty"""
     # set fields to non-null/non-empty
     response = auth_client.patch(
-        f"/api/v1/agreements/{test_contract.id}",
+        url_for("api.agreements-item", id=test_contract.id),
         json={
             "agreement_type": "CONTRACT",
             "name": "Updated Contract Name",
@@ -447,7 +461,7 @@ def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test
 
     # path with null/empty
     response = auth_client.patch(
-        f"/api/v1/agreements/{test_contract.id}",
+        url_for("api.agreements-item", id=test_contract.id),
         json={
             "team_members": None,
             "support_contacts": [],
@@ -471,7 +485,7 @@ def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test
 def test_agreements_patch_by_id_grant(auth_client, loaded_db):
     """PATCH GRANT"""
     response = auth_client.patch(
-        "/api/v1/agreements/3",
+        url_for("api.agreements-item", id=3),
         json={
             "agreement_type": "GRANT",
             "name": "Updated Grant Name",
@@ -515,10 +529,9 @@ def test_agreements_patch_by_id_just_notes(auth_client, loaded_db):
         agreement = loaded_db.execute(stmt)
 
 
-# @pytest.mark.skip("Not yet implemented")
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_delete_by_id(auth_client, loaded_db, test_contract):
-    response = auth_client.delete(f"/api/v1/agreements/{test_contract.id}")
+    response = auth_client.delete(url_for("api.agreements-item", id=test_contract.id))
     assert response.status_code == 200
 
     stmt = select(Agreement).where(Agreement.id == test_contract.id)
