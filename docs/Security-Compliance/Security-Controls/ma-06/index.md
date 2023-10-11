@@ -9,6 +9,6 @@ TODO: seek inherited text
 
 ### Control Origination
 
-IaaS vendor
+OPS, Hybrid with IaaS provider, and inherited from ACF Tech (AMS)
 
 ### Related Content

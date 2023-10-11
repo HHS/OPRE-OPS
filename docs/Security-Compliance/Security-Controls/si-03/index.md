@@ -13,10 +13,16 @@ d. Address the receipt of false positives during malicious code detection and er
 
 ## OPS Implementation
 
-TOOD: container signing ? seek inherited text from IaaS provider
+TODO: a. container signing in GH and/or Azure to help with some layers of malicious code prevention. seek inherited text from IaaS provider
+
+b. updated based on whatever tooling A uses
+
+c. put some text in about [container scanning tools]
+
+d. System Owners will review alerts from tooling and document any false positives within the tool.
 
 ### Control Origination
 
-Hybrid with IaaS vendor and OPS
+Hybrid with IaaS vendor and OPS. Inherited from ACF Tech (AMS)
 
 ### Related Content

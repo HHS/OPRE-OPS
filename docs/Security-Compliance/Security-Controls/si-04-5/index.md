@@ -16,6 +16,6 @@ TODO: Provide evidence of IaaS alerting settings
 
 ### Control Origination
 
-Hybrid with IaaS vendor and OPS
+Hybrid with IaaS vendor and OPS. Inherited from ACF Tech (AMS)
 
 ### Related Content

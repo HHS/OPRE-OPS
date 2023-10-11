@@ -12,9 +12,11 @@ TODO: text around IaaS vendor alerts, dependabot, renovatebot, reference securit
 
 TODO: seek inherited text from IaaS vendor, ACF Tech, generate other text
 
+ACF/OPRE Incident Response team also communicates relevant alerts, advisories, and directives at their discretion
+
 ### Control Origination
 
-Hybrid with IaaS vendor and OPS
+Hybrid with IaaS vendor and OPS. Inherited from ACF Tech.
 
 ### Related Content
 Note: See HHS Policy for Vulnerability Management.

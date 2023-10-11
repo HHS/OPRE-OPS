@@ -21,12 +21,12 @@ g. Provide [Audit records, Input from malicious code protection mechanisms, data
 
 ## OPS Implementation
 
-TODO: better language around OPS utilizes WAF, Defender for ____. Seek inherited text
+TODO: better language around OPS utilizes WAF, Defender for ____. Logs on access attempts. Azure logging verbiage.... Seek inherited text from Azure and ACF Tech (AMS)
 
 TODO: f and g: Seek ACF Tech guidance?   Azure inheritance?
 
 ### Control Origination
 
-Hybrid with IaaS vendor and OPS
+Hybrid with IaaS vendor and OPS. Inherited from ACF
 
 ### Related Content

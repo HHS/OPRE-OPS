@@ -5,7 +5,7 @@ Employ automated tools and mechanisms to support near real-time analysis of even
 
 ## OPS Implementation
 
-TODO: better language around OPS utilizes WAF, Defender for ____, and alerting around all of the above. Seek inherited text
+TODO: better language around OPS utilizes WAF, Defender for ____, LogWatch equivalent, and alerting around all of the above. Seek inherited text
 
 ### Control Origination
 

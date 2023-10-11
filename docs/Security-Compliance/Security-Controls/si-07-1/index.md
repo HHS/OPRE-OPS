@@ -5,10 +5,10 @@ Perform an integrity check of [system software, firmware, and applications deeme
 
 ## OPS Implementation
 
-TODO: ???
+TODO: container signing verbiage from si-7. consider what needs to be done for data integrity?
 
 ### Control Origination
 
-Hybrid with IaaS vendor and OPS
+Hybrid with IaaS vendor and OPS. Inherited from ACF Tech (AMS)
 
 ### Related Content

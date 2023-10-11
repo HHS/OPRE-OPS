@@ -2,10 +2,15 @@
 ## MA-02 - Controlled Maintenance
 
 a. Schedule, document, and review records of maintenance, repair, and replacement on system components in accordance with manufacturer or vendor specifications and/or organizational requirements;
+
 b. Approve and monitor all maintenance activities, whether performed on site or remotely and whether the system or system components are serviced on site or removed to another location;
+
 c. Require that [the System Owner (SO)] explicitly approve the removal of the system or system components from organizational facilities for off-site maintenance, repair, or replacement;
+
 d. Sanitize equipment to remove the following information from associated media prior to removal from organizational facilities for off-site maintenance, repair, or replacement: [ACF-defined information];
+
 e. Check all potentially impacted controls to verify that the controls are still functioning properly following maintenance, repair, or replacement actions; and
+
 f. Include the following information in organizational maintenance records: [Date and time of maintenance; Name of individual(s) performing the maintenance; Name of escort, if applicable; Description of maintenance performed; List of equipment removed or replaced (including identification numbers, if applicable)].
 
 ## OPS Implementation
@@ -14,7 +19,7 @@ TODO: seek inherited text
 
 ### Control Origination
 
-IaaS vendor
+Hybrid with OPS and IaaS vendor
 
 ### Related Content
 Note: For systems categorized as Moderate or High, maintenance records should include: (i) the date and time of maintenance; (ii) the name of the individual performing the maintenance; (iii) the name of escort, if necessary; (iv) a description of the maintenance performed; and (v) a list of equipment removed and replaced (including identification numbers, if applicable). For systems categorized as High, ensure automated mechanisms are employed to schedule, conduct, and document any maintenance and repairs as required.

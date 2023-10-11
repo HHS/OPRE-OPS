@@ -13,6 +13,6 @@ TODO: seek inherited text
 
 ### Control Origination
 
-IaaS vendor
+Inherited from IaaS vendor and ACF Tech (AMS)
 
 ### Related Content
