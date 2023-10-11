@@ -54,7 +54,7 @@ describe("table row", () => {
     });
 });
 
-describe.only("agreement meta accordion", () => {
+describe("agreement meta accordion", () => {
     it("accordion should open when clicked", () => {
         cy.visit("/agreements/approve/1");
         cy.get(".usa-accordion__heading > .usa-accordion__button").first().as("acc-btn").should("exist");
