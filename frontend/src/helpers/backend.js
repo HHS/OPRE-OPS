@@ -19,7 +19,8 @@ export const callBackend = async (urlPath, action, requestBody, queryParams, use
         method: action,
         url: `${BACKEND_DOMAIN}${urlPath}`,
         data: requestBody,
-        params: queryParams
+        params: queryParams,
+        withCredentials: true
     });
 
     return response.data;
