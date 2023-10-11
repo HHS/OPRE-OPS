@@ -31,6 +31,9 @@ export const setActionableBudgetLines = (agreement, action) => {
 
 export const anyBudgetLinesByStatus = (agreement, status) => {
     handleAgreementProp(agreement);
-
-    return agreement?.budget_line_items.some((item) => item.status === status);
+    let match = false;
+    if (agreement?.budget_line_items) {
+        match = agreement.budget_line_items.some((item) => item.status === status);
+    }
+    return match;
 };
