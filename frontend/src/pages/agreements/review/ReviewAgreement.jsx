@@ -31,6 +31,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
     });
 
     const [updateBudgetLineItemStatus] = useUpdateBudgetLineItemStatusMutation();
+    const [action, setAction] = useState(""); // for the action accordion
     const [pageErrors, setPageErrors] = useState({});
     const [isAlertActive, setIsAlertActive] = useState(false);
     const isAgreementStateEditable = useIsAgreementEditable(agreement?.id);
@@ -84,6 +85,18 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const budgetLineErrorsExist = budgetLineErrors.length > 0;
     const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist;
     const anyBudgetLinesAreDraft = agreement.budget_line_items.some((item) => item.status === "DRAFT");
+
+    const setActionableBudgetLines = (action) => {
+        switch (action) {
+            case "Change Draft Budget Lines to Planned Status":
+                return agreement.budget_line_items.filter((item) => item.status === "DRAFT");
+            case "Change Planned Budget Lines to Executing Status":
+                return agreement.budget_line_items.filter((item) => item.status === "PLANNED");
+            default:
+                return [];
+        }
+    };
+    let actionableBudgetLines = setActionableBudgetLines(action);
 
     const handleSendToApproval = () => {
         if (anyBudgetLinesAreDraft) {
@@ -160,7 +173,13 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 cn={cn}
                 convertCodeForDisplay={convertCodeForDisplay}
             />
-            <AgreementActionAccordion />
+            <AgreementActionAccordion setAction={setAction} />
+            <pre className="border-1px padding-1 font-12px border-dotted border-info">
+                {action ? action : "no action"} is selected
+            </pre>
+            <pre className="border-1px padding-1 font-12px border-dotted border-info">
+                {actionableBudgetLines && JSON.stringify(actionableBudgetLines, null, 2)}
+            </pre>
             <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : null}`}>
                 <h2
                     className="text-bold"

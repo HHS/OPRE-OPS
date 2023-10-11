@@ -1,12 +1,10 @@
-import React from "react";
 import RadioButtonTile from "../../UI/RadioButtonTile";
 import Accordion from "../../UI/Accordion";
 
-const AgreementActionAccordion = () => {
-    const [value, setValue] = React.useState("Change Draft Budget Lines to Planned Status");
+const AgreementActionAccordion = ({ setAction }) => {
     return (
         <Accordion
-            heading="Hello"
+            heading="Choose an Action"
             level={2}
         >
             <fieldset className="usa-fieldset">
@@ -18,20 +16,17 @@ const AgreementActionAccordion = () => {
                         <RadioButtonTile
                             label="Change Draft Budget Lines to Planned Status"
                             description="This will subtract the amounts from the FY budget"
-                            checked={true}
-                            setValue={setValue}
+                            setValue={setAction}
                         />
                     </div>
                     <div className="grid-col">
                         <RadioButtonTile
                             label="Change Planned Budget Lines to Executing Status"
                             description="This will start the procurement process"
-                            setValue={setValue}
-                            disabled={true}
+                            setValue={setAction}
                         />
                     </div>
                 </div>
-                <pre>{value} is selected</pre>
             </fieldset>
         </Accordion>
     );
