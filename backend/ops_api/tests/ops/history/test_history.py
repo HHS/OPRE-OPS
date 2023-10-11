@@ -122,7 +122,7 @@ def test_history_expanded_with_web_client(auth_client, loaded_db):
         "name": "Contract123",
         "description": "History Test Description",
         "product_service_code_id": 1,
-        "project_officer": 1,
+        "project_officer_id": 1,
         "team_members": [
             {
                 "id": 3,
@@ -202,7 +202,7 @@ def test_history_expanded_with_web_client(auth_client, loaded_db):
     assert "new" in result.changes["notes"]
     assert result.changes["notes"]["new"] == patch_data["notes"]
     assert "old" in result.changes["notes"]
-    assert result.changes["notes"]["old"] is None
+    assert result.changes["notes"]["old"] == ""
     assert "team_members" in result.changes
     assert len(result.changes["team_members"]["added"]) == 2
     assert len(result.changes["team_members"]["deleted"]) == 1

@@ -59,7 +59,7 @@ def contract_agreement_project_officer(loaded_db):
         agreement_type=AgreementType.CONTRACT,
         research_project_id=1,
         created_by=1,
-        project_officer=4,
+        project_officer_id=4,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -80,7 +80,7 @@ def contract_agreement_team_member(loaded_db):
         agreement_type=AgreementType.CONTRACT,
         research_project_id=1,
         created_by=1,
-        project_officer=1,
+        project_officer_id=1,
         team_members=[user],
     )
     loaded_db.add(contract_agreement)

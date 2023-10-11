@@ -28,7 +28,7 @@ def original_agreement():
         "product_service_code_id": 2,
         "description": "Using Innovative Data...",
         "agreement_reason": AgreementReason.NEW_REQ,
-        "project_officer": 1,
+        "project_officer_id": 1,
         "procurement_shop_id": 1,
         "created_by": 1,
     }
@@ -127,7 +127,7 @@ def agreement_owner(loaded_db, original_agreement, not_budget_team):
 
 @given("I have a Contract Agreement as the Project Officer", target_fixture="agreement")
 def agreement_project_officer(loaded_db, original_agreement, not_budget_team):
-    original_agreement["project_officer"] = 4
+    original_agreement["project_officer_id"] = 4
     contract_agreement = ContractAgreement(**original_agreement)
     loaded_db.add(contract_agreement)
     loaded_db.commit()

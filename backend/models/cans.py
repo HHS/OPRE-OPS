@@ -21,7 +21,16 @@ from sqlalchemy import (
     case,
     select,
 )
-from sqlalchemy.orm import InstrumentedAttribute, column_property, object_session, relationship, with_polymorphic
+from sqlalchemy.dialects.postgresql import ENUM
+from sqlalchemy.orm import (
+    InstrumentedAttribute,
+    Mapped,
+    column_property,
+    mapped_column,
+    object_session,
+    relationship,
+    with_polymorphic,
+)
 from typing_extensions import override
 
 
@@ -140,42 +149,99 @@ class Agreement(BaseModel):
 
     __tablename__ = "agreement"
 
-    id = Column(Integer, Identity(), primary_key=True)
-    agreement_type = Column(sa.Enum(AgreementType), nullable=False)
-    name = Column(String, nullable=False)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
+    # id = Column(Integer, Identity(), primary_key=True)
 
-    description = Column(String)
+    agreement_type = mapped_column(ENUM(AgreementType), nullable=False)
+    # agreement_type = Column(sa.Enum(AgreementType), nullable=False)
 
-    product_service_code_id = Column(Integer, ForeignKey("product_service_code.id"))
-    product_service_code = relationship(
-        "ProductServiceCode", back_populates="agreement"
+    name: Mapped[str] = mapped_column(
+        String, nullable=False, comment="In MAPS this was PROJECT.PROJECT_TITLE"
+    )
+    # name = Column(
+    #     String, nullable=False, comment="In MAPS this was PROJECT.PROJECT_TITLE"
+    # )
+
+    description: Mapped[str] = mapped_column(String, nullable=True)
+    # description = Column(String)
+
+    product_service_code_id: Mapped[int] = mapped_column(
+        ForeignKey("product_service_code.id"),
+        nullable=True,
+    )
+    # product_service_code_id = Column(Integer, ForeignKey("product_service_code.id"))
+
+    product_service_code: Mapped[Optional[ProductServiceCode]] = relationship(
+        back_populates="agreement"
+    )
+    # product_service_code = relationship(
+    #     "ProductServiceCode", back_populates="agreement"
+    # )
+
+    agreement_reason = mapped_column(ENUM(AgreementReason))
+    # agreement_reason = Column(sa.Enum(AgreementReason))
+
+    incumbent: Mapped[str] = mapped_column(String, nullable=True)
+    # incumbent = Column(String)
+
+    project_officer_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"), nullable=True
     )
 
-    agreement_reason = Column(sa.Enum(AgreementReason))
-    incumbent = Column(String)
-    project_officer = Column(
-        Integer, ForeignKey("users.id", name="fk_user_project_officer")
+    # project_officer = Column(
+    #     Integer, ForeignKey("users.id", name="fk_user_project_officer")
+    # )
+
+    project_officer: Mapped[Optional[User]] = relationship(
+        User, foreign_keys=[project_officer_id]
     )
-    project_officer_user = relationship(User, foreign_keys=[project_officer])
-    team_members = relationship(
+    # project_officer_user = relationship(User, foreign_keys=[project_officer])
+
+    team_members: Mapped[list[User]] = relationship(
         User,
         secondary=agreement_team_members,
         back_populates="agreements",
     )
 
-    research_project_id = Column(Integer, ForeignKey("research_project.id"))
-    research_project = relationship("ResearchProject", back_populates="agreements")
+    # team_members = relationship(
+    #     User,
+    #     secondary=agreement_team_members,
+    #     back_populates="agreements",
+    # )
 
-    budget_line_items = relationship(
+    research_project_id: Mapped[int] = mapped_column(
+        ForeignKey("research_project.id"), nullable=True
+    )
+    # research_project_id = Column(Integer, ForeignKey("research_project.id"))
+
+    research_project: Mapped[Optional["ResearchProject"]] = relationship(
+        "ResearchProject", back_populates="agreements"
+    )
+    # research_project = relationship("ResearchProject", back_populates="agreements")
+
+    budget_line_items: Mapped[list["BudgetLineItem"]] = relationship(
         "BudgetLineItem",
         back_populates="agreement",
         lazy=True,
         cascade="all, delete",
     )
-    procurement_shop_id = Column(Integer, ForeignKey("procurement_shop.id"))
-    procurement_shop = relationship("ProcurementShop", back_populates="agreements")
+    # budget_line_items = relationship(
+    #     "BudgetLineItem",
+    #     back_populates="agreement",
+    #     lazy=True,
+    #     cascade="all, delete",
+    # )
 
-    notes = Column(Text)
+    procurement_shop_id: Mapped[int] = mapped_column(
+        ForeignKey("procurement_shop.id"), nullable=True
+    )
+    # procurement_shop_id = Column(Integer, ForeignKey("procurement_shop.id"))
+
+    procurement_shop = relationship("ProcurementShop", back_populates="agreements")
+    # procurement_shop = relationship("ProcurementShop", back_populates="agreements")
+
+    notes: Mapped[str] = mapped_column(Text, default="")
+    # notes = Column(Text)
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -187,8 +253,8 @@ class Agreement(BaseModel):
     }
 
     @override
-    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
-        d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = super().to_dict()
 
         if isinstance(self.agreement_type, str):
             self.agreement_type = AgreementType[self.agreement_type]
@@ -255,8 +321,8 @@ class ContractAgreement(Agreement):
     }
 
     @override
-    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
-        d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = super().to_dict()
 
         if isinstance(self.contract_type, str):
             self.contract_type = ContractType[self.contract_type]
@@ -540,7 +606,7 @@ class CAN(BaseModel):
         return self.number
 
     @override
-    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
+    def to_dict(self) -> dict[str, Any]:
         d: dict[str, Any] = super().to_dict()
 
         if isinstance(self.arrangement_type, str):

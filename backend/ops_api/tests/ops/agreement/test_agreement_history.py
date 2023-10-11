@@ -12,7 +12,7 @@ def test_agreement_history(auth_client, loaded_db):
         "description": "Description",
         "product_service_code_id": 1,
         "incumbent": "Vendor A",
-        "project_officer": 1,
+        "project_officer_id": 1,
         "team_members": [
             {
                 "id": 3,
@@ -103,4 +103,4 @@ def test_agreement_history(auth_client, loaded_db):
     assert len(data[4]["changes"]) == 2
     assert data[5]["class_name"] == "ContractAgreement"
     assert data[5]["event_type"] == "NEW"
-    assert len(data[5]["changes"]) == 10
+    assert len(data[5]["changes"]) == 9
