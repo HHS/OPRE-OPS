@@ -1,9 +1,9 @@
+import React from "react";
 import PropTypes from "prop-types";
-import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
+import CurrencyFormat from "react-currency-format";
 import { fiscalYearFromDate } from "../../../helpers/utils";
 import constants from "../../../constants";
 import SummaryCard from "../../UI/SummaryCard";
-const { blisByFYChartColors } = constants;
 import styles from "./BudgetLinesByFiscalYear.styles.module.scss";
 
 /**
@@ -14,6 +14,8 @@ import styles from "./BudgetLinesByFiscalYear.styles.module.scss";
  * @returns {React.JSX.Element} - The agreement total budget lines card component JSX.
  */
 const BudgetLinesByFiscalYear = ({ budgetLineItems }) => {
+    const id = React.useId();
+    const { blisByFYChartColors } = constants;
     const headerText = "Budget Lines by Fiscal Year";
     const blisFy = budgetLineItems.map((bli) => ({ ...bli, fiscalYear: fiscalYearFromDate(bli.date_needed) }));
     const fyTotalsMap = blisFy.reduce((acc, cur) => {
@@ -40,17 +42,22 @@ const BudgetLinesByFiscalYear = ({ budgetLineItems }) => {
             color: blisByFYChartColors[index].color
         };
     });
-    console.log(chartData);
 
-    const ratio = 0.5;
+    console.log(chartData);
 
     return (
         <SummaryCard title={headerText}>
             <div>
                 {chartData.map((item, index) => (
-                    <div className="display-flex margin-y-1">
-                        <div>{item.FY}</div>
-                        <div style={{ flex: item.ratio }}>
+                    <div
+                        className="display-flex margin-y-1"
+                        key={`blis-fy-${index}-${id}`}
+                    >
+                        <span>FY {item.FY}</span>
+                        <div
+                            className="margin-x-1"
+                            style={{ flex: item.ratio }}
+                        >
                             <div className={styles.barBox}>
                                 <div
                                     className={`${styles.rightBar}`}
@@ -58,7 +65,14 @@ const BudgetLinesByFiscalYear = ({ budgetLineItems }) => {
                                 />
                             </div>
                         </div>
-                        <div>{item.total}</div>
+                        <CurrencyFormat
+                            value={item.total}
+                            displayType="text"
+                            thousandSeparator=","
+                            prefix="$"
+                            decimalScale={2}
+                            fixedDecimalScale={true}
+                        />
                     </div>
                 ))}
             </div>
