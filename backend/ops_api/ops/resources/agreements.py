@@ -10,12 +10,10 @@ from models import DirectAgreement, GrantAgreement, IaaAaAgreement, IaaAgreement
 from models.base import BaseModel
 from models.cans import Agreement, AgreementReason, AgreementType, BudgetLineItemStatus, ContractAgreement
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
-from ops_api.ops.schemas.agreements import (
-    ContractAgreementData,
-    DirectAgreementData,
-    GrantAgreementData,
-    IaaAaAgreementData,
-    IaaAgreementData,
+from ops_api.ops.resources.agreements_constants import (
+    AGREEMENT_TYPE_TO_CLASS_MAPPING,
+    AGREEMENTS_REQUEST_SCHEMAS,
+    ENDPOINT_STRING,
 )
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
@@ -24,34 +22,6 @@ from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 from sqlalchemy.future import select
 from typing_extensions import Any, override
-
-ENDPOINT_STRING = "/agreements"
-
-
-AGREEMENT_TYPE_TO_CLASS_MAPPING = {
-    AgreementType.CONTRACT: ContractAgreement,
-    AgreementType.GRANT: GrantAgreement,
-    AgreementType.IAA: IaaAgreement,
-    AgreementType.DIRECT_ALLOCATION: DirectAgreement,
-    AgreementType.IAA_AA: IaaAaAgreement,
-}
-
-
-AGREEMENT_TYPE_TO_DATACLASS_MAPPING = {
-    AgreementType.CONTRACT: ContractAgreementData,
-    AgreementType.GRANT: GrantAgreementData,
-    AgreementType.IAA: IaaAgreementData,
-    AgreementType.DIRECT_ALLOCATION: DirectAgreementData,
-    AgreementType.IAA_AA: IaaAaAgreementData,
-}
-
-AGREEMENTS_REQUEST_SCHEMAS = {
-    AgreementType.CONTRACT: AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(AgreementType.CONTRACT)(),
-    AgreementType.GRANT: AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(AgreementType.GRANT)(),
-    AgreementType.IAA: AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(AgreementType.IAA)(),
-    AgreementType.DIRECT_ALLOCATION: AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(AgreementType.DIRECT_ALLOCATION)(),
-    AgreementType.IAA_AA: AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(AgreementType.IAA_AA)(),
-}
 
 
 @dataclass
