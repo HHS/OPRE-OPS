@@ -12,6 +12,7 @@ import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../.
 import useAlert from "../../../hooks/use-alert.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import AgreementActionAccordion from "../../../components/Agreements/AgreementActionAccordion";
+import { setActionableBudgetLines, anyBudgetLinesByStatus } from "./ReviewAgreement.helpers";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -84,22 +85,12 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const budgetLineErrors = res.getErrors("budget-line-items");
     const budgetLineErrorsExist = budgetLineErrors.length > 0;
     const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist;
-    const anyBudgetLinesAreDraft = agreement.budget_line_items.some((item) => item.status === "DRAFT");
-
-    const setActionableBudgetLines = (action) => {
-        switch (action) {
-            case "Change Draft Budget Lines to Planned Status":
-                return agreement.budget_line_items.filter((item) => item.status === "DRAFT");
-            case "Change Planned Budget Lines to Executing Status":
-                return agreement.budget_line_items.filter((item) => item.status === "PLANNED");
-            default:
-                return [];
-        }
-    };
-    let actionableBudgetLines = setActionableBudgetLines(action);
+    const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement, "DRAFT");
+    const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement, "PLANNED");
+    const actionableBudgetLines = setActionableBudgetLines(agreement, action);
 
     const handleSendToApproval = () => {
-        if (anyBudgetLinesAreDraft) {
+        if (anyBudgetLinesDraft) {
             agreement?.budget_line_items.forEach((bli) => {
                 if (bli.status === "DRAFT") {
                     console.log(bli.id);
@@ -173,11 +164,16 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 cn={cn}
                 convertCodeForDisplay={convertCodeForDisplay}
             />
-            <AgreementActionAccordion setAction={setAction} />
+            <AgreementActionAccordion
+                setAction={setAction}
+                optionOneDisabled={!anyBudgetLinesDraft}
+                optionTwoDisabled={!anyBudgetLinePlanned}
+            />
             <pre className="border-1px padding-1 font-12px border-dotted border-info">
                 {action ? action : "no action"} is selected
             </pre>
             <pre className="border-1px padding-1 font-12px border-dotted border-info">
+                actionableBudgetLines:
                 {actionableBudgetLines && JSON.stringify(actionableBudgetLines, null, 2)}
             </pre>
             <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : null}`}>
@@ -230,11 +226,11 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     Edit
                 </button>
                 <button
-                    className={`usa-button ${!anyBudgetLinesAreDraft ? "usa-tooltip" : ""}`}
+                    className={`usa-button ${!anyBudgetLinesDraft ? "usa-tooltip" : ""}`}
                     data-cy="send-to-approval-btn"
-                    title={!anyBudgetLinesAreDraft ? "Agreement is not able to be reviewed" : ""}
+                    title={!anyBudgetLinesDraft ? "Agreement is not able to be reviewed" : ""}
                     onClick={handleSendToApproval}
-                    disabled={!anyBudgetLinesAreDraft || !res.isValid()}
+                    disabled={!anyBudgetLinesDraft || !res.isValid()}
                 >
                     Send to Approval
                 </button>
