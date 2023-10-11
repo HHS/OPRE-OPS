@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from marshmallow import fields
 from models import ContractType
@@ -39,8 +38,8 @@ class ContractItemAPI(BaseItemAPI):
 class ContractListAPI(BaseListAPI):
     def __init__(self, model: BaseData = ContractAgreement):
         super().__init__(model)
-        self._response_schema = mmdc.class_schema(ContractAgreementResponse)()
-        self._response_schema_collection = mmdc.class_schema(ContractAgreementResponse)(many=True)
+        self._response_schema = ContractAgreementResponse()
+        self._response_schema_collection = ContractAgreementResponse(many=True)
 
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
