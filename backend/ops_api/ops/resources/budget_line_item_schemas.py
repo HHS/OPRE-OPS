@@ -228,7 +228,7 @@ class QueryParameters:
 
 
 @dataclass
-class TeamMembers:
+class BLITeamMembers:
     id: int
     full_name: Optional[str] = None
     email: Optional[str] = None
@@ -250,4 +250,4 @@ class BudgetLineItemResponse:
     date_needed: date = field(default=None, metadata={"format": "%Y-%m-%d"})
     portfolio_id: Optional[int] = None
     fiscal_year: Optional[int] = None
-    team_members: Optional[list[TeamMembers]] = field(default_factory=lambda: [])
+    team_members: Optional[list[BLITeamMembers]] = field(default_factory=lambda: [])
