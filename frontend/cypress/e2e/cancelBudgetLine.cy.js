@@ -19,7 +19,7 @@ const blData = [
         day: "01",
         year: "2023",
         amount: "111111",
-        note: "note one",
+        note: "note one"
     },
     {
         descr: "SC2",
@@ -28,7 +28,7 @@ const blData = [
         day: "22",
         year: "2023",
         amount: "222222",
-        note: "note two",
+        note: "note two"
     },
     {
         descr: "SC3",
@@ -37,8 +37,8 @@ const blData = [
         day: "23",
         year: "2023",
         amount: "333333",
-        note: "note three",
-    },
+        note: "note three"
+    }
 ];
 
 const completeStepOne = () => {

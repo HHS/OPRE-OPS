@@ -1,0 +1,41 @@
+import { actionOptions } from "./ReviewAgreement.constants";
+
+/**
+ * Validates that the agreement is an object.
+ * @param {Object} agreement - The agreement to validate.
+ * @throws {Error} If the agreement is not an object.
+ */
+const handleAgreementProp = (agreement) => {
+    if (typeof agreement !== "object") {
+        throw new Error(`Agreement must be an object, but got ${typeof agreement}`);
+    }
+};
+
+/**
+ * Returns an array of budget line items based on the provided action and agreement.
+ *
+ * @param {Object} agreement - The agreement object to filter budget line items from.
+ * @param {string} action - The action to perform on the budget line items.
+ * @returns {Array<any>} - An array of budget line items based on the provided action and agreement.
+ */
+export const setActionableBudgetLines = (agreement, action) => {
+    handleAgreementProp(agreement);
+
+    switch (action) {
+        case actionOptions.CHANGE_DRAFT_TO_PLANNED:
+            return agreement?.budget_line_items.filter((item) => item.status === "DRAFT");
+        case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
+            return agreement?.budget_line_items.filter((item) => item.status === "PLANNED");
+        default:
+            return [];
+    }
+};
+
+export const anyBudgetLinesByStatus = (agreement, status) => {
+    handleAgreementProp(agreement);
+    let match = false;
+    if (agreement?.budget_line_items) {
+        match = agreement.budget_line_items.some((item) => item.status === status);
+    }
+    return match;
+};
