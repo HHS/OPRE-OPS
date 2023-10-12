@@ -11,8 +11,8 @@ import AgreementValuesCard from "../../../components/Agreements/AgreementDetails
 import { useState } from "react";
 import AgreementBudgetLinesHeader from "../../../components/Agreements/AgreementBudgetLinesHeader";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
-import BudgetLinesByFiscalYear from "../../../components/Agreements/AgreementDetailsCards/BudgetLinesByFiscalYear";
-import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard";
+import BudgetLinesByFiscalYear from "../../../components/Agreements/AgreementDetailsCards/BLIsByFYSummaryCard/BLIsByFYSummaryCard";
+import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard/AgreementTotalCard";
 
 /**
  * Renders Agreement budget lines view

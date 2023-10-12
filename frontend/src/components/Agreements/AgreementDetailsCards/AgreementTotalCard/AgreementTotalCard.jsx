@@ -1,25 +1,23 @@
 import PropTypes from "prop-types";
-import { ResponsiveBar } from "@nivo/bar";
-import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
-import { fiscalYearFromDate } from "../../../helpers/utils";
-import constants from "../../../constants";
+import CurrencySummaryCard from "../../../UI/CurrencySummaryCard/CurrencySummaryCard";
 import CurrencyFormat from "react-currency-format";
-const { barChartColors } = constants;
 
 /**
- * A component that displays the totals for an agreement, and it's procurement shop.
- * @param total
- * @param subtotal
- * @param fees
- * @param procurementShop
- * @returns {JSX.Element}
- * @constructor
+ * Renders a card displaying the agreement total, subtotal, fees, and procurement shop information.
+ * @param {Object} props - The component props.
+ * @param {number} props.total - The total amount of the agreement.
+ * @param {number} props.subtotal - The subtotal amount of the agreement.
+ * @param {number} props.fees - The fees amount of the agreement.
+ * @param {Object} props.procurementShop - The procurement shop information object.
+ * @param {string} props.procurementShop.abbr - The abbreviation of the procurement shop.
+ * @param {number} props.procurementShop.fee - The fee rate of the procurement shop.
+ * @returns {React.JSX.Element} - The JSX element representing the agreement total card.
  */
 const AgreementTotalCard = ({ total, subtotal, fees, procurementShop }) => {
-    const headerText = "Agreement Total";
+    "Agreement Total";
     return (
         <CurrencySummaryCard
-            headerText={headerText}
+            headerText="Agreement Total"
             amount={total}
         >
             <h4 className="margin-0 margin-top-2 margin-bottom-1 font-12px text-base-dark text-normal">
@@ -48,17 +46,6 @@ const AgreementTotalCard = ({ total, subtotal, fees, procurementShop }) => {
                             prefix={"$"}
                         />
                     </div>
-                    {/*<dt className="margin-0 text-base-dark grid-col-5">Fees</dt>*/}
-                    {/*<dd className="text-semibold margin-0 grid-col-5">*/}
-                    {/*    <CurrencyFormat*/}
-                    {/*        value={fees}*/}
-                    {/*        displayType={"text"}*/}
-                    {/*        thousandSeparator={true}*/}
-                    {/*        decimalScale={2}*/}
-                    {/*        fixedDecimalScale={true}*/}
-                    {/*        prefix={"$"}*/}
-                    {/*    />*/}
-                    {/*</dd>*/}
                 </div>
                 <div>
                     <h4 className="margin-0 margin-top-2 margin-bottom-1 font-12px text-base-dark text-normal">

@@ -1,10 +1,10 @@
 import React from "react";
 import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
-import { fiscalYearFromDate } from "../../../helpers/utils";
-import constants from "../../../constants";
-import SummaryCard from "../../UI/SummaryCard";
-import styles from "./BudgetLinesByFiscalYear.styles.module.scss";
+import { fiscalYearFromDate } from "../../../../helpers/utils";
+import constants from "../../../../constants";
+import SummaryCard from "../../../UI/SummaryCard";
+import styles from "./BLIsByFYSummaryCard.styles.module.scss";
 
 /**
  * A component that displays the total budget lines for an agreement.
@@ -13,10 +13,9 @@ import styles from "./BudgetLinesByFiscalYear.styles.module.scss";
  * @param {Array<any>} props.budgetLineItems - The budget line items for the agreement.
  * @returns {React.JSX.Element} - The agreement total budget lines card component JSX.
  */
-const BudgetLinesByFiscalYear = ({ budgetLineItems }) => {
+const BLIsByFYSummaryCard = ({ budgetLineItems }) => {
     const id = React.useId();
     const { blisByFYChartColors } = constants;
-    const headerText = "Budget Lines by Fiscal Year";
     const blisFy = budgetLineItems.map((bli) => ({ ...bli, fiscalYear: fiscalYearFromDate(bli.date_needed) }));
     const fyTotalsMap = blisFy.reduce((acc, cur) => {
         if (!cur.fiscalYear || cur.amount == null) return acc;
@@ -46,7 +45,7 @@ const BudgetLinesByFiscalYear = ({ budgetLineItems }) => {
     console.log(chartData);
 
     return (
-        <SummaryCard title={headerText}>
+        <SummaryCard title="Budget Lines by Fiscal Year">
             <div>
                 {chartData.map((item, index) => (
                     <div
@@ -60,7 +59,7 @@ const BudgetLinesByFiscalYear = ({ budgetLineItems }) => {
                         >
                             <div className={styles.barBox}>
                                 <div
-                                    className={`${styles.rightBar}`}
+                                    className={styles.rightBar}
                                     style={{ backgroundColor: item.color }}
                                 />
                             </div>
@@ -80,8 +79,8 @@ const BudgetLinesByFiscalYear = ({ budgetLineItems }) => {
     );
 };
 
-BudgetLinesByFiscalYear.propTypes = {
+BLIsByFYSummaryCard.propTypes = {
     budgetLineItems: PropTypes.array.isRequired
 };
 
-export default BudgetLinesByFiscalYear;
+export default BLIsByFYSummaryCard;
