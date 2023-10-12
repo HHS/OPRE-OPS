@@ -42,8 +42,6 @@ const BLIsByFYSummaryCard = ({ budgetLineItems }) => {
         };
     });
 
-    console.log(chartData);
-
     return (
         <SummaryCard
             title="Budget Lines by Fiscal Year"
