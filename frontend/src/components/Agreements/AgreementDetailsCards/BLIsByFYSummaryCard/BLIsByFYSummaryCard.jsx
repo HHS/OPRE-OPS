@@ -45,7 +45,10 @@ const BLIsByFYSummaryCard = ({ budgetLineItems }) => {
     console.log(chartData);
 
     return (
-        <SummaryCard title="Budget Lines by Fiscal Year">
+        <SummaryCard
+            title="Budget Lines by Fiscal Year"
+            dataCy="blis-by-fy-card"
+        >
             <div>
                 {chartData.map((item, index) => (
                     <div

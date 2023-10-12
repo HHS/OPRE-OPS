@@ -1,8 +1,9 @@
 import PropTypes from "prop-types";
 import Table from "../../UI/Table";
-import "./BudgetLinesTable.scss";
-import { BUDGET_LINE_TABLE_HEADERS } from "./BudgetLinesTable.constants";
+import TotalSummaryCard from "../TotalSummaryCard";
 import BLIRow from "./BLIRow";
+import { BUDGET_LINE_TABLE_HEADERS } from "./BudgetLinesTable.constants";
+import "./BudgetLinesTable.scss";
 
 /**
  * A table component that displays budget lines.
@@ -43,6 +44,7 @@ const BudgetLinesTable = ({
                     />
                 ))}
             </Table>
+            <TotalSummaryCard budgetLines={sortedBudgetLines}></TotalSummaryCard>
         </>
     );
 };
