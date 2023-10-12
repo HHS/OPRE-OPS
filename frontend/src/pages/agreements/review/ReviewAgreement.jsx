@@ -35,7 +35,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const isAgreementStateEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
-    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer);
+    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const { setAlert } = useAlert();
 
     let res = suite.get();

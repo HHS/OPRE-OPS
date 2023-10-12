@@ -50,7 +50,7 @@ describe("postAgreement function", () => {
         description: "",
         product_service_id: null,
         incumbent: null,
-        project_officer: null,
+        project_officer_id: null,
         team_members: [],
         notes: ""
     };

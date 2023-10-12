@@ -50,7 +50,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
     const setAgreementId = useUpdateAgreement("id");
     const setProductServiceCodeId = useUpdateAgreement("product_service_code_id");
     const setAgreementReason = useUpdateAgreement("agreement_reason");
-    const setProjectOfficerId = useUpdateAgreement("project_officer");
+    const setProjectOfficerId = useUpdateAgreement("project_officer_id");
     const setAgreementIncumbent = useUpdateAgreement("incumbent");
     const setAgreementNotes = useUpdateAgreement("notes");
 
@@ -150,6 +150,9 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
             })
         };
         const { id, cleanData } = cleanAgreementForApi(data);
+
+        console.log("cleanData", cleanData);
+
         if (id) {
             await updateAgreement({ id: id, data: cleanData })
                 .unwrap()
