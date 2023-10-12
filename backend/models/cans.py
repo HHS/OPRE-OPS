@@ -138,13 +138,13 @@ class ProductServiceCode(BaseModel):
 class Agreement(BaseModel):
     """Base Agreement Model"""
 
-    _subclasses: ClassVar[dict[Optional[AgreementType], type["Agreement"]]] = {}
-
     __tablename__ = "agreement"
 
     id = Column(Integer, Identity(), primary_key=True)
+    agreement_type = Column(sa.Enum(AgreementType), nullable=False)
     name = Column(String, nullable=False)
-    description = Column(String, nullable=True)
+
+    description = Column(String)
 
     product_service_code_id = Column(Integer, ForeignKey("product_service_code.id"))
     product_service_code = relationship(
@@ -152,9 +152,9 @@ class Agreement(BaseModel):
     )
 
     agreement_reason = Column(sa.Enum(AgreementReason))
-    incumbent = Column(String, nullable=True)
+    incumbent = Column(String)
     project_officer = Column(
-        Integer, ForeignKey("users.id", name="fk_user_project_officer"), nullable=True
+        Integer, ForeignKey("users.id", name="fk_user_project_officer")
     )
     project_officer_user = relationship(User, foreign_keys=[project_officer])
     team_members = relationship(
@@ -162,7 +162,6 @@ class Agreement(BaseModel):
         secondary=agreement_team_members,
         back_populates="agreements",
     )
-    agreement_type = Column(sa.Enum(AgreementType))
 
     research_project_id = Column(Integer, ForeignKey("research_project.id"))
     research_project = relationship("ResearchProject", back_populates="agreements")
@@ -176,7 +175,7 @@ class Agreement(BaseModel):
     procurement_shop_id = Column(Integer, ForeignKey("procurement_shop.id"))
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
 
-    notes = Column(Text, nullable=True)
+    notes = Column(Text)
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -186,38 +185,6 @@ class Agreement(BaseModel):
         "polymorphic_identity": "agreement",
         "polymorphic_on": "agreement_type",
     }
-
-    def __init_subclass__(cls, agreement_type: AgreementType, **kwargs):
-        cls._subclasses[agreement_type] = cls  # type: ignore [assignment]
-        super().__init_subclass__(**kwargs)
-
-    @classmethod
-    def get_polymorphic(cls) -> "Agreement":
-        return with_polymorphic(Agreement, list(cls._subclasses.values()))
-
-    @classmethod
-    def get_class_field(cls, field_name: str) -> InstrumentedAttribute:
-        if field_name in set(Agreement.columns):
-            table_class = Agreement
-        else:
-            for subclass in cls._subclasses.values():
-                if field_name in set(subclass.columns):
-                    table_class = subclass
-                    break
-            else:
-                raise ValueError(
-                    f"Column name does not exist for agreements: {field_name}"
-                )
-        return getattr(table_class, field_name)
-
-    @classmethod
-    def get_class(
-        cls, agreement_type: Optional[AgreementType] = None
-    ) -> type["Agreement"]:
-        try:
-            return cls._subclasses[agreement_type]
-        except KeyError:
-            return Agreement
 
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
@@ -267,7 +234,7 @@ class ContractType(Enum):
     SERVICE = 1
 
 
-class ContractAgreement(Agreement, agreement_type=AgreementType.CONTRACT):
+class ContractAgreement(Agreement):
     """Contract Agreement Model"""
 
     __tablename__ = "contract_agreement"
@@ -309,7 +276,7 @@ class ContractAgreement(Agreement, agreement_type=AgreementType.CONTRACT):
 
 
 # TODO: Skeleton, will need flushed out more when we know what all a Grant is.
-class GrantAgreement(Agreement, agreement_type=AgreementType.GRANT):
+class GrantAgreement(Agreement):
     """Grant Agreement Model"""
 
     __tablename__ = "grant_agreement"
@@ -321,10 +288,15 @@ class GrantAgreement(Agreement, agreement_type=AgreementType.GRANT):
         "polymorphic_identity": AgreementType.GRANT,
     }
 
+    @override
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = super().to_dict()
+        return d
+
 
 # TODO: Skeleton, will need flushed out more when we know what all an IAA is.
 ### Inter-Agency-Agreement
-class IaaAgreement(Agreement, agreement_type=AgreementType.IAA):
+class IaaAgreement(Agreement):
     """IAA Agreement Model"""
 
     __tablename__ = "iaa_agreement"
@@ -336,10 +308,15 @@ class IaaAgreement(Agreement, agreement_type=AgreementType.IAA):
         "polymorphic_identity": AgreementType.IAA,
     }
 
+    @override
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = super().to_dict()
+        return d
+
 
 # TODO: Skeleton, will need flushed out more when we know what all an IAA-AA is. Inter-Agency-Agreement-Assisted-Aquisition
 ### Inter-Agency-Agreement-Assisted-Aquisition
-class IaaAaAgreement(Agreement, agreement_type=AgreementType.IAA_AA):
+class IaaAaAgreement(Agreement):
     """IAA-AA Agreement Model"""
 
     __tablename__ = "iaa_aa_agreement"
@@ -351,8 +328,13 @@ class IaaAaAgreement(Agreement, agreement_type=AgreementType.IAA_AA):
         "polymorphic_identity": AgreementType.MISCELLANEOUS,
     }
 
+    @override
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = super().to_dict()
+        return d
 
-class DirectAgreement(Agreement, agreement_type=AgreementType.DIRECT_ALLOCATION):
+
+class DirectAgreement(Agreement):
     """Direct Obligation Agreement Model"""
 
     __tablename__ = "direct_agreement"
@@ -363,6 +345,11 @@ class DirectAgreement(Agreement, agreement_type=AgreementType.DIRECT_ALLOCATION)
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.DIRECT_ALLOCATION,
     }
+
+    @override
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = super().to_dict()
+        return d
 
 
 class CANFiscalYear(BaseModel):
