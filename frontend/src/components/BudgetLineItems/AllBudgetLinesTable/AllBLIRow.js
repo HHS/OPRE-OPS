@@ -9,7 +9,7 @@ import { formatDateNeeded, totalBudgetLineFeeAmount, totalBudgetLineAmountPlusFe
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helper";
+import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
 import { changeBgColorIfExpanded, removeBorderBottomIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
 

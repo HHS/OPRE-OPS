@@ -9,8 +9,8 @@ import useAlert from "../../../hooks/use-alert.hooks";
 import { useState } from "react";
 import AgreementBudgetLinesHeader from "../../../components/Agreements/AgreementBudgetLinesHeader";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
-import BudgetLinesByFiscalYear from "../../../components/Agreements/AgreementDetailsCards/BLIsByFYSummaryCard/BLIsByFYSummaryCard";
-import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard/AgreementTotalCard";
+import BLIsByFYSummaryCard from "../../../components/Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
+import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard";
 
 /**
  * Renders Agreement budget lines view
@@ -81,7 +81,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                 setIncludeDrafts={setIncludeDrafts}
             />
             <div className="display-flex flex-justify">
-                <BudgetLinesByFiscalYear budgetLineItems={filteredBlis} />
+                <BLIsByFYSummaryCard budgetLineItems={filteredBlis} />
                 <AgreementTotalCard
                     total={totals["Agreement"]["total"]}
                     subtotal={totals["Agreement"]["subtotal"]}
