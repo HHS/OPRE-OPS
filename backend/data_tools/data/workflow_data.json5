@@ -1,0 +1,59 @@
+{
+    workflow: [
+        {
+            id: 1,
+            name: "DD-Only Approval",
+            type: "APPROVAL",
+            can_id: 1
+        },
+        {
+            id: 2,
+            name: "Two Approvers Required",
+            type: "APPROVAL",
+            can_id: 1
+        }
+    ],
+    workflow_steps: [
+        {
+            id: 1,
+            workflow_id: 1,
+            step: 1,
+            approver_id: 1,
+            approver_type: "DD"
+        },
+        {
+            id: 2,
+            workflow_id: 2,
+            step: 1,
+            approver_id: 1,
+            approver_type: "DD"
+        },
+        {
+            id: 3,
+            workflow_id: 2,
+            step: 2,
+            approver_id: 2,
+            approver_type: "DD"
+        }
+    ],
+    step_approvers: [
+        {
+            id: 1,
+            workflow_step_id: 1,
+            user_id: 1,
+            approver_type: "DD"
+        },
+        {
+            id: 2,
+            workflow_step_id: 2,
+            user_id: 1,
+            approver_type: "DD"
+        },
+        {
+            id: 3,
+            workflow_step_id: 2,
+            user_id: 2,
+            approver_type: "TeamLead"
+        }
+    ],
+}
