@@ -535,7 +535,7 @@ class CAN(BaseModel):
     """
 
     __tablename__ = "can"
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, Identity(), primary_key=True)
     number = Column(String(30), nullable=False)
     description = Column(String)
     purpose = Column(String, default="")
