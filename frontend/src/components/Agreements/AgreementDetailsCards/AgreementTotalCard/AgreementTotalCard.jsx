@@ -14,7 +14,6 @@ import CurrencyFormat from "react-currency-format";
  * @returns {React.JSX.Element} - The JSX element representing the agreement total card.
  */
 const AgreementTotalCard = ({ total, subtotal, fees, procurementShop }) => {
-    "Agreement Total";
     return (
         <CurrencySummaryCard
             headerText="Agreement Total"

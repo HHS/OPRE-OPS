@@ -6,8 +6,6 @@ import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTab
 import StepCreateBudgetLines from "../../../components/UI/WizardSteps/StepCreateBudgetLines/StepCreateBudgetLines";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import useAlert from "../../../hooks/use-alert.hooks";
-import AgreementTotalBudgetLinesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalBudgetLinesCard";
-import AgreementValuesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementValuesCard";
 import { useState } from "react";
 import AgreementBudgetLinesHeader from "../../../components/Agreements/AgreementBudgetLinesHeader";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
@@ -18,6 +16,7 @@ import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsC
  * Renders Agreement budget lines view
  * @param {Object} props - The component props.
  * @param {Object} props.agreement - The agreement to display.
+ * @param {number} props.agreement.id - The agreement id.
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
  * @param {function} props.setIsEditMode - The function to set the edit mode.
  * @returns {React.JSX.Element} - The rendered component.
@@ -57,7 +56,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
             totals["Draft"]["total"] += total;
         }
 
-        if (fiscalYear === currentFiscalYear) {
+        if (fiscalYear === +currentFiscalYear) {
             totals["FY"]["subtotal"] += amount;
             totals["FY"]["fees"] += fee;
             totals["FY"]["total"] += total;
@@ -67,16 +66,6 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
         totals["Agreement"]["fees"] += fee;
         totals["Agreement"]["total"] += total;
     });
-
-    const numberOfAgreements = filteredBlis.length;
-    const countsByStatus = filteredBlis.reduce((p, c) => {
-        const status = c.status;
-        if (!(status in p)) {
-            p[status] = 0;
-        }
-        p[status]++;
-        return p;
-    }, {});
 
     // if there are no BLIS than the user can edit
     if (agreement?.budget_line_items?.length === 0) {
