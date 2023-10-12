@@ -210,6 +210,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 readOnly={true}
                 budgetLinesAdded={agreement?.budget_line_items}
                 isReviewMode={true}
+                showTotalSummaryCard={false}
             />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
