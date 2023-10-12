@@ -2,7 +2,7 @@ import datetime
 
 import pytest
 from models import AgreementType, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ContractType
-from ops_api.ops.resources.agreements import AgreementData
+from ops_api.ops.resources.agreements import AGREEMENTS_REQUEST_SCHEMAS
 from pytest_bdd import given, scenario, then, when
 
 AGREEMENT_ID = 1
@@ -156,7 +156,7 @@ def reduce_for_put(data):
     """Some fields returned in the GET can't be sent in a PUT|PATCH.
     So this creates a copy of the data reduced to valid fields for PUT|PATCH"""
     agreement_type = AgreementType[data["agreement_type"]]
-    schema = AgreementData.get_schema(agreement_type)
+    schema = AGREEMENTS_REQUEST_SCHEMAS.get(agreement_type)
     data_to_put = {k: data[k] for k in schema.fields.keys() if k in data.keys()}
     return data_to_put
 
