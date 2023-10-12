@@ -18,7 +18,7 @@ const AgreementTotalCard = ({ total, subtotal, fees, procurementShop }) => {
         <CurrencySummaryCard
             headerText="Agreement Total"
             amount={total}
-            className="margin-top-neg-205"
+            className="margin-top-neg-105"
         >
             <h4 className="margin-0 margin-top-2 margin-bottom-1 font-12px text-base-dark text-normal">
                 Agreement Subtotal
