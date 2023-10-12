@@ -9,7 +9,7 @@ describe("postAgreement function", () => {
         description: "Description",
         product_service_code_id: 1,
         incumbent: "Vendor A",
-        project_officer: 1,
+        project_officer_id: 1,
         team_members: [
             {
                 created_by: null,
