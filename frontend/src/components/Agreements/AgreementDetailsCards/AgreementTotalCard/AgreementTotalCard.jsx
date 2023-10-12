@@ -37,14 +37,18 @@ const AgreementTotalCard = ({ total, subtotal, fees, procurementShop }) => {
                 <div>
                     <h4 className="margin-0 margin-top-2 margin-bottom-1 font-12px text-base-dark text-normal">Fees</h4>
                     <div className="text-semibold">
-                        <CurrencyFormat
-                            value={fees}
-                            displayType={"text"}
-                            thousandSeparator={true}
-                            decimalScale={2}
-                            fixedDecimalScale={true}
-                            prefix={"$"}
-                        />
+                        {fees === 0 ? (
+                            0
+                        ) : (
+                            <CurrencyFormat
+                                value={fees}
+                                displayType={"text"}
+                                thousandSeparator={true}
+                                decimalScale={2}
+                                fixedDecimalScale={true}
+                                prefix={"$"}
+                            />
+                        )}
                     </div>
                 </div>
                 <div className="margin-left-10">
