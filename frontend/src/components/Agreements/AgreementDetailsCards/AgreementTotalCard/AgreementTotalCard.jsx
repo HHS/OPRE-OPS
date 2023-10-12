@@ -33,7 +33,7 @@ const AgreementTotalCard = ({ total, subtotal, fees, procurementShop }) => {
                     prefix={"$"}
                 />
             </div>
-            <div className="display-flex flex-justify">
+            <div className="display-flex">
                 <div>
                     <h4 className="margin-0 margin-top-2 margin-bottom-1 font-12px text-base-dark text-normal">Fees</h4>
                     <div className="text-semibold">
@@ -47,7 +47,7 @@ const AgreementTotalCard = ({ total, subtotal, fees, procurementShop }) => {
                         />
                     </div>
                 </div>
-                <div>
+                <div className="margin-left-10">
                     <h4 className="margin-0 margin-top-2 margin-bottom-1 font-12px text-base-dark text-normal">
                         Procurement Shop
                     </h4>
