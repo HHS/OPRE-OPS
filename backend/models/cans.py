@@ -147,6 +147,7 @@ class ProductServiceCode(BaseModel):
 class Agreement(BaseModel):
     """Base Agreement Model"""
 
+    __versioned__ = {}
     __tablename__ = "agreement"
 
     id: Mapped[int] = mapped_column(Identity(), primary_key=True)
@@ -254,14 +255,15 @@ class ContractType(Enum):
 class ContractAgreement(Agreement):
     """Contract Agreement Model"""
 
+    __versioned__ = {}
     __tablename__ = "contract_agreement"
 
-    id = Column(Integer, ForeignKey("agreement.id"), primary_key=True)
-    contract_number = Column(String)
-    vendor = Column(String)
-    delivered_status = Column(Boolean, default=False)
-    contract_type = Column(sa.Enum(ContractType))
-    support_contacts = relationship(
+    id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
+    contract_number: Mapped[str] = mapped_column(String, nullable=True)
+    vendor: Mapped[str] = mapped_column(String, nullable=True)
+    delivered_status: Mapped[bool] = mapped_column(Boolean, default=False)
+    contract_type = mapped_column(ENUM(ContractType))
+    support_contacts: Mapped[list[User]] = relationship(
         User,
         secondary=contract_support_contacts,
         back_populates="contracts",
@@ -296,10 +298,11 @@ class ContractAgreement(Agreement):
 class GrantAgreement(Agreement):
     """Grant Agreement Model"""
 
+    __versioned__ = {}
     __tablename__ = "grant_agreement"
 
-    id = Column(Integer, ForeignKey("agreement.id"), primary_key=True)
-    foa = Column(String)
+    id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
+    foa: Mapped[str]
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.GRANT,
@@ -316,10 +319,11 @@ class GrantAgreement(Agreement):
 class IaaAgreement(Agreement):
     """IAA Agreement Model"""
 
+    __versioned__ = {}
     __tablename__ = "iaa_agreement"
 
-    id = Column(Integer, ForeignKey("agreement.id"), primary_key=True)
-    iaa = Column(String)
+    id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
+    iaa: Mapped[str]
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.IAA,
@@ -336,10 +340,11 @@ class IaaAgreement(Agreement):
 class IaaAaAgreement(Agreement):
     """IAA-AA Agreement Model"""
 
+    __versioned__ = {}
     __tablename__ = "iaa_aa_agreement"
 
-    id = Column(Integer, ForeignKey("agreement.id"), primary_key=True)
-    iaa_aa = Column(String)
+    id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
+    iaa_aa: Mapped[str]
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.MISCELLANEOUS,
@@ -354,10 +359,11 @@ class IaaAaAgreement(Agreement):
 class DirectAgreement(Agreement):
     """Direct Obligation Agreement Model"""
 
+    __versioned__ = {}
     __tablename__ = "direct_agreement"
 
-    id = Column(Integer, ForeignKey("agreement.id"), primary_key=True)
-    payee = Column(String, nullable=False)
+    id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
+    payee: Mapped[str] = mapped_column(String, nullable=False)
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.DIRECT_ALLOCATION,
