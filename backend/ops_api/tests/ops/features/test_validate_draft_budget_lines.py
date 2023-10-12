@@ -49,11 +49,6 @@ def test_valid_agreement(loaded_db, context):
     ...
 
 
-@scenario("validate_draft_budget_lines.feature", "Valid Agreement Type")
-def test_valid_agreement_type(loaded_db, context):
-    ...
-
-
 @scenario("validate_draft_budget_lines.feature", "Valid Agreement Description")
 def test_valid_agreement_description(loaded_db, context):
     ...

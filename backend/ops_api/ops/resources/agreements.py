@@ -1,132 +1,27 @@
 from contextlib import suppress
 from dataclasses import dataclass
-from dataclasses import fields as dc_fields
-from typing import ClassVar, Optional
+from typing import Optional
 
-import desert
 from flask import Response, current_app, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
-from marshmallow import Schema, ValidationError, fields
-from models import ContractType, OpsEventType, User
+from marshmallow import EXCLUDE, Schema, ValidationError
+from models import DirectAgreement, GrantAgreement, IaaAaAgreement, IaaAgreement, OpsEventType, User
 from models.base import BaseModel
-from models.cans import (
-    Agreement,
-    AgreementReason,
-    AgreementType,
-    BudgetLineItemStatus,
-    ContractAgreement,
-    ProductServiceCode,
-)
+from models.cans import Agreement, AgreementReason, AgreementType, BudgetLineItemStatus, ContractAgreement
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
+from ops_api.ops.resources.agreements_constants import (
+    AGREEMENT_TYPE_TO_CLASS_MAPPING,
+    AGREEMENTS_REQUEST_SCHEMAS,
+    ENDPOINT_STRING,
+)
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
-from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 from sqlalchemy.future import select
 from typing_extensions import Any, override
-
-ENDPOINT_STRING = "/agreements"
-
-
-@dataclass
-class TeamMembers:
-    id: int
-    full_name: Optional[str] = None
-    email: Optional[str] = None
-
-
-@dataclass
-class AgreementData:
-    _subclasses: ClassVar[dict[Optional[AgreementType], type["AgreementData"]]] = {}
-    _schemas: ClassVar[dict[Optional[AgreementType], Schema]] = {}
-    name: str
-    agreement_type: AgreementType = fields.Enum(AgreementType)
-    display_name: Optional[str] = None
-    description: Optional[str] = None
-    product_service_code_id: Optional[int] = None
-    agreement_reason: Optional[AgreementReason] = None
-    incumbent: Optional[str] = None
-    project_officer: Optional[int] = None
-    team_members: Optional[list[TeamMembers]] = fields.List(
-        fields.Nested(TeamMembers),
-        default=[],
-    )
-    research_project_id: Optional[int] = None
-    procurement_shop_id: Optional[int] = None
-    notes: Optional[str] = None
-
-    def __init_subclass__(cls, agreement_type: AgreementType, **kwargs):
-        cls._subclasses[agreement_type] = cls  # type: ignore [assignment]
-        super().__init_subclass__(**kwargs)
-
-    @classmethod
-    def get_schema(cls, agreement_type: Optional[AgreementType] = None) -> Schema:
-        try:
-            return cls._schemas[agreement_type]
-        except KeyError:
-            cls._schemas[agreement_type] = desert.schema(cls._subclasses.get(agreement_type, AgreementData))
-            return cls._schemas[agreement_type]
-
-    @classmethod
-    def get_class(cls, agreement_type: Optional[AgreementType] = None) -> type["AgreementData"]:
-        try:
-            return cls._subclasses[agreement_type]
-        except KeyError:
-            return AgreementData
-
-
-@dataclass
-class ContractAgreementData(AgreementData, agreement_type=AgreementType.CONTRACT):
-    contract_number: Optional[str] = None
-    vendor: Optional[str] = None
-    delivered_status: Optional[bool] = fields.Boolean(default=False)
-    contract_type: Optional[ContractType] = fields.Enum(ContractType)
-    support_contacts: Optional[list[TeamMembers]] = fields.List(
-        fields.Nested(TeamMembers),
-        default=[],
-    )
-
-
-@dataclass
-class GrantAgreementData(AgreementData, agreement_type=AgreementType.GRANT):
-    foa: Optional[str] = None
-
-
-@dataclass
-class DirectAgreementData(AgreementData, agreement_type=AgreementType.DIRECT_ALLOCATION):
-    pass
-
-
-@dataclass
-class IaaAgreementData(AgreementData, agreement_type=AgreementType.IAA):
-    pass
-
-
-@dataclass
-class IaaAaAgreementData(AgreementData, agreement_type=AgreementType.IAA_AA):
-    pass
-
-
-@dataclass
-class AgreementResponse:
-    id: int
-    type: str
-    name: str
-    created_by: int
-    description: str
-    product_service_code: Optional[ProductServiceCode]
-    incumbent: str
-    project_officer: TeamMembers
-    research_project: int
-    agreement_type: AgreementType = fields.Enum(AgreementType)
-    agreement_reason: AgreementReason = fields.Enum(AgreementReason)
-    team_members: Optional[list[TeamMembers]] = None
-    budget_line_items: Optional[list[int]] = None
-    procurement_shop: Optional[int] = None
-    notes: Optional[str] = None
 
 
 @dataclass
@@ -182,15 +77,15 @@ class AgreementItemAPI(BaseItemAPI):
                         raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
                 except (KeyError, ValueError) as e:
                     raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
-                schema = AgreementData.get_schema(old_agreement.agreement_type)
+
+                schema = AGREEMENTS_REQUEST_SCHEMAS.get(old_agreement.agreement_type)
 
                 OPSMethodView._validate_request(
                     schema=schema,
                     message=f"{message_prefix}: Params failed validation:",
                 )
 
-                data = schema.load(request.json)
-                data = data.__dict__
+                data = schema.dump(schema.load(request.json))
                 agreement = update_agreement(data, old_agreement)
                 agreement_dict = agreement.to_dict()
                 meta.metadata.update({"updated_agreement": agreement_dict})
@@ -228,17 +123,13 @@ class AgreementItemAPI(BaseItemAPI):
                         raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
                 except (KeyError, ValueError) as e:
                     raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
-                schema = AgreementData.get_schema(old_agreement.agreement_type)
 
-                OPSMethodView._validate_request(
-                    schema=schema,
-                    message=f"{message_prefix}: Params failed validation:",
-                    partial=True,
-                )
+                schema: Schema = AGREEMENTS_REQUEST_SCHEMAS.get(old_agreement.agreement_type)
 
-                agreement_fields = set(f.name for f in dc_fields(AgreementData.get_class(old_agreement.agreement_type)))
-                data = {k: v for k, v in request.json.items() if k in agreement_fields}
+                data = get_change_data(old_agreement, schema)
+
                 agreement = update_agreement(data, old_agreement)
+
                 agreement_dict = agreement.to_dict()
                 meta.metadata.update({"updated_agreement": agreement_dict})
                 current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
@@ -294,43 +185,21 @@ class AgreementListAPI(BaseListAPI):
     def __init__(self, model: BaseModel = Agreement):
         super().__init__(model)
 
-    @staticmethod
-    def _get_query(args):
-        polymorphic_agreement = Agreement.get_polymorphic()
-        stmt = select(polymorphic_agreement).order_by(Agreement.id)
-        query_helper = QueryHelper(stmt)
-
-        match args:
-            case {"search": search, **filter_args} if not search:
-                query_helper.return_none()
-
-            case {"search": search, **filter_args}:
-                query_helper.add_search(polymorphic_agreement.name, search)
-
-            case {**filter_args}:
-                pass  # Do nothing if only filters are provided
-
-        for key, value in filter_args.items():
-            with suppress(ValueError):
-                query_helper.add_column_equals(Agreement.get_class_field(key), value)
-
-        stmt = query_helper.get_stmt()
-        current_app.logger.debug(f"SQL: {stmt}")
-
-        return stmt
-
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
-        stmt = self._get_query(request.args)
+        agreement_classes = [
+            ContractAgreement,
+            GrantAgreement,
+            IaaAgreement,
+            IaaAaAgreement,
+            DirectAgreement,
+        ]
+        result = []
+        for agreement_cls in agreement_classes:
+            result.extend(current_app.db_session.execute(self._get_query(agreement_cls, **request.args)).all())
 
-        result = current_app.db_session.execute(stmt).all()
-
-        items = (i for item in result for i in item)
-
-        response = make_response_with_headers([i.to_dict() for i in items])
-
-        return response
+        return make_response_with_headers([i.to_dict() for item in result for i in item])
 
     @override
     @is_authorized(PermissionType.POST, Permission.AGREEMENT)
@@ -347,11 +216,12 @@ class AgreementListAPI(BaseListAPI):
                     raise ValueError("Invalid agreement_type")
 
                 current_app.logger.info(agreement_type.name)
-                errors = AgreementData.get_schema(agreement_type).validate(request.json)
-                self.check_errors(errors)
 
-                data = AgreementData.get_schema(agreement_type).load(request.json)
-                new_agreement = self._create_agreement(data, Agreement.get_class(agreement_type))
+                schema = AGREEMENTS_REQUEST_SCHEMAS.get(agreement_type)
+
+                data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
+
+                new_agreement = self._create_agreement(data, AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement_type))
 
                 token = verify_jwt_in_request()
                 user = get_user_from_token(token[1])
@@ -377,20 +247,22 @@ class AgreementListAPI(BaseListAPI):
             return make_response_with_headers({}, 500)
 
     def _create_agreement(self, data, agreement_cls):
-        tmp_team_members = data.team_members if data.team_members else []
-        data.team_members = []
+        tmp_team_members = data.get("team_members") or []
+        data["team_members"] = []
 
         if agreement_cls == ContractAgreement:
-            tmp_support_contacts = data.support_contacts if data.support_contacts else []
-            data.support_contacts = []
+            tmp_support_contacts = data.get("support_contacts") or []
+            data["support_contacts"] = []
 
-        new_agreement = agreement_cls(**data.__dict__)
+        new_agreement = agreement_cls(**data)
 
-        new_agreement.team_members.extend([current_app.db_session.get(User, tm_id.id) for tm_id in tmp_team_members])
+        new_agreement.team_members.extend(
+            [current_app.db_session.get(User, tm_id.get("id")) for tm_id in tmp_team_members]
+        )
 
         if agreement_cls == ContractAgreement:
             new_agreement.support_contacts.extend(
-                [current_app.db_session.get(User, tm_id.id) for tm_id in tmp_support_contacts]
+                [current_app.db_session.get(User, tm_id.get("id")) for tm_id in tmp_support_contacts]
             )
 
         return new_agreement
@@ -478,3 +350,20 @@ def update_agreement(data: dict[str, Any], agreement: Agreement):
     current_app.db_session.add(agreement)
     current_app.db_session.commit()
     return agreement
+
+
+def get_change_data(old_agreement: Agreement, schema: Schema, partial: bool = True) -> dict[str, Any]:
+    try:
+        data = {
+            key: value for key, value in old_agreement.to_dict().items() if key in request.json
+        }  # only keep the attributes from the request body
+    except AttributeError:
+        data = {}
+    change_data = schema.dump(schema.load(request.json, unknown=EXCLUDE, partial=partial))
+    change_data = {
+        key: value
+        for key, value in change_data.items()
+        if key not in {"status", "id"} and key in request.json and value != data.get(key, None)
+    }  # only keep the attributes from the request body
+    data |= change_data
+    return data
