@@ -1,3 +1,5 @@
+import { actionOptions } from "./ReviewAgreement.constants";
+
 /**
  * Validates that the agreement is an object.
  * @param {Object} agreement - The agreement to validate.
@@ -20,9 +22,9 @@ export const setActionableBudgetLines = (agreement, action) => {
     handleAgreementProp(agreement);
 
     switch (action) {
-        case "Change Draft Budget Lines to Planned Status":
+        case actionOptions.CHANGE_DRAFT_TO_PLANNED:
             return agreement?.budget_line_items.filter((item) => item.status === "DRAFT");
-        case "Change Planned Budget Lines to Executing Status":
+        case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
             return agreement?.budget_line_items.filter((item) => item.status === "PLANNED");
         default:
             return [];

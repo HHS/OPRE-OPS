@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import RadioButtonTile from "../../UI/RadioButtonTile";
 import Accordion from "../../UI/Accordion";
+import { actionOptions } from "../../../pages/agreements/review/ReviewAgreement.constants";
 
 /**
  * Renders an accordion component with two radio button tiles for selecting an action.
@@ -23,7 +24,7 @@ const AgreementActionAccordion = ({ setAction, optionOneDisabled = false, option
                 <div className="grid-row grid-gap">
                     <div className="grid-col">
                         <RadioButtonTile
-                            label="Change Draft Budget Lines to Planned Status"
+                            label={actionOptions.CHANGE_DRAFT_TO_PLANNED}
                             description="This will subtract the amounts from the FY budget"
                             setValue={setAction}
                             disabled={optionOneDisabled}
@@ -31,7 +32,7 @@ const AgreementActionAccordion = ({ setAction, optionOneDisabled = false, option
                     </div>
                     <div className="grid-col">
                         <RadioButtonTile
-                            label="Change Planned Budget Lines to Executing Status"
+                            label={actionOptions.CHANGE_PLANNED_TO_EXECUTING}
                             description="This will start the procurement process"
                             setValue={setAction}
                             disabled={optionTwoDisabled}
