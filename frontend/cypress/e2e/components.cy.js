@@ -100,6 +100,23 @@ describe("agreement action accordion", () => {
     });
 });
 
+describe("agreement BLI accordion", () => {
+    it('accordion should open when "enter" is pressed', () => {
+        cy.visit("/agreements/approve/1");
+        cy.get("h2").contains("Select Budget Lines").as("acc-btn").should("exist");
+        cy.get(".usa-accordion__content").should("not.be.hidden");
+        cy.get("@acc-btn").type("{enter}");
+        cy.get(".usa-accordion__content").should("be.hidden");
+    });
+    it("should contain summary card", () => {
+        cy.visit("/agreements/approve/1");
+        cy.get("h2").contains("Select Budget Lines").as("acc-btn").type("{enter}");
+        cy.get('[data-cy="blis-by-fy-card"]').should("exist");
+        cy.get('[data-cy="currency-summary-card"]').should("exist");
+        cy.get(".usa-table").should("exist");
+    });
+});
+
 const fireModal = () => {
     cy.visit("/projects/create");
     cy.get("#cancel").click(); // open modal
