@@ -108,7 +108,7 @@ const BLIRow = ({
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$"}
-                    decimalScale={2}
+                    decimalScale={budgetLine?.amount === 0 || budgetLine?.amount === null ? 0 : 2}
                     fixedDecimalScale={true}
                     renderText={(value) => value}
                 />
@@ -117,37 +117,29 @@ const BLIRow = ({
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
-                {feeTotal === 0 ? (
-                    0
-                ) : (
-                    <CurrencyFormat
-                        value={feeTotal}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        decimalScale={2}
-                        fixedDecimalScale={true}
-                        renderText={(value) => value}
-                    />
-                )}
+                <CurrencyFormat
+                    value={feeTotal}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"$"}
+                    decimalScale={feeTotal === 0 ? 0 : 2}
+                    fixedDecimalScale={true}
+                    renderText={(value) => value}
+                />
             </td>
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
-                {budgetLineTotalPlusFees === 0 ? (
-                    0
-                ) : (
-                    <CurrencyFormat
-                        value={budgetLineTotalPlusFees}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        decimalScale={2}
-                        fixedDecimalScale={true}
-                        renderText={(value) => value}
-                    />
-                )}
+                <CurrencyFormat
+                    value={budgetLineTotalPlusFees}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"$"}
+                    decimalScale={budgetLineTotalPlusFees === 0 ? 0 : 2}
+                    fixedDecimalScale={true}
+                    renderText={(value) => value}
+                />
             </td>
             <td
                 className={borderExpandedStyles}

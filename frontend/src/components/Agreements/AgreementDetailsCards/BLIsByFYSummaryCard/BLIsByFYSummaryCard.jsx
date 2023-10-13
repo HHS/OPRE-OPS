@@ -70,7 +70,7 @@ const BLIsByFYSummaryCard = ({ budgetLineItems }) => {
                             displayType="text"
                             thousandSeparator=","
                             prefix="$"
-                            decimalScale={2}
+                            decimalScale={item.total === 0 ? 0 : 2}
                             fixedDecimalScale={true}
                         />
                     </div>

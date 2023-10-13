@@ -87,19 +87,15 @@ const AllBLIRow = ({
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
-                {budgetLineTotalPlusFees === 0 ? (
-                    0
-                ) : (
-                    <CurrencyFormat
-                        value={budgetLineTotalPlusFees}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        decimalScale={2}
-                        fixedDecimalScale={true}
-                        renderText={(value) => value}
-                    />
-                )}
+                <CurrencyFormat
+                    value={budgetLineTotalPlusFees}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"$"}
+                    decimalScale={budgetLineTotalPlusFees === 0 ? 0 : 2}
+                    fixedDecimalScale={true}
+                    renderText={(value) => value}
+                />
             </td>
             <td
                 className={borderExpandedStyles}
@@ -171,7 +167,7 @@ const AllBLIRow = ({
                                     displayType={"text"}
                                     thousandSeparator={true}
                                     prefix={"$"}
-                                    decimalScale={2}
+                                    decimalScale={budgetLine?.amount === 0 ? 0 : 2}
                                     fixedDecimalScale={true}
                                     renderText={(value) => value}
                                 />
@@ -180,19 +176,15 @@ const AllBLIRow = ({
                         <dl className=" margin-0 margin-left-2">
                             <dt className="margin-0 text-base-dark">Fees</dt>
                             <dd className="margin-0">
-                                {feeTotal === 0 ? (
-                                    0
-                                ) : (
-                                    <CurrencyFormat
-                                        value={feeTotal}
-                                        displayType={"text"}
-                                        thousandSeparator={true}
-                                        prefix={"$"}
-                                        decimalScale={2}
-                                        fixedDecimalScale={true}
-                                        renderText={(value) => value}
-                                    />
-                                )}
+                                <CurrencyFormat
+                                    value={feeTotal}
+                                    displayType={"text"}
+                                    thousandSeparator={true}
+                                    prefix={"$"}
+                                    decimalScale={feeTotal === 0 ? 0 : 2}
+                                    fixedDecimalScale={true}
+                                    renderText={(value) => value}
+                                />
                             </dd>
                         </dl>
                     </div>

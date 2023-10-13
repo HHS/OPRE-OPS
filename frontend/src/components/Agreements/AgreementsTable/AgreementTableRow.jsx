@@ -111,7 +111,7 @@ export const AgreementTableRow = ({ agreement }) => {
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$"}
-                    decimalScale={2}
+                    decimalScale={agreementTotal === 0 ? 0 : 2}
                     fixedDecimalScale={true}
                     renderText={(value) => value}
                 />

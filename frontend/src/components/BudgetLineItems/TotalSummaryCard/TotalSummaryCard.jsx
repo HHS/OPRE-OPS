@@ -59,7 +59,7 @@ export const TotalSummaryCard = ({ budgetLines }) => {
                                 displayType={"text"}
                                 thousandSeparator={true}
                                 prefix={"$"}
-                                decimalScale={2}
+                                decimalScale={data.subtotal === 0 ? 0 : 2}
                                 fixedDecimalScale={true}
                             />
                         </dd>
@@ -71,7 +71,7 @@ export const TotalSummaryCard = ({ budgetLines }) => {
                                 value={data.fees}
                                 displayType={"text"}
                                 thousandSeparator={true}
-                                decimalScale={2}
+                                decimalScale={data.fees === 0 ? 0 : 2}
                                 fixedDecimalScale={true}
                                 prefix={"$"}
                             />
@@ -83,7 +83,7 @@ export const TotalSummaryCard = ({ budgetLines }) => {
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$ "}
-                    decimalScale={2}
+                    decimalScale={data.total === 0 ? 0 : 2}
                     fixedDecimalScale={true}
                     renderText={(value) => <span className="text-semibold font-sans-lg padding-y-105">{value}</span>}
                 />
