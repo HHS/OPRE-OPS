@@ -12,6 +12,7 @@ import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks"
 import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
 import { changeBgColorIfExpanded, removeBorderBottomIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
+import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -87,19 +88,15 @@ const AllBLIRow = ({
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
-                {budgetLineTotalPlusFees === 0 ? (
-                    0
-                ) : (
-                    <CurrencyFormat
-                        value={budgetLineTotalPlusFees}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        decimalScale={2}
-                        fixedDecimalScale={true}
-                        renderText={(value) => value}
-                    />
-                )}
+                <CurrencyFormat
+                    value={budgetLineTotalPlusFees}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"$"}
+                    decimalScale={getDecimalScale(budgetLineTotalPlusFees)}
+                    fixedDecimalScale={true}
+                    renderText={(value) => value}
+                />
             </td>
             <td
                 className={borderExpandedStyles}
@@ -171,7 +168,7 @@ const AllBLIRow = ({
                                     displayType={"text"}
                                     thousandSeparator={true}
                                     prefix={"$"}
-                                    decimalScale={2}
+                                    decimalScale={getDecimalScale(budgetLine?.amount)}
                                     fixedDecimalScale={true}
                                     renderText={(value) => value}
                                 />
@@ -180,19 +177,15 @@ const AllBLIRow = ({
                         <dl className=" margin-0 margin-left-2">
                             <dt className="margin-0 text-base-dark">Fees</dt>
                             <dd className="margin-0">
-                                {feeTotal === 0 ? (
-                                    0
-                                ) : (
-                                    <CurrencyFormat
-                                        value={feeTotal}
-                                        displayType={"text"}
-                                        thousandSeparator={true}
-                                        prefix={"$"}
-                                        decimalScale={2}
-                                        fixedDecimalScale={true}
-                                        renderText={(value) => value}
-                                    />
-                                )}
+                                <CurrencyFormat
+                                    value={feeTotal}
+                                    displayType={"text"}
+                                    thousandSeparator={true}
+                                    prefix={"$"}
+                                    decimalScale={getDecimalScale(feeTotal)}
+                                    fixedDecimalScale={true}
+                                    renderText={(value) => value}
+                                />
                             </dd>
                         </dl>
                     </div>

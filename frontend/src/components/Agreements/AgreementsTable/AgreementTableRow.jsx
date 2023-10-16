@@ -24,6 +24,7 @@ import {
     areAllBudgetLinesInStatus,
     isThereAnyBudgetLines
 } from "./AgreementsTable.helpers";
+import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 
 /**
  * Renders a row in the agreements table.
@@ -50,7 +51,7 @@ export const AgreementTableRow = ({ agreement }) => {
 
     // styles for the table row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
-    const changeBgColorIfExpanded = { backgroundColor: isExpanded && "var(--neutral-lightest)" };
+    const changeBgColorIfExpanded = { backgroundColor: isExpanded ? "var(--neutral-lightest)" : "" };
     // Validations for editing/deleting an agreement
     const isAgreementEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
@@ -111,7 +112,7 @@ export const AgreementTableRow = ({ agreement }) => {
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$"}
-                    decimalScale={2}
+                    decimalScale={getDecimalScale(agreementTotal)}
                     fixedDecimalScale={true}
                     renderText={(value) => value}
                 />

@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import CurrencySummaryCard from "../../../UI/CurrencySummaryCard/CurrencySummaryCard";
 import CurrencyFormat from "react-currency-format";
+import { getDecimalScale } from "../../../../helpers/currencyFormat.helpers";
 
 /**
  * Renders a card displaying the agreement total, subtotal, fees, and procurement shop information.
@@ -28,7 +29,7 @@ const AgreementTotalCard = ({ total, subtotal, fees, procurementShop }) => {
                     value={subtotal}
                     displayType={"text"}
                     thousandSeparator={true}
-                    decimalScale={2}
+                    decimalScale={getDecimalScale(subtotal)}
                     fixedDecimalScale={true}
                     prefix={"$"}
                 />
@@ -37,18 +38,14 @@ const AgreementTotalCard = ({ total, subtotal, fees, procurementShop }) => {
                 <div>
                     <h4 className="margin-0 margin-top-2 margin-bottom-1 font-12px text-base-dark text-normal">Fees</h4>
                     <div className="text-semibold">
-                        {fees === 0 ? (
-                            0
-                        ) : (
-                            <CurrencyFormat
-                                value={fees}
-                                displayType={"text"}
-                                thousandSeparator={true}
-                                decimalScale={2}
-                                fixedDecimalScale={true}
-                                prefix={"$"}
-                            />
-                        )}
+                        <CurrencyFormat
+                            value={fees}
+                            displayType={"text"}
+                            thousandSeparator={true}
+                            decimalScale={getDecimalScale(fees)}
+                            fixedDecimalScale={true}
+                            prefix={"$"}
+                        />
                     </div>
                 </div>
                 <div className="margin-left-10">

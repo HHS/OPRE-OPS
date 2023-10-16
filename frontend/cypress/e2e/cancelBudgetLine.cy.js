@@ -72,7 +72,7 @@ const completeStepTwo = () => {
         .and("contain", "Product Service Center")
         .and("contain", "0");
     cy.get('[data-cy="total-summary-cards"]').as("tsc").should("exist");
-    cy.get("@tsc").should("contain", "Draft Total").and("contain", "$0.00");
+    cy.get("@tsc").should("contain", "Draft Total").and("contain", "$0");
 };
 
 const completeCreateBudgetLines = () => {
