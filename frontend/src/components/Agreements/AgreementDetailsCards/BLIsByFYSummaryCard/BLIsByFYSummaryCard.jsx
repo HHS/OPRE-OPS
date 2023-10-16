@@ -4,6 +4,7 @@ import CurrencyFormat from "react-currency-format";
 import SummaryCard from "../../../UI/SummaryCard";
 import styles from "./BLIsByFYSummaryCard.styles.module.scss";
 import { summaryCard } from "./BLIsFYSummaryCard.helpers";
+import { getDecimalScale } from "../../../../helpers/currencyFormat.helpers";
 
 /**
  * A component that displays the total budget lines for an agreement.
@@ -44,7 +45,7 @@ const BLIsByFYSummaryCard = ({ budgetLineItems }) => {
                             displayType="text"
                             thousandSeparator=","
                             prefix="$"
-                            decimalScale={item.total === 0 ? 0 : 2}
+                            decimalScale={getDecimalScale(item.total)}
                             fixedDecimalScale={true}
                         />
                     </div>

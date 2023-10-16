@@ -12,6 +12,8 @@ import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks"
 import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
 import { changeBgColorIfExpanded, removeBorderBottomIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
+import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import { get } from "lodash";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -92,7 +94,7 @@ const AllBLIRow = ({
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$"}
-                    decimalScale={budgetLineTotalPlusFees === 0 ? 0 : 2}
+                    decimalScale={getDecimalScale(budgetLineTotalPlusFees)}
                     fixedDecimalScale={true}
                     renderText={(value) => value}
                 />
@@ -167,7 +169,7 @@ const AllBLIRow = ({
                                     displayType={"text"}
                                     thousandSeparator={true}
                                     prefix={"$"}
-                                    decimalScale={budgetLine?.amount === 0 ? 0 : 2}
+                                    decimalScale={getDecimalScale(budgetLine?.amount)}
                                     fixedDecimalScale={true}
                                     renderText={(value) => value}
                                 />
@@ -181,7 +183,7 @@ const AllBLIRow = ({
                                     displayType={"text"}
                                     thousandSeparator={true}
                                     prefix={"$"}
-                                    decimalScale={feeTotal === 0 ? 0 : 2}
+                                    decimalScale={getDecimalScale(feeTotal)}
                                     fixedDecimalScale={true}
                                     renderText={(value) => value}
                                 />

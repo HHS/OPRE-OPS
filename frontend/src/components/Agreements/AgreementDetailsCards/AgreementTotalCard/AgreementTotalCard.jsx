@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import CurrencySummaryCard from "../../../UI/CurrencySummaryCard/CurrencySummaryCard";
 import CurrencyFormat from "react-currency-format";
+import { getDecimalScale } from "../../../../helpers/currencyFormat.helpers";
 
 /**
  * Renders a card displaying the agreement total, subtotal, fees, and procurement shop information.
@@ -41,7 +42,7 @@ const AgreementTotalCard = ({ total, subtotal, fees, procurementShop }) => {
                             value={fees}
                             displayType={"text"}
                             thousandSeparator={true}
-                            decimalScale={fees === 0 ? 0 : 2}
+                            decimalScale={getDecimalScale(fees)}
                             fixedDecimalScale={true}
                             prefix={"$"}
                         />
