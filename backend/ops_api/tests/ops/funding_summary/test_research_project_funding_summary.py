@@ -1,5 +1,5 @@
 import pytest
-from models import Agreement
+from models import ContractAgreement, GrantAgreement
 from models.cans import CAN, AgreementType, BudgetLineItem, CANFiscalYear
 from models.research_projects import ResearchProject
 
@@ -60,70 +60,82 @@ def test_get_research_project_funding_summary_no_data(auth_client):
 @pytest.mark.usefixtures("app_ctx")
 def db_loaded_with_research_projects(app, loaded_db):
     with app.app_context():
-        instances = []
+        research_project_rp1 = ResearchProject(title="RP1")
+        research_project_rp2 = ResearchProject(title="RP2")
 
-        research_project_100 = ResearchProject(id=100, title="RP100")
-        research_project_200 = ResearchProject(id=200, title="RP200")
+        research_project_rp1.portfolio_id = 1
+        research_project_rp2.portfolio_id = 1
 
-        research_project_100.portfolio_id = 1
-        research_project_200.portfolio_id = 1
+        loaded_db.add_all([research_project_rp1, research_project_rp2])
+        loaded_db.commit()
 
-        instances.extend([research_project_100, research_project_200])
+        can_1 = CAN(number="CAN1")
+        can_2 = CAN(number="CAN2")
+        can_3 = CAN(number="CAN3")
+        can_4 = CAN(number="CAN4")
 
-        can_100 = CAN(id=100, number="CAN100")
-        can_200 = CAN(id=200, number="CAN200")
-        can_300 = CAN(id=300, number="CAN300")
-        can_400 = CAN(id=400, number="CAN400")
+        loaded_db.add_all([can_1, can_2, can_3, can_4])
+        loaded_db.commit()
 
-        instances.extend([can_100, can_200, can_300, can_400])
-
-        agreement_1 = Agreement(
-            id=100,
+        agreement_1 = ContractAgreement(
             name="Agreement 1",
             agreement_type=AgreementType.CONTRACT,
-            research_project_id=100,
+            research_project_id=research_project_rp1.id,
         )
-        agreement_2 = Agreement(
-            id=200,
+        agreement_2 = GrantAgreement(
             name="Agreement 2",
             agreement_type=AgreementType.GRANT,
-            research_project_id=200,
+            research_project_id=research_project_rp2.id,
+            foa="foa",
         )
 
-        instances.extend([agreement_1, agreement_2])
+        loaded_db.add_all([agreement_1, agreement_2])
+        loaded_db.commit()
 
-        can_100_fy_2023 = CANFiscalYear(can_id=100, fiscal_year=2023, received_funding=5)
-        can_200_fy_2023 = CANFiscalYear(can_id=200, fiscal_year=2023, received_funding=5)
-        can_300_fy_2022 = CANFiscalYear(can_id=300, fiscal_year=2022, received_funding=5)
-        can_300_fy_2023 = CANFiscalYear(can_id=300, fiscal_year=2023, received_funding=5)
-        can_400_fy_2023 = CANFiscalYear(can_id=400, fiscal_year=2023, received_funding=5)
+        can_1_fy_2023 = CANFiscalYear(can_id=can_1.id, fiscal_year=2023, received_funding=5)
+        can_2_fy_2023 = CANFiscalYear(can_id=can_2.id, fiscal_year=2023, received_funding=5)
+        can_3_fy_2022 = CANFiscalYear(can_id=can_3.id, fiscal_year=2022, received_funding=5)
+        can_3_fy_2023 = CANFiscalYear(can_id=can_3.id, fiscal_year=2023, received_funding=5)
+        can_4_fy_2023 = CANFiscalYear(can_id=can_4.id, fiscal_year=2023, received_funding=5)
 
-        instances.extend(
-            [
-                can_100_fy_2023,
-                can_200_fy_2023,
-                can_300_fy_2022,
-                can_300_fy_2023,
-                can_400_fy_2023,
-            ]
-        )
+        loaded_db.add_all([can_1_fy_2023, can_2_fy_2023, can_3_fy_2022, can_3_fy_2023, can_4_fy_2023])
+        loaded_db.commit()
 
-        blin_1 = BudgetLineItem(line_description="#1", id=100, amount=1.0, can_id=100)
-        blin_2 = BudgetLineItem(line_description="#2", id=200, amount=2.0, can_id=200)
-        blin_3 = BudgetLineItem(line_description="#3", id=300, amount=3.0, can_id=300)
-        blin_4 = BudgetLineItem(line_description="#4", id=400, amount=4.0, can_id=400)
+        blin_1 = BudgetLineItem(line_description="#1", amount=1.0, can_id=can_1.id)
+        blin_2 = BudgetLineItem(line_description="#2", amount=2.0, can_id=can_2.id)
+        blin_3 = BudgetLineItem(line_description="#3", amount=3.0, can_id=can_3.id)
+        blin_4 = BudgetLineItem(line_description="#4", amount=4.0, can_id=can_4.id)
 
-        instances.extend([blin_1, blin_2, blin_3, blin_4])
+        loaded_db.add_all([blin_1, blin_2, blin_3, blin_4])
+        loaded_db.commit()
 
         agreement_1.budget_line_items.extend([blin_1, blin_2, blin_3])
         agreement_2.budget_line_items.append(blin_4)
 
-        loaded_db.add_all(instances)
-
+        loaded_db.add_all([agreement_1, agreement_2])
         loaded_db.commit()
+
         yield loaded_db
 
         # Cleanup
-        for instance in instances:
-            loaded_db.delete(instance)
+        for obj in [
+            research_project_rp1,
+            research_project_rp2,
+            can_1,
+            can_2,
+            can_3,
+            can_4,
+            agreement_1,
+            agreement_2,
+            blin_1,
+            blin_2,
+            blin_3,
+            blin_4,
+            can_1_fy_2023,
+            can_2_fy_2023,
+            can_3_fy_2022,
+            can_3_fy_2023,
+            can_4_fy_2023,
+        ]:
+            loaded_db.delete(obj)
         loaded_db.commit()

@@ -46,86 +46,27 @@ def test_agreements_serialization(auth_client, loaded_db):
     response = auth_client.get(url_for("api.agreements-item", id=1))
     assert response.status_code == 200
 
-    # Remove extra keys that make test flaky or noisy (like datetimes)
-    json_to_compare = response.json  # response.json seems to be immutable
-    del json_to_compare["created_on"]
-    del json_to_compare["updated_on"]
-    del json_to_compare["budget_line_items"]
-    del json_to_compare["research_project"]
-    del json_to_compare["procurement_shop"]
-    del json_to_compare["product_service_code"]
-    del json_to_compare["team_members"][0]["created_on"]
-    del json_to_compare["team_members"][0]["date_joined"]
-    del json_to_compare["team_members"][0]["updated_on"]
-    del json_to_compare["team_members"][1]["created_on"]
-    del json_to_compare["team_members"][1]["date_joined"]
-    del json_to_compare["team_members"][1]["updated_on"]
-    del json_to_compare["team_members"][2]["created_on"]
-    del json_to_compare["team_members"][2]["date_joined"]
-    del json_to_compare["team_members"][2]["updated_on"]
-    print(f"json_to_compare: {json_to_compare}")
+    agreement = loaded_db.get(Agreement, 1)
 
-    assert json_to_compare == {
-        "agreement_reason": "NEW_REQ",
-        "agreement_type": "CONTRACT",
-        "contract_number": "XXXX000000001",
-        "contract_type": "RESEARCH",
-        "created_by": 4,
-        "delivered_status": False,
-        "description": "Test description",
-        "display_name": "Contract #1: African American Child and Family Research Center",
-        "id": 1,
-        "incumbent": "",
-        "name": "Contract #1: African American Child and Family Research Center",
-        "notes": None,
-        "procurement_shop_id": 1,
-        "product_service_code_id": 1,
-        "project_officer": 1,
-        "research_project_id": 1,
-        "support_contacts": [],
-        "team_members": [
-            {
-                "created_by": None,
-                "display_name": "Chris Fortunato",
-                "division": 1,
-                "email": "chris.fortunato@example.com",
-                "first_name": "Chris",
-                "full_name": "Chris Fortunato",
-                "hhs_id": None,
-                "id": 1,
-                "last_name": "Fortunato",
-                "oidc_id": "00000000-0000-1111-a111-000000000001",
-                "updated": None,
-            },
-            {
-                "created_by": None,
-                "division": 2,
-                "display_name": "Amelia Popham",
-                "email": "Amelia.Popham@example.com",
-                "first_name": "Amelia",
-                "full_name": "Amelia Popham",
-                "hhs_id": None,
-                "id": 4,
-                "last_name": "Popham",
-                "oidc_id": "00000000-0000-1111-a111-000000000004",
-                "updated": None,
-            },
-            {
-                "created_by": None,
-                "display_name": "Admin Demo",
-                "division": 3,
-                "email": "admin.demo@email.com",
-                "first_name": "Admin",
-                "full_name": "Admin Demo",
-                "hhs_id": None,
-                "id": 21,
-                "last_name": "Demo",
-                "oidc_id": "00000000-0000-1111-a111-000000000018",
-                "updated": None,
-            },
-        ],
-        "vendor": "Vendor 1",
-    }
+    assert response.json["agreement_reason"] == agreement.agreement_reason.name
+    assert response.json["agreement_type"] == agreement.agreement_type.name
+    assert response.json["contract_number"] == agreement.contract_number
+    assert response.json["contract_type"] == agreement.contract_type.name
+    assert response.json["created_by"] == agreement.created_by
+    assert response.json["delivered_status"] == agreement.delivered_status
+    assert response.json["description"] == agreement.description
+    assert response.json["display_name"] == agreement.display_name
+    assert response.json["id"] == agreement.id
+    assert response.json["incumbent"] == agreement.incumbent
+    assert response.json["name"] == agreement.name
+    assert response.json["notes"] == agreement.notes
+    assert response.json["procurement_shop_id"] == agreement.procurement_shop_id
+    assert response.json["product_service_code_id"] == agreement.product_service_code_id
+    assert response.json["project_officer_id"] == agreement.project_officer_id
+    assert response.json["research_project_id"] == agreement.research_project_id
+    assert response.json["support_contacts"] == agreement.support_contacts
+    assert len(response.json["team_members"]) == len(agreement.team_members)
+    assert response.json["vendor"] == agreement.vendor
 
 
 @pytest.mark.skip("Need to consult whether this should return ALL or NONE if the value is empty")
@@ -165,7 +106,7 @@ def test_agreements_with_simulated_error(auth_client, loaded_db, simulated_error
         ("agreement_type", "CONTRACT"),
         ("delivered_status", False),
         ("procurement_shop_id", 1),
-        ("project_officer", 1),
+        ("project_officer_id", 1),
         ("research_project_id", 1),
         ("foa", "This is an FOA value"),
         ("name", "Contract #1: African American Child and Family Research Center"),
@@ -363,7 +304,7 @@ def test_agreements_put_by_id_contract_remove_fields(auth_client, loaded_db, tes
     assert agreement.name == "Updated Contract Name"
     assert agreement.display_name == agreement.name
     assert agreement.description == "Updated Contract Description"
-    assert agreement.notes is None
+    assert agreement.notes == ""
     assert agreement.team_members == []
     assert agreement.support_contacts == []
 
@@ -449,15 +390,12 @@ def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test
     )
     assert response.status_code == 200
 
-    stmt = select(Agreement).where(Agreement.id == test_contract.id)
-    agreement = loaded_db.scalar(stmt)
-
-    assert agreement.name == "Updated Contract Name"
-    assert agreement.display_name == agreement.name
-    assert agreement.description == "Updated Contract Description"
-    assert agreement.notes == "Test Note"
-    assert [m.id for m in agreement.team_members] == [1]
-    assert [m.id for m in agreement.support_contacts] == [2, 3]
+    assert test_contract.name == "Updated Contract Name"
+    assert test_contract.display_name == test_contract.name
+    assert test_contract.description == "Updated Contract Description"
+    assert test_contract.notes == "Test Note"
+    assert [m.id for m in test_contract.team_members] == [1]
+    assert [m.id for m in test_contract.support_contacts] == [2, 3]
 
     # path with null/empty
     response = auth_client.patch(
@@ -465,20 +403,17 @@ def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test
         json={
             "team_members": None,
             "support_contacts": [],
-            "notes": None,
+            "notes": "",
         },
     )
     assert response.status_code == 200
 
-    stmt = select(Agreement).where(Agreement.id == test_contract.id)
-    agreement = loaded_db.scalar(stmt)
-
-    assert agreement.name == "Updated Contract Name"
-    assert agreement.display_name == agreement.name
-    assert agreement.description == "Updated Contract Description"
-    assert agreement.notes is None
-    assert agreement.team_members == []
-    assert agreement.support_contacts == []
+    assert test_contract.name == "Updated Contract Name"
+    assert test_contract.display_name == test_contract.name
+    assert test_contract.description == "Updated Contract Description"
+    assert test_contract.notes == ""
+    assert test_contract.team_members == []
+    assert test_contract.support_contacts == []
 
 
 @pytest.mark.usefixtures("app_ctx")

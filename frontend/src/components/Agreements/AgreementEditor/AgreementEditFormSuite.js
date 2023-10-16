@@ -30,7 +30,7 @@ const suite = create((data = {}, fieldName) => {
         }
     });
     test("project_officer", "This is required information", () => {
-        enforce(data.project_officer).greaterThan(0);
+        enforce(data.project_officer_id).greaterThan(0);
     });
 });
 

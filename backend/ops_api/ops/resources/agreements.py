@@ -38,8 +38,8 @@ def associated_with_agreement(self, id: int) -> bool:
     oidc_ids = set()
     if agreement.created_by_user:
         oidc_ids.add(str(agreement.created_by_user.oidc_id))
-    if agreement.project_officer_user:
-        oidc_ids.add(str(agreement.project_officer_user.oidc_id))
+    if agreement.project_officer:
+        oidc_ids.add(str(agreement.project_officer.oidc_id))
     oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
 
     ret = jwt_identity in oidc_ids

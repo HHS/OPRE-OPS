@@ -66,7 +66,7 @@ export const handleFilterByUrl = (myBudgetLineItemsUrl, filteredBudgetLineItems,
         const myBLIs = filteredBudgetLineItems.filter((budgetLine) => {
             const teamMembers = budgetLine.team_members;
             const agreement = agreements.find((agreement) => agreement.id === budgetLine.agreement_id);
-            const projectOfficerId = agreement?.project_officer;
+            const projectOfficerId = agreement?.project_officer_id;
 
             return teamMembers?.some((teamMember) => {
                 return teamMember.id === activeUser.id || projectOfficerId === activeUser.id;
