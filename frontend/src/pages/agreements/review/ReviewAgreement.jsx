@@ -13,6 +13,7 @@ import useAlert from "../../../hooks/use-alert.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import AgreementActionAccordion from "../../../components/Agreements/AgreementActionAccordion";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
+import AgreementBLIReviewTable from "../../../components/Agreements/AgreementBLIReviewTable";
 import { setActionableBudgetLines, anyBudgetLinesByStatus } from "./ReviewAgreement.helpers";
 
 /**
@@ -208,9 +209,10 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 </div>
                 {/* TODO: Make actionable Table variant */}
                 {/* TODO: Handle action toggle disabling of BLIs */}
-                <BudgetLinesTable
+
+                <AgreementBLIReviewTable
                     readOnly={true}
-                    budgetLinesAdded={agreement?.budget_line_items}
+                    budgetLines={agreement?.budget_line_items}
                     isReviewMode={true}
                     showTotalSummaryCard={false}
                 />
