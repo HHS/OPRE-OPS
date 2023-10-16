@@ -16,7 +16,6 @@ it("loads", () => {
 });
 
 it("navigates to the approveAgreements page when the approve button is clicked", () => {
-    cy.wait(1000);
     // hover over a row to make the approve button visible
     cy.get(".usa-table").should("exist");
     cy.get("tbody tr").first().trigger("mouseover");
