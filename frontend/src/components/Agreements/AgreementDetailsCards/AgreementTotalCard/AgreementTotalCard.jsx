@@ -29,7 +29,7 @@ const AgreementTotalCard = ({ total, subtotal, fees, procurementShop }) => {
                     value={subtotal}
                     displayType={"text"}
                     thousandSeparator={true}
-                    decimalScale={subtotal === 0 ? 0 : 2}
+                    decimalScale={getDecimalScale(subtotal)}
                     fixedDecimalScale={true}
                     prefix={"$"}
                 />
