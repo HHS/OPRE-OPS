@@ -12,6 +12,7 @@ import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../.
 import useAlert from "../../../hooks/use-alert.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import AgreementActionAccordion from "../../../components/Agreements/AgreementActionAccordion";
+import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import { setActionableBudgetLines, anyBudgetLinesByStatus } from "./ReviewAgreement.helpers";
 
 /**
@@ -38,7 +39,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const isAgreementStateEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
-    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer);
+    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const { setAlert } = useAlert();
 
     let res = suite.get();
@@ -176,41 +177,44 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 actionableBudgetLines:
                 {actionableBudgetLines && JSON.stringify(actionableBudgetLines, null, 2)}
             </pre>
-            <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : null}`}>
-                <h2
-                    className="text-bold"
-                    style={{ fontSize: "1.375rem" }}
-                >
-                    Budget Lines
-                </h2>
-                <p>This is a list of all budget lines within this agreement.</p>
-                {areThereBudgetLineErrors && (
-                    <ul className="usa-error-message padding-left-1">
-                        {budgetLineErrorsExist && (
-                            <li>
-                                {budgetLineErrors.map((error, index) => (
-                                    <Fragment key={index}>
-                                        <span>{error}</span>
-                                        {index < budgetLineErrors.length - 1 && <span>, </span>}
-                                    </Fragment>
-                                ))}
-                            </li>
-                        )}
-                        {budgetLinePageErrorsExist &&
-                            budgetLinePageErrors.map(([budgetLineItem, errors]) => (
-                                <li key={budgetLineItem}>
-                                    {budgetLineItem}: {errors.join(", ")}
-                                </li>
-                            ))}
-                    </ul>
-                )}
-            </div>
 
-            <BudgetLinesTable
-                readOnly={true}
-                budgetLinesAdded={agreement?.budget_line_items}
-                isReviewMode={true}
-            />
+            <AgreementBLIAccordion
+                budgetLineItems={agreement?.budget_line_items}
+                agreement={agreement}
+            >
+                <div
+                    className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : null}`}
+                >
+                    {areThereBudgetLineErrors && (
+                        <ul className="usa-error-message padding-left-2 border-left-05">
+                            {budgetLineErrorsExist && (
+                                <li>
+                                    {budgetLineErrors.map((error, index) => (
+                                        <Fragment key={index}>
+                                            <span>{error}</span>
+                                            {index < budgetLineErrors.length - 1 && <span>, </span>}
+                                        </Fragment>
+                                    ))}
+                                </li>
+                            )}
+                            {budgetLinePageErrorsExist &&
+                                budgetLinePageErrors.map(([budgetLineItem, errors]) => (
+                                    <li key={budgetLineItem}>
+                                        {budgetLineItem}: {errors.join(", ")}
+                                    </li>
+                                ))}
+                        </ul>
+                    )}
+                </div>
+                {/* TODO: Make actionable Table variant */}
+                {/* TODO: Handle action toggle disabling of BLIs */}
+                <BudgetLinesTable
+                    readOnly={true}
+                    budgetLinesAdded={agreement?.budget_line_items}
+                    isReviewMode={true}
+                    showTotalSummaryCard={false}
+                />
+            </AgreementBLIAccordion>
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className={`usa-button usa-button--outline margin-right-2 ${

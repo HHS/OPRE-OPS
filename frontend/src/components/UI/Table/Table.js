@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import "./table.css";
+import styles from "./table.module.css";
 
 /**
  * The Table component is a layout component that displays a table
@@ -24,7 +24,7 @@ const Table = ({ children, tableHeadings }) => {
         return undefined;
     };
     return (
-        <table className="usa-table usa-table--borderless width-full table-hover">
+        <table className={`usa-table usa-table--borderless width-full ${styles.tableHover}`}>
             <thead>
                 <tr>
                     {tableHeadings.map((heading, index) => (

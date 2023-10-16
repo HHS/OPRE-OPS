@@ -21,7 +21,7 @@ export const AgreementSelect = ({
         }
         setSelectedAgreement({
             ...selectedAgreement,
-            projectOfficer: selectedAgreement?.project_officer,
+            projectOfficer: selectedAgreement?.project_officer_id,
             periodOfPerformance
         });
 

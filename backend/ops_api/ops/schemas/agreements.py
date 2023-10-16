@@ -12,7 +12,7 @@ class AgreementData(Schema):
     product_service_code_id = fields.Integer(allow_none=True)
     agreement_reason = fields.Enum(AgreementReason, allow_none=True)
     incumbent = fields.String(allow_none=True)
-    project_officer = fields.Integer(allow_none=True)
+    project_officer_id = fields.Integer(allow_none=True)
     team_members = fields.List(fields.Nested(TeamMembers), default=[], allow_none=True)
     research_project_id = fields.Integer(allow_none=True)
     procurement_shop_id = fields.Integer(allow_none=True)
