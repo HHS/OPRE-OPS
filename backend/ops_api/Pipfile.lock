@@ -236,7 +236,6 @@
                 "sha256:e40211b4923ba5a6dc9769eab704bdb3fbb58d56c5b336d30996c24fcf12aadb",
                 "sha256:efc8ad4e6fc4f1752ebfb58aefece8b4e3c4cae940b0994d43649bdfce8d0d4f"
             ],
-            "markers": "python_version >= '3.7'",
             "version": "==41.0.4"
         },
         "desert": {
@@ -1182,7 +1181,6 @@
                 "sha256:e40211b4923ba5a6dc9769eab704bdb3fbb58d56c5b336d30996c24fcf12aadb",
                 "sha256:efc8ad4e6fc4f1752ebfb58aefece8b4e3c4cae940b0994d43649bdfce8d0d4f"
             ],
-            "markers": "python_version >= '3.7'",
             "version": "==41.0.4"
         },
         "decorator": {
