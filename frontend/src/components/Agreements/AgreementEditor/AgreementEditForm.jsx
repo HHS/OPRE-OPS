@@ -151,8 +151,6 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         };
         const { id, cleanData } = cleanAgreementForApi(data);
 
-        console.log("cleanData", cleanData);
-
         if (id) {
             await updateAgreement({ id: id, data: cleanData })
                 .unwrap()
