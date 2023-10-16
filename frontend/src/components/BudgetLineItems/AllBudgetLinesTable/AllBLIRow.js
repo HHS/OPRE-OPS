@@ -13,7 +13,6 @@ import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
 import { changeBgColorIfExpanded, removeBorderBottomIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import { get } from "lodash";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
