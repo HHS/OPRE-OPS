@@ -88,7 +88,7 @@ const agreementHistoryData = [
                 updated_on: "2023-08-24T16:19:01.268399"
             },
             product_service_code_id: 1,
-            project_officer: 1,
+            project_officer_id: 1,
             research_project: {
                 created_by: null,
                 created_on: "2023-08-24T16:18:48.654514",
@@ -235,7 +235,7 @@ const agreementHistoryData = [
             procurement_shop_id: 2,
             product_service_code: null,
             product_service_code_id: null,
-            project_officer: null,
+            project_officer_id: null,
             research_project: {
                 id: 3,
                 title: "Annual Performance Plans and Reports"
@@ -342,7 +342,7 @@ const agreementHistoryData = [
             procurement_shop_id: 2,
             product_service_code: null,
             product_service_code_id: null,
-            project_officer: null,
+            project_officer_id: null,
             research_project: null,
             research_project_id: 3,
             support_contacts: [],
@@ -381,7 +381,7 @@ describe("AgreementDetails", () => {
         },
         agreement_reason: "RECOMPETE",
         incumbent: "Test Incumbent",
-        project_officer: 1,
+        project_officer_id: 1,
         team_members: [
             {
                 full_name: "Amy Madigan",

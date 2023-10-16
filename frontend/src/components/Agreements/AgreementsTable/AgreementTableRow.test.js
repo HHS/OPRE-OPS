@@ -40,7 +40,7 @@ const agreement = {
     display_name: "Test Agreement",
     research_project: { title: "Test Project" },
     agreement_type: "GRANT",
-    project_officer: 1,
+    project_officer_id: 1,
     team_members: [{ id: 1 }],
     procurement_shop: { fee: 0.05 },
     budget_line_items: [

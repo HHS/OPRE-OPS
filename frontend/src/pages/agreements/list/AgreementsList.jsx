@@ -107,7 +107,7 @@ export const AgreementsList = () => {
         return (
             filters.projectOfficers.length === 0 ||
             filters.projectOfficers.some((po) => {
-                return po.id === agreement.project_officer;
+                return po.id === agreement.project_officer_id;
             })
         );
     });
@@ -159,7 +159,7 @@ export const AgreementsList = () => {
     if (myAgreementsUrl) {
         const myAgreements = filteredAgreements.filter((agreement) => {
             return agreement.team_members?.some((teamMember) => {
-                return teamMember.id === activeUser.id || agreement.project_officer === activeUser.id;
+                return teamMember.id === activeUser.id || agreement.project_officer_id === activeUser.id;
             });
         });
         sortedAgreements = sortAgreements(myAgreements);

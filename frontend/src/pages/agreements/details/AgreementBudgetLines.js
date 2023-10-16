@@ -156,7 +156,7 @@ AgreementBudgetLines.propTypes = {
         research_project: PropTypes.object,
         team_members: PropTypes.arrayOf(PropTypes.object),
         created_by: PropTypes.number,
-        project_officer: PropTypes.number
+        project_officer_id: PropTypes.number
     }),
     isEditMode: PropTypes.bool,
     setIsEditMode: PropTypes.func
