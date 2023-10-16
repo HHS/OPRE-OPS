@@ -1,4 +1,5 @@
 import { formatDate } from "../../../helpers/utils";
+export { getAgreementSubTotal, getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
 
 const handleAgreementProp = (agreement) => {
     if (typeof agreement !== "object") {
@@ -14,19 +15,6 @@ export const getAgreementName = (agreement) => {
 export const getResearchProjectName = (agreement) => {
     handleAgreementProp(agreement);
     return agreement.research_project?.title;
-};
-
-export const getAgreementSubTotal = (agreement) => {
-    handleAgreementProp(agreement);
-    return agreement.budget_line_items?.reduce((n, { amount }) => n + amount, 0);
-};
-
-export const getProcurementShopSubTotal = (agreement) => {
-    handleAgreementProp(agreement);
-    return agreement.budget_line_items?.reduce(
-        (n, { amount }) => n + amount * (agreement.procurement_shop ? agreement.procurement_shop.fee : 0),
-        0
-    );
 };
 
 export const getAgreementNotes = (agreement) => {

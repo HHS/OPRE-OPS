@@ -1,10 +1,9 @@
 import React from "react";
 import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
-import { fiscalYearFromDate } from "../../../../helpers/utils";
-import constants from "../../../../constants";
 import SummaryCard from "../../../UI/SummaryCard";
 import styles from "./BLIsByFYSummaryCard.styles.module.scss";
+import { summaryCard } from "./BLIsFYSummaryCard.helpers";
 
 /**
  * A component that displays the total budget lines for an agreement.
@@ -15,32 +14,7 @@ import styles from "./BLIsByFYSummaryCard.styles.module.scss";
  */
 const BLIsByFYSummaryCard = ({ budgetLineItems }) => {
     const id = React.useId();
-    const { blisByFYChartColors } = constants;
-    const blisFy = budgetLineItems.map((bli) => ({ ...bli, fiscalYear: fiscalYearFromDate(bli.date_needed) }));
-    const fyTotalsMap = blisFy.reduce((acc, cur) => {
-        if (!cur.fiscalYear || cur.amount == null) return acc;
-        // TODO: create BLI total function somewhere to use here and in AgreementBudgetLines, TotalSummaryCard, etc
-        let fee = cur.amount * cur?.proc_shop_fee_percentage;
-        let total = cur.amount + fee;
-        if (!(cur.fiscalYear in acc)) {
-            acc[cur.fiscalYear] = total;
-        } else {
-            acc[cur.fiscalYear] = acc[cur.fiscalYear] + total;
-        }
-        return acc;
-    }, {});
-    const fyTotalsAll = Object.keys(fyTotalsMap).map((fy) => ({ fiscalYear: fy, total: fyTotalsMap[fy] }));
-    const fyTotals = fyTotalsAll.slice(0, 5);
-    const maxFyTotal = Math.max(...fyTotals.map((o) => o.total));
-
-    const chartData = fyTotals.map((fyVal, index) => {
-        return {
-            FY: fyVal.fiscalYear,
-            total: fyVal.total,
-            ratio: fyVal.total / maxFyTotal,
-            color: blisByFYChartColors[index].color
-        };
-    });
+    const { chartData } = summaryCard(budgetLineItems);
 
     return (
         <SummaryCard
