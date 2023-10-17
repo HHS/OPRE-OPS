@@ -13,7 +13,8 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import AgreementActionAccordion from "../../../components/Agreements/AgreementActionAccordion";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementBLIReviewTable from "../../../components/Agreements/AgreementBLIReviewTable";
-import { setActionableBudgetLines, anyBudgetLinesByStatus } from "./ReviewAgreement.helpers";
+import { anyBudgetLinesByStatus } from "./ReviewAgreement.helpers";
+import { actionOptions } from "./ReviewAgreement.constants";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -73,13 +74,13 @@ export const ReviewAgreement = ({ agreement_id }) => {
             setIsAlertActive(false);
         };
     }, [res, isSuccess]);
-
+    // set new props for the budget lines
     useEffect(() => {
         const newBudgetLines =
             agreement?.budget_line_items?.map((bli) => ({
                 ...bli,
-                selected: false,
-                actionable: false
+                selected: false, // for use in the BLI table
+                actionable: false // based on action accordion
             })) ?? [];
         setBudgetLines(newBudgetLines);
     }, [agreement]);
@@ -99,7 +100,6 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist;
     const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement, "DRAFT");
     const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement, "PLANNED");
-    const actionableBudgetLines = setActionableBudgetLines(agreement, action);
 
     const handleSelectBLI = (bliId) => {
         const newBudgetLines = budgetLines.map((bli) => {
@@ -112,6 +112,27 @@ export const ReviewAgreement = ({ agreement_id }) => {
             return bli;
         });
 
+        setBudgetLines(newBudgetLines);
+    };
+
+    const handleActionChange = (action) => {
+        setAction(action);
+        const newBudgetLines = budgetLines.map((bli) => {
+            switch (action) {
+                case actionOptions.CHANGE_DRAFT_TO_PLANNED:
+                    return {
+                        ...bli,
+                        actionable: bli.status === "DRAFT"
+                    };
+                case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
+                    return {
+                        ...bli,
+                        actionable: bli.status === "PLANNED"
+                    };
+                default:
+                    return bli;
+            }
+        });
         setBudgetLines(newBudgetLines);
     };
 
@@ -191,17 +212,10 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 convertCodeForDisplay={convertCodeForDisplay}
             />
             <AgreementActionAccordion
-                setAction={setAction}
+                setAction={handleActionChange}
                 optionOneDisabled={!anyBudgetLinesDraft}
                 optionTwoDisabled={!anyBudgetLinePlanned}
             />
-            <pre className="border-1px padding-1 font-12px border-dotted border-info">
-                {action ? action : "no action"} is selected
-            </pre>
-            <pre className="border-1px padding-1 font-12px border-dotted border-info">
-                actionableBudgetLines:
-                {actionableBudgetLines && JSON.stringify(actionableBudgetLines, null, 2)}
-            </pre>
 
             <AgreementBLIAccordion
                 budgetLineItems={agreement?.budget_line_items}
@@ -234,7 +248,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 {/* TODO: Handle action toggle disabling of BLIs */}
                 <AgreementBLIReviewTable
                     readOnly={true}
-                    budgetLines={agreement?.budget_line_items}
+                    budgetLines={budgetLines}
                     isReviewMode={true}
                     showTotalSummaryCard={false}
                     setSelectedBLIs={handleSelectBLI}

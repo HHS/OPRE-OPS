@@ -29,6 +29,7 @@ import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
  * @param {Function} [props.handleDeleteBudgetLine] - The function to delete the budget line.
  * @param {Function} [props.handleDuplicateBudgetLine] - The function to duplicate the budget line.
  * @param {boolean} [props.readOnly] - Whether the user is in read only mode.
+ * @param {Function} [props.setSelectedBLIs] - The function to set the selected budget line items.
  * @returns {React.JSX.Element} The BLIRow component.
  **/
 const BLIReviewRow = ({
@@ -73,22 +74,28 @@ const BLIReviewRow = ({
                 )} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                <input
-                    className="usa-checkbox__input"
-                    id={budgetLine?.id}
-                    type="checkbox"
-                    name="budget-line-checkbox"
-                    value={budgetLine?.id}
-                    onChange={(e) => {
-                        setSelectedBLIs(e.target.value);
-                    }}
-                />
-                <label
-                    className="usa-checkbox__label"
-                    htmlFor={budgetLine?.id}
-                >
-                    {budgetLine?.line_description}
-                </label>
+                {budgetLine.actionable ? (
+                    <>
+                        <input
+                            className="usa-checkbox__input"
+                            id={budgetLine?.id}
+                            type="checkbox"
+                            name="budget-line-checkbox"
+                            value={budgetLine?.id}
+                            onChange={(e) => {
+                                setSelectedBLIs(e.target.value);
+                            }}
+                        />
+                        <label
+                            className="usa-checkbox__label"
+                            htmlFor={budgetLine?.id}
+                        >
+                            {budgetLine?.line_description}
+                        </label>
+                    </>
+                ) : (
+                    budgetLine?.line_description
+                )}
             </th>
             <td
                 className={`${futureDateErrorClass(
@@ -229,6 +236,7 @@ BLIReviewRow.propTypes = {
     handleSetBudgetLineForEditing: PropTypes.func,
     handleDeleteBudgetLine: PropTypes.func,
     handleDuplicateBudgetLine: PropTypes.func,
+    setSelectedBLIs: PropTypes.func,
     readOnly: PropTypes.bool
 };
 
