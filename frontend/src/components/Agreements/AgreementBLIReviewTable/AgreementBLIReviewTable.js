@@ -15,6 +15,7 @@ import "../../BudgetLineItems/BudgetLinesTable/BudgetLinesTable.scss";
  * @param {Boolean} [props.readOnly] - A flag to indicate if the table is read-only.
  * @param {Boolean} [props.isReviewMode] - A flag to indicate if the table is in review mode.
  * @param {Boolean} [props.showTotalSummaryCard] - A flag to indicate if the total summary card should be displayed.
+ * @param {Function} [props.setSelectedBLIs] - A function to set the selected budget line items.
  * @returns {JSX.Element} - The rendered table component.
  */
 const AgreementBLIReviewTable = ({
@@ -62,7 +63,8 @@ AgreementBLIReviewTable.propTypes = {
     readOnly: PropTypes.bool,
     errors: PropTypes.arrayOf(PropTypes.array),
     isReviewMode: PropTypes.bool,
-    showTotalSummaryCard: PropTypes.bool
+    showTotalSummaryCard: PropTypes.bool,
+    setSelectedBLIs: PropTypes.func
 };
 
 export default AgreementBLIReviewTable;

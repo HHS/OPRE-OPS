@@ -74,28 +74,30 @@ const BLIReviewRow = ({
                 )} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {budgetLine.actionable ? (
-                    <>
-                        <input
-                            className="usa-checkbox__input"
-                            id={budgetLine?.id}
-                            type="checkbox"
-                            name="budget-line-checkbox"
-                            value={budgetLine?.id}
-                            onChange={(e) => {
-                                setSelectedBLIs(e.target.value);
-                            }}
-                        />
-                        <label
-                            className="usa-checkbox__label"
-                            htmlFor={budgetLine?.id}
-                        >
-                            {budgetLine?.line_description}
-                        </label>
-                    </>
-                ) : (
-                    budgetLine?.line_description
-                )}
+                <div
+                    className="usa-tooltip"
+                    data-position="top"
+                    title={`${!budgetLine.actionable ? "The budget line cannot be selected" : ""}`}
+                >
+                    <input
+                        className="usa-checkbox__input"
+                        id={budgetLine?.id}
+                        type="checkbox"
+                        name="budget-line-checkbox"
+                        value={budgetLine?.id}
+                        onChange={(e) => {
+                            setSelectedBLIs(e.target.value);
+                        }}
+                        disabled={!budgetLine.actionable}
+                        checked={budgetLine?.selected}
+                    />
+                    <label
+                        className="usa-checkbox__label"
+                        htmlFor={budgetLine?.id}
+                    >
+                        {budgetLine?.line_description}
+                    </label>
+                </div>
             </th>
             <td
                 className={`${futureDateErrorClass(
@@ -225,6 +227,7 @@ const BLIReviewRow = ({
             isExpanded={isExpanded}
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
+            className={`${!budgetLine.actionable ? "text-gray-30" : ""}`}
         />
     );
 };

@@ -122,11 +122,13 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 case actionOptions.CHANGE_DRAFT_TO_PLANNED:
                     return {
                         ...bli,
+                        selected: false,
                         actionable: bli.status === "DRAFT"
                     };
                 case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
                     return {
                         ...bli,
+                        selected: false,
                         actionable: bli.status === "PLANNED"
                     };
                 default:
@@ -245,7 +247,6 @@ export const ReviewAgreement = ({ agreement_id }) => {
                         </ul>
                     )}
                 </div>
-                {/* TODO: Handle action toggle disabling of BLIs */}
                 <AgreementBLIReviewTable
                     readOnly={true}
                     budgetLines={budgetLines}
