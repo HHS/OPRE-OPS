@@ -35,6 +35,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
 
     const [updateBudgetLineItemStatus] = useUpdateBudgetLineItemStatusMutation();
     const [action, setAction] = useState(""); // for the action accordion
+    const [selectedBLIs, setSelectedBLIs] = useState([]);
     const [pageErrors, setPageErrors] = useState({});
     const [isAlertActive, setIsAlertActive] = useState(false);
     const isAgreementStateEditable = useIsAgreementEditable(agreement?.id);
@@ -90,6 +91,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement, "DRAFT");
     const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement, "PLANNED");
     const actionableBudgetLines = setActionableBudgetLines(agreement, action);
+    console.log(selectedBLIs);
 
     const handleSendToApproval = () => {
         if (anyBudgetLinesDraft) {
@@ -215,6 +217,8 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     budgetLines={agreement?.budget_line_items}
                     isReviewMode={true}
                     showTotalSummaryCard={false}
+                    selectedBLIs={selectedBLIs}
+                    setSelectedBLIs={setSelectedBLIs}
                 />
             </AgreementBLIAccordion>
             <div className="grid-row flex-justify-end margin-top-1">

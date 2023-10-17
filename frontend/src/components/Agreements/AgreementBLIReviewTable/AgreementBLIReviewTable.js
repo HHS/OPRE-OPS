@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import Table from "../../UI/Table";
 import TotalSummaryCard from "../../BudgetLineItems/TotalSummaryCard";
-import BLIRow from "../../BudgetLineItems/BudgetLinesTable/BLIRow";
+import BLIReviewRow from "./BLIReviewRow";
 import { BUDGET_LINE_TABLE_HEADERS } from "../../BudgetLineItems/BudgetLinesTable/BudgetLinesTable.constants";
 import "../../BudgetLineItems/BudgetLinesTable/BudgetLinesTable.scss";
 
@@ -24,7 +24,9 @@ const AgreementBLIReviewTable = ({
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isReviewMode = false,
-    showTotalSummaryCard = true
+    showTotalSummaryCard = true,
+    selectedBLIs,
+    setSelectedBLIs
 }) => {
     const sortedBudgetLines = budgetLines
         .slice()
@@ -35,7 +37,7 @@ const AgreementBLIReviewTable = ({
         <>
             <Table tableHeadings={BUDGET_LINE_TABLE_HEADERS}>
                 {sortedBudgetLines.map((budgetLine) => (
-                    <BLIRow
+                    <BLIReviewRow
                         key={budgetLine.id}
                         budgetLine={budgetLine}
                         handleDeleteBudgetLine={handleDeleteBudgetLine}
@@ -43,6 +45,8 @@ const AgreementBLIReviewTable = ({
                         handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                         isReviewMode={isReviewMode}
                         readOnly={readOnly}
+                        setSelectedBLIs={setSelectedBLIs}
+                        selectedBLIs={selectedBLIs}
                     />
                 ))}
             </Table>
