@@ -2,7 +2,6 @@ import { useEffect, useState, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 import PropTypes from "prop-types";
-import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../../api/opsAPI";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
@@ -35,7 +34,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
 
     const [updateBudgetLineItemStatus] = useUpdateBudgetLineItemStatusMutation();
     const [action, setAction] = useState(""); // for the action accordion
-    const [selectedBLIs, setSelectedBLIs] = useState([]);
+    const [budgetLines, setBudgetLines] = useState([]);
     const [pageErrors, setPageErrors] = useState({});
     const [isAlertActive, setIsAlertActive] = useState(false);
     const isAgreementStateEditable = useIsAgreementEditable(agreement?.id);
@@ -75,6 +74,16 @@ export const ReviewAgreement = ({ agreement_id }) => {
         };
     }, [res, isSuccess]);
 
+    useEffect(() => {
+        const newBudgetLines =
+            agreement?.budget_line_items?.map((bli) => ({
+                ...bli,
+                selected: false,
+                actionable: false
+            })) ?? [];
+        setBudgetLines(newBudgetLines);
+    }, [agreement]);
+
     if (isLoadingAgreement) {
         return <h1>Loading...</h1>;
     }
@@ -91,7 +100,20 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement, "DRAFT");
     const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement, "PLANNED");
     const actionableBudgetLines = setActionableBudgetLines(agreement, action);
-    console.log(selectedBLIs);
+
+    const handleSelectBLI = (bliId) => {
+        const newBudgetLines = budgetLines.map((bli) => {
+            if (+bli.id === +bliId) {
+                return {
+                    ...bli,
+                    selected: !bli.selected
+                };
+            }
+            return bli;
+        });
+
+        setBudgetLines(newBudgetLines);
+    };
 
     const handleSendToApproval = () => {
         if (anyBudgetLinesDraft) {
@@ -209,16 +231,13 @@ export const ReviewAgreement = ({ agreement_id }) => {
                         </ul>
                     )}
                 </div>
-                {/* TODO: Make actionable Table variant */}
                 {/* TODO: Handle action toggle disabling of BLIs */}
-
                 <AgreementBLIReviewTable
                     readOnly={true}
                     budgetLines={agreement?.budget_line_items}
                     isReviewMode={true}
                     showTotalSummaryCard={false}
-                    selectedBLIs={selectedBLIs}
-                    setSelectedBLIs={setSelectedBLIs}
+                    setSelectedBLIs={handleSelectBLI}
                 />
             </AgreementBLIAccordion>
             <div className="grid-row flex-justify-end margin-top-1">

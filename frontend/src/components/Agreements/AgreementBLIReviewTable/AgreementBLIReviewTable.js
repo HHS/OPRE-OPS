@@ -25,7 +25,6 @@ const AgreementBLIReviewTable = ({
     readOnly = false,
     isReviewMode = false,
     showTotalSummaryCard = true,
-    selectedBLIs,
     setSelectedBLIs
 }) => {
     const sortedBudgetLines = budgetLines
@@ -46,7 +45,6 @@ const AgreementBLIReviewTable = ({
                         isReviewMode={isReviewMode}
                         readOnly={readOnly}
                         setSelectedBLIs={setSelectedBLIs}
-                        selectedBLIs={selectedBLIs}
                     />
                 ))}
             </Table>

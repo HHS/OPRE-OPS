@@ -19,7 +19,6 @@ import { removeBorderBottomIfExpanded, changeBgColorIfExpanded } from "../../UI/
 import { futureDateErrorClass, addErrorClassIfNotFound } from "../../BudgetLineItems/BudgetLinesTable/BLIRow.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import { set } from "lodash";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -39,7 +38,6 @@ const BLIReviewRow = ({
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
-    selectedBLIs,
     setSelectedBLIs
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
@@ -82,10 +80,7 @@ const BLIReviewRow = ({
                     name="budget-line-checkbox"
                     value={budgetLine?.id}
                     onChange={(e) => {
-                        const newBLIS = selectedBLIs;
-                        const newBLI = e.target.value;
-                        //TODO: not working
-                        setSelectedBLIs([...newBLIS, newBLI]);
+                        setSelectedBLIs(e.target.value);
                     }}
                 />
                 <label
