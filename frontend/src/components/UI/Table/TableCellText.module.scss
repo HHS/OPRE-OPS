@@ -1,0 +1,11 @@
+.limitedToTwoLines {
+  // only if it's supported, works in most browsers including Firefox
+  @supports (-webkit-line-clamp: 2) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: initial;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+}

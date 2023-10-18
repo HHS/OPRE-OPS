@@ -25,6 +25,7 @@ import {
     isThereAnyBudgetLines
 } from "./AgreementsTable.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import TableCellText from "../../UI/Table/TableCellText";
 
 /**
  * Renders a row in the agreements table.
@@ -88,14 +89,14 @@ export const AgreementTableRow = ({ agreement }) => {
                     className="text-ink text-no-underline"
                     to={"/agreements/" + agreement.id}
                 >
-                    {agreementName}
+                    <TableCellText text={agreementName} />
                 </Link>
             </th>
             <td
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {researchProjectName}
+                <TableCellText text={researchProjectName} />
             </td>
             <td
                 className={removeBorderBottomIfExpanded}
