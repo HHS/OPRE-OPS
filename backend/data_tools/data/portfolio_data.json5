@@ -2,8 +2,8 @@
   division: [
     {
       id: 1,
-      name: "Division of Child and Family Development",
-      abbreviation: "DFCD",
+      name: "Child Care",
+      abbreviation: "CC",
     },
     {
       id: 2,
@@ -12,14 +12,24 @@
     },
     {
       id: 3,
+      name: "Office of the Director",
+      abbreviation: "OD",
+    },
+    {
+      id: 4,
+      name: "Division of Child and Family Development",
+      abbreviation: "DFCD",
+    },
+    {
+      id: 5,
       name: "Division of Family Strengthening",
       abbreviation: "DFS",
     },
     {
-      id: 4,
+      id: 6,
       name: "Division of Data and Improvement",
       abbreviation: "DDI",
-    },
+    }
   ],
   portfolio: [
     {
