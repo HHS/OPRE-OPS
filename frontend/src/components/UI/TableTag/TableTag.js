@@ -23,7 +23,7 @@ const TableTag = ({ status }) => {
             classNames += "bg-brand-data-viz-secondary-23 text-white";
             break;
         case "Executing":
-            classNames += "bg-brand-data-viz-primary-8";
+            classNames += "bg-brand-data-viz-primary-8 text-ink";
             break;
         case "Obligated":
             classNames += "bg-brand-data-viz-primary-6 text-white";
