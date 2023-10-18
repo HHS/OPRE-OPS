@@ -34,6 +34,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
     });
 
     const [updateBudgetLineItemStatus] = useUpdateBudgetLineItemStatusMutation();
+    // eslint-disable-next-line no-unused-vars
     const [action, setAction] = useState(""); // for the action accordion
     const [budgetLines, setBudgetLines] = useState([]);
     const [pageErrors, setPageErrors] = useState({});

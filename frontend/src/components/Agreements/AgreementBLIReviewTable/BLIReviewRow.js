@@ -74,30 +74,26 @@ const BLIReviewRow = ({
                 )} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                <div
-                    className="usa-tooltip"
+                <input
+                    className="usa-checkbox__input"
+                    id={budgetLine?.id}
+                    type="checkbox"
+                    name="budget-line-checkbox"
+                    value={budgetLine?.id}
+                    onChange={(e) => {
+                        setSelectedBLIs(e.target.value);
+                    }}
+                    disabled={!budgetLine.actionable}
+                    checked={budgetLine?.selected}
+                />
+                <label
+                    className="usa-checkbox__label usa-tool-tip"
+                    htmlFor={budgetLine?.id}
                     data-position="top"
                     title={`${!budgetLine.actionable ? "The budget line cannot be selected" : ""}`}
                 >
-                    <input
-                        className="usa-checkbox__input"
-                        id={budgetLine?.id}
-                        type="checkbox"
-                        name="budget-line-checkbox"
-                        value={budgetLine?.id}
-                        onChange={(e) => {
-                            setSelectedBLIs(e.target.value);
-                        }}
-                        disabled={!budgetLine.actionable}
-                        checked={budgetLine?.selected}
-                    />
-                    <label
-                        className="usa-checkbox__label"
-                        htmlFor={budgetLine?.id}
-                    >
-                        {budgetLine?.line_description}
-                    </label>
-                </div>
+                    {budgetLine?.line_description}
+                </label>
             </th>
             <td
                 className={`${futureDateErrorClass(
@@ -227,7 +223,7 @@ const BLIReviewRow = ({
             isExpanded={isExpanded}
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
-            className={`${!budgetLine.actionable ? "text-gray-30" : ""}`}
+            className={`${!budgetLine.actionable ? "text-gray-50" : ""}`}
         />
     );
 };
