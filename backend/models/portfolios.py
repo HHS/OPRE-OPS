@@ -5,7 +5,7 @@ from typing import Any, cast
 import sqlalchemy as sa
 from models.base import BaseModel
 from sqlalchemy import Column, ForeignKey, Identity, Integer, String, Table, Text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
 from typing_extensions import override
 
 
@@ -85,6 +85,10 @@ class Portfolio(BaseModel):
     def display_name(self):
         return self.name
 
+    @property
+    def division(self):
+        return object_session(self).get(Division, self.division_id)
+
     @override
     def to_dict(self) -> dict[str, Any]:
         d = super().to_dict()
@@ -94,6 +98,7 @@ class Portfolio(BaseModel):
                 "description": self.description,
                 "urls": [url.to_dict() for url in self.urls],
                 "cans": [can.to_dict() for can in self.cans],
+                "division": self.division.to_dict() if self.division else None,
                 "status": self.status.name if self.status else None,
                 "team_leaders": [
                     team_lead.to_dict() for team_lead in self.team_leaders

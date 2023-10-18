@@ -7,7 +7,7 @@ def test_division_lookup(loaded_db):
     division = loaded_db.get(Division, 1)
     assert division is not None
     assert division.name == "Child Care"
-    assert division.abbreviation == "DFCD"
+    assert division.abbreviation == "CC"
     assert division.display_name == division.name
 
 
