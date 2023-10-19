@@ -13,6 +13,7 @@ import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
 import { changeBgColorIfExpanded, removeBorderBottomIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import TextClip from "../../UI/Text/TextClip";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -58,13 +59,13 @@ const AllBLIRow = ({
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
-                {budgetLine.line_description}
+                <TextClip text={budgetLine.line_description} />
             </th>
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
-                {budgetLine.agreement_name}
+                <TextClip text={budgetLine.agreement_name} />
             </td>
             <td
                 className={borderExpandedStyles}
