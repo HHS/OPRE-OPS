@@ -59,6 +59,7 @@ export const useReviewAgreement = (agreement, isSuccess) => {
 
     const handleActionChange = (action) => {
         setAction(action);
+        setMainToggleSelected(false);
         const newBudgetLines = budgetLines.map((bli) => {
             switch (action) {
                 case actionOptions.CHANGE_DRAFT_TO_PLANNED:

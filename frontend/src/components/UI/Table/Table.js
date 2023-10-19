@@ -26,37 +26,21 @@ const Table = ({ children, tableHeadings, hasCheckbox = false, checkBoxSlot }) =
         return undefined;
     };
 
-    const restOfHeadings = tableHeadings.slice(1);
-
     return (
         <table className={`usa-table usa-table--borderless width-full ${styles.tableHover}`}>
             <thead>
-                {hasCheckbox ? (
-                    <tr>
-                        {checkBoxSlot}
-                        {restOfHeadings.map((heading, index) => (
-                            <th
-                                key={index}
-                                scope="col"
-                                style={addWidthIfStatus(heading)}
-                            >
-                                {heading}
-                            </th>
-                        ))}
-                    </tr>
-                ) : (
-                    <tr>
-                        {tableHeadings.map((heading, index) => (
-                            <th
-                                key={index}
-                                scope="col"
-                                style={addWidthIfStatus(heading)}
-                            >
-                                {heading}
-                            </th>
-                        ))}
-                    </tr>
-                )}
+                <tr>
+                    {hasCheckbox && checkBoxSlot}
+                    {tableHeadings.map((heading, index) => (
+                        <th
+                            key={index}
+                            scope="col"
+                            style={addWidthIfStatus(heading)}
+                        >
+                            {heading}
+                        </th>
+                    ))}
+                </tr>
             </thead>
             <tbody>{children}</tbody>
         </table>
