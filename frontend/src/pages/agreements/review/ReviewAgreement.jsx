@@ -1,8 +1,7 @@
-import { useEffect, useState, Fragment } from "react";
+import { Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 import PropTypes from "prop-types";
-import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../../api/opsAPI";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
@@ -13,7 +12,9 @@ import useAlert from "../../../hooks/use-alert.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import AgreementActionAccordion from "../../../components/Agreements/AgreementActionAccordion";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
-import { setActionableBudgetLines, anyBudgetLinesByStatus } from "./ReviewAgreement.helpers";
+import AgreementBLIReviewTable from "../../../components/Agreements/AgreementBLIReviewTable";
+import { anyBudgetLinesByStatus } from "./ReviewAgreement.helpers";
+import useReviewAgreement from "./reviewAgreement.hooks";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -33,45 +34,21 @@ export const ReviewAgreement = ({ agreement_id }) => {
     });
 
     const [updateBudgetLineItemStatus] = useUpdateBudgetLineItemStatusMutation();
-    const [action, setAction] = useState(""); // for the action accordion
-    const [pageErrors, setPageErrors] = useState({});
-    const [isAlertActive, setIsAlertActive] = useState(false);
     const isAgreementStateEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const { setAlert } = useAlert();
-
-    let res = suite.get();
+    const { budgetLines, handleSelectBLI, pageErrors, isAlertActive, res, handleActionChange } = useReviewAgreement(
+        agreement,
+        isSuccess
+    );
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
         valid: "success",
         warning: "warning"
     });
-    // pass in the agreement object to the suite
-    useEffect(() => {
-        if (isSuccess) {
-            suite({
-                ...agreement
-            });
-        }
-        return () => {
-            suite.reset();
-        };
-    }, [isSuccess, agreement]);
-
-    // fire the page errors based on the suite results
-    useEffect(() => {
-        if (isSuccess && !res.isValid()) {
-            setIsAlertActive(true);
-            setPageErrors(res.getErrors());
-        }
-        return () => {
-            setPageErrors({});
-            setIsAlertActive(false);
-        };
-    }, [res, isSuccess]);
 
     if (isLoadingAgreement) {
         return <h1>Loading...</h1>;
@@ -88,7 +65,6 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist;
     const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement, "DRAFT");
     const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement, "PLANNED");
-    const actionableBudgetLines = setActionableBudgetLines(agreement, action);
 
     const handleSendToApproval = () => {
         if (anyBudgetLinesDraft) {
@@ -166,17 +142,10 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 convertCodeForDisplay={convertCodeForDisplay}
             />
             <AgreementActionAccordion
-                setAction={setAction}
+                setAction={handleActionChange}
                 optionOneDisabled={!anyBudgetLinesDraft}
                 optionTwoDisabled={!anyBudgetLinePlanned}
             />
-            <pre className="border-1px padding-1 font-12px border-dotted border-info">
-                {action ? action : "no action"} is selected
-            </pre>
-            <pre className="border-1px padding-1 font-12px border-dotted border-info">
-                actionableBudgetLines:
-                {actionableBudgetLines && JSON.stringify(actionableBudgetLines, null, 2)}
-            </pre>
 
             <AgreementBLIAccordion
                 budgetLineItems={agreement?.budget_line_items}
@@ -206,13 +175,12 @@ export const ReviewAgreement = ({ agreement_id }) => {
                         </ul>
                     )}
                 </div>
-                {/* TODO: Make actionable Table variant */}
-                {/* TODO: Handle action toggle disabling of BLIs */}
-                <BudgetLinesTable
+                <AgreementBLIReviewTable
                     readOnly={true}
-                    budgetLinesAdded={agreement?.budget_line_items}
+                    budgetLines={budgetLines}
                     isReviewMode={true}
                     showTotalSummaryCard={false}
+                    setSelectedBLIs={handleSelectBLI}
                 />
             </AgreementBLIAccordion>
             <div className="grid-row flex-justify-end margin-top-1">

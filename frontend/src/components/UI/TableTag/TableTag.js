@@ -17,13 +17,13 @@ const TableTag = ({ status }) => {
     let classNames = "padding-x-105 padding-y-1 ";
     switch (statusText) {
         case "Draft":
-            classNames += "bg-brand-neutral-lighter";
+            classNames += "bg-brand-neutral-lighter text-ink";
             break;
         case "In Review":
             classNames += "bg-brand-data-viz-secondary-23 text-white";
             break;
         case "Executing":
-            classNames += "bg-brand-data-viz-primary-8";
+            classNames += "bg-brand-data-viz-primary-8 text-ink";
             break;
         case "Obligated":
             classNames += "bg-brand-data-viz-primary-6 text-white";
