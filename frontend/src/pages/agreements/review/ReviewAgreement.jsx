@@ -1,4 +1,4 @@
-import { useEffect, useState, Fragment } from "react";
+import { Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 import PropTypes from "prop-types";
@@ -14,7 +14,7 @@ import AgreementActionAccordion from "../../../components/Agreements/AgreementAc
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementBLIReviewTable from "../../../components/Agreements/AgreementBLIReviewTable";
 import { anyBudgetLinesByStatus } from "./ReviewAgreement.helpers";
-import { actionOptions } from "./ReviewAgreement.constants";
+import useReviewAgreement from "./reviewAgreement.hooks";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -34,57 +34,21 @@ export const ReviewAgreement = ({ agreement_id }) => {
     });
 
     const [updateBudgetLineItemStatus] = useUpdateBudgetLineItemStatusMutation();
-    // eslint-disable-next-line no-unused-vars
-    const [action, setAction] = useState(""); // for the action accordion
-    const [budgetLines, setBudgetLines] = useState([]);
-    const [pageErrors, setPageErrors] = useState({});
-    const [isAlertActive, setIsAlertActive] = useState(false);
     const isAgreementStateEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const { setAlert } = useAlert();
-
-    let res = suite.get();
+    const { budgetLines, handleSelectBLI, pageErrors, isAlertActive, res, handleActionChange } = useReviewAgreement(
+        agreement,
+        isSuccess
+    );
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
         valid: "success",
         warning: "warning"
     });
-    // pass in the agreement object to the suite
-    useEffect(() => {
-        if (isSuccess) {
-            suite({
-                ...agreement
-            });
-        }
-        return () => {
-            suite.reset();
-        };
-    }, [isSuccess, agreement]);
-
-    // fire the page errors based on the suite results
-    useEffect(() => {
-        if (isSuccess && !res.isValid()) {
-            setIsAlertActive(true);
-            setPageErrors(res.getErrors());
-        }
-        return () => {
-            setPageErrors({});
-            setIsAlertActive(false);
-        };
-    }, [res, isSuccess]);
-    // set new props for the budget lines
-    useEffect(() => {
-        const newBudgetLines =
-            agreement?.budget_line_items?.map((bli) => ({
-                ...bli,
-                selected: false, // for use in the BLI table
-                actionable: false // based on action accordion
-            })) ?? [];
-        setBudgetLines(newBudgetLines);
-    }, [agreement]);
 
     if (isLoadingAgreement) {
         return <h1>Loading...</h1>;
@@ -101,43 +65,6 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist;
     const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement, "DRAFT");
     const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement, "PLANNED");
-
-    const handleSelectBLI = (bliId) => {
-        const newBudgetLines = budgetLines.map((bli) => {
-            if (+bli.id === +bliId) {
-                return {
-                    ...bli,
-                    selected: !bli.selected
-                };
-            }
-            return bli;
-        });
-
-        setBudgetLines(newBudgetLines);
-    };
-
-    const handleActionChange = (action) => {
-        setAction(action);
-        const newBudgetLines = budgetLines.map((bli) => {
-            switch (action) {
-                case actionOptions.CHANGE_DRAFT_TO_PLANNED:
-                    return {
-                        ...bli,
-                        selected: false,
-                        actionable: bli.status === "DRAFT"
-                    };
-                case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
-                    return {
-                        ...bli,
-                        selected: false,
-                        actionable: bli.status === "PLANNED"
-                    };
-                default:
-                    return bli;
-            }
-        });
-        setBudgetLines(newBudgetLines);
-    };
 
     const handleSendToApproval = () => {
         if (anyBudgetLinesDraft) {
