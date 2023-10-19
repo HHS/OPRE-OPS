@@ -1,8 +1,8 @@
 import PropTypes from "prop-types";
 import Table from "../../UI/Table";
-import TotalSummaryCard from "../../BudgetLineItems/TotalSummaryCard";
+import TotalSummaryCard from "../TotalSummaryCard";
 import BLIReviewRow from "./BLIReviewRow";
-import { BUDGET_LINE_TABLE_HEADERS } from "../../BudgetLineItems/BudgetLinesTable/BudgetLinesTable.constants";
+import { BUDGET_LINE_TABLE_HEADERS } from "./BLIReviewTable.constants";
 import "../../BudgetLineItems/BudgetLinesTable/BudgetLinesTable.scss";
 
 /**
@@ -16,6 +16,9 @@ import "../../BudgetLineItems/BudgetLinesTable/BudgetLinesTable.scss";
  * @param {Boolean} [props.isReviewMode] - A flag to indicate if the table is in review mode.
  * @param {Boolean} [props.showTotalSummaryCard] - A flag to indicate if the total summary card should be displayed.
  * @param {Function} [props.setSelectedBLIs] - A function to set the selected budget line items.
+ * @param {Function} [props.toggleSelectActionableBLIs] - A function to toggle the selection of actionable budget line items.
+ * @param {Boolean} [props.mainToggleSelected] - A flag to indicate if the main toggle is selected.
+ * @param {Function} [props.setMainToggleSelected] - A function to set the main toggle selected.
  * @returns {JSX.Element} - The rendered table component.
  */
 const AgreementBLIReviewTable = ({
@@ -26,16 +29,50 @@ const AgreementBLIReviewTable = ({
     readOnly = false,
     isReviewMode = false,
     showTotalSummaryCard = true,
-    setSelectedBLIs
+    setSelectedBLIs,
+    toggleSelectActionableBLIs = () => {},
+    mainToggleSelected,
+    setMainToggleSelected = () => {}
 }) => {
     const sortedBudgetLines = budgetLines
         .slice()
         .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on))
         .reverse();
 
+    const areSomeBudgetLinesActionable = budgetLines.some((budgetLine) => budgetLine.actionable);
+    const checkBoxSlot = (
+        <th>
+            <input
+                className="usa-checkbox__input"
+                id="check-all"
+                type="checkbox"
+                name="budget-line-checkbox"
+                value="check-all"
+                onChange={() => {
+                    toggleSelectActionableBLIs();
+                    setMainToggleSelected(!mainToggleSelected);
+                }}
+                disabled={!areSomeBudgetLinesActionable}
+                checked={mainToggleSelected}
+            />
+            <label
+                className="usa-checkbox__label usa-tool-tip text-bold"
+                htmlFor="check-all"
+                data-position="top"
+                title={`${!areSomeBudgetLinesActionable ? "disabled" : ""}`}
+            >
+                Description
+            </label>
+        </th>
+    );
+
     return (
         <>
-            <Table tableHeadings={BUDGET_LINE_TABLE_HEADERS}>
+            <Table
+                tableHeadings={BUDGET_LINE_TABLE_HEADERS}
+                hasCheckbox={true}
+                checkBoxSlot={checkBoxSlot}
+            >
                 {sortedBudgetLines.map((budgetLine) => (
                     <BLIReviewRow
                         key={budgetLine.id}
@@ -64,7 +101,10 @@ AgreementBLIReviewTable.propTypes = {
     errors: PropTypes.arrayOf(PropTypes.array),
     isReviewMode: PropTypes.bool,
     showTotalSummaryCard: PropTypes.bool,
-    setSelectedBLIs: PropTypes.func
+    setSelectedBLIs: PropTypes.func,
+    toggleSelectActionableBLIs: PropTypes.func,
+    mainToggleSelected: PropTypes.bool,
+    setMainToggleSelected: PropTypes.func
 };
 
 export default AgreementBLIReviewTable;

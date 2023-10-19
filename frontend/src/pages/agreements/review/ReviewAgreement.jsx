@@ -12,7 +12,7 @@ import useAlert from "../../../hooks/use-alert.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import AgreementActionAccordion from "../../../components/Agreements/AgreementActionAccordion";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
-import AgreementBLIReviewTable from "../../../components/Agreements/AgreementBLIReviewTable";
+import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
 import { anyBudgetLinesByStatus } from "./ReviewAgreement.helpers";
 import useReviewAgreement from "./reviewAgreement.hooks";
 
@@ -39,10 +39,17 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const { setAlert } = useAlert();
-    const { budgetLines, handleSelectBLI, pageErrors, isAlertActive, res, handleActionChange } = useReviewAgreement(
-        agreement,
-        isSuccess
-    );
+    const {
+        budgetLines,
+        handleSelectBLI,
+        pageErrors,
+        isAlertActive,
+        res,
+        handleActionChange,
+        toggleSelectActionableBLIs,
+        mainToggleSelected,
+        setMainToggleSelected
+    } = useReviewAgreement(agreement, isSuccess);
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -151,9 +158,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 budgetLineItems={agreement?.budget_line_items}
                 agreement={agreement}
             >
-                <div
-                    className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : null}`}
-                >
+                <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""}`}>
                     {areThereBudgetLineErrors && (
                         <ul className="usa-error-message padding-left-2 border-left-05">
                             {budgetLineErrorsExist && (
@@ -181,6 +186,9 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     isReviewMode={true}
                     showTotalSummaryCard={false}
                     setSelectedBLIs={handleSelectBLI}
+                    toggleSelectActionableBLIs={toggleSelectActionableBLIs}
+                    mainToggleSelected={mainToggleSelected}
+                    setMainToggleSelected={setMainToggleSelected}
                 />
             </AgreementBLIAccordion>
             <div className="grid-row flex-justify-end margin-top-1">
