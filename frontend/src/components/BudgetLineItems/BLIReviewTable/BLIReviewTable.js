@@ -40,7 +40,7 @@ const AgreementBLIReviewTable = ({
         .reverse();
 
     const areSomeBudgetLinesActionable = budgetLines.some((budgetLine) => budgetLine.actionable);
-    const checkBoxSlot = (
+    const firstHeadingSlot = (
         <th>
             <input
                 className="usa-checkbox__input"
@@ -70,8 +70,7 @@ const AgreementBLIReviewTable = ({
         <>
             <Table
                 tableHeadings={BUDGET_LINE_TABLE_HEADERS}
-                hasCheckbox={true}
-                checkBoxSlot={checkBoxSlot}
+                firstHeadingSlot={firstHeadingSlot}
             >
                 {sortedBudgetLines.map((budgetLine) => (
                     <BLIReviewRow

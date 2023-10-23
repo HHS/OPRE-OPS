@@ -6,12 +6,12 @@ import styles from "./table.module.css";
  * @param {object} props - The component props.
  * @param {React.ReactNode} [props.children] - The children to render - optional.
  * @param {string[]} props.tableHeadings - The table headings to display.
- * @param {React.ReactNode} [props.checkBoxSlot] - The checkbox slot - optional.
+ * @param {React.ReactNode} [props.firstHeadingSlot] - The checkbox slot - optional.
  * @returns {React.JSX.Element} - The rendered component.
  * @example
  * <Table tableHeadings={["Heading 1", "Heading 2", "Heading 3"]}>
  **/
-const Table = ({ children, tableHeadings, checkBoxSlot }) => {
+const Table = ({ children, tableHeadings, firstHeadingSlot }) => {
     /**
      * Adds a width to the Status column
      * @param {string} heading - The heading to check
@@ -29,7 +29,7 @@ const Table = ({ children, tableHeadings, checkBoxSlot }) => {
         <table className={`usa-table usa-table--borderless width-full ${styles.tableHover}`}>
             <thead>
                 <tr>
-                    {checkBoxSlot && checkBoxSlot}
+                    {firstHeadingSlot && firstHeadingSlot}
                     {tableHeadings.map((heading, index) => (
                         <th
                             key={index}
@@ -49,7 +49,7 @@ const Table = ({ children, tableHeadings, checkBoxSlot }) => {
 Table.propTypes = {
     children: PropTypes.node.isRequired,
     tableHeadings: PropTypes.arrayOf(PropTypes.string).isRequired,
-    checkBoxSlot: PropTypes.node
+    firstHeadingSlot: PropTypes.node
 };
 
 export default Table;
