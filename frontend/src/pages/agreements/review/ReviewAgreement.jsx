@@ -13,6 +13,7 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import AgreementActionAccordion from "../../../components/Agreements/AgreementActionAccordion";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementBLIReviewTable from "../../../components/Agreements/AgreementBLIReviewTable";
+import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
 import { anyBudgetLinesByStatus } from "./ReviewAgreement.helpers";
 import useReviewAgreement from "./reviewAgreement.hooks";
 
@@ -183,6 +184,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     setSelectedBLIs={handleSelectBLI}
                 />
             </AgreementBLIAccordion>
+            <AgreementChangesAccordion />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className={`usa-button usa-button--outline margin-right-2 ${
