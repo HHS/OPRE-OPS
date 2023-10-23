@@ -6,13 +6,12 @@ import styles from "./table.module.css";
  * @param {object} props - The component props.
  * @param {React.ReactNode} [props.children] - The children to render - optional.
  * @param {string[]} props.tableHeadings - The table headings to display.
- * @param {boolean} [props.hasCheckbox] - A flag to indicate if the table has a checkbox - optional.
  * @param {React.ReactNode} [props.checkBoxSlot] - The checkbox slot - optional.
  * @returns {React.JSX.Element} - The rendered component.
  * @example
  * <Table tableHeadings={["Heading 1", "Heading 2", "Heading 3"]}>
  **/
-const Table = ({ children, tableHeadings, hasCheckbox = false, checkBoxSlot }) => {
+const Table = ({ children, tableHeadings, checkBoxSlot }) => {
     /**
      * Adds a width to the Status column
      * @param {string} heading - The heading to check
@@ -30,7 +29,7 @@ const Table = ({ children, tableHeadings, hasCheckbox = false, checkBoxSlot }) =
         <table className={`usa-table usa-table--borderless width-full ${styles.tableHover}`}>
             <thead>
                 <tr>
-                    {hasCheckbox && checkBoxSlot}
+                    {checkBoxSlot && checkBoxSlot}
                     {tableHeadings.map((heading, index) => (
                         <th
                             key={index}
@@ -50,7 +49,6 @@ const Table = ({ children, tableHeadings, hasCheckbox = false, checkBoxSlot }) =
 Table.propTypes = {
     children: PropTypes.node.isRequired,
     tableHeadings: PropTypes.arrayOf(PropTypes.string).isRequired,
-    hasCheckbox: PropTypes.bool,
     checkBoxSlot: PropTypes.node
 };
 
