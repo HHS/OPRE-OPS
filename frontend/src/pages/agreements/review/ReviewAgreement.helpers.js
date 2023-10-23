@@ -17,3 +17,24 @@ export const anyBudgetLinesByStatus = (agreement, status) => {
     }
     return match;
 };
+
+export const getSelectedBudgetLines = (budgetLines) => {
+    handleAgreementProp(budgetLines);
+    return budgetLines?.filter((item) => item.selected);
+};
+
+export const getSelectedBudgetLinesCanAmounts = (budgetLines) => {
+    handleAgreementProp(budgetLines);
+    const selectedBudgetLines = getSelectedBudgetLines(budgetLines);
+    return selectedBudgetLines.map((item) => item.can_amount);
+}
+
+export const selectedBudgetLinesTotal = (budgetLines) => {
+    handleAgreementProp(budgetLines);
+    const selectedBudgetLines = getSelectedBudgetLines(budgetLines);
+    return selectedBudgetLines.reduce((acc, { amount }) => acc + amount, 0);
+};
+
+export const selectedBudgetLinesCansTotal = (budgetLines) => {
+
+}
