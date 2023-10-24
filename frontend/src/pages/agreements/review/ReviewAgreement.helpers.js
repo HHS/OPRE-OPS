@@ -9,6 +9,20 @@ const handlePropType = (prop) => {
     }
 };
 
+const handlePropWithoutSelectedProp = (prop) => {
+    // eslint-disable-next-line no-prototype-builtins
+    if (prop.some((item) => !item.hasOwnProperty("selected"))) {
+        throw new Error(`Prop must be an array of objects with a 'selected' property`);
+    }
+};
+
+const handlePropWithoutCanProp = (prop) => {
+    // eslint-disable-next-line no-prototype-builtins
+    if (prop.some((item) => !item.hasOwnProperty("can"))) {
+        throw new Error(`Prop must be an array of objects with a 'can' property`);
+    }
+};
+
 export const anyBudgetLinesByStatus = (agreement, status) => {
     handlePropType(agreement);
     let match = false;
@@ -20,6 +34,7 @@ export const anyBudgetLinesByStatus = (agreement, status) => {
 
 export const getSelectedBudgetLines = (budgetLines) => {
     handlePropType(budgetLines);
+    handlePropWithoutSelectedProp(budgetLines);
     return budgetLines?.filter((item) => item.selected);
 };
 
@@ -35,7 +50,7 @@ export const selectedBudgetLinesTotal = (budgetLines) => {
     return selectedBudgetLines.reduce((acc, { amount }) => acc + amount, 0);
 };
 
-const totalByCan = (accumulator, { can, amount }) => {
+export const totalByCan = (accumulator, { can, amount }) => {
     if (!accumulator[can.number]) {
         accumulator[can.number] = 0;
     }
@@ -45,6 +60,7 @@ const totalByCan = (accumulator, { can, amount }) => {
 
 export const getTotalBySelectedCans = (budgetLines) => {
     handlePropType(budgetLines);
+    
     const selectedBudgetLines = getSelectedBudgetLines(budgetLines);
     const totalByCans = selectedBudgetLines.reduce(totalByCan, {});
     const cansNumberAndAmount = Object.entries(totalByCans).map(([canNumber, amount]) => ({ canNumber, amount }));
