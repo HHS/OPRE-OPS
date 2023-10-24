@@ -14,7 +14,7 @@ import AgreementActionAccordion from "../../../components/Agreements/AgreementAc
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementBLIReviewTable from "../../../components/Agreements/AgreementBLIReviewTable";
 import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
-import { anyBudgetLinesByStatus, selectedBudgetLinesTotal } from "./ReviewAgreement.helpers";
+import { anyBudgetLinesByStatus, selectedBudgetLinesTotal, getTotalBySelectedCans } from "./ReviewAgreement.helpers";
 import useReviewAgreement from "./reviewAgreement.hooks";
 
 /**
@@ -66,6 +66,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist;
     const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement, "DRAFT");
     const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement, "PLANNED");
+    const changeInCans = getTotalBySelectedCans(budgetLines);
 
     const handleSendToApproval = () => {
         if (anyBudgetLinesDraft) {
@@ -152,9 +153,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 budgetLineItems={agreement?.budget_line_items}
                 agreement={agreement}
             >
-                <div
-                    className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : null}`}
-                >
+                <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""}`}>
                     {areThereBudgetLineErrors && (
                         <ul className="usa-error-message padding-left-2 border-left-05">
                             {budgetLineErrorsExist && (
@@ -184,7 +183,10 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     setSelectedBLIs={handleSelectBLI}
                 />
             </AgreementBLIAccordion>
-            <AgreementChangesAccordion changeInBudgetLines={selectedBudgetLinesTotal(budgetLines)} />
+            <AgreementChangesAccordion
+                changeInBudgetLines={selectedBudgetLinesTotal(budgetLines)}
+                changeInCans={changeInCans}
+            />
 
             <div className="grid-row flex-justify-end margin-top-1">
                 <button

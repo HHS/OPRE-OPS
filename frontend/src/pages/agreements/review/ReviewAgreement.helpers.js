@@ -1,16 +1,16 @@
 /**
  * Validates that the agreement is an object.
- * @param {Object} agreement - The agreement to validate.
+ * @param {Object} prop - The agreement to validate.
  * @throws {Error} If the agreement is not an object.
  */
-const handleAgreementProp = (agreement) => {
-    if (typeof agreement !== "object") {
-        throw new Error(`Agreement must be an object, but got ${typeof agreement}`);
+const handlePropType = (prop) => {
+    if (typeof prop !== "object") {
+        throw new Error(`Prop must be an object, but got ${typeof prop}`);
     }
 };
 
 export const anyBudgetLinesByStatus = (agreement, status) => {
-    handleAgreementProp(agreement);
+    handlePropType(agreement);
     let match = false;
     if (agreement?.budget_line_items) {
         match = agreement.budget_line_items.some((item) => item.status === status);
@@ -19,22 +19,33 @@ export const anyBudgetLinesByStatus = (agreement, status) => {
 };
 
 export const getSelectedBudgetLines = (budgetLines) => {
-    handleAgreementProp(budgetLines);
+    handlePropType(budgetLines);
     return budgetLines?.filter((item) => item.selected);
 };
 
 export const getSelectedBudgetLinesCanAmounts = (budgetLines) => {
-    handleAgreementProp(budgetLines);
+    handlePropType(budgetLines);
     const selectedBudgetLines = getSelectedBudgetLines(budgetLines);
     return selectedBudgetLines.map((item) => item.can_amount);
-}
+};
 
 export const selectedBudgetLinesTotal = (budgetLines) => {
-    handleAgreementProp(budgetLines);
+    handlePropType(budgetLines);
     const selectedBudgetLines = getSelectedBudgetLines(budgetLines);
     return selectedBudgetLines.reduce((acc, { amount }) => acc + amount, 0);
 };
 
-export const selectedBudgetLinesCansTotal = (budgetLines) => {
+const totalByCan = (accumulator, { can, amount }) => {
+    if (!accumulator[can.number]) {
+        accumulator[can.number] = 0;
+    }
+    accumulator[can.number] += amount;
+    return accumulator;
+};
 
-}
+export const getTotalBySelectedCans = (budgetLines) => {
+    handlePropType(budgetLines);
+    const selectedBudgetLines = getSelectedBudgetLines(budgetLines);
+    const totalByCans = selectedBudgetLines.reduce(totalByCan, {});
+    return Object.entries(totalByCans).map(([canNumber, amount]) => ({ canNumber, amount }));
+};
