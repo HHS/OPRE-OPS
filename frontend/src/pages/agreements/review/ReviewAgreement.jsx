@@ -12,9 +12,9 @@ import useAlert from "../../../hooks/use-alert.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import AgreementActionAccordion from "../../../components/Agreements/AgreementActionAccordion";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
-import AgreementBLIReviewTable from "../../../components/Agreements/AgreementBLIReviewTable";
 import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
 import { anyBudgetLinesByStatus, selectedBudgetLinesTotal, getTotalBySelectedCans } from "./ReviewAgreement.helpers";
+import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
 import useReviewAgreement from "./reviewAgreement.hooks";
 
 /**
@@ -40,10 +40,17 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const { setAlert } = useAlert();
-    const { budgetLines, handleSelectBLI, pageErrors, isAlertActive, res, handleActionChange } = useReviewAgreement(
-        agreement,
-        isSuccess
-    );
+    const {
+        budgetLines,
+        handleSelectBLI,
+        pageErrors,
+        isAlertActive,
+        res,
+        handleActionChange,
+        toggleSelectActionableBLIs,
+        mainToggleSelected,
+        setMainToggleSelected
+    } = useReviewAgreement(agreement, isSuccess);
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -181,6 +188,9 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     isReviewMode={true}
                     showTotalSummaryCard={false}
                     setSelectedBLIs={handleSelectBLI}
+                    toggleSelectActionableBLIs={toggleSelectActionableBLIs}
+                    mainToggleSelected={mainToggleSelected}
+                    setMainToggleSelected={setMainToggleSelected}
                 />
             </AgreementBLIAccordion>
             <AgreementChangesAccordion

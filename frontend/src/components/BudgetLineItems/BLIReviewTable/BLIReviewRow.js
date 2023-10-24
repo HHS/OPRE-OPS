@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import CurrencyFormat from "react-currency-format";
 import TableTag from "../../UI/TableTag";
-import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
+import ChangeIcons from "../ChangeIcons";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     fiscalYearFromDate,
@@ -16,7 +16,7 @@ import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../.
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { removeBorderBottomIfExpanded, changeBgColorIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
-import { futureDateErrorClass, addErrorClassIfNotFound } from "../../BudgetLineItems/BudgetLinesTable/BLIRow.helpers";
+import { futureDateErrorClass, addErrorClassIfNotFound } from "../BudgetLinesTable/BLIRow.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 
@@ -90,7 +90,7 @@ const BLIReviewRow = ({
                     className="usa-checkbox__label usa-tool-tip"
                     htmlFor={budgetLine?.id}
                     data-position="top"
-                    title={`${!budgetLine.actionable ? "The budget line cannot be selected" : ""}`}
+                    title={`${!budgetLine.actionable ? "disabled" : ""}`}
                 >
                     {budgetLine?.line_description}
                 </label>

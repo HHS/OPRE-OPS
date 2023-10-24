@@ -32,7 +32,6 @@ function AgreementBLIAccordion({ budgetLineItems = [], children, agreement }) {
                     procurementShop={agreement.procurement_shop}
                 />
             </div>
-
             {children}
         </Accordion>
     );
