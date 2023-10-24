@@ -42,18 +42,20 @@ sequenceDiagram
     User ->> GUI: User enters "Notes"
     User ->>+ GUI: User Clicks "Send to Approval"
 
-    GUI ->>+ API: Submit BLI <br/> for approval
-    API ->> API: Create ApprovalWorkflow
-    API ->>+ Database: INSERT ApprovalWorkflow
-    Database ->>- API: {approvalWorkflow.id}
+    GUI ->>+ API: Submit BLI <br/> for approval <br/> (POST /bli-packages)
 
-    API ->> API: Create Event: WorkflowCreated
-    API ->>+ Database: INSERT Event: WorkflowCreated
+    API ->> API: WorkflowInstance Lookup
+
+    API ->>+ Database: INSERT WorkflowInstance, <br/> WorkflowStepInstance, <br/> BliPackage, <br/>BliPackageSnapshot,
+    Database ->>- API: {...id(s)}
+
+    API ->> API: Create Event: <br/>BliPackage Submission
+    API ->>+ Database: INSERT Event: BliPackage
     Database ->>- API: SUCCESS: {event.id}
 
     API ->> API: Create Notification
     API ->>+ Database: INSERT Notification
     Database ->>- API: SUCCESS: {notification.id}
 
-    API ->>- GUI: SET (RTK) /approvalWorkflows
+    API ->>- GUI: SET (RTK) /bli-package-metadata <br/>(submission ID?)
     GUI ->>- User: {page render} - <br/> BLI is now in "In-Review" state
