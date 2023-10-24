@@ -3,7 +3,6 @@ import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
     testLogin("admin");
-    // cy.visit("/cans");
 });
 
 afterEach(() => {
