@@ -16,13 +16,6 @@ const handlePropWithoutSelectedProp = (prop) => {
     }
 };
 
-const handlePropWithoutCanProp = (prop) => {
-    // eslint-disable-next-line no-prototype-builtins
-    if (prop.some((item) => !item.hasOwnProperty("can"))) {
-        throw new Error(`Prop must be an array of objects with a 'can' property`);
-    }
-};
-
 export const anyBudgetLinesByStatus = (agreement, status) => {
     handlePropType(agreement);
     let match = false;
@@ -60,7 +53,6 @@ export const totalByCan = (accumulator, { can, amount }) => {
 
 export const getTotalBySelectedCans = (budgetLines) => {
     handlePropType(budgetLines);
-    
     const selectedBudgetLines = getSelectedBudgetLines(budgetLines);
     const totalByCans = selectedBudgetLines.reduce(totalByCan, {});
     const cansNumberAndAmount = Object.entries(totalByCans).map(([canNumber, amount]) => ({ canNumber, amount }));
