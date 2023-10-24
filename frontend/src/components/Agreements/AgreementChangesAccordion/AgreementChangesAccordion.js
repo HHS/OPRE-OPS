@@ -14,7 +14,7 @@ function AgreementChangesAccordion({ children, changeInBudgetLines, changeInCans
                 <p className="text-bold">
                     <FontAwesomeIcon
                         icon={faAdd}
-                        className="text-ink height-2 width-2 margin-right-1  usa-tooltip"
+                        className="text-ink height-2 width-2 margin-right-1 usa-tooltip"
                     />
                     <CurrencyFormat
                         value={changeInBudgetLines || 0}
@@ -30,12 +30,12 @@ function AgreementChangesAccordion({ children, changeInBudgetLines, changeInCans
                 changeInCans.map(({ canNumber, amount, term }) => (
                     <SummaryCard
                         key={canNumber}
-                        title={`CAN ${canNumber} - ${handleTerm(term)}`}
+                        title={`CAN ${canNumber} (${handleTerm(term)})`}
                     >
                         <p className="text-bold">
                             <FontAwesomeIcon
                                 icon={faSubtract}
-                                className="text-ink height-2 width-2 margin-right-1  usa-tooltip"
+                                className="text-ink height-2 width-2 margin-right-1 usa-tooltip"
                             />
                             <CurrencyFormat
                                 value={amount || 0}
