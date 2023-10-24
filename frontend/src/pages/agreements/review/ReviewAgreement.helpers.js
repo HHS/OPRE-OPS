@@ -47,5 +47,10 @@ export const getTotalBySelectedCans = (budgetLines) => {
     handlePropType(budgetLines);
     const selectedBudgetLines = getSelectedBudgetLines(budgetLines);
     const totalByCans = selectedBudgetLines.reduce(totalByCan, {});
-    return Object.entries(totalByCans).map(([canNumber, amount]) => ({ canNumber, amount }));
+    const cansNumberAndAmount = Object.entries(totalByCans).map(([canNumber, amount]) => ({ canNumber, amount }));
+    const canNumbersWithAmountsAndTerms = cansNumberAndAmount.map(({ canNumber, amount }) => {
+        const can = selectedBudgetLines.find((item) => item.can.number === canNumber).can;
+        return { canNumber, amount, term: can.appropriation_term };
+    });
+    return canNumbersWithAmountsAndTerms;
 };

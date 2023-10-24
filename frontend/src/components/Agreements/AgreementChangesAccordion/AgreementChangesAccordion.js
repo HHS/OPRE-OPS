@@ -6,6 +6,7 @@ import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import SummaryCard from "../../UI/SummaryCard";
 
 function AgreementChangesAccordion({ children, changeInBudgetLines, changeInCans }) {
+    const handleTerm = (term) => (term === 1 ? `${term} Year` : `${term} Years`);
     return (
         <Accordion heading="Review Changes">
             <p>Review the changes below to confirm what you are sending for approval.</p>
@@ -26,10 +27,10 @@ function AgreementChangesAccordion({ children, changeInBudgetLines, changeInCans
                 </p>
             </SummaryCard>
             {changeInCans.length > 0 &&
-                changeInCans.map(({ canNumber, amount }) => (
+                changeInCans.map(({ canNumber, amount, term }) => (
                     <SummaryCard
                         key={canNumber}
-                        title={`CAN ${canNumber}`}
+                        title={`CAN ${canNumber} - ${handleTerm(term)}`}
                     >
                         <p className="text-bold">
                             <FontAwesomeIcon
