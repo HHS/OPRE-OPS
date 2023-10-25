@@ -20,6 +20,7 @@ function AgreementChangesAccordion({ children, changeInBudgetLines, changeInCans
                 <SummaryCard
                     title="Agreement Total"
                     className={cardStyles}
+                    dataCy="agreement-total-card"
                 >
                     <p className={`text-bold ${styles.font20}`}>
                         <FontAwesomeIcon
@@ -42,6 +43,7 @@ function AgreementChangesAccordion({ children, changeInBudgetLines, changeInCans
                             key={canNumber}
                             title={`CAN ${canNumber} (${handleTerm(term)})`}
                             className={cardStyles}
+                            dataCy={`can-total-card-${canNumber}`}
                         >
                             <p className={`text-bold ${styles.font20}`}>
                                 <FontAwesomeIcon
