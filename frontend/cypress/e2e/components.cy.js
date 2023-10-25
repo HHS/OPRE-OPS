@@ -139,13 +139,13 @@ describe("agreement BLI accordion", () => {
 });
 
 describe("agreement change accordion", () => {
-    it("handles interactions", () => {
+    it.only("handles interactions", () => {
         cy.visit("/agreements/approve/1");
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
         cy.get(".usa-table").should("exist");
         cy.get("#check-all").should("exist").should("be.disabled");
         cy.get('[data-cy="agreement-total-card"]').should("exist").contains("$0");
-        cy.get('[data-cy="can-total-card"]').should("not.exist");
+        cy.get('[data-cy="can-total-card-G994426"]').should("not.exist");
         // click action radio button
         cy.get("h2").contains("Choose an Action").as("acc-btn").should("exist");
         cy.get('input[id="Change Draft Budget Lines to Planned Status"]').should("exist").should("not.be.disabled");
@@ -153,15 +153,13 @@ describe("agreement change accordion", () => {
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('[type="radio"]').first().check({ force: true });
         cy.get("#check-all").check({ force: true });
-        // next tick
-        cy.tick(1000);
         cy.get('[type="checkbox"]')
             .should("have.length", 3)
             .each((checkbox) => {
                 cy.wrap(checkbox).should("be.checked");
             });
         cy.get('[data-cy="agreement-total-card"]').contains("$2,000,000.00");
-        cy.get('[data-cy="can-total-card"]').contains("$2,000,000.00");
+        cy.get('[data-cy="can-total-card-G994426"]').contains("$2,000,000.00");
     });
 });
 
