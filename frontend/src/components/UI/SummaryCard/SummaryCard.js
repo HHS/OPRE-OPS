@@ -15,7 +15,14 @@ const SummaryCard = ({ title, children, dataCy = "" }) => {
             className="padding-y-205 padding-x-4 padding-right-9 display-inline-block"
             dataCy={dataCy ?? dataCy}
         >
-            {title && <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">{title}</h3>}
+            {title && (
+                <h3
+                    className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal"
+                    style={{ whiteSpace: "pre-line", lineHeight: "20px" }}
+                >
+                    {title}
+                </h3>
+            )}
             {children}
         </RoundedBox>
     );

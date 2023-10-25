@@ -15,6 +15,7 @@ import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAc
 import AgreementBLIReviewTable from "../../../components/Agreements/AgreementBLIReviewTable";
 import { anyBudgetLinesByStatus } from "./ReviewAgreement.helpers";
 import useReviewAgreement from "./reviewAgreement.hooks";
+import AgreementCANReviewAccordian from "../../../components/Agreements/AgreementCANReviewAccordian";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -183,6 +184,10 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     setSelectedBLIs={handleSelectBLI}
                 />
             </AgreementBLIAccordion>
+            <AgreementCANReviewAccordian
+                agreement={agreement}
+                selectedBudgetLines={budgetLines}
+            />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className={`usa-button usa-button--outline margin-right-2 ${
