@@ -136,7 +136,10 @@ describe("agreement BLI accordion", () => {
                 cy.wrap(checkbox).should("not.be.checked");
             });
     });
-    it("should handle check-all and uncheck all", () => {
+});
+
+describe("agreement change accordion", () => {
+    it("handles interactions", () => {
         cy.visit("/agreements/approve/1");
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
         cy.get(".usa-table").should("exist");
