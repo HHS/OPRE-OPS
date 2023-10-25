@@ -1,9 +1,4 @@
 import cx from "clsx";
-import React, { useEffect } from "react";
-import USWDS from "@uswds/uswds/js";
-
-const { characterCount } = USWDS;
-
 /**
  * A textarea input component.
  *
@@ -31,19 +26,6 @@ export const TextArea = ({
     className
 }) => {
     if (!hintMsg && maxLength) hintMsg = `Maximum ${maxLength} characters`;
-    // const ref = document.body;
-    const characterCountRef = React.useRef();
-
-    useEffect(() => {
-        // initialize
-        characterCount.on(characterCountRef.current);
-
-        // remove event listeners when the component un-mounts.
-        return () => {
-            characterCount.off(characterCountRef.current);
-        };
-    }, []);
-
     return (
         <div className="usa-character-count margin-top-3">
             <div className={cx("usa-form-group", pending && "pending", className)}>
@@ -71,9 +53,7 @@ export const TextArea = ({
                     </span>
                 )}
                 <textarea
-                    className={`usa-textarea usa-character-count__field ${
-                        messages.length ? "usa-input--error" : null
-                    } `}
+                    className={`usa-textarea ${messages.length ? "usa-input--error" : null} `}
                     id={name}
                     name={name}
                     rows={5}
@@ -92,7 +72,6 @@ export const TextArea = ({
             </span>
         </div>
     );
-
     function handleChange(e) {
         onChange(name, e.target.value);
     }
