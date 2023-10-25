@@ -12,8 +12,9 @@ import useAlert from "../../../hooks/use-alert.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import AgreementActionAccordion from "../../../components/Agreements/AgreementActionAccordion";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
+import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
+import { anyBudgetLinesByStatus, selectedBudgetLinesTotal, getTotalBySelectedCans } from "./ReviewAgreement.helpers";
 import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
-import { anyBudgetLinesByStatus } from "./ReviewAgreement.helpers";
 import useReviewAgreement from "./reviewAgreement.hooks";
 
 /**
@@ -72,6 +73,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist;
     const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement, "DRAFT");
     const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement, "PLANNED");
+    const changeInCans = getTotalBySelectedCans(budgetLines);
 
     const handleSendToApproval = () => {
         if (anyBudgetLinesDraft) {
@@ -191,6 +193,11 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     setMainToggleSelected={setMainToggleSelected}
                 />
             </AgreementBLIAccordion>
+            <AgreementChangesAccordion
+                changeInBudgetLines={selectedBudgetLinesTotal(budgetLines)}
+                changeInCans={changeInCans}
+            />
+
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className={`usa-button usa-button--outline margin-right-2 ${
