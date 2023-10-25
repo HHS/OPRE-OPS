@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import styles from "./TextClip.module.scss";
-import USWDS from "@uswds/uswds/js";
 import React, { useEffect } from "react";
+import USWDS from "@uswds/uswds/js";
 
 const { tooltip } = USWDS;
 
