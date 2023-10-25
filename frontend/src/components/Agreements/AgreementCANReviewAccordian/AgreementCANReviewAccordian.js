@@ -32,11 +32,11 @@ const CANFundingCard = ({ can, pendingAmount }) => {
     const canFundingBarData = [
         {
             id: 1,
-            label: "Total Spending",
+            label: "Executing",
             value: totalSpending,
             color: "#80A858",
-            // tagStyle: "lightTextGreenBackground",
             tagStyle: "darkTextWhiteBackground",
+            // tagStyle: "lightTextGreenBackground",
             percent: `${calculatePercent(totalSpending, totalFunding)}%`
         },
         {

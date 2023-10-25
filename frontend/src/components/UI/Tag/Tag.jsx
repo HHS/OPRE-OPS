@@ -28,6 +28,9 @@ const Tag = ({ tagStyle, text, active = false, label, className, children }) => 
         case "darkTextGreenBackground":
             tagClasses += " bg-brand-data-viz-primary-10 text-brand-neutral-dark";
             break;
+        case "lightTextGreenBackground":
+            tagClasses += " bg-brand-data-viz-secondary-58 text-brand-neutral-lightest";
+            break;
         case "primaryDarkTextLightBackground":
             tagClasses += " bg-brand-primary-light text-brand-primary-dark";
             break;
