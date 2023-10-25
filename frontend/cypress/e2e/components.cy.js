@@ -153,6 +153,8 @@ describe("agreement change accordion", () => {
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('[type="radio"]').first().check({ force: true });
         cy.get("#check-all").check({ force: true });
+        // next tick
+        cy.tick(1000);
         cy.get('[type="checkbox"]')
             .should("have.length", 3)
             .each((checkbox) => {
