@@ -10145,10 +10145,10 @@ mz@^2.7.0:
     object-assign "^4.0.1"
     thenify-all "^1.0.0"
 
-n4s@^5.0.6:
-  version "5.0.6"
-  resolved "https://registry.yarnpkg.com/n4s/-/n4s-5.0.6.tgz#148baea2b6fcb37959da093604acf9ce926bbe77"
-  integrity sha512-E3EkEzgkp5JKVy+wji1ykEX1V7/NHbQJE1VZ37rZLC59WJE+BMTPAxIw9sznWnUugKwE/MhSsdQ1atQDcC5tbw==
+n4s@^5.0.7:
+  version "5.0.7"
+  resolved "https://registry.yarnpkg.com/n4s/-/n4s-5.0.7.tgz#0685da48cefbdad55737d721f67ec61241e5d8a1"
+  integrity sha512-sx4fxDohLqkiCDYOLtr/t8IukO2Ocq4WszA9rDjbWo376RFZOUcK91gTbN5BPo5r/RSCuLQWpmSKRC0RG4OUZQ==
   dependencies:
     context "^3.0.13"
     vest-utils "^1.1.0"
@@ -14271,13 +14271,13 @@ vest-utils@^1.1.0:
   resolved "https://registry.yarnpkg.com/vest-utils/-/vest-utils-1.1.0.tgz#901135fda5f2e4d483e88acecef054c611361388"
   integrity sha512-BL2XdKt38c5lugRQFrOsxefo5PWkOiUetnPTT/D51LXGMT83KX4au3x377Y3RpiOBxzrKEJkXJAtcrLSwel54Q==
 
-vest@5.1.1:
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/vest/-/vest-5.1.1.tgz#c2974990a3986c3996aade72e448f34d678403e4"
-  integrity sha512-/iigxA+/IW2gOJNNY6SRB2AbrkhV3O8W9v61zmDe/x8hu5RhfjmNZSgNK7NF0PKVRcdeuTkKKCrdvn1+iOPIiA==
+vest@5.1.2:
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/vest/-/vest-5.1.2.tgz#1176379501f0d801cee12c2e57c77a8dda34a87b"
+  integrity sha512-RHGCb09BSD6R2aqe6/KXAdrqI5TZRDt5bYslpGaA4BV+UGtI2l3kXS2ZF9uDGv3NRnB1/jik4enWJVGwzg8mKQ==
   dependencies:
     context "^3.0.13"
-    n4s "^5.0.6"
+    n4s "^5.0.7"
     vast "^1.0.22"
     vest-utils "^1.1.0"
     vestjs-runtime "^1.0.4"
