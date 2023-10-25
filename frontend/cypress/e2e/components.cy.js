@@ -153,6 +153,11 @@ describe("agreement change accordion", () => {
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('[type="radio"]').first().check({ force: true });
         cy.get("#check-all").check({ force: true });
+        cy.get('[type="checkbox"]')
+            .should("have.length", 3)
+            .each((checkbox) => {
+                cy.wrap(checkbox).should("be.checked");
+            });
         cy.get('[data-cy="agreement-total-card"]').contains("$2,000,000.00");
         cy.get('[data-cy="can-total-card"]').contains("$2,000,000.00");
     });
