@@ -2,7 +2,7 @@ import datetime
 
 import pytest
 from models import AgreementType, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ContractType
-from ops_api.ops.resources.agreements import AgreementData
+from ops_api.ops.resources.agreements import AGREEMENTS_REQUEST_SCHEMAS
 from pytest_bdd import given, scenario, then, when
 
 AGREEMENT_ID = 1
@@ -11,7 +11,6 @@ TEST_CONTRACT_DATA = {
     "agreement_type": "CONTRACT",
     "name": "Feature Test Contract",
     "description": "Contract Description",
-    "number": "BDD0001",
     "team_members": [{"id": 1}],
     "support_contacts": [{"id": 2}, {"id": 3}],
     "notes": "Test Note",
@@ -22,7 +21,6 @@ TEST_CONTRACT_DATA = {
 def test_contract(loaded_db):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
-        number="BDD0999",
         contract_number="CT0999",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -158,7 +156,7 @@ def reduce_for_put(data):
     """Some fields returned in the GET can't be sent in a PUT|PATCH.
     So this creates a copy of the data reduced to valid fields for PUT|PATCH"""
     agreement_type = AgreementType[data["agreement_type"]]
-    schema = AgreementData.get_schema(agreement_type)
+    schema = AGREEMENTS_REQUEST_SCHEMAS.get(agreement_type)
     data_to_put = {k: data[k] for k in schema.fields.keys() if k in data.keys()}
     return data_to_put
 

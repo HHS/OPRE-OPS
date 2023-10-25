@@ -1,13 +1,13 @@
 import PropTypes from "prop-types";
 import LogItem from "../../UI/LogItem";
 import { convertCodeForDisplay, renderField } from "../../../helpers/utils";
-import useGetUserFullNameFromId from "../../../helpers/user-hooks";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import {
     useGetNameForCanId,
     useGetNameForProcurementShopId,
     useGetNameForProductServiceCodeId,
     useGetNameForResearchProjectId
-} from "../../../helpers/lookup-hooks";
+} from "../../../hooks/lookup.hooks";
 
 const noDataMessage = "There is currently no history for this agreement.";
 

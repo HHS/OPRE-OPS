@@ -12,7 +12,7 @@ import PropTypes from "prop-types";
  *  @returns {React.JSX.Element} - The tag element.
  */
 const Tag = ({ tagStyle, text, active = false, label, className, children }) => {
-    let tagClasses = "font-12px padding-05 height-205 radius-md",
+    let tagClasses = "font-12px padding-y-05 padding-x-1 height-205 radius-md",
         activeClass = "";
     // OVERRIDES FOR DEFAULT CLASSES
     switch (tagStyle) {

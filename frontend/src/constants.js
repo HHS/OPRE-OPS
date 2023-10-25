@@ -26,13 +26,24 @@ const constants = {
         {
             color: "hsla(153, 49%, 47%, 1)" // light green
         }
+    ],
+    blisByFYChartColors: [
+        {
+            color: "hsla(327, 37%, 25%, 1)" // dark purple
+        },
+        {
+            color: "hsla(336, 45%, 52%, 1)" // mid purple
+        },
+        {
+            color: "hsla(345, 70%, 70%, 1)" // light purple
+        },
+        {
+            color: "hsla(347, 40%, 82%, 1)" // very light purple
+        },
+        {
+            color: "hsla(282, 23%, 44%, 1)" // dark blue purple
+        }
     ]
 };
-
-export const All_BUDGET_LINES_TABLE_HEADINGS = ["Description", "Agreement", "Need By", "FY", "CAN", "Total", "Status"];
-export const BUDGET_LINE_TABLE_HEADERS = ["Description", "Need By", "FY", "CAN", "Amount", "Fee", "Total", "Status"];
-export const DISABLED_ICON_CLASSES = "opacity-30 cursor-not-allowed";
-
-export const BLIS_PER_PAGE = 10;
 
 export default constants;

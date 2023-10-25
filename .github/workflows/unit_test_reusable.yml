@@ -8,7 +8,7 @@ jobs:
     env:
       JWT_PRIVATE_KEY: "__blank__"
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
       - uses: ./.github/actions/setup-python
       # Stand up the system stack, to have something to poke
       - name: Run backend unit tests
@@ -21,7 +21,7 @@ jobs:
     env:
       JWT_PRIVATE_KEY: "__blank__"
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
       - uses: ./.github/actions/setup-python
       - name: Run backend unit tests
         working-directory: ./backend/data_tools/
@@ -31,7 +31,7 @@ jobs:
     name: Frontend Unit Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
       - uses: ./.github/actions/setup-javascript
       # Stand up the system stack, to have something to poke
       - name: Run frontend unit tests
@@ -44,7 +44,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
       # Install NPM dependencies, cache them correctly
       # and run all Cypress tests
@@ -69,7 +69,7 @@ jobs:
 
       - name: Upload logs as artifact
         if: always() # Ensure this runs, even if E2E fails
-        uses: actions/upload-artifact@82c141cc518b40d92cc801eee768e7aafc9c2fa2 # v2
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3
         with:
           # Set the path to the log file
           path: full-stack-logs.log

@@ -2,6 +2,7 @@ import os
 from typing import Tuple
 
 import sqlalchemy.engine
+from data_tools.environment.local_migration import LocalMigrationConfig
 from environment.cloudgov import CloudGovConfig
 from environment.common import DataToolsConfig
 from environment.dev import DevConfig
@@ -13,7 +14,9 @@ from sqlalchemy import MetaData, create_engine
 def init_db(
     config: DataToolsConfig,
 ) -> Tuple[sqlalchemy.engine.Engine, sqlalchemy.MetaData]:
-    engine = create_engine(config.db_connection_string, echo=config.verbosity, future=True)
+    engine = create_engine(
+        config.db_connection_string, echo=config.verbosity, future=True
+    )
     metadata_obj = MetaData()
     metadata_obj.reflect(bind=engine)
 
@@ -27,6 +30,8 @@ def get_config(environment_name: str) -> DataToolsConfig:
             config = CloudGovConfig()
         case "local":
             config = LocalConfig()
+        case "local-migration":
+            config = LocalMigrationConfig()
         case "test":
             config = TestConfig()
         case _:

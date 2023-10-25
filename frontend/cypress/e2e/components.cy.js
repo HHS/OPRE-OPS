@@ -3,19 +3,12 @@ import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
     testLogin("admin");
-    cy.visit("/cans");
 });
 
 afterEach(() => {
     cy.injectAxe();
     cy.checkA11y(null, null, terminalLog);
 });
-
-const fireModal = () => {
-    cy.visit("/projects/create");
-    cy.get("#cancel").click(); // open modal
-    cy.get(".usa-modal").should("exist");
-};
 
 describe("modal management", () => {
     it("should open and close modal with cancel button", () => {
@@ -35,12 +28,6 @@ describe("modal management", () => {
     });
 });
 
-const getToProcurementShopSelect = () => {
-    cy.visit("/agreements/create");
-    cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
-    cy.get("#continue").click();
-};
-
 describe("procurement shop select", () => {
     it("should display all shops in the dropdown", () => {
         getToProcurementShopSelect();
@@ -55,11 +42,109 @@ describe("procurement shop select", () => {
     });
 });
 
-it("hover on table row displays icons", () => {
-    cy.visit("/agreements/1/budget-lines?mode=edit");
-    cy.get("tbody").find("tr").first().find('[data-cy="expand-row"]').should("exist");
-    cy.get("tbody").find("tr").first().trigger("mouseover");
-    cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').should("exist");
-    cy.get("tbody").find("tr").first().find('[data-cy="delete-row"]').should("exist");
-    cy.get("tbody").find("tr").first().find('[data-cy="duplicate-row"]').should("exist");
+describe("table row", () => {
+    it("hover on table row displays icons", () => {
+        cy.visit("/agreements/1/budget-lines?mode=edit");
+        cy.get("tbody").find("tr").first().find('[data-cy="expand-row"]').should("exist");
+        cy.get("tbody").find("tr").first().trigger("mouseover");
+        cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').should("exist");
+        cy.get("tbody").find("tr").first().find('[data-cy="delete-row"]').should("exist");
+        cy.get("tbody").find("tr").first().find('[data-cy="duplicate-row"]').should("exist");
+    });
 });
+
+describe("agreement meta accordion", () => {
+    it("accordion should close when clicked", () => {
+        cy.visit("/agreements/approve/1");
+        cy.get(".usa-accordion__heading > .usa-accordion__button").first().as("acc-btn").should("exist");
+        cy.get(".usa-accordion__content").should("not.be.hidden");
+        cy.get("@acc-btn").click();
+        cy.get(".usa-accordion__content").should("be.hidden");
+    });
+
+    it("accordion should close via keyboard enter", () => {
+        cy.visit("/agreements/approve/1");
+        cy.get(".usa-accordion__heading > .usa-accordion__button").first().as("acc-btn").should("exist");
+        cy.get(".usa-accordion__content").should("not.be.hidden");
+        cy.get("@acc-btn").type("{enter}");
+        cy.get(".usa-accordion__content").should("be.hidden");
+    });
+});
+
+describe("agreement action accordion", () => {
+    it("should have draft option available on agreement one", () => {
+        cy.visit("/agreements/approve/1");
+        cy.get("h2").contains("Choose an Action").as("acc-btn").should("exist");
+        cy.get("@acc-btn").type("{enter}");
+        cy.get('input[type="radio"]').should("have.length", 2);
+        cy.get('input[id="Change Draft Budget Lines to Planned Status"]').should("exist").should("not.be.disabled");
+        cy.get('input[id="Change Planned Budget Lines to Executing Status"]').should("exist").should("be.disabled");
+    });
+
+    it("should have planned option available on agreement nine", () => {
+        cy.visit("/agreements/approve/9");
+        cy.get("h2").contains("Choose an Action").as("acc-btn").should("exist");
+        cy.get("@acc-btn").type("{enter}");
+        cy.get('input[type="radio"]').should("have.length", 2);
+        cy.get('input[id="Change Draft Budget Lines to Planned Status"]').should("exist").should("be.disabled");
+        cy.get('input[id="Change Planned Budget Lines to Executing Status"]').should("exist").should("not.be.disabled");
+    });
+});
+
+describe.only("agreement BLI accordion", () => {
+    it("should contain summary card", () => {
+        cy.visit("/agreements/approve/1");
+        cy.get("h2").contains("Select Budget Lines").as("acc-btn");
+        cy.get('[data-cy="blis-by-fy-card"]').should("exist");
+        cy.get('[data-cy="currency-summary-card"]').should("exist");
+    });
+
+    it("allow to select individual budget lines", () => {
+        cy.visit("/agreements/approve/1");
+        cy.get('input[id="Change Draft Budget Lines to Planned Status"]').should("exist").should("not.be.disabled");
+        cy.get('[type="radio"]').should("have.length", 2);
+        cy.get('[type="radio"]').first().check({ force: true });
+        cy.get("#1").check({ force: true });
+        cy.get("#2").check({ force: true });
+    });
+
+    it("should handle check-all and uncheck all", () => {
+        cy.visit("/agreements/approve/1");
+        cy.get("h2").contains("Select Budget Lines").as("acc-btn");
+        cy.get(".usa-table").should("exist");
+        cy.get("#check-all").should("exist").should("be.disabled");
+        // click action radio button
+        cy.get("h2").contains("Choose an Action").as("acc-btn").should("exist");
+        cy.get('input[id="Change Draft Budget Lines to Planned Status"]').should("exist").should("not.be.disabled");
+        // check the radio button
+        cy.get('[type="radio"]').should("have.length", 2);
+        cy.get('[type="radio"]').first().check({ force: true });
+        cy.get("#check-all").check({ force: true });
+        // all checkboxes should be checked
+        cy.get('[type="checkbox"]')
+            .should("have.length", 3)
+            .each((checkbox) => {
+                cy.wrap(checkbox).should("be.checked");
+            });
+        // uncheck all
+        cy.get("#check-all").uncheck({ force: true });
+        // all checkboxes should be unchecked
+        cy.get('[type="checkbox"]')
+            .should("have.length", 3)
+            .each((checkbox) => {
+                cy.wrap(checkbox).should("not.be.checked");
+            });
+    });
+});
+
+const fireModal = () => {
+    cy.visit("/projects/create");
+    cy.get("#cancel").click(); // open modal
+    cy.get(".usa-modal").should("exist");
+};
+
+const getToProcurementShopSelect = () => {
+    cy.visit("/agreements/create");
+    cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
+    cy.get("#continue").click();
+};

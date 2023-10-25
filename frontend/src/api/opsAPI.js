@@ -23,6 +23,8 @@ export const opsApi = createApi({
             if (access_token) {
                 headers.set("Authorization", `Bearer ${access_token}`);
             }
+            // Include this line to enable credentials (cookies)
+            headers.set("withCredentials", "true");
 
             return headers;
         }

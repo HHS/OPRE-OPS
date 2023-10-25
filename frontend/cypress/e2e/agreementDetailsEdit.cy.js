@@ -6,22 +6,21 @@ const testAgreement = {
     agreement_type: "CONTRACT",
     agreement_reason: "NEW_REQ",
     name: "Test Contract",
-    number: "TEST001",
     description: "Test Description",
     research_project_id: 1,
     product_service_code_id: 1,
     procurement_shop_id: 1,
     incumbent: "Test Vendor",
-    project_officer: 1,
+    project_officer_id: 1,
     team_members: [
         {
-            id: 3,
+            id: 3
         },
         {
-            id: 5,
-        },
+            id: 5
+        }
     ],
-    notes: "Test Notes",
+    notes: "Test Notes"
 };
 
 beforeEach(() => {
@@ -46,8 +45,8 @@ it("edit an agreement", () => {
         headers: {
             Authorization: bearer_token,
             "Content-Type": "application/json",
-            Accept: "application/json",
-        },
+            Accept: "application/json"
+        }
     }).then((response) => {
         expect(response.status).to.eq(201);
         expect(response.body.id).to.exist;
@@ -84,7 +83,7 @@ it("edit an agreement", () => {
         cy.get(".usa-error-message").should("not.exist");
         cy.get("[data-cy='continue-btn']").should("not.be.disabled");
         cy.get("#description").type(" more text");
-        cy.get("#agreementNotes").type("test edit notes");
+        cy.get("#agreementNotes").type(" test edit notes");
 
         cy.get("[data-cy='continue-btn']").click();
 
@@ -99,6 +98,8 @@ it("edit an agreement", () => {
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(6000);
         cy.get("h1").should("have.text", "Test Edit Title");
+        cy.get("[data-cy='details-notes']").should("exist");
+        cy.get("[data-cy='details-notes']").should("have.text", "Test Notes test edit notes");
         cy.get("#edit").should("exist");
 
         cy.get(
@@ -129,8 +130,8 @@ it("edit an agreement", () => {
             url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
             headers: {
                 Authorization: bearer_token,
-                Accept: "application/json",
-            },
+                Accept: "application/json"
+            }
         }).then((response) => {
             expect(response.status).to.eq(200);
         });

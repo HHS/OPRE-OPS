@@ -4,8 +4,8 @@ from typing import Any, cast
 
 import sqlalchemy as sa
 from models.base import BaseModel
-from sqlalchemy import Column, ForeignKey, Integer, String, Table, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, ForeignKey, Identity, Integer, String, Table, Text
+from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
 from typing_extensions import override
 
 
@@ -18,11 +18,12 @@ class PortfolioStatus(Enum):
 class Division(BaseModel):
     """Portfolio Division sub model."""
 
+    __versioned__ = {}
     __tablename__ = "division"
-    id = Column(Integer, primary_key=True)
-    name = Column(String(100), unique=True)
-    abbreviation = Column(String(10), unique=True)
-    portfolio = relationship("Portfolio", back_populates="division")
+
+    id: Mapped[int] = mapped_column(Integer, Identity(start=10), primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True)
+    abbreviation: Mapped[str] = mapped_column(String(10), unique=True)
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -72,7 +73,6 @@ class Portfolio(BaseModel):
         "CAN", back_populates="shared_portfolios", secondary=shared_portfolio_cans
     )
     division_id = Column(Integer, ForeignKey("division.id"))
-    division = relationship("Division", back_populates="portfolio")
     urls = relationship("PortfolioUrl")
     description = Column(Text)
     team_leaders = relationship(
@@ -85,6 +85,10 @@ class Portfolio(BaseModel):
     def display_name(self):
         return self.name
 
+    @property
+    def division(self):
+        return object_session(self).get(Division, self.division_id)
+
     @override
     def to_dict(self) -> dict[str, Any]:
         d = super().to_dict()
@@ -93,8 +97,8 @@ class Portfolio(BaseModel):
             {
                 "description": self.description,
                 "urls": [url.to_dict() for url in self.urls],
-                "division": self.division.to_dict() if self.division else None,
                 "cans": [can.to_dict() for can in self.cans],
+                "division": self.division.to_dict() if self.division else None,
                 "status": self.status.name if self.status else None,
                 "team_leaders": [
                     team_lead.to_dict() for team_lead in self.team_leaders

@@ -3,80 +3,108 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClone } from "@fortawesome/free-regular-svg-icons";
 import DisabledChangeIcons from "./DisabledChangeIcons";
+import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
+import icons from "../../../uswds/img/sprite.svg";
 
 /**
  * This component displays the edit, delete, and duplicate icons for a budget line.
  * @param {object} props - The component props.
- * @param {Object} props.budgetLine - The budget line data for the row.
- * @param {boolean} props.isBudgetLineEditable - Whether the budget line is editable.
- * @param {function} props.handleSetBudgetLineForEditing - The function to set the budget line for editing.
- * @param {function} props.handleDeleteBudgetLine - The function to delete the budget line.
- * @param {function} [props.handleDuplicateBudgetLine] - The function to duplicate the budget line.
+ * @param {Object} props.item - The item or data for the row.
+ * @param {boolean} props.isItemEditable - Whether the item is editable.
+ * @param {function} props.handleSetItemForEditing - The function to set the row item for editing.
+ * @param {boolean} [props.isItemDeletable] - Whether the item is deletable.
+ * @param {function} props.handleDeleteItem - The function to delete the row.
+ * @param {function} [props.handleDuplicateItem] - The function to duplicate the row.
  * @param {boolean} [props.duplicateIcon] - Whether to show the duplicate icon.
+ * @param {boolean} [props.sendToReviewIcon] - Whether to show the send to review icon.
+ * @param {function} [props.handleSubmitItemForApproval] - The function to submit the item for approval.
  * @returns {React.JSX.Element} - The rendered component.
  **/
 
 const ChangeIcons = ({
-    budgetLine,
-    isBudgetLineEditable = false,
-    handleSetBudgetLineForEditing = () => {},
-    handleDeleteBudgetLine = () => {},
-    handleDuplicateBudgetLine = () => {},
-    duplicateIcon = true
+    item,
+    isItemEditable = false,
+    handleSetItemForEditing = () => {},
+    isItemDeletable = isItemEditable,
+    handleDeleteItem = () => {},
+    handleDuplicateItem = () => {},
+    duplicateIcon = true,
+    sendToReviewIcon = false,
+    handleSubmitItemForApproval = () => {}
 }) => {
+    if (!isItemEditable) {
+        return (
+            <DisabledChangeIcons
+                duplicateIcon={duplicateIcon}
+                sendToReviewIcon={sendToReviewIcon}
+                handleDuplicateItem={() => handleDuplicateItem(item)}
+            />
+        );
+    }
+
     return (
         <>
-            {!isBudgetLineEditable && (
-                <DisabledChangeIcons
-                    duplicateIcon={duplicateIcon}
-                    handleDuplicateBudgetLine={() => handleDuplicateBudgetLine(budgetLine)}
-                />
-            )}
-            {isBudgetLineEditable && (
-                <>
+            <div className="display-flex flex-align-center">
+                {isItemEditable && (
                     <FontAwesomeIcon
-                        id={`edit-${budgetLine?.id}`}
+                        id={`edit-${item?.id}`}
                         data-cy="edit-row"
                         icon={faPen}
                         className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
                         title="edit"
                         data-position="top"
-                        onClick={() => handleSetBudgetLineForEditing(budgetLine)}
+                        onClick={() => handleSetItemForEditing(item)}
                     />
+                )}
+                <FontAwesomeIcon
+                    id={`delete-${item?.id}`}
+                    data-cy="delete-row"
+                    data-testid="delete-row"
+                    icon={faTrash}
+                    title={`${isItemDeletable ? "delete" : "cannot delete"}`}
+                    data-position="top"
+                    className={`text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip ${
+                        !isItemDeletable ? DISABLED_ICON_CLASSES : ""
+                    }`}
+                    onClick={() => isItemDeletable && handleDeleteItem(item.id, item.display_name)}
+                />
+
+                {duplicateIcon && (
                     <FontAwesomeIcon
-                        id={`delete-${budgetLine?.id}`}
-                        data-cy="delete-row"
-                        data-testid="delete-row"
-                        icon={faTrash}
-                        title="delete"
+                        id={`duplicate-${item?.id}`}
+                        data-cy="duplicate-row"
+                        icon={faClone}
+                        title="duplicate"
                         data-position="top"
-                        className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
-                        onClick={() => handleDeleteBudgetLine(budgetLine.id)}
+                        className="text-primary height-2 width-2 cursor-pointer usa-tooltip margin-left-0"
+                        onClick={() => handleDuplicateItem(item)}
                     />
-                    {duplicateIcon && (
-                        <FontAwesomeIcon
-                            id={`duplicate-${budgetLine?.id}`}
-                            data-cy="duplicate-row"
-                            icon={faClone}
-                            title="duplicate"
-                            data-position="top"
-                            className="text-primary height-2 width-2 cursor-pointer usa-tooltip margin-left-0"
-                            onClick={() => handleDuplicateBudgetLine(budgetLine)}
-                        />
-                    )}
-                </>
-            )}
+                )}
+                {sendToReviewIcon && (
+                    <svg
+                        id={`submit-for-approval-${item.id}`}
+                        data-cy="submit-row"
+                        className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0"
+                        onClick={() => handleSubmitItemForApproval(item.id)}
+                    >
+                        <use xlinkHref={`${icons}#send`}></use>
+                    </svg>
+                )}
+            </div>
         </>
     );
 };
 
 ChangeIcons.propTypes = {
-    budgetLine: PropTypes.object.isRequired,
-    isBudgetLineEditable: PropTypes.bool,
-    handleSetBudgetLineForEditing: PropTypes.func,
-    handleDeleteBudgetLine: PropTypes.func,
-    handleDuplicateBudgetLine: PropTypes.func,
-    duplicateIcon: PropTypes.bool
+    item: PropTypes.object.isRequired,
+    isItemEditable: PropTypes.bool,
+    handleSetItemForEditing: PropTypes.func,
+    isItemDeletable: PropTypes.bool,
+    handleDeleteItem: PropTypes.func,
+    handleDuplicateItem: PropTypes.func,
+    duplicateIcon: PropTypes.bool,
+    sendToReviewIcon: PropTypes.bool,
+    handleSubmitItemForApproval: PropTypes.func
 };
 
 export default ChangeIcons;

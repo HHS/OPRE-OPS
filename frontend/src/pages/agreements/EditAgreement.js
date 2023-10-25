@@ -6,7 +6,7 @@ import CreateEditAgreement from "./CreateEditAgreement";
 import { useGetAgreementByIdQuery } from "../../api/opsAPI";
 import { getUser } from "../../api/getUser";
 import SimpleAlert from "../../components/UI/Alert/SimpleAlert";
-import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../helpers/agreement-hooks";
+import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../hooks/agreement.hooks";
 
 const EditAgreement = () => {
     const urlPathParams = useParams();
@@ -31,8 +31,8 @@ const EditAgreement = () => {
             setProjectOfficer(results);
         };
 
-        if (agreement?.project_officer) {
-            getProjectOfficerSetState(agreement?.project_officer).catch(console.error);
+        if (agreement?.project_officer_id) {
+            getProjectOfficerSetState(agreement?.project_officer_id).catch(console.error);
         }
 
         return () => {

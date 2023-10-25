@@ -58,6 +58,9 @@ export const formatDateToMonthDayYear = (date) => {
     return new Date(date).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
 };
 
+// List of BLI statuses which are considered Draft
+export const draftBudgetLineStatuses = ["DRAFT", "UNDER_REVIEW"];
+
 /**
  * Object containing display text for various codes.
  * @typedef {Object} CodesToDisplayText
@@ -165,14 +168,6 @@ export const convertCodeForDisplay = (listName, code) => {
 
     // Return the display text for the code, or the original code value if no mapping is found
     return codeMap[code] ? codeMap[code] : code;
-};
-
-export const loggedInName = (activeUser) => {
-    let loggedInUser = "Unknown User";
-    if (activeUser) {
-        loggedInUser = activeUser.full_name ? activeUser.full_name : activeUser.email;
-    }
-    return loggedInUser;
 };
 
 export const timeAgo = (dateParam) => {

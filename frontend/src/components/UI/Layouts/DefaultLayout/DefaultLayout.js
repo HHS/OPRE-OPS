@@ -3,7 +3,7 @@ import Header from "../../Header";
 import Footer from "../../Footer";
 import Alert from "../../Alert";
 import Breadcrumb from "../../Header/Breadcrumb";
-import useAlert from "../../../../helpers/use-alert";
+import useAlert from "../../../../hooks/use-alert.hooks";
 
 /**
  * DefaultLayout component
@@ -18,12 +18,12 @@ const DefaultLayout = ({ children, breadCrumbName }) => {
         <div className="bg-base-lightest">
             <div className="usa-overlay"></div>
             <Header />
-            {breadCrumbName ? <Breadcrumb currentName={breadCrumbName} /> : null}
-            {isAlertActive && <Alert />}
             <main
                 id="main-content"
                 className="grid-container bg-white padding-bottom-6"
             >
+                {breadCrumbName ? <Breadcrumb currentName={breadCrumbName} /> : null}
+                {isAlertActive && <Alert />}
                 {children}
             </main>
             <Footer />

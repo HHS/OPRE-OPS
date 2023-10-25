@@ -77,7 +77,7 @@ describe("AgreementDetailsEdit", () => {
         },
         agreement_reason: "RECOMPETE",
         incumbent: "Test Incumbent",
-        project_officer: 1,
+        project_officer_id: 1,
         team_members: [
             {
                 full_name: "Amy Madigan",

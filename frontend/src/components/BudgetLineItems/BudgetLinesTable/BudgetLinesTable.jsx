@@ -1,9 +1,9 @@
 import PropTypes from "prop-types";
-import TotalSummaryCard from "../TotalSummaryCard/TotalSummaryCard";
 import Table from "../../UI/Table";
+import TotalSummaryCard from "../TotalSummaryCard";
+import BLIRow from "./BLIRow";
+import { BUDGET_LINE_TABLE_HEADERS } from "./BudgetLinesTable.constants";
 import "./BudgetLinesTable.scss";
-import { BUDGET_LINE_TABLE_HEADERS } from "../../../constants";
-import BLIRow from "../BLIRow";
 
 /**
  * A table component that displays budget lines.
@@ -14,6 +14,7 @@ import BLIRow from "../BLIRow";
  * @param {Function} [props.handleDuplicateBudgetLine] - A function to handle duplicating a budget line. - optional
  * @param {Boolean} [props.readOnly] - A flag to indicate if the table is read-only.
  * @param {Boolean} [props.isReviewMode] - A flag to indicate if the table is in review mode.
+ * @param {Boolean} [props.showTotalSummaryCard] - A flag to indicate if the total summary card should be displayed.
  * @returns {JSX.Element} - The rendered table component.
  */
 const BudgetLinesTable = ({
@@ -22,7 +23,8 @@ const BudgetLinesTable = ({
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
-    isReviewMode = false
+    isReviewMode = false,
+    showTotalSummaryCard = true
 }) => {
     const sortedBudgetLines = budgetLinesAdded
         .slice()
@@ -32,10 +34,10 @@ const BudgetLinesTable = ({
     return (
         <>
             <Table tableHeadings={BUDGET_LINE_TABLE_HEADERS}>
-                {sortedBudgetLines.map((bl) => (
+                {sortedBudgetLines.map((budgetLine) => (
                     <BLIRow
-                        key={bl?.id}
-                        bl={bl}
+                        key={budgetLine.id}
+                        budgetLine={budgetLine}
                         handleDeleteBudgetLine={handleDeleteBudgetLine}
                         handleDuplicateBudgetLine={handleDuplicateBudgetLine}
                         handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
@@ -44,7 +46,7 @@ const BudgetLinesTable = ({
                     />
                 ))}
             </Table>
-            <TotalSummaryCard budgetLines={sortedBudgetLines}></TotalSummaryCard>
+            {showTotalSummaryCard && <TotalSummaryCard budgetLines={sortedBudgetLines}></TotalSummaryCard>}
         </>
     );
 };
@@ -57,7 +59,8 @@ BudgetLinesTable.propTypes = {
     handleDuplicateBudgetLine: PropTypes.func,
     readOnly: PropTypes.bool,
     errors: PropTypes.arrayOf(PropTypes.array),
-    isReviewMode: PropTypes.bool
+    isReviewMode: PropTypes.bool,
+    showTotalSummaryCard: PropTypes.bool
 };
 
 export default BudgetLinesTable;

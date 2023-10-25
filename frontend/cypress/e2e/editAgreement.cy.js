@@ -6,13 +6,12 @@ const testAgreement = {
     agreement_type: "CONTRACT",
     agreement_reason: "NEW_REQ",
     name: "Test Contract",
-    number: "TEST001",
     description: "Test Description",
     research_project_id: 1,
     product_service_code_id: 1,
     procurement_shop_id: 1,
     incumbent: "Test Vendor",
-    project_officer: 1,
+    project_officer_id: 1,
     team_members: [
         {
             id: 3
@@ -181,7 +180,9 @@ it("can edit a budget line if it is in DRAFT or in REVIEW", () => {
     // get the first row which is in DRAFT
     cy.get("@table-rows").eq(0).find('[data-cy="expand-row"]').click();
     cy.get(".padding-right-9").find('[data-cy="edit-row"]').should("exist");
+    cy.get('[data-cy="continue-btn"]').should("exist");
     cy.get('[data-cy="continue-btn"]').click();
+    cy.visit(`/agreements/1/budget-lines`);
     cy.get('[data-cy="bli-tab-continue-btn"]').click();
     cy.get('[data-cy="send-to-approval-btn"]').should("exist");
     cy.get('[data-cy="send-to-approval-btn"]').click();

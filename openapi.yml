@@ -1281,9 +1281,39 @@ components:
         id:
           type: integer
           example: 2
+        name:
+          type: string
+          example: "Contract #2: African American Child and Family Research Center"
         agreement_type:
-          type: integer
+          type: string
           example: "CONTRACT"
+        description:
+          type: string
+          example: "Test Agreement Description"
+        product_service_code_id:
+          type: integer
+          example: 1
+        agreement_reason:
+          type: string
+          example: "NEW_REQ"
+        incumbent:
+          type: string
+          example: "Previous Vendor"
+        procurement_shop_id:
+          type: integer
+          example: 1
+        notes:
+          type: string
+          example: "Test Notes"
+        team_members:
+          type: array
+          items:
+            type: array
+            example: [
+              { 'id': 1, 'full_name': 'Chris Fortunato', 'email': 'chris.fortunato@example.com' },
+              { 'id': 2, 'full_name': 'Amy Madigan', 'email': 'Amy.Madigan@example.com' },
+              { 'id': 3, 'full_name': 'Ivelisse Martinez-Beck', 'email': 'Ivelisse.Martinez-Beck@example.com' },
+            ]
         created_by:
           type: integer
           example: 1
@@ -1296,9 +1326,12 @@ components:
         research_project_id:
           type: integer
           example: 1
-        name:
-          type: string
-          example: "Contract #2: African American Child and Family Research Center"
+        project_officer_id:
+          type: integer
+          example: 1
+      required:
+        - name
+        - agreement_type
 
     Agreements:
       description: OPS List of Agreements
@@ -1340,12 +1373,6 @@ components:
           type: object
         changes:
           description: JSON for the changeset
-          type: object
-        diff:
-          description: properties which changed
-          type: object
-        original:
-          description: properties with their values before changes
           type: object
 
     BudgetLineItems:

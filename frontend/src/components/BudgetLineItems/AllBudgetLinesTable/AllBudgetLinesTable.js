@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import _ from "lodash";
 import Table from "../../UI/Table";
-import AllBLIRow from "../AllBLIRow";
-import { All_BUDGET_LINES_TABLE_HEADINGS, BLIS_PER_PAGE } from "../../../constants";
+import AllBLIRow from "./AllBLIRow";
+import { All_BUDGET_LINES_TABLE_HEADINGS, BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
 import PaginationNav from "../../UI/PaginationNav/PaginationNav";
 
 /**
@@ -22,15 +22,17 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
     return (
         <>
             <Table tableHeadings={All_BUDGET_LINES_TABLE_HEADINGS}>
-                {budgetLinesPage.map((bl) => (
+                {budgetLinesPage.map((budgetLine) => (
                     <AllBLIRow
-                        key={bl?.id}
-                        bl={bl}
+                        key={budgetLine?.id}
+                        budgetLine={budgetLine}
                         handleDeleteBudgetLine={() => {
                             alert("not implemented");
                         }}
                         handleSetBudgetLineForEditing={() => {
-                            navigate(`/agreements/${bl.agreement_id}/budget-lines?mode=edit&budget-line-id=${bl.id}`);
+                            navigate(
+                                `/agreements/${budgetLine.agreement_id}/budget-lines?mode=edit&budget-line-id=${budgetLine.id}`
+                            );
                         }}
                         isReviewMode={false}
                         readOnly={false}

@@ -1,4 +1,6 @@
 import CurrencyFormat from "react-currency-format";
+import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+
 // TODO: Check math on totals
 export const TotalSummaryCard = ({ budgetLines }) => {
     let currentDate = new Date();
@@ -59,7 +61,7 @@ export const TotalSummaryCard = ({ budgetLines }) => {
                                 displayType={"text"}
                                 thousandSeparator={true}
                                 prefix={"$"}
-                                decimalScale={2}
+                                decimalScale={getDecimalScale(data.subtotal)}
                                 fixedDecimalScale={true}
                             />
                         </dd>
@@ -71,7 +73,7 @@ export const TotalSummaryCard = ({ budgetLines }) => {
                                 value={data.fees}
                                 displayType={"text"}
                                 thousandSeparator={true}
-                                decimalScale={2}
+                                decimalScale={getDecimalScale(data.fees)}
                                 fixedDecimalScale={true}
                                 prefix={"$"}
                             />
@@ -83,7 +85,7 @@ export const TotalSummaryCard = ({ budgetLines }) => {
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$ "}
-                    decimalScale={2}
+                    decimalScale={getDecimalScale(data.total)}
                     fixedDecimalScale={true}
                     renderText={(value) => <span className="text-semibold font-sans-lg padding-y-105">{value}</span>}
                 />

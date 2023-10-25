@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import { changeBgColorIfExpanded, removeBorderBottomIfExpanded } from "./table-row.helpers";
 
 /**
  * TableRowExpandable component that represents a single expandable row in a table.
@@ -10,36 +11,32 @@ import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
  * @param {React.ReactNode} props.expandedData - The expanded data for the row.
  * @param {boolean} props.isExpanded - Whether the row is expanded.
  * @param {Function} props.setIsExpanded - The setter function for isExpanded.
- * @param {boolean} props.isRowActive - Whether the row is active.
  * @param {Function} props.setIsRowActive - The setter function for isRowActive.
  * @returns {React.JSX.Element} The TableRowExpandable component.
  */
-const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpanded, isRowActive, setIsRowActive }) => {
+const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpanded, setIsRowActive, ...rest }) => {
     const trId = React.useId();
-    const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : undefined;
-    const changeBgColorIfExpanded = { backgroundColor: isExpanded && "var(--neutral-lightest)" };
-    const handleExpandRow = () => {
-        setIsExpanded(!isExpanded);
-        setIsRowActive(!isRowActive);
-    };
+    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
+    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
 
     return (
         <>
             <tr
+                {...rest}
                 onMouseEnter={() => setIsRowActive(true)}
                 onMouseLeave={() => !isExpanded && setIsRowActive(false)}
             >
                 {tableRowData}
                 <td
-                    className={removeBorderBottomIfExpanded}
-                    style={changeBgColorIfExpanded}
+                    className={borderExpandedStyles}
+                    style={bgExpandedStyles}
                 >
                     <FontAwesomeIcon
                         id={`expand-${trId}`}
                         data-cy="expand-row"
                         icon={isExpanded ? faChevronUp : faChevronDown}
                         className="height-2 width-2 padding-right-1 cursor-pointer"
-                        onClick={handleExpandRow}
+                        onClick={() => setIsExpanded(!isExpanded)}
                     />
                 </td>
             </tr>
@@ -54,7 +51,6 @@ TableRowExpandable.propTypes = {
     expandedData: PropTypes.node.isRequired,
     isExpanded: PropTypes.bool.isRequired,
     setIsExpanded: PropTypes.func.isRequired,
-    isRowActive: PropTypes.bool.isRequired,
     setIsRowActive: PropTypes.func.isRequired
 };
 export default TableRowExpandable;

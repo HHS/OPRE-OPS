@@ -29,7 +29,7 @@ const suite = create((fieldName) => {
     });
     // incumbent is not required
     test("project-officer", "This is required information", () => {
-        enforce(fieldName.project_officer).isNotBlank();
+        enforce(fieldName.project_officer_id).isNotBlank();
     });
     // test to ensure at least one budget line item exists
     test("budget-line-items", "Must have at least one budget line item", () => {

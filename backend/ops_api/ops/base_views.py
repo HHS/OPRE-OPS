@@ -1,4 +1,4 @@
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from enum import Enum
 from typing import Optional
 
@@ -9,6 +9,7 @@ from marshmallow import Schema, ValidationError
 from models.base import BaseModel
 from ops_api.ops.utils.auth import auth_gateway
 from ops_api.ops.utils.errors import error_simulator
+from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
@@ -92,6 +93,25 @@ class OPSMethodView(MethodView):
         if errors:
             current_app.logger.error(f"{message}: {errors}")
             raise ValidationError(errors)
+
+    @staticmethod
+    def _get_query(model, search=None, **kwargs):
+        stmt = select(model).order_by(model.id)
+        query_helper = QueryHelper(stmt)
+
+        if search is not None and len(search) == 0:
+            query_helper.return_none()
+        elif search:
+            query_helper.add_search(getattr(model, "name"), search)
+
+        for key, value in kwargs.items():
+            with suppress(AttributeError):
+                query_helper.add_column_equals(getattr(model, key), value)
+
+        stmt = query_helper.get_stmt()
+        current_app.logger.debug(f"SQL: {stmt}")
+
+        return stmt
 
 
 class BaseItemAPI(OPSMethodView):

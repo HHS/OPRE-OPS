@@ -3,7 +3,6 @@ from datetime import timedelta
 
 DEBUG = False  # make sure DEBUG is off unless enabled explicitly otherwise
 
-# SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:local_password@localhost:5432/postgres"
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_ECHO = False
 
@@ -20,6 +19,9 @@ JWT_REFRESH_TOKEN_EXPIRES = timedelta(hours=12)
 # OPS-API JWT
 JWT_ENCODE_ISSUER = "https://opre-ops-backend-dev"
 JWT_ENCODE_AUDIENCE = "https://opre-ops-frontend-dev"
+
+# OPS-FRONTEND
+OPS_FRONTEND_URL = "http://localhost:3000"
 
 AUTHLIB_OAUTH_CLIENTS = {
     "logingov": {

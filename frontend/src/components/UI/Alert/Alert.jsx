@@ -52,7 +52,7 @@ export const Alert = ({ children }) => {
 
     return (
         <div
-            className={`grid-container usa-alert ${typeClass} margin-top-0 pin-x`}
+            className={`grid-container usa-alert ${typeClass} margin-top-0 pin-x z-top`}
             role="status"
             data-cy="alert"
         >

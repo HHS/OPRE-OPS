@@ -9,6 +9,7 @@ describe("FiscalYearComboBox", () => {
             <FiscalYearComboBox
                 selectedFiscalYears={null}
                 setSelectedFiscalYears={mockSetSelectedFiscalYears}
+                budgetLinesFiscalYears={[2043, 2044]}
             />
         );
         expect(screen.getByRole("combobox")).toBeInTheDocument();
@@ -20,15 +21,15 @@ describe("FiscalYearComboBox", () => {
             <FiscalYearComboBox
                 selectedFiscalYears={null}
                 setSelectedFiscalYears={mockSetSelectedFiscalYears}
+                budgetLinesFiscalYears={[2043, 2044]}
             />
         );
 
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
         fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
 
-        expect(screen.getByText("2020")).toBeInTheDocument();
-        expect(screen.getByText("2021")).toBeInTheDocument();
-        expect(screen.getByText("2022")).toBeInTheDocument();
+        expect(screen.getByText("2043")).toBeInTheDocument();
+        expect(screen.getByText("2044")).toBeInTheDocument();
     });
 
     it("updates the input value when the user types in the input field", () => {
@@ -36,11 +37,12 @@ describe("FiscalYearComboBox", () => {
             <FiscalYearComboBox
                 selectedFiscalYears={null}
                 setSelectedFiscalYears={mockSetSelectedFiscalYears}
+                budgetLinesFiscalYears={[2043, 2044]}
             />
         );
         const input = screen.getByRole("combobox");
-        fireEvent.change(input, { target: { value: "2020" } });
-        expect(input).toHaveValue("2020");
+        fireEvent.change(input, { target: { value: 2043 } });
+        expect(input).toHaveValue("2043");
     });
 
     it("updates the selected item when multiple options are selected", () => {
@@ -49,6 +51,7 @@ describe("FiscalYearComboBox", () => {
             <FiscalYearComboBox
                 selectedFiscalYears={null}
                 setSelectedFiscalYears={setSelectedFiscalYears}
+                budgetLinesFiscalYears={[2043, 2044]}
             />
         );
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
@@ -57,15 +60,15 @@ describe("FiscalYearComboBox", () => {
         fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
 
         // eslint-disable-next-line testing-library/prefer-screen-queries
-        fireEvent.click(getByText("2020"));
+        fireEvent.click(getByText("2043"));
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
         fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
 
         // eslint-disable-next-line testing-library/prefer-screen-queries
-        fireEvent.click(getByText("2021"));
+        fireEvent.click(getByText("2044"));
         expect(setSelectedFiscalYears).toHaveBeenCalledWith([
-            { id: 2020, title: 2020 },
-            { id: 2021, title: 2021 }
+            { id: 2043, title: 2043 },
+            { id: 2044, title: 2044 }
         ]);
     });
 });

@@ -35,7 +35,6 @@ def not_admin_user(loaded_db):
 def contract_agreement(loaded_db):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
-        number="BDD0999",
         contract_number="CT0999",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -55,13 +54,12 @@ def contract_agreement(loaded_db):
 def contract_agreement_project_officer(loaded_db):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
-        number="BDD0999",
         contract_number="CT0999",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
         research_project_id=1,
         created_by=1,
-        project_officer=4,
+        project_officer_id=4,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -77,13 +75,12 @@ def contract_agreement_team_member(loaded_db):
     user = loaded_db.get(User, 4)
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
-        number="BDD0999",
         contract_number="CT0999",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
         research_project_id=1,
         created_by=1,
-        project_officer=1,
+        project_officer_id=1,
         team_members=[user],
     )
     loaded_db.add(contract_agreement)
@@ -101,7 +98,6 @@ def contract_agreement_team_member(loaded_db):
 def contract_agreement_not_associated(loaded_db):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
-        number="BDD0999",
         contract_number="CT0999",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -165,7 +161,6 @@ def contract_with_planned_bli(loaded_db, contract_agreement):
 def direct_agreement(loaded_db):
     direct_agreement = DirectAgreement(
         name="Feature Test Direct",
-        number="BDD0969",
         payee="Somebody who needs money",
         agreement_type=AgreementType.DIRECT_ALLOCATION,
         research_project_id=1,
