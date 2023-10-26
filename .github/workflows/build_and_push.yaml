@@ -31,6 +31,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: List backend contents
+      run: ls -la ${{ github.workspace }}/backend
+
     - name: Convert to lowercase
       id: convert
       run: |
