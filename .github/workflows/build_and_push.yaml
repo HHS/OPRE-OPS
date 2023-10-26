@@ -2,9 +2,11 @@ name: Build and Push Docker Image
 
 on:
   workflow_dispatch: 
-  # push:
+  push:
   #   branches:
-  #     - main  # Trigger on pushes to the main branch
+  #     - main  # Trigger on pushes to the main branchpush:
+    branches:
+      - POC-Azure-Deployment
   # release:
   #   types: [created]  # Trigger when a new release is created
 
