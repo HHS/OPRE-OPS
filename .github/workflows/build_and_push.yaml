@@ -31,9 +31,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: List backend contents
-      run: ls -la ${{ github.workspace }}/backend
-
     - name: Convert to lowercase
       id: convert
       run: |
@@ -45,7 +42,7 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         context: ${{ github.workspace }}/backend
-        file: Dockerfile.ops-api
+        file: ${{ github.workspace }}/backend/Dockerfile.ops-api
         push: true
         # tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
         tags: ghcr.io/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}:${{ github.sha }}
