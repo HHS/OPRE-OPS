@@ -108,7 +108,7 @@ export const ReviewAgreement = () => {
     };
 
     return (
-        <App>
+        <App breadCrumbName="Agreements">
             {isAlertActive && Object.entries(pageErrors).length > 0 ? (
                 <SimpleAlert
                     type="error"
