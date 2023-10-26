@@ -11,7 +11,7 @@ import PropTypes from "prop-types";
  *  @param {React.ReactNode} [props.children] - Child elements.
  *  @returns {React.JSX.Element} - The tag element.
  */
-const Tag = ({ tagStyle, text, active = false, label, className, children }) => {
+const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className, children }) => {
     let tagClasses = "font-12px padding-y-05 padding-x-1 height-205 radius-md",
         activeClass = "";
     // OVERRIDES FOR DEFAULT CLASSES
@@ -39,39 +39,55 @@ const Tag = ({ tagStyle, text, active = false, label, className, children }) => 
     }
     // ACTIVE CLASSES FOR GRAPH LEGEND
     if (active) {
-        switch (label) {
-            case "Available":
-                activeClass += " bg-brand-data-viz-primary-5 text-white fake-bold";
-                break;
-            case "Planned":
-                activeClass += " bg-brand-data-viz-primary-11 text-white fake-bold";
-                break;
-            case "Executing":
-                activeClass += " bg-brand-data-viz-primary-8 fake-bold";
-                break;
-            case "Obligated":
-                activeClass += " bg-brand-data-viz-primary-6 text-white fake-bold";
-                break;
-            case "Draft":
-                activeClass += " bg-brand-neutral-lighter fake-bold";
-                break;
-            case label.includes("Funding Received"):
-                activeClass += " bg-brand-data-viz-primary-3 text-white fake-bold";
-                break;
-            case label.includes("Funding Expected") ?? label.includes("Remaining Budget"):
-                activeClass += " bg-brand-neutral-lighter fake-bold";
-                break;
-            case label.includes("Carry-Forward"):
-                activeClass += " bg-brand-data-viz-primary-10 fake-bold";
-                break;
-            case label.includes("New Funding"):
-                activeClass += " bg-brand-data-viz-secondary-20 text-white fake-bold";
-                break;
-            case label.includes("Total Spending"):
-                activeClass += " bg-brand-data-viz-secondary-26 text-white fake-bold";
-                break;
-            default:
-                break;
+        if (tagStyleActive) {
+            switch (tagStyleActive) {
+                case "lightTextGreenBackground":
+                    tagClasses += " bg-brand-data-viz-secondary-58 text-white fake-bold";
+                    break;
+                case "darkTextGreyBackground":
+                    activeClass += " bg-brand-neutral-lighter fake-bold";
+                    break;
+                case "lightTextRedBackground":
+                    activeClass += " bg-secondary-dark text-white fake-bold";
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            switch (label) {
+                case "Available":
+                    activeClass += " bg-brand-data-viz-primary-5 text-white fake-bold";
+                    break;
+                case "Planned":
+                    activeClass += " bg-brand-data-viz-primary-11 text-white fake-bold";
+                    break;
+                case "Executing":
+                    activeClass += " bg-brand-data-viz-primary-8 fake-bold";
+                    break;
+                case "Obligated":
+                    activeClass += " bg-brand-data-viz-primary-6 text-white fake-bold";
+                    break;
+                case "Draft":
+                    activeClass += " bg-brand-neutral-lighter fake-bold";
+                    break;
+                case label.includes("Funding Received"):
+                    activeClass += " bg-brand-data-viz-primary-3 text-white fake-bold";
+                    break;
+                case label.includes("Funding Expected") ?? label.includes("Remaining Budget"):
+                    activeClass += " bg-brand-neutral-lighter fake-bold";
+                    break;
+                case label.includes("Carry-Forward"):
+                    activeClass += " bg-brand-data-viz-primary-10 fake-bold";
+                    break;
+                case label.includes("New Funding"):
+                    activeClass += " bg-brand-data-viz-secondary-20 text-white fake-bold";
+                    break;
+                case label.includes("Total Spending"):
+                    activeClass += " bg-brand-data-viz-secondary-26 text-white fake-bold";
+                    break;
+                default:
+                    break;
+            }
         }
     }
 

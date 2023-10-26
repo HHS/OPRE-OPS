@@ -20,36 +20,36 @@ const CANFundingCard = ({ can, pendingAmount }) => {
     if (error) {
         return <div>An error occurred loading CAN funding data</div>;
     }
-
     const totalFunding = Number(data.total_funding);
     const availableFunding = Number(data.available_funding);
     const totalAccountedFor = totalFunding - availableFunding; // same as adding planned, obligated, in_execution
     const totalSpending = totalAccountedFor; // TODO: subtract off pending BLIs
     const remainingBudget = availableFunding; // TODO: subtract off pending BLIs
-
+    const overBudget = remainingBudget < 0;
     // available_funding = float(total_funding) - float(total_accounted_for)
 
     const canFundingBarData = [
         {
             id: 1,
-            label: "Executing",
+            label: "Total Spending",
             value: totalSpending,
-            color: "#80A858",
+            color: overBudget ? "#B50909" : "#80A858",
             tagStyle: "darkTextWhiteBackground",
-            // tagStyle: "lightTextGreenBackground",
+            tagStyleActive: overBudget ? "lightTextRedBackground" : "lightTextGreenBackground",
             percent: `${calculatePercent(totalSpending, totalFunding)}%`
         },
         {
             id: 2,
             label: `Remaining Budget`,
             value: remainingBudget,
-            color: "#A9AEB1",
+            color: overBudget ? "#B50909" : "#A9AEB1",
             tagStyle: "darkTextWhiteBackground",
+            tagStyleActive: overBudget ? "lightTextRedBackground" : "darkTextGreyBackground",
             percent: `${calculatePercent(remainingBudget, totalFunding)}%`
         }
     ];
 
-    const LegendItem = ({ id, label, value, color, percent, tagStyle }) => {
+    const LegendItem = ({ id, label, value, color, percent, tagStyle, tagStyleActive }) => {
         const isGraphActive = activeId === id;
         return (
             <div className="grid-row margin-top-2">
@@ -76,6 +76,7 @@ const CANFundingCard = ({ can, pendingAmount }) => {
                 <div className="grid-col-1">
                     <Tag
                         tagStyle={tagStyle}
+                        tagStyleActive={tagStyleActive}
                         text={percent}
                         label={label}
                         active={isGraphActive}
@@ -110,6 +111,7 @@ const CANFundingCard = ({ can, pendingAmount }) => {
                             color={item.color}
                             percent={item.percent}
                             tagStyle={item.tagStyle}
+                            tagStyleActive={item.tagStyleActive}
                         />
                     ))}
                 </div>
