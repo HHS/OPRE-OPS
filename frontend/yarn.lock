@@ -8989,10 +8989,10 @@ jiti@^1.18.2:
   resolved "https://registry.yarnpkg.com/jiti/-/jiti-1.20.0.tgz#2d823b5852ee8963585c8dd8b7992ffc1ae83b42"
   integrity sha512-3TV69ZbrvV6U5DfQimop50jE9Dl6J8O1ja1dvBbMba/sZ3YBEQqJ2VZRoQPVnhlzjNtU1vaXRZVrVjU4qtm8yA==
 
-jose@4.15.4:
-  version "4.15.4"
-  resolved "https://registry.yarnpkg.com/jose/-/jose-4.15.4.tgz#02a9a763803e3872cf55f29ecef0dfdcc218cc03"
-  integrity sha512-W+oqK4H+r5sITxfxpSU+MMdr/YSWGvgZMQDIsNoBDGGy4i7GBPTtvFKibQzW06n3U3TqHjhvBJsirShsEJ6eeQ==
+jose@5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/jose/-/jose-5.0.1.tgz#a2f0bb241ecfe6ebf37ef435498a491918a1a0e0"
+  integrity sha512-gRVzy7s3RRdGbXmcTdlOswJOjhwPLx1ijIgAqLY6ktzFpOJxxYn4l0fC2vHaHHi4YBX/5FOL3aY+6W0cvQgpug==
 
 js-cookie@3.0.5:
   version "3.0.5"
@@ -10145,10 +10145,10 @@ mz@^2.7.0:
     object-assign "^4.0.1"
     thenify-all "^1.0.0"
 
-n4s@^5.0.6:
-  version "5.0.6"
-  resolved "https://registry.yarnpkg.com/n4s/-/n4s-5.0.6.tgz#148baea2b6fcb37959da093604acf9ce926bbe77"
-  integrity sha512-E3EkEzgkp5JKVy+wji1ykEX1V7/NHbQJE1VZ37rZLC59WJE+BMTPAxIw9sznWnUugKwE/MhSsdQ1atQDcC5tbw==
+n4s@^5.0.7:
+  version "5.0.7"
+  resolved "https://registry.yarnpkg.com/n4s/-/n4s-5.0.7.tgz#0685da48cefbdad55737d721f67ec61241e5d8a1"
+  integrity sha512-sx4fxDohLqkiCDYOLtr/t8IukO2Ocq4WszA9rDjbWo376RFZOUcK91gTbN5BPo5r/RSCuLQWpmSKRC0RG4OUZQ==
   dependencies:
     context "^3.0.13"
     vest-utils "^1.1.0"
@@ -12563,10 +12563,10 @@ sass-loader@^12.3.0:
     klona "^2.0.4"
     neo-async "^2.6.2"
 
-sass@1.69.4:
-  version "1.69.4"
-  resolved "https://registry.yarnpkg.com/sass/-/sass-1.69.4.tgz#10c735f55e3ea0b7742c6efa940bce30e07fbca2"
-  integrity sha512-+qEreVhqAy8o++aQfCJwp0sklr2xyEzkm9Pp/Igu9wNPoe7EZEQ8X/MBvvXggI2ql607cxKg/RKOwDj6pp2XDA==
+sass@1.69.5:
+  version "1.69.5"
+  resolved "https://registry.yarnpkg.com/sass/-/sass-1.69.5.tgz#23e18d1c757a35f2e52cc81871060b9ad653dfde"
+  integrity sha512-qg2+UCJibLr2LCVOt3OlPhr/dqVHWOa9XtZf2OjbLs/T4VPSJ00udtgJxH3neXZm+QqX8B+3cU7RaLqp1iVfcQ==
   dependencies:
     chokidar ">=3.0.0 <4.0.0"
     immutable "^4.0.0"
@@ -14271,13 +14271,13 @@ vest-utils@^1.1.0:
   resolved "https://registry.yarnpkg.com/vest-utils/-/vest-utils-1.1.0.tgz#901135fda5f2e4d483e88acecef054c611361388"
   integrity sha512-BL2XdKt38c5lugRQFrOsxefo5PWkOiUetnPTT/D51LXGMT83KX4au3x377Y3RpiOBxzrKEJkXJAtcrLSwel54Q==
 
-vest@5.1.1:
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/vest/-/vest-5.1.1.tgz#c2974990a3986c3996aade72e448f34d678403e4"
-  integrity sha512-/iigxA+/IW2gOJNNY6SRB2AbrkhV3O8W9v61zmDe/x8hu5RhfjmNZSgNK7NF0PKVRcdeuTkKKCrdvn1+iOPIiA==
+vest@5.1.2:
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/vest/-/vest-5.1.2.tgz#1176379501f0d801cee12c2e57c77a8dda34a87b"
+  integrity sha512-RHGCb09BSD6R2aqe6/KXAdrqI5TZRDt5bYslpGaA4BV+UGtI2l3kXS2ZF9uDGv3NRnB1/jik4enWJVGwzg8mKQ==
   dependencies:
     context "^3.0.13"
-    n4s "^5.0.6"
+    n4s "^5.0.7"
     vast "^1.0.22"
     vest-utils "^1.1.0"
     vestjs-runtime "^1.0.4"
