@@ -139,7 +139,7 @@ describe("agreement BLI accordion", () => {
 });
 
 describe("agreement change accordion", () => {
-    it.only("handles interactions", () => {
+    it("handles interactions", () => {
         cy.visit("/agreements/approve/1");
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
         cy.get(".usa-table").should("exist");
