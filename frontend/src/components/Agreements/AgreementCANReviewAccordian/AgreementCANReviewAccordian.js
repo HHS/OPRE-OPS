@@ -12,6 +12,7 @@ import CurrencyWithSmallCents from "../../UI/CurrencyWithSmallCents/CurrencyWith
 import SummaryCard from "../../UI/SummaryCard";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import styles from "../AgreementChangesAccordion/small-summary-card.module.css";
+import RoundedBox from "../../UI/RoundedBox";
 
 const CANFundingCard = ({ can, pendingAmount }) => {
     const canId = can.can_id;
@@ -90,17 +91,19 @@ const CANFundingCard = ({ can, pendingAmount }) => {
         );
     };
 
+    const title = "G99CC23 (5 Year)";
+    const titleLine2 = "CAN Total Budget";
+
     return (
-        <SummaryCard
-            // title={"G99CC23 (5 Year) \n CAN Total Budget"}
-            title={"G99CC23 (5 Year)"}
-            dataCy="currency-summary-card"
+        <RoundedBox
+            className={`padding-y-205 padding-x-4 padding-right-9 display-inline-block`}
+            dataCy="can-funding-summary-card"
         >
             <h3
-                className="margin-0 margin-top-neg-3 margin-bottom-2 font-12px text-base-dark text-normal"
+                className="margin-0 margin-bottom-2 font-12px text-base-dark text-normal"
                 style={{ whiteSpace: "pre-line", lineHeight: "20px" }}
             >
-                {"CAN Total Budget"}
+                {title} <br /> {titleLine2}
             </h3>
             <div>
                 <p className={`text-bold ${styles.font20}`}>
@@ -137,7 +140,7 @@ const CANFundingCard = ({ can, pendingAmount }) => {
                     />
                 ))}
             </div>
-        </SummaryCard>
+        </RoundedBox>
     );
 };
 

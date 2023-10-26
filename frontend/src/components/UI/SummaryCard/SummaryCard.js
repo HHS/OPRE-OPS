@@ -16,14 +16,7 @@ const SummaryCard = ({ title, children, dataCy = "", ...rest }) => {
             dataCy={dataCy ?? dataCy}
             {...rest} // this is real trust
         >
-            {title && (
-                <h3
-                    className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal"
-                    style={{ whiteSpace: "pre-line", lineHeight: "20px" }}
-                >
-                    {title}
-                </h3>
-            )}
+            {title && <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">{title}</h3>}
             {children}
         </RoundedBox>
     );
