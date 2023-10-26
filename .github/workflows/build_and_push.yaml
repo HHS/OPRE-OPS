@@ -28,6 +28,10 @@ jobs:
     #     username: ${{ github.repository_owner }}
     #     password: ${{ secrets.CR_PAT }}
 
+    - name: List workspace contents
+      run: ls -la ${{ github.workspace }}
+
+
     - name: Convert to lowercase
       id: convert
       run: |
