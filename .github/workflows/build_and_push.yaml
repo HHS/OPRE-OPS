@@ -38,7 +38,7 @@ jobs:
       if: github.event_name == 'push'
       uses: docker/build-push-action@v5
       with:
-        context: ./backend
+        context: ${{ github.workspace }}/backend
         file: Dockerfile.ops-api
         push: true
         # tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
