@@ -28,6 +28,12 @@ jobs:
     #     username: ${{ github.repository_owner }}
     #     password: ${{ secrets.CR_PAT }}
 
+    - name: Convert to lowercase
+      id: convert
+      run: |
+        echo "REPO_OWNER=${{ github.repository_owner }} | tr 'A-Z' 'a-z'" >> $GITHUB_ENV
+        echo "REPO_NAME=${{ github.repository_name }} | tr 'A-Z' 'a-z'" >> $GITHUB_ENV
+
     - name: Build and push image with commit hash
       if: github.event_name == 'push'
       uses: docker/build-push-action@v5
@@ -36,7 +42,7 @@ jobs:
         file: Dockerfile.ops-api
         push: true
         # tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
-        tags: ghcr.io/${{ github.repository_owner | lower }}/${{ github.repository_name | lower }}:${{ github.sha }}
+        tags: ghcr.io/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}:${{ github.sha }}
 
     # - name: Build and push image with release tag
     #   if: github.event_name == 'release'
