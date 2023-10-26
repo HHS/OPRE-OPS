@@ -35,7 +35,8 @@ jobs:
         context: backend
         file: Dockerfile.ops-api
         push: true
-        tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+        # tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+        tags: ghcr.io/${{ github.repository_owner | lower }}/${{ github.repository_name | lower }}:${{ github.sha }}
 
     # - name: Build and push image with release tag
     #   if: github.event_name == 'release'
