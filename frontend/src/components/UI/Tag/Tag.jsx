@@ -34,6 +34,9 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className,
         case "primaryDarkTextLightBackground":
             tagClasses += " bg-brand-primary-light text-brand-primary-dark";
             break;
+        case "lightTextRedBackground":
+            activeClass += " bg-secondary-dark text-white";
+            break;
         default:
             break;
     }

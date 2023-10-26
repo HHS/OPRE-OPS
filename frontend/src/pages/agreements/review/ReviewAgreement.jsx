@@ -13,7 +13,12 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import AgreementActionAccordion from "../../../components/Agreements/AgreementActionAccordion";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
-import { anyBudgetLinesByStatus, selectedBudgetLinesTotal, getTotalBySelectedCans } from "./ReviewAgreement.helpers";
+import {
+    anyBudgetLinesByStatus,
+    getSelectedBudgetLines,
+    selectedBudgetLinesTotal,
+    getTotalBySelectedCans
+} from "./ReviewAgreement.helpers";
 import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
 import useReviewAgreement from "./reviewAgreement.hooks";
 import AgreementCANReviewAccordian from "../../../components/Agreements/AgreementCANReviewAccordian";
@@ -196,7 +201,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordian
                 agreement={agreement}
-                selectedBudgetLines={budgetLines}
+                selectedBudgetLines={getSelectedBudgetLines(budgetLines)}
             />
             <AgreementChangesAccordion
                 changeInBudgetLines={selectedBudgetLinesTotal(budgetLines)}

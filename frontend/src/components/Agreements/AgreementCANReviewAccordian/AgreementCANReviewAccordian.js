@@ -1,11 +1,11 @@
 import Accordion from "../../UI/Accordion";
 import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
 import CANFundingBar from "../../CANs/CANFundingBar/CANFundingBar";
-import React from "react";
+import React, { useState } from "react";
 import { useGetAgreementByIdQuery, useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
-import { calculatePercent } from "../../../helpers/utils";
+import { calculatePercent, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircle } from "@fortawesome/free-solid-svg-icons";
+import { faCircle, faToggleOff, faToggleOn, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import CurrencyFormat from "react-currency-format";
 import Tag from "../../UI/Tag";
 import CurrencyWithSmallCents from "../../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
@@ -14,8 +14,9 @@ import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import styles from "../AgreementChangesAccordion/small-summary-card.module.css";
 import RoundedBox from "../../UI/RoundedBox";
 
-const CANFundingCard = ({ can, pendingAmount }) => {
-    const canId = can.can_id;
+const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
+    const adjustAmount = afterApproval ? pendingAmount : 0;
+    const canId = can.id;
     const { data: data, error: error, isLoading: isLoading } = useGetCanFundingSummaryQuery(canId);
     const [activeId, setActiveId] = React.useState(0);
 
@@ -25,11 +26,12 @@ const CANFundingCard = ({ can, pendingAmount }) => {
     if (error) {
         return <div>An error occurred loading CAN funding data</div>;
     }
+    const title = `${data.can.number} (${data.can.appropriation_term} Year)`;
     const totalFunding = Number(data.total_funding);
     const availableFunding = Number(data.available_funding);
     const totalAccountedFor = totalFunding - availableFunding; // same as adding planned, obligated, in_execution
-    const totalSpending = totalAccountedFor; // TODO: subtract off pending BLIs
-    const remainingBudget = availableFunding; // TODO: subtract off pending BLIs
+    const totalSpending = totalAccountedFor + adjustAmount;
+    const remainingBudget = availableFunding - adjustAmount;
     const overBudget = remainingBudget < 0;
     // available_funding = float(total_funding) - float(total_accounted_for)
 
@@ -58,7 +60,7 @@ const CANFundingCard = ({ can, pendingAmount }) => {
         const isGraphActive = activeId === id;
         return (
             <div className="grid-row margin-top-2">
-                <div className="grid-col-7">
+                <div className="grid-col-6">
                     <div className="display-flex flex-align-center">
                         <FontAwesomeIcon
                             icon={faCircle}
@@ -66,7 +68,7 @@ const CANFundingCard = ({ can, pendingAmount }) => {
                             style={{ color: color }}
                         />
 
-                        <span className={isGraphActive ? "fake-bold" : undefined}>{label}</span>
+                        <span className={isGraphActive ? "fake-bold" : ""}>{label}</span>
                     </div>
                 </div>
                 <div className="grid-col-4">
@@ -75,10 +77,10 @@ const CANFundingCard = ({ can, pendingAmount }) => {
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$ "}
-                        renderText={(value) => <span className={isGraphActive ? "fake-bold" : undefined}>{value}</span>}
+                        renderText={(value) => <span className={isGraphActive ? "fake-bold" : ""}>{value}</span>}
                     />
                 </div>
-                <div className="grid-col-1">
+                <div className="grid-col-2">
                     <Tag
                         tagStyle={tagStyle}
                         tagStyleActive={tagStyleActive}
@@ -91,9 +93,6 @@ const CANFundingCard = ({ can, pendingAmount }) => {
         );
     };
 
-    const title = "G99CC23 (5 Year)";
-    const titleLine2 = "CAN Total Budget";
-
     return (
         <RoundedBox
             className={`padding-y-205 padding-x-4 padding-right-9 display-inline-block`}
@@ -103,19 +102,28 @@ const CANFundingCard = ({ can, pendingAmount }) => {
                 className="margin-0 margin-bottom-2 font-12px text-base-dark text-normal"
                 style={{ whiteSpace: "pre-line", lineHeight: "20px" }}
             >
-                {title} <br /> {titleLine2}
+                {title} <br /> CAN Total Budget
             </h3>
-            <div>
-                <p className={`text-bold ${styles.font20}`}>
-                    <CurrencyFormat
-                        value={totalFunding || 0}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        decimalScale={getDecimalScale(totalFunding)}
-                        fixedDecimalScale={true}
-                    />
-                </p>
+
+            <div className={`${styles.font20} margin-0 display-flex flex-justify`}>
+                <CurrencyFormat
+                    className={`text-bold`}
+                    value={totalFunding || 0}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"$"}
+                    decimalScale={getDecimalScale(totalFunding)}
+                    fixedDecimalScale={true}
+                />
+                {overBudget && (
+                    <Tag tagStyle={"lightTextRedBackground"}>
+                        Over Budget{" "}
+                        <FontAwesomeIcon
+                            icon={faTriangleExclamation}
+                            title="Over Budget"
+                        />
+                    </Tag>
+                )}
             </div>
             <div
                 id="currency-summary-card"
@@ -145,6 +153,25 @@ const CANFundingCard = ({ can, pendingAmount }) => {
 };
 
 const AgreementCANReviewAccordian = ({ agreement, selectedBudgetLines }) => {
+    const [afterApproval, setAfterApproval] = useState(true);
+    const cansWithPendingAmount = selectedBudgetLines.reduce((acc, budgetLine) => {
+        const canId = budgetLine?.can?.id;
+        if (!acc[canId]) {
+            acc[canId] = {
+                can: budgetLine.can,
+                pendingAmount: 0,
+                count: 0 // not used but handy for debugging
+            };
+        }
+        acc[canId].pendingAmount +=
+            budgetLine.amount + totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.proc_shop_fee_percentage);
+        acc[canId].count += 1;
+        return acc;
+    }, {});
+
+    console.log("cansWithPendingAmount", cansWithPendingAmount);
+    // Object.entries()
+
     return (
         <Accordion
             heading="Review CANs"
@@ -155,11 +182,60 @@ const AgreementCANReviewAccordian = ({ agreement, selectedBudgetLines }) => {
                 toggle to see how your approval would change the remaining budget of CANs within your Portfolio or
                 Division.
             </p>
-            <CANFundingCard can={{ can_id: 1 }} />
-            <CANFundingCard can={{ can_id: 2 }} />
-            <CANFundingCard can={{ can_id: 3 }} />
-            <CANFundingCard can={{ can_id: 4 }} />
-            <CANFundingCard can={{ can_id: 5 }} />
+            <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
+                {/*<h2 className="font-sans-lg"></h2>*/}
+                <button
+                    id="toggleAfterApproval"
+                    className="hover:text-underline cursor-pointer"
+                    onClick={() => setAfterApproval(!afterApproval)}
+                >
+                    <FontAwesomeIcon
+                        icon={afterApproval ? faToggleOn : faToggleOff}
+                        size="2xl"
+                        className={`margin-right-1 cursor-pointer ${afterApproval ? "text-primary" : "text-base"}`}
+                        title={afterApproval ? "On (Drafts included)" : "Off (Drafts excluded)"}
+                    />
+                    <span className="text-primary">After Approval</span>
+                </button>
+            </div>
+            <div
+                className="display-flex flex-wrap"
+                style={{ gap: "32px 28px" }}
+            >
+                {Object.entries(cansWithPendingAmount).map(([key, value]) => (
+                    <CANFundingCard
+                        can={value.can}
+                        pendingAmount={value.pendingAmount}
+                        afterApproval={afterApproval}
+                    />
+                ))}
+
+                <CANFundingCard
+                    can={{ id: 1 }}
+                    pendingAmount={1000000}
+                    afterApproval={afterApproval}
+                />
+                <CANFundingCard
+                    can={{ id: 2 }}
+                    pendingAmount={20000000}
+                    afterApproval={afterApproval}
+                />
+                <CANFundingCard
+                    can={{ id: 3 }}
+                    pendingAmount={3000000}
+                    afterApproval={afterApproval}
+                />
+                <CANFundingCard
+                    can={{ id: 4 }}
+                    pendingAmount={4000000}
+                    afterApproval={afterApproval}
+                />
+                <CANFundingCard
+                    can={{ id: 5 }}
+                    pendingAmount={5000000}
+                    afterApproval={afterApproval}
+                />
+            </div>
             {/*<div>-----------</div>*/}
             {/*<pre>{JSON.stringify(selectedBudgetLines, null, 2)}</pre>*/}
         </Accordion>
