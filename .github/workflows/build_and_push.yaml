@@ -31,8 +31,8 @@ jobs:
     - name: Convert to lowercase
       id: convert
       run: |
-        echo "REPO_OWNER=${{ github.repository_owner }} | tr 'A-Z' 'a-z'" >> $GITHUB_ENV
-        echo "REPO_NAME=${{ github.repository_name }} | tr 'A-Z' 'a-z'" >> $GITHUB_ENV
+        echo "REPO_OWNER=${{github.repository_owner,,}}" >> $GITHUB_ENV
+        echo "REPO_NAME=${{github.repository_name,,}}" >> $GITHUB_ENV
 
     - name: Build and push image with commit hash
       if: github.event_name == 'push'
