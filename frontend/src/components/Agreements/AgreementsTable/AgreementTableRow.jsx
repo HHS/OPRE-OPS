@@ -183,7 +183,6 @@ export const AgreementTableRow = ({ agreement }) => {
                 expandedData={ExpandedData}
                 isExpanded={isExpanded}
                 setIsExpanded={setIsExpanded}
-                isRowActive={isRowActive}
                 setIsRowActive={setIsRowActive}
             />
         </>
