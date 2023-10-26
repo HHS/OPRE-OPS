@@ -8,6 +8,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import CurrencyFormat from "react-currency-format";
 import Tag from "../../UI/Tag";
+import CurrencyWithSmallCents from "../../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
+import SummaryCard from "../../UI/SummaryCard";
+import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import styles from "../AgreementChangesAccordion/small-summary-card.module.css";
 
 const CANFundingCard = ({ can, pendingAmount }) => {
     const canId = can.can_id;
@@ -87,37 +91,53 @@ const CANFundingCard = ({ can, pendingAmount }) => {
     };
 
     return (
-        <div>
-            <CurrencySummaryCard
-                headerText={"G99CC23 (5 Year) \n CAN Total Budget"}
-                amount={totalFunding}
+        <SummaryCard
+            // title={"G99CC23 (5 Year) \n CAN Total Budget"}
+            title={"G99CC23 (5 Year)"}
+            dataCy="currency-summary-card"
+        >
+            <h3
+                className="margin-0 margin-top-neg-3 margin-bottom-2 font-12px text-base-dark text-normal"
+                style={{ whiteSpace: "pre-line", lineHeight: "20px" }}
             >
-                <div
-                    id="currency-summary-card"
-                    className="margin-top-2"
-                >
-                    <CANFundingBar
-                        setActiveId={setActiveId}
-                        data={canFundingBarData}
+                {"CAN Total Budget"}
+            </h3>
+            <div>
+                <p className={`text-bold ${styles.font20}`}>
+                    <CurrencyFormat
+                        value={totalFunding || 0}
+                        displayType={"text"}
+                        thousandSeparator={true}
+                        prefix={"$"}
+                        decimalScale={getDecimalScale(totalFunding)}
+                        fixedDecimalScale={true}
                     />
-                </div>
-                <div className="font-12px margin-top-2">
-                    {canFundingBarData.map((item) => (
-                        <LegendItem
-                            key={item.id}
-                            id={item.id}
-                            label={item.label}
-                            value={item.value}
-                            color={item.color}
-                            percent={item.percent}
-                            tagStyle={item.tagStyle}
-                            tagStyleActive={item.tagStyleActive}
-                        />
-                    ))}
-                </div>
-            </CurrencySummaryCard>
-            <div style={{ marginTop: "30px" }}>{/*<pre>{JSON.stringify(data, null, 2)}</pre>*/}</div>
-        </div>
+                </p>
+            </div>
+            <div
+                id="currency-summary-card"
+                className="margin-top-2"
+            >
+                <CANFundingBar
+                    setActiveId={setActiveId}
+                    data={canFundingBarData}
+                />
+            </div>
+            <div className="font-12px margin-top-2">
+                {canFundingBarData.map((item) => (
+                    <LegendItem
+                        key={item.id}
+                        id={item.id}
+                        label={item.label}
+                        value={item.value}
+                        color={item.color}
+                        percent={item.percent}
+                        tagStyle={item.tagStyle}
+                        tagStyleActive={item.tagStyleActive}
+                    />
+                ))}
+            </div>
+        </SummaryCard>
     );
 };
 
