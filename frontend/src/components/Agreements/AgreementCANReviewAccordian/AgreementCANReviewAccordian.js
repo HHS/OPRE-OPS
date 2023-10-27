@@ -1,19 +1,17 @@
 import Accordion from "../../UI/Accordion";
-import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
 import CANFundingBar from "../../CANs/CANFundingBar/CANFundingBar";
 import React, { useState } from "react";
-import { useGetAgreementByIdQuery, useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
+import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 import { calculatePercent, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle, faToggleOff, faToggleOn, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import CurrencyFormat from "react-currency-format";
 import Tag from "../../UI/Tag";
-import CurrencyWithSmallCents from "../../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
-import SummaryCard from "../../UI/SummaryCard";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import styles from "../AgreementChangesAccordion/small-summary-card.module.css";
 import RoundedBox from "../../UI/RoundedBox";
 
+// TODO: move to its own file
 const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
     const adjustAmount = afterApproval ? pendingAmount : 0;
     const canId = can.id;
@@ -33,7 +31,6 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
     const totalSpending = totalAccountedFor + adjustAmount;
     const remainingBudget = availableFunding - adjustAmount;
     const overBudget = remainingBudget < 0;
-    // available_funding = float(total_funding) - float(total_accounted_for)
 
     const canFundingBarData = [
         {
@@ -55,7 +52,7 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
             percent: `${calculatePercent(remainingBudget, totalFunding)}%`
         }
     ];
-
+    // TODO: move to its own file
     const LegendItem = ({ id, label, value, color, percent, tagStyle, tagStyleActive }) => {
         const isGraphActive = activeId === id;
         return (
@@ -152,7 +149,7 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
     );
 };
 
-const AgreementCANReviewAccordian = ({ agreement, selectedBudgetLines }) => {
+const AgreementCANReviewAccordian = ({ selectedBudgetLines }) => {
     const [afterApproval, setAfterApproval] = useState(true);
     const cansWithPendingAmount = selectedBudgetLines.reduce((acc, budgetLine) => {
         const canId = budgetLine?.can?.id;
@@ -170,7 +167,6 @@ const AgreementCANReviewAccordian = ({ agreement, selectedBudgetLines }) => {
     }, {});
 
     console.log("cansWithPendingAmount", cansWithPendingAmount);
-    // Object.entries()
 
     return (
         <Accordion
@@ -183,7 +179,6 @@ const AgreementCANReviewAccordian = ({ agreement, selectedBudgetLines }) => {
                 Division.
             </p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
-                {/*<h2 className="font-sans-lg"></h2>*/}
                 <button
                     id="toggleAfterApproval"
                     className="hover:text-underline cursor-pointer"
@@ -237,7 +232,6 @@ const AgreementCANReviewAccordian = ({ agreement, selectedBudgetLines }) => {
                     afterApproval={afterApproval}
                 />
             </div>
-            {/*<div>-----------</div>*/}
             {/*<pre>{JSON.stringify(selectedBudgetLines, null, 2)}</pre>*/}
         </Accordion>
     );

@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
  *  Tag component.
  *  @param {Object} props - Properties passed to component
  *  @param {string} [props.tagStyle] - The style of the tag.
+ * @param {string} [props.tagStyleActive] - The style of the tag when active.
  *  @param {string} [props.text] - The text to display in the tag.
  *  @param {boolean} [props. active] - Whether the tag is active or not.
  *  @param {string} [props.label ]- The label of the tag.
@@ -112,5 +113,6 @@ Tag.propTypes = {
     active: PropTypes.bool,
     label: PropTypes.string,
     className: PropTypes.string,
-    children: PropTypes.node
+    children: PropTypes.node,
+    tagStyleActive: PropTypes.string
 };
