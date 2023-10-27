@@ -14,7 +14,7 @@ import RoundedBox from "../../UI/RoundedBox";
 // TODO: move to its own file
 const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
     const adjustAmount = afterApproval ? pendingAmount : 0;
-    const canId = can.id;
+    const canId = can?.id;
     const { data: data, error: error, isLoading: isLoading } = useGetCanFundingSummaryQuery(canId);
     const [activeId, setActiveId] = React.useState(0);
 
@@ -92,7 +92,7 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
     return (
         <RoundedBox
             className={`padding-y-205 padding-x-4 padding-right-9 display-inline-block`}
-            dataCy="can-funding-summary-card"
+            dataCy={`can-funding-summary-card-${canId}`}
             style={{ height: "14.5rem" }}
         >
             <h3
@@ -206,7 +206,7 @@ const AgreementCANReviewAccordian = ({ selectedBudgetLines }) => {
                     />
                 ))}
 
-                <CANFundingCard
+                {/* <CANFundingCard
                     can={{ id: 1 }}
                     pendingAmount={1000000}
                     afterApproval={afterApproval}
@@ -230,7 +230,7 @@ const AgreementCANReviewAccordian = ({ selectedBudgetLines }) => {
                     can={{ id: 5 }}
                     pendingAmount={5000000}
                     afterApproval={afterApproval}
-                />
+                /> */}
             </div>
             {/*<pre>{JSON.stringify(selectedBudgetLines, null, 2)}</pre>*/}
         </Accordion>
