@@ -59,8 +59,8 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
     const LegendItem = ({ id, label, value, color, percent, tagStyle, tagStyleActive }) => {
         const isGraphActive = activeId === id;
         return (
-            <div className="grid-row margin-top-2">
-                <div className="grid-col-6">
+            <div className="display-flex flex-justify margin-top-2">
+                <div className="">
                     <div className="display-flex flex-align-center">
                         <FontAwesomeIcon
                             icon={faCircle}
@@ -71,7 +71,7 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
                         <span className={isGraphActive ? "fake-bold" : ""}>{label}</span>
                     </div>
                 </div>
-                <div className="grid-col-4">
+                <div>
                     <CurrencyFormat
                         value={value}
                         displayType={"text"}
@@ -79,14 +79,13 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
                         prefix={"$ "}
                         renderText={(value) => <span className={isGraphActive ? "fake-bold" : ""}>{value}</span>}
                     />
-                </div>
-                <div className="grid-col-2">
                     <Tag
                         tagStyle={tagStyle}
                         tagStyleActive={tagStyleActive}
                         text={percent}
                         label={label}
                         active={isGraphActive}
+                        className="margin-left-1"
                     />
                 </div>
             </div>
@@ -97,6 +96,7 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
         <RoundedBox
             className={`padding-y-205 padding-x-4 padding-right-9 display-inline-block`}
             dataCy="can-funding-summary-card"
+            style={{ height: "14.5rem" }}
         >
             <h3
                 className="margin-0 margin-bottom-2 font-12px text-base-dark text-normal"
@@ -204,6 +204,7 @@ const AgreementCANReviewAccordian = ({ agreement, selectedBudgetLines }) => {
             >
                 {Object.entries(cansWithPendingAmount).map(([key, value]) => (
                     <CANFundingCard
+                        key={key}
                         can={value.can}
                         pendingAmount={value.pendingAmount}
                         afterApproval={afterApproval}

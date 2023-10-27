@@ -13,13 +13,14 @@ library.add(faSquare);
  * @param {string} [props.dataCy] - Data attribute for Cypress tests.
  * @returns {React.JSX.Element} Rendered component.
  */
-const RoundedBox = ({ children, className, dataCy }) => {
+const RoundedBox = ({ children, className, dataCy, ...rest }) => {
     const cardContainer = `bg-base-lightest font-family-sans display-flex ${cssClasses.container} ${className}`;
 
     return (
         <div
             className={cardContainer}
             data-cy={dataCy ?? dataCy}
+            {...rest}
         >
             {children}
         </div>
