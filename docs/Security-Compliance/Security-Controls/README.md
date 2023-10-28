@@ -149,6 +149,10 @@
 7. [MA-5](ma-05/index.md)
 8. [MA-6](ma-06/index.md)
 
+### Media Protection
+
+### Planning
+
 ### Personally Identifiable Information Processing and Transparency
 
 1. [PT-2](pt-02/index.md)
@@ -163,6 +167,8 @@
 10. [PT-7-1](pt-07-1/index.md)
 11. [PT-7-2](pt-07-2/index.md)
 12. [PT-8](pt-08/index.md)
+
+### Personal Security
 
 ### Risk Assessment
 
@@ -239,4 +245,9 @@
 13. [SI-10](si-10/index.md)
 14. [SI-11](si-11/index.md)
 15. [SI-12](si-12/index.md)
-16. [SI-16](si-16/index.md)
+16. [SI-12-1](si-12-1/index.md) ?
+17. [SI-12-2](si-12-3/index.md) ?
+18. [SI-12-3](si-12-3/index.md) ?
+19. [SI-16](si-16/index.md)
+
+### Supply Chain Risk Management

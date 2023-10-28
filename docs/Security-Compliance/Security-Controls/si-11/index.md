@@ -12,6 +12,6 @@ OPS error messages renedered to OPS users do not disclose exploitable or vulnera
 
 ### Control Origination
 
-OPS
+Hybrid with IaaS vendor, ACF Tech (AMS), and OPS
 
 ### Related Content

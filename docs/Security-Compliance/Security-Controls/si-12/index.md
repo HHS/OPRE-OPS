@@ -1,5 +1,5 @@
 # System and Information Integrity
-## SI-12 - Information Output Handling and Retention
+## SI-12 - Information Management and Retention
 
 Manage and retain information within the system and information output from the system in accordance with applicable laws, executive orders, directives, regulations, policies, standards, guidelines and operational requirements.
 

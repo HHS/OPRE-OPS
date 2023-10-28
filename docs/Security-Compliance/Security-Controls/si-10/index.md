@@ -15,7 +15,7 @@ iii. Parameter and character validity checks – Checks to verify that any param
 
 ## OPS Implementation
 
-TODO: need some text around Vest, SQL Alchemy, and other input sanitization techniques, front end served from static files, do not operate a separtae web server. See any inherited text
+TODO: need some text around Vest, SQL Alchemy, and other input sanitization techniques, front end served from static files, do not operate a separate web server. See any inherited text
 
 ### Control Origination
 
