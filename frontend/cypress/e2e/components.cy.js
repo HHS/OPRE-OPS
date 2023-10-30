@@ -56,7 +56,7 @@ describe("table row", () => {
 
 describe("accordion", () => {
     it("accordion should close when clicked", () => {
-        cy.visit("/agreements/approve/1");
+        cy.visit("/agreements/review/1");
         cy.get(".usa-accordion__heading > .usa-accordion__button").first().as("acc-btn").should("exist");
         cy.get(".usa-accordion__content").should("not.be.hidden");
         cy.get("@acc-btn").click();
@@ -64,7 +64,7 @@ describe("accordion", () => {
     });
 
     it("accordion should close via keyboard enter", () => {
-        cy.visit("/agreements/approve/1");
+        cy.visit("/agreements/review/1");
         cy.get(".usa-accordion__heading > .usa-accordion__button").first().as("acc-btn").should("exist");
         cy.get(".usa-accordion__content").should("not.be.hidden");
         cy.get("@acc-btn").type("{enter}");

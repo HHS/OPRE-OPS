@@ -1,7 +1,6 @@
 import { Fragment } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import classnames from "vest/classnames";
-import PropTypes from "prop-types";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../../api/opsAPI";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
@@ -22,21 +21,23 @@ import {
 import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
 import useReviewAgreement from "./reviewAgreement.hooks";
 import AgreementCANReviewAccordian from "../../../components/Agreements/AgreementCANReviewAccordian";
+import App from "../../../App";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
- * @param {Object} props - The component props.
- * @param {number} props.agreement_id - The ID of the agreement to review.
  * @returns {React.JSX.Element} - The rendered component.
  */
-export const ReviewAgreement = ({ agreement_id }) => {
+
+export const ReviewAgreement = () => {
+    const urlPathParams = useParams();
+    const agreementId = +urlPathParams.id;
     const navigate = useNavigate();
     const {
         isSuccess,
         data: agreement,
         error: errorAgreement,
         isLoading: isLoadingAgreement
-    } = useGetAgreementByIdQuery(agreement_id, {
+    } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true
     });
 
@@ -113,7 +114,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
     };
 
     return (
-        <>
+        <App breadCrumbName="Agreements">
             {isAlertActive && Object.entries(pageErrors).length > 0 ? (
                 <SimpleAlert
                     type="error"
@@ -143,7 +144,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 </SimpleAlert>
             ) : (
                 <h1
-                    className="text-bold margin-top-0"
+                    className="text-bold"
                     style={{ fontSize: "1.375rem" }}
                 >
                     Review and Send Agreement to Approval
@@ -231,12 +232,8 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     Send to Approval
                 </button>
             </div>
-        </>
+        </App>
     );
-};
-
-ReviewAgreement.propTypes = {
-    agreement_id: PropTypes.number.isRequired
 };
 
 export default ReviewAgreement;
