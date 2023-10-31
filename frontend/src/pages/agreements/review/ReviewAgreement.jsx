@@ -20,7 +20,7 @@ import {
 } from "./ReviewAgreement.helpers";
 import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
 import useReviewAgreement from "./reviewAgreement.hooks";
-import AgreementCANReviewAccordian from "../../../components/Agreements/AgreementCANReviewAccordian";
+import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordian";
 import App from "../../../App";
 
 /**
@@ -200,7 +200,7 @@ export const ReviewAgreement = () => {
                     setMainToggleSelected={setMainToggleSelected}
                 />
             </AgreementBLIAccordion>
-            <AgreementCANReviewAccordian
+            <AgreementCANReviewAccordion
                 agreement={agreement}
                 selectedBudgetLines={getSelectedBudgetLines(budgetLines)}
             />
