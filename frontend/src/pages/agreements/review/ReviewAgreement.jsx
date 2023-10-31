@@ -22,7 +22,7 @@ import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIRevi
 import useReviewAgreement from "./reviewAgreement.hooks";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordian";
 import App from "../../../App";
-import useToggle from "../../../components/UI/ToggleButton/useToggle";
+import useToggle from "../../../hooks/useToggle";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -166,8 +166,10 @@ export const ReviewAgreement = () => {
             />
 
             <AgreementBLIAccordion
-                budgetLineItems={agreement?.budget_line_items}
+                budgetLineItems={getSelectedBudgetLines(budgetLines)}
                 agreement={agreement}
+                afterApproval={afterAproval}
+                setAfterApproval={setAfterApproval}
             >
                 <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""}`}>
                     {areThereBudgetLineErrors && (
