@@ -1,13 +1,17 @@
-import * as React from "react";
 import Accordion from "../../UI/Accordion";
 import { totalBudgetLineFeeAmount } from "../../../helpers/utils";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faToggleOff, faToggleOn } from "@fortawesome/free-solid-svg-icons";
 import CANFundingCard from "../../CANs/CANFundingCard";
+import ToggleButton from "../../UI/ToggleButton";
 
-const AgreementCANReviewAccordion = ({ selectedBudgetLines }) => {
-    // TODO: may need to elevate state for approval toggle
-    const [afterApproval, setAfterApproval] = React.useState(true);
+/**
+ * Renders an accordion component for reviewing CANs.
+ * @param {Object} props - The component props.
+ * @param {Array<any>} props.selectedBudgetLines - The selected budget lines.
+ * @param {boolean} props.afterApproval - Flag indicating whether to show remaining budget after approval.
+ * @param {Function} props.setAfterApproval - Function to set the afterApproval flag.
+ * @returns {React.JSX.Element} The AgreementCANReviewAccordion component.
+ */
+const AgreementCANReviewAccordion = ({ selectedBudgetLines, afterApproval, setAfterApproval }) => {
     const cansWithPendingAmount = selectedBudgetLines.reduce((acc, budgetLine) => {
         const canId = budgetLine?.can?.id;
         if (!acc[canId]) {
@@ -36,19 +40,11 @@ const AgreementCANReviewAccordion = ({ selectedBudgetLines }) => {
                 Division.
             </p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
-                <button
-                    id="toggleAfterApproval"
-                    className="hover:text-underline cursor-pointer"
-                    onClick={() => setAfterApproval(!afterApproval)}
-                >
-                    <FontAwesomeIcon
-                        icon={afterApproval ? faToggleOn : faToggleOff}
-                        size="2xl"
-                        className={`margin-right-1 cursor-pointer ${afterApproval ? "text-primary" : "text-base"}`}
-                        title={afterApproval ? "On (Drafts included)" : "Off (Drafts excluded)"}
-                    />
-                    <span className="text-primary">After Approval</span>
-                </button>
+                <ToggleButton
+                    btnText="After Approval"
+                    handleToggle={() => setAfterApproval(!afterApproval)}
+                    isToggleOn={afterApproval}
+                />
             </div>
             <div
                 className="display-flex flex-wrap"

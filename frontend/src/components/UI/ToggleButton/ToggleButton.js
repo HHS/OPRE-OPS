@@ -1,4 +1,6 @@
 import React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faToggleOff, faToggleOn } from "@fortawesome/free-solid-svg-icons";
 
 const ToggleButton = ({ handleToggle = () => {}, isToggleOn = true, btnText = "" }) => {
     const toggleId = React.useId();
