@@ -27,14 +27,12 @@ const minAgreement = {
 
 beforeEach(() => {
     testLogin("admin");
-    // TODO: make sure we need this line
-    // cy.visit(`/`);
 });
-// TODO: uncomment and handle a11y issues
-// afterEach(() => {
-//     cy.injectAxe();
-//     cy.checkA11y(null, null, terminalLog);
-// });
+
+afterEach(() => {
+    cy.injectAxe();
+    cy.checkA11y(null, null, terminalLog);
+});
 
 describe("agreement review workflow", () => {
     it("review an agreement", () => {
@@ -389,7 +387,7 @@ describe("agreement review workflow", () => {
     });
 });
 
-describe.only("agreement change accordion", () => {
+describe("agreement change accordion", () => {
     it("handles interactions", () => {
         cy.visit("/agreements/review/1").wait(1000);
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
@@ -423,7 +421,7 @@ describe("agreement BLI accordion", () => {
     });
 
     it("allow to select individual budget lines", () => {
-        cy.visit("/agreements/review/1");
+        cy.visit("/agreements/review/1").wait(1000);
         cy.get('input[id="Change Draft Budget Lines to Planned Status"]').should("exist").should("not.be.disabled");
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('[type="radio"]').first().check({ force: true });
@@ -491,9 +489,9 @@ describe("agreement review CANS accordion", () => {
         // check the radio button
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('[type="radio"]').first().check({ force: true });
-        cy.wait(1000);
+        cy.wait(1);
         cy.get("#check-all").check({ force: true });
-        cy.wait(1000);
+        cy.wait(1);
         cy.get('[type="checkbox"]')
             .should("have.length", 3)
             .each((checkbox) => {
@@ -512,9 +510,9 @@ describe("agreement review CANS accordion", () => {
         // check the radio button
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('[type="radio"]').first().check({ force: true });
-        cy.wait(1000);
+        cy.wait(1);
         cy.get("#check-all").check({ force: true });
-        cy.wait(1000);
+        cy.wait(1);
         cy.get('[type="checkbox"]')
             .should("have.length", 3)
             .each((checkbox) => {

@@ -1,2 +1,2 @@
-export * from "./AgreementCANReviewAccordian";
-export { default } from "./AgreementCANReviewAccordian";
+export * from "./AgreementCANReviewAccordion";
+export { default } from "./AgreementCANReviewAccordion";
