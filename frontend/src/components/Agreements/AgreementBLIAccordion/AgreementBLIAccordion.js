@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import Accordion from "../../UI/Accordion";
 import BLIsByFYSummaryCard from "../AgreementDetailsCards/BLIsByFYSummaryCard";
 import AgreementTotalCard from "../AgreementDetailsCards/AgreementTotalCard";
-import { getAgreementSubTotal, getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
+import { draftBudgetLineStatuses } from "../../../helpers/utils";
 import ToggleButton from "../../UI/ToggleButton";
 
 /**
@@ -13,30 +13,30 @@ import ToggleButton from "../../UI/ToggleButton";
  * @param {Object} props.agreement - The agreement object.
  * @param {boolean} props.afterApproval - Flag indicating whether to show remaining budget after approval.
  * @param {Function} props.setAfterApproval - Function to set the afterApproval flag.
- * @param {boolean} props.anyBudgetLinesDraft - Flag indicating whether any budget lines are in draft status.
  * @returns {React.JSX.Element} - The rendered accordion component.
  */
 function AgreementBLIAccordion({
-    budgetLineItems = [],
+    budgetLineItems: selectedBudgetLineItems = [],
     children,
     agreement,
     afterApproval,
-    setAfterApproval,
-    anyBudgetLinesDraft
+    setAfterApproval
 }) {
-    const agreementSubtotal = getAgreementSubTotal(agreement);
-    const agreementFees = getProcurementShopSubTotal(agreement);
-    const agreementTotal = agreementSubtotal + agreementFees;
-    const selectedBLISubtotal = budgetLineItems?.reduce((acc, { amount }) => acc + amount, 0);
-    const selectedBLIFees = budgetLineItems?.reduce(
-        (acc, { amount }) => acc + amount * (agreement.procurement_shop ? agreement.procurement_shop.fee : 0),
-        0
+    const budgetLinesTotal = (budgetLines) => budgetLines?.reduce((n, { amount }) => n + amount, 0);
+    const calculateBudgetLinesFees = (budgetLineItems) =>
+        budgetLineItems?.reduce(
+            (acc, { amount }) => acc + amount * (agreement.procurement_shop ? agreement.procurement_shop.fee : 0),
+            0
+        );
+    const notDraftBLIs = agreement.budget_line_items.filter((bli) => !draftBudgetLineStatuses.includes(bli.status));
+    const selectedDRAFTBudgetLines = selectedBudgetLineItems.filter((bli) =>
+        draftBudgetLineStatuses.includes(bli.status)
     );
-    const selectedBLITotal = selectedBLISubtotal + selectedBLIFees;
-    const totalAfterApproval = afterApproval ? selectedBLITotal : agreementTotal - selectedBLITotal;
-    const budgetLinesAfterApproval = afterApproval ? budgetLineItems : agreement.budget_lines;
-    const feesAfterApproval = afterApproval ? selectedBLIFees : agreementFees - selectedBLIFees;
-    const subTotalAfterApproval = afterApproval ? selectedBLISubtotal : agreementSubtotal - selectedBLISubtotal;
+    const budgetLinesForCards = afterApproval ? [...selectedDRAFTBudgetLines, ...notDraftBLIs] : notDraftBLIs;
+    const feesForCards = calculateBudgetLinesFees(budgetLinesForCards);
+    const subTotalForCards = budgetLinesTotal(budgetLinesForCards);
+    const totalsForCards = subTotalForCards + calculateBudgetLinesFees(budgetLinesForCards);
+
     return (
         <Accordion
             heading="Select Budget Lines"
@@ -55,27 +55,13 @@ function AgreementBLIAccordion({
                 />
             </div>
             <div className="display-flex flex-justify">
-                {anyBudgetLinesDraft ? (
-                    <BLIsByFYSummaryCard budgetLineItems={budgetLinesAfterApproval} />
-                ) : (
-                    <BLIsByFYSummaryCard budgetLineItems={agreement.budget_line_items} />
-                )}
-
-                {anyBudgetLinesDraft ? (
-                    <AgreementTotalCard
-                        total={totalAfterApproval}
-                        subtotal={subTotalAfterApproval}
-                        fees={feesAfterApproval}
-                        procurementShop={agreement.procurement_shop}
-                    />
-                ) : (
-                    <AgreementTotalCard
-                        total={getAgreementSubTotal(agreement) + getProcurementShopSubTotal(agreement)}
-                        subtotal={getAgreementSubTotal(agreement)}
-                        fees={getProcurementShopSubTotal(agreement)}
-                        procurementShop={agreement.procurement_shop}
-                    />
-                )}
+                <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
+                <AgreementTotalCard
+                    total={totalsForCards}
+                    subtotal={subTotalForCards}
+                    fees={feesForCards}
+                    procurementShop={agreement.procurement_shop}
+                />
             </div>
             {children}
         </Accordion>
@@ -86,7 +72,6 @@ AgreementBLIAccordion.propTypes = {
     children: PropTypes.node,
     agreement: PropTypes.object,
     afterApproval: PropTypes.bool,
-    setAfterApproval: PropTypes.func,
-    anyBudgetLinesDraft: PropTypes.bool
+    setAfterApproval: PropTypes.func
 };
 export default AgreementBLIAccordion;

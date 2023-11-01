@@ -170,7 +170,6 @@ export const ReviewAgreement = () => {
                 agreement={agreement}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
-                anyBudgetLinesDraft={anyBudgetLinesDraft}
             >
                 <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""}`}>
                     {areThereBudgetLineErrors && (
