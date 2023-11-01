@@ -47,7 +47,7 @@ export const ReviewAgreement = () => {
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
-    const [afterAproval, setAfterApproval] = useToggle(true);
+    const [afterApproval, setAfterApproval] = useToggle(true);
     const { setAlert } = useAlert();
     const {
         budgetLines,
@@ -168,8 +168,9 @@ export const ReviewAgreement = () => {
             <AgreementBLIAccordion
                 budgetLineItems={getSelectedBudgetLines(budgetLines)}
                 agreement={agreement}
-                afterApproval={afterAproval}
+                afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
+                anyBudgetLinesDraft={anyBudgetLinesDraft}
             >
                 <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""}`}>
                     {areThereBudgetLineErrors && (
@@ -206,7 +207,7 @@ export const ReviewAgreement = () => {
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
                 selectedBudgetLines={getSelectedBudgetLines(budgetLines)}
-                afterApproval={afterAproval}
+                afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
             />
             <AgreementChangesAccordion

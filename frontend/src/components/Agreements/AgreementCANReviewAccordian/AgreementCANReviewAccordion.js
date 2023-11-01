@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import Accordion from "../../UI/Accordion";
 import { totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import CANFundingCard from "../../CANs/CANFundingCard";
@@ -26,8 +27,6 @@ const AgreementCANReviewAccordion = ({ selectedBudgetLines, afterApproval, setAf
         acc[canId].count += 1;
         return acc;
     }, {});
-
-    console.log("cansWithPendingAmount", cansWithPendingAmount);
 
     return (
         <Accordion
@@ -63,4 +62,9 @@ const AgreementCANReviewAccordion = ({ selectedBudgetLines, afterApproval, setAf
     );
 };
 
+AgreementCANReviewAccordion.propTypes = {
+    selectedBudgetLines: PropTypes.arrayOf(PropTypes.object),
+    afterApproval: PropTypes.bool,
+    setAfterApproval: PropTypes.func
+};
 export default AgreementCANReviewAccordion;
