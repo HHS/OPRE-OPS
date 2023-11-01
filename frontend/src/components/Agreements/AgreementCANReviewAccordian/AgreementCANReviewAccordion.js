@@ -8,7 +8,7 @@ import Tag from "../../UI/Tag";
 import { useSelector } from "react-redux";
 import { useGetPortfoliosQuery } from "../../../api/opsAPI";
 
-const AgreementCANReviewAccordian = ({ selectedBudgetLines }) => {
+const AgreementCANReviewAccordion = ({ selectedBudgetLines }) => {
     // TODO: may need to elevate state for approval toggle
     const [afterApproval, setAfterApproval] = useState(true);
     const activeUser = useSelector((state) => state.auth.activeUser);
@@ -103,4 +103,4 @@ const AgreementCANReviewAccordian = ({ selectedBudgetLines }) => {
     );
 };
 
-export default AgreementCANReviewAccordian;
+export default AgreementCANReviewAccordion;
