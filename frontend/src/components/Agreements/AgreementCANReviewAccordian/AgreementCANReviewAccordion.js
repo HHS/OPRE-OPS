@@ -25,13 +25,10 @@ const AgreementCANReviewAccordion = ({ selectedBudgetLines }) => {
     const cansWithPendingAmountMap = selectedBudgetLines.reduce((acc, budgetLine) => {
         const canId = budgetLine?.can?.id;
         const canPortfolio = portfolios.find((portfolio) => portfolio.id === budgetLine?.can?.managing_portfolio_id);
-        const canDivisionId = canPortfolio.division_id;
-        const inMyDivision = myDivisionId === canDivisionId;
         if (!acc[canId]) {
             acc[canId] = {
                 can: budgetLine.can,
                 pendingAmount: 0,
-                inMyDivision: inMyDivision,
                 count: 0 // not used but handy for debugging
             };
         }
