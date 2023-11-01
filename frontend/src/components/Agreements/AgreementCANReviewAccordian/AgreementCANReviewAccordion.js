@@ -5,14 +5,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faToggleOff, faToggleOn } from "@fortawesome/free-solid-svg-icons";
 import CANFundingCard from "../../CANs/CANFundingCard";
 import Tag from "../../UI/Tag";
-import { useSelector } from "react-redux";
 import { useGetPortfoliosQuery } from "../../../api/opsAPI";
 
 const AgreementCANReviewAccordion = ({ selectedBudgetLines }) => {
     // TODO: may need to elevate state for approval toggle
     const [afterApproval, setAfterApproval] = useState(true);
-    const activeUser = useSelector((state) => state.auth.activeUser);
-    const myDivisionId = activeUser?.division;
 
     const { data: portfolios, error, isLoading } = useGetPortfoliosQuery();
     if (isLoading) {
