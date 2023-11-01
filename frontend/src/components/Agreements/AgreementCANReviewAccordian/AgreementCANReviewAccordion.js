@@ -3,6 +3,8 @@ import Accordion from "../../UI/Accordion";
 import { totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import CANFundingCard from "../../CANs/CANFundingCard";
 import ToggleButton from "../../UI/ToggleButton";
+import Tag from "../../UI/Tag";
+import { useGetPortfoliosQuery } from "../../../api/opsAPI";
 
 /**
  * Renders an accordion component for reviewing CANs.
@@ -13,8 +15,17 @@ import ToggleButton from "../../UI/ToggleButton";
  * @returns {React.JSX.Element} The AgreementCANReviewAccordion component.
  */
 const AgreementCANReviewAccordion = ({ selectedBudgetLines, afterApproval, setAfterApproval }) => {
-    const cansWithPendingAmount = selectedBudgetLines.reduce((acc, budgetLine) => {
+    const { data: portfolios, error, isLoading } = useGetPortfoliosQuery();
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+    if (error) {
+        return <div>An error occurred loading Portfolio data</div>;
+    }
+
+    const cansWithPendingAmountMap = selectedBudgetLines.reduce((acc, budgetLine) => {
         const canId = budgetLine?.can?.id;
+        const canPortfolio = portfolios.find((portfolio) => portfolio.id === budgetLine?.can?.managing_portfolio_id);
         if (!acc[canId]) {
             acc[canId] = {
                 can: budgetLine.can,
@@ -27,6 +38,13 @@ const AgreementCANReviewAccordion = ({ selectedBudgetLines, afterApproval, setAf
         acc[canId].count += 1;
         return acc;
     }, {});
+    const cansWithPendingAmount = Object.values(cansWithPendingAmountMap);
+
+    let canPortfolios = [];
+    selectedBudgetLines.forEach((budgetLine) => {
+        const canPortfolio = portfolios.find((portfolio) => portfolio.id === budgetLine?.can?.managing_portfolio_id);
+        if (canPortfolios.indexOf(canPortfolio) < 0) canPortfolios.push(canPortfolio);
+    });
 
     return (
         <Accordion
@@ -34,9 +52,8 @@ const AgreementCANReviewAccordion = ({ selectedBudgetLines, afterApproval, setAf
             level={2}
         >
             <p>
-                The budget lines showing In Review Status have allocated funds from the CANs displayed below. Use the
-                toggle to see how your approval would change the remaining budget of CANs within your Portfolio or
-                Division.
+                The selected budget lines have allocated funds from the CANs displayed below. Use the toggle to see how
+                your approval would change the remaining budget of those CANs.
             </p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
                 <ToggleButton
@@ -46,15 +63,29 @@ const AgreementCANReviewAccordion = ({ selectedBudgetLines, afterApproval, setAf
                 />
             </div>
             <div
-                className="display-flex flex-wrap"
+                className="display-flex flex-wrap margin-bottom-0"
                 style={{ gap: "32px 28px" }}
             >
-                {Object.entries(cansWithPendingAmount).map(([key, value]) => (
+                {cansWithPendingAmount.map((value) => (
                     <CANFundingCard
-                        key={key}
+                        key={value.can.id}
                         can={value.can}
                         pendingAmount={value.pendingAmount}
                         afterApproval={afterApproval}
+                    />
+                ))}
+            </div>
+            <div className="text-base-dark font-12px margin-top-1">
+                *Total Spending equals the sum of Budget Lines in Planned, Executing and Obligated
+            </div>
+            <div className="margin-top-3">
+                <span className="text-base-dark font-12px">Portfolios:</span>
+                {canPortfolios.map((portfolio) => (
+                    <Tag
+                        key={portfolio.id}
+                        className="margin-left-1"
+                        text={portfolio.name}
+                        tagStyle="primaryDarkTextLightBackground"
                     />
                 ))}
             </div>
