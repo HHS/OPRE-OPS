@@ -20,7 +20,7 @@ import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
     const adjustAmount = afterApproval ? pendingAmount : 0;
     const canId = can?.id;
-    const { data: data, error: error, isLoading: isLoading } = useGetCanFundingSummaryQuery(canId);
+    const { data, error, isLoading } = useGetCanFundingSummaryQuery(canId);
     const [activeId, setActiveId] = React.useState(0);
 
     if (isLoading) {
