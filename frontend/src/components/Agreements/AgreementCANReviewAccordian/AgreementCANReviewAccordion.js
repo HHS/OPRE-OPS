@@ -104,7 +104,7 @@ const AgreementCANReviewAccordian = ({ selectedBudgetLines }) => {
                 *Total Spending equals the sum of Budget Lines in Planned, Executing and Obligated
             </div>
             <div className="margin-top-4">
-                <span className="text-base-dark font-12px">Other CANs Outside Your Portfolio:</span>
+                <span className="text-base-dark font-12px">Other CANs Outside Your Division:</span>
                 {otherCansWithPendingAmount.map((value) => (
                     <Tag
                         className="margin-left-1"
