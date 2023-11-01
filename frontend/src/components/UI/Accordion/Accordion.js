@@ -18,7 +18,7 @@ const Accordion = ({ heading, level = 4, children }) => {
 
     return (
         <div
-            className="usa-accordion"
+            className="usa-accordion padding-bottom-6"
             style={{ lineHeight: "inherit" }}
         >
             <AccordionHeading className="usa-accordion__heading">

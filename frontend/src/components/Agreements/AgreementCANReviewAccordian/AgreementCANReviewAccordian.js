@@ -1,7 +1,7 @@
 import Accordion from "../../UI/Accordion";
 import CANFundingBar from "../../CANs/CANFundingBar/CANFundingBar";
 import React, { useState } from "react";
-import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
+import { useGetCanFundingSummaryQuery, useGetPortfoliosQuery } from "../../../api/opsAPI";
 import { calculatePercent, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle, faToggleOff, faToggleOn, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
@@ -10,12 +10,13 @@ import Tag from "../../UI/Tag";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import styles from "../AgreementChangesAccordion/small-summary-card.module.css";
 import RoundedBox from "../../UI/RoundedBox";
+import { useSelector } from "react-redux";
 
 // TODO: move to its own file
 const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
     const adjustAmount = afterApproval ? pendingAmount : 0;
     const canId = can?.id;
-    const { data: data, error: error, isLoading: isLoading } = useGetCanFundingSummaryQuery(canId);
+    const { data, error, isLoading } = useGetCanFundingSummaryQuery(canId);
     const [activeId, setActiveId] = React.useState(0);
 
     if (isLoading) {
@@ -151,12 +152,34 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
 
 const AgreementCANReviewAccordian = ({ selectedBudgetLines }) => {
     const [afterApproval, setAfterApproval] = useState(true);
+    const activeUser = useSelector((state) => state.auth.activeUser);
+    const myDivisionId = activeUser.division;
+
+    const { data: portfolios, error, isLoading } = useGetPortfoliosQuery();
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+    if (error) {
+        return <div>An error occurred loading Portfolio data</div>;
+    }
+
+    console.log("activeUser:", activeUser);
+    console.log("portfolios:", portfolios);
+
     const cansWithPendingAmount = selectedBudgetLines.reduce((acc, budgetLine) => {
         const canId = budgetLine?.can?.id;
+        const canPortfolio = portfolios.find((portfolio) => portfolio.id === budgetLine?.can?.managing_portfolio_id);
+        const canDivisionId = canPortfolio.division_id;
+        console.log("canPortfolio", canPortfolio);
+        console.log("canDivision", canPortfolio.division_id);
+        const inMyDivision = myDivisionId === canDivisionId;
+        console.log("inMyDivision", inMyDivision);
         if (!acc[canId]) {
+            console.log("can", budgetLine.can);
             acc[canId] = {
                 can: budgetLine.can,
                 pendingAmount: 0,
+                inMyDivision: inMyDivision,
                 count: 0 // not used but handy for debugging
             };
         }
@@ -166,7 +189,18 @@ const AgreementCANReviewAccordian = ({ selectedBudgetLines }) => {
         return acc;
     }, {});
 
+    let canPortfolios = [];
+    selectedBudgetLines.forEach((budgetLine) => {
+        const canPortfolio = portfolios.find((portfolio) => portfolio.id === budgetLine?.can?.managing_portfolio_id);
+        if (canPortfolios.indexOf(canPortfolio) < 0) canPortfolios.push(canPortfolio);
+    });
+
     console.log("cansWithPendingAmount", cansWithPendingAmount);
+    const myCansWithPendingAmount = Object.values(cansWithPendingAmount).filter((el) => el.inMyDivision);
+    const otherCansWithPendingAmount = Object.values(cansWithPendingAmount).filter((el) => !el.inMyDivision);
+
+    console.log("myCansWithPendingAmount", myCansWithPendingAmount);
+    console.log("otherCansWithPendingAmount", otherCansWithPendingAmount);
 
     return (
         <Accordion
@@ -194,45 +228,41 @@ const AgreementCANReviewAccordian = ({ selectedBudgetLines }) => {
                 </button>
             </div>
             <div
-                className="display-flex flex-wrap"
+                className="display-flex flex-wrap margin-bottom-0"
                 style={{ gap: "32px 28px" }}
             >
-                {Object.entries(cansWithPendingAmount).map(([key, value]) => (
+                {myCansWithPendingAmount.map((value) => (
                     <CANFundingCard
-                        key={key}
+                        key={value.can.id}
                         can={value.can}
                         pendingAmount={value.pendingAmount}
                         afterApproval={afterApproval}
                     />
                 ))}
-
-                {/* <CANFundingCard
-                    can={{ id: 1 }}
-                    pendingAmount={1000000}
-                    afterApproval={afterApproval}
-                />
-                <CANFundingCard
-                    can={{ id: 2 }}
-                    pendingAmount={20000000}
-                    afterApproval={afterApproval}
-                />
-                <CANFundingCard
-                    can={{ id: 3 }}
-                    pendingAmount={3000000}
-                    afterApproval={afterApproval}
-                />
-                <CANFundingCard
-                    can={{ id: 4 }}
-                    pendingAmount={4000000}
-                    afterApproval={afterApproval}
-                />
-                <CANFundingCard
-                    can={{ id: 5 }}
-                    pendingAmount={5000000}
-                    afterApproval={afterApproval}
-                /> */}
             </div>
-            {/*<pre>{JSON.stringify(selectedBudgetLines, null, 2)}</pre>*/}
+            <div className="text-base-dark font-12px margin-top-1">
+                *Total Spending equals the sum of Budget Lines in Planned, Executing and Obligated
+            </div>
+            <div className="margin-top-4">
+                <span className="text-base-dark font-12px">Other CANs Outside Your Portfolio:</span>
+                {otherCansWithPendingAmount.map((value) => (
+                    <Tag
+                        className="margin-left-1"
+                        text={value.can.number}
+                        tagStyle="primaryDarkTextLightBackground"
+                    />
+                ))}
+            </div>
+            <div className="margin-top-3">
+                <span className="text-base-dark font-12px">Portfolios:</span>
+                {canPortfolios.map((portfolio) => (
+                    <Tag
+                        className="margin-left-1"
+                        text={portfolio.name}
+                        tagStyle="primaryDarkTextLightBackground"
+                    />
+                ))}
+            </div>
         </Accordion>
     );
 };
