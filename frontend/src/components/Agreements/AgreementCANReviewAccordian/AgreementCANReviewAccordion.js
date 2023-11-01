@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Accordion from "../../UI/Accordion";
 import { totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -12,9 +12,7 @@ const AgreementCANReviewAccordian = ({ selectedBudgetLines }) => {
     // TODO: may need to elevate state for approval toggle
     const [afterApproval, setAfterApproval] = useState(true);
     const activeUser = useSelector((state) => state.auth.activeUser);
-    console.log("activeUser:", activeUser);
     const myDivisionId = activeUser?.division;
-    console.log(`myDivisionId: ${myDivisionId}`);
 
     const { data: portfolios, error, isLoading } = useGetPortfoliosQuery();
     if (isLoading) {
@@ -24,18 +22,12 @@ const AgreementCANReviewAccordian = ({ selectedBudgetLines }) => {
         return <div>An error occurred loading Portfolio data</div>;
     }
 
-    console.log("portfolios:", portfolios);
-
-    const cansWithPendingAmount = selectedBudgetLines.reduce((acc, budgetLine) => {
+    const cansWithPendingAmountMap = selectedBudgetLines.reduce((acc, budgetLine) => {
         const canId = budgetLine?.can?.id;
         const canPortfolio = portfolios.find((portfolio) => portfolio.id === budgetLine?.can?.managing_portfolio_id);
         const canDivisionId = canPortfolio.division_id;
-        console.log("canPortfolio", canPortfolio);
-        console.log("canDivision", canPortfolio.division_id);
         const inMyDivision = myDivisionId === canDivisionId;
-        console.log("inMyDivision", inMyDivision);
         if (!acc[canId]) {
-            console.log("can", budgetLine.can);
             acc[canId] = {
                 can: budgetLine.can,
                 pendingAmount: 0,
@@ -48,19 +40,15 @@ const AgreementCANReviewAccordian = ({ selectedBudgetLines }) => {
         acc[canId].count += 1;
         return acc;
     }, {});
+    const cansWithPendingAmount = Object.values(cansWithPendingAmountMap);
+    const myCansWithPendingAmount = cansWithPendingAmount.filter((el) => el.inMyDivision);
+    const otherCansWithPendingAmount = cansWithPendingAmount.filter((el) => !el.inMyDivision);
 
     let canPortfolios = [];
     selectedBudgetLines.forEach((budgetLine) => {
         const canPortfolio = portfolios.find((portfolio) => portfolio.id === budgetLine?.can?.managing_portfolio_id);
         if (canPortfolios.indexOf(canPortfolio) < 0) canPortfolios.push(canPortfolio);
     });
-
-    console.log("cansWithPendingAmount", cansWithPendingAmount);
-    const myCansWithPendingAmount = Object.values(cansWithPendingAmount).filter((el) => el.inMyDivision);
-    const otherCansWithPendingAmount = Object.values(cansWithPendingAmount).filter((el) => !el.inMyDivision);
-
-    console.log("myCansWithPendingAmount", myCansWithPendingAmount);
-    console.log("otherCansWithPendingAmount", otherCansWithPendingAmount);
 
     return (
         <Accordion
@@ -105,10 +93,11 @@ const AgreementCANReviewAccordian = ({ selectedBudgetLines }) => {
             </div>
             <div className="margin-top-4">
                 <span className="text-base-dark font-12px">Other CANs Outside Your Division:</span>
-                {otherCansWithPendingAmount.map((value) => (
+                {otherCansWithPendingAmount.map((el) => (
                     <Tag
+                        key={el.can.id}
                         className="margin-left-1"
-                        text={value.can.number}
+                        text={el.can.number}
                         tagStyle="primaryDarkTextLightBackground"
                     />
                 ))}
@@ -117,6 +106,7 @@ const AgreementCANReviewAccordian = ({ selectedBudgetLines }) => {
                 <span className="text-base-dark font-12px">Portfolios:</span>
                 {canPortfolios.map((portfolio) => (
                     <Tag
+                        key={portfolio.id}
                         className="margin-left-1"
                         text={portfolio.name}
                         tagStyle="primaryDarkTextLightBackground"
