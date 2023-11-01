@@ -41,8 +41,6 @@ const AgreementCANReviewAccordian = ({ selectedBudgetLines }) => {
         return acc;
     }, {});
     const cansWithPendingAmount = Object.values(cansWithPendingAmountMap);
-    const myCansWithPendingAmount = cansWithPendingAmount.filter((el) => el.inMyDivision);
-    const otherCansWithPendingAmount = cansWithPendingAmount.filter((el) => !el.inMyDivision);
 
     let canPortfolios = [];
     selectedBudgetLines.forEach((budgetLine) => {
@@ -56,9 +54,8 @@ const AgreementCANReviewAccordian = ({ selectedBudgetLines }) => {
             level={2}
         >
             <p>
-                The budget lines showing In Review Status have allocated funds from the CANs displayed below. Use the
-                toggle to see how your approval would change the remaining budget of CANs within your Portfolio or
-                Division.
+                The selected budget lines have allocated funds from the CANs displayed below. Use the toggle to see how
+                your approval would change the remaining budget of those CANs.
             </p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
                 <button
@@ -79,7 +76,7 @@ const AgreementCANReviewAccordian = ({ selectedBudgetLines }) => {
                 className="display-flex flex-wrap margin-bottom-0"
                 style={{ gap: "32px 28px" }}
             >
-                {myCansWithPendingAmount.map((value) => (
+                {cansWithPendingAmount.map((value) => (
                     <CANFundingCard
                         key={value.can.id}
                         can={value.can}
@@ -90,17 +87,6 @@ const AgreementCANReviewAccordian = ({ selectedBudgetLines }) => {
             </div>
             <div className="text-base-dark font-12px margin-top-1">
                 *Total Spending equals the sum of Budget Lines in Planned, Executing and Obligated
-            </div>
-            <div className="margin-top-4">
-                <span className="text-base-dark font-12px">Other CANs Outside Your Division:</span>
-                {otherCansWithPendingAmount.map((el) => (
-                    <Tag
-                        key={el.can.id}
-                        className="margin-left-1"
-                        text={el.can.number}
-                        tagStyle="primaryDarkTextLightBackground"
-                    />
-                ))}
             </div>
             <div className="margin-top-3">
                 <span className="text-base-dark font-12px">Portfolios:</span>
