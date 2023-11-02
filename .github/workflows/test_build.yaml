@@ -1,6 +1,9 @@
 name: Test Build
 
 on:
+  push:
+    branches:
+      - POC-Azure-Deployment
   workflow_dispatch:
 
 jobs:
