@@ -22,6 +22,7 @@ import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIRevi
 import useReviewAgreement from "./reviewAgreement.hooks";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordian";
 import App from "../../../App";
+import useToggle from "../../../hooks/useToggle";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -46,6 +47,7 @@ export const ReviewAgreement = () => {
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
+    const [afterApproval, setAfterApproval] = useToggle(true);
     const { setAlert } = useAlert();
     const {
         budgetLines,
@@ -164,8 +166,10 @@ export const ReviewAgreement = () => {
             />
 
             <AgreementBLIAccordion
-                budgetLineItems={agreement?.budget_line_items}
+                budgetLineItems={getSelectedBudgetLines(budgetLines)}
                 agreement={agreement}
+                afterApproval={afterApproval}
+                setAfterApproval={setAfterApproval}
             >
                 <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""}`}>
                     {areThereBudgetLineErrors && (
@@ -201,8 +205,9 @@ export const ReviewAgreement = () => {
                 />
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
-                agreement={agreement}
                 selectedBudgetLines={getSelectedBudgetLines(budgetLines)}
+                afterApproval={afterApproval}
+                setAfterApproval={setAfterApproval}
             />
             <AgreementChangesAccordion
                 changeInBudgetLines={selectedBudgetLinesTotal(budgetLines)}

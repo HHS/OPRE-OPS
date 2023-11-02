@@ -9,6 +9,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTriangleExclamation, faCircle } from "@fortawesome/free-solid-svg-icons";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 
+/**
+ * A component that displays funding information for a CAN
+ * @param {Object} props - The props object.
+ * @param {Object} props.can - The CAN object.
+ * @param {number} props.pendingAmount - The pending amount.
+ * @param {boolean} props.afterApproval - A flag indicating whether the funding is after approval.
+ * @returns {JSX.Element} - The CANFundingCard component.
+ */
 const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
     const adjustAmount = afterApproval ? pendingAmount : 0;
     const canId = can?.id;
@@ -50,6 +58,19 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
         }
     ];
 
+    /**
+     * A component that displays a legend item with a label, value, color, and percentage.
+     *
+     * @param {object} props - The props object containing the following properties:
+     * @param {number} props.id - The ID of the legend item.
+     * @param {string} props.label - The label of the legend item.
+     * @param {number} props.value - The value of the legend item.
+     * @param {string} props.color - The color of the legend item.
+     * @param {string} props.percent - The percentage of the legend item.
+     * @param {object} props.tagStyle - The style of the tag when it's not active.
+     * @param {object} props.tagStyleActive - The style of the tag when it's active.
+     * @returns {React.JSX.Element} A React component that displays a legend item.
+     */
     const LegendItem = ({ id, label, value, color, percent, tagStyle, tagStyleActive }) => {
         const isGraphActive = activeId === id;
         return (
