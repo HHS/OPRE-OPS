@@ -503,7 +503,7 @@ describe("agreement review CANS accordion", () => {
     it("should handle after approval toggle", () => {
         cy.visit("/agreements/review/1").wait(1000);
         // pre-change
-        cy.get("#toggleAfterApproval").should("exist");
+        cy.get('[data-cy="button-toggle-After Approval"]').first().should("exist");
         // select all BLIs to show CANS cards
         cy.get("h2").contains("Choose an Action").as("acc-btn").should("exist");
         cy.get('input[id="Change Draft Budget Lines to Planned Status"]').should("exist").should("not.be.disabled");
@@ -520,7 +520,7 @@ describe("agreement review CANS accordion", () => {
             });
         cy.get('[data-cy="can-funding-summary-card-5"]').should("exist");
         cy.get('[data-cy="can-funding-summary-card-5"]').contains("4,000,000");
-        cy.get("#toggleAfterApproval").click({ force: true });
+        cy.get('[data-cy="button-toggle-After Approval"]').first().click({ force: true });
         cy.get('[data-cy="can-funding-summary-card-5"]').contains("2,000,000");
     });
     it("should handle over budget CANs", () => {
