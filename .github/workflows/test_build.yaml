@@ -8,11 +8,10 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      
       - name: Test Docker Context
         uses: ./.github/workflows/build_and_push.yaml
         with:
