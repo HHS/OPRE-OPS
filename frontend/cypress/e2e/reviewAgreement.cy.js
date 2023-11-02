@@ -531,6 +531,7 @@ describe("agreement review CANS accordion", () => {
         cy.visit("/agreements/review/1").wait(1000);
         // pre-change
         cy.get('[data-cy="button-toggle-After Approval"]').should("exist");
+        cy.get('[data-cy="button-toggle-After Approval"]').first().should("exist");
         // select all BLIs to show CANS cards
         cy.get("h2").contains("Choose an Action").as("acc-btn").should("exist");
         cy.get('input[id="Change Draft Budget Lines to Planned Status"]').should("exist").should("not.be.disabled");

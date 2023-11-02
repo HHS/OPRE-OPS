@@ -20,7 +20,7 @@ import {
 } from "./ReviewAgreement.helpers";
 import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
 import useReviewAgreement from "./reviewAgreement.hooks";
-import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordian";
+import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import App from "../../../App";
 import useToggle from "../../../hooks/useToggle";
 
