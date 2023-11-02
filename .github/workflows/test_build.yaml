@@ -21,6 +21,9 @@ on:
 #           docker-file: Dockerfile.ops-api
 jobs:
   test-build-and-push:
+    permissions:
+      contents: read
+      packages: write
     uses: ./.github/workflows/build_and_push.yaml
     with:
       image-name: ops-backend
