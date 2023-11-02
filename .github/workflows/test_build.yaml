@@ -6,16 +6,23 @@ on:
       - POC-Azure-Deployment
   workflow_dispatch:
 
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+#     permissions:
+#       contents: read
+#       packages: write
+#     steps:
+#       - name: Test Docker Context
+#         uses: ./.github/workflows/build_and_push.yaml
+#         with:
+#           image-name: ops-backend
+#           docker-context: backend
+#           docker-file: Dockerfile.ops-api
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - name: Test Docker Context
-        uses: ./.github/workflows/build_and_push.yaml
-        with:
-          image-name: ops-backend
-          docker-context: backend
-          docker-file: Dockerfile.ops-api
+  test-build-and-push:
+    uses: ./.github/workflows/build_and_push.yaml
+    with:
+      image-name: ops-backend
+      docker-context: backend
+      docker-file: Dockerfile.ops-api
