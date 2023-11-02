@@ -137,7 +137,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                 <div className="grid-row flex-justify-end margin-top-1">
                     <Link
                         className="usa-button margin-top-4 margin-right-0"
-                        to={`/agreements/approve/${agreement?.id}`}
+                        to={`/agreements/review/${agreement?.id}`}
                         data-cy="bli-tab-continue-btn"
                     >
                         Plan or Execute Budget Lines

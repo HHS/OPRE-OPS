@@ -107,7 +107,7 @@ it("cannot edit an agreement with budget line items obligated", () => {
 });
 
 it("cannot navigate to edit an agreement with budget line items obligated from review page", () => {
-    cy.visit(`/agreements/approve/7`);
+    cy.visit(`/agreements/review/7`);
     cy.get("dd").first().should("have.text", "MIHOPE Check-In");
     cy.get('[data-cy="edit-agreement-btn"]').should("be.disabled");
 });
@@ -119,7 +119,7 @@ it("cannot edit an agreement with budget line items in executing", () => {
 });
 
 it("cannot navigate to edit an agreement with budget line items in executing from review page", () => {
-    cy.visit(`/agreements/approve/2`);
+    cy.visit(`/agreements/review/2`);
     cy.get("dd").first().should("have.text", "DIRECT ALLOCATION #2: African American Child and Family Research Center");
     cy.get('[data-cy="edit-agreement-btn"]').should("be.disabled");
 });
