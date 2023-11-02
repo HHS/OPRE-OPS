@@ -1,68 +1,39 @@
 name: Build and Push Docker Image
 
 on:
-  workflow_dispatch: 
-  push:
-  #   branches:
-  #     - main  # Trigger on pushes to the main branchpush:
-    branches:
-      - POC-Azure-Deployment
-  # release:
-  #   types: [created]  # Trigger when a new release is created
+  workflow_call: 
+    inputs:
+      image-name:
+        description: "The name of the final image; ex: ops-backend, ops-data-tools"
+        required: true
+        type: string
+      docker-file:
+        description: "The name of the Dockerfile to build from."
+        default: "Dockerfile"
+        required: false
+        type: string
+      docker-context:
+        description: "Relative path from the repository root to the Docker build context directory; defaults to root of the repository."
+        default: "."
+        required: false
+        type: string
 
 jobs:
-  build_and_push:
+  build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      - name: Build and publish a Docker image for ${{ github.repository }}
+      - name: Build and publish the Docker image for ${{ github.repository }}
         uses: macbre/push-to-ghcr@v13
         with:
-          image_name: ${{ github.repository }}  # it will be lowercased internally
+          image_name: ${{ github.repository }}/${{inputs.image-name}}  # it will be lowercased internally
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          context: ${{ github.workspace }}/backend
-          dockerfile: ${{ github.workspace }}/backend/Dockerfile.ops-api
+          context: ${{ github.workspace }}/${{ inputs.docker-context }}
+          dockerfile: ${{ github.workspace }}/${{ inputs.docker-context }}/${{ inputs.docker-file }}
           image_tag: ${{ github.sha }}
-    # steps:
-    # # - name: Checkout repository
-    # #   uses: actions/checkout@v2
-
-    # # - name: Set up Docker Buildx
-    # #   uses: docker/setup-buildx-action@v1
-
-    # - name: Login to GitHub Container Registry
-    #   uses: docker/login-action@v1
-    #   with:
-    #     registry: ghcr.io
-    #     username: ${{ github.actor }}
-    #     password: ${{ secrets.CR_PAT }}
-
-    # - name: Checkout code
-    #   uses: actions/checkout@v4
-
-    # - name: Convert to lowercase
-    #   id: convert
-    #   run: |
-    #     echo "REPO_OWNER=$(echo '${{ github.repository }}' | cut -d '/' -f 1 | tr 'A-Z' 'a-z')" >> $GITHUB_ENV
-    #     echo "REPO_NAME=$(echo '${{ github.repository }}' | cut -d '/' -f 2 | tr 'A-Z' 'a-z')" >> $GITHUB_ENV
-
-    # - name: Build and push image with commit hash
-    #   if: github.event_name == 'push'
-    #   uses: docker/build-push-action@v5
-    #   with:
-    #     context: ${{ github.workspace }}/backend
-    #     file: ${{ github.workspace }}/backend/Dockerfile.ops-api
-    #     push: true
-    #     # tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
-    #     tags: ghcr.io/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}:${{ github.sha }}
-
-    # # - name: Build and push image with release tag
-    # #   if: github.event_name == 'release'
-    # #   uses: docker/build-push-action@v5
-    # #   with:
-    # #     context: .
-    # #     push: true
-    # #     tags: ghcr.io/${{ github.repository }}:${{ github.event.release.tag_name }}
-
