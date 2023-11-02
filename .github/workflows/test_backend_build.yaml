@@ -1,9 +1,11 @@
-name: Test Build
+name: Test Backend Build
 
 on:
   push:
     branches:
       - POC-Azure-Deployment
+    # paths:
+    #   - 'backend/**'
   workflow_dispatch:
 
 jobs:

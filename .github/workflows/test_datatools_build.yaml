@@ -1,0 +1,20 @@
+name: Test Backend Data-Tools Build
+
+on:
+  push:
+    branches:
+      - POC-Azure-Deployment
+    # paths:
+    #   - 'backend/**'
+  workflow_dispatch:
+
+jobs:
+  test-build-and-push:
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/build_and_push.yaml
+    with:
+      image-name: ops-data-tools
+      docker-context: backend
+      docker-file: Dockerfile.data-tools
