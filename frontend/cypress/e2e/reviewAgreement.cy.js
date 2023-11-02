@@ -55,7 +55,7 @@ it("review an agreement", () => {
         const agreementId = response.body.id;
 
         cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
-        cy.visit(`/agreements/approve/${agreementId}?mode=review`);
+        cy.visit(`/agreements/review/${agreementId}?mode=review`);
         cy.get("h1").should("have.text", "Please resolve the errors outlined below");
 
         cy.get('[data-cy="error-list"]').should("exist");
@@ -150,8 +150,8 @@ it("review an agreement", () => {
         // go back to review page
         cy.get('[data-cy="continue-btn"]').click();
         // not sure why but need to manually navigate to get the error banner to not show up
-        cy.visit(`/agreements/approve/${agreementId}`);
-        cy.url().should("include", `/agreements/approve/${agreementId}`);
+        cy.visit(`/agreements/review/${agreementId}`);
+        cy.url().should("include", `/agreements/review/${agreementId}`);
         cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
         cy.get('[data-cy="error-list"]').should("not.exist");
         cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
@@ -167,7 +167,7 @@ it("review an agreement", () => {
         // patch agreement
         cy.get('[data-cy="continue-btn"]').click();
         //check for new budget line errors
-        cy.visit(`/agreements/approve/${agreementId}?mode=review`);
+        cy.visit(`/agreements/review/${agreementId}?mode=review`);
         cy.get("h1").should("have.text", "Please resolve the errors outlined below");
         cy.get('[data-cy="error-list"]').should("exist");
         cy.get('[data-cy="error-item"]').should("have.length", 1);
@@ -199,7 +199,7 @@ it("review an agreement", () => {
         // patch agreement
         cy.get('[data-cy="continue-btn"]').click();
         //check review page
-        cy.visit(`/agreements/approve/${agreementId}?mode=review`);
+        cy.visit(`/agreements/review/${agreementId}?mode=review`);
         cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
         cy.get('[data-cy="error-list"]').should("not.exist");
         cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
