@@ -456,6 +456,32 @@ describe("agreement BLI accordion", () => {
                 cy.wrap(checkbox).should("not.be.checked");
             });
     });
+
+    it("should handle after approval toggle on Agreement1", () => {
+        cy.visit("/agreements/review/1").wait(1000);
+        cy.get('[type="radio"]').should("have.length", 2);
+        cy.get('[type="radio"]').first().check({ force: true });
+        cy.get("#check-all").check({ force: true });
+        cy.get('[data-cy="button-toggle-After Approval"]').should("exist");
+        cy.get('[data-cy="currency-summary-card"]').should("exist");
+        cy.get('[data-cy="currency-summary-card"]').contains("2,000,000");
+        cy.get('[data-cy="button-toggle-After Approval"]').first().click({ force: true });
+        cy.get('[data-cy="currency-summary-card"]').contains("0");
+        // Agreement 9
+        cy.visit("/agreements/review/1").wait(1000);
+    });
+
+    it("should handle after approval toggle on Agreement 2", () => {
+        cy.visit("/agreements/review/2").wait(1000);
+        cy.get('[type="radio"]').should("have.length", 2);
+        cy.get('input[id="Change Planned Budget Lines to Executing Status"]').check({ force: true });
+        cy.get("#check-all").check({ force: true });
+        cy.get('[data-cy="button-toggle-After Approval"]').should("exist");
+        cy.get('[data-cy="currency-summary-card"]').should("exist");
+        cy.get('[data-cy="currency-summary-card"]').contains("$32,000,000.00");
+        cy.get('[data-cy="button-toggle-After Approval"]').first().click({ force: true });
+        cy.get('[data-cy="currency-summary-card"]').contains("$32,000,000.00");
+    });
 });
 
 describe("agreement action accordion", () => {
@@ -500,10 +526,11 @@ describe("agreement review CANS accordion", () => {
         cy.get('[data-cy="can-funding-summary-card-5"]').should("exist");
         cy.get('[data-cy="can-funding-summary-card-5"]').contains("$40,000,000.00");
     });
+
     it("should handle after approval toggle", () => {
         cy.visit("/agreements/review/1").wait(1000);
         // pre-change
-        cy.get("#toggleAfterApproval").should("exist");
+        cy.get('[data-cy="button-toggle-After Approval"]').should("exist");
         // select all BLIs to show CANS cards
         cy.get("h2").contains("Choose an Action").as("acc-btn").should("exist");
         cy.get('input[id="Change Draft Budget Lines to Planned Status"]').should("exist").should("not.be.disabled");
@@ -520,9 +547,10 @@ describe("agreement review CANS accordion", () => {
             });
         cy.get('[data-cy="can-funding-summary-card-5"]').should("exist");
         cy.get('[data-cy="can-funding-summary-card-5"]').contains("4,000,000");
-        cy.get("#toggleAfterApproval").click({ force: true });
+        cy.get('[data-cy="button-toggle-After Approval"]').first().click({ force: true });
         cy.get('[data-cy="can-funding-summary-card-5"]').contains("2,000,000");
     });
+
     it("should handle over budget CANs", () => {
         cy.visit("/agreements/review/2").wait(1000);
         // pre-change

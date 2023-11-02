@@ -8,6 +8,7 @@ const ToggleButton = ({ handleToggle = () => {}, isToggleOn = true, btnText = ""
     return (
         <button
             id={`toggle-button-${toggleId}`}
+            data-cy={`button-toggle-${btnText}`}
             className="hover:text-underline cursor-pointer"
             onClick={handleToggle}
         >
