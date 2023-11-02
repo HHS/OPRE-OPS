@@ -25,7 +25,10 @@ const AgreementChangesAccordion = ({ children, changeInBudgetLines, changeInCans
     const cardStyles = `padding-y-205 padding-x-2 display-inline-block ${styles.card}`;
 
     return (
-        <Accordion heading="Review Changes">
+        <Accordion
+            heading="Review Changes"
+            level={2}
+        >
             <p>Review the changes below to confirm what you are sending for approval.</p>
             <div
                 className="display-flex flex-wrap"
