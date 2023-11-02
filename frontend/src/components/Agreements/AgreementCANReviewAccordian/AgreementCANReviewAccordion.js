@@ -25,7 +25,6 @@ const AgreementCANReviewAccordion = ({ selectedBudgetLines, afterApproval, setAf
 
     const cansWithPendingAmountMap = selectedBudgetLines.reduce((acc, budgetLine) => {
         const canId = budgetLine?.can?.id;
-        const canPortfolio = portfolios.find((portfolio) => portfolio.id === budgetLine?.can?.managing_portfolio_id);
         if (!acc[canId]) {
             acc[canId] = {
                 can: budgetLine.can,

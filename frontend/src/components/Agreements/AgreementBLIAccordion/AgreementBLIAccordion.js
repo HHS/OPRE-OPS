@@ -2,8 +2,10 @@ import PropTypes from "prop-types";
 import Accordion from "../../UI/Accordion";
 import BLIsByFYSummaryCard from "../AgreementDetailsCards/BLIsByFYSummaryCard";
 import AgreementTotalCard from "../AgreementDetailsCards/AgreementTotalCard";
-import { draftBudgetLineStatuses } from "../../../helpers/utils";
 import ToggleButton from "../../UI/ToggleButton";
+import { draftBudgetLineStatuses } from "../../../helpers/utils";
+import { budgetLinesTotal, getBudgetByStatus, getNonDRAFTBudgetLines } from "../../../helpers/budgetLines.helpers";
+import { getProcurementShopSubTotal } from "../AgreementsTable/AgreementsTable.helpers";
 
 /**
  * Renders an accordion component for selecting budget lines for an agreement.
@@ -22,20 +24,12 @@ function AgreementBLIAccordion({
     afterApproval,
     setAfterApproval
 }) {
-    const budgetLinesTotal = (budgetLines) => budgetLines?.reduce((n, { amount }) => n + amount, 0);
-    const calculateBudgetLinesFees = (budgetLineItems) =>
-        budgetLineItems?.reduce(
-            (acc, { amount }) => acc + amount * (agreement.procurement_shop ? agreement.procurement_shop.fee : 0),
-            0
-        );
-    const notDraftBLIs = agreement.budget_line_items.filter((bli) => !draftBudgetLineStatuses.includes(bli.status));
-    const selectedDRAFTBudgetLines = selectedBudgetLineItems.filter((bli) =>
-        draftBudgetLineStatuses.includes(bli.status)
-    );
+    const notDraftBLIs = getNonDRAFTBudgetLines(agreement.budget_line_items);
+    const selectedDRAFTBudgetLines = getBudgetByStatus(selectedBudgetLineItems, draftBudgetLineStatuses);
     const budgetLinesForCards = afterApproval ? [...selectedDRAFTBudgetLines, ...notDraftBLIs] : notDraftBLIs;
-    const feesForCards = calculateBudgetLinesFees(budgetLinesForCards);
+    const feesForCards = getProcurementShopSubTotal(agreement, budgetLinesForCards);
     const subTotalForCards = budgetLinesTotal(budgetLinesForCards);
-    const totalsForCards = subTotalForCards + calculateBudgetLinesFees(budgetLinesForCards);
+    const totalsForCards = subTotalForCards + getProcurementShopSubTotal(agreement, budgetLinesForCards);
 
     return (
         <Accordion
