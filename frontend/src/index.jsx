@@ -26,10 +26,10 @@ import CreateProject from "./pages/projects/CreateProject";
 import { AgreementsList } from "./pages/agreements/list/AgreementsList";
 import Agreement from "./pages/agreements/details/Agreement";
 import EditAgreement from "./pages/agreements/EditAgreement";
-import { ApproveAgreement } from "./pages/agreements/approve/ApproveAgreement";
 import Login from "./pages/Login";
 import ErrorPage from "./pages/ErrorPage";
 import { BudgetLineItemList } from "./pages/budgetLines/list/BudgetLineItemList";
+import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -205,8 +205,8 @@ const router = createBrowserRouter(
                     element={<EditAgreement />}
                 />
                 <Route
-                    path="/agreements/approve/:id/*"
-                    element={<ApproveAgreement />}
+                    path="/agreements/review/:id/*"
+                    element={<ReviewAgreement />}
                 />
                 <Route
                     path="/cans"

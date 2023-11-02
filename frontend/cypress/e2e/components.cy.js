@@ -56,7 +56,7 @@ describe("table row", () => {
 
 describe("agreement meta accordion", () => {
     it("accordion should close when clicked", () => {
-        cy.visit("/agreements/approve/1");
+        cy.visit("/agreements/review/1");
         cy.get(".usa-accordion__heading > .usa-accordion__button").first().as("acc-btn").should("exist");
         cy.get(".usa-accordion__content").should("not.be.hidden");
         cy.get("@acc-btn").click();
@@ -64,7 +64,7 @@ describe("agreement meta accordion", () => {
     });
 
     it("accordion should close via keyboard enter", () => {
-        cy.visit("/agreements/approve/1");
+        cy.visit("/agreements/review/1");
         cy.get(".usa-accordion__heading > .usa-accordion__button").first().as("acc-btn").should("exist");
         cy.get(".usa-accordion__content").should("not.be.hidden");
         cy.get("@acc-btn").type("{enter}");
@@ -74,7 +74,7 @@ describe("agreement meta accordion", () => {
 
 describe("agreement action accordion", () => {
     it("should have draft option available on agreement one", () => {
-        cy.visit("/agreements/approve/1");
+        cy.visit("/agreements/review/1");
         cy.get("h2").contains("Choose an Action").as("acc-btn").should("exist");
         cy.get("@acc-btn").type("{enter}");
         cy.get('input[type="radio"]').should("have.length", 2);
@@ -83,7 +83,7 @@ describe("agreement action accordion", () => {
     });
 
     it("should have planned option available on agreement nine", () => {
-        cy.visit("/agreements/approve/9");
+        cy.visit("/agreements/review/9");
         cy.get("h2").contains("Choose an Action").as("acc-btn").should("exist");
         cy.get("@acc-btn").type("{enter}");
         cy.get('input[type="radio"]').should("have.length", 2);
@@ -94,14 +94,14 @@ describe("agreement action accordion", () => {
 
 describe("agreement BLI accordion", () => {
     it("should contain summary card", () => {
-        cy.visit("/agreements/approve/1");
+        cy.visit("/agreements/review/1");
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
         cy.get('[data-cy="blis-by-fy-card"]').should("exist");
         cy.get('[data-cy="currency-summary-card"]').should("exist");
     });
 
     it("allow to select individual budget lines", () => {
-        cy.visit("/agreements/approve/1");
+        cy.visit("/agreements/review/1");
         cy.get('input[id="Change Draft Budget Lines to Planned Status"]').should("exist").should("not.be.disabled");
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('[type="radio"]').first().check({ force: true });
@@ -110,7 +110,7 @@ describe("agreement BLI accordion", () => {
     });
 
     it("should handle check-all and uncheck all", () => {
-        cy.visit("/agreements/approve/1");
+        cy.visit("/agreements/review/1");
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
         cy.get(".usa-table").should("exist");
         cy.get("#check-all").should("exist").should("be.disabled");
@@ -140,7 +140,7 @@ describe("agreement BLI accordion", () => {
 
 describe("agreement change accordion", () => {
     it("handles interactions", () => {
-        cy.visit("/agreements/approve/1");
+        cy.visit("/agreements/review/1");
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
         cy.get(".usa-table").should("exist");
         cy.get("#check-all").should("exist").should("be.disabled");
