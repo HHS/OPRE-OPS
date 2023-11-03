@@ -72,7 +72,7 @@
         "eject": "react-scripts eject",
         "lint": "eslint './src/**'",
         "cypress:open": "cypress open",
-        "uswds:update": "npx gulp compile"
+        "uswds:update": "bunx gulp compile"
     },
     "jest": {
         "coverageThreshold": {
