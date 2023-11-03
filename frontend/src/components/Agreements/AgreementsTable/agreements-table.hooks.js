@@ -7,7 +7,7 @@ export const useAgreementApproval = () => {
     const navigate = useNavigate();
 
     const handleSubmitAgreementForApproval = (id) => {
-        navigate(`/agreements/approve/${id}`);
+        navigate(`/agreements/review/${id}`);
     };
 
     return handleSubmitAgreementForApproval;

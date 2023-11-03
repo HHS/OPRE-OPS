@@ -14,7 +14,7 @@ A core aspect of AMS is native support for PIV/CAC cards for 2FA (Two-Factor Aut
 
 ## Decision
 
-Login.gov will be used as the central AuthN Provider for user authentication for OPS.
+HHS AMS will be used as the central AuthN Provider for user authentication for OPS.
 
 ## Diagram
 

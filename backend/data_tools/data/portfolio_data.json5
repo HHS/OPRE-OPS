@@ -29,6 +29,11 @@
       id: 6,
       name: "Division of Data and Improvement",
       abbreviation: "DDI",
+    },
+    {
+      id: 7,
+      name: "Non-OPRE Division",
+      abbreviation: "OTHER",
     }
   ],
   portfolio: [
