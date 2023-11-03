@@ -1,0 +1,17 @@
+# Project Infrastructure
+
+This project bootstrapped terraform state management resources into your environment. 
+
+## Backend Configuration
+
+Now that the backend has been created, you can copy the backend config below and update the key for other terraform configs in your project.
+
+```hcl
+terraform {
+  backend "azurerm" {
+    resource_group_name   = "${resource_group_name}"
+    storage_account_name  = "${storage_account_name}"
+    container_name        = "${container_name}"
+    key                   = "<unique_key_name_for_statefile>"
+  }
+}
