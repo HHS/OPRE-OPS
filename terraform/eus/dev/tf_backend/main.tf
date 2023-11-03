@@ -3,10 +3,10 @@
 
 module "labels" {
   source      = "git@github.com:devops-chris/tf-azure-labels.git?ref=v0.1.0"
-  owner       = "opre"
-  project     = "ops"
-  location    = "eastus"
-  environment = "dev"
+  owner       = var.owner
+  project     = var.project
+  location    = var.location
+  environment = var.environment
   workload    = "tf"
 }
 
