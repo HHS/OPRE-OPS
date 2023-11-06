@@ -209,6 +209,9 @@ backend/ops_api/django_config/static
 *.drawio.bkp
 *.db
 
+# To avoid lock issues... 
+*.terraform.lock.*
+
 # Local .terraform directories
 **/.terraform/*
 
