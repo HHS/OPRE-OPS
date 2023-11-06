@@ -38,7 +38,6 @@
   ],
   portfolio: [
     {
-      id: 1,
       name: "Child Welfare Research",
       abbreviation: "CWR",
       division_id: 4,
@@ -75,7 +74,6 @@
         ",
     },
     {
-      id: 2,
       name: "Head Start",
       abbreviation: "HS",
       division_id: 4,
@@ -98,7 +96,6 @@
       ",
     },
     {
-      id: 3,
       name: "Child Care",
       abbreviation: "CC",
       division_id: 4,
@@ -124,7 +121,6 @@
       ",
     },
     {
-      id: 4,
       name: "Welfare Research",
       abbreviation: "WR",
       division_id: 2,
@@ -158,7 +154,6 @@
       ",
     },
     {
-      id: 5,
       name: "Adolescent Development Research",
       abbreviation: "ADR",
       division_id: 5,
@@ -197,7 +192,6 @@
       ",
     },
     {
-      id: 6,
       name: "Healthy Marriage & Responsible Fatherhood",
       abbreviation: "HMRF",
       division_id: 5,
@@ -226,7 +220,6 @@
       ",
     },
     {
-      id: 7,
       name: "Home Visiting",
       abbreviation: "HV",
       division_id: 5,
@@ -257,7 +250,6 @@
       ",
     },
     {
-      id: 8,
       name: "Program Support",
       abbreviation: "PS",
       division_id: 6,
@@ -265,7 +257,6 @@
       description: "",
     },
     {
-      id: 9,
       name: "Data Governance",
       abbreviation: "DG",
       division_id: 6,

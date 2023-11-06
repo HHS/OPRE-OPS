@@ -65,7 +65,7 @@ class Portfolio(BaseModel):
     """Main Portfolio model."""
 
     __tablename__ = "portfolio"
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, Identity(), primary_key=True)
     name = Column(String, nullable=False)
     status = Column(sa.Enum(PortfolioStatus))
     cans = relationship(
