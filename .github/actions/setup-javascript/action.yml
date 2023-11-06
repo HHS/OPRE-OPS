@@ -7,9 +7,9 @@ runs:
       uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # tag: v3.5.1
       with:
         node-version: 18
-        cache: 'yarn'
-        cache-dependency-path: '**/yarn.lock'
-    - name: Install yarn dependencies
+        cache: 'bun'
+        cache-dependency-path: '**/bun.lockb'
+    - name: Install bun dependencies
       shell: bash
       working-directory: ./frontend
-      run: yarn install --frozen-lockfile
+      run: bun install --frozen-lockfile
