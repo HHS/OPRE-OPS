@@ -36,7 +36,7 @@ jobs:
       # Stand up the system stack, to have something to poke
       - name: Run frontend unit tests
         working-directory: ./frontend
-        run: bun test
+        run: bun run test
 
   e2e:
     name: End-to-End Testing
@@ -59,7 +59,7 @@ jobs:
       # Run the Cypress E2E Tests
       - name: E2E Test
         working-directory: frontend
-        run: bun test:e2e
+        run: bun run test:e2e
 
       - name: Capture logs
         shell: bash
