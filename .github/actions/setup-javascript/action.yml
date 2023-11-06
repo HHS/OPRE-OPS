@@ -3,8 +3,8 @@ description: Installs Node.js and dependencies defined in package.json
 runs:
   using: composite
   steps:
-    - name: Set up node
-      uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # tag: v3.5.1
+    - name: Set up Bun
+      uses: oven-sh/setup-bun@v1
       with:
         node-version: 18
         cache: 'bun'
