@@ -247,6 +247,14 @@ contract_support_contacts = Table(
 )
 
 
+class AcquisitionType(Enum):
+    """Acquisition Type"""
+
+    GSA_SCHEDULE = 1
+    TASK_ORDER = 2
+    FULL_AND_OPEN = 3
+
+
 class ContractType(Enum):
     RESEARCH = 0
     SERVICE = 1
@@ -261,6 +269,19 @@ class ContractAgreement(Agreement):
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
     contract_number: Mapped[str] = mapped_column(String, nullable=True)
     vendor: Mapped[str] = mapped_column(String, nullable=True)
+    task_order_number: Mapped[str] = mapped_column(
+        String(length=50),
+        nullable=True,
+        comment="MAPS.CONTRACT.TASK_ORDER_NBR",
+    )
+    po_number: Mapped[str] = mapped_column(
+        String(length=50), nullable=True, comment="MAPS.CONTRACT.PO_NBR"
+    )
+    acquisition_type = mapped_column(
+        ENUM(AcquisitionType),
+        nullable=True,
+        comment="MAPS.CONTRACT.SYS_ACQUISITION_TYPE_ID",
+    )
     delivered_status: Mapped[bool] = mapped_column(Boolean, default=False)
     contract_type = mapped_column(ENUM(ContractType))
     support_contacts: Mapped[list[User]] = relationship(
