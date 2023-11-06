@@ -7,10 +7,10 @@ runs:
       uses: oven-sh/setup-bun@v1
       with:
         bun-version: latest
-        # cache: 'bun'
-        # cache-dependency-path: '**/bun.lockb'
+        cache: 'bun'
+        cache-dependency-path: '**/bun.lockb'
     - name: Install bun dependencies
       shell: bash
       working-directory: ./frontend
-      # run: bun install --frozen-lockfile
-      run: bun install
+      run: bun install --frozen-lockfile
+      # run: bun install
