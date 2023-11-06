@@ -1,5 +1,20 @@
+name: Cache Dependencies
+  id: cache-deps
+  uses: actions/cache@v2
+  with:
+    path: |
+       ~/.cache/Cypress
+       ~/node_modules
+       **/node_modules
+    key: cache-${{ hashFiles('bun.lockb') }}
+
+name: Install dependencies
+  if: steps.cache-deps.outputs.cache-hit != 'true'
+  run: bun --frozen-lockfile
+
 name: Set up Javascript
 description: Installs Node.js and dependencies defined in package.json
+
 runs:
   using: composite
   steps:
