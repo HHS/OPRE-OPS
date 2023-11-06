@@ -13,7 +13,7 @@ import { getDecimalScale } from "../../../../helpers/currencyFormat.helpers";
  * @param {Array<any>} props.budgetLineItems - The budget line items for the agreement.
  * @returns {React.JSX.Element} - The agreement total budget lines card component JSX.
  */
-const BLIsByFYSummaryCard = ({ budgetLineItems }) => {
+const BLIsByFYSummaryCard = ({ budgetLineItems = [] }) => {
     const id = React.useId();
     const { chartData } = summaryCard(budgetLineItems);
 
