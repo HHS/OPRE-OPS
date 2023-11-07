@@ -59,11 +59,9 @@ jobs:
       # Run the Cypress E2E Tests
       - name: Install Cypress globally
         run: bun install -g cypress
-      - name: Install binary dependencies
-        run: bun run cypress install
       - name: E2E Test
         working-directory: frontend
-        run: bun run test:e2e
+        run: bun run cypress install && bun run test:e2e
       - name: Capture logs
         shell: bash
         if: always()
