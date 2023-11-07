@@ -58,7 +58,9 @@ jobs:
 
       # Run the Cypress E2E Tests
       - name: Install Cypress globally
-        run: npm install -g cypress
+        run: bun install -g cypress
+      - name: Install binary dependencies
+        run: bun run cypress install
       - name: E2E Test
         working-directory: frontend
         run: bun run test:e2e
