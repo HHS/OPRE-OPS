@@ -89,7 +89,10 @@
         ],
         "transformIgnorePatterns": [
             "node_modules/(?!crypto-random-string)/"
-        ]
+        ],
+        "moduleNameMapper": {
+          "^@uswds/uswds/js$": "<rootDir>/src/uswds/js/uswds-mock.js"
+        }
     },
     "browserslist": {
         "production": [
