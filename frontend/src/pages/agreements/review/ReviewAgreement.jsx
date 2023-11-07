@@ -220,7 +220,7 @@ export const ReviewAgreement = () => {
             <TextArea
                 name="submitter-notes"
                 label="Notes (optional)"
-                maxLength={1000}
+                maxLength={150}
                 value={notes}
                 onChange={(name, value) => setNotes(value)}
             />
