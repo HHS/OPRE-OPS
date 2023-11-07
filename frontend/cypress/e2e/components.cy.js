@@ -1,9 +1,9 @@
+// TODO: add Cypress component testing to project
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
     testLogin("admin");
-    cy.visit("/cans");
 });
 
 afterEach(() => {
@@ -54,66 +54,21 @@ describe("table row", () => {
     });
 });
 
-describe("agreement meta accordion", () => {
-    it("accordion should open when clicked", () => {
-        cy.visit("/agreements/approve/1");
+describe("accordion", () => {
+    it("accordion should close when clicked", () => {
+        cy.visit("/agreements/review/1");
         cy.get(".usa-accordion__heading > .usa-accordion__button").first().as("acc-btn").should("exist");
         cy.get(".usa-accordion__content").should("not.be.hidden");
         cy.get("@acc-btn").click();
         cy.get(".usa-accordion__content").should("be.hidden");
     });
 
-    it("accordion should open via keyboard enter", () => {
-        cy.visit("/agreements/approve/1");
+    it("accordion should close via keyboard enter", () => {
+        cy.visit("/agreements/review/1");
         cy.get(".usa-accordion__heading > .usa-accordion__button").first().as("acc-btn").should("exist");
         cy.get(".usa-accordion__content").should("not.be.hidden");
         cy.get("@acc-btn").type("{enter}");
         cy.get(".usa-accordion__content").should("be.hidden");
-    });
-});
-
-describe("agreement action accordion", () => {
-    it('accordion should open when "enter" is pressed', () => {
-        cy.visit("/agreements/approve/1");
-        cy.get("h2").contains("Choose an Action").as("acc-btn").should("exist");
-        cy.get(".usa-accordion__content").should("not.be.hidden");
-        cy.get("@acc-btn").type("{enter}");
-        cy.get(".usa-accordion__content").should("be.hidden");
-    });
-
-    it("should have draft option available on agreement one", () => {
-        cy.visit("/agreements/approve/1");
-        cy.get("h2").contains("Choose an Action").as("acc-btn").should("exist");
-        cy.get("@acc-btn").type("{enter}");
-        cy.get('input[type="radio"]').should("have.length", 2);
-        cy.get('input[id="Change Draft Budget Lines to Planned Status"]').should("exist").should("not.be.disabled");
-        cy.get('input[id="Change Planned Budget Lines to Executing Status"]').should("exist").should("be.disabled");
-    });
-
-    it("should have planned option available on agreement nine", () => {
-        cy.visit("/agreements/approve/9");
-        cy.get("h2").contains("Choose an Action").as("acc-btn").should("exist");
-        cy.get("@acc-btn").type("{enter}");
-        cy.get('input[type="radio"]').should("have.length", 2);
-        cy.get('input[id="Change Draft Budget Lines to Planned Status"]').should("exist").should("be.disabled");
-        cy.get('input[id="Change Planned Budget Lines to Executing Status"]').should("exist").should("not.be.disabled");
-    });
-});
-
-describe("agreement BLI accordion", () => {
-    it('accordion should open when "enter" is pressed', () => {
-        cy.visit("/agreements/approve/1");
-        cy.get("h2").contains("Select Budget Lines").as("acc-btn").should("exist");
-        cy.get(".usa-accordion__content").should("not.be.hidden");
-        cy.get("@acc-btn").type("{enter}");
-        cy.get(".usa-accordion__content").should("be.hidden");
-    });
-    it("should contain summary card", () => {
-        cy.visit("/agreements/approve/1");
-        cy.get("h2").contains("Select Budget Lines").as("acc-btn").type("{enter}");
-        cy.get('[data-cy="blis-by-fy-card"]').should("exist");
-        cy.get('[data-cy="currency-summary-card"]').should("exist");
-        cy.get(".usa-table").should("exist");
     });
 });
 

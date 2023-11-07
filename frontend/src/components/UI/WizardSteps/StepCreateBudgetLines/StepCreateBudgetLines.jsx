@@ -267,7 +267,7 @@ export const StepCreateBudgetLines = ({
 
         // handle next step
         if (isReviewMode) {
-            navigate(`/agreements/approve/${selectedAgreement.id}`);
+            navigate(`/agreements/review/${selectedAgreement.id}`);
         } else if (continueOverRide) {
             continueOverRide();
         } else if (goToNext) {

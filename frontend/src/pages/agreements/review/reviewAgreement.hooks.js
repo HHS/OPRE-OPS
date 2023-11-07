@@ -7,6 +7,7 @@ export const useReviewAgreement = (agreement, isSuccess) => {
     const [budgetLines, setBudgetLines] = React.useState([]);
     const [pageErrors, setPageErrors] = React.useState({});
     const [isAlertActive, setIsAlertActive] = React.useState(false);
+    const [mainToggleSelected, setMainToggleSelected] = React.useState(false);
 
     let res = suite.get();
 
@@ -58,6 +59,7 @@ export const useReviewAgreement = (agreement, isSuccess) => {
 
     const handleActionChange = (action) => {
         setAction(action);
+        setMainToggleSelected(false);
         const newBudgetLines = budgetLines.map((bli) => {
             switch (action) {
                 case actionOptions.CHANGE_DRAFT_TO_PLANNED:
@@ -79,6 +81,14 @@ export const useReviewAgreement = (agreement, isSuccess) => {
         setBudgetLines(newBudgetLines);
     };
 
+    const toggleSelectActionableBLIs = () => {
+        const newBudgetLines = budgetLines.map((bli) => ({
+            ...bli,
+            selected: bli.actionable && !mainToggleSelected
+        }));
+        setBudgetLines(newBudgetLines);
+    };
+
     return {
         action,
         setAction,
@@ -88,7 +98,10 @@ export const useReviewAgreement = (agreement, isSuccess) => {
         pageErrors,
         isAlertActive,
         res,
-        handleActionChange
+        handleActionChange,
+        toggleSelectActionableBLIs,
+        mainToggleSelected,
+        setMainToggleSelected
     };
 };
 
