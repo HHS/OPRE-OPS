@@ -423,7 +423,7 @@ class CANFiscalYearCarryForward(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN carried over from a previous fiscal year."""
 
     __tablename__ = "can_fiscal_year_carry_forward"
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, Identity(), primary_key=True)
     can_id = Column(Integer, ForeignKey("can.id"))
     can = relationship("CAN", lazy="joined")
     from_fiscal_year = Column(Integer)

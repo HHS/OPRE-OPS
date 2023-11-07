@@ -15,7 +15,7 @@ afterEach(() => {
 it("loads", () => {
     cy.visit("/portfolios/1");
     cy.get("h1").should("contain", "Child Welfare Research");
-    cy.get("h2").should("contain", "Child Care");
+    cy.get("h2").should("contain", "Division of Child and Family Development");
     cy.get("dt").should("contain", "Team Leader");
     cy.get("dd").should("contain", "Chris Fortunato");
     cy.get("div.margin-top-1 > .text-base-dark").should("contain", "Portfolio Description");
