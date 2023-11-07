@@ -23,8 +23,6 @@ const TextClip = ({ text, maxLines = 2, tooltipThreshold = 50 }) => {
             tooltip.on(tooltipRef.current);
             // remove event listeners when the component un-mounts.
             return () => {
-                // console.log("tooltipRef.current:", tooltipRef.current);
-                // tooltip.off(tooltipRef.current);
                 tooltip.off();
             };
         }
