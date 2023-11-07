@@ -12,10 +12,17 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import AgreementActionAccordion from "../../../components/Agreements/AgreementActionAccordion";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
-import { anyBudgetLinesByStatus, selectedBudgetLinesTotal, getTotalBySelectedCans } from "./ReviewAgreement.helpers";
+import {
+    anyBudgetLinesByStatus,
+    getSelectedBudgetLines,
+    selectedBudgetLinesTotal,
+    getTotalBySelectedCans
+} from "./ReviewAgreement.helpers";
 import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
 import useReviewAgreement from "./reviewAgreement.hooks";
+import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import App from "../../../App";
+import useToggle from "../../../hooks/useToggle";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -40,6 +47,7 @@ export const ReviewAgreement = () => {
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
+    const [afterApproval, setAfterApproval] = useToggle(true);
     const { setAlert } = useAlert();
     const {
         budgetLines,
@@ -158,8 +166,10 @@ export const ReviewAgreement = () => {
             />
 
             <AgreementBLIAccordion
-                budgetLineItems={agreement?.budget_line_items}
+                budgetLineItems={getSelectedBudgetLines(budgetLines)}
                 agreement={agreement}
+                afterApproval={afterApproval}
+                setAfterApproval={setAfterApproval}
             >
                 <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""}`}>
                     {areThereBudgetLineErrors && (
@@ -194,11 +204,15 @@ export const ReviewAgreement = () => {
                     setMainToggleSelected={setMainToggleSelected}
                 />
             </AgreementBLIAccordion>
+            <AgreementCANReviewAccordion
+                selectedBudgetLines={getSelectedBudgetLines(budgetLines)}
+                afterApproval={afterApproval}
+                setAfterApproval={setAfterApproval}
+            />
             <AgreementChangesAccordion
                 changeInBudgetLines={selectedBudgetLinesTotal(budgetLines)}
                 changeInCans={changeInCans}
             />
-
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className={`usa-button usa-button--outline margin-right-2 ${
