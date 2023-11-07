@@ -23,6 +23,7 @@ import useReviewAgreement from "./reviewAgreement.hooks";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import App from "../../../App";
 import useToggle from "../../../hooks/useToggle";
+import TextArea from "../../../components/UI/Form/TextArea";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -58,7 +59,9 @@ export const ReviewAgreement = () => {
         handleActionChange,
         toggleSelectActionableBLIs,
         mainToggleSelected,
-        setMainToggleSelected
+        setMainToggleSelected,
+        notes,
+        setNotes
     } = useReviewAgreement(agreement, isSuccess);
 
     const cn = classnames(suite.get(), {
@@ -212,6 +215,14 @@ export const ReviewAgreement = () => {
             <AgreementChangesAccordion
                 changeInBudgetLines={selectedBudgetLinesTotal(budgetLines)}
                 changeInCans={changeInCans}
+            />
+            <h2 className="font-sans-lg text-semibold">Notes</h2>
+            <TextArea
+                name="submitter-notes"
+                label="Notes (optional)"
+                maxLength={1000}
+                value={notes}
+                onChange={(name, value) => setNotes(value)}
             />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
