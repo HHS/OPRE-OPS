@@ -5,8 +5,10 @@ import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider, L
 import store from "./store";
 
 //  USWDS
+// import "@trussworks/react-uswds/lib/index.css";
 import "./uswds/css/styles.css";
-import "./uswds/js/uswds.min.js";
+// import "./uswds/js/uswds.min.js";
+// @import '~@trussworks/react-uswds/lib/index.css';
 
 import Home from "./pages/Home";
 import PortfolioList from "./pages/portfolios/list/PortfolioList";

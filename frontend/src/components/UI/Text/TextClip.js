@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import styles from "./TextClip.module.scss";
 import React, { useEffect } from "react";
 import USWDS from "@uswds/uswds/js";
+import { Tooltip } from "@trussworks/react-uswds";
 
 const { tooltip } = USWDS;
 
@@ -28,15 +29,18 @@ const TextClip = ({ text, maxLines = 2, tooltipThreshold = 50 }) => {
         }
     });
     return (
-        <span
-            ref={tooltipRef}
-            className={`${tooltipEnabled ? "usa-tooltip" : ""} ${styles.limitedLinesWithEllipsis}`}
-            style={{ WebkitLineClamp: maxLines }}
-            title={text}
-            data-position="right"
-        >
-            {text}
-        </span>
+        <div className="margin-4">
+            <Tooltip label="Default">Default</Tooltip>
+        </div>
+        // <span
+        //     ref={tooltipRef}
+        //     className={`${tooltipEnabled ? "usa-tooltip" : ""} ${styles.limitedLinesWithEllipsis}`}
+        //     style={{ WebkitLineClamp: maxLines }}
+        //     title={text}
+        //     data-position="right"
+        // >
+        //     {text}
+        // </span>
     );
 };
 
