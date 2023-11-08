@@ -1,7 +1,7 @@
 # Personally Identifiable Information Processing and Transparency
 ## PT-6 (2) - System of Records Notice | Exemption Rules
 
-Review all Privacy Act exemptions claimed for the system of records at [Assignment: organization-defined frequency] to ensure they remain appropriate and necessary in accordance with law, that they have been promulgated as regulations, and that they are accurately described in the system of records notice.
+Review all Privacy Act exemptions claimed for the system of records at [ACF-defined frequency] to ensure they remain appropriate and necessary in accordance with law, that they have been promulgated as regulations, and that they are accurately described in the system of records notice.
 
 ## OPS Implementation
 
