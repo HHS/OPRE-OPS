@@ -1,11 +1,9 @@
 # Supply Chain Risk Management
 ## SR-03 - Supply Chain Controls and Processes
 
-a. Establish a process or processes to identify and address weaknesses or deficiencies in the supply chain elements and processes of [Assignment: organization-defined system or system component] in coordination with [Assignment: organization-defined supply chain personnel];
-
-b. Employ the following controls to protect against supply chain risks to the system, system component, or system service and to limit the harm or consequences from supply chain-related events: [Assignment: organization-defined supply chain controls]; and
-
-c. Document the selected and implemented supply chain processes and controls in [Selection: security and privacy plans; supply chain risk management plan; [Assignment: organization-defined document]].
+a. Establish a process or processes to identify and address weaknesses or deficiencies in the supply chain elements and processes of [ACF-defined system or system component] in coordination with [ACF-defined supply chain personnel];
+b. Employ the following controls to protect against supply chain risks to the system, system component, or system service and to limit the harm or consequences from supply chain-related events: [ACF-defined supply chain controls]; and
+c. Document the selected and implemented supply chain processes and controls in [security and privacy plans as well as supply chain risk management plan];
 
 ## OPS Implementation
 
@@ -16,3 +14,4 @@ TODO: ???
 Hybrid with IaaS vendor and OPS. Inherited from ACF Tech (AMS)
 
 ### Related Content
+Consult the HHS Policy for Cyber Supply Chain Risk Management
