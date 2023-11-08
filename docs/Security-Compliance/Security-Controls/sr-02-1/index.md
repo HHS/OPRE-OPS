@@ -1,7 +1,9 @@
 # Supply Chain Risk Management
 ## SR-02 (1) - Supply Chain Risk Management Plan | Establish SCRM Team
 
-Establish a supply chain risk management team consisting of [Assignment: organization-defined personnel, roles, and responsibilities] to lead and support the following SCRM activities: [Assignment: organization-defined supply chain risk management activities].
+a. Establish a process or processes to identify and address weaknesses or deficiencies in the supply chain elements and processes of [ACF-defined system or system component] in coordination with [ACF-defined supply chain personnel];
+b. Employ the following controls to protect against supply chain risks to the system, system component, or system service and to limit the harm or consequences from supply chain-related events: [ACF-defined supply chain controls]; and
+c. Document the selected and implemented supply chain processes and controls in [security and privacy plans as well as supply chain risk management plan];
 
 ## OPS Implementation
 
@@ -12,3 +14,4 @@ TODO: ???
 Hybrid with IaaS vendor and OPS. Inherited from ACF Tech (AMS)
 
 ### Related Content
+Note: Consult the HHS Policy for Cyber Supply Chain Risk Management 
