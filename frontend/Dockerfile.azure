@@ -1,0 +1,27 @@
+# -- BUILD --
+FROM node:16-alpine as build
+
+WORKDIR /home/app
+COPY ./package.json ./yarn.lock ./
+RUN yarn install --network-timeout 300000 && yarn cache clean
+COPY . .
+RUN yarn build
+
+# -- RELEASE --
+FROM nginx:stable-alpine as release
+
+COPY --from=build /home/app/build /usr/share/nginx/html
+COPY --from=build /home/app/.env.example /usr/share/nginx/html/.env
+
+# Set the working directory to the directory where nginx serves the files.
+WORKDIR /usr/share/nginx/html
+
+# Install nodejs and npm, and then install runtime-env-cra globally
+# This needs to be done in the release stage because this is where runtime-env-cra needs to run.
+RUN apk add --no-cache nodejs npm \
+    && npm install -g runtime-env-cra
+
+EXPOSE 80
+
+# Start runtime-env-cra to inject runtime env vars and then start nginx
+CMD ["/bin/sh", "-c", "runtime-env-cra && nginx -g 'daemon off;'"]

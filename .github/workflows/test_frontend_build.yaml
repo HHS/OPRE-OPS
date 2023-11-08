@@ -17,4 +17,4 @@ jobs:
     with:
       image-name: ops-frontend
       docker-context: frontend
-      docker-file: Dockerfile
+      docker-file: Dockerfile.azure
