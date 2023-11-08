@@ -268,7 +268,7 @@ class ContractAgreement(Agreement):
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
     contract_number: Mapped[str] = mapped_column(String, nullable=True)
-    vendor: Mapped[str] = mapped_column(String, nullable=True)
+    vendor_id: Mapped[int] = mapped_column(ForeignKey("vendor.id"), nullable=True)
     task_order_number: Mapped[str] = mapped_column(
         String(length=50),
         nullable=True,
