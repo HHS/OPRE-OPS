@@ -270,17 +270,13 @@ class ContractAgreement(Agreement):
     contract_number: Mapped[str] = mapped_column(String, nullable=True)
     vendor_id: Mapped[int] = mapped_column(ForeignKey("vendor.id"), nullable=True)
     task_order_number: Mapped[str] = mapped_column(
-        String(length=50),
+        String(),
         nullable=True,
-        comment="MAPS.CONTRACT.TASK_ORDER_NBR",
     )
-    po_number: Mapped[str] = mapped_column(
-        String(length=50), nullable=True, comment="MAPS.CONTRACT.PO_NBR"
-    )
+    po_number: Mapped[str] = mapped_column(String(), nullable=True)
     acquisition_type = mapped_column(
         ENUM(AcquisitionType),
         nullable=True,
-        comment="MAPS.CONTRACT.SYS_ACQUISITION_TYPE_ID",
     )
     delivered_status: Mapped[bool] = mapped_column(Boolean, default=False)
     contract_type = mapped_column(ENUM(ContractType))
