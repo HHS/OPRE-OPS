@@ -25,6 +25,9 @@ class Division(BaseModel):
     name: Mapped[str] = mapped_column(String(100), unique=True)
     abbreviation: Mapped[str] = mapped_column(String(10), unique=True)
 
+    division_director_id = Column(Integer, ForeignKey("users.id"))
+    deputy_division_director_id = Column(Integer, ForeignKey("users.id"))
+
     @BaseModel.display_name.getter
     def display_name(self):
         return self.name
@@ -62,7 +65,7 @@ class Portfolio(BaseModel):
     """Main Portfolio model."""
 
     __tablename__ = "portfolio"
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, Identity(), primary_key=True)
     name = Column(String, nullable=False)
     status = Column(sa.Enum(PortfolioStatus))
     cans = relationship(
@@ -72,7 +75,7 @@ class Portfolio(BaseModel):
     shared_cans = relationship(
         "CAN", back_populates="shared_portfolios", secondary=shared_portfolio_cans
     )
-    division_id = Column(Integer, ForeignKey("division.id"))
+    division_id = Column(Integer, ForeignKey("division.id"), nullable=False)
     urls = relationship("PortfolioUrl")
     description = Column(Text)
     team_leaders = relationship(

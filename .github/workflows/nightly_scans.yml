@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
       - name: Run OWASP Zap Scan on live-dev
-        uses: zaproxy/action-full-scan@e058236b1221595033527ccc8a79959c7396d53f # v0.7.0
+        uses: zaproxy/action-full-scan@77c40179ecb960ceb784da5f370ad6285ebcf1cb # v0.8.0
         with:
           docker_name: 'owasp/zap2docker-stable'
           target: 'https://ops-dev.fr.cloud.gov/'
