@@ -2,12 +2,12 @@
 ## PL-04 - Rules of Behavior
 
 a. Establish and provide to individuals requiring access to the system, the rules that describe their responsibilities and expected behavior for information and system usage, security, and privacy;
-
 b. Receive a documented acknowledgment from such individuals, indicating that they have read, understand, and agree to abide by the rules of behavior, before authorizing access to information and the system;
+c. Review and update the rules of behavior [at least every three (3) years]; and
+d. Require individuals who have acknowledged a previous version of the rules of behavior to read and re-acknowledge [on an annual basis or as needed, when the HHS RoB are revised or updated.]
+e. Informs employees and contractors that the use of HHS information resources for anything other than authorized purposes set forth in the HHS RoB is a violation of either or both of those policies, and is grounds for disciplinary action, monetary fines, and/or criminal charges that could result in imprisonment.
 
-c. Review and update the rules of behavior [Assignment: organization-defined frequency]; and
-
-d. Require individuals who have acknowledged a previous version of the rules of behavior to read and re-acknowledge [Selection (one or more): [Assignment: organization-defined frequency]; when the rules are revised or updated]."
+Note: HHS has established the HHS Rules of Behavior for Use of HHS Information and IT Resources available on the HHS intranet. Some OpDivs maintain their own OpDiv-level Rules of Behavior (RoB), which must be based upon the HHS RoB and no less restrictive. Usage of these RoBs is permissible as a substitute for the HHS RoB. In addition, a system-level RoB acknowledgement may also be required for some Moderate and High systems
 
 ## OPS Implementation
 
