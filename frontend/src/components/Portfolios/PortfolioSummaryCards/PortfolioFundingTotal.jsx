@@ -22,19 +22,21 @@ const PortfolioFundingTotal = () => {
             label: "Previous FYs Carry-Forward",
             value: carryForwardFunding,
             color: "#A1D0BE",
-            percent: `${calculatePercent(carryForwardFunding, totalFunding)}%`
+            percent: `${calculatePercent(carryForwardFunding, totalFunding)}%`,
+            tagActiveStyle: "whiteOnTeal"
         },
         {
             id: 2,
             label: `FY ${fiscalYear.value} New Funding`,
             value: newFunding,
             color: "#534C9C",
-            percent: `${calculatePercent(newFunding, totalFunding)}%`
+            percent: `${calculatePercent(newFunding, totalFunding)}%`,
+            tagActiveStyle: "whiteOnPurple"
         }
     ];
     const [activeId, setActiveId] = React.useState(0);
 
-    const LegendItem = ({ id, label, value, color, percent }) => {
+    const LegendItem = ({ id, label, value, color, percent, tagStyleActive }) => {
         const isGraphActive = activeId === id;
         return (
             <div className="grid-row margin-top-2 font-12px">
@@ -64,6 +66,7 @@ const PortfolioFundingTotal = () => {
                         text={percent}
                         label={label}
                         active={isGraphActive}
+                        tagStyleActive={tagStyleActive}
                     />
                 </div>
             </div>
@@ -93,6 +96,7 @@ const PortfolioFundingTotal = () => {
                     value={item.value}
                     color={item.color}
                     percent={item.percent}
+                    tagStyleActive={item.tagActiveStyle}
                 />
             ))}
         </CurrencySummaryCard>
