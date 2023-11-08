@@ -527,7 +527,6 @@
   ],
   can_fiscal_year_carry_forward: [
     {
-      id: 1,
       can_id: 11,
       from_fiscal_year: 2022,
       to_fiscal_year: 2023,
@@ -535,7 +534,6 @@
       expected_amount: 100000.0,
     },
     {
-      id: 2,
       can_id: 12,
       from_fiscal_year: 2022,
       to_fiscal_year: 2023,
