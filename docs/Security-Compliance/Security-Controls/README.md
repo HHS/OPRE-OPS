@@ -151,7 +151,21 @@
 
 ### Media Protection
 
+1. [MP-2](mp-02/index.md)
+2. [MP-3](mp-03/index.md)
+3. [MP-4](mp-04/index.md)
+4. [MP-5](mp-05/index.md)
+5. [MP-6](mp-06/index.md)
+6. [MP-7](mp-07/index.md)
+
 ### Planning
+
+1. [PL-2](pl-02/index.md)
+2. [PL-4](pl-04/index.md)
+3. [PL-4-1](pl-04-1/index.md)
+4. [PL-8](pl-08/index.md)
+5. [PL-10](pl-10/index.md)
+6. [PL-11](pl-11/index.md)
 
 ### Personally Identifiable Information Processing and Transparency
 
@@ -168,7 +182,16 @@
 11. [PT-7-2](pt-07-2/index.md)
 12. [PT-8](pt-08/index.md)
 
-### Personal Security
+### Personnel Security
+
+1. [PS-2](ps-02/index.md)
+2. [PS-3](ps-03/index.md)
+3. [PS-4](ps-04/index.md)
+4. [PS-5](ps-05/index.md)
+5. [PS-6](ps-06/index.md)
+6. [PS-7](ps-07/index.md)
+7. [PS-8](ps-08/index.md)
+8. [PS-9](ps-09/index.md)
 
 ### Risk Assessment
 
@@ -251,3 +274,15 @@
 19. [SI-16](si-16/index.md)
 
 ### Supply Chain Risk Management
+
+1. [SR-2](sr-02/index.md)
+2. [SR-2-1](sr-02-1/index.md)
+3. [SR-3](sr-03/index.md)
+4. [SR-5](sr-05/index.md)
+5. [SR-6](sr-06/index.md)
+6. [SR-8](sr-08/index.md)
+7. [SR-10](sr-10/index.md)
+8. [SR-11](sr-11/index.md)
+9.  [SR-11-1](sr-11-1/index.md)
+10. [SR-11-2](sr-11-2/index.md)
+11. [SR-12](sr-12/index.md)
