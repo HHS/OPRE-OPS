@@ -1,7 +1,7 @@
 # Supply Chain Risk Management
 ## SR-11 (2) - Component Authenticity | Configuration Control for Component Service and Repair
 
-Maintain configuration control over the following system components awaiting service or repair and serviced or repaired components awaiting return to service: [Assignment: organization-defined system components].
+Maintain configuration control over the following system components awaiting service or repair and serviced or repaired components awaiting return to service: [ACF-defined system components].
 
 ## OPS Implementation
 
