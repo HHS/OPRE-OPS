@@ -32,7 +32,7 @@
         "react-select": "5.7.7",
         "sass": "1.69.5",
         "sass-loader": "13.3.2",
-        "vest": "5.1.2"
+        "vest": "5.1.3"
     },
     "devDependencies": {
         "@babel/plugin-proposal-private-property-in-object": "7.21.11",
