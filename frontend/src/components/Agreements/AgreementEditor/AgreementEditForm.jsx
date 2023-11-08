@@ -15,7 +15,7 @@ import ProductServiceCodeSummaryBox from "../../UI/Form/ProductServiceCodeSummar
 import { useEditAgreement, useEditAgreementDispatch, useSetState, useUpdateAgreement } from "./AgreementEditorContext";
 import suite from "./AgreementEditFormSuite";
 import Input from "../../UI/Form/Input";
-import TextArea from "../../UI/Form/TextArea/TextArea";
+// import TextArea from "../../UI/Form/TextArea/TextArea";
 import {
     useAddAgreementMutation,
     useGetProductServiceCodesQuery,
@@ -23,6 +23,7 @@ import {
 } from "../../../api/opsAPI";
 import ProjectOfficerComboBox from "../../UI/Form/ProjectOfficerComboBox";
 import useAlert from "../../../hooks/use-alert.hooks";
+import { CharacterCount, CharacterCountContainer, Form, FormGroup, Label, TextArea } from "@metrostar/comet-uswds";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -277,20 +278,64 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                 }}
             />
 
-            <TextArea
-                name="description"
-                label="Description"
-                messages={res.getErrors("description")}
-                className={cn("description")}
-                value={agreementDescription}
-                maxLength={1000}
-                onChange={(name, value) => {
-                    setAgreementDescription(value);
-                    if (isReviewMode) {
-                        runValidate(name, value);
-                    }
-                }}
-            />
+            {/*<TextArea*/}
+            {/*    aria-describedby="with-hint-textarea-info with-hint-textarea-hint"*/}
+            {/*    id="foo123"*/}
+            {/*    name="description"*/}
+            {/*    label="Description"*/}
+            {/*    messages={res.getErrors("description")}*/}
+            {/*    className={cn("description")}*/}
+            {/*    value={agreementDescription}*/}
+            {/*    maxLength={1000}*/}
+            {/*    onChange={(name, value) => {*/}
+            {/*        setAgreementDescription(value);*/}
+            {/*        if (isReviewMode) {*/}
+            {/*            runValidate(name, value);*/}
+            {/*        }*/}
+            {/*    }}*/}
+            {/*/>*/}
+
+            <CharacterCountContainer id="character-count">
+                <FormGroup>
+                    <Label htmlFor="with-hint-textarea">Textarea</Label>
+                    <span
+                        className="usa-hint"
+                        id="with-hint-textarea-hint"
+                    >
+                        This is a textarea with a character counter.
+                    </span>
+                    <TextArea
+                        aria-describedby="with-hint-textarea-info with-hint-textarea-hint"
+                        className="usa-character-count__field"
+                        id="with-hint-textarea"
+                        maxLength={50}
+                        name="with-hint-textarea"
+                        rows={5}
+                    />
+                </FormGroup>
+                <CharacterCount id="with-hint-textarea-info">You can enter up to 50 characters</CharacterCount>
+            </CharacterCountContainer>
+
+            <CharacterCountContainer id="character-count-2">
+                <FormGroup>
+                    <Label htmlFor="with-hint-textarea-2">Textarea</Label>
+                    <span
+                        className="usa-hint"
+                        id="with-hint-textarea-hint-2"
+                    >
+                        This is a textarea with a character counter.
+                    </span>
+                    <TextArea
+                        aria-describedby="with-hint-textarea-info-2 with-hint-textarea-hint-2"
+                        className="usa-character-count__field"
+                        id="with-hint-textarea-2"
+                        maxLength={50}
+                        name="with-hint-textarea-2"
+                        rows={5}
+                    />
+                </FormGroup>
+                <CharacterCount id="with-hint-textarea-info-2">You can enter up to 50 characters</CharacterCount>
+            </CharacterCountContainer>
 
             <ProductServiceCodeSelect
                 name="product_service_code_id"
@@ -381,15 +426,16 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                 selectedTeamMembers={selectedTeamMembers}
                 removeTeamMember={removeTeamMember}
             />
-            <TextArea
-                name="agreementNotes"
-                label="Notes (optional)"
-                maxLength={1000}
-                messages={res.getErrors("agreementNotes")}
-                className={cn("agreementNotes")}
-                value={agreementNotes || ""}
-                onChange={(name, value) => setAgreementNotes(value)}
-            />
+            {/*<TextArea*/}
+            {/*    id="foo222"*/}
+            {/*    name="agreementNotes"*/}
+            {/*    label="Notes (optional)"*/}
+            {/*    maxLength={1000}*/}
+            {/*    messages={res.getErrors("agreementNotes")}*/}
+            {/*    className={cn("agreementNotes")}*/}
+            {/*    value={agreementNotes || ""}*/}
+            {/*    onChange={(name, value) => setAgreementNotes(value)}*/}
+            {/*/>*/}
             <div className="grid-row flex-justify margin-top-8">
                 {isWizardMode ? (
                     <button

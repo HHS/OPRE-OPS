@@ -8,6 +8,7 @@ import {
     Form,
     FormGroup,
     Label,
+    TextArea,
     TextInput,
     Tooltip
 } from "@metrostar/comet-uswds";
@@ -31,25 +32,26 @@ const Home = () => {
                     This is the alert body
                 </Alert>
 
-                <Form id="form-1">
-                    <CharacterCountContainer id="character-count-1">
+                <Form id="form-2">
+                    <CharacterCountContainer id="character-count-2">
                         <FormGroup>
-                            <Label htmlFor="with-hint-input">Text input</Label>
+                            <Label htmlFor="with-hint-textarea">Textarea</Label>
                             <span
                                 className="usa-hint"
-                                id="with-hint-input-hint"
+                                id="with-hint-textarea-hint"
                             >
-                                This is an input with a character counter.
+                                This is a textarea with a character counter.
                             </span>
-                            <TextInput
-                                aria-describedby="with-hint-input-info with-hint-input-hint"
+                            <TextArea
+                                aria-describedby="with-hint-textarea-info with-hint-textarea-hint"
                                 className="usa-character-count__field"
-                                id="with-hint-input"
-                                maxLength={25}
-                                name="with-hint-input"
+                                id="with-hint-textarea"
+                                maxLength={50}
+                                name="with-hint-textarea"
+                                rows={5}
                             />
                         </FormGroup>
-                        <CharacterCount id="with-hint-input-info">You can enter up to 25 characters</CharacterCount>
+                        <CharacterCount id="with-hint-textarea-info">You can enter up to 50 characters</CharacterCount>
                     </CharacterCountContainer>
                 </Form>
 
