@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import CurrencyFormat from "react-currency-format";
-import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
+import CurrencySummaryCard from "../../UI/CurrencySummaryCard";
 import CANFundingBar from "../../CANs/CANFundingBar/CANFundingBar";
 import { calculatePercent } from "../../../helpers/utils";
 import Tag from "../../UI/Tag/Tag";
@@ -46,7 +46,7 @@ const PortfolioFundingTotal = () => {
                             style={{ color: color }}
                         />
 
-                        <span className={isGraphActive ? "fake-bold" : undefined}>{label}</span>
+                        <span className={isGraphActive ? "fake-bold" : ""}>{label}</span>
                     </div>
                 </div>
                 <div className="grid-col-4">
@@ -55,7 +55,7 @@ const PortfolioFundingTotal = () => {
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$ "}
-                        renderText={(value) => <span className={isGraphActive ? "fake-bold" : undefined}>{value}</span>}
+                        renderText={(value) => <span className={isGraphActive ? "fake-bold" : ""}>{value}</span>}
                     />
                 </div>
                 <div className="grid-col-1">

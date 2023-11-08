@@ -96,12 +96,15 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className,
     }
 
     return (
-        <span
-            className={`${tagClasses} ${activeClass} ${className}`}
-            style={{ width: "fit-content" }}
-        >
-            {text ? text : children}
-        </span>
+        <>
+            <span
+                className={`${tagClasses} ${activeClass} ${className}`}
+                style={{ width: "fit-content" }}
+            >
+                {text ? text : children}
+            </span>
+            <pre>{label}</pre>
+        </>
     );
 };
 

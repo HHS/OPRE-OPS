@@ -8,7 +8,7 @@ import SummaryCard from "../SummaryCard";
  * @param {string} props.headerText - The header text to display on the card.
  * @param {number} props.amount - The amount of currency to display on the card.
  * @param {React.ReactNode} props.children - The children of the component.
- * @param {Object} props.rest - The rest of the props to be spread on the root div element.
+ * @param {Object} [props.rest] - The rest of the props to be spread on the root div element.
  * @returns {React.JSX.Element} - The CurrencySummaryCard component.
  */
 const CurrencySummaryCard = ({ headerText, amount, children, ...rest }) => {
