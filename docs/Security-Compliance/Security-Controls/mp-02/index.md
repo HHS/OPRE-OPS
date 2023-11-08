@@ -1,7 +1,7 @@
 # Media Protection
 ## MP-02 - Media Access
 
-Restrict access to [Assignment: organization-defined types of digital and/or non-digital media] to [Assignment: organization-defined personnel or roles].
+Restrict access to [digital and non-digital media pursuant to Appendix I of the HHS IS2P] to [authorized personnel].
 
 ## OPS Implementation
 
