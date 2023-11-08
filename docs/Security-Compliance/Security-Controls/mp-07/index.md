@@ -1,8 +1,7 @@
 # Media Protection
 ## MP-07 - Media Use
 
-a. [Selection: Restrict; Prohibit] the use of [Assignment: organization-defined types of system media] on [Assignment: organization-defined systems or system components] using [Assignment: organization-defined controls]; and
-
+a. [Restricts] the use of [information system media (including, but not limited to, magnetic tapes, external/removable hard disk drives, flash drives, CDs, DVDs)] on [ACF information systems or system components] using [manual and automated security safeguards]; and
 b. Prohibit the use of portable storage devices in organizational systems when such devices have no identifiable owner.
 
 ## OPS Implementation
