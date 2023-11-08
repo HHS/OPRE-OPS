@@ -2,16 +2,11 @@
 ## PT-5 - Privacy Notice
 
 Provide notice to individuals about the processing of personally identifiable information that:
-
-a. Is available to individuals upon first interacting with an organization, and subsequently at [Assignment: organization-defined frequency];
-
+a. Is available to individuals upon first interacting with an organization, and subsequently at [ACF-defined frequency];
 b. Is clear and easy-to-understand, expressing information about personally identifiable information processing in plain language;
-
 c. Identifies the authority that authorizes the processing of personally identifiable information;
-
 d. Identifies the purposes for which personally identifiable information is to be processed; and
-
-e. Includes [Assignment: organization-defined information].
+e. Includes [ACF-defined information, including a point of contact for the individual to contact for more information].
 
 ## OPS Implementation
 
