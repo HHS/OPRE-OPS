@@ -66,7 +66,7 @@ def test_agreements_serialization(auth_client, loaded_db):
     assert response.json["research_project_id"] == agreement.research_project_id
     assert response.json["support_contacts"] == agreement.support_contacts
     assert len(response.json["team_members"]) == len(agreement.team_members)
-    assert response.json["vendor"] == agreement.vendor
+    assert response.json["vendor_id"] == agreement.vendor_id
 
 
 @pytest.mark.skip("Need to consult whether this should return ALL or NONE if the value is empty")
