@@ -2,12 +2,10 @@
 ## PS-06 - Access Agreements
 
 a. Develop and document access agreements for organizational systems;
-
-b. Review and update the access agreements [Assignment: organization-defined frequency]; and
-
-c. Verify that individuals requiring access to organizational information and systems: <br />
-1. Sign appropriate access agreements prior to being granted access; and<br />
-2. Re-sign access agreements to maintain access to organizational systems when access agreements have been updated or [Assignment: organization-defined frequency].
+b. Review and update the access agreements [at least every 365 days or whenever there is a significant change to the information system or information being processed; and whenever there is a change to the agreements’ verbiage]; and
+c. Verify that individuals requiring access to organizational information and systems: 
+1. Sign appropriate access agreements prior to being granted access; and
+2. Re-sign access agreements to maintain access to organizational systems when access agreements have been updated or [at least every 365 days].
 
 ## OPS Implementation
 
