@@ -12,9 +12,6 @@ echo "Loading DB..."
 python ./data_tools/src/import_static_data/load_db.py
 
 echo "Loading 'vendor_and_contact_data.json5'..."
-DATA=./data_tools/data/vendor_and_contact_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-
-echo "Loading 'vendor_and_contact_data.json5'..."
 DATA=./data_tools/data/vendor_and_contact_data.json5 python ./data_tools/src/import_static_data/import_data.py
 
 echo "Loading 'portfolio_data.json5'..."
