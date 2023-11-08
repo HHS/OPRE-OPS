@@ -28,7 +28,7 @@ user_group_table = Table(
 class User(BaseModel):
     """Main User model."""
 
-    __tablename__ = "users"
+    __tablename__ = "users" # plural because it's a reserved word in Postgres
     id = Column(Integer, Identity(always=True, start=1, cycle=True), primary_key=True)
     oidc_id = Column(UUID(as_uuid=True), unique=True, index=True)
     hhs_id = Column(String)
@@ -102,7 +102,7 @@ class User(BaseModel):
 class Role(BaseModel):
     """Main Role model."""
 
-    __tablename__ = "roles"
+    __tablename__ = "roles" # plural because it's a reserved word in Postgres
     id = Column(Integer, Identity(always=True, start=1, cycle=True), primary_key=True)
     name = Column(String, index=True, nullable=False)
     permissions = Column(String, nullable=False)
@@ -116,7 +116,7 @@ class Role(BaseModel):
 class Group(BaseModel):
     """Main Group model."""
 
-    __tablename__ = "groups"
+    __tablename__ = "groups" # plural because it's a reserved word in Postgres
     id = Column(Integer, Identity(always=True, start=1, cycle=True), primary_key=True)
     name = Column(String, index=True, nullable=False)
     users = relationship("User", secondary=user_group_table, back_populates="groups")

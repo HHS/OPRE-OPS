@@ -22,6 +22,7 @@ print("Loading models for Portfolios", models.portfolios)
 print("Loading models for Research Projects", models.research_projects)
 print("Loading models for Users", models.users)
 print("Loading models for Procurement Shop", models.procurement_shops)
+print("Loading models for Workflows", models.workflows)
 
 # Whitelisting here to help mitigate a SQL Injection attack from the JSON data
 ALLOWED_TABLES = [
@@ -57,6 +58,16 @@ ALLOWED_TABLES = [
     "procurement_shop",
     "agreement_team_members",
     "notification",
+    "workflow_template",
+    "workflow_step_template",
+    "workflow_instance",
+    "workflow_step_instance",
+    "package",
+    "bli_package",
+    "package_snapshot",
+    "bli_package_snapshot",
+    "workflow_step_dependency",
+    "step_approvers",
 ]
 
 data = os.getenv("DATA")

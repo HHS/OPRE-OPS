@@ -9,9 +9,10 @@ import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from marshmallow import EXCLUDE, Schema, ValidationError
-from models import Agreement, BudgetLineItemStatus, OpsEventType
+from models import BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import AgreementType, BudgetLineItem
+from models.workflows import BliPackage
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.resources.budget_line_item_schemas import (
     BudgetLineItemResponse,
@@ -36,7 +37,7 @@ def bli_associated_with_agreement(self, id: int, permission_type: PermissionType
     try:
         agreement_id = request.json["agreement_id"]
         agreement_type = AgreementType[request.json["agreement_type"]]
-        agreement_cls = Agreement.get_class(agreement_type)
+        agreement_cls = BliPackage.get_class(agreement_type)
         agreement_id_field = agreement_cls.get_class_field("id")
         agreement_stmt = select(agreement_cls).where(agreement_id_field == agreement_id)
         agreement = current_app.db_session.scalar(agreement_stmt)
