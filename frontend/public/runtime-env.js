@@ -1,1 +1,1 @@
-window.__RUNTIME_CONFIG__ = {"REACT_APP_BACKEND_DOMAIN":"https://api.my-awesome-website34343.com"};
+// This is just a placeholder, runtime-env-cra will fill in at runtime. Required file
