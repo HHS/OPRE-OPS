@@ -8,10 +8,10 @@ Include in the rules of behavior, restrictions on:<br />
 
 ## OPS Implementation
 
-TODO: Template or inherited from ACF Tech ?
+TODO: Seek inherited text. IaaS provider ?
 
 ### Control Origination
 
-Inherited from ACF Tech (AMS) ??
+Inherited from HHS/ACF
 
 ### Related Content

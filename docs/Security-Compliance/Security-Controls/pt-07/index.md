@@ -5,6 +5,8 @@ Apply [ACF-defined processing conditions] for specific categories of personally 
 
 ## OPS Implementation
 
+TODO: Seek ACF Tech conditions for our categories referenced in PIA ???
+
 ### Control Origination
 
 

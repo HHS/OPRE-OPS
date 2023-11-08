@@ -9,6 +9,6 @@ TODO: seek inherited text
 
 ### Control Origination
 
-Inherited from OPRE
+Inherited from HHS/ACF/OPRE
 
 ### Related Content

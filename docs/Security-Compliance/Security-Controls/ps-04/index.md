@@ -3,22 +3,27 @@
 
 Upon termination of individual employment:
 a. Disable system access within [as soon as possible but no longer than seven (7) calendar days following termination or, if necessary, prior to the formal termination action];
+
 b. Terminate or revoke any authenticators and credentials associated with the individual;
+
 c. Conduct exit interviews that include a discussion of [the terminated individual's continued obligations under information system non-disclosure, confidentiality, or user access agreements];
+
 d. Retrieve all security-related organizational system-related property; and
+
 e. Retain access to organizational information and systems formerly controlled by terminated individual.
 
 ## OPS Implementation
 
-a, b. TODO: reliance on AMS for disabling and revocation of access ?
+a, b. A system admin will revoke user authorization within OPS within the required timeframe after receiving a qualified notification.
 
 TODO: seek inherited text
 
 ### Control Origination
 
-Inherited from OPRE and ACF Tech (ACF)
+Hybrid with OPS, HHS/ACF/OPRE, and ACF Tech
 
 ### Related Content
-Notes: 
+
+Notes:
 -For systems that rely on identity and access management systems for access, termination or revocation of credentials effectively prevents system access.
 -The organization must retain for a reasonable time period, not less than the period available for the employee to appeal the termination, all electronic documentation in an OpDiv-defined location, which can readily be retrieved in the event of litigation at a later date after a terminated employee has departed an Agency organization.

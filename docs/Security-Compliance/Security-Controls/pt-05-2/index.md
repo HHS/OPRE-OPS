@@ -5,7 +5,10 @@ Include Privacy Act statements on forms that collect information that will be ma
 
 ## OPS Implementation
 
+TODO: Reference footer/banner
+
 ### Control Origination
 
+Hybrid with IaaS vendor and OPS. Inherited from ACF Tech (AMS)
 
 ### Related Content

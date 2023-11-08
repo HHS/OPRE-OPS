@@ -5,7 +5,10 @@ Implement [ACF-defined tools or mechanisms] for individuals to consent to the pr
 
 ## OPS Implementation
 
+TODO: reference global banner/footer text
+
 ### Control Origination
 
+Hybrid with IaaS vendor and OPS. Inherited from ACF Tech (AMS)
 
 ### Related Content

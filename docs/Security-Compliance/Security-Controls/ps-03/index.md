@@ -2,10 +2,14 @@
 ## PS-03 - Personnel Screening
 
 a. Screen individuals prior to authorizing access to the system; and
+
 b. Rescreen individuals in accordance with [anytime they move to a new position with a higher risk designation, and where rescreening is so indicated, rescreens in accordance with FIPS 199 and 201 and Executive Order 10450 (i.e., every three (3) years in conjunction with Personal Identity Verification (PIV) re-issuance)].
+
 c. Conducts background investigations in a manner commensurate with OPM and HHS Human Resources policy and guidance;
+
 d. Performs reinvestigations in accordance with guidance provided by current personnel security policy; and
-e. Refuses employees and contractors access to information systems until they have:
+
+e. Refuses employees and contractors access to information systems until they have:<br />
 1. Been granted an interim clearance, and
 2. Signed the appropriate access agreements.
 
@@ -15,6 +19,6 @@ TODO: seek inherited text
 
 ### Control Origination
 
-Inherited from OPRE
+Inherited from HHS/ACF/OPRE
 
 ### Related Content

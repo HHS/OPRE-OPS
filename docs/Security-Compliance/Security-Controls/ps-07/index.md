@@ -2,21 +2,26 @@
 ## PS-07 - External Personnel Security
 
 a. Establish personnel security requirements, including security roles and responsibilities for external providers;
+
 b. Require external providers to comply with personnel security policies and procedures established by the organization;
+
 c. Document personnel security requirements;
-d. Require external providers to notify [management personnel, systems administrators, physical security personnel] of any personnel transfers or terminations of external personnel who possess organizational credentials and/or badges, or who have system privileges within 
-[ Low - As soon as possible within a maximum of 30 days from the formal transfer or termination action.
-    Moderate - As soon as possible within a maximum of 7 days from the formal transfer or termination action.
-    High - As soon as possible within a maximum of 72 hours from the formal transfer or termination action.]; and
+
+d. Require external providers to notify [management personnel, systems administrators, physical security personnel] of any personnel transfers or terminations of external personnel who possess organizational credentials and/or badges, or who have system privileges within <br />
+[ Low - As soon as possible within a maximum of 30 days from the formal transfer or termination action<br />
+  Moderate - As soon as possible within a maximum of 7 days from the formal transfer or termination action.<br />
+  High - As soon as possible within a maximum of 72 hours from the formal transfer or termination action.]; and
+
 e. Monitor provider compliance with personnel security requirements.
 
 ## OPS Implementation
 
-TODO: ???
+TODO: Seek inherited text from IaaS provider
 
 ### Control Origination
 
 Hybrid with IaaS vendor and OPS. Inherited from ACF Tech (AMS)
 
 ### Related Content
+
 Third-party providers include, for example, service bureaus, contractors, and other organizations providing information system development, information technology services, outsourced applications, and network and security managementt.
