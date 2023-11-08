@@ -8,6 +8,7 @@
         "module": "ES2015",
         "typeRoots": ["./node_modules/@types"]
     },
+    "include": ["src/types"],
     "$schema": "https://json.schemastore.org/tsconfig",
     "display": "Recommended"
 }

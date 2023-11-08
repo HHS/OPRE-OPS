@@ -1,7 +1,8 @@
 import axios from "axios";
 import { getAccessToken, getRefreshToken } from "../components/Auth/auth";
 
-const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
+// const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
+const BACKEND_DOMAIN = window.__RUNTIME_CONFIG__.REACT_APP_BACKEND_DOMAIN;
 
 export const callBackend = async (urlPath, action, requestBody, queryParams, useRefresh = false) => {
     console.debug(

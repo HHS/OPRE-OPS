@@ -1,7 +1,8 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getAccessToken } from "../components/Auth/auth";
 
-const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
+// const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
+const BACKEND_DOMAIN = window.__RUNTIME_CONFIG__.REACT_APP_BACKEND_DOMAIN;
 
 export const opsApi = createApi({
     reducerPath: "opsApi",

@@ -30,6 +30,7 @@
         "react-router-dom": "6.17.0",
         "react-scripts": "5.0.1",
         "react-select": "5.7.7",
+        "runtime-env-cra": "^0.2.4",
         "sass": "1.69.5",
         "sass-loader": "13.3.2",
         "vest": "5.1.2"
@@ -61,7 +62,7 @@
         "redux-mock-store": "1.5.4"
     },
     "scripts": {
-        "start": "DISABLE_ESLINT_PLUGIN=true react-scripts start",
+        "start": "DISABLE_ESLINT_PLUGIN=true NODE_ENV=development runtime-env-cra --config-name=./public/runtime-env.js && react-scripts start",
         "start:debug": "DISABLE_ESLINT_PLUGIN=true react-scripts --inspect=0.0.0.0:9229 start",
         "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
         "test": "react-scripts test",
