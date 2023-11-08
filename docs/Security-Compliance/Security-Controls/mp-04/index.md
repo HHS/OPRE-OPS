@@ -1,8 +1,7 @@
 # Media Protection
 ## MP-04 - Media Storage
 
-a. Physically control and securely store [Assignment: organization-defined types of digital and/or non-digital media] within [Assignment: organization-defined controlled areas]; and
-
+a. Physically control and securely store [information system media pursuant to Appendix I of the HHS IS2P] within [HHS controlled offices and data centers]; and
 b. Protect system media types defined in MP-4a until the media are destroyed or sanitized using approved equipment, techniques, and procedures.
 
 ## OPS Implementation
