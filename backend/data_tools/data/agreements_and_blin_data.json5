@@ -155,7 +155,7 @@
     {
       id: 1,
       contract_number: "XXXX000000001",
-      vendor: "Vendor 1",
+      vendor_id: 1,
       delivered_status: false,
       contract_type: "RESEARCH",
       support_contacts: [],
@@ -163,7 +163,7 @@
     {
       id: 6,
       contract_number: "XXXX000000006",
-      vendor: "Vendor 1",
+      vendor_id: 1,
       delivered_status: false,
       contract_type: "RESEARCH",
       support_contacts: [],
@@ -171,7 +171,7 @@
     {
       id: 7,
       contract_number: "XXXX000000007",
-      vendor: "Vendor 2",
+      vendor_id: 2,
       delivered_status: false,
       contract_type: "RESEARCH",
       support_contacts: [],
@@ -179,7 +179,7 @@
     {
       id: 8,
       contract_number: "XXXX000000008",
-      vendor: "Vendor 2",
+      vendor_id: 2,
       delivered_status: false,
       contract_type: "RESEARCH",
       support_contacts: [],
@@ -187,7 +187,7 @@
     {
       id: 9,
       contract_number: "XXXX000000009",
-      vendor: "Vendor 3",
+      vendor_id: 3,
       delivered_status: false,
       contract_type: "RESEARCH",
       support_contacts: [],
