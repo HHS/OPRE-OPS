@@ -14,7 +14,7 @@ export const useIsUserAllowedToEditAgreement = (agreementId) => {
     const { data: agreement } = useGetAgreementByIdQuery(agreementId);
     const loggedInUserId = useSelector((state) => state?.auth?.activeUser?.id);
 
-    const isUserTheProjectOfficer = agreement?.project_officer === loggedInUserId;
+    const isUserTheProjectOfficer = agreement?.project_officer_id === loggedInUserId;
     const isUserTheAgreementCreator = agreement?.created_by === loggedInUserId;
     const isUserATeamMember = agreement?.team_members?.some((teamMember) => teamMember.id === loggedInUserId);
     const isUserCreatorOfAnyBudgetLines = agreement?.budget_line_items?.some(

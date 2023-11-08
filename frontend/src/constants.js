@@ -26,6 +26,23 @@ const constants = {
         {
             color: "hsla(153, 49%, 47%, 1)" // light green
         }
+    ],
+    blisByFYChartColors: [
+        {
+            color: "hsla(327, 37%, 25%, 1)" // dark purple
+        },
+        {
+            color: "hsla(336, 45%, 52%, 1)" // mid purple
+        },
+        {
+            color: "hsla(345, 70%, 70%, 1)" // light purple
+        },
+        {
+            color: "hsla(347, 40%, 82%, 1)" // very light purple
+        },
+        {
+            color: "hsla(282, 23%, 44%, 1)" // dark blue purple
+        }
     ]
 };
 

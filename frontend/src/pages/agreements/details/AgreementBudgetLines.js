@@ -6,16 +6,17 @@ import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTab
 import StepCreateBudgetLines from "../../../components/UI/WizardSteps/StepCreateBudgetLines/StepCreateBudgetLines";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import useAlert from "../../../hooks/use-alert.hooks";
-import AgreementTotalBudgetLinesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalBudgetLinesCard";
-import AgreementValuesCard from "../../../components/Agreements/AgreementDetailsCards/AgreementValuesCard";
 import { useState } from "react";
 import AgreementBudgetLinesHeader from "../../../components/Agreements/AgreementBudgetLinesHeader";
-import { draftBudgetLineStatuses } from "../../../helpers/utils";
+import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
+import BLIsByFYSummaryCard from "../../../components/Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
+import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard";
 
 /**
  * Renders Agreement budget lines view
  * @param {Object} props - The component props.
  * @param {Object} props.agreement - The agreement to display.
+ * @param {number} props.agreement.id - The agreement id.
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
  * @param {function} props.setIsEditMode - The function to set the edit mode.
  * @returns {React.JSX.Element} - The rendered component.
@@ -31,15 +32,40 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
     // details for AgreementTotalBudgetLinesCard
     const blis = agreement.budget_line_items ? agreement.budget_line_items : [];
     const filteredBlis = includeDrafts ? blis : blis.filter((bli) => !draftBudgetLineStatuses.includes(bli.status));
-    const numberOfAgreements = filteredBlis.length;
-    const countsByStatus = filteredBlis.reduce((p, c) => {
-        const status = c.status;
-        if (!(status in p)) {
-            p[status] = 0;
+    const currentFiscalYear = getCurrentFiscalYear();
+
+    const totals = {
+        Draft: { subtotal: 0, fees: 0, total: 0 },
+        FY: { subtotal: 0, fees: 0, total: 0 },
+        Agreement: { subtotal: 0, fees: 0, total: 0 }
+    };
+
+    filteredBlis.forEach((bl) => {
+        let date_needed = new Date(bl?.date_needed);
+        let month = date_needed.getMonth();
+        let year = date_needed.getFullYear();
+        let fiscalYear = month > 8 ? year + 1 : year;
+        let amount = bl?.amount;
+        let fee = amount * bl?.proc_shop_fee_percentage;
+        let total = amount + fee;
+        let status = bl?.status.charAt(0).toUpperCase() + bl?.status.slice(1).toLowerCase();
+
+        if (status === "Draft") {
+            totals["Draft"]["subtotal"] += amount;
+            totals["Draft"]["fees"] += fee;
+            totals["Draft"]["total"] += total;
         }
-        p[status]++;
-        return p;
-    }, {});
+
+        if (fiscalYear === +currentFiscalYear) {
+            totals["FY"]["subtotal"] += amount;
+            totals["FY"]["fees"] += fee;
+            totals["FY"]["total"] += total;
+        }
+
+        totals["Agreement"]["subtotal"] += amount;
+        totals["Agreement"]["fees"] += fee;
+        totals["Agreement"]["total"] += total;
+    });
 
     // if there are no BLIS than the user can edit
     if (agreement?.budget_line_items?.length === 0) {
@@ -55,12 +81,13 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                 setIncludeDrafts={setIncludeDrafts}
             />
             <div className="display-flex flex-justify">
-                <AgreementTotalBudgetLinesCard
-                    numberOfAgreements={numberOfAgreements}
-                    countsByStatus={countsByStatus}
-                    includeDrafts={includeDrafts}
+                <BLIsByFYSummaryCard budgetLineItems={filteredBlis} />
+                <AgreementTotalCard
+                    total={totals["Agreement"]["total"]}
+                    subtotal={totals["Agreement"]["subtotal"]}
+                    fees={totals["Agreement"]["fees"]}
+                    procurementShop={agreement.procurement_shop}
                 />
-                <AgreementValuesCard budgetLineItems={filteredBlis} />
             </div>
             <AgreementDetailHeader
                 heading="Budget Lines"
@@ -100,6 +127,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                 <BudgetLinesTable
                     budgetLinesAdded={agreement?.budget_line_items}
                     readOnly={!isEditMode}
+                    showTotalSummaryCard={false}
                 />
             ) : (
                 <p>No budget lines.</p>
@@ -109,7 +137,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                 <div className="grid-row flex-justify-end margin-top-1">
                     <Link
                         className="usa-button margin-top-4 margin-right-0"
-                        to={`/agreements/approve/${agreement?.id}`}
+                        to={`/agreements/review/${agreement?.id}`}
                         data-cy="bli-tab-continue-btn"
                     >
                         Plan or Execute Budget Lines
@@ -128,7 +156,7 @@ AgreementBudgetLines.propTypes = {
         research_project: PropTypes.object,
         team_members: PropTypes.arrayOf(PropTypes.object),
         created_by: PropTypes.number,
-        project_officer: PropTypes.number
+        project_officer_id: PropTypes.number
     }),
     isEditMode: PropTypes.bool,
     setIsEditMode: PropTypes.func

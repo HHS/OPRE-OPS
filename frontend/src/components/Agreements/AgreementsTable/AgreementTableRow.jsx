@@ -24,6 +24,8 @@ import {
     areAllBudgetLinesInStatus,
     isThereAnyBudgetLines
 } from "./AgreementsTable.helpers";
+import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import TextClip from "../../UI/Text/TextClip";
 
 /**
  * Renders a row in the agreements table.
@@ -50,7 +52,7 @@ export const AgreementTableRow = ({ agreement }) => {
 
     // styles for the table row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
-    const changeBgColorIfExpanded = { backgroundColor: isExpanded && "var(--neutral-lightest)" };
+    const changeBgColorIfExpanded = { backgroundColor: isExpanded ? "var(--neutral-lightest)" : "" };
     // Validations for editing/deleting an agreement
     const isAgreementEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
@@ -87,14 +89,17 @@ export const AgreementTableRow = ({ agreement }) => {
                     className="text-ink text-no-underline"
                     to={"/agreements/" + agreement.id}
                 >
-                    {agreementName}
+                    <TextClip text={agreementName} />
                 </Link>
             </th>
             <td
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {researchProjectName}
+                <TextClip
+                    text={researchProjectName}
+                    tooltipThreshold={30}
+                />
             </td>
             <td
                 className={removeBorderBottomIfExpanded}
@@ -111,7 +116,7 @@ export const AgreementTableRow = ({ agreement }) => {
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$"}
-                    decimalScale={2}
+                    decimalScale={getDecimalScale(agreementTotal)}
                     fixedDecimalScale={true}
                     renderText={(value) => value}
                 />
@@ -181,7 +186,6 @@ export const AgreementTableRow = ({ agreement }) => {
                 expandedData={ExpandedData}
                 isExpanded={isExpanded}
                 setIsExpanded={setIsExpanded}
-                isRowActive={isRowActive}
                 setIsRowActive={setIsRowActive}
             />
         </>
@@ -209,7 +213,7 @@ AgreementTableRow.propTypes = {
         created_by: PropTypes.number.isRequired,
         notes: PropTypes.string,
         created_on: PropTypes.string,
-        project_officer: PropTypes.number.isRequired,
+        project_officer_id: PropTypes.number.isRequired,
         team_members: PropTypes.arrayOf(
             PropTypes.shape({
                 id: PropTypes.number.isRequired

@@ -1,8 +1,6 @@
-import { useEffect, useState, Fragment } from "react";
-import { useNavigate } from "react-router-dom";
+import { Fragment } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import classnames from "vest/classnames";
-import PropTypes from "prop-types";
-import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../../api/opsAPI";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
@@ -11,63 +9,63 @@ import suite from "./suite";
 import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import AgreementActionAccordion from "../../../components/Agreements/AgreementActionAccordion";
+import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
+import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
+import {
+    anyBudgetLinesByStatus,
+    getSelectedBudgetLines,
+    selectedBudgetLinesTotal,
+    getTotalBySelectedCans
+} from "./ReviewAgreement.helpers";
+import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
+import useReviewAgreement from "./reviewAgreement.hooks";
+import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
+import App from "../../../App";
+import useToggle from "../../../hooks/useToggle";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
- * @param {Object} props - The component props.
- * @param {number} props.agreement_id - The ID of the agreement to review.
  * @returns {React.JSX.Element} - The rendered component.
  */
-export const ReviewAgreement = ({ agreement_id }) => {
+
+export const ReviewAgreement = () => {
+    const urlPathParams = useParams();
+    const agreementId = +urlPathParams.id;
     const navigate = useNavigate();
     const {
         isSuccess,
         data: agreement,
         error: errorAgreement,
         isLoading: isLoadingAgreement
-    } = useGetAgreementByIdQuery(agreement_id, {
+    } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true
     });
 
     const [updateBudgetLineItemStatus] = useUpdateBudgetLineItemStatusMutation();
-    const [pageErrors, setPageErrors] = useState({});
-    const [isAlertActive, setIsAlertActive] = useState(false);
     const isAgreementStateEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
-    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer);
+    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
+    const [afterApproval, setAfterApproval] = useToggle(true);
     const { setAlert } = useAlert();
-
-    let res = suite.get();
+    const {
+        budgetLines,
+        handleSelectBLI,
+        pageErrors,
+        isAlertActive,
+        res,
+        handleActionChange,
+        toggleSelectActionableBLIs,
+        mainToggleSelected,
+        setMainToggleSelected
+    } = useReviewAgreement(agreement, isSuccess);
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
         valid: "success",
         warning: "warning"
     });
-    // pass in the agreement object to the suite
-    useEffect(() => {
-        if (isSuccess) {
-            suite({
-                ...agreement
-            });
-        }
-        return () => {
-            suite.reset();
-        };
-    }, [isSuccess, agreement]);
-
-    // fire the page errors based on the suite results
-    useEffect(() => {
-        if (isSuccess && !res.isValid()) {
-            setIsAlertActive(true);
-            setPageErrors(res.getErrors());
-        }
-        return () => {
-            setPageErrors({});
-            setIsAlertActive(false);
-        };
-    }, [res, isSuccess]);
 
     if (isLoadingAgreement) {
         return <h1>Loading...</h1>;
@@ -82,10 +80,12 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const budgetLineErrors = res.getErrors("budget-line-items");
     const budgetLineErrorsExist = budgetLineErrors.length > 0;
     const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist;
-    const anyBudgetLinesAreDraft = agreement.budget_line_items.some((item) => item.status === "DRAFT");
+    const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement, "DRAFT");
+    const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement, "PLANNED");
+    const changeInCans = getTotalBySelectedCans(budgetLines);
 
     const handleSendToApproval = () => {
-        if (anyBudgetLinesAreDraft) {
+        if (anyBudgetLinesDraft) {
             agreement?.budget_line_items.forEach((bli) => {
                 if (bli.status === "DRAFT") {
                     console.log(bli.id);
@@ -116,7 +116,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
     };
 
     return (
-        <>
+        <App breadCrumbName="Agreements">
             {isAlertActive && Object.entries(pageErrors).length > 0 ? (
                 <SimpleAlert
                     type="error"
@@ -146,7 +146,7 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 </SimpleAlert>
             ) : (
                 <h1
-                    className="text-bold margin-top-0"
+                    className="text-bold"
                     style={{ fontSize: "1.375rem" }}
                 >
                     Review and Send Agreement to Approval
@@ -159,40 +159,59 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 cn={cn}
                 convertCodeForDisplay={convertCodeForDisplay}
             />
-            <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : null}`}>
-                <h2
-                    className="text-bold"
-                    style={{ fontSize: "1.375rem" }}
-                >
-                    Budget Lines
-                </h2>
-                <p>This is a list of all budget lines within this agreement.</p>
-                {areThereBudgetLineErrors && (
-                    <ul className="usa-error-message padding-left-1">
-                        {budgetLineErrorsExist && (
-                            <li>
-                                {budgetLineErrors.map((error, index) => (
-                                    <Fragment key={index}>
-                                        <span>{error}</span>
-                                        {index < budgetLineErrors.length - 1 && <span>, </span>}
-                                    </Fragment>
-                                ))}
-                            </li>
-                        )}
-                        {budgetLinePageErrorsExist &&
-                            budgetLinePageErrors.map(([budgetLineItem, errors]) => (
-                                <li key={budgetLineItem}>
-                                    {budgetLineItem}: {errors.join(", ")}
-                                </li>
-                            ))}
-                    </ul>
-                )}
-            </div>
+            <AgreementActionAccordion
+                setAction={handleActionChange}
+                optionOneDisabled={!anyBudgetLinesDraft}
+                optionTwoDisabled={!anyBudgetLinePlanned}
+            />
 
-            <BudgetLinesTable
-                readOnly={true}
-                budgetLinesAdded={agreement?.budget_line_items}
-                isReviewMode={true}
+            <AgreementBLIAccordion
+                budgetLineItems={getSelectedBudgetLines(budgetLines)}
+                agreement={agreement}
+                afterApproval={afterApproval}
+                setAfterApproval={setAfterApproval}
+            >
+                <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""}`}>
+                    {areThereBudgetLineErrors && (
+                        <ul className="usa-error-message padding-left-2 border-left-05">
+                            {budgetLineErrorsExist && (
+                                <li>
+                                    {budgetLineErrors.map((error, index) => (
+                                        <Fragment key={index}>
+                                            <span>{error}</span>
+                                            {index < budgetLineErrors.length - 1 && <span>, </span>}
+                                        </Fragment>
+                                    ))}
+                                </li>
+                            )}
+                            {budgetLinePageErrorsExist &&
+                                budgetLinePageErrors.map(([budgetLineItem, errors]) => (
+                                    <li key={budgetLineItem}>
+                                        {budgetLineItem}: {errors.join(", ")}
+                                    </li>
+                                ))}
+                        </ul>
+                    )}
+                </div>
+                <AgreementBLIReviewTable
+                    readOnly={true}
+                    budgetLines={budgetLines}
+                    isReviewMode={true}
+                    showTotalSummaryCard={false}
+                    setSelectedBLIs={handleSelectBLI}
+                    toggleSelectActionableBLIs={toggleSelectActionableBLIs}
+                    mainToggleSelected={mainToggleSelected}
+                    setMainToggleSelected={setMainToggleSelected}
+                />
+            </AgreementBLIAccordion>
+            <AgreementCANReviewAccordion
+                selectedBudgetLines={getSelectedBudgetLines(budgetLines)}
+                afterApproval={afterApproval}
+                setAfterApproval={setAfterApproval}
+            />
+            <AgreementChangesAccordion
+                changeInBudgetLines={selectedBudgetLinesTotal(budgetLines)}
+                changeInCans={changeInCans}
             />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
@@ -209,21 +228,17 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     Edit
                 </button>
                 <button
-                    className={`usa-button ${!anyBudgetLinesAreDraft ? "usa-tooltip" : ""}`}
+                    className={`usa-button ${!anyBudgetLinesDraft ? "usa-tooltip" : ""}`}
                     data-cy="send-to-approval-btn"
-                    title={!anyBudgetLinesAreDraft ? "Agreement is not able to be reviewed" : ""}
+                    title={!anyBudgetLinesDraft ? "Agreement is not able to be reviewed" : ""}
                     onClick={handleSendToApproval}
-                    disabled={!anyBudgetLinesAreDraft || !res.isValid()}
+                    disabled={!anyBudgetLinesDraft || !res.isValid()}
                 >
                     Send to Approval
                 </button>
             </div>
-        </>
+        </App>
     );
-};
-
-ReviewAgreement.propTypes = {
-    agreement_id: PropTypes.number.isRequired
 };
 
 export default ReviewAgreement;

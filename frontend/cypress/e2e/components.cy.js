@@ -1,9 +1,9 @@
+// TODO: add Cypress component testing to project
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
     testLogin("admin");
-    cy.visit("/cans");
 });
 
 afterEach(() => {
@@ -55,17 +55,17 @@ describe("table row", () => {
 });
 
 describe("accordion", () => {
-    it("accordion should open when clicked", () => {
-        cy.visit("/agreements/approve/1");
-        cy.get(".usa-accordion__heading > .usa-accordion__button").as("acc-btn").should("exist");
+    it("accordion should close when clicked", () => {
+        cy.visit("/agreements/review/1");
+        cy.get(".usa-accordion__heading > .usa-accordion__button").first().as("acc-btn").should("exist");
         cy.get(".usa-accordion__content").should("not.be.hidden");
         cy.get("@acc-btn").click();
         cy.get(".usa-accordion__content").should("be.hidden");
     });
 
-    it('accordion should open when "enter" is pressed', () => {
-        cy.visit("/agreements/approve/1");
-        cy.get(".usa-accordion__heading > .usa-accordion__button").as("acc-btn").should("exist");
+    it("accordion should close via keyboard enter", () => {
+        cy.visit("/agreements/review/1");
+        cy.get(".usa-accordion__heading > .usa-accordion__button").first().as("acc-btn").should("exist");
         cy.get(".usa-accordion__content").should("not.be.hidden");
         cy.get("@acc-btn").type("{enter}");
         cy.get(".usa-accordion__content").should("be.hidden");

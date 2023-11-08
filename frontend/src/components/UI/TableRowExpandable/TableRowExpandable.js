@@ -14,7 +14,7 @@ import { changeBgColorIfExpanded, removeBorderBottomIfExpanded } from "./table-r
  * @param {Function} props.setIsRowActive - The setter function for isRowActive.
  * @returns {React.JSX.Element} The TableRowExpandable component.
  */
-const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpanded, setIsRowActive }) => {
+const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpanded, setIsRowActive, ...rest }) => {
     const trId = React.useId();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
@@ -22,6 +22,7 @@ const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpan
     return (
         <>
             <tr
+                {...rest}
                 onMouseEnter={() => setIsRowActive(true)}
                 onMouseLeave={() => !isExpanded && setIsRowActive(false)}
             >

@@ -11,7 +11,7 @@ const defaultState = {
         description: "",
         product_service_code_id: null,
         incumbent: null,
-        project_officer: null, // this is the ID
+        project_officer_id: null, // this is the ID
         team_members: [],
         notes: "",
         research_project_id: null,

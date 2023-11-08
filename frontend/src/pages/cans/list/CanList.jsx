@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, Outlet } from "react-router-dom";
 import App from "../../../App";
 import { getCanList } from "./getCanList";
+import TextClip from "../../../components/UI/Text/TextClip";
 
 const CanList = () => {
     const dispatch = useDispatch();
@@ -32,7 +33,9 @@ const CanList = () => {
                                 <th scope="row">
                                     <Link to={"./" + can.id}>{can.number}</Link>
                                 </th>
-                                <td>{can.description}</td>
+                                <td>
+                                    <TextClip text={can.description} />
+                                </td>
                             </tr>
                         ))}
                     </tbody>

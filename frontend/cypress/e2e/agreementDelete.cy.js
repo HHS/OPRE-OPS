@@ -7,7 +7,7 @@ const testAgreements = [
         agreement: 1,
         row: 0,
         created_by: 4,
-        project_officer: 1,
+        project_officer_id: 1,
         team_members: [1, 4],
         BLIsAllDraft: true,
         shouldDelete: true
@@ -16,7 +16,7 @@ const testAgreements = [
         agreement: 2,
         row: 1,
         created_by: 4,
-        project_officer: 1,
+        project_officer_id: 1,
         team_members: [1, 4],
         BLIsAllDraft: false,
         shouldDelete: false
@@ -25,7 +25,7 @@ const testAgreements = [
         agreement: 7,
         row: 2,
         created_by: 4,
-        project_officer: null,
+        project_officer_id: null,
         team_members: [],
         BLIsAllDraft: false,
         shouldDelete: false
@@ -34,7 +34,7 @@ const testAgreements = [
         agreement: 8,
         row: 3,
         created_by: 4,
-        project_officer: null,
+        project_officer_id: null,
         team_members: [],
         BLIsAllDraft: false,
         shouldDelete: false
@@ -43,7 +43,7 @@ const testAgreements = [
         agreement: 3,
         row: 4,
         created_by: 4,
-        project_officer: 1,
+        project_officer_id: 1,
         team_members: [],
         BLIsAllDraft: 0,
         shouldDelete: true
@@ -52,7 +52,7 @@ const testAgreements = [
         agreement: 4,
         row: 5,
         created_by: 4,
-        project_officer: 1,
+        project_officer_id: 1,
         team_members: [],
         BLIsAllDraft: 0,
         shouldDelete: true
@@ -61,7 +61,7 @@ const testAgreements = [
         agreement: 5,
         row: 6,
         created_by: 4,
-        project_officer: 1,
+        project_officer_id: 1,
         team_members: [],
         BLIsAllDraft: 0,
         shouldDelete: true
@@ -70,7 +70,7 @@ const testAgreements = [
         agreement: 6,
         row: 7,
         created_by: 4,
-        project_officer: 1,
+        project_officer_id: 1,
         team_members: [],
         BLIsAllDraft: 0,
         shouldDelete: true
@@ -86,7 +86,7 @@ const testAgreement = {
     product_service_code_id: 1,
     procurement_shop_id: 1,
     incumbent: "Test Vendor",
-    project_officer: 1,
+    project_officer_id: 1,
     team_members: [
         {
             id: 3
@@ -137,6 +137,19 @@ const deleteAgreementByRow = (row) => {
     cy.get("@table-rows").eq(row).find('[data-cy="expand-row"]').click();
 };
 
+const deleteAgreementByName = (name) => {
+    // get the created agreement
+    cy.contains("tbody tr", name).as("agreement-row");
+    cy.get("@agreement-row").find('[data-cy="expand-row"]').click();
+    // get the first delete button and click
+    cy.get(".padding-right-9").find('[data-cy="delete-row"]').click();
+    // get the modal and cancel
+    cy.get("#ops-modal-heading").should("have.text", "Are you sure you want to delete this agreement?");
+    cy.get('[data-cy="cancel-action"]').click();
+    // close the row
+    cy.get("@agreement-row").find('[data-cy="expand-row"]').click();
+};
+
 const deleteAgreementByRowAndFail = (row) => {
     cy.get("tbody").children().as("table-rows").should("exist");
     // get the created agreement
@@ -168,7 +181,7 @@ const addAgreement = (agreement) => {
 it("should allow to delete an agreement if user created it", () => {
     addAgreement(testAgreement);
     cy.visit("/agreements/");
-    deleteLastAgreement();
+    deleteAgreementByName(testAgreement.name);
 });
 
 it("should allow to delete an agreement if user is project officer", () => {

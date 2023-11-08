@@ -33,8 +33,8 @@ const Agreement = () => {
             setProjectOfficer(results);
         };
 
-        if (agreement?.project_officer) {
-            getProjectOfficerSetState(agreement?.project_officer).catch(console.error);
+        if (agreement?.project_officer_id) {
+            getProjectOfficerSetState(agreement?.project_officer_id).catch(console.error);
         }
 
         return () => {
