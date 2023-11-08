@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import styles from "./TextClip.module.scss";
 import React, { useEffect } from "react";
 import USWDS from "@uswds/uswds/js";
+import { Tooltip } from "@metrostar/comet-uswds";
 
 const { tooltip } = USWDS;
 
@@ -15,28 +16,42 @@ const { tooltip } = USWDS;
  **/
 const TextClip = ({ text, maxLines = 2, tooltipThreshold = 50 }) => {
     const tooltipEnabled = text?.length > tooltipThreshold;
-    const tooltipRef = React.useRef();
-
-    useEffect(() => {
-        if (tooltipEnabled) {
-            // initialize
-            tooltip.on(tooltipRef.current);
-            // remove event listeners when the component un-mounts.
-            return () => {
-                tooltip.off();
-            };
-        }
-    });
+    // const tooltipRef = React.useRef();
+    //
+    // useEffect(() => {
+    //     if (tooltipEnabled) {
+    //         // initialize
+    //         tooltip.on(tooltipRef.current);
+    //         // remove event listeners when the component un-mounts.
+    //         return () => {
+    //             tooltip.off();
+    //         };
+    //     }
+    // });
     return (
-        <span
-            ref={tooltipRef}
-            className={`${tooltipEnabled ? "usa-tooltip" : ""} ${styles.limitedLinesWithEllipsis}`}
-            style={{ WebkitLineClamp: maxLines }}
-            title={text}
-            data-position="right"
-        >
-            {text}
-        </span>
+        // <Tooltip
+        //     label="Tooltip text"
+        //     position="top"
+        // >
+        //     <span>{text}</span>
+        // </Tooltip>
+        <Tooltip label={text}>
+            <span
+                className={`${styles.limitedLinesWithEllipsis}`}
+                style={{ WebkitLineClamp: maxLines }}
+            >
+                {text}
+            </span>
+        </Tooltip>
+        // <span
+        //     ref={tooltipRef}
+        //     className={`${tooltipEnabled ? "usa-tooltip" : ""} ${styles.limitedLinesWithEllipsis}`}
+        //     style={{ WebkitLineClamp: maxLines }}
+        //     title={text}
+        //     data-position="right"
+        // >
+        //     {text}
+        // </span>
     );
 };
 

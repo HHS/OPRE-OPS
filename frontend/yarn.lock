@@ -1823,6 +1823,16 @@
   resolved "https://registry.yarnpkg.com/@leichtgewicht/ip-codec/-/ip-codec-2.0.4.tgz#b2ac626d6cb9c8718ab459166d4bb405b8ffa78b"
   integrity sha512-Hcv+nVC0kZnQ3tD9GVu5xSMR4VVYOteQIr/hwFPVEvPdlXqgGEuRjiheChHgdM+JyqdgNcmzZOX/tnl0JOiI7A==
 
+"@metrostar/comet-uswds@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@metrostar/comet-uswds/-/comet-uswds-2.0.0.tgz#32654c80f5ee914ad2d878f2779cd828edfa509b"
+  integrity sha512-kDiOnwtxaxfsK+EGjpRza87AV3HuW83f/6dyaR+zE4LtfpkrgSFrcpif6iqNcSyehyhdROUatBgbqY3cSl6CiA==
+  dependencies:
+    "@uswds/uswds" "3.6.0"
+    classnames "^2.3.2"
+    react "^18.2.0"
+    react-dom "^18.2.0"
+
 "@mswjs/cookies@^0.2.2":
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/@mswjs/cookies/-/cookies-0.2.2.tgz#b4e207bf6989e5d5427539c2443380a33ebb922b"
@@ -2982,6 +2992,16 @@
     postcss "8.4.19"
     postcss-csso "6.0.1"
     sass-embedded "1.56.1"
+
+"@uswds/uswds@3.6.0":
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/@uswds/uswds/-/uswds-3.6.0.tgz#dbcdf51736df185be18067cb9c71be47475c7599"
+  integrity sha512-bsFSwhMctRgCushvId/rnfPthKJUGC2v0stOuc98LxgQzwQWP90C3P3FDVzEWKz0HYr4XTGgrWA5rcuZ9qml2w==
+  dependencies:
+    classlist-polyfill "1.0.3"
+    object-assign "4.1.1"
+    receptor "1.0.0"
+    resolve-id-refs "0.1.0"
 
 "@uswds/uswds@3.6.1":
   version "3.6.1"
@@ -4387,6 +4407,11 @@ classlist-polyfill@1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/classlist-polyfill/-/classlist-polyfill-1.0.3.tgz#7cd5a9207c8d6932f592fdeaa6b45352ed71690d"
   integrity sha512-bDLDUsSg5LYFWsc2hphtG6ulyaCFSupdEBU3wxNECKWHnyPVvY8EB9Wbt9DzWkstWclFZhDaZK/VnEK/DmqE/Q==
+
+classnames@^2.3.2:
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.3.2.tgz#351d813bf0137fcc6a76a16b88208d2560a0d924"
+  integrity sha512-CSbhY4cFEJRe6/GQzIk5qXZ4Jeg5pcsP7b5peFSDpffpe1cqjASH/n9UTjBwOp6XpMSTwQ8Za2K5V02ueA7Tmw==
 
 clean-css@^5.2.2:
   version "5.3.2"
@@ -11749,7 +11774,7 @@ react-dev-utils@^12.0.1:
     strip-ansi "^6.0.1"
     text-table "^0.2.0"
 
-react-dom@18.2.0:
+react-dom@18.2.0, react-dom@^18.2.0:
   version "18.2.0"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.2.0.tgz#22aaf38708db2674ed9ada224ca4aa708d821e3d"
   integrity sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==
@@ -11925,7 +11950,7 @@ react-transition-group@^4.3.0:
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
 
-react@18.2.0:
+react@18.2.0, react@^18.2.0:
   version "18.2.0"
   resolved "https://registry.yarnpkg.com/react/-/react-18.2.0.tgz#555bd98592883255fa00de14f1151a917b5d77d5"
   integrity sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==

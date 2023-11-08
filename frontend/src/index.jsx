@@ -6,7 +6,7 @@ import store from "./store";
 
 //  USWDS
 import "./uswds/css/styles.css";
-import "./uswds/js/uswds.min.js";
+// import "./uswds/js/uswds.min.js";
 
 import Home from "./pages/Home";
 import PortfolioList from "./pages/portfolios/list/PortfolioList";
