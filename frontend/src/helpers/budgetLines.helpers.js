@@ -25,3 +25,25 @@ export const getBudgetLineCreatedDate = (budgetLine) => {
 
     return budgetLine?.created_on ? formatDateToMonthDayYear(budgetLine.created_on) : formattedToday;
 };
+
+export const budgetLinesTotal = (budgetLines) => {
+    handleBLIProp(budgetLines);
+    return budgetLines?.reduce((n, { amount }) => n + amount, 0);
+};
+
+/**
+ * Returns an array of budget lines filtered by status.
+ * @param {Object[]} budgetLines - The budget lines to filter.
+ * @param {string[]} status - The status to filter by.
+ * @returns {Object[]} An array of budget lines filtered by status.
+ */
+// const notDraftBLIs = agreement.budget_line_items.filter((bli) => !draftBudgetLineStatuses.includes(bli.status));
+export const getBudgetByStatus = (budgetLines, status) => {
+    handleBLIProp(budgetLines);
+    return budgetLines?.filter((bli) => status.includes(bli.status));
+};
+
+export const getNonDRAFTBudgetLines = (budgetLines) => {
+    handleBLIProp(budgetLines);
+    return budgetLines?.filter((bli) => bli.status !== "DRAFT" && bli.status !== "IN_REVIEW");
+};

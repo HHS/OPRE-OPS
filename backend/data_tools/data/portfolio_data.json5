@@ -29,14 +29,18 @@
       id: 6,
       name: "Division of Data and Improvement",
       abbreviation: "DDI",
+    },
+    {
+      id: 7,
+      name: "Non-OPRE Division",
+      abbreviation: "OTHER",
     }
   ],
   portfolio: [
     {
-      id: 1,
       name: "Child Welfare Research",
       abbreviation: "CWR",
-      division_id: 1,
+      division_id: 4,
       status: "IN_PROCESS",
       description: "\
              The promotion of children’s safety, permanence, and well-being are the principles that guide child\
@@ -70,10 +74,9 @@
         ",
     },
     {
-      id: 2,
       name: "Head Start",
       abbreviation: "HS",
-      division_id: 1,
+      division_id: 4,
       status: "IN_PROCESS",
       description: "\
              Established in 1965, Head Start was designed to promote the school readiness of children, ages\
@@ -93,10 +96,9 @@
       ",
     },
     {
-      id: 3,
       name: "Child Care",
       abbreviation: "CC",
-      division_id: 1,
+      division_id: 4,
       status: "IN_PROCESS",
       description: "\
             Quality child care and early education programs are a critical resource for families, support young\
@@ -119,7 +121,6 @@
       ",
     },
     {
-      id: 4,
       name: "Welfare Research",
       abbreviation: "WR",
       division_id: 2,
@@ -153,10 +154,9 @@
       ",
     },
     {
-      id: 5,
       name: "Adolescent Development Research",
       abbreviation: "ADR",
-      division_id: 3,
+      division_id: 5,
       status: "IN_PROCESS",
       description: "\
             Despite recent declines in teen childbirth rates, teen pregnancy rates in the United States are much\
@@ -192,10 +192,9 @@
       ",
     },
     {
-      id: 6,
       name: "Healthy Marriage & Responsible Fatherhood",
       abbreviation: "HMRF",
-      division_id: 3,
+      division_id: 5,
       status: "IN_PROCESS",
       description: "\
             The Healthy Marriage and Responsible Fatherhood (HMRF) program is part of ACF’s strategy to improve the\
@@ -221,10 +220,9 @@
       ",
     },
     {
-      id: 7,
       name: "Home Visiting",
       abbreviation: "HV",
-      division_id: 3,
+      division_id: 5,
       status: "IN_PROCESS",
       description: "\
             Home visiting is a service delivery strategy that aims to support the healthy development and well-being\
@@ -252,19 +250,19 @@
       ",
     },
     {
-      id: 8,
-      name: "Social Science Research Demonstration",
-      abbreviation: "SSRD",
-      division_id: 4,
+      name: "Program Support",
+      abbreviation: "PS",
+      division_id: 6,
       status: "IN_PROCESS",
-      description: "\
-            The Social Science Research and Demonstration appropriation is used to fund research or demonstration\
-            projects such as those relating to the prevention and reduction of dependency, or which will aid in\
-            effecting coordination of planning between private and public welfare agencies or which will help improve\
-            the administration and effectiveness of programs carried on or assisted under the Social Security Act\
-            and programs related thereto.\
-      ",
+      description: "",
     },
+    {
+      name: "Data Governance",
+      abbreviation: "DG",
+      division_id: 6,
+      status: "IN_PROCESS",
+      description: "",
+    }
   ],
   portfolio_url: [
     {

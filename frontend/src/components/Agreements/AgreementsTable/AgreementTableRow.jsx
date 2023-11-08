@@ -96,7 +96,10 @@ export const AgreementTableRow = ({ agreement }) => {
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                <TextClip text={researchProjectName} />
+                <TextClip
+                    text={researchProjectName}
+                    tooltipThreshold={30}
+                />
             </td>
             <td
                 className={removeBorderBottomIfExpanded}
@@ -183,7 +186,6 @@ export const AgreementTableRow = ({ agreement }) => {
                 expandedData={ExpandedData}
                 isExpanded={isExpanded}
                 setIsExpanded={setIsExpanded}
-                isRowActive={isRowActive}
                 setIsRowActive={setIsRowActive}
             />
         </>
