@@ -6,8 +6,8 @@ b. Require external providers to comply with personnel security policies and pro
 c. Document personnel security requirements;
 d. Require external providers to notify [management personnel, systems administrators, physical security personnel] of any personnel transfers or terminations of external personnel who possess organizational credentials and/or badges, or who have system privileges within 
 [ Low - As soon as possible within a maximum of 30 days from the formal transfer or termination action.
- Moderate - As soon as possible within a maximum of 7 days from the formal transfer or termination action.
-High - As soon as possible within a maximum of 72 hours from the formal transfer or termination action.]; and
+    Moderate - As soon as possible within a maximum of 7 days from the formal transfer or termination action.
+    High - As soon as possible within a maximum of 72 hours from the formal transfer or termination action.]; and
 e. Monitor provider compliance with personnel security requirements.
 
 ## OPS Implementation
