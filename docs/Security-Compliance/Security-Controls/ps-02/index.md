@@ -2,10 +2,10 @@
 ## PS-02 - Position Risk Designation
 
 a. Assign a risk designation to all organizational positions;
-
 b. Establish screening criteria for individuals filling those positions; and
-
-c. Review and update position risk designations [Assignment: organization-defined frequency].
+c. Ensures that all individuals with significant security responsibilities possess, at a minimum, a Level 5 Public Trust;
+d. Ensures that individuals are designated to position-sensitivity levels that are commensurate with the responsibilities and risks associated with the position; and
+e. Review and update position risk designations [at least within three years or whenever a position’s duties are changed/revised/realigned, and ensures that these risk designations are consistent with U.S. Office of Personnel managementt (OPM) policy and guidance.].
 
 ## OPS Implementation
 
