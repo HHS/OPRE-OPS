@@ -17,3 +17,4 @@ OPS does not process social security numbers
 
 
 ### Related Content
+Please note that truncated SSNs are considered SSNs.
