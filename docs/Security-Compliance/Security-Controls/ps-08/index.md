@@ -1,9 +1,9 @@
 # Personnel Security
 ## PS-08 - Personnel Sanctions
 
-a. Employ a formal sanctions process for individuals failing to comply with established information security and privacy policies and procedures; and
-
-b. Notify [Assignment: organization-defined personnel or roles] within [Assignment: organization-defined time period] when a formal employee sanctions process is initiated, identifying the individual sanctioned and the reason for the sanction.
+a. Employ a formal sanctions process (that may include termination of employment; removal or disbarment from work on federal contracts or projects; suspension of access privileges; revocation of access to federal information, information systems and/or facilities; criminal penalties) for individuals failing to comply with established information security and privacy policies and procedures; and
+b. Notify [management personnel, systems administrators, physical security personnel] within [  Low - As soon as possible within a maximum of 30 days Moderate - As soon as possible within a maximum of 7 days
+   High - As soon as possible within a maximum of 72 hours] when a formal employee sanctions process is initiated, identifying the individual sanctioned and the reason for the sanction.
 
 ## OPS Implementation
 
