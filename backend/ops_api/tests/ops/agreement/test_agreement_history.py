@@ -11,7 +11,7 @@ def test_agreement_history(auth_client, loaded_db):
         "name": "Agreement144",
         "description": "Description",
         "product_service_code_id": 1,
-        "incumbent": "Vendor A",
+        "incumbent_id": 1,
         "project_officer_id": 1,
         "team_members": [
             {

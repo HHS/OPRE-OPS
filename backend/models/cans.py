@@ -165,7 +165,6 @@ class Agreement(BaseModel):
         back_populates="agreement"
     )
     agreement_reason = mapped_column(ENUM(AgreementReason))
-    incumbent: Mapped[str] = mapped_column(String, nullable=True)
     project_officer_id: Mapped[int] = mapped_column(
         ForeignKey("users.id"), nullable=True
     )
@@ -268,6 +267,7 @@ class ContractAgreement(Agreement):
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
     contract_number: Mapped[str] = mapped_column(String, nullable=True)
+    incumbent_id: Mapped[int] = mapped_column(ForeignKey("vendor.id"), nullable=True)
     vendor_id: Mapped[int] = mapped_column(ForeignKey("vendor.id"), nullable=True)
     task_order_number: Mapped[str] = mapped_column(
         String(),
