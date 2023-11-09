@@ -2,6 +2,10 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
 import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../../api/opsAPI";
+import PageHeader from "../../../components/UI/PageHeader";
+import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import { convertCodeForDisplay } from "../../../helpers/utils";
 
 const ApproveAgreement = () => {
     const urlPathParams = useParams();
@@ -15,6 +19,10 @@ const ApproveAgreement = () => {
     } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true
     });
+    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
+    const cn = "";
+    const res = "";
+
     if (isLoadingAgreement) {
         return <h1>Loading...</h1>;
     }
@@ -24,8 +32,16 @@ const ApproveAgreement = () => {
 
     return (
         <App breadCrumbName="Approve BLI Status Change">
-            <h1 className="margin-0 text-brand-primary font-sans-2xl">Approval for Planned Status</h1>
-            <p className="font-sans-3xs margin-0">{agreement.name}</p>
+            <PageHeader
+                title="Approval for Planned Status"
+                subTitle={agreement.name}
+            />
+            <AgreementMetaAccordion
+                agreement={agreement}
+                projectOfficerName={projectOfficerName}
+                convertCodeForDisplay={convertCodeForDisplay}
+            />
+
             <pre className="font-code-2xs border-dashed border-error">{JSON.stringify(agreement, null, 2)}</pre>
         </App>
     );

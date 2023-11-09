@@ -8,10 +8,10 @@ import PropTypes from "prop-types";
  */
 const PageHeader = ({ title, subTitle }) => {
     return (
-        <>
+        <div className="margin-bottom-3">
             <h1 className="margin-0 text-brand-primary font-sans-2xl">{title}</h1>
             {subTitle && <p className="font-sans-3xs margin-0">{subTitle}</p>}
-        </>
+        </div>
     );
 };
 
