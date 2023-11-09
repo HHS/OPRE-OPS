@@ -26,7 +26,7 @@ const suite = create((data = {}, fieldName) => {
             (data.agreement_reason && data.agreement_reason === "RECOMPETE") ||
             data.agreement_reason === "LOGICAL_FOLLOW_ON"
         ) {
-            enforce(data.incumbent_id).isNotBlank();
+            enforce(data.incumbent).isNotBlank();
         }
     });
     test("project_officer", "This is required information", () => {

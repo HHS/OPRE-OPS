@@ -3,6 +3,7 @@ from enum import Enum
 from typing import Any, ClassVar, Optional
 
 import sqlalchemy as sa
+from models import Vendor
 from models.base import BaseModel
 from models.portfolios import Portfolio, shared_portfolio_cans
 from models.users import User
@@ -285,6 +286,22 @@ class ContractAgreement(Agreement):
         secondary=contract_support_contacts,
         back_populates="contracts",
     )
+
+    @property
+    def vendor(self):
+        return (
+            object_session(self).get(Vendor, self.vendor_id).name
+            if self.vendor_id
+            else None
+        )
+
+    @property
+    def incumbent(self):
+        return (
+            object_session(self).get(Vendor, self.incumbent_id).name
+            if self.incumbent_id
+            else None
+        )
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.CONTRACT,

@@ -21,8 +21,8 @@ class AgreementData(Schema):
 
 class ContractAgreementData(AgreementData):
     contract_number = fields.String(allow_none=True)
-    incumbent_id = fields.Integer(allow_none=True)
-    vendor_id = fields.Integer(allow_none=True)
+    incumbent = fields.String(allow_none=True)
+    vendor = fields.String(allow_none=True)
     delivered_status = fields.Bool(default=False)
     contract_type = fields.Enum(ContractType, allow_none=True)
     support_contacts = fields.List(fields.Nested(TeamMembers), default=[], allow_none=True)

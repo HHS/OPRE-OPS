@@ -10,7 +10,7 @@ const defaultState = {
         name: "",
         description: "",
         product_service_code_id: null,
-        incumbent_id: null,
+        incumbent: null,
         project_officer_id: null, // this is the ID
         team_members: [],
         notes: "",
