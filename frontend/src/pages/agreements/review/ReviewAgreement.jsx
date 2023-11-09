@@ -24,6 +24,7 @@ import AgreementCANReviewAccordion from "../../../components/Agreements/Agreemen
 import App from "../../../App";
 import useToggle from "../../../hooks/useToggle";
 import TextArea from "../../../components/UI/Form/TextArea";
+import PageHeader from "../../../components/UI/PageHeader";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -148,12 +149,10 @@ export const ReviewAgreement = () => {
                     </ul>
                 </SimpleAlert>
             ) : (
-                <h1
-                    className="text-bold"
-                    style={{ fontSize: "1.375rem" }}
-                >
-                    Review and Send Agreement to Approval
-                </h1>
+                <PageHeader
+                    title="Request BL Status Change"
+                    subTitle={agreement?.name}
+                />
             )}
             <AgreementMetaAccordion
                 agreement={agreement}
