@@ -22,7 +22,9 @@ import {
     getAgreementCreatedDate,
     getAgreementStatus,
     areAllBudgetLinesInStatus,
-    isThereAnyBudgetLines
+    isThereAnyBudgetLines,
+    findNextBudgetLine,
+    findNextNeedBy
 } from "./AgreementsTable.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import TextClip from "../../UI/Text/TextClip";
@@ -44,7 +46,9 @@ export const AgreementTableRow = ({ agreement }) => {
     const agreementSubTotal = getAgreementSubTotal(agreement);
     const procurementShopSubTotal = getProcurementShopSubTotal(agreement);
     const agreementTotal = agreementSubTotal + procurementShopSubTotal;
-    const nextNeedBy = findMinDateNeeded(agreement);
+    const nextBudgetLine = findNextBudgetLine(agreement);
+    const nextNeedBy = findNextNeedBy(agreement);
+    // const nextNeedBy = findMinDateNeeded(agreement);
     const agreementCreatedByName = useGetUserFullNameFromId(agreement?.created_by);
     const agreementNotes = getAgreementNotes(agreement);
     const agreementCreatedOn = getAgreementCreatedDate(agreement);
@@ -125,14 +129,28 @@ export const AgreementTableRow = ({ agreement }) => {
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {nextNeedBy}
+                <CurrencyFormat
+                    value={nextBudgetLine.amount}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"$"}
+                    decimalScale={getDecimalScale(agreementTotal)}
+                    fixedDecimalScale={true}
+                    renderText={(value) => value}
+                />
             </td>
             <td
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {isRowActive && !isExpanded ? <div>{changeIcons}</div> : <TableTag status={agreementStatus} />}
+                {isRowActive && !isExpanded ? <div>{changeIcons}</div> : <div>{nextNeedBy}</div>}
             </td>
+            {/*<td*/}
+            {/*    className={removeBorderBottomIfExpanded}*/}
+            {/*    style={changeBgColorIfExpanded}*/}
+            {/*>*/}
+            {/*    {isRowActive && !isExpanded ? <div>{changeIcons}</div> : <TableTag status={agreementStatus} />}*/}
+            {/*</td>*/}
         </>
     );
 

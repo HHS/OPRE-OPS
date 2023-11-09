@@ -22,6 +22,23 @@ export const getAgreementNotes = (agreement) => {
     return agreement.notes;
 };
 
+export const findNextBudgetLine = (agreement) => {
+    handleAgreementProp(agreement);
+    let nextBudgetLine = agreement.budget_line_items?.reduce(
+        (nextBli, bli) => (nextBli.date_needed < bli.date_needed ? nextBli : bli),
+        0
+    );
+    return nextBudgetLine;
+};
+
+export const findNextNeedBy = (agreement) => {
+    handleAgreementProp(agreement);
+    const nextBudgetLine = findNextBudgetLine(agreement);
+    let nextNeedBy = nextBudgetLine?.date_needed;
+    nextNeedBy = nextNeedBy ? formatDate(new Date(nextNeedBy)) : "TBD";
+    return nextNeedBy;
+};
+
 export const findMinDateNeeded = (agreement) => {
     handleAgreementProp(agreement);
     let nextNeedBy = agreement.budget_line_items?.reduce(
