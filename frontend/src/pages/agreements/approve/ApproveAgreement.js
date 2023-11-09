@@ -1,7 +1,7 @@
 import React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import App from "../../../App";
-import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../../api/opsAPI";
+import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
@@ -10,17 +10,17 @@ import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAc
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
-import { anyBudgetLinesByStatus, selectedBudgetLinesTotal, getTotalByCans } from "../review/ReviewAgreement.helpers";
+import { getTotalByCans } from "../review/ReviewAgreement.helpers";
 import TextArea from "../../../components/UI/Form/TextArea";
 import useToggle from "../../../hooks/useToggle";
 
 const ApproveAgreement = () => {
     const urlPathParams = useParams();
     const agreementId = +urlPathParams.id;
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     const [notes, setNotes] = React.useState("");
     const {
-        isSuccess,
+        // isSuccess,
         data: agreement,
         error: errorAgreement,
         isLoading: isLoadingAgreement

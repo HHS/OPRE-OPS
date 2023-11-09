@@ -168,6 +168,7 @@ export const ReviewAgreement = () => {
             />
 
             <AgreementBLIAccordion
+                title="Select Budget Lines"
                 budgetLineItems={getSelectedBudgetLines(budgetLines)}
                 agreement={agreement}
                 afterApproval={afterApproval}
