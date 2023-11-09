@@ -21,25 +21,28 @@ const CANFundingYTD = ({
             label: "Funding Received YTD",
             value: received_funding,
             color: "#D47D2D",
-            percent: `${calculatePercent(received_funding, total_funding)}%`
+            percent: `${calculatePercent(received_funding, total_funding)}%`,
+            tagStyleActive: "whiteOnOrange"
         },
         {
             id: 2,
             label: "Funding Expected",
             value: expected_funding,
             color: "#A9AEB1",
-            percent: `${calculatePercent(expected_funding, total_funding)}%`
+            percent: `${calculatePercent(expected_funding, total_funding)}%`,
+            tagStyleActive: "darkTextGreyBackground"
         }
     ];
     const [activeId, setActiveId] = React.useState(0);
 
-    const CarryForwardTag = ({ funding, label }) => {
+    const CarryForwardTag = ({ funding, label, tagStyleActive }) => {
         if (funding > 0) {
             return (
                 <Tag
                     tagStyle="darkTextGreenBackground"
                     text={label}
                     label={label}
+                    tagStyleActive={tagStyleActive}
                 />
             );
         } else {
@@ -47,7 +50,7 @@ const CANFundingYTD = ({
         }
     };
 
-    const LegendItem = ({ id, label, value, color, percent }) => {
+    const LegendItem = ({ id, label, value, color, percent, tagStyleActive }) => {
         const isGraphActive = activeId === id;
         return (
             <div className="grid-row margin-top-2">
@@ -59,7 +62,7 @@ const CANFundingYTD = ({
                             style={{ color: color }}
                         />
 
-                        <span className={isGraphActive ? "fake-bold" : undefined}>{label}</span>
+                        <span className={isGraphActive ? "fake-bold" : ""}>{label}</span>
                     </div>
                 </div>
                 <div className="grid-col-4">
@@ -68,7 +71,7 @@ const CANFundingYTD = ({
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$ "}
-                        renderText={(value) => <span className={isGraphActive ? "fake-bold" : undefined}>{value}</span>}
+                        renderText={(value) => <span className={isGraphActive ? "fake-bold" : ""}>{value}</span>}
                     />
                 </div>
                 <div className="grid-col-1">
@@ -77,6 +80,7 @@ const CANFundingYTD = ({
                         text={percent}
                         label={label}
                         active={isGraphActive}
+                        tagStyleActive={tagStyleActive}
                     />
                 </div>
             </div>
@@ -114,6 +118,7 @@ const CANFundingYTD = ({
                         value={item.value}
                         color={item.color}
                         percent={item.percent}
+                        tagStyleActive={item.tagStyleActive}
                     />
                 ))}
             </div>
