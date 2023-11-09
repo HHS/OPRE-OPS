@@ -309,6 +309,8 @@ def _get_user_list(data: Any):
 def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
     changed = False
     for item in data:
+        if item in ["vendor", "incumbent"]:
+            continue
         # subclass attributes won't have the old (deleted) value in get_history
         # unless they were loaded before setting
         _hack_to_fix_get_history = getattr(agreement, item)  # noqa: F841
@@ -338,15 +340,6 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
                             bli.proc_shop_fee_percentage = agreement.procurement_shop.fee
                     changed = True
 
-            # TODO: add_vendor is here temporarily until we have vendor management
-            # implemented in the frontend, i.e. the vendor is a drop-down instead
-            # of a text field
-            case "incumbent":
-                add_vendor(data, "incumbent")
-
-            case "vendor":
-                add_vendor(data, "vendor")
-
             case _:
                 if getattr(agreement, item) != data[item]:
                     setattr(agreement, item, data[item])
@@ -362,6 +355,13 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
 
 def update_agreement(data: dict[str, Any], agreement: Agreement):
     update_data(agreement, data)
+
+    # TODO: add_vendor is here temporarily until we have vendor management
+    # implemented in the frontend, i.e. the vendor is a drop-down instead
+    # of a text field
+    add_vendor(data, "incumbent")
+    add_vendor(data, "vendor")
+
     current_app.db_session.add(agreement)
     current_app.db_session.commit()
     return agreement
