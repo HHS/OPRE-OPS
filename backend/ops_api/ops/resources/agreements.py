@@ -254,17 +254,11 @@ class AgreementListAPI(BaseListAPI):
             tmp_support_contacts = data.get("support_contacts") or []
             data["support_contacts"] = []
 
-            incumbent = data.get("incumbent")
-            if incumbent:
-                incumbent_obj = current_app.db_session.scalar(select(Vendor).where(Vendor.name.ilike(incumbent)))
-                if not incumbent_obj:
-                    new_incumbent = Vendor(name=incumbent, duns=incumbent)
-                    current_app.db_session.add(new_incumbent)
-                    current_app.db_session.commit()
-                    data["incumbent_id"] = new_incumbent.id
-                else:
-                    data["incumbent_id"] = incumbent_obj.id
-                del data["incumbent"]
+            # TODO: add_vendor is here temporarily until we have vendor management
+            # implemented in the frontend, i.e. the vendor is a drop-down instead
+            # of a text field
+            add_vendor(data, "incumbent")
+            add_vendor(data, "vendor")
 
             vendor = data.get("vendor")
             if vendor:
@@ -391,3 +385,17 @@ def get_change_data(old_agreement: Agreement, schema: Schema, partial: bool = Tr
     }  # only keep the attributes from the request body
     data |= change_data
     return data
+
+
+def add_vendor(data: dict, field_name: str = "vendor") -> None:
+    vendor = data.get(field_name)
+    if vendor:
+        vendor_obj = current_app.db_session.scalar(select(Vendor).where(Vendor.name.ilike(vendor)))
+        if not vendor_obj:
+            new_vendor = Vendor(name=vendor, duns=vendor)
+            current_app.db_session.add(new_vendor)
+            current_app.db_session.commit()
+            data[f"{field_name}_id"] = new_vendor.id
+        else:
+            data[f"{field_name}_id"] = vendor_obj.id
+        del data[field_name]
