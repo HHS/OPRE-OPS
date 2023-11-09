@@ -16,6 +16,7 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className,
     let tagClasses = "font-12px padding-y-05 padding-x-1 height-205 radius-md",
         activeClass = "";
     // OVERRIDES FOR DEFAULT CLASSES
+    // Can also pass in className prop to override
     switch (tagStyle) {
         case "darkTextLightBackground":
             tagClasses += " bg-brand-neutral-lightest text-brand-neutral-dark";
@@ -36,7 +37,7 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className,
             tagClasses += " bg-brand-primary-light text-brand-primary-dark";
             break;
         case "lightTextRedBackground":
-            activeClass += " bg-secondary-dark text-white";
+            tagClasses += " bg-secondary-dark text-white";
             break;
         default:
             break;
@@ -46,13 +47,25 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className,
         if (tagStyleActive) {
             switch (tagStyleActive) {
                 case "lightTextGreenBackground":
-                    tagClasses += " bg-brand-data-viz-secondary-58 text-white fake-bold";
+                    activeClass += " bg-brand-data-viz-secondary-58 text-white fake-bold";
                     break;
                 case "darkTextGreyBackground":
                     activeClass += " bg-brand-neutral-lighter fake-bold";
                     break;
                 case "lightTextRedBackground":
                     activeClass += " bg-secondary-dark text-white fake-bold";
+                    break;
+                case "whiteOnPurple":
+                    activeClass += " bg-brand-data-viz-secondary-20 text-white fake-bold";
+                    break;
+                case "whiteOnTeal":
+                    activeClass += " bg-brand-data-viz-primary-10 fake-bold";
+                    break;
+                case "whiteOnOrange":
+                    activeClass += " bg-brand-data-viz-primary-3 text-white fake-bold";
+                    break;
+                case "whiteOnPink":
+                    activeClass += " bg-brand-data-viz-secondary-26 text-white fake-bold";
                     break;
                 default:
                     break;
@@ -74,21 +87,6 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className,
                 case "Draft":
                     activeClass += " bg-brand-neutral-lighter fake-bold";
                     break;
-                case label.includes("Funding Received"):
-                    activeClass += " bg-brand-data-viz-primary-3 text-white fake-bold";
-                    break;
-                case label.includes("Funding Expected") ?? label.includes("Remaining Budget"):
-                    activeClass += " bg-brand-neutral-lighter fake-bold";
-                    break;
-                case label.includes("Carry-Forward"):
-                    activeClass += " bg-brand-data-viz-primary-10 fake-bold";
-                    break;
-                case label.includes("New Funding"):
-                    activeClass += " bg-brand-data-viz-secondary-20 text-white fake-bold";
-                    break;
-                case label.includes("Total Spending"):
-                    activeClass += " bg-brand-data-viz-secondary-26 text-white fake-bold";
-                    break;
                 default:
                     break;
             }
@@ -96,12 +94,14 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className,
     }
 
     return (
-        <span
-            className={`${tagClasses} ${activeClass} ${className}`}
-            style={{ width: "fit-content" }}
-        >
-            {text ? text : children}
-        </span>
+        <>
+            <span
+                className={`${tagClasses} ${activeClass} ${className}`}
+                style={{ width: "fit-content" }}
+            >
+                {text ? text : children}
+            </span>
+        </>
     );
 };
 
