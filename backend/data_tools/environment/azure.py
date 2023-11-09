@@ -2,7 +2,7 @@ import os
 
 from data_tools.environment.common import DataToolsConfig
 
-class DevConfig(DataToolsConfig):
+class AzureConfig(DataToolsConfig):
     @property
     def db_connection_string(self) -> str:
         db_username = os.getenv("PGUSER")
