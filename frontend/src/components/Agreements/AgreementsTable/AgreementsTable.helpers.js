@@ -1,4 +1,4 @@
-import { formatDate } from "../../../helpers/utils";
+import { formatDate, nextBudgetLineStatuses } from "../../../helpers/utils";
 export { getAgreementSubTotal, getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
 
 const handleAgreementProp = (agreement) => {
@@ -24,10 +24,14 @@ export const getAgreementNotes = (agreement) => {
 
 export const findNextBudgetLine = (agreement) => {
     handleAgreementProp(agreement);
-    let nextBudgetLine = agreement.budget_line_items?.reduce(
-        (nextBli, bli) => (nextBli.date_needed < bli.date_needed ? nextBli : bli),
-        0
-    );
+    let nextBudgetLine;
+    agreement.budget_line_items?.forEach((bli) => {
+        if (nextBudgetLineStatuses.includes(bli.status)) {
+            if (!nextBudgetLine || bli.date_needed < nextBudgetLine.date_needed) {
+                nextBudgetLine = bli;
+            }
+        }
+    });
     return nextBudgetLine;
 };
 
@@ -35,18 +39,7 @@ export const findNextNeedBy = (agreement) => {
     handleAgreementProp(agreement);
     const nextBudgetLine = findNextBudgetLine(agreement);
     let nextNeedBy = nextBudgetLine?.date_needed;
-    nextNeedBy = nextNeedBy ? formatDate(new Date(nextNeedBy)) : "TBD";
-    return nextNeedBy;
-};
-
-export const findMinDateNeeded = (agreement) => {
-    handleAgreementProp(agreement);
-    let nextNeedBy = agreement.budget_line_items?.reduce(
-        (n, { date_needed }) => (n < date_needed ? n : date_needed),
-        0
-    );
-    nextNeedBy = nextNeedBy ? formatDate(new Date(nextNeedBy)) : "";
-
+    nextNeedBy = nextNeedBy ? formatDate(new Date(nextNeedBy)) : "None";
     return nextNeedBy;
 };
 

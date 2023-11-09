@@ -61,6 +61,9 @@ export const formatDateToMonthDayYear = (date) => {
 // List of BLI statuses which are considered Draft
 export const draftBudgetLineStatuses = ["DRAFT", "UNDER_REVIEW"];
 
+// List of BLI statuses which are valid for finding the Next Budget Line
+export const nextBudgetLineStatuses = ["PLANNED", "IN_EXECUTION"];
+
 /**
  * Object containing display text for various codes.
  * @typedef {Object} CodesToDisplayText

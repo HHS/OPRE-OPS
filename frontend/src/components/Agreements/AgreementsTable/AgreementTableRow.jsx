@@ -5,7 +5,6 @@ import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import TableTag from "../../UI/TableTag";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
@@ -17,10 +16,8 @@ import {
     getResearchProjectName,
     getAgreementSubTotal,
     getProcurementShopSubTotal,
-    findMinDateNeeded,
     getAgreementNotes,
     getAgreementCreatedDate,
-    getAgreementStatus,
     areAllBudgetLinesInStatus,
     isThereAnyBudgetLines,
     findNextBudgetLine,
@@ -47,12 +44,11 @@ export const AgreementTableRow = ({ agreement }) => {
     const procurementShopSubTotal = getProcurementShopSubTotal(agreement);
     const agreementTotal = agreementSubTotal + procurementShopSubTotal;
     const nextBudgetLine = findNextBudgetLine(agreement);
+    const nextBudgetLineAmount = nextBudgetLine?.amount || 0;
     const nextNeedBy = findNextNeedBy(agreement);
-    // const nextNeedBy = findMinDateNeeded(agreement);
     const agreementCreatedByName = useGetUserFullNameFromId(agreement?.created_by);
     const agreementNotes = getAgreementNotes(agreement);
     const agreementCreatedOn = getAgreementCreatedDate(agreement);
-    const agreementStatus = getAgreementStatus(agreement);
 
     // styles for the table row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
@@ -130,11 +126,11 @@ export const AgreementTableRow = ({ agreement }) => {
                 style={changeBgColorIfExpanded}
             >
                 <CurrencyFormat
-                    value={nextBudgetLine.amount}
+                    value={nextBudgetLineAmount}
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$"}
-                    decimalScale={getDecimalScale(agreementTotal)}
+                    decimalScale={getDecimalScale(nextBudgetLineAmount)}
                     fixedDecimalScale={true}
                     renderText={(value) => value}
                 />
@@ -145,12 +141,6 @@ export const AgreementTableRow = ({ agreement }) => {
             >
                 {isRowActive && !isExpanded ? <div>{changeIcons}</div> : <div>{nextNeedBy}</div>}
             </td>
-            {/*<td*/}
-            {/*    className={removeBorderBottomIfExpanded}*/}
-            {/*    style={changeBgColorIfExpanded}*/}
-            {/*>*/}
-            {/*    {isRowActive && !isExpanded ? <div>{changeIcons}</div> : <TableTag status={agreementStatus} />}*/}
-            {/*</td>*/}
         </>
     );
 
