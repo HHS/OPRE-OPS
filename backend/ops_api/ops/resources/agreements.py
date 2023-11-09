@@ -260,18 +260,6 @@ class AgreementListAPI(BaseListAPI):
             add_vendor(data, "incumbent")
             add_vendor(data, "vendor")
 
-            vendor = data.get("vendor")
-            if vendor:
-                vendor_obj = current_app.db_session.scalar(select(Vendor).where(Vendor.name.ilike(vendor)))
-                if not vendor_obj:
-                    new_vendor = Vendor(name=vendor, duns=vendor)
-                    current_app.db_session.add(new_vendor)
-                    current_app.db_session.commit()
-                    data["vendor_id"] = new_vendor.id
-                else:
-                    data["vendor_id"] = vendor_obj.id
-                del data["vendor"]
-
         new_agreement = agreement_cls(**data)
 
         new_agreement.team_members.extend(
@@ -349,6 +337,15 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
                         if bli.status.value <= BudgetLineItemStatus.PLANNED.value:
                             bli.proc_shop_fee_percentage = agreement.procurement_shop.fee
                     changed = True
+
+            # TODO: add_vendor is here temporarily until we have vendor management
+            # implemented in the frontend, i.e. the vendor is a drop-down instead
+            # of a text field
+            case "incumbent":
+                add_vendor(data, "incumbent")
+
+            case "vendor":
+                add_vendor(data, "vendor")
 
             case _:
                 if getattr(agreement, item) != data[item]:
