@@ -3,7 +3,6 @@ from enum import Enum
 from typing import Any, ClassVar, Optional
 
 import sqlalchemy as sa
-from models import Vendor
 from models.base import BaseModel
 from models.portfolios import Portfolio, shared_portfolio_cans
 from models.users import User
@@ -20,6 +19,7 @@ from sqlalchemy import (
     Table,
     Text,
     case,
+    column,
     select,
 )
 from sqlalchemy.dialects.postgresql import ENUM
@@ -269,7 +269,9 @@ class ContractAgreement(Agreement):
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
     contract_number: Mapped[str] = mapped_column(String, nullable=True)
     incumbent_id: Mapped[int] = mapped_column(ForeignKey("vendor.id"), nullable=True)
+    incumbent = relationship("Vendor", foreign_keys=[incumbent_id])
     vendor_id: Mapped[int] = mapped_column(ForeignKey("vendor.id"), nullable=True)
+    vendor = relationship("Vendor", foreign_keys=[vendor_id])
     task_order_number: Mapped[str] = mapped_column(
         String(),
         nullable=True,
@@ -286,22 +288,6 @@ class ContractAgreement(Agreement):
         secondary=contract_support_contacts,
         back_populates="contracts",
     )
-
-    @property
-    def vendor(self):
-        return (
-            object_session(self).get(Vendor, self.vendor_id).name
-            if self.vendor_id
-            else None
-        )
-
-    @property
-    def incumbent(self):
-        return (
-            object_session(self).get(Vendor, self.incumbent_id).name
-            if self.incumbent_id
-            else None
-        )
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.CONTRACT,
@@ -322,6 +308,8 @@ class ContractAgreement(Agreement):
                 "support_contacts": [
                     contacts.to_dict() for contacts in self.support_contacts
                 ],
+                "vendor": self.vendor.name if self.vendor else None,
+                "incumbent": self.incumbent.name if self.incumbent else None,
             }
         )
 

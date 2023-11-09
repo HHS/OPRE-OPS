@@ -6,7 +6,7 @@ from flask import Response, current_app, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from marshmallow import EXCLUDE, Schema, ValidationError
-from models import DirectAgreement, GrantAgreement, IaaAaAgreement, IaaAgreement, OpsEventType, User
+from models import DirectAgreement, GrantAgreement, IaaAaAgreement, IaaAgreement, OpsEventType, User, Vendor
 from models.base import BaseModel
 from models.cans import Agreement, AgreementReason, AgreementType, BudgetLineItemStatus, ContractAgreement
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
@@ -253,6 +253,30 @@ class AgreementListAPI(BaseListAPI):
         if agreement_cls == ContractAgreement:
             tmp_support_contacts = data.get("support_contacts") or []
             data["support_contacts"] = []
+
+            incumbent = data.get("incumbent")
+            if incumbent:
+                incumbent_obj = current_app.db_session.scalar(select(Vendor).where(Vendor.name.ilike(incumbent)))
+                if not incumbent_obj:
+                    new_incumbent = Vendor(name=incumbent, duns=incumbent)
+                    current_app.db_session.add(new_incumbent)
+                    current_app.db_session.commit()
+                    data["incumbent_id"] = new_incumbent.id
+                else:
+                    data["incumbent_id"] = incumbent_obj.id
+                del data["incumbent"]
+
+            vendor = data.get("vendor")
+            if vendor:
+                vendor_obj = current_app.db_session.scalar(select(Vendor).where(Vendor.name.ilike(vendor)))
+                if not vendor_obj:
+                    new_vendor = Vendor(name=vendor, duns=vendor)
+                    current_app.db_session.add(new_vendor)
+                    current_app.db_session.commit()
+                    data["vendor_id"] = new_vendor.id
+                else:
+                    data["vendor_id"] = vendor_obj.id
+                del data["vendor"]
 
         new_agreement = agreement_cls(**data)
 
