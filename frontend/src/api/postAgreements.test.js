@@ -8,7 +8,7 @@ describe("postAgreement function", () => {
         name: "Agreement144",
         description: "Description",
         product_service_code_id: 1,
-        incumbent: "Vendor A",
+        incumbent_id: 1,
         project_officer_id: 1,
         team_members: [
             {
@@ -49,7 +49,7 @@ describe("postAgreement function", () => {
         name: "",
         description: "",
         product_service_id: null,
-        incumbent: null,
+        incumbent_id: null,
         project_officer_id: null,
         team_members: [],
         notes: ""

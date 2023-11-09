@@ -51,7 +51,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
     const setProductServiceCodeId = useUpdateAgreement("product_service_code_id");
     const setAgreementReason = useUpdateAgreement("agreement_reason");
     const setProjectOfficerId = useUpdateAgreement("project_officer_id");
-    const setAgreementIncumbent = useUpdateAgreement("incumbent");
+    const setAgreementIncumbent = useUpdateAgreement("incumbent_id");
     const setAgreementNotes = useUpdateAgreement("notes");
 
     const [showModal, setShowModal] = React.useState(false);
@@ -72,7 +72,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
     } = useEditAgreement();
     const {
         notes: agreementNotes,
-        incumbent: agreementIncumbent,
+        incumbent_id: agreementIncumbent,
         agreement_type: agreementType,
         name: agreementTitle,
         description: agreementDescription,

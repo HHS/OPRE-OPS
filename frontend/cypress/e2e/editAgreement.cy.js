@@ -10,7 +10,7 @@ const testAgreement = {
     research_project_id: 1,
     product_service_code_id: 1,
     procurement_shop_id: 1,
-    incumbent: "Test Vendor",
+    incumbent_id: 1,
     project_officer_id: 1,
     team_members: [
         {
