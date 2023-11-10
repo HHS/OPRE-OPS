@@ -1,8 +1,8 @@
 name: Terraform Plan
 
 on:
-  branches:
-      - POC-Azure-Deployment
+  # branches:
+  #     - POC-Azure-Deployment
   # pull_request:
   workflow_dispatch:
 env:
