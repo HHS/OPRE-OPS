@@ -30,6 +30,6 @@ jobs:
         with:
           terraform_directory: "terraform/eus/dev/test"
           terraform_version: ${{ env.TERRAFORM_VERSION }}
-          google_sa_key: ${{ secrets.AZURE_CREDS }}
+          azure_creds: ${{ secrets.AZURE_CREDS }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pr_id: "F4K31D" #${{ steps.pr-id.outputs.PR_NUMBER }}
