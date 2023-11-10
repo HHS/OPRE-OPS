@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - POC-Azure-Deployment
-    # paths:
-    #   - 'frontend/**'
+    paths:
+      - 'frontend/**'
   workflow_dispatch:
 
 jobs:

@@ -4,8 +4,10 @@ on:
   push:
     branches:
       - POC-Azure-Deployment
-    # paths:
-    #   - 'backend/**'
+    paths:
+      - backend/models/**
+      - backend/ops_api/**
+      - backend/Dockerfile.cg-ops-api
   workflow_dispatch:
 
 jobs:

@@ -1,0 +1,35 @@
+name: Terraform Plan
+
+on:
+  branches:
+      - POC-Azure-Deployment
+  # pull_request:
+  workflow_dispatch:
+env:
+  TERRAFORM_VERSION: "1.2.9"
+  TF_IN_AUTOMATION: "True"
+
+jobs:
+  terraform_plan:
+    runs-on: ubuntu-latest
+    if: github.event.review.state != 'approved'
+    steps:
+      - uses: actions/checkout@v3
+
+      # - name: Get PR ID
+      #   id: pr-id
+      #   shell: bash
+      #   env:
+      #     GITHUB_REF: ${{ inputs.github_ref }}
+      #   run: |
+      #     PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
+      #     echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_OUTPUT
+
+      - name: Terraform Plan
+        uses: ./.github/actions/tf-plan
+        with:
+          terraform_directory: "terraform/eus/dev/test"
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          google_sa_key: ${{ secrets.AZURE_CREDS }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_id: "F4K31D" #${{ steps.pr-id.outputs.PR_NUMBER }}
