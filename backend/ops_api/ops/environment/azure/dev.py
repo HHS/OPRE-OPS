@@ -43,4 +43,4 @@ AUTHLIB_OAUTH_CLIENTS = {
     },
 }
 
-JWT_PUBLIC_KEY_PATH = "static/test-public-key.pem"
+JWT_PUBLIC_KEY_PATH = "static/public.pem"
