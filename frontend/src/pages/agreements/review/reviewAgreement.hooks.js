@@ -8,6 +8,7 @@ export const useReviewAgreement = (agreement, isSuccess) => {
     const [pageErrors, setPageErrors] = React.useState({});
     const [isAlertActive, setIsAlertActive] = React.useState(false);
     const [mainToggleSelected, setMainToggleSelected] = React.useState(false);
+    const [notes, setNotes] = React.useState("");
 
     let res = suite.get();
 
@@ -101,7 +102,9 @@ export const useReviewAgreement = (agreement, isSuccess) => {
         handleActionChange,
         toggleSelectActionableBLIs,
         mainToggleSelected,
-        setMainToggleSelected
+        setMainToggleSelected,
+        notes,
+        setNotes
     };
 };
 
