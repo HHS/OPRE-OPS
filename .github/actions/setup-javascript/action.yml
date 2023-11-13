@@ -1,10 +1,10 @@
 name: Set up Javascript
-description: Installs Node.js and dependencies defined in package.json
+description: Installs Bun.js and dependencies defined in package.json
 runs:
   using: composite
   steps:
     - name: Set up Bun
-      uses: oven-sh/setup-bun@v1
+      uses: oven-sh/setup-bun@a1800f471a0bc25cddac36bb13e6f436ddf341d7 # v1
       with:
         bun-version: latest
     - name: Install bun dependencies
