@@ -19,6 +19,7 @@ from sqlalchemy import (
     Table,
     Text,
     case,
+    column,
     select,
 )
 from sqlalchemy.dialects.postgresql import ENUM
@@ -165,7 +166,6 @@ class Agreement(BaseModel):
         back_populates="agreement"
     )
     agreement_reason = mapped_column(ENUM(AgreementReason))
-    incumbent: Mapped[str] = mapped_column(String, nullable=True)
     project_officer_id: Mapped[int] = mapped_column(
         ForeignKey("users.id"), nullable=True
     )
@@ -247,6 +247,14 @@ contract_support_contacts = Table(
 )
 
 
+class AcquisitionType(Enum):
+    """Acquisition Type"""
+
+    GSA_SCHEDULE = 1
+    TASK_ORDER = 2
+    FULL_AND_OPEN = 3
+
+
 class ContractType(Enum):
     RESEARCH = 0
     SERVICE = 1
@@ -260,7 +268,19 @@ class ContractAgreement(Agreement):
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
     contract_number: Mapped[str] = mapped_column(String, nullable=True)
-    vendor: Mapped[str] = mapped_column(String, nullable=True)
+    incumbent_id: Mapped[int] = mapped_column(ForeignKey("vendor.id"), nullable=True)
+    incumbent = relationship("Vendor", foreign_keys=[incumbent_id])
+    vendor_id: Mapped[int] = mapped_column(ForeignKey("vendor.id"), nullable=True)
+    vendor = relationship("Vendor", foreign_keys=[vendor_id])
+    task_order_number: Mapped[str] = mapped_column(
+        String(),
+        nullable=True,
+    )
+    po_number: Mapped[str] = mapped_column(String(), nullable=True)
+    acquisition_type = mapped_column(
+        ENUM(AcquisitionType),
+        nullable=True,
+    )
     delivered_status: Mapped[bool] = mapped_column(Boolean, default=False)
     contract_type = mapped_column(ENUM(ContractType))
     support_contacts: Mapped[list[User]] = relationship(
@@ -288,6 +308,8 @@ class ContractAgreement(Agreement):
                 "support_contacts": [
                     contacts.to_dict() for contacts in self.support_contacts
                 ],
+                "vendor": self.vendor.name if self.vendor else None,
+                "incumbent": self.incumbent.name if self.incumbent else None,
             }
         )
 
