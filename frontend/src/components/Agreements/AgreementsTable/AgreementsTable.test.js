@@ -17,7 +17,8 @@ const agreements = [
         procurement_shop: { fee: 0.05 },
         budget_line_items: [
             { amount: 100, date_needed: "2024-05-02T11:00:00", status: "DRAFT" },
-            { amount: 200, date_needed: "2023-03-02T11:00:00", status: "UNDER_REVIEW" }
+            { amount: 200, date_needed: "2023-03-02T11:00:00", status: "UNDER_REVIEW" },
+            { amount: 300, date_needed: "2043-03-04T11:00:00", status: "PLANNED", proc_shop_fee_percentage: 0.05 }
         ],
         created_by: 1,
         notes: "Test notes",
@@ -60,6 +61,7 @@ it("renders without crashing", () => {
     expect(screen.getByText("Test Agreement")).toBeInTheDocument();
     expect(screen.getByText("Test Project")).toBeInTheDocument();
     expect(screen.getByText("Grant")).toBeInTheDocument();
+    expect(screen.getByText("$630.00")).toBeInTheDocument();
     expect(screen.getByText("$315.00")).toBeInTheDocument();
-    expect(screen.getByText("3/2/2023")).toBeInTheDocument();
+    expect(screen.getByText("3/4/2043")).toBeInTheDocument();
 });

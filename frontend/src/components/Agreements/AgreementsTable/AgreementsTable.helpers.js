@@ -1,4 +1,4 @@
-import { formatDate } from "../../../helpers/utils";
+import { draftBudgetLineStatuses, formatDate } from "../../../helpers/utils";
 export { getAgreementSubTotal, getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
 
 const handleAgreementProp = (agreement) => {
@@ -22,14 +22,25 @@ export const getAgreementNotes = (agreement) => {
     return agreement.notes;
 };
 
-export const findMinDateNeeded = (agreement) => {
+export const findNextBudgetLine = (agreement) => {
     handleAgreementProp(agreement);
-    let nextNeedBy = agreement.budget_line_items?.reduce(
-        (n, { date_needed }) => (n < date_needed ? n : date_needed),
-        0
-    );
-    nextNeedBy = nextNeedBy ? formatDate(new Date(nextNeedBy)) : "";
+    const today = new Date();
+    let nextBudgetLine;
+    agreement.budget_line_items?.forEach((bli) => {
+        if (!draftBudgetLineStatuses.includes(bli.status) && bli.date_needed && new Date(bli.date_needed) >= today) {
+            if (!nextBudgetLine || bli.date_needed < nextBudgetLine.date_needed) {
+                nextBudgetLine = bli;
+            }
+        }
+    });
+    return nextBudgetLine;
+};
 
+export const findNextNeedBy = (agreement) => {
+    handleAgreementProp(agreement);
+    const nextBudgetLine = findNextBudgetLine(agreement);
+    let nextNeedBy = nextBudgetLine?.date_needed;
+    nextNeedBy = nextNeedBy ? formatDate(new Date(nextNeedBy)) : "None";
     return nextNeedBy;
 };
 

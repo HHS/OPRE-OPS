@@ -13,7 +13,7 @@ const { tooltip } = USWDS;
  * @param {string} [props.tooltipThreshold] - optional (default 50), minimum character length to add the enhanced tooltip
  * @returns {React.JSX.Element} - The rendered component
  **/
-const TextClip = ({ text, maxLines = 2, tooltipThreshold = 50 }) => {
+const TextClip = ({ text, maxLines = 2, tooltipThreshold = 40 }) => {
     const tooltipEnabled = text?.length > tooltipThreshold;
     const tooltipRef = React.useRef();
 
