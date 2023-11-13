@@ -21,7 +21,7 @@
         "jwt-decode": "3.1.2",
         "lodash": "4.17.21",
         "node-gyp": "9.4.1",
-        "react": "18.2.0",
+        "react": "18.2.0",  
         "react-currency-format": "1.1.0",
         "react-dom": "18.2.0",
         "react-markdown": "8.0.7",
@@ -72,7 +72,7 @@
         "eject": "react-scripts eject",
         "lint": "eslint './src/**'",
         "cypress:open": "cypress open",
-        "uswds:update": "npx gulp compile"
+        "uswds:update": "bunx gulp compile"
     },
     "jest": {
         "coverageThreshold": {
@@ -91,7 +91,7 @@
             "node_modules/(?!crypto-random-string)/"
         ],
         "moduleNameMapper": {
-          "^@uswds/uswds/js$": "<rootDir>/src/uswds/js/uswds-mock.js"
+            "^@uswds/uswds/js$": "<rootDir>/src/uswds/js/uswds-mock.js"
         }
     },
     "browserslist": {
