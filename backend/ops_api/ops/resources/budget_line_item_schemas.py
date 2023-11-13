@@ -104,7 +104,7 @@ class RequestBody:
                 bli
                 and bli.agreement_id
                 and bli.agreement.agreement_reason == AgreementReason.NEW_REQ
-                and bli.agreement.incumbent
+                and bli.agreement.incumbent_id
             ):
                 raise ValidationError(
                     "BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ"
@@ -121,7 +121,7 @@ class RequestBody:
                     bli.agreement.agreement_reason == AgreementReason.RECOMPETE
                     or bli.agreement.agreement_reason == AgreementReason.LOGICAL_FOLLOW_ON
                 )
-                and not bli.agreement.incumbent
+                and not bli.agreement.incumbent_id
             ):
                 raise ValidationError(
                     "BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"

@@ -47,4 +47,4 @@ jobs:
 
       - name: Lint frontend
         working-directory: ./frontend
-        run: yarn lint
+        run: bun lint

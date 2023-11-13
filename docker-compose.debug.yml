@@ -33,6 +33,7 @@ services:
     command: >
       bash -c "
       python ./data_tools/src/import_static_data/load_db.py &&
+      DATA=./data_tools/data/vendor_and_contact_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/portfolio_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/funding_partner_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/funding_source_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
@@ -88,7 +89,7 @@ services:
       - REACT_APP_BACKEND_DOMAIN=http://localhost:8080
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
-    command: ["yarn", "start:debug"]
+    command: ["bun", "start:debug"]
     ports:
       - 3000:3000
       - 9229:9229
