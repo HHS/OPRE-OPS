@@ -1,4 +1,4 @@
-import { formatDate, nextBudgetLineStatuses } from "../../../helpers/utils";
+import { draftBudgetLineStatuses, formatDate } from "../../../helpers/utils";
 export { getAgreementSubTotal, getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
 
 const handleAgreementProp = (agreement) => {
@@ -24,9 +24,10 @@ export const getAgreementNotes = (agreement) => {
 
 export const findNextBudgetLine = (agreement) => {
     handleAgreementProp(agreement);
+    const today = new Date();
     let nextBudgetLine;
     agreement.budget_line_items?.forEach((bli) => {
-        if (nextBudgetLineStatuses.includes(bli.status)) {
+        if (!draftBudgetLineStatuses.includes(bli.status) && bli.date_needed && new Date(bli.date_needed) >= today) {
             if (!nextBudgetLine || bli.date_needed < nextBudgetLine.date_needed) {
                 nextBudgetLine = bli;
             }

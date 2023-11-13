@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
-import { convertCodeForDisplay } from "../../../helpers/utils";
+import { convertCodeForDisplay, totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
@@ -44,7 +44,12 @@ export const AgreementTableRow = ({ agreement }) => {
     const procurementShopSubTotal = getProcurementShopSubTotal(agreement);
     const agreementTotal = agreementSubTotal + procurementShopSubTotal;
     const nextBudgetLine = findNextBudgetLine(agreement);
-    const nextBudgetLineAmount = nextBudgetLine?.amount || 0;
+    const nextBudgetLineAmount = nextBudgetLine?.amount
+        ? totalBudgetLineAmountPlusFees(
+              nextBudgetLine.amount,
+              totalBudgetLineFeeAmount(nextBudgetLine.amount, nextBudgetLine.proc_shop_fee_percentage)
+          )
+        : 0;
     const nextNeedBy = findNextNeedBy(agreement);
     const agreementCreatedByName = useGetUserFullNameFromId(agreement?.created_by);
     const agreementNotes = getAgreementNotes(agreement);
