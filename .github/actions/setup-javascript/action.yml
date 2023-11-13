@@ -4,7 +4,7 @@ runs:
   using: composite
   steps:
     - name: Set up node
-      uses: actions/setup-node@ee36e8b5c0fdd6014a0398aed18ce9876360bd63 # tag: v3.5.1
+      uses: actions/setup-node@5ef044f9d09786428e6e895be6be17937becee3a # tag: v3.5.1
       with:
         node-version-file: ./frontend/.nvmrc
         cache: 'yarn'
