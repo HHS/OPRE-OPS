@@ -65,7 +65,7 @@
         "vite-plugin-svgr": "^4.1.0"
     },
     "scripts": {
-        "start": "vite",
+        "start": "vite --host",
         "start:debug": "vite --inspect=0.0.0.0:9229",
         "build": "vite build",
         "test": "vite test",
