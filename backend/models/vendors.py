@@ -1,13 +1,23 @@
+from typing import List
+
 from models.base import BaseModel
 from sqlalchemy import Boolean, Column, ForeignKey, Identity, String, Table
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-vendor_contacts = Table(
-    "vendor_contacts",
-    BaseModel.metadata,
-    Column("vendor_id", ForeignKey("vendor.id"), primary_key=True),
-    Column("contact_id", ForeignKey("contact.id"), primary_key=True),
-)
+
+class VendorContacts(BaseModel):
+    __versioned__ = {}
+    __tablename__ = "vendor_contacts"
+
+    vendor_id: Mapped[int] = mapped_column(ForeignKey("vendor.id"), primary_key=True)
+    contact_id: Mapped[int] = mapped_column(ForeignKey("contact.id"), primary_key=True)
+
+    vendor: Mapped["Vendor"] = relationship(
+        "Vendor", back_populates="contacts_vendor_contacts"
+    )
+    contact: Mapped["Contact"] = relationship(
+        "Contact", back_populates="vendors_vendor_contacts"
+    )
 
 
 class Contact(BaseModel):
@@ -22,15 +32,19 @@ class Contact(BaseModel):
     city: Mapped[str] = mapped_column(String(), nullable=True)
     state: Mapped[str] = mapped_column(String(), nullable=True)
     zip: Mapped[str] = mapped_column(String(), nullable=True)
-    area_code: Mapped[str] = mapped_column(String(), nullable=True)
+    phone_area_code: Mapped[str] = mapped_column(String(), nullable=True)
     phone_number: Mapped[str] = mapped_column(String(), nullable=True)
     email: Mapped[str] = mapped_column(String(), nullable=True)
 
-    vendors = relationship(
+    vendors: Mapped[List["Vendor"]] = relationship(
         "Vendor",
         back_populates="contacts",
         secondary="vendor_contacts",
         viewonly=True,
+    )
+
+    vendors_vendor_contacts: Mapped[List["VendorContacts"]] = relationship(
+        back_populates="contact"
     )
 
     @BaseModel.display_name.getter
@@ -46,10 +60,15 @@ class Vendor(BaseModel):
     name: Mapped[str]
     duns: Mapped[str]
     active: Mapped[bool] = mapped_column(Boolean(), default=True, nullable=False)
-    contacts: Mapped[list[Contact]] = relationship(
+
+    contacts: Mapped[List[Contact]] = relationship(
         Contact,
-        secondary=vendor_contacts,
+        secondary="vendor_contacts",
         back_populates="vendors",
+    )
+
+    contacts_vendor_contacts: Mapped[List[VendorContacts]] = relationship(
+        back_populates="vendor"
     )
 
     @BaseModel.display_name.getter
