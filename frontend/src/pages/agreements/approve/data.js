@@ -1,0 +1,72 @@
+export const packetData = {
+    id: 1,
+    name: "Packet 1",
+    description: "Packet 1 description",
+    status: "Draft",
+    budgetLinesAdded: [
+        {
+            agreement_id: 1,
+            amount: 1000000,
+            can: {
+                appropriation_date: "01/10/2023",
+                appropriation_term: 1,
+                arrangement_type: "OPRE_APPROPRIATION",
+                authorizer_id: 26,
+                created_by: null,
+                created_on: "2023-11-13T21:55:10.186615",
+                description: "Head Start Research",
+                display_name: "G994426",
+                expiration_date: "01/09/2024",
+                id: 5,
+                managing_portfolio_id: 2,
+                nickname: "HS",
+                number: "G994426",
+                purpose: "",
+                updated_on: "2023-11-13T21:55:10.186615"
+            },
+            can_id: 5,
+            comments: "",
+            created_by: null,
+            created_on: "2023-11-13T21:55:11.686443",
+            date_needed: "2043-06-13",
+            display_name: "LI 1",
+            id: 1,
+            line_description: "LI 1",
+            proc_shop_fee_percentage: null,
+            status: "DRAFT",
+            updated_on: "2023-11-13T21:55:11.686443"
+        },
+        {
+            agreement_id: 1,
+            amount: 1000000,
+            can: {
+                appropriation_date: "01/10/2023",
+                appropriation_term: 1,
+                arrangement_type: "OPRE_APPROPRIATION",
+                authorizer_id: 26,
+                created_by: null,
+                created_on: "2023-11-13T21:55:10.186615",
+                description: "Head Start Research",
+                display_name: "G994426",
+                expiration_date: "01/09/2024",
+                id: 5,
+                managing_portfolio_id: 2,
+                nickname: "HS",
+                number: "G994426",
+                purpose: "",
+                updated_on: "2023-11-13T21:55:10.186615"
+            },
+            can_id: 5,
+            comments: "",
+            created_by: null,
+            created_on: "2023-11-13T21:55:11.686443",
+            date_needed: "2043-06-13",
+            display_name: "LI 2",
+            id: 2,
+            line_description: "LI 2",
+            proc_shop_fee_percentage: null,
+            status: "DRAFT",
+            updated_on: "2023-11-13T21:55:11.686443"
+        }
+    ]
+};

@@ -13,12 +13,14 @@ import AgreementChangesAccordion from "../../../components/Agreements/AgreementC
 import { getTotalByCans } from "../review/ReviewAgreement.helpers";
 import TextArea from "../../../components/UI/Form/TextArea";
 import useToggle from "../../../hooks/useToggle";
+import { packetData } from "./data";
 
 const ApproveAgreement = () => {
     const urlPathParams = useParams();
+    const [notes, setNotes] = React.useState("");
+    // @ts-ignore
     const agreementId = +urlPathParams.id;
     // const navigate = useNavigate();
-    const [notes, setNotes] = React.useState("");
     const {
         // isSuccess,
         data: agreement,
@@ -82,8 +84,9 @@ const ApproveAgreement = () => {
                 value={notes}
                 onChange={(name, value) => setNotes(value)}
             />
-            <div className="grid-row flex-justify-end margin-top-8">
+            <div className="grid-row flex-justify-end flex-align-center margin-top-8">
                 <button
+                    name="cancel"
                     className={`usa-button usa-button--unstyled margin-right-2`}
                     data-cy="edit-agreement-btn"
                     onClick={() => {
@@ -92,6 +95,7 @@ const ApproveAgreement = () => {
                 >
                     Cancel
                 </button>
+
                 <button
                     className={`usa-button usa-button--outline margin-right-2`}
                     data-cy="edit-agreement-btn"
