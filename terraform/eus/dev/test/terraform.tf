@@ -13,3 +13,5 @@ terraform {
     key                  = "terraform-test-gha.tfstate"
   }
 }
+
+data "azurerm_client_config" "current" {}
