@@ -57,6 +57,9 @@ ALLOWED_TABLES = [
     "procurement_shop",
     "agreement_team_members",
     "notification",
+    "vendor",
+    "contact",
+    "vendor_contacts",
 ]
 
 data = os.getenv("DATA")

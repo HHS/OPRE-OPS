@@ -19,10 +19,10 @@ const Table = ({ children, tableHeadings, firstHeadingSlot }) => {
      *
      */
     const addWidthIfStatus = (heading) => {
-        if (heading === "Status") {
-            return { width: "6.25rem" };
+        if (heading === "Next Need By") {
+            return { width: "6.25rem", whiteSpace: "nowrap" };
         }
-        return undefined;
+        return { whiteSpace: "nowrap" };
     };
 
     return (

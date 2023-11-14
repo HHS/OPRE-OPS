@@ -6,7 +6,7 @@ from flask import Response, current_app, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from marshmallow import EXCLUDE, Schema, ValidationError
-from models import DirectAgreement, GrantAgreement, IaaAaAgreement, IaaAgreement, OpsEventType, User
+from models import DirectAgreement, GrantAgreement, IaaAaAgreement, IaaAgreement, OpsEventType, User, Vendor
 from models.base import BaseModel
 from models.cans import Agreement, AgreementReason, AgreementType, BudgetLineItemStatus, ContractAgreement
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
@@ -254,6 +254,12 @@ class AgreementListAPI(BaseListAPI):
             tmp_support_contacts = data.get("support_contacts") or []
             data["support_contacts"] = []
 
+            # TODO: add_vendor is here temporarily until we have vendor management
+            # implemented in the frontend, i.e. the vendor is a drop-down instead
+            # of a text field
+            add_vendor(data, "incumbent")
+            add_vendor(data, "vendor")
+
         new_agreement = agreement_cls(**data)
 
         new_agreement.team_members.extend(
@@ -303,6 +309,8 @@ def _get_user_list(data: Any):
 def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
     changed = False
     for item in data:
+        if item in ["vendor", "incumbent"]:
+            continue
         # subclass attributes won't have the old (deleted) value in get_history
         # unless they were loaded before setting
         _hack_to_fix_get_history = getattr(agreement, item)  # noqa: F841
@@ -347,6 +355,13 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
 
 def update_agreement(data: dict[str, Any], agreement: Agreement):
     update_data(agreement, data)
+
+    # TODO: add_vendor is here temporarily until we have vendor management
+    # implemented in the frontend, i.e. the vendor is a drop-down instead
+    # of a text field
+    add_vendor(data, "incumbent")
+    add_vendor(data, "vendor")
+
     current_app.db_session.add(agreement)
     current_app.db_session.commit()
     return agreement
@@ -367,3 +382,17 @@ def get_change_data(old_agreement: Agreement, schema: Schema, partial: bool = Tr
     }  # only keep the attributes from the request body
     data |= change_data
     return data
+
+
+def add_vendor(data: dict, field_name: str = "vendor") -> None:
+    vendor = data.get(field_name)
+    if vendor:
+        vendor_obj = current_app.db_session.scalar(select(Vendor).where(Vendor.name.ilike(vendor)))
+        if not vendor_obj:
+            new_vendor = Vendor(name=vendor, duns=vendor)
+            current_app.db_session.add(new_vendor)
+            current_app.db_session.commit()
+            data[f"{field_name}_id"] = new_vendor.id
+        else:
+            data[f"{field_name}_id"] = vendor_obj.id
+        del data[field_name]

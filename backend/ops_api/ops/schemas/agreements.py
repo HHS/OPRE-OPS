@@ -21,6 +21,7 @@ class AgreementData(Schema):
 
 class ContractAgreementData(AgreementData):
     contract_number = fields.String(allow_none=True)
+    incumbent = fields.String(allow_none=True)
     vendor = fields.String(allow_none=True)
     delivered_status = fields.Bool(default=False)
     contract_type = fields.Enum(ContractType, allow_none=True)
@@ -51,7 +52,6 @@ class AgreementResponse(Schema):
     created_by = fields.Integer(required=True)
     description = fields.String(required=True)
     product_service_code = fields.Nested(ProductServiceCodeSchema)
-    incumbent = fields.String(required=True)
     project_officer = fields.Nested(TeamMembers)
     research_project = fields.Integer(required=True)
     agreement_type = fields.Enum(AgreementType, required=True)

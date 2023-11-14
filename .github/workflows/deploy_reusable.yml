@@ -64,7 +64,7 @@ jobs:
           NODE_ENV: production
         run: |
           echo ${{steps.get-backend-uri.outputs.BACKEND_DOMAIN}}
-          REACT_APP_BACKEND_DOMAIN=https://${{steps.deploy-backend.outputs.BACKEND_DOMAIN}} yarn build
+          REACT_APP_BACKEND_DOMAIN=https://${{steps.deploy-backend.outputs.BACKEND_DOMAIN}} bun build
           cp ./Staticfile ./build/
 
       - name: Deploy frontend
