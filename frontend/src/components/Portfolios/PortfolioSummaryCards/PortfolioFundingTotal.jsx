@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import CurrencyFormat from "react-currency-format";
-import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
+import CurrencySummaryCard from "../../UI/CurrencySummaryCard";
 import CANFundingBar from "../../CANs/CANFundingBar/CANFundingBar";
 import { calculatePercent } from "../../../helpers/utils";
 import Tag from "../../UI/Tag/Tag";
@@ -22,19 +22,21 @@ const PortfolioFundingTotal = () => {
             label: "Previous FYs Carry-Forward",
             value: carryForwardFunding,
             color: "#A1D0BE",
-            percent: `${calculatePercent(carryForwardFunding, totalFunding)}%`
+            percent: `${calculatePercent(carryForwardFunding, totalFunding)}%`,
+            tagActiveStyle: "whiteOnTeal"
         },
         {
             id: 2,
             label: `FY ${fiscalYear.value} New Funding`,
             value: newFunding,
             color: "#534C9C",
-            percent: `${calculatePercent(newFunding, totalFunding)}%`
+            percent: `${calculatePercent(newFunding, totalFunding)}%`,
+            tagActiveStyle: "whiteOnPurple"
         }
     ];
     const [activeId, setActiveId] = React.useState(0);
 
-    const LegendItem = ({ id, label, value, color, percent }) => {
+    const LegendItem = ({ id, label, value, color, percent, tagStyleActive }) => {
         const isGraphActive = activeId === id;
         return (
             <div className="grid-row margin-top-2 font-12px">
@@ -46,7 +48,7 @@ const PortfolioFundingTotal = () => {
                             style={{ color: color }}
                         />
 
-                        <span className={isGraphActive ? "fake-bold" : undefined}>{label}</span>
+                        <span className={isGraphActive ? "fake-bold" : ""}>{label}</span>
                     </div>
                 </div>
                 <div className="grid-col-4">
@@ -55,7 +57,7 @@ const PortfolioFundingTotal = () => {
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$ "}
-                        renderText={(value) => <span className={isGraphActive ? "fake-bold" : undefined}>{value}</span>}
+                        renderText={(value) => <span className={isGraphActive ? "fake-bold" : ""}>{value}</span>}
                     />
                 </div>
                 <div className="grid-col-1">
@@ -64,6 +66,7 @@ const PortfolioFundingTotal = () => {
                         text={percent}
                         label={label}
                         active={isGraphActive}
+                        tagStyleActive={tagStyleActive}
                     />
                 </div>
             </div>
@@ -93,6 +96,7 @@ const PortfolioFundingTotal = () => {
                     value={item.value}
                     color={item.color}
                     percent={item.percent}
+                    tagStyleActive={item.tagActiveStyle}
                 />
             ))}
         </CurrencySummaryCard>

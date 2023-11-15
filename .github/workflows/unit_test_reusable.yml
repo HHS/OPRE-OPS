@@ -36,7 +36,7 @@ jobs:
       # Stand up the system stack, to have something to poke
       - name: Run frontend unit tests
         working-directory: ./frontend
-        run: yarn test
+        run: bun run test
 
   e2e:
     name: End-to-End Testing
@@ -57,10 +57,11 @@ jobs:
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
 
       # Run the Cypress E2E Tests
+      - name: Install Cypress globally
+        run: bun install -g cypress
       - name: E2E Test
         working-directory: frontend
-        run: yarn test:e2e
-
+        run: bun run cypress install && bun run test:e2e
       - name: Capture logs
         shell: bash
         if: always()

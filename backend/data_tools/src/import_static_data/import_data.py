@@ -68,6 +68,9 @@ ALLOWED_TABLES = [
     "bli_package_snapshot",
     "workflow_step_dependency",
     "step_approvers",
+    "vendor",
+    "contact",
+    "vendor_contacts",
 ]
 
 data = os.getenv("DATA")

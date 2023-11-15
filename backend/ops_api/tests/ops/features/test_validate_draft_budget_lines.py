@@ -334,7 +334,7 @@ def agreement_reason_with_incumbent(loaded_db, context):
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
-        incumbent="CURRENT VENDOR",
+        incumbent_id=1,
         project_officer_id=1,
         procurement_shop_id=1,
     )

@@ -1,0 +1,69 @@
+{
+  contact: [
+    {
+      "first_name": "John",
+      "last_name": "Doe",
+      "address": "123 Main St",
+      "city": "Washington",
+      "state": "DC",
+      "zip": "20001",
+      "phone_area_code": "123",
+      "phone_number": "4567890",
+      "email": "john.doe@example.com"
+    },
+    {
+      "first_name": "Jane",
+      "last_name": "Doe",
+      "address": "123 Main St",
+      "city": "Washington",
+      "state": "DC",
+      "zip": "20001",
+      "phone_area_code": "123",
+      "phone_number": "4567890",
+      "email": "jane.doe@example.com"
+    }
+  ],
+  vendor: [
+    {
+      "name": "Vendor 1",
+      "duns": "123456789",
+      "active": true,
+    },
+    {
+      "name": "Vendor 2",
+      "duns": "987654321",
+      "active": true,
+    },
+    {
+      "name": "Vendor 3",
+      "duns": "123456780",
+      "active": false,
+    }
+  ],
+  vendor_contacts: [
+    {
+      "vendor_id": 1,
+      "contact_id": 1
+    },
+    {
+      "vendor_id": 1,
+      "contact_id": 2
+    },
+    {
+      "vendor_id": 2,
+      "contact_id": 1
+    },
+    {
+      "vendor_id": 2,
+      "contact_id": 2
+    },
+    {
+      "vendor_id": 3,
+      "contact_id": 1
+    },
+    {
+      "vendor_id": 3,
+      "contact_id": 2
+    }
+  ]
+}
