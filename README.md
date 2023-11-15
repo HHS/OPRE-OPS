@@ -30,13 +30,13 @@ pipenv install --dev
 
 ### Frontend
 
-We use [yarn](https://yarnpkg.com) to manage our Node.js dependencies.  It comes by default with Node.js.
+We use [bun](https://bun.sh/docs) to manage our Node.js dependencies.
 
 To install the dependencies, run...
 
 ```shell
 cd ./frontend/
-yarn install
+bun install
 ```
 
 ## Run
@@ -67,7 +67,7 @@ cd ./backend/ops_api
 pytest
 ```
 
-Note: All backend API endpoints have the abililty to simulate an error response, for testing purposes for the frontend. This is accomplished
+Note: All backend API endpoints have the ability to simulate an error response, for testing purposes for the frontend. This is accomplished
 through passing the `simulatedError=true` query parameter. It will automatically return a status code of 500 whenever this is done. It can
 be customized further by choosing the status code and passing that, so `simulatedError=400` sends back a 400 code rather than a 500 code. This will override any other processing the endpoint would normally do and just return the response, giving a simple mechanism for frontend development and/or testing to validate it works with error conditions from the backend.
 
@@ -79,7 +79,7 @@ To run them...
 
 ```shell
 cd ./frontend/
-yarn test --watchAll=false
+bun test --watchAll=false
 ```
 
 This runs them once and then exits.  You can remove the `--watchAll=false` if you want to continually rerun the tests
@@ -89,7 +89,7 @@ You can also get code coverage information by running...
 
 ```shell
 cd ./frontend/
-yarn test:coverage --watchAll=false
+bun test:coverage --watchAll=false
 ```
 
 We require 90% code coverage.
@@ -106,11 +106,11 @@ docker compose -f docker-compose.e2e.yml up
 
 End-to-end (E2E) can be run from the `frontend` via:
 ```shell
-yarn test:e2e
+bun test:e2e
 ```
 or Interactively via:
 ```shell
-yarn test:e2e:interactive
+bun test:e2e:interactive
 ```
 
 The E2E uses it's own TEST keys for generating and validating JWT Signatures, as it bypasses any live OAuth providers.
@@ -150,14 +150,14 @@ To run linting...
 
 ```shell
 cd ./frontend/
-yarn lint
+bun lint
 ```
 
 You can automatically fix many linting errors by passing in `--fix`.
 
 ```shell
 cd ./frontend/
-yarn lint --fix
+bun lint --fix
 ```
 
 ### Pre-commit Hooks
