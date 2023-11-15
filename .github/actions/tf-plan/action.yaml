@@ -4,8 +4,20 @@ inputs:
   terraform_directory:
     description: 'Directory that holds Terraform code'
     required: true
-  azure_creds: 
-    description: 'Azure SP Creds to use with Terraform'
+  # azure_creds: 
+  #   description: 'Azure SP Creds to use with Terraform'
+  #   required: true
+  azure_client_id: 
+    description: 'Azure client id'
+    required: true
+  azure_client_secret: 
+    description: 'Azure client secret'
+    required: true
+  azure_subscription_id:
+    description: 'Azure subscription id'
+    required: true
+  azure_tenant_id:
+    description: 'Azure tenant id'
     required: true
   terraform_version: 
     description: 'Terraform Version'
@@ -27,23 +39,23 @@ runs:
         terraform_version: ${{ inputs.terraforom_version }}
         terraform_wrapper: false
     
-    - id: 'login'
-      name: 'Login to Azure'
-      uses: azure/login@v1
-      with:
-        creds: ${{ inputs.azure_creds }} #${{ secrets.AZURE_CREDS }}
     # - id: 'login'
     #   name: 'Login to Azure'
-    #   uses: Azure/login@v1
+    #   uses: azure/login@v1
     #   with:
-    #     creds: '{"clientId":"${{ secrets.CLIENT_ID }}","clientSecret":"${{ secrets.CLIENT_SECRET }}","subscriptionId":"${{ secrets.SUBSCRIPTION_ID }}","tenantId":"${{ secrets.TENANT_ID }}"}'
+    #     creds: ${{ inputs.azure_creds }} #${{ secrets.AZURE_CREDS }}
+    - id: 'login'
+      name: 'Login to Azure'
+      uses: Azure/login@v1
+      with:
+        creds: '{"clientId":"${{ inputs.azure_client_id }}","clientSecret":"${{ inputs.azure_client_secret }}","subscriptionId":"${{ inputs.azure_subscription_id }}","tenantId":"${{ inputs.azure_tenant_id }}"}'
     
     - name: Terraform Init
       # env:
-      #   ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-      #   ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-      #   ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-      #   ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      #   ARM_CLIENT_ID: ${{ inputs.azure_client_id }}
+      #   ARM_CLIENT_SECRET: ${{ inputs.azure_client_secret }}
+      #   ARM_SUBSCRIPTION_ID: ${{ inputs.azure_subscription_id }}
+      #   ARM_TENANT_ID: ${{ inputs.azure_tenant_id }}
       id: init
       working-directory: ${{ inputs.terraform_directory }}
       shell: bash

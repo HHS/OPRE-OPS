@@ -30,6 +30,10 @@ jobs:
         with:
           terraform_directory: "terraform/eus/dev/test"
           terraform_version: ${{ env.TERRAFORM_VERSION }}
-          azure_creds: ${{ secrets.AZURE_CREDS }}
+          # azure_creds: ${{ secrets.AZURE_CREDS }}
+          azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
+          azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
+          azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pr_id: "F4K31D" #${{ steps.pr-id.outputs.PR_NUMBER }}
