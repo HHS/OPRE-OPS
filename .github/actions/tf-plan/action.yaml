@@ -44,18 +44,18 @@ runs:
     #   uses: azure/login@v1
     #   with:
     #     creds: ${{ inputs.azure_creds }} #${{ secrets.AZURE_CREDS }}
-    - id: 'login'
-      name: 'Login to Azure'
-      uses: Azure/login@v1
-      with:
-        creds: '{"clientId":"${{ inputs.azure_client_id }}","clientSecret":"${{ inputs.azure_client_secret }}","subscriptionId":"${{ inputs.azure_subscription_id }}","tenantId":"${{ inputs.azure_tenant_id }}"}'
+    # - id: 'login'
+    #   name: 'Login to Azure'
+    #   uses: Azure/login@v1
+    #   with:
+    #     creds: '{"clientId":"${{ inputs.azure_client_id }}","clientSecret":"${{ inputs.azure_client_secret }}","subscriptionId":"${{ inputs.azure_subscription_id }}","tenantId":"${{ inputs.azure_tenant_id }}"}'
     
     - name: Terraform Init
-      # env:
-      #   ARM_CLIENT_ID: ${{ inputs.azure_client_id }}
-      #   ARM_CLIENT_SECRET: ${{ inputs.azure_client_secret }}
-      #   ARM_SUBSCRIPTION_ID: ${{ inputs.azure_subscription_id }}
-      #   ARM_TENANT_ID: ${{ inputs.azure_tenant_id }}
+      env:
+        ARM_CLIENT_ID: ${{ inputs.azure_client_id }}
+        ARM_CLIENT_SECRET: ${{ inputs.azure_client_secret }}
+        ARM_SUBSCRIPTION_ID: ${{ inputs.azure_subscription_id }}
+        ARM_TENANT_ID: ${{ inputs.azure_tenant_id }}
       id: init
       working-directory: ${{ inputs.terraform_directory }}
       shell: bash
