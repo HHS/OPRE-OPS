@@ -196,6 +196,15 @@ export const opsApi = createApi({
         getPortfolios: builder.query({
             query: () => `/portfolios/`,
             providesTags: ["Portfolios"]
+        }),
+        addBliPackage: builder.query({
+            query: (body) => ({
+                url: `/bli-package/`,
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body
+            }),
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
         })
     })
 });
