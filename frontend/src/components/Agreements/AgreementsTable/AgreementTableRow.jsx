@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -86,6 +86,10 @@ export const AgreementTableRow = ({ agreement }) => {
     const handleEditAgreement = useHandleEditAgreement();
     const { handleDeleteAgreement, modalProps, setShowModal, showModal } = useHandleDeleteAgreement();
 
+    // TODO figure out logic for when to show goToApproval icon
+    const [searchParams] = useSearchParams();
+    const forApprovalUrl = searchParams.get("filter") === "for-approval";
+
     const changeIcons = (
         <ChangeIcons
             item={agreement}
@@ -96,7 +100,7 @@ export const AgreementTableRow = ({ agreement }) => {
             duplicateIcon={false}
             sendToReviewIcon={true}
             handleSubmitItemForApproval={handleSubmitAgreementForApproval}
-            goToApproveIcon={true}
+            goToApproveIcon={forApprovalUrl}
             handleGoToApprove={handleGoToApprove}
         />
     );

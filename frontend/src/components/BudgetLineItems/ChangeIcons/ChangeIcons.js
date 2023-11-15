@@ -88,7 +88,7 @@ const ChangeIcons = ({
                     <svg
                         id={`submit-for-approval-${item.id}`}
                         data-cy="submit-row"
-                        className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0"
+                        className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0 margin-right-05"
                         onClick={() => handleSubmitItemForApproval(item.id)}
                     >
                         <use xlinkHref={`${icons}#send`}></use>
