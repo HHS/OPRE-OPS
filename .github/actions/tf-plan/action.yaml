@@ -27,13 +27,18 @@ runs:
         terraform_version: ${{ inputs.terraforom_version }}
         terraform_wrapper: false
     
-    - id: 'login'
-      name: 'Login to Azure'
-      uses: azure/login@v1
-      with:
-        creds: ${{ inputs.azure_creds }} #${{ secrets.AZURE_CREDS }}
+    # - id: 'login'
+    #   name: 'Login to Azure'
+    #   uses: azure/login@v1
+    #   with:
+    #     creds: ${{ inputs.azure_creds }} #${{ secrets.AZURE_CREDS }}
 
     - name: Terraform Init
+      env:
+        ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+        ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
       id: init
       working-directory: ${{ inputs.terraform_directory }}
       shell: bash
