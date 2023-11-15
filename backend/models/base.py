@@ -105,7 +105,7 @@ class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc, valid-t
 
     @declared_attr
     def created_by(cls):
-        return Column("created_by", ForeignKey("users.id"))
+        return Column("created_by", ForeignKey("user.id"))
 
     @declared_attr
     def created_by_user(cls):

@@ -124,7 +124,7 @@ agreement_team_members = Table(
     "agreement_team_members",
     BaseModel.metadata,
     Column("agreement_id", ForeignKey("agreement.id"), primary_key=True),
-    Column("users_id", ForeignKey("users.id"), primary_key=True),
+    Column("users_id", ForeignKey("user.id"), primary_key=True),
 )
 
 
@@ -167,7 +167,7 @@ class Agreement(BaseModel):
     )
     agreement_reason = mapped_column(ENUM(AgreementReason))
     project_officer_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id"), nullable=True
+        ForeignKey("user.id"), nullable=True
     )
     project_officer: Mapped[Optional[User]] = relationship(
         User, foreign_keys=[project_officer_id]
@@ -243,7 +243,7 @@ contract_support_contacts = Table(
         ForeignKey("contract_agreement.id"),
         primary_key=True,
     ),
-    Column("users_id", ForeignKey("users.id"), primary_key=True),
+    Column("users_id", ForeignKey("user.id"), primary_key=True),
 )
 
 

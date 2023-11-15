@@ -25,8 +25,8 @@ class Division(BaseModel):
     name: Mapped[str] = mapped_column(String(100), unique=True)
     abbreviation: Mapped[str] = mapped_column(String(10), unique=True)
 
-    division_director_id = Column(Integer, ForeignKey("users.id"))
-    deputy_division_director_id = Column(Integer, ForeignKey("users.id"))
+    division_director_id = Column(Integer, ForeignKey("user.id"))
+    deputy_division_director_id = Column(Integer, ForeignKey("user.id"))
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -57,7 +57,7 @@ portfolio_team_leaders = Table(
     "portfolio_team_leaders",
     BaseModel.metadata,
     Column("portfolio_id", ForeignKey("portfolio.id"), primary_key=True),
-    Column("team_lead_id", ForeignKey("users.id"), primary_key=True),
+    Column("team_lead_id", ForeignKey("user.id"), primary_key=True),
 )
 
 

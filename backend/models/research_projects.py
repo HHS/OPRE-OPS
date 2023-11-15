@@ -43,7 +43,7 @@ research_project_team_leaders = Table(
     "research_project_team_leaders",
     BaseModel.metadata,
     Column("research_project_id", ForeignKey("research_project.id"), primary_key=True),
-    Column("team_lead_id", ForeignKey("users.id"), primary_key=True),
+    Column("team_lead_id", ForeignKey("user.id"), primary_key=True),
 )
 
 
