@@ -38,7 +38,6 @@ runs:
       with:
         terraform_version: ${{ inputs.terraforom_version }}
         terraform_wrapper: false
-    - name: Setup Environment
       
     # - id: 'login'
     #   name: 'Login to Azure'
