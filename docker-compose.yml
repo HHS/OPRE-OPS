@@ -92,4 +92,4 @@ services:
     depends_on:
       - backend
     volumes:
-      - ./frontend/:/home/app
+      - ./frontend/src:/home/app/src

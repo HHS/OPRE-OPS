@@ -14,13 +14,11 @@
         "@reduxjs/toolkit": "1.9.7",
         "@uswds/uswds": "3.7.0",
         "axios": "1.6.1",
-        "babel-plugin-macros": "3.1.0",
         "clsx": "2.0.0",
         "crypto-random-string": "5.0.0",
         "js-cookie": "3.0.5",
         "jwt-decode": "3.1.2",
         "lodash": "4.17.21",
-        "node-gyp": "9.4.1",
         "react": "18.2.0",
         "react-currency-format": "1.1.0",
         "react-dom": "18.2.0",
@@ -31,9 +29,7 @@
         "react-select": "5.8.0",
         "sass": "1.69.5",
         "sass-loader": "13.3.2",
-        "vest": "5.1.4",
-        "vite-jsconfig-paths": "^2.0.1",
-        "vite-plugin-eslint": "^1.8.1"
+        "vest": "5.1.4"
     },
     "devDependencies": {
         "@babel/plugin-proposal-private-property-in-object": "7.21.11",
@@ -62,12 +58,15 @@
         "prettier": "3.0.3",
         "redux-mock-store": "1.5.4",
         "vite": "^4.5.0",
-        "vite-plugin-svgr": "^4.1.0"
+        "vite-plugin-svgr": "^4.1.0",
+        "vite-jsconfig-paths": "^2.0.1",
+        "vite-plugin-eslint": "^1.8.1",
+        "vite-plugin-babel-macros": "^1.0.6"
     },
     "scripts": {
-        "start": "vite --host",
-        "start:debug": "vite --inspect=0.0.0.0:9229",
-        "build": "vite build",
+        "start": "DISABLE_ESLINT_PLUGIN=true vite --host",
+        "start:debug": "DISABLE_ESLINT_PLUGIN=true vite --inspect=0.0.0.0:9229",
+        "build": "DISABLE_ESLINT_PLUGIN=true vite build",
         "test": "vite test",
         "test:coverage": "vite test --coverage",
         "test:e2e:interactive": "cypress open --config-file ./cypress.config.js",
