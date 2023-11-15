@@ -3,14 +3,18 @@ import { useNavigate } from "react-router-dom";
 import useAlert from "../../../hooks/use-alert.hooks";
 import { useDeleteAgreementMutation } from "../../../api/opsAPI";
 
-export const useAgreementApproval = () => {
+export const useNavigateAgreementReview = () => {
     const navigate = useNavigate();
-
-    const handleSubmitAgreementForApproval = (id) => {
+    return (id) => {
         navigate(`/agreements/review/${id}`);
     };
+};
 
-    return handleSubmitAgreementForApproval;
+export const useNavigateAgreementApprove = () => {
+    const navigate = useNavigate();
+    return (id) => {
+        navigate(`/agreements/approve/${id}`);
+    };
 };
 
 export const useHandleEditAgreement = () => {

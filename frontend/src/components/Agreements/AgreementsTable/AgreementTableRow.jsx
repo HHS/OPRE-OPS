@@ -15,7 +15,12 @@ import TableRowExpandable from "../../UI/TableRowExpandable";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { useIsUserAllowedToEditAgreement, useIsAgreementEditable } from "../../../hooks/agreement.hooks";
-import { useAgreementApproval, useHandleEditAgreement, useHandleDeleteAgreement } from "./agreements-table.hooks";
+import {
+    useNavigateAgreementReview,
+    useNavigateAgreementApprove,
+    useHandleEditAgreement,
+    useHandleDeleteAgreement
+} from "./agreements-table.hooks";
 import {
     getAgreementName,
     getResearchProjectName,
@@ -76,7 +81,8 @@ export const AgreementTableRow = ({ agreement }) => {
     const areThereAnyBudgetLines = isThereAnyBudgetLines(agreement);
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
     // hooks
-    const handleSubmitAgreementForApproval = useAgreementApproval();
+    const handleSubmitAgreementForApproval = useNavigateAgreementReview();
+    const handleGoToApprove = useNavigateAgreementApprove();
     const handleEditAgreement = useHandleEditAgreement();
     const { handleDeleteAgreement, modalProps, setShowModal, showModal } = useHandleDeleteAgreement();
 
@@ -90,6 +96,8 @@ export const AgreementTableRow = ({ agreement }) => {
             duplicateIcon={false}
             sendToReviewIcon={true}
             handleSubmitItemForApproval={handleSubmitAgreementForApproval}
+            goToApproveIcon={true}
+            handleGoToApprove={handleGoToApprove}
         />
     );
 
