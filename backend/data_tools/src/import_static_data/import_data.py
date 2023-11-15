@@ -128,16 +128,18 @@ def load_new_data(
         model = BaseModel.model_lookup_by_table_name(name)
         if model:
             for datum in data_items:
-                # values of type list are associations
+                # values of type list[dict] are associations
                 data_without_associations = {
                     key: value
                     for key, value in datum.items()
                     if not isinstance(value, list)
+                    or any([not isinstance(obj, dict) for obj in value])
                 }
                 data_with_associations = {
                     key: value
                     for key, value in datum.items()
                     if isinstance(value, list)
+                    and all([isinstance(obj, dict) for obj in value])
                 }
                 with Session(conn) as session:
                     obj = model(**data_without_associations)
@@ -154,7 +156,6 @@ def load_new_data(
                             getattr(obj, key).append(associated_obj)
                             session.add(obj)
                             session.commit()
-
 
 
 def import_data(engine: Engine, metadata_obj: MetaData, data: dict[str, Any]) -> None:
