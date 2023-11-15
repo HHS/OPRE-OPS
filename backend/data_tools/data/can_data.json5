@@ -10,6 +10,16 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 6,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        },
+        {
+          "tablename": "funding_source",
+          "id": 24
+        }
+      ]
     },
     {
       number: "G99IA14",
@@ -21,6 +31,12 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 1,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
       number: "G99PHS9",
@@ -32,6 +48,12 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 8,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
       number: "G990136",
@@ -43,6 +65,12 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 1,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
       number: "G994426",
@@ -54,6 +82,12 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 2,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
       number: "G994648",
@@ -65,6 +99,12 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 1,
       managing_portfolio_id: 6,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
       number: "G996125",
@@ -76,6 +116,12 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
       number: "G99XXX1",
@@ -87,6 +133,12 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
       number: "G99XXX2",
@@ -98,6 +150,12 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
       number: "G99XXX3",
@@ -109,6 +167,12 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
       number: "G99XXX4",
@@ -120,6 +184,12 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
       number: "G99XXX7",
@@ -132,6 +202,12 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
       number: "G99XXX8",
@@ -143,6 +219,12 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 3,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
       number: "G99MV23",
@@ -154,6 +236,12 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 3,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 25
+        }
+      ]
     },
     {
       number: "G99MV24",
@@ -165,6 +253,12 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 3,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 25
+        }
+      ]
     },
     {
       number: "G99MVT3",
@@ -176,78 +270,84 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 3,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 25
+        }
+      ]
     },
   ],
-  can_funding_sources: [
-    {
-      can_id: 1,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 1,
-      funding_source_id: 24,
-    },
-    {
-      can_id: 2,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 3,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 4,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 5,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 6,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 7,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 8,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 9,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 10,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 11,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 12,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 13,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 14,
-      funding_source_id: 25,
-    },
-    {
-      can_id: 15,
-      funding_source_id: 25,
-    },
-    {
-      can_id: 16,
-      funding_source_id: 25,
-    },
-  ],
+//  can_funding_sources: [
+//    {
+//      can_id: 1,
+//      funding_source_id: 26,
+//    },
+//    {
+//      can_id: 1,
+//      funding_source_id: 24,
+//    },
+//    {
+//      can_id: 2,
+//      funding_source_id: 26,
+//    },
+//    {
+//      can_id: 3,
+//      funding_source_id: 26,
+//    },
+//    {
+//      can_id: 4,
+//      funding_source_id: 26,
+//    },
+//    {
+//      can_id: 5,
+//      funding_source_id: 26,
+//    },
+//    {
+//      can_id: 6,
+//      funding_source_id: 26,
+//    },
+//    {
+//      can_id: 7,
+//      funding_source_id: 26,
+//    },
+//    {
+//      can_id: 8,
+//      funding_source_id: 26,
+//    },
+//    {
+//      can_id: 9,
+//      funding_source_id: 26,
+//    },
+//    {
+//      can_id: 10,
+//      funding_source_id: 26,
+//    },
+//    {
+//      can_id: 11,
+//      funding_source_id: 26,
+//    },
+//    {
+//      can_id: 12,
+//      funding_source_id: 26,
+//    },
+//    {
+//      can_id: 13,
+//      funding_source_id: 26,
+//    },
+//    {
+//      can_id: 14,
+//      funding_source_id: 25,
+//    },
+//    {
+//      can_id: 15,
+//      funding_source_id: 25,
+//    },
+//    {
+//      can_id: 16,
+//      funding_source_id: 25,
+//    },
+//  ],
   can_fiscal_year: [
     {
       can_id: 1,
@@ -491,7 +591,8 @@
       expected_funding: 1000000.0,
       potential_additional_funding: 0.0,
       notes: "",
-    },{
+    },
+    {
       can_id: 16,
       fiscal_year: 2025,
       total_fiscal_year_funding: 1000000.0,

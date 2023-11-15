@@ -1,6 +1,6 @@
 """CAN models."""
 from enum import Enum
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar, List, Optional
 
 import sqlalchemy as sa
 from models.base import BaseModel
@@ -51,16 +51,19 @@ class CANArrangementType(Enum):
     MOU = 5
 
 
-can_funding_sources = Table(
-    "can_funding_sources",
-    BaseModel.metadata,
-    Column("can_id", ForeignKey("can.id"), primary_key=True),
-    Column(
-        "funding_source_id",
-        ForeignKey("funding_source.id"),
-        primary_key=True,
-    ),
-)
+class CANFundingSources(BaseModel):
+    __versioned__ = {}
+    __tablename__ = "can_funding_sources"
+
+    can_id: Mapped[int] = mapped_column(ForeignKey("can.id"), primary_key=True)
+    funding_source_id: Mapped[int] = mapped_column(
+        ForeignKey("funding_source.id"), primary_key=True
+    )
+
+    can: Mapped["CAN"] = relationship(back_populates="associated_funding_sources")
+    funding_source: Mapped["FundingSource"] = relationship(
+        back_populates="associated_cans"
+    )
 
 
 class FundingSource(BaseModel):
@@ -72,14 +75,19 @@ class FundingSource(BaseModel):
         Instead of ""Agency,"" consider ""Funding Partner""
     """
 
+    __versioned__ = {}
     __tablename__ = "funding_source"
+
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
     nickname = Column(String(100))
-    cans = relationship(
-        "CAN",
-        secondary=can_funding_sources,
-        back_populates="funding_sources",
+
+    cans: Mapped[List["CAN"]] = relationship(
+        secondary="can_funding_sources", back_populates="funding_sources"
+    )
+
+    associated_cans: Mapped[List["CANFundingSources"]] = relationship(
+        back_populates="funding_source"
     )
 
     @BaseModel.display_name.getter
@@ -556,7 +564,9 @@ class CAN(BaseModel):
     descriptive information about a given CAN
     """
 
+    __versioned__ = {}
     __tablename__ = "can"
+
     id = Column(Integer, Identity(), primary_key=True)
     number = Column(String(30), nullable=False)
     description = Column(String)
@@ -566,11 +576,15 @@ class CAN(BaseModel):
     appropriation_date = Column(DateTime)
     appropriation_term = Column(Integer, default="1")
     arrangement_type = Column(sa.Enum(CANArrangementType))
-    funding_sources = relationship(
-        FundingSource,
-        secondary=can_funding_sources,
-        back_populates="cans",
+
+    funding_sources: Mapped[List["FundingSource"]] = relationship(
+        secondary="can_funding_sources", back_populates="cans"
     )
+
+    associated_funding_sources: Mapped[List["CANFundingSources"]] = relationship(
+        back_populates="can"
+    )
+
     authorizer_id = Column(Integer, ForeignKey("funding_partner.id"))
     authorizer = relationship(FundingPartner)
     managing_portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
