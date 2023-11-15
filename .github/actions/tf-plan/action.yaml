@@ -32,18 +32,14 @@ inputs:
 
 runs:
   using: "composite"
-  env:
-    ARM_CLIENT_ID: ${{ inputs.azure_client_id }}
-    ARM_CLIENT_SECRET: ${{ inputs.azure_client_secret }}
-    ARM_SUBSCRIPTION_ID: ${{ inputs.azure_subscription_id }}
-    ARM_TENANT_ID: ${{ inputs.azure_tenant_id }}
   steps:
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_version: ${{ inputs.terraforom_version }}
         terraform_wrapper: false
-
+    - name: Setup Environment
+      
     # - id: 'login'
     #   name: 'Login to Azure'
     #   uses: azure/login@v1
@@ -59,6 +55,11 @@ runs:
       id: init
       working-directory: ${{ inputs.terraform_directory }}
       shell: bash
+      env:
+        ARM_CLIENT_ID: ${{ inputs.azure_client_id }}
+        ARM_CLIENT_SECRET: ${{ inputs.azure_client_secret }}
+        ARM_SUBSCRIPTION_ID: ${{ inputs.azure_subscription_id }}
+        ARM_TENANT_ID: ${{ inputs.azure_tenant_id }}
       run: |
         terraform init
 
@@ -66,6 +67,11 @@ runs:
       id: plan
       working-directory: ${{ inputs.terraform_directory }}
       shell: bash
+      env:
+        ARM_CLIENT_ID: ${{ inputs.azure_client_id }}
+        ARM_CLIENT_SECRET: ${{ inputs.azure_client_secret }}
+        ARM_SUBSCRIPTION_ID: ${{ inputs.azure_subscription_id }}
+        ARM_TENANT_ID: ${{ inputs.azure_tenant_id }}
       run: |
         echo 'plan<<EOF' >> $GITHUB_OUTPUT
         terraform plan -no-color -out=tfplan >> $GITHUB_OUTPUT
