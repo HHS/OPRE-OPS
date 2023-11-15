@@ -32,13 +32,18 @@ runs:
     #   uses: azure/login@v1
     #   with:
     #     creds: ${{ inputs.azure_creds }} #${{ secrets.AZURE_CREDS }}
-
+    - id: 'login'
+      name: 'Login to Azure'
+      uses: Azure/login@v1
+      with:
+        creds: '{"clientId":"${{ secrets.CLIENT_ID }}","clientSecret":"${{ secrets.CLIENT_SECRET }}","subscriptionId":"${{ secrets.SUBSCRIPTION_ID }}","tenantId":"${{ secrets.TENANT_ID }}"}'
+    
     - name: Terraform Init
-      env:
-        ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-        ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-        ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      # env:
+      #   ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      #   ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      #   ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      #   ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
       id: init
       working-directory: ${{ inputs.terraform_directory }}
       shell: bash
