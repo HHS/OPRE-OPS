@@ -11,10 +11,11 @@ When a system processes Social Security numbers:
 
 ## OPS Implementation
 
-OPS does not process social security numbers
+OPS does not intend to collect or store SSNs. If one is utilized as a Taxpayer Identification Number (TIN) for purposes of vendor invoicing, it could potentially be included. More information can be found in the Privacy Impact Assessment (PIA).
 
 ### Control Origination
 
 
 ### Related Content
-Please note that truncated SSNs are considered SSNs.
+
+Please note that truncated SSNs are considered SSNs

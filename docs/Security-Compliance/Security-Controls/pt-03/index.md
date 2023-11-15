@@ -11,7 +11,15 @@ d. Monitor changes in processing personally identifiable information and impleme
 
 ## OPS Implementation
 
-TODO: reference text from PIA
+The overall purpose of OPS is to track OPRE's funding and the vehicle through which that money was spent (e.g., contract).
+
+The PII about the system users (e.g., budget staff, system administrators) is collected and used to manage their accounts and authenticate them during the log in process.
+
+The PII about the vendor representatives is collected and used to contact the relevant individual if there is an issue with an invoice.
+
+The COR certificates may be attached to acquisition requests when required by PSC. More information can be found in the Privacy Impact Assessment (PIA).
+
+b. TODO: ???
 
 ### Control Origination
 
