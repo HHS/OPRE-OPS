@@ -15,7 +15,7 @@ it("loads", () => {
     cy.get("h1").should("have.text", "Agreements");
 });
 
-it.only("Agreements list table has correct headers and first row", () => {
+it("Agreements list table has correct headers and first row", () => {
     cy.get(".usa-table").should("exist");
     cy.get("h1").should("exist");
     cy.get("h1").should("have.text", "Agreements");
@@ -51,6 +51,13 @@ it.only("Agreements list table has correct headers and first row", () => {
     cy.get("tbody tr").first().trigger("mouseover");
     cy.get("svg[id^='submit-for-approval-']").first().should("exist");
     cy.get("svg[id^='submit-for-approval-']").first().should("not.be.disabled");
+
+    // expand first row
+    cy.get(':nth-child(1) > :nth-child(7) > [data-cy="expand-row"]').should("exist");
+    cy.get(':nth-child(1) > :nth-child(7) > [data-cy="expand-row"]').click();
+    cy.get(".padding-right-9 > :nth-child(1) > :nth-child(1)").should("have.text", "Created By");
+    cy.get(".width-mobile > .text-base-dark").should("have.text", "Description");
+    cy.get('[style="margin-left: 3.125rem;"] > .text-base-dark').should("have.text", "Budget Lines");
 });
 
 it("navigates to the ReviewAgreements page when the review button is clicked", () => {
