@@ -2,7 +2,7 @@
 from typing import Any, List, cast
 
 from models.base import BaseModel
-from sqlalchemy import Column, DateTime, ForeignKey, Identity, Integer, String, Table, func
+from sqlalchemy import Column, DateTime, ForeignKey, Identity, Integer, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 from typing_extensions import override
@@ -92,11 +92,17 @@ class User(BaseModel):
         viewonly=True,
     )
 
-    agreements = relationship(
+    agreements: Mapped[List["Agreement"]] = relationship(
         "Agreement",
-        back_populates="team_members",
         secondary="agreement_team_members",
-        viewonly=True,
+        back_populates="team_members",
+        primaryjoin="User.id == AgreementTeamMembers.user_id",
+        secondaryjoin="Agreement.id == AgreementTeamMembers.agreement_id",
+    )
+
+    associated_agreements: Mapped[List["AgreementTeamMembers"]] = relationship(
+        back_populates="team_member",
+        primaryjoin="User.id == AgreementTeamMembers.user_id",
     )
 
     contracts = relationship(
