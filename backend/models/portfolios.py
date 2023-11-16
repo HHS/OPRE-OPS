@@ -1,6 +1,6 @@
 """Portfolio models."""
 from enum import Enum
-from typing import Any, cast
+from typing import Any, List, cast
 
 import sqlalchemy as sa
 from models.base import BaseModel
@@ -46,12 +46,22 @@ class PortfolioUrl(BaseModel):
     url = Column(String)
 
 
-shared_portfolio_cans = Table(
-    "shared_portfolio_cans",
-    BaseModel.metadata,
-    Column("portfolio_id", ForeignKey("portfolio.id"), primary_key=True),
-    Column("can_id", ForeignKey("can.id"), primary_key=True),
-)
+class SharedPortfolioCANs(BaseModel):
+    __versioned__ = {}
+    __tablename__ = "shared_portfolio_cans"
+
+    portfolio_id: Mapped[int] = mapped_column(
+        ForeignKey("portfolio.id"), primary_key=True
+    )
+    can_id: Mapped[int] = mapped_column(ForeignKey("can.id"), primary_key=True)
+
+    shared_portfolio: Mapped["Portfolio"] = relationship(
+        back_populates="associated_shared_cans"
+    )
+    shared_can: Mapped["CAN"] = relationship(
+        back_populates="associated_shared_portfolios"
+    )
+
 
 portfolio_team_leaders = Table(
     "portfolio_team_leaders",
@@ -73,9 +83,15 @@ class Portfolio(BaseModel):
         "CAN",
         back_populates="managing_portfolio",
     )
-    shared_cans = relationship(
-        "CAN", back_populates="shared_portfolios", secondary=shared_portfolio_cans
+
+    shared_cans: Mapped[List["CAN"]] = relationship(
+        secondary="shared_portfolio_cans", back_populates="shared_portfolios"
     )
+
+    associated_shared_cans: Mapped[List["SharedPortfolioCANs"]] = relationship(
+        back_populates="shared_portfolio"
+    )
+
     division_id = Column(Integer, ForeignKey("division.id"), nullable=False)
     urls = relationship("PortfolioUrl")
     description = Column(Text)

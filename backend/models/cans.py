@@ -4,7 +4,7 @@ from typing import Any, ClassVar, List, Optional
 
 import sqlalchemy as sa
 from models.base import BaseModel
-from models.portfolios import Portfolio, shared_portfolio_cans
+from models.portfolios import Portfolio
 from models.users import User
 from sqlalchemy import (
     Boolean,
@@ -589,9 +589,15 @@ class CAN(BaseModel):
     authorizer = relationship(FundingPartner)
     managing_portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
     managing_portfolio = relationship(Portfolio, back_populates="cans")
-    shared_portfolios = relationship(
-        Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans"
+
+    shared_portfolios: Mapped[List["Portfolio"]] = relationship(
+        secondary="shared_portfolio_cans", back_populates="shared_cans"
     )
+
+    associated_shared_portfolios: Mapped[List["SharedPortfolioCANs"]] = relationship(
+        back_populates="shared_can"
+    )
+
     budget_line_items = relationship("BudgetLineItem", back_populates="can")
 
     @BaseModel.display_name.getter

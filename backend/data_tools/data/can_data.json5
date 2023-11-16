@@ -138,6 +138,12 @@
           "tablename": "funding_source",
           "id": 26
         }
+      ],
+      shared_portfolios: [
+        {
+          "tablename": "portfolio",
+          "id": 2
+        }
       ]
     },
     {
@@ -618,12 +624,6 @@
       expected_funding: 500000.0,
       potential_additional_funding: 0.0,
       notes: "",
-    },
-  ],
-  shared_portfolio_cans: [
-    {
-      portfolio_id: 2,
-      can_id: 8,
     },
   ],
   can_fiscal_year_carry_forward: [
