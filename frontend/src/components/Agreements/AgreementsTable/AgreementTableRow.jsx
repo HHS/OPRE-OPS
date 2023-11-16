@@ -97,7 +97,7 @@ export const AgreementTableRow = ({ agreement }) => {
             handleDeleteItem={handleDeleteAgreement}
             handleSetItemForEditing={handleEditAgreement}
             duplicateIcon={false}
-            sendToReviewIcon={true}
+            sendToReviewIcon={!forApprovalUrl}
             handleSubmitItemForApproval={handleSubmitAgreementForApproval}
             goToApproveIcon={forApprovalUrl}
             handleGoToApprove={handleGoToApprove}
