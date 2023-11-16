@@ -23,6 +23,9 @@ export const Tooltip = ({ label, position = "top", children }) => {
       tooltipElement.setAttribute("data-position", position)
       tooltip.on(tooltipElement)
     }
+    else {
+        console.log("No tooltip element!")
+    }
     return () => tooltip.off(tooltipElement)
   })
   return <span ref={tooltipRef}>{children}</span>
