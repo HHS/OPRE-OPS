@@ -176,7 +176,6 @@ export const AgreementTableRow = ({ agreement }) => {
                         <FontAwesomeIcon
                             icon={faCircle}
                             className={`${statusToClassName(status)} height-1 width-1 margin-right-05`}
-                            // style={{ verticalAlign: "middle" }}
                         />
 
                         <span>{label}</span>
@@ -214,7 +213,7 @@ export const AgreementTableRow = ({ agreement }) => {
                 </dl>
                 <dl
                     className="font-12px width-mobile"
-                    style={{ marginLeft: "40px" }}
+                    style={{ marginLeft: "2.5rem" }}
                 >
                     <dt className="margin-0 text-base-dark">Description</dt>
                     <dd
@@ -226,7 +225,7 @@ export const AgreementTableRow = ({ agreement }) => {
                 </dl>
                 <dl
                     className="font-12px"
-                    style={{ marginLeft: "50px" }}
+                    style={{ marginLeft: "3.125rem" }}
                 >
                     <dt className="margin-0 text-base-dark">Budget Lines</dt>
                     <dd
