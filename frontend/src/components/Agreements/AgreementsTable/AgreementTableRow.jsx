@@ -63,7 +63,6 @@ export const AgreementTableRow = ({ agreement }) => {
     const agreementDescription = getAgreementDescription(agreement);
     const agreementCreatedOn = getAgreementCreatedDate(agreement);
     const budgetLineCountsByStatus = getBudgetLineCountsByStatus(agreement);
-    console.log("budgetLineCountsByStatus", budgetLineCountsByStatus);
 
     // styles for the table row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
