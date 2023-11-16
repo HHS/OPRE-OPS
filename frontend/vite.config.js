@@ -2,13 +2,16 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import viteJsconfigPaths from "vite-jsconfig-paths";
 import svgr from "vite-plugin-svgr";
-// import eslint from "vite-plugin-eslint";
+import eslint from "vite-plugin-eslint";
 import fs from "fs/promises";
 // import macrosPlugin from "vite-plugin-babel-macros";
 
 // https://vitejs.dev/config/
 /** @type {import('vite').UserConfig} */
 export default defineConfig({
+    build: {
+        outDir: "build"
+    },
     server: {
         port: 3000,
         cors: {
@@ -28,7 +31,7 @@ export default defineConfig({
             }
         }),
         viteJsconfigPaths(),
-        // eslint(),
+        eslint(),
         // macrosPlugin(),
         svgr({
             include: "**/*.svg?react"
