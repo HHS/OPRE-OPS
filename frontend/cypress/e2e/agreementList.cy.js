@@ -57,7 +57,7 @@ it("Agreements list table has correct headers and first row", () => {
     cy.get(':nth-child(1) > :nth-child(7) > [data-cy="expand-row"]').click();
     cy.get(".padding-right-9 > :nth-child(1) > :nth-child(1)").should("have.text", "Created By");
     cy.get(".width-mobile > .text-base-dark").should("have.text", "Description");
-    cy.get('[style="margin-left: 50px;"] > .text-base-dark').should("have.text", "Budget Lines");
+    cy.get('[style="margin-left: 3.125rem;"] > .text-base-dark').should("have.text", "Budget Lines");
 });
 
 it("navigates to the ReviewAgreements page when the review button is clicked", () => {
