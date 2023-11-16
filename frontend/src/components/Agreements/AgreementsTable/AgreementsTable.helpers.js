@@ -1,4 +1,4 @@
-import { draftBudgetLineStatuses, formatDate } from "../../../helpers/utils";
+import { codesToDisplayText, draftBudgetLineStatuses, formatDate } from "../../../helpers/utils";
 export { getAgreementSubTotal, getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
 
 const handleAgreementProp = (agreement) => {
@@ -15,6 +15,11 @@ export const getAgreementName = (agreement) => {
 export const getResearchProjectName = (agreement) => {
     handleAgreementProp(agreement);
     return agreement.research_project?.title;
+};
+
+export const getAgreementDescription = (agreement) => {
+    handleAgreementProp(agreement);
+    return agreement.description;
 };
 
 export const getAgreementNotes = (agreement) => {
@@ -69,4 +74,27 @@ export const isThereAnyBudgetLines = (agreement) => {
     handleAgreementProp(agreement);
 
     return agreement?.budget_line_items?.length > 0;
+};
+
+export const getBudgetLineCountsByStatus = (agreement) => {
+    handleAgreementProp(agreement);
+
+    const countsByStatus = agreement.budget_line_items?.reduce((p, c) => {
+        const status = c.status;
+        if (!(status in p)) {
+            p[status] = 0;
+        }
+        p[status]++;
+        return p;
+    }, {});
+
+    const statuses = Object.keys(codesToDisplayText.budgetLineStatus);
+
+    const zerosForAllStatuses = statuses.reduce((obj, status) => {
+        obj[status] = 0;
+        return obj;
+    }, {});
+    const countsByStatusWithZeros = { ...zerosForAllStatuses, ...countsByStatus };
+
+    return countsByStatusWithZeros;
 };
