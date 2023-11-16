@@ -4,7 +4,7 @@ import viteJsconfigPaths from "vite-jsconfig-paths";
 import svgr from "vite-plugin-svgr";
 // import eslint from "vite-plugin-eslint";
 import fs from "fs/promises";
-import macrosPlugin from "vite-plugin-babel-macros";
+// import macrosPlugin from "vite-plugin-babel-macros";
 
 // https://vitejs.dev/config/
 /** @type {import('vite').UserConfig} */
@@ -13,10 +13,14 @@ export default defineConfig({
         port: 3000
     },
     plugins: [
-        react(),
+        react({
+            babel: {
+              plugins: ['babel-plugin-macros']
+            },
+          }),
         viteJsconfigPaths(),
         // eslint(),
-        macrosPlugin(),
+        // macrosPlugin(),
         svgr({
             include: "**/*.svg?react"
         })

@@ -64,9 +64,9 @@
         "vite-plugin-babel-macros": "^1.0.6"
     },
     "scripts": {
-        "start": "DISABLE_ESLINT_PLUGIN=true vite --host",
-        "start:debug": "DISABLE_ESLINT_PLUGIN=true vite --inspect=0.0.0.0:9229",
-        "build": "DISABLE_ESLINT_PLUGIN=true vite build",
+        "start": "vite --host",
+        "start:debug": "vite --inspect=0.0.0.0:9229",
+        "build": "vite build",
         "test": "vite test",
         "test:coverage": "vite test --coverage",
         "test:e2e:interactive": "cypress open --config-file ./cypress.config.js",
