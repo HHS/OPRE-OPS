@@ -1,10 +1,11 @@
 from enum import Enum
+from typing import List
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 from models.base import BaseModel
 from sqlalchemy import Column, Date, ForeignKey, Identity, Integer, String, Table, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing_extensions import override
 
 
@@ -32,12 +33,20 @@ class ResearchType(Enum):
     PROGRAM_SUPPORT = 3
 
 
-research_project_cans = Table(
-    "research_project_cans",
-    BaseModel.metadata,
-    Column("research_project_id", ForeignKey("research_project.id"), primary_key=True),
-    Column("can_id", ForeignKey("can.id"), primary_key=True),
-)
+class ResearchProjectCANs(BaseModel):
+    __versioned__ = {}
+    __tablename__ = "research_project_cans"
+
+    research_project_id: Mapped[int] = mapped_column(
+        ForeignKey("research_project.id"), primary_key=True
+    )
+    can_id: Mapped[int] = mapped_column(ForeignKey("can.id"), primary_key=True)
+
+    research_project: Mapped["ResearchProject"] = relationship(
+        back_populates="associated_cans"
+    )
+    can: Mapped["CAN"] = relationship(back_populates="associated_research_projects")
+
 
 research_project_team_leaders = Table(
     "research_project_team_leaders",
@@ -66,6 +75,14 @@ class ResearchProject(BaseModel):
         "User",
         back_populates="research_projects",
         secondary=research_project_team_leaders,
+    )
+
+    cans: Mapped[List["CAN"]] = relationship(
+        "CAN", secondary="research_project_cans", back_populates="research_projects"
+    )
+
+    associated_cans: Mapped[List["ResearchProjectCANs"]] = relationship(
+        back_populates="research_project"
     )
 
     @BaseModel.display_name.getter

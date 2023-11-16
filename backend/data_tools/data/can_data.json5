@@ -230,6 +230,12 @@
           "tablename": "funding_source",
           "id": 26
         }
+      ],
+      research_projects: [
+        {
+          "tablename": "research_project",
+          "id": 1
+        }
       ]
     },
     {
@@ -284,76 +290,6 @@
       ]
     },
   ],
-//  can_funding_sources: [
-//    {
-//      can_id: 1,
-//      funding_source_id: 26,
-//    },
-//    {
-//      can_id: 1,
-//      funding_source_id: 24,
-//    },
-//    {
-//      can_id: 2,
-//      funding_source_id: 26,
-//    },
-//    {
-//      can_id: 3,
-//      funding_source_id: 26,
-//    },
-//    {
-//      can_id: 4,
-//      funding_source_id: 26,
-//    },
-//    {
-//      can_id: 5,
-//      funding_source_id: 26,
-//    },
-//    {
-//      can_id: 6,
-//      funding_source_id: 26,
-//    },
-//    {
-//      can_id: 7,
-//      funding_source_id: 26,
-//    },
-//    {
-//      can_id: 8,
-//      funding_source_id: 26,
-//    },
-//    {
-//      can_id: 9,
-//      funding_source_id: 26,
-//    },
-//    {
-//      can_id: 10,
-//      funding_source_id: 26,
-//    },
-//    {
-//      can_id: 11,
-//      funding_source_id: 26,
-//    },
-//    {
-//      can_id: 12,
-//      funding_source_id: 26,
-//    },
-//    {
-//      can_id: 13,
-//      funding_source_id: 26,
-//    },
-//    {
-//      can_id: 14,
-//      funding_source_id: 25,
-//    },
-//    {
-//      can_id: 15,
-//      funding_source_id: 25,
-//    },
-//    {
-//      can_id: 16,
-//      funding_source_id: 25,
-//    },
-//  ],
   can_fiscal_year: [
     {
       can_id: 1,
@@ -641,11 +577,5 @@
       received_amount: 500000.0,
       expected_amount: 500000.0,
     },
-  ],
-  research_project_cans: [
-    {
-      research_project_id: 1,
-      can_id: 13,
-    },
-  ],
+  ]
 }
