@@ -1,7 +1,8 @@
 import { rest } from "msw";
 import { setupServer } from "msw/lib/node";
 
-const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
+// const BACKEND_DOMAIN = process.env.BACKEND_DOMAIN;
+const BACKEND_DOMAIN = "http://localhost:8080";
 
 export const handlers = [
     rest.get(`${BACKEND_DOMAIN}/api/v1/agreements/`, (req, res, ctx) => {

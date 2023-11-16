@@ -10,14 +10,23 @@ import fs from "fs/promises";
 /** @type {import('vite').UserConfig} */
 export default defineConfig({
     server: {
-        port: 3000
+        port: 3000,
+        cors: {
+            origin: function (origin, callback) {
+                if (origin === "http://localhost:8080") {
+                    callback(null, false); // disable CORS for localhost:8080
+                } else {
+                    callback(null, true); // enable CORS for other origins
+                }
+            }
+        }
     },
     plugins: [
         react({
             babel: {
-              plugins: ['babel-plugin-macros']
-            },
-          }),
+                plugins: ["babel-plugin-macros"]
+            }
+        }),
         viteJsconfigPaths(),
         // eslint(),
         // macrosPlugin(),
