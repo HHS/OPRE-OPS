@@ -15,7 +15,7 @@ from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.orm import Session
 from sqlalchemy.schema import MetaData
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 from models import *  # noqa: F403, F401
 

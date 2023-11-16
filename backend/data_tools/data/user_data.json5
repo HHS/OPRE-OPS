@@ -76,7 +76,7 @@
       division: 1,
       email: "chris.fortunato@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000001",
-      roles: [{"tablename":  "role", "id": 1}]
+      roles: [{"tablename":  "role", "id": 1}],
     },
     { // 2
       first_name: "Amy",
@@ -101,7 +101,7 @@
       email: "Amelia.Popham@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000004",
       roles: [{"tablename":  "role", "id": 1}],
-      groups: [{"tablename":  "group", "id": 1}]
+      groups: [{"tablename":  "group", "id": 1}],
     },
     { // 5
       first_name: "Tia",
@@ -160,7 +160,7 @@
       division: 4,
       email: "Niki.Denmark@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000012",
-      roles: [{"tablename":  "role", "id": 1}]
+      roles: [{"tablename":  "role", "id": 1}],
     },
     { // 13
       first_name: "Tim",
@@ -241,7 +241,7 @@
       division: 3,
       email: "admin.demo@email.com",
       oidc_id: "00000000-0000-1111-a111-000000000018",
-      roles: [{"tablename":  "role", "id": 1}]
+      roles: [{"tablename":  "role", "id": 1}],
     },
     { // 22
       first_name: "User",
