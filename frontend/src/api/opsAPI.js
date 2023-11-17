@@ -1,8 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getAccessToken } from "../components/Auth/auth";
 
-// const BACKEND_DOMAIN = process.env.BACKEND_DOMAIN;
-const BACKEND_DOMAIN = "http://localhost:8080";
+const BACKEND_DOMAIN = import.meta.env.VITE_BACKEND_DOMAIN;
 
 export const opsApi = createApi({
     reducerPath: "opsApi",

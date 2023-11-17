@@ -1,8 +1,7 @@
 import axios from "axios";
 import { getAccessToken, getRefreshToken } from "../components/Auth/auth";
 
-// const BACKEND_DOMAIN = process.env.BACKEND_DOMAIN``;
-const BACKEND_DOMAIN = "http://localhost:8080";
+const BACKEND_DOMAIN = import.meta.env.VITE_BACKEND_DOMAIN;
 
 export const callBackend = async (urlPath, action, requestBody, queryParams, useRefresh = false) => {
     console.debug(
