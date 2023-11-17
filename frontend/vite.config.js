@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import viteJsconfigPaths from "vite-jsconfig-paths";
@@ -37,6 +38,12 @@ export default defineConfig({
             include: "**/*.svg?react"
         })
     ],
+    test: {
+        globals: true,
+        environment: "jsdom",
+        setupFiles: "./src/setupTests.js",
+        coverage: {}
+    },
     define: {
         "process.env": {}
     },
