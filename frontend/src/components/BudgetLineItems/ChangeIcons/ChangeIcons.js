@@ -47,52 +47,74 @@ const ChangeIcons = ({
         <>
             <div className="display-flex flex-align-center">
                 {isItemEditable && (
-                    <>
-                        <FontAwesomeIcon
-                            id={`edit-${item?.id}`}
-                            data-cy="edit-row"
-                            icon={faPen}
-                            className="text-primary height-2 width-2 margin-right-1 cursor-pointer"
-                            onClick={() => handleSetItemForEditing(item)}
-                        />
-                    </>
+                    <Tooltip
+                        label="Edit"
+                        className="line-height-body-1"
+                    >
+                        <span>
+                            <FontAwesomeIcon
+                                id={`edit-${item?.id}`}
+                                data-cy="edit-row"
+                                icon={faPen}
+                                title="Edit2"
+                                className="text-primary height-2 width-2 margin-right-1 cursor-pointer"
+                                onClick={() => handleSetItemForEditing(item)}
+                            />
+                        </span>
+                    </Tooltip>
                 )}
-                <FontAwesomeIcon
-                    id={`delete-${item?.id}`}
-                    data-cy="delete-row"
-                    data-testid="delete-row"
-                    icon={faTrash}
-                    title={`${isItemDeletable ? "delete" : "cannot delete"}`}
-                    data-position="top"
-                    className={`text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip ${
-                        !isItemDeletable ? DISABLED_ICON_CLASSES : ""
-                    }`}
-                    onClick={() => isItemDeletable && handleDeleteItem(item.id, item.display_name)}
-                />
+                <Tooltip
+                    label={`${isItemDeletable ? "delete" : "cannot delete"}`}
+                    className="line-height-body-1"
+                >
+                    <span>
+                        <FontAwesomeIcon
+                            id={`delete-${item?.id}`}
+                            data-cy="delete-row"
+                            data-testid="delete-row"
+                            icon={faTrash}
+                            data-position="top"
+                            className={`text-primary height-2 width-2 margin-right-1 cursor-pointer ${
+                                !isItemDeletable ? DISABLED_ICON_CLASSES : ""
+                            }`}
+                            onClick={() => isItemDeletable && handleDeleteItem(item.id, item.display_name)}
+                        />
+                    </span>
+                </Tooltip>
 
                 {duplicateIcon && (
-                    <Tooltip label="duplicate">
-                        <FontAwesomeIcon
-                            id={`duplicate-${item?.id}`}
-                            data-cy="duplicate-row"
-                            icon={faClone}
-                            title="duplicate"
-                            data-position="top"
-                            className="text-primary height-2 width-2 cursor-pointer margin-left-0"
-                            onClick={() => handleDuplicateItem(item)}
-                        />
+                    <Tooltip
+                        label="duplicate"
+                        className="line-height-body-1"
+                    >
+                        <span>
+                            <FontAwesomeIcon
+                                id={`duplicate-${item?.id}`}
+                                data-cy="duplicate-row"
+                                icon={faClone}
+                                title="duplicate"
+                                data-position="top"
+                                className="text-primary height-2 width-2 cursor-pointer margin-left-0"
+                                onClick={() => handleDuplicateItem(item)}
+                            />
+                        </span>
                     </Tooltip>
                 )}
                 {sendToReviewIcon && (
-                    <Tooltip label="Submit for Approval">
-                        <svg
-                            id={`submit-for-approval-${item.id}`}
-                            data-cy="submit-row"
-                            className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0"
-                            onClick={() => handleSubmitItemForApproval(item.id)}
-                        >
-                            <use xlinkHref={`${icons}#send`}></use>
-                        </svg>
+                    <Tooltip
+                        label="Submit for Approval"
+                        className="line-height-body-1"
+                    >
+                        <span>
+                            <svg
+                                id={`submit-for-approval-${item.id}`}
+                                data-cy="submit-row"
+                                className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0"
+                                onClick={() => handleSubmitItemForApproval(item.id)}
+                            >
+                                <use xlinkHref={`${icons}#send`}></use>
+                            </svg>
+                        </span>
                     </Tooltip>
                 )}
             </div>

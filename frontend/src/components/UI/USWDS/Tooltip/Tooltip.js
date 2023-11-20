@@ -8,12 +8,13 @@ import Accordion from "../../Accordion";
  *
  * @param {string} label - the content of the tooltip
  * @param {("top" | "right" | "bottom" | "left")} position - where the tooltip should be placed (if possible), default is "top"
+ * @param {string} className - the className for the span container, optional
  * @param {React.ReactNode} children
  * @returns {React.JSX.Element}
  * @constructor
  */
 
-export const Tooltip = ({ label, position = "top", children }) => {
+export const Tooltip = ({ label, position = "top", children, className }) => {
   const tooltipRef = useRef(null)
   useLayoutEffect(() => {
     const tooltipElement = tooltipRef.current?.firstChild
@@ -28,13 +29,14 @@ export const Tooltip = ({ label, position = "top", children }) => {
     }
     return () => tooltip.off(tooltipElement)
   })
-  return <span ref={tooltipRef}>{children}</span>
+    return <span ref={tooltipRef} className={className}>{children}</span>
 }
 
 Tooltip.propTypes = {
     label: PropTypes.string.isRequired,
     position: PropTypes.string,
-    children: PropTypes.node.isRequired
+    children: PropTypes.node.isRequired,
+    className: PropTypes.string
 };
 
 export default Tooltip
