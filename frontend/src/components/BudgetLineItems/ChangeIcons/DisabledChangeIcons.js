@@ -5,6 +5,7 @@ import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClone } from "@fortawesome/free-regular-svg-icons";
 import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
 import icons from "../../../uswds/img/sprite.svg";
+import { Tooltip } from "../../UI/USWDS/Tooltip";
 
 /**
  * This component displays the disabled change icons for a table row.
@@ -19,25 +20,35 @@ const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () =>
     const rowId = React.useId();
     return (
         <div className="display-flex flex-align-center">
-            <div
-                className="usa-tooltip"
-                title="Only team members listed on this agreement can edit or delete"
-                data-position="left"
+            <Tooltip
+                position="left"
+                label="Only team members listed on this agreement can edit or delete"
+                className="line-height-body-1"
             >
-                <FontAwesomeIcon
-                    id={`edit-${rowId}`}
-                    data-cy="edit-row"
-                    icon={faPen}
-                    className={classes}
-                />
-                <FontAwesomeIcon
-                    id={`delete-${rowId}`}
-                    data-cy="delete-row"
-                    data-testid="delete-row"
-                    icon={faTrash}
-                    className={classes}
-                />
-            </div>
+                <span>
+                    <FontAwesomeIcon
+                        id={`edit-${rowId}`}
+                        data-cy="edit-row"
+                        icon={faPen}
+                        className={classes}
+                    />
+                </span>
+            </Tooltip>
+            <Tooltip
+                position="left"
+                label="Only team members listed on this agreement can edit or delete"
+                className="line-height-body-1"
+            >
+                <span>
+                    <FontAwesomeIcon
+                        id={`delete-${rowId}`}
+                        data-cy="delete-row"
+                        data-testid="delete-row"
+                        icon={faTrash}
+                        className={classes}
+                    />
+                </span>
+            </Tooltip>
             {duplicateIcon && (
                 <FontAwesomeIcon
                     id={`duplicate-${rowId}`}
