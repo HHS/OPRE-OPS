@@ -4,8 +4,12 @@ import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
-import { convertCodeForDisplay } from "../../../helpers/utils";
-import TableTag from "../../UI/TableTag";
+import {
+    convertCodeForDisplay,
+    statusToClassName,
+    totalBudgetLineAmountPlusFees,
+    totalBudgetLineFeeAmount
+} from "../../../helpers/utils";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
@@ -17,15 +21,18 @@ import {
     getResearchProjectName,
     getAgreementSubTotal,
     getProcurementShopSubTotal,
-    findMinDateNeeded,
-    getAgreementNotes,
     getAgreementCreatedDate,
-    getAgreementStatus,
     areAllBudgetLinesInStatus,
-    isThereAnyBudgetLines
+    isThereAnyBudgetLines,
+    findNextBudgetLine,
+    findNextNeedBy,
+    getBudgetLineCountsByStatus,
+    getAgreementDescription
 } from "./AgreementsTable.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import TextClip from "../../UI/Text/TextClip";
+import { faCircle } from "@fortawesome/free-solid-svg-icons";
+import Tag from "../../UI/Tag";
 
 /**
  * Renders a row in the agreements table.
@@ -44,11 +51,18 @@ export const AgreementTableRow = ({ agreement }) => {
     const agreementSubTotal = getAgreementSubTotal(agreement);
     const procurementShopSubTotal = getProcurementShopSubTotal(agreement);
     const agreementTotal = agreementSubTotal + procurementShopSubTotal;
-    const nextNeedBy = findMinDateNeeded(agreement);
+    const nextBudgetLine = findNextBudgetLine(agreement);
+    const nextBudgetLineAmount = nextBudgetLine?.amount
+        ? totalBudgetLineAmountPlusFees(
+              nextBudgetLine.amount,
+              totalBudgetLineFeeAmount(nextBudgetLine.amount, nextBudgetLine.proc_shop_fee_percentage)
+          )
+        : 0;
+    const nextNeedBy = findNextNeedBy(agreement);
     const agreementCreatedByName = useGetUserFullNameFromId(agreement?.created_by);
-    const agreementNotes = getAgreementNotes(agreement);
+    const agreementDescription = getAgreementDescription(agreement);
     const agreementCreatedOn = getAgreementCreatedDate(agreement);
-    const agreementStatus = getAgreementStatus(agreement);
+    const budgetLineCountsByStatus = getBudgetLineCountsByStatus(agreement);
 
     // styles for the table row
     const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
@@ -125,16 +139,58 @@ export const AgreementTableRow = ({ agreement }) => {
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {nextNeedBy}
+                <CurrencyFormat
+                    value={nextBudgetLineAmount}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"$"}
+                    decimalScale={getDecimalScale(nextBudgetLineAmount)}
+                    fixedDecimalScale={true}
+                    renderText={(value) => value}
+                />
             </td>
             <td
                 className={removeBorderBottomIfExpanded}
                 style={changeBgColorIfExpanded}
             >
-                {isRowActive && !isExpanded ? <div>{changeIcons}</div> : <TableTag status={agreementStatus} />}
+                {isRowActive && !isExpanded ? <div>{changeIcons}</div> : <div>{nextNeedBy}</div>}
             </td>
         </>
     );
+
+    /**
+     * A component that displays the status with its counts
+     *
+     * @param {object} props - The props object containing the following properties:
+     * @param {string} props.status - The BLI status.
+     * @param {number} props.count - The count of BLI with the status.
+     * @returns {React.JSX.Element} A React component that displays a legend item.
+     */
+    const StatusCountItem = ({ status, count }) => {
+        const label = convertCodeForDisplay("budgetLineStatus", status);
+        return (
+            <div className="display-flex flex-justify margin-top-1">
+                <div className="">
+                    <div className="display-flex flex-align-center">
+                        <FontAwesomeIcon
+                            icon={faCircle}
+                            className={`${statusToClassName(status)} height-1 width-1 margin-right-05`}
+                        />
+
+                        <span>{label}</span>
+                    </div>
+                </div>
+                <div>
+                    <Tag
+                        tagStyle="darkTextWhiteBackground"
+                        text={`${count}`}
+                        label={label}
+                        className="margin-left-1"
+                    />
+                </div>
+            </div>
+        );
+    };
 
     const ExpandedData = (
         <td
@@ -155,15 +211,35 @@ export const AgreementTableRow = ({ agreement }) => {
                     </dt>
                 </dl>
                 <dl
-                    className="font-12px"
-                    style={{ marginLeft: "9.0625rem" }}
+                    className="font-12px width-mobile"
+                    style={{ marginLeft: "2.5rem" }}
                 >
-                    <dt className="margin-0 text-base-dark">Notes</dt>
+                    <dt className="margin-0 text-base-dark">Description</dt>
                     <dd
                         className="margin-0"
                         style={{ maxWidth: "400px" }}
                     >
-                        {agreementNotes ? agreementNotes : "No notes added."}
+                        {agreementDescription ? agreementDescription : "No description created."}
+                    </dd>
+                </dl>
+                <dl
+                    className="font-12px"
+                    style={{ marginLeft: "3.125rem" }}
+                >
+                    <dt className="margin-0 text-base-dark">Budget Lines</dt>
+                    <dd
+                        className="margin-0"
+                        style={{ maxWidth: "400px" }}
+                    >
+                        <div className="font-12px margin-top-1">
+                            {Object.entries(budgetLineCountsByStatus).map(([status, count]) => (
+                                <StatusCountItem
+                                    key={status}
+                                    status={status}
+                                    count={count}
+                                />
+                            ))}
+                        </div>
                     </dd>
                 </dl>
                 <div className="flex-align-self-end margin-left-auto margin-bottom-1">{changeIcons}</div>

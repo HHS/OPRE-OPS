@@ -15,12 +15,60 @@ it("loads", () => {
     cy.get("h1").should("have.text", "Agreements");
 });
 
+it("Agreements list table has correct headers and first row", () => {
+    cy.get(".usa-table").should("exist");
+    cy.get("h1").should("exist");
+    cy.get("h1").should("have.text", "Agreements");
+    // table headers
+    cy.get("thead > tr > :nth-child(1)").should("have.text", "Agreement");
+    cy.get("thead > tr > :nth-child(2)").should("have.text", "Project");
+    cy.get("thead > tr > :nth-child(3)").should("have.text", "Type");
+    cy.get("thead > tr > :nth-child(4)").should("have.text", "Agreement Total");
+    cy.get("thead > tr > :nth-child(5)").should("have.text", "Next Budget Line");
+    cy.get("thead > tr > :nth-child(6)").should("have.text", "Next Need By");
+    // first row (including tooltips)
+    cy.get("tbody > :nth-child(1) > :nth-child(1) > a > .usa-tooltip > .usa-tooltip__trigger").should(
+        "have.text",
+        "Contract #1: African American Child and Family Research Center"
+    );
+    cy.get("tbody > :nth-child(1) > :nth-child(1) > a > .usa-tooltip > .usa-tooltip__body").should(
+        "have.text",
+        "Contract #1: African American Child and Family Research Center"
+    );
+    cy.get("tbody > :nth-child(1) > :nth-child(2) > .usa-tooltip > .usa-tooltip__trigger").should(
+        "have.text",
+        "Human Services Interoperability Support"
+    );
+    cy.get("tbody > :nth-child(1) > :nth-child(2) > .usa-tooltip > .usa-tooltip__body").should(
+        "have.text",
+        "Human Services Interoperability Support"
+    );
+    cy.get("tbody > :nth-child(1) > :nth-child(3)").should("have.text", "Contract");
+    cy.get("tbody > :nth-child(1) > :nth-child(4)").should("have.text", "$2,000,000.00");
+    cy.get("tbody > :nth-child(1) > :nth-child(5)").should("have.text", "$0");
+    cy.get("tbody > :nth-child(1) > :nth-child(6)").should("have.text", "None");
+
+    cy.get("tbody tr").first().trigger("mouseover");
+    cy.get("svg[id^='submit-for-approval-']").first().should("exist");
+    cy.get("svg[id^='submit-for-approval-']").first().should("not.be.disabled");
+
+    // expand first row
+    cy.get(':nth-child(1) > :nth-child(7) > [data-cy="expand-row"]').should("exist");
+    cy.get(':nth-child(1) > :nth-child(7) > [data-cy="expand-row"]').click();
+    cy.get(".padding-right-9 > :nth-child(1) > :nth-child(1)").should("have.text", "Created By");
+    cy.get(".width-mobile > .text-base-dark").should("have.text", "Description");
+    cy.get('[style="margin-left: 3.125rem;"] > .text-base-dark').should("have.text", "Budget Lines");
+});
+
 it("navigates to the ReviewAgreements page when the review button is clicked", () => {
     cy.get(".usa-table").should("exist");
     cy.get("tbody tr").first().trigger("mouseover");
+    cy.get("svg[id^='submit-for-approval-']").first().should("exist");
+    cy.get("svg[id^='submit-for-approval-']").first().should("not.be.disabled");
     cy.get("svg[id^='submit-for-approval-']").first().click();
     cy.url().should("include", "/agreements/review");
     cy.get("h1").should("exist");
+    cy.get("h1").should("have.text", "Review and Send Agreement to Approval");
 });
 
 it("Agreements Table is correctly filtered on all-agreements or my-agreements", () => {

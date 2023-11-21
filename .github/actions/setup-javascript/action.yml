@@ -1,15 +1,14 @@
 name: Set up Javascript
-description: Installs Node.js and dependencies defined in package.json
+description: Installs Bun.js and dependencies defined in package.json
 runs:
   using: composite
   steps:
-    - name: Set up node
-      uses: actions/setup-node@ee36e8b5c0fdd6014a0398aed18ce9876360bd63 # tag: v3.5.1
+    - name: Set up Bun
+      uses: oven-sh/setup-bun@a1800f471a0bc25cddac36bb13e6f436ddf341d7 # v1.0.11
       with:
-        node-version-file: ./frontend/.nvmrc
-        cache: 'yarn'
-        cache-dependency-path: '**/yarn.lock'
-    - name: Install yarn dependencies
+        bun-version: 1.0.11
+    - name: Install bun dependencies
       shell: bash
       working-directory: ./frontend
-      run: yarn install --frozen-lockfile
+      run: bun install 
+      
