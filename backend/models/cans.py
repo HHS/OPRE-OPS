@@ -1,6 +1,6 @@
 """CAN models."""
 from enum import Enum
-from typing import Any, ClassVar, List, Optional
+from typing import Any, List, Optional
 
 import sqlalchemy as sa
 from models.base import BaseModel
@@ -128,12 +128,18 @@ class AgreementReason(Enum):
     )
 
 
-agreement_team_members = Table(
-    "agreement_team_members",
-    BaseModel.metadata,
-    Column("agreement_id", ForeignKey("agreement.id"), primary_key=True),
-    Column("users_id", ForeignKey("user.id"), primary_key=True),
-)
+class AgreementTeamMembers(BaseModel):
+    __versioned__ = {}
+    __tablename__ = "agreement_team_members"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    agreement_id: Mapped[int] = mapped_column(
+        ForeignKey("agreement.id"), primary_key=True
+    )
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"user id: {self.user_id};agreement id:{self.agreement_id}"
 
 
 class ProductServiceCode(BaseModel):
@@ -180,11 +186,15 @@ class Agreement(BaseModel):
     project_officer: Mapped[Optional[User]] = relationship(
         User, foreign_keys=[project_officer_id]
     )
-    team_members: Mapped[list[User]] = relationship(
-        User,
-        secondary=agreement_team_members,
+
+    team_members: Mapped[List["User"]] = relationship(
+        "User",
+        secondary="agreement_team_members",
         back_populates="agreements",
+        primaryjoin="Agreement.id == AgreementTeamMembers.agreement_id",
+        secondaryjoin="User.id == AgreementTeamMembers.user_id",
     )
+
     research_project_id: Mapped[int] = mapped_column(
         ForeignKey("research_project.id"), nullable=True
     )
