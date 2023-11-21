@@ -601,9 +601,6 @@ class CAN(BaseModel):
         "ResearchProject", secondary="research_project_cans", back_populates="cans"
     )
 
-    associated_research_projects: Mapped[List["ResearchProjectCANs"]] = relationship(
-        back_populates="can"
-    )
 
     @BaseModel.display_name.getter
     def display_name(self):

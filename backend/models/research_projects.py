@@ -42,10 +42,9 @@ class ResearchProjectCANs(BaseModel):
     )
     can_id: Mapped[int] = mapped_column(ForeignKey("can.id"), primary_key=True)
 
-    research_project: Mapped["ResearchProject"] = relationship(
-        back_populates="associated_cans"
-    )
-    can: Mapped["CAN"] = relationship(back_populates="associated_research_projects")
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"research_project_id={self.research_project_id};can_id={self.can_id}"
 
 
 research_project_team_leaders = Table(
@@ -79,10 +78,6 @@ class ResearchProject(BaseModel):
 
     cans: Mapped[List["CAN"]] = relationship(
         "CAN", secondary="research_project_cans", back_populates="research_projects"
-    )
-
-    associated_cans: Mapped[List["ResearchProjectCANs"]] = relationship(
-        back_populates="research_project"
     )
 
     @BaseModel.display_name.getter
