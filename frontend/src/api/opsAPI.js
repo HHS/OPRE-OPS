@@ -197,9 +197,18 @@ export const opsApi = createApi({
             query: () => `/portfolios/`,
             providesTags: ["Portfolios"]
         }),
-        addBliPackage: builder.query({
+        addBliPackage: builder.mutation({
             query: (body) => ({
                 url: `/bli-package/`,
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body
+            }),
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
+        }),
+        addApprovalRequest: builder.mutation({
+            query: (body) => ({
+                url: `/approve/`,
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body
@@ -237,5 +246,7 @@ export const {
     useGetCanFundingSummaryQuery,
     useGetNotificationsByUserIdQuery,
     useDismissNotificationMutation,
-    useGetPortfoliosQuery
+    useGetPortfoliosQuery,
+    useAddBliPackageMutation,
+    useAddApprovalRequestMutation
 } = opsApi;
