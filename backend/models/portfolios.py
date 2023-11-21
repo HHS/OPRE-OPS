@@ -55,12 +55,9 @@ class SharedPortfolioCANs(BaseModel):
     )
     can_id: Mapped[int] = mapped_column(ForeignKey("can.id"), primary_key=True)
 
-    shared_portfolio: Mapped["Portfolio"] = relationship(
-        back_populates="associated_shared_cans"
-    )
-    shared_can: Mapped["CAN"] = relationship(
-        back_populates="associated_shared_portfolios"
-    )
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"portfolio_id={self.portfolio_id}:can_id={self.can_id}"
 
 
 portfolio_team_leaders = Table(
@@ -86,10 +83,6 @@ class Portfolio(BaseModel):
 
     shared_cans: Mapped[List["CAN"]] = relationship(
         secondary="shared_portfolio_cans", back_populates="shared_portfolios"
-    )
-
-    associated_shared_cans: Mapped[List["SharedPortfolioCANs"]] = relationship(
-        back_populates="shared_portfolio"
     )
 
     division_id = Column(Integer, ForeignKey("division.id"), nullable=False)

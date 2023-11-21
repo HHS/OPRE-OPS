@@ -595,10 +595,6 @@ class CAN(BaseModel):
         secondary="shared_portfolio_cans", back_populates="shared_cans"
     )
 
-    associated_shared_portfolios: Mapped[List["SharedPortfolioCANs"]] = relationship(
-        back_populates="shared_can"
-    )
-
     budget_line_items = relationship("BudgetLineItem", back_populates="can")
 
     research_projects: Mapped[List["ResearchProject"]] = relationship(
