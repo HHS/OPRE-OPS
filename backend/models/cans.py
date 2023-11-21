@@ -601,7 +601,6 @@ class CAN(BaseModel):
         "ResearchProject", secondary="research_project_cans", back_populates="cans"
     )
 
-
     @BaseModel.display_name.getter
     def display_name(self):
         return self.number
