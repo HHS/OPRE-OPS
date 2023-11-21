@@ -99,29 +99,9 @@ def get_data_to_import(file_name: Optional[str] = data) -> dict[str, Any]:
     return cast(dict[str, Any], json5.load(open(file_name)))
 
 
-def exists(conn: Connection, table: str) -> bool:  # pragma: no cover
-    return cast(bool, inspect(conn).has_table(table))
-
-
-def delete_existing_data(  # type: ignore [return]
-    conn: Connection,
-    data: dict[str, Any],
-) -> Optional[str]:
-    for ops_table in data:
-        if ops_table not in ALLOWED_TABLES:
-            raise RuntimeError("Table not allowed")
-        # Only truncate if it actually exists
-        if exists(conn, ops_table):
-            # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
-            conn.execute(text(f"TRUNCATE TABLE {ops_table} RESTART IDENTITY CASCADE;"))
-        else:
-            return "Table does not exist"
-
-
 def load_new_data(
     conn: sqlalchemy.engine.Engine,
     data: dict[str, Any],
-    metadata_obj: sqlalchemy.MetaData,
 ) -> None:
     for name, data_items in data.items():
         logging.debug(f"Loading {name}...")
@@ -145,22 +125,24 @@ def load_new_data(
                     obj = model(**data_without_associations)
                     session.add(obj)
                     session.commit()
-                    for key, value in data_with_associations.items():
-                        for associated_id in value:
-                            associated_model = BaseModel.model_lookup_by_table_name(
-                                associated_id.get("tablename")
-                            )
-                            associated_obj = session.get(
-                                associated_model, associated_id.get("id")
-                            )
-                            getattr(obj, key).append(associated_obj)
-                            session.add(obj)
-                            session.commit()
+                    insert_associated_data(data_with_associations, obj, session)
 
 
-def import_data(engine: Engine, metadata_obj: MetaData, data: dict[str, Any]) -> None:
+def insert_associated_data(data_with_associations, obj, session):
+    for key, value in data_with_associations.items():
+        for associated_id in value:
+            associated_model = BaseModel.model_lookup_by_table_name(
+                associated_id.get("tablename")
+            )
+            associated_obj = session.get(associated_model, associated_id.get("id"))
+            getattr(obj, key).append(associated_obj)
+            session.add(obj)
+            session.commit()
+
+
+def import_data(engine: Engine, data: dict[str, Any]) -> None:
     with engine.connect() as conn:
-        load_new_data(conn, data, metadata_obj)
+        load_new_data(conn, data)
         conn.commit()
 
 
@@ -172,4 +154,4 @@ if __name__ == "__main__":
 
     global_data = get_data_to_import()
 
-    import_data(db_engine, db_metadata_obj, global_data)
+    import_data(db_engine, global_data)
