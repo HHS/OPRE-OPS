@@ -12,12 +12,9 @@ class VendorContacts(BaseModel):
     vendor_id: Mapped[int] = mapped_column(ForeignKey("vendor.id"), primary_key=True)
     contact_id: Mapped[int] = mapped_column(ForeignKey("contact.id"), primary_key=True)
 
-    vendor: Mapped["Vendor"] = relationship(
-        "Vendor", back_populates="contacts_vendor_contacts"
-    )
-    contact: Mapped["Contact"] = relationship(
-        "Contact", back_populates="vendors_vendor_contacts"
-    )
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"vendor_id={self.vendor_id};contact_id={self.contact_id}"
 
 
 class Contact(BaseModel):
@@ -43,10 +40,6 @@ class Contact(BaseModel):
         viewonly=True,
     )
 
-    vendors_vendor_contacts: Mapped[List["VendorContacts"]] = relationship(
-        back_populates="contact"
-    )
-
     @BaseModel.display_name.getter
     def display_name(self):
         return f"{self.first_name} {self.last_name}"
@@ -65,10 +58,6 @@ class Vendor(BaseModel):
         Contact,
         secondary="vendor_contacts",
         back_populates="vendors",
-    )
-
-    contacts_vendor_contacts: Mapped[List[VendorContacts]] = relationship(
-        back_populates="vendor"
     )
 
     @BaseModel.display_name.getter
