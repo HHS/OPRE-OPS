@@ -6,6 +6,12 @@
       description: "This contract will conduct interoperability activities to facilitate the exchange of information within, between, and from states and tribal organizations by facilitating lower-burden, interoperable data reporting and exchange to other state agencies and to ACF. The contract will focus on developing content that facilitates streamlined, interoperable reporting to ACF. The contract will also conduct research and evaluation activities with states and tribal organizations to assess the effectiveness of providing these interoperability artifacts for these organizations to use. The ability to share data and develop interoperable data systems is important for effective operation and oversight of these programs. This contract is designed to address these requirements and deliver needed and practical tools to accelerate implementation of data sharing and interoperable initiatives.",
       url: "https://www.acf.hhs.gov/opre/project/acf-human-services-interoperability-support",
       origination_date: "01-01-2021",
+      team_leaders: [
+        {
+          tablename: "user",
+          id: "1"
+        }
+      ],
       methodologies: [
         "SURVEY",
         "FIELD_RESEARCH",
@@ -15,7 +21,9 @@
         "SECONDARY_DATA_ANALYSIS",
         "CASE_STUDY",
       ],
-      populations: ["POPULATION_1"],
+      populations: [
+        "POPULATION_1"
+      ],
     },
     {
       title: "Youth Demonstration Development Project",
@@ -32,7 +40,9 @@
         "SECONDARY_DATA_ANALYSIS",
         "CASE_STUDY",
       ],
-      populations: ["POPULATION_1"],
+      populations: [
+        "POPULATION_1"
+      ],
     },
     {
       title: "Annual Performance Plans and Reports",
@@ -49,7 +59,9 @@
         "SECONDARY_DATA_ANALYSIS",
         "CASE_STUDY",
       ],
-      populations: ["POPULATION_1"],
+      populations: [
+        "POPULATION_1"
+      ],
     },
     {
       title: "Data Governance Consulting and Support",
@@ -66,7 +78,9 @@
         "SECONDARY_DATA_ANALYSIS",
         "CASE_STUDY",
       ],
-      populations: ["POPULATION_1"],
+      populations: [
+        "POPULATION_1"
+      ],
     },
     {
       title: "Evidence Capacity Support",
@@ -83,7 +97,9 @@
         "SECONDARY_DATA_ANALYSIS",
         "CASE_STUDY",
       ],
-      populations: ["POPULATION_1"],
+      populations: [
+        "POPULATION_1"
+      ],
     },
     {
       title: "Interoperability Initiative",
@@ -100,7 +116,9 @@
         "SECONDARY_DATA_ANALYSIS",
         "CASE_STUDY",
       ],
-      populations: ["POPULATION_1"],
+      populations: [
+        "POPULATION_1"
+      ],
     },
     {
       title: "Program Guidance on Sharing Administrative Data",
@@ -117,7 +135,9 @@
         "SECONDARY_DATA_ANALYSIS",
         "CASE_STUDY",
       ],
-      populations: ["POPULATION_1"],
+      populations: [
+        "POPULATION_1"
+      ],
     },
     {
       title: "Responsible Fatherhood and Healthy Marriage Research Initiative",
@@ -134,7 +154,9 @@
         "SECONDARY_DATA_ANALYSIS",
         "CASE_STUDY",
       ],
-      populations: ["POPULATION_1"],
+      populations: [
+        "POPULATION_1"
+      ],
     },
     {
       title: "Baby's First Years",
@@ -151,7 +173,9 @@
         "SECONDARY_DATA_ANALYSIS",
         "CASE_STUDY",
       ],
-      populations: ["POPULATION_1"],
+      populations: [
+        "POPULATION_1"
+      ],
     },
     {
       title: "African American Child and Family Research Center",
@@ -192,7 +216,9 @@
         "SECONDARY_DATA_ANALYSIS",
         "CASE_STUDY",
       ],
-      populations: ["POPULATION_1"],
+      populations: [
+        "POPULATION_1"
+      ],
     },
     {
       title: "Early Care and Education Leadership Study (ExCELS)",
@@ -234,7 +260,9 @@
         "SECONDARY_DATA_ANALYSIS",
         "CASE_STUDY",
       ],
-      populations: ["POPULATION_1"],
+      populations: [
+        "POPULATION_1"
+      ],
     },
     {
       title: "Fathers and Continuous Learning (FCL)",
@@ -273,7 +301,9 @@
         "SECONDARY_DATA_ANALYSIS",
         "CASE_STUDY",
       ],
-      populations: ["POPULATION_1"],
+      populations: [
+        "POPULATION_1"
+      ],
     },
     {
       title: "Mother and Infant Home Visiting Program Evaluation 2",
@@ -290,7 +320,9 @@
         "SECONDARY_DATA_ANALYSIS",
         "CASE_STUDY",
       ],
-      populations: ["POPULATION_1"],
+      populations: [
+        "POPULATION_1"
+      ],
     },
   ],
 }
