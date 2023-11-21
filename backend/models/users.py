@@ -15,10 +15,9 @@ class UserRole(BaseModel):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
     role_id: Mapped[int] = mapped_column(ForeignKey("role.id"), primary_key=True)
 
-    user: Mapped["User"] = relationship(
-        "User", back_populates="associated_roles", foreign_keys=[user_id]
-    )
-    role: Mapped["Role"] = relationship("Role", back_populates="associated_users")
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"User Role: user_id={self.user_id}; role_id={self.role_id}"
 
 
 class UserGroup(BaseModel):
@@ -28,10 +27,9 @@ class UserGroup(BaseModel):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
     group_id: Mapped[int] = mapped_column(ForeignKey("group.id"), primary_key=True)
 
-    user: Mapped["User"] = relationship(
-        "User", back_populates="associated_groups", foreign_keys=[user_id]
-    )
-    group: Mapped["Group"] = relationship("Group", back_populates="associated_users")
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"User Group: user_id={self.user_id}; group_id={self.group_id}"
 
 
 class User(BaseModel):
@@ -60,22 +58,12 @@ class User(BaseModel):
         secondaryjoin="Role.id == UserRole.role_id",
     )
 
-    associated_roles: Mapped[List["UserRole"]] = relationship(
-        back_populates="user",
-        primaryjoin="User.id == UserRole.user_id",
-    )
-
     groups: Mapped[List["Group"]] = relationship(
         "Group",
         secondary="user_group",
         back_populates="users",
         primaryjoin="User.id == UserGroup.user_id",
         secondaryjoin="Group.id == UserGroup.group_id",
-    )
-
-    associated_groups: Mapped[List["UserGroup"]] = relationship(
-        back_populates="user",
-        primaryjoin="User.id == UserGroup.user_id",
     )
 
     portfolios = relationship(
@@ -98,11 +86,6 @@ class User(BaseModel):
         back_populates="team_members",
         primaryjoin="User.id == AgreementTeamMembers.user_id",
         secondaryjoin="Agreement.id == AgreementTeamMembers.agreement_id",
-    )
-
-    associated_agreements: Mapped[List["AgreementTeamMembers"]] = relationship(
-        back_populates="team_member",
-        primaryjoin="User.id == AgreementTeamMembers.user_id",
     )
 
     contracts = relationship(
@@ -157,10 +140,6 @@ class Role(BaseModel):
         secondaryjoin="User.id == UserRole.user_id",
     )
 
-    associated_users: Mapped[List["UserRole"]] = relationship(
-        back_populates="role", primaryjoin="Role.id == UserRole.role_id"
-    )
-
     @BaseModel.display_name.getter
     def display_name(self):
         return self.name
@@ -179,10 +158,6 @@ class Group(BaseModel):
         back_populates="groups",
         primaryjoin="Group.id == UserGroup.group_id",
         secondaryjoin="User.id == UserGroup.user_id",
-    )
-
-    associated_users: Mapped[List["UserGroup"]] = relationship(
-        back_populates="group", primaryjoin="Group.id == UserGroup.group_id"
     )
 
     @BaseModel.display_name.getter
