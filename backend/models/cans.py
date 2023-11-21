@@ -60,10 +60,9 @@ class CANFundingSources(BaseModel):
         ForeignKey("funding_source.id"), primary_key=True
     )
 
-    can: Mapped["CAN"] = relationship(back_populates="associated_funding_sources")
-    funding_source: Mapped["FundingSource"] = relationship(
-        back_populates="associated_cans"
-    )
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"can_id={self.can_id}:funding_source_id={self.funding_source_id}"
 
 
 class FundingSource(BaseModel):
@@ -84,10 +83,6 @@ class FundingSource(BaseModel):
 
     cans: Mapped[List["CAN"]] = relationship(
         secondary="can_funding_sources", back_populates="funding_sources"
-    )
-
-    associated_cans: Mapped[List["CANFundingSources"]] = relationship(
-        back_populates="funding_source"
     )
 
     @BaseModel.display_name.getter
@@ -589,10 +584,6 @@ class CAN(BaseModel):
 
     funding_sources: Mapped[List["FundingSource"]] = relationship(
         secondary="can_funding_sources", back_populates="cans"
-    )
-
-    associated_funding_sources: Mapped[List["CANFundingSources"]] = relationship(
-        back_populates="can"
     )
 
     authorizer_id = Column(Integer, ForeignKey("funding_partner.id"))
