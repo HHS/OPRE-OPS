@@ -70,6 +70,8 @@ class User(BaseModel):
         "Portfolio",
         back_populates="team_leaders",
         secondary="portfolio_team_leaders",
+        primaryjoin="User.id == PortfolioTeamLeaders.team_lead_id",
+        secondaryjoin="Portfolio.id == PortfolioTeamLeaders.portfolio_id",
         viewonly=True,
     )
 

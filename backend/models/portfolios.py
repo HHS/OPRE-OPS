@@ -60,12 +60,18 @@ class SharedPortfolioCANs(BaseModel):
         return f"portfolio_id={self.portfolio_id}:can_id={self.can_id}"
 
 
-portfolio_team_leaders = Table(
-    "portfolio_team_leaders",
-    BaseModel.metadata,
-    Column("portfolio_id", ForeignKey("portfolio.id"), primary_key=True),
-    Column("team_lead_id", ForeignKey("user.id"), primary_key=True),
-)
+class PortfolioTeamLeaders(BaseModel):
+    __versioned__ = {}
+    __tablename__ = "portfolio_team_leaders"
+
+    portfolio_id: Mapped[int] = mapped_column(
+        ForeignKey("portfolio.id"), primary_key=True
+    )
+    team_lead_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"portfolio_id={self.portfolio_id};team_lead_id={self.team_lead_id}"
 
 
 class Portfolio(BaseModel):
@@ -91,7 +97,9 @@ class Portfolio(BaseModel):
     team_leaders = relationship(
         "User",
         back_populates="portfolios",
-        secondary=portfolio_team_leaders,
+        secondary="portfolio_team_leaders",
+        primaryjoin="Portfolio.id == PortfolioTeamLeaders.portfolio_id",
+        secondaryjoin="User.id == PortfolioTeamLeaders.team_lead_id",
     )
 
     @BaseModel.display_name.getter
