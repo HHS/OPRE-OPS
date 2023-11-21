@@ -1,7 +1,7 @@
 """User models."""
 from typing import Any, List, cast
 
-from models.base import BaseModel
+from models import BaseModel
 from sqlalchemy import Column, DateTime, ForeignKey, Identity, Integer, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship

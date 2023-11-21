@@ -5,7 +5,7 @@ from flask import Response, current_app, request
 from marshmallow import Schema, ValidationError
 from models import BaseModel, User
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.resources.users_schemas import PATCHRequestBody, POSTRequestBody, QueryParameters
+from ops_api.ops.resources.users_schemas import PATCHRequestBody, POSTRequestBody, QueryParameters, UserResponse
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 from typing_extensions import override
@@ -14,7 +14,7 @@ from typing_extensions import override
 class UsersItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
-        self._response_schema = mmdc.class_schema(model)()
+        self._response_schema = mmdc.class_schema(UserResponse)()
         self._put_schema = mmdc.class_schema(POSTRequestBody)()
         self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
 

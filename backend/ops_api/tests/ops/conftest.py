@@ -13,7 +13,6 @@ from pytest_docker.plugin import Services
 from sqlalchemy import create_engine, delete, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm import Session
 from tests.ops.auth_client import AuthClient
 
 
@@ -102,20 +101,20 @@ def docker_compose_command() -> str:
 def loaded_db(app: Flask, app_ctx: None):
     """Get SQLAlchemy Session."""
 
-    engine = create_engine(app.config.get("SQLALCHEMY_DATABASE_URI"), echo=True, future=True)
-    with Session(engine) as session:
-        yield session
+    session = app.db_session
 
-        # cleanup
-        session.rollback()
+    yield session
 
-        stmt = delete(OpsDBHistory)
-        session.execute(stmt)
-        stmt = delete(OpsEvent)
-        session.execute(stmt)
+    # cleanup
+    session.rollback()
 
-        session.commit()
-        session.close()
+    stmt = delete(OpsDBHistory)
+    session.execute(stmt)
+    stmt = delete(OpsEvent)
+    session.execute(stmt)
+
+    session.commit()
+    session.close()
 
 
 @pytest.fixture()
