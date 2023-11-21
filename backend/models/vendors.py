@@ -6,7 +6,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
 class VendorContacts(BaseModel):
-    __versioned__ = {}
     __tablename__ = "vendor_contacts"
 
     vendor_id: Mapped[int] = mapped_column(ForeignKey("vendor.id"), primary_key=True)
@@ -18,7 +17,6 @@ class VendorContacts(BaseModel):
 
 
 class Contact(BaseModel):
-    __versioned__ = {}
     __tablename__ = "contact"
 
     id: Mapped[int] = mapped_column(Identity(), primary_key=True)
@@ -46,7 +44,6 @@ class Contact(BaseModel):
 
 
 class Vendor(BaseModel):
-    __versioned__ = {}
     __tablename__ = "vendor"
 
     id: Mapped[int] = mapped_column(Identity(), primary_key=True)

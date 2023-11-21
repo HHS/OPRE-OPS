@@ -52,7 +52,6 @@ class CANArrangementType(Enum):
 
 
 class CANFundingSources(BaseModel):
-    __versioned__ = {}
     __tablename__ = "can_funding_sources"
 
     can_id: Mapped[int] = mapped_column(ForeignKey("can.id"), primary_key=True)
@@ -74,7 +73,6 @@ class FundingSource(BaseModel):
         Instead of ""Agency,"" consider ""Funding Partner""
     """
 
-    __versioned__ = {}
     __tablename__ = "funding_source"
 
     id = Column(Integer, primary_key=True)
@@ -124,7 +122,6 @@ class AgreementReason(Enum):
 
 
 class AgreementTeamMembers(BaseModel):
-    __versioned__ = {}
     __tablename__ = "agreement_team_members"
 
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
@@ -157,7 +154,6 @@ class ProductServiceCode(BaseModel):
 class Agreement(BaseModel):
     """Base Agreement Model"""
 
-    __versioned__ = {}
     __tablename__ = "agreement"
 
     id: Mapped[int] = mapped_column(Identity(), primary_key=True)
@@ -276,7 +272,6 @@ class ContractType(Enum):
 class ContractAgreement(Agreement):
     """Contract Agreement Model"""
 
-    __versioned__ = {}
     __tablename__ = "contract_agreement"
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
@@ -333,7 +328,6 @@ class ContractAgreement(Agreement):
 class GrantAgreement(Agreement):
     """Grant Agreement Model"""
 
-    __versioned__ = {}
     __tablename__ = "grant_agreement"
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
@@ -354,7 +348,6 @@ class GrantAgreement(Agreement):
 class IaaAgreement(Agreement):
     """IAA Agreement Model"""
 
-    __versioned__ = {}
     __tablename__ = "iaa_agreement"
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
@@ -375,7 +368,6 @@ class IaaAgreement(Agreement):
 class IaaAaAgreement(Agreement):
     """IAA-AA Agreement Model"""
 
-    __versioned__ = {}
     __tablename__ = "iaa_aa_agreement"
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
@@ -394,7 +386,6 @@ class IaaAaAgreement(Agreement):
 class DirectAgreement(Agreement):
     """Direct Obligation Agreement Model"""
 
-    __versioned__ = {}
     __tablename__ = "direct_agreement"
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
@@ -486,7 +477,6 @@ class CANFiscalYearCarryForward(BaseModel):
 
 
 class BudgetLineItem(BaseModel):
-    __versioned__ = {}
     __tablename__ = "budget_line_item"
 
     id = Column(Integer, Identity(), primary_key=True)
@@ -569,7 +559,6 @@ class CAN(BaseModel):
     descriptive information about a given CAN
     """
 
-    __versioned__ = {}
     __tablename__ = "can"
 
     id = Column(Integer, Identity(), primary_key=True)

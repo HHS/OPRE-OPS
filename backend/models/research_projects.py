@@ -34,7 +34,6 @@ class ResearchType(Enum):
 
 
 class ResearchProjectCANs(BaseModel):
-    __versioned__ = {}
     __tablename__ = "research_project_cans"
 
     research_project_id: Mapped[int] = mapped_column(
@@ -48,7 +47,6 @@ class ResearchProjectCANs(BaseModel):
 
 
 class ResearchProjectTeamLeaders(BaseModel):
-    __versioned__ = {}
     __tablename__ = "research_project_team_leaders"
 
     research_project_id: Mapped[int] = mapped_column(

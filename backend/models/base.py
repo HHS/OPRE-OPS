@@ -91,6 +91,7 @@ make_versioned(user_cls=None)
 
 
 class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc, valid-type]
+    __versioned__ = {}
     __abstract__ = True
     __repr__ = ReprMixin.__repr__
 

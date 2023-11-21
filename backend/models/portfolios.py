@@ -18,7 +18,6 @@ class PortfolioStatus(Enum):
 class Division(BaseModel):
     """Portfolio Division sub model."""
 
-    __versioned__ = {}
     __tablename__ = "division"
 
     id: Mapped[int] = mapped_column(Integer, Identity(start=10), primary_key=True)
@@ -47,7 +46,6 @@ class PortfolioUrl(BaseModel):
 
 
 class SharedPortfolioCANs(BaseModel):
-    __versioned__ = {}
     __tablename__ = "shared_portfolio_cans"
 
     portfolio_id: Mapped[int] = mapped_column(
@@ -61,7 +59,6 @@ class SharedPortfolioCANs(BaseModel):
 
 
 class PortfolioTeamLeaders(BaseModel):
-    __versioned__ = {}
     __tablename__ = "portfolio_team_leaders"
 
     portfolio_id: Mapped[int] = mapped_column(

@@ -9,7 +9,6 @@ from typing_extensions import override
 
 
 class UserRole(BaseModel):
-    __versioned__ = {}
     __tablename__ = "user_role"
 
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
@@ -21,7 +20,6 @@ class UserRole(BaseModel):
 
 
 class UserGroup(BaseModel):
-    __versioned__ = {}
     __tablename__ = "user_group"
 
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
@@ -35,7 +33,6 @@ class UserGroup(BaseModel):
 class User(BaseModel):
     """Main User model."""
 
-    __versioned__ = {}
     __tablename__ = "user"
 
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
@@ -130,7 +127,6 @@ class User(BaseModel):
 class Role(BaseModel):
     """Main Role model."""
 
-    __versioned__ = {}
     __tablename__ = "role"
     id = Column(Integer, Identity(), primary_key=True)
     name = Column(String, index=True, nullable=False)
