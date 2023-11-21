@@ -1,6 +1,6 @@
 from models import Notification
 from models.base import BaseModel
-from models.cans import CAN, BudgetLineItem, CANFiscalYear, ContractAgreement, ProductServiceCode
+from models.cans import CAN, Agreement, BudgetLineItem, CANFiscalYear, ContractAgreement, ProductServiceCode
 from models.history import OpsDBHistory
 from models.portfolios import Division, Portfolio, PortfolioStatus
 from models.procurement_shops import ProcurementShop
@@ -39,8 +39,8 @@ from ops_api.ops.resources.research_type import ResearchTypeListAPI
 from ops_api.ops.resources.users import UsersItemAPI, UsersListAPI
 
 # AGREEMENT ENDPOINTS
-AGREEMENT_ITEM_API_VIEW_FUNC = AgreementItemAPI.as_view("agreements-item", BliPackage)
-AGREEMENT_LIST_API_VIEW_FUNC = AgreementListAPI.as_view("agreements-group", BliPackage)
+AGREEMENT_ITEM_API_VIEW_FUNC = AgreementItemAPI.as_view("agreements-item", Agreement)
+AGREEMENT_LIST_API_VIEW_FUNC = AgreementListAPI.as_view("agreements-group", Agreement)
 AGREEMENT_REASON_LIST_API_VIEW_FUNC = AgreementReasonListAPI.as_view("agreement-reason-list")
 # Agreement History Endpoint - specialized from OpsDBHistory
 AGREEMENT_HISTORY_LIST_API_VIEW_FUNC = AgreementHistoryListAPI.as_view("agreement-history-group", OpsDBHistory)
