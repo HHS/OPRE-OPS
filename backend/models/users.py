@@ -79,6 +79,8 @@ class User(BaseModel):
         "ResearchProject",
         back_populates="team_leaders",
         secondary="research_project_team_leaders",
+        primaryjoin="User.id == ResearchProjectTeamLeaders.team_lead_id",
+        secondaryjoin="ResearchProject.id == ResearchProjectTeamLeaders.research_project_id",
         viewonly=True,
     )
 

@@ -47,12 +47,18 @@ class ResearchProjectCANs(BaseModel):
         return f"research_project_id={self.research_project_id};can_id={self.can_id}"
 
 
-research_project_team_leaders = Table(
-    "research_project_team_leaders",
-    BaseModel.metadata,
-    Column("research_project_id", ForeignKey("research_project.id"), primary_key=True),
-    Column("team_lead_id", ForeignKey("user.id"), primary_key=True),
-)
+class ResearchProjectTeamLeaders(BaseModel):
+    __versioned__ = {}
+    __tablename__ = "research_project_team_leaders"
+
+    research_project_id: Mapped[int] = mapped_column(
+        ForeignKey("research_project.id"), primary_key=True
+    )
+    team_lead_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"research_project_id={self.research_project_id};team_lead_id={self.team_lead_id}"
 
 
 class ResearchProject(BaseModel):
@@ -73,7 +79,9 @@ class ResearchProject(BaseModel):
     team_leaders = relationship(
         "User",
         back_populates="research_projects",
-        secondary=research_project_team_leaders,
+        secondary="research_project_team_leaders",
+        primaryjoin="ResearchProject.id == ResearchProjectTeamLeaders.research_project_id",
+        secondaryjoin="User.id == ResearchProjectTeamLeaders.team_lead_id",
     )
 
     cans: Mapped[List["CAN"]] = relationship(
