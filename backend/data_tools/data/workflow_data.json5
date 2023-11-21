@@ -89,7 +89,7 @@
 
   package_snapshot: [
     {
-      package_id: 1,
+      _package_id: 1,
     },
   ],
 

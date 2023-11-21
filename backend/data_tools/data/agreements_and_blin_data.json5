@@ -113,7 +113,7 @@
       description: "Test description",
       product_service_code_id: 1,
       agreement_reason: "NEW_REQ",
-      project_officer_id: 18,
+      project_officer_id: 21,
       agreement_type: "CONTRACT",
       research_project_id: 13,
       procurement_shop_id: 4,
@@ -124,7 +124,7 @@
       description: "Test description",
       product_service_code_id: 1,
       agreement_reason: "NEW_REQ",
-      project_officer_id: 18,
+      project_officer_id: 21,
       agreement_type: "CONTRACT",
       research_project_id: 13,
       procurement_shop_id: 4,
@@ -489,6 +489,10 @@
     {
       agreement_id: 9,
       users_id: 12,
+    },
+    {
+      agreement_id: 1,
+      users_id: 22,
     }
   ]
 }
