@@ -3,7 +3,7 @@
 
 a. Screen individuals prior to authorizing access to the system; and
 
-b. Rescreen individuals in accordance with [anytime they move to a new position with a higher risk designation, and where rescreening is so indicated, rescreens in accordance with FIPS 199 and 201 and Executive Order 10450 (i.e., every three (3) years in conjunction with Personal Identity Verification (PIV) re-issuance)].
+b. Rescreen individuals in accordance with [anytime they move to a new position with a higher risk designation, and where rescreening is so indicated, rescreens in accordance with FIPS 199 and 201 and [Executive Order 10450](https://www.dni.gov/files/NCSC/documents/Regulations/EO_10450.pdf) (i.e., every three (3) years in conjunction with Personal Identity Verification (PIV) re-issuance)].
 
 c. Conducts background investigations in a manner commensurate with OPM and HHS Human Resources policy and guidance;
 

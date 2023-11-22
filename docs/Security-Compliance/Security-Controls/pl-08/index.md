@@ -11,7 +11,7 @@ b. Review and update the architectures [at least every three (3) years] to refle
 
 c. Reflect planned architecture changes in security and privacy plans, Concept of Operations (CONOPS), criticality analysis, organizational procedures, and procurements and acquisitions.
 
-d. Ensures that the planned information security architecture is consistent with the Department’s enterprise architecture program and is based on the taxonomy of the Federal Enterprise Architecture (FEA).
+d. Ensures that the planned information security architecture is consistent with the Department’s enterprise architecture program and is based on the taxonomy of the [Federal Enterprise Architecture (FEA)](https://www.whitehouse.gov/omb/management/ofcio/#B2).
 
 ## OPS Implementation
 
@@ -23,4 +23,4 @@ Hybrid with IaaS vendor and OPS. Inherited from ACF Tech (AMS)
 
 ### Related Content
 
-Consult The Common Approach to Federal Enterprise Architecture and other for FEA guidance.
+Consult [The Common Approach to Federal Enterprise Architecture](https://obamawhitehouse.archives.gov/sites/default/files/omb/assets/egov_docs/common_approach_to_federal_ea.pdf) and [other for FEA guidance](https://www.whitehouse.gov/omb/management/ofcio/#B2).

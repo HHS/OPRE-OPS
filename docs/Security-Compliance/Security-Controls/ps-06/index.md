@@ -11,7 +11,7 @@ c. Verify that individuals requiring access to organizational information and sy
 
 ## OPS Implementation
 
-TODO: seek inherited text on HHS RoB
+TODO: seek inherited text on [HHS RoB](https://www.hhs.gov/sites/default/files/rules-of-behavior.pdf)
 
 ### Control Origination
 

@@ -1,7 +1,7 @@
 # Personnel Security
 ## SR-12 - Component Disposal
 
-Dispose of [HHS/ACF data, documentation, tools, or system components] using the following techniques and methods: [in accordance with NIST 800-88].
+Dispose of [HHS/ACF data, documentation, tools, or system components] using the following techniques and methods: [in accordance with [NIST 800-88](https://www.nist.gov/privacy-framework/nist-sp-800-88)].
 
 ## OPS Implementation
 
