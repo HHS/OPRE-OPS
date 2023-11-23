@@ -101,6 +101,47 @@ class WorkflowStepInstance(BaseModel):
         cascade="all, delete-orphan"
     )
 
+
+class WorkflowStepDependency(BaseModel):
+    """ Association model to handle multiple dependencies between WorkflowStepInstances """
+    __tablename__ = "workflow_step_dependency"
+    predecessor_step_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_instance.id"), primary_key=True)
+    successor_step_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_instance.id"), primary_key=True)
+    predecessor_step = relationship(
+        "WorkflowStepInstance",
+        foreign_keys=[predecessor_step_id],
+        overlaps="predecessor_step_instance,successor_dependencies"
+    )
+    successor_step = relationship(
+        "WorkflowStepInstance",
+        foreign_keys=[successor_step_id],
+        back_populates="predecessor_dependencies"
+    )
+
+
+class StepApprovers(BaseModel):
+    """ Step Approvers model for WorkflowStepTemplates """
+    __tablename__ = "step_approvers"
+    id = sa.Column(sa.Integer, sa.Identity(always=True, start=1, cycle=True), primary_key=True)
+    workflow_step_template_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_template.id"))
+    user_id = sa.Column(sa.Integer, sa.ForeignKey("users.id"), nullable=True)
+    role_id = sa.Column(sa.Integer, sa.ForeignKey("roles.id"), nullable=True)
+    group_id = sa.Column(sa.Integer, sa.ForeignKey("groups.id"), nullable=True)
+
+
+class BliPackage(Package, package_type=PackageType.BLI):
+    """Budget Line Item Package
+    """
+    __tablename__ = "bli_package"
+    __versioned__ = {}
+    id = sa.Column(sa.Integer, sa.ForeignKey("package.id"), primary_key=True)
+    bli_package_snapshots = relationship("BliPackageSnapshot", backref="bli_package")
+
+    __mapper_args__ = {
+        "polymorphic_identity": PackageType.BLI,
+    }
+
+
 class Package(BaseModel):
     """Base package, used for sending groups of things around in a workflow
     """
@@ -171,18 +212,6 @@ class Package(BaseModel):
         )
         return d
 
-class BliPackage(Package, package_type=PackageType.BLI):
-    """Budget Line Item Package
-    """
-    __tablename__ = "bli_package"
-    __versioned__ = {}
-    id = sa.Column(sa.Integer, sa.ForeignKey("package.id"), primary_key=True)
-    bli_package_snapshots = relationship("BliPackageSnapshot", backref="bli_package")
-
-    __mapper_args__ = {
-        "polymorphic_identity": PackageType.BLI,
-    }
-
 
 class PackageSnapshot(BaseModel):
     __tablename__ = "package_snapshot"
@@ -210,30 +239,3 @@ class BliPackageSnapshot(PackageSnapshot):
     overlaps = "package,package_snapshots"
     id = sa.Column(sa.Integer, sa.ForeignKey("package_snapshot.id"), primary_key=True)
     bli_id = sa.Column(sa.Integer, sa.ForeignKey("budget_line_item.id"), nullable=False)
-
-
-class WorkflowStepDependency(BaseModel):
-    """ Association model to handle multiple dependencies between WorkflowStepInstances """
-    __tablename__ = "workflow_step_dependency"
-    predecessor_step_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_instance.id"), primary_key=True)
-    successor_step_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_instance.id"), primary_key=True)
-    predecessor_step = relationship(
-        "WorkflowStepInstance",
-        foreign_keys=[predecessor_step_id],
-        overlaps="predecessor_step_instance,successor_dependencies"
-    )
-    successor_step = relationship(
-        "WorkflowStepInstance",
-        foreign_keys=[successor_step_id],
-        back_populates="predecessor_dependencies"
-    )
-
-
-class StepApprovers(BaseModel):
-    """ Step Approvers model for WorkflowStepTemplates """
-    __tablename__ = "step_approvers"
-    id = sa.Column(sa.Integer, sa.Identity(always=True, start=1, cycle=True), primary_key=True)
-    workflow_step_template_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_template.id"))
-    user_id = sa.Column(sa.Integer, sa.ForeignKey("users.id"), nullable=True)
-    role_id = sa.Column(sa.Integer, sa.ForeignKey("roles.id"), nullable=True)
-    group_id = sa.Column(sa.Integer, sa.ForeignKey("groups.id"), nullable=True)
