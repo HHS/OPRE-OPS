@@ -1,4 +1,5 @@
 # This pulls in the global context.
 module "ctx" {
-  source = "../../../global/context"
+    source = "../../../global/context"
+    environment = var.environment
 }
