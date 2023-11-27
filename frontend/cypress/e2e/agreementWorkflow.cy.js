@@ -83,9 +83,12 @@ it("agreement for approval", () => {
         .then(({ agreementId, bliId }) => {
             cy.visit("/agreements?filter=for-approval");
             cy.get(":nth-child(1) > .margin-0").should("have.text", "For Approval");
-            cy.get("tbody")
-                .children()
-                .should("have.length.at.least", 1)
+            cy.get("tbody").children().should("have.length.at.least", 1);
+            cy.get("tbody tr").first().trigger("mouseover");
+            cy.get("[data-cy='go-to-approve-row']").first().should("exist");
+            cy.get("[data-cy='go-to-approve-row']")
+                .first()
+                .should("not.be.disabled")
                 .then(() => {
                     return { agreementId, bliId };
                 });
@@ -116,9 +119,9 @@ it("agreement for approval", () => {
             }).then((response) => {
                 expect(response.status).to.eq(200);
             });
-        })
-        .then(({ agreementId, bliId }) => {
-            cy.visit("/agreements?filter=for-approval");
-            cy.get(":nth-child(1) > .margin-0").should("have.text", "For Approval");
         });
+    // .then(({ agreementId, bliId }) => {
+    //     cy.visit("/agreements?filter=for-approval");
+    //     cy.get(":nth-child(1) > .margin-0").should("have.text", "For Approval");
+    // });
 });
