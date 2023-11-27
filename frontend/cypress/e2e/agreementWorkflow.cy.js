@@ -45,9 +45,6 @@ beforeEach(() => {
 it("agreement for approval", () => {
     expect(localStorage.getItem("access_token")).to.exist;
 
-    let testAgreementId;
-    let testBliId;
-
     // create test agreement
     const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
     cy.request({
@@ -64,12 +61,10 @@ it("agreement for approval", () => {
             expect(response.status).to.eq(201);
             expect(response.body.id).to.exist;
             const agreementId = response.body.id;
-            testAgreementId = agreementId;
             return agreementId;
         })
         .then((agreementId) => {
             const bliData = { ...testBli, agreement_id: agreementId };
-            expect(agreementId).to.eq(testAgreementId);
             cy.request({
                 method: "POST",
                 url: "http://localhost:8080/api/v1/budget-line-items/",
@@ -82,50 +77,23 @@ it("agreement for approval", () => {
                 expect(response.status).to.eq(201);
                 expect(response.body.id).to.exist;
                 const bliId = response.body.id;
-                testBliId = bliId;
-                return bliId;
-            });
-            // .then((bliId) => {
-            //     cy.request({
-            //         method: "PATCH",
-            //         url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
-            //         body: { status: "UNDER_REVIEW" },
-            //         headers: {
-            //             Authorization: bearer_token,
-            //             Accept: "application/json"
-            //         }
-            //     }).then((response) => {
-            //         expect(response.status).to.eq(200);
-            //         return agreementId;
-            //     });
-            // });
-        })
-        .then((agreementId) => {
-            // const bliData = { ...testBli, agreement_id: agreementId };
-            // cy.request({
-            //     method: "PATCH",
-            //     url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
-            //     body: { status: "UNDER_REVIEW" },
-            //     headers: {
-            //         Authorization: bearer_token,
-            //         Accept: "application/json"
-            //     }
-            // }).then((response) => {
-            //     expect(response.status).to.eq(200);
-            //     return agreementId;
-            // });
-        })
-        .then((agreementId) => {
-            cy.visit("/agreements?filter=for-approval").then((response) => {
-                // TODO: more tests here
-                return agreementId;
+                return { agreementId, bliId };
             });
         })
-        .then((agreementId) => {
-            expect(testBliId).to.exist;
+        .then(({ agreementId, bliId }) => {
+            cy.visit("/agreements?filter=for-approval");
+            cy.get(":nth-child(1) > .margin-0").should("have.text", "For Approval");
+            cy.get("tbody")
+                .children()
+                .should("have.length.at.least", 1)
+                .then(() => {
+                    return { agreementId, bliId };
+                });
+        })
+        .then(({ agreementId, bliId }) => {
             cy.request({
                 method: "PATCH",
-                url: `http://localhost:8080/api/v1/budget-line-items/${testBliId}`,
+                url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
                 body: { status: "DRAFT" },
                 headers: {
                     Authorization: bearer_token,
@@ -148,24 +116,9 @@ it("agreement for approval", () => {
             }).then((response) => {
                 expect(response.status).to.eq(200);
             });
+        })
+        .then(({ agreementId, bliId }) => {
+            cy.visit("/agreements?filter=for-approval");
+            cy.get(":nth-child(1) > .margin-0").should("have.text", "For Approval");
         });
-
-    // cy.request({
-    //     method: "DELETE",
-    //     url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-    //     headers: {
-    //         Authorization: bearer_token,
-    //         Accept: "application/json"
-    //     }
-    // }).then((response) => {
-    //     expect(response.status).to.eq(200);
-    // });
-    //
-    // cy.request("GET", myUrl)
-    //     .its("body")
-    //     .then((res) => cy.request("GET", res).its("body"))
-    //     .then((subRes) => cy.request("GET", subRes).its("body"))
-    //     .then((subSubRes) => {
-    //         expect(subSubRes, myMessage).to.eq(myEvaluation);
-    //     });
 });
