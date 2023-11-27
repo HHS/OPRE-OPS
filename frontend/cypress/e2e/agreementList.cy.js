@@ -144,7 +144,7 @@ it("clicking the add agreement button takes you to the create agreement page", (
     cy.url().should("include", "/agreements/create");
 });
 
-it("For Approval tab works as ", () => {
+it("For Approval tab works using filter=for-approval", () => {
     const testAgreement = {
         agreement_type: "CONTRACT",
         agreement_reason: "NEW_REQ",

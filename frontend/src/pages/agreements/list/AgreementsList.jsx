@@ -165,7 +165,7 @@ export const AgreementsList = () => {
         });
         sortedAgreements = sortAgreements(myAgreements);
     } else if (forApprovalUrl) {
-        // TODO: Use new workflow to filter For Approval - this is just my agreements what are UNDER_REVIEW for now
+        // TODO: Use new workflow to filter For Approval - this is just my agreements that are UNDER_REVIEW for now
         const myAgreements = filteredAgreements.filter((agreement) => {
             return agreement.team_members?.some((teamMember) => {
                 return teamMember.id === activeUser.id || agreement.project_officer_id === activeUser.id;
@@ -202,6 +202,7 @@ export const AgreementsList = () => {
                     <AgreementsFilterTags
                         filters={filters}
                         setFilters={setFilters}
+                        for
                     />
                 }
                 FilterButton={
