@@ -1,10 +1,11 @@
 from enum import Enum
+from typing import List
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 from models.base import BaseModel
 from sqlalchemy import Column, Date, ForeignKey, Identity, Integer, String, Table, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing_extensions import override
 
 
@@ -32,19 +33,30 @@ class ResearchType(Enum):
     PROGRAM_SUPPORT = 3
 
 
-research_project_cans = Table(
-    "research_project_cans",
-    BaseModel.metadata,
-    Column("research_project_id", ForeignKey("research_project.id"), primary_key=True),
-    Column("can_id", ForeignKey("can.id"), primary_key=True),
-)
+class ResearchProjectCANs(BaseModel):
+    __tablename__ = "research_project_cans"
 
-research_project_team_leaders = Table(
-    "research_project_team_leaders",
-    BaseModel.metadata,
-    Column("research_project_id", ForeignKey("research_project.id"), primary_key=True),
-    Column("team_lead_id", ForeignKey("users.id"), primary_key=True),
-)
+    research_project_id: Mapped[int] = mapped_column(
+        ForeignKey("research_project.id"), primary_key=True
+    )
+    can_id: Mapped[int] = mapped_column(ForeignKey("can.id"), primary_key=True)
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"research_project_id={self.research_project_id};can_id={self.can_id}"
+
+
+class ResearchProjectTeamLeaders(BaseModel):
+    __tablename__ = "research_project_team_leaders"
+
+    research_project_id: Mapped[int] = mapped_column(
+        ForeignKey("research_project.id"), primary_key=True
+    )
+    team_lead_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"research_project_id={self.research_project_id};team_lead_id={self.team_lead_id}"
 
 
 class ResearchProject(BaseModel):
@@ -65,7 +77,13 @@ class ResearchProject(BaseModel):
     team_leaders = relationship(
         "User",
         back_populates="research_projects",
-        secondary=research_project_team_leaders,
+        secondary="research_project_team_leaders",
+        primaryjoin="ResearchProject.id == ResearchProjectTeamLeaders.research_project_id",
+        secondaryjoin="User.id == ResearchProjectTeamLeaders.team_lead_id",
+    )
+
+    cans: Mapped[List["CAN"]] = relationship(
+        "CAN", secondary="research_project_cans", back_populates="research_projects"
     )
 
     @BaseModel.display_name.getter

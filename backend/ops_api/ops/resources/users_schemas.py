@@ -6,7 +6,6 @@ from typing import Optional
 from uuid import UUID
 
 # from marshmallow import validates_schema
-from models.users import Role
 
 ENDPOINT_STRING = "/users"
 
@@ -38,6 +37,11 @@ class QueryParameters:
 
 
 @dataclass
+class RoleResponse:
+    name: str
+
+
+@dataclass(kw_only=True)
 class UserResponse:
     id: int
     oidc_id: UUID
@@ -47,7 +51,7 @@ class UserResponse:
     last_name: str
     full_name: str
     division: int
-    roles: list[Role.name]
+    roles: list[RoleResponse] = field(default_factory=lambda: [])
     date_joined: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})

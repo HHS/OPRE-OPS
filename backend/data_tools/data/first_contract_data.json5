@@ -1,0 +1,77 @@
+{
+  procurement_shop: [
+    {
+      id: 1,
+      name: "Product Service Center",
+      abbr: "PSC",
+      fee: 0,
+    },
+    {
+      id: 2,
+      name: "Government Contracting Services",
+      abbr: "GCS",
+      fee: 0,
+    },
+    {
+      id: 3,
+      name: "National Institute of Health",
+      abbr: "NIH",
+      fee: 0.005,
+    },
+    {
+      id: 4,
+      name: "Interior Business Center",
+      abbr: "IBC",
+      fee: 0.048,
+    },
+  ],
+  product_service_code: [
+    {
+      id: 1,
+      name: "Other Scientific and Technical Consulting Services",
+      naics: 541690,
+      support_code: "R410 - Research",
+      description: "",
+    },
+    {
+      id: 2,
+      name: "Convention and Trade Shows",
+      naics: 561920,
+      support_code: "R706 - Support",
+      description: "",
+    },
+  ],
+  contract_agreement: [
+    {
+      name: "Contract #1: African American Child and Family Research Center",
+      description: "Test description",
+      product_service_code_id: 1,
+      agreement_reason: "NEW_REQ",
+      project_officer_id: 1,
+      agreement_type: "CONTRACT",
+      research_project_id: 1,
+      procurement_shop_id: 1,
+      created_by: 4,
+      contract_number: "XXXX000000001",
+      incumbent_id: null,
+      vendor_id: 1,
+      delivered_status: false,
+      contract_type: "RESEARCH",
+      support_contacts: [],
+      team_members: [
+        {
+          "tablename": "user",
+          "id": 1,
+        },
+        {
+          "tablename": "user",
+          "id": 4,
+        },
+        {
+          "tablename": "user",
+          "id": 21,
+        }
+      ],
+    },
+  ]
+}

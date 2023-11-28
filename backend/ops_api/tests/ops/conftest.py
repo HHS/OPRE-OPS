@@ -97,25 +97,24 @@ def docker_compose_command() -> str:
     return "docker compose"
 
 
-# @pytest.fixture(scope="session")
-# def docker_compose_file(pytestconfig):
-#     compose_file = os.path.join(str(pytestconfig.rootdir),"../../", "docker-compose.yml")
-#     print(f"docker-compose-path: {compose_file}")
-#     return compose_file
-
-
 @pytest.fixture()
 def loaded_db(app: Flask, app_ctx: None):
     """Get SQLAlchemy Session."""
-    yield app.db_session
+
+    session = app.db_session
+
+    yield session
+
     # cleanup
-    app.db_session.rollback()
+    session.rollback()
+
     stmt = delete(OpsDBHistory)
-    app.db_session.execute(stmt)
+    session.execute(stmt)
     stmt = delete(OpsEvent)
-    app.db_session.execute(stmt)
-    app.db_session.commit()
-    app.db_session.close()
+    session.execute(stmt)
+
+    session.commit()
+    session.close()
 
 
 @pytest.fixture()
