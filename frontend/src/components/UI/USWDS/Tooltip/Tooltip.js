@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef } from "react"
+import React, {useLayoutEffect, useRef} from "react"
 import tooltip from "@uswds/uswds/js/usa-tooltip"
 import PropTypes from "prop-types";
 import Accordion from "../../Accordion";
@@ -14,21 +14,20 @@ import Accordion from "../../Accordion";
  * @constructor
  */
 
-export const Tooltip = ({ label, position = "top", children, className }) => {
-  const tooltipRef = useRef(null)
-  useLayoutEffect(() => {
-    const tooltipElement = tooltipRef.current?.firstChild
-    if (tooltipElement) {
-      tooltipElement.classList.add("usa-tooltip")
-      tooltipElement.title = label
-      tooltipElement.setAttribute("data-position", position)
-      tooltip.on(tooltipElement)
-    }
-    else {
-        console.log("No tooltip element!")
-    }
-    return () => tooltip.off(tooltipElement)
-  })
+export const Tooltip = ({label, position = "top", children, className}) => {
+    const tooltipRef = useRef(null)
+    useLayoutEffect(() => {
+        const tooltipElement = tooltipRef.current?.firstChild
+        if (tooltipElement) {
+            tooltipElement.classList.add("usa-tooltip")
+            tooltipElement.title = label
+            tooltipElement.setAttribute("data-position", position)
+            tooltip.on(tooltipElement)
+        } else {
+            console.log("No tooltip element!")
+        }
+        return () => tooltip.off(tooltipElement)
+    })
     return <span ref={tooltipRef} className={className}>{children}</span>
 }
 
