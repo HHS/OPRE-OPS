@@ -60,7 +60,7 @@ const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () =>
                             id={`duplicate-${rowId}`}
                             data-cy="duplicate-row"
                             icon={faClone}
-                            className="text-primary height-2 width-2 cursor-pointer usa-tooltip margin-left-0"
+                            className="text-primary height-2 width-2 cursor-pointer margin-left-0"
                             onClick={handleDuplicateItem}
                         />
                     </button>

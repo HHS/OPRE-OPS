@@ -37,7 +37,7 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList }) => {
                 onClick={() => (showModal ? setShowModal(false) : setShowModal(true))}
             >
                 <svg
-                    className="height-2 width-2 margin-right-05 hover: cursor-pointer usa-tooltip"
+                    className="height-2 width-2 margin-right-05 hover: cursor-pointer"
                     style={!showModal ? { fill: "#005EA2" } : { fill: "white" }}
                 >
                     <use xlinkHref={`${icons}#filter_list`}></use>
@@ -56,7 +56,7 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList }) => {
                         <h1 className="text-bold font-sans-lg margin-bottom-205 margin-top-205">Filters</h1>
                         <div className="margin-top-205 margin-right-205 padding-08">
                             <svg
-                                className="usa-icon text-ink height-205 width-205 hover: cursor-pointer usa-tooltip"
+                                className="usa-icon text-ink height-205 width-205 cursor-pointer"
                                 onClick={() => setShowModal(false)}
                                 id="filter-close"
                             >
