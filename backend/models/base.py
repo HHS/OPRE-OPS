@@ -91,12 +91,22 @@ make_versioned(user_cls=None)
 
 
 class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc, valid-type]
+    __versioned__ = {}
     __abstract__ = True
     __repr__ = ReprMixin.__repr__
 
+    @classmethod
+    def model_lookup_by_table_name(cls, table_name):
+        registry_instance = getattr(cls, "registry")
+        for mapper_ in registry_instance.mappers:
+            model = mapper_.class_
+            model_class_name = model.__table__.name
+            if model_class_name == table_name:
+                return model
+
     @declared_attr
     def created_by(cls):
-        return Column("created_by", ForeignKey("users.id"))
+        return Column("created_by", ForeignKey("user.id"))
 
     @declared_attr
     def created_by_user(cls):
