@@ -1,58 +1,5 @@
 {
-  procurement_shop: [
-    {
-      id: 1,
-      name: "Product Service Center",
-      abbr: "PSC",
-      fee: 0,
-    },
-    {
-      id: 2,
-      name: "Government Contracting Services",
-      abbr: "GCS",
-      fee: 0,
-    },
-    {
-      id: 3,
-      name: "National Institute of Health",
-      abbr: "NIH",
-      fee: 0.005,
-    },
-    {
-      id: 4,
-      name: "Interior Business Center",
-      abbr: "IBC",
-      fee: 0.048,
-    },
-  ],
-  product_service_code: [
-    {
-      id: 1,
-      name: "Other Scientific and Technical Consulting Services",
-      naics: 541690,
-      support_code: "R410 - Research",
-      description: "",
-    },
-    {
-      id: 2,
-      name: "Convention and Trade Shows",
-      naics: 561920,
-      support_code: "R706 - Support",
-      description: "",
-    },
-  ],
-  agreement: [
-    {
-      name: "Contract #1: African American Child and Family Research Center",
-      description: "Test description",
-      product_service_code_id: 1,
-      agreement_reason: "NEW_REQ",
-      project_officer_id: 1,
-      agreement_type: "CONTRACT",
-      research_project_id: 1,
-      procurement_shop_id: 1,
-      created_by: 4,
-    },
+  direct_agreement: [
     {
       name: "DIRECT ALLOCATION #2: African American Child and Family Research Center",
       description: "Test description",
@@ -63,7 +10,24 @@
       research_project_id: 1,
       procurement_shop_id: 3,
       created_by: 4,
+      payee: "The Foundation of People Who Get Paid",
+      team_members: [
+        {
+          "tablename": "user",
+          "id": 1,
+        },
+        {
+          "tablename": "user",
+          "id": 4
+        },
+        {
+          "tablename": "user",
+          "id": 21,
+        }
+      ]
     },
+  ],
+  grant_agreement: [
     {
       name: "Grant #1: Early Care and Education Leadership Study (ExCELS)",
       description: "Test description",
@@ -74,7 +38,10 @@
       research_project_id: 2,
       procurement_shop_id: 3,
       created_by: 4,
+      foa: "This is an FOA value",
     },
+  ],
+  iaa_agreement: [
     {
       name: "IAA #1: Early Care and Education Leadership Study (ExCELS)",
       description: "Test description",
@@ -85,7 +52,10 @@
       research_project_id: 2,
       procurement_shop_id: 3,
       created_by: 4,
+      iaa: "This is an IAA value",
     },
+  ],
+  iaa_aa_agreement: [
     {
       name: "IAA-AA #1: Fathers and Continuous Learning (FCL)",
       description: "Test description",
@@ -96,7 +66,10 @@
       research_project_id: 3,
       procurement_shop_id: 3,
       created_by: 4,
+      iaa_aa: "This is an IAA-AA value",
     },
+  ],
+  contract_agreement: [
     {
       name: "CONTRACT #2: Fathers and Continuous Learning (FCL)",
       description: "Test description",
@@ -107,6 +80,12 @@
       research_project_id: 3,
       procurement_shop_id: 4,
       created_by: 4,
+      contract_number: "XXXX000000006",
+      incumbent_id: null,
+      vendor_id: 1,
+      delivered_status: false,
+      contract_type: "RESEARCH",
+      support_contacts: [],
     },
     {
       name: "MIHOPE Check-In",
@@ -118,6 +97,12 @@
       research_project_id: 13,
       procurement_shop_id: 4,
       created_by: 4,
+      contract_number: "XXXX000000007",
+      incumbent_id: null,
+      vendor_id: 2,
+      delivered_status: false,
+      contract_type: "RESEARCH",
+      support_contacts: [],
     },
     {
       name: "MIHOPE Long-Term",
@@ -129,6 +114,12 @@
       research_project_id: 13,
       procurement_shop_id: 4,
       created_by: 4,
+      contract_number: "XXXX000000008",
+      incumbent_id: null,
+      vendor_id: 2,
+      delivered_status: false,
+      contract_type: "RESEARCH",
+      support_contacts: [],
     },
     {
       name: "Interoperability Initiatives",
@@ -140,77 +131,22 @@
       research_project_id: 3,
       procurement_shop_id: 3,
       created_by: 4,
-    },
-  ],
-  contract_agreement: [
-    {
-      id: 1,
-      contract_number: "XXXX000000001",
-      incumbent_id: null,
-      vendor_id: 1,
-      delivered_status: false,
-      contract_type: "RESEARCH",
-      support_contacts: [],
-    },
-    {
-      id: 6,
-      contract_number: "XXXX000000006",
-      incumbent_id: null,
-      vendor_id: 1,
-      delivered_status: false,
-      contract_type: "RESEARCH",
-      support_contacts: [],
-    },
-    {
-      id: 7,
-      contract_number: "XXXX000000007",
-      incumbent_id: null,
-      vendor_id: 2,
-      delivered_status: false,
-      contract_type: "RESEARCH",
-      support_contacts: [],
-    },
-    {
-      id: 8,
-      contract_number: "XXXX000000008",
-      incumbent_id: null,
-      vendor_id: 2,
-      delivered_status: false,
-      contract_type: "RESEARCH",
-      support_contacts: [],
-    },
-    {
-      id: 9,
       contract_number: "XXXX000000009",
       incumbent_id: null,
       vendor_id: 3,
       delivered_status: false,
       contract_type: "RESEARCH",
       support_contacts: [],
-    },
-  ],
-  direct_agreement: [
-    {
-      id: 2,
-      payee: "The Foundation of People Who Get Paid",
-    },
-  ],
-  grant_agreement: [
-    {
-      id: 3,
-      foa: "This is an FOA value",
-    },
-  ],
-  iaa_agreement: [
-    {
-      id: 4,
-      iaa: "This is an IAA value",
-    },
-  ],
-  iaa_aa_agreement: [
-    {
-      id: 5,
-      iaa_aa: "This is an IAA-AA value",
+      team_members: [
+        {
+          "tablename": "user",
+          "id": 12,
+        },
+        {
+          "tablename": "user",
+          "id": 21,
+        }
+      ]
     },
   ],
   budget_line_item: [
@@ -309,7 +245,6 @@
       comments: "",
       can_id: 4,
       agreement_id: 2,
-      can_fiscal_year_can_id: 4,
       amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
@@ -435,39 +370,5 @@
       date_needed: "2044-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
     },
-  ],
-  agreement_team_members: [
-    {
-      agreement_id: 1,
-      users_id: 1,
-    },
-    {
-      agreement_id: 2,
-      users_id: 1,
-    },
-    {
-      agreement_id: 1,
-      users_id: 4,
-    },
-    {
-      agreement_id: 2,
-      users_id: 4,
-    },
-    {
-      agreement_id: 1,
-      users_id: 21,
-    },
-    {
-      agreement_id: 2,
-      users_id: 21,
-    },
-    {
-      agreement_id: 9,
-      users_id: 21,
-    },
-    {
-      agreement_id: 9,
-      users_id: 12,
-    }
   ]
 }

@@ -28,42 +28,46 @@
       "name": "Vendor 1",
       "duns": "123456789",
       "active": true,
+      "contacts": [
+        {
+          "tablename": "contact",
+          "id": 1
+        },
+        {
+          "tablename": "contact",
+          "id": 2
+        }
+      ]
     },
     {
       "name": "Vendor 2",
       "duns": "987654321",
       "active": true,
+      "contacts": [
+        {
+          "tablename": "contact",
+          "id": 1
+        },
+        {
+          "tablename": "contact",
+          "id": 2
+        }
+      ]
     },
     {
       "name": "Vendor 3",
       "duns": "123456780",
       "active": false,
+      "contacts": [
+        {
+          "tablename": "contact",
+          "id": 1
+        },
+        {
+          "tablename": "contact",
+          "id": 2
+        }
+      ]
     }
   ],
-  vendor_contacts: [
-    {
-      "vendor_id": 1,
-      "contact_id": 1
-    },
-    {
-      "vendor_id": 1,
-      "contact_id": 2
-    },
-    {
-      "vendor_id": 2,
-      "contact_id": 1
-    },
-    {
-      "vendor_id": 2,
-      "contact_id": 2
-    },
-    {
-      "vendor_id": 3,
-      "contact_id": 1
-    },
-    {
-      "vendor_id": 3,
-      "contact_id": 2
-    }
-  ]
 }

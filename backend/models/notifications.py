@@ -13,7 +13,7 @@ class Notification(BaseModel):
     is_read = Column(Boolean, default=False)
     expires = Column(Date)
 
-    recipient_id = Column(Integer, ForeignKey("users.id"))
+    recipient_id = Column(Integer, ForeignKey("user.id"))
     recipient = relationship(
         "User", back_populates="notifications", foreign_keys=[recipient_id]
     )
