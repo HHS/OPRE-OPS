@@ -1,5 +1,6 @@
 import { render, fireEvent } from "@testing-library/react";
 import ProjectSelectWithSummaryCard from "./ProjectSelectWithSummaryCard";
+import { vi } from "vitest";
 
 describe("ProjectSelect", () => {
     const researchProjects = [
@@ -7,10 +8,10 @@ describe("ProjectSelect", () => {
         { id: 2, title: "Project 2", description: "Description 2" },
         { id: 3, title: "Project 3", description: "Description 3" }
     ];
-    const mockClearFunction = jest.fn();
+    const mockClearFunction = vi.fn();
 
     it("updates the selected project when an option is selected and displays summary card", () => {
-        const setSelectedProject = jest.fn();
+        const setSelectedProject = vi.fn();
         const { getByText, container } = render(
             <ProjectSelectWithSummaryCard
                 researchProjects={researchProjects}

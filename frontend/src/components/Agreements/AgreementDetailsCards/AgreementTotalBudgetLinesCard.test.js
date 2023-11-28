@@ -1,15 +1,16 @@
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import AgreementTotalBudgetLinesCard from "./AgreementTotalBudgetLinesCard";
+import { vi } from "vitest";
 
-jest.mock("react", () => ({
+vi.mock("react", () => ({
     ...jest.requireActual("react"),
-    useState: () => [null, jest.fn()]
+    useState: () => [null, vi.fn()]
 }));
 
 // This will reset all mocks after each test
 afterEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
 });
 
 describe("AgreementTotalBudgetLinesCard", () => {

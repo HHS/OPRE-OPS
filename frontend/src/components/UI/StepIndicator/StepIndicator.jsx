@@ -35,9 +35,7 @@ export const StepIndicator = ({ steps, currentStep }) => {
 };
 
 StepIndicator.propTypes = {
-    /** List of strings that will be displayed on each step */
     steps: PropTypes.arrayOf(PropTypes.string).isRequired,
-    /** Indicates the active (highlighted) step */
     currentStep: PropTypes.number.isRequired
 };
 

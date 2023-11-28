@@ -1,17 +1,18 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import DesiredAwardDate from "./DesiredAwardDate";
+import { vi } from "vitest";
 
 describe("DesiredAwardDate", () => {
     let mockSetEnteredMonth, mockSetEnteredDay, mockSetEnteredYear, mockRunValidate, mockRes;
 
     beforeEach(() => {
-        mockSetEnteredMonth = jest.fn();
-        mockSetEnteredDay = jest.fn();
-        mockSetEnteredYear = jest.fn();
-        mockRunValidate = jest.fn();
+        mockSetEnteredMonth = vi.fn();
+        mockSetEnteredDay = vi.fn();
+        mockSetEnteredYear = vi.fn();
+        mockRunValidate = vi.fn();
         mockRes = {
-            getErrorsByGroup: jest.fn().mockReturnValue([]),
-            getErrors: jest.fn()
+            getErrorsByGroup: vi.fn().mockReturnValue([]),
+            getErrors: vi.fn()
         };
     });
 

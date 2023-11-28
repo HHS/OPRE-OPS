@@ -2,9 +2,10 @@ import store from "../../../store";
 import { Provider } from "react-redux";
 import { render } from "@testing-library/react";
 import CANFundingBar from "./CANFundingBar";
+import { vi } from "vitest";
 
 it("renders without crashing", () => {
-    const setActiveId = jest.fn();
+    const setActiveId = vi.fn();
 
     const data = [
         {

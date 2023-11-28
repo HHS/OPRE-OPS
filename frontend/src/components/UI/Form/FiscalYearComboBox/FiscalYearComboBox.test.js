@@ -1,8 +1,9 @@
 import { render, fireEvent, screen } from "@testing-library/react";
 import FiscalYearComboBox from "./FiscalYearComboBox";
+import { vi } from "vitest";
 
 describe("FiscalYearComboBox", () => {
-    const mockSetSelectedFiscalYears = jest.fn();
+    const mockSetSelectedFiscalYears = vi.fn();
 
     it("renders the component with the correct label", () => {
         render(
@@ -46,7 +47,7 @@ describe("FiscalYearComboBox", () => {
     });
 
     it("updates the selected item when multiple options are selected", () => {
-        const setSelectedFiscalYears = jest.fn();
+        const setSelectedFiscalYears = vi.fn();
         const { getByText, container } = render(
             <FiscalYearComboBox
                 selectedFiscalYears={null}

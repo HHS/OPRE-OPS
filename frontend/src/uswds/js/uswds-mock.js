@@ -1,8 +1,10 @@
+import { vi } from "vitest";
+
 const mockTooltip = {
-    on: jest.fn(),
-    off: jest.fn(),
+    on: vi.fn(),
+    off: vi.fn()
 };
 
 export default {
-  tooltip: mockTooltip,
+    tooltip: mockTooltip
 };

@@ -1,5 +1,6 @@
 import { render, fireEvent, screen } from "@testing-library/react";
 import ProjectComboBox from "./ProjectComboBox";
+import { vi } from "vitest";
 
 describe("ProjectReactSelect", () => {
     const researchProjects = [
@@ -7,8 +8,8 @@ describe("ProjectReactSelect", () => {
         { id: 2, title: "Project 2", description: "Description 2" },
         { id: 3, title: "Project 3", description: "Description 3" }
     ];
-    const mockSetSelectedProject = jest.fn();
-    const mockClearFunction = jest.fn();
+    const mockSetSelectedProject = vi.fn();
+    const mockClearFunction = vi.fn();
 
     it("renders the component with the correct label", () => {
         render(
@@ -36,7 +37,7 @@ describe("ProjectReactSelect", () => {
     });
 
     it("updates the selected project when an option is selected", () => {
-        const setSelectedProject = jest.fn();
+        const setSelectedProject = vi.fn();
         const { getByText, container } = render(
             <ProjectComboBox
                 researchProjects={researchProjects}
