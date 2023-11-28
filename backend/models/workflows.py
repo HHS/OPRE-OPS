@@ -129,19 +129,6 @@ class StepApprovers(BaseModel):
     group_id = sa.Column(sa.Integer, sa.ForeignKey("groups.id"), nullable=True)
 
 
-class BliPackage(Package, package_type=PackageType.BLI):
-    """Budget Line Item Package
-    """
-    __tablename__ = "bli_package"
-    __versioned__ = {}
-    id = sa.Column(sa.Integer, sa.ForeignKey("package.id"), primary_key=True)
-    bli_package_snapshots = relationship("BliPackageSnapshot", backref="bli_package")
-
-    __mapper_args__ = {
-        "polymorphic_identity": PackageType.BLI,
-    }
-
-
 class Package(BaseModel):
     """Base package, used for sending groups of things around in a workflow
     """
@@ -211,6 +198,19 @@ class Package(BaseModel):
             package_type=self.package_type.name if self.package_type else None,
         )
         return d
+
+
+class BliPackage(Package, package_type=PackageType.BLI):
+    """Budget Line Item Package
+    """
+    __tablename__ = "bli_package"
+    __versioned__ = {}
+    id = sa.Column(sa.Integer, sa.ForeignKey("package.id"), primary_key=True)
+    bli_package_snapshots = relationship("BliPackageSnapshot", backref="bli_package")
+
+    __mapper_args__ = {
+        "polymorphic_identity": PackageType.BLI,
+    }
 
 
 class PackageSnapshot(BaseModel):
