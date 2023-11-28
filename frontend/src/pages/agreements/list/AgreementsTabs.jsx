@@ -21,6 +21,10 @@ export const AgreementTabs = () => {
         {
             name: "?filter=my-agreements",
             label: "My Agreements"
+        },
+        {
+            name: "?filter=for-approval",
+            label: "For Approval"
         }
     ];
 

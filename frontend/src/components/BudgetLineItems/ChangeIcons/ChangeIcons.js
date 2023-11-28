@@ -19,6 +19,8 @@ import { Tooltip } from "../../UI/USWDS/Tooltip";
  * @param {boolean} [props.duplicateIcon] - Whether to show the duplicate icon.
  * @param {boolean} [props.sendToReviewIcon] - Whether to show the send to review icon.
  * @param {function} [props.handleSubmitItemForApproval] - The function to submit the item for approval.
+ * @param {boolean} [props.goToApproveIcon] - Whether to show the go-to-approve icon.
+ * @param {function} [props.handleGoToApprove] - The function to navigate to approve the item
  * @returns {React.JSX.Element} - The rendered component.
  **/
 
@@ -31,7 +33,9 @@ const ChangeIcons = ({
     handleDuplicateItem = () => {},
     duplicateIcon = true,
     sendToReviewIcon = false,
-    handleSubmitItemForApproval = () => {}
+    handleSubmitItemForApproval = () => {},
+    goToApproveIcon = false,
+    handleGoToApprove = () => {}
 }) => {
     if (!isItemEditable) {
         return (
@@ -113,6 +117,16 @@ const ChangeIcons = ({
                             </svg>
                         </button>
                     </Tooltip>
+                )}
+                {goToApproveIcon && (
+                    <svg
+                        id={`submit-for-approval-${item.id}`}
+                        data-cy="go-to-approve-row"
+                        className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0"
+                        onClick={() => handleGoToApprove(item.id)}
+                    >
+                        <use xlinkHref={`${icons}#check_circle`}></use>
+                    </svg>
                 )}
             </div>
         </>
