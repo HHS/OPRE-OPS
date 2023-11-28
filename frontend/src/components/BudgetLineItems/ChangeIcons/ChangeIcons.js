@@ -51,53 +51,50 @@ const ChangeIcons = ({
                         label="Edit"
                         className="line-height-body-1"
                     >
-                        <span>
+                        <button>
                             <FontAwesomeIcon
                                 id={`edit-${item?.id}`}
                                 data-cy="edit-row"
                                 icon={faPen}
-                                title="Edit2"
                                 className="text-primary height-2 width-2 margin-right-1 cursor-pointer"
                                 onClick={() => handleSetItemForEditing(item)}
                             />
-                        </span>
+                        </button>
                     </Tooltip>
                 )}
                 <Tooltip
                     label={`${isItemDeletable ? "delete" : "cannot delete"}`}
                     className="line-height-body-1"
                 >
-                    <span>
+                    <button>
                         <FontAwesomeIcon
                             id={`delete-${item?.id}`}
                             data-cy="delete-row"
                             data-testid="delete-row"
                             icon={faTrash}
-                            data-position="top"
                             className={`text-primary height-2 width-2 margin-right-1 cursor-pointer ${
                                 !isItemDeletable ? DISABLED_ICON_CLASSES : ""
                             }`}
                             onClick={() => isItemDeletable && handleDeleteItem(item.id, item.display_name)}
                         />
-                    </span>
+                    </button>
                 </Tooltip>
 
                 {duplicateIcon && (
                     <Tooltip
-                        label="duplicate"
+                        label="Duplicate"
                         className="line-height-body-1"
                     >
-                        <span>
+                        <button>
                             <FontAwesomeIcon
                                 id={`duplicate-${item?.id}`}
                                 data-cy="duplicate-row"
                                 icon={faClone}
                                 title="duplicate"
-                                data-position="top"
                                 className="text-primary height-2 width-2 cursor-pointer margin-left-0"
                                 onClick={() => handleDuplicateItem(item)}
                             />
-                        </span>
+                        </button>
                     </Tooltip>
                 )}
                 {sendToReviewIcon && (
@@ -105,7 +102,7 @@ const ChangeIcons = ({
                         label="Submit for Approval"
                         className="line-height-body-1"
                     >
-                        <span>
+                        <button>
                             <svg
                                 id={`submit-for-approval-${item.id}`}
                                 data-cy="submit-row"
@@ -114,7 +111,7 @@ const ChangeIcons = ({
                             >
                                 <use xlinkHref={`${icons}#send`}></use>
                             </svg>
-                        </span>
+                        </button>
                     </Tooltip>
                 )}
             </div>

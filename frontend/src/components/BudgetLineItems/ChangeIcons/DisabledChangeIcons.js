@@ -21,25 +21,25 @@ const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () =>
     return (
         <div className="display-flex flex-align-center">
             <Tooltip
-                position="left"
-                label="Only team members listed on this agreement can edit or delete"
+                position="top"
+                label="Only team members listed on this agreement can edit"
                 className="line-height-body-1"
             >
-                <span>
+                <button>
                     <FontAwesomeIcon
                         id={`edit-${rowId}`}
                         data-cy="edit-row"
                         icon={faPen}
                         className={classes}
                     />
-                </span>
+                </button>
             </Tooltip>
             <Tooltip
-                position="left"
-                label="Only team members listed on this agreement can edit or delete"
+                position="top"
+                label="Only team members listed on this agreement can delete"
                 className="line-height-body-1"
             >
-                <span>
+                <button>
                     <FontAwesomeIcon
                         id={`delete-${rowId}`}
                         data-cy="delete-row"
@@ -47,27 +47,41 @@ const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () =>
                         icon={faTrash}
                         className={classes}
                     />
-                </span>
+                </button>
             </Tooltip>
             {duplicateIcon && (
-                <FontAwesomeIcon
-                    id={`duplicate-${rowId}`}
-                    data-cy="duplicate-row"
-                    icon={faClone}
-                    title="duplicate"
-                    data-position="top"
-                    className="text-primary height-2 width-2 cursor-pointer usa-tooltip margin-left-0"
-                    onClick={handleDuplicateItem}
-                />
+                <Tooltip
+                    position="top"
+                    label="Duplicate"
+                    className="line-height-body-1"
+                >
+                    <button>
+                        <FontAwesomeIcon
+                            id={`duplicate-${rowId}`}
+                            data-cy="duplicate-row"
+                            icon={faClone}
+                            className="text-primary height-2 width-2 cursor-pointer usa-tooltip margin-left-0"
+                            onClick={handleDuplicateItem}
+                        />
+                    </button>
+                </Tooltip>
             )}
             {sendToReviewIcon && (
-                <svg
-                    id={`submit-for-approval-${rowId}`}
-                    data-cy="submit-row"
-                    className={`usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0 ${DISABLED_ICON_CLASSES}`}
+                <Tooltip
+                    position="top"
+                    label="Only team members listed on this agreement can submit it for approval"
+                    className="line-height-body-1"
                 >
-                    <use xlinkHref={`${icons}#send`}></use>
-                </svg>
+                    <button>
+                        <svg
+                            id={`submit-for-approval-${rowId}`}
+                            data-cy="submit-row"
+                            className={`usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0 ${DISABLED_ICON_CLASSES}`}
+                        >
+                            <use xlinkHref={`${icons}#send`}></use>
+                        </svg>
+                    </button>
+                </Tooltip>
             )}
         </div>
     );
