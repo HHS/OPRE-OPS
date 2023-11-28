@@ -1,3 +1,4 @@
+import React from "react";
 import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
 import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider, Link, Navigate } from "react-router-dom";
@@ -243,11 +244,11 @@ const rootElement = document.getElementById("root");
 
 if (rootElement) {
     ReactDOM.createRoot(rootElement).render(
-        // <React.StrictMode>
-        <Provider store={store}>
-            <RouterProvider router={router} />
-        </Provider>
-        // </React.StrictMode>
+        <React.StrictMode>
+            <Provider store={store}>
+                <RouterProvider router={router} />
+            </Provider>
+        </React.StrictMode>
     );
 } else {
     console.error("No root element found");
