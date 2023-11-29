@@ -1,10 +1,10 @@
 """CAN models."""
 from enum import Enum
-from typing import Any, ClassVar, Optional
+from typing import Any, List, Optional
 
 import sqlalchemy as sa
 from models.base import BaseModel
-from models.portfolios import Portfolio, shared_portfolio_cans
+from models.portfolios import Portfolio
 from models.users import User
 from sqlalchemy import (
     Boolean,
@@ -51,16 +51,17 @@ class CANArrangementType(Enum):
     MOU = 5
 
 
-can_funding_sources = Table(
-    "can_funding_sources",
-    BaseModel.metadata,
-    Column("can_id", ForeignKey("can.id"), primary_key=True),
-    Column(
-        "funding_source_id",
-        ForeignKey("funding_source.id"),
-        primary_key=True,
-    ),
-)
+class CANFundingSources(BaseModel):
+    __tablename__ = "can_funding_sources"
+
+    can_id: Mapped[int] = mapped_column(ForeignKey("can.id"), primary_key=True)
+    funding_source_id: Mapped[int] = mapped_column(
+        ForeignKey("funding_source.id"), primary_key=True
+    )
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"can_id={self.can_id}:funding_source_id={self.funding_source_id}"
 
 
 class FundingSource(BaseModel):
@@ -73,13 +74,13 @@ class FundingSource(BaseModel):
     """
 
     __tablename__ = "funding_source"
+
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
     nickname = Column(String(100))
-    cans = relationship(
-        "CAN",
-        secondary=can_funding_sources,
-        back_populates="funding_sources",
+
+    cans: Mapped[List["CAN"]] = relationship(
+        secondary="can_funding_sources", back_populates="funding_sources"
     )
 
     @BaseModel.display_name.getter
@@ -120,12 +121,17 @@ class AgreementReason(Enum):
     )
 
 
-agreement_team_members = Table(
-    "agreement_team_members",
-    BaseModel.metadata,
-    Column("agreement_id", ForeignKey("agreement.id"), primary_key=True),
-    Column("users_id", ForeignKey("users.id"), primary_key=True),
-)
+class AgreementTeamMembers(BaseModel):
+    __tablename__ = "agreement_team_members"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    agreement_id: Mapped[int] = mapped_column(
+        ForeignKey("agreement.id"), primary_key=True
+    )
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"user id: {self.user_id};agreement id:{self.agreement_id}"
 
 
 class ProductServiceCode(BaseModel):
@@ -148,7 +154,6 @@ class ProductServiceCode(BaseModel):
 class Agreement(BaseModel):
     """Base Agreement Model"""
 
-    __versioned__ = {}
     __tablename__ = "agreement"
 
     id: Mapped[int] = mapped_column(Identity(), primary_key=True)
@@ -167,16 +172,20 @@ class Agreement(BaseModel):
     )
     agreement_reason = mapped_column(ENUM(AgreementReason))
     project_officer_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id"), nullable=True
+        ForeignKey("user.id"), nullable=True
     )
     project_officer: Mapped[Optional[User]] = relationship(
         User, foreign_keys=[project_officer_id]
     )
-    team_members: Mapped[list[User]] = relationship(
-        User,
-        secondary=agreement_team_members,
+
+    team_members: Mapped[List["User"]] = relationship(
+        "User",
+        secondary="agreement_team_members",
         back_populates="agreements",
+        primaryjoin="Agreement.id == AgreementTeamMembers.agreement_id",
+        secondaryjoin="User.id == AgreementTeamMembers.user_id",
     )
+
     research_project_id: Mapped[int] = mapped_column(
         ForeignKey("research_project.id"), nullable=True
     )
@@ -243,7 +252,7 @@ contract_support_contacts = Table(
         ForeignKey("contract_agreement.id"),
         primary_key=True,
     ),
-    Column("users_id", ForeignKey("users.id"), primary_key=True),
+    Column("users_id", ForeignKey("user.id"), primary_key=True),
 )
 
 
@@ -263,7 +272,6 @@ class ContractType(Enum):
 class ContractAgreement(Agreement):
     """Contract Agreement Model"""
 
-    __versioned__ = {}
     __tablename__ = "contract_agreement"
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
@@ -320,7 +328,6 @@ class ContractAgreement(Agreement):
 class GrantAgreement(Agreement):
     """Grant Agreement Model"""
 
-    __versioned__ = {}
     __tablename__ = "grant_agreement"
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
@@ -341,7 +348,6 @@ class GrantAgreement(Agreement):
 class IaaAgreement(Agreement):
     """IAA Agreement Model"""
 
-    __versioned__ = {}
     __tablename__ = "iaa_agreement"
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
@@ -362,7 +368,6 @@ class IaaAgreement(Agreement):
 class IaaAaAgreement(Agreement):
     """IAA-AA Agreement Model"""
 
-    __versioned__ = {}
     __tablename__ = "iaa_aa_agreement"
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
@@ -381,7 +386,6 @@ class IaaAaAgreement(Agreement):
 class DirectAgreement(Agreement):
     """Direct Obligation Agreement Model"""
 
-    __versioned__ = {}
     __tablename__ = "direct_agreement"
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
@@ -473,7 +477,6 @@ class CANFiscalYearCarryForward(BaseModel):
 
 
 class BudgetLineItem(BaseModel):
-    __versioned__ = {}
     __tablename__ = "budget_line_item"
 
     id = Column(Integer, Identity(), primary_key=True)
@@ -557,6 +560,7 @@ class CAN(BaseModel):
     """
 
     __tablename__ = "can"
+
     id = Column(Integer, Identity(), primary_key=True)
     number = Column(String(30), nullable=False)
     description = Column(String)
@@ -566,19 +570,25 @@ class CAN(BaseModel):
     appropriation_date = Column(DateTime)
     appropriation_term = Column(Integer, default="1")
     arrangement_type = Column(sa.Enum(CANArrangementType))
-    funding_sources = relationship(
-        FundingSource,
-        secondary=can_funding_sources,
-        back_populates="cans",
+
+    funding_sources: Mapped[List["FundingSource"]] = relationship(
+        secondary="can_funding_sources", back_populates="cans"
     )
+
     authorizer_id = Column(Integer, ForeignKey("funding_partner.id"))
     authorizer = relationship(FundingPartner)
     managing_portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
     managing_portfolio = relationship(Portfolio, back_populates="cans")
-    shared_portfolios = relationship(
-        Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans"
+
+    shared_portfolios: Mapped[List["Portfolio"]] = relationship(
+        secondary="shared_portfolio_cans", back_populates="shared_cans"
     )
+
     budget_line_items = relationship("BudgetLineItem", back_populates="can")
+
+    research_projects: Mapped[List["ResearchProject"]] = relationship(
+        "ResearchProject", secondary="research_project_cans", back_populates="cans"
+    )
 
     @BaseModel.display_name.getter
     def display_name(self):

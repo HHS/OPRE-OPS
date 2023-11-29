@@ -40,6 +40,7 @@ export const AgreementsList = () => {
 
     const activeUser = useSelector((state) => state.auth.activeUser);
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
+    const forApprovalUrl = searchParams.get("filter") === "for-approval";
 
     if (isLoadingAgreement) {
         return (
@@ -163,21 +164,37 @@ export const AgreementsList = () => {
             });
         });
         sortedAgreements = sortAgreements(myAgreements);
+    } else if (forApprovalUrl) {
+        // TODO: Use new workflow to filter For Approval - this is just my agreements that are UNDER_REVIEW for now
+        const myAgreements = filteredAgreements.filter((agreement) => {
+            return agreement.team_members?.some((teamMember) => {
+                return teamMember.id === activeUser.id || agreement.project_officer_id === activeUser.id;
+            });
+        });
+        const forApprovalAgreements = myAgreements.filter((agreement) => {
+            return agreement.budget_line_items?.some((bli) => bli.status === "UNDER_REVIEW");
+        });
+        sortedAgreements = sortAgreements(forApprovalAgreements);
     } else {
         // all-agreements
         sortedAgreements = sortAgreements(filteredAgreements);
     }
 
+    let subtitle = "All Agreements";
+    if (myAgreementsUrl) subtitle = "My Agreements";
+    else if (forApprovalUrl) subtitle = "For Approval";
+    let details = "This is a list of all agreements across OPRE.";
+    if (myAgreementsUrl) details = "This is a list of the agreements you are listed as a Team Member on.";
+    else if (forApprovalUrl)
+        details =
+            "This is a list of agreements in your Division that are awaiting your approval to change budget line status. Draft budget lines are not included in the Agreement Total.";
+
     return (
         <App breadCrumbName="Agreements">
             <TablePageLayout
                 title="Agreements"
-                subtitle={myAgreementsUrl ? "My Agreements" : "All Agreements"}
-                details={
-                    myAgreementsUrl
-                        ? "This is a list of the agreements you are listed as a Team Member on."
-                        : "This is a list of all agreements across OPRE."
-                }
+                subtitle={subtitle}
+                details={details}
                 buttonText="Add Agreement"
                 buttonLink="/agreements/create"
                 TabsSection={<AgreementTabs />}
@@ -185,6 +202,7 @@ export const AgreementsList = () => {
                     <AgreementsFilterTags
                         filters={filters}
                         setFilters={setFilters}
+                        for
                     />
                 }
                 FilterButton={
