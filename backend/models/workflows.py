@@ -124,9 +124,9 @@ class StepApprovers(BaseModel):
     __tablename__ = "step_approvers"
     id = sa.Column(sa.Integer, sa.Identity(always=True, start=1, cycle=True), primary_key=True)
     workflow_step_template_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_template.id"))
-    user_id = sa.Column(sa.Integer, sa.ForeignKey("users.id"), nullable=True)
-    role_id = sa.Column(sa.Integer, sa.ForeignKey("roles.id"), nullable=True)
-    group_id = sa.Column(sa.Integer, sa.ForeignKey("groups.id"), nullable=True)
+    user_id = sa.Column(sa.Integer, sa.ForeignKey("user.id"), nullable=True)
+    role_id = sa.Column(sa.Integer, sa.ForeignKey("role.id"), nullable=True)
+    group_id = sa.Column(sa.Integer, sa.ForeignKey("group.id"), nullable=True)
 
 
 class Package(BaseModel):
