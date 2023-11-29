@@ -5,10 +5,10 @@ Increase the availability of incident response information and support using [AC
 
 ## OPS Implementation
 
-OPS will establish interconnection agreements with ACF/OCIO and cloud.gov for Incident Response
+TODO: ??? what is the ACF-defined mechanism.... ?
 
 ### Control Origination
 
-Hybrid with cloud.gov and ACF/OCIO
+Hybrid with IaaS vendor and ACF Tech
 
 ### Related Content

@@ -29,6 +29,14 @@
 25. [AC-20](ac-20/index.md)
 26. [AC-20-1](ac-20-1/index.md)
 
+### Awareness and Training
+
+1. [AT-2](at-02/index.md)
+2. [AT-2-2](at-02-02/index.md)
+3. [AT-2-3](at-02-3/index.md)
+4. [AT-3](at-03/index.md)
+5. [AT-4](at-04/index.md)
+
 ### Audit
 
 1. [AU-2](au-02/index.md)
@@ -44,6 +52,18 @@
 11. [AU-9-4](au-09-4/index.md)
 12. [AU-11](au-11/index.md)
 13. [AU-12](au-12/index.md)
+
+### Assessment, Authorization, and Monitoring
+
+1. [CA-2](ca-02/index.md)
+2. [CA-2-1](ca-02-01/index.md)
+3. [CA-3](ca-03/index.md)
+4. [CA-5](ca-05/index.md)
+5. [CA-6](ca-06/index.md)
+6. [CA-7](ca-07/index.md)
+7. [CA-7-1](ca-07-01/index.md)
+8. [CA-7-4](ca-07-04/index.md)
+9. [CA-9](ca-09/index.md)
 
 ### Configuration Management
 

@@ -5,7 +5,7 @@ Provide an incident response support resource, integral to the organizational in
 
 ## OPS Implementation
 
-TODO: Work with ACF/OCIO and cloud.gov on identifying support resources
+TODO: Work with ACF Tech and IaaS vendor on identifying support resources
 
 ### Control Origination
 
