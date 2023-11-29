@@ -1,162 +1,42 @@
 {
-  users: [
-    { // 1
-      first_name: "Chris",
-      last_name: "Fortunato",
-      division: 1,
-      email: "chris.fortunato@example.com",
-      oidc_id: "00000000-0000-1111-a111-000000000001",
+  division: [
+    {
+      id: 1,
+      name: "Child Care",
+      abbreviation: "CC",
     },
-    { // 2
-      first_name: "Amy",
-      last_name: "Madigan",
-      division: 1,
-      email: "Amy.Madigan@example.com",
-      oidc_id: "00000000-0000-1111-a111-000000000002",
+    {
+      id: 2,
+      name: "Division of Economic Independence",
+      abbreviation: "DEI",
     },
-    { // 3
-      first_name: "Ivelisse",
-      last_name: "Martinez-Beck",
-      division: 1,
-      email: "Ivelisse.Martinez-Beck@example.com",
-      oidc_id: "00000000-0000-1111-a111-000000000003",
+    {
+      id: 3,
+      name: "Office of the Director",
+      abbreviation: "OD",
     },
-    { // 4 - THIS IS USED IN THE TESTS (AUTH_CLIENT)
-      first_name: "Amelia",
-      last_name: "Popham",
-      division: 2,
-      email: "Amelia.Popham@example.com",
-      oidc_id: "00000000-0000-1111-a111-000000000004",
+    {
+      id: 4,
+      name: "Division of Child and Family Development",
+      abbreviation: "DFCD",
     },
-    { // 5
-      first_name: "Tia",
-      last_name: "Brown",
-      division: 3,
-      email: "Tia.Brown@example.com",
-      oidc_id: "00000000-0000-1111-a111-000000000005",
+    {
+      id: 5,
+      name: "Division of Family Strengthening",
+      abbreviation: "DFS",
     },
-    { // 6
-      first_name: "Katie",
-      last_name: "Pahigiannis",
-      division: 3,
-      email: "Katie.Pahigiannis@example.com",
-      oidc_id: "00000000-0000-1111-a111-000000000006",
+    {
+      id: 6,
+      name: "Division of Data and Improvement",
+      abbreviation: "DDI",
     },
-    { // 7
-      first_name: "Nancy",
-      last_name: "Margie",
-      division: 3,
-      email: "Nancy.Margie@example.com",
-      oidc_id: "00000000-0000-1111-a111-000000000007",
-    },
-    { // 8
-      first_name: "Nicole",
-      last_name: "Deterding",
-      division: 4,
-      email: "Nicole.Deterding@example.com",
-      oidc_id: "00000000-0000-1111-a111-000000000008",
-    },
-    { // 9
-      first_name: "Valeria",
-      last_name: "Butler",
-      division: 4,
-      email: "Valeria.Butler@example.com",
-      oidc_id: "00000000-0000-1111-a111-000000000009",
-    },
-    { // 10
-      first_name: "Beth Ann",
-      last_name: "Barnes",
-      division: 4,
-      email: "BethAnn.Barnes@example.com",
-      oidc_id: "00000000-0000-1111-a111-000000000010",
-    },
-    { // 11
-      first_name: "Laura",
-      last_name: "Nerenberg",
-      division: 4,
-      email: "Laura.Nerenberg@example.com",
-      oidc_id: "00000000-0000-1111-a111-000000000011",
-    },
-    { // 12
-      first_name: "Niki",
-      last_name: "Denmark",
-      division: 4,
-      email: "Niki.Denmark@example.com",
-      oidc_id: "00000000-0000-1111-a111-000000000012",
-    },
-    { // 13
-      first_name: "Tim",
-      last_name: "Donaworth",
-      division: 3,
-      email: "tdonaworth+dev@flexion.us",
-      //oidc_id: "e5711101-bc3e-41e5-a6a2-000000000000",
-      oidc_id: "e5711101-bc3e-41e5-a6a2-051874b307ca",
-    },
-    { // 14
-      first_name: "John",
-      last_name: "DeAngelis",
-      division: 3,
-      email: "jdeangelis@flexion.us",
-      oidc_id: "838861c4-8bee-427d-8b49-0892875483ba",
-    },
-    { // 15
-      first_name: "Frank",
-      last_name: "Pigeon",
-      division: 3,
-      email: "fpigeon@flexion.us",
-      oidc_id: "3e4c46ae-0ff9-4dd7-8671-b9801460a052",
-    },
-    { // 16
-      first_name: "Cliff",
-      last_name: "Hill",
-      division: 3,
-      email: "chill@flexion.us",
-      oidc_id: "c8102694-a707-418d-9698-1d33db337b86",
-    },
-    { // 17
-      first_name: "Steve",
-      last_name: "Tekell",
-      division: 3,
-      email: "stekell+sandbox@flexion.us",
-      oidc_id: "7716138a-dec6-4976-9f31-e30fade3254d",
-    },
-    { // 18
-      first_name: "Jonathan",
-      last_name: "Nalley",
-      division: 3,
-      email: "jnalley+logingovsandbox@flexion.us",
-      oidc_id: "48f7db91-1861-4d4b-813c-a6221cb61b60",
-    },
-    { // 19
-      first_name: "Andressa",
-      last_name: "Silva",
-      division: 3,
-      email: "acurvelodasilva@flexion.us",
-      oidc_id: "6e672c19-15bc-4901-8cee-b57cd8c6d0c1",
-    },
-    { // 20
-      first_name: "Kim",
-      last_name: "Schulke",
-      division: 3,
-      email: "kschulke@flexion.us",
-      oidc_id: "b5f7598b-e5e6-4b11-8321-b3acabc780f7",
-    },
-    { // 21 User is used in E2E tests
-      first_name: "Admin",
-      last_name: "Demo",
-      division: 3,
-      email: "admin.demo@email.com",
-      oidc_id: "00000000-0000-1111-a111-000000000018",
-    },
-    { // 22
-      first_name: "User",
-      last_name: "Demo",
-      division: 3,
-      email: "user.demo@email.com",
-      oidc_id: "00000000-0000-1111-a111-000000000019",
+    {
+      id: 7,
+      name: "Non-OPRE Division",
+      abbreviation: "OTHER",
     }
   ],
-  roles: [
+  role: [
     {
       name: "admin",
       permissions: [
@@ -223,77 +103,7 @@
       ],
     },
   ],
-  user_role: [
-    {
-      user_id: 1,
-      role_id: 1,
-    },
-    {
-      user_id: 2,
-      role_id: 1,
-    },
-    {
-      user_id: 3,
-      role_id: 2,
-    },
-    {
-      user_id: 4,
-      role_id: 1,
-    },
-    {
-      user_id: 5,
-      role_id: 1,
-    },
-    {
-      user_id: 6,
-      role_id: 1,
-    },
-    {
-      user_id: 12,
-      role_id: 1,
-    },
-    {
-      user_id: 13,
-      role_id: 1,
-    },
-    {
-      user_id: 14,
-      role_id: 1,
-    },
-    {
-      user_id: 15,
-      role_id: 1,
-    },
-    {
-      user_id: 16,
-      role_id: 1,
-    },
-    {
-      user_id: 17,
-      role_id: 1,
-    },
-    {
-      user_id: 18,
-      role_id: 1,
-    },
-    {
-      user_id: 19,
-      role_id: 1,
-    },
-    {
-      user_id: 20,
-      role_id: 1,
-    },
-    {
-      user_id: 21,
-      role_id: 1,
-    },
-    {
-      user_id: 22,
-      role_id: 2,
-    },
-  ],
-  groups: [
+  group: [
     {
       name: "Budget Team",
     },
@@ -301,42 +111,187 @@
       name: "Admins",
     }
   ],
-  user_group: [
-    {
-      user_id: 4,
-      group_id: 1,
+  user: [
+    { // 1
+      first_name: "Chris",
+      last_name: "Fortunato",
+      division: 1,
+      email: "chris.fortunato@example.com",
+      oidc_id: "00000000-0000-1111-a111-000000000001",
+      roles: [{"tablename":  "role", "id": 1}],
     },
-    {
-      user_id: 13,
-      group_id: 2,
+    { // 2
+      first_name: "Amy",
+      last_name: "Madigan",
+      division: 1,
+      email: "Amy.Madigan@example.com",
+      oidc_id: "00000000-0000-1111-a111-000000000002",
+      roles: [{"tablename":  "role", "id": 1}]
     },
-    {
-      user_id: 14,
-      group_id: 2,
+    { // 3
+      first_name: "Ivelisse",
+      last_name: "Martinez-Beck",
+      division: 1,
+      email: "Ivelisse.Martinez-Beck@example.com",
+      oidc_id: "00000000-0000-1111-a111-000000000003",
+      roles: [{"tablename":  "role", "id": 2}]
     },
-    {
-      user_id: 15,
-      group_id: 2,
+    { // 4 - THIS IS USED IN THE TESTS (AUTH_CLIENT)
+      first_name: "Amelia",
+      last_name: "Popham",
+      division: 2,
+      email: "Amelia.Popham@example.com",
+      oidc_id: "00000000-0000-1111-a111-000000000004",
+      roles: [{"tablename":  "role", "id": 1}],
+      groups: [{"tablename":  "group", "id": 1}],
     },
-    {
-      user_id: 16,
-      group_id: 2,
+    { // 5
+      first_name: "Tia",
+      last_name: "Brown",
+      division: 3,
+      email: "Tia.Brown@example.com",
+      oidc_id: "00000000-0000-1111-a111-000000000005",
+      roles: [{"tablename":  "role", "id": 1}]
     },
-    {
-      user_id: 17,
-      group_id: 2,
+    { // 6
+      first_name: "Katie",
+      last_name: "Pahigiannis",
+      division: 3,
+      email: "Katie.Pahigiannis@example.com",
+      oidc_id: "00000000-0000-1111-a111-000000000006",
+      roles: [{"tablename":  "role", "id": 1}]
     },
-    {
-      user_id: 18,
-      group_id: 2,
+    { // 7
+      first_name: "Nancy",
+      last_name: "Margie",
+      division: 3,
+      email: "Nancy.Margie@example.com",
+      oidc_id: "00000000-0000-1111-a111-000000000007",
     },
-    {
-      user_id: 19,
-      group_id: 2,
+    { // 8
+      first_name: "Nicole",
+      last_name: "Deterding",
+      division: 4,
+      email: "Nicole.Deterding@example.com",
+      oidc_id: "00000000-0000-1111-a111-000000000008",
     },
-    {
-      user_id: 20,
-      group_id: 2,
+    { // 9
+      first_name: "Valeria",
+      last_name: "Butler",
+      division: 4,
+      email: "Valeria.Butler@example.com",
+      oidc_id: "00000000-0000-1111-a111-000000000009",
+    },
+    { // 10
+      first_name: "Beth Ann",
+      last_name: "Barnes",
+      division: 4,
+      email: "BethAnn.Barnes@example.com",
+      oidc_id: "00000000-0000-1111-a111-000000000010",
+    },
+    { // 11
+      first_name: "Laura",
+      last_name: "Nerenberg",
+      division: 4,
+      email: "Laura.Nerenberg@example.com",
+      oidc_id: "00000000-0000-1111-a111-000000000011",
+    },
+    { // 12
+      first_name: "Niki",
+      last_name: "Denmark",
+      division: 4,
+      email: "Niki.Denmark@example.com",
+      oidc_id: "00000000-0000-1111-a111-000000000012",
+      roles: [{"tablename":  "role", "id": 1}],
+    },
+    { // 13
+      first_name: "Tim",
+      last_name: "Donaworth",
+      division: 3,
+      email: "tdonaworth+dev@flexion.us",
+      //oidc_id: "e5711101-bc3e-41e5-a6a2-000000000000",
+      oidc_id: "e5711101-bc3e-41e5-a6a2-051874b307ca",
+      roles: [{"tablename":  "role", "id": 1}],
+      groups: [{"tablename":  "group", "id": 2}]
+    },
+    { // 14
+      first_name: "John",
+      last_name: "DeAngelis",
+      division: 3,
+      email: "jdeangelis@flexion.us",
+      oidc_id: "838861c4-8bee-427d-8b49-0892875483ba",
+      roles: [{"tablename":  "role", "id": 1}],
+      groups: [{"tablename":  "group", "id": 2}]
+    },
+    { // 15
+      first_name: "Frank",
+      last_name: "Pigeon",
+      division: 3,
+      email: "fpigeon@flexion.us",
+      oidc_id: "3e4c46ae-0ff9-4dd7-8671-b9801460a052",
+      roles: [{"tablename":  "role", "id": 1}],
+      groups: [{"tablename":  "group", "id": 2}]
+    },
+    { // 16
+      first_name: "Cliff",
+      last_name: "Hill",
+      division: 3,
+      email: "chill@flexion.us",
+      oidc_id: "c8102694-a707-418d-9698-1d33db337b86",
+      roles: [{"tablename":  "role", "id": 1}],
+      groups: [{"tablename":  "group", "id": 2}]
+    },
+    { // 17
+      first_name: "Steve",
+      last_name: "Tekell",
+      division: 3,
+      email: "stekell+sandbox@flexion.us",
+      oidc_id: "7716138a-dec6-4976-9f31-e30fade3254d",
+      roles: [{"tablename":  "role", "id": 1}],
+      groups: [{"tablename":  "group", "id": 2}]
+    },
+    { // 18
+      first_name: "Jonathan",
+      last_name: "Nalley",
+      division: 3,
+      email: "jnalley+logingovsandbox@flexion.us",
+      oidc_id: "48f7db91-1861-4d4b-813c-a6221cb61b60",
+      roles: [{"tablename":  "role", "id": 1}],
+      groups: [{"tablename":  "group", "id": 2}]
+    },
+    { // 19
+      first_name: "Andressa",
+      last_name: "Silva",
+      division: 3,
+      email: "acurvelodasilva@flexion.us",
+      oidc_id: "6e672c19-15bc-4901-8cee-b57cd8c6d0c1",
+      roles: [{"tablename":  "role", "id": 1}],
+      groups: [{"tablename":  "group", "id": 2}]
+    },
+    { // 20
+      first_name: "Kim",
+      last_name: "Schulke",
+      division: 3,
+      email: "kschulke@flexion.us",
+      oidc_id: "b5f7598b-e5e6-4b11-8321-b3acabc780f7",
+      roles: [{"tablename":  "role", "id": 1}],
+      groups: [{"tablename":  "group", "id": 2}]
+    },
+    { // 21 User is used in E2E tests
+      first_name: "Admin",
+      last_name: "Demo",
+      division: 3,
+      email: "admin.demo@email.com",
+      oidc_id: "00000000-0000-1111-a111-000000000018",
+      roles: [{"tablename":  "role", "id": 1}],
+    },
+    { // 22
+      first_name: "User",
+      last_name: "Demo",
+      division: 3,
+      email: "user.demo@email.com",
+      oidc_id: "00000000-0000-1111-a111-000000000019",
+      roles: [{"tablename":  "role", "id": 2}]
     }
   ],
   notification: [
