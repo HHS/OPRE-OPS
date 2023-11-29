@@ -5,23 +5,30 @@ import { Router } from "react-router-dom";
 import { createMemoryHistory } from "history";
 import { Provider } from "react-redux";
 import configureStore from "redux-mock-store";
+import { vi } from "vitest";
 
 const history = createMemoryHistory();
 const mockStore = configureStore([]);
 
-jest.mock("react", () => ({
-    ...jest.requireActual("react"),
-    useState: () => [null, jest.fn()]
-}));
+vi.mock("react", async () => {
+    const actual = await vi.importActual("react");
+    return {
+        ...actual,
+        useState: () => [null, vi.fn()]
+    };
+});
 
-jest.mock("react-router-dom", () => ({
-    ...jest.requireActual("react-router-dom"),
-    useNavigate: () => jest.fn()
-}));
+vi.mock("react-router-dom", async () => {
+    const actual = await vi.importActual("react-router-dom");
+    return {
+        ...actual,
+        useNavigate: () => vi.fn()
+    };
+});
 
 // This will reset all mocks after each test
 afterEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
 });
 
 const userData = {
@@ -29,11 +36,16 @@ const userData = {
     full_name: "Test User"
 };
 
-jest.mock("../../../api/opsAPI", () => ({
-    ...jest.requireActual("../../../api/opsAPI"),
-    useGetUserByIdQuery: () => jest.fn(() => ({ data: userData })),
-    useGetAgreementByIdQuery: () => jest.fn(() => ({ data: agreement }))
-}));
+vi.mock("../../../api/opsAPI", async () => {
+    const actual = await vi.importActual("../../../api/opsAPI");
+
+    return {
+        ...actual,
+        useGetUserByIdQuery: () => vi.fn(() => ({ data: userData })),
+        useGetAgreementByIdQuery: () => vi.fn(() => ({ data: agreement }))
+    };
+});
+
 const agreement = {
     id: 1,
     name: "Test Agreement",

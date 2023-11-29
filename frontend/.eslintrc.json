@@ -1,6 +1,6 @@
 /* eslint-env node */
 {
-    "env": { "node": true, "es2020": true, "browser": true, "jest": true, "cypress/globals": true },
+    "env": { "node": true, "es2020": true, "browser": true, "cypress/globals": true },
     "extends": [
         "eslint:recommended",
         "plugin:react-hooks/recommended",

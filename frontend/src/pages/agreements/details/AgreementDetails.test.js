@@ -33,7 +33,6 @@ vi.mock("react", async () => {
     };
 });
 
-// jest.mock("../../../../components/Agreements", () => () => <div />);
 const agreementHistoryData = [
     {
         changes: {

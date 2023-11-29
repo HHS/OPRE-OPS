@@ -3,10 +3,20 @@ import "@testing-library/jest-dom";
 import AgreementTotalBudgetLinesCard from "./AgreementTotalBudgetLinesCard";
 import { vi } from "vitest";
 
-vi.mock("react", () => ({
-    ...jest.requireActual("react"),
-    useState: () => [null, vi.fn()]
+vi.mock("@nivo/bar", () => ({
+    __esModule: true,
+    ResponsiveBar: () => {
+        return <div />;
+    }
 }));
+
+vi.mock("react", async () => {
+    const actual = await vi.importActual("react");
+    return {
+        ...actual,
+        useState: () => [null, vi.fn()]
+    };
+});
 
 // This will reset all mocks after each test
 afterEach(() => {
