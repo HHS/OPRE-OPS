@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "license": "CC0-1.0",
     "private": true,
+    "type": "module",
     "dependencies": {
         "@fortawesome/fontawesome-svg-core": "6.4.2",
         "@fortawesome/free-regular-svg-icons": "6.4.2",
