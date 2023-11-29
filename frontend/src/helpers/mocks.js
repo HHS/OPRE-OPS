@@ -1,5 +1,5 @@
 import { rest } from "msw";
-import { setupServer } from "msw/lib/node";
+import { setupServer } from "msw/node";
 
 const BACKEND_DOMAIN = import.meta.env.VITE_BACKEND_DOMAIN;
 

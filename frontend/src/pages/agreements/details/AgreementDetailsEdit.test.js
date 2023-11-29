@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import "@testing-library/jest-dom";
+
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
 import { Router } from "react-router-dom";
 import { createMemoryHistory } from "history";
@@ -7,6 +7,7 @@ import store from "../../../store";
 import { Provider } from "react-redux";
 // import { useGetProductServiceCodesQuery } from "../../../api/opsAPI";
 // import ProductServiceCodeSelect from "../../../components/UI/Form/ProductServiceCodeSelect"
+import { vi } from "vitest";
 
 const productServiceCodesData = [
     {
@@ -23,37 +24,46 @@ const productServiceCodesData = [
     }
 ];
 
-jest.mock("../../../api/opsAPI", () => ({
-    ...jest.requireActual("../../../api/opsAPI"),
-    useGetProductServiceCodesQuery: () => jest.fn(() => ({ data: productServiceCodesData }))
-}));
+vi.mock("../../../api/opsAPI", async () => {
+    const actual = await import("../../../api/opsAPI");
+    return {
+        ...actual,
+        useGetProductServiceCodesQuery: () => vi.fn(() => ({ data: productServiceCodesData }))
+    };
+});
 
 // eslint-disable-next-line react/display-name
-jest.mock("../../../components/UI/Form/ProductServiceCodeSelect", () => () => {
+vi.mock("../../../components/UI/Form/ProductServiceCodeSelect", () => {
     return <div />;
 });
 
 // mocking ResponsiveBar until there's a solution for TypeError: Cannot read properties of null (reading 'width')
-jest.mock("@nivo/bar", () => ({
+vi.mock("@nivo/bar", () => ({
     __esModule: true,
     ResponsiveBar: () => {
         return <div />;
     }
 }));
 
-jest.mock("react-router-dom", () => ({
-    ...jest.requireActual("react-router-dom"),
-    useNavigate: () => jest.fn()
-}));
+vi.mock("react-router-dom", async () => {
+    const actual = await import("react-router-dom");
+    return {
+        ...actual,
+        useNavigate: () => vi.fn()
+    };
+});
 
-jest.mock("react", () => ({
-    ...jest.requireActual("react"),
-    useState: () => [null, jest.fn()]
-}));
+vi.mock("react", async () => {
+    const actual = await import("react");
+    return {
+        ...actual,
+        useState: () => [null, vi.fn()]
+    };
+});
 
 // This will reset all mocks after each test
 afterEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
 });
 
 const history = createMemoryHistory();
@@ -115,7 +125,7 @@ describe("AgreementDetailsEdit", () => {
                         agreement={agreement}
                         projectOfficer={projectOfficer}
                         isEditMode={true}
-                        setIsEditMode={jest.fn()}
+                        setIsEditMode={vi.fn()}
                     />
                 </Router>
             </Provider>

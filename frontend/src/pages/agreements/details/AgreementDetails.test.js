@@ -1,30 +1,37 @@
 import { render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
-import "@testing-library/jest-dom";
+// import "@testing-library/jest-dom";
 import AgreementDetails from "./AgreementDetails";
 import { Router } from "react-router-dom";
 import { createMemoryHistory } from "history";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 const history = createMemoryHistory();
 import store from "../../../store";
+import { vi } from "vitest";
 
 // mocking ResponsiveBar until there's a solution for TypeError: Cannot read properties of null (reading 'width')
-jest.mock("@nivo/bar", () => ({
+vi.mock("@nivo/bar", () => ({
     __esModule: true,
     ResponsiveBar: () => {
         return <div />;
     }
 }));
 
-jest.mock("react-router-dom", () => ({
-    ...jest.requireActual("react-router-dom"),
-    useNavigate: () => jest.fn()
-}));
+vi.mock("react-router-dom", async () => {
+    const actual = await vi.importActual("react-router-dom");
+    return {
+        ...actual,
+        useNavigate: () => vi.fn()
+    };
+});
 
-jest.mock("react", () => ({
-    ...jest.requireActual("react"),
-    useState: () => [null, jest.fn()]
-}));
+vi.mock("react", async () => {
+    const actual = await vi.importActual("react");
+    return {
+        ...actual,
+        useState: () => [null, vi.fn()]
+    };
+});
 
 // jest.mock("../../../../components/Agreements", () => () => <div />);
 const agreementHistoryData = [
@@ -359,7 +366,7 @@ const agreementHistoryData = [
 
 // This will reset all mocks after each test
 afterEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
 });
 
 describe("AgreementDetails", () => {
@@ -412,7 +419,7 @@ describe("AgreementDetails", () => {
         });
 
         // IntersectionObserver isn't available in test environment
-        const mockIntersectionObserver = jest.fn();
+        const mockIntersectionObserver = vi.fn();
         mockIntersectionObserver.mockReturnValue({
             observe: () => null,
             unobserve: () => null,
@@ -430,7 +437,7 @@ describe("AgreementDetails", () => {
                         agreement={agreement}
                         projectOfficer={projectOfficer}
                         isEditMode={false}
-                        setIsEditMode={jest.fn}
+                        setIsEditMode={vi.fn}
                     />
                 </Router>
             </Provider>
