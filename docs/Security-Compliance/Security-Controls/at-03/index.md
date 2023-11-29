@@ -1,13 +1,15 @@
 # Awareness and Training
 ## AT-03 - Role-based Training
 
-a. Provide role-based security and privacy training to personnel with the following roles and responsibilities: [Assignment: organization-defined roles and responsibilities]:
 
-1. Before authorizing access to the system, information, or performing assigned duties, and [Assignment: organization-defined frequency] thereafter; and
+a. Provide role-based security and privacy training to personnel with the following roles and responsibilities [in accordance with HHS Memorandum detailing Requirements for Role-Based Training of Personnel with Significant Security Responsibilities (current version) and any ACF Defined Requirements]:
+
+1. Before authorizing access to the system, information, or performing assigned duties, and [annually] thereafter; and
 2. When required by system changes;
-b. Update role-based training content [Assignment: organization-defined frequency] and following [Assignment: organization-defined events]; and
 
-c. Incorporate lessons learned from internal or external security incidents or breaches into role-based training.
+b. Update role-based training content [annually] and following [ACF-defined events]; and
+
+c. Incorporate lessons learned from internal or external security incidents or breaches into role-based training
 
 ## OPS Implementation
 
@@ -18,3 +20,5 @@ TODO: seek inherited text
 Inherited from HHS/ACF/OPRE
 
 ### Related Content
+
+Requirements for Role-Based Training of Personnel with Significant Security Responsibilities

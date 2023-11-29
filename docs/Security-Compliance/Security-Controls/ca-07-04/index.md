@@ -7,7 +7,7 @@ Ensure risk monitoring is an integral part of the continuous monitoring strategy
 
 (b) Compliance monitoring; and
 
-(c) Change monitoring."
+(c) Change monitoring.
 
 ## OPS Implementation
 

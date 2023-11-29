@@ -2,15 +2,17 @@
 ## CA-05 - Plan of Action and Milestones
 
 a. Develop a plan of action and milestones for the system to document the planned remediation actions of the organization to correct weaknesses or deficiencies noted during the assessment of the controls and to reduce or eliminate known vulnerabilities in the system; and
+
 b. Update existing plan of action and milestones [at least weekly] based on the findings from control assessments, independent audits or reviews, and continuous monitoring activities
 
 ## OPS Implementation
 
-TODO: chicken and the egg...
+
 
 ### Control Origination
 
 Hybrid with IaaS vendor and OPS. Inherited from ACF Tech (AMS)
 
 ### Related Content
+
 See also HHS Standard for Plan of Action and Milestones (POAM) Management and Reporting for additional requirements
