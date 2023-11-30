@@ -199,7 +199,7 @@ class AgreementListAPI(BaseListAPI):
         for agreement_cls in agreement_classes:
             result.extend(current_app.db_session.execute(self._get_query(agreement_cls, **request.args)).all())
 
-        return make_response_with_headers([i.to_dict() for item in result for i in item])
+        return make_response_with_headers([i.serialize() for item in result for i in item])
 
     @override
     @is_authorized(PermissionType.POST, Permission.AGREEMENT)

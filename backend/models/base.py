@@ -3,11 +3,11 @@ import decimal
 from typing import Annotated, ClassVar, Final, TypeAlias, TypedDict, TypeVar, cast
 
 from marshmallow import Schema as MMSchema
-from models.mixins.repr import ReprMixin
-from models.mixins.serialize import SerializeMixin
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, Numeric, func
+from marshmallow.exceptions import MarshmallowError
+from marshmallow_enum import EnumField
+from sqlalchemy import Column, DateTime, ForeignKey, Numeric, func
 from sqlalchemy.orm import declarative_base, declared_attr, mapped_column, registry, relationship
-from typing_extensions import Any, override
+from typing_extensions import Any
 
 Base = declarative_base()
 reg = registry(metadata=Base.metadata)
@@ -102,12 +102,21 @@ def setup_schema(base: Base) -> callable:
                     model = class_
                     dateformat = "%Y-%m-%d"
                     datetimeformat = "%Y-%m-%dT%H:%M:%S.%fZ"
+                    include_relationships = True
+                    load_instance = True
+                    include_fk = True
 
                 schema_class_name = f"{class_.__name__}Schema"
 
                 schema_class = type(
                     schema_class_name, (SQLAlchemyAutoSchema,), {"Meta": Meta}
                 )
+
+                # exceptions
+                if class_.__name__ in ["Agreement", "ContractAgreement"]:
+                    schema_class._declared_fields["agreement_type"] = EnumField(
+                        "AgreementType"
+                    )
 
                 setattr(class_, "__marshmallow__", schema_class)
 
@@ -120,7 +129,7 @@ from sqlalchemy_continuum import make_versioned
 make_versioned(user_cls=None)
 
 
-class BaseModel(Base, SerializeMixin):  # type: ignore [misc, valid-type]
+class BaseModel(Base):  # type: ignore [misc, valid-type]
     __versioned__ = {}
     __abstract__ = True
 
@@ -132,6 +141,14 @@ class BaseModel(Base, SerializeMixin):  # type: ignore [misc, valid-type]
             model_class_name = model.__table__.name
             if model_class_name == table_name:
                 return model
+
+    def serialize(self):
+        if not hasattr(self, "__marshmallow__"):
+            raise MarshmallowError(
+                f"Model {self.__class__.__name__} does not have a marshmallow schema"
+            )
+        schema = self.__marshmallow__()
+        return schema.dump(self)
 
     @declared_attr
     def created_by(cls):
@@ -160,19 +177,19 @@ class BaseModel(Base, SerializeMixin):  # type: ignore [misc, valid-type]
         def validate(item, data):  # type: ignore [no-untyped-def]
             pass
 
-    @override
-    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
-        d = super().to_dict()  # type: ignore [no-untyped-call]
-
-        d.update(
-            {
-                "created_on": self.created_on.isoformat() if self.created_on else None,
-                "updated_on": self.updated_on.isoformat() if self.updated_on else None,
-                "display_name": self.display_name,
-            }
-        )
-
-        return cast(dict[str, Any], d)
+    # @override
+    # def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
+    #     d = super().to_dict()  # type: ignore [no-untyped-call]
+    #
+    #     d.update(
+    #         {
+    #             "created_on": self.created_on.isoformat() if self.created_on else None,
+    #             "updated_on": self.updated_on.isoformat() if self.updated_on else None,
+    #             "display_name": self.display_name,
+    #         }
+    #     )
+    #
+    #     return cast(dict[str, Any], d)
 
     def to_slim_dict(self) -> dict[str, Any]:
         d = {
