@@ -1,7 +1,9 @@
 import React, {Fragment, useLayoutEffect, useRef} from "react"
-import tooltip from "@uswds/uswds/js/usa-tooltip"
 import PropTypes from "prop-types";
 import Accordion from "../../Accordion";
+import USWDS from "@uswds/uswds/js";
+
+const { tooltip } = USWDS;
 
 /**
  * A tooltip is a short descriptive message that appears when a user hovers or focuses on an element.
