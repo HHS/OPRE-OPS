@@ -4,7 +4,7 @@ runs:
   using: composite
   steps:
     - name: Set up Bun
-      uses: oven-sh/setup-bun@a1800f471a0bc25cddac36bb13e6f436ddf341d7 # v1.0.11
+      uses: oven-sh/setup-bun@e900e6b10896cd3a94ded8f5d6094c6547532020 # v1.1.0
       with:
         bun-version: 1.0.11
     - name: Install bun dependencies
