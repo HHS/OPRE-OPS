@@ -55,9 +55,13 @@ const ChangeIcons = ({
                         label="Edit"
                         className="line-height-body-1"
                     >
-                        <button onClick={() => handleSetItemForEditing(item)}>
+                        <button
+                            onClick={() => handleSetItemForEditing(item)}
+                            title="Edit"
+                        >
                             <FontAwesomeIcon
                                 id={`edit-${item?.id}`}
+                                title="Edit"
                                 data-cy="edit-row"
                                 icon={faPen}
                                 className="text-primary height-2 width-2 margin-right-1 cursor-pointer"
@@ -69,9 +73,13 @@ const ChangeIcons = ({
                     label={`${isItemDeletable ? "Delete" : "Cannot delete"}`}
                     className="line-height-body-1"
                 >
-                    <button onClick={() => isItemDeletable && handleDeleteItem(item.id, item.display_name)}>
+                    <button
+                        onClick={() => isItemDeletable && handleDeleteItem(item.id, item.display_name)}
+                        title="Delete"
+                    >
                         <FontAwesomeIcon
                             id={`delete-${item?.id}`}
+                            title="Delete"
                             data-cy="delete-row"
                             data-testid="delete-row"
                             icon={faTrash}
@@ -87,12 +95,14 @@ const ChangeIcons = ({
                         label="Duplicate"
                         className="line-height-body-1"
                     >
-                        <button onClick={() => handleDuplicateItem(item)}>
+                        <button
+                            onClick={() => handleDuplicateItem(item)}
+                            title="Duplicate"
+                        >
                             <FontAwesomeIcon
                                 id={`duplicate-${item?.id}`}
                                 data-cy="duplicate-row"
                                 icon={faClone}
-                                title="duplicate"
                                 className="text-primary height-2 width-2 cursor-pointer margin-left-0"
                             />
                         </button>
@@ -103,7 +113,10 @@ const ChangeIcons = ({
                         label="Submit for Approval"
                         className="line-height-body-1"
                     >
-                        <button onClick={() => handleSubmitItemForApproval(item.id)}>
+                        <button
+                            onClick={() => handleSubmitItemForApproval(item.id)}
+                            title="Submit for Approval"
+                        >
                             <svg
                                 id={`submit-for-approval-${item.id}`}
                                 data-cy="submit-row"
@@ -119,7 +132,10 @@ const ChangeIcons = ({
                         label="Go to Approve"
                         className="line-height-body-1"
                     >
-                        <button onClick={() => handleGoToApprove(item.id)}>
+                        <button
+                            onClick={() => handleGoToApprove(item.id)}
+                            title="Go to Approve"
+                        >
                             <svg
                                 id={`submit-for-approval-${item.id}`}
                                 data-cy="go-to-approve-row"

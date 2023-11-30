@@ -25,7 +25,7 @@ const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () =>
                 label="Only team members listed on this agreement can edit"
                 className="line-height-body-1"
             >
-                <button>
+                <button title="Edit">
                     <FontAwesomeIcon
                         id={`edit-${rowId}`}
                         data-cy="edit-row"
@@ -39,7 +39,7 @@ const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () =>
                 label="Only team members listed on this agreement can delete"
                 className="line-height-body-1"
             >
-                <button>
+                <button title="Delete">
                     <FontAwesomeIcon
                         id={`delete-${rowId}`}
                         data-cy="delete-row"
@@ -55,7 +55,7 @@ const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () =>
                     label="Duplicate"
                     className="line-height-body-1"
                 >
-                    <button>
+                    <button title="Duplicate">
                         <FontAwesomeIcon
                             id={`duplicate-${rowId}`}
                             data-cy="duplicate-row"
@@ -72,7 +72,7 @@ const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () =>
                     label="Only team members listed on this agreement can submit it for approval"
                     className="line-height-body-1"
                 >
-                    <button>
+                    <button title="Submit for Approval">
                         <svg
                             id={`submit-for-approval-${rowId}`}
                             data-cy="submit-row"
