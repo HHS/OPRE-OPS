@@ -11,11 +11,6 @@ const Home = () => {
                     <p>⚠️Tread with caution</p>
                 </RoundedBox>
             </div>
-            <div>
-                <Tooltip label="Test Tooltip Label">
-                    <span>Tooltip Trigger</span>
-                </Tooltip>
-            </div>
         </App>
     );
 };
