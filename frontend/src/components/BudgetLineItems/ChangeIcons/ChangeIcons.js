@@ -56,15 +56,15 @@ const ChangeIcons = ({
                         className="line-height-body-1"
                     >
                         <button
-                            onClick={() => handleSetItemForEditing(item)}
+                            id={`edit-${item?.id}`}
                             title="Edit"
+                            data-cy="edit-row"
+                            onClick={() => handleSetItemForEditing(item)}
                         >
                             <FontAwesomeIcon
-                                id={`edit-${item?.id}`}
                                 title="Edit"
-                                data-cy="edit-row"
                                 icon={faPen}
-                                className="text-primary height-2 width-2 margin-right-1 cursor-pointer"
+                                className="text-primaary height-2 width-2 margin-right-1 cursor-pointer"
                             />
                         </button>
                     </Tooltip>
@@ -74,14 +74,13 @@ const ChangeIcons = ({
                     className="line-height-body-1"
                 >
                     <button
-                        onClick={() => isItemDeletable && handleDeleteItem(item.id, item.display_name)}
+                        id={`delete-${item?.id}`}
                         title="Delete"
+                        data-cy="delete-row"
+                        onClick={() => isItemDeletable && handleDeleteItem(item.id, item.display_name)}
                     >
                         <FontAwesomeIcon
-                            id={`delete-${item?.id}`}
                             title="Delete"
-                            data-cy="delete-row"
-                            data-testid="delete-row"
                             icon={faTrash}
                             className={`text-primary height-2 width-2 margin-right-1 cursor-pointer ${
                                 !isItemDeletable ? DISABLED_ICON_CLASSES : ""
@@ -96,12 +95,12 @@ const ChangeIcons = ({
                         className="line-height-body-1"
                     >
                         <button
-                            onClick={() => handleDuplicateItem(item)}
+                            id={`duplicate-${item?.id}`}
                             title="Duplicate"
+                            data-cy="duplicate-row"
+                            onClick={() => handleDuplicateItem(item)}
                         >
                             <FontAwesomeIcon
-                                id={`duplicate-${item?.id}`}
-                                data-cy="duplicate-row"
                                 icon={faClone}
                                 className="text-primary height-2 width-2 cursor-pointer margin-left-0"
                             />
@@ -113,18 +112,16 @@ const ChangeIcons = ({
                         label="Submit for Approval"
                         className="line-height-body-1"
                     >
-                        <button
-                            onClick={() => handleSubmitItemForApproval(item.id)}
+                        <span
+                            id={`submit-for-approval-${item.id}`}
                             title="Submit for Approval"
+                            data-cy="submit-row"
+                            onClick={() => handleSubmitItemForApproval(item.id)}
                         >
-                            <svg
-                                id={`submit-for-approval-${item.id}`}
-                                data-cy="submit-row"
-                                className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0"
-                            >
+                            <svg className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0">
                                 <use xlinkHref={`${icons}#send`}></use>
                             </svg>
-                        </button>
+                        </span>
                     </Tooltip>
                 )}
                 {goToApproveIcon && (
@@ -133,14 +130,12 @@ const ChangeIcons = ({
                         className="line-height-body-1"
                     >
                         <button
-                            onClick={() => handleGoToApprove(item.id)}
+                            id={`submit-for-approval-${item.id}`}
                             title="Go to Approve"
+                            data-cy="go-to-approve-row"
+                            onClick={() => handleGoToApprove(item.id)}
                         >
-                            <svg
-                                id={`submit-for-approval-${item.id}`}
-                                data-cy="go-to-approve-row"
-                                className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0"
-                            >
+                            <svg className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0">
                                 <use xlinkHref={`${icons}#check_circle`}></use>
                             </svg>
                         </button>

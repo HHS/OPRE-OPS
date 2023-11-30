@@ -25,10 +25,12 @@ const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () =>
                 label="Only team members listed on this agreement can edit"
                 className="line-height-body-1"
             >
-                <button title="Edit">
+                <button
+                    id={`edit-${rowId}`}
+                    title="Edit"
+                    data-cy="edit-row"
+                >
                     <FontAwesomeIcon
-                        id={`edit-${rowId}`}
-                        data-cy="edit-row"
                         icon={faPen}
                         className={classes}
                     />
@@ -39,11 +41,12 @@ const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () =>
                 label="Only team members listed on this agreement can delete"
                 className="line-height-body-1"
             >
-                <button title="Delete">
+                <button
+                    id={`delete-${rowId}`}
+                    title="Delete"
+                    data-cy="delete-row"
+                >
                     <FontAwesomeIcon
-                        id={`delete-${rowId}`}
-                        data-cy="delete-row"
-                        data-testid="delete-row"
                         icon={faTrash}
                         className={classes}
                     />
@@ -55,10 +58,12 @@ const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () =>
                     label="Duplicate"
                     className="line-height-body-1"
                 >
-                    <button title="Duplicate">
+                    <button
+                        id={`duplicate-${rowId}`}
+                        title="Duplicate"
+                        data-cy="duplicate-row"
+                    >
                         <FontAwesomeIcon
-                            id={`duplicate-${rowId}`}
-                            data-cy="duplicate-row"
                             icon={faClone}
                             className="text-primary height-2 width-2 cursor-pointer margin-left-0"
                             onClick={handleDuplicateItem}
@@ -72,10 +77,12 @@ const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () =>
                     label="Only team members listed on this agreement can submit it for approval"
                     className="line-height-body-1"
                 >
-                    <button title="Submit for Approval">
+                    <button
+                        id={`submit-for-approval-${rowId}`}
+                        title="Submit for Approval"
+                        data-cy="submit-row"
+                    >
                         <svg
-                            id={`submit-for-approval-${rowId}`}
-                            data-cy="submit-row"
                             className={`usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0 ${DISABLED_ICON_CLASSES}`}
                         >
                             <use xlinkHref={`${icons}#send`}></use>
