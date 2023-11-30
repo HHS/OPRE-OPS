@@ -173,6 +173,7 @@ it("can not edit a budget line if it is in EXECUTING", () => {
 
 it("can edit a budget line if it is in DRAFT or in REVIEW", () => {
     cy.visit(`/agreements/1/budget-lines`);
+    cy.wait(500); // wait for the page to load
     cy.get("h1").should("have.text", "Contract #1: African American Child and Family Research Center");
     cy.get("#edit").should("exist");
     cy.get("#edit").click();
