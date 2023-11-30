@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -15,7 +15,12 @@ import TableRowExpandable from "../../UI/TableRowExpandable";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { useIsUserAllowedToEditAgreement, useIsAgreementEditable } from "../../../hooks/agreement.hooks";
-import { useAgreementApproval, useHandleEditAgreement, useHandleDeleteAgreement } from "./agreements-table.hooks";
+import {
+    useNavigateAgreementReview,
+    useNavigateAgreementApprove,
+    useHandleEditAgreement,
+    useHandleDeleteAgreement
+} from "./agreements-table.hooks";
 import {
     getAgreementName,
     getResearchProjectName,
@@ -75,9 +80,14 @@ export const AgreementTableRow = ({ agreement }) => {
     const areThereAnyBudgetLines = isThereAnyBudgetLines(agreement);
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
     // hooks
-    const handleSubmitAgreementForApproval = useAgreementApproval();
+    const handleSubmitAgreementForApproval = useNavigateAgreementReview();
+    const handleGoToApprove = useNavigateAgreementApprove();
     const handleEditAgreement = useHandleEditAgreement();
     const { handleDeleteAgreement, modalProps, setShowModal, showModal } = useHandleDeleteAgreement();
+
+    // TODO figure out logic for when to show goToApproval icon
+    const [searchParams] = useSearchParams();
+    const forApprovalUrl = searchParams.get("filter") === "for-approval";
 
     const changeIcons = (
         <ChangeIcons
@@ -87,8 +97,10 @@ export const AgreementTableRow = ({ agreement }) => {
             handleDeleteItem={handleDeleteAgreement}
             handleSetItemForEditing={handleEditAgreement}
             duplicateIcon={false}
-            sendToReviewIcon={true}
+            sendToReviewIcon={!forApprovalUrl}
             handleSubmitItemForApproval={handleSubmitAgreementForApproval}
+            goToApproveIcon={forApprovalUrl}
+            handleGoToApprove={handleGoToApprove}
         />
     );
 
