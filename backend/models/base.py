@@ -85,15 +85,44 @@ class BaseData:
         return cast(str, self.Schema.dumps(self))
 
 
+from marshmallow_sqlalchemy import ModelConversionError, SQLAlchemyAutoSchema
+
+
+def setup_schema(base: Base) -> callable:
+    def setup_schema_fn():
+        for class_ in base.registry._class_registry.values():
+            if hasattr(class_, "__tablename__"):
+                if class_.__name__.endswith("Schema"):
+                    raise ModelConversionError(
+                        "For safety, setup_schema can not be used when a"
+                        "Model class ends with 'Schema'"
+                    )
+
+                class Meta(object):
+                    model = class_
+                    dateformat = "%Y-%m-%d"
+                    datetimeformat = "%Y-%m-%dT%H:%M:%S.%fZ"
+
+                schema_class_name = f"{class_.__name__}Schema"
+
+                schema_class = type(
+                    schema_class_name, (SQLAlchemyAutoSchema,), {"Meta": Meta}
+                )
+
+                setattr(class_, "__marshmallow__", schema_class)
+
+    return setup_schema_fn
+
+
 from sqlalchemy_continuum import make_versioned
 
+# init sqlalchemy_continuum
 make_versioned(user_cls=None)
 
 
-class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc, valid-type]
+class BaseModel(Base, SerializeMixin):  # type: ignore [misc, valid-type]
     __versioned__ = {}
     __abstract__ = True
-    __repr__ = ReprMixin.__repr__
 
     @classmethod
     def model_lookup_by_table_name(cls, table_name):

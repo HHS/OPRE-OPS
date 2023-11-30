@@ -1,3 +1,5 @@
+import datetime
+
 import pytest
 from models.cans import CAN, CANArrangementType
 
@@ -20,7 +22,7 @@ def test_can_retrieve(loaded_db):
     # assert can.budget_line_items == []
 
 
-def test_can_creation():
+def test_can_creation(loaded_db):
     can = CAN(
         number="G990991-X",
         description="Secondary Analyses Data On Child Care & Early Edu",
@@ -29,6 +31,7 @@ def test_can_creation():
         arrangement_type=CANArrangementType.COST_SHARE,
         authorizer_id=1,
         managing_portfolio_id=2,
+        expiration_date=datetime.datetime(2022, 9, 30, 1, 1, 1),
     )
 
     serialized = can.to_dict()

@@ -19,6 +19,7 @@ desert = "==2022.9.22"
 marshmallow-enum = "==1.5.1"
 marshmallow-dataclass = "==8.6.0"
 sqlalchemy-continuum = "==1.4.0"
+marshmallow-sqlalchemy = "==0.29.0"
 
 [dev-packages]
 flake8 = "==6.1.0"
