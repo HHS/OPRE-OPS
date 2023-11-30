@@ -70,7 +70,7 @@ class OPSMethodView(MethodView):
             item = self._get_item(id)
 
             if item:
-                response = make_response_with_headers(item.to_dict())
+                response = make_response_with_headers(item.serialize())
             else:
                 response = make_response_with_headers({}, 404)
 
