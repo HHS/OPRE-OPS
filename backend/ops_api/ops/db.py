@@ -18,8 +18,6 @@ def init_db(
     # add the marshmallow schemas to all the models
     event.listen(mapper, "after_configured", setup_schema(BaseModel))  # noqa: F405
 
-    # configure_mappers()
-
     if is_unit_test:
         Base.metadata.create_all(bind=engine)
 
