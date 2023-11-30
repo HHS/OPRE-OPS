@@ -33,9 +33,7 @@ vi.mock("../../../api/opsAPI", async () => {
 });
 
 // eslint-disable-next-line react/display-name
-vi.mock("../../../components/UI/Form/ProductServiceCodeSelect", () => {
-    return <div />;
-});
+vi.mock("../../../components/UI/Form/ProductServiceCodeSelect", () => <div />);
 
 // mocking ResponsiveBar until there's a solution for TypeError: Cannot read properties of null (reading 'width')
 vi.mock("@nivo/bar", () => ({
