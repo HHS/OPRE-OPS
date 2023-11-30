@@ -20,7 +20,6 @@ module.exports = defineConfig({
             });
         }
     },
-
     video: false,
     viewportHeight: 768,
     viewportWidth: 1024,
