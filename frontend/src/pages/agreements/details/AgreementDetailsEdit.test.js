@@ -5,8 +5,6 @@ import { Router } from "react-router-dom";
 import { createMemoryHistory } from "history";
 import store from "../../../store";
 import { Provider } from "react-redux";
-// import { useGetProductServiceCodesQuery } from "../../../api/opsAPI";
-// import ProductServiceCodeSelect from "../../../components/UI/Form/ProductServiceCodeSelect"
 import { vi } from "vitest";
 
 const productServiceCodesData = [
@@ -32,8 +30,13 @@ vi.mock("../../../api/opsAPI", async () => {
     };
 });
 
-// eslint-disable-next-line react/display-name
-vi.mock("../../../components/UI/Form/ProductServiceCodeSelect", () => <div />);
+vi.mock("../../../components/UI/Form/ProductServiceCodeSelect", async () => {
+    const actual = await vi.importActual("../../../components/UI/Form/ProductServiceCodeSelect");
+    return {
+        ...actual,
+        default: () => <div />
+    };
+});
 
 // mocking ResponsiveBar until there's a solution for TypeError: Cannot read properties of null (reading 'width')
 vi.mock("@nivo/bar", () => ({
