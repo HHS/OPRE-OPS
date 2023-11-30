@@ -2,6 +2,7 @@
 import decimal
 from typing import Annotated, ClassVar, Final, TypeAlias, TypedDict, TypeVar, cast
 
+import sqlalchemy
 from marshmallow import Schema as MMSchema
 from marshmallow.exceptions import MarshmallowError
 from marshmallow_enum import EnumField
@@ -112,11 +113,12 @@ def setup_schema(base: Base) -> callable:
                     schema_class_name, (SQLAlchemyAutoSchema,), {"Meta": Meta}
                 )
 
-                # exceptions
-                if class_.__name__ in ["Agreement", "ContractAgreement"]:
-                    schema_class._declared_fields["agreement_type"] = EnumField(
-                        "AgreementType"
-                    )
+                # handle enums
+                for column in class_.__mapper__.columns:
+                    if isinstance(column.type, sqlalchemy.sql.sqltypes.Enum):
+                        schema_class._declared_fields[column.name] = EnumField(
+                            column.type.enum_class
+                        )
 
                 setattr(class_, "__marshmallow__", schema_class)
 
