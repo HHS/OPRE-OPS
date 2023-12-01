@@ -40,4 +40,4 @@ By leveraging these strengths, Vite can significantly enhance the development ex
 
 ## Other
 
-![Vite and Bun](https://github-production-user-asset-6210df.s3.amazonaws.com/4629398/282599507-100520bb-842b-473a-ad38-3a31359b718a.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20231201%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20231201T180351Z&X-Amz-Expires=300&X-Amz-Signature=b814508cf3bc172d1775e8221ef6fec92f9c19209346874b324c04aa2800966f&X-Amz-SignedHeaders=host&actor_id=4629398&key_id=0&repo_id=368634076)
+![Vite and Bun](https://github-production-user-asset-6210df.s3.amazonaws.com/4629398/282599507-100520bb-842b-473a-ad38-3a31359b718a.png)
