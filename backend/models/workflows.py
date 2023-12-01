@@ -55,7 +55,7 @@ class WorkflowInstance(BaseModel):
     associated_type = sa.Column(sa.Enum(WorkflowTriggerType), nullable=False)  # could use Enum based on the entities
     workflow_template_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_template.id"))
     steps = relationship("WorkflowStepInstance", backref="workflow_instance")
-    #prop
+    # future props
     # overall_status - calculated
     # current_step - calculated based on status of steps
 
@@ -158,14 +158,11 @@ class Package(BaseModel):
         cls._subclasses[package_type] = cls
         super().__init_subclass__(**kwargs)
 
-    # @classmethod
-    # def get_polymorphic(cls, package_type: PackageType) -> type["Package"]:
-    #     return cast(type[Package], cls._subclasses[package_type])
-
 
     @classmethod
     def get_polymorphic(cls) -> "Package":
         return with_polymorphic(Package, list(cls._subclasses.values()))
+
 
     @classmethod
     def get_class_field(cls, field_name: str) -> InstrumentedAttribute:
@@ -180,12 +177,14 @@ class Package(BaseModel):
                 raise ValueError(f"Column name does not exist for packages: {field_name}")
         return getattr(table_class, field_name)
 
+
     @classmethod
     def get_class(cls, package_type: Optional[PackageType] = None) -> type["Package"]:
         try:
             return cls._subclasses[package_type]
         except KeyError:
             return Package
+
 
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
