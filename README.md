@@ -73,13 +73,13 @@ be customized further by choosing the status code and passing that, so `simulate
 
 #### Frontend
 
-The frontend tests are implemented through [Jest](https://jestjs.io).
+The frontend tests are implemented through [Vitest](https://vitest.dev/).
 
 To run them...
 
 ```shell
 cd ./frontend/
-bun test --watchAll=false
+bun run test --watchAll=false
 ```
 
 This runs them once and then exits.  You can remove the `--watchAll=false` if you want to continually rerun the tests
@@ -89,7 +89,7 @@ You can also get code coverage information by running...
 
 ```shell
 cd ./frontend/
-bun test:coverage --watchAll=false
+bun run test:coverage --watchAll=false
 ```
 
 We require 90% code coverage.
@@ -106,11 +106,11 @@ docker compose -f docker-compose.e2e.yml up
 
 End-to-end (E2E) can be run from the `frontend` via:
 ```shell
-bun test:e2e
+bun run test:e2e
 ```
 or Interactively via:
 ```shell
-bun test:e2e:interactive
+bun run test:e2e:interactive
 ```
 
 The E2E uses it's own TEST keys for generating and validating JWT Signatures, as it bypasses any live OAuth providers.
@@ -150,14 +150,14 @@ To run linting...
 
 ```shell
 cd ./frontend/
-bun lint
+bun run lint
 ```
 
 You can automatically fix many linting errors by passing in `--fix`.
 
 ```shell
 cd ./frontend/
-bun lint --fix
+bun run lint --fix
 ```
 
 ### Pre-commit Hooks

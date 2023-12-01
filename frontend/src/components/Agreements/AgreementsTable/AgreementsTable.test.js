@@ -36,8 +36,8 @@ vi.mock("../../../api/opsAPI", async () => {
     const actual = await vi.importActual("../../../api/opsAPI");
     return {
         ...actual,
-        useGetUserByIdQuery: () => vi.fn(() => ({ data: userData })),
-        useGetAgreementByIdQuery: () => vi.fn(() => ({ data: agreements[0] }))
+        useGetUserByIdQuery: () => ({ data: userData }),
+        useGetAgreementByIdQuery: () => ({ data: agreements[0] })
     };
 });
 

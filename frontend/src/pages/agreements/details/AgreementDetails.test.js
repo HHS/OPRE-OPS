@@ -1,6 +1,5 @@
 import { render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
-// import "@testing-library/jest-dom";
 import AgreementDetails from "./AgreementDetails";
 import { Router } from "react-router-dom";
 import { createMemoryHistory } from "history";
@@ -9,6 +8,7 @@ const history = createMemoryHistory();
 import store from "../../../store";
 import { vi } from "vitest";
 
+const mockFn = TestApplicationContext.helpers().mockFn;
 // mocking ResponsiveBar until there's a solution for TypeError: Cannot read properties of null (reading 'width')
 vi.mock("@nivo/bar", () => ({
     __esModule: true,
@@ -21,7 +21,7 @@ vi.mock("react-router-dom", async () => {
     const actual = await vi.importActual("react-router-dom");
     return {
         ...actual,
-        useNavigate: () => vi.fn()
+        useNavigate: () => mockFn
     };
 });
 
@@ -29,7 +29,7 @@ vi.mock("react", async () => {
     const actual = await vi.importActual("react");
     return {
         ...actual,
-        useState: () => [null, vi.fn()]
+        useState: () => [null, mockFn]
     };
 });
 
@@ -418,7 +418,7 @@ describe("AgreementDetails", () => {
         });
 
         // IntersectionObserver isn't available in test environment
-        const mockIntersectionObserver = vi.fn();
+        const mockIntersectionObserver = mockFn;
         mockIntersectionObserver.mockReturnValue({
             observe: () => null,
             unobserve: () => null,
@@ -436,7 +436,7 @@ describe("AgreementDetails", () => {
                         agreement={agreement}
                         projectOfficer={projectOfficer}
                         isEditMode={false}
-                        setIsEditMode={vi.fn}
+                        setIsEditMode={mockFn}
                     />
                 </Router>
             </Provider>

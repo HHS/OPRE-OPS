@@ -1,18 +1,21 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import DesiredAwardDate from "./DesiredAwardDate";
 import { vi } from "vitest";
+import TestApplicationContext from "../../../../applicationContext/TestApplicationContext";
+
+const mockFn = TestApplicationContext.helpers().mockFn;
 
 describe("DesiredAwardDate", () => {
     let mockSetEnteredMonth, mockSetEnteredDay, mockSetEnteredYear, mockRunValidate, mockRes;
 
     beforeEach(() => {
-        mockSetEnteredMonth = vi.fn();
-        mockSetEnteredDay = vi.fn();
-        mockSetEnteredYear = vi.fn();
+        mockSetEnteredMonth = mockFn;
+        mockSetEnteredDay = mockFn;
+        mockSetEnteredYear = mockFn;
         mockRunValidate = vi.fn();
         mockRes = {
-            getErrorsByGroup: vi.fn().mockReturnValue([]),
-            getErrors: vi.fn()
+            getErrorsByGroup: mockFn.mockReturnValue([]),
+            getErrors: mockFn
         };
     });
 

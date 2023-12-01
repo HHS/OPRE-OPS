@@ -1,11 +1,13 @@
 import { render, screen } from "@testing-library/react";
-
-import AgreementDetailsEdit from "./AgreementDetailsEdit";
 import { Router } from "react-router-dom";
 import { createMemoryHistory } from "history";
-import store from "../../../store";
 import { Provider } from "react-redux";
 import { vi } from "vitest";
+import AgreementDetailsEdit from "./AgreementDetailsEdit";
+import store from "../../../store";
+import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
+
+const mockFn = TestApplicationContext.helpers().mockFn;
 
 const productServiceCodesData = [
     {
@@ -26,7 +28,7 @@ vi.mock("../../../api/opsAPI", async () => {
     const actual = await import("../../../api/opsAPI");
     return {
         ...actual,
-        useGetProductServiceCodesQuery: () => vi.fn(() => ({ data: productServiceCodesData }))
+        useGetProductServiceCodesQuery: () => ({ data: productServiceCodesData })
     };
 });
 
@@ -50,7 +52,7 @@ vi.mock("react-router-dom", async () => {
     const actual = await import("react-router-dom");
     return {
         ...actual,
-        useNavigate: () => vi.fn()
+        useNavigate: () => mockFn
     };
 });
 
@@ -58,7 +60,7 @@ vi.mock("react", async () => {
     const actual = await import("react");
     return {
         ...actual,
-        useState: () => [null, vi.fn()]
+        useState: () => [null, mockFn]
     };
 });
 
@@ -126,7 +128,7 @@ describe("AgreementDetailsEdit", () => {
                         agreement={agreement}
                         projectOfficer={projectOfficer}
                         isEditMode={true}
-                        setIsEditMode={vi.fn()}
+                        setIsEditMode={mockFn}
                     />
                 </Router>
             </Provider>

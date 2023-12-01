@@ -1,6 +1,8 @@
 import { render, fireEvent } from "@testing-library/react";
 import ProjectSelectWithSummaryCard from "./ProjectSelectWithSummaryCard";
-import { vi } from "vitest";
+import TestApplicationContext from "../../../../applicationContext/TestApplicationContext";
+
+const mockFn = TestApplicationContext.helpers().mockFn;
 
 describe("ProjectSelect", () => {
     const researchProjects = [
@@ -8,10 +10,10 @@ describe("ProjectSelect", () => {
         { id: 2, title: "Project 2", description: "Description 2" },
         { id: 3, title: "Project 3", description: "Description 3" }
     ];
-    const mockClearFunction = vi.fn();
+    const mockClearFunction = mockFn;
 
     it("updates the selected project when an option is selected and displays summary card", () => {
-        const setSelectedProject = vi.fn();
+        const setSelectedProject = mockFn;
         const { getByText, container } = render(
             <ProjectSelectWithSummaryCard
                 researchProjects={researchProjects}

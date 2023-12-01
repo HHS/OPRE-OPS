@@ -2,6 +2,9 @@ import { screen, render } from "@testing-library/react";
 import { ProcurementShopSelectWithFee } from "./ProcurementShopSelectWithFee";
 import { useGetProcurementShopsQuery } from "../../../../api/opsAPI";
 import { vi } from "vitest";
+import TestApplicationContext from "../../../../applicationContext/TestApplicationContext";
+
+const mockFn = TestApplicationContext.helpers().mockFn;
 
 vi.mock("../../../../api/opsAPI");
 
@@ -16,7 +19,7 @@ describe("ProcurementShopSelect", () => {
         render(
             <ProcurementShopSelectWithFee
                 selectedProcurementShop={null}
-                onChangeSelectedProcurementShop={vi.fn()}
+                onChangeSelectedProcurementShop={mockFn}
             />
         );
         expect(screen.getByText("Loading...")).toBeInTheDocument();
@@ -27,7 +30,7 @@ describe("ProcurementShopSelect", () => {
         render(
             <ProcurementShopSelectWithFee
                 selectedProcurementShop={null}
-                onChangeSelectedProcurementShop={vi.fn()}
+                onChangeSelectedProcurementShop={mockFn}
             />
         );
         expect(screen.getByText("Oops, an error occurred")).toBeInTheDocument();
@@ -38,7 +41,7 @@ describe("ProcurementShopSelect", () => {
         render(
             <ProcurementShopSelectWithFee
                 selectedProcurementShop={null}
-                onChangeSelectedProcurementShop={vi.fn()}
+                onChangeSelectedProcurementShop={mockFn}
             />
         );
         const select = screen.getByLabelText("Procurement Shop");
@@ -50,7 +53,7 @@ describe("ProcurementShopSelect", () => {
         render(
             <ProcurementShopSelectWithFee
                 selectedProcurementShop={null}
-                onChangeSelectedProcurementShop={vi.fn()}
+                onChangeSelectedProcurementShop={mockFn}
             />
         );
 

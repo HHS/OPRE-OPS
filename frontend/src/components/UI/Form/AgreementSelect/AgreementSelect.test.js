@@ -2,6 +2,9 @@ import { render, screen, fireEvent, within } from "@testing-library/react";
 import AgreementSelect from "./AgreementSelect";
 import { useGetUserByIdQuery } from "../../../../api/opsAPI";
 import { vi } from "vitest";
+import TestApplicationContext from "../../../../applicationContext/TestApplicationContext";
+
+const mockFn = TestApplicationContext.helpers().mockFn;
 
 vi.mock("../../../../api/opsAPI");
 
@@ -62,9 +65,9 @@ describe("AgreementSelect", () => {
     });
 
     it("calls onChangeAgreementSelection when an agreement is selected", () => {
-        const setSelectedAgreementMock = vi.fn();
-        const setSelectedProcurementShopMock = vi.fn();
-        const setBudgetLinesAddedMock = vi.fn();
+        const setSelectedAgreementMock = mockFn;
+        const setSelectedProcurementShopMock = mockFn;
+        const setBudgetLinesAddedMock = mockFn;
         render(
             <AgreementSelect
                 agreements={agreementsMock}

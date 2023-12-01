@@ -1,12 +1,13 @@
 import { render, screen } from "@testing-library/react";
-import "@testing-library/jest-dom";
 import { AgreementTableRow } from "./AgreementTableRow";
 import { Router } from "react-router-dom";
 import { createMemoryHistory } from "history";
 import { Provider } from "react-redux";
 import configureStore from "redux-mock-store";
 import { vi } from "vitest";
+import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 
+const mockFn = TestApplicationContext.helpers().mockFn;
 const history = createMemoryHistory();
 const mockStore = configureStore([]);
 
@@ -14,7 +15,7 @@ vi.mock("react", async () => {
     const actual = await vi.importActual("react");
     return {
         ...actual,
-        useState: () => [null, vi.fn()]
+        useState: () => [null, mockFn]
     };
 });
 
@@ -22,7 +23,7 @@ vi.mock("react-router-dom", async () => {
     const actual = await vi.importActual("react-router-dom");
     return {
         ...actual,
-        useNavigate: () => vi.fn()
+        useNavigate: () => mockFn
     };
 });
 
@@ -41,8 +42,8 @@ vi.mock("../../../api/opsAPI", async () => {
 
     return {
         ...actual,
-        useGetUserByIdQuery: () => vi.fn(() => ({ data: userData })),
-        useGetAgreementByIdQuery: () => vi.fn(() => ({ data: agreement }))
+        useGetUserByIdQuery: () => ({ data: userData }),
+        useGetAgreementByIdQuery: () => ({ data: agreement })
     };
 });
 

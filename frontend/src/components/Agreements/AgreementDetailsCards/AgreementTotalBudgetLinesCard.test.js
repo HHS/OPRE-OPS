@@ -1,7 +1,9 @@
 import { render, screen } from "@testing-library/react";
-import "@testing-library/jest-dom";
 import AgreementTotalBudgetLinesCard from "./AgreementTotalBudgetLinesCard";
 import { vi } from "vitest";
+import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
+
+const mockFn = TestApplicationContext.helpers().mockFn;
 
 vi.mock("@nivo/bar", () => ({
     __esModule: true,
@@ -14,7 +16,7 @@ vi.mock("react", async () => {
     const actual = await vi.importActual("react");
     return {
         ...actual,
-        useState: () => [null, vi.fn()]
+        useState: () => [null, mockFn]
     };
 });
 

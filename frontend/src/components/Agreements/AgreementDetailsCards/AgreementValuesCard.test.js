@@ -1,6 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import AgreementValuesCard from "./AgreementValuesCard";
 import { vi } from "vitest";
+import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
+
+const mockFn = TestApplicationContext.helpers().mockFn;
 
 // mocking ResponsiveBar until there's a solution for TypeError: Cannot read properties of null (reading 'width')
 vi.mock("@nivo/bar", () => ({
@@ -14,7 +17,7 @@ vi.mock("react", async () => {
     const actual = await vi.importActual("react");
     return {
         ...actual,
-        useState: () => [null, vi.fn()]
+        useState: () => [null, mockFn]
     };
 });
 

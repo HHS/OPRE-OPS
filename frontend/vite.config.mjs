@@ -5,7 +5,6 @@ import viteJsconfigPaths from "vite-jsconfig-paths";
 import svgr from "vite-plugin-svgr";
 import eslint from "vite-plugin-eslint";
 import fs from "fs/promises";
-// import macrosPlugin from "vite-plugin-babel-macros";
 
 export default defineConfig(({ mode }) => {
     // Load env file based on `mode` in the current working directory.
@@ -36,7 +35,6 @@ export default defineConfig(({ mode }) => {
             }),
             viteJsconfigPaths(),
             eslint(),
-            // macrosPlugin(),
             svgr({
                 include: "**/*.svg?react"
             })

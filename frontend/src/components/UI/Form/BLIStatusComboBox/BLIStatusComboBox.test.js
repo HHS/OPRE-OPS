@@ -1,9 +1,11 @@
 import { render, fireEvent, screen } from "@testing-library/react";
 import BLIStatusComboBox from "./BLIStatusComboBox";
-import { vi } from "vitest";
+import TestApplicationContext from "../../../../applicationContext/TestApplicationContext";
+
+const mockFn = TestApplicationContext.helpers().mockFn;
 
 describe("BLIStatusComboBox", () => {
-    const mockSetSelectedBLIStatus = vi.fn();
+    const mockSetSelectedBLIStatus = mockFn;
 
     it("renders the component with the correct label", () => {
         render(
@@ -45,7 +47,7 @@ describe("BLIStatusComboBox", () => {
     });
 
     it("updates the selected item when multiple options are selected", () => {
-        const setSelectedBLIStatus = vi.fn();
+        const setSelectedBLIStatus = mockFn;
         const { getByText, container } = render(
             <BLIStatusComboBox
                 selectedBLIStatus={null}

@@ -2,6 +2,9 @@ import { render, fireEvent, screen } from "@testing-library/react";
 import PortfoliosComboBox from "./PortfoliosComboBox";
 import { useGetPortfoliosQuery } from "../../../../api/opsAPI";
 import { vi } from "vitest";
+import TestApplicationContext from "../../../../applicationContext/TestApplicationContext";
+
+const mockFn = TestApplicationContext.helpers().mockFn;
 
 vi.mock("../../../../api/opsAPI");
 
@@ -12,7 +15,7 @@ const samplePortfolios = [
 ];
 
 describe("PortfoliosComboBox", () => {
-    const mockSetSelectedPortfolios = vi.fn();
+    const mockSetSelectedPortfolios = mockFn;
 
     it("renders the component with the correct label", () => {
         useGetPortfoliosQuery.mockReturnValue({ data: samplePortfolios });
@@ -57,7 +60,7 @@ describe("PortfoliosComboBox", () => {
     });
 
     it("updates the selected item when multiple options are selected", () => {
-        const setSelectedPortfolios = vi.fn();
+        const setSelectedPortfolios = mockFn;
         useGetPortfoliosQuery.mockReturnValue({ data: samplePortfolios });
         const { getByText, container } = render(
             <PortfoliosComboBox

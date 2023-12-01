@@ -1,8 +1,10 @@
-import { vi } from "vitest";
+import TestApplicationContext from "../../applicationContext/TestApplicationContext";
+
+const mockFn = TestApplicationContext.helpers().mockFn;
 
 const mockTooltip = {
-    on: vi.fn(),
-    off: vi.fn()
+    on: mockFn,
+    off: mockFn
 };
 
 export default {

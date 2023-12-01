@@ -2,10 +2,12 @@ import store from "../../../store";
 import { Provider } from "react-redux";
 import { render } from "@testing-library/react";
 import CANFundingBar from "./CANFundingBar";
-import { vi } from "vitest";
+import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
+
+const mockFn = TestApplicationContext.helpers().mockFn;
 
 it("renders without crashing", () => {
-    const setActiveId = vi.fn();
+    const setActiveId = mockFn;
 
     const data = [
         {

@@ -5,7 +5,8 @@ class TestApplicationContext {
     static #helpers = {
         callBackend: vi.fn(),
         authConfig,
-        backEndConfig
+        backEndConfig,
+        mockFn: vi.fn()
     };
 
     static helpers() {
