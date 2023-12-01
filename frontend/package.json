@@ -33,7 +33,6 @@
         "vest": "5.1.5"
     },
     "devDependencies": {
-        "@babel/plugin-proposal-private-property-in-object": "7.21.11",
         "@testing-library/react": "14.1.2",
         "@testing-library/jest-dom": "6.1.4",
         "@types/testing-library__react": "10.2.0",
