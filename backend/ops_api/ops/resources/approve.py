@@ -40,7 +40,7 @@ class ApproveSubmisionListApi(BaseItemAPI):
         try:
             # with OpsEventHandler(OpsEventHandler.CREATE_BLI_PACKAGE) as meta:
 
-            # Using a dataclass schema for ApprovalSubmissionData, load data from request.json
+            # TODO: Using a dataclass schema for ApprovalSubmissionData, load data from request.json
             # data = ApprovalSubmissionData().load(data=request.json)
 
             submitter_id = request.json.get("submitter_id")
@@ -80,7 +80,7 @@ class ApproveSubmisionListApi(BaseItemAPI):
                 else:
                     raise ValueError(f"BudgetLineItem with ID {bli_id} does not exist.")
 
-            # # Create WorkflowInstance and WorkflowStepInstance
+            # # WIP: Create WorkflowInstance and WorkflowStepInstance
             # workflow_instance = WorkflowInstance()
             # workflow_instance.workflow_template_id = 1  # We know this is a basic approval template
             # workflow_instance.created_by = user.id
@@ -106,7 +106,7 @@ class ApproveSubmisionListApi(BaseItemAPI):
 
             # # workflow_instance.steps.append(workflow_step_instance)
 
-            # # # commit our new workflow instance
+            # # # WIP: commit our new workflow instance
             # # current_app.db_session.add(workflow_instance)
             # # current_app.db_session.commit()
 
