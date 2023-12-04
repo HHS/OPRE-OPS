@@ -109,12 +109,12 @@ const ChangeIcons = ({
                 )}
                 {sendToReviewIcon && (
                     <Tooltip
-                        label="Submit for Approval"
+                        label="Submit for approval"
                         className="line-height-body-1"
                     >
                         <button
                             id={`submit-for-approval-${item.id}`}
-                            title="Submit for Approval"
+                            title="Submit for approval"
                             data-cy="submit-row"
                             onClick={() => handleSubmitItemForApproval(item.id)}
                         >
