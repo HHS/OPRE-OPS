@@ -1,8 +1,12 @@
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import AgreementSelect from "./AgreementSelect";
 import { useGetUserByIdQuery } from "../../../../api/opsAPI";
+import { vi } from "vitest";
+import TestApplicationContext from "../../../../applicationContext/TestApplicationContext";
 
-jest.mock("../../../../api/opsAPI");
+const mockFn = TestApplicationContext.helpers().mockFn;
+
+vi.mock("../../../../api/opsAPI");
 
 describe("AgreementSelect", () => {
     const agreementsMock = [
@@ -61,9 +65,9 @@ describe("AgreementSelect", () => {
     });
 
     it("calls onChangeAgreementSelection when an agreement is selected", () => {
-        const setSelectedAgreementMock = jest.fn();
-        const setSelectedProcurementShopMock = jest.fn();
-        const setBudgetLinesAddedMock = jest.fn();
+        const setSelectedAgreementMock = mockFn;
+        const setSelectedProcurementShopMock = mockFn;
+        const setBudgetLinesAddedMock = mockFn;
         render(
             <AgreementSelect
                 agreements={agreementsMock}

@@ -1,17 +1,18 @@
 import store from "../../../store";
 import { Provider } from "react-redux";
 import { render } from "@testing-library/react";
-import PeopleAndTeams from "./PeopleAndTeams";
+import ResearchProjects from "./ResearchProjects";
 import CanCard from "../../CANs/CanCard/CanCard";
+import { vi } from "vitest";
 
 // This is needed because Nivo (charting library) uses the ResizeObserver on the client and so needs to be
 // mocked for unit tests.
 window.ResizeObserver =
     window.ResizeObserver ||
-    jest.fn().mockImplementation(() => ({
-        disconnect: jest.fn(),
-        observe: jest.fn(),
-        unobserve: jest.fn()
+    vi.fn().mockImplementation(() => ({
+        disconnect: vi.fn(),
+        observe: vi.fn(),
+        unobserve: vi.fn()
     }));
 
 // TODO: Skipping test for now because this component contains many sub-components which currently do not have tests -
@@ -19,7 +20,7 @@ window.ResizeObserver =
 it.skip("renders without crashing", () => {
     render(
         <Provider store={store}>
-            <PeopleAndTeams
+            <ResearchProjects
                 portfolioId={1}
                 canCards={[
                     <CanCard

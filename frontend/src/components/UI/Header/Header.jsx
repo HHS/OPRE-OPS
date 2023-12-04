@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import AuthSection from "../../Auth/AuthSection";
 import { Menu } from "./Menu";
 import { Search } from "./Search";
@@ -21,8 +22,8 @@ const Header = () => {
                     style={styles.logo}
                     id="-logo"
                 >
-                    <a
-                        href="/"
+                    <Link
+                        to="/"
                         style={styles.textlogo}
                         title="Portfolio Management System"
                     >
@@ -31,7 +32,7 @@ const Header = () => {
                             alt="OPRE Logo"
                         />
                         <em className="font-ui-md">&nbsp;Portfolio Management System</em>
-                    </a>
+                    </Link>
                 </div>
                 <button
                     type="button"

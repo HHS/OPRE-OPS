@@ -1,23 +1,29 @@
 import { render, screen } from "@testing-library/react";
-import "@testing-library/jest-dom";
 import AgreementValuesCard from "./AgreementValuesCard";
+import { vi } from "vitest";
+import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
+
+const mockFn = TestApplicationContext.helpers().mockFn;
 
 // mocking ResponsiveBar until there's a solution for TypeError: Cannot read properties of null (reading 'width')
-jest.mock("@nivo/bar", () => ({
+vi.mock("@nivo/bar", () => ({
     __esModule: true,
     ResponsiveBar: () => {
         return <div />;
     }
 }));
 
-jest.mock("react", () => ({
-    ...jest.requireActual("react"),
-    useState: () => [null, jest.fn()]
-}));
+vi.mock("react", async () => {
+    const actual = await vi.importActual("react");
+    return {
+        ...actual,
+        useState: () => [null, mockFn]
+    };
+});
 
 // This will reset all mocks after each test
 afterEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
 });
 
 describe("AgreementValuesCard", () => {

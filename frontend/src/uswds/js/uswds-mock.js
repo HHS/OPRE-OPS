@@ -1,8 +1,12 @@
+import TestApplicationContext from "../../applicationContext/TestApplicationContext";
+
+const mockFn = TestApplicationContext.helpers().mockFn;
+
 const mockTooltip = {
-    on: jest.fn(),
-    off: jest.fn(),
+    on: mockFn,
+    off: mockFn
 };
 
 export default {
-  tooltip: mockTooltip,
+    tooltip: mockTooltip
 };
