@@ -65,12 +65,14 @@ class OPSMethodView(MethodView):
 
             return response
 
-    def _get_item_with_try(self, id: int) -> Response:
+    def _get_item_with_try(self, id: int, additional_fields: dict = None) -> Response:
         with handle_sql_error():
             item = self._get_item(id)
 
             if item:
-                response = make_response_with_headers(item.serialize())
+                item_dict = item.to_dict()
+                item_dict.update(additional_fields or {})
+                response = make_response_with_headers(item_dict)
             else:
                 response = make_response_with_headers({}, 404)
 

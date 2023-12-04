@@ -144,7 +144,7 @@ class BaseModel(Base):  # type: ignore [misc, valid-type]
             if model_class_name == table_name:
                 return model
 
-    def serialize(self):
+    def to_dict(self):
         if not hasattr(self, "__marshmallow__"):
             raise MarshmallowError(
                 f"Model {self.__class__.__name__} does not have a marshmallow schema"

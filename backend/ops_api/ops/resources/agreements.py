@@ -9,7 +9,7 @@ from marshmallow import EXCLUDE, Schema, ValidationError
 from models import DirectAgreement, GrantAgreement, IaaAaAgreement, IaaAgreement, OpsEventType, User, Vendor
 from models.base import BaseModel
 from models.cans import Agreement, AgreementReason, AgreementType, BudgetLineItemStatus, ContractAgreement
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView, handle_sql_error
 from ops_api.ops.resources.agreements_constants import (
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
     AGREEMENTS_REQUEST_SCHEMAS,
@@ -54,8 +54,11 @@ class AgreementItemAPI(BaseItemAPI):
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self, id: int) -> Response:
-        response = self._get_item_with_try(id)
-        return response
+        with handle_sql_error():
+            item = self._get_item(id)
+            additional_fields = add_additional_fields_to_agreement_response(item)
+
+        return self._get_item_with_try(id, additional_fields=additional_fields)
 
     @override
     @is_authorized(PermissionType.PUT, Permission.AGREEMENT)
@@ -199,7 +202,7 @@ class AgreementListAPI(BaseListAPI):
         for agreement_cls in agreement_classes:
             result.extend(current_app.db_session.execute(self._get_query(agreement_cls, **request.args)).all())
 
-        return make_response_with_headers([i.serialize() for item in result for i in item])
+        return make_response_with_headers([i.to_dict() for item in result for i in item])
 
     @override
     @is_authorized(PermissionType.POST, Permission.AGREEMENT)
@@ -396,3 +399,26 @@ def add_vendor(data: dict, field_name: str = "vendor") -> None:
         else:
             data[f"{field_name}_id"] = vendor_obj.id
         del data[field_name]
+
+
+def add_additional_fields_to_agreement_response(agreement: Agreement) -> dict[str, Any]:
+    """
+    Add additional fields to the agreement response.
+
+    N.B. This is a temporary solution to add additional fields to the response.
+    This should be refactored to use marshmallow.
+    Also, the frontend/OpenAPI needs to be refactored to not use these fields.
+    """
+    if not agreement:
+        return {}
+
+    return {
+        "agreement_type": agreement.agreement_type.name if agreement.agreement_type else None,
+        "agreement_reason": agreement.agreement_reason.name if agreement.agreement_reason else None,
+        "budget_line_items": [bli.to_dict() for bli in agreement.budget_line_items],
+        "team_members": [tm.to_dict() for tm in agreement.team_members],
+        "research_project": agreement.research_project.to_dict() if agreement.research_project else None,
+        "procurement_shop": agreement.procurement_shop.to_dict() if agreement.procurement_shop else None,
+        "product_service_code": agreement.product_service_code.to_dict() if agreement.product_service_code else None,
+        "display_name": agreement.display_name,
+    }
