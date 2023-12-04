@@ -24,7 +24,7 @@ it("agreement loads with details", () => {
 });
 
 it("agreement loads with budget lines", () => {
-    cy.get(".DetailsTabs_listItemNotSelected__Sy8MZ").click();
+    cy.get('[data-cy="details-tab-Budget Lines"]').click();
     cy.get('[data-cy="currency-summary-card"]').contains("Agreement Total");
     cy.get('[data-cy="currency-summary-card"]').contains("$ 0");
     cy.get('[data-cy="blis-by-fy-card"]').should("exist");
