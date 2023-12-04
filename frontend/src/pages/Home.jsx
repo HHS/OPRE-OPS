@@ -1,6 +1,5 @@
 import App from "../App";
 import RoundedBox from "../components/UI/RoundedBox";
-import { Tooltip } from "../components/UI/USWDS/Tooltip";
 
 const Home = () => {
     return (
