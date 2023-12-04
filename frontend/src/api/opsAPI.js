@@ -199,7 +199,7 @@ export const opsApi = createApi({
         }),
         addBliPackage: builder.mutation({
             query: (body) => ({
-                url: `/bli-package/`,
+                url: `/bli-packages/`,
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body

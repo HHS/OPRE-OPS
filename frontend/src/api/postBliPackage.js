@@ -13,7 +13,7 @@ export const postBliPackage = async (item) => {
 
     const responseData = await ApplicationContext.get()
         .helpers()
-        .callBackend(`/api/${api_version}/bli-package/`, "POST", newBliPackage)
+        .callBackend(`/api/${api_version}/bli-packages/`, "POST", newBliPackage)
         .then(function (response) {
             return response;
         })

@@ -120,11 +120,11 @@ def register_api(api_bp: Blueprint) -> None:
     )
 
     api_bp.add_url_rule(
-        "/bli-package/<int:id>",
+        "/bli-packages/<int:id>",
         view_func=BLI_PACKAGE_ITEM_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
-        "/bli-package/",
+        "/bli-packages/",
         view_func=BLI_PACKAGE_LIST_API_VIEW_FUNC,
     )
 
