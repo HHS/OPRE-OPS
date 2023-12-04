@@ -126,12 +126,12 @@ const ChangeIcons = ({
                 )}
                 {goToApproveIcon && (
                     <Tooltip
-                        label="Go to Approve"
+                        label="Go to approve"
                         className="line-height-body-1"
                     >
                         <button
                             id={`submit-for-approval-${item.id}`}
-                            title="Go to Approve"
+                            title="Go to approve"
                             data-cy="go-to-approve-row"
                             onClick={() => handleGoToApprove(item.id)}
                         >
