@@ -10,7 +10,6 @@ from ops_api.ops.base_views import BaseItemAPI
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
-from sqlalchemy import desc
 from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 from typing_extensions import override
 
@@ -65,14 +64,15 @@ class ApproveSubmisionListApi(BaseItemAPI):
             # Handle budget_line_item IDs and create BliPackageSnapshot records
             for bli_id in budget_line_item_ids:
                 bli = current_app.db_session.get(BudgetLineItem, bli_id)
-                # latest_version = bli.versions.order_by(desc("id")).first()
-                # current_app.logger.info(f"Latest version: {latest_version}")
+
                 # bli_package_snapshot = BliPackageSnapshot(
                 #     bli_id=bli.id,
                 #     package_id=new_bli_package.id,
                 #     version=None,
                 # )
                 if bli:
+                    # latest_version = bli.versions.order_by(desc("id")).first()
+                    # current_app.logger.info(f"Latest version: {latest_version}")
                     new_bli_package.bli_package_snapshots.append(
                         BliPackageSnapshot(
                             bli_id=bli.id,
@@ -126,9 +126,7 @@ class ApproveSubmisionListApi(BaseItemAPI):
             # meta.metadata.update({"New Bli Package": new_bli_package_dict})
             # current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Bli Package created: {new_bli_package_dict}")
 
-            return make_response_with_headers(
-                {"message": "Bli Package created", "id": new_bli_package.id}, 201
-            )
+            return make_response_with_headers({"message": "Bli Package created", "id": new_bli_package.id}, 201)
         except (KeyError, RuntimeError, PendingRollbackError, ValueError) as re:
             current_app.logger.error(f"{message_prefix}: {re}")
             return make_response_with_headers({}, 400)
