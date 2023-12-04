@@ -34,10 +34,13 @@ class PackageType(Enum):
 class WorkflowTemplate(BaseModel):
     """ Workflow structure without being tied to any specific real-world entity """
     __tablename__ = "workflow_template"
-    __versioned__ = {}
-    id = sa.Column(sa.Integer, sa.Identity(always=True, start=1, cycle=True), primary_key=True)
+    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
     name = sa.Column(sa.String, nullable=False)
     steps = relationship("WorkflowStepTemplate", backref="workflow_template")
+    
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.name
 
 
 class WorkflowInstance(BaseModel):
@@ -48,9 +51,8 @@ class WorkflowInstance(BaseModel):
              approach with `associated_id` and `associated_type` fields.
     """
     __tablename__ = "workflow_instance"
-    __versioned__ = {}
 
-    id = sa.Column(sa.Integer, sa.Identity(always=True, start=1, cycle=True), primary_key=True)
+    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
     associated_id = sa.Column(sa.Integer, nullable=False)
     associated_type = sa.Column(sa.Enum(WorkflowTriggerType), nullable=False)  # could use Enum based on the entities
     workflow_template_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_template.id"))
@@ -63,9 +65,8 @@ class WorkflowInstance(BaseModel):
 class WorkflowStepTemplate(BaseModel):
     """ Step structure belonging to a WorkflowTemplate """
     __tablename__ = "workflow_step_template"
-    __versioned__ = {}
 
-    id = sa.Column(sa.Integer, sa.Identity(always=True, start=1, cycle=True), primary_key=True)
+    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
     name = sa.Column(sa.String, nullable=False)
     workflow_template_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_template.id"))
     workflow_type = sa.Column(sa.Enum(WorkflowType), nullable=False)
@@ -79,9 +80,8 @@ class WorkflowStepInstance(BaseModel):
         This effectively outlines the steps in a workflow, and the order in which they are completed.
     """
     __tablename__ = "workflow_step_instance"
-    __versioned__ = {}
 
-    id = sa.Column(sa.Integer, sa.Identity(always=True, start=1, cycle=True), primary_key=True)
+    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
     workflow_instance_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_instance.id"))
     workflow_step_template_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_template.id"))
     status = sa.Column(sa.Enum(WorkflowStatus), nullable=False)
@@ -122,7 +122,7 @@ class WorkflowStepDependency(BaseModel):
 class StepApprovers(BaseModel):
     """ Step Approvers model for WorkflowStepTemplates """
     __tablename__ = "step_approvers"
-    id = sa.Column(sa.Integer, sa.Identity(always=True, start=1, cycle=True), primary_key=True)
+    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
     workflow_step_template_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_template.id"))
     user_id = sa.Column(sa.Integer, sa.ForeignKey("user.id"), nullable=True)
     role_id = sa.Column(sa.Integer, sa.ForeignKey("role.id"), nullable=True)
@@ -136,9 +136,8 @@ class Package(BaseModel):
     _subclasses: ClassVar[dict[Optional[PackageType], type["Package"]]] = {}
 
     __tablename__ = "package"
-    __versioned__ = {}
 
-    id = sa.Column(sa.Integer, sa.Identity(always=True, start=1, cycle=True), primary_key=True)
+    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
     submitter_id = (sa.Integer, sa.ForeignKey("user.id"))
     current_workflow_step_instance_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_instance.id"))
     notes = sa.Column(sa.String, nullable=True)
@@ -203,7 +202,7 @@ class BliPackage(Package, package_type=PackageType.BLI):
     """Budget Line Item Package
     """
     __tablename__ = "bli_package"
-    __versioned__ = {}
+
     id = sa.Column(sa.Integer, sa.ForeignKey("package.id"), primary_key=True)
     bli_package_snapshots = relationship("BliPackageSnapshot", backref="bli_package")
 
@@ -214,8 +213,7 @@ class BliPackage(Package, package_type=PackageType.BLI):
 
 class PackageSnapshot(BaseModel):
     __tablename__ = "package_snapshot"
-    __versioned__ = {}
-    id = sa.Column(sa.Integer, sa.Identity(always=True, start=1, cycle=True), primary_key=True)
+    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
     # make package_id a read-only field
     _package_id = sa.Column(sa.Integer, sa.ForeignKey("package.id"), nullable=False)
     version = sa.Column(sa.Integer, nullable=True)
@@ -234,7 +232,6 @@ class PackageSnapshot(BaseModel):
 
 class BliPackageSnapshot(PackageSnapshot):
     __tablename__ = "bli_package_snapshot"
-    __versioned__ = {}
     overlaps = "package,package_snapshots"
     id = sa.Column(sa.Integer, sa.ForeignKey("package_snapshot.id"), primary_key=True)
     bli_id = sa.Column(sa.Integer, sa.ForeignKey("budget_line_item.id"), nullable=False)

@@ -12,7 +12,6 @@ from marshmallow import EXCLUDE, Schema, ValidationError
 from models import Agreement, BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import AgreementType, BudgetLineItem
-from models.workflows import BliPackage
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.resources.budget_line_item_schemas import (
     BudgetLineItemResponse,

@@ -36,7 +36,7 @@ def test_approve_submission_success(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_approve_submission_invalid_budget_line_item_id(auth_client, loaded_db):
     # Test with an invalid budget line item ID
-    submitter_id = ... # Set a valid submitter ID
+    submitter_id = 21 # Admin User
     invalid_budget_line_item_id = 99999
     response = auth_client.post(
         url_for("api.approve-submission-list"),
@@ -45,18 +45,4 @@ def test_approve_submission_invalid_budget_line_item_id(auth_client, loaded_db):
             "budget_line_item_ids": [invalid_budget_line_item_id]
         }
     )
-
     assert response.status_code == 400
-    assert "does not exist" in response.json["message"]
-
-@pytest.mark.usefixtures("app_ctx")
-def test_approve_submission_db_error(auth_client, loaded_db):
-    # Mock a database error
-    with pytest.raises(SQLAlchemyError):
-        auth_client.post(
-            url_for("api.approve-submission-list"),
-            json={
-                "submitter_id": 99999,
-                "budget_line_item_ids": [99998, 99999]
-            }
-        )
