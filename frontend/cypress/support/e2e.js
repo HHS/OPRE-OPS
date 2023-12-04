@@ -27,7 +27,7 @@ const users = [
         division: 1,
         email: "emily.ball@example.com",
         role: "Admin",
-        oidc_id: "00000000-0000-1111-a111-000000000001",
+        oidc_id: "00000000-0000-1111-a111-000000000001"
     },
     {
         name: "director",
@@ -36,7 +36,7 @@ const users = [
         division: 4,
         email: "Bethanne.Barnes@example.com",
         role: "Division Director",
-        oidc_id: "00000000-0000-1111-a111-000000000002",
+        oidc_id: "00000000-0000-1111-a111-000000000002"
     },
     {
         name: "cor",
@@ -45,7 +45,7 @@ const users = [
         division: 1,
         email: "Meryl.Barofsky@example.com",
         role: "COR",
-        oidc_id: "00000000-0000-1111-a111-000000000003",
+        oidc_id: "00000000-0000-1111-a111-000000000003"
     },
     {
         name: "basic",
@@ -54,8 +54,8 @@ const users = [
         division: 3,
         email: "Anne.Bergan@example.com",
         role: "View-Only",
-        oidc_id: "00000000-0000-1111-a111-000000000004",
-    },
+        oidc_id: "00000000-0000-1111-a111-000000000004"
+    }
 ];
 
 const generateJWT = async (name) => {

@@ -14,11 +14,11 @@ Accepted.
 
 Cypress is a next generation front end testing tool built for the modern web.
 
-We're still using language specific tests for unit testing (pytest, jest), but for more advanced testing needs Cypress will be utilized.
+We're still using language specific tests for unit testing (pytest, vitest), but for more advanced testing needs Cypress will be utilized.
 
 - It allows for easy browser based testing.
 - Native support for screenshots and video.
-- Network traffic control (can be userful for performance testing).
+- Network traffic control (can be useful for performance testing).
 - Direct React Component support.
 
 ### Related issues
