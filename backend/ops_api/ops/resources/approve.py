@@ -59,24 +59,29 @@ class ApproveSubmisionListApi(BaseItemAPI):
             new_bli_package.submitter_id = user.id
             new_bli_package.notes = submission_notes
 
-            bli_cans = []
+            # bli_cans = []
 
             # Create BliPackageSnapshot
             # Handle budget_line_item IDs and create BliPackageSnapshot records
             for bli_id in budget_line_item_ids:
-                bli = current_app.db_session.query(BudgetLineItem).get(bli_id)
-                latest_version = bli.versions.order_by(desc("id")).first()
-                current_app.logger.info(f"Latest version: {latest_version}")
+                bli = current_app.db_session.get(BudgetLineItem, bli_id)
+                # latest_version = bli.versions.order_by(desc("id")).first()
+                # current_app.logger.info(f"Latest version: {latest_version}")
+                # bli_package_snapshot = BliPackageSnapshot(
+                #     bli_id=bli.id,
+                #     package_id=new_bli_package.id,
+                #     version=None,
+                # )
                 if bli:
                     new_bli_package.bli_package_snapshots.append(
                         BliPackageSnapshot(
                             bli_id=bli.id,
-                            package_id=new_bli_package.id,
-                            version=latest_version,
+                            # package_id=new_bli_package.id,
+                            version=None,
                         )
                     )
                     # current_app.db_session.add(snapshot)
-                    bli_cans.append(bli.can_id)
+                    # bli_cans.append(bli.can_id)
                 else:
                     raise ValueError(f"BudgetLineItem with ID {bli_id} does not exist.")
 
@@ -117,12 +122,14 @@ class ApproveSubmisionListApi(BaseItemAPI):
             current_app.db_session.add(new_bli_package)
             current_app.db_session.commit()
 
-            new_bli_package_dict = new_bli_package.to_dict()
+            # new_bli_package_dict = new_bli_package.to_dict()
             # meta.metadata.update({"New Bli Package": new_bli_package_dict})
-            current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Bli Package created: {new_bli_package_dict}")
+            # current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Bli Package created: {new_bli_package_dict}")
 
-            return make_response_with_headers({"message": "Bli Package created", "id": new_bli_package.id}, 201)
-        except (KeyError, RuntimeError, PendingRollbackError) as re:
+            return make_response_with_headers(
+                {"message": "Bli Package created", "id": new_bli_package.id}, 201
+            )
+        except (KeyError, RuntimeError, PendingRollbackError, ValueError) as re:
             current_app.logger.error(f"{message_prefix}: {re}")
             return make_response_with_headers({}, 400)
         except ValidationError as ve:
