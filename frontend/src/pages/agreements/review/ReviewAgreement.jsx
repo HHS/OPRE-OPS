@@ -190,6 +190,7 @@ export const ReviewAgreement = () => {
                 <h1
                     className="text-bold"
                     style={{ fontSize: "1.375rem" }}
+                    data-cy="review-agreement-heading"
                 >
                     Review and Send Agreement to Approval
                 </h1>
