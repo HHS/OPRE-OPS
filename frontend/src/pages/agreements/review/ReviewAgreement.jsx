@@ -34,7 +34,7 @@ import TextArea from "../../../components/UI/Form/TextArea";
 
 export const ReviewAgreement = () => {
     const urlPathParams = useParams();
-    const agreementId = +urlPathParams.id;
+    const agreementId = urlPathParams?.id;
     const navigate = useNavigate();
     const {
         isSuccess,
