@@ -1,8 +1,12 @@
 import { screen, render } from "@testing-library/react";
 import { ProcurementShopSelectWithFee } from "./ProcurementShopSelectWithFee";
 import { useGetProcurementShopsQuery } from "../../../../api/opsAPI";
+import { vi } from "vitest";
+import TestApplicationContext from "../../../../applicationContext/TestApplicationContext";
 
-jest.mock("../../../../api/opsAPI");
+const mockFn = TestApplicationContext.helpers().mockFn;
+
+vi.mock("../../../../api/opsAPI");
 
 const sampleShops = [
     { id: 1, name: "Shop1", abbr: "S1", fee: 0.1 },
@@ -15,7 +19,7 @@ describe("ProcurementShopSelect", () => {
         render(
             <ProcurementShopSelectWithFee
                 selectedProcurementShop={null}
-                onChangeSelectedProcurementShop={jest.fn()}
+                onChangeSelectedProcurementShop={mockFn}
             />
         );
         expect(screen.getByText("Loading...")).toBeInTheDocument();
@@ -26,7 +30,7 @@ describe("ProcurementShopSelect", () => {
         render(
             <ProcurementShopSelectWithFee
                 selectedProcurementShop={null}
-                onChangeSelectedProcurementShop={jest.fn()}
+                onChangeSelectedProcurementShop={mockFn}
             />
         );
         expect(screen.getByText("Oops, an error occurred")).toBeInTheDocument();
@@ -37,7 +41,7 @@ describe("ProcurementShopSelect", () => {
         render(
             <ProcurementShopSelectWithFee
                 selectedProcurementShop={null}
-                onChangeSelectedProcurementShop={jest.fn()}
+                onChangeSelectedProcurementShop={mockFn}
             />
         );
         const select = screen.getByLabelText("Procurement Shop");
@@ -49,7 +53,7 @@ describe("ProcurementShopSelect", () => {
         render(
             <ProcurementShopSelectWithFee
                 selectedProcurementShop={null}
-                onChangeSelectedProcurementShop={jest.fn()}
+                onChangeSelectedProcurementShop={mockFn}
             />
         );
 
