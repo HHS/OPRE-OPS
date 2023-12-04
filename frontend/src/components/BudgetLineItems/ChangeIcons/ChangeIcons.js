@@ -94,8 +94,8 @@ const ChangeIcons = ({
                         label="Duplicate"
                         className="line-height-body-1"
                     >
-                        <button
-                            id={`duplicate-${item?.id}`}
+                        <span
+                            id={`duplicate-row-${item?.id}`}
                             title="Duplicate"
                             data-cy="duplicate-row"
                             onClick={() => handleDuplicateItem(item)}
@@ -104,7 +104,7 @@ const ChangeIcons = ({
                                 icon={faClone}
                                 className="text-primary height-2 width-2 cursor-pointer margin-left-0"
                             />
-                        </button>
+                        </span>
                     </Tooltip>
                 )}
                 {sendToReviewIcon && (
@@ -112,7 +112,7 @@ const ChangeIcons = ({
                         label="Submit for Approval"
                         className="line-height-body-1"
                     >
-                        <span
+                        <button
                             id={`submit-for-approval-${item.id}`}
                             title="Submit for Approval"
                             data-cy="submit-row"
@@ -121,7 +121,7 @@ const ChangeIcons = ({
                             <svg className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0">
                                 <use xlinkHref={`${icons}#send`}></use>
                             </svg>
-                        </span>
+                        </button>
                     </Tooltip>
                 )}
                 {goToApproveIcon && (
