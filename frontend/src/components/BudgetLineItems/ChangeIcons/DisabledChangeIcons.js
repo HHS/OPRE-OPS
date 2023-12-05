@@ -28,6 +28,7 @@ const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () =>
                 <button
                     id={`edit-${rowId}`}
                     title="Edit"
+                    aria-label="Edit"
                     data-cy="edit-row"
                 >
                     <FontAwesomeIcon
@@ -44,6 +45,7 @@ const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () =>
                 <button
                     id={`delete-${rowId}`}
                     title="Delete"
+                    aria-label="Delete"
                     data-cy="delete-row"
                 >
                     <FontAwesomeIcon
@@ -61,6 +63,7 @@ const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () =>
                     <button
                         id={`duplicate-${rowId}`}
                         title="Duplicate"
+                        aria-label="Duplicate"
                         data-cy="duplicate-row"
                     >
                         <FontAwesomeIcon
@@ -80,6 +83,7 @@ const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () =>
                     <button
                         id={`submit-for-approval-${rowId}`}
                         title="Submit for Approval"
+                        aria-label="Submit for Approval"
                         data-cy="submit-row"
                     >
                         <svg

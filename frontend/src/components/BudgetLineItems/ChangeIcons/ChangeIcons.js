@@ -58,6 +58,7 @@ const ChangeIcons = ({
                         <button
                             id={`edit-${item?.id}`}
                             title="Edit"
+                            aria-label="Edit"
                             data-cy="edit-row"
                             onClick={() => handleSetItemForEditing(item)}
                         >
@@ -76,6 +77,7 @@ const ChangeIcons = ({
                     <button
                         id={`delete-${item?.id}`}
                         title="Delete"
+                        aria-label="Delete"
                         data-cy="delete-row"
                         onClick={() => isItemDeletable && handleDeleteItem(item.id, item.display_name)}
                     >
@@ -94,9 +96,10 @@ const ChangeIcons = ({
                         label="Duplicate"
                         className="line-height-body-1"
                     >
-                        <span
+                        <button
                             id={`duplicate-row-${item?.id}`}
                             title="Duplicate"
+                            aria-label="Duplicate"
                             data-cy="duplicate-row"
                             onClick={() => handleDuplicateItem(item)}
                         >
@@ -104,7 +107,7 @@ const ChangeIcons = ({
                                 icon={faClone}
                                 className="text-primary height-2 width-2 cursor-pointer margin-left-0"
                             />
-                        </span>
+                        </button>
                     </Tooltip>
                 )}
                 {sendToReviewIcon && (
@@ -115,6 +118,7 @@ const ChangeIcons = ({
                         <button
                             id={`submit-for-approval-${item.id}`}
                             title="Submit for approval"
+                            aria-label="Submit for approval"
                             data-cy="submit-row"
                             onClick={() => handleSubmitItemForApproval(item.id)}
                         >
@@ -132,6 +136,7 @@ const ChangeIcons = ({
                         <button
                             id={`submit-for-approval-${item.id}`}
                             title="Go to approve"
+                            aria-label="Go to approve"
                             data-cy="go-to-approve-row"
                             onClick={() => handleGoToApprove(item.id)}
                         >
