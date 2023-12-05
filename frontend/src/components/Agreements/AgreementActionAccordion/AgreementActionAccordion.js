@@ -28,6 +28,7 @@ const AgreementActionAccordion = ({ setAction, optionOneDisabled = false, option
                             description="This will subtract the amounts from the FY budget"
                             setValue={setAction}
                             disabled={optionOneDisabled}
+                            data-cy="change-draft-to-planned"
                         />
                     </div>
                     <div className="grid-col">
@@ -36,6 +37,7 @@ const AgreementActionAccordion = ({ setAction, optionOneDisabled = false, option
                             description="This will start the procurement process"
                             setValue={setAction}
                             disabled={optionTwoDisabled}
+                            data-cy="change-planned-to-executing"
                         />
                     </div>
                 </div>

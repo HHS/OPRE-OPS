@@ -54,6 +54,7 @@ const AgreementBLIReviewTable = ({
                 }}
                 disabled={!areSomeBudgetLinesActionable}
                 checked={mainToggleSelected}
+                data-cy="check-all"
             />
             <label
                 className="usa-checkbox__label usa-tool-tip text-bold"

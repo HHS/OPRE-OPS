@@ -1,15 +1,28 @@
 import { render, screen } from "@testing-library/react";
-import "@testing-library/jest-dom";
 import AgreementTotalBudgetLinesCard from "./AgreementTotalBudgetLinesCard";
+import { vi } from "vitest";
+import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 
-jest.mock("react", () => ({
-    ...jest.requireActual("react"),
-    useState: () => [null, jest.fn()]
+const mockFn = TestApplicationContext.helpers().mockFn;
+
+vi.mock("@nivo/bar", () => ({
+    __esModule: true,
+    ResponsiveBar: () => {
+        return <div />;
+    }
 }));
+
+vi.mock("react", async () => {
+    const actual = await vi.importActual("react");
+    return {
+        ...actual,
+        useState: () => [null, mockFn]
+    };
+});
 
 // This will reset all mocks after each test
 afterEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
 });
 
 describe("AgreementTotalBudgetLinesCard", () => {

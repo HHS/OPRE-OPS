@@ -1,8 +1,11 @@
 import { render, fireEvent, screen } from "@testing-library/react";
 import FiscalYearComboBox from "./FiscalYearComboBox";
+import TestApplicationContext from "../../../../applicationContext/TestApplicationContext";
+
+const mockFn = TestApplicationContext.helpers().mockFn;
 
 describe("FiscalYearComboBox", () => {
-    const mockSetSelectedFiscalYears = jest.fn();
+    const mockSetSelectedFiscalYears = mockFn;
 
     it("renders the component with the correct label", () => {
         render(
@@ -46,7 +49,7 @@ describe("FiscalYearComboBox", () => {
     });
 
     it("updates the selected item when multiple options are selected", () => {
-        const setSelectedFiscalYears = jest.fn();
+        const setSelectedFiscalYears = mockFn;
         const { getByText, container } = render(
             <FiscalYearComboBox
                 selectedFiscalYears={null}

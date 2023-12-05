@@ -1,35 +1,40 @@
 """User models."""
-from typing import Any, cast
+from typing import Any, List, cast
 
-from models.base import BaseModel
-from sqlalchemy import Column, DateTime, ForeignKey, Identity, Integer, String, Table, func
+from models import BaseModel
+from sqlalchemy import Column, DateTime, ForeignKey, Identity, Integer, String, func
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import column_property, relationship
+from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 from typing_extensions import override
 
-# Define a many-to-many relationship between Users and Roles
-user_role_table = Table(
-    "user_role",
-    BaseModel.metadata,
-    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
-    Column("role_id", Integer, ForeignKey("roles.id"), primary_key=True),
-)
+
+class UserRole(BaseModel):
+    __tablename__ = "user_role"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    role_id: Mapped[int] = mapped_column(ForeignKey("role.id"), primary_key=True)
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"User Role: user_id={self.user_id}; role_id={self.role_id}"
 
 
-# Define a many-to-many relationship between Users and Roles
-user_group_table = Table(
-    "user_group",
-    BaseModel.metadata,
-    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
-    Column("group_id", Integer, ForeignKey("groups.id"), primary_key=True),
-)
+class UserGroup(BaseModel):
+    __tablename__ = "user_group"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey("group.id"), primary_key=True)
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"User Group: user_id={self.user_id}; group_id={self.group_id}"
 
 
 class User(BaseModel):
     """Main User model."""
+    __tablename__ = "user"
 
-    __tablename__ = "users"
-    id = Column(Integer, Identity(always=True, start=1, cycle=True), primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
     oidc_id = Column(UUID(as_uuid=True), unique=True, index=True)
     hhs_id = Column(String)
     email = Column(String, index=True, nullable=False)
@@ -40,13 +45,29 @@ class User(BaseModel):
     updated = Column(DateTime, onupdate=func.now())
 
     division = Column(Integer, ForeignKey("division.id", name="fk_user_division"))
-    roles = relationship("Role", secondary=user_role_table, back_populates="users")
-    groups = relationship("Group", secondary=user_group_table, back_populates="users")
+
+    roles: Mapped[List["Role"]] = relationship(
+        "Role",
+        secondary="user_role",
+        back_populates="users",
+        primaryjoin="User.id == UserRole.user_id",
+        secondaryjoin="Role.id == UserRole.role_id",
+    )
+
+    groups: Mapped[List["Group"]] = relationship(
+        "Group",
+        secondary="user_group",
+        back_populates="users",
+        primaryjoin="User.id == UserGroup.user_id",
+        secondaryjoin="Group.id == UserGroup.group_id",
+    )
 
     portfolios = relationship(
         "Portfolio",
         back_populates="team_leaders",
         secondary="portfolio_team_leaders",
+        primaryjoin="User.id == PortfolioTeamLeaders.team_lead_id",
+        secondaryjoin="Portfolio.id == PortfolioTeamLeaders.portfolio_id",
         viewonly=True,
     )
 
@@ -54,14 +75,17 @@ class User(BaseModel):
         "ResearchProject",
         back_populates="team_leaders",
         secondary="research_project_team_leaders",
+        primaryjoin="User.id == ResearchProjectTeamLeaders.team_lead_id",
+        secondaryjoin="ResearchProject.id == ResearchProjectTeamLeaders.research_project_id",
         viewonly=True,
     )
 
-    agreements = relationship(
+    agreements: Mapped[List["Agreement"]] = relationship(
         "Agreement",
-        back_populates="team_members",
         secondary="agreement_team_members",
-        viewonly=True,
+        back_populates="team_members",
+        primaryjoin="User.id == AgreementTeamMembers.user_id",
+        secondaryjoin="Agreement.id == AgreementTeamMembers.agreement_id",
     )
 
     contracts = relationship(
@@ -84,8 +108,8 @@ class User(BaseModel):
         return self.full_name if self.full_name else self.email
 
     @override
-    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
-        d = super().to_dict()  # type: ignore [no-untyped-call]
+    def to_dict(self) -> dict[str, Any]:
+        d = super().to_dict()
 
         d.update(
             {
@@ -102,11 +126,19 @@ class User(BaseModel):
 class Role(BaseModel):
     """Main Role model."""
 
-    __tablename__ = "roles"
-    id = Column(Integer, Identity(always=True, start=1, cycle=True), primary_key=True)
+    __tablename__ = "role"
+    id = Column(Integer, Identity(), primary_key=True)
+
     name = Column(String, index=True, nullable=False)
     permissions = Column(String, nullable=False)
-    users = relationship("User", secondary=user_role_table, back_populates="roles")
+
+    users: Mapped[List["User"]] = relationship(
+        "User",
+        secondary="user_role",
+        back_populates="roles",
+        primaryjoin="Role.id == UserRole.role_id",
+        secondaryjoin="User.id == UserRole.user_id",
+    )
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -116,10 +148,17 @@ class Role(BaseModel):
 class Group(BaseModel):
     """Main Group model."""
 
-    __tablename__ = "groups"
-    id = Column(Integer, Identity(always=True, start=1, cycle=True), primary_key=True)
+    __tablename__ = "group"
+    id = Column(Integer, Identity(), primary_key=True)
     name = Column(String, index=True, nullable=False)
-    users = relationship("User", secondary=user_group_table, back_populates="groups")
+
+    users: Mapped[List["User"]] = relationship(
+        "User",
+        secondary="user_group",
+        back_populates="groups",
+        primaryjoin="Group.id == UserGroup.group_id",
+        secondaryjoin="User.id == UserGroup.user_id",
+    )
 
     @BaseModel.display_name.getter
     def display_name(self):

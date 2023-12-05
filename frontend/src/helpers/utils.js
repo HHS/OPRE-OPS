@@ -74,7 +74,7 @@ export const draftBudgetLineStatuses = ["DRAFT", "UNDER_REVIEW"];
  * Object containing display text for various codes.
  * @type {CodesToDisplayText}
  */
-const codesToDisplayText = {
+export const codesToDisplayText = {
     agreementType: {
         CONTRACT: "Contract",
         GRANT: "Grant",
@@ -260,5 +260,37 @@ export const renderField = (className, fieldName, value) => {
                 default:
                     return value;
             }
+    }
+};
+
+export const statusToClassName = (status, styleType = "text") => {
+    // status color as foreground text
+    if (styleType === "text") {
+        switch (status) {
+            case "DRAFT":
+                return "text-brand-neutral-lighter";
+            case "PLANNED":
+                return "text-brand-data-viz-primary-11";
+            case "IN_EXECUTION":
+                return "text-brand-data-viz-primary-8";
+            case "OBLIGATED":
+                return "text-brand-data-viz-primary-6";
+            default:
+                return "";
+        }
+    } else {
+        // tag style with status color as the background and contrasting text
+        switch (status) {
+            case "DRAFT":
+                return "bg-brand-neutral-lighter";
+            case "PLANNED":
+                return "bg-brand-data-viz-primary-11 text-white";
+            case "IN_EXECUTION":
+                return "bg-brand-data-viz-primary-8";
+            case "OBLIGATED":
+                return "bg-brand-data-viz-primary-6 text-white";
+            default:
+                return "";
+        }
     }
 };
