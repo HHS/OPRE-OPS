@@ -108,20 +108,20 @@ class User(BaseModel):
     def display_name(self):
         return self.full_name if self.full_name else self.email
 
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d = super().to_dict()
-
-        d.update(
-            {
-                "oidc_id": f"{self.oidc_id}" if self.oidc_id else None,
-                "date_joined": self.date_joined.isoformat()
-                if self.date_joined
-                else None,
-            }
-        )
-
-        return cast(dict[str, Any], d)
+    # @override
+    # def to_dict(self) -> dict[str, Any]:
+    #     d = super().to_dict()
+    #
+    #     d.update(
+    #         {
+    #             "oidc_id": f"{self.oidc_id}" if self.oidc_id else None,
+    #             "date_joined": self.date_joined.isoformat()
+    #             if self.date_joined
+    #             else None,
+    #         }
+    #     )
+    #
+    #     return cast(dict[str, Any], d)
 
 
 class Role(BaseModel):

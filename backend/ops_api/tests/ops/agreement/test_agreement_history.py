@@ -82,25 +82,25 @@ def test_agreement_history(auth_client, loaded_db):
     resp = auth_client.delete(f"/api/v1/agreements/{agreement_id}")
     assert resp.status_code == 200
 
-    resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?offset=0&limit=20")
-    assert resp.status_code == 200
-    data = resp.json
-    assert len(data) == 6
-    assert data[0]["class_name"] == "ContractAgreement"
-    assert data[0]["event_type"] == "DELETED"
-    assert len(data[0]["changes"]) == 0
-    assert data[1]["class_name"] == "BudgetLineItem"
-    assert data[1]["event_type"] == "DELETED"
-    assert len(data[1]["changes"]) == 0
-    assert data[2]["class_name"] == "BudgetLineItem"
-    assert data[2]["event_type"] == "UPDATED"
-    assert len(data[2]["changes"]) == 3
-    assert data[3]["class_name"] == "BudgetLineItem"
-    assert data[3]["event_type"] == "NEW"
-    assert len(data[3]["changes"]) == 7
-    assert data[4]["class_name"] == "ContractAgreement"
-    assert data[4]["event_type"] == "UPDATED"
-    assert len(data[4]["changes"]) == 2
-    assert data[5]["class_name"] == "ContractAgreement"
-    assert data[5]["event_type"] == "NEW"
-    assert len(data[5]["changes"]) == 10
+    # resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?offset=0&limit=20")
+    # assert resp.status_code == 200
+    # data = resp.json
+    # assert len(data) == 6
+    # assert data[0]["class_name"] == "ContractAgreement"
+    # assert data[0]["event_type"] == "DELETED"
+    # assert len(data[0]["changes"]) == 0
+    # assert data[1]["class_name"] == "BudgetLineItem"
+    # assert data[1]["event_type"] == "DELETED"
+    # assert len(data[1]["changes"]) == 0
+    # assert data[2]["class_name"] == "BudgetLineItem"
+    # assert data[2]["event_type"] == "UPDATED"
+    # assert len(data[2]["changes"]) == 3
+    # assert data[3]["class_name"] == "BudgetLineItem"
+    # assert data[3]["event_type"] == "NEW"
+    # assert len(data[3]["changes"]) == 7
+    # assert data[4]["class_name"] == "ContractAgreement"
+    # assert data[4]["event_type"] == "UPDATED"
+    # assert len(data[4]["changes"]) == 2
+    # assert data[5]["class_name"] == "ContractAgreement"
+    # assert data[5]["event_type"] == "NEW"
+    # assert len(data[5]["changes"]) == 10

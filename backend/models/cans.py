@@ -204,35 +204,35 @@ class Agreement(BaseModel):
         "polymorphic_on": "agreement_type",
     }
 
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-
-        if isinstance(self.agreement_type, str):
-            self.agreement_type = AgreementType[self.agreement_type]
-
-        if isinstance(self.agreement_reason, str):
-            self.agreement_reason = AgreementReason[self.agreement_reason]
-
-        d.update(
-            agreement_type=self.agreement_type.name if self.agreement_type else None,
-            agreement_reason=self.agreement_reason.name
-            if self.agreement_reason
-            else None,
-            budget_line_items=[bli.to_dict() for bli in self.budget_line_items],
-            team_members=[tm.to_dict() for tm in self.team_members],
-            research_project=self.research_project.to_dict()
-            if self.research_project
-            else None,
-            procurement_shop=self.procurement_shop.to_dict()
-            if self.procurement_shop
-            else None,
-            product_service_code=self.product_service_code.to_dict()
-            if self.product_service_code
-            else None,
-        )
-
-        return d
+    # @override
+    # def to_dict(self) -> dict[str, Any]:
+    #     d: dict[str, Any] = super().to_dict()
+    #
+    #     if isinstance(self.agreement_type, str):
+    #         self.agreement_type = AgreementType[self.agreement_type]
+    #
+    #     if isinstance(self.agreement_reason, str):
+    #         self.agreement_reason = AgreementReason[self.agreement_reason]
+    #
+    #     d.update(
+    #         agreement_type=self.agreement_type.name if self.agreement_type else None,
+    #         agreement_reason=self.agreement_reason.name
+    #         if self.agreement_reason
+    #         else None,
+    #         budget_line_items=[bli.to_dict() for bli in self.budget_line_items],
+    #         team_members=[tm.to_dict() for tm in self.team_members],
+    #         research_project=self.research_project.to_dict()
+    #         if self.research_project
+    #         else None,
+    #         procurement_shop=self.procurement_shop.to_dict()
+    #         if self.procurement_shop
+    #         else None,
+    #         product_service_code=self.product_service_code.to_dict()
+    #         if self.product_service_code
+    #         else None,
+    #     )
+    #
+    #     return d
 
 
 contract_support_contacts = Table(
@@ -292,27 +292,27 @@ class ContractAgreement(Agreement):
         "polymorphic_identity": AgreementType.CONTRACT,
     }
 
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-
-        if isinstance(self.contract_type, str):
-            self.contract_type = ContractType[self.contract_type]
-
-        d.update(
-            {
-                "contract_type": self.contract_type.name
-                if self.contract_type
-                else None,
-                "support_contacts": [
-                    contacts.to_dict() for contacts in self.support_contacts
-                ],
-                "vendor": self.vendor.name if self.vendor else None,
-                "incumbent": self.incumbent.name if self.incumbent else None,
-            }
-        )
-
-        return d
+    # @override
+    # def to_dict(self) -> dict[str, Any]:
+    #     d: dict[str, Any] = super().to_dict()
+    #
+    #     if isinstance(self.contract_type, str):
+    #         self.contract_type = ContractType[self.contract_type]
+    #
+    #     d.update(
+    #         {
+    #             "contract_type": self.contract_type.name
+    #             if self.contract_type
+    #             else None,
+    #             "support_contacts": [
+    #                 contacts.to_dict() for contacts in self.support_contacts
+    #             ],
+    #             "vendor": self.vendor.name if self.vendor else None,
+    #             "incumbent": self.incumbent.name if self.incumbent else None,
+    #         }
+    #     )
+    #
+    #     return d
 
 
 # TODO: Skeleton, will need flushed out more when we know what all a Grant is.
@@ -328,10 +328,10 @@ class GrantAgreement(Agreement):
         "polymorphic_identity": AgreementType.GRANT,
     }
 
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-        return d
+    # @override
+    # def to_dict(self) -> dict[str, Any]:
+    #     d: dict[str, Any] = super().to_dict()
+    #     return d
 
 
 # TODO: Skeleton, will need flushed out more when we know what all an IAA is.
@@ -348,10 +348,10 @@ class IaaAgreement(Agreement):
         "polymorphic_identity": AgreementType.IAA,
     }
 
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-        return d
+    # @override
+    # def to_dict(self) -> dict[str, Any]:
+    #     d: dict[str, Any] = super().to_dict()
+    #     return d
 
 
 # TODO: Skeleton, will need flushed out more when we know what all an IAA-AA is. Inter-Agency-Agreement-Assisted-Aquisition
@@ -368,10 +368,10 @@ class IaaAaAgreement(Agreement):
         "polymorphic_identity": AgreementType.MISCELLANEOUS,
     }
 
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-        return d
+    # @override
+    # def to_dict(self) -> dict[str, Any]:
+    #     d: dict[str, Any] = super().to_dict()
+    #     return d
 
 
 class DirectAgreement(Agreement):
@@ -386,10 +386,10 @@ class DirectAgreement(Agreement):
         "polymorphic_identity": AgreementType.DIRECT_ALLOCATION,
     }
 
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-        return d
+    # @override
+    # def to_dict(self) -> dict[str, Any]:
+    #     d: dict[str, Any] = super().to_dict()
+    #     return d
 
 
 class CANFiscalYear(BaseModel):
@@ -415,8 +415,9 @@ class CANFiscalYear(BaseModel):
 
     @override
     def to_dict(self):
-        d = super().to_dict()
+        # d = super().to_dict()
 
+        d = {}
         d.update(
             total_fiscal_year_funding=float(self.total_fiscal_year_funding)
             if self.total_fiscal_year_funding
@@ -452,8 +453,9 @@ class CANFiscalYearCarryForward(BaseModel):
 
     @override
     def to_dict(self):
-        d = super().to_dict()
+        # d = super().to_dict()
 
+        d = {}
         d.update(
             received_amount=float(self.received_amount)
             if self.received_amount
@@ -521,24 +523,24 @@ class BudgetLineItem(BaseModel):
     def team_members(self):
         return self.agreement.team_members if self.agreement else []
 
-    @override
-    def to_dict(self):
-        d = super().to_dict()
-
-        if isinstance(self.status, str):
-            self.status = BudgetLineItemStatus[self.status]
-
-        d.update(
-            status=self.status.name if self.status else None,
-            amount=float(self.amount) if self.amount else None,
-            proc_shop_fee_percentage=float(self.proc_shop_fee_percentage)
-            if self.proc_shop_fee_percentage
-            else None,
-            date_needed=self.date_needed.isoformat() if self.date_needed else None,
-            can=self.can.to_dict() if self.can else None,
-        )
-
-        return d
+    # @override
+    # def to_dict(self):
+    #     d = super().to_dict()
+    #
+    #     if isinstance(self.status, str):
+    #         self.status = BudgetLineItemStatus[self.status]
+    #
+    #     d.update(
+    #         status=self.status.name if self.status else None,
+    #         amount=float(self.amount) if self.amount else None,
+    #         proc_shop_fee_percentage=float(self.proc_shop_fee_percentage)
+    #         if self.proc_shop_fee_percentage
+    #         else None,
+    #         date_needed=self.date_needed.isoformat() if self.date_needed else None,
+    #         can=self.can.to_dict() if self.can else None,
+    #     )
+    #
+    #     return d
 
 
 class CAN(BaseModel):
@@ -585,23 +587,23 @@ class CAN(BaseModel):
     def display_name(self):
         return self.number
 
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-
-        if isinstance(self.arrangement_type, str):
-            self.arrangement_type = CANArrangementType[self.arrangement_type]
-
-        d.update(
-            appropriation_date=self.appropriation_date.strftime("%d/%m/%Y")
-            if self.appropriation_date
-            else None,
-            expiration_date=self.expiration_date.strftime("%d/%m/%Y")
-            if self.expiration_date
-            else None,
-            arrangement_type=self.arrangement_type.name
-            if self.arrangement_type
-            else None,
-        )
-
-        return d
+    # @override
+    # def to_dict(self) -> dict[str, Any]:
+    #     d: dict[str, Any] = super().to_dict()
+    #
+    #     if isinstance(self.arrangement_type, str):
+    #         self.arrangement_type = CANArrangementType[self.arrangement_type]
+    #
+    #     d.update(
+    #         appropriation_date=self.appropriation_date.strftime("%d/%m/%Y")
+    #         if self.appropriation_date
+    #         else None,
+    #         expiration_date=self.expiration_date.strftime("%d/%m/%Y")
+    #         if self.expiration_date
+    #         else None,
+    #         arrangement_type=self.arrangement_type.name
+    #         if self.arrangement_type
+    #         else None,
+    #     )
+    #
+    #     return d

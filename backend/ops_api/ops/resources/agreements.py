@@ -6,7 +6,16 @@ from flask import Response, current_app, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from marshmallow import EXCLUDE, Schema, ValidationError
-from models import DirectAgreement, GrantAgreement, IaaAaAgreement, IaaAgreement, OpsEventType, User, Vendor
+from models import (
+    ContractType,
+    DirectAgreement,
+    GrantAgreement,
+    IaaAaAgreement,
+    IaaAgreement,
+    OpsEventType,
+    User,
+    Vendor,
+)
 from models.base import BaseModel
 from models.cans import Agreement, AgreementReason, AgreementType, BudgetLineItemStatus, ContractAgreement
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView, handle_sql_error
@@ -250,10 +259,15 @@ class AgreementListAPI(BaseListAPI):
             return make_response_with_headers({}, 500)
 
     def _create_agreement(self, data, agreement_cls):
+        data["agreement_type"] = AgreementType[data["agreement_type"]] if data.get("agreement_type") else None
+        data["agreement_reason"] = AgreementReason[data["agreement_reason"]] if data.get("agreement_reason") else None
+
         tmp_team_members = data.get("team_members") or []
         data["team_members"] = []
 
         if agreement_cls == ContractAgreement:
+            data["contract_type"] = ContractType[data["contract_type"]] if data.get("contract_type") else None
+
             tmp_support_contacts = data.get("support_contacts") or []
             data["support_contacts"] = []
 

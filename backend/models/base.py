@@ -4,6 +4,7 @@ from typing import Annotated, ClassVar, Final, TypeAlias, TypedDict, TypeVar, ca
 
 import sqlalchemy
 from marshmallow import Schema as MMSchema
+from marshmallow import fields
 from marshmallow.exceptions import MarshmallowError
 from marshmallow_enum import EnumField
 from sqlalchemy import Column, DateTime, ForeignKey, Numeric, func
@@ -113,11 +114,17 @@ def setup_schema(base: Base) -> callable:
                     schema_class_name, (SQLAlchemyAutoSchema,), {"Meta": Meta}
                 )
 
-                # handle enums
                 for column in class_.__mapper__.columns:
+                    # handle enums
                     if isinstance(column.type, sqlalchemy.sql.sqltypes.Enum):
                         schema_class._declared_fields[column.name] = EnumField(
                             column.type.enum_class
+                        )
+
+                    # handle Decimal
+                    if isinstance(column.type, sqlalchemy.types.Numeric):
+                        schema_class._declared_fields[column.name] = fields.Decimal(
+                            as_string=True
                         )
 
                 setattr(class_, "__marshmallow__", schema_class)

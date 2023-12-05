@@ -25,17 +25,17 @@ class OpsDBHistory(BaseModel):
     row_key = sa.Column(sa.String)
     changes = sa.Column(JSONB)
 
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-
-        d.update(
-            {
-                "event_type": self.event_type.name if self.event_type else None,
-            }
-        )
-
-        return d
+    # @override
+    # def to_dict(self) -> dict[str, Any]:
+    #     d: dict[str, Any] = super().to_dict()
+    #
+    #     d.update(
+    #         {
+    #             "event_type": self.event_type.name if self.event_type else None,
+    #         }
+    #     )
+    #
+    #     return d
 
 
 # index for typical change history queries to find all changes for a record (class+row_key), with recent first
