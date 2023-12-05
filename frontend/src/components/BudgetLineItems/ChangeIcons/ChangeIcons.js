@@ -118,7 +118,9 @@ ChangeIcons.propTypes = {
     handleDuplicateItem: PropTypes.func,
     duplicateIcon: PropTypes.bool,
     sendToReviewIcon: PropTypes.bool,
-    handleSubmitItemForApproval: PropTypes.func
+    handleSubmitItemForApproval: PropTypes.func,
+    goToApproveIcon: PropTypes.bool,
+    handleGoToApprove: PropTypes.func
 };
 
 export default ChangeIcons;
