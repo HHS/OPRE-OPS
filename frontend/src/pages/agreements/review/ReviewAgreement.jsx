@@ -1,8 +1,10 @@
 import { Fragment } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import classnames from "vest/classnames";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
-import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../../api/opsAPI";
+import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
+import { useAddApprovalRequestMutation } from "../../../api/opsAPI";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import suite from "./suite";
@@ -32,7 +34,7 @@ import TextArea from "../../../components/UI/Form/TextArea";
 
 export const ReviewAgreement = () => {
     const urlPathParams = useParams();
-    const agreementId = +urlPathParams.id;
+    const agreementId = urlPathParams?.id;
     const navigate = useNavigate();
     const {
         isSuccess,
@@ -42,8 +44,9 @@ export const ReviewAgreement = () => {
     } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true
     });
+    const activeUser = useSelector((state) => state.auth.activeUser);
 
-    const [updateBudgetLineItemStatus] = useUpdateBudgetLineItemStatusMutation();
+    const [addApprovalRequest] = useAddApprovalRequestMutation();
     const isAgreementStateEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
@@ -89,6 +92,40 @@ export const ReviewAgreement = () => {
 
     const handleSendToApproval = () => {
         if (anyBudgetLinesDraft) {
+            //Create BLI Package, and send it to approval (create a Workflow)
+            const bli_ids = agreement?.budget_line_items.map((bli) => bli.id);
+            const user_id = activeUser?.id;
+            const notes = "";
+            console.log("BLI Package Data:", bli_ids, user_id, notes);
+            addApprovalRequest({
+                budget_line_item_ids: bli_ids,
+                submitter_id: user_id,
+                notes: notes
+            })
+                .unwrap()
+                .then((fulfilled) => {
+                    console.log("BLI Status Updated:", fulfilled);
+                    setAlert({
+                        type: "success",
+                        heading: "Agreement sent to approval",
+                        message: "The agreement has been successfully sent to approval for Planned Status.",
+                        redirectUrl: "/agreements"
+                    });
+                })
+                .catch((rejected) => {
+                    console.log("Error Updating Budget Line Status");
+                    console.dir(rejected);
+                    setAlert({
+                        type: "error",
+                        heading: "Error",
+                        message: "An error occurred. Please try again.",
+                        redirectUrl: "/error"
+                    });
+                });
+
+            // This is the old process of just updating the BLI status to UNDER_REVIEW
+            // Instead it should be creating a BLI Package, and sending it to approval (create a Workflow)
+            /*
             agreement?.budget_line_items.forEach((bli) => {
                 if (bli.status === "DRAFT") {
                     console.log(bli.id);
@@ -115,6 +152,7 @@ export const ReviewAgreement = () => {
                         });
                 }
             });
+            */
         }
     };
 
@@ -151,6 +189,7 @@ export const ReviewAgreement = () => {
                 <h1
                     className="text-bold"
                     style={{ fontSize: "1.375rem" }}
+                    data-cy="review-agreement-heading"
                 >
                     Review and Send Agreement to Approval
                 </h1>

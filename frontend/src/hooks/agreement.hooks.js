@@ -37,8 +37,8 @@ export const useIsUserAllowedToEditAgreement = (agreementId) => {
 export const useIsAgreementEditable = (agreementId) => {
     const { data: agreement } = useGetAgreementByIdQuery(agreementId);
 
-    const anyBudgetLinesInExecuting = agreement?.budget_line_items.some((item) => item.status === "IN_EXECUTING");
-    const anyBudgetLinesObligated = agreement?.budget_line_items.some((item) => item.status === "OBLIGATED");
+    const anyBudgetLinesInExecuting = agreement?.budget_line_items?.some((item) => item.status === "IN_EXECUTING");
+    const anyBudgetLinesObligated = agreement?.budget_line_items?.some((item) => item.status === "OBLIGATED");
     const isAgreementEditable = !anyBudgetLinesInExecuting && !anyBudgetLinesObligated;
 
     return isAgreementEditable;

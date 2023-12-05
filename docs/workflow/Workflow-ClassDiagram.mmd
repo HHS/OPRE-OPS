@@ -1,0 +1,76 @@
+classDiagram
+    class Workflow {
+        +Integer id
+        +String name
+        +Enum workflow_type
+        +Integer can_id
+    }
+
+    class WorkflowType {
+        APPROVAL
+        DOCUMENT_MGMT
+        VALIDATION
+    }
+
+    class WorkflowStatus {
+        REVIEW
+        APPROVED
+        REJECTED
+        CHANGES
+    }
+
+    class WorkflowStep {
+        +Integer id
+        +String name
+        +Integer workflow_id
+        +Enum workflow_type
+        +Enum status
+        +Integer index
+        +Boolean is_last_step
+        +Boolean completed
+        +String notes
+        +DateTime time_completed
+    }
+
+    class WorkflowStepDependency {
+        +Integer predecessor_step_id
+        +Integer successor_step_id
+    }
+
+    class StepApprovers {
+        +Integer id
+        +Integer workflow_step_id
+        +Integer user_id
+        +Integer role_id
+        +Integer group_id
+    }
+
+    Workflow "1" --> "0..*" WorkflowStep: contains
+    WorkflowStep --> WorkflowType: has_type
+    WorkflowStep --> WorkflowStatus: has_status
+    WorkflowStep "1" --> "0..*" WorkflowStepDependency: has_predecessor
+    WorkflowStep "1" --> "0..*" WorkflowStepDependency: has_successor
+    WorkflowStepDependency "1" --> "0..1" WorkflowStep: predecessor_depends_on
+    WorkflowStepDependency "1" --> "0..1" WorkflowStep: successor_depends_on
+    WorkflowStep "1" --> "0..*" StepApprovers: has
+
+    class CAN {
+        +Integer id
+    }
+
+    class USER {
+        +Integer id
+    }
+
+    class ROLE {
+        +Integer id
+    }
+
+    class GROUP {
+        +Integer id
+    }
+
+    CAN "1" --> "0..1" Workflow: has
+    USER "0..*" --> "0..*" StepApprovers: approves
+    ROLE "0..*" --> "0..*" StepApprovers: approves
+    GROUP "0..*" --> "0..*" StepApprovers: approves
