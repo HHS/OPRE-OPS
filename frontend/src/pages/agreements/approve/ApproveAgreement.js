@@ -13,7 +13,6 @@ import AgreementChangesAccordion from "../../../components/Agreements/AgreementC
 import { getTotalByCans } from "../review/ReviewAgreement.helpers";
 import TextArea from "../../../components/UI/Form/TextArea";
 import useToggle from "../../../hooks/useToggle";
-import { packetData } from "./data";
 
 const ApproveAgreement = () => {
     const urlPathParams = useParams();
