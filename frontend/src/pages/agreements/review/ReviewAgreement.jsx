@@ -46,7 +46,6 @@ export const ReviewAgreement = () => {
     });
     const activeUser = useSelector((state) => state.auth.activeUser);
 
-    //const [updateBudgetLineItemStatus] = useUpdateBudgetLineItemStatusMutation();
     const [addApprovalRequest] = useAddApprovalRequestMutation();
     const isAgreementStateEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
