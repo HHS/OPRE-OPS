@@ -5,9 +5,12 @@ from ops_api.ops.views import (
     AGREEMENT_LIST_API_VIEW_FUNC,
     AGREEMENT_REASON_LIST_API_VIEW_FUNC,
     AGREEMENT_TYPE_LIST_API_VIEW_FUNC,
+    APPROVE_SUBMISSION_LIST_API_VIEW_FUNC,
     AUTH_LOGIN_API_VIEW_FUNC,
     AUTH_LOGOUT_API_VIEW_FUNC,
     AUTH_REFRESH_API_VIEW_FUNC,
+    BLI_PACKAGE_ITEM_API_VIEW_FUNC,
+    BLI_PACKAGE_LIST_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC,
     CAN_FISCAL_YEAR_ITEM_API_VIEW_FUNC,
@@ -117,6 +120,15 @@ def register_api(api_bp: Blueprint) -> None:
     )
 
     api_bp.add_url_rule(
+        "/bli-packages/<int:id>",
+        view_func=BLI_PACKAGE_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/bli-packages/",
+        view_func=BLI_PACKAGE_LIST_API_VIEW_FUNC,
+    )
+
+    api_bp.add_url_rule(
         "/procurement-shops/<int:id>",
         view_func=PROCUREMENT_SHOPS_ITEM_API_VIEW_FUNC,
     )
@@ -223,4 +235,9 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/notifications/<int:id>",
         view_func=NOTIFICATIONS_ITEM_API_VIEW_FUNC,
+    )
+
+    api_bp.add_url_rule(
+        "/approve/",
+        view_func=APPROVE_SUBMISSION_LIST_API_VIEW_FUNC,
     )

@@ -8,3 +8,4 @@ from .procurement_shops import *
 from .research_projects import *
 from .users import *
 from .vendors import *
+from .workflows import *
