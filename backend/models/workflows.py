@@ -9,7 +9,13 @@ from sqlalchemy.orm import InstrumentedAttribute, relationship, with_polymorphic
 from typing_extensions import override
 
 
-class WorkflowType(Enum):
+class WorkflowAction(Enum): # WorkflowStepTypes
+    DRAFT_TO_PLANNED = 1
+    PLANNED_TO_EXECUTING = 2
+    GENERIC = 3
+
+    
+class WorkflowStepType(Enum): # WorkflowStepTypes
     APPROVAL = 1
     DOCUMENT_MGMT = 2
     VALIDATION = 3
@@ -57,7 +63,22 @@ class WorkflowInstance(BaseModel):
     associated_type = sa.Column(sa.Enum(WorkflowTriggerType), nullable=False)  # could use Enum based on the entities
     workflow_template_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_template.id"))
     steps = relationship("WorkflowStepInstance", backref="workflow_instance")
+    workflow_action = sa.Column(sa.Enum(WorkflowAction), nullable=False)
     # future props
+    
+
+    # REJECTED = "Rejected" (any --> Rejected)
+    # CHANGES = "Changes Required" (any --> Changes Required)
+    # REVIEW = "In-Review" (any --> In-Review)
+    # APPROVED = "Approved" (all --> Approved)
+    # 
+
+    @property
+    def workflow_status(self):
+        status_order = [WorkflowStatus.REJECTED, WorkflowStatus.CHANGES, WorkflowStatus.REVIEW]
+        return next((status for status in status_order if any(item.status == status for item in self.steps)),
+            WorkflowStatus.APPROVED if all(item.status == WorkflowStatus.APPROVED for item in self.steps) else None) 
+    
     # overall_status - calculated
     # current_step - calculated based on status of steps
 
@@ -69,7 +90,7 @@ class WorkflowStepTemplate(BaseModel):
     id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
     name = sa.Column(sa.String, nullable=False)
     workflow_template_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_template.id"))
-    workflow_type = sa.Column(sa.Enum(WorkflowType), nullable=False)
+    workflow_type = sa.Column(sa.Enum(WorkflowStepType), nullable=False)
     index = sa.Column(sa.Integer, nullable=False)
     step_approvers = relationship("StepApprovers", backref="step_template")
 
@@ -100,6 +121,13 @@ class WorkflowStepInstance(BaseModel):
         back_populates="successor_step",
         cascade="all, delete-orphan"
     )
+    @property
+    def approvers(self):
+        return [approver.user for approver in self.step_template.step_approvers if approver.user is not None] + \
+               [approver.group for approver in self.step_template.step_approvers if approver.group is not None] + \
+               [approver.role for approver in self.step_template.step_approvers if approver.role is not None]
+        
+        
 
 
 class WorkflowStepDependency(BaseModel):
@@ -215,7 +243,7 @@ class PackageSnapshot(BaseModel):
     __tablename__ = "package_snapshot"
     id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
     # make package_id a read-only field
-    _package_id = sa.Column(sa.Integer, sa.ForeignKey("package.id"), nullable=False)
+    _package_id = sa.Column(sa.Integer, sa.ForeignKey("package.id"), nullable=True)
     version = sa.Column(sa.Integer, nullable=True)
 
     @property
@@ -235,3 +263,4 @@ class BliPackageSnapshot(PackageSnapshot):
     overlaps = "package,package_snapshots"
     id = sa.Column(sa.Integer, sa.ForeignKey("package_snapshot.id"), primary_key=True)
     bli_id = sa.Column(sa.Integer, sa.ForeignKey("budget_line_item.id"), nullable=False)
+    # bli_package = relationship("BliPackage", backref="bli_package_snapshots", overlaps="package,package_snapshots")

@@ -203,6 +203,10 @@ class Agreement(BaseModel):
     )
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
     notes: Mapped[str] = mapped_column(Text, default="")
+    
+    # @property
+    # def has_bli_in_workflow(self):
+    #     return any(bli.workflow_instance_id for bli in self.budget_line_items)
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -529,7 +533,7 @@ class BudgetLineItem(BaseModel):
     @property
     def team_members(self):
         return self.agreement.team_members if self.agreement else []
-
+    
     @override
     def to_dict(self):
         d = super().to_dict()
