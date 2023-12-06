@@ -435,4 +435,5 @@ def add_additional_fields_to_agreement_response(agreement: Agreement) -> dict[st
         "procurement_shop": agreement.procurement_shop.to_dict() if agreement.procurement_shop else None,
         "product_service_code": agreement.product_service_code.to_dict() if agreement.product_service_code else None,
         "display_name": agreement.display_name,
+        "vendor": agreement.vendor.name if agreement.vendor else None,
     }
