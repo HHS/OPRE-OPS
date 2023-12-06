@@ -10,7 +10,7 @@ While this module can be customized and used in other projects, it is intended t
 
 ```
 module "ctx" {
-  source      = "./" # Location where this module lives. 
+  source      = "git::https://github.com/HHS/OPRE-OPS.git//terraform/global/context?ref=<tag>" # Location where this module lives. 
   environment = "dev"
 }
 
