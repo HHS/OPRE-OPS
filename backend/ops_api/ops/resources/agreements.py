@@ -98,6 +98,8 @@ class AgreementItemAPI(BaseItemAPI):
                 )
 
                 data = schema.dump(schema.load(request.json))
+                data["contract_type"] = ContractType[data["contract_type"]] if data.get("contract_type") else None
+
                 agreement = update_agreement(data, old_agreement)
                 agreement_dict = agreement.to_dict()
                 meta.metadata.update({"updated_agreement": agreement_dict})
