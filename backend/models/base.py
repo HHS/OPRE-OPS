@@ -1,5 +1,6 @@
 """Base model and other useful tools for project models."""
 import decimal
+import enum
 from typing import Annotated, ClassVar, Final, TypeAlias, TypedDict, TypeVar, cast
 
 import sqlalchemy
@@ -119,6 +120,16 @@ def setup_schema(base: Base) -> callable:
                     if isinstance(column.type, sqlalchemy.sql.sqltypes.Enum):
                         schema_class._declared_fields[column.name] = EnumField(
                             column.type.enum_class
+                        )
+
+                    # handle list of enums
+                    if isinstance(column.type, sqlalchemy.types.ARRAY) and isinstance(
+                        column.type.item_type.enum_class, enum.EnumMeta
+                    ):
+                        schema_class._declared_fields[column.name] = fields.List(
+                            EnumField(column.type.item_type.enum_class),
+                            default=[],
+                            allow_none=True,
                         )
 
                     # handle Decimal
