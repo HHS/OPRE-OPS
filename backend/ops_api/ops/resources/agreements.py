@@ -81,14 +81,8 @@ class AgreementItemAPI(BaseItemAPI):
                     raise RuntimeError("Invalid Agreement id.")
                 elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
                     raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
-                # reject change of agreement_type
-                # for PUT, it must exist in request
-                try:
-                    req_type = request.json["agreement_type"]
-                    if req_type != old_agreement.agreement_type.name:
-                        raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
-                except (KeyError, ValueError) as e:
-                    raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
+
+                req_type = reject_change_of_agreement_type(old_agreement)
 
                 schema = AGREEMENTS_REQUEST_SCHEMAS.get(old_agreement.agreement_type)
 
@@ -98,7 +92,9 @@ class AgreementItemAPI(BaseItemAPI):
                 )
 
                 data = schema.dump(schema.load(request.json))
-                data["contract_type"] = ContractType[data["contract_type"]] if data.get("contract_type") else None
+
+                if data.get("contract_type") and req_type == AgreementType.CONTRACT.name:
+                    data["contract_type"] = ContractType[data["contract_type"]]
 
                 agreement = update_agreement(data, old_agreement)
                 agreement_dict = agreement.to_dict()
@@ -439,3 +435,15 @@ def add_additional_fields_to_agreement_response(agreement: Agreement) -> dict[st
         "display_name": agreement.display_name,
         "vendor": agreement.vendor.name if agreement.vendor else None,
     }
+
+
+def reject_change_of_agreement_type(old_agreement):
+    # reject change of agreement_type
+    # for PUT, it must exist in request
+    try:
+        req_type = request.json["agreement_type"]
+        if req_type != old_agreement.agreement_type.name:
+            raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
+    except (KeyError, ValueError) as e:
+        raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
+    return req_type
