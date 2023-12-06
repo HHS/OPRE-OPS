@@ -4,13 +4,30 @@
 This is a module intended to be shared across a project that provides some standard naming, labelling, and context when imported.
 
 ## Usage
-While this module can be customized and used in other projects, it is intended to support the OPRE OPS Project and has opinionated default values designed to lessen the need to bring your own context into each component of the Terraform project.
+While this module can be customized and used in other projects, it is intended to support the OPRE OPS Project and has opinionated default values designed to lessen the need to bring your own context into each component of the Terraform project. There are more examples in the [examples](./examples) directory.
+
+## Basic Example Usage
+
+```
+module "ctx" {
+  source      = "./" # Location where this module lives.
+  environment = "dev"
+}
+
+resource "azurerm_storage_account" "example" {
+  name                     = module.ctx.labels.core.resourceNames["azurerm_storage_account"]
+  resource_group_name      = module.ctx.resource_group_name
+  location                 = module.ctx.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+}
+```
 
 ## Example Output
 Below is an example of the output that this module might generate:
 
-```hcl
-labels = = {
+```
+labels = {
     environment         = "example"
     labels              = {
         ""   = {
