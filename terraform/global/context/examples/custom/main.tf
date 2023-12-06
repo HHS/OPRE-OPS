@@ -3,7 +3,7 @@
 # Typically you would not do customization unless for temp and testing purposes. 
 
 module "ctx" {
-  source      = "../../"
+  source      = "git::https://github.com/HHS/OPRE-OPS.git//terraform/global/context?ref=tf-global-context-v0.0.1"
   environment = "custom" // Might typically be "dev", "stg", "prod"
   default_workload = "app" // This is usually core, but can be set. 
   workload_list = ["custom", "temp", "etc"] // Used to define new workloads or to make context output specific to what you need
