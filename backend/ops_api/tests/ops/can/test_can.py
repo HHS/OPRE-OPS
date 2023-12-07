@@ -19,7 +19,7 @@ def test_can_retrieve(loaded_db):
     assert can.arrangement_type == CANArrangementType.OPRE_APPROPRIATION
     assert len(can.funding_sources) == 2
     assert can.shared_portfolios == []
-    assert len(can.budget_line_items) == 1
+    assert len(can.budget_line_items) == 3
 
 
 def test_can_creation(loaded_db):

@@ -21,11 +21,17 @@ def test_agreement_retrieve(loaded_db):
 def test_agreements_get_all(auth_client, loaded_db):
     stmt = select(func.count()).select_from(Agreement)
     count = loaded_db.scalar(stmt)
-    assert count == 9
 
     response = auth_client.get(url_for("api.agreements-group"))
     assert response.status_code == 200
     assert len(response.json) == count
+
+    # test an agreement
+    assert response.json[0]["name"] == "Contract #1: African American Child and Family Research Center"
+    assert response.json[0]["agreement_type"] == "CONTRACT"
+    assert response.json[0]["contract_number"] == "XXXX000000001"
+    assert response.json[0]["research_project"]["id"] == 1
+    assert response.json[0]["budget_line_items"][0].amount == 1
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -474,3 +480,12 @@ def test_agreements_delete_by_id(auth_client, loaded_db, test_contract):
     agreement = loaded_db.scalar(stmt)
 
     assert agreement is None
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_get_iaa_agreement(auth_client, loaded_db):
+    response = auth_client.get(url_for("api.agreements-item", id=4))
+    assert response.status_code == 200
+    assert response.json["agreement_type"] == "IAA"
+    assert response.json["iaa"] == "This is an IAA value"

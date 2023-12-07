@@ -1,6 +1,6 @@
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Optional
+from typing import List, Optional
 
 from flask import Response, current_app, request
 from flask.views import MethodView
@@ -209,7 +209,15 @@ class AgreementListAPI(BaseListAPI):
         for agreement_cls in agreement_classes:
             result.extend(current_app.db_session.execute(self._get_query(agreement_cls, **request.args)).all())
 
-        return make_response_with_headers([i.to_dict() for item in result for i in item])
+        agreement_response: List[dict] = []
+        for item in result:
+            for agreement in item:
+                additional_fields = add_additional_fields_to_agreement_response(agreement)
+                agreement_dict = agreement.to_dict()
+                agreement_dict.update(additional_fields)
+                agreement_response.append(agreement_dict)
+
+        return make_response_with_headers(agreement_response)
 
     @override
     @is_authorized(PermissionType.POST, Permission.AGREEMENT)
@@ -424,16 +432,21 @@ def add_additional_fields_to_agreement_response(agreement: Agreement) -> dict[st
     if not agreement:
         return {}
 
+    # change BLI amounts from string to float - this is a temporary solution in lieu of marshmallow
+    transformed_blis = [bli.to_dict() for bli in agreement.budget_line_items]
+    for bli in transformed_blis:
+        bli.amount = float(bli.get("amount", 0))
+
     return {
         "agreement_type": agreement.agreement_type.name if agreement.agreement_type else None,
         "agreement_reason": agreement.agreement_reason.name if agreement.agreement_reason else None,
-        "budget_line_items": [bli.to_dict() for bli in agreement.budget_line_items],
+        "budget_line_items": transformed_blis,
         "team_members": [tm.to_dict() for tm in agreement.team_members],
         "research_project": agreement.research_project.to_dict() if agreement.research_project else None,
         "procurement_shop": agreement.procurement_shop.to_dict() if agreement.procurement_shop else None,
         "product_service_code": agreement.product_service_code.to_dict() if agreement.product_service_code else None,
         "display_name": agreement.display_name,
-        "vendor": agreement.vendor.name if agreement.vendor else None,
+        "vendor": agreement.vendor.name if hasattr(agreement, "vendor") and agreement.vendor else None,
     }
 
 
