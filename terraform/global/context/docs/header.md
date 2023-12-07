@@ -8,9 +8,9 @@ While this module can be customized and used in other projects, it is intended t
 
 ## Basic Example Usage 
 
-```hcl
+```
 module "ctx" {
-  source      = "./" # Location where this module lives. 
+  source      = "git::https://github.com/HHS/OPRE-OPS.git//terraform/global/context?ref=<tag>" # Location where this module lives. 
   environment = "dev"
 }
 
@@ -26,7 +26,7 @@ resource "azurerm_storage_account" "example" {
 ## Example Output
 Below is an example of the output that this module might generate:
 
-```hcl
+```
 labels = {
     environment         = "example"
     labels              = {
