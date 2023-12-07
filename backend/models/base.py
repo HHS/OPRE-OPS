@@ -197,20 +197,6 @@ class BaseModel(Base):  # type: ignore [misc, valid-type]
         def validate(item, data):  # type: ignore [no-untyped-def]
             pass
 
-    # @override
-    # def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
-    #     d = super().to_dict()  # type: ignore [no-untyped-call]
-    #
-    #     d.update(
-    #         {
-    #             "created_on": self.created_on.isoformat() if self.created_on else None,
-    #             "updated_on": self.updated_on.isoformat() if self.updated_on else None,
-    #             "display_name": self.display_name,
-    #         }
-    #     )
-    #
-    #     return cast(dict[str, Any], d)
-
     def to_slim_dict(self) -> dict[str, Any]:
         d = {
             "id": self.id,

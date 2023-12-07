@@ -204,36 +204,6 @@ class Agreement(BaseModel):
         "polymorphic_on": "agreement_type",
     }
 
-    # @override
-    # def to_dict(self) -> dict[str, Any]:
-    #     d: dict[str, Any] = super().to_dict()
-    #
-    #     if isinstance(self.agreement_type, str):
-    #         self.agreement_type = AgreementType[self.agreement_type]
-    #
-    #     if isinstance(self.agreement_reason, str):
-    #         self.agreement_reason = AgreementReason[self.agreement_reason]
-    #
-    #     d.update(
-    #         agreement_type=self.agreement_type.name if self.agreement_type else None,
-    #         agreement_reason=self.agreement_reason.name
-    #         if self.agreement_reason
-    #         else None,
-    #         budget_line_items=[bli.to_dict() for bli in self.budget_line_items],
-    #         team_members=[tm.to_dict() for tm in self.team_members],
-    #         research_project=self.research_project.to_dict()
-    #         if self.research_project
-    #         else None,
-    #         procurement_shop=self.procurement_shop.to_dict()
-    #         if self.procurement_shop
-    #         else None,
-    #         product_service_code=self.product_service_code.to_dict()
-    #         if self.product_service_code
-    #         else None,
-    #     )
-    #
-    #     return d
-
 
 contract_support_contacts = Table(
     "contract_support_contacts",

@@ -1,9 +1,10 @@
 from dataclasses import dataclass
-from typing import List, Optional, cast
+from typing import Any, List, Optional, cast
 
 import desert
 from flask import Response, current_app, request
 from flask_jwt_extended import jwt_required
+from models import CANArrangementType
 from models.base import BaseModel
 from models.cans import CAN
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -57,7 +58,12 @@ class CANListAPI(BaseListAPI):
         request_data: ListAPIRequest = self._get_input_schema.load(request.args)
         stmt = self._get_query(request_data.search)
         result = current_app.db_session.execute(stmt).all()
-        return make_response_with_headers([i.to_dict() for item in result for i in item])
+
+        cans_with_additional_fields = []
+        for item in result:
+            cans_with_additional_fields.extend(enhance_cans(item))
+
+        return make_response_with_headers(cans_with_additional_fields)
 
 
 class CANsByPortfolioAPI(BaseItemAPI):
@@ -73,4 +79,37 @@ class CANsByPortfolioAPI(BaseItemAPI):
     @override
     def get(self, id: int) -> Response:
         cans = self._get_item(id)
-        return make_response_with_headers([can.to_dict() for can in cans])
+        cans_with_additional_fields = enhance_cans(cans)
+
+        return make_response_with_headers(cans_with_additional_fields)
+
+
+def add_additional_fields_to_can_response(can: CAN) -> dict[str, Any]:
+    """
+    Add additional fields to the CAN response.
+
+    N.B. This is a temporary solution to add additional fields to the response.
+    This should be refactored to use marshmallow.
+    Also, the frontend/OpenAPI needs to be refactored to not use these fields.
+    """
+    if not can:
+        return {}
+
+    if isinstance(can.arrangement_type, str):
+        can.arrangement_type = CANArrangementType[can.arrangement_type]
+
+    return {
+        "appropriation_date": can.appropriation_date.strftime("%d/%m/%Y") if can.appropriation_date else None,
+        "expiration_date": can.expiration_date.strftime("%d/%m/%Y") if can.expiration_date else None,
+        "arrangement_type": can.arrangement_type.name if can.arrangement_type else None,
+    }
+
+
+def enhance_cans(cans: List[CAN]) -> List[CAN]:
+    cans_with_additional_fields = []
+    for can in cans:
+        additional_fields = add_additional_fields_to_can_response(can)
+        can_dict = can.to_dict()
+        can_dict.update(additional_fields)
+        cans_with_additional_fields.append(can_dict)
+    return cans_with_additional_fields
