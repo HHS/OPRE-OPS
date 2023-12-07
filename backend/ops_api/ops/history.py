@@ -49,7 +49,7 @@ def find_relationship_by_fk(obj, col_key):
 
 
 def build_audit(obj, event_type: OpsDBHistoryType) -> DbRecordAudit:  # noqa: C901
-    row_key = "|".join([pk.name for pk in inspect(obj.__table__).primary_key.columns.values()])
+    row_key = "|".join([str(getattr(obj, pk.name)) for pk in inspect(obj.__table__).primary_key.columns.values()])
 
     changes = {}
 
