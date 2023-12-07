@@ -1,6 +1,8 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
+const randomString = Math.floor(Math.random() * Date.now()).toString(36);
+
 // eslint-disable-next-line no-unused-vars
 const testAgreements = [
     {
@@ -79,7 +81,7 @@ const testAgreements = [
 const testAgreement = {
     agreement_type: "CONTRACT",
     agreement_reason: "NEW_REQ",
-    name: "Test Contract",
+    name: "Test Contract" + randomString,
     display_name: "Test Contract",
     description: "Test Description",
     research_project_id: 1,
