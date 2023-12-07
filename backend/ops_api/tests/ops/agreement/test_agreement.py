@@ -1,3 +1,4 @@
+import numpy
 import pytest
 from flask import url_for
 from models import AgreementType, ContractAgreement, ContractType, GrantAgreement
@@ -31,7 +32,8 @@ def test_agreements_get_all(auth_client, loaded_db):
     assert response.json[0]["agreement_type"] == "CONTRACT"
     assert response.json[0]["contract_number"] == "XXXX000000001"
     assert response.json[0]["research_project"]["id"] == 1
-    assert response.json[0]["budget_line_items"][0].amount == 1
+    assert numpy.isclose(response.json[0]["budget_line_items"][0]["amount"], 1000000.0)
+    assert numpy.isclose(response.json[0]["procurement_shop"]["fee"], 0.0)
 
 
 @pytest.mark.usefixtures("app_ctx")

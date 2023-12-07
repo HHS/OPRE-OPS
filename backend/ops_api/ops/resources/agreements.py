@@ -435,7 +435,13 @@ def add_additional_fields_to_agreement_response(agreement: Agreement) -> dict[st
     # change BLI amounts from string to float - this is a temporary solution in lieu of marshmallow
     transformed_blis = [bli.to_dict() for bli in agreement.budget_line_items]
     for bli in transformed_blis:
-        bli.amount = float(bli.get("amount", 0))
+        if bli.get("amount"):
+            bli["amount"] = float(bli.get("amount"))
+
+    # change PS amount from string to float - this is a temporary solution in lieu of marshmallow
+    transformed_ps = agreement.procurement_shop.to_dict() if agreement.procurement_shop else {}
+    if transformed_ps:
+        transformed_ps["fee"] = float(transformed_ps.get("fee"))
 
     return {
         "agreement_type": agreement.agreement_type.name if agreement.agreement_type else None,
@@ -443,7 +449,7 @@ def add_additional_fields_to_agreement_response(agreement: Agreement) -> dict[st
         "budget_line_items": transformed_blis,
         "team_members": [tm.to_dict() for tm in agreement.team_members],
         "research_project": agreement.research_project.to_dict() if agreement.research_project else None,
-        "procurement_shop": agreement.procurement_shop.to_dict() if agreement.procurement_shop else None,
+        "procurement_shop": transformed_ps,
         "product_service_code": agreement.product_service_code.to_dict() if agreement.product_service_code else None,
         "display_name": agreement.display_name,
         "vendor": agreement.vendor.name if hasattr(agreement, "vendor") and agreement.vendor else None,
