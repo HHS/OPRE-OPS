@@ -1,7 +1,7 @@
 import pytest
 from flask import url_for
 from models.cans import BudgetLineItem
-from models.workflows import BliPackage
+from models.workflows import Package
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -15,7 +15,12 @@ def test_approve_submission_success(auth_client, loaded_db):
 
     response = auth_client.post(
         url_for("api.approve-submission-list"),
-        json={"submitter_id": submitter_id, "budget_line_item_ids": budget_line_item_ids, "notes": submission_notes},
+        json={
+            "submitter_id": submitter_id,
+            "budget_line_item_ids": budget_line_item_ids,
+            "notes": submission_notes,
+            "workflow_action": "DRAFT_TO_PLANNED",
+        },
     )
 
     # Assertions
@@ -25,7 +30,7 @@ def test_approve_submission_success(auth_client, loaded_db):
     assert "id" in data
 
     # Verify BliPackageSnapshot creation
-    new_bli_package = loaded_db.get(BliPackage, data["id"])
+    new_bli_package = loaded_db.get(Package, data["id"])
     assert new_bli_package is not None
     assert len(new_bli_package.bli_package_snapshots) == len(budget_line_item_ids)
 

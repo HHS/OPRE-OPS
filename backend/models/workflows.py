@@ -14,7 +14,7 @@ class WorkflowAction(Enum): # WorkflowStepTypes
     PLANNED_TO_EXECUTING = 2
     GENERIC = 3
 
-    
+
 class WorkflowStepType(Enum): # WorkflowStepTypes
     APPROVAL = 1
     DOCUMENT_MGMT = 2
@@ -33,17 +33,13 @@ class WorkflowTriggerType(Enum):
     PROCUREMENT_SHOP = 2
 
 
-class PackageType(Enum):
-    BLI = 1
-
-
 class WorkflowTemplate(BaseModel):
     """ Workflow structure without being tied to any specific real-world entity """
     __tablename__ = "workflow_template"
     id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
     name = sa.Column(sa.String, nullable=False)
     steps = relationship("WorkflowStepTemplate", backref="workflow_template")
-    
+
     @BaseModel.display_name.getter
     def display_name(self):
         return self.name
@@ -64,23 +60,20 @@ class WorkflowInstance(BaseModel):
     workflow_template_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_template.id"))
     steps = relationship("WorkflowStepInstance", backref="workflow_instance")
     workflow_action = sa.Column(sa.Enum(WorkflowAction), nullable=False)
+    current_workflow_step_instance_id = sa.Column(sa.Integer, nullable=True)
     # future props
-    
 
     # REJECTED = "Rejected" (any --> Rejected)
     # CHANGES = "Changes Required" (any --> Changes Required)
     # REVIEW = "In-Review" (any --> In-Review)
     # APPROVED = "Approved" (all --> Approved)
-    # 
 
     @property
     def workflow_status(self):
         status_order = [WorkflowStatus.REJECTED, WorkflowStatus.CHANGES, WorkflowStatus.REVIEW]
         return next((status for status in status_order if any(item.status == status for item in self.steps)),
-            WorkflowStatus.APPROVED if all(item.status == WorkflowStatus.APPROVED for item in self.steps) else None) 
-    
-    # overall_status - calculated
-    # current_step - calculated based on status of steps
+            WorkflowStatus.APPROVED if all(item.status == WorkflowStatus.APPROVED for item in self.steps) else None)
+
 
 
 class WorkflowStepTemplate(BaseModel):
@@ -126,8 +119,8 @@ class WorkflowStepInstance(BaseModel):
         return [approver.user for approver in self.step_template.step_approvers if approver.user is not None] + \
                [approver.group for approver in self.step_template.step_approvers if approver.group is not None] + \
                [approver.role for approver in self.step_template.step_approvers if approver.role is not None]
-        
-        
+
+
 
 
 class WorkflowStepDependency(BaseModel):
@@ -160,83 +153,30 @@ class StepApprovers(BaseModel):
 class Package(BaseModel):
     """Base package, used for sending groups of things around in a workflow
     """
-
-    _subclasses: ClassVar[dict[Optional[PackageType], type["Package"]]] = {}
-
     __tablename__ = "package"
 
     id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
     submitter_id = (sa.Integer, sa.ForeignKey("user.id"))
-    current_workflow_step_instance_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_instance.id"))
+    workflow = sa.Column(sa.Integer, sa.ForeignKey("workflow_instance.id"), nullable=True)
     notes = sa.Column(sa.String, nullable=True)
-    package_type = sa.Column(sa.Enum(PackageType), nullable=False)
     package_snapshots = relationship("PackageSnapshot", backref="package")
 
     @BaseModel.display_name.getter
     def display_name(self):
         return f"{self.package_type}-Package-{self.id}"
 
-    __mapper_args__: dict[str, str | PackageType] = {
-        "polymorphic_identity": "package",
-        "polymorphic_on": "package_type",
-    }
 
-    def __init_subclass__(cls, package_type: PackageType, **kwargs: Any) -> None:
-        cls._subclasses[package_type] = cls
-        super().__init_subclass__(**kwargs)
+# class BliPackage(Package, package_type=PackageType.BLI):
+#     """Budget Line Item Package
+#     """
+#     __tablename__ = "bli_package"
 
+#     id = sa.Column(sa.Integer, sa.ForeignKey("package.id"), primary_key=True)
+#     bli_package_snapshots = relationship("BliPackageSnapshot", backref="bli_package")
 
-    @classmethod
-    def get_polymorphic(cls) -> "Package":
-        return with_polymorphic(Package, list(cls._subclasses.values()))
-
-
-    @classmethod
-    def get_class_field(cls, field_name: str) -> InstrumentedAttribute:
-        if field_name in set(Package.columns):
-            table_class = Package
-        else:
-            for subclass in cls._subclasses.values():
-                if field_name in set(subclass.columns):
-                    table_class = subclass
-                    break
-            else:
-                raise ValueError(f"Column name does not exist for packages: {field_name}")
-        return getattr(table_class, field_name)
-
-
-    @classmethod
-    def get_class(cls, package_type: Optional[PackageType] = None) -> type["Package"]:
-        try:
-            return cls._subclasses[package_type]
-        except KeyError:
-            return Package
-
-
-    @override
-    def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
-        d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
-
-        if isinstance(self.package_type, str):
-            self.package_type = PackageType(self.package_type)
-
-        d.update(
-            package_type=self.package_type.name if self.package_type else None,
-        )
-        return d
-
-
-class BliPackage(Package, package_type=PackageType.BLI):
-    """Budget Line Item Package
-    """
-    __tablename__ = "bli_package"
-
-    id = sa.Column(sa.Integer, sa.ForeignKey("package.id"), primary_key=True)
-    bli_package_snapshots = relationship("BliPackageSnapshot", backref="bli_package")
-
-    __mapper_args__ = {
-        "polymorphic_identity": PackageType.BLI,
-    }
+#     __mapper_args__ = {
+#         "polymorphic_identity": PackageType.BLI,
+#     }
 
 
 class PackageSnapshot(BaseModel):
@@ -245,6 +185,7 @@ class PackageSnapshot(BaseModel):
     # make package_id a read-only field
     _package_id = sa.Column(sa.Integer, sa.ForeignKey("package.id"), nullable=True)
     version = sa.Column(sa.Integer, nullable=True)
+    bli_id = sa.Column(sa.Integer, sa.ForeignKey("budget_line_item.id"), nullable=False)
 
     @property
     def package_id(self):
@@ -258,9 +199,7 @@ class PackageSnapshot(BaseModel):
             raise ValueError("package_id is a read-only attribute")
 
 
-class BliPackageSnapshot(PackageSnapshot):
-    __tablename__ = "bli_package_snapshot"
-    overlaps = "package,package_snapshots"
-    id = sa.Column(sa.Integer, sa.ForeignKey("package_snapshot.id"), primary_key=True)
-    bli_id = sa.Column(sa.Integer, sa.ForeignKey("budget_line_item.id"), nullable=False)
-    # bli_package = relationship("BliPackage", backref="bli_package_snapshots", overlaps="package,package_snapshots")
+# class BliPackageSnapshot(PackageSnapshot):
+#     __tablename__ = "bli_package_snapshot"
+#     id = sa.Column(sa.Integer, sa.ForeignKey("package_snapshot.id"), primary_key=True)
+#     bli_package = relationship("BliPackage", backref="bli_package_snapshots", overlaps="package,package_snapshots")

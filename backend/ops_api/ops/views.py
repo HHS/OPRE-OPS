@@ -6,7 +6,6 @@ from models.portfolios import Division, Portfolio, PortfolioStatus
 from models.procurement_shops import ProcurementShop
 from models.research_projects import ResearchProject, ResearchType
 from models.users import User
-from models.workflows import BliPackage
 from ops_api.ops.resources.agreement_history import AgreementHistoryListAPI
 from ops_api.ops.resources.agreements import (
     AgreementItemAPI,
@@ -16,7 +15,6 @@ from ops_api.ops.resources.agreements import (
 )
 from ops_api.ops.resources.approve import ApproveSubmisionListApi
 from ops_api.ops.resources.auth import AuthLoginAPI, AuthLogoutAPI, AuthRefreshAPI
-from ops_api.ops.resources.bli_package import BliPackageItemAPI, BliPackageListAPI
 from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, BudgetLineItemsListAPI
 from ops_api.ops.resources.can_fiscal_year import CANFiscalYearItemAPI, CANFiscalYearListAPI
 from ops_api.ops.resources.can_funding_summary import CANFundingSummaryItemAPI
@@ -82,8 +80,8 @@ BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC = BudgetLineItemsItemAPI.as_view("budget-li
 BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC = BudgetLineItemsListAPI.as_view("budget-line-items-group", BudgetLineItem)
 
 # BUDGET LINE ITEM PACKAGE ENDPOINTS
-BLI_PACKAGE_ITEM_API_VIEW_FUNC = BliPackageItemAPI.as_view("bli-package-item", BliPackage)
-BLI_PACKAGE_LIST_API_VIEW_FUNC = BliPackageListAPI.as_view("bli-package-group", BliPackage)
+# PACKAGE_ITEM_API_VIEW_FUNC = PackageItemAPI.as_view("package-item", Package)
+# PACKAGE_LIST_API_VIEW_FUNC = PackageListAPI.as_view("package-group", Package)
 
 # PRODUCT SERVICE CODES ENDPOINTS
 PRODUCT_SERVICE_CODE_ITEM_API_VIEW_FUNC = ProductServiceCodeItemAPI.as_view(

@@ -33,12 +33,14 @@
       associated_type: "CAN",
       workflow_template_id: 1,
       workflow_action: "DRAFT_TO_PLANNED",
+      current_workflow_step_instance_id: null,
     },
     {
       associated_id: 1,
       associated_type: "CAN",
       workflow_template_id: 1,
       workflow_action: "DRAFT_TO_PLANNED",
+      current_workflow_step_instance_id: null,
     },
   ],
 
@@ -75,24 +77,29 @@
 
   package: [
     {
-      current_workflow_step_instance_id: 1,
+      workflow: 1,
       submitter_id: 21,
       notes: "Urgent approval needed",
-      package_type: "BLI",
     },
+    {
+      workflow: 2,
+      submitter_id: 21,
+      notes: "Urgent approval needed",
+    }
   ],
+
 
   package_snapshot: [
     {
       _package_id: 1,
       version: 1,
-    },
-  ],
-
-  bli_package_snapshot: [
-    {
       bli_id: 1,
     },
+    {
+      _package_id: 2,
+      version: 1,
+      bli_id: 2,
+    }
   ],
 
 }

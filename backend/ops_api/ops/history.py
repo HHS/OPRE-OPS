@@ -9,7 +9,7 @@ from flask import current_app
 from flask_jwt_extended import verify_jwt_in_request
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from models import BaseModel, OpsDBHistory, OpsDBHistoryType, OpsEvent, User
-from models.workflows import WorkflowStepInstance, WorkflowInstance, BliPackage, BliPackageSnapshot
+from models.workflows import Package, PackageSnapshot, WorkflowInstance, WorkflowStepInstance
 from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy.cyextension.collections import IdentitySet
 from sqlalchemy.orm import Session
@@ -142,7 +142,9 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
         current_app.logger.info(f"Failed trying to get the user from the request. {type(e)}: {e}")
 
     for obj in objs:
-        if not isinstance(obj, (OpsEvent, OpsDBHistory, WorkflowStepInstance, WorkflowInstance, BliPackage, BliPackageSnapshot )):  # not interested in tracking these
+        if not isinstance(
+            obj, (OpsEvent, OpsDBHistory, WorkflowStepInstance, WorkflowInstance, Package, PackageSnapshot)
+        ):  # not interested in tracking these
             db_audit = build_audit(obj, event_type)
             if event_type == OpsDBHistoryType.UPDATED and not db_audit.changes:
                 logging.info(

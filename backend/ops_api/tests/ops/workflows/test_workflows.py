@@ -1,13 +1,12 @@
 import pytest
-from flask import url_for
-from models.cans import BudgetLineItem
-from models.workflows import BliPackage, WorkflowStepInstance, WorkflowInstance, WorkflowAction, WorkflowStatus, WorkflowTriggerType
+from models.workflows import WorkflowAction, WorkflowInstance, WorkflowStatus, WorkflowStepInstance, WorkflowTriggerType
+
 
 @pytest.mark.usefixtures("app_ctx")
 def test_workflow_instance_retrieve(auth_client, loaded_db):
-    #workflow_instance = loaded_db.get(WorkflowInstance, 1)
+    # workflow_instance = loaded_db.get(WorkflowInstance, 1)
     workflow_instance = loaded_db.query(WorkflowInstance).filter(WorkflowInstance.id == 1).one()
-    
+
     assert workflow_instance is not None
     assert workflow_instance.associated_type == WorkflowTriggerType.CAN
     assert workflow_instance.associated_id == 1
@@ -18,7 +17,9 @@ def test_workflow_instance_retrieve(auth_client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_workflow_step_instance_retrieve(auth_client, loaded_db):
-    workflow_step_instance = loaded_db.query(WorkflowStepInstance).filter(WorkflowStepInstance.id == 1).one() # loaded_db.get(WorkflowStepInstance, 1)
+    workflow_step_instance = (
+        loaded_db.query(WorkflowStepInstance).filter(WorkflowStepInstance.id == 1).one()
+    )  # loaded_db.get(WorkflowStepInstance, 1)
 
     assert workflow_step_instance is not None
     assert workflow_step_instance.workflow_instance_id == 1
