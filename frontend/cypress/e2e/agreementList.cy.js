@@ -49,8 +49,8 @@ it("Agreements list table has correct headers and first row", () => {
     cy.get("tbody > :nth-child(1) > :nth-child(6)").should("have.text", "None");
 
     cy.get("tbody tr").first().trigger("mouseover");
-    cy.get("svg[id^='submit-for-approval-']").first().should("exist");
-    cy.get("svg[id^='submit-for-approval-']").first().should("not.be.disabled");
+    cy.get("button[id^='submit-for-approval-']").first().should("exist");
+    cy.get("button[id^='submit-for-approval-']").first().should("not.be.disabled");
 
     // expand first row
     cy.get(':nth-child(1) > :nth-child(7) > [data-cy="expand-row"]').should("exist");
@@ -63,9 +63,9 @@ it("Agreements list table has correct headers and first row", () => {
 it("navigates to the ReviewAgreements page when the review button is clicked", () => {
     cy.get(".usa-table").should("exist");
     cy.get("tbody tr").first().trigger("mouseover");
-    cy.get("svg[id^='submit-for-approval-']").first().should("exist");
-    cy.get("svg[id^='submit-for-approval-']").first().should("not.be.disabled");
-    cy.get("svg[id^='submit-for-approval-']").first().click();
+    cy.get("button[id^='submit-for-approval-']").first().should("exist");
+    cy.get("button[id^='submit-for-approval-']").first().should("not.be.disabled");
+    cy.get("button[id^='submit-for-approval-']").first().click();
     cy.url().should("include", "/agreements/review");
     cy.get("h1").should("exist");
     cy.get("h1").should("have.text", "Request BL Status Change");

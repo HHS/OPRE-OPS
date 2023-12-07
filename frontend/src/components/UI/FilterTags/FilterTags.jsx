@@ -13,7 +13,7 @@ export const FilterTags = ({ removeFilter, tagsList }) => {
         <Tag className="bg-brand-primary-light display-flex flex-align-center">
             {tag.tagText}
             <svg
-                className="height-2 width-2 text-primary-dark margin-left-05 hover: cursor-pointer usa-tooltip"
+                className="height-2 width-2 text-primary-dark margin-left-05 cursor-pointer"
                 onClick={() => removeFilter(tag)}
                 id={`filter-tag-${tag.filter}`}
             >

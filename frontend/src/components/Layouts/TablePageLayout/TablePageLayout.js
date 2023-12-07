@@ -41,7 +41,7 @@ export const TablePageLayout = ({
                     className="usa-button usa-button--outline display-flex flex-align-center margin-0 padding-105"
                 >
                     <svg
-                        className="height-2 width-2 margin-right-05 hover: cursor-pointer usa-tooltip "
+                        className="height-2 width-2 margin-right-05 cursor-pointer"
                         style={{ fill: "#005ea2" }}
                     >
                         <use xlinkHref={`${icons}#add`}></use>
