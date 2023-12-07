@@ -413,28 +413,28 @@ class CANFiscalYear(BaseModel):
             return f"{self.can.display_name}:{self.fiscal_year}"
         return f"CAN#{self.can_id}:{self.fiscal_year}"
 
-    @override
-    def to_dict(self):
-        # d = super().to_dict()
-
-        d = {}
-        d.update(
-            total_fiscal_year_funding=float(self.total_fiscal_year_funding)
-            if self.total_fiscal_year_funding
-            else None,
-            received_funding=float(self.received_funding)
-            if self.received_funding
-            else None,
-            expected_funding=float(self.expected_funding)
-            if self.expected_funding
-            else None,
-            potential_additional_funding=float(self.potential_additional_funding)
-            if self.potential_additional_funding
-            else None,
-            total_funding=float(self.total_funding) if self.total_funding else None,
-        )
-
-        return d
+    # @override
+    # def to_dict(self):
+    #     # d = super().to_dict()
+    #
+    #     d = {}
+    #     d.update(
+    #         total_fiscal_year_funding=float(self.total_fiscal_year_funding)
+    #         if self.total_fiscal_year_funding
+    #         else None,
+    #         received_funding=float(self.received_funding)
+    #         if self.received_funding
+    #         else None,
+    #         expected_funding=float(self.expected_funding)
+    #         if self.expected_funding
+    #         else None,
+    #         potential_additional_funding=float(self.potential_additional_funding)
+    #         if self.potential_additional_funding
+    #         else None,
+    #         total_funding=float(self.total_funding) if self.total_funding else None,
+    #     )
+    #
+    #     return d
 
 
 class CANFiscalYearCarryForward(BaseModel):
@@ -451,22 +451,22 @@ class CANFiscalYearCarryForward(BaseModel):
     notes = Column(String, default="")
     total_amount = column_property(received_amount + expected_amount)
 
-    @override
-    def to_dict(self):
-        # d = super().to_dict()
-
-        d = {}
-        d.update(
-            received_amount=float(self.received_amount)
-            if self.received_amount
-            else None,
-            expected_amount=float(self.expected_amount)
-            if self.expected_amount
-            else None,
-            total_amount=float(self.total_amount) if self.total_amount else None,
-        )
-
-        return d
+    # @override
+    # def to_dict(self):
+    #     # d = super().to_dict()
+    #
+    #     d = {}
+    #     d.update(
+    #         received_amount=float(self.received_amount)
+    #         if self.received_amount
+    #         else None,
+    #         expected_amount=float(self.expected_amount)
+    #         if self.expected_amount
+    #         else None,
+    #         total_amount=float(self.total_amount) if self.total_amount else None,
+    #     )
+    #
+    #     return d
 
 
 class BudgetLineItem(BaseModel):

@@ -118,7 +118,7 @@ def setup_schema(base: Base) -> callable:
                 for column in class_.__mapper__.columns:
                     # handle enums
                     if isinstance(column.type, sqlalchemy.sql.sqltypes.Enum):
-                        schema_class._declared_fields[column.name] = EnumField(
+                        schema_class._declared_fields[column.key] = EnumField(
                             column.type.enum_class
                         )
 
@@ -126,7 +126,7 @@ def setup_schema(base: Base) -> callable:
                     if isinstance(column.type, sqlalchemy.types.ARRAY) and isinstance(
                         column.type.item_type.enum_class, enum.EnumMeta
                     ):
-                        schema_class._declared_fields[column.name] = fields.List(
+                        schema_class._declared_fields[column.key] = fields.List(
                             EnumField(column.type.item_type.enum_class),
                             default=[],
                             allow_none=True,
@@ -134,7 +134,7 @@ def setup_schema(base: Base) -> callable:
 
                     # handle Decimal
                     if isinstance(column.type, sqlalchemy.types.Numeric):
-                        schema_class._declared_fields[column.name] = fields.Decimal(
+                        schema_class._declared_fields[column.key] = fields.Decimal(
                             as_string=True
                         )
 
