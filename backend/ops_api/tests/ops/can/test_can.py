@@ -17,9 +17,9 @@ def test_can_retrieve(loaded_db):
     assert can.authorizer_id == 26
     assert can.managing_portfolio_id == 6
     assert can.arrangement_type == CANArrangementType.OPRE_APPROPRIATION
-    # assert can.funding_sources == []
-    # assert can.shared_portfolios == [2]
-    # assert can.budget_line_items == []
+    assert len(can.funding_sources) == 2
+    assert can.shared_portfolios == []
+    assert len(can.budget_line_items) == 1
 
 
 def test_can_creation(loaded_db):

@@ -556,24 +556,3 @@ class CAN(BaseModel):
     @BaseModel.display_name.getter
     def display_name(self):
         return self.number
-
-    # @override
-    # def to_dict(self) -> dict[str, Any]:
-    #     d: dict[str, Any] = super().to_dict()
-    #
-    #     if isinstance(self.arrangement_type, str):
-    #         self.arrangement_type = CANArrangementType[self.arrangement_type]
-    #
-    #     d.update(
-    #         appropriation_date=self.appropriation_date.strftime("%d/%m/%Y")
-    #         if self.appropriation_date
-    #         else None,
-    #         expiration_date=self.expiration_date.strftime("%d/%m/%Y")
-    #         if self.expiration_date
-    #         else None,
-    #         arrangement_type=self.arrangement_type.name
-    #         if self.arrangement_type
-    #         else None,
-    #     )
-    #
-    #     return d
