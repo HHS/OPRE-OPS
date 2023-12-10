@@ -17,6 +17,7 @@ import useToggle from "../../../hooks/useToggle";
 const ApproveAgreement = () => {
     const urlPathParams = useParams();
     const [notes, setNotes] = React.useState("");
+    const [confirmation, setConfirmation] = React.useState(false);
     // @ts-ignore
     const agreementId = +urlPathParams.id;
     // const navigate = useNavigate();
@@ -75,6 +76,23 @@ const ApproveAgreement = () => {
                 changeInBudgetLines={agreement.budget_line_items.reduce((acc, { amount }) => acc + amount, 0)}
                 changeInCans={changeInCans}
             />
+            <div className="usa-checkbox padding-bottom-105">
+                <input
+                    className="usa-checkbox__input"
+                    id="approve-confirmation"
+                    type="checkbox"
+                    name="approve-confirmation"
+                    value="approve-confirmation"
+                    checked={confirmation}
+                    onChange={() => setConfirmation(!confirmation)}
+                />
+                <label
+                    className="usa-checkbox__label"
+                    htmlFor="approve-confirmation"
+                >
+                    I understand that approving these budget lines will subtract the amounts from the FY budget
+                </label>
+            </div>
             <h2 className="font-sans-lg text-semibold">Notes</h2>
             <TextArea
                 name="submitter-notes"
@@ -110,6 +128,7 @@ const ApproveAgreement = () => {
                     onClick={() => {
                         alert("Not implemented yet");
                     }}
+                    disabled={!confirmation}
                 >
                     Approve
                 </button>
