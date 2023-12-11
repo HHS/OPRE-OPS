@@ -4,12 +4,12 @@ from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
 from types import NoneType
+import json
 
 from flask import current_app
 from flask_jwt_extended import verify_jwt_in_request
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from models import BaseModel, OpsDBHistory, OpsDBHistoryType, OpsEvent, User
-from models.workflows import Package, PackageSnapshot, WorkflowInstance, WorkflowStepInstance
 from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy.cyextension.collections import IdentitySet
 from sqlalchemy.orm import Session
@@ -111,11 +111,17 @@ def track_db_history_after(session: Session):
 
 
 def track_db_history_catch_errors(exception_context):
+    # Avoid JSON serialization error with exception_context.parameters by safely converting first
+    # Otherwise, if there are objects in exception_context.parameters that SQLAlchemy can't convert to JSON
+    # then it can spawn another error which comes back to here which spawns another error, etc
+    params_json = json.dumps(exception_context.parameters, default=str)
+    params_obj = json.loads(params_json)
+
     ops_db = OpsDBHistory(
         event_type=OpsDBHistoryType.ERROR,
         event_details={
             "statement": exception_context.statement,
-            "parameters": exception_context.parameters,
+            "parameters": params_obj,
             "original_exception": f"{exception_context.original_exception}",
             "sqlalchemy_exception": f"{exception_context.sqlalchemy_exception}",
         },
@@ -143,7 +149,7 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
 
     for obj in objs:
         if not isinstance(
-            obj, (OpsEvent, OpsDBHistory, WorkflowStepInstance, WorkflowInstance, Package, PackageSnapshot)
+            obj, (OpsEvent, OpsDBHistory)
         ):  # not interested in tracking these
             db_audit = build_audit(obj, event_type)
             if event_type == OpsDBHistoryType.UPDATED and not db_audit.changes:
