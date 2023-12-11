@@ -123,7 +123,6 @@ export const getAccessToken = () => {
         // is the refresh token still valid?
         callBackend("/api/v1/auth/refresh/", "POST", {}, null, true)
             .then((response) => {
-                console.log(response);
                 localStorage.setItem("access_token", response.access_token);
                 return response.access_token;
             })

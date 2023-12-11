@@ -6,6 +6,7 @@ from models.portfolios import Division, Portfolio, PortfolioStatus
 from models.procurement_shops import ProcurementShop
 from models.research_projects import ResearchProject, ResearchType
 from models.users import User
+from models.workflows import BliPackage
 from ops_api.ops.resources.agreement_history import AgreementHistoryListAPI
 from ops_api.ops.resources.agreements import (
     AgreementItemAPI,
@@ -13,7 +14,9 @@ from ops_api.ops.resources.agreements import (
     AgreementReasonListAPI,
     AgreementTypeListAPI,
 )
+from ops_api.ops.resources.approve import ApproveSubmisionListApi
 from ops_api.ops.resources.auth import AuthLoginAPI, AuthLogoutAPI, AuthRefreshAPI
+from ops_api.ops.resources.bli_package import BliPackageItemAPI, BliPackageListAPI
 from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, BudgetLineItemsListAPI
 from ops_api.ops.resources.can_fiscal_year import CANFiscalYearItemAPI, CANFiscalYearListAPI
 from ops_api.ops.resources.can_funding_summary import CANFundingSummaryItemAPI
@@ -45,6 +48,9 @@ AGREEMENT_HISTORY_LIST_API_VIEW_FUNC = AgreementHistoryListAPI.as_view("agreemen
 # AGREEMENT-TYPE ENDPOINTS
 AGREEMENT_TYPE_LIST_API_VIEW_FUNC = AgreementTypeListAPI.as_view("agreement-type-list")
 
+# ApproveSubmission ENDPOINTS
+APPROVE_SUBMISSION_LIST_API_VIEW_FUNC = ApproveSubmisionListApi.as_view("approve-submission-list", BaseModel)
+
 # CONTRACT ENDPOINTS
 CONTRACT_ITEM_API_VIEW_FUNC = ContractItemAPI.as_view("contract-item", ContractAgreement)
 CONTRACT_LIST_API_VIEW_FUNC = ContractListAPI.as_view("contract-list", ContractListAPI)
@@ -74,6 +80,10 @@ CAN_FISCAL_YEAR_LIST_API_VIEW_FUNC = CANFiscalYearListAPI.as_view("can-fiscal-ye
 # BUDGET LINE ITEM ENDPOINTS
 BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC = BudgetLineItemsItemAPI.as_view("budget-line-items-item", BudgetLineItem)
 BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC = BudgetLineItemsListAPI.as_view("budget-line-items-group", BudgetLineItem)
+
+# BUDGET LINE ITEM PACKAGE ENDPOINTS
+BLI_PACKAGE_ITEM_API_VIEW_FUNC = BliPackageItemAPI.as_view("bli-package-item", BliPackage)
+BLI_PACKAGE_LIST_API_VIEW_FUNC = BliPackageListAPI.as_view("bli-package-group", BliPackage)
 
 # PRODUCT SERVICE CODES ENDPOINTS
 PRODUCT_SERVICE_CODE_ITEM_API_VIEW_FUNC = ProductServiceCodeItemAPI.as_view(

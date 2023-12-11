@@ -22,7 +22,8 @@ class OpsEventType(Enum):
     CREATE_USER = 11
     UPDATE_USER = 12
     DEACTIVATE_USER = 13
-
+    CREATE_BLI_PACKAGE = 14
+    UPDATE_BLI_PACKAGE = 15
 
 class OpsEventStatus(Enum):
     SUCCESS = 1

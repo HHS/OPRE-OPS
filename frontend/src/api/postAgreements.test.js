@@ -1,5 +1,6 @@
 import { postAgreement, formatTeamMember } from "./postAgreements";
 import TestApplicationContext from "../applicationContext/TestApplicationContext";
+import { vi } from "vitest";
 
 describe("postAgreement function", () => {
     const mockAgreement = {
@@ -58,7 +59,7 @@ describe("postAgreement function", () => {
     const mockApiResponse = { id: 1, message: "Agreement created" };
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.resetAllMocks();
     });
 
     test("returns the API response data", async () => {

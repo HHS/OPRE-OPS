@@ -5,6 +5,7 @@ import { faClone } from "@fortawesome/free-regular-svg-icons";
 import DisabledChangeIcons from "./DisabledChangeIcons";
 import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
 import icons from "../../../uswds/img/sprite.svg";
+import { Tooltip } from "../../UI/USWDS/Tooltip";
 
 /**
  * This component displays the edit, delete, and duplicate icons for a budget line.
@@ -50,59 +51,100 @@ const ChangeIcons = ({
         <>
             <div className="display-flex flex-align-center">
                 {isItemEditable && (
-                    <FontAwesomeIcon
-                        id={`edit-${item?.id}`}
-                        data-cy="edit-row"
-                        icon={faPen}
-                        className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
-                        title="edit"
-                        data-position="top"
-                        onClick={() => handleSetItemForEditing(item)}
-                    />
+                    <Tooltip
+                        label="Edit"
+                        className="line-height-body-1"
+                    >
+                        <button
+                            id={`edit-${item?.id}`}
+                            title="Edit"
+                            aria-label="Edit"
+                            data-cy="edit-row"
+                            onClick={() => handleSetItemForEditing(item)}
+                        >
+                            <FontAwesomeIcon
+                                title="Edit"
+                                icon={faPen}
+                                className="text-primaary height-2 width-2 margin-right-1 cursor-pointer"
+                            />
+                        </button>
+                    </Tooltip>
                 )}
-                <FontAwesomeIcon
-                    id={`delete-${item?.id}`}
-                    data-cy="delete-row"
-                    data-testid="delete-row"
-                    icon={faTrash}
-                    title={`${isItemDeletable ? "delete" : "cannot delete"}`}
-                    data-position="top"
-                    className={`text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip ${
-                        !isItemDeletable ? DISABLED_ICON_CLASSES : ""
-                    }`}
-                    onClick={() => isItemDeletable && handleDeleteItem(item.id, item.display_name)}
-                />
+                <Tooltip
+                    label={`${isItemDeletable ? "Delete" : "Cannot delete"}`}
+                    className="line-height-body-1"
+                >
+                    <button
+                        id={`delete-${item?.id}`}
+                        title="Delete"
+                        aria-label="Delete"
+                        data-cy="delete-row"
+                        onClick={() => isItemDeletable && handleDeleteItem(item.id, item.display_name)}
+                    >
+                        <FontAwesomeIcon
+                            title="Delete"
+                            icon={faTrash}
+                            className={`text-primary height-2 width-2 margin-right-1 cursor-pointer ${
+                                !isItemDeletable ? DISABLED_ICON_CLASSES : ""
+                            }`}
+                        />
+                    </button>
+                </Tooltip>
 
                 {duplicateIcon && (
-                    <FontAwesomeIcon
-                        id={`duplicate-${item?.id}`}
-                        data-cy="duplicate-row"
-                        icon={faClone}
-                        title="duplicate"
-                        data-position="top"
-                        className="text-primary height-2 width-2 cursor-pointer usa-tooltip margin-left-0"
-                        onClick={() => handleDuplicateItem(item)}
-                    />
+                    <Tooltip
+                        label="Duplicate"
+                        className="line-height-body-1"
+                    >
+                        <button
+                            id={`duplicate-row-${item?.id}`}
+                            title="Duplicate"
+                            aria-label="Duplicate"
+                            data-cy="duplicate-row"
+                            onClick={() => handleDuplicateItem(item)}
+                        >
+                            <FontAwesomeIcon
+                                icon={faClone}
+                                className="text-primary height-2 width-2 cursor-pointer margin-left-0"
+                            />
+                        </button>
+                    </Tooltip>
                 )}
                 {sendToReviewIcon && (
-                    <svg
-                        id={`submit-for-approval-${item.id}`}
-                        data-cy="submit-row"
-                        className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0 margin-right-05"
-                        onClick={() => handleSubmitItemForApproval(item.id)}
+                    <Tooltip
+                        label="Submit for approval"
+                        className="line-height-body-1"
                     >
-                        <use xlinkHref={`${icons}#send`}></use>
-                    </svg>
+                        <button
+                            id={`submit-for-approval-${item.id}`}
+                            title="Submit for approval"
+                            aria-label="Submit for approval"
+                            data-cy="submit-row"
+                            onClick={() => handleSubmitItemForApproval(item.id)}
+                        >
+                            <svg className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0">
+                                <use xlinkHref={`${icons}#send`}></use>
+                            </svg>
+                        </button>
+                    </Tooltip>
                 )}
                 {goToApproveIcon && (
-                    <svg
-                        id={`submit-for-approval-${item.id}`}
-                        data-cy="go-to-approve-row"
-                        className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0"
-                        onClick={() => handleGoToApprove(item.id)}
+                    <Tooltip
+                        label="Go to approve"
+                        className="line-height-body-1"
                     >
-                        <use xlinkHref={`${icons}#check_circle`}></use>
-                    </svg>
+                        <button
+                            id={`submit-for-approval-${item.id}`}
+                            title="Go to approve"
+                            aria-label="Go to approve"
+                            data-cy="go-to-approve-row"
+                            onClick={() => handleGoToApprove(item.id)}
+                        >
+                            <svg className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0">
+                                <use xlinkHref={`${icons}#check_circle`}></use>
+                            </svg>
+                        </button>
+                    </Tooltip>
                 )}
             </div>
         </>

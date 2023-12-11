@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getAccessToken } from "../components/Auth/auth";
 
-const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
+const BACKEND_DOMAIN = import.meta.env.VITE_BACKEND_DOMAIN;
 
 export const opsApi = createApi({
     reducerPath: "opsApi",
@@ -196,6 +196,24 @@ export const opsApi = createApi({
         getPortfolios: builder.query({
             query: () => `/portfolios/`,
             providesTags: ["Portfolios"]
+        }),
+        addBliPackage: builder.mutation({
+            query: (body) => ({
+                url: `/bli-packages/`,
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body
+            }),
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
+        }),
+        addApprovalRequest: builder.mutation({
+            query: (body) => ({
+                url: `/approve/`,
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body
+            }),
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
         })
     })
 });
@@ -228,5 +246,7 @@ export const {
     useGetCanFundingSummaryQuery,
     useGetNotificationsByUserIdQuery,
     useDismissNotificationMutation,
-    useGetPortfoliosQuery
+    useGetPortfoliosQuery,
+    useAddBliPackageMutation,
+    useAddApprovalRequestMutation
 } = opsApi;

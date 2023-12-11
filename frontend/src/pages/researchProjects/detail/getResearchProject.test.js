@@ -30,7 +30,6 @@ test("successfully gets the Research Project from the backend", async () => {
 test("required param missing", () => {
     expect.assertions(1);
     return getResearchProject().catch((e) =>
-        // eslint-disable-next-line jest/no-conditional-expect
         expect(e).toEqual(
             expect.objectContaining({
                 message: "id is required"

@@ -32,7 +32,6 @@ class UserGroup(BaseModel):
 
 class User(BaseModel):
     """Main User model."""
-
     __tablename__ = "user"
 
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
@@ -129,6 +128,7 @@ class Role(BaseModel):
 
     __tablename__ = "role"
     id = Column(Integer, Identity(), primary_key=True)
+
     name = Column(String, index=True, nullable=False)
     permissions = Column(String, nullable=False)
 

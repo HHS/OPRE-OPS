@@ -17,6 +17,8 @@ const RadioButtonTile = ({ label, description, checked = false, setValue = () =>
         <div
             key={`usa-radio-${uniqueId}`}
             className="usa-radio"
+            // @ts-ignore
+            data-cy={`div-${rest["data-cy"]}`}
         >
             <input
                 {...rest}
