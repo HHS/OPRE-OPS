@@ -9,7 +9,7 @@ const { tooltip } = USWDS;
  * A tooltip is a short descriptive message that appears when a user hovers or focuses on an element.
  * @param {object} props - the component props
  * @param {string} props.label - the content of the tooltip
- * @param {("top" | "right" | "bottom" | "left")} props.position - where the tooltip should be placed (if possible), default is "top"
+ * @param {("top" | "right" | "bottom" | "left")} [props.position] - where the tooltip should be placed (if possible), default is "top"
  * @param {string} [props.className] - the className for the span container, optional
  * @param {React.ReactNode} props.children
  * @returns {React.JSX.Element}
