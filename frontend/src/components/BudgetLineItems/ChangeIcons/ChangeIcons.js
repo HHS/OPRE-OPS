@@ -65,7 +65,7 @@ const ChangeIcons = ({
                             <FontAwesomeIcon
                                 title="Edit"
                                 icon={faPen}
-                                className="text-primaary height-2 width-2 margin-right-1 cursor-pointer"
+                                className="text-primary height-2 width-2 margin-right-1 cursor-pointer"
                             />
                         </button>
                     </Tooltip>
