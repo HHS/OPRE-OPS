@@ -4,7 +4,7 @@ import { Router } from "react-router-dom";
 import BudgetLinesTable from "./BudgetLinesTable";
 import store from "../../../store";
 
-const dummyBudgetLines = [
+const mockBudgetLines = [
     {
         id: 1,
         line_description: "Description 1",
@@ -44,7 +44,7 @@ describe("PreviewTable", () => {
         customRender(
             <BudgetLinesTable
                 canUserEditBudgetLines={false}
-                budgetLinesAdded={dummyBudgetLines}
+                budgetLinesAdded={mockBudgetLines}
                 handleSetBudgetLineForEditing={() => {}}
                 handleDeleteBudgetLine={() => {}}
                 handleDuplicateBudgetLine={() => {}}
@@ -53,7 +53,7 @@ describe("PreviewTable", () => {
             />,
             store
         );
-        dummyBudgetLines.forEach((bl) => {
+        mockBudgetLines.forEach((bl) => {
             expect(screen.getByText(bl.line_description)).toBeInTheDocument();
         });
     });
@@ -62,7 +62,7 @@ describe("PreviewTable", () => {
         customRender(
             <BudgetLinesTable
                 canUserEditBudgetLines={false}
-                budgetLinesAdded={dummyBudgetLines}
+                budgetLinesAdded={mockBudgetLines}
                 handleSetBudgetLineForEditing={() => {}}
                 handleDeleteBudgetLine={() => {}}
                 handleDuplicateBudgetLine={() => {}}
