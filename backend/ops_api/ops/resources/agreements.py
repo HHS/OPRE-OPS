@@ -91,7 +91,7 @@ class AgreementItemAPI(BaseItemAPI):
                     message=f"{message_prefix}: Params failed validation:",
                 )
 
-                data = schema.dump(schema.load(request.json))
+                data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
 
                 if data.get("contract_type") and req_type == AgreementType.CONTRACT.name:
                     data["contract_type"] = ContractType[data["contract_type"]]
@@ -453,6 +453,7 @@ def add_additional_fields_to_agreement_response(agreement: Agreement) -> dict[st
         "product_service_code": agreement.product_service_code.to_dict() if agreement.product_service_code else None,
         "display_name": agreement.display_name,
         "vendor": agreement.vendor.name if hasattr(agreement, "vendor") and agreement.vendor else None,
+        "incumbent": agreement.incumbent.name if hasattr(agreement, "incumbent") and agreement.incumbent else None,
     }
 
 

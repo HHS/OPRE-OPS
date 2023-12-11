@@ -34,6 +34,7 @@ def test_agreements_get_all(auth_client, loaded_db):
     assert response.json[0]["research_project"]["id"] == 1
     assert numpy.isclose(response.json[0]["budget_line_items"][0]["amount"], 1000000.0)
     assert numpy.isclose(response.json[0]["procurement_shop"]["fee"], 0.0)
+    assert response.json[0]["incumbent"] == "Vendor 1"
 
 
 @pytest.mark.usefixtures("app_ctx")

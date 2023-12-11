@@ -5,7 +5,7 @@ from typing import Optional
 from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
-from marshmallow import Schema, ValidationError
+from marshmallow import EXCLUDE, Schema
 from models.base import BaseModel
 from ops_api.ops.utils.auth import auth_gateway
 from ops_api.ops.utils.errors import error_simulator
@@ -91,10 +91,8 @@ class OPSMethodView(MethodView):
 
     @staticmethod
     def _validate_request(schema: Schema, message: Optional[str] = "", partial=False):
-        errors = schema.validate(request.json, partial=partial)
-        if errors:
-            current_app.logger.error(f"{message}: {errors}")
-            raise ValidationError(errors)
+        # schema.load will run the validator and throw a ValidationError if it fails
+        schema.load(request.json, unknown=EXCLUDE, partial=partial)
 
     @staticmethod
     def _get_query(model, search=None, **kwargs):
