@@ -26,10 +26,21 @@ inputs:
   pr_id:
     description: 'Pull request ID'
     required: true
+  tf_vars: 
+    description: 'A map of variable inputs for Terraform'
+    required: false
 
 runs:
   using: "composite"
   steps:
+    - name: Set Terraform Variables
+      run: |
+        if [[ -n "${INPUT_TF_VARS}" ]]; then
+          for key in "${!INPUT_TF_VARS[@]}"; do
+            export TF_VAR_$key="${INPUT_TF_VARS[$key]}"
+          done
+        fi
+
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
       with:
