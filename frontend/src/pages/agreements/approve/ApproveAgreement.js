@@ -13,6 +13,7 @@ import AgreementChangesAccordion from "../../../components/Agreements/AgreementC
 import { getTotalByCans } from "../review/ReviewAgreement.helpers";
 import TextArea from "../../../components/UI/Form/TextArea";
 import useToggle from "../../../hooks/useToggle";
+import { mockData } from "./data";
 
 const ApproveAgreement = () => {
     const urlPathParams = useParams();
@@ -39,6 +40,16 @@ const ApproveAgreement = () => {
         return <h1>Oops, an error occurred</h1>;
     }
 
+    // compare packetBLIs to agreement.budget_line_items
+    // make a new array indicating if budgetline is in packetBLIs
+    const tableBudgetLines = agreement?.budget_line_items.map((bli) => {
+        const isBLIInPacket = mockData.packageBLIs.find((bliInPacket) => bliInPacket.id === bli.id);
+        return {
+            ...bli,
+            isInPacket: !!isBLIInPacket
+        };
+    });
+
     const changeInCans = getTotalByCans(agreement?.budget_line_items);
 
     return (
@@ -55,25 +66,25 @@ const ApproveAgreement = () => {
 
             <AgreementBLIAccordion
                 title="Review Budget Lines"
-                budgetLineItems={agreement.budget_line_items}
+                budgetLineItems={tableBudgetLines}
                 agreement={agreement}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
             >
                 <BudgetLinesTable
                     readOnly={true}
-                    budgetLinesAdded={agreement.budget_line_items}
+                    budgetLinesAdded={tableBudgetLines}
                     isReviewMode={false}
                     showTotalSummaryCard={false}
                 />
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
-                selectedBudgetLines={agreement.budget_line_items}
+                selectedBudgetLines={mockData.packageBLIs}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
             />
             <AgreementChangesAccordion
-                changeInBudgetLines={agreement.budget_line_items.reduce((acc, { amount }) => acc + amount, 0)}
+                changeInBudgetLines={mockData.packageBLIs.reduce((acc, { amount }) => acc + amount, 0)}
                 changeInCans={changeInCans}
             />
             <div className="usa-checkbox padding-bottom-105">
@@ -134,7 +145,7 @@ const ApproveAgreement = () => {
                 </button>
             </div>
             <pre className="font-code-2xs border-dashed border-error margin-top-10">
-                {JSON.stringify(agreement, null, 2)}
+                {JSON.stringify(tableBudgetLines, null, 2)}
             </pre>
         </App>
     );

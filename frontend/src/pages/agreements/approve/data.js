@@ -1,9 +1,9 @@
-export const packetData = {
+export const mockData = {
     id: 1,
     name: "Packet 1",
     description: "Packet 1 description",
     status: "Draft",
-    budgetLinesAdded: [
+    packageBLIs: [
         {
             agreement_id: 1,
             amount: 1000000,
@@ -62,7 +62,7 @@ export const packetData = {
             created_on: "2023-11-13T21:55:11.686443",
             date_needed: "2043-06-13",
             display_name: "LI 2",
-            id: 2,
+            id: 999,
             line_description: "LI 2",
             proc_shop_fee_percentage: null,
             status: "DRAFT",

@@ -19,6 +19,7 @@ import { removeBorderBottomIfExpanded, changeBgColorIfExpanded } from "../../UI/
 import { futureDateErrorClass, addErrorClassIfNotFound } from "./BLIRow.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import Tooltip from "../../UI/USWDS/Tooltip";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -61,6 +62,7 @@ const BLIRow = ({
     // styles for the table row
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
+    const isBLIInPacket = budgetLine?.isInPacket;
 
     const TableRowData = (
         <>
@@ -72,7 +74,16 @@ const BLIRow = ({
                 )} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {budgetLine?.line_description}
+                {isBLIInPacket ? (
+                    budgetLine?.line_description
+                ) : (
+                    <Tooltip
+                        label="This budget line was not sent for approval"
+                        position="right"
+                    >
+                        <span>{budgetLine?.line_description}</span>
+                    </Tooltip>
+                )}
             </th>
             <td
                 className={`${futureDateErrorClass(
@@ -202,6 +213,7 @@ const BLIRow = ({
             isExpanded={isExpanded}
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
+            className={!isBLIInPacket ? "text-gray-30" : ""}
         />
     );
 };

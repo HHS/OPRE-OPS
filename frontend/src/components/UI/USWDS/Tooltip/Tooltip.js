@@ -1,4 +1,4 @@
-import React, {Fragment, useLayoutEffect, useRef} from "react"
+import React, { Fragment, useLayoutEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import Accordion from "../../Accordion";
 import USWDS from "@uswds/uswds/js";
@@ -10,25 +10,32 @@ const { tooltip } = USWDS;
  * @param {object} props - the component props
  * @param {string} props.label - the content of the tooltip
  * @param {("top" | "right" | "bottom" | "left")} props.position - where the tooltip should be placed (if possible), default is "top"
- * @param {string} props.className - the className for the span container, optional
+ * @param {string} [props.className] - the className for the span container, optional
  * @param {React.ReactNode} props.children
  * @returns {React.JSX.Element}
  */
 
-export const Tooltip = ({label, position = "top", children, className}) => {
-    const tooltipRef = useRef(null)
+export const Tooltip = ({ label, position = "top", children, className }) => {
+    const tooltipRef = useRef(null);
     useLayoutEffect(() => {
-        const tooltipElement = tooltipRef.current?.firstChild
+        const tooltipElement = tooltipRef.current?.firstChild;
         if (tooltipElement) {
             tooltipElement.classList.add("usa-tooltip");
             tooltipElement.title = label;
             tooltipElement.setAttribute("data-position", position);
             tooltip.on(tooltipElement);
         }
-        return () => tooltip.off(tooltipElement)
-    })
-    return <span ref={tooltipRef} className={className}>{children}</span>
-}
+        return () => tooltip.off(tooltipElement);
+    });
+    return (
+        <span
+            ref={tooltipRef}
+            className={className}
+        >
+            {children}
+        </span>
+    );
+};
 
 Tooltip.propTypes = {
     label: PropTypes.string.isRequired,
@@ -37,4 +44,4 @@ Tooltip.propTypes = {
     className: PropTypes.string
 };
 
-export default Tooltip
+export default Tooltip;
