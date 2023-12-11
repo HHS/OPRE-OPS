@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
+import { Router } from "react-router-dom";
 import BudgetLinesTable from "./BudgetLinesTable";
 import store from "../../../store";
 
@@ -31,7 +32,11 @@ const dummyBudgetLines = [
 ];
 
 function customRender(ui, store) {
-    return render(<Provider store={store}>{ui}</Provider>);
+    return render(
+        <Router location="/">
+            <Provider store={store}>{ui}</Provider>
+        </Router>
+    );
 }
 
 describe("PreviewTable", () => {
