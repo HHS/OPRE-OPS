@@ -81,7 +81,7 @@ const BLIRow = ({
             >
                 {isApprovePageAndBLIIsNotInPacket ? (
                     <Tooltip
-                        label="This budget line was sent for approval"
+                        label="This budget line was not sent for approval"
                         position="right"
                     >
                         <span>{budgetLine?.line_description}</span>

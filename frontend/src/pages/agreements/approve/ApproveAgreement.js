@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import App from "../../../App";
 import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 import PageHeader from "../../../components/UI/PageHeader";
@@ -13,15 +13,23 @@ import AgreementChangesAccordion from "../../../components/Agreements/AgreementC
 import { getTotalByCans } from "../review/ReviewAgreement.helpers";
 import TextArea from "../../../components/UI/Form/TextArea";
 import useToggle from "../../../hooks/useToggle";
+import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import { mockData } from "./data";
 
 const ApproveAgreement = () => {
     const urlPathParams = useParams();
     const [notes, setNotes] = React.useState("");
     const [confirmation, setConfirmation] = React.useState(false);
+    const [showModal, setShowModal] = React.useState(false);
+    const [modalProps, setModalProps] = React.useState({
+        heading: "",
+        actionButtonText: "",
+        secondaryButtonText: "",
+        handleConfirm: () => {}
+    });
     // @ts-ignore
     const agreementId = +urlPathParams.id;
-    // const navigate = useNavigate();
+    const navigate = useNavigate();
     const {
         // isSuccess,
         data: agreement,
@@ -52,8 +60,29 @@ const ApproveAgreement = () => {
 
     const changeInCans = getTotalByCans(agreement?.budget_line_items);
 
+    const handleCancel = () => {
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel?",
+            actionButtonText: "Cancel",
+            secondaryButtonText: "Continue",
+            handleConfirm: () => {
+                navigate("/agreements");
+            }
+        });
+    };
+
     return (
         <App breadCrumbName="Approve BLI Status Change">
+            {showModal && (
+                <ConfirmationModal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                />
+            )}
             <PageHeader
                 title="Approval for Planned Status"
                 subTitle={agreement.name}
@@ -117,9 +146,7 @@ const ApproveAgreement = () => {
                     name="cancel"
                     className={`usa-button usa-button--unstyled margin-right-2`}
                     data-cy="edit-agreement-btn"
-                    onClick={() => {
-                        alert("Not implemented yet");
-                    }}
+                    onClick={handleCancel}
                 >
                     Cancel
                 </button>
