@@ -14,6 +14,7 @@ import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
 import CanList from "./pages/cans/list/CanList";
 import CanDetail from "./pages/cans/detail/CanDetail";
 import UserDetail from "./pages/users/detail/UserDetail";
+import EditUser from "./pages/users/edit/EditUser";
 import ResearchProjects from "./components/Portfolios/ResearchProjects/ResearchProjects";
 import PeopleAndTeams from "./components/Portfolios/PeopleAndTeams/PeopleAndTeams";
 import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAndFunding";
@@ -21,29 +22,43 @@ import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProje
 import CreateBudgetLines from "./pages/budgetLines";
 import CreateAgreements from "./pages/agreements";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
-import { CreateProject } from "./pages/projects/CreateProject";
+import CreateProject from "./pages/projects/CreateProject";
 import { AgreementsList } from "./pages/agreements/list/AgreementsList";
+import Agreement from "./pages/agreements/details/Agreement";
 import EditAgreement from "./pages/agreements/EditAgreement";
-import { ApproveAgreement } from "./pages/agreements/approve/ApproveAgreement";
+import Login from "./pages/Login";
+import ErrorPage from "./pages/ErrorPage";
+import { BudgetLineItemList } from "./pages/budgetLines/list/BudgetLineItemList";
+import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
         <>
-            <Route path="/" element={<Home />} />
+            <Route
+                path="/login"
+                element={<Login />}
+            />
+            <Route
+                path="/"
+                element={<Home />}
+            />
             <Route
                 element={
                     // This demonstrates a Protected Route. All children within this Route
                     // will have to be processed by the Protection rules before rendering.
-                    // by default, we redirect back to "/" if they're not allowed. This can
+                    // By default, we redirect back to "/login" if they're not allowed. This can
                     // overwritten with a 'redirectPath="/whatever"' prop.
                     //
                     // In this example, all /portfolio routes are currently protected.
-                    // See below for a mixed example, where /cans is allowed, but all
-                    // children of /cans ie: /cans/{id} are not allowed unless authenticated.
+
                     <ProtectedRoute />
                 }
             >
-                <Route path="/portfolios" element={<PortfolioList />} />
+                {/* BEGIN PROTECTED ROUTES */}
+                <Route
+                    path="/portfolios"
+                    element={<PortfolioList />}
+                />
                 <Route
                     path="/portfolios/:id"
                     element={<PortfolioDetail />}
@@ -53,77 +68,174 @@ const router = createBrowserRouter(
                         // this is what we'll render in the breadcrumbs
                         // for this route
                         crumb: () => (
-                            <Link to="/portfolios" className="text-primary">
+                            <Link
+                                to="/portfolios"
+                                className="text-primary"
+                            >
                                 Portfolios
                             </Link>
-                        ),
+                        )
                     }}
                 >
                     {/* Default to BudgetAndFunding */}
-                    <Route exact path="" element={<Navigate to={"budget-and-funding"} />} />
-                    <Route path="budget-and-funding" element={<BudgetAndFunding />} />
-                    <Route path="research-projects" element={<ResearchProjects />} />
-                    <Route path="people-and-teams" element={<PeopleAndTeams />} />
+                    <Route
+                        exact
+                        path=""
+                        element={<Navigate to={"budget-and-funding"} />}
+                    />
+                    <Route
+                        path="budget-and-funding"
+                        element={<BudgetAndFunding />}
+                    />
+                    <Route
+                        path="research-projects"
+                        element={<ResearchProjects />}
+                    />
+                    <Route
+                        path="people-and-teams"
+                        element={<PeopleAndTeams />}
+                    />
                 </Route>
                 <Route
-                    path="/research-projects/:id"
+                    path="/research-projects/:id/*"
                     element={<ResearchProjectDetail />}
                     handle={{
-                        // you can put whatever you want on a route handle
-                        // here we use "crumb" and return some elements,
-                        // this is what we'll render in the breadcrumbs
-                        // for this route
                         crumb: () => (
                             <div>
-                                <Link to="/" className="text-primary">
+                                <Link
+                                    to="/"
+                                    className="text-primary"
+                                >
                                     Research Projects
                                 </Link>
                             </div>
-                        ),
+                        )
                     }}
                 />
                 <Route
-                    path="/users/:id"
+                    path="/users/:id/*"
                     element={<UserDetail />}
                     handle={{
                         crumb: () => (
                             <div>
-                                <Link to="/" className="text-primary">
+                                <Link
+                                    to="/"
+                                    className="text-primary"
+                                >
                                     Users
                                 </Link>
                             </div>
-                        ),
+                        )
                     }}
                 />
-            </Route>
-            <Route element={<ProtectedRoute redirectPath="/cans" />}>
                 <Route
-                    path="/cans/:id"
-                    element={<CanDetail />}
+                    path="/users/edit/:id"
+                    element={<EditUser />}
+                    handle={{
+                        crumb: () => (
+                            <div>
+                                <Link
+                                    to="/"
+                                    className="text-primary"
+                                >
+                                    Edit User
+                                </Link>
+                            </div>
+                        )
+                    }}
+                />
+                <Route
+                    path="/users/edit"
+                    element={<EditUser />}
+                    handle={{
+                        crumb: () => (
+                            <div>
+                                <Link
+                                    to="/"
+                                    className="text-primary"
+                                >
+                                    Edit User
+                                </Link>
+                            </div>
+                        )
+                    }}
+                />
+                <Route
+                    path="/agreements/:id/*"
+                    element={<Agreement />}
                     handle={{
                         // you can put whatever you want on a route handle
                         // here we use "crumb" and return some elements,
                         // this is what we'll render in the breadcrumbs
                         // for this route
                         crumb: () => (
-                            <Link to="/cans" className="text-primary">
+                            <Link
+                                to="/agreements"
+                                className="text-primary"
+                            >
+                                Agreements
+                            </Link>
+                        )
+                    }}
+                />
+                {/*/!* Default to BudgetAndFunding *!/*/}
+                {/*<Route exact path="" element={<Navigate to={"budget-and-funding"} />} />*/}
+                <Route
+                    path="/budget-lines"
+                    element={<BudgetLineItemList />}
+                />
+                <Route
+                    path="/budget-lines/create"
+                    element={<CreateBudgetLines />}
+                />
+                <Route
+                    path="/agreements/create"
+                    element={<CreateAgreements />}
+                />
+                <Route
+                    path="/projects/create"
+                    element={<CreateProject />}
+                />
+                <Route
+                    path="/agreements"
+                    element={<AgreementsList />}
+                />
+                <Route
+                    path="/agreements/edit/:id/*"
+                    element={<EditAgreement />}
+                />
+                <Route
+                    path="/agreements/review/:id/*"
+                    element={<ReviewAgreement />}
+                />
+                <Route
+                    path="/cans"
+                    element={<CanList />}
+                />
+                <Route
+                    path="/cans/:id/*"
+                    element={<CanDetail />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/cans"
+                                className="text-primary"
+                            >
                                 Cans
                             </Link>
-                        ),
+                        )
                     }}
                 />
             </Route>
-            <Route path="/cans" element={<CanList />} />
-            <Route path="/login" handle={{}} />
-
-            <Route element={<ProtectedRoute redirectPath="/" />}>
-                <Route path="/budget-lines/create" element={<CreateBudgetLines />} />
-                <Route path="/agreements/create" element={<CreateAgreements />} />
-                <Route path="/projects/create" element={<CreateProject />} />
-                <Route path="/agreements" element={<AgreementsList />} />
-                <Route path="/agreements/edit/:id" element={<EditAgreement />} />
-                <Route path="/agreements/approve/:id" element={<ApproveAgreement />} />
-            </Route>
+            {/* END PROTECTED ROUTES */}
+            <Route
+                path="/error"
+                element={<ErrorPage />}
+            />
+            <Route
+                path="*"
+                element={<Navigate to="/error" />}
+            />
         </>
     )
 );

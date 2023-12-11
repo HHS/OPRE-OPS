@@ -10,6 +10,7 @@ def test_funding_source_lookup(loaded_db):
     assert funding_source.name == "Children's Bureau"
     assert funding_source.nickname == "Children's Bureau"
     assert funding_source.cans == []  # CAN(#1) was assigned this funding source
+    assert funding_source.display_name == funding_source.name
 
 
 def test_finding_source_creation():

@@ -1,34 +1,53 @@
 import axios from "axios";
+import { getAccessToken, getRefreshToken } from "../components/Auth/auth";
 
-const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
+const BACKEND_DOMAIN = import.meta.env.VITE_BACKEND_DOMAIN;
 
-export const callBackend = async (urlPath, action, requestBody, queryParams) => {
-    console.log(`Calling backend at ${urlPath} ${queryParams ? "with params:" + JSON.stringify(queryParams) : ""}`);
+export const callBackend = async (urlPath, action, requestBody, queryParams, useRefresh = false) => {
+    console.debug(
+        `Calling backend at ${BACKEND_DOMAIN}${urlPath} ${
+            queryParams ? "with params:" + JSON.stringify(queryParams) : ""
+        }`
+    );
 
-    if (localStorage.getItem("access_token"))
-        axios.defaults.headers.common["Authorization"] = `Bearer ${localStorage.getItem("access_token")}`;
+    const accessToken = useRefresh ? getRefreshToken() : getAccessToken();
+    if (accessToken) {
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+    }
 
     const response = await axios({
         method: action,
         url: `${BACKEND_DOMAIN}${urlPath}`,
         data: requestBody,
         params: queryParams,
+        withCredentials: true
     });
 
     return response.data;
 };
 
 export const authConfig = {
-    loginGovAuthorizationEndpoint: "https://idp.int.identitysandbox.gov/openid_connect/authorize",
-    acr_values: "http://idmanagement.gov/ns/assurance/ial/1",
-    client_id: "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
-    response_type: "code",
-    scope: "openid email",
-    redirect_uri: window.location.origin,
-    logoutEndpoint: "https://idp.int.identitysandbox.gov/openid_connect/logout",
+    hhsams: {
+        auth_endpoint: "https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/auth",
+        client_id: "44fe2c7a-e9c5-43ec-87e9-3de78d2d3a11",
+        response_type: "code",
+        scope: "openid profile email",
+        redirect_uri: `${window.location.origin}/login`,
+        acr_values: 1,
+        logout_endpoint: "https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/logout"
+    },
+    logingov: {
+        auth_endpoint: "https://idp.int.identitysandbox.gov/openid_connect/authorize",
+        client_id: "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
+        response_type: "code",
+        scope: "openid email",
+        redirect_uri: `${window.location.origin}/login`,
+        acr_values: "http://idmanagement.gov/ns/assurance/ial/1",
+        logout_endpoint: "https://idp.int.identitysandbox.gov/openid_connect/logout"
+    }
 };
 
 export const backEndConfig = {
     apiVersion: "v1",
-    publicKey: "",
+    publicKey: ""
 };

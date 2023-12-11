@@ -13,7 +13,7 @@ const initialState = {
     entered_day: "",
     entered_year: "",
     entered_comments: "",
-    budget_line_being_edited: -1,
+    budget_line_being_edited: -1
 };
 
 export function CreateBudgetLinesProvider({ children }) {
@@ -54,13 +54,13 @@ function budgetLinesReducer(state, action) {
             return {
                 ...state,
                 new_budget_lines: [...state.new_budget_lines, action.payload],
-                is_editing_budget_line: false,
+                is_editing_budget_line: false
             };
         }
         case "DELETE_BUDGET_LINE": {
             return {
                 ...state,
-                new_budget_lines: state.new_budget_lines.filter((bl) => bl.id !== action.id),
+                new_budget_lines: state.new_budget_lines.filter((bl) => bl.id !== action.id)
             };
         }
         case "SET_BUDGET_LINE_FOR_EDITING": {
@@ -82,13 +82,13 @@ function budgetLinesReducer(state, action) {
                     entered_description: line_description,
                     entered_comments: comments,
                     selected_can: {
-                        ...can,
+                        ...can
                     },
                     entered_amount: amount,
                     entered_month,
                     entered_day,
                     entered_year,
-                    budget_line_being_edited: index,
+                    budget_line_being_edited: index
                 };
             }
             return state;
@@ -98,7 +98,7 @@ function budgetLinesReducer(state, action) {
                 if (budgetLine.id === action.payload.id) {
                     return {
                         ...budgetLine,
-                        ...action.payload,
+                        ...action.payload
                     };
                 }
                 return budgetLine;
@@ -106,7 +106,7 @@ function budgetLinesReducer(state, action) {
 
             return {
                 ...state,
-                new_budget_lines: updatedBudgetLines,
+                new_budget_lines: updatedBudgetLines
             };
         }
         case "DUPLICATE_BUDGET_LINE": {
@@ -116,12 +116,12 @@ function budgetLinesReducer(state, action) {
                 const duplicatedLine = {
                     ...action.payload,
                     id: crypto.getRandomValues(new Uint32Array(1))[0],
-                    status: "DRAFT",
+                    status: "DRAFT"
                 };
 
                 return {
                     ...state,
-                    new_budget_lines: [...state.new_budget_lines, duplicatedLine],
+                    new_budget_lines: [...state.new_budget_lines, duplicatedLine]
                 };
             }
             return state;
@@ -129,7 +129,7 @@ function budgetLinesReducer(state, action) {
         case "ADD_EXISTING_BUDGET_LINES": {
             return {
                 ...state,
-                new_budget_lines: [...action.payload],
+                new_budget_lines: [...action.payload]
             };
         }
         case "RESET_FORM": {
@@ -143,7 +143,7 @@ function budgetLinesReducer(state, action) {
                 entered_day: "",
                 entered_year: "",
                 budget_line_being_edited: -1,
-                is_editing_budget_line: false,
+                is_editing_budget_line: false
             };
         }
         case "RESET_FORM_AND_BUDGET_LINES": {
@@ -158,7 +158,7 @@ function budgetLinesReducer(state, action) {
                 entered_year: "",
                 budget_line_being_edited: -1,
                 is_editing_budget_line: false,
-                new_budget_lines: [],
+                new_budget_lines: []
             };
         }
         case "RESET_TO_INITIAL_STATE": {

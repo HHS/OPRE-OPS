@@ -5,15 +5,6 @@ from ops_api.ops.environment.default_settings import *  # noqa: F403, F401
 
 DEBUG = False
 
-AUTHLIB_OAUTH_CLIENTS = {
-    "logingov": {
-        "server_metadata_url": "https://idp.int.identitysandbox.gov/.well-known/openid-configuration",
-        "user_info_url": "https://idp.int.identitysandbox.gov/api/openid_connect/userinfo",
-        "client_id": "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops_staging",
-        "client_kwargs": {"scope": "openid email"},
-    },
-}
-
 
 # Helper function
 def get_json_env_var(variable_name):

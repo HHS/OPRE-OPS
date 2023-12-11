@@ -1,7 +1,13 @@
 import { Link, useMatches } from "react-router-dom";
 import PropTypes from "prop-types";
 
-export const Breadcrumb = ({ currentName }) => {
+/**
+ * Breadcrumb component
+ * @param {Object} props - Properties passed to component
+ * @param {string} props.currentName - The name of the current breadcrumb
+ * @returns {React.JSX.Element} - The rendered component
+ */
+const Breadcrumb = ({ currentName }) => {
     let matches = useMatches();
     let crumbs = matches
         // first get rid of any matches that don't have handle and crumb
@@ -11,16 +17,25 @@ export const Breadcrumb = ({ currentName }) => {
         .map((match) => match.handle.crumb(match.data));
 
     return (
-        <section>
-            <nav className="usa-breadcrumb margin-right-2 padding-top-3 padding-bottom-4" aria-label="Breadcrumbs">
+        <section className="bg-white">
+            <nav
+                className="usa-breadcrumb margin-right-2 padding-y-3"
+                aria-label="Breadcrumbs"
+            >
                 <ol className="usa-breadcrumb__list">
                     <li className="usa-breadcrumb__list-item">
-                        <Link to="/" className="usa-breadbrumb__link text-primary">
+                        <Link
+                            to="/"
+                            className="usa-breadbrumb__link text-primary"
+                        >
                             Home
                         </Link>
                     </li>
                     {crumbs.map((crumb, index) => (
-                        <li key={index} className="usa-breadcrumb__list-item">
+                        <li
+                            key={index}
+                            className="usa-breadcrumb__list-item"
+                        >
                             {crumb}
                         </li>
                     ))}
@@ -32,7 +47,7 @@ export const Breadcrumb = ({ currentName }) => {
 };
 
 Breadcrumb.propTypes = {
-    currentName: PropTypes.string.isRequired,
+    currentName: PropTypes.string.isRequired
 };
 
 export default Breadcrumb;

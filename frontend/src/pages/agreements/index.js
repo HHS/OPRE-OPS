@@ -1,13 +1,13 @@
 import App from "../../App";
-import { CreateAgreementProvider } from "./CreateAgreementContext";
+import { EditAgreementProvider } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import CreateEditAgreement from "./CreateEditAgreement";
 
 const CreateAgreements = () => {
     return (
         <App>
-            <CreateAgreementProvider>
+            <EditAgreementProvider>
                 <CreateEditAgreement />
-            </CreateAgreementProvider>
+            </EditAgreementProvider>
         </App>
     );
 };

@@ -1,11 +1,12 @@
-FROM node:18-slim
-
+FROM oven/bun@sha256:8ede441e7561e2672a3e580cf408cff16830d44cc8bc1ce26ff97d215bd85771
 RUN useradd -ms /bin/bash app
 USER app
 WORKDIR /home/app
 
-COPY ./package.json ./yarn.lock /home/app/
-RUN yarn install --production --network-timeout 100000 && yarn cache clean
+COPY --chown=app:app ./package.json ./bun.lockb /home/app/
 
-COPY ./ /home/app/
-CMD ["yarn", "start"]
+RUN bun install
+
+COPY --chown=app:app ./ /home/app/
+
+CMD ["bun", "start"]

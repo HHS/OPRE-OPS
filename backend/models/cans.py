@@ -1,10 +1,10 @@
 """CAN models."""
 from enum import Enum
-from typing import Any, ClassVar, Optional
+from typing import Any, List, Optional
 
 import sqlalchemy as sa
 from models.base import BaseModel
-from models.portfolios import Portfolio, shared_portfolio_cans
+from models.portfolios import Portfolio
 from models.users import User
 from sqlalchemy import (
     Boolean,
@@ -18,8 +18,20 @@ from sqlalchemy import (
     String,
     Table,
     Text,
+    case,
+    column,
+    select,
 )
-from sqlalchemy.orm import InstrumentedAttribute, column_property, relationship, with_polymorphic
+from sqlalchemy.dialects.postgresql import ENUM
+from sqlalchemy.orm import (
+    InstrumentedAttribute,
+    Mapped,
+    column_property,
+    mapped_column,
+    object_session,
+    relationship,
+    with_polymorphic,
+)
 from typing_extensions import override
 
 
@@ -39,16 +51,17 @@ class CANArrangementType(Enum):
     MOU = 5
 
 
-can_funding_sources = Table(
-    "can_funding_sources",
-    BaseModel.metadata,
-    Column("can_id", ForeignKey("can.id"), primary_key=True),
-    Column(
-        "funding_source_id",
-        ForeignKey("funding_source.id"),
-        primary_key=True,
-    ),
-)
+class CANFundingSources(BaseModel):
+    __tablename__ = "can_funding_sources"
+
+    can_id: Mapped[int] = mapped_column(ForeignKey("can.id"), primary_key=True)
+    funding_source_id: Mapped[int] = mapped_column(
+        ForeignKey("funding_source.id"), primary_key=True
+    )
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"can_id={self.can_id}:funding_source_id={self.funding_source_id}"
 
 
 class FundingSource(BaseModel):
@@ -61,14 +74,18 @@ class FundingSource(BaseModel):
     """
 
     __tablename__ = "funding_source"
+
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
     nickname = Column(String(100))
-    cans = relationship(
-        "CAN",
-        secondary=can_funding_sources,
-        back_populates="funding_sources",
+
+    cans: Mapped[List["CAN"]] = relationship(
+        secondary="can_funding_sources", back_populates="funding_sources"
     )
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.name
 
 
 class FundingPartner(BaseModel):
@@ -81,6 +98,10 @@ class FundingPartner(BaseModel):
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
     nickname = Column(String(100))
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.name
 
 
 class AgreementType(Enum):
@@ -100,12 +121,17 @@ class AgreementReason(Enum):
     )
 
 
-agreement_team_members = Table(
-    "agreement_team_members",
-    BaseModel.metadata,
-    Column("agreement_id", ForeignKey("agreement.id"), primary_key=True),
-    Column("users_id", ForeignKey("users.id"), primary_key=True),
-)
+class AgreementTeamMembers(BaseModel):
+    __tablename__ = "agreement_team_members"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    agreement_id: Mapped[int] = mapped_column(
+        ForeignKey("agreement.id"), primary_key=True
+    )
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return f"user id: {self.user_id};agreement id:{self.agreement_id}"
 
 
 class ProductServiceCode(BaseModel):
@@ -120,87 +146,76 @@ class ProductServiceCode(BaseModel):
     description = Column(String)
     agreement = relationship("Agreement")
 
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.name
+
 
 class Agreement(BaseModel):
     """Base Agreement Model"""
 
-    _subclasses: ClassVar[dict[Optional[AgreementType], type["Agreement"]]] = {}
-
     __tablename__ = "agreement"
 
-    id = Column(Integer, Identity(), primary_key=True)
-    name = Column(String, nullable=False)
-    number = Column(String, nullable=False)
-    description = Column(String, nullable=True)
-
-    product_service_code_id = Column(Integer, ForeignKey("product_service_code.id"))
-    product_service_code = relationship(
-        "ProductServiceCode", back_populates="agreement"
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
+    agreement_type = mapped_column(ENUM(AgreementType), nullable=False)
+    name: Mapped[str] = mapped_column(
+        String, nullable=False, comment="In MAPS this was PROJECT.PROJECT_TITLE"
     )
 
-    agreement_reason = Column(sa.Enum(AgreementReason))
-    incumbent = Column(String, nullable=True)
-    project_officer = Column(
-        Integer, ForeignKey("users.id", name="fk_user_project_officer"), nullable=True
+    description: Mapped[str] = mapped_column(String, nullable=True)
+    product_service_code_id: Mapped[int] = mapped_column(
+        ForeignKey("product_service_code.id"),
+        nullable=True,
     )
-    team_members = relationship(
-        User,
-        secondary=agreement_team_members,
+    product_service_code: Mapped[Optional[ProductServiceCode]] = relationship(
+        back_populates="agreement"
+    )
+    agreement_reason = mapped_column(ENUM(AgreementReason))
+    project_officer_id: Mapped[int] = mapped_column(
+        ForeignKey("user.id"), nullable=True
+    )
+    project_officer: Mapped[Optional[User]] = relationship(
+        User, foreign_keys=[project_officer_id]
+    )
+
+    team_members: Mapped[List["User"]] = relationship(
+        "User",
+        secondary="agreement_team_members",
         back_populates="agreements",
+        primaryjoin="Agreement.id == AgreementTeamMembers.agreement_id",
+        secondaryjoin="User.id == AgreementTeamMembers.user_id",
     )
-    agreement_type = Column(sa.Enum(AgreementType))
 
-    research_project_id = Column(Integer, ForeignKey("research_project.id"))
-    research_project = relationship("ResearchProject", back_populates="agreements")
-
-    budget_line_items = relationship(
-        "BudgetLineItem", back_populates="agreement", lazy=True
+    research_project_id: Mapped[int] = mapped_column(
+        ForeignKey("research_project.id"), nullable=True
     )
-    procurement_shop_id = Column(Integer, ForeignKey("procurement_shop.id"))
+    research_project: Mapped[Optional["ResearchProject"]] = relationship(
+        "ResearchProject", back_populates="agreements"
+    )
+    budget_line_items: Mapped[list["BudgetLineItem"]] = relationship(
+        "BudgetLineItem",
+        back_populates="agreement",
+        lazy=True,
+        cascade="all, delete",
+    )
+    procurement_shop_id: Mapped[int] = mapped_column(
+        ForeignKey("procurement_shop.id"), nullable=True
+    )
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
+    notes: Mapped[str] = mapped_column(Text, default="")
 
-    notes = Column(Text, nullable=True)
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.name
 
     __mapper_args__: dict[str, str | AgreementType] = {
         "polymorphic_identity": "agreement",
         "polymorphic_on": "agreement_type",
     }
 
-    def __init_subclass__(cls, agreement_type: AgreementType, **kwargs):
-        cls._subclasses[agreement_type] = cls  # type: ignore [assignment]
-        super().__init_subclass__(**kwargs)
-
-    @classmethod
-    def get_polymorphic(cls) -> "Agreement":
-        return with_polymorphic(Agreement, list(cls._subclasses.values()))
-
-    @classmethod
-    def get_class_field(cls, field_name: str) -> InstrumentedAttribute:
-        if field_name in set(Agreement.columns):
-            table_class = Agreement
-        else:
-            for subclass in cls._subclasses.values():
-                if field_name in set(subclass.columns):
-                    table_class = subclass
-                    break
-            else:
-                raise ValueError(
-                    f"Column name does not exist for agreements: {field_name}"
-                )
-        return getattr(table_class, field_name)
-
-    @classmethod
-    def get_class(
-        cls, agreement_type: Optional[AgreementType] = None
-    ) -> type["Agreement"]:
-        try:
-            return cls._subclasses[agreement_type]
-        except KeyError:
-            return Agreement
-
     @override
-    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
-        d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = super().to_dict()
 
         if isinstance(self.agreement_type, str):
             self.agreement_type = AgreementType[self.agreement_type]
@@ -237,8 +252,16 @@ contract_support_contacts = Table(
         ForeignKey("contract_agreement.id"),
         primary_key=True,
     ),
-    Column("users_id", ForeignKey("users.id"), primary_key=True),
+    Column("users_id", ForeignKey("user.id"), primary_key=True),
 )
+
+
+class AcquisitionType(Enum):
+    """Acquisition Type"""
+
+    GSA_SCHEDULE = 1
+    TASK_ORDER = 2
+    FULL_AND_OPEN = 3
 
 
 class ContractType(Enum):
@@ -246,17 +269,29 @@ class ContractType(Enum):
     SERVICE = 1
 
 
-class ContractAgreement(Agreement, agreement_type=AgreementType.CONTRACT):
+class ContractAgreement(Agreement):
     """Contract Agreement Model"""
 
     __tablename__ = "contract_agreement"
 
-    id = Column(Integer, ForeignKey("agreement.id"), primary_key=True)
-    contract_number = Column(String)
-    vendor = Column(String)
-    delivered_status = Column(Boolean, default=False)
-    contract_type = Column(sa.Enum(ContractType))
-    support_contacts = relationship(
+    id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
+    contract_number: Mapped[str] = mapped_column(String, nullable=True)
+    incumbent_id: Mapped[int] = mapped_column(ForeignKey("vendor.id"), nullable=True)
+    incumbent = relationship("Vendor", foreign_keys=[incumbent_id])
+    vendor_id: Mapped[int] = mapped_column(ForeignKey("vendor.id"), nullable=True)
+    vendor = relationship("Vendor", foreign_keys=[vendor_id])
+    task_order_number: Mapped[str] = mapped_column(
+        String(),
+        nullable=True,
+    )
+    po_number: Mapped[str] = mapped_column(String(), nullable=True)
+    acquisition_type = mapped_column(
+        ENUM(AcquisitionType),
+        nullable=True,
+    )
+    delivered_status: Mapped[bool] = mapped_column(Boolean, default=False)
+    contract_type = mapped_column(ENUM(ContractType))
+    support_contacts: Mapped[list[User]] = relationship(
         User,
         secondary=contract_support_contacts,
         back_populates="contracts",
@@ -267,8 +302,8 @@ class ContractAgreement(Agreement, agreement_type=AgreementType.CONTRACT):
     }
 
     @override
-    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
-        d: dict[str, Any] = super().to_dict()  # type: ignore [no-untyped-call]
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = super().to_dict()
 
         if isinstance(self.contract_type, str):
             self.contract_type = ContractType[self.contract_type]
@@ -281,6 +316,8 @@ class ContractAgreement(Agreement, agreement_type=AgreementType.CONTRACT):
                 "support_contacts": [
                     contacts.to_dict() for contacts in self.support_contacts
                 ],
+                "vendor": self.vendor.name if self.vendor else None,
+                "incumbent": self.incumbent.name if self.incumbent else None,
             }
         )
 
@@ -288,60 +325,80 @@ class ContractAgreement(Agreement, agreement_type=AgreementType.CONTRACT):
 
 
 # TODO: Skeleton, will need flushed out more when we know what all a Grant is.
-class GrantAgreement(Agreement, agreement_type=AgreementType.GRANT):
+class GrantAgreement(Agreement):
     """Grant Agreement Model"""
 
     __tablename__ = "grant_agreement"
 
-    id = Column(Integer, ForeignKey("agreement.id"), primary_key=True)
-    foa = Column(String)
+    id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
+    foa: Mapped[str]
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.GRANT,
     }
 
+    @override
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = super().to_dict()
+        return d
+
 
 # TODO: Skeleton, will need flushed out more when we know what all an IAA is.
 ### Inter-Agency-Agreement
-class IaaAgreement(Agreement, agreement_type=AgreementType.IAA):
+class IaaAgreement(Agreement):
     """IAA Agreement Model"""
 
     __tablename__ = "iaa_agreement"
 
-    id = Column(Integer, ForeignKey("agreement.id"), primary_key=True)
-    iaa = Column(String)
+    id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
+    iaa: Mapped[str]
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.IAA,
     }
 
+    @override
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = super().to_dict()
+        return d
+
 
 # TODO: Skeleton, will need flushed out more when we know what all an IAA-AA is. Inter-Agency-Agreement-Assisted-Aquisition
 ### Inter-Agency-Agreement-Assisted-Aquisition
-class IaaAaAgreement(Agreement, agreement_type=AgreementType.IAA_AA):
+class IaaAaAgreement(Agreement):
     """IAA-AA Agreement Model"""
 
     __tablename__ = "iaa_aa_agreement"
 
-    id = Column(Integer, ForeignKey("agreement.id"), primary_key=True)
-    iaa_aa = Column(String)
+    id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
+    iaa_aa: Mapped[str]
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.MISCELLANEOUS,
     }
 
+    @override
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = super().to_dict()
+        return d
 
-class DirectAgreement(Agreement, agreement_type=AgreementType.DIRECT_ALLOCATION):
+
+class DirectAgreement(Agreement):
     """Direct Obligation Agreement Model"""
 
     __tablename__ = "direct_agreement"
 
-    id = Column(Integer, ForeignKey("agreement.id"), primary_key=True)
-    payee = Column(String, nullable=False)
+    id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
+    payee: Mapped[str] = mapped_column(String, nullable=False)
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.DIRECT_ALLOCATION,
     }
+
+    @override
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = super().to_dict()
+        return d
 
 
 class CANFiscalYear(BaseModel):
@@ -358,6 +415,12 @@ class CANFiscalYear(BaseModel):
     can_lead = Column(String)
     notes = Column(String, default="")
     total_funding = column_property(received_funding + expected_funding)
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        if self.can:
+            return f"{self.can.display_name}:{self.fiscal_year}"
+        return f"CAN#{self.can_id}:{self.fiscal_year}"
 
     @override
     def to_dict(self):
@@ -386,7 +449,7 @@ class CANFiscalYearCarryForward(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN carried over from a previous fiscal year."""
 
     __tablename__ = "can_fiscal_year_carry_forward"
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, Identity(), primary_key=True)
     can_id = Column(Integer, ForeignKey("can.id"))
     can = relationship("CAN", lazy="joined")
     from_fiscal_year = Column(Integer)
@@ -414,7 +477,6 @@ class CANFiscalYearCarryForward(BaseModel):
 
 
 class BudgetLineItem(BaseModel):
-    __versioned__ = {}
     __tablename__ = "budget_line_item"
 
     id = Column(Integer, Identity(), primary_key=True)
@@ -432,9 +494,41 @@ class BudgetLineItem(BaseModel):
     status = Column(sa.Enum(BudgetLineItemStatus))
 
     date_needed = Column(Date)
-    psc_fee_amount = Column(
-        Numeric(12, 2)
+    proc_shop_fee_percentage = Column(
+        Numeric(12, 5)
     )  # may need to be a different object, i.e. flat rate or percentage
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.line_description if self.line_description else super().display_name
+
+    @property
+    def portfolio_id(self):
+        return object_session(self).scalar(
+            select(Portfolio.id)
+            .join(CAN, Portfolio.id == CAN.managing_portfolio_id)
+            .join(self.__class__, self.can_id == CAN.id)
+            .where(self.__class__.id == self.id)
+        )
+
+    @property
+    def fiscal_year(self):
+        date_needed = self.date_needed or None
+        month = date_needed.month if date_needed else -1
+        year = date_needed.year if date_needed else -1
+        return object_session(self).scalar(
+            select(
+                case(
+                    (month >= 10, year + 1),
+                    (month >= 0 and month < 10, year),
+                    else_=None,
+                )
+            )
+        )
+
+    @property
+    def team_members(self):
+        return self.agreement.team_members if self.agreement else []
 
     @override
     def to_dict(self):
@@ -446,7 +540,9 @@ class BudgetLineItem(BaseModel):
         d.update(
             status=self.status.name if self.status else None,
             amount=float(self.amount) if self.amount else None,
-            psc_fee_amount=float(self.psc_fee_amount) if self.psc_fee_amount else None,
+            proc_shop_fee_percentage=float(self.proc_shop_fee_percentage)
+            if self.proc_shop_fee_percentage
+            else None,
             date_needed=self.date_needed.isoformat() if self.date_needed else None,
             can=self.can.to_dict() if self.can else None,
         )
@@ -464,7 +560,8 @@ class CAN(BaseModel):
     """
 
     __tablename__ = "can"
-    id = Column(Integer, primary_key=True)
+
+    id = Column(Integer, Identity(), primary_key=True)
     number = Column(String(30), nullable=False)
     description = Column(String)
     purpose = Column(String, default="")
@@ -473,22 +570,32 @@ class CAN(BaseModel):
     appropriation_date = Column(DateTime)
     appropriation_term = Column(Integer, default="1")
     arrangement_type = Column(sa.Enum(CANArrangementType))
-    funding_sources = relationship(
-        FundingSource,
-        secondary=can_funding_sources,
-        back_populates="cans",
+
+    funding_sources: Mapped[List["FundingSource"]] = relationship(
+        secondary="can_funding_sources", back_populates="cans"
     )
+
     authorizer_id = Column(Integer, ForeignKey("funding_partner.id"))
     authorizer = relationship(FundingPartner)
     managing_portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
     managing_portfolio = relationship(Portfolio, back_populates="cans")
-    shared_portfolios = relationship(
-        Portfolio, secondary=shared_portfolio_cans, back_populates="shared_cans"
+
+    shared_portfolios: Mapped[List["Portfolio"]] = relationship(
+        secondary="shared_portfolio_cans", back_populates="shared_cans"
     )
+
     budget_line_items = relationship("BudgetLineItem", back_populates="can")
 
+    research_projects: Mapped[List["ResearchProject"]] = relationship(
+        "ResearchProject", secondary="research_project_cans", back_populates="cans"
+    )
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.number
+
     @override
-    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
+    def to_dict(self) -> dict[str, Any]:
         d: dict[str, Any] = super().to_dict()
 
         if isinstance(self.arrangement_type, str):

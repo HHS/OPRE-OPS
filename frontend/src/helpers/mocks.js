@@ -1,7 +1,7 @@
 import { rest } from "msw";
-import { setupServer } from "msw/lib/node";
+import { setupServer } from "msw/node";
 
-const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
+const BACKEND_DOMAIN = import.meta.env.VITE_BACKEND_DOMAIN;
 
 export const handlers = [
     rest.get(`${BACKEND_DOMAIN}/api/v1/agreements/`, (req, res, ctx) => {
@@ -9,7 +9,7 @@ export const handlers = [
             ctx.status(200),
             ctx.json([
                 { id: 1, name: "Agreement 1" },
-                { id: 2, name: "Agreement 2" },
+                { id: 2, name: "Agreement 2" }
             ]),
             ctx.delay(150)
         );
@@ -26,7 +26,7 @@ export const handlers = [
             ctx.status(200),
             ctx.json([
                 { id: 1, name: "Research Project 1" },
-                { id: 2, name: "Research Project 2" },
+                { id: 2, name: "Research Project 2" }
             ]),
             ctx.delay(150)
         );
@@ -36,7 +36,7 @@ export const handlers = [
         const { body } = req;
 
         return res(ctx.status(201), ctx.json({ id: 3, name: body.name }), ctx.delay(150));
-    }),
+    })
 ];
 
 export const server = setupServer(...handlers);

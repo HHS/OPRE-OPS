@@ -1,6 +1,9 @@
+import PropTypes from "prop-types";
 import cx from "clsx";
+
 /**
  * Renders a select input for choosing a month.
+ *
  * @param {Object} props - The component props.
  * @param {string} props.name - The name of the input.
  * @param {string} [props.label=name] - The label for the input.
@@ -8,23 +11,20 @@ import cx from "clsx";
  * @param {boolean} [props.pending=false] - Whether the input is in a pending state.
  * @param {string[]} [props.messages=[]] - An array of error messages to display.
  * @param {number} props.value - The currently selected value.
- * @param {string} [props.className] - Additional class names to apply to the component.
  * @returns {JSX.Element} - The rendered component.
  */
-export const MonthSelect = ({ name, label = name, onChange, pending = false, messages = [], value, className }) => {
+const MonthSelect = ({ name, label = name, onChange, pending = false, messages = [], value }) => {
     function handleChange(e) {
         onChange(name, Number(e.target.value));
     }
     return (
-        <div className={cx("usa-form-group usa-form-group--month margin-top-0", pending && "pending", className)}>
-            <label className={`usa-label sr-only ${messages.length ? "usa-label--error" : null} `} htmlFor={name}>
+        <div className={cx("usa-form-group usa-form-group--month margin-top-0", pending && "pending")}>
+            <label
+                className={`usa-label sr-only ${messages.length ? "usa-label--error" : null} `}
+                htmlFor={name}
+            >
                 {label}
             </label>
-            {messages.length ? (
-                <span className="usa-error-message" id="input-error-message" role="alert">
-                    {messages[0]}
-                </span>
-            ) : null}
             <select
                 className={`usa-select ${messages.length ? "usa-input--error" : null}`}
                 id={name}
@@ -50,6 +50,15 @@ export const MonthSelect = ({ name, label = name, onChange, pending = false, mes
             </select>
         </div>
     );
+};
+
+MonthSelect.propTypes = {
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    onChange: PropTypes.func.isRequired,
+    pending: PropTypes.bool,
+    messages: PropTypes.arrayOf(PropTypes.string),
+    value: PropTypes.number.isRequired
 };
 
 export default MonthSelect;

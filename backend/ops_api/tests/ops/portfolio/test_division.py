@@ -6,8 +6,9 @@ from models.portfolios import Division
 def test_division_lookup(loaded_db):
     division = loaded_db.get(Division, 1)
     assert division is not None
-    assert division.name == "Division of Child and Family Development"
-    assert division.abbreviation == "DFCD"
+    assert division.name == "Child Care"
+    assert division.abbreviation == "CC"
+    assert division.display_name == division.name
 
 
 def test_division_create():
@@ -20,7 +21,7 @@ def test_division_create():
 def test_get_divisions_list(auth_client):
     response = auth_client.get("/api/v1/divisions/")
     assert response.status_code == 200
-    assert len(response.json) == 4
+    assert len(response.json) == 7
 
 
 @pytest.mark.usefixtures("app_ctx")

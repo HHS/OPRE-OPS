@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   unittest_db:
-    image: "postgres:12"
+    image: "postgres:16"
     platform: linux/amd64
     container_name: unit-test-db
     security_opt:
@@ -11,6 +11,8 @@ services:
       - POSTGRES_PASSWORD=local_password  # pragma: allowlist secret
     read_only: true  # Resolve semgrep https://sg.run/e4JE
     tmpfs: /var/run/postgresql/
+    volumes:
+      - ../../data_tools/ops_db_sql_init:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
     healthcheck:
@@ -30,13 +32,14 @@ services:
     command: >
       bash -c "
       python ./data_tools/src/import_static_data/load_db.py &&
+      DATA=./data_tools/data/user_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
+      DATA=./data_tools/data/vendor_and_contact_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/portfolio_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/funding_partner_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/funding_source_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/research_project_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-      DATA=./data_tools/data/user_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-      DATA=./data_tools/data/team_leader_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/can_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
+      DATA=./data_tools/data/first_contract_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/agreements_and_blin_data.json5 python ./data_tools/src/import_static_data/import_data.py
       "
     depends_on:

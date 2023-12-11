@@ -45,7 +45,7 @@ class RequestBody:
     amount: Optional[float] = None
     date_needed: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
     comments: Optional[str] = None
-    psc_fee_amount: Optional[float] = None
+    proc_shop_fee_percentage: Optional[float] = None
 
     @validates_schema(skip_on_field_errors=False)
     def validate_agreement_id(self, data, **kwargs):
@@ -104,7 +104,7 @@ class RequestBody:
                 bli
                 and bli.agreement_id
                 and bli.agreement.agreement_reason == AgreementReason.NEW_REQ
-                and bli.agreement.incumbent
+                and bli.agreement.incumbent_id
             ):
                 raise ValidationError(
                     "BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ"
@@ -121,7 +121,7 @@ class RequestBody:
                     bli.agreement.agreement_reason == AgreementReason.RECOMPETE
                     or bli.agreement.agreement_reason == AgreementReason.LOGICAL_FOLLOW_ON
                 )
-                and not bli.agreement.incumbent
+                and not bli.agreement.incumbent_id
             ):
                 raise ValidationError(
                     "BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
@@ -133,13 +133,6 @@ class RequestBody:
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
             if bli and bli.agreement_id and not bli.agreement.project_officer:
                 raise ValidationError("BLI's Agreement must have a ProjectOfficer when status is not DRAFT")
-
-    @validates_schema(skip_on_field_errors=False)
-    def validate_team_members(self, data, **kwargs):
-        if is_changing_status(data):
-            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
-            if bli and bli.agreement_id and not bli.agreement.team_members:
-                raise ValidationError("BLI's Agreement must have at least one Team Member when status is not DRAFT")
 
     @validates_schema(skip_on_field_errors=False)
     def validate_description(self, data: dict, **kwargs):
@@ -235,6 +228,13 @@ class QueryParameters:
 
 
 @dataclass
+class BLITeamMembers:
+    id: int
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+
+
+@dataclass
 class BudgetLineItemResponse:
     id: int
     agreement_id: int
@@ -244,7 +244,10 @@ class BudgetLineItemResponse:
     line_description: str
     status: BudgetLineItemStatus = EnumField(BudgetLineItemStatus)
     comments: Optional[str] = None
-    psc_fee_amount: Optional[float] = None
+    proc_shop_fee_percentage: Optional[float] = None
     created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     date_needed: date = field(default=None, metadata={"format": "%Y-%m-%d"})
+    portfolio_id: Optional[int] = None
+    fiscal_year: Optional[int] = None
+    team_members: Optional[list[BLITeamMembers]] = field(default_factory=lambda: [])

@@ -23,7 +23,7 @@ export const CanSelect = ({
     onChange,
     pending = false,
     messages = [],
-    className,
+    className
 }) => {
     const [inputValue, setInputValue] = useState(selectedCan?.number ?? "");
 
@@ -60,11 +60,17 @@ export const CanSelect = ({
                 {label}
             </label>
             {messages.length ? (
-                <span className="usa-error-message" id="input-error-message" role="alert">
+                <span
+                    className="usa-error-message"
+                    role="alert"
+                >
                     {messages[0]}
                 </span>
             ) : null}
-            <div className="usa-combo-box" data-enhanced="true">
+            <div
+                className="usa-combo-box"
+                data-enhanced="true"
+            >
                 <select
                     className="usa-select usa-sr-only usa-combo-box__select"
                     name={name}
@@ -74,7 +80,10 @@ export const CanSelect = ({
                     onChange={(e) => handleChange(Number(e.target.value))}
                 >
                     {canList.map((can) => (
-                        <option key={can.id} value={can.id}>
+                        <option
+                            key={can.id}
+                            value={can.id}
+                        >
                             {can.number}
                         </option>
                     ))}
@@ -95,7 +104,10 @@ export const CanSelect = ({
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                 />
-                <span className="usa-combo-box__clear-input__wrapper" tabIndex={-1}>
+                <span
+                    className="usa-combo-box__clear-input__wrapper"
+                    tabIndex={-1}
+                >
                     <button
                         name={name}
                         type="button"
@@ -109,7 +121,10 @@ export const CanSelect = ({
                     </button>
                 </span>
                 <span className="usa-combo-box__input-button-separator">&nbsp;</span>
-                <span className="usa-combo-box__toggle-list__wrapper" tabIndex={-1}>
+                <span
+                    className="usa-combo-box__toggle-list__wrapper"
+                    tabIndex={-1}
+                >
                     <button
                         type="button"
                         tabIndex={-1}
@@ -147,8 +162,14 @@ export const CanSelect = ({
                     })}
                 </ul>
 
-                <div className="usa-combo-box__status usa-sr-only" role="status"></div>
-                <span id="can--assistiveHint" className="usa-sr-only">
+                <div
+                    className="usa-combo-box__status usa-sr-only"
+                    role="status"
+                ></div>
+                <span
+                    id="can--assistiveHint"
+                    className="usa-sr-only"
+                >
                     When autocomplete results are available use up and down arrows to review and enter to select. Touch
                     device users, explore by touch or with swipe gestures.
                 </span>

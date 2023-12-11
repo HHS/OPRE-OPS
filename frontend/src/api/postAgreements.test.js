@@ -1,5 +1,6 @@
 import { postAgreement, formatTeamMember } from "./postAgreements";
 import TestApplicationContext from "../applicationContext/TestApplicationContext";
+import { vi } from "vitest";
 
 describe("postAgreement function", () => {
     const mockAgreement = {
@@ -9,7 +10,7 @@ describe("postAgreement function", () => {
         description: "Description",
         product_service_code_id: 1,
         incumbent: "Vendor A",
-        project_officer: 1,
+        project_officer_id: 1,
         team_members: [
             {
                 created_by: null,
@@ -23,7 +24,7 @@ describe("postAgreement function", () => {
                 last_name: "Martinez-Beck",
                 oidc_id: "00000000-0000-1111-a111-000000000003",
                 updated: null,
-                updated_on: "2023-04-25T17:22:11.766571",
+                updated_on: "2023-04-25T17:22:11.766571"
             },
             {
                 created_by: null,
@@ -37,10 +38,10 @@ describe("postAgreement function", () => {
                 last_name: "Brown",
                 oidc_id: "00000000-0000-1111-a111-000000000005",
                 updated: null,
-                updated_on: "2023-04-25T17:22:11.766571",
-            },
+                updated_on: "2023-04-25T17:22:11.766571"
+            }
         ],
-        notes: "New Agreement for purpose X",
+        notes: "New Agreement for purpose X"
     };
 
     const emptyMockAgreement = {
@@ -50,15 +51,15 @@ describe("postAgreement function", () => {
         description: "",
         product_service_id: null,
         incumbent: null,
-        project_officer: null,
+        project_officer_id: null,
         team_members: [],
-        notes: "",
+        notes: ""
     };
 
     const mockApiResponse = { id: 1, message: "Agreement created" };
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.resetAllMocks();
     });
 
     test("returns the API response data", async () => {
@@ -94,13 +95,13 @@ describe("formatTeamMember function", () => {
             last_name: "Member A",
             oidc_id: "00000000-0000-1111-a111-000000000002",
             updated: null,
-            updated_on: "2023-04-24T18:14:38.156209",
+            updated_on: "2023-04-24T18:14:38.156209"
         };
 
         const expectedOutput = {
             id: 123,
             full_name: "Team Member A",
-            email: "tm_a@test.com",
+            email: "tm_a@test.com"
         };
 
         const output = formatTeamMember(input);

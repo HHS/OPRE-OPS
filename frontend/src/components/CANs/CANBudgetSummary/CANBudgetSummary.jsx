@@ -53,7 +53,10 @@ const CANBudgetSummary = () => {
         <>
             <h2>Budget summary</h2>
 
-            <FiscalYear fiscalYear={selectedFiscalYear} handleChangeFiscalYear={setSelectedFiscalYear} />
+            <FiscalYear
+                fiscalYear={selectedFiscalYear}
+                handleChangeFiscalYear={setSelectedFiscalYear}
+            />
 
             <table className="usa-table usa-table--borderless">
                 <thead>

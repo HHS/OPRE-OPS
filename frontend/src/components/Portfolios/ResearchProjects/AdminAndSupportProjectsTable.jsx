@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import useSortableData from "../../../helpers/useSortableData";
+import useSortableData from "../../../hooks/use-sortable-data.hooks";
 import CurrencyFormat from "react-currency-format";
 import "./tables.scss";
 
@@ -18,7 +18,11 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
 
     const TableRow = ({ name, link, funding, fundingToDate, firstAwardDate, cans, agreement }) => (
         <tr>
-            <th scope="row" data-sort-value={name} data-sort-active={getClassNamesFor("name")}>
+            <th
+                scope="row"
+                data-sort-value={name}
+                data-sort-active={getClassNamesFor("name")}
+            >
                 <Link
                     to={link}
                     className="text-ink text-no-underline hover:text-underline usa-tooltip"
@@ -30,19 +34,44 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                     {name.length > 30 ? name.substring(0, 30) + "..." : name}
                 </Link>
             </th>
-            <td data-sort-value={funding} data-sort-active={getClassNamesFor("funding")}>
-                <CurrencyFormat value={funding} displayType={"text"} thousandSeparator={true} prefix={"$"} />
+            <td
+                data-sort-value={funding}
+                data-sort-active={getClassNamesFor("funding")}
+            >
+                <CurrencyFormat
+                    value={funding}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"$"}
+                />
             </td>
-            <td data-sort-value={fundingToDate} data-sort-active={getClassNamesFor("fundingToDate")}>
-                <CurrencyFormat value={fundingToDate} displayType={"text"} thousandSeparator={true} prefix={"$"} />
+            <td
+                data-sort-value={fundingToDate}
+                data-sort-active={getClassNamesFor("fundingToDate")}
+            >
+                <CurrencyFormat
+                    value={fundingToDate}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"$"}
+                />
             </td>
-            <td data-sort-value={firstAwardDate} data-sort-active={getClassNamesFor("firstAwardDate")}>
+            <td
+                data-sort-value={firstAwardDate}
+                data-sort-active={getClassNamesFor("firstAwardDate")}
+            >
                 {firstAwardDate}
             </td>
-            <td data-sort-value={cans} data-sort-active={getClassNamesFor("cans")}>
+            <td
+                data-sort-value={cans}
+                data-sort-active={getClassNamesFor("cans")}
+            >
                 {cans}
             </td>
-            <td data-sort-value={agreement} data-sort-active={getClassNamesFor("agreement")}>
+            <td
+                data-sort-value={agreement}
+                data-sort-active={getClassNamesFor("agreement")}
+            >
                 {agreement}
             </td>
         </tr>
@@ -55,7 +84,10 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
     }, []);
 
     return (
-        <div className="usa-table-container--scrollable" tabIndex="0">
+        <div
+            className="usa-table-container--scrollable"
+            tabIndex="0"
+        >
             <table className="usa-table usa-table--borderless width-full">
                 <thead>
                     <tr>
@@ -191,11 +223,17 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
                 </thead>
                 <tbody>
                     {projectTableData.map((tableData) => (
-                        <TableRow key={tableData.id} {...tableData} />
+                        <TableRow
+                            key={tableData.id}
+                            {...tableData}
+                        />
                     ))}
                 </tbody>
             </table>
-            <div className="usa-sr-only usa-table__announcement-region" aria-live="polite">
+            <div
+                className="usa-sr-only usa-table__announcement-region"
+                aria-live="polite"
+            >
                 {srMsg}
             </div>
         </div>

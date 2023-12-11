@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import classnames from "vest/classnames";
 import CanSelect from "../CanSelect";
 import DesiredAwardDate from "../DesiredAwardDate";
@@ -27,9 +28,8 @@ import CurrencyInput from "./CurrencyInput";
  * @param {function} props.handleEditForm - A function to handle editing the budget line form.
  * @param {function} props.handleSubmitForm - A function to handle submitting the budget line form.
  * @param {function} props.handleResetForm - A function to handle resetting the budget line form.
- * @param {boolean} props.isEditMode - Whether the form is in edit mode.
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.JSX.Element} - The rendered component.
  */
 export const CreateBudgetLinesForm = ({
     selectedCan,
@@ -50,15 +50,14 @@ export const CreateBudgetLinesForm = ({
     handleEditForm = () => {},
     handleSubmitForm = () => {},
     handleResetForm = () => {},
-    isEditMode,
-    isReviewMode,
+    isReviewMode
 }) => {
     let res = suite.get();
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
         valid: "success",
-        warning: "warning",
+        warning: "warning"
     });
     const isFormComplete =
         selectedCan && enteredDescription && enteredAmount && enteredMonth && enteredDay && enteredYear;
@@ -71,7 +70,7 @@ export const CreateBudgetLinesForm = ({
             enteredAmount,
             enteredMonth,
             enteredDay,
-            enteredYear,
+            enteredYear
         });
     }
 
@@ -84,7 +83,7 @@ export const CreateBudgetLinesForm = ({
                 enteredMonth,
                 enteredDay,
                 enteredYear,
-                ...{ [name]: value },
+                ...{ [name]: value }
             },
             name
         );
@@ -142,7 +141,7 @@ export const CreateBudgetLinesForm = ({
                     label="Amount"
                     messages={res.getErrors("enteredAmount")}
                     className={cn("enteredAmount")}
-                    value={enteredAmount || ""}
+                    value={enteredAmount ?? ""}
                     setEnteredAmount={setEnteredAmount}
                     onChange={(name, value) => {
                         if (isReviewMode) {
@@ -156,7 +155,7 @@ export const CreateBudgetLinesForm = ({
                     name="enteredComments"
                     label="Notes (optional)"
                     value={enteredComments || ""}
-                    hintMsg="Maximum 150 characters"
+                    maxLength={150}
                     onChange={(name, value) => {
                         setEnteredComments(value);
                     }}
@@ -197,6 +196,28 @@ export const CreateBudgetLinesForm = ({
             </div>
         </form>
     );
+};
+
+CreateBudgetLinesForm.propTypes = {
+    selectedCan: PropTypes.object,
+    enteredDescription: PropTypes.string,
+    enteredAmount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    enteredMonth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    enteredDay: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    enteredYear: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    enteredComments: PropTypes.string,
+    isEditing: PropTypes.bool,
+    setEnteredDescription: PropTypes.func,
+    setSelectedCan: PropTypes.func,
+    setEnteredAmount: PropTypes.func,
+    setEnteredMonth: PropTypes.func,
+    setEnteredDay: PropTypes.func,
+    setEnteredYear: PropTypes.func,
+    setEnteredComments: PropTypes.func,
+    handleEditForm: PropTypes.func,
+    handleSubmitForm: PropTypes.func,
+    handleResetForm: PropTypes.func,
+    isReviewMode: PropTypes.bool
 };
 
 export default CreateBudgetLinesForm;

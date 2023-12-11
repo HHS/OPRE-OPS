@@ -1,14 +1,15 @@
 import os
-from typing import Tuple
+from typing import Optional
 
 import sqlalchemy.engine
 from data_tools.environment.cloudgov import CloudGovConfig
 from data_tools.environment.common import DataToolsConfig
 from data_tools.environment.dev import DevConfig
 from data_tools.environment.local import LocalConfig
+from data_tools.environment.local_migration import LocalMigrationConfig
 from data_tools.environment.pytest import PytestConfig
 from data_tools.environment.test import TestConfig
-from models import *
+from models import BaseModel
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import configure_mappers
@@ -18,7 +19,7 @@ configure_mappers()
 
 def init_db(
     config: DataToolsConfig, db: Optional[Engine] = None
-) -> Tuple[sqlalchemy.engine.Engine, sqlalchemy.MetaData]:
+) -> tuple[sqlalchemy.engine.Engine, sqlalchemy.MetaData]:
     if not db:
         engine = create_engine(
             config.db_connection_string, echo=config.verbosity, future=True
@@ -35,6 +36,8 @@ def get_config(environment_name: Optional[str] = None) -> DataToolsConfig:
             config = CloudGovConfig()
         case "local":
             config = LocalConfig()
+        case "local-migration":
+            config = LocalMigrationConfig()
         case "test":
             config = TestConfig()
         case "pytest":

@@ -6,7 +6,7 @@ test("successfully gets the CAN from the backend and directly puts it into state
     const mockBackendResponse = {
         id: 2,
         number: mockCanId,
-        otherStuff: "DogCow",
+        otherStuff: "DogCow"
     };
     TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
         return mockBackendResponse;

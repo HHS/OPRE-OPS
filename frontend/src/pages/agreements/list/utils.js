@@ -47,9 +47,9 @@ const sortAgreements = (agreements) => {
                 budget_line_items: agreement.budget_line_items.map((bli) => {
                     return {
                         ...bli,
-                        date_needed: bli.date_needed ? bli.date_needed.toISOString().split("T")[0] : null,
+                        date_needed: bli.date_needed ? bli.date_needed.toISOString().split("T")[0] : null
                     };
-                }),
+                })
             };
         });
     }

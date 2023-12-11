@@ -4,14 +4,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import ReactMarkdown from "react-markdown";
 
-const HeroDescription = ({ description, urls }) => {
+const HeroDescription = ({ label, description, urls }) => {
     const styles = {
         hidden: {
-            display: "none",
+            display: "none"
         },
         visible: {
-            display: "inherit",
-        },
+            display: "inherit"
+        }
     };
 
     const [textStyle, setTextStyle] = useState(styles.hidden);
@@ -29,19 +29,38 @@ const HeroDescription = ({ description, urls }) => {
 
     return (
         <div className="margin-top-1">
-            <div style={buttonStyle}>
+            <div className="text-base-dark margin-top-3 font-12px">{label}</div>
+            <div
+                style={buttonStyle}
+                className="margin-top-neg-105"
+            >
                 <ReactMarkdown>{description?.trimStart().substring(0, 255) + "..."}</ReactMarkdown>
-                <button className="usa-button usa-button--unstyled" onClick={expandCollapse} type="button">
+                <button
+                    className="usa-button usa-button--unstyled"
+                    onClick={expandCollapse}
+                    type="button"
+                >
                     read more
                 </button>
             </div>
-            <div style={textStyle}>
+            <div
+                style={textStyle}
+                className="margin-top-neg-105"
+            >
                 <ReactMarkdown>{description?.trimStart()}</ReactMarkdown>
-                <button className="usa-button usa-button--unstyled" onClick={collapseExpand} type="button">
+                <button
+                    className="usa-button usa-button--unstyled"
+                    onClick={collapseExpand}
+                    type="button"
+                >
                     show less
                 </button>
                 {urls?.map((url) => (
-                    <a key={url.id} href={url.url} className="display-block margin-top-2 width-fit-content">
+                    <a
+                        key={url.id}
+                        href={url.url}
+                        className="display-block margin-top-2 width-fit-content text-primary"
+                    >
                         See more on the website
                         <FontAwesomeIcon
                             icon={solid("up-right-from-square")}

@@ -4,10 +4,9 @@ import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCar
 import Tag from "../../UI/Tag/Tag";
 
 const ProjectsAndAgreements = ({
-    portfolioId = 0,
     numberOfProjects = 0,
     numOfResearchProjects = 0,
-    numOfAdminAndSupportProjects = 0,
+    numOfAdminAndSupportProjects = 0
 }) => {
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
     const projectHeading = `FY ${fiscalYear.value} Projects`;
@@ -45,7 +44,10 @@ const ProjectsAndAgreements = ({
                     <div className="display-flex flex-justify">
                         <span className="font-sans-xl text-bold line-height-sans-1">{numberOfAgreements}</span>
                         <div className="display-flex flex-column margin-left-2 grid-gap">
-                            <Tag className="bg-brand-primary text-white" text={`${plannedAgreements} Planned`} />
+                            <Tag
+                                className="bg-brand-primary text-white"
+                                text={`${plannedAgreements} Planned`}
+                            />
                             <Tag
                                 className="bg-brand-feedback-warning margin-top-1"
                                 text={`${executingAgreements} Executing`}
@@ -65,8 +67,7 @@ const ProjectsAndAgreements = ({
 export default ProjectsAndAgreements;
 
 ProjectsAndAgreements.propTypes = {
-    portfolioId: PropTypes.number,
     numberOfProjects: PropTypes.number,
     numOfResearchProjects: PropTypes.number,
-    numOfAdminAndSupportProjects: PropTypes.number,
+    numOfAdminAndSupportProjects: PropTypes.number
 };

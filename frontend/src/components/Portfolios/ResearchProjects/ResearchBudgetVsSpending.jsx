@@ -38,6 +38,7 @@ const ResearchBudgetVsSpending = ({ portfolioId = 0 }) => {
             value: "8000000.00",
             color: "#B6406C",
             percent: `${calculatePercent("8000000.00", totalFunding)}%`,
+            tagStyleActive: "whiteOnPink"
         },
         {
             id: 2,
@@ -45,11 +46,12 @@ const ResearchBudgetVsSpending = ({ portfolioId = 0 }) => {
             value: "2000000.00",
             color: "#A9AEB1 ",
             percent: `${calculatePercent("2000000.00", totalFunding)}%`,
-        },
+            tagStyleActive: "darkTextGreyBackground"
+        }
     ];
     const [activeId, setActiveId] = React.useState(0);
 
-    const LegendItem = ({ id, label, value, color, percent }) => {
+    const LegendItem = ({ id, label, value, color, percent, tagStyleActive }) => {
         const isGraphActive = activeId === id;
         return (
             <div className="grid-row margin-top-2 font-12px">
@@ -61,7 +63,7 @@ const ResearchBudgetVsSpending = ({ portfolioId = 0 }) => {
                             style={{ color: color }}
                         />
 
-                        <span className={isGraphActive ? "fake-bold" : undefined}>{label}</span>
+                        <span className={isGraphActive ? "fake-bold" : ""}>{label}</span>
                     </div>
                 </div>
                 <div className="grid-col-4">
@@ -70,20 +72,35 @@ const ResearchBudgetVsSpending = ({ portfolioId = 0 }) => {
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$ "}
-                        renderText={(value) => <span className={isGraphActive ? "fake-bold" : undefined}>{value}</span>}
+                        renderText={(value) => <span className={isGraphActive ? "fake-bold" : ""}>{value}</span>}
                     />
                 </div>
                 <div className="grid-col-1">
-                    <Tag tagStyle="darkTextWhiteBackground" text={percent} label={label} active={isGraphActive} />
+                    <Tag
+                        tagStyle="darkTextWhiteBackground"
+                        text={percent}
+                        label={label}
+                        active={isGraphActive}
+                        tagStyleActive={tagStyleActive}
+                    />
                 </div>
             </div>
         );
     };
 
     return (
-        <CurrencySummaryCard headerText={headerText} amount={totalFunding}>
-            <div id="currency-summary-card" className="margin-top-2">
-                <CANFundingBar setActiveId={setActiveId} data={data} />
+        <CurrencySummaryCard
+            headerText={headerText}
+            amount={totalFunding}
+        >
+            <div
+                id="currency-summary-card"
+                className="margin-top-2"
+            >
+                <CANFundingBar
+                    setActiveId={setActiveId}
+                    data={data}
+                />
             </div>
 
             {data.map((item) => (
@@ -94,6 +111,7 @@ const ResearchBudgetVsSpending = ({ portfolioId = 0 }) => {
                     value={item.value}
                     color={item.color}
                     percent={item.percent}
+                    tagStyleActive={item.tagStyleActive}
                 />
             ))}
         </CurrencySummaryCard>

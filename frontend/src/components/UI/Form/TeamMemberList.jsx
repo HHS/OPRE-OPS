@@ -20,7 +20,10 @@ const TeamMemberList = ({ selectedTeamMembers, removeTeamMember }) => {
     return selectedTeamMembers.length > 0 ? (
         <ul className="add-list-reset">
             {selectedTeamMembers?.map((teamMember) => (
-                <li key={teamMember.id} className="margin-top-105">
+                <li
+                    key={teamMember.id}
+                    className="margin-top-105"
+                >
                     <TeamTag teamMember={teamMember} />
                 </li>
             ))}

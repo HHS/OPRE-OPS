@@ -19,7 +19,7 @@ const blData = [
         day: "01",
         year: "2023",
         amount: "111111",
-        note: "note one",
+        note: "note one"
     },
     {
         descr: "SC2",
@@ -28,7 +28,7 @@ const blData = [
         day: "22",
         year: "2023",
         amount: "222222",
-        note: "note two",
+        note: "note two"
     },
     {
         descr: "SC3",
@@ -37,8 +37,8 @@ const blData = [
         day: "23",
         year: "2023",
         amount: "333333",
-        note: "note three",
-    },
+        note: "note three"
+    }
 ];
 
 const completeStepOne = () => {
@@ -52,7 +52,7 @@ const completeStepOne = () => {
     // agreement should be disabled until project is selected
     cy.get("#agreement").should("be.disabled");
     // select project
-    cy.get("#project").type("Human Services Interoperability Support{enter}");
+    cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
     // summary card should exist after project is selected
     cy.get('[data-cy="project-summary-card"]').should("exist");
     // agreement should be enabled after project is selected
@@ -72,7 +72,7 @@ const completeStepTwo = () => {
         .and("contain", "Product Service Center")
         .and("contain", "0");
     cy.get('[data-cy="total-summary-cards"]').as("tsc").should("exist");
-    cy.get("@tsc").should("contain", "Draft Total").and("contain", "$0.00");
+    cy.get("@tsc").should("contain", "Draft Total").and("contain", "$0");
 };
 
 const completeCreateBudgetLines = () => {

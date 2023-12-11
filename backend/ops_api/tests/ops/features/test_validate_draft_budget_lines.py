@@ -49,11 +49,6 @@ def test_valid_agreement(loaded_db, context):
     ...
 
 
-@scenario("validate_draft_budget_lines.feature", "Valid Agreement Type")
-def test_valid_agreement_type(loaded_db, context):
-    ...
-
-
 @scenario("validate_draft_budget_lines.feature", "Valid Agreement Description")
 def test_valid_agreement_description(loaded_db, context):
     ...
@@ -210,7 +205,6 @@ def client(auth_client):
 def agreement_null_project(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         product_service_code_id=2,
@@ -218,7 +212,7 @@ def agreement_null_project(loaded_db, context):
         procurement_shop_id=1,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
-        project_officer=1,
+        project_officer_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
     loaded_db.add(contract_agreement)
@@ -231,7 +225,6 @@ def agreement_null_project(loaded_db, context):
 def agreement_null_agreement_type(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         product_service_code_id=2,
@@ -239,7 +232,7 @@ def agreement_null_agreement_type(loaded_db, context):
         procurement_shop_id=1,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
-        project_officer=1,
+        project_officer_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
     contract_agreement.agreement_type = None
@@ -253,7 +246,6 @@ def agreement_null_agreement_type(loaded_db, context):
 def agreement_empty_description(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         product_service_code_id=2,
@@ -262,7 +254,7 @@ def agreement_empty_description(loaded_db, context):
         description="",
         procurement_shop_id=1,
         agreement_reason=AgreementReason.NEW_REQ,
-        project_officer=1,
+        project_officer_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
     loaded_db.add(contract_agreement)
@@ -275,7 +267,6 @@ def agreement_empty_description(loaded_db, context):
 def agreement_null_product_service_code(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -283,7 +274,7 @@ def agreement_null_product_service_code(loaded_db, context):
         procurement_shop_id=1,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
-        project_officer=1,
+        project_officer_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
     loaded_db.add(contract_agreement)
@@ -296,7 +287,6 @@ def agreement_null_product_service_code(loaded_db, context):
 def agreement_null_procurement_shop(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -304,7 +294,7 @@ def agreement_null_procurement_shop(loaded_db, context):
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
-        project_officer=1,
+        project_officer_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
     loaded_db.add(contract_agreement)
@@ -317,14 +307,13 @@ def agreement_null_procurement_shop(loaded_db, context):
 def agreement_null_agreement_reason(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
         research_project_id=1,
         product_service_code_id=2,
         description="Using Innovative Data...",
-        project_officer=1,
+        project_officer_id=1,
         procurement_shop_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
@@ -338,7 +327,6 @@ def agreement_null_agreement_reason(loaded_db, context):
 def agreement_reason_with_incumbent(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -346,8 +334,8 @@ def agreement_reason_with_incumbent(loaded_db, context):
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
-        incumbent="CURRENT VENDOR",
-        project_officer=1,
+        incumbent_id=1,
+        project_officer_id=1,
         procurement_shop_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
@@ -363,7 +351,6 @@ def agreement_reason_with_incumbent(loaded_db, context):
 def agreement_reason_with_incumbent_required(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -371,7 +358,7 @@ def agreement_reason_with_incumbent_required(loaded_db, context):
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.RECOMPETE,
-        project_officer=1,
+        project_officer_id=1,
         procurement_shop_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
@@ -385,7 +372,6 @@ def agreement_reason_with_incumbent_required(loaded_db, context):
 def agreement_null_project_officer(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -406,7 +392,6 @@ def agreement_null_project_officer(loaded_db, context):
 def agreement_null_team_members(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -414,7 +399,7 @@ def agreement_null_team_members(loaded_db, context):
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
-        project_officer=1,
+        project_officer_id=1,
         procurement_shop_id=1,
     )
     loaded_db.add(contract_agreement)
@@ -427,7 +412,6 @@ def agreement_null_team_members(loaded_db, context):
 def valid_agreement(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
-        number="AGRXX003459217-B",
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
@@ -435,7 +419,7 @@ def valid_agreement(loaded_db, context):
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
-        project_officer=1,
+        project_officer_id=1,
         procurement_shop_id=1,
     )
     contract_agreement.team_members.append(loaded_db.get(User, 1))
@@ -455,7 +439,7 @@ def bli(loaded_db, context):
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     initial_bli_for_patch = BudgetLineItem(
@@ -466,7 +450,7 @@ def bli(loaded_db, context):
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     loaded_db.add(initial_bli_for_put)
@@ -486,7 +470,7 @@ def bli_without_description(loaded_db, context):
         can_id=1,
         date_needed=datetime.date(2023, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     initial_bli_for_patch = BudgetLineItem(
@@ -496,7 +480,7 @@ def bli_without_description(loaded_db, context):
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     loaded_db.add(initial_bli_for_put)
@@ -516,7 +500,7 @@ def bli_without_need_by_date(loaded_db, context):
         amount=100.12,
         can_id=1,
         status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     initial_bli_for_patch = BudgetLineItem(
@@ -526,7 +510,7 @@ def bli_without_need_by_date(loaded_db, context):
         amount=100.12,
         can_id=1,
         status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     loaded_db.add(initial_bli_for_put)
@@ -547,7 +531,7 @@ def bli_past_need_by_date(loaded_db, context):
         can_id=1,
         date_needed=datetime.date(2022, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     initial_bli_for_patch = BudgetLineItem(
@@ -558,7 +542,7 @@ def bli_past_need_by_date(loaded_db, context):
         can_id=1,
         date_needed=datetime.date(2022, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     loaded_db.add(initial_bli_for_put)
@@ -578,7 +562,7 @@ def bli_without_can(loaded_db, context):
         amount=100.12,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     initial_bli_for_patch = BudgetLineItem(
@@ -588,7 +572,7 @@ def bli_without_can(loaded_db, context):
         amount=100.12,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     loaded_db.add(initial_bli_for_put)
@@ -608,7 +592,7 @@ def bli_without_amount(loaded_db, context):
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     initial_bli_for_patch = BudgetLineItem(
@@ -618,7 +602,7 @@ def bli_without_amount(loaded_db, context):
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     loaded_db.add(initial_bli_for_put)
@@ -639,7 +623,7 @@ def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context):
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     initial_bli_for_patch = BudgetLineItem(
@@ -650,7 +634,7 @@ def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context):
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     loaded_db.add(initial_bli_for_put)
@@ -670,7 +654,7 @@ def bli_without_agreement(loaded_db, context):
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     initial_bli_for_patch = BudgetLineItem(
@@ -680,7 +664,7 @@ def bli_without_agreement(loaded_db, context):
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
-        psc_fee_amount=1.23,
+        proc_shop_fee_percentage=1.23,
         created_by=1,
     )
     loaded_db.add(initial_bli_for_put)
@@ -701,7 +685,7 @@ def submit(client, context):
         "amount": 200.24,
         "status": "UNDER_REVIEW",
         "date_needed": "2044-01-01",
-        "psc_fee_amount": 2.34,
+        "proc_shop_fee_percentage": 2.34,
     }
 
     context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
@@ -723,7 +707,7 @@ def submit_without_description(client, context):
         "amount": 200.24,
         "status": "UNDER_REVIEW",
         "date_needed": "2044-01-01",
-        "psc_fee_amount": 2.34,
+        "proc_shop_fee_percentage": 2.34,
     }
 
     context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
@@ -746,7 +730,7 @@ def submit_empty_description(client, context):
         "amount": 200.24,
         "status": "UNDER_REVIEW",
         "date_needed": "2044-01-01",
-        "psc_fee_amount": 2.34,
+        "proc_shop_fee_percentage": 2.34,
     }
 
     context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
@@ -768,7 +752,7 @@ def submit_without_agreement(client, context):
         "amount": 200.24,
         "status": "UNDER_REVIEW",
         "date_needed": "2044-01-01",
-        "psc_fee_amount": 2.34,
+        "proc_shop_fee_percentage": 2.34,
     }
 
     context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
@@ -790,7 +774,7 @@ def submit_without_need_by_date(client, context):
         "can_id": 2,
         "amount": 200.24,
         "status": "UNDER_REVIEW",
-        "psc_fee_amount": 2.34,
+        "proc_shop_fee_percentage": 2.34,
     }
 
     context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
@@ -813,7 +797,7 @@ def submit_empty_need_by_date(client, context):
         "amount": 200.24,
         "status": "UNDER_REVIEW",
         "date_needed": "  ",
-        "psc_fee_amount": 2.34,
+        "proc_shop_fee_percentage": 2.34,
     }
 
     context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
@@ -835,7 +819,7 @@ def submit_without_can(client, context):
         "amount": 200.24,
         "status": "UNDER_REVIEW",
         "date_needed": "2044-01-01",
-        "psc_fee_amount": 2.34,
+        "proc_shop_fee_percentage": 2.34,
     }
 
     context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
@@ -857,7 +841,7 @@ def submit_without_amount(client, context):
         "can_id": 2,
         "status": "UNDER_REVIEW",
         "date_needed": "2044-01-01",
-        "psc_fee_amount": 2.34,
+        "proc_shop_fee_percentage": 2.34,
     }
 
     context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
@@ -880,7 +864,7 @@ def submit_amount_less_than_zero(client, context):
         "amount": -200.24,
         "status": "UNDER_REVIEW",
         "date_needed": "2044-01-01",
-        "psc_fee_amount": 2.34,
+        "proc_shop_fee_percentage": 2.34,
     }
 
     context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)

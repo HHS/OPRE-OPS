@@ -1,12 +1,11 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
-import { useDispatch } from "react-redux";
 import CreateAgreementFlow from "./CreateAgreementFlow";
 import StepSelectProject from "./StepSelectProject";
 import StepCreateAgreement from "./StepCreateAgreement";
 import StepCreateBudgetLines from "../../components/UI/WizardSteps/StepCreateBudgetLines";
-import { useCreateAgreement } from "./CreateAgreementContext";
-import { setAlert } from "../../components/UI/Alert/alertSlice";
+import { useEditAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
+import useAlert from "../../hooks/use-alert.hooks";
 
 /**
  * Renders the Create Agreement flow, which consists of several steps.
@@ -18,12 +17,11 @@ import { setAlert } from "../../components/UI/Alert/alertSlice";
 export const CreateAgreement = ({ existingBudgetLines }) => {
     const [isEditMode, setIsEditMode] = React.useState(false);
     const [isReviewMode, setIsReviewMode] = React.useState(false);
-    const createAgreementContext = useCreateAgreement();
-    const globalDispatch = useDispatch();
-
+    const createAgreementContext = useEditAgreement();
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
     const mode = searchParams.get("mode") || undefined;
+    const { setAlert } = useAlert();
     // check mode on mount
     React.useEffect(() => {
         switch (mode) {
@@ -39,32 +37,33 @@ export const CreateAgreement = ({ existingBudgetLines }) => {
     }, [mode]);
 
     const {
-        wizardSteps,
         selected_project: selectedResearchProject,
         agreement: selectedAgreement,
-        selected_procurement_shop: selectedProcurementShop,
+        selected_procurement_shop: selectedProcurementShop
     } = createAgreementContext;
 
     return (
         <CreateAgreementFlow>
-            <StepSelectProject isEditMode={isEditMode} isReviewMode={isReviewMode} />
-            <StepCreateAgreement isEditMode={isEditMode} isReviewMode={isReviewMode} />
+            <StepSelectProject
+                isEditMode={isEditMode}
+                isReviewMode={isReviewMode}
+            />
+            <StepCreateAgreement
+                isEditMode={isEditMode}
+                isReviewMode={isReviewMode}
+            />
             <StepCreateBudgetLines
-                wizardSteps={wizardSteps}
-                currentStep={3}
                 selectedResearchProject={selectedResearchProject}
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}
                 continueBtnText="Save Draft"
                 continueOverRide={() =>
-                    globalDispatch(
-                        setAlert({
-                            type: "success",
-                            heading: "Agreement draft saved",
-                            message: "The agreement has been successfully saved.",
-                            redirectUrl: "/agreements",
-                        })
-                    )
+                    setAlert({
+                        type: "success",
+                        heading: "Agreement draft saved",
+                        message: "The agreement has been successfully saved.",
+                        redirectUrl: "/agreements"
+                    })
                 }
                 existingBudgetLines={existingBudgetLines}
                 isEditMode={isEditMode}

@@ -5,7 +5,7 @@ from typing import Any, Optional
 from flask import Blueprint, Flask
 from flask_cors import CORS
 from ops_api.ops.db import init_db
-from ops_api.ops.history import track_db_history_before, track_db_history_catch_errors, track_db_history_after
+from ops_api.ops.history import track_db_history_after, track_db_history_before, track_db_history_catch_errors
 from ops_api.ops.home_page.views import home
 from ops_api.ops.urls import register_api
 from ops_api.ops.utils.auth import jwtMgr, oauth
@@ -34,12 +34,12 @@ def configure_logging(log_level: str = "INFO") -> None:
     )
 
 
-def create_app(config_overrides: Optional[dict[str, Any]] = {}) -> Flask:
+def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
     is_unit_test = False if config_overrides is None else config_overrides.get("TESTING") is True
     log_level = "INFO" if not is_unit_test else "DEBUG"
     configure_logging(log_level)  # should be configured before any access to app.logger
     app = Flask(__name__)
-    CORS(app)
+
     app.config.from_object("ops_api.ops.environment.default_settings")
     if os.getenv("OPS_CONFIG"):
         app.config.from_envvar("OPS_CONFIG")
@@ -53,11 +53,19 @@ def create_app(config_overrides: Optional[dict[str, Any]] = {}) -> Flask:
     # fall back for pytest to use
     app.config.setdefault(
         "SQLALCHEMY_DATABASE_URI",
-        "postgresql+psycopg2://postgres:local_password@localhost:5432/postgres",
+        "postgresql+psycopg2://ops:ops@localhost:5432/postgres",
     )
 
     if config_overrides is not None:
         app.config.from_mapping(config_overrides)
+
+    cors_resources = {
+        r"/api/*": {
+            "origins": app.config.get("OPS_FRONTEND_URL"),
+            "supports_credentials": True,
+        }
+    }
+    CORS(app, resources=cors_resources)
 
     app.register_blueprint(home)
 

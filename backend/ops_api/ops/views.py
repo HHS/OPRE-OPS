@@ -1,17 +1,22 @@
 from models import Notification
 from models.base import BaseModel
 from models.cans import CAN, Agreement, BudgetLineItem, CANFiscalYear, ContractAgreement, ProductServiceCode
+from models.history import OpsDBHistory
 from models.portfolios import Division, Portfolio, PortfolioStatus
 from models.procurement_shops import ProcurementShop
 from models.research_projects import ResearchProject, ResearchType
 from models.users import User
+from models.workflows import BliPackage
+from ops_api.ops.resources.agreement_history import AgreementHistoryListAPI
 from ops_api.ops.resources.agreements import (
     AgreementItemAPI,
     AgreementListAPI,
     AgreementReasonListAPI,
     AgreementTypeListAPI,
 )
+from ops_api.ops.resources.approve import ApproveSubmisionListApi
 from ops_api.ops.resources.auth import AuthLoginAPI, AuthLogoutAPI, AuthRefreshAPI
+from ops_api.ops.resources.bli_package import BliPackageItemAPI, BliPackageListAPI
 from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, BudgetLineItemsListAPI
 from ops_api.ops.resources.can_fiscal_year import CANFiscalYearItemAPI, CANFiscalYearListAPI
 from ops_api.ops.resources.can_funding_summary import CANFundingSummaryItemAPI
@@ -19,6 +24,7 @@ from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANsByPortfolioAP
 from ops_api.ops.resources.contract import ContractItemAPI, ContractListAPI
 from ops_api.ops.resources.divisions import DivisionsItemAPI, DivisionsListAPI
 from ops_api.ops.resources.health_check import HealthCheckAPI
+from ops_api.ops.resources.history import OpsDBHistoryListAPI
 from ops_api.ops.resources.notifications import NotificationItemAPI, NotificationListAPI
 from ops_api.ops.resources.portfolio_calculate_funding import PortfolioCalculateFundingAPI
 from ops_api.ops.resources.portfolio_cans import PortfolioCansAPI
@@ -36,9 +42,14 @@ from ops_api.ops.resources.users import UsersItemAPI, UsersListAPI
 AGREEMENT_ITEM_API_VIEW_FUNC = AgreementItemAPI.as_view("agreements-item", Agreement)
 AGREEMENT_LIST_API_VIEW_FUNC = AgreementListAPI.as_view("agreements-group", Agreement)
 AGREEMENT_REASON_LIST_API_VIEW_FUNC = AgreementReasonListAPI.as_view("agreement-reason-list")
+# Agreement History Endpoint - specialized from OpsDBHistory
+AGREEMENT_HISTORY_LIST_API_VIEW_FUNC = AgreementHistoryListAPI.as_view("agreement-history-group", OpsDBHistory)
 
 # AGREEMENT-TYPE ENDPOINTS
 AGREEMENT_TYPE_LIST_API_VIEW_FUNC = AgreementTypeListAPI.as_view("agreement-type-list")
+
+# ApproveSubmission ENDPOINTS
+APPROVE_SUBMISSION_LIST_API_VIEW_FUNC = ApproveSubmisionListApi.as_view("approve-submission-list", BaseModel)
 
 # CONTRACT ENDPOINTS
 CONTRACT_ITEM_API_VIEW_FUNC = ContractItemAPI.as_view("contract-item", ContractAgreement)
@@ -69,6 +80,10 @@ CAN_FISCAL_YEAR_LIST_API_VIEW_FUNC = CANFiscalYearListAPI.as_view("can-fiscal-ye
 # BUDGET LINE ITEM ENDPOINTS
 BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC = BudgetLineItemsItemAPI.as_view("budget-line-items-item", BudgetLineItem)
 BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC = BudgetLineItemsListAPI.as_view("budget-line-items-group", BudgetLineItem)
+
+# BUDGET LINE ITEM PACKAGE ENDPOINTS
+BLI_PACKAGE_ITEM_API_VIEW_FUNC = BliPackageItemAPI.as_view("bli-package-item", BliPackage)
+BLI_PACKAGE_LIST_API_VIEW_FUNC = BliPackageListAPI.as_view("bli-package-group", BliPackage)
 
 # PRODUCT SERVICE CODES ENDPOINTS
 PRODUCT_SERVICE_CODE_ITEM_API_VIEW_FUNC = ProductServiceCodeItemAPI.as_view(
@@ -118,6 +133,9 @@ RESEARCH_TYPE_LIST_API_VIEW_FUNC = ResearchTypeListAPI.as_view("research-type-gr
 
 # HEALTH CHECK
 HEALTH_CHECK_VIEW_FUNC = HealthCheckAPI.as_view("health-check")
+
+# OPS DB HISTORY ENDPOINTS
+OPS_DB_HISTORY_LIST_API_VIEW_FUNC = OpsDBHistoryListAPI.as_view("ops-db-history-group", OpsDBHistory)
 
 # NOTIFICATIONS ENDPOINTS
 NOTIFICATIONS_ITEM_API_VIEW_FUNC = NotificationItemAPI.as_view("notifications-item", Notification)

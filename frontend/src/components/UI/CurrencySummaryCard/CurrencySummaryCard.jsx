@@ -1,24 +1,40 @@
+import PropTypes from "prop-types";
 import CurrencyWithSmallCents from "../CurrencyWithSmallCents/CurrencyWithSmallCents";
-import RoundedBox from "../RoundedBox/RoundedBox";
+import SummaryCard from "../SummaryCard";
 
-const CurrencySummaryCard = ({ headerText, amount, children }) => {
+/**
+ * Renders a summary card for a currency with a header text and an amount.
+ * @param {Object} props - The component props.
+ * @param {string} props.headerText - The header text to display on the card.
+ * @param {number} props.amount - The amount of currency to display on the card.
+ * @param {React.ReactNode} props.children - The children of the component.
+ * @param {Object} [props.rest] - The rest of the props to be spread on the root div element.
+ * @returns {React.JSX.Element} - The CurrencySummaryCard component.
+ */
+const CurrencySummaryCard = ({ headerText, amount, children, ...rest }) => {
     return (
-        <RoundedBox className="padding-y-205 padding-x-4 padding-right-9 display-inline-block">
-            <div className="">
-                {headerText && (
-                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">{headerText}</h3>
-                )}
-                {amount && (
+        <SummaryCard
+            title={headerText}
+            dataCy="currency-summary-card"
+        >
+            <div {...rest}>
+                {(amount || amount === 0) && (
                     <CurrencyWithSmallCents
                         dollarsClasses="font-sans-xl"
                         centsClasses="font-sans-3xs"
                         amount={amount}
                     />
                 )}
-                <div className="">{children}</div>
             </div>
-        </RoundedBox>
+            {children}
+        </SummaryCard>
     );
+};
+
+CurrencySummaryCard.propTypes = {
+    headerText: PropTypes.string.isRequired,
+    amount: PropTypes.number.isRequired,
+    children: PropTypes.node
 };
 
 export default CurrencySummaryCard;

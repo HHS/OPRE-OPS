@@ -1,7 +1,6 @@
 {
   can: [
     {
-      id: 1,
       number: "G99HRF2",
       description: "Healthy Marriages Responsible Fatherhood - OPRE",
       nickname: "HMRF-OPRE",
@@ -11,9 +10,18 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 6,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        },
+        {
+          "tablename": "funding_source",
+          "id": 24
+        }
+      ]
     },
     {
-      id: 2,
       number: "G99IA14",
       description: "Incoming Interagency Agreements",
       nickname: "IAA-Incoming",
@@ -23,9 +31,14 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 1,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
-      id: 3,
       number: "G99PHS9",
       description: "Social Science Research and Development",
       nickname: "SSRD",
@@ -35,9 +48,14 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 8,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
-      id: 4,
       number: "G990136",
       description: "Child Development Research Fellowship Grant Program",
       nickname: "ASPE SRCD-IDDA",
@@ -47,9 +65,14 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 1,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
-      id: 5,
       number: "G994426",
       description: "Head Start Research",
       nickname: "HS",
@@ -59,9 +82,14 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 2,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
-      id: 6,
       number: "G994648",
       description: "Kinship Navigation",
       nickname: "Kin-Nav",
@@ -71,9 +99,14 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 1,
       managing_portfolio_id: 6,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
-      id: 7,
       number: "G996125",
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nickname: "HMRF-OFA",
@@ -83,9 +116,14 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
-      id: 8,
       number: "G99XXX1",
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nickname: "HMRF-OFA",
@@ -95,9 +133,20 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ],
+      shared_portfolios: [
+        {
+          "tablename": "portfolio",
+          "id": 2
+        }
+      ]
     },
     {
-      id: 9,
       number: "G99XXX2",
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nickname: "HMRF-OFA",
@@ -107,9 +156,14 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
-      id: 10,
       number: "G99XXX3",
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nickname: "HMRF-OFA",
@@ -119,9 +173,14 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
-      id: 11,
       number: "G99XXX4",
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nickname: "HMRF-OFA",
@@ -131,9 +190,14 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
-      id: 12,
       number: "G99XXX7",
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nickname: "HMRF-OFA",
@@ -144,9 +208,14 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 23,
       managing_portfolio_id: 6,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ]
     },
     {
-      id: 13,
       number: "G99XXX8",
       description: "Example CAN",
       nickname: "",
@@ -156,9 +225,20 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 3,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 26
+        }
+      ],
+      research_projects: [
+        {
+          "tablename": "research_project",
+          "id": 1
+        }
+      ]
     },
     {
-      id: 14,
       number: "G99MV23",
       description: "MIHOPE Check-in 2023",
       nickname: "MIHOPE 23",
@@ -168,9 +248,14 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 3,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 25
+        }
+      ]
     },
     {
-      id: 15,
       number: "G99MV24",
       description: "MIHOPE Check-in 2024",
       nickname: "MIHOPE 24",
@@ -180,9 +265,14 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 3,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 25
+        }
+      ]
     },
     {
-      id: 16,
       number: "G99MVT3",
       description: "MOHOPE Long-Term",
       nickname: "MIHOPE LT",
@@ -192,76 +282,12 @@
       arrangement_type: "OPRE_APPROPRIATION",
       authorizer_id: 26,
       managing_portfolio_id: 3,
-    },
-  ],
-  can_funding_sources: [
-    {
-      can_id: 1,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 1,
-      funding_source_id: 24,
-    },
-    {
-      can_id: 2,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 3,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 4,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 5,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 6,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 7,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 8,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 9,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 10,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 11,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 12,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 13,
-      funding_source_id: 26,
-    },
-    {
-      can_id: 14,
-      funding_source_id: 25,
-    },
-    {
-      can_id: 15,
-      funding_source_id: 25,
-    },
-    {
-      can_id: 16,
-      funding_source_id: 25,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 25
+        }
+      ]
     },
   ],
   can_fiscal_year: [
@@ -507,7 +533,8 @@
       expected_funding: 1000000.0,
       potential_additional_funding: 0.0,
       notes: "",
-    },{
+    },
+    {
       can_id: 16,
       fiscal_year: 2025,
       total_fiscal_year_funding: 1000000.0,
@@ -535,15 +562,8 @@
       notes: "",
     },
   ],
-  shared_portfolio_cans: [
-    {
-      portfolio_id: 2,
-      can_id: 8,
-    },
-  ],
   can_fiscal_year_carry_forward: [
     {
-      id: 1,
       can_id: 11,
       from_fiscal_year: 2022,
       to_fiscal_year: 2023,
@@ -551,18 +571,11 @@
       expected_amount: 100000.0,
     },
     {
-      id: 2,
       can_id: 12,
       from_fiscal_year: 2022,
       to_fiscal_year: 2023,
       received_amount: 500000.0,
       expected_amount: 500000.0,
     },
-  ],
-  research_project_cans: [
-    {
-      research_project_id: 1,
-      can_id: 13,
-    },
-  ],
+  ]
 }

@@ -1,11 +1,15 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import ProjectSelect from "../../components/UI/Form/ProjectSelect";
+import ProjectSelectWithSummaryCard from "../../components/UI/Form/ProjectSelectWithSummaryCard";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-import Modal from "../../components/UI/Modal";
 import { useGetResearchProjectsQuery } from "../../api/opsAPI";
-import { useCreateAgreement, useSetState, useUpdateAgreement } from "./CreateAgreementContext";
+import {
+    useEditAgreement,
+    useSetState,
+    useUpdateAgreement
+} from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import EditModeTitle from "./EditModeTitle";
+import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
 
 /**
  * Renders a step in the Create Agreement wizard for selecting a research project.
@@ -16,9 +20,9 @@ import EditModeTitle from "./EditModeTitle";
  * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
  * @returns {JSX.Element} - The rendered component.
  */
-export const StepSelectProject = ({ goToNext, isEditMode, isReviewMode }) => {
+export const StepSelectProject = ({ goToNext, isEditMode, isReviewMode, wizardSteps, currentStep }) => {
     const navigate = useNavigate();
-    const { wizardSteps, selected_project: selectedResearchProject } = useCreateAgreement();
+    const { selected_project: selectedResearchProject } = useEditAgreement();
     // setters
     const setSelectedProject = useSetState("selected_project");
     const setAgreementProjectId = useUpdateAgreement("research_project_id");
@@ -48,7 +52,7 @@ export const StepSelectProject = ({ goToNext, isEditMode, isReviewMode }) => {
             handleConfirm: () => {
                 setModalProps({});
                 navigate("/");
-            },
+            }
         });
     };
 
@@ -59,7 +63,7 @@ export const StepSelectProject = ({ goToNext, isEditMode, isReviewMode }) => {
     return (
         <>
             {showModal && (
-                <Modal
+                <ConfirmationModal
                     heading={modalProps.heading}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
@@ -68,13 +72,16 @@ export const StepSelectProject = ({ goToNext, isEditMode, isReviewMode }) => {
                 />
             )}
             <EditModeTitle isEditMode={isEditMode || isReviewMode} />
-            <StepIndicator steps={wizardSteps} currentStep={1} />
+            <StepIndicator
+                steps={wizardSteps}
+                currentStep={currentStep}
+            />
             <h2 className="font-sans-lg">Select a Project</h2>
             <p>
                 Select a project the agreement should be associated with. If you need to create a new project, click Add
                 New Project.
             </p>
-            <ProjectSelect
+            <ProjectSelectWithSummaryCard
                 researchProjects={projects}
                 selectedResearchProject={selectedResearchProject}
                 setSelectedProject={setSelectedProject}

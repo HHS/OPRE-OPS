@@ -23,8 +23,7 @@ class OpsDBHistory(BaseModel):
     event_details = sa.Column(JSONB)
     class_name = sa.Column(sa.String)
     row_key = sa.Column(sa.String)
-    original = sa.Column(JSONB)
-    diff = sa.Column(JSONB)
+    changes = sa.Column(JSONB)
 
     @override
     def to_dict(self) -> dict[str, Any]:
@@ -40,5 +39,9 @@ class OpsDBHistory(BaseModel):
 
 
 # index for typical change history queries to find all changes for a record (class+row_key), with recent first
-index = Index('idx_ops_db_history_class_name_row_key_created_on', OpsDBHistory.class_name, OpsDBHistory.row_key,
-              sa.desc(OpsDBHistory.created_on))
+index = Index(
+    "idx_ops_db_history_class_name_row_key_created_on",
+    OpsDBHistory.class_name,
+    OpsDBHistory.row_key,
+    sa.desc(OpsDBHistory.created_on),
+)

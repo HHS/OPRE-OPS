@@ -1,106 +1,232 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { getAccessToken } from "../components/Auth/auth";
 
-const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
+const BACKEND_DOMAIN = import.meta.env.VITE_BACKEND_DOMAIN;
 
 export const opsApi = createApi({
     reducerPath: "opsApi",
-    tagTypes: ["Agreements", "ResearchProjects"],
+    tagTypes: [
+        "Agreements",
+        "ResearchProjects",
+        "Users",
+        "AgreementTypes",
+        "AgreementReasons",
+        "ProcurementShops",
+        "BudgetLineItems",
+        "AgreementHistory"
+    ],
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
-        prepareHeaders: (headers, { getState }) => {
-            const access_token = localStorage.getItem("access_token");
+        prepareHeaders: (headers) => {
+            const access_token = getAccessToken();
 
             if (access_token) {
                 headers.set("Authorization", `Bearer ${access_token}`);
             }
+            // Include this line to enable credentials (cookies)
+            headers.set("withCredentials", "true");
 
             return headers;
-        },
+        }
     }),
     endpoints: (builder) => ({
         getAgreements: builder.query({
             query: () => `/agreements/`,
-            providesTags: ["Agreements"],
+            providesTags: ["Agreements", "BudgetLineItems"]
         }),
         getAgreementById: builder.query({
             query: (id) => `/agreements/${id}`,
+            providesTags: ["Agreements"]
+        }),
+        addAgreement: builder.mutation({
+            query: (data) => {
+                return {
+                    url: `/agreements/`,
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: data
+                };
+            },
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
+        }),
+        updateAgreement: builder.mutation({
+            query: ({ id, data }) => {
+                return {
+                    url: `/agreements/${id}`,
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: data
+                };
+            },
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
+        }),
+        deleteAgreement: builder.mutation({
+            query: (id) => ({
+                url: `/agreements/${id}`,
+                method: "DELETE"
+            }),
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
+        }),
+        getBudgetLineItems: builder.query({
+            query: () => `/budget-line-items/`,
+            providesTags: ["BudgetLineItems"]
+        }),
+        addBudgetLineItem: builder.mutation({
+            query: (data) => {
+                return {
+                    url: `/budget-line-items/`,
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: data
+                };
+            },
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
+        }),
+        updateBudgetLineItem: builder.mutation({
+            query: ({ id, data }) => {
+                return {
+                    url: `/budget-line-items/${id}`,
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: data
+                };
+            },
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
         }),
         getAgreementsByResearchProjectFilter: builder.query({
             query: (id) => `/agreements/?research_project_id=${id}`,
-            providesTags: ["Agreements", "FilterAgreements"],
+            providesTags: ["Agreements", "FilterAgreements"]
         }),
         getUserById: builder.query({
             query: (id) => `/users/${id}`,
-            providesTags: ["Users"],
+            providesTags: ["Users"]
         }),
         getUserByOIDCId: builder.query({
             query: (id) => `/users/?oidc_id=${id}`,
-            providesTags: ["Users"],
+            providesTags: ["Users"]
         }),
         getResearchProjects: builder.query({
             query: () => `/research-projects/`,
-            providesTags: ["ResearchProjects"],
+            providesTags: ["ResearchProjects"]
         }),
         addResearchProjects: builder.mutation({
             query: (body) => ({
                 url: `/research-projects/`,
                 method: "POST",
-                body,
+                body
             }),
-            invalidatesTags: ["ResearchProjects"],
+            invalidatesTags: ["ResearchProjects"]
         }),
         updateBudgetLineItemStatus: builder.mutation({
             query: ({ id, status }) => ({
                 url: `/budget-line-items/${id}`,
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: { status },
+                body: { status }
             }),
-            invalidatesTags: ["Agreements", "BudgetLineItems"],
+            invalidatesTags: ["Agreements", "BudgetLineItems"]
         }),
         getAgreementTypes: builder.query({
             query: () => `/agreement-types/`,
-            providesTags: ["AgreementTypes"],
+            providesTags: ["AgreementTypes"]
         }),
         getProductServiceCodes: builder.query({
             query: () => `/product-service-codes/`,
-            providesTags: ["ProductServiceCodes"],
+            providesTags: ["ProductServiceCodes"]
         }),
         getProcurementShops: builder.query({
             query: () => `/procurement-shops/`,
-            providesTags: ["ProcurementShops"],
+            providesTags: ["ProcurementShops"]
         }),
         getAgreementReasons: builder.query({
             query: () => `/agreement-reasons/`,
-            providesTags: ["AgreementReasons"],
+            providesTags: ["AgreementReasons"]
         }),
         getUsers: builder.query({
             query: () => `/users/`,
-            providesTags: ["Users"],
+            providesTags: ["Users"]
+        }),
+        getUser: builder.query({
+            query: (id) => `/users/${id}`,
+            providesTags: ["User"]
+        }),
+        getUserByOidc: builder.query({
+            query: (oidc_id) => `/users/?oidc_id=${oidc_id}`,
+            providesTags: ["User"]
+        }),
+        addUser: builder.mutation({
+            query: (body) => ({
+                url: `/users/`,
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body
+            }),
+            invalidatesTags: ["User"]
+        }),
+        updateUser: builder.mutation({
+            query: ({ id, body }) => ({
+                url: `/users/${id}`,
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body
+            }),
+            invalidatesTags: ["User"]
         }),
         getCans: builder.query({
             query: () => `/cans/`,
-            providesTags: ["Cans"],
+            providesTags: ["Cans"]
+        }),
+        getCanFundingSummary: builder.query({
+            query: (id) => `/can-funding-summary/${id}`,
+            providesTags: ["CanFunding"]
         }),
         getNotificationsByUserId: builder.query({
             query: (id) => `/notifications/?oidc_id=${id}`,
-            providesTags: ["Notifications"],
+            providesTags: ["Notifications"]
         }),
         dismissNotification: builder.mutation({
             query: (id) => ({
                 url: `/notifications/${id}`,
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: { is_read: true },
+                body: { is_read: true }
             }),
-            invalidatesTags: ["Notifications"],
+            invalidatesTags: ["Notifications"]
         }),
-    }),
+        getPortfolios: builder.query({
+            query: () => `/portfolios/`,
+            providesTags: ["Portfolios"]
+        }),
+        addBliPackage: builder.mutation({
+            query: (body) => ({
+                url: `/bli-packages/`,
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body
+            }),
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
+        }),
+        addApprovalRequest: builder.mutation({
+            query: (body) => ({
+                url: `/approve/`,
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body
+            }),
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
+        })
+    })
 });
 
 export const {
     useGetAgreementsQuery,
     useGetAgreementByIdQuery,
+    useAddAgreementMutation,
+    useUpdateAgreementMutation,
+    useDeleteAgreementMutation,
+    useAddBudgetLineItemMutation,
+    useGetBudgetLineItemsQuery,
+    useUpdateBudgetLineItemMutation,
     useGetAgreementsByResearchProjectFilterQuery,
     useGetUserByIdQuery,
     useGetUserByOIDCIdQuery,
@@ -112,7 +238,15 @@ export const {
     useGetProcurementShopsQuery,
     useGetAgreementReasonsQuery,
     useGetUsersQuery,
+    useGetUserQuery,
+    useGetUserByOidcQuery,
+    useAddUserMutation,
+    useUpdateUserMutation,
     useGetCansQuery,
+    useGetCanFundingSummaryQuery,
     useGetNotificationsByUserIdQuery,
     useDismissNotificationMutation,
+    useGetPortfoliosQuery,
+    useAddBliPackageMutation,
+    useAddApprovalRequestMutation
 } = opsApi;

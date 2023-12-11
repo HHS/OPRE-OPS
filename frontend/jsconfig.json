@@ -1,12 +1,25 @@
 {
-    "extends": "@tsconfig/create-react-app/tsconfig.json",
+    "$schema": "https://json.schemastore.org/tsconfig",
     "compilerOptions": {
         "allowJs": true,
+        "allowSyntheticDefaultImports": true,
         "checkJs": true,
-        "strict": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "isolatedModules": true,
+        "jsx": "react-jsx",
+        "lib": ["dom", "dom.iterable", "esnext"],
+        "module": "esnext",
+        "moduleResolution": "bundler",
         "noEmit": true,
-        "typeRoots": ["./node_modules/@types"]
+        "noFallthroughCasesInSwitch": true,
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ESNext",
+        "typeRoots": ["./node_modules/@types"],
+        "types": ["vite/client", "vite-plugin-svgr/client", "vite-plugin-babel-macros/client", "vitest/globals"]
     },
-    "$schema": "https://json.schemastore.org/tsconfig",
-    "display": "Recommended"
+    "display": "Recommended",
+    "include": ["src", "src/setupTests.js"]
 }

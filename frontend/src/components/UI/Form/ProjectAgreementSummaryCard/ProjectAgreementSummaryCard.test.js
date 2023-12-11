@@ -1,12 +1,11 @@
 import { render, screen } from "@testing-library/react";
-import "@testing-library/jest-dom";
 import { ProjectAgreementSummaryCard } from "./ProjectAgreementSummaryCard";
 
 describe("ProjectAgreementSummaryCard", () => {
     const defaultProps = {
         selectedResearchProject: { title: "Test Project" },
         selectedAgreement: { name: "Test Agreement" },
-        selectedProcurementShop: { name: "Test Shop", fee: 0.02 },
+        selectedProcurementShop: { name: "Test Shop", fee: 0.02 }
     };
 
     it("renders without crashing", () => {

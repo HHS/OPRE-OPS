@@ -15,6 +15,7 @@ jobs:
 
   unit-tests:
     name: Unit Tests
+    secrets: inherit # https://docs.github.com/en/actions/using-workflows/reusing-workflows#passing-inputs-and-secrets-to-a-reusable-workflow
     uses: ./.github/workflows/unit_test_reusable.yml
 
   codeql-analysis:
@@ -35,13 +36,8 @@ jobs:
     name: Linting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
       - uses: ./.github/actions/setup-python
-
-      # Not needed here, as this is run in our ^^ setup-python
-      # - name: Install backend dependencies
-      #   working-directory: ./backend/ops_api
-      #   run: pipenv install --dev
 
       - name: Lint backend
         working-directory: ./backend/ops_api
@@ -51,4 +47,4 @@ jobs:
 
       - name: Lint frontend
         working-directory: ./frontend
-        run: yarn lint
+        run: bun lint

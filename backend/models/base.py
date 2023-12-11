@@ -5,8 +5,8 @@ from typing import Annotated, ClassVar, Final, TypeAlias, TypedDict, TypeVar, ca
 from marshmallow import Schema as MMSchema
 from models.mixins.repr import ReprMixin
 from models.mixins.serialize import SerializeMixin
-from sqlalchemy import Column, DateTime, ForeignKey, Numeric, func
-from sqlalchemy.orm import declarative_base, declared_attr, mapped_column, registry
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Numeric, func
+from sqlalchemy.orm import declarative_base, declared_attr, mapped_column, registry, relationship
 from typing_extensions import Any, override
 
 Base = declarative_base()
@@ -91,15 +91,40 @@ make_versioned(user_cls=None)
 
 
 class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc, valid-type]
+    __versioned__ = {}
     __abstract__ = True
     __repr__ = ReprMixin.__repr__
 
+    @classmethod
+    def model_lookup_by_table_name(cls, table_name):
+        registry_instance = getattr(cls, "registry")
+        for mapper_ in registry_instance.mappers:
+            model = mapper_.class_
+            model_class_name = model.__table__.name
+            if model_class_name == table_name:
+                return model
+
     @declared_attr
     def created_by(cls):
-        return Column("created_by", ForeignKey("users.id"))
+        return Column("created_by", ForeignKey("user.id"))
+
+    @declared_attr
+    def created_by_user(cls):
+        return relationship("User", foreign_keys=[cls.created_by])
 
     created_on = Column(DateTime, default=func.now())
     updated_on = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    @property
+    def display_name(self):
+        """A property that can be used to provide a name for display purposes of any instance
+        (this should be overridden in subclasses for a better name than this default)"""
+        return f"{self.__class__.__name__}#{self.id}"
+
+    @display_name.setter
+    def display_name(self, value):
+        """a no-op setter for display_name, this prevents errors during binding in API, etc"""
+        pass
 
     class Validator:
         @staticmethod
@@ -114,7 +139,15 @@ class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc, valid-t
             {
                 "created_on": self.created_on.isoformat() if self.created_on else None,
                 "updated_on": self.updated_on.isoformat() if self.updated_on else None,
+                "display_name": self.display_name,
             }
         )
 
+        return cast(dict[str, Any], d)
+
+    def to_slim_dict(self) -> dict[str, Any]:
+        d = {
+            "id": self.id,
+            "display_name": self.display_name,
+        }
         return cast(dict[str, Any], d)

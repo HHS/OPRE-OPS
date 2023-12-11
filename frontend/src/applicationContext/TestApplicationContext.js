@@ -1,11 +1,12 @@
-import "jest";
+import { vi } from "vitest";
 import { authConfig, backEndConfig } from "../helpers/test";
 
 class TestApplicationContext {
     static #helpers = {
-        callBackend: jest.fn(),
+        callBackend: vi.fn(),
         authConfig,
         backEndConfig,
+        mockFn: vi.fn()
     };
 
     static helpers() {

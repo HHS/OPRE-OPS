@@ -1,36 +1,46 @@
+import { useState } from "react";
 import { useSelector } from "react-redux";
-import { useGetAgreementsQuery } from "../../../api/opsAPI";
-import App from "../../../App";
-import Breadcrumb from "../../../components/UI/Header/Breadcrumb";
-import sortAgreements from "./utils";
-import { useEffect } from "react";
-import Alert from "../../../components/UI/Alert";
-import "./AgreementsList.scss";
-import AgreementsTable from "./AgreementsTable";
-import AgreementsFilterHeaderSection from "./AgreementsFilterHeaderSection";
 import { useSearchParams } from "react-router-dom";
+import _ from "lodash";
+import App from "../../../App";
+import { useGetAgreementsQuery } from "../../../api/opsAPI";
+import sortAgreements from "./utils";
+import AgreementsTable from "../../../components/Agreements/AgreementsTable";
+import AgreementTabs from "./AgreementsTabs";
+import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
+import TablePageLayout from "../../../components/Layouts/TablePageLayout";
+import AgreementsFilterButton from "./AgreementsFilterButton";
+import AgreementsFilterTags from "./AgreementsFilterTags";
 
 /**
  * Page for the Agreements List.
- * @returns {ReactNode} The rendered component.
+ * @returns {React.JSX.Element} - The component JSX.
  */
 export const AgreementsList = () => {
     const [searchParams] = useSearchParams();
-    const isAlertActive = useSelector((state) => state.alert.isActive);
+    const [filters, setFilters] = useState({
+        upcomingNeedByDate: "all-time",
+        projects: [],
+        projectOfficers: [],
+        types: [],
+        procurementShops: [],
+        budgetLineStatus: {
+            draft: true,
+            planned: true,
+            executing: true,
+            obligated: true
+        }
+    });
 
     const {
         data: agreements,
         error: errorAgreement,
-        isLoading: isLoadingAgreement,
-        refetch,
+        isLoading: isLoadingAgreement
     } = useGetAgreementsQuery({ refetchOnMountOrArgChange: true });
 
     const activeUser = useSelector((state) => state.auth.activeUser);
-
-    useEffect(() => {
-        refetch();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
+    const forApprovalUrl = searchParams.get("filter") === "for-approval";
 
     if (isLoadingAgreement) {
         return (
@@ -47,28 +57,162 @@ export const AgreementsList = () => {
         );
     }
 
-    let sortedAgreements;
-    if (searchParams.get("filter") === "my-agreements") {
-        const filteredAgreements = agreements.filter((agreement) => {
-            return agreement.team_members?.some((teamMember) => {
-                return teamMember.id === activeUser.id;
+    // FILTERS
+    let filteredAgreements = _.cloneDeep(agreements);
+
+    switch (filters.upcomingNeedByDate) {
+        case "next-30-days":
+            filteredAgreements = filteredAgreements.filter((agreement) => {
+                return agreement.budget_line_items.some((bli) => {
+                    return (
+                        bli.date_needed &&
+                        new Date(bli.date_needed) <= new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000)
+                    );
+                });
             });
-        });
-        sortedAgreements = sortAgreements(filteredAgreements);
-    } else {
-        // all-agreements
-        sortedAgreements = sortAgreements(agreements);
+            break;
+        case "current-fy":
+            filteredAgreements = filteredAgreements.filter((agreement) => {
+                return agreement.budget_line_items.some((bli) => {
+                    const currentFY = Number(getCurrentFiscalYear(new Date()));
+                    const bliFY = new Date(bli.date_needed).getFullYear();
+                    return bli.date_needed && bliFY === currentFY;
+                });
+            });
+            break;
+        case "next-6-months":
+            filteredAgreements = filteredAgreements.filter((agreement) => {
+                const now = new Date();
+                const sixMonthsFromNow = new Date(now.setMonth(now.getMonth() + 6));
+                return agreement.budget_line_items.some((bli) => {
+                    return bli.date_needed && new Date(bli.date_needed) <= sixMonthsFromNow;
+                });
+            });
+            break;
+        case "all-time":
+            break;
     }
 
-    return (
-        <App>
-            <Breadcrumb currentName={"Agreements"} />
-            {isAlertActive && <Alert />}
+    // filter by projects
+    filteredAgreements = filteredAgreements.filter((agreement) => {
+        return (
+            filters.projects.length === 0 ||
+            filters.projects.some((project) => {
+                return project.id === agreement.research_project_id;
+            })
+        );
+    });
 
-            <h1 className="font-sans-lg">Agreements</h1>
-            <p>This is a list of the agreements you are listed as a Team Member on.</p>
-            <AgreementsFilterHeaderSection />
-            <AgreementsTable agreements={sortedAgreements} />
+    // filter by project officers
+    filteredAgreements = filteredAgreements.filter((agreement) => {
+        return (
+            filters.projectOfficers.length === 0 ||
+            filters.projectOfficers.some((po) => {
+                return po.id === agreement.project_officer_id;
+            })
+        );
+    });
+
+    // filter by types
+    filteredAgreements = filteredAgreements.filter((agreement) => {
+        return (
+            filters.types.length === 0 ||
+            filters.types.some((agreementType) => {
+                return agreementType === agreement.agreement_type;
+            })
+        );
+    });
+
+    // filter by procurement shops
+    filteredAgreements = filteredAgreements.filter((agreement) => {
+        return (
+            filters.procurementShops.length === 0 ||
+            filters.procurementShops.some((procurementShop) => {
+                return procurementShop.id === agreement.procurement_shop_id;
+            })
+        );
+    });
+
+    // filter by budget line status
+    filteredAgreements = filteredAgreements.filter((agreement) => {
+        return (
+            (filters.budgetLineStatus.draft === true && agreement.budget_line_items.length === 0) ||
+            (filters.budgetLineStatus.draft === true &&
+                agreement.budget_line_items.some((bli) => {
+                    return draftBudgetLineStatuses.includes(bli.status);
+                })) ||
+            (filters.budgetLineStatus.planned === true &&
+                agreement.budget_line_items.some((bli) => {
+                    return bli.status === "PLANNED";
+                })) ||
+            (filters.budgetLineStatus.executing === true &&
+                agreement.budget_line_items.some((bli) => {
+                    return bli.status === "IN_EXECUTION";
+                })) ||
+            (filters.budgetLineStatus.obligated === true &&
+                agreement.budget_line_items.some((bli) => {
+                    return bli.status === "OBLIGATED";
+                }))
+        );
+    });
+
+    let sortedAgreements = [];
+    if (myAgreementsUrl) {
+        const myAgreements = filteredAgreements.filter((agreement) => {
+            return agreement.team_members?.some((teamMember) => {
+                return teamMember.id === activeUser.id || agreement.project_officer_id === activeUser.id;
+            });
+        });
+        sortedAgreements = sortAgreements(myAgreements);
+    } else if (forApprovalUrl) {
+        // TODO: Use new workflow to filter For Approval - this is just my agreements that are UNDER_REVIEW for now
+        const myAgreements = filteredAgreements.filter((agreement) => {
+            return agreement.team_members?.some((teamMember) => {
+                return teamMember.id === activeUser.id || agreement.project_officer_id === activeUser.id;
+            });
+        });
+        const forApprovalAgreements = myAgreements.filter((agreement) => {
+            return agreement.budget_line_items?.some((bli) => bli.status === "UNDER_REVIEW");
+        });
+        sortedAgreements = sortAgreements(forApprovalAgreements);
+    } else {
+        // all-agreements
+        sortedAgreements = sortAgreements(filteredAgreements);
+    }
+
+    let subtitle = "All Agreements";
+    if (myAgreementsUrl) subtitle = "My Agreements";
+    else if (forApprovalUrl) subtitle = "For Approval";
+    let details = "This is a list of all agreements across OPRE.";
+    if (myAgreementsUrl) details = "This is a list of the agreements you are listed as a Team Member on.";
+    else if (forApprovalUrl)
+        details =
+            "This is a list of agreements in your Division that are awaiting your approval to change budget line status. Draft budget lines are not included in the Agreement Total.";
+
+    return (
+        <App breadCrumbName="Agreements">
+            <TablePageLayout
+                title="Agreements"
+                subtitle={subtitle}
+                details={details}
+                buttonText="Add Agreement"
+                buttonLink="/agreements/create"
+                TabsSection={<AgreementTabs />}
+                FilterTags={
+                    <AgreementsFilterTags
+                        filters={filters}
+                        setFilters={setFilters}
+                        for
+                    />
+                }
+                FilterButton={
+                    <AgreementsFilterButton
+                        filters={filters}
+                        setFilters={setFilters}
+                    />
+                }
+                TableSection={<AgreementsTable agreements={sortedAgreements} />}
+            />
         </App>
     );
 };

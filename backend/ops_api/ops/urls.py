@@ -1,12 +1,16 @@
 from flask import Blueprint
 from ops_api.ops.views import (
+    AGREEMENT_HISTORY_LIST_API_VIEW_FUNC,
     AGREEMENT_ITEM_API_VIEW_FUNC,
     AGREEMENT_LIST_API_VIEW_FUNC,
     AGREEMENT_REASON_LIST_API_VIEW_FUNC,
     AGREEMENT_TYPE_LIST_API_VIEW_FUNC,
+    APPROVE_SUBMISSION_LIST_API_VIEW_FUNC,
     AUTH_LOGIN_API_VIEW_FUNC,
     AUTH_LOGOUT_API_VIEW_FUNC,
     AUTH_REFRESH_API_VIEW_FUNC,
+    BLI_PACKAGE_ITEM_API_VIEW_FUNC,
+    BLI_PACKAGE_LIST_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC,
     CAN_FISCAL_YEAR_ITEM_API_VIEW_FUNC,
@@ -22,6 +26,7 @@ from ops_api.ops.views import (
     HEALTH_CHECK_VIEW_FUNC,
     NOTIFICATIONS_ITEM_API_VIEW_FUNC,
     NOTIFICATIONS_LIST_API_VIEW_FUNC,
+    OPS_DB_HISTORY_LIST_API_VIEW_FUNC,
     PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC,
     PORTFOLIO_CANS_API_VIEW_FUNC,
     PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
@@ -88,6 +93,10 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=CAN_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
+        "/ops-db-histories/",
+        view_func=OPS_DB_HISTORY_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
         "/cans/portfolio/<int:id>",
         view_func=CANS_BY_PORTFOLIO_API_VIEW_FUNC,
     )
@@ -108,6 +117,15 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/budget-line-items/",
         view_func=BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC,
+    )
+
+    api_bp.add_url_rule(
+        "/bli-packages/<int:id>",
+        view_func=BLI_PACKAGE_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/bli-packages/",
+        view_func=BLI_PACKAGE_LIST_API_VIEW_FUNC,
     )
 
     api_bp.add_url_rule(
@@ -181,6 +199,10 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=AGREEMENT_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
+        "/agreements/<int:id>/history/",
+        view_func=AGREEMENT_HISTORY_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
         "/agreement-reasons/",
         view_func=AGREEMENT_REASON_LIST_API_VIEW_FUNC,
     )
@@ -213,4 +235,9 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/notifications/<int:id>",
         view_func=NOTIFICATIONS_ITEM_API_VIEW_FUNC,
+    )
+
+    api_bp.add_url_rule(
+        "/approve/",
+        view_func=APPROVE_SUBMISSION_LIST_API_VIEW_FUNC,
     )

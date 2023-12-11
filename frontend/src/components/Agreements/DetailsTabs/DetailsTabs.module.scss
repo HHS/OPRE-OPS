@@ -1,0 +1,29 @@
+.tabsList {
+    padding-left: 0;
+    align-items: center;
+    justify-content: center;
+    margin-top: 15px;
+    a:not(:first-child) {
+        margin-left: 20px;
+    }
+}
+
+.listItemSelected {
+    display: inline-block;
+    padding: 5px;
+    text-underline-offset: 16px;
+    text-decoration-line: underline;
+    text-decoration-style: solid;
+    text-decoration-thickness: 4px;
+    text-decoration-color: #005ea2;
+    color: #005ea2;
+    outline: none;
+}
+
+.listItemNotSelected {
+    display: inline-block;
+    padding: 5px;
+    text-decoration-line: none;
+    color: #565c65;
+    outline: none;
+}

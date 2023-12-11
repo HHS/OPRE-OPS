@@ -3,12 +3,12 @@ import { useSelector } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import CurrencyFormat from "react-currency-format";
-import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
+import CurrencySummaryCard from "../../UI/CurrencySummaryCard";
 import CANFundingBar from "../../CANs/CANFundingBar/CANFundingBar";
 import { calculatePercent } from "../../../helpers/utils";
 import Tag from "../../UI/Tag/Tag";
 
-const PortfolioFundingTotal = ({ portfolioId }) => {
+const PortfolioFundingTotal = () => {
     const portfolioBudget = useSelector((state) => state.portfolioBudgetSummary.portfolioBudget);
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
     const totalFunding = portfolioBudget.total_funding?.amount;
@@ -23,6 +23,7 @@ const PortfolioFundingTotal = ({ portfolioId }) => {
             value: carryForwardFunding,
             color: "#A1D0BE",
             percent: `${calculatePercent(carryForwardFunding, totalFunding)}%`,
+            tagActiveStyle: "whiteOnTeal"
         },
         {
             id: 2,
@@ -30,11 +31,12 @@ const PortfolioFundingTotal = ({ portfolioId }) => {
             value: newFunding,
             color: "#534C9C",
             percent: `${calculatePercent(newFunding, totalFunding)}%`,
-        },
+            tagActiveStyle: "whiteOnPurple"
+        }
     ];
     const [activeId, setActiveId] = React.useState(0);
 
-    const LegendItem = ({ id, label, value, color, percent }) => {
+    const LegendItem = ({ id, label, value, color, percent, tagStyleActive }) => {
         const isGraphActive = activeId === id;
         return (
             <div className="grid-row margin-top-2 font-12px">
@@ -46,7 +48,7 @@ const PortfolioFundingTotal = ({ portfolioId }) => {
                             style={{ color: color }}
                         />
 
-                        <span className={isGraphActive ? "fake-bold" : undefined}>{label}</span>
+                        <span className={isGraphActive ? "fake-bold" : ""}>{label}</span>
                     </div>
                 </div>
                 <div className="grid-col-4">
@@ -55,20 +57,35 @@ const PortfolioFundingTotal = ({ portfolioId }) => {
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$ "}
-                        renderText={(value) => <span className={isGraphActive ? "fake-bold" : undefined}>{value}</span>}
+                        renderText={(value) => <span className={isGraphActive ? "fake-bold" : ""}>{value}</span>}
                     />
                 </div>
                 <div className="grid-col-1">
-                    <Tag tagStyle="darkTextWhiteBackground" text={percent} label={label} active={isGraphActive} />
+                    <Tag
+                        tagStyle="darkTextWhiteBackground"
+                        text={percent}
+                        label={label}
+                        active={isGraphActive}
+                        tagStyleActive={tagStyleActive}
+                    />
                 </div>
             </div>
         );
     };
 
     return (
-        <CurrencySummaryCard headerText={headerText} amount={portfolioBudget.total_funding.amount}>
-            <div id="currency-summary-card" className="margin-top-2">
-                <CANFundingBar setActiveId={setActiveId} data={data} />
+        <CurrencySummaryCard
+            headerText={headerText}
+            amount={portfolioBudget.total_funding.amount}
+        >
+            <div
+                id="currency-summary-card"
+                className="margin-top-2"
+            >
+                <CANFundingBar
+                    setActiveId={setActiveId}
+                    data={data}
+                />
             </div>
 
             {data.map((item) => (
@@ -79,6 +96,7 @@ const PortfolioFundingTotal = ({ portfolioId }) => {
                     value={item.value}
                     color={item.color}
                     percent={item.percent}
+                    tagStyleActive={item.tagActiveStyle}
                 />
             ))}
         </CurrencySummaryCard>

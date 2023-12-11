@@ -1,0 +1,43 @@
+name: Development Front End Pull Request Merge
+
+on:
+  pull_request:
+    branches:
+      - Development
+    paths:
+      - 'frontend/**'
+  workflow_dispatch:
+
+env:
+  TERRAFORM_VERSION: "1.2.9"
+  TF_IN_AUTOMATION: "True"
+  ENVIRONMENT: "dev"
+
+jobs:
+  terraform_apply:
+    runs-on: ubuntu-latest
+    if: github.event.action == 'closed' && github.event.pull_request.merged
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get PR ID
+        id: pr-id
+        shell: bash
+        run: echo "PR_NUMBER=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+
+      - name: Terraform Apply
+        uses: ./.github/actions/tf-apply
+        with:
+          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/frontend_asa"
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
+          azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
+          azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_id: ${{ steps.pr-id.outputs.PR_NUMBER }}
+          # tf_vars: |
+          #   {
+          #     "environment": "${{ env.ENVIRONMENT }}",
+          #     "commit_hash": "${{ github.sha }}"
+          #   }

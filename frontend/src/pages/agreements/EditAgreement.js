@@ -1,31 +1,29 @@
-import App from "../../App";
-import { CreateAgreementProvider } from "./CreateAgreementContext";
-import CreateEditAgreement from "./CreateEditAgreement";
-import { useParams } from "react-router-dom";
-import { useGetAgreementByIdQuery } from "../../api/opsAPI";
 import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import App from "../../App";
+import { EditAgreementProvider } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
+import CreateEditAgreement from "./CreateEditAgreement";
+import { useGetAgreementByIdQuery } from "../../api/opsAPI";
 import { getUser } from "../../api/getUser";
 import SimpleAlert from "../../components/UI/Alert/SimpleAlert";
+import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../hooks/agreement.hooks";
 
 const EditAgreement = () => {
     const urlPathParams = useParams();
     const agreementId = parseInt(urlPathParams.id);
-
     const [projectOfficer, setProjectOfficer] = useState({});
 
     const {
         data: agreement,
         error: errorAgreement,
-        isLoading: isLoadingAgreement,
-        refetch,
+        isLoading: isLoadingAgreement
     } = useGetAgreementByIdQuery(agreementId, {
-        refetchOnMountOrArgChange: true,
+        refetchOnMountOrArgChange: true
     });
 
-    useEffect(() => {
-        refetch();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
+    const isAgreementEditable = useIsAgreementEditable(agreement?.id);
+    const isEditable = isAgreementEditable && canUserEditAgreement;
 
     useEffect(() => {
         const getProjectOfficerSetState = async (id) => {
@@ -33,8 +31,8 @@ const EditAgreement = () => {
             setProjectOfficer(results);
         };
 
-        if (agreement?.project_officer) {
-            getProjectOfficerSetState(agreement?.project_officer).catch(console.error);
+        if (agreement?.project_officer_id) {
+            getProjectOfficerSetState(agreement?.project_officer_id).catch(console.error);
         }
 
         return () => {
@@ -49,26 +47,31 @@ const EditAgreement = () => {
         return <div>Oops, an error occurred</div>;
     }
 
-    const agreementStatus = agreement?.budget_line_items?.find((bli) => bli.status === "UNDER_REVIEW")
-        ? "In Review"
-        : "Draft";
-
-    if (agreementStatus !== "Draft" && agreementStatus !== "In Review") {
+    if (!isEditable) {
         return (
             <App>
                 <SimpleAlert
                     type="error"
                     heading="Error"
-                    message={`This Agreement cannot be edited because its status is ${agreement.status}.`}
+                    message="This Agreement cannot be edited."
                 ></SimpleAlert>
+                <Link
+                    to="/"
+                    className="usa-button margin-top-4"
+                >
+                    Go back home
+                </Link>
             </App>
         );
     }
     return (
         <App>
-            <CreateAgreementProvider agreement={agreement} projectOfficer={projectOfficer}>
+            <EditAgreementProvider
+                agreement={agreement}
+                projectOfficer={projectOfficer}
+            >
                 <CreateEditAgreement existingBudgetLines={agreement.budget_line_items} />
-            </CreateAgreementProvider>
+            </EditAgreementProvider>
         </App>
     );
 };

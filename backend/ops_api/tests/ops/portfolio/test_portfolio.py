@@ -8,6 +8,7 @@ from ops_api.ops.utils.portfolios import (
     _get_carry_forward_total,
     _get_total_fiscal_year_funding,
 )
+from sqlalchemy import select
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -17,15 +18,16 @@ def test_portfolio_retrieve(loaded_db):
     assert portfolio is not None
     assert portfolio.name == "Child Care"
     assert portfolio.status == PortfolioStatus.IN_PROCESS
+    assert portfolio.display_name == portfolio.name
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_portfolio_get_all(auth_client, loaded_db):
-    assert loaded_db.query(Portfolio).count() == 8
+    num_portfolios = loaded_db.query(Portfolio).count()
 
     response = auth_client.get("/api/v1/portfolios/")
     assert response.status_code == 200
-    assert len(response.json) == 8
+    assert len(response.json) == num_portfolios
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -89,73 +91,66 @@ def test_portfolio_nested_members(auth_client, loaded_db):
 @pytest.fixture()
 @pytest.mark.usefixtures("app_ctx")
 def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
-    with app.app_context():
-        instances = []
+    # simple case with 1 CAN and 1 BLI
+    portfolio = Portfolio(name="UNIT TEST PORTFOLIO", division_id=1)
+    can = CAN(number="TEST_CAN")
+    portfolio.cans.append(can)
 
-        # simple case with 1 CAN and 1 BLI
-        portfolio_100 = Portfolio(id=100, name="PORTFOLIO100")
-        can_100 = CAN(id=100, number="CAN100")
-        portfolio_100.cans.append(can_100)
+    loaded_db.add(portfolio)
+    loaded_db.commit()
 
-        can_100_fy_2023 = CANFiscalYear(can=can_100, fiscal_year=2023, total_fiscal_year_funding=2.0)
+    cfy = CANFiscalYear(can_id=can.id, fiscal_year=2023, total_fiscal_year_funding=2.0)
 
-        blin_1 = BudgetLineItem(
-            line_description="#1",
-            amount=1.0,
-            status=BudgetLineItemStatus.PLANNED,
-            can=can_100,
-        )
-        blin_2 = BudgetLineItem(
-            line_description="#2",
-            amount=2.0,
-            status=BudgetLineItemStatus.IN_EXECUTION,
-            can=can_100,
-        )
-        blin_3 = BudgetLineItem(
-            line_description="#3",
-            amount=3.0,
-            status=BudgetLineItemStatus.OBLIGATED,
-            can=can_100,
-        )
+    blin_1 = BudgetLineItem(
+        line_description="#1",
+        amount=1.0,
+        status=BudgetLineItemStatus.PLANNED,
+        can_id=can.id,
+    )
+    blin_2 = BudgetLineItem(
+        line_description="#2",
+        amount=2.0,
+        status=BudgetLineItemStatus.IN_EXECUTION,
+        can_id=can.id,
+    )
+    blin_3 = BudgetLineItem(
+        line_description="#3",
+        amount=3.0,
+        status=BudgetLineItemStatus.OBLIGATED,
+        can_id=can.id,
+    )
 
-        can_100_fy_2022_co = CANFiscalYearCarryForward(
-            id=100,
-            received_amount=1.0,
-            from_fiscal_year=2022,
-            to_fiscal_year=2023,
-            can=can_100,
-        )
+    cf = CANFiscalYearCarryForward(
+        received_amount=1.0,
+        from_fiscal_year=2022,
+        to_fiscal_year=2023,
+        can_id=can.id,
+    )
 
-        instances.extend(
-            [
-                portfolio_100,
-                can_100,
-                blin_1,
-                blin_2,
-                blin_3,
-                can_100_fy_2023,
-                can_100_fy_2022_co,
-            ]
-        )
+    loaded_db.add_all([cfy, blin_1, blin_2, blin_3, cf])
+    loaded_db.commit()
 
-        loaded_db.add_all(instances)
+    yield loaded_db
 
-        loaded_db.commit()
-        yield loaded_db
-
-        # Cleanup
-        for instance in instances:
-            loaded_db.delete(instance)
-        loaded_db.commit()
+    # Cleanup
+    loaded_db.rollback()
+    for obj in [portfolio, can, cfy, blin_1, blin_2, blin_3, cf]:
+        loaded_db.delete(obj)
+    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("db_loaded_with_data_for_total_fiscal_year_funding")
-def test_get_total_fiscal_year_funding():
-    result = _get_total_fiscal_year_funding(100, 2023)
+def test_get_total_fiscal_year_funding(
+    db_loaded_with_data_for_total_fiscal_year_funding,
+):
+    # get Portfolio for test
+    stmt = select(Portfolio).where(Portfolio.name == "UNIT TEST PORTFOLIO")
+    portfolio = db_loaded_with_data_for_total_fiscal_year_funding.execute(stmt).scalar()
+
+    result = _get_total_fiscal_year_funding(portfolio.id, 2023)
     assert result == Decimal(2), "1 CFY in 2023 with $2"
 
-    result = _get_total_fiscal_year_funding(100, 1900)
+    result = _get_total_fiscal_year_funding(portfolio.id, 1900)
     assert result == Decimal(0), "No CFY"
 
     result = _get_total_fiscal_year_funding(1000, 2023)
@@ -163,12 +158,15 @@ def test_get_total_fiscal_year_funding():
 
 
 @pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("db_loaded_with_data_for_total_fiscal_year_funding")
-def test_get_carry_forward_total():
-    result = _get_carry_forward_total(100, 2023)
+def test_get_carry_forward_total(db_loaded_with_data_for_total_fiscal_year_funding):
+    # get Portfolio for test
+    stmt = select(Portfolio).where(Portfolio.name == "UNIT TEST PORTFOLIO")
+    portfolio = db_loaded_with_data_for_total_fiscal_year_funding.execute(stmt).scalar()
+
+    result = _get_carry_forward_total(portfolio.id, 2023)
     assert result == Decimal(1), "$1 CarryForward for FY 2023"
 
-    result = _get_carry_forward_total(100, 1900)
+    result = _get_carry_forward_total(portfolio.id, 1900)
     assert result == Decimal(0), "No CFY"
 
     result = _get_carry_forward_total(1000, 2023)
@@ -176,9 +174,14 @@ def test_get_carry_forward_total():
 
 
 @pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("db_loaded_with_data_for_total_fiscal_year_funding")
-def test_get_budget_line_item_total_planned():
-    result = _get_budget_line_item_total_by_status(100, BudgetLineItemStatus.PLANNED)
+def test_get_budget_line_item_total_planned(
+    db_loaded_with_data_for_total_fiscal_year_funding,
+):
+    # get Portfolio for test
+    stmt = select(Portfolio).where(Portfolio.name == "UNIT TEST PORTFOLIO")
+    portfolio = db_loaded_with_data_for_total_fiscal_year_funding.execute(stmt).scalar()
+
+    result = _get_budget_line_item_total_by_status(portfolio.id, BudgetLineItemStatus.PLANNED)
     assert result == Decimal(1), "$1 BLI"
 
     result = _get_budget_line_item_total_by_status(1000, BudgetLineItemStatus.PLANNED)
@@ -186,9 +189,14 @@ def test_get_budget_line_item_total_planned():
 
 
 @pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("db_loaded_with_data_for_total_fiscal_year_funding")
-def test_get_budget_line_item_total_in_execution():
-    result = _get_budget_line_item_total_by_status(100, BudgetLineItemStatus.IN_EXECUTION)
+def test_get_budget_line_item_total_in_execution(
+    db_loaded_with_data_for_total_fiscal_year_funding,
+):
+    # get Portfolio for test
+    stmt = select(Portfolio).where(Portfolio.name == "UNIT TEST PORTFOLIO")
+    portfolio = db_loaded_with_data_for_total_fiscal_year_funding.execute(stmt).scalar()
+
+    result = _get_budget_line_item_total_by_status(portfolio.id, BudgetLineItemStatus.IN_EXECUTION)
     assert result == Decimal(2), "$2 BLI"
 
     result = _get_budget_line_item_total_by_status(1000, BudgetLineItemStatus.IN_EXECUTION)
@@ -196,9 +204,14 @@ def test_get_budget_line_item_total_in_execution():
 
 
 @pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("db_loaded_with_data_for_total_fiscal_year_funding")
-def test_get_budget_line_item_total_obligated():
-    result = _get_budget_line_item_total_by_status(100, BudgetLineItemStatus.OBLIGATED)
+def test_get_budget_line_item_total_obligated(
+    db_loaded_with_data_for_total_fiscal_year_funding,
+):
+    # get Portfolio for test
+    stmt = select(Portfolio).where(Portfolio.name == "UNIT TEST PORTFOLIO")
+    portfolio = db_loaded_with_data_for_total_fiscal_year_funding.execute(stmt).scalar()
+
+    result = _get_budget_line_item_total_by_status(portfolio.id, BudgetLineItemStatus.OBLIGATED)
     assert result == Decimal(3), "$3 BLI for FY 2023"
 
     result = _get_budget_line_item_total_by_status(1000, BudgetLineItemStatus.OBLIGATED)

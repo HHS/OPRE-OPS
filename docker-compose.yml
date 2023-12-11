@@ -3,7 +3,7 @@ version: "3.8"
 services:
 
   db:
-    image: "postgres:12"
+    image: "postgres:16"
     platform: linux/amd64
     container_name: ops-db
     security_opt:
@@ -12,6 +12,8 @@ services:
       - POSTGRES_PASSWORD=local_password
     read_only: true  # Resolve semgrep https://sg.run/e4JE
     tmpfs: /var/run/postgresql/
+    volumes:
+      - ./backend/data_tools/ops_db_sql_init:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
     healthcheck:
@@ -31,14 +33,16 @@ services:
     command: >
       bash -c "
       python ./data_tools/src/import_static_data/load_db.py &&
+      DATA=./data_tools/data/user_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
+      DATA=./data_tools/data/vendor_and_contact_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/portfolio_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/funding_partner_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/funding_source_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/research_project_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/can_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-      DATA=./data_tools/data/user_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-      DATA=./data_tools/data/agreements_and_blin_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-      DATA=./data_tools/data/team_leader_data.json5 python ./data_tools/src/import_static_data/import_data.py
+      DATA=./data_tools/data/first_contract_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
+      DATA=./data_tools/data/agreements_and_blin_data.json5 python ./data_tools/src/import_static_data/import_data.py
+      DATA=./data_tools/data/workflow_data.json5 python ./data_tools/src/import_static_data/import_data.py
       "
 
     volumes:
@@ -68,6 +72,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      data-import:
+        condition: service_completed_successfully
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
       interval: 10s
@@ -82,9 +88,10 @@ services:
     container_name: ops-frontend
     environment:
       - REACT_APP_BACKEND_DOMAIN=http://localhost:8080
+      - VITE_BACKEND_DOMAIN=http://localhost:8080
     ports:
       - "3000:3000"
     depends_on:
       - backend
     volumes:
-      - ./frontend/:/home/app
+      - ./frontend/src:/home/app/src

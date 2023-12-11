@@ -7,8 +7,14 @@ export const Menu = () => {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
     return (
         <div id="nav-menu">
-            <button type="button" className="usa-nav__close">
-                <img src="/assets/img/usa-icons/close.svg" alt="Close" />
+            <button
+                type="button"
+                className="usa-nav__close"
+            >
+                <img
+                    src="/assets/img/usa-icons/close.svg"
+                    alt="Close"
+                />
             </button>
             <ul className="usa-nav__primary usa-accordion">
                 {isAuthorized ? (
@@ -24,7 +30,10 @@ export const Menu = () => {
                     <Link to="/cans/">CANs</Link>
                 </li>
                 <li className="usa-nav__primary-item">
-                    <Link to="/agreements?filter=all-agreements">Agreements</Link>
+                    <Link to="/agreements">Agreements</Link>
+                </li>
+                <li className="usa-nav__primary-item">
+                    <Link to="/budget-lines">Budget Lines</Link>
                 </li>
                 <li className="usa-nav__primary-item margin-left-auto">
                     <button

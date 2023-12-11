@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import cx from "clsx";
 
 /**
@@ -10,20 +11,17 @@ import cx from "clsx";
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
  * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
  * @param {string} [props.value] - The value of the input field.(optional)
- * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @returns {JSX.Element} - The rendered input component.
  */
-const YearInput = ({ name, label = name, onChange, pending = false, messages = [], value, className }) => {
+const YearInput = ({ name, label = name, onChange, pending = false, messages = [], value }) => {
     return (
-        <div className={cx("usa-form-group usa-form-group--year margin-top-0", pending && "pending", className)}>
-            <label className={`usa-label sr-only ${messages.length ? "usa-label--error" : null} `} htmlFor={name}>
+        <div className={cx("usa-form-group usa-form-group--year margin-top-0", pending && "pending")}>
+            <label
+                className={`usa-label sr-only ${messages.length ? "usa-label--error" : null} `}
+                htmlFor={name}
+            >
                 {label}
             </label>
-            {messages.length ? (
-                <span className="usa-error-message" id="input-error-message" role="alert">
-                    {messages[0]}
-                </span>
-            ) : null}
             <input
                 id={name}
                 name={name}
@@ -45,6 +43,15 @@ const YearInput = ({ name, label = name, onChange, pending = false, messages = [
             onChange(name, e.target.value);
         }
     }
+};
+
+YearInput.propTypes = {
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    onChange: PropTypes.func.isRequired,
+    pending: PropTypes.bool,
+    messages: PropTypes.arrayOf(PropTypes.string),
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 };
 
 export default YearInput;

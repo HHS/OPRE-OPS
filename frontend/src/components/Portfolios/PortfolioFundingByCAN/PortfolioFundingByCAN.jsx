@@ -19,32 +19,32 @@ library.add(faSquare);
 const styles = {
     root: {
         width: 175,
-        height: 175,
+        height: 175
     },
     cardBody: {
         display: "flex",
         flexDirection: "column",
         alignItems: "left",
-        borderColor: "#FFF",
+        borderColor: "#FFF"
     },
     cardGroup: {
         display: "flex",
         marginBottom: "7%",
         flexDirection: "row",
         justifyContent: "space-evenly",
-        width: "250px",
+        width: "250px"
     },
     cardItem: {
         display: "flex",
-        flex: "1",
+        flex: "1"
     },
     iconStyle: {
         verticalAlign: "middle",
-        paddingRight: "4px",
-    },
+        paddingRight: "4px"
+    }
 };
 
-const PortfolioFundingByCAN = (props) => {
+const PortfolioFundingByCAN = () => {
     const portfolioFunding = useSelector((state) => state.portfolioBudgetSummary.portfolioBudget);
     const portfolioCansFundingDetails = useSelector((state) => state.portfolio.portfolioCansFundingDetails);
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
@@ -67,7 +67,7 @@ const PortfolioFundingByCAN = (props) => {
                             value: item.total_funding,
                             percent: `${Math.floor((parseFloat(item.total_funding) / portfolio_total_funding) * 100)}%`,
                             color: constants.colors[index],
-                            number: item.can.number,
+                            number: item.can.number
                         };
                     }
                 });
@@ -88,10 +88,16 @@ const PortfolioFundingByCAN = (props) => {
                 </div>
                 <div className="font-sans-3xs">
                     {canChartData.slice(0, 5).map((item) => (
-                        <div style={styles.cardGroup} key={item.id}>
+                        <div
+                            style={styles.cardGroup}
+                            key={item.id}
+                        >
                             <div style={styles.cardItem}>
                                 <span style={styles.iconStyle}>
-                                    <FontAwesomeIcon icon={faSquare} style={{ color: item.color }} />
+                                    <FontAwesomeIcon
+                                        icon={faSquare}
+                                        style={{ color: item.color }}
+                                    />
                                 </span>
                                 <span>{item.number}</span>
                             </div>
@@ -106,7 +112,10 @@ const PortfolioFundingByCAN = (props) => {
                     ))}
                 </div>
             </div>
-            <div className={cssClasses.chartArea} id="portfolioCANChart">
+            <div
+                className={cssClasses.chartArea}
+                id="portfolioCANChart"
+            >
                 <div className="padding-top-4">
                     <div
                         style={styles.root}

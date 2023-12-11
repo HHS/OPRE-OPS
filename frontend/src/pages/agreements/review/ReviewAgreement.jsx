@@ -1,91 +1,77 @@
-import { useEffect, useState, Fragment } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Fragment } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import classnames from "vest/classnames";
-import PreviewTable from "../../../components/UI/PreviewTable";
-import Alert from "../../../components/UI/Alert";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
-import { useGetAgreementByIdQuery, useUpdateBudgetLineItemStatusMutation } from "../../../api/opsAPI";
-import { getUser } from "../../../api/getUser";
+import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
+import { useAddApprovalRequestMutation } from "../../../api/opsAPI";
+import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import Terms from "./Terms";
 import suite from "./suite";
-import { setAlert } from "../../../components/UI/Alert/alertSlice";
+import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import useAlert from "../../../hooks/use-alert.hooks";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import AgreementActionAccordion from "../../../components/Agreements/AgreementActionAccordion";
+import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
+import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
+import {
+    anyBudgetLinesByStatus,
+    getSelectedBudgetLines,
+    selectedBudgetLinesTotal,
+    getTotalBySelectedCans
+} from "./ReviewAgreement.helpers";
+import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
+import useReviewAgreement from "./reviewAgreement.hooks";
+import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
+import App from "../../../App";
+import useToggle from "../../../hooks/useToggle";
+import TextArea from "../../../components/UI/Form/TextArea";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
- * @param {Object} props - The component props.
- * @param {string} props.agreement_id - The ID of the agreement to review.
- * @returns {JSX.Element} - The rendered component.
+ * @returns {React.JSX.Element} - The rendered component.
  */
-export const ReviewAgreement = ({ agreement_id }) => {
-    const dispatch = useDispatch();
+
+export const ReviewAgreement = () => {
+    const urlPathParams = useParams();
+    const agreementId = urlPathParams?.id;
     const navigate = useNavigate();
     const {
         isSuccess,
         data: agreement,
         error: errorAgreement,
-        isLoading: isLoadingAgreement,
-    } = useGetAgreementByIdQuery(agreement_id, {
-        refetchOnMountOrArgChange: true,
+        isLoading: isLoadingAgreement
+    } = useGetAgreementByIdQuery(agreementId, {
+        refetchOnMountOrArgChange: true
     });
+    const activeUser = useSelector((state) => state.auth.activeUser);
 
-    const [updateBudgetLineItemStatus] = useUpdateBudgetLineItemStatusMutation();
-
-    const [projectOfficerName, setProjectOfficerName] = useState({ full_name: "" });
-    const [pageErrors, setPageErrors] = useState({});
-    const [isAlertActive, setIsAlertActive] = useState(false);
-    const isGlobalAlertActive = useSelector((state) => state.alert.isActive);
-
-    let res = suite.get();
+    const [addApprovalRequest] = useAddApprovalRequestMutation();
+    const isAgreementStateEditable = useIsAgreementEditable(agreement?.id);
+    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
+    const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
+    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
+    const [afterApproval, setAfterApproval] = useToggle(true);
+    const { setAlert } = useAlert();
+    const {
+        budgetLines,
+        handleSelectBLI,
+        pageErrors,
+        isAlertActive,
+        res,
+        handleActionChange,
+        toggleSelectActionableBLIs,
+        mainToggleSelected,
+        setMainToggleSelected,
+        notes,
+        setNotes
+    } = useReviewAgreement(agreement, isSuccess);
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
         valid: "success",
-        warning: "warning",
+        warning: "warning"
     });
-    // pass in the agreement object to the suite
-    useEffect(() => {
-        if (isSuccess) {
-            suite({
-                ...agreement,
-            });
-        }
-        return () => {
-            suite.reset();
-        };
-    }, [isSuccess, agreement]);
-
-    // fire the page errors based on the suite results
-    useEffect(() => {
-        if (isSuccess && !res.isValid()) {
-            setIsAlertActive(true);
-            setPageErrors(res.getErrors());
-        }
-        return () => {
-            setPageErrors({});
-            setIsAlertActive(false);
-        };
-    }, [res, isSuccess]);
-
-    useEffect(() => {
-        if (isSuccess) {
-            const getUserAndSetState = async (id) => {
-                const results = await getUser(id);
-                setProjectOfficerName(results);
-            };
-
-            if (agreement?.project_officer) {
-                getUserAndSetState(agreement?.project_officer).catch(console.error);
-            }
-
-            return () => {
-                setProjectOfficerName({
-                    full_name: "",
-                });
-            };
-        }
-    }, [agreement, isSuccess]);
 
     if (isLoadingAgreement) {
         return <h1>Loading...</h1>;
@@ -100,36 +86,78 @@ export const ReviewAgreement = ({ agreement_id }) => {
     const budgetLineErrors = res.getErrors("budget-line-items");
     const budgetLineErrorsExist = budgetLineErrors.length > 0;
     const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist;
+    const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement, "DRAFT");
+    const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement, "PLANNED");
+    const changeInCans = getTotalBySelectedCans(budgetLines);
 
-    const anyBudgetLinesAreDraft = agreement.budget_line_items.some((item) => item.status === "DRAFT");
     const handleSendToApproval = () => {
-        if (anyBudgetLinesAreDraft) {
+        if (anyBudgetLinesDraft) {
+            //Create BLI Package, and send it to approval (create a Workflow)
+            const bli_ids = agreement?.budget_line_items.map((bli) => bli.id);
+            const user_id = activeUser?.id;
+            const notes = "";
+            console.log("BLI Package Data:", bli_ids, user_id, notes);
+            addApprovalRequest({
+                budget_line_item_ids: bli_ids,
+                submitter_id: user_id,
+                notes: notes
+            })
+                .unwrap()
+                .then((fulfilled) => {
+                    console.log("BLI Status Updated:", fulfilled);
+                    setAlert({
+                        type: "success",
+                        heading: "Agreement sent to approval",
+                        message: "The agreement has been successfully sent to approval for Planned Status.",
+                        redirectUrl: "/agreements"
+                    });
+                })
+                .catch((rejected) => {
+                    console.log("Error Updating Budget Line Status");
+                    console.dir(rejected);
+                    setAlert({
+                        type: "error",
+                        heading: "Error",
+                        message: "An error occurred. Please try again.",
+                        redirectUrl: "/error"
+                    });
+                });
+
+            // This is the old process of just updating the BLI status to UNDER_REVIEW
+            // Instead it should be creating a BLI Package, and sending it to approval (create a Workflow)
+            /*
             agreement?.budget_line_items.forEach((bli) => {
                 if (bli.status === "DRAFT") {
                     console.log(bli.id);
-                    try {
-                        updateBudgetLineItemStatus({ id: bli.id, status: "UNDER_REVIEW" }).unwrap();
-                        console.log("BLI Status Updated");
-                    } catch (error) {
-                        console.log("Error Updating Budget Line Status");
-                        console.dir(error);
-                    }
+                    updateBudgetLineItemStatus({ id: bli.id, status: "UNDER_REVIEW" })
+                        .unwrap()
+                        .then((fulfilled) => {
+                            console.log("BLI Status Updated:", fulfilled);
+                            setAlert({
+                                type: "success",
+                                heading: "Agreement sent to approval",
+                                message: "The agreement has been successfully sent to approval for Planned Status.",
+                                redirectUrl: "/agreements"
+                            });
+                        })
+                        .catch((rejected) => {
+                            console.log("Error Updating Budget Line Status");
+                            console.dir(rejected);
+                            setAlert({
+                                type: "error",
+                                heading: "Error",
+                                message: "An error occurred. Please try again.",
+                                redirectUrl: "/error"
+                            });
+                        });
                 }
             });
+            */
         }
-        dispatch(
-            setAlert({
-                type: "success",
-                heading: "Agreement sent to approval",
-                message: "The agreement has been successfully sent to approval for Planned Status.",
-                redirectUrl: "/agreements",
-            })
-        );
     };
 
     return (
-        <>
-            {isGlobalAlertActive && <Alert />}
+        <App breadCrumbName="Agreements">
             {isAlertActive && Object.entries(pageErrors).length > 0 ? (
                 <SimpleAlert
                     type="error"
@@ -138,7 +166,10 @@ export const ReviewAgreement = ({ agreement_id }) => {
                 >
                     <ul data-cy="error-list">
                         {Object.entries(pageErrors).map(([key, value]) => (
-                            <li key={key} data-cy="error-item">
+                            <li
+                                key={key}
+                                data-cy="error-item"
+                            >
                                 <strong>{convertCodeForDisplay("validation", key)}: </strong>
                                 {
                                     <span>
@@ -155,159 +186,108 @@ export const ReviewAgreement = ({ agreement_id }) => {
                     </ul>
                 </SimpleAlert>
             ) : (
-                <h1 className="text-bold margin-top-0" style={{ fontSize: "1.375rem" }}>
+                <h1
+                    className="text-bold"
+                    style={{ fontSize: "1.375rem" }}
+                    data-cy="review-agreement-heading"
+                >
                     Review and Send Agreement to Approval
                 </h1>
             )}
-            <p>
-                Please review the agreement below and edit any information if necessary. Send to Approval will send the
-                agreement to your Division Director to review for Planned Status.
-            </p>
+            <AgreementMetaAccordion
+                agreement={agreement}
+                projectOfficerName={projectOfficerName}
+                res={res}
+                cn={cn}
+                convertCodeForDisplay={convertCodeForDisplay}
+            />
+            <AgreementActionAccordion
+                setAction={handleActionChange}
+                optionOneDisabled={!anyBudgetLinesDraft}
+                optionTwoDisabled={!anyBudgetLinePlanned}
+            />
 
-            <dl className="margin-0 font-12px">
-                <Terms
-                    name="name"
-                    label="Project"
-                    messages={res.getErrors("name")}
-                    className={cn("name")}
-                    value={agreement?.name}
-                />
-                <Terms
-                    name="type"
-                    label="Agreement Type"
-                    messages={res.getErrors("type")}
-                    className={cn("type")}
-                    value={convertCodeForDisplay("agreementType", agreement?.agreement_type)}
-                />
-                <Terms
-                    name="description"
-                    label="Description"
-                    messages={res.getErrors("description")}
-                    className={cn("description")}
-                    value={agreement?.description}
-                />
-                <Terms
-                    name="psc"
-                    label="Product Service Code"
-                    messages={res.getErrors("psc")}
-                    className={cn("psc")}
-                    value={agreement?.product_service_code?.name}
-                />
-                <Terms
-                    name="naics"
-                    label="NAICS Code"
-                    messages={res.getErrors("naics")}
-                    className={cn("naics")}
-                    value={agreement?.product_service_code?.naics}
-                />
-                <Terms
-                    name="program-support-code"
-                    label="Program Support Code"
-                    messages={res.getErrors("program-support-code")}
-                    className={cn("program-support-code")}
-                    value={agreement?.product_service_code?.support_code}
-                />
-                <Terms
-                    name="procurement-shop"
-                    label="Procurement Shop"
-                    messages={res.getErrors("procurement-shop")}
-                    className={cn("procurement-shop")}
-                    value={`${agreement?.procurement_shop?.abbr} - Fee Rate: ${
-                        agreement?.procurement_shop?.fee * 100
-                    }%`}
-                />
-                <Terms
-                    name="reason"
-                    label="Reason for creating the agreement"
-                    messages={res.getErrors("reason")}
-                    className={cn("reason")}
-                    value={convertCodeForDisplay("agreementReason", agreement?.agreement_reason)}
-                />
-
-                {agreement?.incumbent && (
-                    <Terms
-                        name="incumbent"
-                        label="Incumbent"
-                        messages={res.getErrors("incumbent")}
-                        className={cn("incumbent")}
-                        value={agreement?.incumbent}
-                    />
-                )}
-                <Terms
-                    name="project-officer"
-                    label="Project Officer"
-                    messages={res.getErrors("project-officer")}
-                    className={cn("project-officer")}
-                    value={projectOfficerName?.full_name}
-                />
-
-                {agreement?.team_members.length > 0 ? (
-                    <>
-                        <dt className="margin-0 text-base-dark margin-top-3">Team Members</dt>
-                        {agreement?.team_members.map((member) => (
-                            <dd key={member.id} className="text-semibold margin-0 margin-top-05">
-                                {member.full_name}
-                            </dd>
-                        ))}
-                    </>
-                ) : (
-                    <Terms
-                        name="team-member"
-                        label="Team Members"
-                        messages={res.getErrors("team-member")}
-                        className={cn("team-member")}
-                        value={agreement?.team_members[0]}
-                    />
-                )}
-            </dl>
-            <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : null}`}>
-                <h2 className="text-bold" style={{ fontSize: "1.375rem" }}>
-                    Budget Lines
-                </h2>
-                <p>This is a list of all budget lines within this agreement.</p>
-                {areThereBudgetLineErrors && (
-                    <ul className="usa-error-message padding-left-1">
-                        {budgetLineErrorsExist && (
-                            <li>
-                                {budgetLineErrors.map((error, index) => (
-                                    <Fragment key={index}>
-                                        <span>{error}</span>
-                                        {index < budgetLineErrors.length - 1 && <span>, </span>}
-                                    </Fragment>
-                                ))}
-                            </li>
-                        )}
-                        {budgetLinePageErrorsExist &&
-                            budgetLinePageErrors.map(([budgetLineItem, errors]) => (
-                                <li key={budgetLineItem}>
-                                    {budgetLineItem}: {errors.join(", ")}
+            <AgreementBLIAccordion
+                budgetLineItems={getSelectedBudgetLines(budgetLines)}
+                agreement={agreement}
+                afterApproval={afterApproval}
+                setAfterApproval={setAfterApproval}
+            >
+                <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""}`}>
+                    {areThereBudgetLineErrors && (
+                        <ul className="usa-error-message padding-left-2 border-left-05">
+                            {budgetLineErrorsExist && (
+                                <li>
+                                    {budgetLineErrors.map((error, index) => (
+                                        <Fragment key={index}>
+                                            <span>{error}</span>
+                                            {index < budgetLineErrors.length - 1 && <span>, </span>}
+                                        </Fragment>
+                                    ))}
                                 </li>
-                            ))}
-                    </ul>
-                )}
-            </div>
-
-            <PreviewTable readOnly={true} budgetLinesAdded={agreement?.budget_line_items} />
+                            )}
+                            {budgetLinePageErrorsExist &&
+                                budgetLinePageErrors.map(([budgetLineItem, errors]) => (
+                                    <li key={budgetLineItem}>
+                                        {budgetLineItem}: {errors.join(", ")}
+                                    </li>
+                                ))}
+                        </ul>
+                    )}
+                </div>
+                <AgreementBLIReviewTable
+                    readOnly={true}
+                    budgetLines={budgetLines}
+                    isReviewMode={true}
+                    showTotalSummaryCard={false}
+                    setSelectedBLIs={handleSelectBLI}
+                    toggleSelectActionableBLIs={toggleSelectActionableBLIs}
+                    mainToggleSelected={mainToggleSelected}
+                    setMainToggleSelected={setMainToggleSelected}
+                />
+            </AgreementBLIAccordion>
+            <AgreementCANReviewAccordion
+                selectedBudgetLines={getSelectedBudgetLines(budgetLines)}
+                afterApproval={afterApproval}
+                setAfterApproval={setAfterApproval}
+            />
+            <AgreementChangesAccordion
+                changeInBudgetLines={selectedBudgetLinesTotal(budgetLines)}
+                changeInCans={changeInCans}
+            />
+            <h2 className="font-sans-lg text-semibold">Notes</h2>
+            <TextArea
+                name="submitter-notes"
+                label="Notes (optional)"
+                maxLength={150}
+                value={notes}
+                onChange={(name, value) => setNotes(value)}
+            />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
-                    className="usa-button usa-button--outline margin-right-2"
+                    className={`usa-button usa-button--outline margin-right-2 ${
+                        !isAgreementEditable ? "usa-tooltip" : ""
+                    }`}
                     data-cy="edit-agreement-btn"
+                    title={!isAgreementEditable ? "Agreement is not editable" : ""}
                     onClick={() => {
                         navigate(`/agreements/edit/${agreement?.id}?mode=review`);
                     }}
+                    disabled={!isAgreementEditable}
                 >
                     Edit
                 </button>
                 <button
-                    className="usa-button"
+                    className={`usa-button ${!anyBudgetLinesDraft ? "usa-tooltip" : ""}`}
                     data-cy="send-to-approval-btn"
+                    title={!anyBudgetLinesDraft ? "Agreement is not able to be reviewed" : ""}
                     onClick={handleSendToApproval}
-                    disabled={!anyBudgetLinesAreDraft || !res.isValid()}
+                    disabled={!anyBudgetLinesDraft || !res.isValid()}
                 >
                     Send to Approval
                 </button>
             </div>
-        </>
+        </App>
     );
 };
 

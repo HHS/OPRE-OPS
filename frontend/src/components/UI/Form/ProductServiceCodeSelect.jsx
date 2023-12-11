@@ -21,7 +21,7 @@ export const ProductServiceCodeSelect = ({
     codes: productServiceCodes,
     pending = false,
     messages = [],
-    className,
+    className
 }) => {
     const handleChange = (e) => {
         onChange(name, e.target.selectedIndex);
@@ -29,11 +29,17 @@ export const ProductServiceCodeSelect = ({
 
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>
-            <label className={`usa-label ${messages.length ? "usa-label--error" : null} `} htmlFor={name}>
+            <label
+                className={`usa-label ${messages.length ? "usa-label--error" : null} `}
+                htmlFor={name}
+            >
                 {label}
             </label>
             {messages.length ? (
-                <span className="usa-error-message" id="input-error-message" role="alert">
+                <span
+                    className="usa-error-message"
+                    role="alert"
+                >
                     {messages[0]}
                 </span>
             ) : null}
@@ -50,7 +56,10 @@ export const ProductServiceCodeSelect = ({
                 >
                     <option value={0}>- Select a Product Service Code -</option>
                     {productServiceCodes.map((psc) => (
-                        <option key={psc?.id} value={psc?.name}>
+                        <option
+                            key={psc?.id}
+                            value={psc?.name}
+                        >
                             {psc?.name}
                         </option>
                     ))}

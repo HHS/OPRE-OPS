@@ -1,0 +1,86 @@
+name: 'Terraform setup and apply'
+description: 'Setup Terraform and applies Terraform config'
+inputs:
+  terraform_directory:
+    description: 'Directory that holds Terraform code'
+    required: true
+  azure_client_id: 
+    description: 'Azure client id'
+    required: true
+  azure_client_secret: 
+    description: 'Azure client secret'
+    required: true
+  azure_subscription_id:
+    description: 'Azure subscription id'
+    required: true
+  azure_tenant_id:
+    description: 'Azure tenant id'
+    required: true
+  terraform_version: 
+    description: 'Terraform Version'
+    required: true
+    default: 1.5.7
+  github_token: 
+    description: 'GitHub token for auth'
+    required: true
+  pr_id:
+    description: 'Pull request ID'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: ${{ inputs.terraforom_version }}
+        terraform_wrapper: false
+  
+    - name: Terraform Init
+      id: init
+      working-directory: ${{ inputs.terraform_directory }}
+      shell: bash
+      env:
+        ARM_CLIENT_ID: ${{ inputs.azure_client_id }}
+        ARM_CLIENT_SECRET: ${{ inputs.azure_client_secret }}
+        ARM_SUBSCRIPTION_ID: ${{ inputs.azure_subscription_id }}
+        ARM_TENANT_ID: ${{ inputs.azure_tenant_id }}
+      run: |
+        terraform init  
+
+    - name: Download Plan
+      id: download-plan
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        github_token: ${{ inputs.github_token }}
+        workflow: plan.yaml
+        pr: ${{ inputs.pr_id }}
+        name: ${{ inputs.pr_id }}-tf-plan
+        path: ${{ inputs.terraform_directory }}
+
+   - name: Terraform Apply
+      id: apply
+      working-directory: ${{ inputs.terraform_directory }}
+      shell: bash
+      env:
+        ARM_CLIENT_ID: ${{ inputs.azure_client_id }}
+        ARM_CLIENT_SECRET: ${{ inputs.azure_client_secret }}
+        ARM_SUBSCRIPTION_ID: ${{ inputs.azure_subscription_id }}
+        ARM_TENANT_ID: ${{ inputs.azure_tenant_id }}
+      run: |
+        echo 'apply<<EOF' >> $GITHUB_OUTPUT
+        terraform apply -input=false -no-color tfplan >> $GITHUB_OUTPUT
+        echo 'EOF' >> $GITHUB_OUTPUT
+
+    - name: Comment Apply
+      id: comment-apply
+      uses: peter-evans/create-or-update-comment@v2
+      with:
+        token: ${{ inputs.github_token }}
+        issue-number: ${{ inputs.pr_id }}
+        body: |
+          Terraform Apply:
+
+          ```
+          ${{ steps.apply.outputs.apply }}
+          ```

@@ -15,12 +15,12 @@ it("loads", () => {
     cy.get("h1").should("contain", "G99PHS9");
 });
 
-it("get can fiscal year details - skip while the UI is being updated and data changes", () => {
+it("get can fiscal year details", () => {
     clickOnFiscalYearOption("2022");
     cy.contains("7000000");
 });
 
-it.skip("get a negative value - skip for now because we are working on requirements for how to calculate total/pending/funded/etc", () => {
+it.skip("*** SKIPPING *** get a negative value - skip for now because we are working on requirements for how to calculate total/pending/funded/etc", () => {
     clickOnFiscalYearOption("2023");
     cy.contains("-300000");
     cy.get("[class*='redNegative']").contains("-300000");

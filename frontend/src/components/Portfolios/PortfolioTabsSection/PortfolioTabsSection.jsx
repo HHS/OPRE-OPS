@@ -18,23 +18,27 @@ const PortfolioTabsSection = ({ portfolioId }) => {
     const paths = [
         {
             name: "/budget-and-funding",
-            label: "Budget and Funding",
+            label: "Budget and Funding"
         },
         {
             name: "/research-projects",
-            label: "Projects and Spending",
+            label: "Projects and Spending"
         },
         {
             name: "/people-and-teams",
-            label: "People and Teams",
-        },
+            label: "People and Teams"
+        }
     ];
 
     const links = paths.map((path) => {
         const pathName = `/portfolios/${portfolioId}${path.name}`;
 
         return (
-            <Link to={pathName} className={location.pathname === pathName ? selected : notSelected} key={pathName}>
+            <Link
+                to={pathName}
+                className={location.pathname === pathName ? selected : notSelected}
+                key={pathName}
+            >
                 {path.label}
             </Link>
         );
@@ -42,7 +46,10 @@ const PortfolioTabsSection = ({ portfolioId }) => {
 
     return (
         <>
-            <TabsSection links={links} label="Portfolio Tabs Section" />
+            <TabsSection
+                links={links}
+                label="Portfolio Tabs Section"
+            />
         </>
     );
 };
