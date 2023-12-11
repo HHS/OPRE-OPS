@@ -1,4 +1,5 @@
 import PropTypes from "prop-types";
+import { useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import CurrencyFormat from "react-currency-format";
@@ -49,6 +50,7 @@ const BLIRow = ({
     const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
+    const location = useLocation();
     const changeIcons = (
         <ChangeIcons
             item={budgetLine}
@@ -62,7 +64,10 @@ const BLIRow = ({
     // styles for the table row
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
-    const isBLIInPacket = budgetLine?.isInPacket;
+    // are you on the approve page?
+    const isApprovePage = location.pathname.includes("approve");
+    const isBLIInPacket = budgetLine?.isInPacket || false;
+    const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInPacket;
 
     const TableRowData = (
         <>
@@ -74,15 +79,15 @@ const BLIRow = ({
                 )} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {isBLIInPacket ? (
-                    budgetLine?.line_description
-                ) : (
+                {isApprovePageAndBLIIsNotInPacket ? (
                     <Tooltip
-                        label="This budget line was not sent for approval"
+                        label="This budget line was sent for approval"
                         position="right"
                     >
                         <span>{budgetLine?.line_description}</span>
                     </Tooltip>
+                ) : (
+                    budgetLine?.line_description
                 )}
             </th>
             <td
@@ -213,7 +218,7 @@ const BLIRow = ({
             isExpanded={isExpanded}
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
-            className={!isBLIInPacket ? "text-gray-30" : ""}
+            className={isApprovePageAndBLIIsNotInPacket ? "text-gray-50" : ""}
         />
     );
 };
