@@ -1,5 +1,5 @@
-name: 'Terraform setup and plan'
-description: 'Setup Terraform and creates plan'
+name: 'Terraform setup and apply'
+description: 'Setup Terraform and applies Terraform config'
 inputs:
   terraform_directory:
     description: 'Directory that holds Terraform code'
