@@ -40,6 +40,7 @@ runs:
             export TF_VAR_$key="${INPUT_TF_VARS[$key]}"
           done
         fi
+      shell: bash
 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
@@ -52,6 +53,7 @@ runs:
       working-directory: ${{ inputs.terraform_directory }}
       run: |
         terraform init
+      shell: bash
 
     - name: Terraform Plan
       id: plan
@@ -60,6 +62,7 @@ runs:
         echo 'plan<<EOF' >> $GITHUB_OUTPUT
         terraform plan -no-color -out=tfplan >> $GITHUB_OUTPUT
         echo 'EOF' >> $GITHUB_OUTPUT
+      shell: bash
 
     - name: Save Artifact
       id: save-artifact
