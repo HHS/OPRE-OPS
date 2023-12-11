@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "df03444c7b85484a1e5cf3436e26f89a968e6e4904390cec730e968cfed75128"
+            "sha256": "bd5ff2659df0b0cc3750f2a36307ee9f876792f140da5ca1a3f055554b41fbfe"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -237,7 +237,6 @@
                 "sha256:fcb68203c833cc735321512e13861358079a96c174a61f5116a1de89c58c0ef7"
             ],
             "index": "pypi",
-            "markers": "python_version >= '3.9'",
             "version": "==2.1.4"
         },
         "psycopg2-binary": {
@@ -825,7 +824,6 @@
                 "sha256:83324bad4d90fee4bf64dd69c61aff94debf8073fbd807c8b6a36eec7a2f0719"
             ],
             "index": "pypi",
-            "markers": "python_full_version >= '3.8.1'",
             "version": "==23.12.2"
         },
         "flake8-import-order": {
