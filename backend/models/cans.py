@@ -543,7 +543,7 @@ class BudgetLineItem(BaseModel):
             select(Package)
             .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
             .join(self.__class__, self.id == PackageSnapshot.bli_id)
-            .join(WorkflowInstance, Package.workflow == WorkflowInstance.id)
+            .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
             .join(
                 WorkflowStepInstance,
                 WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
