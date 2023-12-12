@@ -78,7 +78,7 @@ class ApproveSubmisionListApi(BaseItemAPI):
                     new_package.package_snapshots.append(
                         PackageSnapshot(
                             bli_id=bli.id,
-                            # package_id=new_bli_package.id,
+                            # package_id=new_package.id,
                             version=None,
                         )
                     )
@@ -119,15 +119,15 @@ class ApproveSubmisionListApi(BaseItemAPI):
             current_app.db_session.commit()
 
             # updated the current step in the bli package to the first step in the workflow
-            new_package.workflow = workflow_instance
+            new_package.workflow = workflow_instance.id
 
             # commit our new bli package
             current_app.db_session.add(new_package)
             current_app.db_session.commit()
 
-            new_bli_package_dict = new_package.to_dict()
-            # meta.metadata.update({"New Bli Package": new_bli_package_dict})
-            current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Bli Package created: {new_bli_package_dict}")
+            new_package_dict = new_package.to_dict()
+            # meta.metadata.update({"New Bli Package": new_package_dict})
+            current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Bli Package created: {new_package_dict}")
 
             return make_response_with_headers({"message": "Bli Package created", "id": new_package.id}, 201)
         except (KeyError, RuntimeError, PendingRollbackError, ValueError) as re:

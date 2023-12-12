@@ -143,6 +143,7 @@ class WorkflowStepInstance(BaseModel):
         )
         return d
 
+
 class WorkflowStepDependency(BaseModel):
     """ Association model to handle multiple dependencies between WorkflowStepInstances """
     __tablename__ = "workflow_step_dependency"
@@ -183,7 +184,7 @@ class Package(BaseModel):
 
     @BaseModel.display_name.getter
     def display_name(self):
-        return f"{self.package_type}-Package-{self.id}"
+        return f"Package-{self.id}"
 
 
 class PackageSnapshot(BaseModel):
