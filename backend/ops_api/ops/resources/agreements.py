@@ -332,15 +332,19 @@ def _get_user_list(data: Any):
 def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
     changed = False
     for item in data:
-        if item in ["vendor", "incumbent"]:
+        if item in [
+            "vendor",
+            "incumbent",
+            "agreement_type",
+            "versions",
+            "created_by_user",  # handled by created_by
+            "project_officer",  # handled by project_officer_id
+        ]:
             continue
         # subclass attributes won't have the old (deleted) value in get_history
         # unless they were loaded before setting
         _hack_to_fix_get_history = getattr(agreement, item)  # noqa: F841
         match (item):
-            case "agreement_type":
-                continue
-
             case "team_members":
                 tmp_team_members = _get_user_list(data[item])
                 agreement.team_members = tmp_team_members if tmp_team_members else []
@@ -361,6 +365,16 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
                     for bli in agreement.budget_line_items:
                         if bli.status.value <= BudgetLineItemStatus.PLANNED.value:
                             bli.proc_shop_fee_percentage = agreement.procurement_shop.fee
+                    changed = True
+
+            case "agreement_reason":
+                if isinstance(data[item], str):
+                    setattr(agreement, item, AgreementReason[data[item]])
+                    changed = True
+
+            case "agreement_type":
+                if isinstance(data[item], str):
+                    setattr(agreement, item, AgreementType[data[item]])
                     changed = True
 
             case _:

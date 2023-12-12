@@ -232,6 +232,7 @@ def test_contract(loaded_db):
         research_project_id=1,
         created_by=4,
     )
+
     loaded_db.add(contract_agreement)
     loaded_db.commit()
 
@@ -385,8 +386,8 @@ def test_agreements_patch_by_id_contract(auth_client, loaded_db, test_contract):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test_contract):
-    """Patch CONTRACT with setting fields to null/empty"""
-    # set fields to non-null/non-empty
+    """Patch CONTRACT with setting fields to None/empty"""
+    # set fields to non-None/non-empty
     response = auth_client.patch(
         url_for("api.agreements-item", id=test_contract.id),
         json={
@@ -407,7 +408,7 @@ def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test
     assert [m.id for m in test_contract.team_members] == [1]
     assert [m.id for m in test_contract.support_contacts] == [2, 3]
 
-    # path with null/empty
+    # path with None/empty
     response = auth_client.patch(
         url_for("api.agreements-item", id=test_contract.id),
         json={
@@ -492,3 +493,64 @@ def test_get_iaa_agreement(auth_client, loaded_db):
     assert response.status_code == 200
     assert response.json["agreement_type"] == "IAA"
     assert response.json["iaa"] == "This is an IAA value"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_post(auth_client):
+    response = auth_client.post(
+        "/api/v1/agreements/",
+        json={
+            "agreement_type": "CONTRACT",
+            "name": "Test Contract (for post)",
+        },
+    )
+    assert response.status_code == 201
+    contract_id = response.json["id"]
+
+    response = auth_client.get(url_for("api.agreements-item", id=contract_id))
+    assert response.status_code == 200
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract):
+    """PATCH with mimicking the e2e test"""
+    response = auth_client.patch(
+        f"/api/v1/agreements/{test_contract.id}",
+        json={
+            "acquisition_type": None,
+            "agreement_reason": "NEW_REQ",
+            "agreement_type": "CONTRACT",
+            "contract_number": None,
+            "contract_type": None,
+            "created_by_user": 21,
+            "delivered_status": False,
+            "description": "Test Description",
+            "display_name": "Test Contract",
+            "incumbent": None,
+            "incumbent_id": None,
+            "name": "Test Edit Title",
+            "notes": "Test Notes test edit notes",
+            "po_number": None,
+            "procurement_shop_id": 1,
+            "product_service_code_id": 1,
+            "project_officer": 1,
+            "project_officer_id": 1,
+            "research_project_id": 1,
+            "support_contacts": [],
+            "task_order_number": None,
+            "team_members": [
+                {
+                    "id": 3,
+                    "full_name": "Ivelisse Martinez-Beck",
+                    "email": "Ivelisse.Martinez-Beck@example.com",
+                },
+                {"id": 5, "full_name": "Tia Brown", "email": "Tia.Brown@example.com"},
+            ],
+            "vendor": None,
+            "vendor_id": None,
+            "versions": [{"id": 13, "transaction_id": 313}],
+        },
+    )
+    assert response.status_code == 200
+    assert test_contract.name == "Test Edit Title"
+    assert test_contract.notes == "Test Notes test edit notes"
