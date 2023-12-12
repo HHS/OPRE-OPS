@@ -75,7 +75,7 @@ class ApproveSubmisionListApi(BaseItemAPI):
                 if bli:
                     # latest_version = bli.versions.order_by(desc("id")).first()
                     # current_app.logger.info(f"Latest version: {latest_version}")
-                    new_package.bli_package_snapshots.append(
+                    new_package.package_snapshots.append(
                         PackageSnapshot(
                             bli_id=bli.id,
                             # package_id=new_bli_package.id,
