@@ -36,9 +36,13 @@ runs:
     - name: Set Terraform Variables
       run: |
         if [[ -n "${INPUT_TF_VARS}" ]]; then
-          for key in "${!INPUT_TF_VARS[@]}"; do
-            export TF_VAR_$key="${INPUT_TF_VARS[$key]}"
-            echo "Exported TF_VAR_$key=${INPUT_TF_VARS[$key]}"
+          for key in $(echo "${INPUT_TF_VARS}" | jq -r 'keys[]'); do
+            value=$(echo "${INPUT_TF_VARS}" | jq -r ".$key")
+
+            export "TF_VAR_${key// /}=${value}"
+
+            # Print debug statement
+            echo "Exported TF_VAR_${key// /}=${value}"
           done
         fi
       shell: bash
