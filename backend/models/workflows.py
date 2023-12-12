@@ -33,8 +33,6 @@ class WorkflowTriggerType(Enum):
     PROCUREMENT_SHOP = auto()
 
 
-
-
 class WorkflowTemplate(BaseModel):
     """ Workflow structure without being tied to any specific real-world entity """
     __tablename__ = "workflow_template"
@@ -97,6 +95,15 @@ class WorkflowStepTemplate(BaseModel):
     workflow_type = sa.Column(sa.Enum(WorkflowStepType), nullable=False)
     index = sa.Column(sa.Integer, nullable=False)
     step_approvers = relationship("StepApprovers", backref="step_template")
+
+    @override
+    def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
+
+        d.update(
+            workflow_type = self.workflow_type.name if self.workflow_type else None,
+        )
+        return d
 
 
 class WorkflowStepInstance(BaseModel):
@@ -177,8 +184,8 @@ class Package(BaseModel):
     __tablename__ = "package"
 
     id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
-    submitter_id = (sa.Integer, sa.ForeignKey("user.id"))
-    workflow = sa.Column(sa.Integer, sa.ForeignKey("workflow_instance.id"), nullable=True)
+    submitter_id = sa.Column(sa.Integer, sa.ForeignKey("user.id"))
+    workflow_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_instance.id"), nullable=True)
     notes = sa.Column(sa.String, nullable=True)
     package_snapshots = relationship("PackageSnapshot", backref="package")
 
@@ -191,17 +198,6 @@ class PackageSnapshot(BaseModel):
     __tablename__ = "package_snapshot"
     id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
     # make package_id a read-only field
-    _package_id = sa.Column(sa.Integer, sa.ForeignKey("package.id"), nullable=True)
+    package_id = sa.Column(sa.Integer, sa.ForeignKey("package.id"), nullable=True)
     version = sa.Column(sa.Integer, nullable=True)
     bli_id = sa.Column(sa.Integer, sa.ForeignKey("budget_line_item.id"), nullable=False)
-
-    @property
-    def package_id(self):
-        return self._package_id
-
-    @package_id.setter
-    def package_id(self, value):
-        if self._package_id is None:
-            self._package_id = value
-        else:
-            raise ValueError("package_id is a read-only attribute")

@@ -1,4 +1,5 @@
 """Base model and other useful tools for project models."""
+import decimal
 from typing import Annotated, ClassVar, Final, TypeAlias, TypedDict, TypeVar, cast
 
 from marshmallow import Schema as MMSchema

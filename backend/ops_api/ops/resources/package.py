@@ -25,3 +25,23 @@ class PackageListAPI(BaseListAPI):
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
     def get(self) -> Response:
         return super().get()
+
+
+class PackageSnapshotItemAPI(BaseItemAPI):
+    def __init__(self, model: BaseModel):
+        super().__init__(model)
+
+    @override
+    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
+    def get(self, id: int) -> Response:
+        return self._get_item_with_try(id)
+
+
+class PackageSnapshotListAPI(BaseListAPI):
+    def __init__(self, model: BaseModel):
+        super().__init__(model)
+
+    @override
+    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
+    def get(self) -> Response:
+        return super().get()

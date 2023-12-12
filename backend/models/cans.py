@@ -541,7 +541,7 @@ class BudgetLineItem(BaseModel):
             return False
         package = object_session(self).scalar(
             select(Package)
-            .join(PackageSnapshot, Package.id == PackageSnapshot._package_id)
+            .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
             .join(self.__class__, self.id == PackageSnapshot.bli_id)
             .join(WorkflowInstance, Package.workflow == WorkflowInstance.id)
             .join(
