@@ -25,10 +25,11 @@ resource "null_resource" "build" {
   provisioner "local-exec" {
 
     working_dir = var.frontend_dir
-    command     = "yarn build:terraform"
+    command     = "bun run build"
 
     environment = {
       REACT_APP_BACKEND_DOMAIN = self.triggers.backend_domain
+      VITE_BACKEND_DOMAIN = self.triggers.backend_domain
     }
   }
 }
