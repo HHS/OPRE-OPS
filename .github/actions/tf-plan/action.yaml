@@ -39,7 +39,7 @@ runs:
           for key in $(echo "${INPUT_TF_VARS}" | jq -r 'keys[]'); do
             value=$(echo "${INPUT_TF_VARS}" | jq -r ".$key")
 
-            export "TF_VAR_${key// /}=${value}"
+            echo "TF_VAR_${key// /}=${value}" >> $GITHUB_ENV
 
             # Print debug statement
             echo "Exported TF_VAR_${key// /}=${value}"
