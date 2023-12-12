@@ -10,7 +10,7 @@ on:
       - '.github/**' # We don't want to trigger when we update the workflows.
       - 'docs/**' # We don't want to trigger when we update the docs.
       - '*.md'
-      - '/terraform/**'
+      - 'terraform/**'
 
 jobs:
 
