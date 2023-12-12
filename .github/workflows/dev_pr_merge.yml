@@ -1,7 +1,6 @@
 name: Development Front End Pull Request Merge
 
 on:
-  push:
   pull_request:
     branches:
       - development
