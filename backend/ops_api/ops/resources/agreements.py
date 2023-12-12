@@ -7,6 +7,7 @@ from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from marshmallow import EXCLUDE, Schema, ValidationError
 from models import (
+    CAN,
     ContractType,
     DirectAgreement,
     GrantAgreement,
@@ -446,11 +447,14 @@ def add_additional_fields_to_agreement_response(agreement: Agreement) -> dict[st
     if not agreement:
         return {}
 
-    # change BLI amounts from string to float - this is a temporary solution in lieu of marshmallow
     transformed_blis = [bli.to_dict() for bli in agreement.budget_line_items]
     for bli in transformed_blis:
+        # change BLI amounts from string to float - this is a temporary solution in lieu of marshmallow
         if bli.get("amount"):
             bli["amount"] = float(bli.get("amount"))
+        # nest the CAN object (temp needed for the frontend)
+        if bli.get("can"):
+            bli["can"] = current_app.db_session.get(CAN, bli.get("can")).to_dict()
 
     # change PS amount from string to float - this is a temporary solution in lieu of marshmallow
     transformed_ps = agreement.procurement_shop.to_dict() if agreement.procurement_shop else {}
