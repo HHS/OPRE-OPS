@@ -42,6 +42,8 @@ runs:
           done
         fi
       shell: bash
+      env:
+        INPUT_TF_VARS: ${{ inputs.tf_vars }}
 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
