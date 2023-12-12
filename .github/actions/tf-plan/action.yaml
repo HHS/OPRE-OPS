@@ -51,18 +51,28 @@ runs:
     - name: Terraform Init
       id: init
       working-directory: ${{ inputs.terraform_directory }}
+      shell: bash
+      env:
+        ARM_CLIENT_ID: ${{ inputs.azure_client_id }}
+        ARM_CLIENT_SECRET: ${{ inputs.azure_client_secret }}
+        ARM_SUBSCRIPTION_ID: ${{ inputs.azure_subscription_id }}
+        ARM_TENANT_ID: ${{ inputs.azure_tenant_id }}
       run: |
         terraform init
-      shell: bash
 
     - name: Terraform Plan
       id: plan
       working-directory: ${{ inputs.terraform_directory }}
+      shell: bash
+      env:
+        ARM_CLIENT_ID: ${{ inputs.azure_client_id }}
+        ARM_CLIENT_SECRET: ${{ inputs.azure_client_secret }}
+        ARM_SUBSCRIPTION_ID: ${{ inputs.azure_subscription_id }}
+        ARM_TENANT_ID: ${{ inputs.azure_tenant_id }}
       run: |
         echo 'plan<<EOF' >> $GITHUB_OUTPUT
         terraform plan -no-color -out=tfplan >> $GITHUB_OUTPUT
         echo 'EOF' >> $GITHUB_OUTPUT
-      shell: bash
 
     - name: Save Artifact
       id: save-artifact
