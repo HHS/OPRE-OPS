@@ -58,6 +58,8 @@ runs:
         ARM_SUBSCRIPTION_ID: ${{ inputs.azure_subscription_id }}
         ARM_TENANT_ID: ${{ inputs.azure_tenant_id }}
       run: |
+        env
+        echo "TF_COMMIT_HASH: $TF_VAR_commit_hash"
         terraform init
 
     - name: Terraform Plan
