@@ -1,25 +1,25 @@
 """Workflow models."""
-from enum import Enum
-from typing import Any, ClassVar, Optional, cast
+from enum import Enum, auto
 
 import sqlalchemy as sa
 from models.base import BaseModel
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import InstrumentedAttribute, relationship, with_polymorphic
-from typing_extensions import override
+from sqlalchemy.orm import relationship
+from typing_extensions import Any, override
 
 
-class WorkflowAction(Enum): # WorkflowStepTypes
+class WorkflowAction(Enum):
     DRAFT_TO_PLANNED = 1
     PLANNED_TO_EXECUTING = 2
     GENERIC = 3
 
 
-class WorkflowStepType(Enum): # WorkflowStepTypes
+class WorkflowStepType(Enum):
     APPROVAL = 1
     DOCUMENT_MGMT = 2
     VALIDATION = 3
     PROCUREMENT = 4
+
 
 class WorkflowStatus(Enum):
     REVIEW = "In-Review"
@@ -29,8 +29,10 @@ class WorkflowStatus(Enum):
 
 
 class WorkflowTriggerType(Enum):
-    CAN = 1
-    PROCUREMENT_SHOP = 2
+    CAN = auto()
+    PROCUREMENT_SHOP = auto()
+
+
 
 
 class WorkflowTemplate(BaseModel):
@@ -74,7 +76,16 @@ class WorkflowInstance(BaseModel):
         return next((status for status in status_order if any(item.status == status for item in self.steps)),
             WorkflowStatus.APPROVED if all(item.status == WorkflowStatus.APPROVED for item in self.steps) else None)
 
+    @override
+    def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
 
+        d.update(
+            associated_type = self.associated_type.name if self.associated_type else None,
+            workflow_status = self.workflow_status.name if self.workflow_status else None,
+            workflow_action = self.workflow_action.name if self.workflow_action else None,
+        )
+        return d
 
 class WorkflowStepTemplate(BaseModel):
     """ Step structure belonging to a WorkflowTemplate """
@@ -120,8 +131,17 @@ class WorkflowStepInstance(BaseModel):
                [approver.group for approver in self.step_template.step_approvers if approver.group is not None] + \
                [approver.role for approver in self.step_template.step_approvers if approver.role is not None]
 
+    @override
+    def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
 
-
+        d.update(
+            status=self.status.name if self.status else None,
+            # TODO: format for these times?
+            time_started=str(self.time_started) if self.time_started else None,
+            time_completed=str(self.time_completed) if self.time_completed else None
+        )
+        return d
 
 class WorkflowStepDependency(BaseModel):
     """ Association model to handle multiple dependencies between WorkflowStepInstances """
@@ -166,19 +186,6 @@ class Package(BaseModel):
         return f"{self.package_type}-Package-{self.id}"
 
 
-# class BliPackage(Package, package_type=PackageType.BLI):
-#     """Budget Line Item Package
-#     """
-#     __tablename__ = "bli_package"
-
-#     id = sa.Column(sa.Integer, sa.ForeignKey("package.id"), primary_key=True)
-#     bli_package_snapshots = relationship("BliPackageSnapshot", backref="bli_package")
-
-#     __mapper_args__ = {
-#         "polymorphic_identity": PackageType.BLI,
-#     }
-
-
 class PackageSnapshot(BaseModel):
     __tablename__ = "package_snapshot"
     id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
@@ -197,9 +204,3 @@ class PackageSnapshot(BaseModel):
             self._package_id = value
         else:
             raise ValueError("package_id is a read-only attribute")
-
-
-# class BliPackageSnapshot(PackageSnapshot):
-#     __tablename__ = "bli_package_snapshot"
-#     id = sa.Column(sa.Integer, sa.ForeignKey("package_snapshot.id"), primary_key=True)
-#     bli_package = relationship("BliPackage", backref="bli_package_snapshots", overlaps="package,package_snapshots")
