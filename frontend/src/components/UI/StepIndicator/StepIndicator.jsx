@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import PropTypes from "prop-types";
 
 /**
@@ -22,8 +23,8 @@ export const StepIndicator = ({ steps, currentStep }) => {
                             index + 1 === currentStep
                                 ? "usa-step-indicator__segment--current"
                                 : index + 1 < currentStep
-                                ? "usa-step-indicator__segment--complete"
-                                : ""
+                                  ? "usa-step-indicator__segment--complete"
+                                  : ""
                         }`}
                     >
                         <span className="usa-step-indicator__segment-label">{step}</span>
