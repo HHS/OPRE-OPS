@@ -163,7 +163,7 @@ class Package(BaseModel):
 
     @BaseModel.display_name.getter
     def display_name(self):
-        return f"{self.package_type}-Package-{self.id}"
+        return f"Package-{self.id}"
 
 
 # class BliPackage(Package, package_type=PackageType.BLI):
