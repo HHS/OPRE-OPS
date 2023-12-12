@@ -29,8 +29,8 @@ class WorkflowStatus(Enum):
 
 
 class WorkflowTriggerType(Enum):
-    CAN = auto()
-    PROCUREMENT_SHOP = auto()
+    CAN = 1
+    PROCUREMENT_SHOP = 2
 
 
 class WorkflowTemplate(BaseModel):
@@ -77,6 +77,9 @@ class WorkflowInstance(BaseModel):
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
         d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
+
+        if isinstance(self.associated_type, str):
+            self.associated_type = WorkflowTriggerType[self.associated_type]
 
         d.update(
             associated_type = self.associated_type.name if self.associated_type else None,

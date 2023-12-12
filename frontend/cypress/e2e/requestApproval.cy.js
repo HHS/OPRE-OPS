@@ -10,7 +10,7 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 
-it("cannot edit an agreement with budget line items obligated", () => {
+it("can submit budgetlines for status change.", () => {
     cy.visit(`agreements/review/1`);
     cy.get("dd").first().should("have.text", "Contract #1: African American Child and Family Research Center");
     cy.get('[data-cy="div-change-draft-to-planned"]').should("exist").click();
