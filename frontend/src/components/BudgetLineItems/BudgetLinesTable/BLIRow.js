@@ -165,7 +165,10 @@ const BLIRow = ({
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>{changeIcons}</div>
                 ) : (
-                    <TableTag status={budgetLine.status} />
+                    <TableTag
+                        inReview={isBLIInPacket}
+                        status={budgetLine?.status}
+                    />
                 )}
             </td>
         </>
