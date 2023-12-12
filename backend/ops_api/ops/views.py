@@ -6,6 +6,7 @@ from models.portfolios import Division, Portfolio, PortfolioStatus
 from models.procurement_shops import ProcurementShop
 from models.research_projects import ResearchProject, ResearchType
 from models.users import User
+from models.workflows import WorkflowInstance, WorkflowStepInstance
 from ops_api.ops.resources.agreement_history import AgreementHistoryListAPI
 from ops_api.ops.resources.agreements import (
     AgreementItemAPI,
@@ -35,6 +36,7 @@ from ops_api.ops.resources.research_project_funding_summary import ResearchProje
 from ops_api.ops.resources.research_projects import ResearchProjectItemAPI, ResearchProjectListAPI
 from ops_api.ops.resources.research_type import ResearchTypeListAPI
 from ops_api.ops.resources.users import UsersItemAPI, UsersListAPI
+from ops_api.ops.resources.workflow_instance import WorkflowInstanceItemAPI, WorkflowInstanceListAPI
 
 # AGREEMENT ENDPOINTS
 AGREEMENT_ITEM_API_VIEW_FUNC = AgreementItemAPI.as_view("agreements-item", Agreement)
@@ -138,3 +140,15 @@ OPS_DB_HISTORY_LIST_API_VIEW_FUNC = OpsDBHistoryListAPI.as_view("ops-db-history-
 # NOTIFICATIONS ENDPOINTS
 NOTIFICATIONS_ITEM_API_VIEW_FUNC = NotificationItemAPI.as_view("notifications-item", Notification)
 NOTIFICATIONS_LIST_API_VIEW_FUNC = NotificationListAPI.as_view("notifications-group", Notification)
+
+# WORKFLOW INSTANCE ENDPOINTS
+WORKFLOW_INSTANCE_ITEM_API_VIEW_FUNC = WorkflowInstanceItemAPI.as_view("workflow-instance-item", WorkflowInstance)
+WORKFLOW_INSTANCE_LIST_API_VIEW_FUNC = WorkflowInstanceListAPI.as_view("workflow-instance-group", WorkflowInstance)
+
+# WORKFLOW STEP INSTANCE ENDPOINTS
+WORKFLOW_STEP_INSTANCE_ITEM_API_VIEW_FUNC = WorkflowInstanceItemAPI.as_view(
+    "workflow-step-instance-item", WorkflowStepInstance
+)
+WORKFLOW_STEP_INSTANCE_LIST_API_VIEW_FUNC = WorkflowInstanceListAPI.as_view(
+    "workflow-step-instance-group", WorkflowStepInstance
+)

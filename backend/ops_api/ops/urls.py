@@ -42,6 +42,10 @@ from ops_api.ops.views import (
     RESEARCH_TYPE_LIST_API_VIEW_FUNC,
     USERS_ITEM_API_VIEW_FUNC,
     USERS_LIST_API_VIEW_FUNC,
+    WORKFLOW_INSTANCE_ITEM_API_VIEW_FUNC,
+    WORKFLOW_INSTANCE_LIST_API_VIEW_FUNC,
+    WORKFLOW_STEP_INSTANCE_ITEM_API_VIEW_FUNC,
+    WORKFLOW_STEP_INSTANCE_LIST_API_VIEW_FUNC,
 )
 
 # Ideas from Flask docs: https://flask.palletsprojects.com/en/2.2.x/views/#method-dispatching-and-apis
@@ -238,4 +242,20 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/approve/",
         view_func=APPROVE_SUBMISSION_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/workflow-instance/",
+        view_func=WORKFLOW_INSTANCE_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/workflow-instance/<int:id>",
+        view_func=WORKFLOW_INSTANCE_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/workflow-step-instance/",
+        view_func=WORKFLOW_STEP_INSTANCE_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/workflow-step-instance/<int:id>",
+        view_func=WORKFLOW_STEP_INSTANCE_ITEM_API_VIEW_FUNC,
     )

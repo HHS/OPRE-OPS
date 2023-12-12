@@ -28,3 +28,19 @@ def test_workflow_step_instance_retrieve(auth_client, loaded_db):
     assert workflow_step_instance.notes == "Need approved ASAP!"
     assert workflow_step_instance.time_started is not None
     assert workflow_step_instance.time_completed is not None
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_get_workflow_instance_by_id(auth_client):
+    response = auth_client.get("/api/v1/workflow-instance/1")
+    assert response.status_code == 200
+    assert response.json["id"] == 1
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_get_workflow_step_instance_by_id(auth_client):
+    response = auth_client.get("/api/v1/workflow-step-instance/1")
+    assert response.status_code == 200
+    assert response.json["id"] == 1

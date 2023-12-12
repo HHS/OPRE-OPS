@@ -544,7 +544,10 @@ class BudgetLineItem(BaseModel):
             .join(PackageSnapshot, Package.id == PackageSnapshot._package_id)
             .join(self.__class__, self.id == PackageSnapshot.bli_id)
             .join(WorkflowInstance, Package.workflow == WorkflowInstance.id)
-            .join(WorkflowStepInstance, WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id)
+            .join(
+                WorkflowStepInstance,
+                WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
+            )
             .where(WorkflowStepInstance.status == WorkflowStatus.REVIEW)
         )
         return package is not None
@@ -564,7 +567,9 @@ class BudgetLineItem(BaseModel):
             else None,
             date_needed=self.date_needed.isoformat() if self.date_needed else None,
             can=self.can.to_dict() if self.can else None,
-            has_active_workflow=self.has_active_workflow if self.has_active_workflow else None,
+            has_active_workflow=self.has_active_workflow
+            if self.has_active_workflow
+            else None,
         )
 
         return d
