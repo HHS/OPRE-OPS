@@ -65,7 +65,7 @@ const NotificationCenter = () => {
                     <div className={customStyles.flexRight}>
                         <div className={customStyles.closeButtonWrapper}>
                             <svg
-                                className="usa-icon text-ink height-205 width-205 hover: cursor-pointer usa-tooltip"
+                                className="usa-icon text-ink height-205 width-205 cursor-pointer"
                                 onClick={() => setShowModal(false)}
                                 id="notification-center-close"
                             >
@@ -83,7 +83,7 @@ const NotificationCenter = () => {
                                 }}
                             >
                                 <svg
-                                    className={`${customStyles.clearButtonIcon} usa-icon text-primary height-205 width-205 usa-tooltip`}
+                                    className={`${customStyles.clearButtonIcon} usa-icon text-primary height-205 width-205`}
                                     id="notification-center-clear-all"
                                 >
                                     <use xlinkHref={`${icons}#close`}></use>
