@@ -35,9 +35,10 @@ runs:
   steps:
     - name: Set Terraform Variables
       run: |
-        if [[ -n "${INPUT_TF_VARS}" ]]; then
-          for key in "${!INPUT_TF_VARS[@]}"; do
-            export TF_VAR_$key="${INPUT_TF_VARS[$key]}"
+        if [[ -n "${{ inputs.tf_vars }}" ]]; then
+          for key in "${!{ inputs.tf_vars }[@]}"; do
+            export TF_VAR_$key="${{ inputs.tf_vars }[$key]}"
+            echo "Exported TF_VAR_$key=${{ inputs.tf_vars }[$key]}"
           done
         fi
       shell: bash
