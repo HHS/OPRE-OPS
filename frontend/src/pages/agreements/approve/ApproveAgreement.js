@@ -50,13 +50,13 @@ const ApproveAgreement = () => {
 
     // compare packetBLIs to agreement.budget_line_items
     // make a new array indicating if budgetline is in packetBLIs
-    const tableBudgetLines = agreement?.budget_line_items.map((bli) => {
-        const isBLIInPacket = mockData.packageBLIs.find((bliInPacket) => bliInPacket.id === bli.id);
-        return {
-            ...bli,
-            isInPacket: !!isBLIInPacket
-        };
-    });
+    // const tableBudgetLines = agreement?.budget_line_items.map((bli) => {
+    //     const isBLIInPacket = mockData.packageBLIs.find((bliInPacket) => bliInPacket.id === bli.id);
+    //     return {
+    //         ...bli,
+    //         isInPacket: !!isBLIInPacket
+    //     };
+    // });
 
     const changeInCans = getTotalByCans(agreement?.budget_line_items);
 
@@ -95,14 +95,14 @@ const ApproveAgreement = () => {
 
             <AgreementBLIAccordion
                 title="Review Budget Lines"
-                budgetLineItems={tableBudgetLines}
+                budgetLineItems={agreement?.budget_line_items}
                 agreement={agreement}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
             >
                 <BudgetLinesTable
                     readOnly={true}
-                    budgetLinesAdded={tableBudgetLines}
+                    budgetLinesAdded={agreement?.budget_line_items}
                     isReviewMode={false}
                     showTotalSummaryCard={false}
                 />
@@ -172,7 +172,7 @@ const ApproveAgreement = () => {
                 </button>
             </div>
             <pre className="font-code-2xs border-dashed border-error margin-top-10">
-                {JSON.stringify(tableBudgetLines, null, 2)}
+                {JSON.stringify(agreement?.budget_line_items, null, 2)}
             </pre>
         </App>
     );
