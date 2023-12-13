@@ -119,7 +119,7 @@ class ApproveSubmisionListApi(BaseItemAPI):
             current_app.db_session.commit()
 
             # updated the current step in the bli package to the first step in the workflow
-            new_package.workflow = workflow_instance.id
+            new_package.workflow_id = workflow_instance.id
 
             # commit our new bli package
             current_app.db_session.add(new_package)
