@@ -34,6 +34,7 @@ export const mockData = {
             line_description: "LI 1",
             proc_shop_fee_percentage: null,
             status: "DRAFT",
+            has_active_workflow: true,
             updated_on: "2023-11-13T21:55:11.686443"
         },
         {
@@ -66,6 +67,7 @@ export const mockData = {
             line_description: "LI 2",
             proc_shop_fee_percentage: null,
             status: "DRAFT",
+            has_active_workflow: true,
             updated_on: "2023-11-13T21:55:11.686443"
         }
     ]

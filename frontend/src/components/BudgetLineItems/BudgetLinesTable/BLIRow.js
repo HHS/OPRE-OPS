@@ -66,8 +66,8 @@ const BLIRow = ({
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     // are you on the approve page?
     const isApprovePage = location.pathname.includes("approve");
-    const isBLIInPacket = budgetLine?.isInPacket || false;
-    const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInPacket;
+    const isBLIInWorkflow = budgetLine?.has_active_workflow || false;
+    const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInWorkflow;
 
     const TableRowData = (
         <>
@@ -166,7 +166,7 @@ const BLIRow = ({
                     <div>{changeIcons}</div>
                 ) : (
                     <TableTag
-                        inReview={isBLIInPacket}
+                        inReview={isBLIInWorkflow}
                         status={budgetLine?.status}
                     />
                 )}
