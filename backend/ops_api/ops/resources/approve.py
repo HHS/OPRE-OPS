@@ -13,6 +13,7 @@ from models.workflows import (
     WorkflowInstance,
     WorkflowStatus,
     WorkflowStepInstance,
+    WorkflowTriggerType,
 )
 from ops_api.ops.base_views import BaseItemAPI
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
@@ -99,7 +100,7 @@ class ApproveSubmisionListApi(BaseItemAPI):
             #  TODO: this should step over the `bli_cans` list and create a workflow step instance for each CAN,
             #  but for now, going to assume the first BLI CAN is all we need, to ensure the process works.
             workflow_instance.associated_id = 1  # bli_cans[0]
-            workflow_instance.associated_type = "CAN"
+            workflow_instance.associated_type = WorkflowTriggerType.CAN
 
             workflow_step_instance = WorkflowStepInstance(
                 workflow_step_template_id=2,
