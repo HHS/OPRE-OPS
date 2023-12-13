@@ -4,7 +4,7 @@ from enum import Enum, auto
 import sqlalchemy as sa
 from models.base import BaseModel
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import object_session, relationship
 from typing_extensions import Any, override
 
 
@@ -61,7 +61,19 @@ class WorkflowInstance(BaseModel):
     steps = relationship("WorkflowStepInstance", backref="workflow_instance")
     workflow_action = sa.Column(sa.Enum(WorkflowAction), nullable=False)
     current_workflow_step_instance_id = sa.Column(sa.Integer, nullable=True)
-    # future props
+
+    # THis bee brokennnnn
+    # @property
+    # def package_entities(self):
+    #     if object_session(self) is None:
+    #         return []
+    #     bli_list = object_session(self).execute(
+    #         sa.select(PackageSnapshot.bli_id)
+    #             .join(Package, Package.id == PackageSnapshot.package_id)
+    #             .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
+    #             .where(WorkflowInstance.id == self.id)
+    #     )
+    #     return bli_list
 
     # REJECTED = "Rejected" (any --> Rejected)
     # CHANGES = "Changes Required" (any --> Changes Required)
@@ -85,6 +97,7 @@ class WorkflowInstance(BaseModel):
             associated_type = self.associated_type.name if self.associated_type else None,
             workflow_status = self.workflow_status.name if self.workflow_status else None,
             workflow_action = self.workflow_action.name if self.workflow_action else None,
+            #package_entities = self.package_entities
         )
         return d
 
