@@ -20,6 +20,14 @@ def test_budget_line_item_lookup(loaded_db):
     assert bli.status == BudgetLineItemStatus.DRAFT
 
 
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_item_has_active_workflow(loaded_db):
+    bli = loaded_db.get(BudgetLineItem, 2)
+    print(bli.to_dict())
+    assert bli is not None
+    assert bli.has_active_workflow is True
+
+
 def test_budget_line_item_creation():
     bli = BudgetLineItem(
         line_description="Grant Expendeture GA999",

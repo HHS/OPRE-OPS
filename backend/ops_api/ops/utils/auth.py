@@ -43,6 +43,7 @@ class Permission(Enum):
     PORTFOLIO = auto()
     RESEARCH_PROJECT = auto()
     USER = auto()
+    WORKFLOW = auto()
 
 
 @jwtMgr.user_identity_loader

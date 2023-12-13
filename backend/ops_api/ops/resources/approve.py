@@ -1,11 +1,19 @@
 from dataclasses import dataclass
+from datetime import datetime
 
 from flask import Response, current_app, request
 from flask_jwt_extended import verify_jwt_in_request
 from marshmallow import Schema, ValidationError, fields
 from models.base import BaseModel
 from models.cans import BudgetLineItem
-from models.workflows import BliPackage, BliPackageSnapshot
+from models.workflows import (
+    Package,
+    PackageSnapshot,
+    WorkflowAction,
+    WorkflowInstance,
+    WorkflowStatus,
+    WorkflowStepInstance,
+)
 from ops_api.ops.base_views import BaseItemAPI
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
@@ -45,38 +53,32 @@ class ApproveSubmisionListApi(BaseItemAPI):
             submitter_id = request.json.get("submitter_id")
             budget_line_item_ids = request.json.get("budget_line_item_ids", [])
             submission_notes = request.json.get("notes")
-
+            # Capture the use-case for this package (DRAFT_TO_PLANNED or PLANNED_TO_EXECUTED)
+            workflow_action = request.json.get("workflow_action")
             # Create new BliPackage
-            new_bli_package = BliPackage()
+            new_package = Package()
 
             if submitter_id := request.json.get("submitter_id"):
-                new_bli_package.submitter_id = submitter_id
+                new_package.submitter_id = submitter_id
 
             token = verify_jwt_in_request()
             user = get_user_from_token(token[1])
-            new_bli_package.created_by = user.id
-            new_bli_package.submitter_id = user.id
-            new_bli_package.notes = submission_notes
-
-            # bli_cans = []
+            new_package.created_by = user.id
+            new_package.submitter_id = user.id
+            new_package.notes = submission_notes
 
             # Create BliPackageSnapshot
             # Handle budget_line_item IDs and create BliPackageSnapshot records
             for bli_id in budget_line_item_ids:
                 bli = current_app.db_session.get(BudgetLineItem, bli_id)
 
-                # bli_package_snapshot = BliPackageSnapshot(
-                #     bli_id=bli.id,
-                #     package_id=new_bli_package.id,
-                #     version=None,
-                # )
                 if bli:
                     # latest_version = bli.versions.order_by(desc("id")).first()
                     # current_app.logger.info(f"Latest version: {latest_version}")
-                    new_bli_package.bli_package_snapshots.append(
-                        BliPackageSnapshot(
+                    new_package.package_snapshots.append(
+                        PackageSnapshot(
                             bli_id=bli.id,
-                            # package_id=new_bli_package.id,
+                            # package_id=new_package.id,
                             version=None,
                         )
                     )
@@ -85,48 +87,49 @@ class ApproveSubmisionListApi(BaseItemAPI):
                 else:
                     raise ValueError(f"BudgetLineItem with ID {bli_id} does not exist.")
 
-            # # WIP: Create WorkflowInstance and WorkflowStepInstance
-            # workflow_instance = WorkflowInstance()
-            # workflow_instance.workflow_template_id = 1  # We know this is a basic approval template
-            # workflow_instance.created_by = user.id
+            # WIP: Create WorkflowInstance and WorkflowStepInstance
+            workflow_instance = WorkflowInstance()
+            workflow_instance.workflow_template_id = 1  # We know this is a basic approval template
+            workflow_instance.created_by = user.id
+            workflow_instance.workflow_action = WorkflowAction[workflow_action]
 
-            # #  In order to know which workflow to follow, ie: who to send the approval request to,
-            # #  we need to know which CAN the BLIs are associated with. This is the associated_id,
-            # #  and the associated_type will be "CAN".
-            # #  TODO: this should step over the `bli_cans` list and create a workflow step instance for each CAN,
-            # #  but for now, going to assume the first BLI CAN is all we need, to ensure the process works.
-            # workflow_instance.associated_id = bli_cans[0]
-            # workflow_instance.associated_type = "CAN"
+            #  In order to know which workflow to follow, ie: who to send the approval request to,
+            #  we need to know which CAN the BLIs are associated with. This is the associated_id,
+            #  and the associated_type will be "CAN".
+            #  TODO: this should step over the `bli_cans` list and create a workflow step instance for each CAN,
+            #  but for now, going to assume the first BLI CAN is all we need, to ensure the process works.
+            workflow_instance.associated_id = 1  # bli_cans[0]
+            workflow_instance.associated_type = "CAN"
 
-            # workflow_step_instance = WorkflowStepInstance(
-            #         workflow_step_template_id=2,
-            #         status=WorkflowStatus.REVIEW,
-            #         notes=submission_notes,
-            #         created_by=user.id,
-            #         time_started=datetime.now(),
-            #         successor_dependencies=None,
-            #         predecessor_dependencies=None,
-            #     )
-            # current_app.logger.info(f"Workflow Step Instance: {workflow_step_instance}")
+            workflow_step_instance = WorkflowStepInstance(
+                workflow_step_template_id=2,
+                status=WorkflowStatus.REVIEW,
+                notes=submission_notes,
+                created_by=user.id,
+                time_started=datetime.now(),
+                successor_dependencies=[],
+                predecessor_dependencies=[],
+            )
+            current_app.logger.info(f"Workflow Step Instance: {workflow_step_instance}")
 
-            # # workflow_instance.steps.append(workflow_step_instance)
+            workflow_instance.steps.append(workflow_step_instance)
 
-            # # # WIP: commit our new workflow instance
-            # # current_app.db_session.add(workflow_instance)
-            # # current_app.db_session.commit()
-
-            # # updated the current step in the bli package to the first step in the workflow
-            # new_bli_package.current_workflow_step_instance_id = workflow_instance.steps[0].id  # set the current_workflow_step_instance_id to the first step in the workflow
-
-            # commit our new bli package
-            current_app.db_session.add(new_bli_package)
+            # WIP: commit our new workflow instance
+            current_app.db_session.add(workflow_instance)
             current_app.db_session.commit()
 
-            # new_bli_package_dict = new_bli_package.to_dict()
-            # meta.metadata.update({"New Bli Package": new_bli_package_dict})
-            # current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Bli Package created: {new_bli_package_dict}")
+            # updated the current step in the bli package to the first step in the workflow
+            new_package.workflow = workflow_instance.id
 
-            return make_response_with_headers({"message": "Bli Package created", "id": new_bli_package.id}, 201)
+            # commit our new bli package
+            current_app.db_session.add(new_package)
+            current_app.db_session.commit()
+
+            new_package_dict = new_package.to_dict()
+            # meta.metadata.update({"New Bli Package": new_package_dict})
+            current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Bli Package created: {new_package_dict}")
+
+            return make_response_with_headers({"message": "Bli Package created", "id": new_package.id}, 201)
         except (KeyError, RuntimeError, PendingRollbackError, ValueError) as re:
             current_app.logger.error(f"{message_prefix}: {re}")
             return make_response_with_headers({}, 400)

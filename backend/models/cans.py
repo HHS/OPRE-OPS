@@ -6,6 +6,7 @@ import sqlalchemy as sa
 from models.base import BaseModel
 from models.portfolios import Portfolio
 from models.users import User
+from models.workflows import Package, PackageSnapshot, WorkflowInstance, WorkflowStatus, WorkflowStepInstance
 from sqlalchemy import (
     Boolean,
     Column,
@@ -194,6 +195,10 @@ class Agreement(BaseModel):
     )
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
     notes: Mapped[str] = mapped_column(Text, default="")
+
+    # @property
+    # def has_bli_in_workflow(self):
+    #     return any(bli.workflow_instance_id for bli in self.budget_line_items)
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -410,6 +415,23 @@ class BudgetLineItem(BaseModel):
     @property
     def team_members(self):
         return self.agreement.team_members if self.agreement else []
+
+    @property
+    def has_active_workflow(self):
+        if object_session(self) is None:
+            return False
+        package = object_session(self).scalar(
+            select(Package)
+            .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
+            .join(self.__class__, self.id == PackageSnapshot.bli_id)
+            .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
+            .join(
+                WorkflowStepInstance,
+                WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
+            )
+            .where(WorkflowStepInstance.status == WorkflowStatus.REVIEW)
+        )
+        return package is not None
 
 
 class CAN(BaseModel):

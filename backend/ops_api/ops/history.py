@@ -1,3 +1,4 @@
+import json
 import logging
 from collections import namedtuple
 from datetime import date, datetime
@@ -114,11 +115,17 @@ def track_db_history_after(session: Session):
 
 
 def track_db_history_catch_errors(exception_context):
+    # Avoid JSON serialization error with exception_context.parameters by safely converting first
+    # Otherwise, if there are objects in exception_context.parameters that SQLAlchemy can't convert to JSON
+    # then it can spawn another error which comes back to here which spawns another error, etc
+    params_json = json.dumps(exception_context.parameters, default=str)
+    params_obj = json.loads(params_json)
+
     ops_db = OpsDBHistory(
         event_type=OpsDBHistoryType.ERROR,
         event_details={
             "statement": exception_context.statement,
-            "parameters": exception_context.parameters,
+            "parameters": params_obj,
             "original_exception": f"{exception_context.original_exception}",
             "sqlalchemy_exception": f"{exception_context.sqlalchemy_exception}",
         },
@@ -145,7 +152,7 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
         current_app.logger.info(f"Failed trying to get the user from the request. {type(e)}: {e}")
 
     for obj in objs:
-        if not isinstance(obj, OpsEvent) and not isinstance(obj, OpsDBHistory):  # not interested in tracking these
+        if not isinstance(obj, (OpsEvent, OpsDBHistory)):  # not interested in tracking these
             db_audit = build_audit(obj, event_type)
             if event_type == OpsDBHistoryType.UPDATED and not db_audit.changes:
                 logging.info(
