@@ -12,6 +12,7 @@ env:
   TERRAFORM_VERSION: "1.2.9"
   TF_IN_AUTOMATION: "True"
   ENVIRONMENT: "dev"
+  FRONTEND_DIR: "frontend"
 
 jobs:
   frontend-build:
@@ -19,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          path: frontend
+          path: ${{ env.FRONTEND_DIR }}
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
@@ -27,16 +28,18 @@ jobs:
           bun-version: latest
 
       - name: Install dependencies
+        working-directory: ${{ env.FRONTEND_DIR }}
         run: bun install
         
       - name: Build Frontend
+        working-directory: ${{ env.FRONTEND_DIR }}
         run: bun run build
 
       - name: Archive Artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: frontend-${{ env.ENVIRONMENT }}-build-${{ github.sha }}
-          path: frontend/build
+          name: ${{ env.FRONTEND_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.sha }}
+          path: ${{ env.FRONTEND_DIR }}/build
   
   terraform_plan:
     permissions:
@@ -49,8 +52,8 @@ jobs:
       - name: Download Frontend Artifacts
         uses: actions/download-artifact@v2
         with:
-          name: frontend-${{ env.ENVIRONMENT }}-build-${{ github.sha }}
-          path: frontend
+          name: ${{ env.FRONTEND_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.sha }}
+          path: ${{ env.FRONTEND_DIR }}
 
       - name: Get PR ID
         id: pr-id
