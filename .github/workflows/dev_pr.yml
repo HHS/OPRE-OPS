@@ -15,7 +15,7 @@ env:
   WORKING_DIR: "frontend"
 
 jobs:
-  frontend-build:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -39,7 +39,8 @@ jobs:
           name: ${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.sha }}
           path: ${{ env.WORKING_DIR }}/build
   
-  terraform_plan:
+  deploy:
+    needs: build
     permissions:
       pull-requests: write
 
