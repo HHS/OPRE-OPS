@@ -32,6 +32,7 @@ class UserGroup(BaseModel):
 
 class User(BaseModel):
     """Main User model."""
+
     __tablename__ = "user"
 
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
@@ -106,21 +107,6 @@ class User(BaseModel):
     @BaseModel.display_name.getter
     def display_name(self):
         return self.full_name if self.full_name else self.email
-
-    # @override
-    # def to_dict(self) -> dict[str, Any]:
-    #     d = super().to_dict()
-    #
-    #     d.update(
-    #         {
-    #             "oidc_id": f"{self.oidc_id}" if self.oidc_id else None,
-    #             "date_joined": self.date_joined.isoformat()
-    #             if self.date_joined
-    #             else None,
-    #         }
-    #     )
-    #
-    #     return cast(dict[str, Any], d)
 
 
 class Role(BaseModel):

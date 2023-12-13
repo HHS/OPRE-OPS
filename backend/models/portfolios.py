@@ -106,22 +106,3 @@ class Portfolio(BaseModel):
     @property
     def division(self):
         return object_session(self).get(Division, self.division_id)
-
-    # @override
-    # def to_dict(self) -> dict[str, Any]:
-    #     d = super().to_dict()
-    #
-    #     d.update(
-    #         {
-    #             "description": self.description,
-    #             "urls": [url.to_dict() for url in self.urls],
-    #             "cans": [can.to_dict() for can in self.cans],
-    #             "division": self.division.to_dict() if self.division else None,
-    #             "status": self.status.name if self.status else None,
-    #             "team_leaders": [
-    #                 team_lead.to_dict() for team_lead in self.team_leaders
-    #             ],
-    #         }
-    #     )
-    #
-    #     return cast(dict[str, Any], d)
