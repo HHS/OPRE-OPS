@@ -61,13 +61,13 @@ it("Agreements list table has correct headers and first row", () => {
 });
 
 it("navigates to the ReviewAgreements page when the review button is clicked", () => {
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(2000);
     cy.get(".usa-table").should("exist");
     cy.get("tbody tr").first().trigger("mouseover");
     cy.get("button[id^='submit-for-approval-']").first().should("exist");
     cy.get("button[id^='submit-for-approval-']").first().should("not.be.disabled");
     cy.get("button[id^='submit-for-approval-']").first().click();
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(2000);
     cy.url().should("include", "/agreements/review");
     cy.get("h1").should("exist");
     cy.get("h1").should("have.text", "Review and Send Agreement to Approval");
