@@ -52,7 +52,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: ${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.sha }}
-          path: ${{ env.WORKING_DIR }}
+          path: ${{ env.WORKING_DIR }}/build
 
       - name: Get PR ID
         id: pr-id
