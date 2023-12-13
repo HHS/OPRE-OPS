@@ -14,14 +14,43 @@ env:
   ENVIRONMENT: "dev"
 
 jobs:
-  terraform_plan:
+  frontend-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: frontend
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+        
+      - name: Build Frontend
+        run: bun run build
+
+      - name: Archive Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: frontend-${{ env.ENVIRONMENT }}-build-${{ github.sha }}
+          path: frontend/build
+  
+  terraform_plan:
     permissions:
       pull-requests: write
 
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - name: Download Frontend Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: frontend-${{ env.ENVIRONMENT }}-build-${{ github.sha }}
+          path: frontend
 
       - name: Get PR ID
         id: pr-id
