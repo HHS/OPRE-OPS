@@ -74,19 +74,6 @@ class WorkflowInstance(BaseModel):
         return next((status for status in status_order if any(item.status == status for item in self.steps)),
             WorkflowStatus.APPROVED if all(item.status == WorkflowStatus.APPROVED for item in self.steps) else None)
 
-    @override
-    def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
-        d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
-
-        if isinstance(self.associated_type, str):
-            self.associated_type = WorkflowTriggerType[self.associated_type]
-
-        d.update(
-            associated_type = self.associated_type.name if self.associated_type else None,
-            workflow_status = self.workflow_status.name if self.workflow_status else None,
-            workflow_action = self.workflow_action.name if self.workflow_action else None,
-        )
-        return d
 
 class WorkflowStepTemplate(BaseModel):
     """ Step structure belonging to a WorkflowTemplate """
@@ -98,15 +85,6 @@ class WorkflowStepTemplate(BaseModel):
     workflow_type = sa.Column(sa.Enum(WorkflowStepType), nullable=False)
     index = sa.Column(sa.Integer, nullable=False)
     step_approvers = relationship("StepApprovers", backref="step_template")
-
-    @override
-    def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
-        d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
-
-        d.update(
-            workflow_type = self.workflow_type.name if self.workflow_type else None,
-        )
-        return d
 
 
 class WorkflowStepInstance(BaseModel):
@@ -140,18 +118,6 @@ class WorkflowStepInstance(BaseModel):
         return [approver.user for approver in self.step_template.step_approvers if approver.user is not None] + \
                [approver.group for approver in self.step_template.step_approvers if approver.group is not None] + \
                [approver.role for approver in self.step_template.step_approvers if approver.role is not None]
-
-    @override
-    def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
-        d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
-
-        d.update(
-            status=self.status.name if self.status else None,
-            # TODO: format for these times?
-            time_started=str(self.time_started) if self.time_started else None,
-            time_completed=str(self.time_completed) if self.time_completed else None
-        )
-        return d
 
 
 class WorkflowStepDependency(BaseModel):
