@@ -77,6 +77,8 @@
 
         "GET_USERS",
         "GET_HISTORY",
+
+        "GET_WORKFLOW",
       ],
     },
     {
