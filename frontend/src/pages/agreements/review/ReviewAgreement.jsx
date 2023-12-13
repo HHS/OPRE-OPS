@@ -27,6 +27,7 @@ import App from "../../../App";
 import useToggle from "../../../hooks/useToggle";
 import TextArea from "../../../components/UI/Form/TextArea";
 import PageHeader from "../../../components/UI/PageHeader";
+import { actionOptions } from "./ReviewAgreement.constants";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -65,7 +66,8 @@ export const ReviewAgreement = () => {
         mainToggleSelected,
         setMainToggleSelected,
         notes,
-        setNotes
+        setNotes,
+        action
     } = useReviewAgreement(agreement, isSuccess);
 
     const cn = classnames(suite.get(), {
@@ -94,14 +96,25 @@ export const ReviewAgreement = () => {
     const handleSendToApproval = () => {
         if (anyBudgetLinesDraft) {
             //Create BLI Package, and send it to approval (create a Workflow)
-            const bli_ids = agreement?.budget_line_items.map((bli) => bli.id);
+            const bli_ids = getSelectedBudgetLines(budgetLines).map((bli) => bli.id);
             const user_id = activeUser?.id;
             const notes = "";
+            let workflow_action = "";
+            switch (action) {
+                case actionOptions.CHANGE_DRAFT_TO_PLANNED:
+                    workflow_action = "DRAFT_TO_PLANNED";
+                    break;
+                case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
+                    workflow_action = "PLANNED_TO_EXECUTING";
+                    break;
+            }
             console.log("BLI Package Data:", bli_ids, user_id, notes);
+            console.log("THE ACTION IS:", action);
             addApprovalRequest({
                 budget_line_item_ids: bli_ids,
                 submitter_id: user_id,
-                notes: notes
+                notes: notes,
+                workflow_action: workflow_action
             })
                 .unwrap()
                 .then((fulfilled) => {

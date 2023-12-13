@@ -1,35 +1,33 @@
 classDiagram
-    class Workflow {
-        +Integer id
+    class WorkflowTemplate {
         +String name
-        +Enum workflow_type
-        +Integer can_id
+        +List steps
     }
 
-    class WorkflowType {
-        APPROVAL
-        DOCUMENT_MGMT
-        VALIDATION
+    class WorkflowInstance {
+        +Integer associated_id
+        +Enum associated_type
+        +Integer workflow_template_id
+        +List steps
     }
 
-    class WorkflowStatus {
-        REVIEW
-        APPROVED
-        REJECTED
-        CHANGES
-    }
-
-    class WorkflowStep {
-        +Integer id
+    class WorkflowStepTemplate {
         +String name
-        +Integer workflow_id
+        +Integer workflow_template_id
         +Enum workflow_type
-        +Enum status
         +Integer index
-        +Boolean is_last_step
-        +Boolean completed
+        +List step_approvers
+    }
+
+    class WorkflowStepInstance {
+        +Integer workflow_instance_id
+        +Integer workflow_step_template_id
+        +Enum status
         +String notes
+        +DateTime time_started
         +DateTime time_completed
+        +List successor_dependencies
+        +List predecessor_dependencies
     }
 
     class WorkflowStepDependency {
@@ -38,39 +36,40 @@ classDiagram
     }
 
     class StepApprovers {
-        +Integer id
-        +Integer workflow_step_id
+        +Integer workflow_step_template_id
         +Integer user_id
         +Integer role_id
         +Integer group_id
     }
 
-    Workflow "1" --> "0..*" WorkflowStep: contains
-    WorkflowStep --> WorkflowType: has_type
-    WorkflowStep --> WorkflowStatus: has_status
-    WorkflowStep "1" --> "0..*" WorkflowStepDependency: has_predecessor
-    WorkflowStep "1" --> "0..*" WorkflowStepDependency: has_successor
-    WorkflowStepDependency "1" --> "0..1" WorkflowStep: predecessor_depends_on
-    WorkflowStepDependency "1" --> "0..1" WorkflowStep: successor_depends_on
-    WorkflowStep "1" --> "0..*" StepApprovers: has
-
-    class CAN {
-        +Integer id
+    class Package {
+        +Integer submitter_id
+        +Integer current_workflow_step_instance_id
+        +String notes
+        +Enum package_type
+        +List package_snapshots
+        +Enum use_case
     }
 
-    class USER {
-        +Integer id
+    class BliPackage {
+        +List bli_package_snapshots
     }
 
-    class ROLE {
-        +Integer id
+    class PackageSnapshot {
+        +Integer _package_id
+        +Integer version
     }
 
-    class GROUP {
-        +Integer id
+    class BliPackageSnapshot {
+        +Integer bli_id
     }
 
-    CAN "1" --> "0..1" Workflow: has
-    USER "0..*" --> "0..*" StepApprovers: approves
-    ROLE "0..*" --> "0..*" StepApprovers: approves
-    GROUP "0..*" --> "0..*" StepApprovers: approves
+    WorkflowTemplate "1" -- "0..*" WorkflowStepTemplate
+    WorkflowInstance "1" -- "0..*" WorkflowStepInstance
+    WorkflowStepTemplate "1" -- "0..*" StepApprovers
+    WorkflowStepInstance -- WorkflowStepDependency
+    Package "1" -- "0..*" PackageSnapshot
+    BliPackage -- BliPackageSnapshot
+
+    WorkflowStepDependency "1" *-- "1" WorkflowStepInstance : predecessor_step
+    WorkflowStepDependency "1" *-- "1" WorkflowStepInstance : successor_step

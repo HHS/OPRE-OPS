@@ -1,92 +1,72 @@
 classDiagram
-
-    class WorkflowType {
-        APPROVAL
-        DOCUMENT_MGMT
-        VALIDATION
-    }
-
-    class WorkflowStatus {
-        REVIEW
-        APPROVED
-        REJECTED
-        CHANGES
-    }
-
     class WorkflowTemplate {
-        +id: Integer
-        name: String
-        workflow_type: WorkflowType
+        +String name
+        +List steps
     }
 
     class WorkflowInstance {
-        +id: Integer
-        associated_id: Integer
-        associated_type: String
-        workflow_template_id: Integer
+        +Integer associated_id
+        +Enum associated_type
+        +Integer workflow_template_id
+        +Enum workflow_action
+        +Integer current_workflow_step_instance_id
+        +List steps
     }
 
     class WorkflowStepTemplate {
-        +id: Integer
-        name: String
-        workflow_type: WorkflowType
-        index: Integer
-        workflow_template_id: Integer
+        +String name
+        +Integer workflow_template_id
+        +Enum workflow_type
+        +Integer index
+        +List step_approvers
     }
 
     class WorkflowStepInstance {
-        +id: Integer
-        workflow_instance_id: Integer
-        workflow_step_template_id: Integer
-        status: WorkflowStatus
-        notes: String
-        time_completed: DateTime
+        +Integer workflow_instance_id
+        +Integer workflow_step_template_id
+        +Enum status
+        +String notes
+        +DateTime time_started
+        +DateTime time_completed
+        +List successor_dependencies
+        +List predecessor_dependencies
     }
 
     class WorkflowStepDependency {
-        predecessor_step_id: Integer
-        successor_step_id: Integer
+        +Integer predecessor_step_id
+        +Integer successor_step_id
     }
 
     class StepApprovers {
-        +id: Integer
-        workflow_step_template_id: Integer
-        user_id: Integer
-        role_id: Integer
-        group_id: Integer
+        +Integer workflow_step_template_id
+        +Integer user_id
+        +Integer role_id
+        +Integer group_id
     }
 
     class Package {
-        +id: Integer
-        workflow_instance_id: Integer
-
-
+        +Integer submitter_id
+        +Integer workflow
+        +String notes
+        +List package_snapshots
     }
 
-    WorkflowTemplate "1" -- "0..*" WorkflowStepTemplate: steps
-    WorkflowTemplate "1" -- "0..*" WorkflowInstance
-    WorkflowInstance "1" -- "0..*" WorkflowStepInstance: steps
-    WorkflowStepTemplate "1" -- "0..*" StepApprovers: step_approvers
-    WorkflowStepInstance "1" -- "0..*" WorkflowStepDependency: predecessor_dependencies
-    WorkflowStepInstance "1" -- "0..*" WorkflowStepDependency: successor_dependencies
-    WorkflowStepInstance --> WorkflowStatus: has_status
-    WorkflowStepTemplate --> WorkflowType: has_type
-
-    class USER {
-        +Integer id
-        '...' other_attributes
+    class PackageSnapshot {
+        +Integer _package_id
+        +Integer version
+        +Integer bli_id
     }
 
-    class ROLE {
-        +Integer id
-        '...' other_attributes
-    }
+    WorkflowTemplate "1" -- "0..*" WorkflowStepTemplate : steps
+    WorkflowInstance "1" -- "0..*" WorkflowStepInstance : steps
+    WorkflowStepTemplate "1" -- "0..*" StepApprovers : step_approvers
+    WorkflowStepInstance "1" -- "1" WorkflowStepDependency : successor_dependencies
+    WorkflowStepInstance "1" -- "1" WorkflowStepDependency : predecessor_dependencies
+    Package "1" -- "0..*" PackageSnapshot : package_snapshots
 
-    class GROUP {
-        +Integer id
-        '...' other_attributes
-    }
+    WorkflowStepDependency "1" -- "1" WorkflowStepInstance : predecessor_step
+    WorkflowStepDependency "1" -- "1" WorkflowStepInstance : successor_step
 
-    USER "0..*" --> "0..*" StepApprovers: approves
-    ROLE "0..*" --> "0..*" StepApprovers: approves
-    GROUP "0..*" --> "0..*" StepApprovers: approves
+    WorkflowInstance "*" -- "1" WorkflowTemplate : workflow_template
+    WorkflowStepInstance "*" -- "1" WorkflowStepTemplate : workflow_step_template
+    Package "*" -- "1" WorkflowInstance : workflow
