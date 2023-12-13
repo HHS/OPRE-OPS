@@ -1,5 +1,5 @@
 """Workflow models."""
-from enum import Enum, auto
+from enum import Enum
 
 import sqlalchemy as sa
 from models.base import BaseModel
@@ -74,6 +74,14 @@ class WorkflowInstance(BaseModel):
         return next((status for status in status_order if any(item.status == status for item in self.steps)),
             WorkflowStatus.APPROVED if all(item.status == WorkflowStatus.APPROVED for item in self.steps) else None)
 
+    @override
+    def to_dict(self):
+        """Override to_dict to include the workflow status"""
+        if isinstance(self.associated_type, str):
+            self.associated_type = WorkflowTriggerType[self.associated_type]
+        if isinstance(self.workflow_action, str):
+            self.workflow_action = WorkflowAction[self.workflow_action]
+        return super().to_dict()
 
 class WorkflowStepTemplate(BaseModel):
     """ Step structure belonging to a WorkflowTemplate """
@@ -86,6 +94,12 @@ class WorkflowStepTemplate(BaseModel):
     index = sa.Column(sa.Integer, nullable=False)
     step_approvers = relationship("StepApprovers", backref="step_template")
 
+    @override
+    def to_dict(self):
+        """Override to_dict to include the workflow status"""
+        if isinstance(self.workflow_type, str):
+            self.workflow_type = WorkflowStepType[self.workflow_type]
+        return super().to_dict()
 
 class WorkflowStepInstance(BaseModel):
     """ Specific instance of a WorkflowStepTemplate
@@ -119,6 +133,12 @@ class WorkflowStepInstance(BaseModel):
                [approver.group for approver in self.step_template.step_approvers if approver.group is not None] + \
                [approver.role for approver in self.step_template.step_approvers if approver.role is not None]
 
+    @override
+    def to_dict(self):
+        """Override to_dict to include the workflow status"""
+        if isinstance(self.status, str):
+            self.status = WorkflowStatus[self.status]
+        return super().to_dict()
 
 class WorkflowStepDependency(BaseModel):
     """ Association model to handle multiple dependencies between WorkflowStepInstances """
