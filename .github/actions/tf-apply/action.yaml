@@ -72,15 +72,15 @@ runs:
         terraform apply -input=false -no-color tfplan >> $GITHUB_OUTPUT
         echo 'EOF' >> $GITHUB_OUTPUT
 
-    # - name: Comment Apply
-    #   id: comment-apply
-    #   uses: peter-evans/create-or-update-comment@v2
-    #   with:
-    #     token: ${{ inputs.github_token }}
-    #     issue-number: ${{ inputs.pr_id }}
-    #     body: |
-    #       Terraform Apply:
+    - name: Comment Apply
+      id: comment-apply
+      uses: peter-evans/create-or-update-comment@v2
+      with:
+        token: ${{ inputs.github_token }}
+        issue-number: ${{ inputs.pr_id }}
+        body: |
+          Terraform Apply:
 
-    #       ```
-    #       ${{ steps.apply.outputs.apply }}
-    #       ```
+          ```
+          ${{ steps.apply.outputs.apply }}
+          ```

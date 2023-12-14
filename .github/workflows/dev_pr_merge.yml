@@ -2,11 +2,12 @@ name: Development Front End Pull Request Merge
 
 on:
   pull_request:
+    types:
+      - closed
     branches:
       - development
     paths:
       - 'frontend/**'
-  workflow_dispatch:
 
 env:
   TERRAFORM_VERSION: "1.2.9"
@@ -16,7 +17,7 @@ env:
 jobs:
   terraform_apply:
     runs-on: ubuntu-latest
-    if: github.event.action == 'closed' && github.event.pull_request.merged
+    if: ${{ github.event.pull_request.merged }}
     steps:
       - uses: actions/checkout@v3
 
