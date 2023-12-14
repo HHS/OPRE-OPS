@@ -58,7 +58,7 @@ runs:
         name: ${{ inputs.pr_id }}-tf-plan
         path: ${{ inputs.terraform_directory }}
 
-   - name: Terraform Apply
+    - name: Terraform Apply
       id: apply
       working-directory: ${{ inputs.terraform_directory }}
       shell: bash
@@ -71,6 +71,7 @@ runs:
         echo 'apply<<EOF' >> $GITHUB_OUTPUT
         terraform apply -input=false -no-color tfplan >> $GITHUB_OUTPUT
         echo 'EOF' >> $GITHUB_OUTPUT
+
 
     - name: Comment Apply
       id: comment-apply
