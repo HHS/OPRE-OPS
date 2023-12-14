@@ -1,14 +1,14 @@
 name: Terraform Apply
 
 on:
-  pull-request:
+  pull_request:
     types:
       - closed
     branches:
       - development
     paths:
       - 'frontend/**'
-      
+
 jobs:
   terraform_apply:
     runs-on: ubuntu-latest
