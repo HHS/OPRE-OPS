@@ -47,7 +47,6 @@ const ApproveAgreement = () => {
         return <h1>Oops, an error occurred</h1>;
     }
 
-    // make a new array for budgetLines that have property has_active_workflow
     const budgetLinesWithActiveWorkflow = agreement?.budget_line_items.filter((bli) => bli.has_active_workflow);
 
     const changeInCans = getTotalByCans(budgetLinesWithActiveWorkflow);
@@ -59,6 +58,33 @@ const ApproveAgreement = () => {
             actionButtonText: "Cancel",
             secondaryButtonText: "Continue",
             handleConfirm: () => {
+                navigate("/agreements");
+            }
+        });
+    };
+
+    const handleDecline = () => {
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to decline these budget lines for Planned Status?",
+            actionButtonText: "Decline",
+            secondaryButtonText: "Cancel",
+            handleConfirm: () => {
+                alert("Not implemented yet");
+                navigate("/agreements");
+            }
+        });
+    };
+
+    const handleApprove = () => {
+        setShowModal(true);
+        setModalProps({
+            heading:
+                "Are you sure you want to approve these budget lines for Planned Status? This will subtract the amounts from the FY budget.",
+            actionButtonText: "Approve",
+            secondaryButtonText: "Cancel",
+            handleConfirm: () => {
+                alert("Not implemented yet");
                 navigate("/agreements");
             }
         });
@@ -145,23 +171,20 @@ const ApproveAgreement = () => {
                 <button
                     className={`usa-button usa-button--outline margin-right-2`}
                     data-cy="edit-agreement-btn"
-                    onClick={() => {
-                        alert("Not implemented yet");
-                    }}
+                    onClick={handleDecline}
                 >
                     Decline
                 </button>
                 <button
                     className="usa-button"
                     data-cy="send-to-approval-btn"
-                    onClick={() => {
-                        alert("Not implemented yet");
-                    }}
+                    onClick={handleApprove}
                     disabled={!confirmation}
                 >
                     Approve
                 </button>
             </div>
+            {/* TODO: Remove debug code  */}
             <pre className="font-code-2xs border-dashed border-error margin-top-10">
                 {JSON.stringify(budgetLinesWithActiveWorkflow, null, 2)}
             </pre>
