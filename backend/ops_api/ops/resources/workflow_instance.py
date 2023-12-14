@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
-import desert
+import marshmallow_dataclass as mmdc
 from flask import Response
 from flask.views import MethodView
 from marshmallow import fields
@@ -38,6 +38,7 @@ class WorkflowInstanceResponse:
     created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     created_by: Optional[int] = None
+    package_entities: Optional[list[int]] = None
 
 
 # Workflows Metadata Endpoings
@@ -74,12 +75,11 @@ class WorkflowStepDependencyListAPI(MethodView):
 
 
 # Workflows Endpoints
-
-
 class WorkflowInstanceItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel = WorkflowInstance):
         super().__init__(model)
-        self._response_schema = desert.schema(WorkflowInstanceResponse)
+        # self._response_schema = desert.schema(WorkflowInstanceResponse)
+        self._response_schema = mmdc.class_schema(WorkflowInstanceResponse)()
 
     @override
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
@@ -91,7 +91,8 @@ class WorkflowInstanceListAPI(BaseListAPI):
     def __init__(self, model: BaseModel = WorkflowInstance):
         super().__init__(model)
         # self._post_schema = desert.schema(RequestBody) # TODO implement
-        self._response_schema = desert.schema(WorkflowInstanceResponse)
+        # self._response_schema = desert.schema(WorkflowInstanceResponse)
+        self._response_schema = mmdc.class_schema(WorkflowInstanceResponse)()
 
     @override
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)

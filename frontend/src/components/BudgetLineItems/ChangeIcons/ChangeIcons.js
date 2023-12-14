@@ -65,7 +65,7 @@ const ChangeIcons = ({
                             <FontAwesomeIcon
                                 title="Edit"
                                 icon={faPen}
-                                className="text-primaary height-2 width-2 margin-right-1 cursor-pointer"
+                                className="text-primary height-2 width-2 margin-right-1 cursor-pointer"
                             />
                         </button>
                     </Tooltip>
@@ -160,7 +160,9 @@ ChangeIcons.propTypes = {
     handleDuplicateItem: PropTypes.func,
     duplicateIcon: PropTypes.bool,
     sendToReviewIcon: PropTypes.bool,
-    handleSubmitItemForApproval: PropTypes.func
+    handleSubmitItemForApproval: PropTypes.func,
+    goToApproveIcon: PropTypes.bool,
+    handleGoToApprove: PropTypes.func
 };
 
 export default ChangeIcons;

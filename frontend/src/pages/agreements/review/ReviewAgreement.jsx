@@ -26,6 +26,7 @@ import AgreementCANReviewAccordion from "../../../components/Agreements/Agreemen
 import App from "../../../App";
 import useToggle from "../../../hooks/useToggle";
 import TextArea from "../../../components/UI/Form/TextArea";
+import PageHeader from "../../../components/UI/PageHeader";
 import { actionOptions } from "./ReviewAgreement.constants";
 
 /**
@@ -170,7 +171,7 @@ export const ReviewAgreement = () => {
     };
 
     return (
-        <App breadCrumbName="Agreements">
+        <App breadCrumbName="Request BL Status Change">
             {isAlertActive && Object.entries(pageErrors).length > 0 ? (
                 <SimpleAlert
                     type="error"
@@ -199,13 +200,10 @@ export const ReviewAgreement = () => {
                     </ul>
                 </SimpleAlert>
             ) : (
-                <h1
-                    className="text-bold"
-                    style={{ fontSize: "1.375rem" }}
-                    data-cy="review-agreement-heading"
-                >
-                    Review and Send Agreement to Approval
-                </h1>
+                <PageHeader
+                    title="Request BL Status Change"
+                    subTitle={agreement?.name}
+                />
             )}
             <AgreementMetaAccordion
                 agreement={agreement}
@@ -221,6 +219,7 @@ export const ReviewAgreement = () => {
             />
 
             <AgreementBLIAccordion
+                title="Select Budget Lines"
                 budgetLineItems={getSelectedBudgetLines(budgetLines)}
                 agreement={agreement}
                 afterApproval={afterApproval}

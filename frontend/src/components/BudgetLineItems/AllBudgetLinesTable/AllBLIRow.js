@@ -106,7 +106,10 @@ const AllBLIRow = ({
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>{changeIcons}</div>
                 ) : (
-                    <TableTag status={budgetLine.status} />
+                    <TableTag
+                        status={budgetLine?.status}
+                        inReview={budgetLine?.has_active_workflow}
+                    />
                 )}
             </td>
         </>

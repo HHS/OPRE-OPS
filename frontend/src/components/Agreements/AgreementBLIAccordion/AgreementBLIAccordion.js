@@ -10,6 +10,7 @@ import { getProcurementShopSubTotal } from "../AgreementsTable/AgreementsTable.h
 /**
  * Renders an accordion component for selecting budget lines for an agreement.
  * @param {Object} props - The component props.
+ * @param {string} props.title - The title of the accordion.
  * @param {Object[]} props.budgetLineItems - An array of budget line items.
  * @param {React.ReactNode} props.children - Child components to be rendered inside the accordion.
  * @param {Object} props.agreement - The agreement object.
@@ -18,6 +19,7 @@ import { getProcurementShopSubTotal } from "../AgreementsTable/AgreementsTable.h
  * @returns {React.JSX.Element} - The rendered accordion component.
  */
 function AgreementBLIAccordion({
+    title,
     budgetLineItems: selectedBudgetLineItems = [],
     children,
     agreement,
@@ -33,7 +35,7 @@ function AgreementBLIAccordion({
 
     return (
         <Accordion
-            heading="Select Budget Lines"
+            heading={title}
             level={2}
         >
             <p>
@@ -62,6 +64,7 @@ function AgreementBLIAccordion({
     );
 }
 AgreementBLIAccordion.propTypes = {
+    title: PropTypes.string.isRequired,
     budgetLineItems: PropTypes.arrayOf(PropTypes.object),
     children: PropTypes.node,
     agreement: PropTypes.object,
