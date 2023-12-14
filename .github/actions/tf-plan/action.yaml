@@ -78,9 +78,11 @@ runs:
         ARM_SUBSCRIPTION_ID: ${{ inputs.azure_subscription_id }}
         ARM_TENANT_ID: ${{ inputs.azure_tenant_id }}
       run: |
-        echo 'plan<<EOF' >> $GITHUB_OUTPUT
-        terraform plan -no-color -out=tfplan >> $GITHUB_OUTPUT
-        echo 'EOF' >> $GITHUB_OUTPUT
+        {
+          echo 'plan<<EOF' >> $GITHUB_OUTPUT
+          terraform plan -no-color -out=tfplan >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+        }
 
     - name: Save Artifact
       id: save-artifact
