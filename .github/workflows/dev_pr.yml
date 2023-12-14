@@ -79,3 +79,21 @@ jobs:
               "environment": "${{ env.ENVIRONMENT }}",
               "commit_hash": "${{ github.sha }}"
             }
+
+      - name: Terraform Apply
+        if: ${{ github.event.pull_request.closed }} && ${{ github.event.pull_request.merged }} 
+        uses: ./.github/actions/tf-apply
+        with:
+          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/frontend_asa"
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
+          azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
+          azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_id: ${{ steps.pr-id.outputs.PR_NUMBER }}
+          # tf_vars: |
+          #   {
+          #     "environment": "${{ env.ENVIRONMENT }}",
+          #     "commit_hash": "${{ github.sha }}"
+          #   }
