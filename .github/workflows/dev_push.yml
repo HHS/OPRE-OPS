@@ -1,33 +1,23 @@
 name: Terraform Apply
 
 on:
-  push:
+  pull-request:
+    types:
+      - closed
     branches:
       - development
-
+    paths:
+      - 'frontend/**'
+      
 jobs:
   terraform_apply:
     runs-on: ubuntu-latest
 
     steps:
     - name: Check if push is from a PR
+      if: ${{ github.event.pull_request.merged }}
       run: |
-        if [ "${{ github.event_name }}" = "push" ]; then
-          if [ "${{ github.event.pull_request }}" != "null" ]; then
-            PR_NUMBER=$(jq -r .number $GITHUB_EVENT_PATH)
-            echo "This push is from PR #$PR_NUMBER."
-            
-            # Download Terraform plan archive from the PR
-            terraform_archive_path="terraform_plan_${PR_NUMBER}.zip"
-            echo "::set-env name=TERRAFORM_ARCHIVE_PATH::$terraform_archive_path"
-            echo "Downloading Terraform plan archive from PR..."
-            gh run download -R $GITHUB_REPOSITORY -r $PR_NUMBER -n "Terraform Plan" -p /github/workspace -f $terraform_archive_path
-          else
-            echo "This push is not from a PR."
-          fi
-        else
-          echo "This is not a push event."
-        fi
+        echo " I think this worked ?? "
 
     # - name: Display Terraform Plan
     #   if: success() && env.TERRAFORM_ARCHIVE_PATH
