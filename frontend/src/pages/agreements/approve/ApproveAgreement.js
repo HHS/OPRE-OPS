@@ -14,7 +14,6 @@ import { getTotalByCans } from "../review/ReviewAgreement.helpers";
 import TextArea from "../../../components/UI/Form/TextArea";
 import useToggle from "../../../hooks/useToggle";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
-import { mockData } from "./data";
 
 const ApproveAgreement = () => {
     const urlPathParams = useParams();
@@ -48,17 +47,10 @@ const ApproveAgreement = () => {
         return <h1>Oops, an error occurred</h1>;
     }
 
-    // compare packetBLIs to agreement.budget_line_items
-    // make a new array indicating if budgetline is in packetBLIs
-    // const tableBudgetLines = agreement?.budget_line_items.map((bli) => {
-    //     const isBLIInPacket = mockData.packageBLIs.find((bliInPacket) => bliInPacket.id === bli.id);
-    //     return {
-    //         ...bli,
-    //         isInPacket: !!isBLIInPacket
-    //     };
-    // });
+    // make a new array for budgetLines that have property has_active_workflow
+    const budgetLinesWithActiveWorkflow = agreement?.budget_line_items.filter((bli) => bli.has_active_workflow);
 
-    const changeInCans = getTotalByCans(agreement?.budget_line_items);
+    const changeInCans = getTotalByCans(budgetLinesWithActiveWorkflow);
 
     const handleCancel = () => {
         setShowModal(true);
@@ -92,10 +84,9 @@ const ApproveAgreement = () => {
                 projectOfficerName={projectOfficerName}
                 convertCodeForDisplay={convertCodeForDisplay}
             />
-
             <AgreementBLIAccordion
                 title="Review Budget Lines"
-                budgetLineItems={agreement?.budget_line_items}
+                budgetLineItems={budgetLinesWithActiveWorkflow}
                 agreement={agreement}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
@@ -108,12 +99,12 @@ const ApproveAgreement = () => {
                 />
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
-                selectedBudgetLines={mockData.packageBLIs}
+                selectedBudgetLines={budgetLinesWithActiveWorkflow}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
             />
             <AgreementChangesAccordion
-                changeInBudgetLines={mockData.packageBLIs.reduce((acc, { amount }) => acc + amount, 0)}
+                changeInBudgetLines={budgetLinesWithActiveWorkflow.reduce((acc, { amount }) => acc + amount, 0)}
                 changeInCans={changeInCans}
             />
             <div className="usa-checkbox padding-bottom-105">
@@ -172,7 +163,7 @@ const ApproveAgreement = () => {
                 </button>
             </div>
             <pre className="font-code-2xs border-dashed border-error margin-top-10">
-                {JSON.stringify(agreement?.budget_line_items, null, 2)}
+                {JSON.stringify(budgetLinesWithActiveWorkflow, null, 2)}
             </pre>
         </App>
     );
