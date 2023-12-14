@@ -1,33 +1,40 @@
-name: Terraform Apply
+# name: Terraform Apply
 
-on:
-  pull_request:
-    types:
-      - closed
-    branches:
-      - development
-    paths:
-      - 'frontend/**'
+# on:
+#   pull_request:
+#     types:
+#       - closed
+#     branches:
+#       - development
+#     paths:
+#       - 'frontend/**'
 
-jobs:
-  terraform_apply:
-    runs-on: ubuntu-latest
+# jobs:
+#   terraform_apply:
+#     runs-on: ubuntu-latest
 
-    steps:
-    - name: Check if push is from a PR
-      if: ${{ github.event.pull_request.merged }}
-      run: |
-        echo " I think this worked ?? "
+#     steps:
+#     - name: Check if push is from a PR
+#       if: ${{ github.event.pull_request.merged }}
+#       run: |
+#         echo " I think this worked ?? "
 
-    # - name: Display Terraform Plan
-    #   if: success() && env.TERRAFORM_ARCHIVE_PATH
-    #   run: |
-    #     # Unzip and display the Terraform plan
-    #     unzip -q $TERRAFORM_ARCHIVE_PATH -d terraform_plan
-    #     cat terraform_plan/tfplan
 
-    # - name: Apply Terraform Changes
-    #   if: success() && !env.TERRAFORM_ARCHIVE_PATH
-    #   run: |
-    #     # Apply Terraform changes without a plan
-    #     terraform apply -auto-approve
+#     - name: Get PR ID
+#         id: pr-id
+#         shell: bash
+#         run: echo "PR_NUMBER=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+
+    
+#     # - name: Display Terraform Plan
+#     #   if: success() && env.TERRAFORM_ARCHIVE_PATH
+#     #   run: |
+#     #     # Unzip and display the Terraform plan
+#     #     unzip -q $TERRAFORM_ARCHIVE_PATH -d terraform_plan
+#     #     cat terraform_plan/tfplan
+
+#     # - name: Apply Terraform Changes
+#     #   if: success() && !env.TERRAFORM_ARCHIVE_PATH
+#     #   run: |
+#     #     # Apply Terraform changes without a plan
+#     #     terraform apply -auto-approve
