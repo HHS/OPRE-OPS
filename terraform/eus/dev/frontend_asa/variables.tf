@@ -1,7 +1,7 @@
 variable "commit_hash" {
   type        = string
   description = "Git Commit Hash to which this is built to"
-  default     = "noworky"
+  default     = "hmm"
 }
 
 variable "frontend_dir" {
