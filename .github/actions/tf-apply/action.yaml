@@ -58,11 +58,15 @@ runs:
         name: ${{ inputs.pr_id }}-tf-plan
         path: ${{ inputs.terraform_directory }}
 
-    - name: Debug - List Contents
+    - name: Debug List Contents
+      id: debug-contents
+      shell: bash
       run: |
         ls -la ${{ inputs.terraform_directory }}
 
-    - name: Debug - Display tfplan
+    - name: Debug Display tfplan
+      id: debug-display
+      shell: bash
       run: |
         cat ${{ inputs.terraform_directory }}/tfplan
 
