@@ -78,8 +78,11 @@ jobs:
             }
 
   apply-deploy:
-    needs: plan-deploy
     if: ${{ github.event.pull_request.closed }} && ${{ github.event.pull_request.merged }}
+    needs: plan-deploy
+    permissions:
+      pull-requests: write
+    
     runs-on: ubuntu-latest
     steps:
       - name: Terraform Apply
