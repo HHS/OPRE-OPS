@@ -37,7 +37,7 @@ jobs:
       - name: Terraform Apply
         uses: ./.github/actions/tf-apply
         with:
-          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/frontend_asa"
+          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}_asa"
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
           azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
@@ -45,4 +45,4 @@ jobs:
           azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pr_id: ${{ github.event.pull_request.number }}
-          plan_workflow_file: ${{ env.ENVIRONMENT }}_pr.yml
+          plan_workflow_file: ${{ env.ENVIRONMENT }}_${{ env.WORKING_DIR }}_pr.yml
