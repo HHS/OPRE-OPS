@@ -26,6 +26,9 @@ inputs:
   pr_id:
     description: 'Pull request ID'
     required: true
+  plan_workflow_file:
+    description: 'Filename of workflow containing the tf plan artifact.'
+    required: true
 
 runs:
   using: "composite"
@@ -53,7 +56,7 @@ runs:
       uses: dawidd6/action-download-artifact@v2
       with:
         github_token: ${{ inputs.github_token }}
-        workflow: plan.yaml
+        workflow: ${{ inputs.plan_workflow_file }}
         pr: ${{ inputs.pr_id }}
         name: ${{ inputs.pr_id }}-tf-plan
         path: ${{ inputs.terraform_directory }}
