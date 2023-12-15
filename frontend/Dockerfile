@@ -10,4 +10,3 @@ RUN bun install
 COPY --chown=app:app ./ /home/app/
 
 CMD ["bun", "start"]
-###
