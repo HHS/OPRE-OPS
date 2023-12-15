@@ -53,3 +53,7 @@ resource "azurerm_storage_blob" "site" {
   content_type           = local.content_types[lower(regex("\\.[^.]+$", basename(each.value.filename)))]
   content_md5            = each.value.content_md5
 }
+
+output "domain" {
+  value = trimsuffix(data.azurerm_storage_account.static_fe.primary_web_endpoint, "/")
+}

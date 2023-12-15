@@ -67,6 +67,10 @@ resource "azurerm_container_app" "backend" {
   }
 }
 
-output "domain" {
+output "fe_domain" {
   value = trimsuffix(data.azurerm_storage_account.static_fe.primary_web_endpoint, "/")
+}
+
+output "be_domain" {
+  value = trimsuffix(azurerm_container_app.backend.latest_revision_fqdn, "/")
 }
