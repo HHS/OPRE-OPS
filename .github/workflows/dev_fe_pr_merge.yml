@@ -1,4 +1,4 @@
-name: Development Front End Pull Request Merge
+name: [Dev] FrontEnd Pull Request Merged
 
 on:
   pull_request:
