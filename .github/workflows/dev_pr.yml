@@ -38,7 +38,7 @@ jobs:
           name: ${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.event.pull_request.number }}
           path: ${{ env.WORKING_DIR }}/build
   
-  deploy:
+  plan-deploy:
     needs: build
     permissions:
       pull-requests: write

@@ -16,7 +16,9 @@ env:
   WORKING_DIR: "frontend"
 
 jobs:
-  terraform_apply:
+  apply-deploy:
+    permissions:
+      pull-requests: write
     runs-on: ubuntu-latest
     if: ${{ github.event.pull_request.merged }}
     steps:
