@@ -24,8 +24,7 @@ jobs:
       packages: write
     runs-on: ubuntu-latest
     steps:
-     - name: Checkout repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
       - name: Build and publish the Docker image for ${{ github.repository }}
         uses: macbre/push-to-ghcr@v13
