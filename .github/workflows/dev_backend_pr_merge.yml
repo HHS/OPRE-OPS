@@ -1,6 +1,7 @@
 name: Dev BE Pull Request Merged
 
 on:
+  workflow_dispatch:
   pull_request:
     types:
       - closed
