@@ -13,6 +13,7 @@ env:
   TERRAFORM_VERSION: "1.5.7"
   TF_IN_AUTOMATION: "True"
   ENVIRONMENT: "dev"
+  WORKING_DIR: "frontend"
 
 jobs:
   terraform_apply:
@@ -21,14 +22,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # - name: Get PR ID
-      #   id: pr-id
-      #   shell: bash
-      #   env:
-      #     GITHUB_REF: ${{ inputs.github_ref }}
-      #   run: |
-      #     PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
-      #     echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_OUTPUT
+      - name: Load Archived build
+        id: download-plan
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: ${{ env.ENVIRONMENT }}_pr.yml
+          pr: ${{ github.event.pull_request.number }}
+          name: ${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.event.pull_request.number }}
+          path: ${{ env.WORKING_DIR }}/build
 
       - name: Terraform Apply
         uses: ./.github/actions/tf-apply
@@ -41,9 +43,4 @@ jobs:
           azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pr_id: ${{ github.event.pull_request.number }}
-          plan_workflow_file: dev_pr.yml
-          # tf_vars: |
-          #   {
-          #     "environment": "${{ env.ENVIRONMENT }}",
-          #     "commit_hash": "${{ github.sha }}"
-          #   }
+          plan_workflow_file: ${{ env.ENVIRONMENT }}_pr.yml
