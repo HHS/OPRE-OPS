@@ -63,14 +63,14 @@ jobs:
           name: ${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.sha }}
           path: ${{ env.WORKING_DIR }}/build
 
-      - name: Get PR ID
-        id: pr-id
-        shell: bash
-        env:
-          GITHUB_REF: ${{ inputs.github_ref }}
-        run: |
-          PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
-          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_OUTPUT
+      # - name: Get PR ID
+      #   id: pr-id
+      #   shell: bash
+      #   env:
+      #     GITHUB_REF: ${{ inputs.github_ref }}
+      #   run: |
+      #     PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
+      #     echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_OUTPUT
 
       - name: Terraform Plan
         uses: ./.github/actions/tf-plan
@@ -82,7 +82,8 @@ jobs:
           azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
           azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          pr_id: ${{ steps.pr-id.outputs.PR_NUMBER }}
+          # pr_id: ${{ steps.pr-id.outputs.PR_NUMBER }}
+          pr_id: ${{ github.event.pull_request.number }}
           tf_vars: |
             {
               "environment": "${{ env.ENVIRONMENT }}",
