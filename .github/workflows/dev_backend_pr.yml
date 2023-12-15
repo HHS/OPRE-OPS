@@ -44,12 +44,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # - name: Download Backend Artifacts
-      #   uses: actions/download-artifact@v2
-      #   with:
-      #     name: ${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.event.pull_request.number }}
-      #     path: ${{ env.WORKING_DIR }}/build
-
       - name: Terraform Plan
         uses: ./.github/actions/tf-plan
         with:
