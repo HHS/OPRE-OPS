@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-       
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         working-directory: ${{ env.WORKING_DIR }}
         run: bun install
-        
+
       - name: Build Frontend
         working-directory: ${{ env.WORKING_DIR }}
         run: bun run build
@@ -37,24 +37,14 @@ jobs:
         with:
           name: ${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.sha }}
           path: ${{ env.WORKING_DIR }}/build
-  
-  deploy:
+
+  plan-deploy:
     needs: build
     permissions:
       pull-requests: write
 
     runs-on: ubuntu-latest
     steps:
-      # - name: Debug Info
-      #   run: |
-      #     echo "Event Name: ${{ github.event_name }}"
-      #     echo "Event Action: ${{ github.event.action }}"
-      #     echo "Pull Request Number: ${{ github.event.pull_request.number }}"
-      #     echo "Pull Request State: ${{ github.event.pull_request.state }}"
-      #     echo "Pull Request Merged: ${{ github.event.pull_request.merged }}"
-      #     echo "GitHub Event: ${{ toJson(github.event) }}"
-      #   if: always()
-  
       - uses: actions/checkout@v3
 
       - name: Download Frontend Artifacts
@@ -66,8 +56,6 @@ jobs:
       - name: Get PR ID
         id: pr-id
         shell: bash
-        env:
-          GITHUB_REF: ${{ inputs.github_ref }}
         run: |
           PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_OUTPUT
@@ -89,8 +77,12 @@ jobs:
               "commit_hash": "${{ github.sha }}"
             }
 
+  apply-deploy:
+    needs: plan-deploy
+    if: ${{ github.event.pull_request.closed }} && ${{ github.event.pull_request.merged }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Terraform Apply
-        if: ${{ github.event.pull_request.closed }} && ${{ github.event.pull_request.merged }}
         uses: ./.github/actions/tf-apply
         with:
           terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/frontend_asa"
