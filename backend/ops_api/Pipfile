@@ -22,7 +22,7 @@ sqlalchemy-continuum = "==1.4.0"
 
 [dev-packages]
 flake8 = "==6.1.0"
-isort = "==5.13.1"
+isort = "==5.13.2"
 pytest = "==7.4.3"
 nox = "==2023.4.22"
 ipython = "==8.18.1"
