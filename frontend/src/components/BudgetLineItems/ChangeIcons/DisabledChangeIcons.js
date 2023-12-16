@@ -13,6 +13,7 @@ import { Tooltip } from "../../UI/USWDS/Tooltip";
  * @param {boolean} [props.duplicateIcon] - Whether to show the duplicate icon.
  * @param {function} [props.handleDuplicateItem] - The function to duplicate the budget line.
  * @param {boolean} [props.sendToReviewIcon] - Whether to show the send to review icon.
+ * @param {string} [props.lockedMessage] - The message to display when the item is not editable.
  * @returns {React.JSX.Element} - The rendered component.
  **/
 const DisabledChangeIcons = ({
@@ -110,7 +111,8 @@ const DisabledChangeIcons = ({
 DisabledChangeIcons.propTypes = {
     duplicateIcon: PropTypes.bool,
     sendToReviewIcon: PropTypes.bool,
-    handleDuplicateItem: PropTypes.func
+    handleDuplicateItem: PropTypes.func,
+    lockedMessage: PropTypes.string
 };
 
 export default DisabledChangeIcons;

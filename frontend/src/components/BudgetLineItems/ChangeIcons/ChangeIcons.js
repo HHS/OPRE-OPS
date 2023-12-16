@@ -12,7 +12,7 @@ import { Tooltip } from "../../UI/USWDS/Tooltip";
  * @param {object} props - The component props.
  * @param {Object} props.item - The item or data for the row.
  * @param {boolean} props.isItemEditable - Whether the item is editable.
- * @param {string} props.lockedMessage - The message to display when the item is not editable.
+ * @param {string} [props.lockedMessage] - The message to display when the item is not editable.
  * @param {function} props.handleSetItemForEditing - The function to set the row item for editing.
  * @param {boolean} [props.isItemDeletable] - Whether the item is deletable.
  * @param {function} props.handleDeleteItem - The function to delete the row.
