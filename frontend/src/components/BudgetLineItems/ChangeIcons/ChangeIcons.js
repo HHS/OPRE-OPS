@@ -12,6 +12,7 @@ import { Tooltip } from "../../UI/USWDS/Tooltip";
  * @param {object} props - The component props.
  * @param {Object} props.item - The item or data for the row.
  * @param {boolean} props.isItemEditable - Whether the item is editable.
+ * @param {string} props.lockedMessage - The message to display when the item is not editable.
  * @param {function} props.handleSetItemForEditing - The function to set the row item for editing.
  * @param {boolean} [props.isItemDeletable] - Whether the item is deletable.
  * @param {function} props.handleDeleteItem - The function to delete the row.
@@ -27,6 +28,7 @@ import { Tooltip } from "../../UI/USWDS/Tooltip";
 const ChangeIcons = ({
     item,
     isItemEditable = false,
+    lockedMessage,
     handleSetItemForEditing = () => {},
     isItemDeletable = isItemEditable,
     handleDeleteItem = () => {},
@@ -40,6 +42,7 @@ const ChangeIcons = ({
     if (!isItemEditable) {
         return (
             <DisabledChangeIcons
+                lockedMessage={lockedMessage}
                 duplicateIcon={duplicateIcon}
                 sendToReviewIcon={sendToReviewIcon}
                 handleDuplicateItem={() => handleDuplicateItem(item)}
@@ -154,6 +157,7 @@ const ChangeIcons = ({
 ChangeIcons.propTypes = {
     item: PropTypes.object.isRequired,
     isItemEditable: PropTypes.bool,
+    lockedMessage: PropTypes.string,
     handleSetItemForEditing: PropTypes.func,
     isItemDeletable: PropTypes.bool,
     handleDeleteItem: PropTypes.func,

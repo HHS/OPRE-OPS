@@ -47,3 +47,8 @@ export const getNonDRAFTBudgetLines = (budgetLines) => {
     handleBLIProp(budgetLines);
     return budgetLines?.filter((bli) => bli.status !== "DRAFT" && bli.status !== "IN_REVIEW");
 };
+
+export const hasActiveWorkflow = (budgetLines) => {
+    handleBLIProp(budgetLines);
+    return budgetLines?.some((bli) => bli.has_active_workflow);
+};

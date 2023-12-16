@@ -15,14 +15,19 @@ import { Tooltip } from "../../UI/USWDS/Tooltip";
  * @param {boolean} [props.sendToReviewIcon] - Whether to show the send to review icon.
  * @returns {React.JSX.Element} - The rendered component.
  **/
-const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () => {}, sendToReviewIcon = false }) => {
+const DisabledChangeIcons = ({
+    duplicateIcon = true,
+    handleDuplicateItem = () => {},
+    sendToReviewIcon = false,
+    lockedMessage
+}) => {
     const classes = `text-primary height-2 width-2 margin-right-1 cursor-pointer ${DISABLED_ICON_CLASSES}`;
     const rowId = React.useId();
     return (
         <div className="display-flex flex-align-center">
             <Tooltip
                 position="top"
-                label="Only team members listed on this agreement can edit"
+                label={`${lockedMessage ? lockedMessage : "Only team members listed on this agreement can edit"} `}
                 className="line-height-body-1"
             >
                 <button
@@ -39,7 +44,7 @@ const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () =>
             </Tooltip>
             <Tooltip
                 position="top"
-                label="Only team members listed on this agreement can delete"
+                label={`${lockedMessage ? lockedMessage : "Only team members listed on this agreement can delete"}`}
                 className="line-height-body-1"
             >
                 <button
@@ -77,7 +82,11 @@ const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () =>
             {sendToReviewIcon && (
                 <Tooltip
                     position="top"
-                    label="Only team members listed on this agreement can submit it for approval"
+                    label={`${
+                        lockedMessage
+                            ? lockedMessage
+                            : "Only team members listed on this agreement can submit it for approval"
+                    }`}
                     className="line-height-body-1"
                 >
                     <button

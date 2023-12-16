@@ -32,7 +32,8 @@ import {
     findNextBudgetLine,
     findNextNeedBy,
     getBudgetLineCountsByStatus,
-    getAgreementDescription
+    getAgreementDescription,
+    hasActiveWorkflow
 } from "./AgreementsTable.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import TextClip from "../../UI/Text/TextClip";
@@ -75,7 +76,9 @@ export const AgreementTableRow = ({ agreement }) => {
     // Validations for editing/deleting an agreement
     const isAgreementEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
-    const isEditable = isAgreementEditable && canUserEditAgreement;
+    const doesAgreementHaveBudgetLinesInWorkflow = hasActiveWorkflow(agreement?.budget_line_items);
+    const lockedMessage = doesAgreementHaveBudgetLinesInWorkflow ? "This agreement is locked" : "";
+    const isEditable = isAgreementEditable && canUserEditAgreement && !doesAgreementHaveBudgetLinesInWorkflow;
     const areAllBudgetLinesInDraftStatus = areAllBudgetLinesInStatus(agreement, "DRAFT");
     const areThereAnyBudgetLines = isThereAnyBudgetLines(agreement);
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
@@ -93,6 +96,7 @@ export const AgreementTableRow = ({ agreement }) => {
         <ChangeIcons
             item={agreement}
             isItemEditable={isEditable}
+            lockedMessage={lockedMessage}
             isItemDeletable={canUserDeleteAgreement}
             handleDeleteItem={handleDeleteAgreement}
             handleSetItemForEditing={handleEditAgreement}
@@ -113,7 +117,7 @@ export const AgreementTableRow = ({ agreement }) => {
             >
                 <Link
                     className="text-ink text-no-underline"
-                    to={"/agreements/" + agreement.id}
+                    to={"/agreements/" + agreement?.id}
                 >
                     <TextClip text={agreementName} />
                 </Link>
