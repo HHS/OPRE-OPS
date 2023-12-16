@@ -19,7 +19,7 @@ export const getAgreementSubTotal = (agreement) => {
 
 /**
  * Calculates the total cost of a list of items, taking into account a fee per item.
- * @param {Array>} items - The list of items to calculate the total cost for.
+ * @param {Array} items - The list of items to calculate the total cost for.
  * @param {number} fee - The fee per item.
  * @returns {number} The total cost of the items.
  */

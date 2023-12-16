@@ -76,9 +76,9 @@ export const AgreementTableRow = ({ agreement }) => {
     // Validations for editing/deleting an agreement
     const isAgreementEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
-    const doesAgreementHaveBudgetLinesInWorkflow = hasActiveWorkflow(agreement?.budget_line_items);
-    const lockedMessage = doesAgreementHaveBudgetLinesInWorkflow ? "This agreement is locked" : "";
-    const isEditable = isAgreementEditable && canUserEditAgreement && !doesAgreementHaveBudgetLinesInWorkflow;
+    const doesAgreementHaveActiveWorkflow = hasActiveWorkflow(agreement?.budget_line_items);
+    const lockedMessage = doesAgreementHaveActiveWorkflow ? "This agreement is locked" : "";
+    const isEditable = isAgreementEditable && canUserEditAgreement && !doesAgreementHaveActiveWorkflow;
     const areAllBudgetLinesInDraftStatus = areAllBudgetLinesInStatus(agreement, "DRAFT");
     const areThereAnyBudgetLines = isThereAnyBudgetLines(agreement);
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
